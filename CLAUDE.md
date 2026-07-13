@@ -57,6 +57,7 @@ _Empty — everything below has executed. New items go here as they're decided._
 - **VMC**: keep MLM/VMC pair vs consolidate into MLM — undecided.
 - **Crypto sleeve over target** (discovered 2026-07-13, corrected-book run): was $954 = 16.5% over by ~$375. **Partially resolved 2026-07-13** — BTC position fully sold ($239 net), sleeve now ~12.4%, ~$134 residual left. ETH/SOL remain staked/illiquid, so no further trim available without unstaking; letting future deposits into other underweight sleeves passively shrink the remaining % is the default path unless it keeps drifting further over.
 - **`min_lot_dollars` ($25) doesn't scale with book size** — fine at today's ~$5,600 book (~0.45%), but revisit once the book crosses roughly **$25,000** (where $25 drops under ~0.1% of book and stops being a meaningful floor). One-line bump in `targets.yaml` when that trigger hits; not needed now.
+- **SKHY has a permanent no-data gap in Alpaca** (confirmed repeatedly 2026-07-13): trades regular-way on Robinhood, but the free IEX feed returns zero bars for it. RSI/trend/earnings gates can never fire for it — it's evaluated on dollar-value cap/target math only (band target, semis-cluster cap), never on price signal. Not fixable without a paid data feed; just a known blind spot to remember, not a bug to chase.
 
 ## Formatting
 Extremely concise. Bold headers, tables for comparisons, zero preamble. Honesty over comfort — name rationalizations directly.
