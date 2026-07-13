@@ -59,3 +59,9 @@ gates:
   trend_rsi_override: 30       # allow add below 200-SMA only if RSI < this
   earnings_blackout_days: 7    # skip adds within this many calendar days of earnings
   trim_rsi: 60                 # trim band/spec overweights only when RSI > this
+
+margin:
+  # Doctrine (July 2026): fixed structural cap, not a timing lever. Book is
+  # net equity (gross holdings minus margin debt); this cap bounds gross/equity.
+  leverage_cap: 1.8            # hard ceiling on gross-position-value / net-equity
+  buffer_floor_pct: 30.0       # hard cutoff: block margin buys if buffer would drop below this

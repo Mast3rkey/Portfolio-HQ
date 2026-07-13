@@ -1,4 +1,9 @@
 # holdings.yaml — {ticker: market_value}. Written by 'allocate.py update-holdings' (merge unless --replace).
+# margin: synced via 'allocate.py update-margin <debt> <buffer_pct>' — buffer_pct comes from Robinhood directly (per-security maintenance
+# ratios aren't available via Alpaca), so it's only as fresh as the last sync. Verify on Robinhood before any large margin-funded buy.
+margin:
+  debt: 4422.97
+  buffer_pct: 46.73
 holdings:
   AAPL: 102.0
   ABBV: 137.0

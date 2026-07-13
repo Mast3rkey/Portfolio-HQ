@@ -91,17 +91,42 @@ def fetch_market(client, tickers: list[str], regime_ticker: str) -> tuple[dict, 
 
 # ── core allocation logic ──────────────────────────────────────────────────────
 
-def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash):
+def margin_capacity(gross, margin_debt, cash, leverage_cap, buffer_pct, buffer_floor_pct,
+                    margin_requested):
+    """Structural leverage-cap + buffer-floor check (July 2026 margin doctrine).
+    Buffer is a capacity ceiling, not a timing throttle — hard cutoff, no taper.
+    Returns (net_equity, margin_allowed, forced_delever, block_reason)."""
+    net_equity = gross - margin_debt
+    if buffer_pct is not None and buffer_pct < buffer_floor_pct:
+        return net_equity, 0.0, True, (
+            f"buffer {buffer_pct:.1f}% < {buffer_floor_pct:.0f}% floor — forced de-lever")
+    max_by_leverage = max(0.0, leverage_cap * (net_equity + cash) - gross - cash)
+    allowed = min(margin_requested, max_by_leverage)
+    reason = "" if allowed >= margin_requested - 1e-9 else (
+        f"leverage cap {leverage_cap:.2f}x (max additional margin ${max_by_leverage:,.0f})")
+    return net_equity, allowed, False, reason
+
+
+def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
+         margin_debt=0.0, margin_buffer_pct=None, margin_requested=0.0):
     gates = targets.get("gates", {})
     caps = targets.get("caps", {})
+    margin_cfg = targets.get("margin", {})
     min_lot = float(gates.get("min_lot_dollars", 25))
     trend_rsi_override = float(gates.get("trend_rsi_override", 30))
     blackout_days = int(gates.get("earnings_blackout_days", 7))
     trim_rsi = float(gates.get("trim_rsi", 60))
     semis = {s.upper() for s in caps.get("semis_tickers", [])}
     semis_cap_pct = float(caps.get("semis_cluster_pct", 25))
+    leverage_cap = float(margin_cfg.get("leverage_cap", 1.8))
+    buffer_floor_pct = float(margin_cfg.get("buffer_floor_pct", 30.0))
 
-    book = sum(float(v) for v in holdings.values()) + float(cash)
+    gross = sum(float(v) for v in holdings.values())
+    net_equity, margin_allowed, forced_delever, margin_block_reason = margin_capacity(
+        gross, margin_debt, float(cash), leverage_cap, margin_buffer_pct,
+        buffer_floor_pct, float(margin_requested))
+    book = net_equity + float(cash)          # doctrine: book = net equity (+ new deposit)
+    deployable = float(cash) + margin_allowed  # buying power for this cycle (deposit + margin)
     semis_value = sum(float(holdings.get(t, 0)) for t in semis)
 
     rows: list[dict] = []          # BLOCKED / info rows
@@ -193,7 +218,7 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash):
 
     # ---- greedy allocation to largest passing gaps -----------------------
     buy_candidates.sort(key=lambda r: r["gap"], reverse=True)
-    cash_left = float(cash)
+    cash_left = deployable
     buys: list[dict] = []
     for c in buy_candidates:
         want = min(c["gap"], c["max_by_name"])
@@ -207,7 +232,7 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash):
             want = min(want, semis_room)
         alloc = min(want, cash_left)
         if alloc < min_lot:
-            if cash_left < min_lot and cash > 0:
+            if cash_left < min_lot and deployable > 0:
                 rows.append({**c, "action": "BLOCKED", "dollars": 0,
                              "reason": "cash exhausted"})
             continue
@@ -217,16 +242,28 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash):
         if c["is_semis"]:
             semis_value += alloc
 
+    deployed_total = sum(b["dollars"] for b in buys)
+    margin_used = min(margin_allowed, max(0.0, deployed_total - float(cash)))
+
     buy_candidates.sort(key=lambda r: r["gap"], reverse=True)
     crypto_coins = {c.upper() for c in targets.get("crypto", {}).get("coins", [])}
     orphans = {t: float(v) for t, v in holdings.items()
                if t.upper() not in roster and t.upper() not in crypto_coins}
+    leverage_current = (gross / net_equity) if net_equity > 0 else None
     return {
         "book": book, "cash": float(cash), "cash_left": cash_left,
         "buys": buys, "trims": trims, "blocked": rows,
         "underweight": buy_candidates, "orphans": orphans,
         "regime_ok": regime_ok, "regime_known": regime_known,
         "semis_value": semis_value, "semis_cap_pct": semis_cap_pct,
+        "margin": {
+            "gross": gross, "net_equity": net_equity, "debt": margin_debt,
+            "buffer_pct": margin_buffer_pct, "buffer_floor_pct": buffer_floor_pct,
+            "leverage_current": leverage_current, "leverage_cap": leverage_cap,
+            "requested": float(margin_requested), "allowed": margin_allowed,
+            "used": margin_used, "forced_delever": forced_delever,
+            "block_reason": margin_block_reason,
+        },
     }
 
 
@@ -295,8 +332,13 @@ def render(result, review: bool) -> str:
                  f"{len(result['trims'])} trim candidate(s); "
                  f"{len(result['blocked'])} blocked.")
     else:
-        L.append(f"- Deployed **${deployed:,.0f}** of ${result['cash']:,.0f} across "
-                 f"**{n_buy} buy(s)**; ${result['cash_left'] if not bearish else result['cash']:,.0f} left as cash.")
+        mg = result["margin"]
+        margin_note = (f" (incl. ${mg['used']:,.0f} margin)"
+                       if not bearish and mg["used"] > 0.01 else "")
+        pool = result['cash'] + mg['allowed']
+        L.append(f"- Deployed **${deployed:,.0f}**{margin_note} of ${pool:,.0f} available "
+                 f"(${result['cash']:,.0f} cash + ${mg['allowed']:,.0f} margin) across "
+                 f"**{n_buy} buy(s)**; ${result['cash_left'] if not bearish else pool:,.0f} left.")
     L.append(f"- Regime **{regime}**"
              + ("  → holding cash." if bearish else "."))
     L.append(f"- **{len(result['trims'])} trim(s)**, "
@@ -335,6 +377,31 @@ def render(result, review: bool) -> str:
     if orphans:
         listing = ", ".join(f"{t} ${v:,.0f}" for t, v in sorted(orphans.items()))
         L.append(f"- ⚠️ **Held, not in roster** (counts toward book, no target): {listing}.")
+
+    mg = result["margin"]
+    if mg["debt"] > 0 or mg["requested"] > 0:
+        lev_s = f"{mg['leverage_current']:.2f}x" if mg["leverage_current"] is not None else "n/a"
+        buf_s = f"{mg['buffer_pct']:.1f}%" if mg["buffer_pct"] is not None else "unsynced"
+        L.append("")
+        L.append("## Margin")
+        L.append("| | |")
+        L.append("|---|---:|")
+        L.append(f"| Gross / net equity | ${mg['gross']:,.0f} / ${mg['net_equity']:,.0f} |")
+        L.append(f"| Margin debt | ${mg['debt']:,.0f} |")
+        L.append(f"| Leverage (gross/equity) | {lev_s} vs {mg['leverage_cap']:.2f}x cap |")
+        L.append(f"| Buffer (last synced) | {buf_s} vs {mg['buffer_floor_pct']:.0f}% floor |")
+        if mg["requested"] > 0:
+            L.append(f"| Margin requested / allowed | ${mg['requested']:,.0f} / ${mg['allowed']:,.0f} |")
+        if mg["forced_delever"]:
+            L.append("")
+            L.append(f"> ⚠️ **FORCED DE-LEVER — {mg['block_reason']}.** "
+                      "No margin-funded buying this cycle; trim or pay down debt.")
+        elif mg["block_reason"]:
+            L.append("")
+            L.append(f"> Margin request clipped — {mg['block_reason']}.")
+        L.append("")
+        L.append("_Buffer is synced from Robinhood via `update-margin`, not live — "
+                  "verify before any large margin-funded buy._")
     L.append("")
     L.append("_Advisory only. This tool places no orders. Execute manually._")
     return "\n".join(L)
@@ -391,16 +458,39 @@ def update_holdings(replace: bool = False, confirm: bool = False):
                   f"    Nothing was written.", file=sys.stderr)
             sys.exit(1)
 
-    with open(HOLDINGS_FILE, "w") as f:
-        f.write("# holdings.yaml — {ticker: market_value}. Written by "
-                "'allocate.py update-holdings' (merge unless --replace).\nholdings:\n")
-        if merged:
-            for t in sorted(merged):
-                f.write(f"  {t}: {round(merged[t], 2)}\n")
-        else:
-            f.write("  {}\n")
+    margin_state = load_yaml(HOLDINGS_FILE).get("margin") if HOLDINGS_FILE.exists() else None
+    write_state(merged, margin_state)
     action = "wrote" if replace else f"merged {len(new)} into"
     print(f"{action} {len(merged)} total positions in {HOLDINGS_FILE}", file=sys.stderr)
+
+
+def write_state(holdings: dict, margin: dict | None):
+    """Write holdings.yaml, preserving whichever of holdings/margin isn't being updated."""
+    with open(HOLDINGS_FILE, "w") as f:
+        f.write("# holdings.yaml — {ticker: market_value}. Written by "
+                "'allocate.py update-holdings' (merge unless --replace).\n")
+        if margin:
+            f.write("# margin: synced via 'allocate.py update-margin <debt> <buffer_pct>' — "
+                    "buffer_pct comes from Robinhood directly (per-security maintenance\n"
+                    "# ratios aren't available via Alpaca), so it's only as fresh as the "
+                    "last sync. Verify on Robinhood before any large margin-funded buy.\n"
+                    "margin:\n"
+                    f"  debt: {round(float(margin.get('debt', 0.0)), 2)}\n"
+                    f"  buffer_pct: {round(float(margin.get('buffer_pct', 0.0)), 2)}\n")
+        f.write("holdings:\n")
+        if holdings:
+            for t in sorted(holdings):
+                f.write(f"  {t}: {round(holdings[t], 2)}\n")
+        else:
+            f.write("  {}\n")
+
+
+def update_margin(debt: float, buffer_pct: float):
+    prior = load_yaml(HOLDINGS_FILE) or {}
+    holdings = prior.get("holdings", {}) or {}
+    write_state(holdings, {"debt": debt, "buffer_pct": buffer_pct})
+    print(f"margin synced: debt=${debt:,.2f} buffer={buffer_pct:.2f}% in {HOLDINGS_FILE}",
+          file=sys.stderr)
 
 
 # ── main ────────────────────────────────────────────────────────────────────────
@@ -410,15 +500,25 @@ def main():
         update_holdings(replace="--replace" in sys.argv,
                         confirm="--confirm" in sys.argv)
         return
+    if len(sys.argv) > 1 and sys.argv[1] == "update-margin":
+        if len(sys.argv) != 4:
+            print("usage: allocate.py update-margin <debt> <buffer_pct>", file=sys.stderr)
+            sys.exit(1)
+        update_margin(float(sys.argv[2]), float(sys.argv[3]))
+        return
 
     ap = argparse.ArgumentParser(description="Manual-allocation advisor (no orders).")
     ap.add_argument("--cash", type=float, default=0.0, help="new cash to deploy")
+    ap.add_argument("--margin", type=float, default=0.0,
+                    help="margin-funded buying power requested this cycle "
+                         "(clipped to the 1.8x leverage cap / blocked below the buffer floor)")
     ap.add_argument("--review", action="store_true", help="rebalance check, no new cash")
     ap.add_argument("--levels", action="store_true", help="buy-level staging report")
     ap.add_argument("--ticker", type=str, default=None, help="limit --levels to one ticker")
     args = ap.parse_args()
     if args.review:
         args.cash = 0.0
+        args.margin = 0.0
 
     if args.levels:
         from levels import run_levels
@@ -432,7 +532,12 @@ def main():
         return
 
     targets = load_yaml(TARGETS_FILE)
-    holdings = (load_yaml(HOLDINGS_FILE) or {}).get("holdings", {}) or {}
+    holdings_yaml = load_yaml(HOLDINGS_FILE) or {}
+    holdings = holdings_yaml.get("holdings", {}) or {}
+    margin_state = holdings_yaml.get("margin", {}) or {}
+    margin_debt = float(margin_state.get("debt", 0.0))
+    margin_buffer_pct = margin_state.get("buffer_pct")
+    margin_buffer_pct = float(margin_buffer_pct) if margin_buffer_pct is not None else None
     roster = build_roster(targets)
     if not roster:
         print("No tickers in targets.yaml — paste your roster into the tier lists.",
@@ -443,7 +548,9 @@ def main():
     metrics, regime_ok, regime_known = fetch_market(
         client, list(roster), targets.get("regime_ticker", "QQQ"))
 
-    result = plan(targets, holdings, roster, metrics, regime_ok, regime_known, args.cash)
+    result = plan(targets, holdings, roster, metrics, regime_ok, regime_known, args.cash,
+                  margin_debt=margin_debt, margin_buffer_pct=margin_buffer_pct,
+                  margin_requested=args.margin)
 
     # Crypto sleeve — priced live, valued from holdings.yaml, never gated/traded.
     crypto_cfg = targets.get("crypto", {})
