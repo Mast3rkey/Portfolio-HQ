@@ -3,7 +3,7 @@
 # ratios aren't available via Alpaca), so it's only as fresh as the last sync. Verify on Robinhood before any large margin-funded buy.
 margin:
   debt: 3779.53
-  buffer_pct: 43.94
+  buffer_pct: 52.76
 holdings:
   AAPL: 44.14
   ABBV: 42.79
