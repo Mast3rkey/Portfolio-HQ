@@ -18,7 +18,7 @@ from __future__ import annotations
 import argparse
 import csv
 import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import yaml
@@ -324,7 +324,7 @@ def render(result, review: bool) -> str:
               else "BELOW 200-EMA (risk-off)") if result["regime_known"] else "UNKNOWN"
     bearish = result["regime_known"] and not result["regime_ok"]
 
-    L.append(f"# Allocation advisory — {date.today().isoformat()}")
+    L.append(f"# Allocation advisory — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     L.append("")
     L.append(f"**Book:** ${result['book']:,.0f}  |  "
              f"**New cash:** ${result['cash']:,.0f}  |  "
@@ -690,7 +690,7 @@ def main():
         out = run_levels(targets, AlpacaPaperClient(), only_ticker=args.ticker)
         print(out)
         LOGS_DIR.mkdir(exist_ok=True)
-        log_path = LOGS_DIR / f"levels-{date.today().isoformat()}.md"
+        log_path = LOGS_DIR / f"levels-{datetime.now().strftime('%Y-%m-%dT%H%M%S')}.md"
         log_path.write_text(out + "\n")
         print(f"\n[logged to {log_path}]", file=sys.stderr)
         return
@@ -733,7 +733,7 @@ def main():
     print(out)
 
     LOGS_DIR.mkdir(exist_ok=True)
-    log_path = LOGS_DIR / f"allocation-{date.today().isoformat()}.md"
+    log_path = LOGS_DIR / f"allocation-{datetime.now().strftime('%Y-%m-%dT%H%M%S')}.md"
     log_path.write_text(out + "\n")
     print(f"\n[logged to {log_path}]", file=sys.stderr)
     log_performance(client=client, quiet=True)   # auto-snapshot on every allocate run
