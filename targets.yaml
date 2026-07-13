@@ -40,7 +40,10 @@ crypto:
   coingecko_ids: {}
 
 caps:
-  # Semiconductor cluster must stay <= this % of book (hard cap on new buys).
+  # Semiconductor cluster must stay <= this % of book — blocks new buys AND
+  # (July 2026) mechanically trims a breach, no RSI gate (concentration/
+  # correlation risk limit, not a return-timing call, so it doesn't wait for
+  # a "good" price like the band/spec RSI-gated trims do).
   # Correlation-defined, NOT market-cap: these names crash together, and the
   # equipment (KLAC/LRCX/AMAT) and memory (MU/WDC) names crash hardest. Measured
   # honestly so the cap actually binds. SKHY counts once it trades regular-way.
