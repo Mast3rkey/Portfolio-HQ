@@ -6,8 +6,8 @@
 # against real screens and it doesn't reconcile (off by several points);
 # Robinhood's actual formula weights something this simple subtraction misses.
 margin:
-  debt: 3399.5
-  buffer_pct: 56.42
+  debt: 3449.5
+  buffer_pct: 56.08
 holdings:
   AAPL: 44.22
   ABBV: 43.16
