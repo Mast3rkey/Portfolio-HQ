@@ -24,8 +24,9 @@ tiers:
     # has zero bars for it — permanent no-data gap, not a timing issue. RSI/trend
     # gates can never fire for it; only dollar-value cap/target math applies.
     # VMC removed 2026-07-13 — consolidated into MLM (see Decisions Log).
+    # TM removed 2026-07-13 — stray typo, never held, no corresponding target.
     tickers: [KLAC, LRCX, AMAT, AMD, MU, MRVL, WDC, VRT, ETN, CAT, GNRC, IBM, NOW,
-              CRM, ORCL, NFLX, SHOP, CRWD, PANW, AAPL, UBER, TM, JPM, HOOD, XOM, CVX,
+              CRM, ORCL, NFLX, SHOP, CRWD, PANW, AAPL, UBER, JPM, HOOD, XOM, CVX,
               RTX, ABBV, MRK, JNJ, GILD, UNH, BABA, SKHY, DELL]
   spec:
     weight_pct: 1.00
