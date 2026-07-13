@@ -20,7 +20,9 @@ tiers:
   band:
     weight_pct: 0.75
     cap_multiple: 1.25      # band positions may run up to 1.25x target
-    # SKHY: when-issued (SKHYV) until regular-way trading 2026-07-13 — may 404 pre-open.
+    # SKHY: trades regular-way (confirmed 2026-07-13), but Alpaca's free IEX feed
+    # has zero bars for it — permanent no-data gap, not a timing issue. RSI/trend
+    # gates can never fire for it; only dollar-value cap/target math applies.
     # VMC: pending keep/sell decision — held in band for now.
     tickers: [KLAC, LRCX, AMAT, AMD, MU, MRVL, WDC, VRT, ETN, CAT, GNRC, IBM, NOW,
               CRM, ORCL, NFLX, SHOP, CRWD, PANW, AAPL, UBER, TM, JPM, HOOD, XOM, CVX,
@@ -46,7 +48,7 @@ caps:
   # a "good" price like the band/spec RSI-gated trims do).
   # Correlation-defined, NOT market-cap: these names crash together, and the
   # equipment (KLAC/LRCX/AMAT) and memory (MU/WDC) names crash hardest. Measured
-  # honestly so the cap actually binds. SKHY counts once it trades regular-way.
+  # honestly so the cap actually binds. SKHY counts (trades regular-way as of 2026-07-13).
   semis_cluster_pct: 25.0
   semis_tickers: [ASML, TSM, NVDA, AVGO, AMD, MU, MRVL, KLAC, LRCX, AMAT, WDC, INTC, SKHY]
 

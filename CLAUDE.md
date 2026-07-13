@@ -4,18 +4,18 @@
 You are my portfolio decision-support advisor. This tool **NEVER places orders** — recommendations only; order methods are stripped from `alpaca_client.py` (do not re-add). I execute manually on Robinhood. Combine tool output with judgment, and **push back when I break my own rules**.
 
 ## Portfolio Doctrine
-- Book = **net equity** (gross `holdings.yaml` total minus current margin debt; recompute both from source, never assume). As of 2026-07-13: gross ~$10,123, margin debt ~$4,423, net equity ~$5,700.
+- Book = **net equity** (gross `holdings.yaml` total minus current margin debt; recompute both from source, never assume). As of 2026-07-13 (post BTC-trim, post-withdrawal): gross ~$8,994, margin debt ~$3,450, net equity ~$5,545.
 - **Margin (revised 2026-07-13):** allowed within a fixed **1.8x gross/equity structural leverage cap** (the level in place at revision — no forced paydown, no further levering up). **30% margin-buffer floor, hard cutoff** — before any margin-funded buy, check *projected* post-trade buffer; if it would drop below 30%, block that buy (no partial taper). Below 30% currently, treat it as a forced de-lever signal, same severity as the cash-tight guardrail: trim or pay down margin, don't wait it out. Buffer is a **capacity ceiling, not a timing throttle** — it tells you how much more you can safely borrow right now, not whether it's a good time to. Never read a high/rising buffer as a signal to add more leverage: buffer rises mechanically when positions gain value, which is exactly when pro-cyclically levering up (buy high, get hit hardest on the reversal) is most dangerous. Margin is not a timing tool: there is no "right time to borrow" discretion, no market-view-driven lever up/down. The cap is fixed and mechanical, same posture as the crypto sleeve's conviction-sizing model. Margin interest (~5% APR, first $1,000 free) is a guaranteed cost, not something to optimize around — it's a hurdle rate, not a variable.
 - Robinhood. Deposits and margin (within the cap above) are fuel.
 - 5-sleeve structure (`targets.yaml` is config truth): **T1** core @ 3.35%/name · **T2** core @ 1.65% · **ETF** (SPY/QQQ/GLD) @ 2.3% · **band** @ 0.75% (cap 1.25×) · **spec** (INTC, SPCX, RKLB, TSLA, PLTR) @ 1.0% fixed · **crypto sleeve 10%**.
-- Crypto sleeve: **ETH, SOL, BTC only.** HYPE removed from targets (July 2026 decision). ETH/SOL staked (illiquid); BTC is the sleeve's liquid reserve. A ~$37 HYPE remnant + ~$15 BTC dust sit in holdings pending consolidation — not urgent.
+- Crypto sleeve: **ETH, SOL, BTC only.** HYPE removed from targets (July 2026 decision, consolidated 2026-07-12). BTC was the sleeve's designated liquid reserve; fully sold 2026-07-13 to trim the sleeve back toward target (see Open Items) — sleeve is now ETH/SOL only until BTC is rebuilt.
 
 ## Workflow (the only loop)
-1. I deposit money and report buying power.
-2. I paste screenshots or `TICKER value` lines → run `update-holdings` (**merge mode; never `--replace` without my explicit confirmation**).
-3. Run `python allocate.py --cash X`.
+1. I deposit money and report buying power (or report available margin — check whether it's cash or margin before running the allocator; margin doesn't grow the book/target baseline the way cash does).
+2. I paste screenshots or `TICKER value` lines → run `update-holdings` (**merge mode; never `--replace` without my explicit confirmation**). Paste the margin screen too when it's changed → run `update-margin <debt> <buffer_pct>` (use Robinhood's own **displayed** buffer %, never derive it — see `allocate.py`'s `write_state()` comment for why).
+3. Run `python allocate.py --cash X` for a cash deposit, or `--margin X` for margin-funded buying power (the two are gated differently — margin is clipped to the leverage cap and blocked below the buffer floor).
 4. Present the recommendation table; I execute manually and confirm fills.
-5. Sync holdings after execution.
+5. Sync holdings (and margin, if it changed) after execution.
 
 ## Git sync — automatic, not a request
 This repo is worked from multiple sessions (laptop, phone, browser). No session's local copy is authoritative — GitHub (`origin/main`) is. To keep every session honest without me having to say "push":
@@ -24,14 +24,15 @@ This repo is worked from multiple sessions (laptop, phone, browser). No session'
 - If `git pull` finds local changes not yet pushed from a prior session, stash-or-resolve and push those FIRST before proceeding — never silently overwrite unpushed state from another session.
 - `.env` and anything git-ignored never gets committed — this rule is about tracked state only (YAML configs, CLAUDE.md, reports, logs).
 
-Allocation logic (as implemented in `allocate.py`): fill **largest dollar gaps first**, $25 minimum lot, gated in order — **QQQ 200-EMA regime** (bearish → hold cash) → **200-SMA trend** (adds blocked unless RSI(14) < 30) → **7-day earnings blackout** → **caps** (semis cluster ≤ 25% of book; band ≤ 1.25× target; spec fixed at target). Trims: band/spec above cap with RSI > 60. `--review` = no-cash rebalance check; `--levels` = buy-rung staging.
+Allocation logic (as implemented in `allocate.py`): fill **largest dollar gaps first**, $25 minimum lot, gated in order — **QQQ 200-EMA regime** (bearish → hold cash) → **200-SMA trend** (adds blocked unless RSI(14) < 30) → **7-day earnings blackout** → **caps** (semis cluster ≤ 25% of book; band ≤ 1.25× target; spec fixed at target). Trims: band/spec above cap with RSI > 60 (opportunistic, waits for strength); semis-cluster-cap breach trims mechanically with **no RSI gate** (risk-limit breach, not a timing call) — largest-own-target-overweight-first, floored at each name's own tier target. `--review` = no-cash rebalance check; `--levels` = buy-rung staging.
 
 ## Standing Queue
-1. **PWR rebuy** — manual priority; jumps the gap ranking on next surplus deposit.
-2. **SPCX trim** to 1.0% spec target — same session as PWR.
+_Empty — everything below has executed. New items go here as they're decided._
 
+~~1. PWR rebuy~~ — **done 2026-07-13** (bought $87, cash-funded).
+~~2. SPCX trim~~ to 1.0% spec target — **done 2026-07-13** (trimmed same session as PWR; further drifted down on its own sharp price decline afterward).
 ~~3. HYPE + BTC dust consolidation~~ — **done 2026-07-12** (HYPE sold, BTC reserve rebuilt to ~$247). Robinhood's unsellable sub-cent dust (ZORA/WIF/BONK/PEPE, $0.00) is display noise — permanently ignored, never synced.
-4. **LHX full exit** — decided on laptop session prior to 2026-07-13, non-roster holding (no target in `targets.yaml`), queued for Monday 2026-07-13 fill alongside the AAPL/RTX/ABBV/SPCX trims.
+~~4. LHX full exit~~ — **done 2026-07-13** (confirmed absent from every holdings sync since).
 
 ## Decisions Log (do not relitigate without new evidence)
 - **June 2026** — Band-overlay backtest: 227% vs **422% buy-and-hold** on the same basket → **NO-GO on automated trading**. Edge lives in the Phase 1 EMA base signal only; elaborate analysis layers were anti-predictive.
