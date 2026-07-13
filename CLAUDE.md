@@ -27,12 +27,12 @@ This repo is worked from multiple sessions (laptop, phone, browser). No session'
 Allocation logic (as implemented in `allocate.py`): fill **largest dollar gaps first**, $25 minimum lot, gated in order — **QQQ 200-EMA regime** (bearish → hold cash) → **200-SMA trend** (adds blocked unless RSI(14) < 30) → **7-day earnings blackout** → **caps** (semis cluster ≤ 25% of book; band ≤ 1.25× target; spec fixed at target). Trims: band/spec above cap with RSI > 60 (opportunistic, waits for strength); semis-cluster-cap breach trims mechanically with **no RSI gate** (risk-limit breach, not a timing call) — largest-own-target-overweight-first, floored at each name's own tier target. `--review` = no-cash rebalance check; `--levels` = buy-rung staging.
 
 ## Standing Queue
-_Empty — everything below has executed. New items go here as they're decided._
+1. **Rebuild BTC reserve** (decided 2026-07-13) — direct future crypto-sleeve buys to BTC specifically, not ETH/SOL, until it reaches **~25% of the crypto sleeve (~2.5% of book, currently ~$139, scales with book)** — matches BTC's prior share before it was fully drained to fix the July 2026 sleeve overage. Once there, resume manual coin-split discretion. `allocate.py` still only computes the aggregate sleeve gap (coin split is manual); this is an execution instruction, not a code change.
 
-~~1. PWR rebuy~~ — **done 2026-07-13** (bought $87, cash-funded).
-~~2. SPCX trim~~ to 1.0% spec target — **done 2026-07-13** (trimmed same session as PWR; further drifted down on its own sharp price decline afterward).
-~~3. HYPE + BTC dust consolidation~~ — **done 2026-07-12** (HYPE sold, BTC reserve rebuilt to ~$247). Robinhood's unsellable sub-cent dust (ZORA/WIF/BONK/PEPE, $0.00) is display noise — permanently ignored, never synced.
-~~4. LHX full exit~~ — **done 2026-07-13** (confirmed absent from every holdings sync since).
+~~2. PWR rebuy~~ — **done 2026-07-13** (bought $87, cash-funded).
+~~3. SPCX trim~~ to 1.0% spec target — **done 2026-07-13** (trimmed same session as PWR; further drifted down on its own sharp price decline afterward).
+~~4. HYPE + BTC dust consolidation~~ — **done 2026-07-12** (HYPE sold, BTC reserve rebuilt to ~$247). Robinhood's unsellable sub-cent dust (ZORA/WIF/BONK/PEPE, $0.00) is display noise — permanently ignored, never synced.
+~~5. LHX full exit~~ — **done 2026-07-13** (confirmed absent from every holdings sync since).
 
 ## Decisions Log (do not relitigate without new evidence)
 - **June 2026** — Band-overlay backtest: 227% vs **422% buy-and-hold** on the same basket → **NO-GO on automated trading**. Edge lives in the Phase 1 EMA base signal only; elaborate analysis layers were anti-predictive.
@@ -55,7 +55,7 @@ _Empty — everything below has executed. New items go here as they're decided._
 ## Open Items
 - **AMZN**: T1 vs trim to T2 — undecided.
 - **VMC**: keep MLM/VMC pair vs consolidate into MLM — undecided.
-- **Crypto sleeve over target** (discovered 2026-07-13, corrected-book run): was $954 = 16.5% over by ~$375. **Partially resolved 2026-07-13** — BTC position fully sold ($239 net), sleeve now ~12.4%, ~$134 residual left. ETH/SOL remain staked/illiquid, so no further trim available without unstaking; letting future deposits into other underweight sleeves passively shrink the remaining % is the default path unless it keeps drifting further over.
+- **Crypto sleeve over target** (discovered 2026-07-13, corrected-book run): was $954 = 16.5% over by ~$375. **Partially resolved 2026-07-13** — BTC position fully sold ($239 net), sleeve now ~12.4%, ~$134 residual left. ETH/SOL remain staked/illiquid, so no further trim available without unstaking; letting future deposits into other underweight sleeves passively shrink the remaining % is the default path unless it keeps drifting further over. **Rebuild plan added to Standing Queue** — future crypto-sleeve buys route to BTC until it's back to ~25% of the sleeve.
 - **`min_lot_dollars` ($25) doesn't scale with book size** — fine at today's ~$5,600 book (~0.45%), but revisit once the book crosses roughly **$25,000** (where $25 drops under ~0.1% of book and stops being a meaningful floor). One-line bump in `targets.yaml` when that trigger hits; not needed now.
 - **SKHY has a permanent no-data gap in Alpaca** (confirmed repeatedly 2026-07-13): trades regular-way on Robinhood, but the free IEX feed returns zero bars for it. RSI/trend/earnings gates can never fire for it — it's evaluated on dollar-value cap/target math only (band target, semis-cluster cap), never on price signal. Not fixable without a paid data feed; just a known blind spot to remember, not a bug to chase.
 
