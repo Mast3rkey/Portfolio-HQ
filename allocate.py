@@ -16,6 +16,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import csv
 import sys
 from datetime import date
 from pathlib import Path
@@ -32,6 +33,8 @@ HERE = Path(__file__).resolve().parent
 TARGETS_FILE = HERE / "targets.yaml"
 HOLDINGS_FILE = HERE / "holdings.yaml"
 LOGS_DIR = HERE / "logs"
+PERF_LOG_FILE = HERE / "performance_log.csv"
+PERF_FIELDS = ["date", "net_equity", "gross", "margin_debt", "qqq_price", "voo_price", "note"]
 
 DAILY_LIMIT = 300
 DAYS_BACK = 420
@@ -551,6 +554,89 @@ def update_margin(debt: float, buffer_pct: float):
           file=sys.stderr)
 
 
+# ── performance log (net equity vs QQQ/VOO) ─────────────────────────────────────
+# Descriptive only — logs realized book value against a benchmark. Does not
+# predict, does not gate any buy/trim decision. See render_performance() for
+# the deposit/withdrawal caveat this comparison can't correct for.
+
+def _read_perf_log() -> list[dict]:
+    if not PERF_LOG_FILE.exists():
+        return []
+    with open(PERF_LOG_FILE, newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def log_performance(note: str = ""):
+    holdings_yaml = load_yaml(HOLDINGS_FILE) or {}
+    holdings = holdings_yaml.get("holdings", {}) or {}
+    margin_state = holdings_yaml.get("margin", {}) or {}
+    gross = sum(float(v) for v in holdings.values())
+    margin_debt = float(margin_state.get("debt", 0.0))
+    net_equity = gross - margin_debt
+
+    client = AlpacaPaperClient()
+    qqq = client.get_bars("QQQ", "1Day", limit=1, days_back=5)
+    voo = client.get_bars("VOO", "1Day", limit=1, days_back=5)
+    qqq_price = qqq[-1]["c"] if qqq else None
+    voo_price = voo[-1]["c"] if voo else None
+
+    rows = _read_perf_log()
+    today = date.today().isoformat()
+    rows = [r for r in rows if r["date"] != today]   # idempotent same-day re-log
+    rows.append({"date": today, "net_equity": round(net_equity, 2),
+                "gross": round(gross, 2), "margin_debt": round(margin_debt, 2),
+                "qqq_price": qqq_price, "voo_price": voo_price, "note": note})
+    rows.sort(key=lambda r: r["date"])
+
+    with open(PERF_LOG_FILE, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=PERF_FIELDS)
+        w.writeheader()
+        w.writerows(rows)
+    print(f"logged: {today} net_equity=${net_equity:,.2f} QQQ=${qqq_price} VOO=${voo_price} "
+          f"in {PERF_LOG_FILE}", file=sys.stderr)
+
+
+def render_performance() -> str:
+    rows = _read_perf_log()
+    if len(rows) < 2:
+        return ("# Performance log\n\nNot enough history yet — "
+                f"{len(rows)} snapshot(s) logged. Run `log-performance` again on a "
+                "future date to get a comparison.")
+
+    first, last = rows[0], rows[-1]
+    prev = rows[-2] if len(rows) >= 2 else first
+
+    def pct(a, b):
+        a, b = float(a), float(b)
+        return (b / a - 1) * 100 if a else None
+
+    def fmt(p):
+        return f"{p:+.1f}%" if p is not None else "n/a"
+
+    L = ["# Performance log — net equity vs QQQ/VOO", "",
+        f"**{len(rows)} snapshot(s)** logged, {first['date']} → {last['date']}", "",
+        "| | Since first log | Since last log |",
+        "|---|---:|---:|",
+        f"| Net equity | {fmt(pct(first['net_equity'], last['net_equity']))} "
+        f"| {fmt(pct(prev['net_equity'], last['net_equity']))} |",
+        f"| QQQ | {fmt(pct(first['qqq_price'], last['qqq_price']))} "
+        f"| {fmt(pct(prev['qqq_price'], last['qqq_price']))} |",
+        f"| VOO | {fmt(pct(first['voo_price'], last['voo_price']))} "
+        f"| {fmt(pct(prev['voo_price'], last['voo_price']))} |",
+        "", "_Latest snapshot:_",
+        f"- {last['date']}: net equity ${float(last['net_equity']):,.0f}, "
+        f"gross ${float(last['gross']):,.0f}, margin debt ${float(last['margin_debt']):,.0f}"
+        + (f" — _{last['note']}_" if last.get("note") else ""),
+        "",
+        "> ⚠️ **This is a rough directional check, not a precise return calc.** "
+        "Net equity moves from deposits, withdrawals, and margin draws/paydowns, "
+        "none of which are backed out here — a big deposit between snapshots will "
+        "show up as \"growth\" that has nothing to do with market performance. "
+        "Treat divergence from QQQ/VOO as a prompt to look closer, not a verdict.",
+    ]
+    return "\n".join(L)
+
+
 # ── main ────────────────────────────────────────────────────────────────────────
 
 def main():
@@ -564,6 +650,9 @@ def main():
             sys.exit(1)
         update_margin(float(sys.argv[2]), float(sys.argv[3]))
         return
+    if len(sys.argv) > 1 and sys.argv[1] == "log-performance":
+        log_performance(note=" ".join(sys.argv[2:]))
+        return
 
     ap = argparse.ArgumentParser(description="Manual-allocation advisor (no orders).")
     ap.add_argument("--cash", type=float, default=0.0, help="new cash to deploy")
@@ -573,7 +662,12 @@ def main():
     ap.add_argument("--review", action="store_true", help="rebalance check, no new cash")
     ap.add_argument("--levels", action="store_true", help="buy-level staging report")
     ap.add_argument("--ticker", type=str, default=None, help="limit --levels to one ticker")
+    ap.add_argument("--performance", action="store_true",
+                    help="show net-equity-vs-QQQ/VOO log (see log-performance to add a snapshot)")
     args = ap.parse_args()
+    if args.performance:
+        print(render_performance())
+        return
     if args.review:
         args.cash = 0.0
         args.margin = 0.0
