@@ -6,8 +6,8 @@
 # against real screens and it doesn't reconcile (off by several points);
 # Robinhood's actual formula weights something this simple subtraction misses.
 margin:
-  debt: 3335.38
-  buffer_pct: 56.61
+  debt: 3299.38
+  buffer_pct: 56.75
   synced_at: 2026-07-13
 holdings:
   AAPL: 44.22
@@ -52,7 +52,7 @@ holdings:
   MSFT: 287.65
   MU: 34.61
   NFLX: 78.9
-  NOW: 77.33
+  NOW: 44.37
   NVDA: 190.09
   ORCL: 73.86
   PANW: 106.36
