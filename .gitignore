@@ -1,0 +1,11 @@
+# Secrets — never commit (paper-only, but still).
+.env
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Generated
+results/
+logs/

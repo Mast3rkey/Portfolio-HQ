@@ -1,0 +1,61 @@
+# targets.yaml — tier structure and allocation policy.
+# Every percentage here is CONFIG-EDITABLE. Weights are % of total book
+# (current holdings market value + new cash) unless noted.
+#
+# Paste your final roster into the `tickers:` lists below. ETF and spec lists
+# are pre-filled per spec; edit freely.
+
+regime_ticker: QQQ          # ticker whose EMA regime gates all new buys
+
+tiers:
+  T1:
+    weight_pct: 3.35        # per-ticker target, each name in the list
+    tickers: [ASML, TSM, MSFT, GOOGL, META, NVDA, GEV, LLY, V]
+  T2:
+    weight_pct: 1.65
+    tickers: [AVGO, AMZN, CEG, PWR, ISRG, TMO, DHR, SYK, MA, BRK.B, WMT, COST, EQIX, MLM]
+  ETF:
+    weight_pct: 2.30
+    tickers: [SPY, QQQ, GLD]
+  band:
+    weight_pct: 0.75
+    cap_multiple: 1.25      # band positions may run up to 1.25x target
+    # SKHY: when-issued (SKHYV) until regular-way trading 2026-07-13 — may 404 pre-open.
+    # VMC: pending keep/sell decision — held in band for now.
+    tickers: [KLAC, LRCX, AMAT, AMD, MU, MRVL, WDC, VRT, ETN, CAT, GNRC, IBM, NOW,
+              CRM, ORCL, NFLX, SHOP, CRWD, PANW, AAPL, UBER, TM, JPM, HOOD, XOM, CVX,
+              RTX, ABBV, MRK, JNJ, GILD, UNH, BABA, VMC, SKHY, DELL]
+  spec:
+    weight_pct: 1.00
+    fixed: true             # spec names sized at exactly target, NEVER above
+    tickers: [INTC, SPCX, RKLB, TSLA, PLTR]
+
+crypto:
+  sleeve_pct: 10.0          # sleeve target as % of book; tracked, never traded here
+  # HYPE removed July 2026 — the remnant in holdings is untracked inventory
+  # awaiting consolidation, not a sleeve target.
+  coins: [BTC, ETH, SOL]
+  # Coins listed here are priced via Alpaca crypto data ('COIN/USD');
+  # value = market_value from holdings.yaml.
+  coingecko_ids: {}
+
+caps:
+  # Semiconductor cluster must stay <= this % of book (hard cap on new buys).
+  # Correlation-defined, NOT market-cap: these names crash together, and the
+  # equipment (KLAC/LRCX/AMAT) and memory (MU/WDC) names crash hardest. Measured
+  # honestly so the cap actually binds. SKHY counts once it trades regular-way.
+  semis_cluster_pct: 25.0
+  semis_tickers: [ASML, TSM, NVDA, AVGO, AMD, MU, MRVL, KLAC, LRCX, AMAT, WDC, INTC, SKHY]
+
+levels:
+  # Buy-level rungs: 50SMA minus (multiplier x ATR14). L3 is floored at the
+  # 200SMA ("trend-floor") — never model a deep buy below the long-term trend.
+  rung_atr_multipliers: [1.0, 2.0, 3.0]
+  practicality_cap_pct: 25   # levels further below price than this = "unlikely near-term"
+  swing_low_sessions: 60     # recent-support lookback
+
+gates:
+  min_lot_dollars: 25          # do not recommend buys smaller than this
+  trend_rsi_override: 30       # allow add below 200-SMA only if RSI < this
+  earnings_blackout_days: 7    # skip adds within this many calendar days of earnings
+  trim_rsi: 60                 # trim band/spec overweights only when RSI > this
