@@ -35,6 +35,7 @@ LOGS_DIR = HERE / "logs"
 
 DAILY_LIMIT = 300
 DAYS_BACK = 420
+STALE_MARGIN_DAYS = 2   # warn if margin debt/buffer haven't been synced in this many days
 
 
 # ── config / state io ──────────────────────────────────────────────────────────
@@ -418,6 +419,13 @@ def render(result, review: bool) -> str:
     if mg["debt"] > 0 or mg["requested"] > 0:
         lev_s = f"{mg['leverage_current']:.2f}x" if mg["leverage_current"] is not None else "n/a"
         buf_s = f"{mg['buffer_pct']:.1f}%" if mg["buffer_pct"] is not None else "unsynced"
+        age_days = None
+        synced_at = mg.get("synced_at")
+        if synced_at:
+            try:
+                age_days = (date.today() - date.fromisoformat(str(synced_at))).days
+            except ValueError:
+                age_days = None
         L.append("")
         L.append("## Margin")
         L.append("| | |")
@@ -435,6 +443,14 @@ def render(result, review: bool) -> str:
         elif mg["block_reason"]:
             L.append("")
             L.append(f"> Margin request clipped — {mg['block_reason']}.")
+        if age_days is not None and age_days >= STALE_MARGIN_DAYS:
+            L.append("")
+            L.append(f"> ⚠️ **Margin data is {age_days} day(s) old** (last synced {synced_at}) — "
+                      "re-check Robinhood and run `update-margin` before trusting this leverage/buffer read.")
+        elif age_days is None and mg["requested"] > 0:
+            L.append("")
+            L.append("> ⚠️ **No sync date on record for margin state** — run `update-margin` "
+                      "to establish one.")
         L.append("")
         L.append("_Buffer is synced from Robinhood via `update-margin`, not live — "
                   "verify before any large margin-funded buy._")
@@ -516,7 +532,8 @@ def write_state(holdings: dict, margin: dict | None):
                     "# Robinhood's actual formula weights something this simple subtraction misses.\n"
                     "margin:\n"
                     f"  debt: {round(float(margin.get('debt', 0.0)), 2)}\n"
-                    f"  buffer_pct: {round(float(margin.get('buffer_pct', 0.0)), 2)}\n")
+                    f"  buffer_pct: {round(float(margin.get('buffer_pct', 0.0)), 2)}\n"
+                    f"  synced_at: {margin.get('synced_at') or date.today().isoformat()}\n")
         f.write("holdings:\n")
         if holdings:
             for t in sorted(holdings):
@@ -528,7 +545,8 @@ def write_state(holdings: dict, margin: dict | None):
 def update_margin(debt: float, buffer_pct: float):
     prior = load_yaml(HOLDINGS_FILE) or {}
     holdings = prior.get("holdings", {}) or {}
-    write_state(holdings, {"debt": debt, "buffer_pct": buffer_pct})
+    write_state(holdings, {"debt": debt, "buffer_pct": buffer_pct,
+                          "synced_at": date.today().isoformat()})
     print(f"margin synced: debt=${debt:,.2f} buffer={buffer_pct:.2f}% in {HOLDINGS_FILE}",
           file=sys.stderr)
 
@@ -591,6 +609,7 @@ def main():
     result = plan(targets, holdings, roster, metrics, regime_ok, regime_known, args.cash,
                   margin_debt=margin_debt, margin_buffer_pct=margin_buffer_pct,
                   margin_requested=args.margin)
+    result["margin"]["synced_at"] = margin_state.get("synced_at")
 
     # Crypto sleeve — priced live, valued from holdings.yaml, never gated/traded.
     crypto_cfg = targets.get("crypto", {})
