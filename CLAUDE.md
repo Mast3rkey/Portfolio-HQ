@@ -22,6 +22,7 @@ Allocation logic (as implemented in `allocate.py`): fill **largest dollar gaps f
 2. **SPCX trim** to 1.0% spec target — same session as PWR.
 
 ~~3. HYPE + BTC dust consolidation~~ — **done 2026-07-12** (HYPE sold, BTC reserve rebuilt to ~$247). Robinhood's unsellable sub-cent dust (ZORA/WIF/BONK/PEPE, $0.00) is display noise — permanently ignored, never synced.
+4. **LHX full exit** — decided on laptop session prior to 2026-07-13, non-roster holding (no target in `targets.yaml`), queued for Monday 2026-07-13 fill alongside the AAPL/RTX/ABBV/SPCX trims.
 
 ## Decisions Log (do not relitigate without new evidence)
 - **June 2026** — Band-overlay backtest: 227% vs **422% buy-and-hold** on the same basket → **NO-GO on automated trading**. Edge lives in the Phase 1 EMA base signal only; elaborate analysis layers were anti-predictive.
