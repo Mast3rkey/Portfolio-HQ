@@ -2,8 +2,8 @@
 # margin: synced via 'allocate.py update-margin <debt> <buffer_pct>' — buffer_pct comes from Robinhood directly (per-security maintenance
 # ratios aren't available via Alpaca), so it's only as fresh as the last sync. Verify on Robinhood before any large margin-funded buy.
 margin:
-  debt: 4422.97
-  buffer_pct: 46.73
+  debt: 3779.53
+  buffer_pct: 43.94
 holdings:
   AAPL: 44.14
   ABBV: 42.79
