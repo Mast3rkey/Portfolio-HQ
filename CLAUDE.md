@@ -54,7 +54,7 @@ Allocation logic (as implemented in `allocate.py`): fill **largest dollar gaps f
 ## Open Items
 - **AMZN**: T1 vs trim to T2 — undecided.
 - **VMC**: keep MLM/VMC pair vs consolidate into MLM — undecided.
-- **`allocate.py` margin support**: not yet implemented. Book/sleeve-target math still runs on gross `holdings.yaml` value with no margin-debt input and no leverage-cap enforcement. Needs: a margin-debt field synced alongside holdings, book computed as net equity, a check that blocks/flags any buy that would push gross/equity over the 1.8x cap, and a per-trade projected-buffer check (hard block below 30%, using per-security maintenance ratios since they vary — e.g. spec/band names can run much higher than core).
+- **Crypto sleeve over target** (discovered 2026-07-13, corrected-book run): $954 = 16.5% of book vs 10% target, over by ~$375. Not auto-trimmed — ETH/SOL are staked/illiquid, and any trim should target BTC (the sleeve's liquid reserve) specifically, not a proportional cut. The gap machine already blocks further crypto buys while over target, so it won't get worse; letting future deposits into other underweight sleeves passively shrink the % is the default path unless it keeps drifting further over.
 
 ## Formatting
 Extremely concise. Bold headers, tables for comparisons, zero preamble. Honesty over comfort — name rationalizations directly.

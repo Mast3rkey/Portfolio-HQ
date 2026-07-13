@@ -132,6 +132,7 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     rows: list[dict] = []          # BLOCKED / info rows
     buy_candidates: list[dict] = []
     trims: list[dict] = []
+    semis_info: dict[str, dict] = {}   # every semis-tier ticker's own target/current, for cluster trim
 
     for tk, meta in roster.items():
         m = metrics.get(tk, {})
@@ -146,6 +147,9 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
         base = {"ticker": tk, "tier": meta["tier"], "price": price, "rsi": rsi,
                 "vs200": vs200, "target": target_dollars, "current": current,
                 "gap": gap}
+        if tk in semis:
+            semis_info[tk] = {"current": current, "target": target_dollars,
+                              "price": price, "rsi": rsi, "tier": meta["tier"]}
 
         # ---- TRIM check (band/spec overweight + hot RSI) ------------------
         cap_mult = meta["cap_multiple"] if meta["tier"] == "band" else (
@@ -196,6 +200,38 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
                                "max_by_name": max_by_name,
                                "want": min(gap, max_by_name),
                                "earn_flag": base.get("earn_flag", "")})
+
+    # ---- SEMIS CLUSTER CAP: mechanical trim, no RSI gate --------------------
+    # Correlation/concentration risk limit, not a return-timing call — unlike
+    # the opportunistic band/spec RSI-gated trims above, a cap breach trims
+    # regardless of momentum. Names already trimmed above are skipped (their
+    # own-target overweight is already zeroed); trims largest-overweight-first,
+    # floored at each name's own tier target (never trimmed below it).
+    already_trimmed = {t["ticker"] for t in trims}
+    semis_value = semis_value - sum(t["dollars"] for t in trims if t["ticker"] in semis)
+    semis_cap_dollars = book * semis_cap_pct / 100.0
+    excess = semis_value - semis_cap_dollars
+    if excess >= min_lot:
+        candidates = sorted(
+            ({"ticker": tk, **info, "overweight": info["current"] - info["target"]}
+             for tk, info in semis_info.items()
+             if tk not in already_trimmed and info["current"] - info["target"] >= min_lot),
+            key=lambda c: c["overweight"], reverse=True)
+        for c in candidates:
+            if excess < min_lot:
+                break
+            amt = min(c["overweight"], excess)
+            if amt < min_lot:
+                continue
+            trims.append({
+                "ticker": c["ticker"], "tier": c["tier"], "price": c["price"],
+                "rsi": c["rsi"], "vs200": None, "target": c["target"],
+                "current": c["current"], "gap": c["target"] - c["current"],
+                "action": "TRIM", "dollars": amt,
+                "reason": f"semis cluster cap {semis_cap_pct:.0f}% "
+                          f"(${c['overweight']:,.0f} over own target)"})
+            semis_value -= amt
+            excess -= amt
 
     # ---- CRYPTO sleeve competes on gap --------------------------------------
     # Decisions Log (July 2026): conviction-sizing, not a timing call — the
