@@ -50,6 +50,11 @@ caps:
   # Correlation-defined, NOT market-cap: these names crash together, and the
   # equipment (KLAC/LRCX/AMAT) and memory (MU/WDC) names crash hardest. Measured
   # honestly so the cap actually binds. SKHY counts (trades regular-way as of 2026-07-13).
+  # Denominator is book (net equity), not gross — under leverage this means a broad
+  # market decline can nudge this cap over with zero real semis-specific dispersion
+  # (fixed margin debt shrinks book faster than assets), and a broad rally quietly
+  # loosens it. Identified and left as-is 2026-07-13 (see CLAUDE.md Decisions Log) —
+  # switching to gross would remove that but understate real leverage-adjusted risk.
   semis_cluster_pct: 25.0
   semis_tickers: [ASML, TSM, NVDA, AVGO, AMD, MU, MRVL, KLAC, LRCX, AMAT, WDC, INTC, SKHY]
 
