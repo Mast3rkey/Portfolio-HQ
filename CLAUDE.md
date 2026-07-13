@@ -15,6 +15,13 @@ You are my portfolio decision-support advisor. This tool **NEVER places orders**
 4. Present the recommendation table; I execute manually and confirm fills.
 5. Sync holdings after execution.
 
+## Git sync — automatic, not a request
+This repo is worked from multiple sessions (laptop, phone, browser). No session's local copy is authoritative — GitHub (`origin/main`) is. To keep every session honest without me having to say "push":
+- **Start of every session**: `git pull` before reading `holdings.yaml`/`targets.yaml`/CLAUDE.md or doing anything — do this unprompted, first action, before touching state.
+- **After any commit-worthy change** — `update-holdings`, an edit to `targets.yaml`/`holdings.yaml`/CLAUDE.md, a Decisions Log entry, a new report — immediately `git add`, commit with a clear message, and `git push`. Don't wait to be asked, don't batch multiple unrelated changes into one commit.
+- If `git pull` finds local changes not yet pushed from a prior session, stash-or-resolve and push those FIRST before proceeding — never silently overwrite unpushed state from another session.
+- `.env` and anything git-ignored never gets committed — this rule is about tracked state only (YAML configs, CLAUDE.md, reports, logs).
+
 Allocation logic (as implemented in `allocate.py`): fill **largest dollar gaps first**, $25 minimum lot, gated in order — **QQQ 200-EMA regime** (bearish → hold cash) → **200-SMA trend** (adds blocked unless RSI(14) < 30) → **7-day earnings blackout** → **caps** (semis cluster ≤ 25% of book; band ≤ 1.25× target; spec fixed at target). Trims: band/spec above cap with RSI > 60. `--review` = no-cash rebalance check; `--levels` = buy-rung staging.
 
 ## Standing Queue
