@@ -28,7 +28,7 @@ Allocation logic (as implemented in `allocate.py`): fill **largest dollar gaps f
 
 ## Standing Queue
 1. **Rebuild BTC reserve** (decided 2026-07-13) — direct future crypto-sleeve buys to BTC specifically, not ETH/SOL, until it reaches **~25% of the crypto sleeve (~2.5% of book, currently ~$139, scales with book)** — matches BTC's prior share before it was fully drained to fix the July 2026 sleeve overage. Once there, resume manual coin-split discretion. `allocate.py` still only computes the aggregate sleeve gap (coin split is manual); this is an execution instruction, not a code change.
-2. **VMC full exit** (decided 2026-07-13) — sell entire VMC position (~$116, ~0.395 sh @ ~$292.62), consolidating aggregates exposure into MLM. Not yet executed — queue for next available session.
+~~2. VMC full exit~~ — **done 2026-07-13** (sold 0.389582 sh @ $292.93, $114.12 net, consolidated into MLM).
 
 ~~3. PWR rebuy~~ — **done 2026-07-13** (bought $87, cash-funded).
 ~~4. SPCX trim~~ to 1.0% spec target — **done 2026-07-13** (trimmed same session as PWR; further drifted down on its own sharp price decline afterward).
