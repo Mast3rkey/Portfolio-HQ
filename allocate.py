@@ -543,6 +543,7 @@ def write_state(holdings: dict, margin: dict | None):
                 f.write(f"  {t}: {round(holdings[t], 2)}\n")
         else:
             f.write("  {}\n")
+    log_performance(quiet=True)   # auto-snapshot on every holdings/margin sync
 
 
 def update_margin(debt: float, buffer_pct: float):
@@ -566,7 +567,10 @@ def _read_perf_log() -> list[dict]:
         return list(csv.DictReader(f))
 
 
-def log_performance(note: str = ""):
+def log_performance(note: str = "", client=None, quiet: bool = False):
+    """Snapshot net equity + QQQ/VOO vs performance_log.csv. Called automatically
+    after update-holdings, update-margin, and every allocate run — never lets a
+    price-fetch failure block the primary action it's piggybacking on."""
     holdings_yaml = load_yaml(HOLDINGS_FILE) or {}
     holdings = holdings_yaml.get("holdings", {}) or {}
     margin_state = holdings_yaml.get("margin", {}) or {}
@@ -574,11 +578,16 @@ def log_performance(note: str = ""):
     margin_debt = float(margin_state.get("debt", 0.0))
     net_equity = gross - margin_debt
 
-    client = AlpacaPaperClient()
-    qqq = client.get_bars("QQQ", "1Day", limit=1, days_back=5)
-    voo = client.get_bars("VOO", "1Day", limit=1, days_back=5)
-    qqq_price = qqq[-1]["c"] if qqq else None
-    voo_price = voo[-1]["c"] if voo else None
+    qqq_price = voo_price = None
+    try:
+        c = client or AlpacaPaperClient()
+        qqq = c.get_bars("QQQ", "1Day", limit=1, days_back=5)
+        voo = c.get_bars("VOO", "1Day", limit=1, days_back=5)
+        qqq_price = qqq[-1]["c"] if qqq else None
+        voo_price = voo[-1]["c"] if voo else None
+    except Exception as e:
+        if not quiet:
+            print(f"  (performance log: couldn't fetch QQQ/VOO — {e})", file=sys.stderr)
 
     rows = _read_perf_log()
     today = date.today().isoformat()
@@ -592,8 +601,11 @@ def log_performance(note: str = ""):
         w = csv.DictWriter(f, fieldnames=PERF_FIELDS)
         w.writeheader()
         w.writerows(rows)
-    print(f"logged: {today} net_equity=${net_equity:,.2f} QQQ=${qqq_price} VOO=${voo_price} "
-          f"in {PERF_LOG_FILE}", file=sys.stderr)
+    if quiet:
+        print(f"  (performance snapshot updated: net equity ${net_equity:,.2f})", file=sys.stderr)
+    else:
+        print(f"logged: {today} net_equity=${net_equity:,.2f} QQQ=${qqq_price} VOO=${voo_price} "
+              f"in {PERF_LOG_FILE}", file=sys.stderr)
 
 
 def render_performance() -> str:
@@ -724,6 +736,7 @@ def main():
     log_path = LOGS_DIR / f"allocation-{date.today().isoformat()}.md"
     log_path.write_text(out + "\n")
     print(f"\n[logged to {log_path}]", file=sys.stderr)
+    log_performance(client=client, quiet=True)   # auto-snapshot on every allocate run
 
 
 if __name__ == "__main__":
