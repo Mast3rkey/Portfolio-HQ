@@ -1,4 +1,12 @@
-# holdings.yaml — {ticker: market_value}. Written by 'allocate.py update-holdings' (merge unless --replace).
+# holdings.yaml — two tracks. 'shares' (ticker: qty) is the source of
+# truth for any normally-traded position — live-valued every run via
+# Alpaca (qty x latest price). Update it with 'allocate.py update-shares'
+# after a real buy/sell/trim changes a share count.
+# 'holdings' (ticker: dollar value) is the manual fallback for anything
+# NOT share-tracked: SKHY (permanent zero-coverage gap on the free IEX
+# feed — RSI/trend gates can never fire for it) and the crypto sleeve
+# (BTC/ETH/SOL, priced live but valued from here, not qty-tracked).
+# Update it with 'allocate.py update-holdings'.
 # margin: synced via 'allocate.py update-margin <debt> <buffer_pct>' — buffer_pct comes from Robinhood directly (per-security maintenance
 # ratios aren't available via Alpaca), so it's only as fresh as the last sync. Verify on Robinhood before any large margin-funded buy.
 # IMPORTANT: always use Robinhood's own DISPLAYED buffer % — do not derive
@@ -10,70 +18,71 @@ margin:
   buffer_pct: 56.75
   synced_at: 2026-07-13
 holdings:
-  AAPL: 44.22
-  ABBV: 43.16
-  AMAT: 119.18
-  AMD: 97.62
-  AMZN: 267.79
-  ASML: 199.64
-  AVGO: 145.56
-  BABA: 105.38
-  BRK.B: 110.18
-  CAT: 105.8
-  CEG: 107.55
-  COST: 180.63
-  CRM: 78.23
-  CRWD: 129.36
-  CVX: 125.61
-  DELL: 103.28
-  DHR: 96.76
-  EQIX: 101.47
   ETH: 369.97
-  ETN: 105.77
-  GEV: 322.61
-  GILD: 115.68
-  GLD: 229.56
-  GNRC: 74.03
-  GOOGL: 335.33
-  HOOD: 41.86
-  IBM: 106.22
-  INTC: 138.51
-  ISRG: 156.09
-  JNJ: 42.72
-  JPM: 43.68
-  KLAC: 67.34
-  LLY: 337.63
-  LRCX: 72.91
-  MA: 130.88
-  META: 331.25
-  MLM: 127.29
-  MRK: 103.03
-  MRVL: 29.74
-  MSFT: 287.65
-  MU: 34.61
-  NFLX: 78.9
-  NOW: 44.37
-  NVDA: 190.09
-  ORCL: 73.86
-  PANW: 106.36
-  PLTR: 101.7
-  PWR: 86.93
-  QQQ: 149.11
-  RKLB: 143.58
-  RTX: 44.36
-  SHOP: 40.84
   SKHY: 24.45
   SOL: 323.63
-  SPCX: 55.4
-  SPY: 188.94
-  SYK: 104.41
-  TMO: 107.93
-  TSLA: 99.82
-  TSM: 194.65
-  UBER: 105.03
-  UNH: 43.07
-  V: 338.49
-  VRT: 103.31
-  WDC: 81.74
-  WMT: 169.49
-  XOM: 79.47
+shares:
+  AAPL: 0.138
+  ABBV: 0.173
+  AMAT: 0.208
+  AMD: 0.184
+  AMZN: 1.087
+  ASML: 0.114
+  AVGO: 0.376
+  BABA: 0.925
+  BRK.B: 0.22
+  CAT: 0.112
+  CEG: 0.426
+  COST: 0.196
+  CRM: 0.468
+  CRWD: 0.701
+  CVX: 0.694
+  DELL: 0.242
+  DHR: 0.483
+  EQIX: 0.097
+  ETN: 0.262
+  GEV: 0.305
+  GILD: 0.892
+  GLD: 0.618
+  GNRC: 0.32
+  GOOGL: 0.941
+  HOOD: 0.382
+  IBM: 0.366
+  INTC: 1.325
+  ISRG: 0.378
+  JNJ: 0.165
+  JPM: 0.13
+  KLAC: 0.304
+  LLY: 0.283
+  LRCX: 0.221
+  MA: 0.244
+  META: 0.499
+  MLM: 0.219
+  MRK: 0.829
+  MRVL: 0.136
+  MSFT: 0.743
+  MU: 0.038
+  NFLX: 1.05
+  NOW: 0.394
+  NVDA: 0.918
+  ORCL: 0.541
+  PANW: 0.332
+  PLTR: 0.8
+  PWR: 0.134
+  QQQ: 0.209
+  RKLB: 1.828
+  RTX: 0.225
+  SHOP: 0.333
+  SPCX: 0.394
+  SPY: 0.251
+  SYK: 0.311
+  TMO: 0.204
+  TSLA: 0.253
+  TSM: 0.456
+  UBER: 1.404
+  UNH: 0.1
+  V: 0.951
+  VRT: 0.332
+  WDC: 0.152
+  WMT: 1.47
+  XOM: 0.554

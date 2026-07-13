@@ -10,7 +10,8 @@ execute manually on Robinhood.
 Usage:
     python allocate.py --cash 2000       # deploy new cash
     python allocate.py --review          # rebalance check, no new cash
-    python allocate.py update-holdings   # paste "TICKER value" lines, Ctrl-D
+    python allocate.py update-shares     # paste "TICKER qty" lines, Ctrl-D (normal positions)
+    python allocate.py update-holdings   # paste "TICKER value" lines, Ctrl-D (SKHY/crypto only)
 """
 
 from __future__ import annotations
@@ -91,6 +92,33 @@ def fetch_market(client, tickers: list[str], regime_ticker: str) -> tuple[dict, 
     else:
         regime_ok, regime_known = False, False
     return metrics, regime_ok, regime_known
+
+
+def resolve_holdings(client, metrics: dict | None = None) -> dict[str, float]:
+    """Live-value every share-tracked position (qty x latest price); fall back to the
+    manual dollar snapshot in 'holdings' for anything with no share count or no live
+    price (SKHY — permanent zero-coverage gap on the free IEX feed — and crypto,
+    which is priced separately in main()). 'shares' is the source of truth for any
+    ticker present there; 'holdings' entries are only the fallback/override layer.
+    Pass 'metrics' (from fetch_market) to reuse prices already fetched this run and
+    avoid a second round of API calls; omit it to fetch prices fresh (e.g. from
+    log_performance() running standalone)."""
+    data = load_yaml(HOLDINGS_FILE)
+    shares = data.get("shares", {}) or {}
+    result = dict(data.get("holdings", {}) or {})
+    for t, qty in shares.items():
+        price = metrics.get(t, {}).get("price") if metrics else None
+        if price is None:
+            try:
+                bars = client.get_bars(t, "1Day", 1, days_back=5)
+                price = bars[-1]["c"] if bars else None
+            except Exception:
+                price = None
+        if price is not None:
+            result[t] = round(float(qty) * float(price), 2)
+        # else: leave whatever 'holdings' already had for t (or nothing), rather
+        # than silently dropping/zeroing a position on a transient price-fetch miss.
+    return {t: v for t, v in result.items() if v}
 
 
 # ── core allocation logic ──────────────────────────────────────────────────────
@@ -467,15 +495,10 @@ def render(result, review: bool) -> str:
 BOOK_CHANGE_WARN_PCT = 30.0   # abort write if book moves more than this without --confirm
 
 
-def update_holdings(replace: bool = False, confirm: bool = False):
-    mode = "REPLACE all" if replace else "MERGE into existing"
-    print(f"Paste 'TICKER value' lines (e.g. 'NVDA 1234.56'). End with Ctrl-D.\n"
-          f"Mode: {mode} holdings. Pasted tickers are updated; others kept "
-          f"(use --replace to overwrite the whole file).\n", file=sys.stderr)
-    # Accept any whitespace layout: one pair per line OR many pairs per line.
-    # Walk tokens, pairing a ticker with the numeric value that follows it.
-    text = sys.stdin.read().replace("$", "").replace(",", "")
-    tokens = text.split()
+def _parse_ticker_value_pairs(text: str) -> dict[str, float]:
+    """Accept any whitespace layout: one pair per line OR many pairs per line.
+    Walk tokens, pairing a ticker with the numeric value that follows it."""
+    tokens = text.replace("$", "").replace(",", "").split()
     new: dict[str, float] = {}
     pending: str | None = None
     for tok in tokens:
@@ -489,10 +512,21 @@ def update_holdings(replace: bool = False, confirm: bool = False):
         if pending is None:
             print(f"  skipped (value {tok!r} with no ticker)", file=sys.stderr)
             continue
-        new[pending] = round(val, 2)
+        new[pending] = val
         pending = None
     if pending is not None:
         print(f"  skipped (no value for {pending!r})", file=sys.stderr)
+    return new
+
+
+def update_holdings(replace: bool = False, confirm: bool = False):
+    mode = "REPLACE all" if replace else "MERGE into existing"
+    print(f"Paste 'TICKER value' lines (e.g. 'SKHY 24.45'). End with Ctrl-D.\n"
+          f"Mode: {mode} manual holdings. This is only for positions NOT tracked by "
+          f"share count (SKHY, crypto) — anything in 'shares' is live-priced and\n"
+          f"overrides whatever's pasted here. Use 'update-shares' for a normal "
+          f"stock/ETF position.\n", file=sys.stderr)
+    new = {k: round(v, 2) for k, v in _parse_ticker_value_pairs(sys.stdin.read()).items()}
 
     # Merge (default) preserves positions you didn't paste; replace overwrites.
     prior = (load_yaml(HOLDINGS_FILE) or {}).get("holdings", {}) or {}
@@ -513,17 +547,47 @@ def update_holdings(replace: bool = False, confirm: bool = False):
                   f"    Nothing was written.", file=sys.stderr)
             sys.exit(1)
 
-    margin_state = load_yaml(HOLDINGS_FILE).get("margin") if HOLDINGS_FILE.exists() else None
-    write_state(merged, margin_state)
+    prior_yaml = load_yaml(HOLDINGS_FILE) if HOLDINGS_FILE.exists() else {}
+    write_state(merged, prior_yaml.get("margin"), prior_yaml.get("shares"))
     action = "wrote" if replace else f"merged {len(new)} into"
-    print(f"{action} {len(merged)} total positions in {HOLDINGS_FILE}", file=sys.stderr)
+    print(f"{action} {len(merged)} total manual positions in {HOLDINGS_FILE}", file=sys.stderr)
 
 
-def write_state(holdings: dict, margin: dict | None):
-    """Write holdings.yaml, preserving whichever of holdings/margin isn't being updated."""
+def update_shares(replace: bool = False):
+    mode = "REPLACE all" if replace else "MERGE into existing"
+    print(f"Paste 'TICKER qty' lines (e.g. 'AAPL 0.138'). End with Ctrl-D.\n"
+          f"Mode: {mode} share counts. These are live-priced via Alpaca on every run — "
+          f"only update a ticker here after a real buy/sell/trim changes its share "
+          f"count.\n", file=sys.stderr)
+    new = _parse_ticker_value_pairs(sys.stdin.read())
+
+    prior_yaml = load_yaml(HOLDINGS_FILE) if HOLDINGS_FILE.exists() else {}
+    prior = prior_yaml.get("shares", {}) or {}
+    existing = {} if replace else prior
+    merged = {**{k.upper(): float(v) for k, v in existing.items()}, **new}
+    merged = {k: v for k, v in merged.items() if v}   # drop zeroed-out (fully sold) positions
+
+    write_state(prior_yaml.get("holdings"), prior_yaml.get("margin"), merged)
+    action = "wrote" if replace else f"merged {len(new)} into"
+    print(f"{action} {len(merged)} share-tracked positions in {HOLDINGS_FILE}", file=sys.stderr)
+
+
+def write_state(holdings: dict | None, margin: dict | None, shares: dict | None):
+    """Write holdings.yaml. Each of holdings/margin/shares is written as given —
+    callers that aren't changing a given block pass through its prior value so
+    nothing is silently dropped."""
+    holdings = holdings or {}
+    shares = shares or {}
     with open(HOLDINGS_FILE, "w") as f:
-        f.write("# holdings.yaml — {ticker: market_value}. Written by "
-                "'allocate.py update-holdings' (merge unless --replace).\n")
+        f.write("# holdings.yaml — two tracks. 'shares' (ticker: qty) is the source of\n"
+                "# truth for any normally-traded position — live-valued every run via\n"
+                "# Alpaca (qty x latest price). Update it with 'allocate.py update-shares'\n"
+                "# after a real buy/sell/trim changes a share count.\n"
+                "# 'holdings' (ticker: dollar value) is the manual fallback for anything\n"
+                "# NOT share-tracked: SKHY (permanent zero-coverage gap on the free IEX\n"
+                "# feed — RSI/trend gates can never fire for it) and the crypto sleeve\n"
+                "# (BTC/ETH/SOL, priced live but valued from here, not qty-tracked).\n"
+                "# Update it with 'allocate.py update-holdings'.\n")
         if margin:
             f.write("# margin: synced via 'allocate.py update-margin <debt> <buffer_pct>' — "
                     "buffer_pct comes from Robinhood directly (per-security maintenance\n"
@@ -543,14 +607,19 @@ def write_state(holdings: dict, margin: dict | None):
                 f.write(f"  {t}: {round(holdings[t], 2)}\n")
         else:
             f.write("  {}\n")
-    log_performance(quiet=True)   # auto-snapshot on every holdings/margin sync
+        f.write("shares:\n")
+        if shares:
+            for t in sorted(shares):
+                f.write(f"  {t}: {shares[t]}\n")
+        else:
+            f.write("  {}\n")
+    log_performance(quiet=True)   # auto-snapshot on every holdings/shares/margin sync
 
 
 def update_margin(debt: float, buffer_pct: float):
     prior = load_yaml(HOLDINGS_FILE) or {}
-    holdings = prior.get("holdings", {}) or {}
-    write_state(holdings, {"debt": debt, "buffer_pct": buffer_pct,
-                          "synced_at": date.today().isoformat()})
+    write_state(prior.get("holdings"), {"debt": debt, "buffer_pct": buffer_pct,
+                          "synced_at": date.today().isoformat()}, prior.get("shares"))
     print(f"margin synced: debt=${debt:,.2f} buffer={buffer_pct:.2f}% in {HOLDINGS_FILE}",
           file=sys.stderr)
 
@@ -567,20 +636,33 @@ def _read_perf_log() -> list[dict]:
         return list(csv.DictReader(f))
 
 
-def log_performance(note: str = "", client=None, quiet: bool = False):
+def log_performance(note: str = "", client=None, quiet: bool = False,
+                   resolved_holdings: dict | None = None):
     """Snapshot net equity + QQQ/VOO vs performance_log.csv. Called automatically
-    after update-holdings, update-margin, and every allocate run — never lets a
-    price-fetch failure block the primary action it's piggybacking on."""
+    after update-holdings, update-shares, update-margin, and every allocate run —
+    never lets a price-fetch failure block the primary action it's piggybacking on.
+    Pass 'resolved_holdings' (already live-priced, e.g. from main()'s primary flow)
+    to avoid a second round of per-ticker price fetches; omit it to resolve fresh."""
     holdings_yaml = load_yaml(HOLDINGS_FILE) or {}
-    holdings = holdings_yaml.get("holdings", {}) or {}
     margin_state = holdings_yaml.get("margin", {}) or {}
-    gross = sum(float(v) for v in holdings.values())
     margin_debt = float(margin_state.get("debt", 0.0))
+    # Fallback gross if live resolution fails below: last raw 'holdings' dict on
+    # file (misses share-tracked positions, but keeps this from crashing).
+    gross = sum(float(v) for v in (holdings_yaml.get("holdings", {}) or {}).values())
+
+    c = client or AlpacaPaperClient()
+    if resolved_holdings is not None:
+        gross = sum(float(v) for v in resolved_holdings.values())
+    else:
+        try:
+            gross = sum(float(v) for v in resolve_holdings(c).values())
+        except Exception as e:
+            if not quiet:
+                print(f"  (performance log: couldn't resolve live holdings — {e})", file=sys.stderr)
     net_equity = gross - margin_debt
 
     qqq_price = voo_price = None
     try:
-        c = client or AlpacaPaperClient()
         qqq = c.get_bars("QQQ", "1Day", limit=1, days_back=5)
         voo = c.get_bars("VOO", "1Day", limit=1, days_back=5)
         qqq_price = qqq[-1]["c"] if qqq else None
@@ -656,6 +738,9 @@ def main():
         update_holdings(replace="--replace" in sys.argv,
                         confirm="--confirm" in sys.argv)
         return
+    if len(sys.argv) > 1 and sys.argv[1] == "update-shares":
+        update_shares(replace="--replace" in sys.argv)
+        return
     if len(sys.argv) > 1 and sys.argv[1] == "update-margin":
         if len(sys.argv) != 4:
             print("usage: allocate.py update-margin <debt> <buffer_pct>", file=sys.stderr)
@@ -697,7 +782,6 @@ def main():
 
     targets = load_yaml(TARGETS_FILE)
     holdings_yaml = load_yaml(HOLDINGS_FILE) or {}
-    holdings = holdings_yaml.get("holdings", {}) or {}
     margin_state = holdings_yaml.get("margin", {}) or {}
     margin_debt = float(margin_state.get("debt", 0.0))
     margin_buffer_pct = margin_state.get("buffer_pct")
@@ -711,6 +795,7 @@ def main():
     client = AlpacaPaperClient()
     metrics, regime_ok, regime_known = fetch_market(
         client, list(roster), targets.get("regime_ticker", "QQQ"))
+    holdings = resolve_holdings(client, metrics)   # live qty x price; SKHY/crypto manual
 
     result = plan(targets, holdings, roster, metrics, regime_ok, regime_known, args.cash,
                   margin_debt=margin_debt, margin_buffer_pct=margin_buffer_pct,
@@ -736,7 +821,7 @@ def main():
     log_path = LOGS_DIR / f"allocation-{datetime.now().strftime('%Y-%m-%dT%H%M%S')}.md"
     log_path.write_text(out + "\n")
     print(f"\n[logged to {log_path}]", file=sys.stderr)
-    log_performance(client=client, quiet=True)   # auto-snapshot on every allocate run
+    log_performance(client=client, quiet=True, resolved_holdings=holdings)   # auto-snapshot
 
 
 if __name__ == "__main__":
