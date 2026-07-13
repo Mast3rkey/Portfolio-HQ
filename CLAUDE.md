@@ -28,11 +28,12 @@ Allocation logic (as implemented in `allocate.py`): fill **largest dollar gaps f
 
 ## Standing Queue
 1. **Rebuild BTC reserve** (decided 2026-07-13) — direct future crypto-sleeve buys to BTC specifically, not ETH/SOL, until it reaches **~25% of the crypto sleeve (~2.5% of book, currently ~$139, scales with book)** — matches BTC's prior share before it was fully drained to fix the July 2026 sleeve overage. Once there, resume manual coin-split discretion. `allocate.py` still only computes the aggregate sleeve gap (coin split is manual); this is an execution instruction, not a code change.
+2. **VMC full exit** (decided 2026-07-13) — sell entire VMC position (~$116, ~0.395 sh @ ~$292.62), consolidating aggregates exposure into MLM. Not yet executed — queue for next available session.
 
-~~2. PWR rebuy~~ — **done 2026-07-13** (bought $87, cash-funded).
-~~3. SPCX trim~~ to 1.0% spec target — **done 2026-07-13** (trimmed same session as PWR; further drifted down on its own sharp price decline afterward).
-~~4. HYPE + BTC dust consolidation~~ — **done 2026-07-12** (HYPE sold, BTC reserve rebuilt to ~$247). Robinhood's unsellable sub-cent dust (ZORA/WIF/BONK/PEPE, $0.00) is display noise — permanently ignored, never synced.
-~~5. LHX full exit~~ — **done 2026-07-13** (confirmed absent from every holdings sync since).
+~~3. PWR rebuy~~ — **done 2026-07-13** (bought $87, cash-funded).
+~~4. SPCX trim~~ to 1.0% spec target — **done 2026-07-13** (trimmed same session as PWR; further drifted down on its own sharp price decline afterward).
+~~5. HYPE + BTC dust consolidation~~ — **done 2026-07-12** (HYPE sold, BTC reserve rebuilt to ~$247). Robinhood's unsellable sub-cent dust (ZORA/WIF/BONK/PEPE, $0.00) is display noise — permanently ignored, never synced.
+~~6. LHX full exit~~ — **done 2026-07-13** (confirmed absent from every holdings sync since).
 
 ## Decisions Log (do not relitigate without new evidence)
 - **June 2026** — Band-overlay backtest: 227% vs **422% buy-and-hold** on the same basket → **NO-GO on automated trading**. Edge lives in the Phase 1 EMA base signal only; elaborate analysis layers were anti-predictive.
@@ -43,6 +44,8 @@ Allocation logic (as implemented in `allocate.py`): fill **largest dollar gaps f
 - **July 2026** — **Crypto 10% reaffirmed as conviction-sizing, not a timing call.** The sleeve rebuilds through the gap machine only — it competes in the allocator's ranking like any underweight, with no timing gates (no trend/RSI/earnings; "cheap vs expensive" views don't size it). No lump-sum adds on directional views.
 - **July 2026** — **Margin doctrine revised.** Discovered ~$4,423 in existing margin debt (~1.8x gross/equity) contradicting the prior "no margin" rule. Formally allowed going forward within a **fixed 1.8x structural leverage cap** and **30% buffer floor** (forced de-lever guardrail below that). Explicitly rejected: any margin-timing model ("borrow more when conditions look good") — same category as the band-overlay backtest and the multi-timeframe/Fable-5 research proposals floated the same session. Leverage amplifies whatever edge already exists (or doesn't); it is not itself a source of edge, and is not backtestable as one.
 - **July 2026** — **Rung backtest verdict: NO CHANGE** (`reports/rung_backtest.md`). Three arms, 2021–2026, 65 tickers, pre-committed 1.0pp threshold: market-buy 30.12% > current rungs 29.35% > S/R rungs 29.05% annualized TWR. S/R rungs REJECTED (lost to both). C−A gap +0.77pp — rung-waiting cost money but inside noise, so `--levels` survives as staging aid. **Question closed; no variants, no re-runs without a new regime in the data.**
+- **July 2026** — **AMZN kept at T2 (not promoted to T1).** T1 is already 7-of-9 names one AI-infrastructure trade (ASML/TSM/NVDA/MSFT/GOOGL/META/GEV) — flagged as a concentration risk in a system deep-critique the same session. Sizing up another mega-cap position while that finding sits unaddressed compounds the risk rather than fixing it.
+- **July 2026** — **VMC consolidated into MLM, VMC exited.** Both are direct aggregates-industry peers (crushed stone/sand/gravel; same infrastructure-spending/housing/rate-cycle drivers) — holding both wasn't real diversification, just redundant sector exposure. MLM (T2, 1.65%) carries the exposure alone going forward.
 
 ## Guardrails (enforce on me)
 - Margin buffer below 30% → recommend immediate de-lever (trim or pay down margin), same severity as the cash-tight guardrail. Never propose *increasing* leverage as a response to a drawdown.
@@ -53,8 +56,6 @@ Allocation logic (as implemented in `allocate.py`): fill **largest dollar gaps f
 - Never hallucinate prices, dates, or holdings. Live data via the read-only Alpaca API (`alpaca_client.py`; there is no Alpaca MCP). `holdings.yaml` is truth for positions.
 
 ## Open Items
-- **AMZN**: T1 vs trim to T2 — undecided.
-- **VMC**: keep MLM/VMC pair vs consolidate into MLM — undecided.
 - **Crypto sleeve over target** (discovered 2026-07-13, corrected-book run): was $954 = 16.5% over by ~$375. **Partially resolved 2026-07-13** — BTC position fully sold ($239 net), sleeve now ~12.4%, ~$134 residual left. ETH/SOL remain staked/illiquid, so no further trim available without unstaking; letting future deposits into other underweight sleeves passively shrink the remaining % is the default path unless it keeps drifting further over. **Rebuild plan added to Standing Queue** — future crypto-sleeve buys route to BTC until it's back to ~25% of the sleeve.
 - **`min_lot_dollars` ($25) doesn't scale with book size** — fine at today's ~$5,600 book (~0.45%), but revisit once the book crosses roughly **$25,000** (where $25 drops under ~0.1% of book and stops being a meaningful floor). One-line bump in `targets.yaml` when that trigger hits; not needed now.
 - **SKHY has a permanent no-data gap in Alpaca** (confirmed repeatedly 2026-07-13): trades regular-way on Robinhood, but the free IEX feed returns zero bars for it. RSI/trend/earnings gates can never fire for it — it's evaluated on dollar-value cap/target math only (band target, semis-cluster cap), never on price signal. Not fixable without a paid data feed; just a known blind spot to remember, not a bug to chase.

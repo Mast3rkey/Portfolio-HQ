@@ -23,10 +23,10 @@ tiers:
     # SKHY: trades regular-way (confirmed 2026-07-13), but Alpaca's free IEX feed
     # has zero bars for it — permanent no-data gap, not a timing issue. RSI/trend
     # gates can never fire for it; only dollar-value cap/target math applies.
-    # VMC: pending keep/sell decision — held in band for now.
+    # VMC removed 2026-07-13 — consolidated into MLM (see Decisions Log).
     tickers: [KLAC, LRCX, AMAT, AMD, MU, MRVL, WDC, VRT, ETN, CAT, GNRC, IBM, NOW,
               CRM, ORCL, NFLX, SHOP, CRWD, PANW, AAPL, UBER, TM, JPM, HOOD, XOM, CVX,
-              RTX, ABBV, MRK, JNJ, GILD, UNH, BABA, VMC, SKHY, DELL]
+              RTX, ABBV, MRK, JNJ, GILD, UNH, BABA, SKHY, DELL]
   spec:
     weight_pct: 1.00
     fixed: true             # spec names sized at exactly target, NEVER above
