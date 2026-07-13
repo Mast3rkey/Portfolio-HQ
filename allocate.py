@@ -510,6 +510,10 @@ def write_state(holdings: dict, margin: dict | None):
                     "buffer_pct comes from Robinhood directly (per-security maintenance\n"
                     "# ratios aren't available via Alpaca), so it's only as fresh as the "
                     "last sync. Verify on Robinhood before any large margin-funded buy.\n"
+                    "# IMPORTANT: always use Robinhood's own DISPLAYED buffer % — do not derive\n"
+                    "# it from (portfolio value - maint req) / portfolio value. Checked twice\n"
+                    "# against real screens and it doesn't reconcile (off by several points);\n"
+                    "# Robinhood's actual formula weights something this simple subtraction misses.\n"
                     "margin:\n"
                     f"  debt: {round(float(margin.get('debt', 0.0)), 2)}\n"
                     f"  buffer_pct: {round(float(margin.get('buffer_pct', 0.0)), 2)}\n")
