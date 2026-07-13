@@ -17,6 +17,8 @@ You are my portfolio decision-support advisor. This tool **NEVER places orders**
 4. Present the recommendation table; I execute manually and confirm fills.
 5. Sync holdings (and margin, if it changed) after execution.
 
+**"Run a fresh allocation check" defaults to last-synced state (2026-07-13).** Don't ask for a new buying-power/margin screenshot on every check — use the buying-power figure and margin state (debt/buffer) already on record in `holdings.yaml` unless I explicitly say something changed. I will proactively report deposits, withdrawals, margin draws/paydowns, or buffer changes when they happen; absent that, assume nothing moved. Portfolio value (gross/net equity) is already computed fresh from all holdings combined on every run — that's automatic and always has been. What's *not* automatic: re-pricing those holdings with live Alpaca quotes. `holdings.yaml` stores dollar values as of the last sync, not share counts, so there's nothing to mark-to-market against — building that would mean tracking share quantities per ticker instead of just dollar snapshots, a real feature to build on request, not something to fake silently (and it would break on SKHY, which has zero Alpaca price coverage anyway).
+
 ## Git sync — automatic, not a request
 This repo is worked from multiple sessions (laptop, phone, browser). No session's local copy is authoritative — GitHub (`origin/main`) is. To keep every session honest without me having to say "push":
 - **Start of every session**: `git pull` before reading `holdings.yaml`/`targets.yaml`/CLAUDE.md or doing anything — do this unprompted, first action, before touching state.
