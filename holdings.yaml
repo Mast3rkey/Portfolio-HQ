@@ -3,9 +3,12 @@
 # -traded position or coin — live-valued every run via Alpaca (qty x
 # latest price). Update with 'allocate.py update-shares' / 'update-crypto-shares'
 # after a real buy/sell/trim changes a count.
-# 'holdings' (ticker: dollar value) is the manual fallback for anything
-# NOT share-tracked: just SKHY now (permanent zero-coverage gap on the
-# free IEX feed — RSI/trend gates can never fire for it).
+# 'holdings' (ticker: dollar value) is the manual fallback for anything NOT
+# share-tracked. Currently empty — SKHY got live Alpaca price coverage
+# 2026-07-14 (3 daily bars and counting since its 2026-07-10 listing) and
+# moved to 'shares' below. RSI/trend gates still can't fire for it yet
+# (need 15/200 bars respectively) — that's just insufficient history now,
+# not a data-feed gap.
 # Update it with 'allocate.py update-holdings'.
 # margin: synced via 'allocate.py update-margin <debt> <buffer_pct>' — buffer_pct comes from Robinhood directly (per-security maintenance
 # ratios aren't available via Alpaca), so it's only as fresh as the last sync. Verify on Robinhood before any large margin-funded buy.
@@ -17,8 +20,7 @@ margin:
   debt: 2679.4
   buffer_pct: 61.08
   synced_at: 2026-07-14
-holdings:
-  SKHY: 24.45
+holdings: {}
 shares:
   AAPL: 0.13757
   ABBV: 0.173176
@@ -71,6 +73,7 @@ shares:
   RKLB: 1.827858
   RTX: 0.225138
   SHOP: 0.332841
+  SKHY: 0.156753
   SPCX: 0.394204
   SPY: 0.25105
   SYK: 0.311095
