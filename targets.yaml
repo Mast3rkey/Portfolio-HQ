@@ -13,7 +13,8 @@ tiers:
     tickers: [ASML, TSM, MSFT, GOOGL, META, NVDA, GEV, LLY, V]
   T2:
     weight_pct: 1.65
-    tickers: [AVGO, AMZN, CEG, PWR, ISRG, TMO, DHR, SYK, MA, BRK.B, WMT, COST, EQIX, MLM]
+    # AAPL added 2026-07-14 — promoted from band (see Decisions Log).
+    tickers: [AVGO, AMZN, CEG, PWR, ISRG, TMO, DHR, SYK, MA, BRK.B, WMT, COST, EQIX, MLM, AAPL]
   ETF:
     weight_pct: 2.30
     tickers: [SPY, QQQ, GLD]
@@ -26,8 +27,9 @@ tiers:
     # gates can't fire yet — that's insufficient history now, not a data-feed issue.
     # VMC removed 2026-07-13 — consolidated into MLM (see Decisions Log).
     # TM removed 2026-07-13 — stray typo, never held, no corresponding target.
+    # AAPL removed 2026-07-14 — promoted to T2 (see Decisions Log).
     tickers: [KLAC, LRCX, AMAT, AMD, MU, MRVL, WDC, VRT, ETN, CAT, GNRC, IBM, NOW,
-              CRM, ORCL, NFLX, SHOP, CRWD, PANW, AAPL, UBER, JPM, HOOD, XOM, CVX,
+              CRM, ORCL, NFLX, SHOP, CRWD, PANW, UBER, JPM, HOOD, XOM, CVX,
               RTX, ABBV, MRK, JNJ, GILD, UNH, BABA, SKHY, DELL]
   spec:
     weight_pct: 1.00
