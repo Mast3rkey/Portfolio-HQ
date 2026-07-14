@@ -1,11 +1,11 @@
-# holdings.yaml — three tracks. 'shares' (ticker: qty) and 'crypto_shares'
-# (coin: qty) are the source of truth for any normally-traded position or
-# coin — live-valued every run via Alpaca (qty x latest price). Update with
-# 'allocate.py update-shares' / 'update-crypto-shares' after a real
-# buy/sell/trim changes a count.
-# 'holdings' (ticker: dollar value) is the manual fallback for anything NOT
-# share-tracked: just SKHY now (permanent zero-coverage gap on the free IEX
-# feed — RSI/trend gates can never fire for it).
+# holdings.yaml — three tracks. 'shares' (ticker: qty) and
+# 'crypto_shares' (coin: qty) are the source of truth for any normally
+# -traded position or coin — live-valued every run via Alpaca (qty x
+# latest price). Update with 'allocate.py update-shares' / 'update-crypto-shares'
+# after a real buy/sell/trim changes a count.
+# 'holdings' (ticker: dollar value) is the manual fallback for anything
+# NOT share-tracked: just SKHY now (permanent zero-coverage gap on the
+# free IEX feed — RSI/trend gates can never fire for it).
 # Update it with 'allocate.py update-holdings'.
 # margin: synced via 'allocate.py update-margin <debt> <buffer_pct>' — buffer_pct comes from Robinhood directly (per-security maintenance
 # ratios aren't available via Alpaca), so it's only as fresh as the last sync. Verify on Robinhood before any large margin-funded buy.
@@ -33,9 +33,9 @@ shares:
   CEG: 0.425616
   COST: 0.195858
   CRM: 0.468416
-  CRWD: 0.701292
+  CRWD: 0.239072
   CVX: 0.693765
-  DELL: 0.242316
+  DELL: 0.10099
   DHR: 0.482798
   EQIX: 0.096773
   ETN: 0.262049
@@ -64,7 +64,7 @@ shares:
   NOW: 0.393749
   NVDA: 0.917642
   ORCL: 0.541227
-  PANW: 0.331516
+  PANW: 0.137346
   PLTR: 0.800379
   PWR: 0.133949
   QQQ: 0.208877
