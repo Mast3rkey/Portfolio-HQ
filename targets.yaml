@@ -20,9 +20,10 @@ tiers:
   band:
     weight_pct: 0.75
     cap_multiple: 1.25      # band positions may run up to 1.25x target
-    # SKHY: trades regular-way (confirmed 2026-07-13), but Alpaca's free IEX feed
-    # has zero bars for it — permanent no-data gap, not a timing issue. RSI/trend
-    # gates can never fire for it; only dollar-value cap/target math applies.
+    # SKHY: live-priced via 'shares' since 2026-07-14 (Alpaca picked up coverage a
+    # few days after its 2026-07-10 listing — not a permanent gap after all). RSI
+    # needs 15 daily bars, trend needs 200; both still building history, so those
+    # gates can't fire yet — that's insufficient history now, not a data-feed issue.
     # VMC removed 2026-07-13 — consolidated into MLM (see Decisions Log).
     # TM removed 2026-07-13 — stray typo, never held, no corresponding target.
     tickers: [KLAC, LRCX, AMAT, AMD, MU, MRVL, WDC, VRT, ETN, CAT, GNRC, IBM, NOW,

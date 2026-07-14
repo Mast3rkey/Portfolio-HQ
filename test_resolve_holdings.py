@@ -1,7 +1,10 @@
 """Tests for resolve_holdings() — the live qty x price valuation path added
 July 2026 to replace static dollar snapshots. Covers the fallback behavior for
-tickers with no live price (SKHY's permanent zero-coverage gap) and no share
-count (crypto), since a bug here silently misvalues the whole book.
+any ticker/coin with no live price or no share count on file (a manual-only
+holding, e.g. a freshly-listed name still building Alpaca history, or BTC
+pre-reserve-rebuild), since a bug here silently misvalues the whole book.
+SKHY is used below as a synthetic fixture, not a live example — it's been
+share-tracked since 2026-07-14.
 """
 
 import yaml
