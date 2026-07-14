@@ -165,8 +165,12 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     trend_rsi_override = float(gates.get("trend_rsi_override", 30))
     blackout_days = int(gates.get("earnings_blackout_days", 7))
     trim_rsi = float(gates.get("trim_rsi", 60))
-    semis = {s.upper() for s in caps.get("semis_tickers", [])}
-    semis_cap_pct = float(caps.get("semis_cluster_pct", 25))
+    # Correlated-cluster concentration caps (semis, power/infra, ...) — each measured
+    # against book (net equity), mechanically trimmed on breach, no RSI gate. A ticker
+    # may belong to more than one cluster; every cluster it's in must have room for a buy.
+    clusters = [{"name": c["name"], "pct": float(c["pct"]),
+                "tickers": {t.upper() for t in c["tickers"]}}
+               for c in (caps.get("clusters", []) or [])]
     leverage_cap = float(margin_cfg.get("leverage_cap", 1.8))
     buffer_floor_pct = float(margin_cfg.get("buffer_floor_pct", 30.0))
 
@@ -176,12 +180,14 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
         buffer_floor_pct, float(margin_requested))
     book = net_equity + float(cash)          # doctrine: book = net equity (+ new deposit)
     deployable = float(cash) + margin_allowed  # buying power for this cycle (deposit + margin)
-    semis_value = sum(float(holdings.get(t, 0)) for t in semis)
+    # per-cluster running value + per-ticker target/current, for the mechanical trim below
+    cluster_value = {c["name"]: sum(float(holdings.get(t, 0)) for t in c["tickers"])
+                     for c in clusters}
+    cluster_info: dict[str, dict[str, dict]] = {c["name"]: {} for c in clusters}
 
     rows: list[dict] = []          # BLOCKED / info rows
     buy_candidates: list[dict] = []
     trims: list[dict] = []
-    semis_info: dict[str, dict] = {}   # every semis-tier ticker's own target/current, for cluster trim
 
     for tk, meta in roster.items():
         m = metrics.get(tk, {})
@@ -196,9 +202,10 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
         base = {"ticker": tk, "tier": meta["tier"], "price": price, "rsi": rsi,
                 "vs200": vs200, "target": target_dollars, "current": current,
                 "gap": gap}
-        if tk in semis:
-            semis_info[tk] = {"current": current, "target": target_dollars,
-                              "price": price, "rsi": rsi, "tier": meta["tier"]}
+        tk_clusters = [c["name"] for c in clusters if tk in c["tickers"]]
+        for cname in tk_clusters:
+            cluster_info[cname][tk] = {"current": current, "target": target_dollars,
+                                       "price": price, "rsi": rsi, "tier": meta["tier"]}
 
         # ---- TRIM check (band/spec overweight + hot RSI) ------------------
         cap_mult = meta["cap_multiple"] if meta["tier"] == "band" else (
@@ -245,42 +252,52 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
             name_ceiling = target_dollars
         max_by_name = max(0.0, name_ceiling - current)
 
-        buy_candidates.append({**base, "is_semis": tk in semis,
+        buy_candidates.append({**base, "clusters": tk_clusters,
                                "max_by_name": max_by_name,
                                "want": min(gap, max_by_name),
                                "earn_flag": base.get("earn_flag", "")})
 
-    # ---- SEMIS CLUSTER CAP: mechanical trim, no RSI gate --------------------
+    # ---- CLUSTER CAPS: mechanical trim, no RSI gate --------------------------
     # Correlation/concentration risk limit, not a return-timing call — unlike
     # the opportunistic band/spec RSI-gated trims above, a cap breach trims
-    # regardless of momentum. Names already trimmed above are skipped (their
-    # own-target overweight is already zeroed); trims largest-overweight-first,
+    # regardless of momentum. Names already trimmed above (or by an earlier
+    # cluster in this loop) are skipped; trims largest-overweight-first,
     # floored at each name's own tier target (never trimmed below it).
     already_trimmed = {t["ticker"] for t in trims}
-    semis_value = semis_value - sum(t["dollars"] for t in trims if t["ticker"] in semis)
-    semis_cap_dollars = book * semis_cap_pct / 100.0
-    excess = semis_value - semis_cap_dollars
-    if excess >= min_lot:
+    for c in clusters:
+        cname, cap_pct = c["name"], c["pct"]
+        info = cluster_info[cname]
+        cluster_value[cname] -= sum(t["dollars"] for t in trims if t["ticker"] in c["tickers"])
+        cap_dollars = book * cap_pct / 100.0
+        excess = cluster_value[cname] - cap_dollars
+        if excess < min_lot:
+            continue
         candidates = sorted(
-            ({"ticker": tk, **info, "overweight": info["current"] - info["target"]}
-             for tk, info in semis_info.items()
-             if tk not in already_trimmed and info["current"] - info["target"] >= min_lot),
-            key=lambda c: c["overweight"], reverse=True)
-        for c in candidates:
+            ({"ticker": tk, **i, "overweight": i["current"] - i["target"]}
+             for tk, i in info.items()
+             if tk not in already_trimmed and i["current"] - i["target"] >= min_lot),
+            key=lambda x: x["overweight"], reverse=True)
+        for cand in candidates:
             if excess < min_lot:
                 break
-            amt = min(c["overweight"], excess)
+            amt = min(cand["overweight"], excess)
             if amt < min_lot:
                 continue
             trims.append({
-                "ticker": c["ticker"], "tier": c["tier"], "price": c["price"],
-                "rsi": c["rsi"], "vs200": None, "target": c["target"],
-                "current": c["current"], "gap": c["target"] - c["current"],
+                "ticker": cand["ticker"], "tier": cand["tier"], "price": cand["price"],
+                "rsi": cand["rsi"], "vs200": None, "target": cand["target"],
+                "current": cand["current"], "gap": cand["target"] - cand["current"],
                 "action": "TRIM", "dollars": amt,
-                "reason": f"semis cluster cap {semis_cap_pct:.0f}% "
-                          f"(${c['overweight']:,.0f} over own target)"})
-            semis_value -= amt
+                "reason": f"{cname} cluster cap {cap_pct:.0f}% "
+                          f"(${cand['overweight']:,.0f} over own target)"})
+            cluster_value[cname] -= amt
             excess -= amt
+            already_trimmed.add(cand["ticker"])
+            # A ticker trimmed here may also sit in a later cluster in this
+            # loop — keep that cluster's view of it consistent.
+            for c2 in clusters:
+                if cand["ticker"] in cluster_info[c2["name"]]:
+                    cluster_info[c2["name"]][cand["ticker"]]["current"] = cand["current"] - amt
 
     # ---- CRYPTO sleeve competes on gap --------------------------------------
     # Decisions Log (July 2026): conviction-sizing, not a timing call — the
@@ -297,24 +314,29 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
             buy_candidates.append({
                 "ticker": "CRYPTO", "tier": "crypto", "price": None, "rsi": None,
                 "vs200": None, "target": sleeve_target, "current": sleeve_val,
-                "gap": sleeve_gap, "is_semis": False, "max_by_name": sleeve_gap,
+                "gap": sleeve_gap, "clusters": [], "max_by_name": sleeve_gap,
                 "want": sleeve_gap,
                 "earn_flag": f"sleeve {'/'.join(sleeve_coins)}, no timing gates"})
 
     # ---- greedy allocation to largest passing gaps -----------------------
+    cluster_pct = {c["name"]: c["pct"] for c in clusters}
     buy_candidates.sort(key=lambda r: r["gap"], reverse=True)
     cash_left = deployable
     buys: list[dict] = []
     for c in buy_candidates:
         want = min(c["gap"], c["max_by_name"])
-        # semis cluster cap
-        if c["is_semis"]:
-            semis_room = book * semis_cap_pct / 100.0 - semis_value
-            if semis_room < min_lot:
-                rows.append({**c, "action": "BLOCKED", "dollars": 0,
-                             "reason": f"semis cluster cap {semis_cap_pct:.0f}%"})
-                continue
-            want = min(want, semis_room)
+        # every cluster this ticker belongs to must have room
+        blocked_by = None
+        for cname in c["clusters"]:
+            room = book * cluster_pct[cname] / 100.0 - cluster_value[cname]
+            if room < min_lot:
+                blocked_by = cname
+                break
+            want = min(want, room)
+        if blocked_by:
+            rows.append({**c, "action": "BLOCKED", "dollars": 0,
+                         "reason": f"{blocked_by} cluster cap {cluster_pct[blocked_by]:.0f}%"})
+            continue
         alloc = min(want, cash_left)
         if alloc < min_lot:
             if cash_left < min_lot and deployable > 0:
@@ -324,8 +346,8 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
         buys.append({**c, "action": "BUY", "dollars": alloc,
                      "reason": c.get("earn_flag", "")})
         cash_left -= alloc
-        if c["is_semis"]:
-            semis_value += alloc
+        for cname in c["clusters"]:
+            cluster_value[cname] += alloc
 
     deployed_total = sum(b["dollars"] for b in buys)
     margin_used = min(margin_allowed, max(0.0, deployed_total - float(cash)))
@@ -340,7 +362,8 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
         "buys": buys, "trims": trims, "blocked": rows,
         "underweight": buy_candidates, "orphans": orphans,
         "regime_ok": regime_ok, "regime_known": regime_known,
-        "semis_value": semis_value, "semis_cap_pct": semis_cap_pct,
+        "clusters": [{"name": c["name"], "value": cluster_value[c["name"]], "pct": c["pct"]}
+                    for c in clusters],
         "margin": {
             "gross": gross, "net_equity": net_equity, "debt": margin_debt,
             "buffer_pct": margin_buffer_pct, "buffer_floor_pct": buffer_floor_pct,
@@ -426,11 +449,14 @@ def render(result, review: bool) -> str:
                  f"**{n_buy} buy(s)**; ${result['cash_left'] if not bearish else pool:,.0f} left.")
     L.append(f"- Regime **{regime}**"
              + ("  → holding cash." if bearish else "."))
+    cluster_bits = "; ".join(
+        f"{c['name']} ${c['value']:,.0f} "
+        f"({c['value']/result['book']*100 if result['book'] else 0:.1f}% of book, "
+        f"cap {c['pct']:.0f}%)"
+        for c in result.get("clusters", []))
     L.append(f"- **{len(result['trims'])} trim(s)**, "
-             f"**{len(result['blocked'])} blocked**; semis cluster "
-             f"${result['semis_value']:,.0f} "
-             f"({result['semis_value']/result['book']*100 if result['book'] else 0:.1f}% "
-             f"of book, cap {result['semis_cap_pct']:.0f}%).")
+             f"**{len(result['blocked'])} blocked**"
+             + (f"; {cluster_bits}." if cluster_bits else "."))
     cr = result.get("crypto")
     if cr and cr["coins"]:
         book = result["book"]

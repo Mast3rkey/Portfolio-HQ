@@ -43,20 +43,38 @@ crypto:
   coingecko_ids: {}
 
 caps:
-  # Semiconductor cluster must stay <= this % of book — blocks new buys AND
-  # (July 2026) mechanically trims a breach, no RSI gate (concentration/
-  # correlation risk limit, not a return-timing call, so it doesn't wait for
-  # a "good" price like the band/spec RSI-gated trims do).
-  # Correlation-defined, NOT market-cap: these names crash together, and the
-  # equipment (KLAC/LRCX/AMAT) and memory (MU/WDC) names crash hardest. Measured
-  # honestly so the cap actually binds. SKHY counts (trades regular-way as of 2026-07-13).
-  # Denominator is book (net equity), not gross — under leverage this means a broad
-  # market decline can nudge this cap over with zero real semis-specific dispersion
-  # (fixed margin debt shrinks book faster than assets), and a broad rally quietly
-  # loosens it. Identified and left as-is 2026-07-13 (see CLAUDE.md Decisions Log) —
-  # switching to gross would remove that but understate real leverage-adjusted risk.
-  semis_cluster_pct: 25.0
-  semis_tickers: [ASML, TSM, NVDA, AVGO, AMD, MU, MRVL, KLAC, LRCX, AMAT, WDC, INTC, SKHY]
+  # Correlated clusters that must each stay <= their own % of book — blocks new
+  # buys AND mechanically trims a breach, no RSI gate (concentration/correlation
+  # risk limit, not a return-timing call, so it doesn't wait for a "good" price
+  # like the band/spec RSI-gated trims do). Denominator is book (net equity), not
+  # gross — under leverage this means a broad market decline can nudge a cap over
+  # with zero real cluster-specific dispersion (fixed margin debt shrinks book
+  # faster than assets), and a broad rally quietly loosens it. Identified and left
+  # as-is 2026-07-13 for semis (see CLAUDE.md Decisions Log) — switching to gross
+  # would remove that but understate real leverage-adjusted risk. Same property
+  # applies to every cluster below.
+  clusters:
+    - name: semis
+      pct: 25.0
+      # Correlation-defined, NOT market-cap: these names crash together, and the
+      # equipment (KLAC/LRCX/AMAT) and memory (MU/WDC) names crash hardest.
+      # Measured honestly so the cap actually binds. SKHY counts (trades
+      # regular-way as of 2026-07-13).
+      tickers: [ASML, TSM, NVDA, AVGO, AMD, MU, MRVL, KLAC, LRCX, AMAT, WDC, INTC, SKHY]
+    - name: power_infra
+      pct: 20.0
+      # Added 2026-07-14 after a one-time correlation scan (trailing ~1yr daily
+      # returns, one mostly-rising-market sample): GEV/ETN/VRT/PWR showed 0.560
+      # avg pairwise correlation, comparable to the semis baseline (0.542) — real
+      # shared driver is AI data-center power/electricity demand buildout, not
+      # just market beta. CAT and TSLA also correlated with this group in the
+      # same scan but were deliberately EXCLUDED from the cap: weaker fundamental
+      # fit (general industrials / EV+storage), more likely riding bull-market
+      # beta than the specific power-buildout mechanism — see CLAUDE.md Decisions
+      # Log. Cap set at 20% (below semis' 25%, reflecting a shorter track record
+      # and narrower evidence base) with room above the 10.5% level it was at
+      # when added, so it doesn't fire immediately off a diagnostic finding.
+      tickers: [GEV, ETN, VRT, PWR]
 
 levels:
   # Buy-level rungs: 50SMA minus (multiplier x ATR14). L3 is floored at the

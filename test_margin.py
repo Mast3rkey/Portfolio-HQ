@@ -82,9 +82,9 @@ def test_already_over_cap_allows_nothing_more():
     assert "leverage cap" in reason
 
 
-# ── semis cluster mechanical trim (plan()) ──────────────────────────────────
+# ── cluster caps mechanical trim (plan()) ───────────────────────────────────
 
-def _base_targets(semis_cluster_pct=10.0):
+def _base_targets(semis_cluster_pct=10.0, extra_clusters=None):
     return {
         "tiers": {
             "T1": {"weight_pct": 20.0, "tickers": ["DDD"]},
@@ -92,13 +92,18 @@ def _base_targets(semis_cluster_pct=10.0):
             "T3": {"weight_pct": 2.0, "tickers": ["CCC"]},
             "band": {"weight_pct": 3.0, "cap_multiple": 1.25, "tickers": ["BBB"]},
         },
-        "caps": {"semis_cluster_pct": semis_cluster_pct,
-                "semis_tickers": ["AAA", "BBB", "CCC"]},
+        "caps": {"clusters": [{"name": "semis", "pct": semis_cluster_pct,
+                              "tickers": ["AAA", "BBB", "CCC"]}]
+                             + (extra_clusters or [])},
         "gates": {"min_lot_dollars": 1, "trend_rsi_override": 30,
                  "earnings_blackout_days": 7, "trim_rsi": 60},
         "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
         "crypto": {},
     }
+
+
+def _cluster_value(result, name):
+    return next(c["value"] for c in result["clusters"] if c["name"] == name)
 
 
 def _flat_metrics(tickers, rsi=50):
@@ -134,7 +139,7 @@ def test_semis_cluster_trim_largest_overweight_first_floored_at_own_target():
     assert "semis cluster cap" in trims_by_ticker["AAA"]["reason"]
     assert "semis cluster cap" in trims_by_ticker["CCC"]["reason"]
 
-    assert result["semis_value"] == 10.0  # exactly at cap, nothing left over
+    assert _cluster_value(result, "semis") == 10.0  # exactly at cap, nothing left over
 
 
 def test_semis_cluster_under_cap_generates_no_trim():
@@ -147,7 +152,7 @@ def test_semis_cluster_under_cap_generates_no_trim():
                  regime_known=True, cash=0.0)
 
     assert result["trims"] == []
-    assert result["semis_value"] == 80.0  # AAA+BBB+CCC, untouched
+    assert _cluster_value(result, "semis") == 80.0  # AAA+BBB+CCC, untouched
 
 
 def test_semis_cluster_trim_leaves_residual_when_overweight_insufficient():
@@ -164,6 +169,48 @@ def test_semis_cluster_trim_leaves_residual_when_overweight_insufficient():
     # Every semis name gets trimmed to its own target (max possible), but the
     # 1% cap (=$1) still isn't reachable since fair-share targets alone sum
     # above it (AAA target 5 + BBB target 3 + CCC target 2 > 1).
-    assert result["semis_value"] > 1.0
+    assert _cluster_value(result, "semis") > 1.0
     trimmed_tickers = {t["ticker"] for t in result["trims"]}
     assert trimmed_tickers == {"AAA", "BBB", "CCC"}
+
+
+def test_two_independent_clusters_trim_separately():
+    # A second cluster (disjoint tickers) should be evaluated on its own cap,
+    # independent of the first.
+    targets = _base_targets(semis_cluster_pct=90.0,  # semis cluster: no breach
+                            extra_clusters=[{"name": "power", "pct": 10.0,
+                                            "tickers": ["DDD"]}])
+    # book = 5+3+2+25 = 35. DDD is T1 (weight 20 -> target 7.0) with no per-tier
+    # trim mechanism of its own; the "power" cluster caps it at 10% of book
+    # (=3.5), tighter than DDD's own-target floor (7.0) -> trims down to the
+    # floor (own target), leaving a residual above the nominal cap dollars.
+    holdings = {"AAA": 5.0, "BBB": 3.0, "CCC": 2.0, "DDD": 25.0}
+    roster = build_roster(targets)
+    metrics = _flat_metrics(["AAA", "BBB", "CCC", "DDD"])
+
+    result = plan(targets, holdings, roster, metrics, regime_ok=True,
+                 regime_known=True, cash=0.0)
+
+    trims_by_ticker = {t["ticker"]: t for t in result["trims"]}
+    assert set(trims_by_ticker) == {"DDD"}
+    assert "power cluster cap" in trims_by_ticker["DDD"]["reason"]
+    assert _cluster_value(result, "power") == 7.0     # floored at DDD's own target
+    assert _cluster_value(result, "semis") == 10.0     # AAA+BBB+CCC, untouched (well under 90% cap)
+
+
+def test_ticker_in_two_clusters_blocked_by_either():
+    # A ticker in two clusters needs room in BOTH to buy.
+    targets = _base_targets(semis_cluster_pct=90.0,
+                            extra_clusters=[{"name": "power", "pct": 4.0,
+                                            "tickers": ["AAA"]}])
+    # AAA (T2, target 5) is underweight at current=0 -> wants a full $5 buy,
+    # but the "power" cluster caps AAA's cluster at 4% of book (=4).
+    holdings = {"AAA": 0.0, "BBB": 0.0, "CCC": 0.0, "DDD": 0.0}
+    roster = build_roster(targets)
+    metrics = _flat_metrics(["AAA", "BBB", "CCC", "DDD"])
+
+    result = plan(targets, holdings, roster, metrics, regime_ok=True,
+                 regime_known=True, cash=100.0, margin_requested=0.0)
+
+    buys_by_ticker = {b["ticker"]: b for b in result["buys"]}
+    assert buys_by_ticker["AAA"]["dollars"] == 4.0   # clipped by the tighter "power" cap, not semis
