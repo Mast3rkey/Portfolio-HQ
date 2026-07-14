@@ -14,9 +14,9 @@
 # against real screens and it doesn't reconcile (off by several points);
 # Robinhood's actual formula weights something this simple subtraction misses.
 margin:
-  debt: 3299.38
-  buffer_pct: 56.75
-  synced_at: 2026-07-13
+  debt: 2898.22
+  buffer_pct: 59.76
+  synced_at: 2026-07-14
 holdings:
   ETH: 369.97
   SKHY: 24.45
