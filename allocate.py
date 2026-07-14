@@ -390,17 +390,12 @@ def render(result, review: bool) -> str:
     L = []
     regime = ("ABOVE 200-EMA (risk-on)" if result["regime_ok"]
               else "BELOW 200-EMA (risk-off)") if result["regime_known"] else "UNKNOWN"
-    bearish = result["regime_known"] and not result["regime_ok"]
 
     L.append(f"# Allocation advisory — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     L.append("")
     L.append(f"**Book:** ${result['book']:,.0f}  |  "
              f"**New cash:** ${result['cash']:,.0f}  |  "
              f"**Regime (QQQ):** {regime}")
-    if bearish:
-        L.append("")
-        L.append("> ⚠️ **REGIME RISK-OFF — recommendation is to HOLD CASH.** "
-                 "The buys below are what *would* be bought if regime flips risk-on.")
     L.append("")
     L.append("| Ticker | Action | Dollars | Price | RSI | vs200 |")
     L.append("|--------|--------|--------:|------:|----:|------:|")
@@ -415,11 +410,7 @@ def render(result, review: bool) -> str:
             L.append(_fmt_row(rr))
     else:
         for r in result["buys"]:
-            rr = dict(r)
-            if bearish:
-                rr["action"] = "HOLD"
-                rr["reason"] = "regime risk-off (would-buy)"
-            L.append(_fmt_row(rr))
+            L.append(_fmt_row(r))
     for r in result["blocked"]:
         L.append(_fmt_row(r))
 
@@ -429,8 +420,8 @@ def render(result, review: bool) -> str:
         L.append("| — | nothing actionable | — | — | — | — |")
 
     # 3-line summary
-    deployed = 0 if bearish else sum(b["dollars"] for b in result["buys"])
-    n_buy = 0 if bearish else len(result["buys"])
+    deployed = sum(b["dollars"] for b in result["buys"])
+    n_buy = len(result["buys"])
     L.append("")
     L.append("## Summary")
     if review:
@@ -441,14 +432,13 @@ def render(result, review: bool) -> str:
                  f"{len(result['blocked'])} blocked.")
     else:
         mg = result["margin"]
-        margin_note = (f" (incl. ${mg['used']:,.0f} margin)"
-                       if not bearish and mg["used"] > 0.01 else "")
+        margin_note = f" (incl. ${mg['used']:,.0f} margin)" if mg["used"] > 0.01 else ""
         pool = result['cash'] + mg['allowed']
         L.append(f"- Deployed **${deployed:,.0f}**{margin_note} of ${pool:,.0f} available "
                  f"(${result['cash']:,.0f} cash + ${mg['allowed']:,.0f} margin) across "
-                 f"**{n_buy} buy(s)**; ${result['cash_left'] if not bearish else pool:,.0f} left.")
-    L.append(f"- Regime **{regime}**"
-             + ("  → holding cash." if bearish else "."))
+                 f"**{n_buy} buy(s)**; ${result['cash_left']:,.0f} left.")
+    L.append(f"- Regime **{regime}** (informational — no longer gates buys; "
+             "see `reports/regime_backtest.md`).")
     cluster_bits = "; ".join(
         f"{c['name']} ${c['value']:,.0f} "
         f"({c['value']/result['book']*100 if result['book'] else 0:.1f}% of book, "
