@@ -78,6 +78,21 @@ caps:
       # and narrower evidence base) with room above the 10.5% level it was at
       # when added, so it doesn't fire immediately off a diagnostic finding.
       tickers: [GEV, ETN, VRT, PWR]
+    - name: oil
+      pct: 20.0
+      # Added 2026-07-14: strongest correlation found of any group scanned this
+      # session — XOM/CVX at 0.819 avg pairwise (vs semis' 0.542, power_infra's
+      # 0.560), mechanism as direct as it gets (same commodity, crude oil price,
+      # drives both almost entirely). Only 3.46% of book at the time — far below
+      # where a cap would ever bind on its own, so the level was derived instead
+      # of picked: stress-tested against this dataset's own actual historical max
+      # drawdown (~30% for both names, 2020-2025 cached window) so a plausible
+      # severe crash produces ~6% of book max impact — same risk budget as
+      # power_infra. Landed at the same 20% as power_infra despite opposite pulls:
+      # higher/longer-established correlation argues looser, but only 2 names
+      # (vs power_infra's 4) means less internal diversification against a
+      # company-specific shock, argues tighter — the two roughly offset.
+      tickers: [XOM, CVX]
 
 levels:
   # Buy-level rungs: 50SMA minus (multiplier x ATR14). L3 is floored at the
