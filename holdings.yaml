@@ -1,11 +1,11 @@
-# holdings.yaml — two tracks. 'shares' (ticker: qty) is the source of
-# truth for any normally-traded position — live-valued every run via
-# Alpaca (qty x latest price). Update it with 'allocate.py update-shares'
-# after a real buy/sell/trim changes a share count.
-# 'holdings' (ticker: dollar value) is the manual fallback for anything
-# NOT share-tracked: SKHY (permanent zero-coverage gap on the free IEX
-# feed — RSI/trend gates can never fire for it) and the crypto sleeve
-# (BTC/ETH/SOL, priced live but valued from here, not qty-tracked).
+# holdings.yaml — three tracks. 'shares' (ticker: qty) and 'crypto_shares'
+# (coin: qty) are the source of truth for any normally-traded position or
+# coin — live-valued every run via Alpaca (qty x latest price). Update with
+# 'allocate.py update-shares' / 'update-crypto-shares' after a real
+# buy/sell/trim changes a count.
+# 'holdings' (ticker: dollar value) is the manual fallback for anything NOT
+# share-tracked: just SKHY now (permanent zero-coverage gap on the free IEX
+# feed — RSI/trend gates can never fire for it).
 # Update it with 'allocate.py update-holdings'.
 # margin: synced via 'allocate.py update-margin <debt> <buffer_pct>' — buffer_pct comes from Robinhood directly (per-security maintenance
 # ratios aren't available via Alpaca), so it's only as fresh as the last sync. Verify on Robinhood before any large margin-funded buy.
@@ -18,9 +18,7 @@ margin:
   buffer_pct: 59.76
   synced_at: 2026-07-14
 holdings:
-  ETH: 369.97
   SKHY: 24.45
-  SOL: 323.63
 shares:
   AAPL: 0.13757
   ABBV: 0.173176
@@ -86,3 +84,6 @@ shares:
   WDC: 0.15222
   WMT: 1.469458
   XOM: 0.553764
+crypto_shares:
+  ETH: 0.209385
+  SOL: 4.30301
