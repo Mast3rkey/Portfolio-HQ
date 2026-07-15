@@ -1,0 +1,7 @@
+# requires Python >= 3.10 (curl_cffi, pandas pin below both need it)
+certifi==2026.2.25
+curl_cffi==0.15.0
+matplotlib==3.11.0
+pandas==3.0.3
+PyYAML==6.0.1
+yfinance==1.5.1

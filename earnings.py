@@ -15,6 +15,10 @@ from datetime import date, datetime, timezone
 
 _CACHE: dict[str, date | None] = {}
 
+# Tickers where our brokerage-convention symbol (dot class shares) differs
+# from Yahoo's own symbol (dash) — Yahoo returns no data for "BRK.B".
+_YAHOO_SYMBOL = {"BRK.B": "BRK-B"}
+
 
 def next_earnings_date(ticker: str) -> date | None:
     """Return the next upcoming earnings date (>= today), or None if unknown."""
@@ -36,7 +40,7 @@ def next_earnings_date(ticker: str) -> date | None:
             session = CurlSession(impersonate="chrome110")
         except Exception:
             session = None
-        tk = yf.Ticker(ticker, session=session)
+        tk = yf.Ticker(_YAHOO_SYMBOL.get(ticker, ticker), session=session)
         today = datetime.now(timezone.utc).date()
 
         # 1) earnings_dates DataFrame (most reliable when populated)
