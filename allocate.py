@@ -38,7 +38,8 @@ LOGS_DIR = HERE / "logs"
 PERF_LOG_FILE = HERE / "performance_log.csv"
 PERF_FIELDS = ["date", "net_equity", "gross", "margin_debt", "qqq_price", "voo_price", "note"]
 
-DAILY_LIMIT = 300
+DAILY_LIMIT = 320  # margin above the ~290-300 trading days in DAYS_BACK, so a
+                    # holiday-heavy stretch can't starve the 200-SMA of bars
 DAYS_BACK = 420
 STALE_MARGIN_DAYS = 2   # warn if margin debt/buffer haven't been synced in this many days
 

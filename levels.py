@@ -30,7 +30,8 @@ from crypto import coingecko_daily_bars
 HERE = Path(__file__).resolve().parent
 LOGS_DIR = HERE / "logs"
 
-DAILY_LIMIT = 300
+DAILY_LIMIT = 320  # margin above the ~290-300 trading days in DAYS_BACK, so a
+                    # holiday-heavy stretch can't starve the 200-SMA of bars
 DAYS_BACK = 420
 
 CRYPTO_MAJORS = ["BTC", "ETH", "SOL"]
