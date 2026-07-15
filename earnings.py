@@ -26,7 +26,17 @@ def next_earnings_date(ticker: str) -> date | None:
         import logging
         logging.getLogger("yfinance").setLevel(logging.CRITICAL)
         import yfinance as yf
-        tk = yf.Ticker(ticker)
+        session = None
+        try:
+            # yfinance's default curl_cffi fingerprint (impersonate="chrome",
+            # latest) gets connection-reset by this environment's proxy;
+            # an older fingerprint passes through cleanly. Harmless outside
+            # this environment — just a different valid TLS fingerprint.
+            from curl_cffi.requests import Session as CurlSession
+            session = CurlSession(impersonate="chrome110")
+        except Exception:
+            session = None
+        tk = yf.Ticker(ticker, session=session)
         today = datetime.now(timezone.utc).date()
 
         # 1) earnings_dates DataFrame (most reliable when populated)
