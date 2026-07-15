@@ -84,7 +84,7 @@ def test_already_over_cap_allows_nothing_more():
 
 # ── cluster caps mechanical trim (plan()) ───────────────────────────────────
 
-def _base_targets(semis_cluster_pct=10.0, extra_clusters=None):
+def _base_targets(semis_cluster_pct=10.0, extra_clusters=None, t1t2_trim_mult=100.0):
     return {
         "tiers": {
             "T1": {"weight_pct": 20.0, "tickers": ["DDD"]},
@@ -95,8 +95,13 @@ def _base_targets(semis_cluster_pct=10.0, extra_clusters=None):
         "caps": {"clusters": [{"name": "semis", "pct": semis_cluster_pct,
                               "tickers": ["AAA", "BBB", "CCC"]}]
                              + (extra_clusters or [])},
+        # t1t2_trim_mult defaults high enough to stay out of the cluster-cap
+        # tests below (which use T1/T2 fixtures for unrelated reasons) — see
+        # the dedicated T1/T2 concentration-ceiling tests further down for
+        # coverage of that mechanism specifically.
         "gates": {"min_lot_dollars": 1, "trend_rsi_override": 30,
-                 "earnings_blackout_days": 7, "trim_rsi": 60},
+                 "earnings_blackout_days": 7, "trim_rsi": 60,
+                 "t1t2_trim_mult": t1t2_trim_mult},
         "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
         "crypto": {},
     }
@@ -214,3 +219,59 @@ def test_ticker_in_two_clusters_blocked_by_either():
 
     buys_by_ticker = {b["ticker"]: b for b in result["buys"]}
     assert buys_by_ticker["AAA"]["dollars"] == 4.0   # clipped by the tighter "power" cap, not semis
+
+
+# ── T1/T2 concentration ceiling (2026-07-15 doctrine decision) ──────────────
+# Mechanical, no RSI gate, floored at target — same treatment as the cluster
+# caps, but per-name rather than per-cluster. Not a return-timing call: see
+# reports/t1t2_trim_backtest.md (NVDA decomposition) and the Decisions Log.
+
+# book = cash + sum(holdings); target_dollars = book * weight_pct/100 -- NOT
+# normalized against a fixed "book=100" unless the numbers are set up for it.
+# AAA/BBB/CCC held at 0 in these fixtures (cash makes up the rest of book) so
+# DDD (T1, weight 20%) is the only thing moving the T1/T2 ceiling logic.
+
+def test_t1_name_over_ceiling_trims_to_target_no_rsi_gate():
+    targets = _base_targets(t1t2_trim_mult=1.5)
+    # book=100 (cash 65 + DDD 35) -> DDD target=20, current=35 -> 1.75x, over
+    # the 1.5x ceiling. RSI deliberately low (30) to prove this trim ignores
+    # RSI entirely, unlike the band/spec opportunistic trim.
+    holdings = {"AAA": 0.0, "BBB": 0.0, "CCC": 0.0, "DDD": 35.0}
+    roster = build_roster(targets)
+    metrics = _flat_metrics(["AAA", "BBB", "CCC", "DDD"], rsi=30)
+
+    result = plan(targets, holdings, roster, metrics, regime_ok=True,
+                 regime_known=True, cash=65.0)
+
+    trims_by_ticker = {t["ticker"]: t for t in result["trims"]}
+    assert set(trims_by_ticker) == {"DDD"}
+    assert trims_by_ticker["DDD"]["dollars"] == 15.0     # trimmed to target (20), not to 1.5x (30)
+    assert "T1/T2 concentration ceiling" in trims_by_ticker["DDD"]["reason"]
+
+
+def test_t2_name_under_ceiling_generates_no_trim():
+    targets = _base_targets(t1t2_trim_mult=1.5)
+    # book=100 (cash 72 + DDD 28) -> DDD target=20, current=28 -> 1.4x, under
+    # the 1.5x ceiling.
+    holdings = {"AAA": 0.0, "BBB": 0.0, "CCC": 0.0, "DDD": 28.0}
+    roster = build_roster(targets)
+    metrics = _flat_metrics(["AAA", "BBB", "CCC", "DDD"])
+
+    result = plan(targets, holdings, roster, metrics, regime_ok=True,
+                 regime_known=True, cash=72.0)
+
+    assert result["trims"] == []
+
+
+def test_t1t2_ceiling_exactly_at_threshold_not_trimmed():
+    targets = _base_targets(t1t2_trim_mult=1.5)
+    # book=100 (cash 70 + DDD 30) -> DDD target=20, current=30 -> exactly
+    # 1.5x -- boundary, not "over".
+    holdings = {"AAA": 0.0, "BBB": 0.0, "CCC": 0.0, "DDD": 30.0}
+    roster = build_roster(targets)
+    metrics = _flat_metrics(["AAA", "BBB", "CCC", "DDD"])
+
+    result = plan(targets, holdings, roster, metrics, regime_ok=True,
+                 regime_known=True, cash=70.0)
+
+    assert result["trims"] == []

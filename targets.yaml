@@ -110,6 +110,10 @@ gates:
   trend_rsi_override: 30       # allow add below 200-SMA only if RSI < this
   earnings_blackout_days: 7    # skip adds within this many calendar days of earnings
   trim_rsi: 60                 # trim band/spec overweights only when RSI > this
+  t1t2_trim_mult: 1.5          # T1/T2 concentration ceiling (2026-07-15 doctrine decision,
+                                # not a backtest verdict): mechanical, no RSI gate, floored
+                                # at target -- same treatment as the cluster caps. See
+                                # reports/t1t2_trim_backtest.md and CLAUDE.md Decisions Log.
 
 margin:
   # Doctrine (July 2026): fixed structural cap, not a timing lever. Book is

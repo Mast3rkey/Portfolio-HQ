@@ -166,6 +166,7 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     trend_rsi_override = float(gates.get("trend_rsi_override", 30))
     blackout_days = int(gates.get("earnings_blackout_days", 7))
     trim_rsi = float(gates.get("trim_rsi", 60))
+    t1t2_trim_mult = float(gates.get("t1t2_trim_mult", 1.5))
     # Correlated-cluster concentration caps (semis, power/infra, ...) — each measured
     # against book (net equity), mechanically trimmed on breach, no RSI gate. A ticker
     # may belong to more than one cluster; every cluster it's in must have room for a buy.
@@ -217,6 +218,21 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
                 trims.append({**base, "action": "TRIM",
                               "dollars": current - target_dollars,
                               "reason": f"> {'1.25x' if meta['tier']=='band' else '1.0x'} target, RSI {rsi:.1f}>{trim_rsi:.0f}"})
+                continue
+
+        # ---- T1/T2 concentration ceiling: mechanical, no RSI gate ---------
+        # Doctrine decision (2026-07-15), not a backtest verdict — same category
+        # as the 1.8x leverage cap and 30% buffer floor: a single core-conviction
+        # name at 2x+ target under leverage is a tail/forced-liquidation risk a
+        # TWR backtest can't price (see t1t2_trim_backtest.md's NVDA decomposition
+        # — 2.14x target, -66.4% own drawdown, levered math breaking down at
+        # 1.44x). Floored at the name's own target, same as the cluster caps.
+        if meta["tier"] in ("T1", "T2"):
+            overweight_limit = target_dollars * t1t2_trim_mult
+            if current > overweight_limit:
+                trims.append({**base, "action": "TRIM",
+                              "dollars": current - target_dollars,
+                              "reason": f"> {t1t2_trim_mult:.1f}x target (T1/T2 concentration ceiling), mechanical"})
                 continue
 
         # ---- only underweight names are buy candidates -------------------
