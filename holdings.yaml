@@ -14,9 +14,9 @@
 # against real screens and it doesn't reconcile (off by several points);
 # Robinhood's actual formula weights something this simple subtraction misses.
 margin:
-  debt: 2679.4
-  buffer_pct: 61.08
-  synced_at: 2026-07-14
+  debt: 2671.85
+  buffer_pct: 61.96
+  synced_at: 2026-07-15
 holdings:
   {}
 shares:
