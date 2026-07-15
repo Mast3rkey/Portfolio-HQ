@@ -43,6 +43,10 @@ crypto:
   coins: [BTC, ETH, SOL]
   # Coins listed here are priced via Alpaca crypto data ('COIN/USD');
   # value = market_value from holdings.yaml.
+  # BTC has no entry in holdings.yaml's crypto_shares — fully sold 2026-07-13
+  # to trim the sleeve back toward target. Not a data gap: rebuild is via
+  # the gap machine only (future crypto-sleeve buys route to BTC until it's
+  # back to ~25% of the sleeve — see CLAUDE.md Standing Queue).
   coingecko_ids: {}
 
 caps:
