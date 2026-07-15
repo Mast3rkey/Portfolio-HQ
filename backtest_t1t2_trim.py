@@ -69,6 +69,9 @@ MAXDD_TOLERANCE_PP = 1.0     # a TWR "win" that worsens MaxDD by more than this 
 T1T2_TRIM_MULT = 1.5         # mechanical trim threshold: 1.5x a T1/T2 name's own target
 AI_INFRA = {"ASML", "TSM", "NVDA", "MSFT", "GOOGL", "META", "GEV"}
 CLUSTER_CAP_PCT = 35.0       # Arm D only: AI-infra cluster ceiling as % of book
+CURRENT_LEVERAGE = 1.44      # account's actual synced leverage (2026-07-15), for the
+                             # same aggregate-MaxDD-vs-single-name-DD decomposition
+                             # trim_backtest.md applied to RKLB -- not the 1.8x cap
 
 ARMS = {
     "A": "A — current (no T1/T2 trim, control)",
@@ -88,6 +91,7 @@ def simulate(mode: str, tiers: dict[str, str], weights: dict[str, float],
     flows: dict[int, float] = {}
     n_bandspec_trims = n_t1t2_trims = 0
     t1t2_trimmed = 0.0
+    peak_mult: dict[str, float] = {}   # per-T1/T2-ticker peak (value / own target)
 
     for i, d in enumerate(calendar):
         if d in dep_set:
@@ -100,6 +104,13 @@ def simulate(mode: str, tiers: dict[str, str], weights: dict[str, float],
                 book = cash + sum(shares.get(s, 0.0) * closes[s] for s in elig)
                 w_sum = sum(weights[s] for s in elig)
                 targets = {s: book * weights[s] / w_sum for s in elig}
+
+                for s in elig:
+                    if tiers[s] not in ("T1", "T2") or targets[s] <= 0:
+                        continue
+                    mult = shares.get(s, 0.0) * closes[s] / targets[s]
+                    if mult > peak_mult.get(s, 0.0):
+                        peak_mult[s] = mult
 
                 # ---- band/spec trims: identical in every arm ---------------
                 for s in elig:
@@ -190,10 +201,19 @@ def simulate(mode: str, tiers: dict[str, str], weights: dict[str, float],
     t1_final = sum(v for s, v in final_vals.items() if tiers.get(s) in ("T1", "T2"))
     t1_pct = (t1_final / values[-1] * 100.0) if values[-1] else 0.0
 
+    hottest = max(peak_mult, key=peak_mult.get) if peak_mult else None
+    hottest_mult = peak_mult.get(hottest, 0.0) if hottest else 0.0
+    hottest_dd = 0.0
+    if hottest is not None:
+        own_closes = [c for c in aligned[hottest][0] if c is not None]
+        hottest_dd = max_drawdown(own_closes)
+
     return {"ann_twr": twr_annualized(values, flows), "final": values[-1],
             "max_dd": max_drawdown(values), "n_bandspec_trims": n_bandspec_trims,
             "n_t1t2_trims": n_t1t2_trims, "t1t2_trimmed": t1t2_trimmed,
-            "t1t2_final_pct": t1_pct, "deposited": DEPOSIT * len(deposit_days)}
+            "t1t2_final_pct": t1_pct, "deposited": DEPOSIT * len(deposit_days),
+            "hottest_name": hottest, "hottest_peak_mult": hottest_mult,
+            "hottest_own_dd": hottest_dd}
 
 
 def setup():
@@ -273,6 +293,24 @@ def verdict(res: dict, run_d: bool) -> str:
             f"({ADOPT_THRESHOLD_PP}pp). No T1/T2 trim rule adopted; question closed.")
 
 
+def _hottest_name_block(res: dict, tiers: dict[str, str]) -> str:
+    lines = ["| Arm | Hottest T1/T2 name | Peak multiple of target | Name's own MaxDD | "
+             f"Est. net-equity DD at {CURRENT_LEVERAGE:.2f}x |",
+             "|-----|---------------------|-------------------------:|------------------:|"
+             "----------------------------------------------:|"]
+    for k in ("A", "B", "C"):
+        if k not in res:
+            continue
+        r = res[k]
+        name = r["hottest_name"] or "—"
+        mult = r["hottest_peak_mult"]
+        dd = r["hottest_own_dd"]
+        levered_dd = dd * CURRENT_LEVERAGE
+        lines.append(f"| {k} | {name} ({tiers.get(name, '?')}) | {mult:.2f}x | "
+                     f"{dd:.1f}% | {levered_dd:.1f}% |")
+    return "\n".join(lines)
+
+
 def main() -> int:
     tiers, aligned, calendar, deposit_days = setup()
     weights = {t: TIER_WEIGHTS[tiers[t]] for t in tiers}
@@ -336,7 +374,46 @@ def main() -> int:
               "failure mode than trimming a speculative band/spec name that ran hot, "
               "which is why this is a new test and not a rerun of trim_backtest.md. "
               "MaxDD reported alongside TWR because that tension is the whole reason "
-              "this backtest exists._"]
+              "this backtest exists._",
+              "",
+              "## What this verdict does and doesn't cover",
+              "The MaxDD column above is **aggregate-portfolio-level** -- the same "
+              "quantity `trim_backtest.md` showed is *not* where concentration risk "
+              "actually shows up. That test's override of its own raw TWR result (never-"
+              "trim won by +6.65pp but was rejected anyway) was built on a **single-name** "
+              "decomposition: RKLB balloon to 12.6% of the sleeve (3.6x its target) with "
+              "its own -28.6% drawdown vs the portfolio's -24.6%, translated through "
+              "leverage to ~-46% vs ~-39% on net equity. This test's near-identical "
+              "aggregate MaxDD across arms (-20.3% vs -20.1%) does **not** by itself show "
+              "whether an individual T1/T2 name reaches a comparably dangerous "
+              "concentration under Arm A's no-trim control. Running the same "
+              "decomposition here:",
+              "",
+              _hottest_name_block(res, tiers),
+              "",
+              "NVDA's own -66.4% peak-to-trough (its real 2021-2022 correction) is severe "
+              "enough that the linear leverage-translation used above and in "
+              "`trim_backtest.md` (drawdown x leverage multiple) **stops being a valid "
+              "approximation near this magnitude** -- a >69% levered loss on a name that "
+              "size implies forced liquidation / a buffer-floor breach well before the "
+              "full move plays out, not a literal -95.6% mark. The honest reading isn't "
+              "the number itself, it's that **NVDA at 2.14x its T1 target is large enough "
+              "that its own historical worst-case, under this account's actual leverage, "
+              "is wipeout-territory** -- qualitatively different from a diversified "
+              "portfolio-level -20% MaxDD, and exactly the asymmetry a portfolio-level "
+              "MaxDD number cannot show.",
+              "",
+              "**This backtest closes the *return* case for a T1/T2 trim rule, not the "
+              "*capital-impairment* case** -- same distinction the regime-gate entry drew "
+              "between \"cash drag, fully priced by TWR\" and \"capital impairment, not "
+              "priced by TWR.\" If the hottest single-name concentration above is "
+              "meaningfully worse than the account's own leverage math tolerates, that's "
+              "a reason to revisit this question even though the aggregate return/MaxDD "
+              "numbers say no change -- the same way leverage overrode trim_backtest.md's "
+              "raw result. **The verdict above (no T1/T2 trim rule adopted) still stands "
+              "for the return question; whether T1's real-world concentration deserves a "
+              "trim on capital-impairment grounds is a separate judgment this backtest "
+              "surfaces the numbers for but does not itself settle.**"]
     REPORT.parent.mkdir(exist_ok=True)
     REPORT.write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
