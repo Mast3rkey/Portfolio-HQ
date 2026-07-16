@@ -13,10 +13,11 @@
 # it from (portfolio value - maint req) / portfolio value. Checked twice
 # against real screens and it doesn't reconcile (off by several points);
 # Robinhood's actual formula weights something this simple subtraction misses.
+# holdings.yaml — fully synced on July 16, 2026
 margin:
-  debt: 1628.64
-  buffer_pct: 61.77
-  synced_at: 2026-07-15
+  debt: 1385.64
+  buffer_pct: 59.69
+  synced_at: 2026-07-16
 holdings:
   {}
 shares:
@@ -27,14 +28,14 @@ shares:
   AMZN: 0.383715
   ASML: 0.114384
   AVGO: 0.375702
-  BABA: 0.395949
+  BABA: 0.405358
   BRK.B: 0.220004
   CAT: 0.112512
   CEG: 0.425616
   COST: 0.106818
   CRM: 0.468416
   CRWD: 0.239072
-  CVX: 0.693765
+  CVX: 0.24395
   DELL: 0.10099
   DHR: 0.482798
   EQIX: 0.096773
@@ -53,7 +54,7 @@ shares:
   KLAC: 0.304258
   LLY: 0.175524
   LRCX: 0.220697
-  MA: 0.243763
+  MA: 0.243947
   META: 0.292435
   MLM: 0.219284
   MRK: 0.828679
@@ -63,7 +64,7 @@ shares:
   NFLX: 1.049643
   NOW: 0.393749
   NVDA: 0.917642
-  ORCL: 0.541227
+  ORCL: 0.546724
   PANW: 0.137346
   PLTR: 0.800379
   PWR: 0.133949
@@ -86,5 +87,6 @@ shares:
   WMT: 0.864518
   XOM: 0.553764
 crypto_shares:
-  ETH: 0.209385
+  ETH: 0.209552
   SOL: 4.30301
+  BTC: 0.00
