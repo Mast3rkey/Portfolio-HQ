@@ -3,12 +3,9 @@
 # -traded position or coin — live-valued every run via Alpaca (qty x
 # latest price). Update with 'allocate.py update-shares' / 'update-crypto-shares'
 # after a real buy/sell/trim changes a count.
-# 'holdings' (ticker: dollar value) is the manual fallback for anything NOT
-# share-tracked. Currently empty — SKHY got live Alpaca price coverage
-# 2026-07-14 (3 daily bars and counting since its 2026-07-10 listing) and
-# moved to 'shares' below. RSI/trend gates still can't fire for it yet
-# (need 15/200 bars respectively) — that's just insufficient history now,
-# not a data-feed gap.
+# 'holdings' (ticker: dollar value) is the manual fallback for anything
+# NOT share-tracked: just SKHY now (permanent zero-coverage gap on the
+# free IEX feed — RSI/trend gates can never fire for it).
 # Update it with 'allocate.py update-holdings'.
 # margin: synced via 'allocate.py update-margin <debt> <buffer_pct>' — buffer_pct comes from Robinhood directly (per-security maintenance
 # ratios aren't available via Alpaca), so it's only as fresh as the last sync. Verify on Robinhood before any large margin-funded buy.
@@ -17,23 +14,24 @@
 # against real screens and it doesn't reconcile (off by several points);
 # Robinhood's actual formula weights something this simple subtraction misses.
 margin:
-  debt: 2679.4
-  buffer_pct: 61.08
-  synced_at: 2026-07-14
-holdings: {}
+  debt: 1628.64
+  buffer_pct: 61.77
+  synced_at: 2026-07-15
+holdings:
+  {}
 shares:
-  AAPL: 0.13757
+  AAPL: 0.310602
   ABBV: 0.173176
   AMAT: 0.207485
   AMD: 0.183645
-  AMZN: 1.087085
+  AMZN: 0.383715
   ASML: 0.114384
   AVGO: 0.375702
-  BABA: 0.925219
+  BABA: 0.395949
   BRK.B: 0.220004
   CAT: 0.112512
   CEG: 0.425616
-  COST: 0.195858
+  COST: 0.106818
   CRM: 0.468416
   CRWD: 0.239072
   CVX: 0.693765
@@ -41,22 +39,22 @@ shares:
   DHR: 0.482798
   EQIX: 0.096773
   ETN: 0.262049
-  GEV: 0.304629
+  GEV: 0.196239
   GILD: 0.891678
   GLD: 0.61757
   GNRC: 0.320007
-  GOOGL: 0.9411
+  GOOGL: 0.539559
   HOOD: 0.381506
   IBM: 0.365786
   INTC: 1.324933
-  ISRG: 0.378446
+  ISRG: 0.250756
   JNJ: 0.16497
   JPM: 0.129451
   KLAC: 0.304258
-  LLY: 0.283244
+  LLY: 0.175524
   LRCX: 0.220697
   MA: 0.243763
-  META: 0.499205
+  META: 0.292435
   MLM: 0.219284
   MRK: 0.828679
   MRVL: 0.136292
@@ -82,10 +80,10 @@ shares:
   TSM: 0.456002
   UBER: 1.40443
   UNH: 0.100012
-  V: 0.95074
+  V: 0.55877
   VRT: 0.332404
   WDC: 0.15222
-  WMT: 1.469458
+  WMT: 0.864518
   XOM: 0.553764
 crypto_shares:
   ETH: 0.209385
