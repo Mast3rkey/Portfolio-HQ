@@ -479,3 +479,290 @@ decisions:
                        # vocabularies. Implementation requires its own
                        # separate PR and its own separate pre-merge
                        # review before merge.
+
+  - decision_id: PI-0006
+    date: 2026-07-17
+    category: architecture_governance
+    decision: >
+      Theme Intelligence adopted as a frozen data-model specification.
+      This decision freezes doctrine only -- it authorizes no
+      implementation. No theme file, no company file, no validator
+      change, no schema change to any existing file occurs as part of
+      adopting PI-0006. Any future implementation, including the
+      smallest possible pilot, requires its own separate authorization,
+      the same relationship PI-0001's freeze had to PI-0002's and
+      PI-0003's later implementation decisions.
+
+      FROZEN DATA MODEL: a theme is identified by one stable theme_id.
+      Each theme gets exactly two files, mirroring the company pattern:
+      intelligence/themes/<THEME_ID>.yaml (structured claims) and
+      intelligence/themes/<THEME_ID>.md (narrative -- evidence, risks,
+      catalysts affecting the theme as a shared environment, not any
+      single company). A company may reference zero or more themes via
+      a company-schema field, themes: a list of bare theme_id strings.
+
+      Authority runs one way only: company -> theme. A theme file never
+      stores, lists, or implies its member companies -- no sibling
+      index, no reverse-reference file, no company-count field. Any
+      nested or graph-like presentation of theme/company relationships
+      is a future generated reporting view computed by reading company
+      files at report time -- never a stored data structure, under this
+      or any future decision unless that future decision explicitly
+      says so.
+
+      Themes carry no conviction rating and no numeric score of any
+      kind. A theme YAML has: theme_id, a narrative-anchored description
+      (string), evidence (list of strings), risks (list of strings --
+      theme-level, distinct in kind from a company's own risks[]),
+      catalysts (list of strings), lifecycle (exactly one of Emerging,
+      Established, Mature, Declining, Archived -- a new closed
+      vocabulary, same case-sensitive, no-synonym discipline PI-0004
+      established for conviction), and a review block structurally
+      identical to the company schema's (cadence_days, last_reviewed,
+      next_due, log).
+
+      Lifecycle describes the maturity of the shared narrative itself,
+      not a market-timing judgment, and is never read by anything that
+      gates a trade. An Archived theme is not deleted and remains a
+      valid reference target for any company that once pointed at it.
+
+      ROADMAP POSITION: Theme Intelligence precedes Portfolio
+      Intelligence aggregation in the implementation sequence.
+      Portfolio Intelligence aggregation remains fully deferred -- this
+      decision does not authorize, design, or schedule it.
+
+      This decision does not reopen, revise, or advance any question
+      already closed elsewhere in this log: risks[].severity/status
+      remain exactly as unfrozen as PI-0004 left them; the T1/T2
+      concentration ceiling is untouched; and the declined AI-infra
+      cluster-cap decision stands exactly as declined.
+    rationale: >
+      Follows from PI-0005, precisely stated: PI-0005 authorized a
+      second Company Intelligence record (XOM) to test whether the
+      per-company workflow generalizes beyond COST. As of this
+      decision, that implementation has not been merged to main --
+      intelligence/companies/ contains only COST.yaml and COST.md. This
+      freeze is therefore grounded on what is actually merged: one
+      full company record validating cleanly against
+      intelligence_validator.py, the existing isolation tests passing,
+      and PI-0004's conviction vocabulary now enforced in code rather
+      than doctrine alone. It is not grounded on a claim that the
+      workflow has been proven across two companies -- that claim is
+      not yet supported by repository state and is not made here.
+
+      This freeze rejects two candidate designs on direct architectural
+      grounds: theme-level conviction (a company has conviction; a
+      theme has evidence -- different concepts, and conflating them
+      would reopen PI-0004's already-closed conviction scoping
+      question) and a stored sibling/company index (the graph is a
+      reporting view, not a stored model -- the same discipline PI-0001
+      already applied to Portfolio Intelligence's own filesystem-as-
+      index freeze, now extended to Theme Intelligence for the same
+      reasons: single source of truth, clean git merges, no generated
+      artifact to keep in sync).
+
+      Lifecycle was added as the one schema field beyond the minimal
+      three-concept scope (theme identity, shared reasoning, company
+      references) because it is a genuinely new concept (thesis
+      maturity, distinct from review cadence), a small closed
+      enumeration consistent with PI-0004's existing vocabulary
+      discipline, and it has one concrete behavioral consequence --
+      historical memory without deletion or rewriting.
+
+      This entry separates freeze from authorization, mirroring PI-0001's
+      separation from PI-0002 and PI-0003. See PI-0007, which separately
+      authorizes the one pilot slice conforming to this freeze.
+    supporting_artifact: null  # doctrine-driven governance decision; the
+                                # underlying design reasoning was
+                                # conversational analysis during this
+                                # session's drafting process, not a
+                                # committed repository document -- same
+                                # disclosure convention PI-0004/PI-0005
+                                # used.
+    status: active  # data model and roadmap position are frozen. This
+                     # decision does not itself authorize or permit any
+                     # implementation -- PI-0007 is the separate decision
+                     # that authorizes the one pilot slice conforming to
+                     # this freeze.
+
+  - decision_id: PI-0007
+    date: 2026-07-17
+    category: architecture_governance
+    decision: >
+      Theme Intelligence -- Bounded Pilot Authorization. Authorizes
+      exactly one theme, "AI Infrastructure" (theme_id:
+      ai_infrastructure), and exactly two company records referencing
+      it -- NVDA and GEV -- conforming to the data model PI-0006 froze.
+      This decision does not itself create any file. It authorizes
+      future implementation only, requiring its own separate branch/PR
+      and its own separate pre-merge review before merge.
+
+      Authorized file set for the future implementation PR -- exactly
+      eight files, in two categories, and no others:
+
+      Six authorized intelligence content files (the honest minimum
+      given PI-0006's flat model requires real references to test
+      itself):
+      - intelligence/themes/ai_infrastructure.yaml
+      - intelligence/themes/ai_infrastructure.md
+      - intelligence/companies/NVDA.yaml
+      - intelligence/companies/NVDA.md
+      - intelligence/companies/GEV.yaml
+      - intelligence/companies/GEV.md
+
+      Two authorized implementation/test files, limited strictly to the
+      minimum change described under Required Tests below:
+      - intelligence_validator.py
+      - test_intelligence_validator.py
+
+      The future implementation PR may modify exactly those eight files
+      and no others. No change to docs/PORTFOLIO_INTELLIGENCE_SPEC.md
+      is authorized under this decision, including no new section --
+      any future spec change requires its own separate governance
+      decision. Also prohibited: any change to
+      COST.yaml/COST.md/XOM.yaml/XOM.md (regardless of whether XOM
+      exists on main at implementation time), any allocate.py/
+      targets.yaml/holdings.yaml/margin_state.py change, any third
+      theme, any third company, any index.yaml, any report or
+      dashboard, any theme-level conviction or score field, any
+      allocator integration of any kind.
+
+      Required human approvals before that implementation PR is opened:
+      for the theme -- narrative description, evidence, risks,
+      catalysts, initial lifecycle value (human-selected and approved
+      from PI-0006's closed vocabulary -- Emerging, Established,
+      Mature, Declining, or Archived; no default assumed by this
+      decision), review cadence; for NVDA and GEV each --
+      portfolio_role_ref (both are already T1 in targets.yaml;
+      descriptive only, per PI-0003's unchanged doctrine),
+      conviction.rating using exactly one of PI-0004's four frozen
+      values, conviction rationale, review cadence, final thesis
+      wording, final risks and catalysts, source-access disclosure, and
+      the themes: [ai_infrastructure] reference itself. conviction must
+      not be computed, scored, or inferred automatically for either
+      company.
+
+      Prohibited work, explicit: any schema change beyond the themes:
+      list field on the company side and the PI-0006-frozen theme
+      schema; any new controlled vocabulary beyond PI-0006's lifecycle;
+      a stored sibling index, sub-theme hierarchy, or reverse-lookup
+      file in any form; date-arithmetic validation; automatic thesis or
+      evidence generation; automatic financial or conviction scoring;
+      valuation analysis; allocation or sizing recommendations; margin
+      analysis; allocator integration of any kind; any change to
+      allocate.py, targets.yaml, holdings.yaml, margin_state.py, or
+      levels.py; any change to COST.yaml/COST.md/XOM.yaml/XOM.md; any
+      change to docs/PORTFOLIO_INTELLIGENCE_SPEC.md; creation of any
+      third theme or any company beyond NVDA/GEV under this decision.
+
+      Required tests before the implementation PR is opened: (1)
+      structural validation of PI-0006's frozen theme schema (theme_id
+      present, evidence/risks/catalysts as string lists, lifecycle
+      exactly one of the five frozen values, using the same
+      case-sensitive closed-vocabulary enforcement pattern used for
+      conviction.rating under PI-0004, review block matching the
+      existing company review shape); (2) company-side themes: field
+      validated as a list of bare strings, never a mapping, weight, or
+      percentage (same _looks_like_weight_or_percentage guard already
+      protecting portfolio_role_ref); (3) each referenced theme_id must
+      resolve to an existing file under intelligence/themes/ -- a live
+      filesystem check at validation time, not a stored index; (4) a
+      theme with zero current company references validates
+      successfully; (5) a theme with lifecycle: Archived remains a
+      valid reference target; (6) isolation regression --
+      intelligence_validator.py must still have zero import
+      relationship with allocate.py/margin_state.py in either
+      direction, and the existing three isolation tests must continue
+      passing unmodified; (7) COST.yaml must remain valid and
+      unmodified, with no themes: field added. If XOM.yaml exists on
+      main at the time this implementation begins, it must also remain
+      valid and unmodified, with no themes: field added -- this
+      requirement holds regardless of which PR merges first, and does
+      not depend on XOM having been merged as of this authorization
+      (it has not).
+
+      Stop conditions -- the implementation agent must stop before
+      opening a PR and report the issue rather than improvise doctrine
+      if: any required human approval above is missing; source evidence
+      for NVDA's or GEV's thesis is too weak; PI-0006's frozen schema
+      cannot represent the theme cleanly without a field not listed
+      there; a validator or schema change beyond what's specified
+      appears necessary; or scope would exceed the eight authorized
+      files.
+
+      Expansion boundary: PI-0007 authorizes exactly one theme and two
+      companies. It does not authorize a second theme, a third company,
+      or Portfolio Intelligence aggregation. A successfully implemented
+      pilot does not automatically authorize further expansion.
+    rationale: >
+      Follows from PI-0006: a pilot cannot be authorized against a data
+      model that isn't frozen yet, the same dependency PI-0002 and
+      PI-0003 each had on PI-0001's freeze.
+
+      Choosing NVDA and GEV: both are already T1 holdings in
+      targets.yaml (no new tier placement question; verified directly
+      against targets.yaml's T1 tickers list). CLAUDE.md's "T1 AI-infra
+      cluster cap: scanned and declined" entry directly supports five
+      specific facts about this pair: both are named in the same 7-name
+      AI-infrastructure subset (ASML/TSM/NVDA/MSFT/GOOGL/META/GEV) that
+      entry scanned; that subset was "31.2%" of book at scan time; the
+      pairwise correlation result was "avg 0.302 (all 7), 0.373
+      excluding MSFT"; the resulting cap was "declined... no cap
+      added"; and the concentration was, in that entry's own words,
+      "previously only ever cited as a reason to decline new adds...
+      never addressed directly." That entry does not itself discuss
+      narrative or reasoning records -- it is about a correlation-cap
+      mechanism and a separately flagged missing T1/T2 trim rule. The
+      further observation that no record exists anywhere in this
+      repository documenting the shared reasoning behind holding this
+      concentration is an inference drawn from the simple absence of
+      any Theme Intelligence record today, not a claim CLAUDE.md itself
+      makes -- stated here as inference, not attributed to that entry.
+
+      The pairing also crosses two of targets.yaml's own correlation
+      clusters -- NVDA under caps.clusters.semis, GEV under
+      caps.clusters.power_infra, both confirmed directly against
+      targets.yaml -- deliberately, since testing whether cluster
+      membership (mechanical, allocator-visible) and theme membership
+      (narrative, advisory-only) coexist without collision requires a
+      pair not already confined to one cluster.
+
+      A caution carried into the future implementation PR, not resolved
+      here: because this pilot sits on top of a concentration
+      CLAUDE.md's Decisions Log already found real, both company
+      records and the theme record must state explicitly that they are
+      advisory reasoning records, not a justification for position size
+      or a reopening of the declined cluster-cap question.
+
+      The eight-file authorized scope (six content, two implementation)
+      is deliberately larger than any single Company Intelligence
+      decision to date (PI-0003 and PI-0005 each authorized one
+      company, two files, regardless of implementation status) --
+      disclosed honestly rather than understated. The measure that
+      matters is concepts introduced, not files touched: PI-0006 fixed
+      three new concepts; expressing them for one theme plus two
+      companies requires eight files, not a fourth concept.
+
+      This decision does not reopen any question already closed:
+      risks[].severity/status remain exactly as unfrozen as PI-0004
+      left them; the T1/T2 concentration ceiling is untouched; and the
+      declined AI-infra cluster-cap decision stands exactly as
+      declined.
+    supporting_artifact: null  # doctrine-driven governance decision;
+                                # supporting reasoning for the theme and
+                                # company selection was conversational
+                                # analysis during this session's
+                                # drafting process, cross-checked against
+                                # CLAUDE.md's Decisions Log and
+                                # targets.yaml as cited above -- not
+                                # itself a separate committed document.
+    status: accepted  # authorizes future implementation of exactly
+                       # eight files (six intelligence content, two
+                       # implementation/test) conforming to PI-0006's
+                       # frozen model -- does NOT create those files,
+                       # does NOT authorize a second theme, third
+                       # company, spec change, or Portfolio Intelligence
+                       # aggregation, does NOT touch allocate.py/
+                       # targets.yaml/holdings.yaml/margin_state.py/
+                       # COST/XOM. Implementation requires its own
+                       # separate PR and separate pre-merge review.
