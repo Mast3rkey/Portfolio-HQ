@@ -135,29 +135,45 @@ _Written 2026-07-17, resolving `docs/PHASE4A_CONCENTRATION_MARGIN_RESEARCH_PLAN.
 
 ## 6. Success/failure criteria
 
-**Restate:** What evidence would demonstrate the research question's answer, in either direction — explicitly not "which strategy wins," since this research produces no strategy to select from.
+**Restate:** What evidence would demonstrate the research question's answer — explicitly not "which strategy wins," since this research produces no strategy to select from.
 
-**Why it matters:** Without a pre-committed definition of what counts as a positive finding, a negative finding, or an inconclusive one, Phase 4A's eventual results could be read into after the fact — exactly the failure mode every pre-committed-threshold backtest in this repo (`trim_backtest.md` through `t1t2_trim_backtest.md`) exists to prevent. This section fixes the criteria *before* any execution, matching that standing discipline.
+**Why it matters:** Without a pre-committed definition of what counts as each outcome, Phase 4A's eventual results could be read into after the fact — exactly the failure mode every pre-committed-threshold backtest in this repo (`trim_backtest.md` through `t1t2_trim_backtest.md`) exists to prevent. This section fixes the criteria *before* any execution, matching that standing discipline.
 
-### What evidence would demonstrate concentration materially changes margin risk
+**Revision (2026-07-17, per explicit approval feedback):** the original draft of this section used a "positive finding / inconclusive" framing, which risked treating "concentration doesn't materially matter" as a non-result rather than a real, useful finding in its own right. Replaced with a three-way outcome framework:
 
-All of the following would need to hold, not just one — a single suggestive number is not sufficient, matching the "necessary but not sufficient" standard `docs/PHASE4_READINESS_REVIEW.md` §1 already applied to Model B/C:
+- **Evidence supports** — concentration materially changes margin risk (criteria below).
+- **Evidence does not support** — concentration does not materially change margin risk under these conditions; this is treated as a genuine, useful, symmetric finding, not a failure to find something. Demonstrating portfolio-level metrics are sufficient is exactly as valuable as demonstrating they aren't — both save future work from being built on an unverified assumption in either direction.
+- **Evidence inconclusive** — neither of the above can be said with confidence, for reasons specific to this window/construction, not a default fallback used to avoid committing to a direction.
 
-1. **A measurable gap between portfolio-level and single-name-level risk metrics** in Scenario D specifically — e.g., portfolio-level `max_drawdown_pct` looking materially better (smaller in magnitude) than `worst_case_concentration_impact()`'s single-name decomposition for the same run, the same pattern `t1t2_trim_backtest.md`'s NVDA case already demonstrated once.
-2. **The gap widens, not just exists, between Scenario A/B (concentration alone, no stress) and Scenario D (concentration + margin + stress)** — demonstrating margin specifically amplifies the risk concentration alone doesn't fully reveal, not just that concentration itself is risky (a materially different, narrower claim than the research question).
-3. **Forced-deleveraging events or leverage-threshold breaches occur in Scenario D that do not occur in an equivalent unlevered-but-concentrated scenario** — isolating margin's specific contribution to the finding, not concentration's alone.
+Every criterion below is evaluated against the materiality thresholds fixed in `docs/PHASE4A_MATERIALITY_THRESHOLDS.md` (added per the same approval feedback, resolved before this document is considered final) — a "gap," an "event," or a "difference" below those thresholds does not count toward any outcome, by construction, not by post-hoc judgment call.
+
+### Evidence supports (concentration materially changes margin risk)
+
+All of the following would need to hold, not just one — a single suggestive number is not sufficient, matching the "necessary but not sufficient" standard `docs/PHASE4_READINESS_REVIEW.md` §1 already applied to Model B/C. Each condition's own materiality bar is defined in `docs/PHASE4A_MATERIALITY_THRESHOLDS.md`, not restated here:
+
+1. **A material gap between portfolio-level and single-name-level risk metrics** in Scenario D specifically — e.g., portfolio-level `max_drawdown_pct` looking materially better (smaller in magnitude) than `worst_case_concentration_impact()`'s single-name decomposition for the same run, the same pattern `t1t2_trim_backtest.md`'s NVDA case already demonstrated once.
+2. **The gap widens, materially, between Scenario A/B (concentration alone, no stress) and Scenario D (concentration + margin + stress)** — demonstrating margin specifically amplifies the risk concentration alone doesn't fully reveal, not just that concentration itself is risky (a materially different, narrower claim than the research question).
+3. **A material number of forced-deleveraging events or leverage-threshold breaches occur in Scenario D that do not occur in an equivalent unlevered-but-concentrated scenario** — isolating margin's specific contribution to the finding, not concentration's alone. What counts as "material" here (one event vs. repeated events) is fixed in `docs/PHASE4A_MATERIALITY_THRESHOLDS.md`, not decided ad hoc.
 4. **The result is not an artifact of a single synthetic construction choice** — i.e., the finding appears under both the synthetic-inflation and un-trimmed-drift constructions (§1), not only one of them, and (where a hypothetical-severity stress arm was run per §2a) is not solely a product of an aggressively-tuned hypothetical shock.
 
-### What evidence would be inconclusive
+### Evidence does not support (concentration does not materially change margin risk)
 
-- A gap exists between portfolio-level and single-name metrics **but does not widen** between the concentration-only scenarios and the margin-plus-stress scenario — suggests concentration itself is the driver, margin's specific contribution is unproven.
-- The finding **appears under only one** of the two concentration-construction methods (synthetic-only or drift-only) — suggests the result may be a construction artifact rather than a general finding, same caution the research plan's §5/§6 already built in by requiring both methods be run and compared.
-- **No forced-deleveraging or threshold-breach events occur at all** in any Scenario D arm — the same "the trigger never fired" outcome Phase 3G's Model C sweep already produced at higher drawdown thresholds; a real, honest, reportable finding (this window/construction doesn't stress the account enough to show the effect), not evidence the effect doesn't exist, exactly as `docs/PHASE3_FINDINGS.md` §6 and `docs/PHASE4_READINESS_REVIEW.md` §2 already treated Model C's non-firing result.
-- **The single historical stress episode available (NVDA-anchored) is the only source of a positive finding**, with no corroboration from the hypothetical-severity arm or the correlated-cluster case — a real finding, but a thin one, requiring the same "one window, one episode" caveat every prior backtest in this repo has carried.
+Treated with equal rigor to the "supports" outcome, not as a default:
 
-Explicitly, per the task's own framing: **there is no "winning scenario" outcome.** Neither "concentration matters" nor "concentration doesn't materially matter, portfolio-level metrics are sufficient" is a preferred result — both are valid, reportable findings under this framework, and neither would trigger an automatic doctrine change (per the standing rule: any finding, in either direction, requires its own separate, explicit approval step before affecting `targets.yaml`, `allocate.py`, or `CLAUDE.md`'s Decisions Log).
+1. **No condition in the "Evidence supports" list above clears its materiality threshold**, across both construction methods, in Scenario D specifically (the scenario actually combining concentration, margin, and stress — the direct test of the research question).
+2. **Any gap that does exist between portfolio-level and single-name metrics is within the noise floor** defined in `docs/PHASE4A_MATERIALITY_THRESHOLDS.md` — present as a number, but not distinguishable from the variation this harness already produces from immaterial parameter changes (per that document's empirical derivation from Phase 3's own sensitivity data).
+3. **This result holds under both construction methods** (§1) — a "does not support" finding that only appears under one construction method is Inconclusive (below), not "does not support."
 
-**Approval required:** **Yes.** These criteria govern how Phase 4A's eventual results will be read — they must be fixed now, before execution, exactly as this section states, not adjusted after seeing results.
+### Evidence inconclusive
+
+- A gap exists between portfolio-level and single-name metrics, clears the materiality threshold, **but does not widen** between the concentration-only scenarios and the margin-plus-stress scenario — suggests concentration itself is a driver, but margin's specific contribution is unproven either way.
+- **The finding (in either direction) appears under only one** of the two concentration-construction methods (synthetic-only or drift-only) — suggests the result may be a construction artifact rather than a general finding, same caution the research plan's §5/§6 already built in by requiring both methods be run and compared.
+- **No forced-deleveraging or threshold-breach events occur at all** in any Scenario D arm, AND no other criterion clears its materiality threshold either — the same "the trigger never fired" outcome Phase 3G's Model C sweep already produced at higher drawdown thresholds. Note this is genuinely Inconclusive, not automatically "does not support" — a construction/window that never stresses the account hard enough to test the mechanism cannot speak to whether the mechanism matters when it IS stressed; see `docs/PHASE4A_MATERIALITY_THRESHOLDS.md` for exactly how this distinction is drawn.
+- **The single historical stress episode available (NVDA-anchored) is the only source of a material finding**, with no corroboration from the hypothetical-severity arm or the correlated-cluster case — a real finding, but a thin one, requiring the same "one window, one episode" caveat every prior backtest in this repo has carried.
+
+Explicitly, per the task's own framing: **there is no "winning scenario" outcome.** All three outcomes above are equally valid, reportable findings under this framework, and none triggers an automatic doctrine change (per the standing rule: any finding, in any direction, requires its own separate, explicit approval step before affecting `targets.yaml`, `allocate.py`, or `CLAUDE.md`'s Decisions Log).
+
+**Approval required:** **Yes.** These criteria govern how Phase 4A's eventual results will be read — they must be fixed now, before execution, exactly as this section states, not adjusted after seeing results. **This section's materiality-dependent language is not itself final until `docs/PHASE4A_MATERIALITY_THRESHOLDS.md` (a required companion document per approval feedback) is also approved** — see that document.
 
 ---
 
@@ -171,7 +187,8 @@ Explicitly, per the task's own framing: **there is no "winning scenario" outcome
 | 3a/3b | Metric reuse/new methodology inventory | No (factual inventory + structural recommendation) | N/A |
 | 4a/4b | Leverage fixed across A/B/C; no leverage optimization | No (restates existing plan) | N/A |
 | 5 | Scenario D leverage: 1.8x only, no range | Yes (resolved to 1.8x by default in this document) | 1.8x only |
-| 6 | Success/inconclusive criteria | Yes | Not run until approved |
+| 6 | Three-way outcome criteria (Evidence supports / does not support / inconclusive) | Yes | Not run until approved |
+| 7 | Materiality thresholds (`docs/PHASE4A_MATERIALITY_THRESHOLDS.md`) | Yes — required companion document, added per approval feedback | Not run until approved |
 
 ## What this document deliberately does not do
 
