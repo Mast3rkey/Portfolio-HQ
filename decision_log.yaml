@@ -330,3 +330,152 @@ decisions:
                        # explicitly open pending more evidence; a second
                        # company or any validator/schema change still
                        # requires its own separate future authorization.
+
+  - decision_id: PI-0005
+    date: 2026-07-17
+    category: architecture_governance
+    decision: >
+      Second-Company Authorization -- XOM. Authorizes exactly the future
+      creation of two files: intelligence/companies/XOM.yaml and
+      intelligence/companies/XOM.md. This decision does not itself
+      create those files -- no implementation occurs as part of
+      adopting PI-0005.
+
+      Authorized scope for the future implementation PR: XOM.yaml and
+      XOM.md only, using the existing intelligence_validator.py and
+      existing tests as-is (no changes to either), plus the ordinary
+      branch/commit/push/PR actions that bounded implementation
+      requires. Nothing beyond those two files may be created or
+      modified by that future PR.
+
+      Required human approvals before that implementation PR is
+      opened: portfolio_role_ref, conviction.rating, conviction
+      rationale, review cadence, final thesis wording, final risks and
+      catalysts, and source-access disclosure. Proposed
+      portfolio_role_ref is "band" -- descriptive only, per PI-0003's
+      unchanged doctrine, not derived from or synchronized with
+      targets.yaml at read time. conviction.rating must use exactly one
+      of the four values PI-0004 froze -- Low, Medium, High, Very High
+      -- with no synonym, hybrid, or numeric substitute; conviction
+      must not be computed, scored, or inferred automatically, same
+      human-authorship boundary PI-0002 and PI-0003 already established.
+
+      risks[].severity and risks[].status remain unfrozen exactly as
+      PI-0004 left them -- this decision does not freeze, enumerate,
+      standardize, or otherwise resolve either vocabulary. The XOM
+      record must use clear, human-reviewed free-text language
+      consistent with COST's existing style; no validator enforcement
+      of either field is authorized.
+
+      Prohibited work, explicit: any change to
+      docs/PORTFOLIO_INTELLIGENCE_SPEC.md, intelligence_validator.py,
+      or test_intelligence_validator.py; any schema change; any new
+      controlled vocabulary; date-arithmetic validation; YAML/Markdown
+      pairing enforcement changes; ticker-collision handling; sector or
+      industry taxonomy work; reports, dashboards, rollups, or an
+      index.yaml; automatic thesis generation; automatic financial
+      scoring; valuation analysis; allocation or sizing
+      recommendations; margin analysis; allocator integration; any
+      change to allocate.py, targets.yaml, holdings.yaml, or margin
+      code; any change to COST.yaml/COST.md; and creation of any third
+      company.
+
+      Research and evidence requirements for the future draft: clearly
+      distinguish reported facts, analytical interpretation, and
+      approved human judgment (same three-way split COST's record
+      established); prefer primary sources where reasonably
+      accessible; disclose transparently wherever a primary endpoint
+      was inaccessible, indirect corroboration was used instead, or a
+      statement is inference rather than reported fact. Prohibited in
+      that draft: unsupported numeric precision, commodity-price
+      forecasts presented as fact, and any language implying expected
+      market returns.
+
+      Verification the future implementation must demonstrate before
+      any PR is opened: intelligence_validator.py's validate_directory
+      returns valid=True, company_count=2, errors=[]; full test suite
+      passes; exactly two new company files changed, no implementation
+      or governance file changed; working tree clean; no draft or
+      pending-approval markers remain in either file; and it must go
+      through its own separate final pre-merge review with no
+      auto-merge, same discipline as PR #71's and PR #72's review
+      cycles.
+
+      Stop conditions -- the implementation agent must stop before
+      opening a PR and report the issue rather than improvise doctrine
+      if: any required human approval above is missing; the existing
+      schema cannot represent XOM cleanly; a validator or schema change
+      appears necessary; source evidence is too weak to support a
+      responsible record; a deferred governance question must be
+      resolved first; or scope would exceed the two authorized files.
+
+      Expansion boundary: PI-0005 authorizes XOM only. It does not
+      authorize a third company. A successfully implemented XOM record
+      does not automatically authorize further expansion -- any
+      additional company requires its own separate future governance
+      decision, same pattern PI-0003/PI-0004 already established for
+      COST.
+    rationale: >
+      A same-session, read-only candidate review screened the 61
+      eligible current holdings (all tickers in targets.yaml's five
+      tiers, minus COST, ETFs, and crypto) against eight
+      architecture-suitability criteria and recommended XOM as the
+      strongest second-company candidate -- selected for architecture
+      and workflow suitability, not investment attractiveness. This
+      decision deliberately does not restate that review's numeric
+      screening score as a company attribute; it is referenced only as
+      the completed review that grounds this authorization, the same
+      way PI-0003 referenced its own readiness review without folding
+      the review's internal scoring into doctrine.
+
+      XOM adds controlled novelty beyond COST along several dimensions
+      without requiring any schema, validator, or vocabulary change:
+      a different descriptive portfolio_role_ref (band, vs. COST's T2
+      -- the corpus's first non-T2 value); commodity and cyclical risk
+      framing, distinct from COST's structural/operational retail risk
+      profile; an integrated multi-segment business (upstream,
+      downstream, chemicals) that remains reviewable without forcing
+      excessive complexity into the schema, unlike bank-financial-
+      statement or holding-company candidates the same review screened
+      out; a different catalyst shape (capex cycles, dividend/buyback
+      policy, vs. COST's expansion-guidance catalyst); and the same
+      advisory-only, human-reviewed workflow COST already proved out --
+      this authorization tests whether that workflow generalizes to a
+      second, meaningfully different company, not whether a new
+      workflow is needed.
+
+      This selection is explicitly NOT a buy recommendation, a
+      valuation conclusion, an allocation decision, a margin decision,
+      a change to targets.yaml or holdings.yaml, or a conviction
+      determination -- none of those exist yet for XOM; they are
+      exactly the judgment-bearing items this decision requires human
+      approval on before any implementation PR opens, per PI-0002's and
+      PI-0003's already-established human-authorship boundary.
+
+      risks[].severity/risks[].status stay exactly where PI-0004 left
+      them -- deliberately unfrozen, one company's worth of evidence
+      being insufficient to justify closing either vocabulary. A
+      second record does not change that evidentiary math by itself;
+      PI-0004's own stated revisit trigger (3-5 records) is unmet at
+      two, so this decision does not reopen or advance that question.
+
+      This decision is intentionally narrow, matching the same
+      discipline PI-0004 applied to its own scope: it authorizes future
+      implementation of exactly two files, requires its own separate
+      pre-merge review before any merge, and does not itself perform,
+      begin, or imply authorization for any research, drafting, schema
+      work, or third company.
+    supporting_artifact: null  # doctrine-driven governance decision; the
+                                # supporting candidate review was
+                                # conversational session analysis, not a
+                                # committed repository document -- same
+                                # disclosure convention PI-0004 used.
+    status: accepted  # authorizes exactly XOM.yaml + XOM.md, future
+                       # implementation only -- does NOT create those
+                       # files, does NOT authorize a third company, does
+                       # NOT touch the validator/schema/allocator/
+                       # targets/holdings/margin/COST files, and does
+                       # NOT resolve or freeze the deferred risk
+                       # vocabularies. Implementation requires its own
+                       # separate PR and its own separate pre-merge
+                       # review before merge.
