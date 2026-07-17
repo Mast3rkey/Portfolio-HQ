@@ -252,3 +252,81 @@ decisions:
                        # index.yaml, templates under
                        # intelligence/companies/, or any change to
                        # holdings.yaml/targets.yaml.
+
+  - decision_id: PI-0004
+    date: 2026-07-17
+    category: architecture_governance
+    decision: >
+      Closes the PI-0003 pilot-review gate and conditionally authorizes
+      Portfolio Intelligence expansion beyond the COST pilot. Four
+      decisions: (1) defines "pilot reviewed" as requiring all of --
+      implementation merged to main, validator passing, full test
+      suite passing, an architectural retrospective completed, and any
+      governance ambiguities the retrospective identifies explicitly
+      resolved by governance -- a reusable completion criterion for
+      future pilots, not a one-off interpretation; (2) confirms all
+      five conditions are now met for the COST pilot as of this
+      decision's adoption (the fifth condition -- ambiguity resolution
+      -- is satisfied by this decision itself, items 2-4 below); (3)
+      freezes conviction.rating to a closed four-point vocabulary --
+      Low, Medium, High, Very High -- no other value, synonym, numeric
+      scale, or hyphenated hybrid permitted; changing this vocabulary
+      requires its own future governance decision. COST's existing
+      "High" rating already conforms, no migration needed; (4)
+      explicitly defers freezing risk.severity and risk.status --
+      one company record is insufficient evidence to justify a closed
+      vocabulary for either field; revisit once 3-5 company records
+      exist and real usage patterns are observable. This is a
+      deliberate non-decision, not an oversight. A future implementation
+      phase (a second company, or any code change enforcing the
+      conviction vocabulary in intelligence_validator.py) requires its
+      own separate authorization -- this decision closes the review
+      gate and sets doctrine, nothing more; it adds no company, changes
+      no schema, and modifies no validator code.
+    rationale: >
+      PI-0003 authorized exactly one pilot company but left "reviewed"
+      undefined as a completion criterion -- a same-session
+      architecture retrospective (conversational analysis, not a
+      committed repository document; supporting_artifact below is null
+      for that reason) found the architecture held up cleanly under
+      real implementation with no doctrine violation, but surfaced two
+      categories of finding: implementation improvements (date-format
+      validation, next_due arithmetic, YAML/Markdown pairing enforced
+      in the validator itself, duplicate-ticker detection -- correctly
+      out of scope for this decision, deferred as ordinary maintenance
+      against the already-authorized validator) and governance
+      ambiguity (the undefined "reviewed" completion criterion, and
+      unconstrained vocabulary on conviction.rating specifically, which
+      the pilot's own drafting process hit directly -- multiple rounds
+      of correcting a proposed "Medium-High" value that fit neither of
+      the frozen spec's two illustrative example scales). Conviction is
+      elevated to a required-now decision because it is one of the few
+      explicitly human-judgment fields in the frozen schema (spec SS12)
+      and the ambiguity was demonstrated, not hypothetical, during
+      COST's own authoring. risk.severity/risk.status are deliberately
+      NOT elevated to the same level -- unlike conviction, no
+      conflicting usage has been observed, since only one record
+      exists; freezing a vocabulary against a single data point risks
+      standardizing the wrong thing prematurely, the same overfitting
+      concern already raised and rejected once this session regarding
+      per-ticker tailored backtest parameters (see trim_backtest.md
+      precedent in CLAUDE.md's Decisions Log). This decision is
+      intentionally narrow -- governance only, no schema change, no
+      validator change, no second company -- to preserve the
+      established Governance -> Implementation -> Validation ->
+      Retrospective -> Governance cadence rather than letting pilot
+      closure and the next expansion phase blur together.
+    supporting_artifact: null  # doctrine-driven governance decision; the
+                                # supporting retrospective was
+                                # conversational session analysis, not a
+                                # committed repository document -- stated
+                                # explicitly rather than fabricating a
+                                # docs/ path that does not exist.
+    status: accepted  # closes the PI-0003 review gate; conviction.rating
+                       # vocabulary is now closed doctrine (validator
+                       # enforcement NOT added by this decision -- honor
+                       # system until/unless a future decision authorizes
+                       # a validator change); risk vocabularies remain
+                       # explicitly open pending more evidence; a second
+                       # company or any validator/schema change still
+                       # requires its own separate future authorization.
