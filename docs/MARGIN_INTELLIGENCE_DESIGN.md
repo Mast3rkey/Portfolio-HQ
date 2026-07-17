@@ -1,228 +1,255 @@
 # Margin Intelligence Engine — Design Document
 
-_2026-07-17 · Planning/design pass only. No code changed. Written after inspecting `CLAUDE.md` (doctrine + Decisions Log), `allocate.py`'s `margin_capacity()`, `targets.yaml`'s `margin:` block, `holdings.yaml`'s live margin state, the six `backtest_*.py` scripts, and `test_margin.py` (12 tests, all passing)._
+_2026-07-17 · Revision 2 — reframed explicitly as risk governance, not timing, per direct instruction. Planning/design pass only, no code changed. Inspection basis (unchanged from Rev 1): `CLAUDE.md` doctrine + Decisions Log, `allocate.py`'s `margin_capacity()`, `targets.yaml`'s `margin:` block, `holdings.yaml`'s live margin state, all six `backtest_*.py` scripts, `test_margin.py` (12 tests, all passing)._
+
+**Governing constraint, stated once and held throughout this document:** margin intelligence is a **risk governance system**. It answers "how much risk is this account currently carrying, and what does that require" — never "does now look like a good time to borrow more." Every component below is checked against that line before it's included.
 
 ---
 
-## 0. What already exists (inspection summary)
+## 1. Architecture proposal
 
-**`margin_capacity()`** (`allocate.py:144-157`) is the entire current margin engine — 14 lines:
-```python
-def margin_capacity(gross, margin_debt, cash, leverage_cap, buffer_pct, buffer_floor_pct, margin_requested):
-    net_equity = gross - margin_debt
-    if buffer_pct is not None and buffer_pct < buffer_floor_pct:
-        return net_equity, 0.0, True, "buffer < floor — forced de-lever"
-    max_by_leverage = max(0.0, leverage_cap * (net_equity + cash) - gross - cash)
-    allowed = min(margin_requested, max_by_leverage)
-    ...
+Four components, each a pure function or a thin composition of pure functions, mirroring how `margin_capacity()` itself is built — no hidden state, no I/O inside the math, same testability bar as everything else in this system.
+
 ```
-Two rules, both hard cutoffs, no taper, no discretion: (1) buffer below floor → zero margin allowed, full stop; (2) otherwise, clip the requested margin to whatever keeps gross/net-equity at or under `leverage_cap`. That's the entire "intelligence" today — a static ceiling and a static floor.
-
-**`targets.yaml`'s `margin:` block:**
-```yaml
-margin:
-  leverage_cap: 1.8
-  buffer_floor_pct: 30.0
+                     ┌─────────────────────────┐
+holdings.yaml ──────▶│  RiskInputs (assembly)   │◀────── targets.yaml (caps, thresholds)
+(debt, buffer_pct)   │  gross, net_equity,      │
+                     │  cluster values, T1/T2   │
+                     │  current/target ratios   │
+                     └───────────┬─────────────┘
+                                 │
+                 ┌───────────────┼───────────────┐
+                 ▼                               ▼
+   ┌─────────────────────────┐    ┌──────────────────────────┐
+   │ ConcentrationRisk (§5)   │    │  margin_capacity()        │
+   │  -> single risk score,   │    │  (EXISTING, unchanged)     │
+   │  portfolio-level only    │    │  -> net_equity, allowed,   │
+   └───────────┬─────────────┘    │     forced, block_reason   │
+               │                   └─────────────┬─────────────┘
+               └───────────────┬─────────────────┘
+                                ▼
+                  ┌──────────────────────────┐
+                  │  MarginStateClassifier     │
+                  │  -> Normal / Elevated /    │
+                  │     Forced Deleveraging    │
+                  └───────────┬───────────────┘
+                                ▼
+                  ┌──────────────────────────┐
+                  │  RepaymentCalculator        │
+                  │  (only invoked when state   │
+                  │   is Elevated or Forced)    │
+                  │  -> recommended paydown $,   │
+                  │     or trim-proceeds split   │
+                  └───────────┬───────────────┘
+                                ▼
+                      render() displays state +
+                      recommendation (informational
+                      unless Forced, which already
+                      blocks margin buys today)
 ```
-Two numbers. No repayment logic, no state machine, no history-aware behavior.
 
-**`holdings.yaml`'s live margin state** (current, synced 2026-07-15): `debt: 1628.64`, `buffer_pct: 61.77`, `synced_at: 2026-07-15`. Current leverage ≈1.27x against the 1.8x cap — well inside every existing threshold.
+**Design principle behind this shape:** `margin_capacity()` is not modified — it already correctly answers "how much margin is allowed right now" and every existing test depends on its exact current signature and behavior. The new components sit *around* it, consuming its outputs (`net_equity`, `forced_delever`) and `holdings.yaml`/`targets.yaml` inputs it doesn't currently need, and producing a state label + an optional dollar recommendation that `render()` displays. This keeps the blast radius of Phase 2 confined to new, additive code plus one new field on the existing return contract, rather than touching the load-bearing function itself.
 
-**`test_margin.py`**: 12 tests. 7 cover `margin_capacity()` directly (leverage clipping, buffer-floor hard cutoff at/below the exact boundary, unsynced-buffer behavior, cash growing headroom, already-over-cap). 5 cover cluster-cap and the T1/T2 ceiling's mechanical trim inside `plan()`. Zero tests exist for repayment — there is no repayment logic to test.
-
-**The backtest framework** (`backtest_regime.py`, `backtest_trend.py`, `backtest_trims.py`, `backtest_weights.py`, `backtest_rungs.py`, `backtest_t1t2_trim.py`) has a consistent, load-bearing discipline this design must inherit exactly:
-- A **pre-committed decision rule**, fixed and stated in the file *before* any result is computed (usually "adopt only if it beats current by >1.0pp annualized TWR").
-- A **MaxDD tolerance** alongside the TWR threshold where the question has a leverage/concentration dimension (`t1t2_trim_backtest.md` set this precedent: "a TWR win bought with a materially deeper drawdown doesn't count").
-- **One test, one verdict, no variant mining.** Closed questions carry "no re-runs without a new regime in the data."
-- Verdicts are **never auto-applied** — a human reads the report, hand-edits `targets.yaml`, writes a Decisions Log entry.
-
-**The Decisions Log entry that governs everything below** (2026-07-13, "Margin doctrine revised"):
-> "Formally allowed going forward within a fixed 1.8x structural leverage cap and 30% buffer floor... **Explicitly rejected: any margin-timing model** ('borrow more when conditions look good') — same category as the band-overlay backtest and the multi-timeframe/Fable-5 research proposals... **Leverage amplifies whatever edge already exists (or doesn't); it is not itself a source of edge, and is not backtestable as one.**"
-
-This is the single most important fact this design has to work within. Section 2 below addresses it directly and repeatedly, because several items in the requested task brief conflict with it.
+**Why ConcentrationRisk is a separate component from MarginStateClassifier:** concentration (cluster caps, T1/T2 ceiling proximity) is portfolio composition risk; leverage/buffer is capital structure risk. They're related — a concentrated book under leverage is the exact tail scenario `t1t2_trim_backtest.md`'s NVDA decomposition surfaced — but they're measured from different inputs and should stay independently testable. The classifier combines them; it doesn't compute them.
 
 ---
 
-## 1. Margin utilization framework
+## 2. Data requirements
 
-### When should margin be allowed?
-Unchanged from current doctrine, because current doctrine is already correct on this question: margin is allowed as **fuel within a fixed structural ceiling**, whenever a deposit/opportunity cycle calls for more buying power than cash alone provides, *and* the projected post-trade leverage stays at or under `leverage_cap`, *and* the projected post-trade buffer stays at or above `buffer_floor_pct`. No new "should we allow it" logic is needed here — `margin_capacity()`'s existing two checks already answer this correctly and are staying as-is.
+| Data | Source | Already available? | Notes |
+|---|---|---|---|
+| Margin debt | `holdings.yaml` → `margin.debt` | Yes | Synced manually via `update-margin`, never derived. |
+| Buffer % | `holdings.yaml` → `margin.buffer_pct` | Yes | Robinhood-displayed only, per standing doctrine. |
+| Margin sync date | `holdings.yaml` → `margin.synced_at` | Yes | Already used for the existing staleness warning (`STALE_MARGIN_DAYS`). |
+| Gross holdings value | Computed live every run (`resolve_holdings()`) | Yes | No new fetch needed. |
+| Net equity | `gross − debt` | Yes | Already computed in `margin_capacity()`. |
+| Leverage cap, buffer floor | `targets.yaml` → `margin:` | Yes | Existing config. |
+| Cluster values + caps | Computed live in `plan()` (`cluster_value`, `caps.clusters`) | Yes | Already used for cluster-cap trims. |
+| T1/T2 current/target ratios | Computed live in `plan()` (the ceiling check) | Yes | Already used for the T1/T2 ceiling trim. |
+| **New:** state thresholds (Normal/Elevated boundary) | `targets.yaml` → new `margin:` sub-keys | **No — needs to be added** | See Formulas §3; must be explicit config, not a hardcoded constant, matching how `leverage_cap`/`buffer_floor_pct` are already externalized. |
+| **New:** repayment target buffer (how far above the floor a recommended paydown should restore to) | `targets.yaml` → new `margin:` sub-key | **No — needs to be added** | Prevents a paydown recommendation that lands exactly at the floor and immediately re-triggers on the next price wiggle. |
+| **New:** repayment-redirect fraction (Section 4's proportional trim-proceeds rule) | `targets.yaml` → new `margin:` sub-key | **No — needs a backtest verdict before any default is chosen** | Do not default this to a guessed number; Phase 3 below exists specifically to produce evidence for it. |
+| **New:** historical daily account-value series for backtesting | `data/backtest/*.json` (existing cache) + a to-be-built margin/debt simulation layer | **Partially** — price data exists; there is no historical margin-debt or buffer series anywhere, live or cached | This is the biggest data gap. Backtesting margin behavior requires *simulating* debt/leverage/buffer through the historical window — the account's real margin history before 2026-07-13 isn't reconstructable (`CLAUDE.md`: the debt was "discovered," not tracked from origin). All margin backtests will simulate a hypothetical account running the rule being tested from day one of the window, the same way every existing backtest simulates a hypothetical portfolio — not attempt to replay this specific account's real history. |
 
-### When should margin be reduced?
-This is a genuinely new question the current system doesn't answer — today, margin is reduced only when the buffer floor is *already* breached (reactive, forced). The Margin Intelligence Engine's real job is answering this *before* it's forced:
-- **Mechanically, on a schedule tied to leverage relative to the cap**, not on a market view. E.g., "if leverage exceeds some fraction of the cap for N consecutive syncs, recommend a paydown" — a structural rule, same shape as the buffer floor, not a timing call.
-- **Never** in response to "the market looks risky" or "I have a bad feeling" — that's a discretionary/emotional judgment the doctrine (and the task's own "no emotional deployment" instruction) explicitly excludes.
-
-### When should margin be paid down?
-Two legitimate, non-timing triggers:
-1. **Forced** — buffer below floor. Already exists (`forced_delever` in `margin_capacity()`); Section 4 proposes making the recommendation concrete (a specific dollar amount) rather than just a red flag.
-2. **Opportunistic-in-the-mechanical-sense** — when trim proceeds exist anyway (band/spec RSI trims, cluster-cap trims, T1/T2 ceiling trims), a *mechanical* rule can route a portion of those proceeds to debt paydown before redeployment, if leverage is elevated. This is not "pay down margin because the market looks bad" — it's "when cash exists from an already-triggered, already-doctrine-approved trim, and leverage is running hot, prefer debt reduction over redeployment for that dollar." The trigger is trims that already happen for other reasons, not a new market read.
-
-### What signals matter?
-Only structural/mechanical account-state signals:
-- **Leverage ratio** (gross/net-equity) vs. the fixed cap.
-- **Buffer %** (Robinhood-displayed, never derived) vs. the fixed floor.
-- **Concentration** (cluster caps, T1/T2 ceiling) — already-existing risk signals that interact with leverage (a concentrated position under leverage is exactly the capital-impairment risk `t1t2_trim_backtest.md` surfaced).
-- **Available cash** — mechanical inputs to the deployment math, not a market judgment.
-- **Margin debt trend over time** (is leverage drifting up across syncs) — descriptive, feeds the "when to reduce" schedule above.
-
-### What signals are forbidden?
-Explicitly, per the standing Decisions Log rejection and the task's own doctrine constraints:
-- **Volatility regime** as a "good time to lever up" or "bad time to lever up" signal. (Volatility as an input to a *risk* calculation — e.g., translating a drawdown into an equity-impact estimate the way `t1t2_trim_backtest.md` did for NVDA — is fine; volatility as a *timing trigger for changing leverage* is not.)
-- **Market drawdown** as a "buy the dip with borrowed money" trigger. This is literally averaging down, explicitly forbidden by the task brief and structurally identical to the rejected margin-timing model.
-- **Valuation opportunities** ("this looks cheap, lever up") — pure predictive/thesis judgment, already excluded system-wide by the Guardrails' "no predictive research, price targets, or opportunity maps."
-- **Unrealized gains/losses on existing positions** as a lever-up trigger. Doctrine is explicit on the adjacent case (buffer): "never read a high/rising buffer as a signal to add more leverage: buffer rises mechanically when positions gain value, which is exactly when pro-cyclically levering up... is most dangerous." The same logic applies directly to using unrealized gains themselves as a signal.
-- **Regime status** (QQQ vs. 200-EMA) as a margin-draw gate. The existing regime gate was already tested and removed *for cash deployment* on cost grounds; using it to gate margin specifically would be building the same rejected timing mechanism back in through a side door, without even the "it was tested" cover the cash version had — the margin-timing rejection was explicit and never backtested precisely *because* the doctrine holds it isn't a backtestable question (leverage isn't a source of edge to time).
+No new external data source is required — no new API, no new vendor. The one real gap is a simulated-margin-state layer inside the backtest framework, which is new code, not new data.
 
 ---
 
-## 2. Margin states — redesigned to be risk-only, not opportunity-seeking
+## 3. Formulas
 
-The task brief's example states were **Normal / Opportunistic / Defensive / Forced deleveraging**. I'm not implementing this as given — "Opportunistic" as a state name implies a state where the system recommends *increasing* leverage because conditions look favorable, which is precisely the margin-timing model the Decisions Log rejects by name. Renaming or redefining it away from opportunity-seeking is not a cosmetic change; the whole point of a state machine here is that state transitions must only ever point in the risk-reducing direction in response to risk signals, never in the opportunity-seeking direction in response to opportunity signals.
+All formulas here are either (a) already implemented and unchanged, cited for completeness, or (b) new and marked as such.
 
-**Proposed replacement — three states, ceiling-and-floor shaped like everything else in this doctrine:**
+**Leverage ratio** (existing, `margin_capacity()`):
+```
+leverage = gross / net_equity          where net_equity = gross − margin_debt
+```
 
-| State | Objective criteria | System behavior |
-|---|---|---|
-| **Normal** | Leverage ≤ some inner threshold of the cap (e.g. 80% of `leverage_cap`, i.e. ≤1.44x at the current 1.8x cap) AND buffer comfortably above floor (e.g. ≥1.5× `buffer_floor_pct`, i.e. ≥45%) | No change from current behavior. Margin available up to the cap, buys/trims proceed as normal. |
-| **Elevated** | Leverage between the inner threshold and the cap, OR buffer between the floor and the comfort margin above | **Informational only** — shown in every `--review`/`--cash` run, same as the existing margin table, with an explicit note that leverage/buffer is trending toward its limit. No behavior change, no forced action. This is the "watch, don't act" state — consistent with "margin is not a timing tool." |
-| **Forced deleveraging** | Buffer < floor (existing `forced_delever` condition, unchanged) | Existing behavior (block all margin-funded buys) **plus** a concrete repayment recommendation (Section 3) instead of just a block message. |
+**Margin utilization** (new — how much of the *allowed* margin is actually drawn, distinct from leverage itself):
+```
+utilization = margin_debt / max_allowed_debt
+where max_allowed_debt = leverage_cap × net_equity − (gross − margin_debt)
+                        = leverage_cap × net_equity − net_equity
+                        = net_equity × (leverage_cap − 1)
+```
+i.e., `utilization = margin_debt / (net_equity × (leverage_cap − 1))`. This is the cleanest single number for "how much of the structural ceiling is in use" — 0% means no margin drawn, 100% means exactly at the cap, >100% means over the cap (should not occur given `margin_capacity()`'s existing clipping, but is a valid computed value for display/diagnostics).
 
-Three states, not four — I deliberately dropped "Defensive" as a fourth distinct state because on inspection it would either (a) duplicate "Elevated" (both are "getting close to a limit, do nothing but watch") or (b) smuggle in exactly the discretionary judgment call ("conditions look risky, reduce proactively before you're forced to") the doctrine excludes. If you want a genuine fourth state, it needs an *objective, mechanical* trigger distinct from leverage/buffer proximity — I don't have one to propose without inventing a new signal, and per the forbidden-signals list above, most of the obvious candidates (volatility, drawdown) are exactly what's excluded.
+**Concentration risk score** — `ConcentrationRisk`, new, addresses Goal 5 (Section 5 below has the full design; formula here for completeness):
+```
+proximity(cluster) = cluster_value / cluster_cap_dollars           (dimensionless, ~0 to 1+)
+proximity(T1/T2 name) = (current / target) / t1t2_trim_mult        (dimensionless, ~0 to 1+)
 
----
+concentration_score = max( all proximity(cluster), all proximity(T1/T2 name) )
+```
+A single number: how close is the *tightest currently active constraint* to breaching. 1.0 means some cap is exactly at its limit; below 1.0 means every cap has room; the formula deliberately takes the **max**, not an average, because portfolio risk is dominated by its worst concentration, not its typical one — consistent with how `t1t2_trim_backtest.md` singled out NVDA specifically rather than reporting an average T1/T2 overweight.
 
-## 3. Margin deployment rules — evaluated against the requested signal list
+**Margin state classification** — new:
+```
+inner_threshold = leverage_cap × base_fraction × (1 − k × concentration_score)
+                   floored at leverage_cap × min_fraction
 
-Going through every signal the task brief asked me to consider:
+where base_fraction (e.g. 0.80) and min_fraction (e.g. 0.50) and k (e.g. 0.25)
+are explicit targets.yaml constants, not hardcoded
 
-| Signal | Verdict | Reasoning |
-|---|---|---|
-| Leverage ratio | **Use** | Already the core mechanism; unchanged. |
-| Robinhood buffer % | **Use** | Already the core mechanism; unchanged, never derived. |
-| Volatility regime | **Do not use as a deployment trigger.** May use as a *risk-sizing input* (e.g., translating a drawdown into a levered-equity-impact estimate, informational only) — never as a "lever up/down because volatility is low/high" rule. | Forbidden-signal list, Section 1. |
-| Market drawdown | **Do not use as a deployment trigger.** | Averaging-down territory; forbidden-signal list. |
-| Portfolio concentration | **Use — but only in the risk-reducing direction.** Already partially wired (cluster caps, T1/T2 ceiling); the new piece is letting elevated concentration nudge the *repayment* schedule (Section 4), never the deployment ceiling upward. | Consistent with existing cap mechanics. |
-| Available cash | **Use** | Already a mechanical input (`deployable = cash + margin_allowed`); unchanged. |
-| Valuation opportunities | **Do not use.** | Forbidden-signal list; also excluded system-wide by the Guardrails. |
-| Existing unrealized gains/losses | **Do not use as a lever-up trigger.** May inform which specific positions a mechanical trim touches (already true — trims are per-ticker, not portfolio-wide) — never as a portfolio-level "we're up, lever up" signal. | Forbidden-signal list; direct extension of the existing buffer-rising warning. |
+state =
+  Forced Deleveraging   if buffer_pct < buffer_floor_pct               (existing rule, unchanged)
+  Elevated              if leverage > inner_threshold
+                         OR buffer_pct < buffer_floor_pct × comfort_multiplier   (e.g. 1.5×)
+  Normal                otherwise
+```
+The `(1 − k × concentration_score)` term is the whole mechanism for Goal 5: a concentrated book tightens the Normal→Elevated boundary — the *same* leverage ratio is treated as riskier when the portfolio is concentrated than when it's diversified — without ever computing or displaying a per-ticker leverage number. Concentration modulates the *threshold*, not the *leverage calculation itself*, which stays a pure account-level ratio.
 
-**Net effect:** the deployment *ceiling* logic doesn't change at all from what `margin_capacity()` already does. What's new is entirely on the reduction/repayment side (Section 4) and the informational state display (Section 2). This is a deliberate, doctrine-driven scope narrowing from what the task brief's signal list implied — flagged explicitly here rather than silently narrowed.
+**Repayment amount** — new (only computed when state ≠ Normal):
+```
+target_buffer_pct = buffer_floor_pct × repayment_target_multiplier   (e.g. 1.5x → 45% if floor is 30%)
 
----
+recommended_paydown = margin_debt − debt_at_target_buffer
 
-## 4. Margin repayment framework
+# Robinhood's buffer formula isn't independently derivable (documented, standing
+# constraint in write_state()'s comment) — so this cannot be solved in closed
+# form from buffer_pct alone. Two honest options, not one guessed formula:
+#   (a) leverage-based proxy: solve for the debt level that would bring
+#       leverage down to inner_threshold instead of solving for buffer directly,
+#       and clearly label the output as a leverage-based estimate, not a
+#       buffer-based guarantee.
+#   (b) display a recommended payment RANGE bounded by the leverage-based
+#       estimate on one side, and flag "verify resulting buffer on Robinhood
+#       after any paydown" the same way every margin-buy warning already
+#       does for buffer accuracy.
+# Recommend (b) — it's honest about the real constraint instead of presenting
+# a precise-looking number built on an admittedly unreconciled formula.
+```
 
-This is the genuinely new, doctrine-compatible core of the engine — nothing here conflicts with existing rules, because no repayment logic exists today to conflict with.
+**Repayment-redirect (trim proceeds → debt)** — new, parameterized, value TBD by backtest:
+```
+if state == Elevated:
+    to_debt = trim_proceeds × redirect_fraction     (redirect_fraction from targets.yaml,
+                                                       chosen by Phase 3's backtest, not guessed)
+    to_redeploy = trim_proceeds × (1 − redirect_fraction)
+elif state == Forced:
+    to_debt = trim_proceeds                          (100% — consistent with the existing
+                                                       "no margin-funded buying, full stop"
+                                                       treatment of Forced Deleveraging)
+    to_redeploy = 0
+else:  # Normal
+    to_debt = 0
+    to_redeploy = trim_proceeds                       (current behavior, unchanged)
+```
 
-**When should profits repay debt?**
-Never based on "profits" as a standalone concept (that would be a market-timing/emotional judgment — "we're up, let's delever"). Instead: **when a mechanical trim that was already going to happen for an unrelated reason (RSI overweight, cluster cap, T1/T2 ceiling) generates cash, and leverage is in the Elevated state (Section 2), route a portion of that specific trim's proceeds to debt paydown before the normal gap-fill redeployment.** The trigger is "a trim happened" (already doctrine-approved), not "the market is favorable."
+**New backtest metrics** (all new, none exist in the repo today — confirmed via grep):
+```
+daily_return[i] = value[i] / value[i-1] - 1                  (excluding deposit-flow days,
+                                                                same convention as twr_annualized)
+volatility_annualized = stdev(daily_return) × sqrt(252)
 
-**Should trims automatically prioritize debt reduction?**
-Proposed rule: **yes, but only proportionally, and only above the Normal/Elevated boundary.** E.g., if leverage is in the Elevated band, some fraction of trim proceeds (a config value, not derived from a market view) goes to debt paydown before the remainder competes in the normal gap-fill allocation. At leverage in the Normal band, 0% is redirected — full proceeds redeploy as today. This needs backtesting (Section 5, arm 5) before a specific fraction is chosen; do not pick a number without evidence, same standard as every other parameter in this system.
+sharpe = (annualized_TWR - risk_free_rate) / volatility_annualized
+         risk_free_rate = 0.0, explicitly, disclosed in every report header
+         (see Rev 1 §9 — a real T-bill rate is its own undisclosed assumption
+         if picked silently; 0% is the honest default until decided otherwise)
 
-**Should cash flows restore margin capacity?**
-Yes, mechanically: a cash deposit already does this today as a side effect (`margin_capacity()`'s `max_by_leverage` grows with `net_equity + cash`) — no new logic needed, just worth stating explicitly as intentional in the doctrine write-up so a future session doesn't "discover" it as an inconsistency the way the T1/T2 ceiling's floor-vs-ceiling gap was discovered.
+time_underwater = count(value[i] < running_max(value[0..i])) / len(value)
 
-**How to avoid permanently carrying expensive leverage?**
-The real structural fix here isn't a new signal — it's making the "Forced deleveraging" state's response *specific* instead of just a block. Today, `render()` shows "⚠️ FORCED DE-LEVER" with a reason string but no dollar amount. Proposed: compute and display an explicit **recommended paydown amount** — the dollar figure that would restore buffer to some target above the floor (not just barely at it, to avoid immediately re-triggering on the next price wiggle). This is arithmetic on numbers the system already has (gross, debt, buffer), not a new judgment call.
-
----
-
-## 5. Backtesting requirements — redesigned against doctrine, arm by arm
-
-The task brief requested five backtest arms. Going through each against the margin-timing rejection:
-
-**1. Fixed leverage vs. adaptive leverage — buildable, but "adaptive" must mean mechanical, not discretionary.**
-"Adaptive" cannot mean "leverage that changes based on a market read" (rejected). It *can* mean "leverage that changes based on the account's own mechanical state" — e.g., does tapering the effective leverage target as concentration risk rises (informed by the Elevated state in Section 2) perform differently than a flat 1.8x cap regardless of concentration. This is testable without violating doctrine because the input is the account's own risk state, not a market view.
-- **Arms:** A (current, flat 1.8x cap) vs. B (cap tapers linearly from 1.8x to some floor as the largest cluster's %-of-book rises toward its cap).
-- **Metric bar:** TWR + MaxDD, same 1.0pp/1.0pp precedent as `t1t2_trim_backtest.md`.
-
-**2. No margin vs. controlled margin — buildable, directly answers "does margin help at all."**
-- **Arms:** A (no margin ever, cash-only) vs. B (current production: 1.8x cap, 30% floor).
-- This is the most fundamental question and hasn't actually been tested — the 2026-07-13 doctrine revision *allowed* margin based on it already existing (post-hoc legitimization, per this session's own external-review discussion), not based on a backtest showing margin helps. Worth running for real evidence, whichever way it comes out.
-- **Metric bar:** TWR + MaxDD + worst-case single-position levered-drawdown decomposition (the `t1t2_trim_backtest.md` NVDA-style analysis) — a margin backtest without a tail-risk view is exactly the mistake the trim backtest's leverage override was designed to catch.
-
-**3. Margin only during drawdowns — NOT buildable as specified. Direct conflict.**
-This is, by definition, "borrow more when conditions look good [i.e., after a drop, expecting reversion]" — the exact model the Decisions Log names and rejects, and it is functionally indistinguishable from averaging down with borrowed money, which the task's own doctrine constraints separately forbid. **I'm not designing this arm.** If there's a legitimate risk-management question hiding inside this idea (e.g., "does letting margin capacity mechanically restore as prices fall, rather than staying flat, change outcomes" — a structural question, not a timing one), that would need to be posed as its own, differently-shaped question, and should come back as an explicit conversation the way the "investment thesis management" item did in the Phase 1 audit — not built because it appeared on this list.
-
-**4. Margin deployment based on regime — NOT buildable as specified. Direct conflict.**
-Same rejection as #3, and additionally: the *cash* version of this exact idea (deploy or hold based on QQQ's 200-EMA) was already tested (`regime_backtest.md`) and dropped for costing 2.56pp/yr. Re-running the identical mechanism on the margin axis wouldn't be new evidence — the doctrine's position on margin timing is that it isn't a backtestable question in the first place (leverage doesn't have its own edge to time), so there's no version of this arm that both (a) tests what's being asked and (b) doesn't just rebuild the rejected mechanism. **Not designing this arm.**
-
-**5. Margin repayment strategies — buildable, and the most valuable arm on the list.**
-This is the one item in the original five that's unambiguously in-scope and unambiguously new (Section 4 has no backtested basis for its proposed proportional-redirect rule yet).
-- **Arms:** A (current: 100% of trim proceeds redeploy, no debt priority) vs. B (proportional redirect to debt paydown when leverage is Elevated, per Section 4 — test 2-3 fractions, e.g. 25%/50%/75%, as a pre-committed parameter sweep, same style as `trim_backtest.md`'s band-cap/RSI sweep) vs. C (100% of trim proceeds to debt paydown whenever Elevated, the aggressive end).
-- **Metric bar:** TWR + MaxDD + a new metric — **time spent in the Elevated/Forced states** (does a repayment rule actually reduce time-at-risk, not just move dollars around) + **interest cost avoided** (debt × ~5% APR × time, a real, quantifiable savings this system hasn't measured before).
-
-**Metrics, across all buildable arms** (per the task brief's request, mapped to what's genuinely computable from this system's data):
-- **CAGR / annualized TWR** — existing `twr_annualized()`, reused unchanged.
-- **Max drawdown** — existing `max_drawdown()`, reused unchanged.
-- **Volatility** — **new**: standard deviation of daily returns, annualized (√252 scaling). Nothing in the repo computes this today (confirmed via grep — no existing Sharpe/volatility helper anywhere in the codebase); this would be a genuinely new, small, pure function alongside `twr_annualized`/`max_drawdown` in `backtest_regime.py`, with its own unit test before use (per the task's "all new financial logic requires tests before integration" instruction).
-- **Sharpe ratio** — **new**, built directly on the new volatility function: `(annualized_return − risk_free_rate) / annualized_volatility`. Needs a risk-free-rate constant decided explicitly (not defaulted silently) — propose using 0% for simplicity and disclosing that choice in the report header, the same way every other backtest states its held-constant parameters up front, rather than picking a real T-bill rate that itself becomes an unexamined assumption.
-- **Worst-case loss** — the single-name/single-position levered-drawdown decomposition already built for `t1t2_trim_backtest.md` (NVDA's 2.14x/-66.4% analysis), generalized into a reusable function rather than one-off script code.
-- **Time underwater** — **new**: count of days the account's value sits below its prior peak, as a fraction of total days. Straightforward given the existing daily-value series every backtest already produces.
-- **Leverage exposure** — **new**: the leverage ratio's own time series (not just its max), so a report can show *how often* an arm ran hot vs. just *how hot it got once*.
-
----
-
-## 6. Integration plan
-
-**Files that will change:**
-- `allocate.py` — `margin_capacity()` extended to also return a margin *state* (Section 2) and, when Forced, a concrete repayment dollar amount (Section 4). `plan()`'s trim logic extended to optionally redirect a fraction of trim proceeds to debt paydown, gated by the new state (only if Section 5's backtest supports a specific fraction — do not hardcode one pre-emptively). `render()` extended to show the state and (if Forced) the repayment recommendation.
-- `targets.yaml` — new `margin:` sub-keys: state thresholds (the "80% of cap" / "1.5× floor" boundaries from Section 2 — these need their own explicit values, not left implicit in code) and, if Section 5's backtest adopts one, the repayment-redirect fraction.
-- `CLAUDE.md` — new Decisions Log entries for every backtest verdict (arms 1, 2, 5), and explicit doctrine lines for the state definitions and repayment rule, in the same style as the T1/T2 ceiling's entry (including, if applicable, the same "this is a doctrine decision, here's exactly what was and wasn't tested" precision that entry required after review).
-
-**New files needed:**
-- `backtest_margin_leverage.py` — arms 1 and 2 (adaptive-vs-fixed leverage, no-margin-vs-controlled). Two related questions, one file, matching how `backtest_regime.py` and `backtest_trend.py` are split by *question* not by mechanism.
-- `backtest_margin_repayment.py` — arm 5.
-- New shared metrics added to `backtest_regime.py` (volatility, Sharpe, time-underwater, leverage-exposure-series) so every backtest script — margin and non-margin alike — can adopt them the same way they already share `twr_annualized`/`max_drawdown`, rather than creating a second parallel metrics module.
-- `test_margin_intelligence.py` (or extend `test_margin.py` directly, given it already covers the exact function this extends) — unit tests for the new state-classification logic and the repayment-amount calculation, at the same rigor as the existing 7 `margin_capacity()` tests, before any of this touches `plan()`.
-
-**Test strategy:**
-1. Pure-function unit tests first (state classification given leverage/buffer inputs; repayment-amount arithmetic given gross/debt/buffer/target inputs) — deterministic, fast, no live data, same pattern as existing `test_margin.py`.
-2. New backtest metric functions (volatility, Sharpe, time-underwater) get their own unit tests against hand-computed small examples *before* being trusted in a real backtest run — this is exactly the class of thing `test_indicators.py`'s RSI-of-flat-series case exists to catch (an intuitive-but-wrong assumption baked into a formula).
-3. Backtests run and reviewed (human-in-the-loop, per the framework's standing practice) before any `targets.yaml`/`allocate.py` change is made.
-4. `plan()` changes (if any survive the backtests) get integration coverage the same way the T1/T2 ceiling did — a live `--review` run checked against hand-computed expected output before commit.
-
-**Migration steps:**
-1. Add new pure functions (state classifier, repayment calculator, new metrics) with tests. No behavior change yet — nothing calls them from `plan()`.
-2. Add the two new backtest scripts, run them, get verdicts, write Decisions Log entries.
-3. Only then wire adopted verdicts into `plan()`/`render()`/`targets.yaml`, one at a time, each its own commit (matching the Phase 1 cleanup's "small, logically grouped commits" pattern) — repayment logic and state display are independent enough to ship separately rather than as one large change.
-4. Update `README.md`'s margin section to describe the new states/repayment behavior once it's live — do not let this drift the way the old README did.
+leverage_exposure_series[i] = gross[i] / net_equity[i]   (full time series, not just its max —
+                                                            "how often did this arm run hot"
+                                                            is a different question from
+                                                            "how hot did it get once")
+```
 
 ---
 
-## 7. Conflicts with existing doctrine — consolidated
+## 4. Test plan
 
-Restating everything flagged inline above in one place, as requested:
+**Pure-function unit tests (write before any integration, same discipline as `test_margin.py`'s existing 7 for `margin_capacity()`):**
 
-1. **The task brief's "Opportunistic" margin state directly contradicts the 2026-07-13 Decisions Log entry rejecting any margin-timing model.** Not implementing it; replaced with a risk-only three-state model (Section 2).
-2. **"Volatility regime" and "market drawdown" as deployment signals are forbidden** — both are margin-timing-by-another-name and/or averaging down, which the task's own doctrine constraints separately prohibit. Redirected to risk-sizing-only use (Section 1, Section 3).
-3. **"Valuation opportunities" and "existing unrealized gains/losses" as deployment signals are forbidden** — the first is excluded system-wide by the Guardrails' no-predictive-research rule; the second is a direct extension of the existing "never read a rising buffer as a lever-up signal" doctrine line.
-4. **Backtest arm 3 ("margin only during drawdowns") is not being designed** — it's definitionally averaging down with borrowed money.
-5. **Backtest arm 4 ("margin deployment based on regime") is not being designed** — it would rebuild, on the margin axis, the exact mechanism the Decisions Log calls "not backtestable as one" for leverage generally, and whose cash-axis analog was already tested and rejected on cost grounds (`regime_backtest.md`).
-6. **No conflict, but a related discipline point**: the task brief asks for a "rigorous" engine — rigor here specifically means resisting the temptation to reintroduce timing logic under a different name (a "risk regime," a "smart deployment score," etc.). Every mechanical rule in this system that has survived scrutiny (leverage cap, buffer floor, cluster caps, T1/T2 ceiling) shares one property: it responds to the account's own state, never to a market read. This design holds that line throughout.
+| Function | Test cases required |
+|---|---|
+| `concentration_risk_score()` | All clusters/T1T2 names under cap → score < 1.0, matches the single tightest name. Exactly one cluster at cap → score == 1.0. Empty roster/no clusters → score == 0.0 (not an error, not None). |
+| `classify_margin_state()` | Buffer below floor → Forced, regardless of leverage. Leverage above inner threshold, buffer healthy → Elevated. Both healthy → Normal. Concentration score at max (1.0) tightens the boundary — a leverage level that would be Normal at concentration 0.0 becomes Elevated at concentration 1.0 (this is the one test that directly verifies Goal 5's mechanism works). Boundary values (exactly at `inner_threshold`, exactly at `buffer_floor_pct × comfort_multiplier`) — same "exactly at floor is not forced" precedent `test_margin.py` already set. |
+| `recommended_paydown()` | Forced state with a known debt/leverage produces the expected leverage-based estimate. Normal/Elevated states return `None`/no recommendation (only Forced computes a hard number, per the architecture). |
+| `repayment_split()` | Normal → 100% redeploy. Elevated → split matches `redirect_fraction` exactly, for at least two different fraction values (proves it's parameterized, not hardcoded). Forced → 100% to debt. |
+| New backtest metrics (`volatility`, `sharpe`, `time_underwater`) | Each against a **hand-computed small example** before trusting it in a real backtest — same standard `test_indicators.py`'s RSI-of-flat-series case was built to enforce. E.g., volatility of a constant-return series should be 0; Sharpe of a series with 0% return and 0% risk-free rate should be 0 (or explicitly undefined/None if volatility is 0 — decide and test the divide-by-zero case explicitly, don't let it silently produce `inf`/`NaN`). |
 
----
+**Backtests (formalized from Rev 1's evaluation, three arms confirmed in-scope):**
 
-## 8. Recommended implementation order
+1. **Sustainable leverage caps** — is the current fixed 1.8x cap actually sustainable, or does it produce dangerous single-position outcomes under historical stress. Arms: A (no margin, cash-only baseline) vs. B (current: fixed 1.8x cap, static) vs. C (mechanical concentration-adjusted cap — the `inner_threshold` formula above, applied as an actual leverage ceiling rather than just a state-classification boundary, i.e. testing whether the Goal-5 mechanism should also throttle *deployment*, not just *display*, an open design question this backtest can help answer). **Pre-committed rule:** adopt C over B only if it improves MaxDD by >1.0pp without costing more than 1.0pp of TWR (the `t1t2_trim_backtest.md` asymmetric-tolerance pattern, appropriate here since the whole point of C is trading a little return for materially less tail risk).
 
-1. **Repayment framework's pure functions + tests** (Section 4, Section 6 step 1) — no conflicts, most concretely useful, builds on `margin_capacity()`'s existing tested math.
-2. **New backtest metrics (volatility, Sharpe, time-underwater, leverage-exposure) + their own unit tests** — needed before arm 2 or arm 5 can be evaluated properly; useful to every future backtest, not just margin ones.
-3. **Backtest arm 2 (no margin vs. controlled margin)** — the most fundamental open question, currently answered only by "it already existed when discovered," not by evidence. Do this before arm 5, since arm 5's repayment rules only matter if arm 2 confirms margin is worth carrying at all.
-4. **Backtest arm 5 (repayment strategies)** — depends on arm 2's verdict and the new metrics from step 2.
-5. **State classification (Section 2) as a pure, informational function** — display-only integration into `render()`, no behavior change, low risk, can ship independent of the backtests above.
-6. **Backtest arm 1 (mechanical adaptive vs. fixed leverage)** — lowest priority of the buildable arms; the current fixed cap already has a doctrine rationale (same posture as crypto-sleeve conviction-sizing) that doesn't strictly require backtest validation the way a *new* mechanism would, but it's cheap to test given the framework already exists.
-7. **Wire adopted verdicts into `plan()`/`targets.yaml`**, one change at a time, only after every relevant backtest has a verdict and every relevant pure function has tests.
+2. **Forced deleveraging avoidance** — does *any* tested rule (A/B/C above, plus the repayment arms below) reduce the frequency or severity of hitting the Forced state, versus just hitting it and reacting. **Metric, new and central to this arm specifically:** count of Forced-state trigger events per arm, and the deployment-cash lost while Forced (days blocked × average deployable dollars) — this arm is explicitly about avoidance, so time-in-Forced-state is the primary metric, not TWR.
 
-## 9. What should NOT be built yet
+3. **Repayment policies** — Rev 1's arm 5, unchanged: A (no repayment redirect, current) vs. B/C/D (redirect fractions, e.g. 25%/50%/100%, only while Elevated). **Pre-committed rule:** same TWR/MaxDD tolerance pattern, plus the new time-underwater and leverage-exposure-series metrics, plus **interest cost avoided** (debt × ~5% APR × time carried) as a directly dollar-denominated secondary metric this system has never measured before.
 
-- **Arms 3 and 4 as originally specified** — not a sequencing question, a scope question. These would need to come back as their own explicit conversation with a reframed premise, the same way "investment thesis management" was flagged and deferred in the Phase 1 audit, not built because they were on a list.
-- **Any "Opportunistic" or lever-up-on-signal state** — same reasoning.
-- **Any automatic `plan()`/`targets.yaml` change before a backtest verdict exists for it.** The repayment-redirect *fraction* specifically must come from Section 5's backtest, not be picked and shipped first.
-- **A fourth margin state beyond the three proposed** — I don't have an objective, mechanical trigger to justify one; inventing a state without a clean criterion would just be a slower path to reintroducing discretion.
-- **A real risk-free rate for the Sharpe calculation** — using 0% and disclosing it is the right default for now; picking an actual rate is a small but real assumption that deserves its own explicit decision, not a default buried in code.
+4. **Margin drag vs. unlevered baseline** — the most fundamental question, restated from Rev 1's arm 2 with a sharper name: does carrying margin at all, under every governance rule this design proposes, beat a pure cash-only account on a risk-adjusted basis (Sharpe, not just raw TWR) — margin costs real interest (~5% APR) and adds tail risk; the question this arm answers is whether the current doctrine's premise ("margin as fuel within a fixed cap") is actually supported by evidence or just inherited from the debt already existing when discovered. **This should run first, before 1-3** — if margin doesn't clear a risk-adjusted bar at all, the other three arms are optimizing a mechanism that maybe shouldn't exist at its current size in the first place.
+
+**Explicitly not in the test plan** (per the reaffirmed constraint): no arm tests margin deployment as a function of regime, volatility, drawdown-as-entry-signal, or valuation. If a future arm's design would only make sense by reading current price direction as a buy/hold signal for *borrowed* capital specifically, it does not belong in this framework, full stop — this is the line the whole document is built to hold.
 
 ---
 
-Nothing in this document has been implemented. Awaiting approval before any code, test, or config change.
+## 5. Portfolio risk contribution without ticker-level leverage (Goal 5, full design)
+
+The naive framing — "how much leverage does each ticker have" — is wrong on its face: margin debt is a single account-wide liability against the whole portfolio's collateral value, not a loan against any specific position. Robinhood doesn't allocate the debt to AAPL vs. NVDA, and neither should this system. Assigning a per-ticker leverage figure would be inventing a number that doesn't correspond to anything real in the account.
+
+What's real and worth capturing instead: **some holdings, by virtue of their concentration, make the account's existing leverage more dangerous than others would at the same leverage ratio.** This is exactly the NVDA finding in `t1t2_trim_backtest.md` — the account-level leverage (1.44x) was unremarkable, but NVDA's own position size (2.14x its target) combined with its own historical worst-case drawdown (-66.4%) made *that specific concentration*, under the account's *actual* (unremarkable) leverage, into a forced-liquidation-territory risk. The insight isn't "NVDA has 1.44x leverage" (meaningless) — it's "the account's leverage, applied to a book this concentrated in one name, is riskier than the same leverage applied to a diversified book."
+
+**The design (formalized above in Section 3, restated here as the concept):**
+- `concentration_risk_score()` reads the *existing* cluster caps and T1/T2 ceiling infrastructure — it introduces no new position-level risk math, only aggregates outputs that `plan()` already computes for an unrelated purpose (deciding whether to trim).
+- The score is portfolio-level: one number, "how close is the tightest constraint," never a per-ticker output.
+- That single number feeds the margin state classifier's *threshold*, not the leverage calculation. Leverage stays `gross / net_equity`, computed exactly as today, for the whole account. Concentration only ever makes the state boundary *tighter* (never looser — there is no direction in which high concentration should widen how much leverage is treated as "fine"), which keeps this squarely a risk-reduction mechanism, not a new lever-up justification.
+- This is fully backward-compatible with every existing cap: it doesn't change what a cluster cap or the T1/T2 ceiling *does* (they still trim exactly as they do today, independent of margin state) — it only changes what the *margin state display* says given that those caps are currently near their limits.
+
+---
+
+## 6. Implementation phases
+
+Numbered and gated — each phase produces a concrete artifact (tests passing, or a backtest verdict) before the next phase starts, matching the Phase 1 cleanup's "small, logically grouped, verified before proceeding" discipline.
+
+**Phase 2a — Pure functions + unit tests, zero integration.**
+`concentration_risk_score()`, `classify_margin_state()`, `recommended_paydown()`, `repayment_split()`, plus the new backtest metrics (`volatility`, `sharpe`, `time_underwater`, leverage-exposure series). All in isolation, all tested per Section 4's table, none called from `plan()`/`render()`/any backtest yet. Deliverable: a new test file (or extension of `test_margin.py`) with every case in Section 4's table passing.
+
+**Phase 2b — Backtest simulation layer.**
+The one real new-code item Section 2 flagged: a way to simulate a hypothetical margin-debt/leverage/buffer trajectory through the historical bar-cache window, since no real historical margin series exists to replay. Deliverable: a shared simulation function (candidate home: alongside the other shared helpers in `backtest_regime.py`) that the four backtest arms in Section 4 can all build on, with its own test verifying it produces sane leverage/debt values given a known synthetic price path before it's trusted for the real arms.
+
+**Phase 2c — Run the four backtests, in the order Section 4 specifies (margin-drag-vs-baseline first).**
+Each gets its own script (`backtest_margin_drag.py`, `backtest_margin_sustainability.py`, `backtest_margin_forced_deleverage.py`, `backtest_margin_repayment.py` — one file per question, matching the existing convention), its own pre-committed threshold stated before results, its own report in `reports/`. Deliverable: four verdicts, each written up in `CLAUDE.md`'s Decisions Log the way every prior backtest has been — including an honest "no change" outcome if that's what the evidence shows, exactly as `weight_backtest.md` and `t1t2_trim_backtest.md`'s return-question arms did.
+
+**Phase 2d — Informational integration only.**
+Wire `concentration_risk_score()` and `classify_margin_state()` into `render()` as a new display line (state label, informational), with **no behavior change** — margin buys/blocks still come entirely from the existing, unmodified `margin_capacity()`. This phase is intentionally separable from anything that changes what the system *does*, so it can ship even if Phase 2c's backtests are still in progress or produce mixed results.
+
+**Phase 2e — Behavioral integration, only for verdicts that survived Phase 2c.**
+If (and only if) a backtest supports it: wire `recommended_paydown()` into the existing Forced-state message (upgrading it from a block notice to a block notice + a number), and/or wire `repayment_split()` into `plan()`'s trim-proceeds handling at the backtest-chosen `redirect_fraction`. Each is its own commit. Neither ships without its own passing backtest verdict and its own Decisions Log entry, per the standing "verdicts are never auto-applied" rule.
+
+**Phase 2f — Doctrine + README update.**
+`CLAUDE.md` gets explicit new lines for the state definitions and repayment rule (matching the T1/T2 ceiling entry's precision about what was/wasn't backtested). `README.md`'s margin section gets updated to describe the shipped states/repayment behavior — done as its own step so it can't drift the way the pre-Phase-1 README did.
+
+---
+
+## 7. Conflicts with existing doctrine
+
+Reaffirming Rev 1's findings under the sharper "risk governance only" framing this revision was built around — nothing here has softened, if anything it's more explicit:
+
+1. **No "Opportunistic" state, no lever-up-on-signal logic, anywhere in this revision.** Every state transition and every formula in Sections 3-5 moves in the risk-reducing direction only (tighter thresholds under concentration, redirect-to-debt under elevated leverage) — there is no formula in this document that widens the leverage ceiling or loosens a threshold in response to any market condition.
+2. **Backtest arms "margin only during drawdowns" and "margin deployment based on regime" remain excluded, not merely deprioritized.** They're not in Section 4's four-arm test plan at all. Restated per the explicit new instruction: this isn't a scheduling choice, it's a scope boundary.
+3. **The repayment-redirect fraction and the concentration-adjusted leverage cap (arm 1's Arm C) are both parameterized, evidence-gated values — no default is proposed in this document.** Picking either number without Section 4's backtests would itself be a small, unearned timing-adjacent judgment call; the design deliberately leaves both blank pending evidence.
+4. **The repayment-amount formula (Section 3) is honest about a real limitation** — Robinhood's buffer formula can't be independently derived (standing, documented constraint), so the recommendation is framed as a leverage-based estimate with a verify-on-Robinhood caveat, not a precise-looking number built on a formula this codebase has already found doesn't reconcile.
+5. **Margin drag vs. unlevered baseline (Section 4, arm 4) is sequenced first, ahead of the sustainability/repayment arms, on purpose** — it's the test that could, in principle, produce evidence *against* carrying margin at all. Sequencing it last would have looked like optimizing a foregone conclusion; sequencing it first keeps the process honest about the fact that "margin is allowed" was a 2026-07-13 doctrine choice made when the debt was discovered already existing, not a choice made *because* evidence supported it.
+
+---
+
+Nothing in this document has been implemented. Awaiting your decision on what from the six-phase plan (Section 6) gets built, and in what order.
