@@ -8,7 +8,7 @@ _2026-07-17 · Documentation only, no code. Classifies every piece of margin-rel
 
 Real, verifiable, already exists — either committed to git or stated as prose fact in `CLAUDE.md`.
 
-**Margin debt/buffer snapshots** — 9 point-in-time syncs are recoverable from git history on `holdings.yaml` (not a continuous series — each is a manually-triggered sync, usually alongside a trim or a deposit clearing):
+**Margin debt/buffer snapshots** — **7** point-in-time syncs are recoverable from git history on `holdings.yaml` (not a continuous series — each is a manually-triggered sync, usually alongside a trim or a deposit clearing):
 
 | Date | Debt | Buffer % | Triggering event (from commit history) |
 |---|---:|---:|---|
@@ -21,6 +21,8 @@ Real, verifiable, already exists — either committed to git or stated as prose 
 | 2026-07-15 | $1,628.64 | 61.77% | T1/T2 concentration-ceiling trims (9 names, ~$1,044) paid down margin |
 
 **Net equity / gross / QQQ / VOO snapshots** — `performance_log.csv`, 3 rows, 2026-07-13 through 2026-07-15 (a 4th same-day row exists in the file's current state but the dedup logic keeps one row per calendar date, so 3 distinct dates are represented).
+
+**Gross exposure, net equity, and computed leverage ratio** at 5 of these points (the 2 earliest, pre-share-tracking commits where `holdings.yaml` stored full per-ticker dollar values directly, plus the 3 `performance_log.csv`-anchored EOD points) are now fully worked out in `docs/TRACK1_HISTORICAL_REALITY_AUDIT.md` Questions 3-5 — leverage ranged from 1.622x down to 1.273x across the observed window, monotonically falling, never approaching the 1.8x cap. Not duplicated here to avoid two documents drifting out of sync; this inventory stays the classification layer, Track 1 is the worked analysis.
 
 **One recorded withdrawal**: $50, 2026-07-13, referenced by commit message and `CLAUDE.md`'s "post-BTC-trim, post-withdrawal" line. No other withdrawal is recorded anywhere.
 

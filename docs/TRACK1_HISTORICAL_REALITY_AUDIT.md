@@ -1,6 +1,6 @@
 # Track 1 — Historical Reality Audit
 
-_2026-07-17 · Documentation only, no code. Companion to `docs/TRACK2_HYPOTHETICAL_MARGIN_SIMULATION.md` and `docs/MARGIN_DATA_INVENTORY.md`. This track has no simulation, no assumptions, and no hypothetical results — it is a factual inventory of what this account's real margin history actually shows, and, just as importantly, what it doesn't. Every figure below is sourced directly from git history, `performance_log.csv`, or `CLAUDE.md` prose (marked as such), checked at the time of writing._
+_2026-07-17, Rev 2 · Documentation only, no code. Companion to `docs/TRACK2_HYPOTHETICAL_MARGIN_SIMULATION.md` and `docs/MARGIN_DATA_INVENTORY.md`. This track has no simulation, no assumptions, and no hypothetical results — it is a factual inventory of what this account's real margin history actually shows, and, just as importantly, what it doesn't. Every figure below is sourced directly from git history, `performance_log.csv`, or `CLAUDE.md` prose (marked as such), checked at the time of writing. Rev 2 adds gross exposure / net equity / leverage ratio at each known point (not just debt/buffer) and restructures around eight specific questions._
 
 **Question this track answers:** What do we actually know about the margin that existed?
 
@@ -8,52 +8,81 @@ _2026-07-17 · Documentation only, no code. Companion to `docs/TRACK2_HYPOTHETIC
 
 ---
 
-## 1. The observable margin timeline
+## The eight questions, answered directly
 
-Reconstructed from `git log --follow -- holdings.yaml`, cross-referenced against commit messages for the triggering event. This is the complete set of margin snapshots this repository has ever recorded — not a sample, the full set.
+### 1. When did margin debt first appear in records?
 
-| # | Date | Debt | Buffer % | Change vs. prior | Trigger |
-|---|---|---:|---:|---:|---|
-| 1 | 2026-07-13 | $3,449.50 | 56.08% | — (earliest recorded) | Post-$50-withdrawal sync |
-| 2 | 2026-07-13 | $3,335.38 | 56.61% | −$114.12 | VMC exit + paydown |
-| 3 | 2026-07-13 | $3,299.38 | 56.75% | −$36.00 | NOW trim + paydown |
-| 4 | 2026-07-14 | $2,898.22 | 59.76% | −$401.16 | Deposit clearing |
-| 5 | 2026-07-14 | $2,679.40 | 61.08% | −$218.82 | Trim proceeds paydown |
-| 6 | 2026-07-15 | $2,671.85 | 61.96% | −$7.55 | Robinhood screen resync (price/position drift, not a real paydown) |
-| 7 | 2026-07-15 | $1,628.64 | 61.77% | −$1,043.21 | 9-name T1/T2 concentration-ceiling trim batch |
+**2026-07-13**, commit `466fbce` ("Sync margin after $50 withdrawal") — the **first commit in this repository's entire git history** to touch `holdings.yaml`'s margin block, and in fact one of the earliest commits in the repo at all. Margin debt did not "appear" on this date in reality — `CLAUDE.md`'s Decisions Log states it was "discovered" already existing, at a recollected figure of ~$4,423, sometime before this date. What actually happened on 2026-07-13 is: **margin debt first entered this system's records**, mid-existence, not at origin. That distinction matters and is treated as its own finding in Question 8.
 
-**Directly observable pattern:** across all 7 recorded points, debt only ever *decreased* — from $3,449.50 to $1,628.64, a $1,820.86 reduction (53% of the starting recorded balance) over 3 calendar days. Buffer correspondingly rose from 56.08% to 61.77%. **This is a real, fully verifiable fact, not an estimate**: every dollar of paydown in this window came from trims and a deposit, not from a deliberate "let's delever" decision — consistent with the standing doctrine that margin paydown here has always been a side effect of other mechanical rules firing (trims, deposits), never a standalone timing call.
+### 2. What is the earliest reliable debt snapshot?
 
-**What this timeline cannot show:** whether this 3-day window is representative of anything. It's the entire observable history — there is no earlier or later data to compare it against, and no way to know from this alone whether debt was rising, flat, or being paid down in the weeks or months before 2026-07-13.
+**$3,449.50**, 2026-07-13, commit `466fbce` — the earliest **git-committed** figure. This is "reliable" in the specific sense of being a structured, dated, version-controlled data point. The ~$4,423 figure that came before it is a real fact (referenced consistently in `CLAUDE.md` prose) but is **not** a reliable snapshot in this same sense — it has no commit, no exact date, and no corroborating file. Treat $3,449.50 as the first point on any timeline; treat ~$4,423 as a caveat about what preceded that timeline, not as its starting point.
 
-## 2. What predates the observable window
+### 3. What portfolio value existed at each known point?
 
-`CLAUDE.md`'s Decisions Log states the debt was originally "discovered" at **~$4,423** before the 2026-07-13 revision. Comparing this to the earliest git-committed snapshot ($3,449.50, also 2026-07-13, already post-$50-withdrawal): the gap between ~$4,423 and $3,449.50 (~$973.50) is larger than the $50 withdrawal alone accounts for, meaning some further paydown or correction happened between the "discovery" moment and this repo's first commit — **and that intermediate history is not recorded anywhere.** The ~$4,423 figure itself is prose, not a committed data point (see `MARGIN_DATA_INVENTORY.md`, Category A) — it's a real fact about what was once true, but it is the *only* fact this system has about the period before 2026-07-13, and it cannot be placed on a timeline, dated precisely, or connected to any specific holdings/price snapshot.
+Real, computed values — not estimates — for every point where the source data supports an exact figure:
 
-## 3. Deposits and withdrawals
+| Point | Source | Gross | Net equity |
+|---|---|---:|---:|
+| 2026-07-13, intraday #1 (`466fbce`) | Static `holdings:` dict, summed directly from the committed file (pre-share-tracking era — this file genuinely stored full per-ticker dollar values at this point, so the sum is exact, not estimated) | $8,994.32 | $5,544.82 |
+| 2026-07-13, intraday #2 (`49c1ffe`, post-VMC-exit) | Same method | $8,878.67 | $5,543.29 |
+| 2026-07-13, EOD (`performance_log.csv`) | Live-priced snapshot, logged same day | $8,817.47 | $5,518.09 |
+| 2026-07-14, EOD | `performance_log.csv` | $8,648.93 | $5,969.53 |
+| 2026-07-15, EOD | `performance_log.csv` | $7,596.07 | $5,967.43 |
 
-**One event is recorded**: a $50 withdrawal, 2026-07-13, referenced in the commit that produced snapshot #1 above and in `CLAUDE.md`'s "post-BTC-trim, post-withdrawal" line. **No other deposit or withdrawal is dated, amount-stamped, or logged anywhere** — the workflow handles them conversationally each cycle (`CLAUDE.md` step 1: "I deposit money and report buying power") without persisting the event. `performance_log.csv`'s net-equity column moves for reasons that include deposits, withdrawals, margin draws/paydowns, *and* market price changes, all mixed together with no way to separate them — this is `render_performance()`'s own standing, disclosed limitation, not a new finding, but it's directly relevant here: it means net-equity changes across the 3-day window in Table 1 cannot be cleanly attributed to "margin paydown effect" vs. "everything else that happened at the same time."
+**Why some of the 7 margin-sync commits (Table in Question 6) don't get their own row here:** `holdings.yaml` switched from storing full per-ticker dollar values to a share-count-based system at commit `c54be71` (2026-07-13, same day) — after that point, the `holdings:` block became a residual manual-fallback (nearly empty), and the real gross value requires live-priced shares at that exact historical moment, which isn't preserved. Where a margin sync commit doesn't land on exactly one of the 5 rows above, its portfolio value at that precise moment is not independently recoverable — only its debt/buffer (Question 6) is.
 
-## 4. Interest actually paid
+### 4. What was gross exposure vs. net equity?
 
-**Zero data points.** No interest-charge figure exists anywhere in this repository — not a total, not a single dated charge, not an estimate derived from a statement. `CLAUDE.md`'s "~5% APR, first $1,000 free" is a description of the account's rate *terms*, sourced from Robinhood's stated policy for this account type, not a record of what has actually been charged and paid. This is the single largest gap in this audit: the entire "was margin worth its cost" question has never had a real cost figure to weigh against, in either direction.
+Answered by the same table as Question 3 — gross and net equity are both directly computed there, not estimated. Net equity ranged from $5,518.09 (07-13 EOD, the low point) to $5,969.53 (07-14 EOD, the high point) across the 3-day observable window.
 
-## 5. Net equity / gross / benchmark comparison over the observable window
+### 5. What leverage ratio was actually present?
 
-From `performance_log.csv` directly (3 distinct calendar dates):
+Computed directly (`leverage = gross / net_equity`) from Question 3's table:
 
-| Date | Net equity | Gross | Margin debt | QQQ | VOO |
-|---|---:|---:|---:|---:|---:|
-| 2026-07-13 | $5,518.09 | $8,817.47 | $3,299.38 | $711.85 | $688.60 |
-| 2026-07-14 | $5,969.53 | $8,648.93 | $2,679.40 | $719.71 | $691.12 |
-| 2026-07-15 | $5,967.43 | $7,596.07 | $1,628.64 | $716.11 | $692.58 |
+| Point | Leverage |
+|---|---:|
+| 2026-07-13, intraday #1 | **1.622x** |
+| 2026-07-13, intraday #2 | 1.602x |
+| 2026-07-13, EOD | 1.598x |
+| 2026-07-14, EOD | 1.449x |
+| 2026-07-15, EOD | **1.273x** |
 
-**Directly observable:** net equity rose $451.44 (8.2%) from 07-13 to 07-14, then fell $2.10 (flat) from 07-14 to 07-15, while gross fell sharply on 07-15 (the T1/T2 trim batch converting equity positions to debt paydown, not a market loss) and QQQ/VOO moved less than 1% across the same 3 days. **This is too short a window, with too much simultaneous change (a large trim event, a deposit, price moves, and a withdrawal all inside 3 days) to attribute any of this movement to "margin's effect" specifically** — stated here explicitly so it isn't quietly used as evidence for anything in Track 2 or beyond. Three days of data with multiple simultaneous causes is not a basis for a causal claim about margin, positively or negatively.
+**Directly observable: leverage fell monotonically across every recorded point**, from 1.622x down to 1.273x — a real, computed fact, not modeled. It never approached the current 1.8x structural cap at any recorded point; the highest observed leverage (1.622x) was already 90% of the way to the cap in relative terms but never breached it or came within a forced-response distance of it.
 
-## 6. Summary — what this account's real history actually establishes
+### 6. What margin buffer readings were recorded?
 
-1. **A margin doctrine revision happened on 2026-07-13**, formalizing a debt that already existed (~$4,423 by recollection, $3,449.50 by the earliest hard record) into a fixed 1.8x leverage cap / 30% buffer floor regime — a policy decision made when the debt was found, not derived from a performance record of that debt.
-2. **In the only 3 days this repository has ever recorded**, debt fell 53% and buffer rose 5.7 points, entirely as a side effect of trims and a deposit — consistent with, but not proof of, the standing doctrine that paydown here is mechanical, not a timing decision.
-3. **Every quantity needed to answer "has margin been worth it"** — interest actually paid, a clean before/after equity comparison isolated from deposits and price moves, and any data at all from before 2026-07-13 — **does not exist in this system.** This is not a gap Track 2's simulation can fill; it can only build a parallel, clearly-labeled hypothetical answer to a *related* question (what would a stated policy have done to a simulated portfolio through real historical prices), which is a different question from "what did this account's real margin actually do," honestly answered here: **we don't know, and can't, from the data that exists.**
+The complete set — 7 discrete syncs, the full historical record this system has ever captured:
 
-This conclusion is itself the primary deliverable of Track 1 — not a disappointing non-result, but the honest ceiling on what evidence-based margin research can claim about this specific account's past, stated plainly instead of allowed to blur into Track 2's hypothetical findings.
+| # | Date | Debt | Buffer % | Trigger |
+|---|---|---:|---:|---|
+| 1 | 2026-07-13 | $3,449.50 | 56.08% | Post-$50-withdrawal sync (earliest record) |
+| 2 | 2026-07-13 | $3,335.38 | 56.61% | VMC exit + paydown |
+| 3 | 2026-07-13 | $3,299.38 | 56.75% | NOW trim + paydown |
+| 4 | 2026-07-14 | $2,898.22 | 59.76% | Deposit clearing |
+| 5 | 2026-07-14 | $2,679.40 | 61.08% | Trim proceeds paydown |
+| 6 | 2026-07-15 | $2,671.85 | 61.96% | Robinhood screen resync (price/position drift, not a real paydown) |
+| 7 | 2026-07-15 | $1,628.64 | 61.77% | 9-name T1/T2 concentration-ceiling trim batch |
+
+Buffer rose from 56.08% to a peak of 61.96% (row 6) before settling at 61.77% (row 7) — consistently well above the 30% floor throughout the entire observed record.
+
+### 7. Are there any signs of forced deleveraging risk?
+
+**No — not in the observed record.** Every one of the 7 buffer readings sits between 56.08% and 61.96%, roughly double the 30% floor at every single point. Nothing in this system's history shows a buffer reading anywhere near the floor. **This is not the same claim as "the floor was never approached in reality"** — Question 8 names the real gap: buffer is only captured at manual sync moments (7 of them, clustered in a 3-day window), and nothing is recorded about what happened *between* syncs, including any period before 2026-07-13 entirely. The honest statement is: **no forced-deleveraging risk is visible in what was recorded**, which is a narrower and weaker claim than "no forced-deleveraging risk ever existed."
+
+### 8. What data is permanently unavailable?
+
+Consolidated from `MARGIN_DATA_INVENTORY.md`'s Category C, restated here because it's a direct answer to this specific question:
+- **True historical margin utilization before 2026-07-13** — the debt already existed when found; the draw history behind it is gone.
+- **Exact historical interest paid** — zero records exist, anywhere, at any point, in this or any file.
+- **Exact borrowing timeline** — individual draw events, beyond the 7 net debt-level snapshots above.
+- **Actual buffer changes or margin calls between syncs** — the 3-day observed window has 7 syncs; every gap between them (and the entire period before 07-13) is a blind spot, not a zero.
+- **Anything about the ~$4,423 pre-history figure** beyond the bare number itself — no date, no corroborating snapshot, no connection to a specific holdings state.
+
+---
+
+## Conclusion
+
+**The system cannot evaluate whether historical margin usage created alpha, because the historical borrowing path does not exist.** It can only evaluate the current state, and future policy, from the point of logging forward. Everything in Questions 1-7 above is real and precisely computed — but it spans three days, starts mid-existence of the debt it's describing, and contains no counterfactual (there is no "what if this account hadn't used margin" data point, because there was never a parallel unlevered account to compare against). A counterfactual is exactly what Track 2 constructs — as a labeled hypothetical, over a simulated account, precisely because no real one exists to ask the question of directly.
+
+This conclusion does not get weaker or stronger as more analysis is applied to the 3-day window — it is a structural fact about what data exists, not a statistical-power problem more data-massaging could fix. The correct response is what `MARGIN_DATA_INVENTORY.md`'s collection plan already proposes: start logging the data that would make this question answerable *from now forward*, and treat everything before 2026-07-13 as permanently outside this system's evidence base.

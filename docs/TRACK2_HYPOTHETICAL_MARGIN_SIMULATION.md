@@ -38,6 +38,21 @@ The request that produced this spec described Portfolio A as "the actual histori
 
 ## 2. Assumptions (stated explicitly, per the framework's standing discipline of naming every held-constant variable before results exist)
 
+**The complete, explicit assumption set** — every item below must appear, unambiguously, in the eventual report header, exactly as every existing backtest already states its held-constant parameters up front:
+
+| Assumption | Value | Notes |
+|---|---|---|
+| **Starting capital** | $0 | Both portfolios are built entirely from simulated deposits, starting from nothing — same convention as every existing backtest in this repo (`backtest_regime.py` et al.), not a chosen lump sum. |
+| **Leverage cap** | 1.8x (gross / net equity) | Current production value, held constant, not swept in this track (a leverage-level sweep is a later, separate phase — `MARGIN_INTELLIGENCE_DESIGN.md` §5, arm 1). |
+| **Borrowing cost assumption** | 5.00% APR, fixed for the entire window; first $1,000 of debt interest-free | Per `CLAUDE.md`'s documented term ("~5%"); the real rate moves with the Fed funds rate in reality and was never constant 2021-2026 — this is a disclosed simplification, not a historical claim. |
+| **Rebalance / deposit frequency** | Monthly — first trading day of each month | Same `DEPOSIT = 2000.0` cadence every existing backtest already uses; this track introduces no new frequency. |
+| **Deposit assumption** | $2,000/month, identical in both arms | No contribution difference between A and B — isolates the margin-draw policy as the only variable. |
+| **Benchmark** | QQQ and VOO, price-only, same tickers `performance_log.csv` already tracks for the live account | **Added in this revision** — the original draft omitted a named benchmark; TWR/Sharpe alone don't answer "compared to what," and this system already has a standing benchmark convention (`render_performance()`) this track should stay consistent with rather than inventing a new one. |
+| **Drawdown behavior** | Existing trend gate (200-SMA, RSI<30 override), band/spec RSI trims, cluster caps, T1/T2 ceiling — all held at current production values, identical in both arms | Restated explicitly as its own named assumption rather than left implicit in "the allocation rules run as-is" — a reader shouldn't have to infer that neither arm gets special drawdown-specific handling beyond what production already does for every deposit. |
+| **Repayment rules** | **None, in this track.** Portfolio A never voluntarily pays down debt beyond what the leverage cap mechanically requires (i.e., it never draws past the cap — that's a ceiling, not a repayment behavior). | This track isolates the draw-policy question only. Active repayment-policy testing (the Model A/B/C — permanent leverage / profit harvesting / risk reset — comparison) is explicitly a *different*, later backtest (`MARGIN_INTELLIGENCE_DESIGN.md` §5, arm 3, "repayment policies") and must not be conflated with this one. Stating "no repayment rule" here is itself the assumption, not an oversight. |
+
+**Policy-specific assumptions** (the mechanics behind the table above):
+
 1. **Margin-draw policy for Portfolio A ("with margin"):** on each simulated monthly deposit, if the allocator's gap-fill logic would otherwise leave money on the table (i.e., there are still-underweight names after cash is exhausted) *and* drawing margin would keep leverage at or under the 1.8x cap *and* wouldn't require a buffer check this simulation can't perform (see below) — draw margin to fund the remaining gaps, up to the cap. This mirrors current production's `--margin` mechanism (`margin_capacity()`'s leverage-cap clip) as closely as a simulation without a real buffer feed can. **This is a stated policy choice, not a replay of real decisions** — flagged per Section 0.
 2. **No buffer-floor simulation.** The 30% buffer floor is Robinhood's own displayed figure and cannot be derived (`write_state()`'s standing documented constraint: a naive formula doesn't reconcile with Robinhood's real number). This backtest **cannot simulate the buffer floor** and does not claim to — it tests leverage-ratio-gated margin only. This is a real, named limitation, not an oversight: any future backtest of the buffer floor's specific effect needs a different design this spec doesn't attempt.
 3. **Interest accrual:** simple daily accrual, `debt_balance × (0.05 / 365)` per day, on the outstanding balance net of the first $1,000 (interest-free per the doctrine's documented term) — i.e., `max(0, debt_balance − 1000) × (0.05/365)` daily, compounding into the debt balance monthly (added to `debt_balance` on the first simulated trading day of each month, consistent with the existing monthly deposit cadence). This is the specific, testable form of "interest drag" the request asked for.
@@ -75,6 +90,15 @@ Both arms receive the identical $2,000/month simulated deposit, the same convent
 | Interest drag | Section 4 | Dollar total + annualized TWR impact. |
 
 ## 7. Acceptable conclusions
+
+### Required output language
+
+**The report, the Decisions Log entry, and every summary of this track's results anywhere (including a future session's casual restatement of it) must use conditional, assumption-anchored language — never a bare declarative about what margin "would have" done.**
+
+- **Prohibited phrasing:** "Margin would have made +X% annual return." "Margin added +X% return." Any sentence whose subject is "margin" and whose verb asserts a completed historical effect.
+- **Required phrasing:** *"Under these assumptions [starting capital $0, 1.8x leverage cap, 5.00% APR borrowing cost, monthly $2,000 deposits, no repayment rule, current production drawdown handling — the full table in Section 2], a hypothetical investor following this policy would have experienced [specific outcome], versus [benchmark/unlevered comparison]."*
+
+This isn't a stylistic preference. The prohibited phrasing quietly asserts a fact about this account; the required phrasing correctly asserts a fact about a simulation. Given Track 1's own finding — that this account's real margin path is largely unrecoverable — any bare "margin would have made X%" sentence produced by this track would be a claim this system has no evidence to support. The conditional framing is the only framing the underlying method (Section 0: a simulated policy, not a replay) actually earns.
 
 The request is explicit that all three outcomes are valid findings, not just "adopt" or "reject" — this backtest is diagnostic, not a rule-adoption test in the shape of `trim_backtest.md`. But "diagnostic" doesn't mean unstructured: a pre-committed classification scheme is defined **before** the backtest runs, so the conclusion can't be shaped after seeing the numbers.
 
