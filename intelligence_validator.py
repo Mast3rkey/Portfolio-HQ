@@ -41,6 +41,11 @@ _REVIEW_REQUIRED_KEYS = {"cadence_days", "last_reviewed", "next_due"}
 
 _PERCENT_MARKERS = ("%",)
 
+# Closed vocabulary frozen by decision_log.yaml's PI-0004 -- exact,
+# case-sensitive match only. No numeric scale, no hyphenated hybrids,
+# no synonyms.
+_CONVICTION_RATINGS = {"Low", "Medium", "High", "Very High"}
+
 
 @dataclass
 class ValidationResult:
@@ -114,6 +119,12 @@ def _validate_conviction(value: object, errors: list[str]) -> None:
         errors.append(
             "conviction.rating is present without conviction.rationale — "
             "required together per spec §9/§12"
+        )
+    if rating is not None and rating not in _CONVICTION_RATINGS:
+        errors.append(
+            f"conviction.rating must be exactly one of {sorted(_CONVICTION_RATINGS)} "
+            f"(PI-0004 frozen vocabulary, case-sensitive, no numeric scale or "
+            f"hyphenated hybrid) — got {rating!r}"
         )
     # rationale without rating: the frozen spec requires a rationale
     # "alongside any rating" (§9) but does not itself forbid a rationale

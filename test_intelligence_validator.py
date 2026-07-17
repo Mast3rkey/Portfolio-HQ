@@ -71,6 +71,28 @@ def test_conviction_rationale_without_rating_is_allowed():
     assert result.valid is True
 
 
+@pytest.mark.parametrize("good_rating", ["Low", "Medium", "High", "Very High"])
+def test_conviction_rating_accepts_each_frozen_pi0004_value(good_rating):
+    data = _valid_company()
+    data["conviction"] = {"rating": good_rating, "rationale": "synthetic test rationale"}
+    result = iv.validate_company_data(data)
+    assert result.valid is True
+    assert result.errors == []
+
+
+@pytest.mark.parametrize("bad_rating", [
+    "Medium-High",   # hyphenated hybrid, explicitly rejected by PI-0004
+    "medium",        # lowercase — vocabulary is case-sensitive
+    9,                # numeric scale, explicitly rejected by PI-0004
+])
+def test_conviction_rating_rejects_out_of_vocabulary_values(bad_rating):
+    data = _valid_company()
+    data["conviction"] = {"rating": bad_rating, "rationale": "synthetic test rationale"}
+    result = iv.validate_company_data(data)
+    assert result.valid is False
+    assert any("PI-0004" in e for e in result.errors)
+
+
 @pytest.mark.parametrize("bad_value", [
     1.5,                 # numeric
     {"tier": "T1"},       # mapping
