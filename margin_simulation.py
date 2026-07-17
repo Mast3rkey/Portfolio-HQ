@@ -153,52 +153,187 @@ def repayment_model_a(state: PortfolioState, prior_gross: float | None, *,
     return max(0.0, state.margin_debt - target_debt)
 
 
-def repayment_model_b(state: PortfolioState, prior_gross: float | None, *,
-                      target_leverage: float) -> float:
-    """Model B — profit harvesting: hold leverage at `target_leverage`;
-    any drift above it (equity growth alone can push leverage down, but a
-    gross rally without matching equity growth — impossible when debt is
-    fixed and equity = gross - debt, so this only fires when debt itself
-    hasn't kept pace, i.e. margin was drawn) pays down debt back to the
-    target immediately, every day, not just on hard breach."""
-    if state.margin_debt <= 0:
-        return 0.0
-    lr = state.leverage_ratio
-    if lr is None or lr <= target_leverage:
-        return 0.0
-    target_debt = state.gross - state.gross / target_leverage
-    return max(0.0, state.margin_debt - target_debt)
-
-
-def repayment_model_c(state: PortfolioState, prior_gross: float | None, *,
-                      gain_trigger_pct: float, reset_fraction: float,
-                      concentration_score: float = 0.0,
-                      concentration_trigger: float | None = None) -> float:
-    """Model C — risk reset: proactively repay a fixed `reset_fraction` of
-    current debt whenever triggered by EITHER a single-day gross gain
-    exceeding `gain_trigger_pct`, OR (if supplied) a concentration score
-    exceeding `concentration_trigger` — "after gains, volatility spikes,
-    or concentration increases" per docs/PHASE3_MARGIN_EVIDENCE_
-    FRAMEWORK.md Test C. Volatility-spike triggering is intentionally not
-    implemented here (would require a rolling-window volatility input this
-    day-by-day function doesn't have) — flagged, not silently assumed;
-    Phase 3C must decide whether to add it before Model C is actually run.
-    """
-    if state.margin_debt <= 0:
-        return 0.0
-    triggered = False
-    if prior_gross is not None and prior_gross > 0:
-        day_return_pct = (state.gross - prior_gross) / prior_gross * 100.0
-        if day_return_pct > gain_trigger_pct:
-            triggered = True
-    if concentration_trigger is not None and concentration_score > concentration_trigger:
-        triggered = True
-    if not triggered:
-        return 0.0
-    return state.margin_debt * reset_fraction
-
-
 REPAYMENT_MODEL_NAMES = ("MODEL_0", "MODEL_A", "MODEL_B", "MODEL_C")
+
+
+# ── stateful repayment/reset policies (Phase 3D) ────────────────────────────
+#
+# Model B and Model C, per docs/PHASE3_SCENARIO_MANIFEST.md's finalized
+# mechanics, both require cross-day memory (a running net-equity high-water
+# mark; for Model C, also a reset_active flag and the pre-drawdown HWM the
+# account must exceed to restore normal capacity). The old Phase 3B
+# `repayment_model_b()`/`repayment_model_c()` (target-leverage-threshold and
+# single-day-gain-trigger mechanics respectively) are REMOVED — the manifest
+# explicitly supersedes both, and leaving two different "Model B/C"
+# implementations in this module would be a real footgun for a future run.
+# `repayment_model_0` and `repayment_model_a` above are unchanged.
+#
+# "Equity" high-water mark is tracked on NET_EQUITY (gross - margin_debt),
+# NOT `book` (net_equity + cash), correcting a conflation the manifest's own
+# formula (§2) had: tracking on `book` would count an un-invested cash
+# deposit as an instant "gain," so Model B could repay debt against money
+# that was never a market gain at all. net_equity is deposit-neutral by
+# construction (cash only enters net_equity once it's converted into gross
+# exposure via a buy).
+#
+# Both policies are evaluated once per day, at the TOP of simulate()'s loop,
+# using that day's OPENING mark-to-market state — yesterday's shares priced
+# at today's close, before today's interest accrual, deposit, or allocation.
+# This is deliberate: evaluating after the deposit-allocation step (as the
+# old post-allocation repayment_fn slot does, still used by Model 0/A)
+# would let Model C's reset trigger lever up to the scenario's normal cap
+# on the very day a reset fires, then immediately force-sell the excess
+# back down again — same-day churn with no purpose. Evaluating at the top
+# lets Model C declare `effective_leverage_cap` BEFORE that day's buying
+# happens, so a reset constrains the day's own allocation instead of
+# reacting to it after the fact.
+#
+# A fresh instance of either policy must be constructed for every
+# simulate() run — reusing one instance across two separate runs would leak
+# state (a stale HWM, a stuck reset_active flag) between them. See
+# test_margin_simulation.py's leak tests.
+
+@dataclass
+class RepaymentDecision:
+    """Return type for the pre-trade hook (`ScenarioConfig.pre_trade_fn`).
+    `repay_amount` is always >= 0 — no policy in this module can ever
+    return a negative value here, and simulate() additionally clamps
+    anything a future policy might try (constraint #3: no model may
+    recommend increasing leverage — a negative repay would be an implicit
+    borrow). `effective_leverage_cap`, if not None, is the leverage cap
+    simulate() uses for THIS DAY's deposit-driven allocation only, in
+    place of the scenario's normal `leverage_cap` — simulate() further
+    clamps this to `min(effective_leverage_cap, scenario.leverage_cap)`,
+    so no policy can ever raise capacity above the scenario's own hard
+    cap, only tighten it."""
+    repay_amount: float = 0.0
+    effective_leverage_cap: float | None = None
+
+
+class ModelBProfitHarvest:
+    """Model B — Profit Harvest, finalized mechanics
+    (docs/PHASE3_SCENARIO_MANIFEST.md §1/§2, initial repay_fraction=0.25,
+    sweepable {0.10, 0.25, 0.50} in a future run — not swept here).
+
+    Trigger: today's net_equity sets a new high-water mark versus every
+    prior day this instance has seen. On a new-high day, repay
+    `repay_fraction` of the fresh gain (today's net_equity minus the
+    prior HWM) toward margin debt. Never repays more than current
+    margin_debt, and never returns a negative amount (never an implicit
+    borrow) — "no additional borrowing" is satisfied structurally: this
+    policy's `effective_leverage_cap` is always None (it never tightens
+    OR loosens the scenario's normal cap), and `repay_amount` is always
+    >= 0, so it can only ever reduce debt, never increase capacity.
+    """
+
+    def __init__(self, repay_fraction: float = 0.25):
+        if not (0.0 <= repay_fraction <= 1.0):
+            raise ValueError(f"repay_fraction must be in [0, 1], got {repay_fraction}")
+        self.repay_fraction = repay_fraction
+        self._hwm: float | None = None
+
+    def __call__(self, state: PortfolioState, prior_gross: float | None) -> RepaymentDecision:
+        ne = state.net_equity
+        if self._hwm is None:
+            self._hwm = ne
+            return RepaymentDecision()
+        if ne > self._hwm:
+            gain = ne - self._hwm
+            self._hwm = ne
+            repay = max(0.0, min(state.margin_debt, self.repay_fraction * gain))
+            return RepaymentDecision(repay_amount=repay)
+        return RepaymentDecision()
+
+
+class ModelCRiskReset:
+    """Model C — Risk Reset, finalized mechanics
+    (docs/PHASE3_SCENARIO_MANIFEST.md §1/§2, initial parameters:
+    drawdown_trigger_pct=15.0, reset_leverage=1.25).
+
+    Trigger: net_equity drawdown from this instance's own running
+    high-water mark exceeds `drawdown_trigger_pct`. On first crossing
+    (fires ONCE per drawdown episode, not every day the account remains
+    below threshold — docs/PHASE3_SCENARIO_MANIFEST.md §3 assumption #4),
+    immediately deleverages to `reset_leverage` (repays the minimum
+    needed so gross/net_equity == reset_leverage) and enters a reset
+    state that tightens `effective_leverage_cap` to `reset_leverage` for
+    every subsequent day until BOTH restoration conditions hold: (a) a
+    NEW all-time high (net_equity exceeds the PRE-drawdown HWM, not
+    merely recovers to it) and (b) leverage has been at or below
+    `reset_leverage` continuously since the reset (checked each day the
+    reset is active, not just at restoration time — the same clamp that
+    tightens the cap while active also keeps this condition satisfied
+    unless a future policy change reintroduces opportunistic drawing).
+
+    No dip-buying interpretation: `effective_leverage_cap` while active
+    is always `reset_leverage` (never higher) or, once restored, None
+    (defers to the scenario's own cap) — this policy never returns a cap
+    HIGHER than `reset_leverage` while `reset_active` is True, so the
+    drawdown trigger can only ever tighten deployable capacity, never
+    loosen it as a reaction to the dip itself. Restoration is gated on a
+    NEW high, not on the dip ending — a partial recovery back toward the
+    old peak is not, by construction, treated as a buy signal.
+    """
+
+    def __init__(self, drawdown_trigger_pct: float = 15.0, reset_leverage: float = 1.25,
+                epsilon: float = 1e-9):
+        if not (0.0 < drawdown_trigger_pct < 100.0):
+            raise ValueError(f"drawdown_trigger_pct must be in (0, 100), got {drawdown_trigger_pct}")
+        if reset_leverage < 1.0:
+            raise ValueError(f"reset_leverage must be >= 1.0, got {reset_leverage}")
+        self.drawdown_trigger_pct = drawdown_trigger_pct
+        self.reset_leverage = reset_leverage
+        self.epsilon = epsilon
+        self._hwm: float | None = None
+        self.reset_active = False
+        self._pre_drawdown_hwm: float | None = None
+
+    def __call__(self, state: PortfolioState, prior_gross: float | None) -> RepaymentDecision:
+        ne = state.net_equity
+        self._hwm = ne if self._hwm is None else max(self._hwm, ne)
+
+        repay_amount = 0.0
+
+        if not self.reset_active and self._hwm > 0:
+            drawdown_pct = (self._hwm - ne) / self._hwm * 100.0
+            if drawdown_pct > self.drawdown_trigger_pct:
+                self._pre_drawdown_hwm = self._hwm
+                self.reset_active = True
+                lr = state.leverage_ratio
+                if lr is not None and lr > self.reset_leverage and state.gross > 0:
+                    # NOT `gross - gross/reset_leverage` (that assumes gross
+                    # stays fixed while only debt drops, true only if the
+                    # repayment is funded entirely from idle cash). This
+                    # harness's actual funding mechanism (_fund_repayment)
+                    # sells assets when cash is insufficient -- a $1 trim
+                    # reduces gross by $1 AND debt by $1 together, leaving
+                    # net_equity (gross - debt) unchanged by the trim
+                    # itself. Under that funding path, leverage after
+                    # repaying R is (gross-R)/net_equity (net_equity is
+                    # invariant to a trim-funded paydown), so hitting the
+                    # target requires R = gross - reset_leverage*net_equity,
+                    # not the fixed-gross formula. If cash happens to cover
+                    # some or all of R, net_equity rises instead (debt drops
+                    # with no offsetting gross drop) and the realized
+                    # leverage ends up BELOW reset_leverage, never above it
+                    # — this formula is exact for pure-trim funding and
+                    # conservative (over-deleverages, never under-) whenever
+                    # cash is available too. See test_model_c_reset_hits_
+                    # exact_target_leverage_when_trim_funded.
+                    repay_amount = max(0.0, state.gross - self.reset_leverage * state.net_equity)
+
+        if self.reset_active:
+            new_all_time_high = (self._pre_drawdown_hwm is not None
+                                 and ne > self._pre_drawdown_hwm)
+            lr = state.leverage_ratio
+            leverage_normalized = lr is None or lr <= self.reset_leverage + self.epsilon
+            if new_all_time_high and leverage_normalized:
+                self.reset_active = False
+                self._pre_drawdown_hwm = None
+                return RepaymentDecision(repay_amount=repay_amount, effective_leverage_cap=None)
+            return RepaymentDecision(repay_amount=repay_amount,
+                                     effective_leverage_cap=self.reset_leverage)
+        return RepaymentDecision(repay_amount=repay_amount, effective_leverage_cap=None)
 
 
 # ── scenario configuration ──────────────────────────────────────────────────
@@ -211,6 +346,7 @@ class ScenarioConfig:
     interest_free_amount: float
     repayment_fn: Callable[[PortfolioState, float | None], float] = repayment_model_0
     repayment_model_name: str = "MODEL_0"
+    pre_trade_fn: Callable[[PortfolioState, float | None], RepaymentDecision] | None = None
 
 
 def scenario_unlevered(name: str = "A") -> ScenarioConfig:
@@ -250,7 +386,13 @@ def scenario_repayment_variants(leverage_cap: float, interest_apr: float,
     """Scenario D — repayment policy comparison, all four models at the
     same fixed leverage_cap so only repayment behavior varies. Each
     model's config dict is REQUIRED (no defaults) if that model is to be
-    included — pass None to skip a model."""
+    included — pass None to skip a model. Model B/C's config dicts are
+    passed as constructor kwargs to the stateful `ModelBProfitHarvest`/
+    `ModelCRiskReset` policies (e.g. `model_b_cfg={"repay_fraction": 0.25}`,
+    `model_c_cfg={"drawdown_trigger_pct": 15.0, "reset_leverage": 1.25}`) —
+    NOT bound via functools.partial onto a stateless function, since both
+    now require a fresh, per-run stateful instance (see the module-level
+    comment above ModelBProfitHarvest)."""
     out = [ScenarioConfig(
         name="D-0 — no active repayment policy (control)",
         leverage_cap=leverage_cap, interest_apr=interest_apr,
@@ -265,15 +407,17 @@ def scenario_repayment_variants(leverage_cap: float, interest_apr: float,
             repayment_model_name="MODEL_A"))
     if model_b_cfg is not None:
         out.append(ScenarioConfig(
-            name="D-B — profit harvesting", leverage_cap=leverage_cap,
+            name="D-B — profit harvest", leverage_cap=leverage_cap,
             interest_apr=interest_apr, interest_free_amount=interest_free_amount,
-            repayment_fn=partial(repayment_model_b, **model_b_cfg),
+            repayment_fn=repayment_model_0,
+            pre_trade_fn=ModelBProfitHarvest(**model_b_cfg),
             repayment_model_name="MODEL_B"))
     if model_c_cfg is not None:
         out.append(ScenarioConfig(
             name="D-C — risk reset", leverage_cap=leverage_cap,
             interest_apr=interest_apr, interest_free_amount=interest_free_amount,
-            repayment_fn=partial(repayment_model_c, **model_c_cfg),
+            repayment_fn=repayment_model_0,
+            pre_trade_fn=ModelCRiskReset(**model_c_cfg),
             repayment_model_name="MODEL_C"))
     return out
 
@@ -379,6 +523,30 @@ class SimulationResult:
         return m
 
 
+def _fund_repayment(cash: float, shares: dict[str, float], closes: dict[str, float],
+                    gross: float, repay: float) -> float:
+    """Fund `repay` dollars toward a margin paydown: idle cash first, then
+    a pro-rata trim across all priced positions. Mutates `shares` in
+    place (reassigns share counts down). Returns the updated cash value.
+    Shared by both the pre-trade hook (Model B/C) and the post-allocation
+    repayment_fn slot (Model 0/A) — a single funding mechanism, not two
+    slightly-different ones."""
+    from_cash = min(cash, repay)
+    cash -= from_cash
+    still_needed = repay - from_cash
+    if still_needed > 0 and gross > 0:
+        # proceeds go straight to the paydown, never touch idle cash — a
+        # disclosed simplification, not a strategic decision.
+        frac = min(1.0, still_needed / gross)
+        for s in list(shares):
+            px = closes.get(s)
+            if px is None or shares[s] <= 0:
+                continue
+            sell_val = shares[s] * px * frac
+            shares[s] -= sell_val / px
+    return cash
+
+
 def simulate(scenario: ScenarioConfig, weights: dict[str, float],
             aligned: dict[str, tuple[list[float | None], int | None]],
             calendar: list[str], deposit_days: list[str],
@@ -395,11 +563,29 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
 
     Deposits are allocated by weighted dollar-gap, same greedy pattern as
     backtest_regime.simulate() and allocate.py's plan() — largest gap
-    first, funded by cash then margin up to the scenario's leverage cap.
-    Repayment (if the scenario's model calls for it) is funded first from
-    any uninvested cash, then via a pro-rata trim across all held
-    positions if cash alone is insufficient — a disclosed simplification,
-    not itself a strategic decision this harness makes.
+    first, funded by cash then margin up to that day's EFFECTIVE leverage
+    cap. Repayment is funded first from any uninvested cash, then via a
+    pro-rata trim across all held positions if cash alone is insufficient
+    (`_fund_repayment()`) — a disclosed simplification, not itself a
+    strategic decision this harness makes.
+
+    Two independent repayment/reset mechanisms can be attached to a
+    scenario, evaluated at different points in the day (see the
+    module-level comment above ModelBProfitHarvest for the full
+    rationale):
+      - `scenario.repayment_fn` — the original Phase 3B slot, evaluated
+        AFTER deposit-allocation. Model 0/A use this; both are stateless.
+      - `scenario.pre_trade_fn` — the Phase 3D addition, evaluated at the
+        TOP of the day (before interest/deposit/allocation), on OPENING
+        mark-to-market state. Returns a `RepaymentDecision` that can both
+        repay debt immediately AND declare an `effective_leverage_cap`
+        that constrains THIS DAY's deposit-driven allocation. Model B/C
+        use this — both are stateful (see ModelBProfitHarvest/
+        ModelCRiskReset), so a fresh instance is required per simulate()
+        run. Whatever `effective_leverage_cap` a policy requests, this
+        function clamps it to `min(requested, scenario.leverage_cap)` —
+        a structural guarantee that no policy can ever raise capacity
+        above the scenario's own hard cap, only tighten it.
 
     `deposit_amount` is the flat amount used on every day in
     `deposit_days` unless `deposit_schedule` (a {date_str: amount} map)
@@ -424,6 +610,30 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
                  if aligned[s][0][i] is not None}
         gross = sum(shares.get(s, 0.0) * px for s, px in closes.items())
 
+        # ---- pre-trade hook (Model B/C only; None for Model 0/A) -----------
+        # Evaluated on TODAY's OPENING mark-to-market state -- yesterday's
+        # shares priced at today's close, before interest/deposit/trade --
+        # see the module-level comment above ModelBProfitHarvest for why.
+        effective_leverage_cap_today = scenario.leverage_cap
+        if scenario.pre_trade_fn is not None:
+            state_pre = PortfolioState(day_index=i, cash=cash, positions=dict(shares),
+                                       margin_debt=margin_debt, gross=gross)
+            decision = scenario.pre_trade_fn(state_pre, prior_gross)
+            pre_repay = max(0.0, min(decision.repay_amount, margin_debt))
+            if pre_repay > 0:
+                cash = _fund_repayment(cash, shares, closes, gross, pre_repay)
+                margin_debt -= pre_repay
+                gross = sum(shares.get(s, 0.0) * closes.get(s, 0.0) for s in shares)
+                events.append({"day": i, "kind": "repayment", "amount": pre_repay,
+                              "source": "pre_trade"})
+            if decision.effective_leverage_cap is not None:
+                # constraint #3 (no model may recommend increasing leverage),
+                # enforced structurally here, not merely trusted per-policy:
+                # a pre-trade hook can only ever TIGHTEN today's cap, never
+                # loosen it past the scenario's own.
+                effective_leverage_cap_today = min(decision.effective_leverage_cap,
+                                                   scenario.leverage_cap)
+
         # ---- daily interest accrual, capitalized into margin_debt --------
         if margin_debt > 0 and scenario.interest_apr > 0:
             taxable_debt = max(0.0, margin_debt - scenario.interest_free_amount)
@@ -441,7 +651,7 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
 
             net_equity = gross - margin_debt
             margin_allowed = _leverage_capped_margin(
-                gross, margin_debt, cash, scenario.leverage_cap, requested=float("inf"))
+                gross, margin_debt, cash, effective_leverage_cap_today, requested=float("inf"))
             buying_power = cash + margin_allowed
             book = net_equity + cash
             w_sum = sum(weights.get(s, 0.0) for s in elig if s in closes)
@@ -473,22 +683,10 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
         repay = scenario.repayment_fn(state, prior_gross)
         repay = max(0.0, min(repay, margin_debt))
         if repay > 0:
-            from_cash = min(cash, repay)
-            cash -= from_cash
-            still_needed = repay - from_cash
-            if still_needed > 0 and gross > 0:
-                # pro-rata trim across all priced positions, proceeds go
-                # straight to the paydown (never touch idle cash) — a
-                # disclosed simplification, not a strategic decision.
-                frac = min(1.0, still_needed / gross)
-                for s in list(shares):
-                    px = closes.get(s)
-                    if px is None or shares[s] <= 0:
-                        continue
-                    sell_val = shares[s] * px * frac
-                    shares[s] -= sell_val / px
+            cash = _fund_repayment(cash, shares, closes, gross, repay)
             margin_debt -= repay
-            events.append({"day": i, "kind": "repayment", "amount": repay})
+            events.append({"day": i, "kind": "repayment", "amount": repay,
+                          "source": "post_allocation"})
 
         # ---- mark to market --------------------------------------------------
         gross = sum(shares.get(s, 0.0) * closes.get(s, 0.0) for s in shares)

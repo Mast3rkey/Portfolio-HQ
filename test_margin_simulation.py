@@ -13,7 +13,10 @@ import pytest
 from margin_simulation import (
     BANNED_PHRASES,
     HYPOTHETICAL_LABEL,
+    ModelBProfitHarvest,
+    ModelCRiskReset,
     PortfolioState,
+    RepaymentDecision,
     ScenarioConfig,
     _assert_no_banned_language,
     _leverage_capped_margin,
@@ -22,8 +25,6 @@ from margin_simulation import (
     render_metrics,
     repayment_model_0,
     repayment_model_a,
-    repayment_model_b,
-    repayment_model_c,
     scenario_fixed_leverage,
     scenario_leverage_sweep,
     scenario_repayment_variants,
@@ -104,46 +105,247 @@ def test_model_a_zero_debt_no_repayment():
     assert repayment_model_a(s, prior_gross=None, leverage_cap=1.8) == 0.0
 
 
-def test_model_b_repays_any_excess_above_target_every_day():
-    # gross=1000, debt=500 -> leverage=2.0x, target=1.5x -> should repay down to 1.5x
-    s = PortfolioState(0, cash=0.0, positions={}, margin_debt=500.0, gross=1000.0)
-    repay = repayment_model_b(s, prior_gross=None, target_leverage=1.5)
-    assert repay > 0
-    new_debt = 500.0 - repay
-    assert (1000.0 / (1000.0 - new_debt)) == pytest.approx(1.5, abs=1e-6)
+# ── Model B — Profit Harvest (stateful, finalized mechanics) ───────────────
+# docs/PHASE3_SCENARIO_MANIFEST.md §1/§2: trigger on a new net-equity HWM,
+# repay repay_fraction (default 0.25) of the fresh gain, never borrow.
 
-
-def test_model_b_below_target_no_repayment():
+def test_model_b_first_call_establishes_hwm_no_repayment():
+    policy = ModelBProfitHarvest(repay_fraction=0.25)
     s = PortfolioState(0, cash=0.0, positions={}, margin_debt=100.0, gross=1000.0)
-    # leverage = 1000/900 = 1.11x, target 1.5x -> already below target
-    assert repayment_model_b(s, prior_gross=None, target_leverage=1.5) == 0.0
+    decision = policy(s, prior_gross=None)
+    assert decision.repay_amount == 0.0
+    assert decision.effective_leverage_cap is None
+    assert policy._hwm == pytest.approx(900.0)  # net_equity = 1000-100
 
 
-def test_model_c_triggers_on_gain():
-    s = PortfolioState(0, cash=0.0, positions={}, margin_debt=1000.0, gross=1100.0)
-    repay = repayment_model_c(s, prior_gross=1000.0, gain_trigger_pct=5.0, reset_fraction=0.1)
-    # (1100-1000)/1000 = 10% > 5% trigger
-    assert repay == pytest.approx(100.0)  # 10% of 1000 debt
+def test_model_b_repays_fraction_of_gain_above_hwm():
+    policy = ModelBProfitHarvest(repay_fraction=0.25)
+    s1 = PortfolioState(0, cash=0.0, positions={}, margin_debt=100.0, gross=1000.0)
+    policy(s1, prior_gross=None)  # hwm = 900
+
+    s2 = PortfolioState(1, cash=0.0, positions={}, margin_debt=100.0, gross=1100.0)
+    decision = policy(s2, prior_gross=None)  # net_equity = 1000, gain = 100
+    assert decision.repay_amount == pytest.approx(25.0)  # 25% of 100
+    assert decision.effective_leverage_cap is None  # never tightens/loosens the cap
+    assert policy._hwm == pytest.approx(1000.0)
 
 
-def test_model_c_no_trigger_below_gain_threshold():
-    s = PortfolioState(0, cash=0.0, positions={}, margin_debt=1000.0, gross=1020.0)
-    repay = repayment_model_c(s, prior_gross=1000.0, gain_trigger_pct=5.0, reset_fraction=0.1)
-    assert repay == 0.0
+def test_model_b_no_new_high_no_repayment():
+    policy = ModelBProfitHarvest(repay_fraction=0.25)
+    s1 = PortfolioState(0, cash=0.0, positions={}, margin_debt=0.0, gross=1000.0)
+    policy(s1, prior_gross=None)  # hwm = 1000
+
+    s2 = PortfolioState(1, cash=0.0, positions={}, margin_debt=0.0, gross=950.0)
+    decision = policy(s2, prior_gross=None)
+    assert decision.repay_amount == 0.0
 
 
-def test_model_c_triggers_on_concentration():
-    s = PortfolioState(0, cash=0.0, positions={}, margin_debt=1000.0, gross=1000.0)
-    repay = repayment_model_c(s, prior_gross=1000.0, gain_trigger_pct=100.0,
-                              reset_fraction=0.2, concentration_score=1.2,
-                              concentration_trigger=1.0)
-    assert repay == pytest.approx(200.0)
+def test_model_b_never_repays_more_than_current_debt():
+    policy = ModelBProfitHarvest(repay_fraction=1.0)  # repay 100% of any gain
+    s1 = PortfolioState(0, cash=0.0, positions={}, margin_debt=10.0, gross=1000.0)
+    policy(s1, prior_gross=None)  # hwm = 990
+
+    s2 = PortfolioState(1, cash=0.0, positions={}, margin_debt=10.0, gross=1500.0)
+    decision = policy(s2, prior_gross=None)  # gain = 500, 100% = 500, but debt is only 10
+    assert decision.repay_amount == pytest.approx(10.0)
 
 
-def test_model_c_no_debt_no_repayment_regardless_of_trigger():
-    s = PortfolioState(0, cash=0.0, positions={}, margin_debt=0.0, gross=1000.0)
-    repay = repayment_model_c(s, prior_gross=500.0, gain_trigger_pct=1.0, reset_fraction=1.0)
-    assert repay == 0.0
+def test_model_b_invalid_repay_fraction_raises():
+    with pytest.raises(ValueError):
+        ModelBProfitHarvest(repay_fraction=1.5)
+    with pytest.raises(ValueError):
+        ModelBProfitHarvest(repay_fraction=-0.1)
+
+
+def test_model_b_fresh_instance_per_run_no_state_leak():
+    # Reusing one instance across two separate "runs" would leak the HWM
+    # from the first run into the second -- this proves a FRESH instance
+    # starts clean, which is the documented contract (module docstring).
+    run1 = ModelBProfitHarvest(repay_fraction=0.25)
+    run1(PortfolioState(0, cash=0.0, positions={}, margin_debt=0.0, gross=1000.0), None)
+    run1(PortfolioState(1, cash=0.0, positions={}, margin_debt=0.0, gross=2000.0), None)
+    assert run1._hwm == pytest.approx(2000.0)
+
+    run2 = ModelBProfitHarvest(repay_fraction=0.25)
+    decision = run2(PortfolioState(0, cash=0.0, positions={}, margin_debt=0.0, gross=1000.0), None)
+    assert run2._hwm == pytest.approx(1000.0)  # not 2000 -- no leakage from run1
+    assert decision.repay_amount == 0.0  # first call, HWM-establishing, never repays
+
+
+# ── Model C — Risk Reset (stateful, finalized mechanics) ───────────────────
+# docs/PHASE3_SCENARIO_MANIFEST.md §1/§2: trigger on a 15% net-equity
+# drawdown from peak, deleverage to 1.25x, restore only on a NEW high AND
+# leverage normalized.
+
+def test_model_c_no_trigger_below_drawdown_threshold():
+    policy = ModelCRiskReset(drawdown_trigger_pct=15.0, reset_leverage=1.25)
+    s1 = PortfolioState(0, cash=0.0, positions={}, margin_debt=0.0, gross=1000.0)
+    policy(s1, None)  # hwm = 1000
+    s2 = PortfolioState(1, cash=0.0, positions={}, margin_debt=0.0, gross=900.0)  # -10%
+    decision = policy(s2, None)
+    assert decision.repay_amount == 0.0
+    assert decision.effective_leverage_cap is None
+    assert policy.reset_active is False
+
+
+def test_model_c_triggers_and_hits_exact_target_leverage_when_trim_funded():
+    # gross=1000, debt=500 -> net_equity=500 (hwm). Then gross drops to
+    # 700 (>15% net_equity drawdown: net_equity would be 200, an 60% drop)
+    # -- leverage before reset = 700/200 = 3.5x, well above the 1.25x
+    # target. Verifies the trim-funded-exact formula (module comment on
+    # ModelCRiskReset.__call__): repay = gross - reset_leverage*net_equity.
+    policy = ModelCRiskReset(drawdown_trigger_pct=15.0, reset_leverage=1.25)
+    s1 = PortfolioState(0, cash=0.0, positions={}, margin_debt=500.0, gross=1000.0)
+    policy(s1, None)  # hwm = 500
+
+    s2 = PortfolioState(1, cash=0.0, positions={}, margin_debt=500.0, gross=700.0)
+    decision = policy(s2, None)
+    assert policy.reset_active is True
+    expected_repay = 700.0 - 1.25 * 200.0  # gross - reset_leverage*net_equity
+    assert decision.repay_amount == pytest.approx(expected_repay)
+    assert decision.effective_leverage_cap == pytest.approx(1.25)
+
+    # simulate the trim-funded paydown by hand: gross and debt both drop
+    # by repay_amount (see the "no idle cash" funding path), net_equity
+    # is invariant to that trim -- confirms the resulting leverage is
+    # EXACTLY 1.25x, not merely "reduced."
+    new_gross = 700.0 - decision.repay_amount
+    new_debt = 500.0 - decision.repay_amount
+    assert new_gross / (new_gross - new_debt) == pytest.approx(1.25, abs=1e-9)
+
+
+def test_model_c_no_repay_needed_if_already_under_target_after_crash():
+    # A severe crash can push leverage BELOW the reset target even before
+    # any repayment (gross falls faster than debt, but debt is small
+    # enough relative to gross that leverage doesn't spike) -- reset still
+    # activates (drawdown trigger fired) and tightens the cap, but there
+    # is nothing to repay.
+    policy = ModelCRiskReset(drawdown_trigger_pct=15.0, reset_leverage=1.25)
+    s1 = PortfolioState(0, cash=0.0, positions={}, margin_debt=6.0, gross=200.0)
+    policy(s1, None)  # hwm = 194
+
+    s2 = PortfolioState(1, cash=0.0, positions={}, margin_debt=6.0, gross=52.0)  # net_equity=46, drawdown 76%
+    decision = policy(s2, None)
+    assert policy.reset_active is True
+    # leverage = 52/46 = 1.13x, already below 1.25 -> nothing to repay
+    assert decision.repay_amount == 0.0
+    assert decision.effective_leverage_cap == pytest.approx(1.25)
+
+
+def test_model_c_fires_once_per_drawdown_episode_not_every_day_below():
+    policy = ModelCRiskReset(drawdown_trigger_pct=15.0, reset_leverage=1.25)
+    s1 = PortfolioState(0, cash=0.0, positions={}, margin_debt=500.0, gross=1000.0)
+    policy(s1, None)  # hwm = 500
+    s2 = PortfolioState(1, cash=0.0, positions={}, margin_debt=500.0, gross=700.0)
+    d2 = policy(s2, None)
+    assert d2.repay_amount > 0  # the actual reset trim happens once, here
+
+    # still deep in drawdown the next day -- must NOT repay again
+    s3 = PortfolioState(2, cash=0.0, positions={}, margin_debt=500.0 - d2.repay_amount,
+                        gross=700.0 - d2.repay_amount)
+    d3 = policy(s3, None)
+    assert d3.repay_amount == 0.0
+    assert d3.effective_leverage_cap == pytest.approx(1.25)  # cap stays tightened
+
+
+def test_model_c_restoration_requires_both_new_high_and_normalized_leverage():
+    policy = ModelCRiskReset(drawdown_trigger_pct=15.0, reset_leverage=1.25)
+    s1 = PortfolioState(0, cash=0.0, positions={}, margin_debt=500.0, gross=1000.0)
+    policy(s1, None)  # hwm = 500 = pre_drawdown_hwm once triggered
+    s2 = PortfolioState(1, cash=0.0, positions={}, margin_debt=500.0, gross=700.0)
+    policy(s2, None)  # triggers, reset_active=True
+
+    # Case 1: leverage normalized but NOT a new high -> stays active
+    s3 = PortfolioState(2, cash=0.0, positions={}, margin_debt=100.0, gross=350.0)  # ne=250 < 500 hwm, lev=1.4
+    d3 = policy(s3, None)
+    assert policy.reset_active is True
+    assert d3.effective_leverage_cap == pytest.approx(1.25)
+
+    # Case 2: new high but leverage NOT normalized -> stays active
+    s4 = PortfolioState(3, cash=0.0, positions={}, margin_debt=400.0, gross=1000.0)  # ne=600 > 500 hwm, lev=1.667
+    d4 = policy(s4, None)
+    assert policy.reset_active is True
+    assert d4.effective_leverage_cap == pytest.approx(1.25)
+
+    # Case 3: BOTH conditions met -> restores
+    s5 = PortfolioState(4, cash=0.0, positions={}, margin_debt=100.0, gross=700.0)  # ne=600 > 500 hwm, lev=1.167
+    d5 = policy(s5, None)
+    assert policy.reset_active is False
+    assert d5.effective_leverage_cap is None
+
+
+def test_model_c_invalid_params_raise():
+    with pytest.raises(ValueError):
+        ModelCRiskReset(drawdown_trigger_pct=0.0)
+    with pytest.raises(ValueError):
+        ModelCRiskReset(drawdown_trigger_pct=150.0)
+    with pytest.raises(ValueError):
+        ModelCRiskReset(reset_leverage=0.5)
+
+
+def test_model_c_fresh_instance_per_run_no_state_leak():
+    run1 = ModelCRiskReset(drawdown_trigger_pct=15.0, reset_leverage=1.25)
+    run1(PortfolioState(0, cash=0.0, positions={}, margin_debt=500.0, gross=1000.0), None)
+    run1(PortfolioState(1, cash=0.0, positions={}, margin_debt=500.0, gross=700.0), None)
+    assert run1.reset_active is True
+
+    run2 = ModelCRiskReset(drawdown_trigger_pct=15.0, reset_leverage=1.25)
+    d = run2(PortfolioState(0, cash=0.0, positions={}, margin_debt=0.0, gross=1000.0), None)
+    assert run2.reset_active is False  # not leaked from run1
+    assert d.repay_amount == 0.0
+
+
+# ── Property test: leverage can never increase during a Model C reset ─────
+# The single required guarantee named explicitly in the task: "no dip-
+# buying interpretation." Proven structurally, not just asserted for one
+# fixture -- sweeps a grid of gross/debt/drawdown combinations and checks
+# the invariant holds in every one.
+
+def test_model_c_effective_leverage_cap_never_exceeds_reset_leverage_while_active():
+    reset_leverage = 1.25
+    policy = ModelCRiskReset(drawdown_trigger_pct=15.0, reset_leverage=reset_leverage)
+    grosses = [100.0, 500.0, 1000.0, 5000.0]
+    debts = [0.0, 10.0, 100.0, 500.0, 900.0]
+    n_checked = 0
+    for gross in grosses:
+        for debt in debts:
+            if debt >= gross:
+                continue
+            state = PortfolioState(0, cash=0.0, positions={}, margin_debt=debt, gross=gross)
+            decision = policy(state, None)
+            n_checked += 1
+            if policy.reset_active:
+                assert decision.effective_leverage_cap is not None
+                assert decision.effective_leverage_cap <= reset_leverage + 1e-9
+    assert n_checked > 0
+
+
+def test_simulate_never_lets_effective_cap_exceed_scenario_cap_regardless_of_policy():
+    # Structural guarantee enforced in simulate() itself (not trusted
+    # per-policy): even a policy that requested a LOOSER cap than the
+    # scenario's own could never actually get it. A fake policy here
+    # deliberately tries to loosen (requests cap=99.0, far above any
+    # scenario.leverage_cap) to prove simulate() clamps it regardless.
+    class LooseningAttemptPolicy:
+        def __call__(self, state, prior_gross):
+            return RepaymentDecision(repay_amount=0.0, effective_leverage_cap=99.0)
+
+    sc = ScenarioConfig(name="test", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0, repayment_fn=repayment_model_0,
+                        repayment_model_name="MODEL_0", pre_trade_fn=LooseningAttemptPolicy())
+    aligned = {
+        "A": ([100.0] * 3, 0),
+        "B": ([100.0] * 3, 0),
+        "C": ([100.0] * 3, 2),
+    }
+    calendar = ["2026-01-01", "2026-01-02", "2026-01-03"]
+    result = simulate(sc, weights={"A": 1.0, "B": 1.0, "C": 1.0}, aligned=aligned,
+                      calendar=calendar, deposit_days=[calendar[0], calendar[2]],
+                      deposit_amount=None, min_lot=1.0,
+                      deposit_schedule={calendar[0]: 60.0, calendar[2]: 20.0})
+    # leverage never exceeds the scenario's own 1.8x cap, despite the
+    # policy's attempt to loosen it to 99.0
+    assert all(lv is None or lv <= 1.8 + 1e-6 for lv in result.leverage_series)
 
 
 # ── metrics ──────────────────────────────────────────────────────────────────
@@ -248,10 +450,20 @@ def test_scenario_leverage_sweep_produces_one_per_level():
 def test_scenario_repayment_variants_includes_model_0_control_plus_requested():
     scs = scenario_repayment_variants(
         leverage_cap=1.8, interest_apr=0.05, interest_free_amount=1000.0,
-        model_a_cfg={}, model_b_cfg={"target_leverage": 1.5},
-        model_c_cfg={"gain_trigger_pct": 5.0, "reset_fraction": 0.1})
+        model_a_cfg={}, model_b_cfg={"repay_fraction": 0.25},
+        model_c_cfg={"drawdown_trigger_pct": 15.0, "reset_leverage": 1.25})
     names = [s.repayment_model_name for s in scs]
     assert names == ["MODEL_0", "MODEL_A", "MODEL_B", "MODEL_C"]
+    b_scenario = next(s for s in scs if s.repayment_model_name == "MODEL_B")
+    c_scenario = next(s for s in scs if s.repayment_model_name == "MODEL_C")
+    assert isinstance(b_scenario.pre_trade_fn, ModelBProfitHarvest)
+    assert isinstance(c_scenario.pre_trade_fn, ModelCRiskReset)
+    # Model 0/A variants use the old post-allocation repayment_fn slot,
+    # not the new pre_trade_fn hook -- unchanged plumbing.
+    zero_scenario = next(s for s in scs if s.repayment_model_name == "MODEL_0")
+    a_scenario = next(s for s in scs if s.repayment_model_name == "MODEL_A")
+    assert zero_scenario.pre_trade_fn is None
+    assert a_scenario.pre_trade_fn is None
 
 
 def test_scenario_repayment_variants_skips_unconfigured_models():
@@ -354,7 +566,53 @@ def test_simulate_interest_accrues_on_debt_above_free_amount():
     assert all(e["day"] > first_draw_day for e in interest_events)
 
 
-def test_simulate_repayment_model_reduces_final_debt_vs_model_0():
+def _margin_then_crash_fixture():
+    """A eligible from day 0, B from day 2 (forces a $245 margin draw on
+    day 2, same delayed-eligibility mechanism as
+    test_simulate_margin_draw_equals_gap_minus_available_cash), then a 5x
+    price jump on day 2 followed by a 25% crash on day 3 -- gives Model
+    C's drawdown trigger something real to fire on (net-equity drawdown
+    from the day-2 peak comfortably exceeds 15%), while leverage stays
+    meaningfully above the 1.25x reset target at the moment it fires
+    (verified via a standalone probe before this fixture was written)."""
+    common = [100.0, 100.0, 500.0, 375.0, 375.0]
+    aligned = {"A": (common, 0), "B": (common, 2)}
+    calendar = [f"2026-01-{d:02d}" for d in range(1, 6)]
+    deposit_days = [calendar[0], calendar[2]]
+    schedule = {calendar[0]: 100.0, calendar[2]: 10.0}
+    return aligned, calendar, deposit_days, schedule
+
+
+def test_simulate_repayment_model_c_reduces_final_debt_vs_model_0():
+    aligned, calendar, deposit_days, schedule = _margin_then_crash_fixture()
+    weights = {"A": 1.0, "B": 1.0}
+
+    sc_control = scenario_fixed_leverage(1.8, interest_apr=0.0, interest_free_amount=0.0)
+    result_control = simulate(sc_control, weights=weights, aligned=aligned,
+                              calendar=calendar, deposit_days=deposit_days,
+                              deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    assert result_control.final_margin_debt == pytest.approx(245.0)  # sanity: matches the probe
+
+    scs = scenario_repayment_variants(
+        leverage_cap=1.8, interest_apr=0.0, interest_free_amount=0.0,
+        model_c_cfg={"drawdown_trigger_pct": 15.0, "reset_leverage": 1.25})
+    sc_c = next(s for s in scs if s.repayment_model_name == "MODEL_C")
+    result_c = simulate(sc_c, weights=weights, aligned=aligned, calendar=calendar,
+                        deposit_days=deposit_days, deposit_amount=None, min_lot=1.0,
+                        deposit_schedule=schedule)
+
+    assert result_c.final_margin_debt < result_control.final_margin_debt
+    assert result_c.final_margin_debt == pytest.approx(80.3125)  # exact value from the probe
+    # leverage hits exactly the 1.25x reset target once the trim-funded
+    # paydown completes (day 3 onward)
+    assert result_c.leverage_series[3] == pytest.approx(1.25)
+    assert result_c.leverage_series[4] == pytest.approx(1.25)
+
+
+def test_simulate_repayment_model_b_reduces_debt_on_new_highs():
+    # Reuse the delayed-eligibility margin-draw fixture (100->200 rise,
+    # no crash) -- a pure rally, ideal for exercising Model B's HWM-gain
+    # trigger without Model C's drawdown mechanics ever engaging.
     aligned, calendar, deposit_days, schedule = _margin_then_gain_fixture()
     weights = {"A": 1.0, "B": 1.0, "C": 1.0}
 
@@ -366,13 +624,76 @@ def test_simulate_repayment_model_reduces_final_debt_vs_model_0():
 
     scs = scenario_repayment_variants(
         leverage_cap=1.8, interest_apr=0.0, interest_free_amount=0.0,
-        model_c_cfg={"gain_trigger_pct": 10.0, "reset_fraction": 0.5})
-    sc_c = next(s for s in scs if s.repayment_model_name == "MODEL_C")
-    result_c = simulate(sc_c, weights=weights, aligned=aligned, calendar=calendar,
+        model_b_cfg={"repay_fraction": 0.5})
+    sc_b = next(s for s in scs if s.repayment_model_name == "MODEL_B")
+    result_b = simulate(sc_b, weights=weights, aligned=aligned, calendar=calendar,
                         deposit_days=deposit_days, deposit_amount=None, min_lot=1.0,
                         deposit_schedule=schedule)
 
-    assert result_c.final_margin_debt < result_control.final_margin_debt
+    assert result_b.final_margin_debt < result_control.final_margin_debt
+    repay_events = [e for e in result_b.events if e["kind"] == "repayment"]
+    assert len(repay_events) > 0
+    assert all(e["source"] == "pre_trade" for e in repay_events)
+
+
+# ── Regression: A/B/C unchanged after the Phase 3D stateful-policy refactor ─
+# Exact numeric snapshots captured from margin_simulation.py BEFORE the
+# Phase 3D refactor (ModelBProfitHarvest/ModelCRiskReset, the pre_trade_fn
+# hook, _fund_repayment extraction), using this exact fixture. Model 0/A
+# and the shared simulate() plumbing were not supposed to change behavior
+# for scenarios that never set pre_trade_fn (A/B/C all use Model 0) --
+# these tests prove that, to the last cent, rather than just asserting
+# "still runs without error."
+
+def _regression_fixture():
+    aligned = {
+        "A": ([100.0, 100.0, 100.0, 200.0, 200.0], 0),
+        "B": ([100.0, 100.0, 100.0, 200.0, 200.0], 0),
+        "C": ([None, None, 100.0, 200.0, 200.0], 2),
+    }
+    calendar = [f"2026-01-{d:02d}" for d in range(1, 6)]
+    deposit_days = [calendar[0], calendar[2]]
+    schedule = {calendar[0]: 60.0, calendar[2]: 20.0}
+    weights = {"A": 1.0, "B": 1.0, "C": 1.0}
+    return aligned, calendar, deposit_days, schedule, weights
+
+
+def test_regression_scenario_unlevered_unchanged():
+    aligned, calendar, deposit_days, schedule, weights = _regression_fixture()
+    sc = scenario_unlevered()
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    assert result.final_margin_debt == pytest.approx(0.0)
+    assert result.metrics()["final_book_value"] == pytest.approx(160.0)
+    assert sc.pre_trade_fn is None  # scenario_unlevered() never sets one
+
+
+def test_regression_scenario_fixed_leverage_unchanged():
+    aligned, calendar, deposit_days, schedule, weights = _regression_fixture()
+    sc = scenario_fixed_leverage(1.8, interest_apr=0.20, interest_free_amount=0.0)
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    assert result.final_margin_debt == pytest.approx(6.673974604366053)
+    assert result.metrics()["final_book_value"] == pytest.approx(166.65935872896728)
+    assert sc.pre_trade_fn is None
+
+
+def test_regression_scenario_leverage_sweep_unchanged():
+    aligned, calendar, deposit_days, schedule, weights = _regression_fixture()
+    expected = {
+        1.2: (6.673974604366049, 166.6593587289673),
+        1.8: (6.673974604366053, 166.65935872896728),
+        2.0: (6.673974604366053, 166.65935872896728),
+    }
+    scs = scenario_leverage_sweep(list(expected), interest_apr=0.20, interest_free_amount=0.0)
+    assert len(scs) == len(expected)
+    for sc in scs:
+        assert sc.pre_trade_fn is None
+        result = simulate(sc, weights, aligned, calendar, deposit_days,
+                          deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+        exp_debt, exp_book = expected[sc.leverage_cap]
+        assert result.final_margin_debt == pytest.approx(exp_debt)
+        assert result.metrics()["final_book_value"] == pytest.approx(exp_book)
 
 
 def test_simulate_result_metrics_never_produces_banned_language():
