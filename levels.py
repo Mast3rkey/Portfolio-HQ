@@ -190,7 +190,7 @@ def _render(rows, regime_known, regime_bearish, cfg) -> str:
                              abs(r["levels"][0]["dist_pct"]) if r["levels"] else 1e9))
 
     regime_s = ("UNKNOWN" if not regime_known else
-                "BELOW 200-EMA (risk-off — levels stamped do-not-act)"
+                "BELOW 200-EMA (risk-off)"
                 if regime_bearish else "ABOVE 200-EMA (risk-on)")
     L = [f"# Buy levels — {date.today().isoformat()}", "",
          f"**Regime (QQQ):** {regime_s}  |  rungs "
