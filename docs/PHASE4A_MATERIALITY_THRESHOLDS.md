@@ -57,11 +57,29 @@ Gaps between 0.5pp (the noise floor, §2) and 2.0pp are **reported but not count
 
 ## 8. How these thresholds combine with the three-way outcome framework
 
-Applying `docs/PHASE4A_ASSUMPTION_RESOLUTION.md` §6 (as revised) directly:
+### 8a. Criteria as used for Phase 4A (historical record — unchanged)
+
+Applying `docs/PHASE4A_ASSUMPTION_RESOLUTION.md` §6 (as revised) directly, this is the gate `run_phase4a_research.py` actually implemented and that produced Phase 4A's recorded "Evidence inconclusive" outcome (`docs/PHASE4A_RESEARCH_REPORT.md`, `docs/results/PHASE4A_RESEARCH_RESULTS.json`):
 
 - **Evidence supports** requires the §3/§4 gap threshold (2.0pp) to clear AND the §5 event-repetition threshold to clear, together, not either alone — per §5's explicit "necessary, not sufficient" framing.
 - **Evidence does not support** requires every relevant gap to fall at or below the §2 noise floor (0.5pp), consistently across both construction methods (synthetic and drift, per `docs/PHASE4A_ASSUMPTION_RESOLUTION.md` §1).
 - **Evidence inconclusive** covers everything in between: gaps in the 0.5pp-2.0pp suggestive band, results that clear a threshold under only one construction method, or event counts that clear §5's repetition bar without a corresponding gap clearing §3/§4 (echoing the real Phase 3G Model C pattern this document's own noise floor was derived from).
+
+This subsection is preserved as-is and is not edited by 8b below — it is the historical description of what actually governed Phase 4A's result.
+
+### 8b. Adopted criteria for future research cycles (2026-07-17)
+
+Per `docs/PHASE4A_OUTCOME_GATE_REVIEW.md`'s governance review, approved for **future** research only (see that document's §6 non-retroactivity statement and its new "Adoption" section below):
+
+**Previous criteria:** material gap AND repeated forced-deleveraging events.
+
+**Future criteria:** material gap AND (repeated forced-deleveraging events **OR** material threshold-exposure degradation, using the §6 time-above-threshold bar above — a risk-threshold breach occupying ≥5% of the scenario's simulated trading days).
+
+Rationale (from `docs/PHASE4A_OUTCOME_GATE_REVIEW.md` §4): the MaxDD-gap leg of the gate worked as designed and is unchanged. The event-count leg, used alone as the sole second condition, was too narrow — a coverage problem, not a threshold-calibration problem. `forced_deleveraging_events()` detects only one specific failure mode (a passive breach: leverage exceeding the cap because gross fell *after* debt was already drawn, a narrow sequence given `simulate()`'s own allocation step already clips new draws to the cap in real time). Phase 4A's own already-collected time-above-threshold data showed a much larger, more consistent signal across every concentrated arm (100.0% of simulated days above the reference threshold once concentrated, versus 61.7%/14.0% at baseline) than the event-count metric could ever produce in this harness's mechanics — a real, relevant, already-materiality-defined (§6) signal that the original gate simply never consulted.
+
+The revised second condition preserves the "necessary, not sufficient" structure exactly — a material MaxDD gap alone still does not qualify as "Evidence supports" on its own; it must still be corroborated by at least one of the two now-available exposure signals, not by the MaxDD gap in isolation.
+
+**This is a future research-methodology change, not a retroactive reclassification.** Phase 4A's own recorded outcome ("Evidence inconclusive") is not recomputed, and this adoption does not edit `docs/PHASE4A_RESEARCH_REPORT.md` or `docs/results/PHASE4A_RESEARCH_RESULTS.json` in any way — see `docs/PHASE4A_OUTCOME_GATE_REVIEW.md` §6 for the full non-retroactivity reasoning, which this adoption inherits unchanged. A gate is fixed before results for whichever research cycle uses it; adopting a revised gate now applies it prospectively, the same discipline every pre-committed threshold in this project has followed since `rung_backtest.md`.
 
 ## 9. These thresholds are fixed, not adjustable after seeing results
 

@@ -95,3 +95,13 @@ Not "Keep current gate" — the coverage gap identified in §4 is specific, iden
 - Does not itself implement the recommended gate modification — that is future work, gated on its own explicit approval, per the same discipline every other change in this project has followed.
 
 Stopping here. Awaiting direction on whether to adopt the "modify future research criteria" recommendation before any future Phase 4-family research cycle.
+
+## Adoption (2026-07-17)
+
+**The "Modify future research criteria" recommendation above is adopted, for future research cycles only.** Recorded formally in `docs/PHASE4A_MATERIALITY_THRESHOLDS.md` §8b and `docs/PHASE4A_ASSUMPTION_RESOLUTION.md` §6's update note — both updated alongside this adoption, both preserving §8a/the original §6 text as the unedited historical record of what actually governed Phase 4A.
+
+**Previous criteria** (unchanged historical record, still what produced Phase 4A's "Evidence inconclusive" outcome): material gap AND repeated forced-deleveraging events.
+
+**Future criteria** (effective for research cycles after this adoption): material gap AND (repeated forced-deleveraging events **OR** material threshold-exposure degradation, per `docs/PHASE4A_MATERIALITY_THRESHOLDS.md` §6).
+
+This adoption is explicitly a **future research-methodology change, not a retroactive reclassification** — restating §6 above: `docs/PHASE4A_RESEARCH_REPORT.md` and `docs/results/PHASE4A_RESEARCH_RESULTS.json` are not edited, not recomputed, and Phase 4A's recorded outcome is not altered by this adoption. No code was changed to record this adoption. No production file, and no entry in `CLAUDE.md`'s Decisions Log, was touched — this governs future *research methodology* only, not production doctrine, and remains subject to the same "any finding requires its own separate approval before affecting production" rule every other document in this project has stated.
