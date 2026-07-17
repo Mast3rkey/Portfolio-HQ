@@ -696,6 +696,68 @@ def test_regression_scenario_leverage_sweep_unchanged():
         assert result.metrics()["final_book_value"] == pytest.approx(exp_book)
 
 
+# ── track_tickers (Phase 4A addition) ───────────────────────────────────────
+
+def test_simulate_default_track_tickers_is_empty_and_behavior_unchanged():
+    # track_tickers omitted entirely -- must be byte-for-byte identical to
+    # every prior test's behavior (regression proof for the Phase 4A addition).
+    aligned, calendar, deposit_days, schedule, weights = _regression_fixture()
+    sc = scenario_fixed_leverage(1.8, interest_apr=0.20, interest_free_amount=0.0)
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    assert result.tracked_values == {}
+    assert result.final_margin_debt == pytest.approx(6.673974604366053)
+
+
+def test_simulate_track_tickers_records_daily_dollar_value():
+    aligned = {"A": ([100.0, 200.0, 300.0], 0), "B": ([100.0, 100.0, 100.0], 0)}
+    calendar = ["2026-01-01", "2026-01-02", "2026-01-03"]
+    sc = scenario_unlevered()
+    result = simulate(sc, weights={"A": 1.0, "B": 1.0}, aligned=aligned,
+                      calendar=calendar, deposit_days=[calendar[0]],
+                      deposit_amount=200.0, min_lot=1.0, track_tickers=["A"])
+    assert list(result.tracked_values.keys()) == ["A"]
+    assert len(result.tracked_values["A"]) == 3
+    # day0: A bought at $100 with half the $200 deposit -> 1.0 share -> $100
+    assert result.tracked_values["A"][0] == pytest.approx(100.0)
+    # day1: price doubles to $200, still 1.0 share -> $200
+    assert result.tracked_values["A"][1] == pytest.approx(200.0)
+    # day2: price to $300 -> $300
+    assert result.tracked_values["A"][2] == pytest.approx(300.0)
+
+
+def test_simulate_track_tickers_untracked_ticker_not_included():
+    aligned = {"A": ([100.0], 0), "B": ([100.0], 0)}
+    calendar = ["2026-01-01"]
+    sc = scenario_unlevered()
+    result = simulate(sc, weights={"A": 1.0, "B": 1.0}, aligned=aligned,
+                      calendar=calendar, deposit_days=[calendar[0]],
+                      deposit_amount=200.0, min_lot=1.0, track_tickers=["A"])
+    assert "B" not in result.tracked_values
+
+
+def test_simulate_track_tickers_zero_before_eligible():
+    aligned = {"A": ([100.0, 100.0], 0), "C": ([None, 100.0], 1)}
+    calendar = ["2026-01-01", "2026-01-02"]
+    sc = scenario_unlevered()
+    result = simulate(sc, weights={"A": 1.0, "C": 1.0}, aligned=aligned,
+                      calendar=calendar, deposit_days=[calendar[0]],
+                      deposit_amount=100.0, min_lot=1.0, track_tickers=["C"])
+    assert result.tracked_values["C"][0] == 0.0  # not eligible yet, no shares
+
+
+def test_simulate_track_multiple_tickers_sums_independently():
+    aligned = {"A": ([100.0], 0), "B": ([100.0], 0)}
+    calendar = ["2026-01-01"]
+    sc = scenario_unlevered()
+    result = simulate(sc, weights={"A": 1.0, "B": 1.0}, aligned=aligned,
+                      calendar=calendar, deposit_days=[calendar[0]],
+                      deposit_amount=200.0, min_lot=1.0, track_tickers=["A", "B"])
+    assert set(result.tracked_values.keys()) == {"A", "B"}
+    assert result.tracked_values["A"][0] == pytest.approx(100.0)
+    assert result.tracked_values["B"][0] == pytest.approx(100.0)
+
+
 def test_simulate_result_metrics_never_produces_banned_language():
     sc = scenario_fixed_leverage(1.8, interest_apr=0.05, interest_free_amount=1000.0)
     aligned = {"A": ([100.0, 105.0, 95.0, 115.0], 0)}

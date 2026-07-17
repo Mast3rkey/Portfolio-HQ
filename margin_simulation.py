@@ -497,6 +497,7 @@ class SimulationResult:
     events: list[dict]
     final_margin_debt: float
     deposit_total: float
+    tracked_values: dict[str, list[float]] = field(default_factory=dict)
 
     def metrics(self, near_cap_fraction: float = 0.9,
                concentration_inputs: dict | None = None) -> dict:
@@ -551,7 +552,8 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
             aligned: dict[str, tuple[list[float | None], int | None]],
             calendar: list[str], deposit_days: list[str],
             deposit_amount: float | None = 0.0, min_lot: float = 25.0,
-            deposit_schedule: dict[str, float] | None = None) -> SimulationResult:
+            deposit_schedule: dict[str, float] | None = None,
+            track_tickers: list[str] | None = None) -> SimulationResult:
     """Run one scenario through aligned historical (or synthetic, for
     tests) daily closes.
 
@@ -592,6 +594,21 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
     supplies a specific override for that day — real deposit history is
     irregular (per docs/MARGIN_DATA_INVENTORY.md's Category C), so a
     future Phase 3C run may want a non-flat cadence.
+
+    `track_tickers` (Phase 4A addition): optional list of tickers whose
+    daily dollar value (shares held x that day's close) is recorded into
+    the returned SimulationResult.tracked_values. Added because no
+    existing output exposes PER-TICKER value over time — only aggregate
+    gross/book/leverage series — and concentration measurement
+    (docs/PHASE4A_CONCENTRATION_MARGIN_RESEARCH_PLAN.md) genuinely
+    cannot be derived externally without it (unlike everything else
+    Phase 4A needed, which is computable from already-exposed series —
+    see phase4a_lib.py). Defaults to None: when omitted, tracked_values
+    is an empty dict and every other code path is byte-for-byte
+    unchanged — this is a pure addition, not a behavior change, to the
+    existing 156-test-covered engine (see
+    test_regression_scenario_*_unchanged in test_margin_simulation.py
+    for the pre-existing regression-proof pattern this follows).
     """
     dep_set = set(deposit_days)
     cash = 0.0
@@ -603,6 +620,7 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
     flows: dict[int, float] = {}
     events: list[dict] = []
     prior_gross: float | None = None
+    tracked_values: dict[str, list[float]] = {t: [] for t in (track_tickers or [])}
 
     for i, d in enumerate(calendar):
         elig = [s for s in aligned if aligned[s][1] is not None and i >= aligned[s][1]]
@@ -694,6 +712,8 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
         book_values.append(net_equity + cash)
         gross_series.append(gross)
         leverage_series.append((gross / net_equity) if net_equity > 0 else None)
+        for t in tracked_values:
+            tracked_values[t].append(shares.get(t, 0.0) * closes.get(t, 0.0))
         prior_gross = gross
 
     return SimulationResult(
@@ -708,6 +728,7 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
         events=events,
         final_margin_debt=margin_debt,
         deposit_total=sum(flows.values()),
+        tracked_values=tracked_values,
     )
 
 
