@@ -25,10 +25,15 @@ indicators.py        SMA/RSI/ATR/swing-low (pure functions)
 earnings.py          yfinance earnings-date lookup, graceful "unavailable" fallback
 crypto.py            crypto sleeve pricing (Alpaca majors + CoinGecko fallback)
 regime_gate.py        200-day EMA regime check (informational only, see below)
+margin_state.py        leverage-cap/buffer-floor math, concentration risk scoring (imported by allocate.py)
 
 targets.yaml          tier structure, weights, caps, gates, margin doctrine (config truth)
 holdings.yaml          position state: shares, crypto_shares, margin (rewritten by update-* commands)
 CLAUDE.md               doctrine: Decisions Log, Open Items, Guardrails, workflow
+decision_log.yaml       structured governance decisions (PI-000N / MARGIN-000N)
+
+intelligence/companies/     Company Intelligence: per-company research records (implemented, opt-in, advisory-only)
+intelligence_validator.py   read-only schema validator for intelligence/ (zero coupling with allocate.py/margin_state.py)
 
 backtest_*.py          one-shot backtests, each testing exactly one doctrine question
 verify_rungs.py         verification charts for the rung backtest
@@ -51,6 +56,31 @@ targets, no predictive research baked into the tool itself — see `CLAUDE.md`'s
 Guardrails for what's explicitly out of scope and why (several backtests this
 system ran on itself showed that added "smart" layers subtract return, not
 add it).
+
+## Company Intelligence (advisory-only)
+
+`intelligence/companies/` holds human-authored, per-company research records
+(thesis, risks, catalysts, a conviction rating) — one YAML + one Markdown
+file per covered company, validated by `intelligence_validator.py` against
+the schema frozen in `docs/PORTFOLIO_INTELLIGENCE_SPEC.md`. Coverage is
+opt-in; a company with no file is not an error.
+
+**Company Intelligence has zero authority over allocator recommendations,
+targets, tiers, or weights.** `intelligence_validator.py` has no import
+relationship with `allocate.py` or `margin_state.py` in either direction —
+verified by dedicated isolation tests, not just asserted in doctrine.
+Nothing in this repository reads a company's thesis, risks, or conviction
+rating to decide what to buy, trim, or block.
+
+**Theme Intelligence** is governed but not yet implemented. PI-0006 freezes
+its flat, advisory-only data model, and PI-0007 authorizes one bounded future
+pilot covering `ai_infrastructure`, NVDA, and GEV. No theme or associated
+company record currently exists, and implementation remains subject to a
+separate branch, review, and merge.
+
+**Portfolio Intelligence aggregation** remains deferred and unauthorized.
+Neither Theme Intelligence nor Portfolio Intelligence aggregation currently
+affects allocator behavior.
 
 ## Allocation workflow
 
@@ -214,14 +244,17 @@ that backtest's results can be eyeballed against reality.
 ## Tests
 
 ```bash
-python3 -m pytest test_margin.py test_resolve_holdings.py test_rungs.py test_indicators.py -q
+python3 -m pytest -q
 ```
-Real unit coverage for the financially consequential code paths: margin math
-(leverage cap clipping, buffer-floor hard cutoff), cluster-cap and T1/T2
-concentration-ceiling trims (multi-cluster membership, floor-at-target
-behavior), live-holdings price resolution, and the indicator functions
-(including a couple of non-obvious verified edge cases, e.g. RSI of a
-perfectly flat series is 100.0, not the textbook-intuitive 50).
+Covers the financially consequential code paths — margin math (leverage cap
+clipping, buffer-floor hard cutoff), cluster-cap and T1/T2 concentration-
+ceiling trims (multi-cluster membership, floor-at-target behavior),
+live-holdings price resolution, and the indicator functions (including a
+couple of non-obvious verified edge cases, e.g. RSI of a perfectly flat
+series is 100.0, not the textbook-intuitive 50) — plus the backtest
+libraries, buy-level staging, and Company Intelligence's schema validator
+and allocator-isolation guarantees. Run the whole suite rather than naming
+individual files here; the file list changes too often to keep in sync.
 
 ## Known limitation
 
