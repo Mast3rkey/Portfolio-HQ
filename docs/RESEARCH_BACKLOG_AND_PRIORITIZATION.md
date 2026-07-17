@@ -6,6 +6,14 @@ _Written 2026-07-17, following `docs/PHASE4A_RESEARCH_REPORT.md`'s "Evidence inc
 
 ---
 
+## Reassessment (2026-07-17)
+
+Item 1 (transaction cost sensitivity) has been completed — see `docs/TRANSACTION_COST_SENSITIVITY_PLAN.md`/`RESULTS.md` and the consolidated `docs/PHASE3_MODEL_B_EVIDENCE_UPDATE.md`. Marked **CLOSED** in place below rather than deleted, so the backlog stays a complete record of what was considered, not just what remains open.
+
+Closing item 1 surfaced two new, higher-priority questions that were implicit in its own "what this doesn't resolve" section: **tax treatment** and **stress-regime execution assumptions** — both added below as items 9 and 10, and both ranked ahead of everything except the already-completed item 1. Concentration follow-up work (items 2 and 4) is explicitly **deprioritized further**: Phase 4A already established that concentration can produce a measurable degradation signal, but the evidence bar for changing any control has not been met, and neither item is expected to change that determination — further concentration research is lower-value right now than closing the cost-realism gap on Model B specifically. See the updated priority table at the end of this document.
+
+---
+
 ## Scoring legend
 
 - **Effort**: Small (hours, reuses existing harness/functions with no new abstraction) / Medium (new derived-metric layer or new scenario construction, still execution-layer) / Large (new simulation dimension, new data, or a combinatorial sweep).
@@ -14,7 +22,9 @@ _Written 2026-07-17, following `docs/PHASE4A_RESEARCH_REPORT.md`'s "Evidence inc
 
 ---
 
-## 1. Transaction cost sensitivity for repayment-model turnover
+## 1. Transaction cost sensitivity for repayment-model turnover — **CLOSED (2026-07-17)**
+
+**Resolution:** Implemented. `docs/TRANSACTION_COST_SENSITIVITY_RESULTS.md`/`.json` found that cost erosion at 0/5/15bps (0bps Known, 5/15bps Hypothetical) was three orders of magnitude smaller than the already-observed Model B TWR/MaxDD gaps, and did not shift materiality classification at any `repay_fraction` × cost-tier combination tested. Consolidated into `docs/PHASE3_MODEL_B_EVIDENCE_UPDATE.md`. This closes the *bps-based spread/slippage* question specifically — it does **not** close tax treatment, market impact under stress, execution timing, or behavioral friction, each of which is a distinct question (see items 9/10 below, and `docs/PHASE3_MODEL_B_EVIDENCE_UPDATE.md` §4/§5). Original scoring preserved below for the record, not re-evaluated now that it's closed.
 
 **Question:** How much of Model B's (and any future Model C activations') return/drawdown trade-off survives once its measured turnover is actually priced?
 
@@ -198,6 +208,50 @@ These appeared in `docs/PHASE4_READINESS_REVIEW.md`'s "special attention" list a
 
 - **Whether margin should be treated as a portfolio-level risk resource only.** Already the consistent design throughout Phase 2-4 (`margin_state.py`'s `concentration_risk_score()` is explicitly portfolio-level; Model B/C operate on portfolio-level `net_equity`; `worst_case_concentration_impact()`'s own docstring explicitly disclaims any per-position leverage-allocation framing). Phase 4A's design decisions (§3a of the resolution document) reaffirmed this by keeping `margin_state.py`'s scorer read-only/reference-only rather than adapting it toward a per-position view. **Recommend: close as a design principle to explicitly reaffirm in `docs/MARGIN_DOCTRINE.md`** (a small documentation edit, not research) **rather than carry as an open backlog item.**
 
+## 9. Tax treatment sensitivity for repayment-model turnover
+
+**Question:** Does Model B's (or a future Model C's) TWR/MaxDD trade-off survive once realized gains/losses from its forced trim-and-repay cycles are taxed?
+
+**Why it matters:** Added 2026-07-17, surfaced directly by closing item 1: `docs/TRANSACTION_COST_SENSITIVITY_PLAN.md` explicitly scoped out tax effects, and `docs/PHASE3_MODEL_B_EVIDENCE_UPDATE.md` §4 names this as the first of the "non-bps effects" the bps-cost result does not address. Unlike bid-ask spread (small relative to the observed gaps at every tested magnitude), realized-gain tax treatment could plausibly be large — Model B's 296 events at `repay_fraction=0.25` each force a partial sale of appreciated positions (the mechanism only fires on a new net-equity high, i.e. on gains), which is close to a worst case for tax drag (frequent, gain-triggered-by-construction realizations) rather than a typical trading pattern.
+
+**Evidence that exists:** The exact event list (day, dollar amount) for each `repay_fraction` arm is already available from `run_transaction_cost_sensitivity.py`'s re-run — the same event stream the transaction-cost pass already priced could be re-priced with a disclosed tax-rate assumption instead of (or alongside) a bps assumption.
+
+**Evidence missing:** Any tax-rate assumption, any cost-basis tracking (this harness tracks share counts, not per-lot cost basis, so a rigorous realized-gain calculation would need new bookkeeping — see Effort below), and any real data on this account's actual tax situation (short-term vs. long-term treatment, marginal rate) — all necessarily Hypothetical, the same epistemic status as the 5/15bps assumptions.
+
+**Effort:** **Medium.** Unlike the transaction-cost pass (pure post-processing of already-known event dollar amounts), a realized-gain tax estimate needs cost-basis information the harness doesn't currently track per-lot — `simulate()` tracks aggregate share counts per ticker, not when each share was acquired at what price. A rigorous version would need a new, small, additive extension (average-cost-basis tracking per ticker, or a simplifying "average cost basis" approximation that doesn't require full lot-level tracking) — larger than item 1's zero-engine-change scope, but still execution-layer-first per this project's established discipline (extend the engine only if the observation genuinely can't be derived externally, matching Phase 4A's `track_tickers` precedent).
+
+**Expected value:** **High.** Same reasoning as item 1 originally had, but for a cost category plausibly large enough to matter (unlike bps spread, which turned out immaterial at every tested magnitude) — this is the most direct way to test whether Model B's observed advantage is a real, tax-aware advantage or an artifact of a tax-free simulation environment.
+
+**Dependencies:** Item 1 (done — establishes the event-stream/cost-application pattern this item reuses).
+
+**Could change doctrine:** No — same reasoning as item 1; informs whether Model B is worth further investment, doesn't alter any live rule.
+
+**Recommended priority: 1** (of the currently-open items — see the updated table below).
+
+---
+
+## 10. Stress-regime execution assumptions
+
+**Question:** Does the smooth 2021-2026 window hide bad-timing effects that would show up under real stressed-market execution conditions (widened spreads, slippage, delayed fills)?
+
+**Why it matters:** Added 2026-07-17, the second question item 1's closure surfaced: `docs/PHASE3_MODEL_B_EVIDENCE_UPDATE.md` §4 names "market impact under stress" and "execution timing" as unresolved — the tested bps assumption was flat and unconditional, never widening during the account's own worst episodes. This is a distinct question from item 2 in this backlog (a constructed broad-market drawdown stress case for the concentration research line) — this item is about *execution realism* generally (does forced trading during a real stress episode cost more than the calm-market bps rate already tested), not concentration specifically, and could apply to Model B, Model C, or any future mechanical rule.
+
+**Evidence that exists:** The same real 2021-2026 price data every Phase 3/4 scenario already uses; the 2022 stretch (this window's one real, if brief, bear period) as a natural candidate to check whether Model B's events cluster there and whether a stress-conditional cost multiplier (e.g., 2-3x the calm-market bps rate during a defined stress period) would change item 1's conclusion.
+
+**Evidence missing:** Any stress-conditional cost model at all — item 1's cost was flat across the whole window regardless of market conditions.
+
+**Effort:** **Small-Medium.** Reuses item 1's exact event-stream/cost-application pattern; the only new piece is defining a stress-period detector (e.g., "levels of decline from a rolling high" or reusing the existing regime-gate's QQQ-below-200-EMA concept, already computed and available, purely as a read-only reference signal, not reintroducing the removed regime gate as a rule) and applying an elevated bps rate only during those days.
+
+**Expected value:** **Medium-High.** Directly tests whether item 1's "cost doesn't matter" finding is an artifact of this window's calm character (the same concern already raised about the 2021-2026 sample generally) or would hold under real stress-period execution costs too.
+
+**Dependencies:** Item 1 (done). Loosely related to, but independent of, item 2 (the concentration-specific stress case) — could reuse a shared stress-period detector if both are pursued, but neither depends on the other completing first.
+
+**Could change doctrine:** No.
+
+**Recommended priority: 2** (of the currently-open items).
+
+---
+
 ## The one permanent, unresearchable item
 
 - **Real historical margin behavior.** `docs/PHASE4_READINESS_REVIEW.md` §3 and `docs/TRACK1_HISTORICAL_REALITY_AUDIT.md` both already established this cannot be closed by more simulation — the real data doesn't exist. The *only* path forward is item 5 (data collection), and even then the payoff is measured in months/years, not this backlog cycle. Listed here for completeness, not as an actionable item.
@@ -206,18 +260,22 @@ These appeared in `docs/PHASE4_READINESS_REVIEW.md`'s "special attention" list a
 
 ## Recommended priority order (1 = highest value now)
 
+_Updated 2026-07-17 following item 1's closure. Item 1 is retained in the table, marked closed, so the sequencing history stays visible._
+
 | Priority | Item | Effort | Value | Doctrine-capped? |
 |---|---|---|---|---|
-| 1 | Transaction cost sensitivity for repayment turnover | Small | High | No |
-| 2 | Constructed broad-market stress case | Medium | Medium-High | No |
-| 3 | Re-examine the "Evidence supports" AND-gate | Small | Medium | No |
-| 4 | Broader concentration construction sweep | Medium-Large | Medium | No |
-| 5 | Historical data collection infrastructure | Small (touches `allocate.py` — needs authorization) | High, deferred | No (enables future evidence only) |
-| 6 | Model C `reset_leverage` sweep | Small | Low | No |
-| 7 | Model C volatility-spike triggering | Medium | Low | No |
-| 8 | Leverage-cap × concentration combined sweep | Medium | Structurally capped | Structurally capped |
+| **CLOSED** | Transaction cost sensitivity for repayment turnover | Small | High | No |
+| 1 | Tax treatment sensitivity for repayment-model turnover | Medium | High | No |
+| 2 | Stress-regime execution assumptions | Small-Medium | Medium-High | No |
+| 3 | Historical data collection infrastructure | Small (touches `allocate.py` — needs authorization) | High, deferred | No (enables future evidence only) |
+| 4 | Re-examine the "Evidence supports" AND-gate | Small | Medium | No |
+| 5 | Constructed broad-market stress case (concentration line) | Medium | Medium-High | No |
+| 6 | Broader concentration construction sweep | Medium-Large | Medium | No |
+| 7 | Model C `reset_leverage` sweep | Small | Low | No |
+| 8 | Model C volatility-spike triggering | Medium | Low | No |
+| 9 | Leverage-cap × concentration combined sweep | Medium | Structurally capped | Structurally capped |
 
-**Rationale for the top of the list:** items 1 and 3 are near-zero-cost re-analyses of data already collected — no new simulation, no new risk of introducing a new bug, and both directly address the two biggest open weaknesses in the Phase 3/4A evidence base (unpriced cost, a possibly-mis-specified outcome gate). Item 2 is the natural next real research investment once those two are settled, since it strengthens the weakest stress case rather than adding volume to an already-collected dimension. Items 4 and 5 are both worthwhile but lower urgency — 4 because it mostly tests generalization of an already-found effect, 5 because its payoff horizon is inherently long. Items 6-8 are recommended for deprioritization: 6 and 7 because the underlying mechanism (Model C's trigger) has shown almost no activity in this window regardless of parameter, making further parameter search low-yield until a genuinely severe stress case (item 2) changes that picture; item 8 because this project's own doctrine already caps what any finding there could do.
+**Rationale for the reordering:** closing the transaction-cost question narrowed, rather than closed, the "is Model B's turnover a real problem" line of inquiry — it ruled out bid-ask spread as the mechanism but surfaced tax treatment and stress-regime execution as the two cost categories that could plausibly still matter (`docs/PHASE3_MODEL_B_EVIDENCE_UPDATE.md` §4), so both are promoted ahead of everything else. Concentration-line items (former priorities 2 and 4, now 5 and 6) are pushed down: Phase 4A already established that concentration can produce a measurable degradation signal, but the evidence bar for changing any control has not been met, and neither remaining concentration item is expected to change that determination on its own — closing the cost-realism gap on Model B specifically is judged higher-value right now than adding more concentration evidence. Item 3 (data collection infrastructure) moves up in relative terms (not in absolute urgency) simply because two items that used to rank above it are now either closed or reprioritized below it — its own effort/value/dependency profile is unchanged. Items 7-9 remain deprioritized for the same reasons as before (Model C's mechanism shows almost no activity in this window regardless of parameter; the leverage-cap sweep is doctrine-capped regardless of finding).
 
 ## What this document does not do
 
