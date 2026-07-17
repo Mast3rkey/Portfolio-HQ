@@ -29,6 +29,15 @@ Items 9 (tax treatment) and 10 (stress-regime execution assumptions) were both c
 
 No new numbered backlog item is added for execution modeling or broker mechanics here — both are already named, tracked blockers in the Phase 5 governance documents cited above, not new research questions this backlog needs to independently number. Whether either is worth a dedicated future research track (as opposed to a documentation-only inventory) is a governance sequencing question, not a backlog-prioritization one — out of scope for this reconciliation.
 
+## Final reconciliation (2026-07-17)
+
+Per `docs/PHASE7_RESEARCH_PROGRAM_CLOSURE.md`, the Phase 3–7A margin research program is closed. This is the final status pass on this backlog: every item below is now classified exactly one of **CLOSED** (answered, resolution on record), **CLOSED — NO FURTHER VALUE EXPECTED** (not pursued further, and further pursuit is not expected to produce value relative to its cost — a deliberate, reasoned closure, not an oversight), or **OPEN** (still capable of changing governance, with a stated reason why it isn't already answered and what evidence could change the answer). No new item is created in this pass. Two items previously carried as open backlog priorities are reclassified here for the first time:
+
+- **Item 2** (constructed broad-market stress case) and **item 4** (broader concentration construction sweep) move to **CLOSED — NO FURTHER VALUE EXPECTED**. Phase 7A's execution-reality findings identified the actual highest-relevance gap in the concentration research line as a *representational* one (the simulator has no analog for FINRA's real concentration-triggered maintenance escalation or for forced liquidation at all — `docs/PHASE7A_DECISION_RELEVANCE_MAP.md` item 1), not a *coverage* one (more synthetic severity levels or more concentrated-name picks). Running either item now would add more evidence of the same kind the program has already produced in volume, on a question Phase 7A reframed rather than left open.
+- **Item 3** (re-examine the AND-gate's second condition) moves to **CLOSED**. This was, in substance, already done: `docs/PHASE4A_OUTCOME_GATE_REVIEW.md` performed exactly this re-analysis and adopted a widened gate (material gap AND (repeated forced-deleveraging events OR material threshold-exposure degradation)) for future research cycles, explicitly without retroactively reclassifying Phase 4A's own recorded result. This backlog item's question is answered; it was simply never marked closed here.
+- **Items 6, 7, 8** (Model C `reset_leverage` sweep, Model C volatility-spike triggering, leverage-cap × concentration sweep) move to **CLOSED — NO FURTHER VALUE EXPECTED**. Per `docs/PHASE7_RESEARCH_PROGRAM_CLOSURE.md`'s explicit "would not do" list (no further leverage sweep, no further repayment sweep, no further concentration sweep), and each item's own already-recorded Low/Structurally-capped expected value — none has a plausible path to changing governance regardless of effort spent.
+- **Item 5** (historical data collection infrastructure) remains **OPEN** — see its updated entry below for why.
+
 ---
 
 ## Scoring legend
@@ -63,7 +72,9 @@ No new numbered backlog item is added for execution modeling or broker mechanics
 
 ---
 
-## 2. A constructed, non-window-dependent market-drawdown stress case
+## 2. A constructed, non-window-dependent market-drawdown stress case — **CLOSED — NO FURTHER VALUE EXPECTED (2026-07-17)**
+
+**Resolution:** Not pursued. Per the "Final reconciliation" section above: Phase 7A's evidence inventory and decision relevance map identified the concentration research line's actual highest-relevance open question as representational (the simulator has no analog for real concentration-triggered maintenance requirements or forced liquidation, `docs/PHASE7A_DECISION_RELEVANCE_MAP.md` item 1) rather than a matter of testing more synthetic severity levels. A broader synthetic shock would add more evidence of a kind this program already has in volume, not resolve the gap Phase 7A actually found. Original question/rationale preserved below for the historical record of why this item was opened.
 
 **Question:** How does the concentrated + levered portfolio behave in a genuinely severe, broad market decline — not the mild 2022 stretch this repo's 2021-2026 window happens to contain?
 
@@ -85,7 +96,9 @@ No new numbered backlog item is added for execution modeling or broker mechanics
 
 ---
 
-## 3. Re-examine the "Evidence supports" AND-gate's second condition
+## 3. Re-examine the "Evidence supports" AND-gate's second condition — **CLOSED (2026-07-17)**
+
+**Resolution:** Already done, in substance, by `docs/PHASE4A_OUTCOME_GATE_REVIEW.md` — a formal governance review that performed exactly this re-analysis and adopted a widened outcome gate (material MaxDD gap AND (repeated forced-deleveraging events OR material threshold-exposure degradation)) for future research cycles, per its own explicit non-retroactivity statement: Phase 4A's recorded "Evidence inconclusive" result was not itself reclassified. This backlog item's question was answered before this final reconciliation pass; it was simply never marked closed here. Original question/rationale preserved below for the historical record of why this item was opened.
 
 **Question:** Is "forced-deleveraging event count" the right second criterion (alongside a material MaxDD gap) for concluding concentration materially changes margin risk — or does it structurally under-fire in this harness for a reason unrelated to the underlying question?
 
@@ -107,7 +120,9 @@ No new numbered backlog item is added for execution modeling or broker mechanics
 
 ---
 
-## 4. Broader concentration construction sweep (other names, other clusters, multiple multipliers)
+## 4. Broader concentration construction sweep (other names, other clusters, multiple multipliers) — **CLOSED — NO FURTHER VALUE EXPECTED (2026-07-17)**
+
+**Resolution:** Not pursued, same reasoning as item 2 above — Phase 7A reframed the concentration research line's real gap as representational (a missing broker-mechanics analog), not a matter of testing more names/clusters/multipliers with the existing simulator. Original question/rationale preserved below for the historical record of why this item was opened.
 
 **Question:** Does Phase 4A's finding (or lack thereof) generalize beyond NVDA/semis at a single 3.0x/1.8x multiplier, or is it specific to that one pick?
 
@@ -129,7 +144,13 @@ No new numbered backlog item is added for execution modeling or broker mechanics
 
 ---
 
-## 5. Historical data collection infrastructure (margin/cashflow/interest/buffer logs)
+## 5. Historical data collection infrastructure (margin/cashflow/interest/buffer logs) — **OPEN**
+
+**Why it remains open:** This is the one item in the entire backlog that is not a simulation question — it produces the only kind of evidence `docs/PHASE7_RESEARCH_PROGRAM_CLOSURE.md` names as capable of justifying reopening the margin research program at all (real broker records, real fills, real borrowing history — as opposed to more simulation on data this program already has).
+
+**Why it is not already answered:** No margin/cashflow/interest/buffer logging has been implemented. The schema and rationale are fully designed (`docs/MARGIN_DATA_INVENTORY.md`) but nothing has been built — this is a genuine, unstarted gap, not a bookkeeping omission like items 3/9/10 were before their own reconciliation passes.
+
+**What evidence could realistically change the answer:** Starting the log now and letting it accumulate for months to years would eventually answer "what did this account's real margin history actually do" — a question no amount of additional simulation, in this program or any successor, can ever answer instead. Its value is entirely deferred and cannot be accelerated by more research effort today.
 
 **Question:** Not a backtest question — a "what should we start recording today so this becomes answerable from real data in the future" question, already scoped in full in `docs/MARGIN_DATA_INVENTORY.md`'s collection plan (`margin_log.csv`, `cashflow_log.csv`, an interest-charge log, a buffer time series).
 
@@ -151,7 +172,9 @@ No new numbered backlog item is added for execution modeling or broker mechanics
 
 ---
 
-## 6. Model C `reset_leverage` sensitivity sweep
+## 6. Model C `reset_leverage` sensitivity sweep — **CLOSED — NO FURTHER VALUE EXPECTED (2026-07-17)**
+
+**Resolution:** Not pursued. Per `docs/PHASE7_RESEARCH_PROGRAM_CLOSURE.md`'s explicit "would not do" list (no further repayment/leverage sweep) and this item's own already-recorded Low expected value — Model C's drawdown trigger barely engages in this window at any tested threshold (Phase 3G), and Phase 4A independently found zero forced-deleveraging events across every concentration/stress combination. Sweeping a second parameter on a mechanism that rarely activates has no plausible path to changing governance. Original question/rationale preserved below for the historical record of why this item was opened.
 
 **Question:** Does the 1.25x reset target (held fixed throughout Phase 3G's `drawdown_trigger_pct` sweep) itself matter, or would a different reset target change Model C's behavior materially?
 
@@ -173,7 +196,9 @@ No new numbered backlog item is added for execution modeling or broker mechanics
 
 ---
 
-## 7. Model C volatility-spike triggering
+## 7. Model C volatility-spike triggering — **CLOSED — NO FURTHER VALUE EXPECTED (2026-07-17)**
+
+**Resolution:** Not pursued, same reasoning as item 6 — building an entirely new trigger mechanic for a policy class that already barely activates on its existing trigger, in the same calm-dominant window, is a high-effort way to most likely reconfirm what Phase 3G/4A already established. Original question/rationale preserved below for the historical record of why this item was opened.
 
 **Question:** Should Model C also trigger on a volatility spike, not just a drawdown, per the original Test C framing in `docs/PHASE3_MARGIN_EVIDENCE_FRAMEWORK.md` ("gains, volatility spikes, or concentration increases")?
 
@@ -195,7 +220,9 @@ No new numbered backlog item is added for execution modeling or broker mechanics
 
 ---
 
-## 8. Leverage-cap × concentration combined sweep (Scenario D leverage range)
+## 8. Leverage-cap × concentration combined sweep (Scenario D leverage range) — **CLOSED — NO FURTHER VALUE EXPECTED (2026-07-17)**
+
+**Resolution:** Not pursued. This item's own already-recorded scoring already classified it as **Structurally capped** — no finding here, however dramatic, could change the 1.8x leverage cap without a prior, separate, non-research decision to treat the cap as open to backtest-driven revision, which nothing in this project's doctrine supports (`CLAUDE.md`: "State it, apply it, don't relitigate without a new leverage regime"). Confirmed closed rather than left open, since its ceiling on practical value was already established, not newly discovered. Original question/rationale preserved below for the historical record of why this item was opened.
 
 **Question:** Does the concentration-risk finding change at higher leverage levels (e.g., 2.0x instead of 1.8x)?
 
@@ -217,13 +244,13 @@ No new numbered backlog item is added for execution modeling or broker mechanics
 
 ---
 
-## Items recommended for closure (not backlog — already answered)
+## Items recommended for closure (not backlog — already answered) — **CLOSED**
 
 These appeared in `docs/PHASE4_READINESS_REVIEW.md`'s "special attention" list as open questions. On review, both are better classified as **already resolved by existing doctrine**, not open research questions — listing them as pending backlog items would misrepresent them as awaiting evidence they don't actually need.
 
-- **Whether repayment should be automatic or optional.** `docs/PHASE4_READINESS_REVIEW.md` itself already concluded: in this codebase, "automatic" can only ever mean "surfaced as a recommendation in the advisory output," never unattended execution — order-placement code was deliberately stripped from `alpaca_client.py` and must never be re-added (`CLAUDE.md`'s foundational rule). No simulation result, from Model B/C or Phase 4A, can change that; it is a structural property of the tool, not an open empirical question. **Recommend: close, no further research.** If a future decision is needed, it's a design/doctrine discussion, not a backtest.
+- **Whether repayment should be automatic or optional — CLOSED.** `docs/PHASE4_READINESS_REVIEW.md` itself already concluded: in this codebase, "automatic" can only ever mean "surfaced as a recommendation in the advisory output," never unattended execution — order-placement code was deliberately stripped from `alpaca_client.py` and must never be re-added (`CLAUDE.md`'s foundational rule). No simulation result, from Model B/C or Phase 4A, can change that; it is a structural property of the tool, not an open empirical question. If a future decision is needed, it's a design/doctrine discussion, not a backtest.
 
-- **Whether margin should be treated as a portfolio-level risk resource only.** Already the consistent design throughout Phase 2-4 (`margin_state.py`'s `concentration_risk_score()` is explicitly portfolio-level; Model B/C operate on portfolio-level `net_equity`; `worst_case_concentration_impact()`'s own docstring explicitly disclaims any per-position leverage-allocation framing). Phase 4A's design decisions (§3a of the resolution document) reaffirmed this by keeping `margin_state.py`'s scorer read-only/reference-only rather than adapting it toward a per-position view. **Recommend: close as a design principle to explicitly reaffirm in `docs/MARGIN_DOCTRINE.md`** (a small documentation edit, not research) **rather than carry as an open backlog item.**
+- **Whether margin should be treated as a portfolio-level risk resource only — CLOSED.** Already the consistent design throughout Phase 2-4 (`margin_state.py`'s `concentration_risk_score()` is explicitly portfolio-level; Model B/C operate on portfolio-level `net_equity`; `worst_case_concentration_impact()`'s own docstring explicitly disclaims any per-position leverage-allocation framing). Phase 4A's design decisions (§3a of the resolution document) reaffirmed this by keeping `margin_state.py`'s scorer read-only/reference-only rather than adapting it toward a per-position view.
 
 ## 9. Tax treatment sensitivity for repayment-model turnover — **CLOSED (2026-07-17, refined by Phase 6A same day)**
 
@@ -279,30 +306,33 @@ These appeared in `docs/PHASE4_READINESS_REVIEW.md`'s "special attention" list a
 
 ---
 
-## Recommended priority order (1 = highest value now)
+## Final status (2026-07-17)
 
-_Updated 2026-07-17 following the Phase 6A reconciliation. Closed items are retained in the table, marked closed, so the sequencing history stays visible._
+_This table supersedes the prior "Recommended priority order" table, which prioritized among open items during active research. The program is now closed (`docs/PHASE7_RESEARCH_PROGRAM_CLOSURE.md`); every item below carries a final status rather than a ranking. Closed items are retained, not deleted, so the record of what was considered stays complete._
 
-| Priority | Item | Effort | Value | Doctrine-capped? |
-|---|---|---|---|---|
-| **CLOSED** | Transaction cost sensitivity for repayment turnover | Small | High | No |
-| **CLOSED** | Tax treatment sensitivity for repayment-model turnover (upper bound + Phase 6A FIFO refinement) | Medium | High | No |
-| **CLOSED** | Stress-regime execution assumptions | Small-Medium | Medium-High | No |
-| 1 | Historical data collection infrastructure | Small (touches `allocate.py` — needs authorization) | High, deferred | No (enables future evidence only) |
-| 2 | Re-examine the "Evidence supports" AND-gate | Small | Medium | No |
-| 3 | Constructed broad-market stress case (concentration line) | Medium | Medium-High | No |
-| 4 | Broader concentration construction sweep | Medium-Large | Medium | No |
-| 5 | Model C `reset_leverage` sweep | Small | Low | No |
-| 6 | Model C volatility-spike triggering | Medium | Low | No |
-| 7 | Leverage-cap × concentration combined sweep | Medium | Structurally capped | Structurally capped |
+| Item | Final status |
+|---|---|
+| 1. Transaction cost sensitivity for repayment turnover | **CLOSED** |
+| 2. Constructed broad-market stress case (concentration line) | **CLOSED — NO FURTHER VALUE EXPECTED** |
+| 3. Re-examine the "Evidence supports" AND-gate's second condition | **CLOSED** |
+| 4. Broader concentration construction sweep | **CLOSED — NO FURTHER VALUE EXPECTED** |
+| 5. Historical data collection infrastructure | **OPEN** |
+| 6. Model C `reset_leverage` sensitivity sweep | **CLOSED — NO FURTHER VALUE EXPECTED** |
+| 7. Model C volatility-spike triggering | **CLOSED — NO FURTHER VALUE EXPECTED** |
+| 8. Leverage-cap × concentration combined sweep | **CLOSED — NO FURTHER VALUE EXPECTED** |
+| 9. Tax treatment sensitivity for repayment-model turnover | **CLOSED** |
+| 10. Stress-regime execution assumptions | **CLOSED** |
+| Repayment automatic-vs-optional (doctrine reaffirmation) | **CLOSED** |
+| Margin as portfolio-level-only resource (doctrine reaffirmation) | **CLOSED** |
+| Real historical margin behavior (permanent gap, tracked under item 5) | **OPEN** (via item 5 only — no direct research path) |
 
-**Rationale for the reordering:** with items 1, 9, and 10 all now closed, every item in this backlog that used the Model-B-turnover cost-realism line of inquiry (bid-ask spread, tax treatment, execution timing) has been tested exactly once, per this project's standing "answer it once, don't relitigate without new evidence" discipline. Data collection infrastructure (formerly priority 3) moves to priority 1 purely because the items that outranked it are now closed, not because its own effort/value/dependency profile changed. Concentration-line items (formerly priorities 4-6, now 2-4) remain in the same relative order and same reasoning as before: Phase 4A already established concentration can produce a measurable degradation signal, but the evidence bar for changing any control has not been met, and none of these items is expected to change that determination on its own. Items 5-7 remain deprioritized for the same reasons as before (Model C's mechanism shows almost no activity in this window regardless of parameter; the leverage-cap sweep is doctrine-capped regardless of finding). **Note:** execution-realism and broker-mechanics blockers named in the Phase 6A reconciliation section above are not represented as numbered items in this table — they are tracked in `docs/PHASE5_DECISION_GATE_REVIEW.md`'s blocker list, a governance document, not this research-prioritization backlog; whether either becomes a formal backlog item is a future, separate decision.
+**Nine of eleven tracked items are CLOSED; two are OPEN.** Both open items (5, and the permanent-gap note tracked under it) share the same resolution path — historical data logging, not further simulation — and neither is expected to produce value on any timescale shorter than months. No item was removed from this backlog; every item that was ever tracked here retains its final disposition on the record.
 
 ## What this document does not do
 
-- Does not commit to building any of the above. It is explicitly a prioritization exercise, not a roadmap.
+- Does not commit to building item 5 (data collection infrastructure) — it remains open, not authorized; implementation would still require its own separate approval, per this session's standing rule (it is the one open item that would touch `allocate.py`).
 - Does not change any doctrine, any production file, or any prior finding's status.
-- Does not resolve item 3's methodology question itself — it identifies the question and recommends it as the next small, cheap analysis, but the actual re-derivation is future work pending approval.
-- Does not treat "close, no further research" (the two doctrine-reaffirmation items) as equivalent to "unimportant" — closing an item because it's already answered is itself a useful output of a prioritization pass, not a dismissal.
+- Does not treat "CLOSED — NO FURTHER VALUE EXPECTED" as equivalent to "the underlying question doesn't matter" — several of these items (concentration risk, Model C's activation rate) produced real, useful findings before being closed; the classification means further investment in *that specific question* is not expected to add value, not that the question was unimportant to have asked once.
+- Does not reopen any Phase 3–7A conclusion.
 
-Stopping here. Awaiting direction on which item, if any, to pursue next.
+**Current backlog intentionally contains only questions capable of changing governance.**
