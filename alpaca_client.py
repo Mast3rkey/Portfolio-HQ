@@ -73,21 +73,19 @@ class AlpacaPaperClient:
                 time.sleep(2 * (attempt + 1))
         raise RuntimeError(f"request failed after {retries} retries: {last}")
 
-    # --- trading API ------------------------------------------------------ #
+    # get_position() was removed here (2026-07-15 cleanup) -- zero callers
+    # anywhere, including this file's own __main__ self-test. get_account()
+    # and get_clock() are kept below: unused by the live workflow, but this
+    # file's __main__ block (`python3 alpaca_client.py`) is a real connectivity/
+    # credentials diagnostic that calls both -- a legitimate runtime caller
+    # the audit's cross-file grep didn't count since it excluded this file's
+    # own references.
 
     def get_account(self) -> dict:
         return self._req("GET", f"{self.base}/account")
 
     def get_clock(self) -> dict:
         return self._req("GET", f"{self.base}/clock")
-
-    def get_position(self, symbol: str) -> float:
-        try:
-            return float(self._req("GET", f"{self.base}/positions/{symbol}")["qty"])
-        except RuntimeError as e:
-            if "404" in str(e):
-                return 0.0
-            raise
 
     # NOTE: order-placement methods (submit_order / get_order / cancel_order)
     # were deliberately REMOVED for band-validation. This project is advisory
