@@ -11,8 +11,9 @@
 #                       prefixes (CLUSTER-, TRIM-, WEIGHT-, ...) reserved for
 #                       a future, broader migration — not started yet.
 #   date              — ISO date the decision was made (from CLAUDE.md).
-#   category          — one of: margin_doctrine, concentration_risk (more
-#                        categories added only as new entries are migrated).
+#   category          — one of: margin_doctrine, concentration_risk,
+#                        architecture_governance (more categories added
+#                        only as new entries are migrated).
 #   decision          — one-sentence statement of what was decided.
 #   rationale         — why, condensed from the CLAUDE.md entry; not a
 #                        replacement for reading the full entry.
@@ -83,3 +84,47 @@ decisions:
                      # responds to was a doctrine call, not itself
                      # re-testable -- see CLAUDE.md's entry for the full
                      # precision note on what was and wasn't backtested.
+
+  - decision_id: INTEL-0001
+    date: 2026-07-17
+    category: architecture_governance
+    decision: >
+      Portfolio Intelligence Engine Version 2 adopted as the canonical,
+      frozen specification (docs/PORTFOLIO_INTELLIGENCE_SPEC.md). An
+      explicit intelligence/index.yaml was evaluated and rejected -- the
+      filesystem directory listing is the index, permanently. The
+      subsystem is advisory-only: it cannot modify holdings.yaml or
+      targets.yaml, cannot alter allocator recommendations, and no
+      production code reads intelligence/ files under this specification.
+      Freezing the specification does not authorize implementation --
+      no company files, validators, reports, or integrations are created
+      by this decision.
+    rationale: >
+      Three design-review passes (architecture proposal, formal review
+      against Portfolio HQ's eight governing engineering principles, and
+      a final index-necessity review) found Version 1 self-contradictory
+      (claimed one-YAML-plus-one-markdown-per-company while designing
+      four files per company; claimed company-first organization while
+      introducing topic-first directories; reintroduced the exact
+      shared-file git-merge-conflict risk the design itself had argued
+      against). Version 2 resolved each defect by consolidating risks,
+      catalysts, conviction, and review history into a single per-company
+      YAML, keeping the review log embedded per-company rather than in a
+      shared file, and requiring symbol resolution to reuse earnings.py's
+      existing _YAHOO_SYMBOL-style pattern rather than invent a second
+      one. The explicit-index alternative was rejected on all seven
+      evaluated criteria (single source of truth, git merge behavior,
+      discoverability, reporting, validation, scalability,
+      implementation complexity) -- it would duplicate data already
+      authoritative in company files and reintroduce the same
+      merge-conflict class already eliminated from the review log.
+      This entry's corresponding CLAUDE.md Decisions Log entry is the
+      "Portfolio Intelligence Engine Version 2 frozen as canonical
+      specification" bullet (July 2026, immediately following the semis
+      cluster cap leverage-asymmetry entry) -- added to restore this
+      file's own stated invariant that every structured entry traces to
+      an existing CLAUDE.md entry.
+    supporting_artifact: docs/PORTFOLIO_INTELLIGENCE_SPEC.md
+    status: active  # specification is frozen; implementation is
+                     # separately gated per spec section 20/22 and is
+                     # NOT authorized by this decision alone.
