@@ -128,3 +128,55 @@ decisions:
     status: active  # specification is frozen; implementation is
                      # separately gated per spec section 20/22 and is
                      # NOT authorized by this decision alone.
+
+  - decision_id: INTEL-0002
+    date: 2026-07-17
+    category: architecture_governance
+    decision: >
+      Authorizes a single, bounded Phase 1 implementation experiment:
+      a standalone, read-only intelligence_validator.py that validates
+      synthetic company YAML against the schema already frozen in
+      docs/PORTFOLIO_INTELLIGENCE_SPEC.md SS9/14/16/20/21, plus its
+      isolated test_intelligence_validator.py. The validator may scan
+      intelligence/companies/*.yaml if that directory exists; a missing
+      or empty directory must return success with zero covered
+      companies (absence is not an error, coverage stays opt-in). The
+      validator must never write files, modify source data, create
+      directories, or touch holdings.yaml or targets.yaml, and must have
+      zero import coupling with allocate.py or margin_state.py in either
+      direction. Test data is synthetic only -- no real holding, no real
+      ticker thesis, no investment judgment authored by this task.
+      Explicitly excluded and deferred: any real company intelligence
+      file, thesis Markdown content, template files, staleness reports,
+      rollups, dashboards, allocator-visible notes, automatic tier or
+      weight changes, conviction-derived calculations, holdings.yaml or
+      targets.yaml edits, symbol-resolution implementation (SS15 -- moot
+      at this scope since no real ticker filenames exist to resolve),
+      scheduled/cron execution, margin-policy work, or anything beyond
+      the validator and its isolated tests.
+    rationale: >
+      INTEL-0001 froze the Version 2 architecture but explicitly does
+      not authorize implementation (spec SS20, SS24) -- an
+      implementation-readiness review the same session returned REVISE
+      on the proposed Phase 1 solely for lacking this authorization,
+      with two other findings folded in here: (1) the spec's own SS22
+      sequence puts one hand-authored real company file before any
+      tooling, but authoring real investment thesis content is a human
+      editorial act, not an implementation task, so this authorization
+      deliberately scopes Phase 1 to schema-as-code plus a validator
+      exercised only against synthetic fixtures -- no real company file
+      is created by this decision or the work it authorizes; (2) a
+      template file under intelligence/companies/ doesn't fit SS5's
+      ticker-only directory model, so no template file is authorized
+      either. INTEL-0002 authorizes a bounded implementation experiment
+      only, not the broader Intelligence subsystem -- INTEL-0001 remains
+      the governing architectural decision, the implementation must
+      arrive through its own separate branch and PR, this governance
+      entry does not itself authorize merging that future PR, and any
+      expansion beyond this exact scope requires another documented
+      decision.
+    supporting_artifact: docs/PORTFOLIO_INTELLIGENCE_SPEC.md
+    status: active  # authorizes the bounded Phase 1 experiment only;
+                     # does NOT authorize the broader subsystem, does
+                     # NOT pre-approve the future implementation PR's
+                     # merge, and does NOT expand INTEL-0001's scope.
