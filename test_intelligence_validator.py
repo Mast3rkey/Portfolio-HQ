@@ -293,10 +293,60 @@ def test_margin_state_does_not_import_intelligence_validator():
     assert "intelligence_validator" not in imported_names
 
 
-# ── no real intelligence data created by this test suite ───────────────────────
+# ── running the validator against the real directory never mutates it ──────────
 
-def test_no_intelligence_directory_exists_in_the_repository():
-    """This test suite uses tmp_path exclusively for filesystem fixtures —
-    confirms running it did not create a persistent intelligence/ tree in
-    the repository."""
-    assert not os.path.isdir("intelligence")
+def test_validating_the_real_intelligence_directory_does_not_mutate_it():
+    """Updated for PI-0003: intelligence/companies/ may now legitimately
+    exist and hold committed pilot records. If it does, running the
+    real validator against it must not change a single byte -- same
+    regression guard as test_validate_directory_does_not_mutate_source_files
+    above, applied to the actual repository directory rather than a
+    tmp_path fixture, so a future change to the validator can never be
+    the thing that mutates a committed company record."""
+    real_dir = "intelligence/companies"
+    if not os.path.isdir(real_dir):
+        return
+    before = {}
+    for name in os.listdir(real_dir):
+        full = os.path.join(real_dir, name)
+        with open(full, "rb") as f:
+            before[name] = f.read()
+
+    iv.validate_directory(real_dir)
+
+    after = {}
+    for name in os.listdir(real_dir):
+        full = os.path.join(real_dir, name)
+        with open(full, "rb") as f:
+            after[name] = f.read()
+    assert before == after
+
+
+# ── the real intelligence/companies/ directory, if present, stays clean ────────
+
+def test_real_intelligence_companies_directory_contains_only_expected_files():
+    """Updated for PI-0003: intelligence/companies/ is now expected to
+    exist and hold committed pilot company records -- this test
+    previously asserted the directory couldn't exist at all, a
+    Phase 1 / PI-0002-era invariant made stale by PI-0003's
+    authorization of exactly one real company record. Absence is still
+    valid (SS16/SS20 opt-in coverage) -- this only guards against
+    unintended stray files landing in the directory: every entry must
+    be a <TICKER>.yaml with a matching <TICKER>.md, per spec SS7's
+    'at most two files per company' rule, nothing else."""
+    real_dir = "intelligence/companies"
+    if not os.path.isdir(real_dir):
+        return
+    entries = os.listdir(real_dir)
+    for name in entries:
+        full = os.path.join(real_dir, name)
+        assert os.path.isfile(full), f"unexpected non-file entry in {real_dir}: {full}"
+        assert name.endswith(".yaml") or name.endswith(".md"), \
+            f"unexpected file type in {real_dir}: {full}"
+    yaml_stems = {n[:-5] for n in entries if n.endswith(".yaml")}
+    md_stems = {n[:-3] for n in entries if n.endswith(".md")}
+    assert yaml_stems == md_stems, (
+        "every company in intelligence/companies/ must have exactly a "
+        f"matching YAML+Markdown pair (spec SS7) -- yaml-only: "
+        f"{yaml_stems - md_stems}, md-only: {md_stems - yaml_stems}"
+    )
