@@ -34,6 +34,8 @@ from pathlib import Path
 
 import yaml
 
+from backtest_regime import load_bars, rsi_series, twr_annualized, max_drawdown
+
 HERE = Path(__file__).resolve().parent
 CACHE = HERE / "data" / "backtest"
 REPORT = HERE / "reports" / "trim_backtest.md"
@@ -45,7 +47,6 @@ MIN_LOT = 25.0
 MIN_HISTORY = 210             # sessions before a ticker joins the sim
 MIN_TICKERS_TO_START = 20
 EXCLUDE = {"SPCX", "SKHY"}    # no/insufficient data (documented previously)
-RSI_PERIOD = 14
 
 ARMS = {
     "A": {"label": "A — current (1.25x / RSI 60)", "band_cap": 1.25, "trim_rsi": 60.0},
@@ -73,69 +74,12 @@ def universe() -> tuple[dict[str, float], dict[str, str]]:
     return weights, tiers
 
 
-def load_bars(tickers: list[str]) -> dict[str, list[dict]]:
-    out = {}
-    for sym in tickers:
-        f = CACHE / f"{sym}.json"
-        if not f.exists():
-            print(f"  ! {sym}: no cached bars — excluded")
-            continue
-        bars = json.loads(f.read_text())
-        if len(bars) < MIN_HISTORY:
-            print(f"  ! {sym}: only {len(bars)} bars — excluded")
-            continue
-        out[sym] = bars
-    return out
-
-
-# ── indicators (Wilder RSI, precomputed per ticker) ─────────────────────────────
-
-def rsi_series(closes: list[float], period: int = RSI_PERIOD) -> list[float | None]:
-    """rsi[i] uses closes[0..i]; None until period+1 closes exist. Wilder
-    smoothing — matches indicators.rsi (ewm alpha=1/period, adjust=False)."""
-    n = len(closes)
-    out: list[float | None] = [None] * n
-    if n < 2:
-        return out
-    ag = al = 0.0
-    for i in range(1, n):
-        d = closes[i] - closes[i - 1]
-        gain, loss = max(d, 0.0), max(-d, 0.0)
-        if i == 1:
-            ag, al = gain, loss
-        else:
-            ag = ag + (gain - ag) / period
-            al = al + (loss - al) / period
-        if i >= period:
-            out[i] = 100.0 if al == 0 else 100.0 - 100.0 / (1.0 + ag / al)
-    return out
-
-
-# ── portfolio math (shared with rung backtest, duplicated to stay standalone) ───
-
-def twr_annualized(daily_values: list[float], flows: dict[int, float]) -> float:
-    rets = []
-    for i in range(1, len(daily_values)):
-        prev = daily_values[i - 1]
-        if prev <= 0:
-            continue
-        f = flows.get(i, 0.0)
-        rets.append((daily_values[i] - f) / prev - 1.0)
-    if not rets:
-        return 0.0
-    growth = 1.0
-    for r in rets:
-        growth *= 1.0 + r
-    return (growth ** (252.0 / len(rets)) - 1.0) * 100.0
-
-
-def max_drawdown(vals: list[float]) -> float:
-    peak, mdd = 0.0, 0.0
-    for v in vals:
-        peak = max(peak, v)
-        if peak > 0:
-            mdd = min(mdd, v / peak - 1.0)
-    return mdd * 100.0
+# load_bars, rsi_series, twr_annualized, max_drawdown are imported from
+# backtest_regime.py above (2026-07-15 dedup) -- verified byte-identical
+# logic (only docstrings differed) before removing the local copies here.
+# universe() stays local: this file's version returns weights+tiers scoped
+# to band/spec only, a different shape/scope than backtest_regime.py's
+# all-tiers version -- not a duplicate, a genuinely different function.
 
 
 # ── simulation ────────────────────────────────────────────────────────────────────

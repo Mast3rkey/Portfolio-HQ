@@ -1,0 +1,278 @@
+{
+  "label": "hypothetical, simulated",
+  "disclaimer": "Not a claim about this account's real history. Every arm is a hypothetical simulation of a synthetic $0-start account through real historical prices. No parameter was tuned after seeing results; no winner was chosen. See docs/PHASE3_SENSITIVITY_PLAN.md and docs/PHASE3_FINDINGS.md sec 8.",
+  "execution_date": "2026-07-17",
+  "window": "2021-06-01 to 2026-07-10",
+  "n_deposits": 62,
+  "baseline_A": {
+    "label": "hypothetical, simulated",
+    "scenario": "A \u2014 unlevered baseline",
+    "repayment_model": "MODEL_0",
+    "ann_twr_pct": 30.008866139604496,
+    "cagr_pct": 172.15377288839292,
+    "max_drawdown_pct": -22.414037628254825,
+    "annualized_volatility_pct": 23.43004102233155,
+    "time_near_leverage_cap_pct_proxy": 100.0,
+    "final_book_value": 327180.3630550234,
+    "final_margin_debt": 2.5011104298755527e-12,
+    "deposit_total": 124000.0
+  },
+  "baseline_B_interest_5pct": {
+    "label": "hypothetical, simulated",
+    "scenario": "B \u2014 leverage 1.80x, no repayment",
+    "repayment_model": "MODEL_0",
+    "ann_twr_pct": 35.591683923613274,
+    "cagr_pct": 182.68881977542577,
+    "max_drawdown_pct": -26.812741368881365,
+    "annualized_volatility_pct": 25.872401289431025,
+    "time_near_leverage_cap_pct_proxy": 0.0,
+    "final_book_value": 396975.79420614894,
+    "final_margin_debt": 147745.27890156882,
+    "deposit_total": 124000.0
+  },
+  "model_b_sensitivity": {
+    "0.10": {
+      "label": "hypothetical, simulated",
+      "scenario": "B-repay-0.10",
+      "repayment_model": "MODEL_B",
+      "ann_twr_pct": 34.615988095977144,
+      "cagr_pct": 180.93076415526858,
+      "max_drawdown_pct": -25.841109879112935,
+      "annualized_volatility_pct": 25.183017505930906,
+      "time_near_leverage_cap_pct_proxy": 0.0,
+      "final_book_value": 384565.29171329737,
+      "final_margin_debt": 126783.64663897501,
+      "deposit_total": 124000.0,
+      "event_stats": {
+        "count": 314,
+        "total": 38225.88768476152,
+        "mean": 121.73849581134242,
+        "median": 66.31703852929931,
+        "max": 1114.6173418884807
+      },
+      "turnover_estimate": 0.3082732877803348,
+      "twr_maxdd_ratio": 1.3395704850880588,
+      "twr_gap_vs_baseline_pp": -0.9756958276361303,
+      "maxdd_gap_vs_baseline_pp": 0.9716314897684306
+    },
+    "0.25": {
+      "label": "hypothetical, simulated",
+      "scenario": "B-repay-0.25",
+      "repayment_model": "MODEL_B",
+      "ann_twr_pct": 33.276667249843925,
+      "cagr_pct": 178.6030866458633,
+      "max_drawdown_pct": -24.743853134075835,
+      "annualized_volatility_pct": 24.36280696961596,
+      "time_near_leverage_cap_pct_proxy": 0.0,
+      "final_book_value": 368615.3434869761,
+      "final_margin_debt": 103959.03919998439,
+      "deposit_total": 124000.0,
+      "event_stats": {
+        "count": 296,
+        "total": 88516.44606524879,
+        "mean": 299.0420475177324,
+        "median": 175.63593045343077,
+        "max": 2500.4635315602645
+      },
+      "turnover_estimate": 0.7138423069778128,
+      "twr_maxdd_ratio": 1.3448458115853097,
+      "twr_gap_vs_baseline_pp": -2.3150166737693496,
+      "maxdd_gap_vs_baseline_pp": 2.068888234805531
+    },
+    "0.50": {
+      "label": "hypothetical, simulated",
+      "scenario": "B-repay-0.50",
+      "repayment_model": "MODEL_B",
+      "ann_twr_pct": 32.0331311571987,
+      "cagr_pct": 176.32824236511536,
+      "max_drawdown_pct": -23.65280125260114,
+      "annualized_volatility_pct": 23.56182170339319,
+      "time_near_leverage_cap_pct_proxy": 0.0,
+      "final_book_value": 353545.39393651823,
+      "final_margin_debt": 78857.22370618343,
+      "deposit_total": 124000.0,
+      "event_stats": {
+        "count": 263,
+        "total": 156112.51131315526,
+        "mean": 593.5836932059135,
+        "median": 349.6333156865039,
+        "max": 4453.155909498513
+      },
+      "turnover_estimate": 1.2589718654286715,
+      "twr_maxdd_ratio": 1.354306021307982,
+      "twr_gap_vs_baseline_pp": -3.5585527664145715,
+      "maxdd_gap_vs_baseline_pp": 3.159940116280225
+    }
+  },
+  "model_c_sensitivity": {
+    "10": {
+      "label": "hypothetical, simulated",
+      "scenario": "C-trigger-10pct",
+      "repayment_model": "MODEL_C",
+      "ann_twr_pct": 35.03460542914289,
+      "cagr_pct": 181.55357991465198,
+      "max_drawdown_pct": -26.812741368881387,
+      "annualized_volatility_pct": 25.684648038091883,
+      "time_near_leverage_cap_pct_proxy": 0.0,
+      "final_book_value": 388925.6894033691,
+      "final_margin_debt": 130625.65399653665,
+      "deposit_total": 124000.0,
+      "n_reset_activations": 10,
+      "activation_days": [
+        163,
+        226,
+        239,
+        261,
+        317,
+        331,
+        798,
+        940,
+        1125,
+        1211
+      ],
+      "event_stats": {
+        "count": 2,
+        "total": 26578.486082745774,
+        "mean": 13289.243041372887,
+        "median": 13289.243041372887,
+        "max": 16559.22485329042
+      },
+      "twr_gap_vs_baseline_pp": -0.5570784944703817,
+      "maxdd_gap_vs_baseline_pp": -2.1316282072803006e-14
+    },
+    "12.5": {
+      "label": "hypothetical, simulated",
+      "scenario": "C-trigger-12.5pct",
+      "repayment_model": "MODEL_C",
+      "ann_twr_pct": 35.093256311687604,
+      "cagr_pct": 181.6678155134412,
+      "max_drawdown_pct": -26.812741368881355,
+      "annualized_volatility_pct": 25.741590734733766,
+      "time_near_leverage_cap_pct_proxy": 0.0,
+      "final_book_value": 389729.7589467186,
+      "final_margin_debt": 131872.95371169812,
+      "deposit_total": 124000.0,
+      "n_reset_activations": 7,
+      "activation_days": [
+        167,
+        228,
+        264,
+        333,
+        799,
+        945,
+        1212
+      ],
+      "event_stats": {
+        "count": 1,
+        "total": 23878.729714403395,
+        "mean": 23878.729714403395,
+        "median": 23878.729714403395,
+        "max": 23878.729714403395
+      },
+      "twr_gap_vs_baseline_pp": -0.49842761192567053,
+      "maxdd_gap_vs_baseline_pp": 1.0658141036401503e-14
+    },
+    "15": {
+      "label": "hypothetical, simulated",
+      "scenario": "C-trigger-15pct",
+      "repayment_model": "MODEL_C",
+      "ann_twr_pct": 35.591683923613274,
+      "cagr_pct": 182.68881977542577,
+      "max_drawdown_pct": -26.812741368881365,
+      "annualized_volatility_pct": 25.872401289431025,
+      "time_near_leverage_cap_pct_proxy": 0.0,
+      "final_book_value": 396975.79420614894,
+      "final_margin_debt": 147745.27890156882,
+      "deposit_total": 124000.0,
+      "n_reset_activations": 1,
+      "activation_days": [
+        947
+      ],
+      "event_stats": {
+        "count": 0,
+        "total": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0
+      },
+      "twr_gap_vs_baseline_pp": 0.0,
+      "maxdd_gap_vs_baseline_pp": 0.0
+    },
+    "20": {
+      "label": "hypothetical, simulated",
+      "scenario": "C-trigger-20pct",
+      "repayment_model": "MODEL_C",
+      "ann_twr_pct": 35.591683923613274,
+      "cagr_pct": 182.68881977542577,
+      "max_drawdown_pct": -26.812741368881365,
+      "annualized_volatility_pct": 25.872401289431025,
+      "time_near_leverage_cap_pct_proxy": 0.0,
+      "final_book_value": 396975.79420614894,
+      "final_margin_debt": 147745.27890156882,
+      "deposit_total": 124000.0,
+      "n_reset_activations": 1,
+      "activation_days": [
+        965
+      ],
+      "event_stats": {
+        "count": 0,
+        "total": 0.0,
+        "mean": 0.0,
+        "median": 0.0,
+        "max": 0.0
+      },
+      "twr_gap_vs_baseline_pp": 0.0,
+      "maxdd_gap_vs_baseline_pp": 0.0
+    }
+  },
+  "interest_sensitivity": {
+    "0.00": {
+      "label": "hypothetical, simulated",
+      "scenario": "B-interest-0.00 \u2014 leverage 1.80x, no repayment",
+      "repayment_model": "MODEL_0",
+      "ann_twr_pct": 35.98070235124797,
+      "cagr_pct": 183.39912189566328,
+      "max_drawdown_pct": -26.687830048045,
+      "annualized_volatility_pct": 25.821492364245298,
+      "time_near_leverage_cap_pct_proxy": 0.0,
+      "final_book_value": 402080.33796805365,
+      "final_margin_debt": 147298.94567217457,
+      "deposit_total": 124000.0,
+      "interest_accrued_total": 0.0,
+      "twr_gap_vs_A_pp": 5.971836211643474,
+      "maxdd_gap_vs_A_pp": -4.273792419790176
+    },
+    "0.05": {
+      "label": "hypothetical, simulated",
+      "scenario": "B-interest-0.05 \u2014 leverage 1.80x, no repayment",
+      "repayment_model": "MODEL_0",
+      "ann_twr_pct": 35.591683923613274,
+      "cagr_pct": 182.68881977542577,
+      "max_drawdown_pct": -26.812741368881365,
+      "annualized_volatility_pct": 25.872401289431025,
+      "time_near_leverage_cap_pct_proxy": 0.0,
+      "final_book_value": 396975.79420614894,
+      "final_margin_debt": 147745.27890156882,
+      "deposit_total": 124000.0,
+      "interest_accrued_total": 3920.67635084849,
+      "twr_gap_vs_A_pp": 5.582817784008778,
+      "maxdd_gap_vs_A_pp": -4.398703740626541
+    },
+    "0.08": {
+      "label": "hypothetical, simulated",
+      "scenario": "B-interest-0.08 \u2014 leverage 1.80x, no repayment",
+      "repayment_model": "MODEL_0",
+      "ann_twr_pct": 35.3545782180825,
+      "cagr_pct": 182.2557906933995,
+      "max_drawdown_pct": -26.889054983283412,
+      "annualized_volatility_pct": 25.90381845159143,
+      "time_near_leverage_cap_pct_proxy": 0.0,
+      "final_book_value": 393889.49727731105,
+      "final_margin_debt": 148019.10626961614,
+      "deposit_total": 124000.0,
+      "interest_accrued_total": 6294.005541379703,
+      "twr_gap_vs_A_pp": 5.345712078478005,
+      "maxdd_gap_vs_A_pp": -4.475017355028587
+    }
+  }
+}

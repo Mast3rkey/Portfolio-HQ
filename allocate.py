@@ -30,6 +30,7 @@ from indicators import compute_all
 from regime_gate import regime_ok_from_closes
 from earnings import days_until_earnings
 from crypto import fetch_crypto
+from margin_state import classify_margin_state, concentration_risk_score
 
 HERE = Path(__file__).resolve().parent
 TARGETS_FILE = HERE / "targets.yaml"
@@ -166,6 +167,7 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     trend_rsi_override = float(gates.get("trend_rsi_override", 30))
     blackout_days = int(gates.get("earnings_blackout_days", 7))
     trim_rsi = float(gates.get("trim_rsi", 60))
+    t1t2_trim_mult = float(gates.get("t1t2_trim_mult", 1.5))
     # Correlated-cluster concentration caps (semis, power/infra, ...) — each measured
     # against book (net equity), mechanically trimmed on breach, no RSI gate. A ticker
     # may belong to more than one cluster; every cluster it's in must have room for a buy.
@@ -217,6 +219,21 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
                 trims.append({**base, "action": "TRIM",
                               "dollars": current - target_dollars,
                               "reason": f"> {'1.25x' if meta['tier']=='band' else '1.0x'} target, RSI {rsi:.1f}>{trim_rsi:.0f}"})
+                continue
+
+        # ---- T1/T2 concentration ceiling: mechanical, no RSI gate ---------
+        # Doctrine decision (2026-07-15), not a backtest verdict — same category
+        # as the 1.8x leverage cap and 30% buffer floor: a single core-conviction
+        # name at 2x+ target under leverage is a tail/forced-liquidation risk a
+        # TWR backtest can't price (see t1t2_trim_backtest.md's NVDA decomposition
+        # — 2.14x target, -66.4% own drawdown, levered math breaking down at
+        # 1.44x). Floored at the name's own target, same as the cluster caps.
+        if meta["tier"] in ("T1", "T2"):
+            overweight_limit = target_dollars * t1t2_trim_mult
+            if current > overweight_limit:
+                trims.append({**base, "action": "TRIM",
+                              "dollars": current - target_dollars,
+                              "reason": f"> {t1t2_trim_mult:.1f}x target (T1/T2 concentration ceiling), mechanical"})
                 continue
 
         # ---- only underweight names are buy candidates -------------------
@@ -516,6 +533,19 @@ def render(result, review: bool) -> str:
             L.append("")
             L.append("> ⚠️ **No sync date on record for margin state** — run `update-margin` "
                       "to establish one.")
+        ms = result.get("margin_state")
+        if ms is not None:
+            L.append("")
+            L.append(f"**Margin risk state: {ms.current_state}**")
+            if ms.reasons:
+                for reason in ms.reasons:
+                    L.append(f"- {reason}")
+            if ms.violated_constraints:
+                L.append(f"- Violated constraints: {', '.join(ms.violated_constraints)}")
+            L.append(f"- Allowed actions: {', '.join(ms.allowed_actions)}")
+            if ms.concentration_source:
+                L.append(f"- Tightest concentration pressure: {ms.concentration_source} "
+                         f"({ms.risk_metrics.get('concentration_score', 0.0):.2f})")
         L.append("")
         L.append("_Buffer is synced from Robinhood via `update-margin`, not live — "
                   "verify before any large margin-funded buy._")
@@ -881,6 +911,39 @@ def main():
                   margin_debt=margin_debt, margin_buffer_pct=margin_buffer_pct,
                   margin_requested=args.margin)
     result["margin"]["synced_at"] = margin_state.get("synced_at")
+
+    # ---- margin risk-state classification (Phase 2D) -----------------------
+    # Pure post-hoc read of plan()'s own output — computed AFTER plan() has
+    # already decided every buy/trim/block; cannot influence allocation.
+    # Concentration scope: cluster-cap proximities only (T1/T2 proximity
+    # ratios aren't retained in plan()'s return dict yet — deferred, not a
+    # placeholder; see docs/PHASE2D_INTEGRATION_PLAN.md).
+    cluster_proximities = {
+        f"cluster:{c['name']}": c["value"] / (result["book"] * c["pct"] / 100.0)
+        for c in result.get("clusters", [])
+        if c["pct"] > 0 and result["book"] > 0
+    }
+    concentration_score, concentration_source = concentration_risk_score(cluster_proximities)
+    margin_cfg = targets.get("margin", {}) or {}
+    states_cfg = margin_cfg.get("states", {}) or {}
+    caution_cfg = states_cfg.get("caution", {}) or {}
+    restricted_cfg = states_cfg.get("restricted", {}) or {}
+    concentration_cfg = margin_cfg.get("concentration_adjustment", {}) or {}
+    result["margin_state"] = classify_margin_state(
+        gross=result["margin"]["gross"],
+        margin_debt=result["margin"]["debt"],
+        buffer_pct=result["margin"]["buffer_pct"],
+        leverage_cap=result["margin"]["leverage_cap"],
+        buffer_floor_pct=result["margin"]["buffer_floor_pct"],
+        concentration_score=concentration_score,
+        concentration_source=concentration_source,
+        caution_leverage_fraction=caution_cfg.get("leverage_fraction_of_cap"),
+        caution_buffer_comfort_multiplier=caution_cfg.get("buffer_comfort_multiplier"),
+        restricted_leverage_fraction=restricted_cfg.get("leverage_fraction_of_cap"),
+        restricted_buffer_comfort_multiplier=restricted_cfg.get("buffer_comfort_multiplier"),
+        concentration_tightening_coefficient=concentration_cfg.get("tightening_coefficient") or 0.0,
+        concentration_min_fraction=concentration_cfg.get("min_fraction") or 0.5,
+    )
 
     # Crypto sleeve — priced live via 'crypto_shares' (ETH/SOL) or manual 'holdings'
     # (BTC, until rebuilt), never gated/traded.

@@ -1,0 +1,234 @@
+{
+  "label": "hypothetical, simulated",
+  "disclaimer": "Not a claim about this account's real history. Every scenario is a hypothetical simulation of a synthetic $0-start account through real historical prices. See docs/PHASE4A_CONCENTRATION_MARGIN_RESEARCH_PLAN.md and docs/PHASE3_FINDINGS.md sec 8.",
+  "execution_date": "2026-07-17",
+  "window": "2021-06-01 to 2026-07-10",
+  "n_deposits": 62,
+  "parameters": {
+    "concentrated_ticker": "NVDA",
+    "nvda_multiplier": 3.0,
+    "semis_cluster": [
+      "ASML",
+      "TSM",
+      "NVDA",
+      "AVGO",
+      "AMD",
+      "MU",
+      "MRVL",
+      "KLAC",
+      "LRCX",
+      "AMAT",
+      "WDC",
+      "INTC"
+    ],
+    "semis_multiplier": 1.8,
+    "hypothetical_shock_pct": -40.0,
+    "shock_duration_days": 15,
+    "shock_start_idx": 898,
+    "leverage_cap_d": 1.8,
+    "material_threshold_pp": 2.0,
+    "noise_floor_pp": 0.5
+  },
+  "results": {
+    "A_control": {
+      "metrics": {
+        "label": "hypothetical, simulated",
+        "scenario": "A -- control (unlevered)",
+        "repayment_model": "MODEL_0",
+        "ann_twr_pct": 30.008866139604496,
+        "cagr_pct": 172.15377288839292,
+        "max_drawdown_pct": -22.414037628254825,
+        "annualized_volatility_pct": 23.43004102233155,
+        "time_near_leverage_cap_pct_proxy": 100.0,
+        "final_book_value": 327180.3630550234,
+        "final_margin_debt": 2.5011104298755527e-12,
+        "deposit_total": 124000.0
+      },
+      "concentration_series_final_pct": 31.165971276870618,
+      "concentration_series_max_pct": 33.47133468885669,
+      "recovery": {
+        "trough_index": 968,
+        "peak_value": 173552.50438175144,
+        "trough_value": 134652.38074484706,
+        "recovery_index": 993,
+        "recovery_days": 25
+      },
+      "forced_deleveraging_days": [],
+      "n_forced_deleveraging_events": 0
+    },
+    "B_NVDA_synthetic": {
+      "metrics": {
+        "label": "hypothetical, simulated",
+        "scenario": "B-NVDA -- synthetic concentration (unlevered)",
+        "repayment_model": "MODEL_0",
+        "ann_twr_pct": 32.83851400444648,
+        "cagr_pct": 174.665322232884,
+        "max_drawdown_pct": -23.060727525736624,
+        "annualized_volatility_pct": 25.055276396238472,
+        "time_near_leverage_cap_pct_proxy": 100.0,
+        "final_book_value": 342845.70061829395,
+        "final_margin_debt": 0.0,
+        "deposit_total": 124000.0
+      },
+      "concentration_series_final_pct": 16.36226517286988,
+      "concentration_series_max_pct": 25.09596789498388,
+      "recovery": {
+        "trough_index": 968,
+        "peak_value": 189162.43688441272,
+        "trough_value": 145540.2027334548,
+        "recovery_index": 993,
+        "recovery_days": 25
+      },
+      "forced_deleveraging_days": [],
+      "n_forced_deleveraging_events": 0
+    },
+    "B_semis_synthetic": {
+      "metrics": {
+        "label": "hypothetical, simulated",
+        "scenario": "B-semis -- synthetic cluster concentration (unlevered)",
+        "repayment_model": "MODEL_0",
+        "ann_twr_pct": 33.945016148957485,
+        "cagr_pct": 179.80425614919443,
+        "max_drawdown_pct": -23.394986275064632,
+        "annualized_volatility_pct": 25.584561453429654,
+        "time_near_leverage_cap_pct_proxy": 100.0,
+        "final_book_value": 376778.3152392066,
+        "final_margin_debt": 2.0463630789890885e-12,
+        "deposit_total": 124000.0
+      },
+      "concentration_series_final_pct": 49.34029636987702,
+      "concentration_series_max_pct": 52.44598825282741,
+      "recovery": {
+        "trough_index": 968,
+        "peak_value": 174793.85191006865,
+        "trough_value": 133900.85424605128,
+        "recovery_index": 993,
+        "recovery_days": 25
+      },
+      "forced_deleveraging_days": [],
+      "n_forced_deleveraging_events": 0
+    },
+    "C_NVDA_hypothetical_stress": {
+      "metrics": {
+        "label": "hypothetical, simulated",
+        "scenario": "C-NVDA-hyp -- concentration + hypothetical shock (unlevered)",
+        "repayment_model": "MODEL_0",
+        "ann_twr_pct": 30.17086813092613,
+        "cagr_pct": 169.87690950984208,
+        "max_drawdown_pct": -19.403597313219002,
+        "annualized_volatility_pct": 23.565763840871693,
+        "time_near_leverage_cap_pct_proxy": 100.0,
+        "final_book_value": 313480.8850369155,
+        "final_margin_debt": 0.0,
+        "deposit_total": 124000.0
+      },
+      "concentration_series_final_pct": 9.686570553660818,
+      "concentration_series_max_pct": 25.09596789498388,
+      "recovery": {
+        "trough_index": 968,
+        "peak_value": 176518.1545130169,
+        "trough_value": 142267.2826265854,
+        "recovery_index": 995,
+        "recovery_days": 27
+      },
+      "forced_deleveraging_days": [],
+      "n_forced_deleveraging_events": 0
+    },
+    "D_NVDA_historical_stress": {
+      "metrics": {
+        "label": "hypothetical, simulated",
+        "scenario": "D-NVDA-hist -- concentration + historical stress + 1.8x margin",
+        "repayment_model": "MODEL_0",
+        "ann_twr_pct": 39.70138077208316,
+        "cagr_pct": 187.5088900280899,
+        "max_drawdown_pct": -28.19792024721347,
+        "annualized_volatility_pct": 27.924026442388282,
+        "time_near_leverage_cap_pct_proxy": 0.0,
+        "final_book_value": 432660.66654891265,
+        "final_margin_debt": 157155.05618535972,
+        "deposit_total": 124000.0
+      },
+      "concentration_series_final_pct": 12.940486303341784,
+      "concentration_series_max_pct": 24.280050638000024,
+      "recovery": {
+        "trough_index": 968,
+        "peak_value": 203742.4560794619,
+        "trough_value": 146291.3208044613,
+        "recovery_index": 1001,
+        "recovery_days": 33
+      },
+      "forced_deleveraging_days": [],
+      "n_forced_deleveraging_events": 0
+    },
+    "D_NVDA_hypothetical_stress": {
+      "metrics": {
+        "label": "hypothetical, simulated",
+        "scenario": "D-NVDA-hyp -- concentration + hypothetical shock + 1.8x margin",
+        "repayment_model": "MODEL_0",
+        "ann_twr_pct": 36.46131231328267,
+        "cagr_pct": 181.51680073491084,
+        "max_drawdown_pct": -23.974791238264782,
+        "annualized_volatility_pct": 26.283957505805926,
+        "time_near_leverage_cap_pct_proxy": 0.0,
+        "final_book_value": 388667.095858715,
+        "final_margin_debt": 145351.8396017563,
+        "deposit_total": 124000.0
+      },
+      "concentration_series_final_pct": 10.707046137610847,
+      "concentration_series_max_pct": 24.280050638000024,
+      "recovery": {
+        "trough_index": 968,
+        "peak_value": 188898.12169723667,
+        "trough_value": 143610.19136732083,
+        "recovery_index": 996,
+        "recovery_days": 28
+      },
+      "forced_deleveraging_days": [],
+      "n_forced_deleveraging_events": 0
+    },
+    "D_semis_historical_stress": {
+      "metrics": {
+        "label": "hypothetical, simulated",
+        "scenario": "D-semis-hist -- cluster concentration + historical stress + 1.8x margin",
+        "repayment_model": "MODEL_0",
+        "ann_twr_pct": 39.04236441253397,
+        "cagr_pct": 189.30091609348182,
+        "max_drawdown_pct": -28.08575031844076,
+        "annualized_volatility_pct": 28.077414606831613,
+        "time_near_leverage_cap_pct_proxy": 0.0,
+        "final_book_value": 446566.72961936484,
+        "final_margin_debt": 163011.43450418845,
+        "deposit_total": 124000.0
+      },
+      "concentration_series_final_pct": 53.287737947808445,
+      "concentration_series_max_pct": 56.576277478130486,
+      "recovery": {
+        "trough_index": 968,
+        "peak_value": 186585.7067885193,
+        "trough_value": 134181.7110499978,
+        "recovery_index": 1001,
+        "recovery_days": 33
+      },
+      "forced_deleveraging_days": [],
+      "n_forced_deleveraging_events": 0
+    }
+  },
+  "materiality_evaluation": {
+    "gap_B_vs_A_maxdd_pp": -0.6466898974817994,
+    "gap_B_vs_A_class": "suggestive",
+    "gap_DhistVsB_maxdd_pp": -5.137192721476847,
+    "gap_DhistVsB_class": "material",
+    "gap_DhypVsB_maxdd_pp": -0.9140637125281579,
+    "gap_DhypVsB_class": "suggestive",
+    "event_counts_by_stress_case": {
+      "stress_case_1_historical": 0,
+      "stress_case_1_hypothetical": 0,
+      "stress_case_2_cluster": 0,
+      "stress_case_4_concentration_only": 0
+    },
+    "events_repeated": false,
+    "recovery_material_d_hist": false,
+    "recovery_material_d_hyp": false,
+    "outcome": "Evidence inconclusive"
+  }
+}

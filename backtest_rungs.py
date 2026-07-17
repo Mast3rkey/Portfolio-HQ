@@ -30,6 +30,7 @@ import yaml
 
 from alpaca_client import AlpacaPaperClient
 from levels import compute_levels
+from backtest_regime import twr_annualized, max_drawdown
 
 HERE = Path(__file__).resolve().parent
 CACHE = HERE / "data" / "backtest"
@@ -129,31 +130,12 @@ def fill_price(level: float, bar_open: float, bar_low: float) -> float | None:
     return None
 
 
-def twr_annualized(daily_values: list[float], flows: dict[int, float]) -> float:
-    """True time-weighted return from a daily value series + external flows
-    (flow on day i is counted at the start of day i), annualized (252d)."""
-    rets = []
-    for i in range(1, len(daily_values)):
-        prev = daily_values[i - 1]
-        if prev <= 0:
-            continue
-        f = flows.get(i, 0.0)
-        rets.append((daily_values[i] - f) / prev - 1.0)
-    if not rets:
-        return 0.0
-    growth = 1.0
-    for r in rets:
-        growth *= 1.0 + r
-    return (growth ** (252.0 / len(rets)) - 1.0) * 100.0
-
-
-def max_drawdown(vals: list[float]) -> float:
-    peak, mdd = 0.0, 0.0
-    for v in vals:
-        peak = max(peak, v)
-        if peak > 0:
-            mdd = min(mdd, v / peak - 1.0)
-    return mdd * 100.0
+# twr_annualized, max_drawdown imported from backtest_regime.py above
+# (2026-07-15 dedup) -- verified byte-identical logic (only a docstring
+# differed) before removing the local copies here. load_bars stays local:
+# this file's version fetches+caches live from Alpaca on a cache miss,
+# genuinely different behavior from backtest_regime.py's cache-read-only
+# version -- not a duplicate.
 
 
 # ── simulation ────────────────────────────────────────────────────────────────────

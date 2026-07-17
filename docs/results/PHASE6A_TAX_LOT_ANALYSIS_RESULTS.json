@@ -1,0 +1,206 @@
+{
+  "label": "hypothetical, simulated",
+  "disclaimer": "Not a claim about this account's real history, real cost basis, or real tax liability. Every scenario is a hypothetical simulation of a synthetic $0-start account through real historical prices. The FIFO lot ledger is built entirely from this synthetic account's own simulated purchase history, never from real trade data. FIFO is a disclosed default consumption convention, not a confirmed fact about this account's real elected convention. The 15%/32% rate tiers are disclosed Hypothetical, illustrative federal brackets, not this account's confirmed rate. State tax, wash-sale rules, AMT, and NIIT are excluded, not assumed zero-impact. See docs/PHASE6A_TAX_LOT_MODELING_PLAN.md, docs/PHASE6A_ASSUMPTION_REGISTRY.md, and docs/PHASE3_FINDINGS.md sec 8.",
+  "execution_date": "2026-07-17",
+  "window": "2021-06-01 to 2026-07-10",
+  "control_ann_twr_pct": 35.591683923613274,
+  "control_max_drawdown_pct": -26.812741368881365,
+  "tax_rate_tiers_pct": [
+    0.0,
+    15.0,
+    32.0
+  ],
+  "material_threshold_pp": 2.0,
+  "noise_floor_pp": 0.5,
+  "results": {
+    "0.10": {
+      "repay_fraction": 0.1,
+      "gross_ann_twr_pct": 34.615988095977144,
+      "gross_max_drawdown_pct": -25.841109879112935,
+      "n_repayment_events": 314,
+      "realized_gain_summary": {
+        "n_disposal_events": 19450,
+        "n_gain_events": 14293,
+        "n_loss_events": 5156,
+        "total_proceeds": 37879.10839148132,
+        "total_cost_basis": 23484.230354138763,
+        "total_realized_gain_net": 14394.878037342582,
+        "total_realized_gains": 16235.396910467636,
+        "total_realized_losses": -1840.5188731250723,
+        "avg_holding_period_days_proceeds_weighted": 1149.9438735066833,
+        "short_term_gain_dollars": 228.4556801600257,
+        "long_term_gain_dollars": 16006.941230307606,
+        "short_term_gain_pct_of_gains": 1.407145642449498,
+        "long_term_gain_pct_of_gains": 98.5928543575505
+      },
+      "taxable_base_realistic_fifo": 14394.878037342582,
+      "taxable_base_upper_bound": 38225.88768476152,
+      "taxable_base_reduction_pct": 62.34259317650588,
+      "by_rate_tier": {
+        "0.0": {
+          "rate_pct": 0.0,
+          "rate_label": "Known (no tax, control)",
+          "taxable_base_realistic_fifo": 14394.878037342582,
+          "tax_drag_dollars": 0.0,
+          "net_ann_twr_pct": 34.615988095977144,
+          "gap_vs_control_net_pp": -0.9756958276361303,
+          "gap_vs_control_net_class": "suggestive",
+          "upper_bound_net_ann_twr_pct": 34.615988095977144,
+          "upper_bound_gap_vs_control_net_pp": -0.9756958276361303,
+          "upper_bound_gap_vs_control_net_class": "suggestive"
+        },
+        "15.0": {
+          "rate_pct": 15.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_realistic_fifo": 14394.878037342582,
+          "tax_drag_dollars": 2159.231705601387,
+          "net_ann_twr_pct": 34.46707938817886,
+          "gap_vs_control_net_pp": -1.1246045354344147,
+          "gap_vs_control_net_class": "suggestive",
+          "upper_bound_net_ann_twr_pct": 34.21906641241665,
+          "upper_bound_gap_vs_control_net_pp": -1.3726175111966228,
+          "upper_bound_gap_vs_control_net_class": "suggestive"
+        },
+        "32.0": {
+          "rate_pct": 32.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_realistic_fifo": 14394.878037342582,
+          "tax_drag_dollars": 4606.360971949626,
+          "net_ann_twr_pct": 34.29749731354732,
+          "gap_vs_control_net_pp": -1.2941866100659567,
+          "gap_vs_control_net_class": "suggestive",
+          "upper_bound_net_ann_twr_pct": 33.763343657026866,
+          "upper_bound_gap_vs_control_net_pp": -1.8283402665864088,
+          "upper_bound_gap_vs_control_net_class": "suggestive"
+        }
+      },
+      "outcome_category": "Evidence inconclusive"
+    },
+    "0.25": {
+      "repay_fraction": 0.25,
+      "gross_ann_twr_pct": 33.276667249843925,
+      "gross_max_drawdown_pct": -24.743853134075835,
+      "n_repayment_events": 296,
+      "realized_gain_summary": {
+        "n_disposal_events": 19344,
+        "n_gain_events": 14781,
+        "n_loss_events": 4563,
+        "total_proceeds": 88491.20382325705,
+        "total_cost_basis": 50272.16647593376,
+        "total_realized_gain_net": 38219.03734732287,
+        "total_realized_gains": 41302.113692899904,
+        "total_realized_losses": -3083.0763455770775,
+        "avg_holding_period_days_proceeds_weighted": 961.7169264894286,
+        "short_term_gain_dollars": 495.9208488583987,
+        "long_term_gain_dollars": 40806.1928440415,
+        "short_term_gain_pct_of_gains": 1.2007154223287384,
+        "long_term_gain_pct_of_gains": 98.79928457767126
+      },
+      "taxable_base_realistic_fifo": 38219.03734732287,
+      "taxable_base_upper_bound": 88516.44606524879,
+      "taxable_base_reduction_pct": 56.822670762052304,
+      "by_rate_tier": {
+        "0.0": {
+          "rate_pct": 0.0,
+          "rate_label": "Known (no tax, control)",
+          "taxable_base_realistic_fifo": 38219.03734732287,
+          "tax_drag_dollars": 0.0,
+          "net_ann_twr_pct": 33.276667249843925,
+          "gap_vs_control_net_pp": -2.3150166737693496,
+          "gap_vs_control_net_class": "material",
+          "upper_bound_net_ann_twr_pct": 33.276667249843925,
+          "upper_bound_gap_vs_control_net_pp": -2.3150166737693496,
+          "upper_bound_gap_vs_control_net_class": "material"
+        },
+        "15.0": {
+          "rate_pct": 15.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_realistic_fifo": 38219.03734732287,
+          "tax_drag_dollars": 5732.85560209843,
+          "net_ann_twr_pct": 32.86665710629666,
+          "gap_vs_control_net_pp": -2.7250268173166177,
+          "gap_vs_control_net_class": "material",
+          "upper_bound_net_ann_twr_pct": 32.31906501632815,
+          "upper_bound_gap_vs_control_net_pp": -3.2726189072851213,
+          "upper_bound_gap_vs_control_net_class": "material"
+        },
+        "32.0": {
+          "rate_pct": 32.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_realistic_fifo": 38219.03734732287,
+          "tax_drag_dollars": 12230.091951143319,
+          "net_ann_twr_pct": 32.395639132037246,
+          "gap_vs_control_net_pp": -3.1960447915760284,
+          "gap_vs_control_net_class": "material",
+          "upper_bound_net_ann_twr_pct": 31.198381746559733,
+          "upper_bound_gap_vs_control_net_pp": -4.393302177053542,
+          "upper_bound_gap_vs_control_net_class": "material"
+        }
+      },
+      "outcome_category": "Evidence supports"
+    },
+    "0.50": {
+      "repay_fraction": 0.5,
+      "gross_ann_twr_pct": 32.0331311571987,
+      "gross_max_drawdown_pct": -23.65280125260114,
+      "n_repayment_events": 263,
+      "realized_gain_summary": {
+        "n_disposal_events": 17738,
+        "n_gain_events": 13933,
+        "n_loss_events": 3805,
+        "total_proceeds": 156112.51131315515,
+        "total_cost_basis": 88970.43430774094,
+        "total_realized_gain_net": 67142.07700541453,
+        "total_realized_gains": 71771.08061690412,
+        "total_realized_losses": -4629.00361148972,
+        "avg_holding_period_days_proceeds_weighted": 813.6818558529853,
+        "short_term_gain_dollars": 907.0364100316325,
+        "long_term_gain_dollars": 70864.04420687251,
+        "short_term_gain_pct_of_gains": 1.2637909339461713,
+        "long_term_gain_pct_of_gains": 98.73620906605383
+      },
+      "taxable_base_realistic_fifo": 67142.07700541453,
+      "taxable_base_upper_bound": 156112.51131315526,
+      "taxable_base_reduction_pct": 56.991226109526686,
+      "by_rate_tier": {
+        "0.0": {
+          "rate_pct": 0.0,
+          "rate_label": "Known (no tax, control)",
+          "taxable_base_realistic_fifo": 67142.07700541453,
+          "tax_drag_dollars": 0.0,
+          "net_ann_twr_pct": 32.0331311571987,
+          "gap_vs_control_net_pp": -3.5585527664145715,
+          "gap_vs_control_net_class": "material",
+          "upper_bound_net_ann_twr_pct": 32.0331311571987,
+          "upper_bound_gap_vs_control_net_pp": -3.5585527664145715,
+          "upper_bound_gap_vs_control_net_class": "material"
+        },
+        "15.0": {
+          "rate_pct": 15.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_realistic_fifo": 67142.07700541453,
+          "tax_drag_dollars": 10071.31155081218,
+          "net_ann_twr_pct": 31.28519629077118,
+          "gap_vs_control_net_pp": -4.306487632842096,
+          "gap_vs_control_net_class": "material",
+          "upper_bound_net_ann_twr_pct": 30.266469194629188,
+          "upper_bound_gap_vs_control_net_pp": -5.325214728984086,
+          "upper_bound_gap_vs_control_net_class": "material"
+        },
+        "32.0": {
+          "rate_pct": 32.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_realistic_fifo": 67142.07700541453,
+          "tax_drag_dollars": 21485.464641732648,
+          "net_ann_twr_pct": 30.415927048811685,
+          "gap_vs_control_net_pp": -5.175756874801589,
+          "gap_vs_control_net_class": "material",
+          "upper_bound_net_ann_twr_pct": 28.13809682654178,
+          "upper_bound_gap_vs_control_net_pp": -7.453587097071495,
+          "upper_bound_gap_vs_control_net_class": "material"
+        }
+      },
+      "outcome_category": "Evidence supports"
+    }
+  }
+}

@@ -6,6 +6,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
-# Generated
+# Generated (ephemeral scratch output only -- docs/results/ is a tracked
+# deliverable, not ephemeral, and is explicitly re-included below)
 results/
+!docs/results/
+!docs/results/**
 logs/

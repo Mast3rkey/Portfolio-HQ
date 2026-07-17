@@ -1,0 +1,85 @@
+# decision_log.yaml — machine-readable doctrine record, additive to CLAUDE.md's
+# prose Decisions Log, not a replacement for it. CLAUDE.md stays the narrative
+# source of truth (the reasoning is genuinely better read as prose); this file
+# exists so "what's the current value of X and why" is queryable without
+# grepping paragraphs. Every entry here must correspond to an existing
+# CLAUDE.md Decisions Log entry — this file records decisions, it does not
+# originate them.
+#
+# Schema per entry:
+#   decision_id      — MARGIN-#### for this initial migration pass; other
+#                       prefixes (CLUSTER-, TRIM-, WEIGHT-, ...) reserved for
+#                       a future, broader migration — not started yet.
+#   date              — ISO date the decision was made (from CLAUDE.md).
+#   category          — one of: margin_doctrine, concentration_risk (more
+#                        categories added only as new entries are migrated).
+#   decision          — one-sentence statement of what was decided.
+#   rationale         — why, condensed from the CLAUDE.md entry; not a
+#                        replacement for reading the full entry.
+#   supporting_artifact — path to a backtest report, or null if the decision
+#                          was doctrine-driven rather than backtest-derived
+#                          (state that distinction explicitly, don't blur it).
+#   status            — active | superseded | pending_evidence.
+#
+# Scope of this first migration pass, per explicit instruction: margin
+# doctrine decisions ONLY. Two entries below. NOT migrated yet, on purpose:
+# every other CLAUDE.md Decisions Log entry, including the closely-related
+# "Semis cluster cap: leverage asymmetry identified" entry (2026-07-14) --
+# that one is a cluster-cap decision that discusses leverage's effect on the
+# cap's denominator, not itself a margin-policy decision, and is a reasonable
+# candidate for a later, broader migration pass, not this one.
+
+decisions:
+  - decision_id: MARGIN-0001
+    date: 2026-07-13
+    category: margin_doctrine
+    decision: >
+      Margin allowed going forward within a fixed 1.8x structural
+      gross/net-equity leverage cap and a 30% margin-buffer floor
+      (hard cutoff, forced de-lever below it). Any margin-timing model
+      ("borrow more when conditions look good") explicitly rejected.
+    rationale: >
+      Discovered ~$4,423 in existing margin debt (~1.8x gross/equity)
+      contradicting the prior "no margin" rule -- this decision formalized
+      the debt already in place rather than deriving a level from evidence.
+      Margin-timing was rejected on the grounds that leverage amplifies
+      whatever edge the portfolio already has (or doesn't); it is not
+      itself a source of edge, and doctrine holds that isn't a
+      backtestable question -- see docs/MARGIN_DOCTRINE.md for the full
+      argument.
+    supporting_artifact: null
+    status: pending_evidence  # not active/settled in the evidentiary sense --
+                               # Track 2 (docs/TRACK2_HYPOTHETICAL_MARGIN_SIMULATION.md)
+                               # exists specifically to test whether the 1.8x
+                               # level (or any level) is supported by evidence.
+                               # The CAP ITSELF as a fixed, mechanical, no-exception
+                               # structure is not in question (see MARGIN_DOCTRINE.md);
+                               # its specific numeric level is what's pending.
+
+  - decision_id: MARGIN-0002
+    date: 2026-07-15
+    category: concentration_risk
+    decision: >
+      Any T1 or T2 position above 1.5x its own tier target trims
+      mechanically to target, no RSI gate -- same treatment as the
+      correlated-cluster caps, applied per-name instead of per-cluster.
+    rationale: >
+      T1 AI-infra correlation-cap approach was scanned and declined
+      (correlation 0.302, below the bar already set by a previously
+      declined cluster) but the underlying concentration was real (T1 at
+      42.1% of book vs. 30.15% target). This is a doctrine decision, not a
+      backtest verdict -- same category as the 1.8x leverage cap and 30%
+      buffer floor: a single core-conviction position at 2x+ target under
+      leverage is a tail/forced-liquidation risk a TWR backtest can't
+      price (see reports/t1t2_trim_backtest.md's NVDA decomposition:
+      2.14x target, -66.4% own drawdown, levered math breaking down at
+      the account's then-current 1.44x leverage).
+    supporting_artifact: reports/t1t2_trim_backtest.md
+    status: active  # the RETURN question this backtest tested is closed
+                     # (NO CHANGE verdict on TWR/aggregate-MaxDD grounds);
+                     # the trim rule itself is active in production
+                     # (allocate.py plan(), gates.t1t2_trim_mult). The
+                     # separate capital-impairment judgment this rule
+                     # responds to was a doctrine call, not itself
+                     # re-testable -- see CLAUDE.md's entry for the full
+                     # precision note on what was and wasn't backtested.
