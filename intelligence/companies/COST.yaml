@@ -1,0 +1,53 @@
+sector: Consumer Staples
+industry: Discount Stores / Warehouse Clubs
+portfolio_role_ref: T2
+competitive_advantages:
+  - "Membership-fee-funded low-margin model creates a durable price advantage competitors without a comparable membership base struggle to match"
+  - "High membership renewal rates (92.2% U.S./Canada, 89.7% worldwide, per Q3 FY2026 disclosure) indicate durable recurring-revenue loyalty"
+  - "Large-scale bulk purchasing power across 914 warehouses in the U.S. and 12 other countries (FY2025 count) supports cost leadership"
+  - "Limited SKU count (concentrated assortment), a long-documented Costco operating characteristic, supports inventory turnover and per-SKU purchasing leverage versus traditional big-box retailers"
+risks:
+  - risk: "Vigorous competition from Amazon, Walmart (including Sam's Club), Target, BJ's Wholesale, and other general-merchandise and e-commerce retailers"
+    severity: moderate
+    identified: "2026-07-17"
+    status: monitoring
+  - risk: "Rising labor costs in a structurally low-margin business model, driven by recurring wage increases under a multi-year employee compensation agreement"
+    severity: moderate
+    identified: "2026-07-17"
+    status: monitoring
+  - risk: "Membership renewal-rate sensitivity to a growing mix of digitally-sold/promoted memberships, which renew at a slightly lower rate on average"
+    severity: low
+    identified: "2026-07-17"
+    status: monitoring
+  - risk: "Execution risk in e-commerce/digital operations as customer expectations for online ordering, delivery, and curbside service continue to rise"
+    severity: moderate
+    identified: "2026-07-17"
+    status: monitoring
+  - risk: "Tariff exposure on merchandise costs, and foreign-currency exposure across international operations, partially hedged via forward foreign-exchange contracts"
+    severity: low
+    identified: "2026-07-17"
+    status: monitoring
+catalysts:
+  - catalyst: "Fiscal 2026 warehouse expansion -- approximately 26 net new warehouse openings, per management guidance disclosed on the Q3 FY2026 earnings call, including continued international expansion (China, Mexico)"
+    expected: "2026-08-31"
+    status: pending
+conviction:
+  rating: High
+  rationale: "Costco's membership model, renewal behavior, purchasing scale, and operating consistency support high conviction in the durability of the business-quality thesis. The company still faces meaningful competitive, labor-cost, digital-execution, international, and merchandise-cost risks. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-17"
+  next_due: "2026-10-15"
+  log:
+    - date: "2026-07-17"
+      note: "Initial record created through AI-assisted research and drafting; finalized through explicit human review and approval under PI-0003. Portfolio HQ's first Portfolio Intelligence pilot record."
+sources:
+  - note: "Costco Wholesale Corp Form 10-K, fiscal year ended 2025-08-31, filed with SEC 2025-10-07 (accession 0000909832-25-000101) -- membership fee revenue, renewal rates, warehouse/country count, net sales, net income, risk-factor categories. Direct rendering blocked (HTTP 403) in the research environment across multiple access attempts; figures corroborated via independent search results, not directly verified against rendered primary text."
+    url: "https://www.sec.gov/Archives/edgar/data/909832/000090983225000101/cost-20250831.htm"
+    date: "2025-10-07"
+  - note: "Costco Wholesale Corp Form 8-K, filed 2026-05-28 (accession 0000909832-26-000046), Exhibit 99.1 -- Q3 FY2026 operating results (quarter ended 2026-05-10): net sales, net income, membership fee income, renewal rates, total paid members. Same rendering caveat as above."
+    url: "https://www.sec.gov/Archives/edgar/data/0000909832/000090983226000046/costex9918-k52826.htm"
+    date: "2026-05-28"
+  - note: "Costco Wholesale Corporation official investor-relations press release, 'Reports Third Quarter and Year-To-Date Operating Results For Fiscal 2026,' published 2026-05-28. Same rendering caveat as above."
+    url: "https://investor.costco.com/news/news-details/2026/Costco-Wholesale-Corporation-Reports-Third-Quarter-and-Year-To-Date-Operating-Results-For-Fiscal-2026/default.aspx"
+    date: "2026-05-28"
