@@ -1,0 +1,175 @@
+{
+  "label": "hypothetical, simulated",
+  "disclaimer": "Not a claim about this account's real history or real trading costs. Every scenario is a hypothetical simulation of a synthetic $0-start account through real historical prices; the 5bps/15bps cost tiers are disclosed Hypothetical assumptions, not measured Robinhood spread data. See docs/TRANSACTION_COST_SENSITIVITY_PLAN.md and docs/PHASE3_FINDINGS.md sec 8.",
+  "execution_date": "2026-07-17",
+  "window": "2021-06-01 to 2026-07-10",
+  "n_deposits": 62,
+  "total_deposited": 124000.0,
+  "control_ann_twr_pct": 35.591683923613274,
+  "control_max_drawdown_pct": -26.812741368881365,
+  "cost_tiers_bps": [
+    0.0,
+    5.0,
+    15.0
+  ],
+  "material_threshold_pp": 2.0,
+  "noise_floor_pp": 0.5,
+  "results": {
+    "0.10": {
+      "repay_fraction": 0.1,
+      "gross_ann_twr_pct": 34.615988095977144,
+      "gross_max_drawdown_pct": -25.841109879112935,
+      "n_repayment_events": 314,
+      "total_repaid_dollars": 38225.88768476152,
+      "turnover_estimate": 0.3082732877803348,
+      "by_cost_tier": {
+        "0.0": {
+          "bps": 0.0,
+          "cost_label": "Known",
+          "total_cost_dollars": 0.0,
+          "cost_pct_of_repaid": 0.0,
+          "cost_pct_of_deposited": 0.0,
+          "gross_ann_twr_pct": 34.615988095977144,
+          "net_ann_twr_pct": 34.615988095977144,
+          "twr_erosion_pp": 0.0,
+          "gap_vs_control_gross_pp": -0.9756958276361303,
+          "gap_vs_control_net_pp": -0.9756958276361303,
+          "gap_vs_control_gross_class": "suggestive",
+          "gap_vs_control_net_class": "suggestive"
+        },
+        "5.0": {
+          "bps": 5.0,
+          "cost_label": "Hypothetical",
+          "total_cost_dollars": 19.11294384238077,
+          "cost_pct_of_repaid": 0.050000000000000024,
+          "cost_pct_of_deposited": 0.01541366438901675,
+          "gross_ann_twr_pct": 34.615988095977144,
+          "net_ann_twr_pct": 34.61467294585834,
+          "twr_erosion_pp": 0.0013151501188062298,
+          "gap_vs_control_gross_pp": -0.9756958276361303,
+          "gap_vs_control_net_pp": -0.9770109777549365,
+          "gap_vs_control_gross_class": "suggestive",
+          "gap_vs_control_net_class": "suggestive"
+        },
+        "15.0": {
+          "bps": 15.0,
+          "cost_label": "Hypothetical",
+          "total_cost_dollars": 57.3388315271423,
+          "cost_pct_of_repaid": 0.15000000000000005,
+          "cost_pct_of_deposited": 0.04624099316705024,
+          "gross_ann_twr_pct": 34.615988095977144,
+          "net_ann_twr_pct": 34.61204248806056,
+          "twr_erosion_pp": 0.003945607916584493,
+          "gap_vs_control_gross_pp": -0.9756958276361303,
+          "gap_vs_control_net_pp": -0.9796414355527148,
+          "gap_vs_control_gross_class": "suggestive",
+          "gap_vs_control_net_class": "suggestive"
+        }
+      }
+    },
+    "0.25": {
+      "repay_fraction": 0.25,
+      "gross_ann_twr_pct": 33.276667249843925,
+      "gross_max_drawdown_pct": -24.743853134075835,
+      "n_repayment_events": 296,
+      "total_repaid_dollars": 88516.44606524879,
+      "turnover_estimate": 0.7138423069778128,
+      "by_cost_tier": {
+        "0.0": {
+          "bps": 0.0,
+          "cost_label": "Known",
+          "total_cost_dollars": 0.0,
+          "cost_pct_of_repaid": 0.0,
+          "cost_pct_of_deposited": 0.0,
+          "gross_ann_twr_pct": 33.276667249843925,
+          "net_ann_twr_pct": 33.276667249843925,
+          "twr_erosion_pp": 0.0,
+          "gap_vs_control_gross_pp": -2.3150166737693496,
+          "gap_vs_control_net_pp": -2.3150166737693496,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        },
+        "5.0": {
+          "bps": 5.0,
+          "cost_label": "Hypothetical",
+          "total_cost_dollars": 44.258223032624386,
+          "cost_pct_of_repaid": 0.04999999999999999,
+          "cost_pct_of_deposited": 0.035692115348890635,
+          "gross_ann_twr_pct": 33.276667249843925,
+          "net_ann_twr_pct": 33.27352161611967,
+          "twr_erosion_pp": 0.003145633724251695,
+          "gap_vs_control_gross_pp": -2.3150166737693496,
+          "gap_vs_control_net_pp": -2.3181623074936013,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        },
+        "15.0": {
+          "bps": 15.0,
+          "cost_label": "Hypothetical",
+          "total_cost_dollars": 132.7746690978732,
+          "cost_pct_of_repaid": 0.15,
+          "cost_pct_of_deposited": 0.10707634604667192,
+          "gross_ann_twr_pct": 33.276667249843925,
+          "net_ann_twr_pct": 33.267229438121525,
+          "twr_erosion_pp": 0.009437811722399658,
+          "gap_vs_control_gross_pp": -2.3150166737693496,
+          "gap_vs_control_net_pp": -2.3244544854917493,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        }
+      }
+    },
+    "0.50": {
+      "repay_fraction": 0.5,
+      "gross_ann_twr_pct": 32.0331311571987,
+      "gross_max_drawdown_pct": -23.65280125260114,
+      "n_repayment_events": 263,
+      "total_repaid_dollars": 156112.51131315526,
+      "turnover_estimate": 1.2589718654286715,
+      "by_cost_tier": {
+        "0.0": {
+          "bps": 0.0,
+          "cost_label": "Known",
+          "total_cost_dollars": 0.0,
+          "cost_pct_of_repaid": 0.0,
+          "cost_pct_of_deposited": 0.0,
+          "gross_ann_twr_pct": 32.0331311571987,
+          "net_ann_twr_pct": 32.0331311571987,
+          "twr_erosion_pp": 0.0,
+          "gap_vs_control_gross_pp": -3.5585527664145715,
+          "gap_vs_control_net_pp": -3.5585527664145715,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        },
+        "5.0": {
+          "bps": 5.0,
+          "cost_label": "Hypothetical",
+          "total_cost_dollars": 78.05625565657768,
+          "cost_pct_of_repaid": 0.050000000000000024,
+          "cost_pct_of_deposited": 0.06294859327143361,
+          "gross_ann_twr_pct": 32.0331311571987,
+          "net_ann_twr_pct": 32.02740060476301,
+          "twr_erosion_pp": 0.005730552435693426,
+          "gap_vs_control_gross_pp": -3.5585527664145715,
+          "gap_vs_control_net_pp": -3.564283318850265,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        },
+        "15.0": {
+          "bps": 15.0,
+          "cost_label": "Hypothetical",
+          "total_cost_dollars": 234.1687669697329,
+          "cost_pct_of_repaid": 0.15,
+          "cost_pct_of_deposited": 0.18884577981430073,
+          "gross_ann_twr_pct": 32.0331311571987,
+          "net_ann_twr_pct": 32.015936449036595,
+          "twr_erosion_pp": 0.01719470816210844,
+          "gap_vs_control_gross_pp": -3.5585527664145715,
+          "gap_vs_control_net_pp": -3.57574747457668,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        }
+      }
+    }
+  }
+}
