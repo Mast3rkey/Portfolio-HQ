@@ -72,11 +72,15 @@ verified by dedicated isolation tests, not just asserted in doctrine.
 Nothing in this repository reads a company's thesis, risks, or conviction
 rating to decide what to buy, trim, or block.
 
-Additional intelligence layers have been discussed but are not implemented
-or authorized on `main`. **Theme Intelligence** remains an architectural
-proposal pending a separate governance decision. **Portfolio Intelligence
-aggregation** is also deferred. Neither layer can currently affect allocator
-behavior.
+**Theme Intelligence** is governed but not yet implemented. PI-0006 freezes
+its flat, advisory-only data model, and PI-0007 authorizes one bounded future
+pilot covering `ai_infrastructure`, NVDA, and GEV. No theme or associated
+company record currently exists, and implementation remains subject to a
+separate branch, review, and merge.
+
+**Portfolio Intelligence aggregation** remains deferred and unauthorized.
+Neither Theme Intelligence nor Portfolio Intelligence aggregation currently
+affects allocator behavior.
 
 ## Allocation workflow
 
