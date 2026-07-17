@@ -55,6 +55,7 @@ primitives from backtest_regime.py this same way).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import date
 from functools import partial
 from typing import Callable
 
@@ -498,6 +499,7 @@ class SimulationResult:
     final_margin_debt: float
     deposit_total: float
     tracked_values: dict[str, list[float]] = field(default_factory=dict)
+    tax_lot_events: list[dict] = field(default_factory=list)
 
     def metrics(self, near_cap_fraction: float = 0.9,
                concentration_inputs: dict | None = None) -> dict:
@@ -524,14 +526,116 @@ class SimulationResult:
         return m
 
 
+# ── tax-lot tracking (Phase 6A addition — additive only) ────────────────────
+#
+# Per docs/PHASE6A_IMPLEMENTATION_APPROVAL.md: purely additive per-ticker lot
+# bookkeeping, layered alongside the existing aggregate `shares[ticker]`
+# tracking, never replacing or altering it. `simulate()`'s existing
+# share-count/cash/gross/leverage arithmetic is byte-for-byte unchanged by
+# this addition — the lot ledger records the same purchase/sale quantities
+# that arithmetic already computes, it does not compute anything new that
+# influences a decision or a value the engine already outputs.
+#
+# FIFO consumption (oldest lot first) is the sole convention implemented,
+# per docs/PHASE6A_TAX_LOT_MODELING_PLAN.md §6 — a disclosed default, not a
+# claim about this account's real elected convention. Short/long-term
+# classification uses the real IRC §1222 365-day rule applied to the
+# simulation's own synthetic calendar dates (Known rule, Hypothetical
+# dates — docs/PHASE6A_ASSUMPTION_REGISTRY.md #4).
+
+SHORT_TERM_THRESHOLD_DAYS = 365
+
+
+@dataclass
+class Lot:
+    """One simulated purchase lot. `shares` is mutated down in place as
+    FIFO consumption partially or fully liquidates it; a lot with
+    shares <= 0 is fully consumed and removed by _consume_fifo_lots()."""
+    ticker: str
+    shares: float
+    acquisition_day: int
+    acquisition_date: str
+    cost_basis_price: float
+
+
+def _classify_holding_period(acquisition_date: str, sale_date: str) -> str:
+    """Real IRC §1222 365-day short/long-term boundary, applied to the
+    simulation's own (synthetic) calendar dates — see module comment
+    above. Strictly greater than 365 days is long-term, matching the
+    real tax-code convention (>1 year, not >=)."""
+    d0 = date.fromisoformat(acquisition_date)
+    d1 = date.fromisoformat(sale_date)
+    return "long_term" if (d1 - d0).days > SHORT_TERM_THRESHOLD_DAYS else "short_term"
+
+
+def _consume_fifo_lots(ticker_lots: list[Lot], shares_to_sell: float,
+                       sale_price: float, sale_day: int, sale_date: str,
+                       ticker: str) -> list[dict]:
+    """Consumes `shares_to_sell` shares from `ticker_lots` (mutated in
+    place: oldest lots first, fully-consumed lots removed, a partially
+    consumed lot has its `shares` reduced) and returns one tax-lot-event
+    dict per lot touched (a single sale can span multiple lots — this is
+    the "partial lot liquidation" / "multi-lot sale" case named in
+    docs/PHASE6A_IMPLEMENTATION_APPROVAL.md §2's required test list).
+
+    If `shares_to_sell` exceeds the total shares recorded in
+    `ticker_lots` (should not happen if the lot ledger is kept in sync
+    with `shares[ticker]` — see the invariant test in
+    test_margin_simulation.py), consumes every available lot and stops;
+    it does not raise or fabricate a lot that was never recorded."""
+    events: list[dict] = []
+    remaining = shares_to_sell
+    while remaining > 1e-12 and ticker_lots:
+        lot = ticker_lots[0]
+        take = min(lot.shares, remaining)
+        if take <= 0:
+            ticker_lots.pop(0)
+            continue
+        proceeds = take * sale_price
+        cost_basis = take * lot.cost_basis_price
+        realized_gain = proceeds - cost_basis
+        events.append({
+            "ticker": ticker,
+            "shares_sold": take,
+            "acquisition_day": lot.acquisition_day,
+            "acquisition_date": lot.acquisition_date,
+            "cost_basis_price": lot.cost_basis_price,
+            "sale_day": sale_day,
+            "sale_date": sale_date,
+            "sale_price": sale_price,
+            "proceeds": proceeds,
+            "cost_basis": cost_basis,
+            "realized_gain": realized_gain,
+            "holding_period": _classify_holding_period(lot.acquisition_date, sale_date),
+        })
+        lot.shares -= take
+        remaining -= take
+        if lot.shares <= 1e-12:
+            ticker_lots.pop(0)
+    return events
+
+
 def _fund_repayment(cash: float, shares: dict[str, float], closes: dict[str, float],
-                    gross: float, repay: float) -> float:
+                    gross: float, repay: float,
+                    lots: dict[str, list[Lot]] | None = None,
+                    sale_day: int | None = None, sale_date: str | None = None,
+                    tax_lot_events: list[dict] | None = None) -> float:
     """Fund `repay` dollars toward a margin paydown: idle cash first, then
     a pro-rata trim across all priced positions. Mutates `shares` in
     place (reassigns share counts down). Returns the updated cash value.
     Shared by both the pre-trade hook (Model B/C) and the post-allocation
     repayment_fn slot (Model 0/A) — a single funding mechanism, not two
-    slightly-different ones."""
+    slightly-different ones.
+
+    `lots`/`sale_day`/`sale_date`/`tax_lot_events` (Phase 6A addition,
+    all optional, default None): when supplied, FIFO-consumes the exact
+    same share quantity this function already sells (see the `sell_val`/
+    `shares[s]` arithmetic below, unchanged) from `lots[s]`, appending
+    the resulting tax-lot-event records to `tax_lot_events`. This is a
+    read-alongside operation — it observes the sale already happening,
+    it does not change `shares[s]`'s value or any other existing
+    computation. Omitting these arguments (the default) reproduces this
+    function's exact pre-Phase-6A behavior."""
     from_cash = min(cash, repay)
     cash -= from_cash
     still_needed = repay - from_cash
@@ -544,7 +648,13 @@ def _fund_repayment(cash: float, shares: dict[str, float], closes: dict[str, flo
             if px is None or shares[s] <= 0:
                 continue
             sell_val = shares[s] * px * frac
-            shares[s] -= sell_val / px
+            shares_sold = sell_val / px
+            shares[s] -= shares_sold
+            if lots is not None and s in lots and sale_day is not None:
+                events = _consume_fifo_lots(lots[s], shares_sold, px, sale_day,
+                                            sale_date or "", s)
+                if tax_lot_events is not None:
+                    tax_lot_events.extend(events)
     return cash
 
 
@@ -609,6 +719,15 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
     existing 156-test-covered engine (see
     test_regression_scenario_*_unchanged in test_margin_simulation.py
     for the pre-existing regression-proof pattern this follows).
+
+    Phase 6A addition: a per-ticker FIFO lot ledger is always maintained
+    alongside `shares` (see the module comment above _fund_repayment)
+    and every consumption is recorded into the returned
+    SimulationResult.tax_lot_events. This changes no existing field's
+    value — it is read-alongside bookkeeping of the same purchase/sale
+    quantities the engine already computes, per
+    docs/PHASE6A_IMPLEMENTATION_APPROVAL.md's "preserve all existing
+    outputs and labels" constraint.
     """
     dep_set = set(deposit_days)
     cash = 0.0
@@ -621,6 +740,12 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
     events: list[dict] = []
     prior_gross: float | None = None
     tracked_values: dict[str, list[float]] = {t: [] for t in (track_tickers or [])}
+    # Phase 6A addition: per-ticker FIFO lot ledger, additive alongside
+    # `shares` — see the module comment above _fund_repayment. Always
+    # maintained (cheap bookkeeping, no behavior change to any existing
+    # output); consumed only by callers that read `tax_lot_events`.
+    lots: dict[str, list[Lot]] = {}
+    tax_lot_events: list[dict] = []
 
     for i, d in enumerate(calendar):
         elig = [s for s in aligned if aligned[s][1] is not None and i >= aligned[s][1]]
@@ -639,7 +764,9 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
             decision = scenario.pre_trade_fn(state_pre, prior_gross)
             pre_repay = max(0.0, min(decision.repay_amount, margin_debt))
             if pre_repay > 0:
-                cash = _fund_repayment(cash, shares, closes, gross, pre_repay)
+                cash = _fund_repayment(cash, shares, closes, gross, pre_repay,
+                                       lots=lots, sale_day=i, sale_date=d,
+                                       tax_lot_events=tax_lot_events)
                 margin_debt -= pre_repay
                 gross = sum(shares.get(s, 0.0) * closes.get(s, 0.0) for s in shares)
                 events.append({"day": i, "kind": "repayment", "amount": pre_repay,
@@ -684,7 +811,11 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
                     if gap < min_lot or remaining < min_lot:
                         continue
                     spend = min(gap, remaining)
-                    shares[s] = shares.get(s, 0.0) + spend / closes[s]
+                    bought = spend / closes[s]
+                    shares[s] = shares.get(s, 0.0) + bought
+                    lots.setdefault(s, []).append(
+                        Lot(ticker=s, shares=bought, acquisition_day=i,
+                            acquisition_date=d, cost_basis_price=closes[s]))
                     remaining -= spend
                 spent = buying_power - remaining
                 from_cash = min(cash, spent)
@@ -701,7 +832,9 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
         repay = scenario.repayment_fn(state, prior_gross)
         repay = max(0.0, min(repay, margin_debt))
         if repay > 0:
-            cash = _fund_repayment(cash, shares, closes, gross, repay)
+            cash = _fund_repayment(cash, shares, closes, gross, repay,
+                                   lots=lots, sale_day=i, sale_date=d,
+                                   tax_lot_events=tax_lot_events)
             margin_debt -= repay
             events.append({"day": i, "kind": "repayment", "amount": repay,
                           "source": "post_allocation"})
@@ -729,6 +862,7 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
         final_margin_debt=margin_debt,
         deposit_total=sum(flows.values()),
         tracked_values=tracked_values,
+        tax_lot_events=tax_lot_events,
     )
 
 
