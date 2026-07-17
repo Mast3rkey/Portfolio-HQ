@@ -1,0 +1,250 @@
+{
+  "label": "hypothetical, simulated",
+  "disclaimer": "Not a claim about this account's real history or real tax liability. Every scenario is a hypothetical simulation of a synthetic $0-start account through real historical prices. The taxable-realization figure is a disclosed UPPER BOUND (100% of each repayment event's dollar amount treated as realized gain), never converted into an estimate of actual realized gain or actual tax owed. The 15%/32% rate tiers are disclosed Hypothetical, illustrative federal brackets, not this account's confirmed rate. State tax is excluded, not assumed zero. See docs/TAX_TREATMENT_SENSITIVITY_PLAN.md and docs/PHASE3_FINDINGS.md sec 8.",
+  "execution_date": "2026-07-17",
+  "window": "2021-06-01 to 2026-07-10",
+  "n_deposits": 62,
+  "control_ann_twr_pct": 35.591683923613274,
+  "control_max_drawdown_pct": -26.812741368881365,
+  "tax_rate_tiers_pct": [
+    0.0,
+    15.0,
+    32.0
+  ],
+  "holding_period_cases": {
+    "all_long_term": 15.0,
+    "all_short_term": 32.0
+  },
+  "material_threshold_pp": 2.0,
+  "noise_floor_pp": 0.5,
+  "results": {
+    "0.10": {
+      "repay_fraction": 0.1,
+      "gross_ann_twr_pct": 34.615988095977144,
+      "gross_max_drawdown_pct": -25.841109879112935,
+      "n_repayment_events": 314,
+      "taxable_base_upper_bound": 38225.88768476152,
+      "by_rate_tier": {
+        "0.0": {
+          "rate_pct": 0.0,
+          "rate_label": "Known (no tax, control)",
+          "taxable_base_upper_bound": 38225.88768476152,
+          "tax_drag_dollars": 0.0,
+          "gross_ann_twr_pct": 34.615988095977144,
+          "net_ann_twr_pct": 34.615988095977144,
+          "twr_erosion_pp": 0.0,
+          "gap_vs_control_gross_pp": -0.9756958276361303,
+          "gap_vs_control_net_pp": -0.9756958276361303,
+          "gap_vs_control_gross_class": "suggestive",
+          "gap_vs_control_net_class": "suggestive"
+        },
+        "15.0": {
+          "rate_pct": 15.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_upper_bound": 38225.88768476152,
+          "tax_drag_dollars": 5733.883152714227,
+          "gross_ann_twr_pct": 34.615988095977144,
+          "net_ann_twr_pct": 34.21906641241665,
+          "twr_erosion_pp": 0.3969216835604925,
+          "gap_vs_control_gross_pp": -0.9756958276361303,
+          "gap_vs_control_net_pp": -1.3726175111966228,
+          "gap_vs_control_gross_class": "suggestive",
+          "gap_vs_control_net_class": "suggestive"
+        },
+        "32.0": {
+          "rate_pct": 32.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_upper_bound": 38225.88768476152,
+          "tax_drag_dollars": 12232.284059123685,
+          "gross_ann_twr_pct": 34.615988095977144,
+          "net_ann_twr_pct": 33.763343657026866,
+          "twr_erosion_pp": 0.8526444389502785,
+          "gap_vs_control_gross_pp": -0.9756958276361303,
+          "gap_vs_control_net_pp": -1.8283402665864088,
+          "gap_vs_control_gross_class": "suggestive",
+          "gap_vs_control_net_class": "suggestive"
+        }
+      },
+      "by_holding_period": {
+        "all_long_term": {
+          "rate_pct": 15.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_upper_bound": 38225.88768476152,
+          "tax_drag_dollars": 5733.883152714227,
+          "gross_ann_twr_pct": 34.615988095977144,
+          "net_ann_twr_pct": 34.21906641241665,
+          "twr_erosion_pp": 0.3969216835604925,
+          "gap_vs_control_gross_pp": -0.9756958276361303,
+          "gap_vs_control_net_pp": -1.3726175111966228,
+          "gap_vs_control_gross_class": "suggestive",
+          "gap_vs_control_net_class": "suggestive"
+        },
+        "all_short_term": {
+          "rate_pct": 32.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_upper_bound": 38225.88768476152,
+          "tax_drag_dollars": 12232.284059123685,
+          "gross_ann_twr_pct": 34.615988095977144,
+          "net_ann_twr_pct": 33.763343657026866,
+          "twr_erosion_pp": 0.8526444389502785,
+          "gap_vs_control_gross_pp": -0.9756958276361303,
+          "gap_vs_control_net_pp": -1.8283402665864088,
+          "gap_vs_control_gross_class": "suggestive",
+          "gap_vs_control_net_class": "suggestive"
+        }
+      }
+    },
+    "0.25": {
+      "repay_fraction": 0.25,
+      "gross_ann_twr_pct": 33.276667249843925,
+      "gross_max_drawdown_pct": -24.743853134075835,
+      "n_repayment_events": 296,
+      "taxable_base_upper_bound": 88516.44606524879,
+      "by_rate_tier": {
+        "0.0": {
+          "rate_pct": 0.0,
+          "rate_label": "Known (no tax, control)",
+          "taxable_base_upper_bound": 88516.44606524879,
+          "tax_drag_dollars": 0.0,
+          "gross_ann_twr_pct": 33.276667249843925,
+          "net_ann_twr_pct": 33.276667249843925,
+          "twr_erosion_pp": 0.0,
+          "gap_vs_control_gross_pp": -2.3150166737693496,
+          "gap_vs_control_net_pp": -2.3150166737693496,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        },
+        "15.0": {
+          "rate_pct": 15.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_upper_bound": 88516.44606524879,
+          "tax_drag_dollars": 13277.466909787317,
+          "gross_ann_twr_pct": 33.276667249843925,
+          "net_ann_twr_pct": 32.31906501632815,
+          "twr_erosion_pp": 0.9576022335157717,
+          "gap_vs_control_gross_pp": -2.3150166737693496,
+          "gap_vs_control_net_pp": -3.2726189072851213,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        },
+        "32.0": {
+          "rate_pct": 32.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_upper_bound": 88516.44606524879,
+          "tax_drag_dollars": 28325.262740879614,
+          "gross_ann_twr_pct": 33.276667249843925,
+          "net_ann_twr_pct": 31.198381746559733,
+          "twr_erosion_pp": 2.0782855032841923,
+          "gap_vs_control_gross_pp": -2.3150166737693496,
+          "gap_vs_control_net_pp": -4.393302177053542,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        }
+      },
+      "by_holding_period": {
+        "all_long_term": {
+          "rate_pct": 15.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_upper_bound": 88516.44606524879,
+          "tax_drag_dollars": 13277.466909787317,
+          "gross_ann_twr_pct": 33.276667249843925,
+          "net_ann_twr_pct": 32.31906501632815,
+          "twr_erosion_pp": 0.9576022335157717,
+          "gap_vs_control_gross_pp": -2.3150166737693496,
+          "gap_vs_control_net_pp": -3.2726189072851213,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        },
+        "all_short_term": {
+          "rate_pct": 32.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_upper_bound": 88516.44606524879,
+          "tax_drag_dollars": 28325.262740879614,
+          "gross_ann_twr_pct": 33.276667249843925,
+          "net_ann_twr_pct": 31.198381746559733,
+          "twr_erosion_pp": 2.0782855032841923,
+          "gap_vs_control_gross_pp": -2.3150166737693496,
+          "gap_vs_control_net_pp": -4.393302177053542,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        }
+      }
+    },
+    "0.50": {
+      "repay_fraction": 0.5,
+      "gross_ann_twr_pct": 32.0331311571987,
+      "gross_max_drawdown_pct": -23.65280125260114,
+      "n_repayment_events": 263,
+      "taxable_base_upper_bound": 156112.51131315526,
+      "by_rate_tier": {
+        "0.0": {
+          "rate_pct": 0.0,
+          "rate_label": "Known (no tax, control)",
+          "taxable_base_upper_bound": 156112.51131315526,
+          "tax_drag_dollars": 0.0,
+          "gross_ann_twr_pct": 32.0331311571987,
+          "net_ann_twr_pct": 32.0331311571987,
+          "twr_erosion_pp": 0.0,
+          "gap_vs_control_gross_pp": -3.5585527664145715,
+          "gap_vs_control_net_pp": -3.5585527664145715,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        },
+        "15.0": {
+          "rate_pct": 15.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_upper_bound": 156112.51131315526,
+          "tax_drag_dollars": 23416.87669697329,
+          "gross_ann_twr_pct": 32.0331311571987,
+          "net_ann_twr_pct": 30.266469194629188,
+          "twr_erosion_pp": 1.7666619625695148,
+          "gap_vs_control_gross_pp": -3.5585527664145715,
+          "gap_vs_control_net_pp": -5.325214728984086,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        },
+        "32.0": {
+          "rate_pct": 32.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_upper_bound": 156112.51131315526,
+          "tax_drag_dollars": 49956.00362020969,
+          "gross_ann_twr_pct": 32.0331311571987,
+          "net_ann_twr_pct": 28.13809682654178,
+          "twr_erosion_pp": 3.895034330656923,
+          "gap_vs_control_gross_pp": -3.5585527664145715,
+          "gap_vs_control_net_pp": -7.453587097071495,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        }
+      },
+      "by_holding_period": {
+        "all_long_term": {
+          "rate_pct": 15.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_upper_bound": 156112.51131315526,
+          "tax_drag_dollars": 23416.87669697329,
+          "gross_ann_twr_pct": 32.0331311571987,
+          "net_ann_twr_pct": 30.266469194629188,
+          "twr_erosion_pp": 1.7666619625695148,
+          "gap_vs_control_gross_pp": -3.5585527664145715,
+          "gap_vs_control_net_pp": -5.325214728984086,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        },
+        "all_short_term": {
+          "rate_pct": 32.0,
+          "rate_label": "Hypothetical (illustrative federal bracket)",
+          "taxable_base_upper_bound": 156112.51131315526,
+          "tax_drag_dollars": 49956.00362020969,
+          "gross_ann_twr_pct": 32.0331311571987,
+          "net_ann_twr_pct": 28.13809682654178,
+          "twr_erosion_pp": 3.895034330656923,
+          "gap_vs_control_gross_pp": -3.5585527664145715,
+          "gap_vs_control_net_pp": -7.453587097071495,
+          "gap_vs_control_gross_class": "material",
+          "gap_vs_control_net_class": "material"
+        }
+      }
+    }
+  }
+}
