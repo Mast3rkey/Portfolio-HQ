@@ -12,6 +12,23 @@ Item 1 (transaction cost sensitivity) has been completed — see `docs/TRANSACTI
 
 Closing item 1 surfaced two new, higher-priority questions that were implicit in its own "what this doesn't resolve" section: **tax treatment** and **stress-regime execution assumptions** — both added below as items 9 and 10, and both ranked ahead of everything except the already-completed item 1. Concentration follow-up work (items 2 and 4) is explicitly **deprioritized further**: Phase 4A already established that concentration can produce a measurable degradation signal, but the evidence bar for changing any control has not been met, and neither item is expected to change that determination — further concentration research is lower-value right now than closing the cost-realism gap on Model B specifically. See the updated priority table at the end of this document.
 
+## Phase 6A reconciliation (2026-07-17)
+
+Items 9 (tax treatment) and 10 (stress-regime execution assumptions) were both completed after this document's prior update and were not marked closed at the time — a bookkeeping gap, not a finding. Both are now marked **CLOSED** below, item 9 including its Phase 6A FIFO-lot refinement (`docs/PHASE6A_TAX_LOT_EVIDENCE_RECORD.md`).
+
+**Evidence update (Phase 6A, tax-lot / FIFO modeling):**
+- The worst-case tax upper bound (item 9's original result) was **materially reduced** by realistic FIFO lot accounting — the taxable base fell 57–62% at every tested `repay_fraction` ($38,226→$14,395 at 10%; $88,516→$38,219 at 25%; $156,113→$67,142 at 50%).
+- Tax friction **remained material** for the higher repayment fractions (25%/50%) under every tested rate tier, despite that reduction — the earlier "material" classification did not flip to "noise" or "suggestive."
+- At `repay_fraction`=10%, the result **remained inconclusive** in the sense that the gap was already sub-material pre-tax and stayed sub-material ("suggestive," not "material" or "noise") at every FIFO-realistic tax tier — no crossing occurred in either direction.
+- **No `repay_fraction` is selected or recommended by this reconciliation.** All three arms remain open findings, reported in full.
+
+**Reassessment of the three named questions:**
+- **Do tax lots remain an open blocker?** Narrowed, not eliminated. The worst-case estimate was shown to be a real overstatement, and a more realistic (though still synthetic-account-only) figure now exists — but this account's real cost basis, real elected lot convention, real tax rate, and real jurisdiction remain entirely unknown, unchanged from before Phase 6A (`docs/PHASE6A_TAX_LOT_EVIDENCE_RECORD.md` §8). Tax treatment is no longer the single largest unresolved cost-realism question in this backlog — it has moved from "untested" to "tested, bounded, still incomplete."
+- **Does execution modeling remain unresolved?** Yes, unchanged. Item 10's closure tested *timing* (does repayment activity cluster in detected stress windows — it does not) and applied only a flat/regime-conditional bps overlay, never a real slippage or spread-widening model. Real execution realism (actual fill quality, actual spread behavior under stress) remains untouched, per `docs/PHASE5_DECISION_GATE_REVIEW.md` §5's blocker list.
+- **Do broker mechanics remain unresolved?** Yes, unchanged and not addressed by this phase at all — real Robinhood margin-call sequencing, maintenance requirements, and forced-liquidation mechanics remain a named, near-permanent gap (`docs/PHASE5_DECISION_GATE_REVIEW.md` §5, item 3; `docs/PHASE5B_GOVERNANCE_DECISION.md` §3's evaluation of Decision 2).
+
+No new numbered backlog item is added for execution modeling or broker mechanics here — both are already named, tracked blockers in the Phase 5 governance documents cited above, not new research questions this backlog needs to independently number. Whether either is worth a dedicated future research track (as opposed to a documentation-only inventory) is a governance sequencing question, not a backlog-prioritization one — out of scope for this reconciliation.
+
 ---
 
 ## Scoring legend
@@ -208,7 +225,9 @@ These appeared in `docs/PHASE4_READINESS_REVIEW.md`'s "special attention" list a
 
 - **Whether margin should be treated as a portfolio-level risk resource only.** Already the consistent design throughout Phase 2-4 (`margin_state.py`'s `concentration_risk_score()` is explicitly portfolio-level; Model B/C operate on portfolio-level `net_equity`; `worst_case_concentration_impact()`'s own docstring explicitly disclaims any per-position leverage-allocation framing). Phase 4A's design decisions (§3a of the resolution document) reaffirmed this by keeping `margin_state.py`'s scorer read-only/reference-only rather than adapting it toward a per-position view. **Recommend: close as a design principle to explicitly reaffirm in `docs/MARGIN_DOCTRINE.md`** (a small documentation edit, not research) **rather than carry as an open backlog item.**
 
-## 9. Tax treatment sensitivity for repayment-model turnover
+## 9. Tax treatment sensitivity for repayment-model turnover — **CLOSED (2026-07-17, refined by Phase 6A same day)**
+
+**Resolution:** Implemented in two passes. **Pass 1 (upper bound):** `docs/TAX_TREATMENT_SENSITIVITY_RESULTS.md`/`.json` applied a disclosed worst-case assumption (100% of every repaid dollar treated as realized gain) at 0%/15%/32% illustrative rate tiers — found tax friction can materially change the magnitude of Model B's effect (at 50%/32%, gap widened from −3.56pp to −7.45pp). **Pass 2 (Phase 6A, FIFO-realistic):** `docs/PHASE6A_TAX_LOT_EVIDENCE_RECORD.md` added a per-ticker FIFO lot ledger (additive-only extension to `margin_simulation.py`) and recomputed the same comparison using actual realized gain (proceeds minus cost basis) instead of the 100%-gain ceiling. Found the taxable base fell 57–62% at every `repay_fraction`, but the materiality classification did not change at the two fractions (25%/50%) where it was material before — tax friction remains a real, evidence-supported finding at those fractions, just smaller in magnitude than the original upper bound suggested. See the "Phase 6A reconciliation" section above for the full evidence summary. **Consolidated record:** `docs/PHASE6A_TAX_LOT_EVIDENCE_RECORD.md` (canonical), `docs/PHASE3_MODEL_B_COMPLETE_EVIDENCE_RECORD.md` (pre-Phase-6A snapshot, preserved unedited). Original question/rationale preserved below for the historical record of why this item was opened.
 
 **Question:** Does Model B's (or a future Model C's) TWR/MaxDD trade-off survive once realized gains/losses from its forced trim-and-repay cycles are taxed?
 
@@ -230,7 +249,9 @@ These appeared in `docs/PHASE4_READINESS_REVIEW.md`'s "special attention" list a
 
 ---
 
-## 10. Stress-regime execution assumptions
+## 10. Stress-regime execution assumptions — **CLOSED (2026-07-17)**
+
+**Resolution:** Implemented. `docs/STRESS_REGIME_EXECUTION_ASSUMPTIONS_RESULTS.md`/`.json` detected 21 real stress windows from QQQ's OHLCV data (12.2% of simulated trading days) and found repayment dollar volume is *under-represented* inside those windows at every `repay_fraction` (5.9–6.9% of repaid dollars vs. the 12.2% base rate) — Model B's high-water-mark trigger structurally favors calm/rising periods, not stressed ones. Threshold exposure stayed 0.0% (not material) at every arm. A disclosed regime-conditional cost overlay (3x multiplier inside detected stress windows) added only a few dollars over the flat-rate baseline — materiality classification unchanged from item 1's already-closed result. **This closes the repayment-*timing* question specifically** — it does not model real execution slippage or spread-widening (see the Phase 6A reconciliation section above: execution modeling remains a separate, unresolved blocker). Original question/rationale preserved below for the historical record of why this item was opened.
 
 **Question:** Does the smooth 2021-2026 window hide bad-timing effects that would show up under real stressed-market execution conditions (widened spreads, slippage, delayed fills)?
 
@@ -260,22 +281,22 @@ These appeared in `docs/PHASE4_READINESS_REVIEW.md`'s "special attention" list a
 
 ## Recommended priority order (1 = highest value now)
 
-_Updated 2026-07-17 following item 1's closure. Item 1 is retained in the table, marked closed, so the sequencing history stays visible._
+_Updated 2026-07-17 following the Phase 6A reconciliation. Closed items are retained in the table, marked closed, so the sequencing history stays visible._
 
 | Priority | Item | Effort | Value | Doctrine-capped? |
 |---|---|---|---|---|
 | **CLOSED** | Transaction cost sensitivity for repayment turnover | Small | High | No |
-| 1 | Tax treatment sensitivity for repayment-model turnover | Medium | High | No |
-| 2 | Stress-regime execution assumptions | Small-Medium | Medium-High | No |
-| 3 | Historical data collection infrastructure | Small (touches `allocate.py` — needs authorization) | High, deferred | No (enables future evidence only) |
-| 4 | Re-examine the "Evidence supports" AND-gate | Small | Medium | No |
-| 5 | Constructed broad-market stress case (concentration line) | Medium | Medium-High | No |
-| 6 | Broader concentration construction sweep | Medium-Large | Medium | No |
-| 7 | Model C `reset_leverage` sweep | Small | Low | No |
-| 8 | Model C volatility-spike triggering | Medium | Low | No |
-| 9 | Leverage-cap × concentration combined sweep | Medium | Structurally capped | Structurally capped |
+| **CLOSED** | Tax treatment sensitivity for repayment-model turnover (upper bound + Phase 6A FIFO refinement) | Medium | High | No |
+| **CLOSED** | Stress-regime execution assumptions | Small-Medium | Medium-High | No |
+| 1 | Historical data collection infrastructure | Small (touches `allocate.py` — needs authorization) | High, deferred | No (enables future evidence only) |
+| 2 | Re-examine the "Evidence supports" AND-gate | Small | Medium | No |
+| 3 | Constructed broad-market stress case (concentration line) | Medium | Medium-High | No |
+| 4 | Broader concentration construction sweep | Medium-Large | Medium | No |
+| 5 | Model C `reset_leverage` sweep | Small | Low | No |
+| 6 | Model C volatility-spike triggering | Medium | Low | No |
+| 7 | Leverage-cap × concentration combined sweep | Medium | Structurally capped | Structurally capped |
 
-**Rationale for the reordering:** closing the transaction-cost question narrowed, rather than closed, the "is Model B's turnover a real problem" line of inquiry — it ruled out bid-ask spread as the mechanism but surfaced tax treatment and stress-regime execution as the two cost categories that could plausibly still matter (`docs/PHASE3_MODEL_B_EVIDENCE_UPDATE.md` §4), so both are promoted ahead of everything else. Concentration-line items (former priorities 2 and 4, now 5 and 6) are pushed down: Phase 4A already established that concentration can produce a measurable degradation signal, but the evidence bar for changing any control has not been met, and neither remaining concentration item is expected to change that determination on its own — closing the cost-realism gap on Model B specifically is judged higher-value right now than adding more concentration evidence. Item 3 (data collection infrastructure) moves up in relative terms (not in absolute urgency) simply because two items that used to rank above it are now either closed or reprioritized below it — its own effort/value/dependency profile is unchanged. Items 7-9 remain deprioritized for the same reasons as before (Model C's mechanism shows almost no activity in this window regardless of parameter; the leverage-cap sweep is doctrine-capped regardless of finding).
+**Rationale for the reordering:** with items 1, 9, and 10 all now closed, every item in this backlog that used the Model-B-turnover cost-realism line of inquiry (bid-ask spread, tax treatment, execution timing) has been tested exactly once, per this project's standing "answer it once, don't relitigate without new evidence" discipline. Data collection infrastructure (formerly priority 3) moves to priority 1 purely because the items that outranked it are now closed, not because its own effort/value/dependency profile changed. Concentration-line items (formerly priorities 4-6, now 2-4) remain in the same relative order and same reasoning as before: Phase 4A already established concentration can produce a measurable degradation signal, but the evidence bar for changing any control has not been met, and none of these items is expected to change that determination on its own. Items 5-7 remain deprioritized for the same reasons as before (Model C's mechanism shows almost no activity in this window regardless of parameter; the leverage-cap sweep is doctrine-capped regardless of finding). **Note:** execution-realism and broker-mechanics blockers named in the Phase 6A reconciliation section above are not represented as numbered items in this table — they are tracked in `docs/PHASE5_DECISION_GATE_REVIEW.md`'s blocker list, a governance document, not this research-prioritization backlog; whether either becomes a formal backlog item is a future, separate decision.
 
 ## What this document does not do
 
