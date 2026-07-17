@@ -180,3 +180,75 @@ decisions:
                      # does NOT authorize the broader subsystem, does
                      # NOT pre-approve the future implementation PR's
                      # merge, and does NOT expand PI-0001's scope.
+
+  - decision_id: PI-0003
+    date: 2026-07-17
+    category: architecture_governance
+    decision: >
+      Authorizes bounded Portfolio Intelligence Phase 2 pilot: creation
+      of intelligence/companies/, one real TICKER.yaml company record,
+      and one matching TICKER.md thesis narrative, for exactly one
+      company. Content is human-authored research and judgment only,
+      validated read-only via the existing intelligence_validator.py.
+      No second company record is authorized until this pilot is
+      reviewed.
+    rationale: >
+      PI-0002 authorized only the validator; no company content exists
+      yet. A same-session Phase 2 readiness review found the validator
+      faithful to spec SS9/14/16/20/21 with no blocking defects, and
+      confirmed a single human-authored pilot is the narrowest
+      reversible next step in the spec's own SS22 incremental sequence.
+      A one-company pilot is preferable to every considered
+      alternative: a template file doesn't fit SS5's ticker-only
+      directory model (same reasoning PI-0002 already applied);
+      additional synthetic examples add nothing beyond the 28 tests
+      Phase 1 already shipped, since the entire point of SS22 step 1 is
+      to prove the schema against real human judgment, which only real
+      content can do; multiple companies at once would violate the
+      smallest-reversible-step discipline this repo has applied to
+      every prior gate (rungs, trims, weights, the T1/T2 ceiling) --
+      one company lets the schema and workflow get reviewed before any
+      roster-wide pattern is set, consistent with SS16's opt-in
+      coverage policy, not a rollout target; and reporting
+      infrastructure (the SS18 staleness report) is explicitly SS22
+      step 3, strictly after real validated content exists to scan --
+      building it first would have nothing real to report on.
+      Allocator integration remains out of scope for the same reason it
+      has been excluded from every prior authorization: SS19/SS20 gate
+      any allocator-visible integration behind its own separate
+      research, justification, testing, and approval, and this pilot
+      does not attempt to meet that bar -- it is a content experiment,
+      not an integration one. This remains a reversible architectural
+      checkpoint: the pilot lands on its own branch/PR, is reviewed
+      before any second company is considered, and can be discarded or
+      revised without touching any other part of the repository, since
+      nothing outside intelligence/ reads it.
+      portfolio_role_ref doctrine: unchanged from spec SS14, refined
+      here for separation of concerns only, not broadened -- it is
+      descriptive only, a Portfolio Intelligence field that records a
+      human's own characterization of a company's role, and it does
+      not authorize, derive, or infer any allocation behavior; it is
+      not itself a source of allocator meaning. Its meaning is fixed at
+      authoring time by the human who set it, not by whatever
+      targets.yaml happens to contain at read time -- changes to
+      allocator implementation (sleeves, bands, tiers, weights, or any
+      other allocation mechanics) do not retroactively change the
+      meaning of an existing Portfolio Intelligence record. This
+      decision does not enumerate, restrict, or hardcode a specific
+      list of role names into Portfolio Intelligence governance text;
+      doing so would import an allocator-internal implementation
+      detail into a layer SS2's non-goals and SS4's one-way data flow
+      both already require to stay independent of it. If Portfolio
+      Intelligence role semantics ever need to change, that is its own
+      future, separately-documented governance decision -- semantics
+      are never silently inherited from an allocator-side change, and
+      no amendment to this doctrine is folded into this pilot's
+      authorization.
+    supporting_artifact: docs/PORTFOLIO_INTELLIGENCE_SPEC.md
+    status: accepted  # authorizes exactly one pilot company record;
+                       # does NOT authorize a second company, allocator
+                       # integration, generated conviction scoring,
+                       # symbol resolution, dashboards/reports/rollups/
+                       # index.yaml, templates under
+                       # intelligence/companies/, or any change to
+                       # holdings.yaml/targets.yaml.
