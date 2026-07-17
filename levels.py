@@ -81,13 +81,16 @@ def compute_levels(bars: list[dict], cfg: dict) -> dict:
     return out
 
 
-def stance_for(row: dict, regime_bearish: bool, earn_days: int | None,
-               gates: dict) -> tuple[str, str]:
-    """Return (stance, reason). Order: no-data → blocked → buyable → wait."""
+def stance_for(row: dict, earn_days: int | None, gates: dict) -> tuple[str, str]:
+    """Return (stance, reason). Order: no-data → blocked → buyable → wait.
+    Regime is informational only, shown in the report header, never gates a
+    stance here — matches allocate.py's plan(), which stopped gating on
+    regime 2026-07-14 after the regime-gate backtest (reports/regime_backtest.md,
+    CLAUDE.md Decisions Log) showed the gate cost 2.56pp/yr. This function used
+    to block on regime_bearish; that was the same gate the backtest killed,
+    just never propagated here — fixed 2026-07-15."""
     if not row["levels"]:
         return "NO-DATA", "; ".join(row["notes"]) or "no bars"
-    if regime_bearish:
-        return "BLOCKED", "regime bearish — do not act"
     blackout = int(gates.get("earnings_blackout_days", 7))
     if earn_days is not None and 0 <= earn_days <= blackout:
         return "BLOCKED", f"earnings in {earn_days}d — do not act"
@@ -144,7 +147,7 @@ def run_levels(targets: dict, client, only_ticker: str | None = None) -> str:
             continue
         row = compute_levels(bars, cfg)
         earn = days_until_earnings(tk) if row["levels"] else None
-        stance, reason = stance_for(row, regime_bearish, earn, gates)
+        stance, reason = stance_for(row, earn, gates)
         rows.append({"ticker": tk, "stance": stance, "reason": reason, **row})
 
     for coin in cryptos:
@@ -164,7 +167,7 @@ def run_levels(targets: dict, client, only_ticker: str | None = None) -> str:
                              "price": None, "rsi": None, "notes": []})
                 continue
         row = compute_levels(bars, cfg)
-        stance, reason = stance_for(row, regime_bearish, None, gates)  # no earnings for crypto
+        stance, reason = stance_for(row, None, gates)  # no earnings for crypto
         rows.append({"ticker": coin, "stance": stance, "reason": reason, **row})
 
     return _render(rows, regime_known, regime_bearish, cfg)
