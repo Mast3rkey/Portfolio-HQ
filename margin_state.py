@@ -67,6 +67,13 @@ class MarginStateResult:
     violated_constraints: list[str] = field(default_factory=list)
     risk_metrics: dict[str, float | None] = field(default_factory=dict)
     allowed_actions: list[str] = field(default_factory=list)
+    concentration_source: str | None = None
+    """Which existing risk cap (a cluster cap or the T1/T2 ceiling) is under
+    the most pressure, e.g. "cluster:semis" or "t1t2:NVDA" — structured,
+    not just embedded in `reasons` prose, so a future consumer (e.g. a
+    repayment policy module) doesn't have to parse text to find it. This is
+    NOT a per-ticker leverage figure (see concentration_risk_score()'s
+    docstring) — it identifies which existing cap is tightest, nothing more."""
 
     def __post_init__(self):
         if self.current_state not in STATES:
@@ -160,6 +167,12 @@ def classify_margin_state(
         raise ValueError(f"buffer_pct must be in [0, 100] or None, got {buffer_pct}")
     if concentration_score < 0.0:
         raise ValueError(f"concentration_score must be >= 0, got {concentration_score}")
+    if concentration_tightening_coefficient < 0.0:
+        raise ValueError("concentration_tightening_coefficient must be >= 0, got "
+                          f"{concentration_tightening_coefficient} — a negative coefficient "
+                          "would LOOSEN risk thresholds under concentration instead of "
+                          "tightening them, which the doctrine (docs/MARGIN_DOCTRINE.md) "
+                          "requires never happens")
     if not (0.0 <= concentration_min_fraction <= 1.0):
         raise ValueError(f"concentration_min_fraction must be in [0, 1], got {concentration_min_fraction}")
     if buffer_data_age_days is not None and buffer_data_age_days < 0:
@@ -185,6 +198,7 @@ def classify_margin_state(
             violated_constraints=violated,
             risk_metrics=metrics,
             allowed_actions=[PRIORITIZE_DELEVERAGING],
+            concentration_source=concentration_source,
         )
 
     leverage_ratio = gross / net_equity
@@ -244,16 +258,24 @@ def classify_margin_state(
             violated_constraints=violated,
             risk_metrics=metrics,
             allowed_actions=actions,
+            concentration_source=concentration_source,
         )
 
     # ---- concentration tightening: only ever makes a threshold TIGHTER,
-    # never looser -- concentration_score >= 0 by validation above, so the
-    # multiplier below is always <= 1.0. -------------------------------------
+    # never looser. concentration_score >= 0 and concentration_tightening_
+    # coefficient >= 0 are both enforced by validation above, so the raw
+    # multiplier (1.0 - k*score) is always <= 1.0 -- but it's explicitly
+    # clamped to [min_fraction, 1.0] here too, defense-in-depth, so the
+    # "never loosens" invariant holds structurally even if a future edit
+    # ever weakens the input validation. The upper clamp (min(1.0, ...)) is
+    # the one that actually matters for "never exceeds the neutral
+    # baseline"; the lower clamp (max(min_fraction, ...)) bounds how far
+    # tightening can go, unrelated to the loosening question. -------------
     def _tighten(fraction: float | None) -> float | None:
         if fraction is None:
             return None
-        multiplier = max(concentration_min_fraction,
-                          1.0 - concentration_tightening_coefficient * concentration_score)
+        raw = 1.0 - concentration_tightening_coefficient * concentration_score
+        multiplier = min(1.0, max(concentration_min_fraction, raw))
         return fraction * multiplier
 
     caution_lev = _tighten(caution_leverage_fraction)
@@ -284,6 +306,7 @@ def classify_margin_state(
             violated_constraints=violated,
             risk_metrics=metrics,
             allowed_actions=actions,
+            concentration_source=concentration_source,
         )
 
     if caution_lev_hit or caution_buf_hit:
@@ -300,6 +323,7 @@ def classify_margin_state(
             violated_constraints=violated,
             risk_metrics=metrics,
             allowed_actions=actions,
+            concentration_source=concentration_source,
         )
 
     reasons.append("leverage and buffer within normal range")
@@ -312,4 +336,5 @@ def classify_margin_state(
         violated_constraints=violated,
         risk_metrics=metrics,
         allowed_actions=actions,
+        concentration_source=concentration_source,
     )

@@ -253,6 +253,10 @@ def test_unset_thresholds_never_fire_caution_or_restricted():
          concentration_min_fraction=1.5),
     dict(gross=100.0, margin_debt=0.0, buffer_pct=50.0, leverage_cap=1.8, buffer_floor_pct=30.0,
          buffer_data_age_days=-1.0),
+    dict(gross=100.0, margin_debt=0.0, buffer_pct=50.0, leverage_cap=1.8, buffer_floor_pct=30.0,
+         concentration_tightening_coefficient=-0.01),
+    dict(gross=100.0, margin_debt=0.0, buffer_pct=50.0, leverage_cap=1.8, buffer_floor_pct=30.0,
+         concentration_tightening_coefficient=-100.0),
 ])
 def test_invalid_inputs_raise_value_error(kwargs):
     with pytest.raises(ValueError):
@@ -267,6 +271,90 @@ def test_margin_state_result_rejects_invalid_state_name():
 def test_margin_state_result_rejects_disallowed_action():
     with pytest.raises(ValueError):
         MarginStateResult(current_state="NORMAL", allowed_actions=["increase_leverage"])
+
+
+# ── structured concentration_source field ───────────────────────────────────
+
+def test_concentration_source_is_a_structured_field_not_just_prose():
+    r = classify_margin_state(
+        gross=100.0, margin_debt=20.0, buffer_pct=60.0,
+        leverage_cap=1.8, buffer_floor_pct=30.0,
+        concentration_score=0.93, concentration_source="cluster:semis")
+    assert r.concentration_source == "cluster:semis"
+    assert any("cluster:semis" in reason for reason in r.reasons)
+
+
+def test_concentration_source_defaults_to_none_when_not_supplied():
+    r = classify_margin_state(
+        gross=100.0, margin_debt=20.0, buffer_pct=60.0,
+        leverage_cap=1.8, buffer_floor_pct=30.0)
+    assert r.concentration_source is None
+
+
+def test_concentration_source_present_on_every_state_including_forced():
+    # Not just the happy path -- confirm the field survives every early-return
+    # branch (insolvency, buffer/leverage breach), not only the NORMAL/
+    # CAUTION/RESTRICTED fallthrough paths.
+    r_forced_buffer = classify_margin_state(
+        gross=100.0, margin_debt=20.0, buffer_pct=10.0,
+        leverage_cap=1.8, buffer_floor_pct=30.0,
+        concentration_source="cluster:oil")
+    assert r_forced_buffer.concentration_source == "cluster:oil"
+
+    r_forced_leverage = classify_margin_state(
+        gross=200.0, margin_debt=100.0, buffer_pct=60.0,
+        leverage_cap=1.8, buffer_floor_pct=30.0,
+        concentration_source="t1t2:NVDA")
+    assert r_forced_leverage.concentration_source == "t1t2:NVDA"
+
+    r_insolvent = classify_margin_state(
+        gross=100.0, margin_debt=150.0, buffer_pct=None,
+        leverage_cap=1.8, buffer_floor_pct=30.0,
+        concentration_source="cluster:semis")
+    assert r_insolvent.concentration_source == "cluster:semis"
+
+
+# ── adversarial concentration_tightening_coefficient values ────────────────
+
+@pytest.mark.parametrize("k", [0.0, 0.3, 1.0, 1_000_000.0])
+def test_concentration_never_loosens_across_adversarial_coefficients(k):
+    # For every non-negative k, however extreme, concentration_score=1.0 must
+    # never produce a SAFER (or even equal-but-different) outcome than
+    # concentration_score=0.0 at the identical leverage/buffer -- state rank
+    # must be monotonically non-decreasing in concentration_score, for every
+    # coefficient from "no effect" to "absurdly aggressive."
+    order = {"NORMAL": 0, "CAUTION": 1, "RESTRICTED": 2, "FORCED_DELEVER": 3}
+    common = dict(gross=150.0, margin_debt=53.0, buffer_pct=60.0,
+                  leverage_cap=1.8, buffer_floor_pct=30.0,
+                  caution_leverage_fraction=0.85,
+                  restricted_leverage_fraction=0.95,
+                  concentration_min_fraction=0.5,
+                  concentration_tightening_coefficient=k)
+    r_zero = classify_margin_state(**common, concentration_score=0.0)
+    r_one = classify_margin_state(**common, concentration_score=1.0)
+    assert order[r_one.current_state] >= order[r_zero.current_state], (
+        f"k={k}: concentration_score=1.0 produced a SAFER state "
+        f"({r_one.current_state}) than concentration_score=0.0 ({r_zero.current_state})")
+
+
+def test_extreme_positive_coefficient_cannot_exceed_neutral_baseline():
+    # A coefficient large enough to drive (1 - k*score) deeply negative must
+    # still only ever tighten down to concentration_min_fraction -- never
+    # produce behavior equivalent to a NEGATIVE multiplier (which would be
+    # nonsensical) and never, under any positive k, loosen past the raw
+    # (concentration_score=0) threshold.
+    common = dict(gross=150.0, margin_debt=53.0, buffer_pct=60.0,
+                  leverage_cap=1.8, buffer_floor_pct=30.0,
+                  caution_leverage_fraction=0.85,
+                  restricted_leverage_fraction=0.95,
+                  concentration_min_fraction=0.5,
+                  concentration_tightening_coefficient=1_000_000.0)
+    r = classify_margin_state(**common, concentration_score=1.0)
+    # At this leverage (150/97 ~ 1.546x), even the most extreme tightening
+    # (floored at min_fraction=0.5) must classify at least as risky as the
+    # untightened (k=0) case -- confirmed separately above -- and must not
+    # error or produce an out-of-domain state.
+    assert r.current_state in STATES
 
 
 # ── property test: no state can ever recommend increasing leverage ─────────
@@ -289,24 +377,31 @@ def test_no_state_ever_recommends_increasing_leverage():
     concentration_values = (0.0, 0.3, 0.6, 1.0, 1.5)
     caution_fracs = (None, 0.5, 0.85)
     restricted_fracs = (None, 0.7, 0.95)
+    # Adversarial coefficient range added per the Phase 2B hardening patch --
+    # zero (no effect), a normal positive value, and an absurdly large one.
+    # Negative values are NOT included here (they're covered as a rejection
+    # case elsewhere) -- this sweep only exercises values classify_margin_state
+    # actually accepts.
+    coefficients = (0.0, 0.3, 1_000_000.0)
 
+    order = {"NORMAL": 0, "CAUTION": 1, "RESTRICTED": 2, "FORCED_DELEVER": 3}
     checked = 0
-    for gross, debt_frac, buffer_pct, conc, c_frac, r_frac in itertools.product(
+    for gross, debt_frac, buffer_pct, conc, c_frac, r_frac, k in itertools.product(
             gross_values, debt_fractions, buffer_values, concentration_values,
-            caution_fracs, restricted_fracs):
+            caution_fracs, restricted_fracs, coefficients):
         debt = gross * debt_frac
+        kwargs = dict(
+            gross=gross, margin_debt=debt, buffer_pct=buffer_pct,
+            leverage_cap=1.8, buffer_floor_pct=30.0,
+            caution_leverage_fraction=c_frac,
+            restricted_leverage_fraction=r_frac,
+            caution_buffer_comfort_multiplier=1.5 if c_frac is not None else None,
+            restricted_buffer_comfort_multiplier=1.2 if r_frac is not None else None,
+            concentration_tightening_coefficient=k,
+            concentration_min_fraction=0.5,
+        )
         try:
-            result = classify_margin_state(
-                gross=gross, margin_debt=debt, buffer_pct=buffer_pct,
-                leverage_cap=1.8, buffer_floor_pct=30.0,
-                concentration_score=conc,
-                caution_leverage_fraction=c_frac,
-                restricted_leverage_fraction=r_frac,
-                caution_buffer_comfort_multiplier=1.5 if c_frac is not None else None,
-                restricted_buffer_comfort_multiplier=1.2 if r_frac is not None else None,
-                concentration_tightening_coefficient=0.3,
-                concentration_min_fraction=0.5,
-            )
+            result = classify_margin_state(**kwargs, concentration_score=conc)
         except ValueError:
             continue  # invalid combo (e.g. gross=0 with debt>0 handled fine actually) -- skip
         checked += 1
@@ -315,5 +410,17 @@ def test_no_state_ever_recommends_increasing_leverage():
             assert action in ALLOWED_ACTIONS
             for term in forbidden_terms:
                 assert term not in action
+
+        # Output state cannot become SAFER because of concentration adjustment:
+        # re-classify the identical inputs at concentration_score=0.0 (the
+        # neutral baseline) and confirm this result is never LESS risky.
+        try:
+            baseline = classify_margin_state(**kwargs, concentration_score=0.0)
+        except ValueError:
+            continue
+        assert order[result.current_state] >= order[baseline.current_state], (
+            f"gross={gross} debt={debt} buffer={buffer_pct} k={k} conc={conc}: "
+            f"got a SAFER state ({result.current_state}) than the concentration=0 "
+            f"baseline ({baseline.current_state})")
 
     assert checked > 100, "sweep should have exercised a substantial number of combinations"
