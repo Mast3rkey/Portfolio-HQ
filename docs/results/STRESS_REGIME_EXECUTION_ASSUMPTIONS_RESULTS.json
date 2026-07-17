@@ -1,0 +1,213 @@
+{
+  "label": "hypothetical, simulated",
+  "disclaimer": "Not a claim about this account's real history or real market liquidity conditions. Stress windows are detected from real, already-cached OHLCV data as a volatility/liquidity PROXY, never a measurement of actual bid-ask spread or market depth. Execution is assumed to fill instantly at each day's close, calm or stressed -- this analysis does not model or resolve execution failure. The hypothetical-secondary cost multiplier is a disclosed, bounded assumption, kept strictly separate from the historical-primary (assumption-free) measurements. See docs/STRESS_REGIME_EXECUTION_ASSUMPTIONS_PLAN.md and docs/PHASE3_FINDINGS.md sec 8.",
+  "execution_date": "2026-07-17",
+  "window": "2021-06-01 to 2026-07-10",
+  "n_simulated_days": 1283,
+  "stress_detection": {
+    "reference_ticker": "QQQ",
+    "method": "real OHLCV volatility/liquidity proxy, not measured spread/depth",
+    "trailing_window_days": 60,
+    "volatility_multiplier": 1.5,
+    "liquidity_fraction": 0.7,
+    "min_window_days": 3,
+    "merge_gap_days": 5,
+    "n_windows_detected": 21,
+    "windows_day_index_ranges": [
+      [
+        63,
+        65
+      ],
+      [
+        86,
+        89
+      ],
+      [
+        112,
+        114
+      ],
+      [
+        162,
+        176
+      ],
+      [
+        303,
+        313
+      ],
+      [
+        372,
+        394
+      ],
+      [
+        504,
+        506
+      ],
+      [
+        516,
+        520
+      ],
+      [
+        532,
+        534
+      ],
+      [
+        697,
+        699
+      ],
+      [
+        707,
+        709
+      ],
+      [
+        732,
+        748
+      ],
+      [
+        790,
+        802
+      ],
+      [
+        925,
+        927
+      ],
+      [
+        940,
+        948
+      ],
+      [
+        966,
+        970
+      ],
+      [
+        1098,
+        1105
+      ],
+      [
+        1120,
+        1134
+      ],
+      [
+        1218,
+        1221
+      ],
+      [
+        1261,
+        1263
+      ],
+      [
+        1280,
+        1282
+      ]
+    ],
+    "base_rate_days_in_stress_pct": 12.159002338269682
+  },
+  "control_ann_twr_pct": 35.591683923613274,
+  "control_max_drawdown_pct": -26.812741368881365,
+  "materiality": {
+    "material_threshold_pp": 2.0,
+    "noise_floor_pp": 0.5,
+    "threshold_exposure_materiality_pct": 5.0,
+    "outcome_gate": "adopted future gate: material gap AND (repeated forced-deleveraging events OR material threshold-exposure degradation), per docs/PHASE4A_OUTCOME_GATE_REVIEW.md adoption"
+  },
+  "results": {
+    "0.10": {
+      "repay_fraction": 0.1,
+      "gross_ann_twr_pct": 34.615988095977144,
+      "gross_max_drawdown_pct": -25.841109879112935,
+      "n_repayment_events": 314,
+      "historical_primary": {
+        "n_events_in_window": 24,
+        "n_events_outside_window": 290,
+        "dollar_amount_in_window": 2238.024805195259,
+        "dollar_amount_outside_window": 35987.86287956626,
+        "in_window_dollar_fraction_pct": 5.854735993710963,
+        "base_rate_days_in_stress_pct": 12.159002338269682,
+        "turnover_concentration_over_or_under": "under-represented",
+        "recovery_trough_index": 968,
+        "recovery_index": 995,
+        "recovery_days": 27,
+        "leverage_time_above_95pct_of_cap_pct": 0.0,
+        "leverage_exposure_material": false
+      },
+      "hypothetical_secondary": {
+        "base_bps": 15.0,
+        "stress_multiplier": 3.0,
+        "flat_cost_dollars": 57.3388315271423,
+        "flat_net_twr_pct": 34.61204248806056,
+        "regime_conditional_cost_dollars": 64.05290594272806,
+        "regime_conditional_net_twr_pct": 34.61158044728996,
+        "cost_delta_from_regime_conditioning": 6.714074415585763,
+        "gap_vs_control_flat_pp": -0.9796414355527148,
+        "gap_vs_control_regime_pp": -0.9801034763233147,
+        "gap_vs_control_flat_class": "suggestive",
+        "gap_vs_control_regime_class": "suggestive"
+      }
+    },
+    "0.25": {
+      "repay_fraction": 0.25,
+      "gross_ann_twr_pct": 33.276667249843925,
+      "gross_max_drawdown_pct": -24.743853134075835,
+      "n_repayment_events": 296,
+      "historical_primary": {
+        "n_events_in_window": 20,
+        "n_events_outside_window": 276,
+        "dollar_amount_in_window": 5261.593502060776,
+        "dollar_amount_outside_window": 83254.852563188,
+        "in_window_dollar_fraction_pct": 5.944198774295861,
+        "base_rate_days_in_stress_pct": 12.159002338269682,
+        "turnover_concentration_over_or_under": "under-represented",
+        "recovery_trough_index": 968,
+        "recovery_index": 995,
+        "recovery_days": 27,
+        "leverage_time_above_95pct_of_cap_pct": 0.0,
+        "leverage_exposure_material": false
+      },
+      "hypothetical_secondary": {
+        "base_bps": 15.0,
+        "stress_multiplier": 3.0,
+        "flat_cost_dollars": 132.7746690978732,
+        "flat_net_twr_pct": 33.267229438121525,
+        "regime_conditional_cost_dollars": 148.55944960405546,
+        "regime_conditional_net_twr_pct": 33.26610725183479,
+        "cost_delta_from_regime_conditioning": 15.784780506182273,
+        "gap_vs_control_flat_pp": -2.3244544854917493,
+        "gap_vs_control_regime_pp": -2.325576671778485,
+        "gap_vs_control_flat_class": "material",
+        "gap_vs_control_regime_class": "material"
+      }
+    },
+    "0.50": {
+      "repay_fraction": 0.5,
+      "gross_ann_twr_pct": 32.0331311571987,
+      "gross_max_drawdown_pct": -23.65280125260114,
+      "n_repayment_events": 263,
+      "historical_primary": {
+        "n_events_in_window": 20,
+        "n_events_outside_window": 243,
+        "dollar_amount_in_window": 10715.194444053588,
+        "dollar_amount_outside_window": 145397.3168691017,
+        "in_window_dollar_fraction_pct": 6.8637640596014435,
+        "base_rate_days_in_stress_pct": 12.159002338269682,
+        "turnover_concentration_over_or_under": "under-represented",
+        "recovery_trough_index": 968,
+        "recovery_index": 995,
+        "recovery_days": 27,
+        "leverage_time_above_95pct_of_cap_pct": 0.0,
+        "leverage_exposure_material": false
+      },
+      "hypothetical_secondary": {
+        "base_bps": 15.0,
+        "stress_multiplier": 3.0,
+        "flat_cost_dollars": 234.1687669697329,
+        "flat_net_twr_pct": 32.015936449036595,
+        "regime_conditional_cost_dollars": 266.31435030189357,
+        "regime_conditional_net_twr_pct": 32.01357532596156,
+        "cost_delta_from_regime_conditioning": 32.14558333216067,
+        "gap_vs_control_flat_pp": -3.57574747457668,
+        "gap_vs_control_regime_pp": -3.5781085976517133,
+        "gap_vs_control_flat_class": "material",
+        "gap_vs_control_regime_class": "material"
+      }
+    }
+  }
+}
