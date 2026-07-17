@@ -84,11 +84,17 @@ reintroduced shared-file merge-conflict risk) and do not appear here.
 ## 6. Filesystem-as-index decision
 
 **The directory listing is the index. No `intelligence/index.yaml` may be
-introduced, ever**, under this specification. This was evaluated
-explicitly against an alternative (an explicit index file) across seven
-criteria — single source of truth, git merge behavior, discoverability,
-reporting, validation, future scalability, implementation complexity — and
-the explicit-index alternative lost on every one:
+introduced under this specification.** This is frozen current doctrine,
+not a placeholder pending a better idea — it was evaluated explicitly
+against an alternative (an explicit index file) across seven criteria —
+single source of truth, git merge behavior, discoverability, reporting,
+validation, future scalability, implementation complexity — and the
+explicit-index alternative lost on every one. Like every other frozen
+decision in this repository, it may only be reconsidered through a new,
+separately documented architectural decision supported by materially
+changed evidence (e.g. a real scaling ceiling actually reached, not a
+hypothetical one) — not silently reopened inside a future implementation
+pass:
 
 - It would duplicate data already authoritative inside each company file
   (breaks single source of truth).
@@ -296,7 +302,10 @@ separately-justified, separately-approved change:
   implementation.**
 - **Coverage is opt-in.** Absence of a company file is not an error.
 - **The filesystem is the index.** No `intelligence/index.yaml` may be
-  introduced.
+  introduced under this specification — frozen doctrine, reconsiderable
+  only via a new documented architectural decision supported by
+  materially changed evidence (§6), not by silent reintroduction during
+  a future implementation pass.
 - Each covered company has **at most one structured YAML file and one
   thesis Markdown file** — no additional per-company files or
   topic-keyed directories.

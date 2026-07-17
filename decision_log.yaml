@@ -118,13 +118,12 @@ decisions:
       implementation complexity) -- it would duplicate data already
       authoritative in company files and reintroduce the same
       merge-conflict class already eliminated from the review log.
-      This entry is procedurally distinct from every other entry in this
-      file: it is a directly-originated architecture decision, not a
-      migration of an existing CLAUDE.md Decisions Log entry -- the
-      header comment's stated invariant ("every entry here must
-      correspond to an existing CLAUDE.md entry") does not yet hold for
-      this entry and should be reconciled by adding the corresponding
-      CLAUDE.md entry in a future pass.
+      This entry's corresponding CLAUDE.md Decisions Log entry is the
+      "Portfolio Intelligence Engine Version 2 frozen as canonical
+      specification" bullet (July 2026, immediately following the semis
+      cluster cap leverage-asymmetry entry) -- added to restore this
+      file's own stated invariant that every structured entry traces to
+      an existing CLAUDE.md entry.
     supporting_artifact: docs/PORTFOLIO_INTELLIGENCE_SPEC.md
     status: active  # specification is frozen; implementation is
                      # separately gated per spec section 20/22 and is
