@@ -32,7 +32,9 @@ import json
 from datetime import date
 from pathlib import Path
 
-import yaml
+from backtest_regime import (
+    universe, load_bars, rsi_series, twr_annualized, max_drawdown,
+)
 
 HERE = Path(__file__).resolve().parent
 CACHE = HERE / "data" / "backtest"
@@ -44,23 +46,11 @@ MIN_LOT = 25.0
 MIN_HISTORY = 210
 MIN_TICKERS_TO_START = 20
 EXCLUDE = {"SPCX", "SKHY"}
-RSI_PERIOD = 14
 BAND_CAP, TRIM_RSI = 1.25, 60.0   # held constant across arms — already validated
 
-
-# ── universe (mirrors targets.yaml as of this test, T1-spec only, no crypto) ────
-
-def universe() -> dict[str, str]:
-    """{ticker: tier} across T1/T2/ETF/band/spec, minus exclusions."""
-    t = yaml.safe_load(open(HERE / "targets.yaml"))
-    tiers = {}
-    for tname, tier in t["tiers"].items():
-        for s in tier["tickers"]:
-            s = s.upper()
-            if s in EXCLUDE:
-                continue
-            tiers[s] = tname
-    return tiers
+# universe, load_bars, rsi_series, twr_annualized, max_drawdown are imported
+# from backtest_regime.py above (2026-07-15 dedup) -- verified byte-identical
+# logic (only docstrings differed) before removing the local copies here.
 
 
 def weight_schemes(tiers: dict[str, str]) -> dict[str, dict[str, float]]:
@@ -73,69 +63,6 @@ def weight_schemes(tiers: dict[str, str]) -> dict[str, dict[str, float]]:
         "D": {"T1": 5.00, "T2": 1.20, "ETF": 2.30, "band": 0.40, "spec": 0.60},
     }
     return {arm: {t: tier_w[tiers[t]] for t in tiers} for arm, tier_w in schemes.items()}
-
-
-def load_bars(tickers: list[str]) -> dict[str, list[dict]]:
-    out = {}
-    for sym in tickers:
-        f = CACHE / f"{sym}.json"
-        if not f.exists():
-            print(f"  ! {sym}: no cached bars — excluded")
-            continue
-        bars = json.loads(f.read_text())
-        if len(bars) < MIN_HISTORY:
-            print(f"  ! {sym}: only {len(bars)} bars — excluded")
-            continue
-        out[sym] = bars
-    return out
-
-
-# ── indicators (Wilder RSI, precomputed per ticker) ─────────────────────────────
-
-def rsi_series(closes: list[float], period: int = RSI_PERIOD) -> list[float | None]:
-    n = len(closes)
-    out: list[float | None] = [None] * n
-    if n < 2:
-        return out
-    ag = al = 0.0
-    for i in range(1, n):
-        d = closes[i] - closes[i - 1]
-        gain, loss = max(d, 0.0), max(-d, 0.0)
-        if i == 1:
-            ag, al = gain, loss
-        else:
-            ag = ag + (gain - ag) / period
-            al = al + (loss - al) / period
-        if i >= period:
-            out[i] = 100.0 if al == 0 else 100.0 - 100.0 / (1.0 + ag / al)
-    return out
-
-
-# ── portfolio math ───────────────────────────────────────────────────────────────
-
-def twr_annualized(daily_values: list[float], flows: dict[int, float]) -> float:
-    rets = []
-    for i in range(1, len(daily_values)):
-        prev = daily_values[i - 1]
-        if prev <= 0:
-            continue
-        f = flows.get(i, 0.0)
-        rets.append((daily_values[i] - f) / prev - 1.0)
-    if not rets:
-        return 0.0
-    growth = 1.0
-    for r in rets:
-        growth *= 1.0 + r
-    return (growth ** (252.0 / len(rets)) - 1.0) * 100.0
-
-
-def max_drawdown(vals: list[float]) -> float:
-    peak, mdd = 0.0, 0.0
-    for v in vals:
-        peak = max(peak, v)
-        if peak > 0:
-            mdd = min(mdd, v / peak - 1.0)
-    return mdd * 100.0
 
 
 # ── simulation ────────────────────────────────────────────────────────────────────
