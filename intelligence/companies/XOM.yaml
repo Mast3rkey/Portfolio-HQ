@@ -1,0 +1,58 @@
+sector: Energy
+industry: Oil, Gas & Consumable Fuels (Integrated)
+portfolio_role_ref: band
+competitive_advantages:
+  - "Vertically integrated model spanning Upstream, Energy Products (downstream/refining), and Chemical Products provides some earnings diversification across the commodity cycle relative to pure-play upstream or downstream peers"
+  - "Large-scale, growing production base from the Permian Basin (following the 2024 Pioneer Natural Resources acquisition) and Guyana, both reaching record output levels in recent reporting periods"
+  - "43 consecutive years of annual dividend-per-share increases -- a distinction held by a small fraction of S&P 500 companies -- funded by one of the largest capital-return programs in the S&P 500"
+  - "Scale in capital allocation -- large multi-year investment programs directed at projects management characterizes as high-return, with a raised long-term plan announced in December 2025"
+risks:
+  - risk: "Earnings are directly exposed to oil, gas, and petrochemical price and refining-margin volatility, driven by supply/demand conditions outside the company's control"
+    severity: moderate
+    identified: "2026-07-17"
+    status: monitoring
+  - risk: "Exposure to evolving climate-change and greenhouse-gas regulation, including potential changes to laws governing offshore drilling, water use, and hydraulic fracturing, that could increase compliance costs or delay projects"
+    severity: moderate
+    identified: "2026-07-17"
+    status: monitoring
+  - risk: "Active climate-related litigation in multiple U.S. states, with potential for large and unpredictable damage awards, per the company's own risk disclosures"
+    severity: moderate
+    identified: "2026-07-17"
+    status: monitoring
+  - risk: "Integration risk associated with the 2024 Pioneer Natural Resources acquisition -- whether the enlarged Permian production base and reported cost synergies are sustained over time"
+    severity: low
+    identified: "2026-07-17"
+    status: monitoring
+  - risk: "Large, multi-year capital expenditure commitments carry execution and capital-allocation risk if commodity prices or project returns disappoint"
+    severity: low
+    identified: "2026-07-17"
+    status: monitoring
+catalysts:
+  - catalyst: "Execution of the 2026 capital program against management's $27-29 billion cash capex guidance, including continued Permian and Guyana development"
+    expected: "2026-12-31"
+    status: pending
+conviction:
+  rating: null  # PENDING HUMAN APPROVAL -- per PI-0005, must be exactly one
+                # of Low/Medium/High/Very High; not computed, scored, or
+                # inferred by this draft. See implementation report for
+                # proposed options and reasoning.
+  rationale: null  # PENDING HUMAN APPROVAL -- see implementation report.
+review:
+  cadence_days: 90  # PROPOSED -- see implementation report; matches
+                     # COST's pilot-period cadence for consistency, not
+                     # yet human-approved per PI-0005.
+  last_reviewed: "2026-07-17"
+  next_due: "2026-10-15"
+  log:
+    - date: "2026-07-17"
+      note: "Draft record created through AI-assisted research and drafting under PI-0005 authorization; conviction.rating, conviction.rationale, portfolio_role_ref, and review cadence remain pending explicit human approval before this record is considered final."
+sources:
+  - note: "Exxon Mobil Corp Form 10-K, fiscal year ended 2025-12-31, filed with SEC 2026-02-18 (accession 0000034088-26-000045) -- total revenue, net income, cash flow, shareholder distributions, production levels, dividend record, risk-factor categories (commodity price volatility, climate/GHG regulation, climate litigation). Direct rendering blocked (HTTP 403) in the research environment; figures corroborated via independent search results, not directly verified against rendered primary text."
+    url: "https://www.sec.gov/Archives/edgar/data/34088/000003408826000045/xom-20251231.htm"
+    date: "2026-02-18"
+  - note: "ExxonMobil Announces 2025 Results, official corporate press release, published 2026-01-30 -- full-year 2025 revenue ($332.24B), net income ($28.8B), cash flow from operations ($52.0B), shareholder distributions ($37.2B), record production (4.7 million boe/d, highest in 40+ years). Direct rendering blocked (HTTP 403); same corroboration caveat as above."
+    url: "https://corporate.exxonmobil.com/news/news-releases/2026/0130-exxonmobil-announces-2025-results"
+    date: "2026-01-30"
+  - note: "Exxon Mobil Corp Form 8-K, filed 2026-04-30 (accession 0000034088-26-000065) -- first-quarter 2026 results (quarter ended 2026-03-31): earnings $4.2B/$1.00 per share, revenue $85.14B, net production 4.6 million boe/d, cash flow from operations $8.7B, capex $6.2B, Q2 2026 dividend declared $1.03/share, 2026 capex guidance $27-29 billion. Direct rendering blocked (HTTP 403); same corroboration caveat as above."
+    url: "https://www.sec.gov/Archives/edgar/data/0000034088/000003408826000065/livef8k1q26991.htm"
+    date: "2026-04-30"
