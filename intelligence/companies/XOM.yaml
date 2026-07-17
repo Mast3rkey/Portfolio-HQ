@@ -32,20 +32,15 @@ catalysts:
     expected: "2026-12-31"
     status: pending
 conviction:
-  rating: null  # PENDING HUMAN APPROVAL -- per PI-0005, must be exactly one
-                # of Low/Medium/High/Very High; not computed, scored, or
-                # inferred by this draft. See implementation report for
-                # proposed options and reasoning.
-  rationale: null  # PENDING HUMAN APPROVAL -- see implementation report.
+  rating: Medium
+  rationale: "Exxon Mobil's integrated scale, asset diversity, financial capacity, and exposure across upstream, downstream, and chemicals support a durable long-term business thesis. Conviction remains Medium rather than High because results and capital productivity remain materially exposed to commodity prices, major-project execution, regulatory and litigation risk, and the cyclicality of energy markets. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments."
 review:
-  cadence_days: 90  # PROPOSED -- see implementation report; matches
-                     # COST's pilot-period cadence for consistency, not
-                     # yet human-approved per PI-0005.
+  cadence_days: 90
   last_reviewed: "2026-07-17"
   next_due: "2026-10-15"
   log:
     - date: "2026-07-17"
-      note: "Draft record created through AI-assisted research and drafting under PI-0005 authorization; conviction.rating, conviction.rationale, portfolio_role_ref, and review cadence remain pending explicit human approval before this record is considered final."
+      note: "Record created through AI-assisted research and drafting; finalized through explicit human review and approval under PI-0005. Portfolio HQ's second Portfolio Intelligence record."
 sources:
   - note: "Exxon Mobil Corp Form 10-K, fiscal year ended 2025-12-31, filed with SEC 2026-02-18 (accession 0000034088-26-000045) -- total revenue, net income, cash flow, shareholder distributions, production levels, dividend record, risk-factor categories (commodity price volatility, climate/GHG regulation, climate litigation). Direct rendering blocked (HTTP 403) in the research environment; figures corroborated via independent search results, not directly verified against rendered primary text."
     url: "https://www.sec.gov/Archives/edgar/data/34088/000003408826000045/xom-20251231.htm"

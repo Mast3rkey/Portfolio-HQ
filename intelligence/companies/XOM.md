@@ -1,11 +1,8 @@
 # XOM — Exxon Mobil Corporation
 
-Last updated: 2026-07-17 — draft created through AI-assisted research
-and drafting under PI-0005's authorization. **`portfolio_role_ref`,
-`conviction.rating`, `conviction.rationale`, and `review.cadence_days`
-remain pending explicit human approval** before this record is
-considered final — see the implementation report accompanying this
-draft for proposed options and reasoning on each.
+Last updated: 2026-07-17 — created through AI-assisted research and
+drafting, finalized through explicit human review and approval under
+PI-0005. Portfolio HQ's second Portfolio Intelligence record.
 
 ## Source-access disclosure
 
@@ -158,12 +155,8 @@ catalyst section).
 
 ## Review framework
 
-- **Proposed cadence: 90 days** — PENDING HUMAN APPROVAL. Matches
-  COST's pilot-period cadence for consistency; alternatives (e.g. a
-  longer cadence given the multi-decade stability of the core
-  business, offset against the currently-elevated pace of change from
-  the Pioneer integration) are for human judgment, not this draft, to
-  decide.
+- **Cadence: 90 days.** Matches COST's pilot-period cadence for
+  consistency.
 - **Unscheduled-review triggers** (qualitative, observable, same
   pattern COST's record established):
   - A material, sustained decline in reported Permian or Guyana
@@ -181,34 +174,21 @@ catalyst section).
 
 ## Conviction
 
-**PENDING HUMAN APPROVAL** — not computed, scored, or inferred by this
-draft, per PI-0005's explicit requirement. Proposed options for your
-decision:
+**Rating: Medium**
 
-- **Proposal A — "High":** ExxonMobil's scale, vertical integration,
-  and multi-decade capital-return record support high conviction in
-  the durability of the business as a going concern, independent of
-  where oil/gas prices happen to sit at any moment. Strongest
-  counterargument: unlike COST, this is fundamentally a commodity
-  business — "High" conviction in business durability says less about
-  earnings stability than it would for a consumer-staples name, since
-  earnings genuinely do swing with commodity prices as a structural
-  fact, not a risk that can be diversified away.
-- **Proposal B — "Medium":** reflects the same durability read as
-  Proposal A, but weights the structural commodity-price exposure and
-  climate-litigation/regulatory risk more heavily, treating those as
-  genuine, uncapped sources of earnings and reputational volatility
-  that a "High" rating would understate.
-- **Alternative not proposed as a lead option:** "Very High" was
-  considered and set aside — nothing in the researched evidence
-  suggests ExxonMobil's business-quality durability materially exceeds
-  a stable mega-cap consumer name like COST, which is itself rated
-  "High"; rating XOM above COST on business-quality grounds isn't
-  supported by anything found in this research pass.
+**Rationale:** Exxon Mobil's integrated scale, asset diversity,
+financial capacity, and exposure across upstream, downstream, and
+chemicals support a durable long-term business thesis. Conviction
+remains Medium rather than High because results and capital
+productivity remain materially exposed to commodity prices,
+major-project execution, regulatory and litigation risk, and the
+cyclicality of energy markets. This rating explicitly excludes
+valuation, entry-price, allocation, trading, and margin judgments.
 
-Whichever value is chosen, the rationale must, per PI-0005's
-requirement, explicitly exclude valuation, entry-price, allocation,
-trading, and margin judgment — matching COST's precedent exactly.
+This rating and rationale reflect human judgment, approved after
+independent review of AI-assisted research — the research and drafting
+process does not itself constitute the human judgment this record
+requires; the approval decision does.
 
 ## Sources
 
