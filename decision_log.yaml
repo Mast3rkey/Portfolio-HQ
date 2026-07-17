@@ -85,7 +85,7 @@ decisions:
                      # re-testable -- see CLAUDE.md's entry for the full
                      # precision note on what was and wasn't backtested.
 
-  - decision_id: INTEL-0001
+  - decision_id: PI-0001
     date: 2026-07-17
     category: architecture_governance
     decision: >
@@ -129,7 +129,7 @@ decisions:
                      # separately gated per spec section 20/22 and is
                      # NOT authorized by this decision alone.
 
-  - decision_id: INTEL-0002
+  - decision_id: PI-0002
     date: 2026-07-17
     category: architecture_governance
     decision: >
@@ -155,7 +155,7 @@ decisions:
       scheduled/cron execution, margin-policy work, or anything beyond
       the validator and its isolated tests.
     rationale: >
-      INTEL-0001 froze the Version 2 architecture but explicitly does
+      PI-0001 froze the Version 2 architecture but explicitly does
       not authorize implementation (spec SS20, SS24) -- an
       implementation-readiness review the same session returned REVISE
       on the proposed Phase 1 solely for lacking this authorization,
@@ -168,8 +168,8 @@ decisions:
       is created by this decision or the work it authorizes; (2) a
       template file under intelligence/companies/ doesn't fit SS5's
       ticker-only directory model, so no template file is authorized
-      either. INTEL-0002 authorizes a bounded implementation experiment
-      only, not the broader Intelligence subsystem -- INTEL-0001 remains
+      either. PI-0002 authorizes a bounded implementation experiment
+      only, not the broader Intelligence subsystem -- PI-0001 remains
       the governing architectural decision, the implementation must
       arrive through its own separate branch and PR, this governance
       entry does not itself authorize merging that future PR, and any
@@ -179,4 +179,4 @@ decisions:
     status: active  # authorizes the bounded Phase 1 experiment only;
                      # does NOT authorize the broader subsystem, does
                      # NOT pre-approve the future implementation PR's
-                     # merge, and does NOT expand INTEL-0001's scope.
+                     # merge, and does NOT expand PI-0001's scope.
