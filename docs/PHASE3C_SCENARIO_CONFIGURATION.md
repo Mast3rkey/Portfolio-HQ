@@ -68,11 +68,11 @@ All four scenarios share one substrate — same universe, same window, same benc
 | Repayment rules — four named models, per `margin_simulation.py`'s `scenario_repayment_variants()`: | |
 | — MODEL_0 (control) | No active repayment policy — same as Scenario B; the reference point the other three are measured against |
 | — MODEL_A | Permanent leverage — repay only the minimum required to clear a hard leverage-cap breach, nothing proactive otherwise |
-| — MODEL_B | Profit harvesting — hold leverage at a target ratio (**value TBD, see Open Items below** — not yet set) below the 1.8x cap; any drift above the target repays immediately |
-| — MODEL_C | Risk reset — repay a fixed fraction of debt (**fraction TBD, see Open Items**) whenever triggered by a single-day gross gain exceeding a threshold (**TBD**) or a concentration score exceeding a threshold (**TBD**); volatility-spike triggering is explicitly NOT implemented in Phase 3B's harness (flagged there, restated here) |
+| — MODEL_B (Profit Harvest) | **Resolved 2026-07-17, see `PHASE3_SCENARIO_MANIFEST.md` §1/§2.** Trigger: new portfolio high-water mark. Repays 25% (sweepable {10%, 25%, 50%}) of gains above the prior HWM. No additional/opportunistic borrowing. |
+| — MODEL_C (Risk Reset) | **Resolved 2026-07-17, see `PHASE3_SCENARIO_MANIFEST.md` §1/§2.** Trigger: 15% drawdown from peak. Resets to 1.25x target leverage. Restoration requires both a new equity high and leverage normalized (≤1.25x) since the reset. No dip-buying interpretation — structural guarantee, not yet property-tested (manifest §4). |
 | Benchmark role | Gates the repayment waterfall's tiers 2 and 4 (`PHASE2_IMPLEMENTATION_PLAN.md` §6) |
 | New metric | "Time near buffer floor" — implemented as `time_near_leverage_cap_pct_proxy` (Phase 3B), NOT a true buffer% derivation; see `PHASE3_MARGIN_EVIDENCE_FRAMEWORK.md` §2/§3 and `margin_simulation.py`'s module docstring for why |
-| Limitations | Models B and C both require numeric thresholds (target leverage fraction, gain-trigger %, reset fraction) that are **not yet set** — see Open Items. Running D before these are fixed would mean picking numbers post hoc to produce a result, which the standing "pre-committed threshold before results" discipline exists specifically to prevent. **D cannot run until these are resolved and recorded here, not decided silently at run time.** |
+| Limitations | Parameters are resolved (see manifest), but the harness (`margin_simulation.py`) does not yet implement either mechanic — `PHASE3_SCENARIO_MANIFEST.md` §4 names this as required pre-execution work. **D still cannot run until that harness extension exists and has its own passing tests**, same discipline as before, now blocked on implementation rather than parameter choice. |
 
 ---
 
@@ -86,11 +86,12 @@ All four scenarios share one substrate — same universe, same window, same benc
 
 ---
 
-## Open items — must resolve before D can run
+## Open items — status
 
-- **Model B's target leverage fraction** (e.g. "hold at 80% of the 1.8x cap" → 1.44x) — not yet chosen. Needs its own reasoned pick (or its own mini-sweep) before Test D executes, not a default.
-- **Model C's gain-trigger %, reset fraction, and concentration-trigger threshold** — none set. Same requirement.
-- **Volatility-spike triggering for Model C** — named in `PHASE3_MARGIN_EVIDENCE_FRAMEWORK.md` Test C's question ("gains, volatility spikes, or concentration increases") but not implemented in Phase 3B's harness. A decision is needed: implement it before D runs, or run D without it and record the gap explicitly in that test's own limitations section (not silently).
-- **Pre-committed decision thresholds** for each test (A: 1.0pp TWR/1.0pp MaxDD tolerance per the repo's standing pattern; B: same, applied per leverage level; C: repayment-metric threshold — not yet stated; D: proposed 2.0pp per `PHASE3_MARGIN_EVIDENCE_FRAMEWORK.md` §1.D, not yet confirmed) are named in the framework doc as *proposals* — this document does not itself finalize them. They must be explicitly confirmed, in writing, before the corresponding scenario executes.
+- ~~Model B's repayment mechanic/parameter~~ — **resolved 2026-07-17**, `PHASE3_SCENARIO_MANIFEST.md` §1 (HWM-gains-repay, R=25%, sweepable).
+- ~~Model C's trigger/target/restoration mechanic~~ — **resolved 2026-07-17**, `PHASE3_SCENARIO_MANIFEST.md` §1 (15% drawdown trigger, 1.25x reset target, new-high + normalized-leverage restoration).
+- ~~Volatility-spike triggering for Model C~~ — **resolved by omission, 2026-07-17**: not implemented; Model C's trigger is drawdown-only for this initial parameter set (manifest §3, assumption #4/#7's related scoping). Not silently dropped — recorded as a stated scope decision.
+- ~~Concentration-trigger threshold~~ — **resolved 2026-07-17**: 30% cluster concentration, explicitly a test parameter, not doctrine, and explicitly NOT blended into Model C's own trigger (manifest §1/§3, assumption #7).
+- ~~Pre-committed decision thresholds for D~~ — **resolved 2026-07-17**: 2.0pp TWR difference OR 2.0pp MaxDD improvement, applied uniformly across D's model comparisons, explicitly labeled a decision threshold not a proof threshold (manifest §1, assumption #8). A/B/C's own thresholds remain the repo's standard 1.0pp/1.0pp pattern, unchanged.
 
-No scenario runs until every item in this section is resolved and recorded here (or in a follow-up revision of this document) — not decided ad hoc when the run happens.
+**New blocker, replacing the parameter gap:** `PHASE3_SCENARIO_MANIFEST.md` §4 item 1 — the harness (`margin_simulation.py`) does not yet implement either resolved mechanic. **No scenario runs until that harness-extension work exists and has its own passing tests** (same "tests before integration" discipline as every prior phase), not decided ad hoc when the run happens.
