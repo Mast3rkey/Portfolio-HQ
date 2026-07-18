@@ -11,7 +11,9 @@ and the cluster/T1T2 trims) or margin_state.py's classifier internals
 
 import copy
 
-from allocate import build_roster, plan, render
+import pytest
+
+from allocate import build_roster, plan, render, render_health
 from margin_state import (
     ALLOWED_ACTIONS,
     classify_margin_state,
@@ -42,11 +44,13 @@ def _attach_margin_state(result, targets):
     """Reproduces exactly the block added to allocate.py's main() after
     plan() returns — kept in one place so tests exercise the real
     composition (concentration_risk_score -> classify_margin_state) rather
-    than a paraphrase of it."""
+    than a paraphrase of it. Reads plan()'s own `ratio_to_cap` field (added
+    for the Health View) rather than recomputing value/(book*pct/100) a
+    second time — mirrors main()'s current wiring exactly."""
     cluster_proximities = {
-        f"cluster:{c['name']}": c["value"] / (result["book"] * c["pct"] / 100.0)
+        f"cluster:{c['name']}": c["ratio_to_cap"]
         for c in result.get("clusters", [])
-        if c["pct"] > 0 and result["book"] > 0
+        if c.get("ratio_to_cap") is not None
     }
     score, source = concentration_risk_score(cluster_proximities)
     margin_cfg = targets.get("margin", {}) or {}
@@ -200,3 +204,365 @@ def test_margin_state_computed_strictly_after_plan_cannot_influence_buys():
     assert result_a["trims"] == result_b["trims"]
     assert result_a["blocked"] == result_b["blocked"]
     assert result_a["cash_left"] == result_b["cash_left"]
+
+
+# ── Health View V1: plan() cluster contract (current_pct / ratio_to_cap) ───
+
+def _padded_cluster_targets(cap_pct, t1t2_trim_mult=100.0, weight_pct=10.0):
+    return {
+        "tiers": {"T1": {"weight_pct": weight_pct, "tickers": ["CLU"]}},
+        "caps": {"clusters": [{"name": "testcluster", "pct": cap_pct, "tickers": ["CLU"]}]},
+        "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
+                 "earnings_blackout_days": 7, "trim_rsi": 60,
+                 "t1t2_trim_mult": t1t2_trim_mult},
+        "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
+        "crypto": {},
+    }
+
+
+def test_cluster_below_cap_ratio_and_pct():
+    targets = _padded_cluster_targets(cap_pct=20.0)
+    roster = build_roster(targets)
+    # book = 1000 exactly (CLU 100 + PAD 900, cash/debt both 0)
+    holdings = {"CLU": 100.0, "PAD": 900.0}
+    metrics = _flat_metrics(["CLU"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+
+    assert result["book"] == 1000.0
+    c = result["clusters"][0]
+    assert c["value"] == 100.0
+    assert c["current_pct"] == 10.0
+    assert c["ratio_to_cap"] == 0.5      # 100 / (1000 * 20%) = 0.5x, below cap
+    assert result["trims"] == []        # excess < min_lot -> no mechanical trim
+
+
+def test_cluster_exactly_at_cap():
+    targets = _padded_cluster_targets(cap_pct=20.0)
+    roster = build_roster(targets)
+    holdings = {"CLU": 200.0, "PAD": 800.0}   # book=1000, cap_dollars=200
+    metrics = _flat_metrics(["CLU"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+
+    c = result["clusters"][0]
+    assert c["current_pct"] == 20.0
+    assert c["ratio_to_cap"] == 1.0
+    assert result["trims"] == []        # excess == 0 < min_lot -> no trim
+
+
+def test_cluster_over_cap_ratio_persists_when_name_already_trimmed_to_own_target():
+    # Cluster cap (5%) tighter than the name's own T1 tier weight (10%): even
+    # after the T1/T2 ceiling trims CLU down to its own target, that target
+    # alone still exceeds the cluster cap, and the cluster-cap mechanism
+    # cannot trim a name below its own target -- so the cluster stays
+    # genuinely over cap in plan()'s output. Real, reachable config shape,
+    # not a fabricated edge case.
+    targets = _padded_cluster_targets(cap_pct=5.0, t1t2_trim_mult=1.5, weight_pct=10.0)
+    roster = build_roster(targets)
+    holdings = {"CLU": 200.0, "PAD": 800.0}   # book=1000, CLU target=100, ceiling=150
+    metrics = _flat_metrics(["CLU"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+
+    assert any(t["ticker"] == "CLU" for t in result["trims"])   # T1/T2 ceiling fired
+    c = result["clusters"][0]
+    assert c["value"] == 100.0          # trimmed down to CLU's own target, not below
+    assert c["current_pct"] == 10.0
+    assert c["ratio_to_cap"] == 2.0      # 100 / (1000 * 5%) = 2.0x, still over cap
+
+
+def test_cluster_ratio_to_cap_none_on_zero_pct():
+    targets = _padded_cluster_targets(cap_pct=0.0)
+    roster = build_roster(targets)
+    holdings = {"CLU": 50.0, "PAD": 950.0}
+    metrics = _flat_metrics(["CLU"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+
+    c = result["clusters"][0]
+    assert result["book"] > 0
+    assert c["current_pct"] == 5.0        # book > 0 -> still computed
+    assert c["ratio_to_cap"] is None      # pct <= 0 -> guarded, not fabricated
+
+
+def test_cluster_current_pct_and_ratio_none_on_zero_book():
+    targets = _padded_cluster_targets(cap_pct=20.0)
+    roster = build_roster(targets)
+    result = plan(targets, {}, roster, {}, True, True, cash=0.0)  # empty holdings -> book 0
+
+    assert result["book"] == 0.0
+    c = result["clusters"][0]
+    assert c["current_pct"] is None
+    assert c["ratio_to_cap"] is None
+
+
+def test_main_cluster_proximities_reads_ratio_to_cap_not_recomputed():
+    # _attach_margin_state (this test file's mirror of main()'s real block)
+    # now reads c["ratio_to_cap"] directly. Confirm it matches plan()'s own
+    # field value exactly, i.e. there is exactly one formula, owned by plan().
+    targets = _padded_cluster_targets(cap_pct=20.0)
+    roster = build_roster(targets)
+    holdings = {"CLU": 100.0, "PAD": 900.0}
+    metrics = _flat_metrics(["CLU"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+    result = _attach_margin_state(result, targets)
+
+    expected_ratio = result["clusters"][0]["ratio_to_cap"]
+    assert result["margin_state"].risk_metrics.get("concentration_score") == expected_ratio
+
+
+# ── Health View V1: plan() crypto_sleeve contract ──────────────────────────
+
+def _crypto_targets(sleeve_pct=10.0):
+    return {
+        "tiers": {},
+        "caps": {"clusters": []},
+        "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
+                 "earnings_blackout_days": 7, "trim_rsi": 60, "t1t2_trim_mult": 1.5},
+        "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
+        "crypto": {"coins": ["ETH", "SOL"], "sleeve_pct": sleeve_pct},
+    }
+
+
+def test_crypto_sleeve_below_target_gap_at_least_min_lot():
+    targets = _crypto_targets()
+    roster = build_roster(targets)
+    holdings = {"ETH": 30.0, "SOL": 20.0, "PAD": 950.0}   # sleeve=50, book=1000, target=100
+    result = plan(targets, holdings, roster, {}, True, True, cash=0.0)
+
+    cs = result["crypto_sleeve"]
+    assert cs == {"current": 50.0, "current_pct": 5.0, "target_pct": 10.0, "drift": 50.0}
+    assert any(u["ticker"] == "CRYPTO" for u in result["underweight"])  # gap 50 >= min_lot 25
+
+
+def test_crypto_sleeve_below_target_gap_below_min_lot():
+    targets = _crypto_targets()
+    roster = build_roster(targets)
+    holdings = {"ETH": 50.0, "SOL": 35.0, "PAD": 915.0}   # sleeve=85, book=1000, target=100
+    result = plan(targets, holdings, roster, {}, True, True, cash=0.0)
+
+    cs = result["crypto_sleeve"]
+    assert cs["current"] == 85.0
+    assert cs["drift"] == 15.0    # under target, but gap (15) < min_lot (25)
+    assert not any(u["ticker"] == "CRYPTO" for u in result["underweight"])
+
+
+def test_crypto_sleeve_exactly_at_target():
+    targets = _crypto_targets()
+    roster = build_roster(targets)
+    holdings = {"ETH": 60.0, "SOL": 40.0, "PAD": 900.0}   # sleeve=100, book=1000, target=100
+    result = plan(targets, holdings, roster, {}, True, True, cash=0.0)
+
+    cs = result["crypto_sleeve"]
+    assert cs["drift"] == 0.0
+    assert not any(u["ticker"] == "CRYPTO" for u in result["underweight"])
+
+
+def test_crypto_sleeve_above_target():
+    targets = _crypto_targets()
+    roster = build_roster(targets)
+    holdings = {"ETH": 90.0, "SOL": 60.0, "PAD": 850.0}   # sleeve=150, book=1000, target=100
+    result = plan(targets, holdings, roster, {}, True, True, cash=0.0)
+
+    cs = result["crypto_sleeve"]
+    assert cs["current"] == 150.0
+    assert cs["current_pct"] == 15.0
+    assert cs["drift"] == -50.0   # signed negative = over target
+    assert not any(u["ticker"] == "CRYPTO" for u in result["underweight"])
+
+
+def test_crypto_sleeve_accurate_independent_of_underweight_recommendation():
+    # Same sleeve state, two different min_lot thresholds -> the recommendation
+    # list (underweight) differs, but crypto_sleeve's own numbers must not.
+    holdings = {"ETH": 50.0, "SOL": 35.0, "PAD": 915.0}   # sleeve=85, book=1000, gap=15
+    targets_a = _crypto_targets()
+    targets_a["gates"]["min_lot_dollars"] = 25    # gap (15) < min_lot -> no CRYPTO row
+    targets_b = _crypto_targets()
+    targets_b["gates"]["min_lot_dollars"] = 10    # gap (15) >= min_lot -> CRYPTO row appears
+
+    roster = build_roster(targets_a)
+    result_a = plan(targets_a, holdings, roster, {}, True, True, cash=0.0)
+    result_b = plan(targets_b, holdings, roster, {}, True, True, cash=0.0)
+
+    assert result_a["crypto_sleeve"] == result_b["crypto_sleeve"]
+    assert not any(u["ticker"] == "CRYPTO" for u in result_a["underweight"])
+    assert any(u["ticker"] == "CRYPTO" for u in result_b["underweight"])
+
+
+def test_crypto_sleeve_none_when_not_configured():
+    targets = _base_targets()   # crypto: {} -- no coins/sleeve_pct configured
+    roster = build_roster(targets)
+    holdings = {"DDD": 2000.0, "AAA": 500.0}
+    metrics = _flat_metrics(["DDD", "AAA"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+
+    assert result["crypto_sleeve"] is None
+
+
+# ── Health View V1: plan() t1t2_proximity contract ─────────────────────────
+
+def _t1t2_proximity_targets(t1t2_trim_mult=1.5):
+    return {
+        "tiers": {"T1": {"weight_pct": 10.0, "tickers": ["NEUT", "OVER", "UNDER"]}},
+        "caps": {"clusters": []},
+        "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
+                 "earnings_blackout_days": 7, "trim_rsi": 60,
+                 "t1t2_trim_mult": t1t2_trim_mult},
+        "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
+        "crypto": {},
+    }
+
+
+def test_t1t2_neutral_zone_name_retained_though_invisible_elsewhere():
+    targets = _t1t2_proximity_targets()
+    roster = build_roster(targets)
+    # book=1000 (100+200+50+650 PAD); NEUT target=100, current=130 -> 1.3x,
+    # under the 1.5x ceiling (not trimmed) and gap=-30 (not a buy candidate) --
+    # previously fell through plan() entirely.
+    holdings = {"NEUT": 130.0, "OVER": 200.0, "UNDER": 50.0, "PAD": 620.0}
+    metrics = _flat_metrics(["NEUT", "OVER", "UNDER"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+
+    assert not any(t["ticker"] == "NEUT" for t in result["trims"])
+    assert not any(u["ticker"] == "NEUT" for u in result["underweight"])
+    assert not any(b["ticker"] == "NEUT" for b in result["blocked"])
+    neut = next(p for p in result["t1t2_proximity"] if p["ticker"] == "NEUT")
+    assert neut["current"] == 130.0
+    assert neut["target"] == 100.0
+    assert neut["ratio_to_target"] == pytest.approx(1.3)
+    assert neut["ceiling_mult"] == 1.5
+    assert neut["ratio_to_ceiling"] == pytest.approx(130.0 / 150.0)
+
+
+def test_t1t2_over_ceiling_name_also_retained():
+    targets = _t1t2_proximity_targets()
+    roster = build_roster(targets)
+    holdings = {"NEUT": 130.0, "OVER": 200.0, "UNDER": 50.0, "PAD": 620.0}
+    metrics = _flat_metrics(["NEUT", "OVER", "UNDER"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+
+    trimmed = next(t for t in result["trims"] if t["ticker"] == "OVER")
+    assert trimmed["dollars"] == 100.0   # 200 - target(100)
+    over = next(p for p in result["t1t2_proximity"] if p["ticker"] == "OVER")
+    assert over["ratio_to_target"] == pytest.approx(2.0)
+    assert over["ratio_to_ceiling"] == pytest.approx(200.0 / 150.0)
+
+
+def test_every_t1t2_ticker_appears_exactly_once_regardless_of_outcome():
+    targets = _t1t2_proximity_targets()
+    roster = build_roster(targets)
+    holdings = {"NEUT": 130.0, "OVER": 200.0, "UNDER": 50.0, "PAD": 620.0}
+    # UNDER has no metrics entry -> price is None -> BLOCKED "no-data", which
+    # happens strictly before the earnings-gate lookup (no network call).
+    metrics = _flat_metrics(["NEUT", "OVER"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+
+    tickers = [p["ticker"] for p in result["t1t2_proximity"]]
+    assert sorted(tickers) == ["NEUT", "OVER", "UNDER"]
+    assert len(tickers) == len(set(tickers))
+    assert any(b["ticker"] == "UNDER" and "no-data" in b["reason"] for b in result["blocked"])
+    assert any(t["ticker"] == "OVER" for t in result["trims"])
+    assert not any(t["ticker"] == "NEUT" for t in result["trims"] + result["blocked"])
+
+
+def test_t1t2_zero_target_retains_record_with_none_ratios():
+    # book == 0 (empty holdings, no cash/margin) -> every target is 0. A real,
+    # reachable state (a wiped/new book), not invented -- see build_roster()'s
+    # weight_pct default and margin_capacity()'s own "if net_equity > 0 else
+    # None" guard for the repo's established convention on this exact shape
+    # of divide-by-zero.
+    targets = {
+        "tiers": {"T1": {"weight_pct": 10.0, "tickers": ["ZT"]}},
+        "caps": {"clusters": []},
+        "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
+                 "earnings_blackout_days": 7, "trim_rsi": 60, "t1t2_trim_mult": 1.5},
+        "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
+        "crypto": {},
+    }
+    roster = build_roster(targets)
+    result = plan(targets, {}, roster, {}, True, True, cash=0.0)
+
+    assert result["book"] == 0.0
+    zt = next(p for p in result["t1t2_proximity"] if p["ticker"] == "ZT")
+    assert zt["current"] == 0.0
+    assert zt["target"] == 0.0
+    assert zt["ratio_to_target"] is None
+    assert zt["ratio_to_ceiling"] is None
+
+
+# ── Health View V1: render_health() ────────────────────────────────────────
+
+def _health_fixture_result(margin_state_obj="omit"):
+    """A hand-built result dict -- no plan()/live client/YAML involved -- to
+    prove render_health() is a pure function of `result` alone."""
+    result = {
+        "book": 1000.0,
+        "margin": {
+            "gross": 1200.0, "net_equity": 1000.0, "debt": 200.0,
+            "buffer_pct": 55.0, "buffer_floor_pct": 30.0,
+            "leverage_current": 1.2, "leverage_cap": 1.8,
+            "requested": 0.0, "allowed": 0.0, "used": 0.0,
+            "forced_delever": False, "block_reason": None,
+        },
+        "clusters": [
+            {"name": "semis", "value": 180.0, "pct": 20.0,
+             "current_pct": 18.0, "ratio_to_cap": 0.9},
+        ],
+        "crypto_sleeve": {"current": 85.0, "current_pct": 8.5,
+                          "target_pct": 10.0, "drift": 15.0},
+        "t1t2_proximity": [
+            {"ticker": "NEUT", "tier": "T1", "current": 130.0, "target": 100.0,
+             "ratio_to_target": 1.3, "ceiling_mult": 1.5, "ratio_to_ceiling": 130 / 150},
+        ],
+    }
+    if margin_state_obj != "omit":
+        result["margin_state"] = margin_state_obj
+    return result
+
+
+def test_render_health_consumes_hand_built_fixture():
+    result = _health_fixture_result(margin_state_obj=None)
+    out = render_health(result)
+    assert isinstance(out, str) and len(out) > 0
+
+
+def test_render_health_absent_margin_state_renders_unavailable_marker():
+    result = _health_fixture_result(margin_state_obj="omit")
+    assert "margin_state" not in result
+    out = render_health(result)
+    assert "UNAVAILABLE" in out
+    assert "Margin risk state" in out
+
+
+def test_render_health_all_required_sections_and_values_present():
+    targets = _base_targets()
+    roster = build_roster(targets)
+    holdings = {"DDD": 2000.0, "AAA": 500.0}
+    metrics = _flat_metrics(["DDD", "AAA"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0,
+                  margin_debt=100.0, margin_buffer_pct=50.0)
+    result = _attach_margin_state(result, targets)
+    out = render_health(result)
+
+    assert "## Margin" in out
+    assert "## Margin risk state" in out
+    assert "## Clusters" in out
+    assert "## Crypto sleeve" in out
+    assert "## T1/T2 proximity" in out
+    assert f"{result['margin']['leverage_cap']:.2f}x cap" in out
+    assert f"{result['margin']['buffer_floor_pct']:.0f}% floor" in out
+    for c in result["clusters"]:
+        assert c["name"] in out
+    for t in result["t1t2_proximity"]:
+        assert t["ticker"] in out
+
+
+def test_render_health_does_not_mutate_result():
+    result = _health_fixture_result(margin_state_obj=None)
+    before = copy.deepcopy(result)
+    render_health(result)
+    assert result == before
+
+
+def test_render_health_repeated_calls_identical_output():
+    result = _health_fixture_result(margin_state_obj=None)
+    out1 = render_health(result)
+    out2 = render_health(result)
+    assert out1 == out2

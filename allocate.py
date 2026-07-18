@@ -191,6 +191,12 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     rows: list[dict] = []          # BLOCKED / info rows
     buy_candidates: list[dict] = []
     trims: list[dict] = []
+    # Health View support: one record per T1/T2 ticker, retained regardless of
+    # trim/buy/blocked outcome (see the "T1/T2 proximity ratios aren't retained"
+    # gap this closes) — populated below using the same pre-decision
+    # target_dollars/current every trim/buy branch already computes, never a
+    # second derivation.
+    t1t2_proximity: list[dict] = []
 
     for tk, meta in roster.items():
         m = metrics.get(tk, {})
@@ -206,6 +212,17 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
                 "vs200": vs200, "target": target_dollars, "current": current,
                 "gap": gap}
         tk_clusters = [c["name"] for c in clusters if tk in c["tickers"]]
+
+        if meta["tier"] in ("T1", "T2"):
+            target_positive = target_dollars > 0
+            t1t2_proximity.append({
+                "ticker": tk, "tier": meta["tier"],
+                "current": current, "target": target_dollars,
+                "ratio_to_target": (current / target_dollars) if target_positive else None,
+                "ceiling_mult": t1t2_trim_mult,
+                "ratio_to_ceiling": (current / (target_dollars * t1t2_trim_mult))
+                                    if target_positive else None,
+            })
         for cname in tk_clusters:
             cluster_info[cname][tk] = {"current": current, "target": target_dollars,
                                        "price": price, "rsi": rsi, "tier": meta["tier"]}
@@ -324,10 +341,20 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     crypto_cfg = targets.get("crypto", {}) or {}
     sleeve_coins = [c.upper() for c in crypto_cfg.get("coins", [])]
     sleeve_pct = float(crypto_cfg.get("sleeve_pct", 0))
+    # Health View support: an always-present state record (current/target/drift)
+    # independent of the buy_candidates entry below, which only ever appears
+    # when the sleeve is meaningfully underweight — not a state interface.
+    crypto_sleeve: dict | None = None
     if sleeve_coins and sleeve_pct > 0:
         sleeve_val = sum(float(holdings.get(c, 0.0)) for c in sleeve_coins)
         sleeve_target = book * sleeve_pct / 100.0
         sleeve_gap = sleeve_target - sleeve_val
+        crypto_sleeve = {
+            "current": sleeve_val,
+            "current_pct": (sleeve_val / book * 100.0) if book > 0 else None,
+            "target_pct": sleeve_pct,
+            "drift": sleeve_gap,   # signed: positive = under target, negative = over
+        }
         if sleeve_gap >= min_lot:
             buy_candidates.append({
                 "ticker": "CRYPTO", "tier": "crypto", "price": None, "rsi": None,
@@ -380,8 +407,17 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
         "buys": buys, "trims": trims, "blocked": rows,
         "underweight": buy_candidates, "orphans": orphans,
         "regime_ok": regime_ok, "regime_known": regime_known,
-        "clusters": [{"name": c["name"], "value": cluster_value[c["name"]], "pct": c["pct"]}
-                    for c in clusters],
+        "clusters": [
+            {
+                "name": c["name"], "value": cluster_value[c["name"]], "pct": c["pct"],
+                "current_pct": (cluster_value[c["name"]] / book * 100.0) if book > 0 else None,
+                "ratio_to_cap": (cluster_value[c["name"]] / (book * c["pct"] / 100.0))
+                                if (c["pct"] > 0 and book > 0) else None,
+            }
+            for c in clusters
+        ],
+        "crypto_sleeve": crypto_sleeve,
+        "t1t2_proximity": t1t2_proximity,
         "margin": {
             "gross": gross, "net_equity": net_equity, "debt": margin_debt,
             "buffer_pct": margin_buffer_pct, "buffer_floor_pct": buffer_floor_pct,
@@ -551,6 +587,95 @@ def render(result, review: bool) -> str:
                   "verify before any large margin-funded buy._")
     L.append("")
     L.append("_Advisory only. This tool places no orders. Execute manually._")
+    return "\n".join(L)
+
+
+def render_health(result) -> str:
+    """Snapshot risk/health view — pure presentation. Consumes only `result`
+    (plan()'s output, plus whatever main() has already attached to it, e.g.
+    `margin_state`); never reads YAML, never fetches, never recomputes a
+    portfolio ratio plan() didn't already compute. V1 scope: leverage, buffer,
+    margin risk state, cluster caps, crypto sleeve drift, T1/T2 proximity — a
+    point-in-time snapshot only, no historical trend, no repayment
+    recommendation, no new buy/trim/block decision of any kind."""
+    L = []
+    L.append(f"# Portfolio Health View — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    L.append("")
+    L.append(f"**Book:** ${result['book']:,.0f}")
+
+    mg = result["margin"]
+    lev_s = f"{mg['leverage_current']:.2f}x" if mg["leverage_current"] is not None else "n/a"
+    buf_s = f"{mg['buffer_pct']:.1f}%" if mg["buffer_pct"] is not None else "unsynced"
+    L.append("")
+    L.append("## Margin")
+    L.append("| | |")
+    L.append("|---|---:|")
+    L.append(f"| Leverage (gross/equity) | {lev_s} vs {mg['leverage_cap']:.2f}x cap |")
+    L.append(f"| Buffer (last synced) | {buf_s} vs {mg['buffer_floor_pct']:.0f}% floor |")
+
+    L.append("")
+    L.append("## Margin risk state")
+    ms = result.get("margin_state")
+    if ms is None:
+        L.append("> ⚠️ **UNAVAILABLE** — margin risk state was not computed for this "
+                  "result (`classify_margin_state()` was never run against it). This is "
+                  "a data-availability gap, not a risk finding — do not read it as NORMAL.")
+    else:
+        L.append(f"**{ms.current_state}**")
+        for reason in ms.reasons:
+            L.append(f"- {reason}")
+        if ms.violated_constraints:
+            L.append(f"- Violated constraints: {', '.join(ms.violated_constraints)}")
+        if ms.allowed_actions:
+            L.append(f"- Allowed actions: {', '.join(ms.allowed_actions)}")
+        if ms.concentration_source:
+            L.append(f"- Tightest concentration pressure: {ms.concentration_source} "
+                     f"({ms.risk_metrics.get('concentration_score', 0.0):.2f})")
+
+    L.append("")
+    L.append("## Clusters")
+    clusters = result.get("clusters") or []
+    if clusters:
+        L.append("| Cluster | %-of-book | Cap | Ratio-to-cap |")
+        L.append("|---|---:|---:|---:|")
+        for c in clusters:
+            pct_s = f"{c['current_pct']:.1f}%" if c.get("current_pct") is not None else "n/a"
+            ratio_s = f"{c['ratio_to_cap']:.2f}x" if c.get("ratio_to_cap") is not None else "n/a"
+            L.append(f"| {c['name']} | {pct_s} | {c['pct']:.0f}% | {ratio_s} |")
+    else:
+        L.append("_No clusters configured._")
+
+    L.append("")
+    L.append("## Crypto sleeve")
+    cs = result.get("crypto_sleeve")
+    if cs is None:
+        L.append("_No crypto sleeve configured._")
+    else:
+        cur_pct_s = f"{cs['current_pct']:.1f}%" if cs.get("current_pct") is not None else "n/a"
+        drift_word = ("under target" if cs["drift"] > 0
+                     else "over target" if cs["drift"] < 0 else "at target")
+        L.append("| | |")
+        L.append("|---|---:|")
+        L.append(f"| Current | ${cs['current']:,.0f} ({cur_pct_s}) |")
+        L.append(f"| Target | {cs['target_pct']:.1f}% |")
+        L.append(f"| Drift | ${cs['drift']:,.0f} ({drift_word}) |")
+
+    L.append("")
+    L.append("## T1/T2 proximity")
+    t1t2 = result.get("t1t2_proximity") or []
+    if t1t2:
+        L.append("| Ticker | Tier | Current-to-target | Current-to-ceiling |")
+        L.append("|---|---|---:|---:|")
+        for t in sorted(t1t2, key=lambda r: r["ticker"]):
+            rt_s = f"{t['ratio_to_target']:.2f}x" if t["ratio_to_target"] is not None else "n/a"
+            rc_s = f"{t['ratio_to_ceiling']:.2f}x" if t["ratio_to_ceiling"] is not None else "n/a"
+            L.append(f"| {t['ticker']:<6} | {t['tier']} | {rt_s} | {rc_s} |")
+    else:
+        L.append("_No T1/T2 names in roster._")
+
+    L.append("")
+    L.append("_Snapshot only — no historical trend, no repayment recommendation. "
+              "Advisory only. This tool places no orders._")
     return "\n".join(L)
 
 
@@ -861,11 +986,14 @@ def main():
     ap.add_argument("--ticker", type=str, default=None, help="limit --levels to one ticker")
     ap.add_argument("--performance", action="store_true",
                     help="show net-equity-vs-QQQ/VOO log (see log-performance to add a snapshot)")
+    ap.add_argument("--health", action="store_true",
+                    help="snapshot risk/health view (leverage, buffer, clusters, crypto "
+                         "sleeve, T1/T2 proximity) — observational, no new cash")
     args = ap.parse_args()
     if args.performance:
         print(render_performance())
         return
-    if args.review:
+    if args.review or args.health:
         args.cash = 0.0
         args.margin = 0.0
 
@@ -915,13 +1043,16 @@ def main():
     # ---- margin risk-state classification (Phase 2D) -----------------------
     # Pure post-hoc read of plan()'s own output — computed AFTER plan() has
     # already decided every buy/trim/block; cannot influence allocation.
-    # Concentration scope: cluster-cap proximities only (T1/T2 proximity
-    # ratios aren't retained in plan()'s return dict yet — deferred, not a
-    # placeholder; see docs/PHASE2D_INTEGRATION_PLAN.md).
+    # Concentration scope: cluster-cap proximities only (T1/T2 proximity is
+    # now retained in result["t1t2_proximity"] for the Health View, but is not
+    # folded into concentration scoring here — that would change concentration
+    # behavior, which is explicitly out of scope for the Health View addition).
+    # ratio_to_cap is computed once in plan() (same guard: pct>0 and book>0) —
+    # read here, never recomputed, so this formula has exactly one owner.
     cluster_proximities = {
-        f"cluster:{c['name']}": c["value"] / (result["book"] * c["pct"] / 100.0)
+        f"cluster:{c['name']}": c["ratio_to_cap"]
         for c in result.get("clusters", [])
-        if c["pct"] > 0 and result["book"] > 0
+        if c.get("ratio_to_cap") is not None
     }
     concentration_score, concentration_source = concentration_risk_score(cluster_proximities)
     margin_cfg = targets.get("margin", {}) or {}
@@ -954,6 +1085,10 @@ def main():
             "sleeve_total": sum(crypto_holdings.values()),
             "sleeve_pct": float(crypto_cfg.get("sleeve_pct", 10)),
         }
+
+    if args.health:
+        print(render_health(result))
+        return
 
     out = render(result, review=args.review)
     print(out)
