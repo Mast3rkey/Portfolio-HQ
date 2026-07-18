@@ -2,7 +2,9 @@
 intelligence_validator.py — read-only schema validator for the Portfolio
 Intelligence Engine's per-company YAML files (see
 docs/PORTFOLIO_INTELLIGENCE_SPEC.md §9/14/16/20/21; authorized in bounded
-scope by decision_log.yaml's PI-0002).
+scope by decision_log.yaml's PI-0002) and, since PI-0007, the Theme
+Intelligence per-theme YAML files whose flat data model was frozen by
+decision_log.yaml's PI-0006.
 
 This module is a validator, not a data producer. It never opens a file in
 write/append/update mode, never creates a directory, and never touches
@@ -18,6 +20,18 @@ and treat a missing or empty `intelligence/companies/` directory as valid,
 zero-coverage, opt-in state (§16/§20) — never an error. Symbol resolution
 (§15) and any cross-check against holdings.yaml/targets.yaml (§14's
 "future validator" note) are explicitly deferred, not implemented here.
+
+Theme scope, exactly what PI-0007 authorized: validate a theme YAML against
+PI-0006's frozen model (theme_id required; description/evidence/risks/
+catalysts type-checked when present; lifecycle restricted to PI-0006's
+closed five-value vocabulary; review block reusing the company schema's own
+shape), validate a company's `themes:` field as a list of bare theme_id
+strings (never a mapping, weight, or percentage), and check that each
+referenced theme_id resolves to an existing file under
+`intelligence/themes/` -- a live filesystem check performed at validation
+time, not a stored index, so it does not violate PI-0006's frozen
+filesystem-as-index doctrine. No theme ever stores, lists, or implies its
+member companies -- authority runs one way only, company -> theme.
 """
 
 from __future__ import annotations
@@ -45,6 +59,16 @@ _PERCENT_MARKERS = ("%",)
 # case-sensitive match only. No numeric scale, no hyphenated hybrids,
 # no synonyms.
 _CONVICTION_RATINGS = {"Low", "Medium", "High", "Very High"}
+
+# ── §9-adjacent theme schema: frozen by decision_log.yaml's PI-0006 ──────────
+
+_THEME_STRING_FIELDS = ("description",)
+_THEME_STRING_LIST_FIELDS = ("evidence", "risks", "catalysts")
+
+# Closed vocabulary frozen by PI-0006 -- exact, case-sensitive match only,
+# same no-synonym discipline as conviction. Describes the maturity of the
+# shared narrative itself, never a market-timing judgment.
+_LIFECYCLE_VALUES = {"Emerging", "Established", "Mature", "Declining", "Archived"}
 
 
 @dataclass
@@ -171,6 +195,40 @@ def _validate_sources(value: object, errors: list[str]) -> None:
     _validate_list_of_mappings(value, "sources", _SOURCE_REQUIRED_KEYS, errors)
 
 
+def _validate_themes_field(value: object, errors: list[str]) -> None:
+    """PI-0007 required test (2): a company's `themes:` field must be a
+    list of bare theme_id strings -- never a mapping, weight, or
+    percentage. Same guard already protecting portfolio_role_ref (§14/§20),
+    applied per-item here rather than to a single scalar."""
+    if value is None:
+        return
+    if not isinstance(value, list):
+        errors.append(f"themes must be a list, got {type(value).__name__}")
+        return
+    for i, item in enumerate(value):
+        if not isinstance(item, str) or _looks_like_weight_or_percentage(item):
+            errors.append(
+                f"themes[{i}] must be a bare theme_id string, never a "
+                f"numeric weight or percentage — got {item!r}"
+            )
+        elif not item.strip():
+            errors.append(f"themes[{i}] must not be empty")
+
+
+def _validate_lifecycle(value: object, errors: list[str]) -> None:
+    """PI-0006's frozen closed vocabulary -- exact, case-sensitive match,
+    no default assumed by this validator or any decision (PI-0007's human
+    approval requirements select the value; this only enforces the set)."""
+    if value is None:
+        return
+    if value not in _LIFECYCLE_VALUES:
+        errors.append(
+            f"lifecycle must be exactly one of {sorted(_LIFECYCLE_VALUES)} "
+            f"(PI-0006 frozen vocabulary, case-sensitive, no synonym or "
+            f"hybrid) — got {value!r}"
+        )
+
+
 # ── public API ─────────────────────────────────────────────────────────────
 
 def validate_company_data(data: object, *, source: str | None = None) -> ValidationResult:
@@ -201,8 +259,31 @@ def validate_company_data(data: object, *, source: str | None = None) -> Validat
     _validate_conviction(data.get("conviction"), errors)
     _validate_review(data.get("review"), errors)
     _validate_sources(data.get("sources"), errors)
+    _validate_themes_field(data.get("themes"), errors)
 
     return ValidationResult(valid=not errors, errors=errors, source=source)
+
+
+def _validate_theme_references(data: dict, company_path: Path, errors: list[str]) -> None:
+    """PI-0007 required test (3): each theme_id in a company's `themes:`
+    list must resolve to an existing file under intelligence/themes/ -- a
+    live filesystem check at validation time, not a stored index. Lives
+    here (file-level), not in validate_company_data, because that function
+    is documented to never touch the filesystem. An archived theme (§
+    PI-0006 lifecycle) is not special-cased: existence is all that's
+    checked, so an Archived theme stays a valid reference target."""
+    themes = data.get("themes")
+    if not isinstance(themes, list):
+        return
+    themes_dir = company_path.resolve().parent.parent / "themes"
+    for theme_id in themes:
+        if not isinstance(theme_id, str) or not theme_id.strip():
+            continue  # already flagged by _validate_themes_field
+        if not (themes_dir / f"{theme_id}.yaml").is_file():
+            errors.append(
+                f"themes references {theme_id!r}, but "
+                f"{themes_dir / (theme_id + '.yaml')} does not exist"
+            )
 
 
 def validate_company_file(path: str | Path) -> ValidationResult:
@@ -223,7 +304,11 @@ def validate_company_file(path: str | Path) -> ValidationResult:
     if data is None:
         return ValidationResult(valid=False, errors=["file is empty"], source=source)
 
-    return validate_company_data(data, source=source)
+    result = validate_company_data(data, source=source)
+    if isinstance(data, dict):
+        _validate_theme_references(data, path, result.errors)
+        result.valid = not result.errors
+    return result
 
 
 def validate_directory(directory: str | Path) -> DirectoryValidationResult:
@@ -237,6 +322,90 @@ def validate_directory(directory: str | Path) -> DirectoryValidationResult:
 
     results = [
         validate_company_file(p)
+        for p in sorted(directory.glob("*.yaml"))
+    ]
+
+    return DirectoryValidationResult(valid=all(r.valid for r in results), results=results)
+
+
+# ── theme public API (PI-0006 schema, PI-0007 authorized) ────────────────────
+
+def validate_theme_data(data: object, *, source: str | None = None) -> ValidationResult:
+    """Validate an already-parsed theme mapping against PI-0006's frozen
+    schema. Never touches the filesystem. theme_id is required (must be a
+    non-empty string); description/evidence/risks/catalysts/lifecycle/
+    review are type-checked when present, same looseness the company
+    schema already uses for its own optional fields."""
+    errors: list[str] = []
+
+    if not isinstance(data, dict):
+        errors.append(f"root document must be a mapping, got {type(data).__name__}")
+        return ValidationResult(valid=False, errors=errors, source=source)
+
+    theme_id = data.get("theme_id")
+    if not isinstance(theme_id, str) or not theme_id.strip():
+        errors.append("theme_id is required and must be a non-empty string")
+
+    for field_name in _THEME_STRING_FIELDS:
+        if field_name in data and data[field_name] is not None and not isinstance(data[field_name], str):
+            errors.append(f"{field_name} must be a string, got {type(data[field_name]).__name__}")
+
+    for field_name in _THEME_STRING_LIST_FIELDS:
+        if field_name in data and data[field_name] is not None:
+            v = data[field_name]
+            if not isinstance(v, list) or not all(isinstance(x, str) for x in v):
+                errors.append(f"{field_name} must be a list of strings")
+
+    _validate_lifecycle(data.get("lifecycle"), errors)
+    _validate_review(data.get("review"), errors)
+
+    # PI-0006: a theme never stores, lists, or implies its member
+    # companies -- explicitly rejecting any of these fields protects the
+    # one-way-authority model even though nothing upstream would send them.
+    for forbidden in ("companies", "members", "company_count"):
+        if forbidden in data:
+            errors.append(
+                f"{forbidden!r} is not part of PI-0006's frozen theme schema — "
+                f"a theme never stores its member companies (one-way authority, "
+                f"company -> theme only)"
+            )
+
+    return ValidationResult(valid=not errors, errors=errors, source=source)
+
+
+def validate_theme_file(path: str | Path) -> ValidationResult:
+    """Read and validate a single theme YAML file. Read-only, same
+    guarantee as validate_company_file."""
+    path = Path(path)
+    source = str(path)
+    try:
+        text = path.read_text()
+    except OSError as exc:
+        return ValidationResult(valid=False, errors=[f"could not read file: {exc}"], source=source)
+
+    try:
+        data = yaml.safe_load(text)
+    except yaml.YAMLError as exc:
+        return ValidationResult(valid=False, errors=[f"invalid YAML: {exc}"], source=source)
+
+    if data is None:
+        return ValidationResult(valid=False, errors=["file is empty"], source=source)
+
+    return validate_theme_data(data, source=source)
+
+
+def validate_themes_directory(directory: str | Path) -> DirectoryValidationResult:
+    """Scan `<directory>/*.yaml` and validate each theme file found. A
+    missing or empty directory is valid, zero-coverage state (PI-0007
+    required test (4): a theme with zero current company references is
+    still valid on its own terms) — not an error."""
+    directory = Path(directory)
+
+    if not directory.exists() or not directory.is_dir():
+        return DirectoryValidationResult(valid=True, results=[])
+
+    results = [
+        validate_theme_file(p)
         for p in sorted(directory.glob("*.yaml"))
     ]
 

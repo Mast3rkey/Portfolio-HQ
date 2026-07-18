@@ -1,0 +1,44 @@
+sector: Industrials
+industry: Electrical Equipment
+portfolio_role_ref: T1
+themes: [ai_infrastructure]
+competitive_advantages:
+  - "Large, reported backlog of power and electrification equipment orders -- FY2025 total backlog of $150 billion (+$31.2B year-over-year), grown further to $163 billion by Q1 2026 -- reflecting demand across gas power, electrification, and grid equipment"
+  - "Reported data-center-specific demand concentration in the Electrification segment: $2.4 billion in equipment orders supporting data centers booked in Q1 2026 alone, more than all of 2025 combined"
+risks:
+  - risk: "Execution risk on large, long-cycle projects under fixed or competitively-bid contract structures"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Global supply-chain dependency for raw materials, castings, forgings, and specialized components, where a single delayed input can delay a larger system delivery"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Disclosed margin softness in Wind and European Electrification specifically, distinct from stronger Power/Electrification segment performance elsewhere"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Reliance on continued data-center-driven order flow within the Electrification segment for a portion of recent order growth"
+    severity: low
+    identified: "2026-07-18"
+    status: monitoring
+catalysts:
+  - catalyst: "Backlog-to-revenue conversion pace, including management's stated target of approximately $200 billion of total backlog by year-end 2028"
+    expected: "2028-12-31"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "GE Vernova's FY2025 orders ($59.3B, +34% organic), total backlog ($150B, +$31.2B YoY), and Q1 2026 data-center-specific Electrification orders ($2.4B in a single quarter) reflect real, demonstrated demand tied to the AI-infrastructure power buildout. Conviction is Medium rather than High because the company's own disclosed risk profile centers on execution across large, long-cycle, fixed/competitively-bid contracts, with margin softness specifically flagged in Wind and European Electrification. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-18"
+  next_due: "2026-10-16"
+  log:
+    - date: "2026-07-18"
+      note: "Record created through AI-assisted research and drafting; finalized through explicit human review and approval under PI-0007. Portfolio HQ's fourth company record and second under the ai_infrastructure theme."
+sources:
+  - note: "GE Vernova, Q4/FY2025 financial results, official press release -- FY2025 revenue ($38.1B, +9%), net income ($4.9B, including a $2.9B tax benefit), Power/Electrification orders ($59.3B, +34% organic), total backlog ($150B, +$31.2B YoY). Exact publication date not independently confirmed in this research pass -- omitted rather than guessed. Direct rendering blocked (HTTP 403) in the research environment; figures user-inspected and independently corroborated via multiple search results, not directly rendered by this repository's tooling."
+    url: "https://www.gevernova.com/news/press-releases/ge-vernova-reports-fourth-quarter-full-year-2025-financial-results"
+  - note: "GE Vernova, Q1 2026 financial results, Form 8-K exhibit filed with SEC, dated 2026-04-22 -- Electrification segment data-center orders ($2.4B, more than all of 2025), total backlog growth (+$13B quarter-over-quarter, to $163B). No specific enumerated risk-factor text was independently inspected against GE Vernova's own Form 10-K in this research pass; principal risks above are understood from general secondary coverage. Same rendering caveat as above."
+    url: "https://www.sec.gov/Archives/edgar/data/0001996810/000199681026000063/gevpressrelease1q26.htm"
+    date: "2026-04-22"
