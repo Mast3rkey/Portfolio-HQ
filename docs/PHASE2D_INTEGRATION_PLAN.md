@@ -1,5 +1,7 @@
 # Phase 2D Integration Plan — Wiring `margin_state.py` into `allocate.py`
 
+> **STATUS CORRECTION (2026-07-18, `decision_log.yaml` MARGIN-0003):** Contradicted by the current repository state — this plan's integration (concentration score + `classify_margin_state()` call + `render()` display) is live in `allocate.py`, matching this document's §1/§5 description closely enough to be its evident implementation. No claim is made about when or how that implementation proceeded relative to this document's "awaiting approval" framing — see MARGIN-0003.
+
 _2026-07-17 · Planning only. `allocate.py` has not been modified — every line number and code excerpt below was read directly from the file as it exists right now, not recalled from memory. No code is written in this pass. Stop point: this document, awaiting approval._
 
 ---

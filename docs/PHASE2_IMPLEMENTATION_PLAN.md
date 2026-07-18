@@ -1,5 +1,7 @@
 # Phase 2 Implementation Plan — Margin Governance Layer
 
+> **STATUS CORRECTION (2026-07-18, `decision_log.yaml` MARGIN-0003):** This document's framing is contradicted by the current repository state. Phase 2A (`margin_state.py`'s pure classification functions) and Phase 2D (informational integration into `allocate.py`/`render()`) are live in production. Phases 2B's outstanding item, 2C, 2E, and 2F as scoped in Section 6 below have not shipped. No claim is made about when or how implementation proceeded relative to this document's "awaiting approval" framing — see MARGIN-0003.
+
 _2026-07-17, Rev 2 · Planning only. `decision_log.yaml` (repo root) was created in Rev 1 — it's new, inert data nothing reads yet, not a change to production behavior. **No production code (`allocate.py`, `targets.yaml`, `holdings.yaml`, or any file in the live `--cash`/`--review`/`--margin` path) has been modified.** Everything else below is a proposal. Rev 2 adds: an explicit risk-only confirmation for the state machine, a hysteresis design comparison (Option A vs. B, with a recommendation — not implemented), a full margin repayment framework (the deleveraging-necessity/strategic-repayment split and the four-tier waterfall), a consolidated future-backtest-requirements section, and explicit Phase 2A-2D sequencing with a hard gate before any `allocate.py` change. Waiting for approval before any of it is implemented._
 
 ---
