@@ -1,0 +1,37 @@
+sector: Health Care
+industry: Life Sciences Tools & Services
+portfolio_role_ref: T2
+themes: [life_sciences_tools_medtech]
+competitive_advantages:
+  - "Largest reported segment, Laboratory Products and Biopharma Services ($23.98B, +4%), carries a large recurring consumables, reagents, and services revenue base -- segment totals are not directly additive to consolidated revenue and no conclusion here relies on summing the four segment figures"
+  - "Positive reported growth across all four disclosed segments in FY2025: Life Sciences Solutions +8%, Analytical Instruments +1%, Specialty Diagnostics +4%, Laboratory Products and Biopharma Services +4%"
+risks:
+  - risk: "Biopharma and laboratory research spending-cycle sensitivity, currently disclosed as a real, muted-growth factor in the Analytical Instruments segment specifically (+1% for FY2025), not a hypothetical risk"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Foreign-exchange exposure, reflected in the gap between reported and organic growth rates in TMO's disclosures"
+    severity: low
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Competitive pressure across instrument and life-sciences-tools product categories"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Execution risk in any future acquisition integration"
+    severity: low
+    identified: "2026-07-18"
+    status: monitoring
+conviction:
+  rating: Medium
+  rationale: "TMO's FY2025 results show positive reported growth in all four disclosed segments -- Life Sciences Solutions up 8% to $10.37 billion, Analytical Instruments up 1% to $7.55 billion, Specialty Diagnostics up 4% to $4.68 billion, and Laboratory Products and Biopharma Services up 4% to $23.98 billion, the largest reported segment by segment revenue. Growth is real but muted in places -- Analytical Instruments' 1% growth reflects disclosed softness in part of the lab and biopharma end market. Conviction is Medium rather than High specifically because of this currently muted growth in at least one major segment, and because TMO's own enumerated Form 10-K risk-factor text was not independently inspected in this packet's research. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments, and was not inferred from TMO's existing T2 portfolio-tier placement -- it was reasoned solely from the segment-level growth pattern described above."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-18"
+  next_due: "2026-10-16"
+  log:
+    - date: "2026-07-18"
+      note: "Record created through AI-assisted research and drafting; finalized through explicit human review and approval under PI-0009. Portfolio HQ's sixth company record, and the second of two records created under the life_sciences_tools_medtech theme pilot."
+sources:
+  - note: "Thermo Fisher Scientific, Q4 and full-year 2025 earnings release -- FY2025 total revenue ($44.56B, +4%), segment revenue: Life Sciences Solutions ($10.37B, +8%), Analytical Instruments ($7.55B, +1%), Specialty Diagnostics ($4.68B, +4%), Laboratory Products and Biopharma Services ($23.98B, +4%, largest reported segment by segment revenue). The four segment totals sum to approximately $46.58B, not directly additive to the $44.56B consolidated total -- the approximately $2.0B difference was not reconciled against a directly inspected eliminations table, and no conclusion here relies on summing the four segment figures. Direct rendering blocked (HTTP 403) in the research environment; figures obtained via search-engine synthesis of services that parse SEC 10-K segment-reporting data directly, not directly rendered or read by this repository's tooling."
+    url: "https://www.sec.gov/Archives/edgar/data/97745/000009774526000018/tmo-20251231.htm"
