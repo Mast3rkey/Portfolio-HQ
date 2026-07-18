@@ -10,9 +10,12 @@ and the cluster/T1T2 trims) or margin_state.py's classifier internals
 """
 
 import copy
+import sys
 
 import pytest
+import yaml
 
+import allocate
 from allocate import build_roster, plan, render, render_health
 from margin_state import (
     ALLOWED_ACTIONS,
@@ -566,3 +569,116 @@ def test_render_health_repeated_calls_identical_output():
     out1 = render_health(result)
     out2 = render_health(result)
     assert out1 == out2
+
+
+# ── Health View V1: unsynced buffer (buffer_pct is None) ──────────────────
+
+def test_render_health_unsynced_buffer_labeled_not_hidden_as_normal():
+    # buffer_pct=None is the real "never synced" shape resolve_holdings/
+    # margin_state.py already handle elsewhere -- render_health must not
+    # crash, must not print the literal "None%", and must not let the
+    # absence of data read as a clean/adequate buffer.
+    result = _health_fixture_result(margin_state_obj=None)
+    result["margin"]["buffer_pct"] = None
+    out = render_health(result)
+
+    assert "None%" not in out
+    assert "unsynced" in out
+    floor = result["margin"]["buffer_floor_pct"]
+    assert f"{floor:.0f}% floor" in out   # the floor itself still renders
+    assert "Advisory only. This tool places no orders." in out
+
+
+# ── Health View V1: CLI path (argparse -> --health -> render_health) ──────
+
+def _cli_targets_and_holdings(tmp_path):
+    targets_file = tmp_path / "targets.yaml"
+    holdings_file = tmp_path / "holdings.yaml"
+    with targets_file.open("w") as f:
+        yaml.safe_dump({
+            "tiers": {"T1": {"weight_pct": 10.0, "tickers": ["AAA"]}},
+            "caps": {"clusters": []},
+            "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
+                     "earnings_blackout_days": 7, "trim_rsi": 60,
+                     "t1t2_trim_mult": 1.5},
+            "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
+            "crypto": {},
+        }, f)
+    with holdings_file.open("w") as f:
+        yaml.safe_dump({
+            "holdings": {}, "shares": {"AAA": 10.0}, "crypto_shares": {},
+            "margin": {"debt": 100.0, "buffer_pct": 50.0, "synced_at": "2026-07-18"},
+        }, f)
+    return targets_file, holdings_file
+
+
+def test_health_flag_cli_path_is_read_only(tmp_path, monkeypatch, capsys):
+    """Exercises the actual command line path -- argparse -> --health ->
+    observational cash/margin handling -> plan() -> render_health() -> print
+    -- not just plan()/render_health() called directly, the way the other
+    Health View tests do. No real network call: client construction and
+    every live-data fetch are replaced with local, no-network fakes; only
+    plan() and classify_margin_state() (both pure, already covered by their
+    own test suites) run for real, so this test observes the genuine
+    composition rather than a paraphrase of it."""
+    targets_file, holdings_file = _cli_targets_and_holdings(tmp_path)
+    monkeypatch.setattr(allocate, "TARGETS_FILE", targets_file)
+    monkeypatch.setattr(allocate, "HOLDINGS_FILE", holdings_file)
+
+    monkeypatch.setattr(allocate, "AlpacaPaperClient", lambda: object())
+    monkeypatch.setattr(
+        allocate, "fetch_market",
+        lambda client, tickers, regime_ticker: (
+            {"AAA": {"price": 100.0, "rsi14": 50.0, "sma200": 90.0}}, True, True))
+    monkeypatch.setattr(
+        allocate, "resolve_holdings",
+        lambda client, metrics=None, crypto_prices=None: {"AAA": 1000.0})
+
+    def _forbidden(name):
+        def _raise(*a, **k):
+            raise AssertionError(f"{name} must not be invoked by --health")
+        return _raise
+
+    # No update-* subcommand and no other state-writing entry point may fire.
+    for fn in ("update_holdings", "update_shares", "update_crypto_shares",
+              "update_margin", "log_performance"):
+        monkeypatch.setattr(allocate, fn, _forbidden(fn))
+    # The standard allocation report must not be produced in its place.
+    monkeypatch.setattr(allocate, "render", _forbidden("render (the standard report)"))
+
+    plan_calls = []
+    real_plan = allocate.plan
+
+    def _spy_plan(*args, **kwargs):
+        plan_calls.append({"cash": args[6], **kwargs})
+        return real_plan(*args, **kwargs)
+    monkeypatch.setattr(allocate, "plan", _spy_plan)
+
+    render_health_calls = []
+    def _spy_render_health(result):
+        render_health_calls.append(result)
+        return "SENTINEL_HEALTH_VIEW_OUTPUT"
+    monkeypatch.setattr(allocate, "render_health", _spy_render_health)
+
+    monkeypatch.setattr(sys, "argv", ["allocate.py", "--health"])
+
+    allocate.main()   # must complete without raising or sys.exit()
+
+    out = capsys.readouterr().out
+    assert "SENTINEL_HEALTH_VIEW_OUTPUT" in out          # render_health()'s own
+                                                          # output was printed...
+    assert "BUY" not in out and "TRIM" not in out         # ...the standard report's
+                                                          # vocabulary was not
+
+    assert len(plan_calls) == 1
+    # observational: no deployable cash or margin capacity reaches plan()
+    assert plan_calls[0]["cash"] == 0.0
+    assert plan_calls[0]["margin_requested"] == 0.0
+
+    assert len(render_health_calls) == 1
+    result = render_health_calls[0]
+    # render_health() received plan()'s own output, already carried through
+    # main()'s post-processing (margin_state attached) -- not a stub.
+    assert "margin_state" in result
+    assert "t1t2_proximity" in result
+    assert "crypto_sleeve" in result
