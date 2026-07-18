@@ -13,3 +13,10 @@ decisions:
     related_decisions: [PI-0001, MARGIN-0003]
     supporting_artifact: null
     file: governance/decisions/GOV-0001-governance-architecture-adopted.md
+  - decision_id: PI-0010
+    date: 2026-07-18
+    status: Accepted
+    category: architecture_governance
+    related_decisions: [PI-0001, PI-0006, PI-0007, PI-0009, GOV-0001]
+    supporting_artifact: null
+    file: governance/decisions/PI-0010-theme-intelligence-spec-reconciliation.md

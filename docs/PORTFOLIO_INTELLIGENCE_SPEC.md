@@ -22,6 +22,12 @@ layout, and non-coupling rules for capturing and reviewing per-company
 investment intelligence. It does not scope any specific company's content
 — that is future, separate, opt-in work (§16).
 
+A related, separately-governed record type, Theme Intelligence, is
+documented in §25. It follows the same non-coupling and advisory-only
+rules as Company Intelligence; §25 exists as a trailing addendum rather
+than being interleaved throughout §1-§24, to avoid renumbering this
+document's existing internal cross-references.
+
 ## 2. Non-goals
 
 - Not a trading system, signal generator, or automated research pipeline.
@@ -72,14 +78,18 @@ intelligence/
                         # review metadata and history
     <TICKER>.md         # thesis narrative, conviction rationale,
                         # valuation notes — dated prose sections
+  themes/
+    <THEME_ID>.yaml      # structured theme record — see §25
+    <THEME_ID>.md         # theme narrative
   reports/
     staleness_report.md # generated, overwritten in place (§18)
 ```
 
-No other top-level directories. Earlier drafts (Version 1) proposed
-separate `risks/`, `catalysts/`, and a shared `reviews/` log — all three
-were rejected in review (self-contradicted "company-first" framing,
-reintroduced shared-file merge-conflict risk) and do not appear here.
+No top-level directories beyond `companies/`, `themes/`, and `reports/`.
+Earlier drafts (Version 1) proposed separate `risks/`, `catalysts/`, and a
+shared `reviews/` log — all three were rejected in review (self-contradicted
+"company-first" framing, reintroduced shared-file merge-conflict risk) and
+do not appear here.
 
 ## 6. Filesystem-as-index decision
 
@@ -143,6 +153,10 @@ recoverable by re-running the generator.
 sector: <string>
 industry: <string>
 portfolio_role_ref: <tier label only — see §14>
+themes: [<theme_id>, ...]   # optional; zero or more references to
+                             # intelligence/themes/<theme_id>.yaml — see §25.
+                             # This is the only direction the reference runs;
+                             # a theme file never lists its companies.
 competitive_advantages: [<string>, ...]
 risks:
   - risk: <string>
@@ -379,3 +393,55 @@ new evidence.
 authorization to create any company file, validator, report generator, or
 integration.** Each of those remains its own separate, future decision,
 to be made and recorded on its own terms.
+
+## 25. Theme Intelligence (addendum — PI-0006 / PI-0007 / PI-0009)
+
+Frozen by `decision_log.yaml` PI-0006; implemented per PI-0007
+(`ai_infrastructure`, referencing NVDA and GEV) and PI-0009
+(`life_sciences_tools_medtech`, referencing ISRG and TMO). This section
+faithfully codifies the schema and governing rules PI-0006 froze, without
+changing their substance — it makes no new design decision and reopens
+none.
+
+A theme is identified by one stable `theme_id`. Each theme has exactly two
+files: `intelligence/themes/<THEME_ID>.yaml` (structured) and
+`intelligence/themes/<THEME_ID>.md` (narrative). A company references zero
+or more themes via its own `themes:` field (§9); **authority runs one way
+only, company → theme** — a theme file never stores, lists, or implies its
+member companies. Any graph-like presentation of theme/company
+relationships is a generated reporting view computed at report time, never
+a stored data structure (PI-0006).
+
+Theme YAML schema (PI-0006):
+
+```yaml
+theme_id: <string, must match filename>
+description: <string>
+evidence: [<string>, ...]
+risks: [<string>, ...]      # theme-level, distinct in kind from a
+                              # company's own risks[] (§9)
+catalysts: [<string>, ...]
+lifecycle: <one of: Emerging, Established, Mature, Declining, Archived>
+review:
+  cadence_days: <int>
+  last_reviewed: <ISO date>
+  next_due: <ISO date>
+  log:
+    - date: <ISO date>
+      note: <string>
+```
+
+Themes carry **no conviction rating and no numeric score of any kind** — a
+company has conviction (§12), a theme has evidence; PI-0006 treats these as
+distinct concepts and declined to conflate them. `lifecycle` describes the
+maturity of the shared narrative itself, is never read by anything that
+gates a trade, and an Archived theme is not deleted and remains a valid
+reference target for any company that once pointed at it (PI-0006).
+
+§4's and §20's non-coupling rules are written in terms of `intelligence/` and
+"the Intelligence Engine" generally, not `companies/` specifically, and
+already cover Theme Intelligence without amendment now that §5 lists
+`intelligence/themes/` as part of that directory. Portfolio Intelligence
+aggregation across companies and themes remains fully deferred (PI-0006's
+own roadmap statement) and no allocator integration of any kind is
+authorized (PI-0007).
