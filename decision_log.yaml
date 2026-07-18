@@ -29,6 +29,12 @@
 # that one is a cluster-cap decision that discusses leverage's effect on the
 # cap's denominator, not itself a margin-policy decision, and is a reasonable
 # candidate for a later, broader migration pass, not this one.
+#
+# Governance architecture note (2026-07-18, GOV-0001): this file is frozen
+# as the historical record for the MARGIN-#### and PI-#### series exactly
+# as it stands -- not superseded, not migrated. New decisions in any domain,
+# going forward, are recorded as ADR files under governance/decisions/, with
+# a generated index at governance/decisions.yaml. See governance/README.md.
 
 decisions:
   - decision_id: MARGIN-0001

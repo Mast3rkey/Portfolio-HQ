@@ -30,9 +30,14 @@ margin_state.py        leverage-cap/buffer-floor math, concentration risk scorin
 targets.yaml          tier structure, weights, caps, gates, margin doctrine (config truth)
 holdings.yaml          position state: shares, crypto_shares, margin (rewritten by update-* commands)
 CLAUDE.md               doctrine: Decisions Log, Open Items, Guardrails, workflow
-decision_log.yaml       structured governance decisions (PI-000N / MARGIN-000N)
+decision_log.yaml       historical decision record, PI-000N / MARGIN-000N series (pre-dates the
+                        governance/decisions/ layer below; new decisions are not appended here)
+constitution/INVESTMENT_CONSTITUTION.md   immutable investment philosophy (rarely amended)
+governance/decisions/   structured decision records (ADR-style), one file per decision;
+                        every new decision since GOV-0001 (2026-07-18) is filed here
 
 intelligence/companies/     Company Intelligence: per-company research records (implemented, opt-in, advisory-only)
+intelligence/themes/        Theme Intelligence: theme-level research records (implemented, opt-in, advisory-only)
 intelligence_validator.py   read-only schema validator for intelligence/ (zero coupling with allocate.py/margin_state.py)
 
 backtest_*.py          one-shot backtests, each testing exactly one doctrine question
@@ -57,30 +62,41 @@ Guardrails for what's explicitly out of scope and why (several backtests this
 system ran on itself showed that added "smart" layers subtract return, not
 add it).
 
-## Company Intelligence (advisory-only)
+## Company & Theme Intelligence (advisory-only)
 
 `intelligence/companies/` holds human-authored, per-company research records
 (thesis, risks, catalysts, a conviction rating) — one YAML + one Markdown
 file per covered company, validated by `intelligence_validator.py` against
 the schema frozen in `docs/PORTFOLIO_INTELLIGENCE_SPEC.md`. Coverage is
-opt-in; a company with no file is not an error.
+opt-in; a company with no file is not an error. The current set of covered
+companies is whatever files exist under `intelligence/companies/` — this
+README does not restate it as a fixed roster. (As of this writing: COST,
+GEV, ISRG, NVDA, TMO, XOM — a snapshot, not a ceiling or a target.)
 
-**Company Intelligence has zero authority over allocator recommendations,
-targets, tiers, or weights.** `intelligence_validator.py` has no import
-relationship with `allocate.py` or `margin_state.py` in either direction —
-verified by dedicated isolation tests, not just asserted in doctrine.
-Nothing in this repository reads a company's thesis, risks, or conviction
-rating to decide what to buy, trim, or block.
+`intelligence/themes/` holds theme records — shared narrative, evidence,
+risks, catalysts, and a closed `lifecycle` vocabulary (no conviction rating,
+no numeric score) — one YAML + one Markdown file per theme, frozen by
+`decision_log.yaml` PI-0006 and reconciled into the specification by
+`governance/decisions/PI-0010-theme-intelligence-spec-reconciliation.md`. A
+company references zero or more themes via its own `themes:` field;
+authority runs one way only, company → theme (a theme file never lists its
+member companies). The current set of themes is whatever files exist under
+`intelligence/themes/`. (As of this writing: `ai_infrastructure`, referenced
+by GEV and NVDA; `life_sciences_tools_medtech`, referenced by ISRG and TMO —
+again a snapshot, not a ceiling.)
 
-**Theme Intelligence** is governed but not yet implemented. PI-0006 freezes
-its flat, advisory-only data model, and PI-0007 authorizes one bounded future
-pilot covering `ai_infrastructure`, NVDA, and GEV. No theme or associated
-company record currently exists, and implementation remains subject to a
-separate branch, review, and merge.
+**Company and Theme Intelligence have zero authority over allocator
+recommendations, targets, tiers, or weights.** `intelligence_validator.py`
+has no import relationship with `allocate.py` or `margin_state.py` in
+either direction — verified by dedicated isolation tests, not just asserted
+in doctrine. Nothing in this repository reads a company's or theme's
+thesis, risks, evidence, or conviction/lifecycle value to decide what to
+buy, trim, or block.
 
-**Portfolio Intelligence aggregation** remains deferred and unauthorized.
-Neither Theme Intelligence nor Portfolio Intelligence aggregation currently
-affects allocator behavior.
+**Portfolio Intelligence aggregation** — and any theme-level scoring,
+ranking, weighting, or allocator-visible integration — remains deferred and
+unauthorized. Neither Theme Intelligence nor Portfolio Intelligence
+aggregation currently affects allocator behavior.
 
 ## Allocation workflow
 

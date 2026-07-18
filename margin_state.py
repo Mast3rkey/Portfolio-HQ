@@ -177,6 +177,18 @@ def classify_margin_state(
         raise ValueError(f"concentration_min_fraction must be in [0, 1], got {concentration_min_fraction}")
     if buffer_data_age_days is not None and buffer_data_age_days < 0:
         raise ValueError(f"buffer_data_age_days must be >= 0 or None, got {buffer_data_age_days}")
+    if caution_leverage_fraction is not None and not (0.0 < caution_leverage_fraction < 1.0):
+        raise ValueError(f"caution_leverage_fraction must be None or strictly between 0 and 1, "
+                          f"got {caution_leverage_fraction}")
+    if restricted_leverage_fraction is not None and not (0.0 < restricted_leverage_fraction < 1.0):
+        raise ValueError(f"restricted_leverage_fraction must be None or strictly between 0 and 1, "
+                          f"got {restricted_leverage_fraction}")
+    if caution_buffer_comfort_multiplier is not None and not (caution_buffer_comfort_multiplier > 1.0):
+        raise ValueError(f"caution_buffer_comfort_multiplier must be None or strictly greater than 1, "
+                          f"got {caution_buffer_comfort_multiplier}")
+    if restricted_buffer_comfort_multiplier is not None and not (restricted_buffer_comfort_multiplier > 1.0):
+        raise ValueError(f"restricted_buffer_comfort_multiplier must be None or strictly greater than 1, "
+                          f"got {restricted_buffer_comfort_multiplier}")
 
     reasons: list[str] = []
     violated: list[str] = []

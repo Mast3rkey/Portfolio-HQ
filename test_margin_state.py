@@ -263,6 +263,57 @@ def test_invalid_inputs_raise_value_error(kwargs):
         classify_margin_state(**kwargs)
 
 
+@pytest.mark.parametrize("field,bad_value", [
+    ("caution_leverage_fraction", 0.0),
+    ("caution_leverage_fraction", 1.0),
+    ("caution_leverage_fraction", -0.1),
+    ("caution_leverage_fraction", 1.1),
+    ("restricted_leverage_fraction", 0.0),
+    ("restricted_leverage_fraction", 1.0),
+    ("restricted_leverage_fraction", -0.1),
+    ("restricted_leverage_fraction", 1.1),
+    ("caution_buffer_comfort_multiplier", 1.0),
+    ("caution_buffer_comfort_multiplier", 0.5),
+    ("caution_buffer_comfort_multiplier", -1.0),
+    ("restricted_buffer_comfort_multiplier", 1.0),
+    ("restricted_buffer_comfort_multiplier", 0.5),
+    ("restricted_buffer_comfort_multiplier", -1.0),
+])
+def test_threshold_domain_validation_rejects_boundary_and_out_of_range_values(field, bad_value):
+    kwargs = dict(gross=100.0, margin_debt=20.0, buffer_pct=60.0,
+                  leverage_cap=1.8, buffer_floor_pct=30.0)
+    kwargs[field] = bad_value
+    with pytest.raises(ValueError):
+        classify_margin_state(**kwargs)
+
+
+@pytest.mark.parametrize("field,good_value", [
+    ("caution_leverage_fraction", 0.001),
+    ("caution_leverage_fraction", 0.999),
+    ("restricted_leverage_fraction", 0.001),
+    ("restricted_leverage_fraction", 0.999),
+    ("caution_buffer_comfort_multiplier", 1.001),
+    ("caution_buffer_comfort_multiplier", 100.0),
+    ("restricted_buffer_comfort_multiplier", 1.001),
+    ("restricted_buffer_comfort_multiplier", 100.0),
+])
+def test_threshold_domain_validation_accepts_values_just_inside_the_boundary(field, good_value):
+    kwargs = dict(gross=100.0, margin_debt=20.0, buffer_pct=60.0,
+                  leverage_cap=1.8, buffer_floor_pct=30.0)
+    kwargs[field] = good_value
+    r = classify_margin_state(**kwargs)
+    assert r.current_state in STATES
+
+
+def test_threshold_domain_validation_accepts_none_for_all_four_fields():
+    r = classify_margin_state(
+        gross=100.0, margin_debt=20.0, buffer_pct=60.0,
+        leverage_cap=1.8, buffer_floor_pct=30.0,
+        caution_leverage_fraction=None, restricted_leverage_fraction=None,
+        caution_buffer_comfort_multiplier=None, restricted_buffer_comfort_multiplier=None)
+    assert r.current_state == "NORMAL"
+
+
 def test_margin_state_result_rejects_invalid_state_name():
     with pytest.raises(ValueError):
         MarginStateResult(current_state="BULLISH")

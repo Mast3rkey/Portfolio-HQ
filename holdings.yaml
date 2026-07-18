@@ -3,10 +3,12 @@
 # -traded position or coin — live-valued every run via Alpaca (qty x
 # latest price). Update with 'allocate.py update-shares' / 'update-crypto-shares'
 # after a real buy/sell/trim changes a count.
-# 'holdings' (ticker: dollar value) is the manual fallback for anything
-# NOT share-tracked: just SKHY now (permanent zero-coverage gap on the
-# free IEX feed — RSI/trend gates can never fire for it).
-# Update it with 'allocate.py update-holdings'.
+# 'holdings' (ticker: dollar value) is the manual fallback for any position
+# that cannot be share-priced. Currently empty/unused — SKHY was the only
+# occupant until the 2026-07-14 symbol/data resolution moved it into the
+# normal share-tracked 'shares' block above (see CLAUDE.md's Open Items).
+# Update it with 'allocate.py update-holdings' if a future ticker ever needs
+# this fallback again.
 # margin: synced via 'allocate.py update-margin <debt> <buffer_pct>' — buffer_pct comes from Robinhood directly (per-security maintenance
 # ratios aren't available via Alpaca), so it's only as fresh as the last sync. Verify on Robinhood before any large margin-funded buy.
 # IMPORTANT: always use Robinhood's own DISPLAYED buffer % — do not derive
