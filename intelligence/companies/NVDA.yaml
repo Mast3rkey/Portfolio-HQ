@@ -1,0 +1,41 @@
+sector: Information Technology
+industry: Semiconductors & Semiconductor Equipment
+portfolio_role_ref: T1
+themes: [ai_infrastructure]
+competitive_advantages:
+  - "Dominant, reported position in AI accelerated-compute hardware -- FY2026 Data Center segment revenue of $193.7 billion, up 68% year-over-year, now the company's dominant reported revenue segment"
+risks:
+  - risk: "Customer/hyperscaler concentration -- a large share of Data Center revenue is understood to be concentrated among a small number of large customers"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Export-control and geopolitical policy exposure affecting which customers and regions can be served"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Intense competition in AI accelerator hardware"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Supply-chain concentration risk in advanced semiconductor manufacturing capacity"
+    severity: low
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Execution risk on each new compute-architecture-generation transition (ramp timing, yield)"
+    severity: low
+    identified: "2026-07-18"
+    status: monitoring
+conviction:
+  rating: High
+  rationale: "NVIDIA's Data Center segment revenue reached $193.7 billion in FY2026, up 68% year-over-year -- a demonstrated position in the AI-infrastructure compute buildout. Conviction is High rather than Very High because customer/hyperscaler concentration and export-control/geopolitical exposure are real, disclosed risk categories. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-18"
+  next_due: "2026-10-16"
+  log:
+    - date: "2026-07-18"
+      note: "Record created through AI-assisted research and drafting; finalized through explicit human review and approval under PI-0007. Portfolio HQ's third company record and first under the ai_infrastructure theme."
+sources:
+  - note: "NVIDIA, 'NVIDIA Announces Financial Results for Fourth Quarter and Fiscal 2026,' official press release, published 2026-02-25 -- FY2026 total revenue ($215.938B, +65% YoY), Data Center segment revenue ($193.7B, +68% YoY). No specific enumerated risk-factor text was independently inspected against NVIDIA's own FY2026 Form 10-K in this research pass; principal risks above are understood from general secondary coverage, not confirmed against NVIDIA's filed risk-factor language. Direct rendering blocked (HTTP 403) in the research environment; figures user-inspected and independently corroborated via multiple search results, not directly rendered by this repository's tooling."
+    url: "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026"
+    date: "2026-02-25"

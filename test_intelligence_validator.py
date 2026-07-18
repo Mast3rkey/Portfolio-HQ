@@ -7,7 +7,10 @@ authorized scope, only a fictional placeholder ticker ("ZZZZ") is used.
 
 import ast
 import os
+import tempfile
 import textwrap
+from contextlib import contextmanager
+from pathlib import Path
 
 import pytest
 
@@ -372,3 +375,240 @@ def test_real_intelligence_companies_directory_contains_only_expected_files():
         f"matching YAML+Markdown pair (spec SS7) -- yaml-only: "
         f"{yaml_stems - md_stems}, md-only: {md_stems - yaml_stems}"
     )
+
+
+# ── theme schema (PI-0006 frozen model, PI-0007 bounded pilot) ─────────────────
+
+def _valid_theme() -> dict:
+    """A structurally complete, fully synthetic theme record."""
+    return {
+        "theme_id": "zzzz_theme",
+        "description": "A fictional theme for schema testing only.",
+        "evidence": ["made-up evidence"],
+        "risks": ["made-up theme-level risk"],
+        "catalysts": ["made-up theme-level catalyst"],
+        "lifecycle": "Emerging",
+        "review": {
+            "cadence_days": 90,
+            "last_reviewed": "2026-01-01",
+            "next_due": "2026-04-01",
+            "log": [{"date": "2026-01-01", "note": "synthetic review note"}],
+        },
+    }
+
+
+def test_valid_synthetic_theme_passes():
+    result = iv.validate_theme_data(_valid_theme())
+    assert result.valid is True
+    assert result.errors == []
+
+
+def test_theme_id_is_required():
+    data = _valid_theme()
+    del data["theme_id"]
+    result = iv.validate_theme_data(data)
+    assert result.valid is False
+    assert any("theme_id" in e for e in result.errors)
+
+
+def test_theme_id_must_not_be_empty():
+    data = _valid_theme()
+    data["theme_id"] = "   "
+    result = iv.validate_theme_data(data)
+    assert result.valid is False
+    assert any("theme_id" in e for e in result.errors)
+
+
+@pytest.mark.parametrize("field_name", ["evidence", "risks", "catalysts"])
+def test_theme_string_list_fields_reject_non_string_items(field_name):
+    data = _valid_theme()
+    data[field_name] = ["fine", {"not": "a string"}]
+    result = iv.validate_theme_data(data)
+    assert result.valid is False
+    assert any(field_name in e for e in result.errors)
+
+
+@pytest.mark.parametrize("good_lifecycle", ["Emerging", "Established", "Mature", "Declining", "Archived"])
+def test_theme_lifecycle_accepts_each_frozen_pi0006_value(good_lifecycle):
+    data = _valid_theme()
+    data["lifecycle"] = good_lifecycle
+    result = iv.validate_theme_data(data)
+    assert result.valid is True
+
+
+@pytest.mark.parametrize("bad_lifecycle", ["emerging", "Emerging-ish", "Growing", 1])
+def test_theme_lifecycle_rejects_out_of_vocabulary_values(bad_lifecycle):
+    data = _valid_theme()
+    data["lifecycle"] = bad_lifecycle
+    result = iv.validate_theme_data(data)
+    assert result.valid is False
+    assert any("PI-0006" in e for e in result.errors)
+
+
+@pytest.mark.parametrize("forbidden", ["companies", "members", "company_count"])
+def test_theme_rejects_stored_company_membership_fields(forbidden):
+    """PI-0006: a theme never stores, lists, or implies its member
+    companies -- one-way authority, company -> theme only."""
+    data = _valid_theme()
+    data[forbidden] = ["ZZZZ"]
+    result = iv.validate_theme_data(data)
+    assert result.valid is False
+    assert any(forbidden in e for e in result.errors)
+
+
+def test_theme_review_reuses_company_review_shape():
+    data = _valid_theme()
+    data["review"] = {"cadence_days": 90}  # missing last_reviewed/next_due
+    result = iv.validate_theme_data(data)
+    assert result.valid is False
+    assert any("review" in e for e in result.errors)
+
+
+def test_theme_with_zero_company_references_is_still_valid():
+    """PI-0007 required test (4): a theme's own validity never depends on
+    whether any company currently references it -- one-way authority means
+    the theme file itself carries no knowledge of company references at
+    all."""
+    result = iv.validate_theme_data(_valid_theme())
+    assert result.valid is True
+
+
+def test_theme_file_and_directory_helpers_roundtrip(tmp_path):
+    d = tmp_path / "themes"
+    d.mkdir()
+    p = d / "zzzz_theme.yaml"
+    p.write_text(textwrap.dedent("""
+        theme_id: zzzz_theme
+        description: fictional
+        lifecycle: Emerging
+    """))
+    file_result = iv.validate_theme_file(p)
+    assert file_result.valid is True
+
+    dir_result = iv.validate_themes_directory(d)
+    assert dir_result.valid is True
+    assert dir_result.company_count == 1
+
+
+def test_missing_themes_directory_succeeds_with_zero_themes(tmp_path):
+    missing = tmp_path / "does_not_exist"
+    result = iv.validate_themes_directory(missing)
+    assert result.valid is True
+    assert result.company_count == 0
+
+
+# ── company-side themes: field (PI-0007 required test (2)) ─────────────────────
+
+@pytest.mark.parametrize("bad_value", [
+    1.5,
+    {"ai_infrastructure": "T1"},
+    "ai_infrastructure",  # a bare string, not a list, is wrong shape
+])
+def test_themes_field_rejects_non_list_shapes(bad_value):
+    data = _valid_company()
+    data["themes"] = bad_value
+    result = iv.validate_company_data(data)
+    assert result.valid is False
+    assert any("themes" in e for e in result.errors)
+
+
+@pytest.mark.parametrize("bad_item", [3.35, "3.35%", {"tier": "T1"}, ""])
+def test_themes_field_rejects_non_bare_string_items(bad_item):
+    data = _valid_company()
+    data["themes"] = ["ai_infrastructure", bad_item]
+    result = iv.validate_company_data(data)
+    assert result.valid is False
+    assert any("themes[1]" in e for e in result.errors)
+
+
+def test_themes_field_accepts_a_list_of_bare_strings():
+    data = _valid_company()
+    data["themes"] = ["ai_infrastructure"]
+    result = iv.validate_company_data(data)
+    assert result.valid is True
+
+
+# ── theme-reference integrity (PI-0007 required test (3)) ───────────────────────
+
+def test_theme_reference_resolves_to_existing_theme_file(tmp_path):
+    themes_dir = tmp_path / "intelligence" / "themes"
+    companies_dir = tmp_path / "intelligence" / "companies"
+    themes_dir.mkdir(parents=True)
+    companies_dir.mkdir(parents=True)
+    (themes_dir / "ai_infrastructure.yaml").write_text("theme_id: ai_infrastructure\n")
+    company_path = companies_dir / "ZZZZ.yaml"
+    company_path.write_text(textwrap.dedent("""
+        sector: Fictional Sector
+        portfolio_role_ref: T1
+        themes: [ai_infrastructure]
+    """))
+    result = iv.validate_company_file(company_path)
+    assert result.valid is True
+
+
+def test_theme_reference_to_nonexistent_theme_fails():
+    """PI-0007 required test (3): the check is a live filesystem lookup at
+    validation time, not a stored index -- a reference to a theme_id with
+    no corresponding file must fail."""
+    with pytest_tmp_dir_company(themes={}, company_themes=["does_not_exist"]) as company_path:
+        result = iv.validate_company_file(company_path)
+    assert result.valid is False
+    assert any("does_not_exist" in e for e in result.errors)
+
+
+def test_archived_theme_remains_a_valid_reference_target():
+    """PI-0007 required test (5): an Archived theme is not deleted and
+    stays a valid reference target -- only existence is checked, lifecycle
+    value is irrelevant to referential integrity."""
+    with pytest_tmp_dir_company(
+        themes={"ai_infrastructure": "lifecycle: Archived\ntheme_id: ai_infrastructure\n"},
+        company_themes=["ai_infrastructure"],
+    ) as company_path:
+        result = iv.validate_company_file(company_path)
+    assert result.valid is True
+
+
+@contextmanager
+def pytest_tmp_dir_company(*, themes: dict, company_themes: list):
+    """Shared scaffold for the two theme-reference-integrity tests above:
+    builds an intelligence/{themes,companies}/ pair in a temp directory and
+    yields the company file's path."""
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        themes_dir = tmp_path / "intelligence" / "themes"
+        companies_dir = tmp_path / "intelligence" / "companies"
+        themes_dir.mkdir(parents=True)
+        companies_dir.mkdir(parents=True)
+        for theme_id, content in themes.items():
+            (themes_dir / f"{theme_id}.yaml").write_text(content)
+        company_path = companies_dir / "ZZZZ.yaml"
+        themes_yaml = "[" + ", ".join(company_themes) + "]"
+        company_path.write_text(
+            f"sector: Fictional Sector\nportfolio_role_ref: T1\nthemes: {themes_yaml}\n"
+        )
+        yield company_path
+
+
+# ── the real ai_infrastructure theme and its two company records ───────────────
+
+def test_real_ai_infrastructure_theme_and_pilot_companies_validate():
+    """Regression guard for the PI-0007 pilot itself: the real, committed
+    theme record and its two referencing company records must all
+    validate cleanly, and existing records (COST) must be unaffected."""
+    themes_dir = "intelligence/themes"
+    companies_dir = "intelligence/companies"
+    if not os.path.isdir(themes_dir) or not os.path.isdir(companies_dir):
+        return
+
+    theme_result = iv.validate_themes_directory(themes_dir)
+    assert theme_result.valid is True, theme_result.results
+
+    dir_result = iv.validate_directory(companies_dir)
+    assert dir_result.valid is True, [
+        (r.source, r.errors) for r in dir_result.results if not r.valid
+    ]
+
+    by_source = {os.path.basename(r.source): r for r in dir_result.results}
+    if "COST.yaml" in by_source:
+        assert by_source["COST.yaml"].valid is True
+        assert by_source["COST.yaml"].errors == []
