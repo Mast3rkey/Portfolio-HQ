@@ -1,8 +1,10 @@
 # Portfolio Policy Manual v1.0
 
-**Document status:** Synthesis of existing, adopted investment policy. This manual originates no new policy, changes no doctrine, and recommends no code. Authority remains with `CLAUDE.md` (narrative source of truth), `targets.yaml` (numeric config truth), and `decision_log.yaml` (structured decision record). If those change, this manual must be regenerated to match — it is not itself an amendment mechanism.
+**Document status:** Synthesis of existing, adopted investment policy. This manual originates no new policy, changes no doctrine, and recommends no code. Authority remains with `CLAUDE.md` (narrative source of truth), `targets.yaml` (numeric configuration truth), `decision_log.yaml` (historical decision record for the pre-GOV-0001 ledger), `governance/decisions/` (accepted structured decisions filed under the current governance architecture and indexed by `governance/decisions.yaml`), and `docs/PORTFOLIO_INTELLIGENCE_SPEC.md` (the canonical Portfolio and Theme Intelligence specification). If those sources change, this manual must be updated to match; it is not itself an amendment mechanism.
 
-**As of:** 2026-07-18. Net equity ~$5,545 (gross ~$8,994 less margin debt ~$3,450) and margin buffer 61.08% are the **2026-07-13/07-14 doctrine-revision baseline** from `CLAUDE.md` — not live figures. `holdings.yaml`'s `margin:` block has synced more recently than this baseline; check it directly for the current margin debt and buffer. These are point-in-time reference figures, not policy — policy is the rules below, which apply regardless of where these numbers sit on any given day.
+**Last verified against repository sources at commit `7c6daf1e3bdfd1b37e9d0ed59613fad283759974`.** Later changes to authoritative sources supersede this synthesis.
+
+**As of:** 2026-07-18. Net equity ~$5,545 (gross ~$8,994 less margin debt ~$3,450) and margin buffer 61.08% are retained as a **2026-07-13/07-14 doctrine-revision baseline** for historical context. They are no longer stated in `CLAUDE.md`, which now points to `holdings.yaml` for the repository's most recently synced margin state. These are not live figures and are not policy — policy is the rules below, which apply regardless of where these numbers sit on any given day.
 
 ---
 
