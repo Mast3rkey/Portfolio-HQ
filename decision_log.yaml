@@ -766,3 +766,89 @@ decisions:
                        # targets.yaml/holdings.yaml/margin_state.py/
                        # COST/XOM. Implementation requires its own
                        # separate PR and separate pre-merge review.
+
+  - decision_id: PI-0008
+    date: 2026-07-18
+    category: architecture_governance
+    decision: >
+      Retroactively documents a validator-hardening change already
+      implemented and merged in PR #79 (commit 205bb3c). The validator
+      now requires a theme's lifecycle and review fields to be present,
+      not merely checked when present, and requires a theme's declared
+      theme_id to exactly match its own filename. This entry does not
+      change any behavior -- both checks are already live in
+      production, and this entry authorizes nothing beyond what PR #79
+      already merged.
+    rationale: >
+      PI-0007 listed a theme's lifecycle value and review cadence
+      among the human approvals required before its implementation PR
+      could open, but neither PI-0006's frozen schema nor PI-0007's
+      text required the validator itself to reject a theme file
+      omitting them -- human-approval-gating and validator enforcement
+      are distinct, and only the former existed before this change.
+      PR #79 describes this as closing that gap, identified in a
+      post-implementation review of the PI-0007 pilot; no separate
+      committed document describing that review was identified during
+      this repository review. The theme_id/filename check closes a
+      related integrity gap: nothing previously stopped a theme's
+      internal theme_id from silently diverging from its own filename.
+      Confirmed backward-compatible against the existing
+      ai_infrastructure theme, which already satisfied both
+      requirements -- no existing approved content required any
+      change. Validator-only: no schema expansion, no new vocabulary,
+      no allocator/targets/holdings/margin touch.
+    supporting_artifact: null  # PR #79 (commit 205bb3c) is the actual
+                                # implementation. The "post-
+                                # implementation architectural review"
+                                # it describes does not correspond to
+                                # any separate committed document
+                                # identified during this repository
+                                # review -- same disclosure convention
+                                # as PI-0004/0005/0006/0007's
+                                # conversational retrospectives.
+    status: active  # already live in production as of PR #79's merge.
+                     # This entry is a retroactive governance record,
+                     # not a new authorization.
+
+  - decision_id: PI-0009
+    date: 2026-07-18
+    category: architecture_governance
+    decision: >
+      Retroactively documents the second Theme Intelligence pilot,
+      already implemented and merged in PR #80 (commit 16f7817): one
+      new theme, life_sciences_tools_medtech (lifecycle: Established,
+      90-day review cadence), referenced by two new company records --
+      ISRG (portfolio_role_ref: T2, conviction.rating: High) and TMO
+      (portfolio_role_ref: T2, conviction.rating: Medium). SYK and DHR
+      were reviewed and explicitly deferred, not rejected -- neither
+      has a company record or a themes: reference. This entry does not
+      change any behavior or create any file -- the implementation it
+      describes is already live in production, and this entry
+      authorizes nothing beyond what PR #80 already merged.
+    rationale: >
+      PI-0007 established the first Theme Intelligence pilot
+      (ai_infrastructure, NVDA/GEV) as a bounded test of PI-0006's flat
+      data model. PR #80 describes its content as populated from an
+      approval process it calls the "PI-0009 Human Approval Record,"
+      dated 2026-07-18 -- no committed artifact by that name was
+      identified during this repository review; it names a
+      conversational approval, not a committed document. This
+      decision_log.yaml entry is the first committed record of that
+      decision. No schema, validator, allocator, targets, holdings,
+      margin, or existing Company/Theme Intelligence file (COST, NVDA,
+      GEV, ai_infrastructure) was touched.
+    supporting_artifact: null  # The "PI-0009 Human Approval Record"
+                                # named throughout the merged content
+                                # does not correspond to any committed
+                                # repository document identified during
+                                # this repository review -- it names a
+                                # conversational approval interaction,
+                                # same category as the retrospectives
+                                # disclosed under PI-0004/0005/0006/
+                                # PI-0007. This decision_log.yaml entry
+                                # is the actual committed governance
+                                # artifact.
+    status: active  # already live in production as of PR #80's merge.
+                     # This entry is a retroactive governance record,
+                     # not a new authorization -- it does not
+                     # authorize a third theme or company.
