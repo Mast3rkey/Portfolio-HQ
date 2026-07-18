@@ -1,0 +1,39 @@
+sector: Health Care
+industry: Health Care Equipment
+portfolio_role_ref: T2
+themes: [life_sciences_tools_medtech]
+competitive_advantages:
+  - "Broad-based FY2025 growth across systems (+26%), recurring instruments and accessories (+19%), and service revenue (+20%) simultaneously -- recurring revenue lines growing nearly as fast as, or faster than, systems sales, indicating durable rather than one-time revenue growth"
+  - "da Vinci installed base grew 12% to 11,106 systems at 2025 year-end; Ion platform procedures grew approximately 51%, evidence of both platform durability and expansion into a second product line"
+risks:
+  - risk: "Competitive entry into robotic-assisted surgery from other device manufacturers"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Reimbursement and hospital capital-budget exposure, since systems sales depend on hospital capital-spending decisions and procedures depend on payer reimbursement"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Regulatory and clearance risk for new platforms, systems, and surgical indications"
+    severity: moderate
+    identified: "2026-07-18"
+    status: monitoring
+  - risk: "Execution risk in the ongoing da Vinci 5 rollout, which remains in an active, only-partially-complete adoption phase as of the Q4 2025 placement data (303 of 532 systems placed were da Vinci 5)"
+    severity: low
+    identified: "2026-07-18"
+    status: monitoring
+conviction:
+  rating: High
+  rationale: "ISRG's FY2025 results show broad-based growth across systems, recurring instruments and accessories, and service revenue simultaneously -- Systems revenue up 26%, Instruments and accessories revenue up 19%, and Service revenue up 20% -- with the recurring revenue lines growing nearly as fast as, or faster than, systems sales, indicating durable rather than one-time revenue growth. The installed base grew 12% to 11,106 da Vinci systems, and the newer Ion platform grew procedures by approximately 51%, evidence of both platform durability and expansion into a second product line. Conviction is High rather than Very High because of real, disclosed-relevant competitive-entry risk into robotic-assisted surgery and reimbursement/hospital-capital-budget exposure, and because a full enumeration of Intuitive's own Form 10-K risk-factor text was not independently inspected in this packet's research. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments, and was not inferred from ISRG's existing T2 portfolio-tier placement -- it was reasoned solely from the disclosed growth breadth described above."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-18"
+  next_due: "2026-10-16"
+  log:
+    - date: "2026-07-18"
+      note: "Record created through AI-assisted research and drafting; finalized through explicit human review and approval under PI-0009. Portfolio HQ's fifth company record, and the first of two records created under the life_sciences_tools_medtech theme pilot."
+sources:
+  - note: "Intuitive Surgical, Q4 and full-year 2025 earnings release -- FY2025 total revenue ($10.1B, +21%), procedure growth (worldwide +19%, da Vinci +18%, Ion +51%), Systems revenue ($2.47B, +26%), Instruments and accessories revenue ($6.02B, +19%), Service revenue ($1.57B, +20%), da Vinci installed base (11,106, +12%), Q4 2025 system placements (532 total, 303 da Vinci 5). Direct rendering blocked (HTTP 403) in the research environment across multiple access attempts; figures obtained via search-engine synthesis of secondary sources, not directly rendered or read by this repository's tooling. This source rests on a single search-synthesized result and was not independently cross-checked against a second, separately rendered source -- a residual limitation disclosed explicitly."
+    url: "https://isrg.intuitive.com/news-releases/news-release-details/intuitive-announces-fourth-quarter-earnings-5/"
+  - note: "Intuitive Surgical, FY2025 Form 10-K -- identified as the source for enumerated risk-factor detail; direct rendering blocked (HTTP 403) in the research environment. Risk categories in this record are understood from general secondary coverage, not confirmed word-for-word against Intuitive's own filed risk-factor language."
+    url: "https://www.sec.gov/Archives/edgar/data/1035267/000103526726000010/isrg-20251231.htm"
