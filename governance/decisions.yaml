@@ -1,0 +1,22 @@
+# governance/decisions.yaml — generated index of governance/decisions/*.md frontmatter.
+# Never hand-edited as a primary record: the .md files under decisions/ are the
+# source of truth, this is a queryable rollup. Regenerate (by hand or script)
+# whenever a decision file is added. Distinct from decision_log.yaml (repo root),
+# which is the separate, untouched historical record for the MARGIN-#### and
+# PI-#### series predating this governance layer.
+
+decisions:
+  - decision_id: GOV-0001
+    date: 2026-07-18
+    status: Accepted
+    category: architecture_governance
+    related_decisions: [PI-0001, MARGIN-0003]
+    supporting_artifact: null
+    file: governance/decisions/GOV-0001-governance-architecture-adopted.md
+  - decision_id: PI-0010
+    date: 2026-07-18
+    status: Accepted
+    category: architecture_governance
+    related_decisions: [PI-0001, PI-0006, PI-0007, PI-0009, GOV-0001]
+    supporting_artifact: null
+    file: governance/decisions/PI-0010-theme-intelligence-spec-reconciliation.md

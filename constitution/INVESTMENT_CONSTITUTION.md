@@ -1,0 +1,43 @@
+# Investment Constitution
+
+_Adopted 2026-07-18 (`governance/decisions/GOV-0001-governance-architecture-adopted.md`). Distills principles already adopted in CLAUDE.md's Decisions Log — this document originates nothing new. It exists so the **why** behind the system's non-negotiable rules survives independent of any specific numeric value, ticker, or gate implementation._
+
+**This is not the operational source of truth.** CLAUDE.md remains that — current parameters (the 1.8x leverage cap, the 30% buffer floor, tier weights, cluster caps), the workflow, and the full narrative Decisions Log all live there and change as the portfolio does. This document changes rarely, and only through its own amendment process (below). If the two ever appear to conflict, CLAUDE.md's Decisions Log is the more recent and more specific record — treat a conflict as a sign this document needs a deliberate amendment, not as license to ignore either one.
+
+**Two domain constitutions extend this one by reference, not duplication**: `docs/MARGIN_DOCTRINE.md` (margin philosophy, in full) and `docs/PORTFOLIO_INTELLIGENCE_SPEC.md` (Company/Theme Intelligence's non-negotiables, §20/24). Their content is not repeated here — this document states the same underlying principles at a higher level and points to them for the complete argument.
+
+---
+
+## 1. What this tool is
+
+A decision-support advisor, not a trading system. It computes recommendations; a human executes every trade manually. Order-placement methods are deliberately absent from `alpaca_client.py` and are not to be reintroduced. Tool output is combined with judgment, not substituted for it — and the tool is expected to push back when its own operator breaks the system's own rules, not defer silently.
+
+## 2. Manual execution over automation — why, not just what
+
+This is not a stylistic preference. In June 2026 a band-overlay automated-trading backtest returned 227% against a 422% buy-and-hold baseline on the same basket — a NO-GO result stated plainly: elaborate analysis layers were anti-predictive, and whatever edge existed lived entirely in the base signal, not in the automation wrapped around it. Every later "should we add a new analysis/research/thesis layer" question in this system's history has been checked against that result first. It is the empirical grounding for Principle 4 below, not an assumption.
+
+## 3. Margin is risk governance, not alpha
+
+Margin only amplifies whatever edge the underlying portfolio already has — it is not itself a source of edge, and it is not a timing tool. There is no "right time to borrow more" or "right time to borrow less" computed from a market read, a valuation judgment, or a volatility level; this system has explicitly rejected that framing as not backtestable, because the premise (leverage as a source of edge to time) is false, not because a backtest came back unfavorable. Margin interest is a guaranteed cost, treated as a hurdle rate, never as a rounding error. Every margin rule this system runs is a fixed, mechanical ceiling or floor with no discretionary exception path.
+
+The full doctrine — including exactly which questions the Margin Intelligence Engine can and cannot answer — lives in `docs/MARGIN_DOCTRINE.md`. This constitution states the principle; that document is its complete, authoritative expression.
+
+## 4. No predictive research
+
+No price targets, no "opportunity maps," no standing research or scoring layer that runs ahead of a deposit and tells the operator what to buy before there's money to allocate. Opportunities are computed at runtime, on deposit day, from live data and current gaps against target — never precomputed, never speculative. A proposal to add a new analysis, research, or thesis-generation system must be checked against Principle 2's evidence first.
+
+## 5. Fixed, mechanical, no-exception limits
+
+Certain risk limits in this system are doctrine, not backtest verdicts, and are deliberately immune to discretionary override: the leverage cap, the buffer floor, the correlated-cluster caps, and the T1/T2 concentration ceiling all share this shape. They exist because the cost of a wrong tail-risk call under leverage outweighs the value of flexibility, and because a single overweight, correlated, or over-leveraged position compounding unchecked is a forced-liquidation risk no time-weighted-return backtest can price. State the limit, apply it, and don't relitigate it without a genuinely new leverage regime in the data — not a new opinion about the current one.
+
+## 6. Verify before acting on external review
+
+Any claim about this repository's code, data, or behavior that originates outside a live session with real file and data access — a different chat, an outside review, an uploaded document — is treated as unverified until confirmed directly against the actual code or file. This has caught concrete errors before (a stale price, a wrong assumed function return value) and applies to every future external input the same way, including this document's own future amendments.
+
+## 7. Amendment process
+
+This document changes less often, and with more deliberation, than an ordinary committee decision. An amendment requires its own governance decision (see `governance/decisions/`), explicitly categorized as a constitutional amendment rather than an ordinary decision, and must state what principle is changing and why the prior version no longer holds. It is not amended as a side effect of an unrelated policy change, a new company review, or a new tier decision — those operate at the Policy and Company/Theme layers below this one and do not, by themselves, alter anything here.
+
+---
+
+_Changelog: 2026-07-18 — initial adoption (GOV-0001)._
