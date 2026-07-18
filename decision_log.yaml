@@ -118,9 +118,8 @@ decisions:
       an approval sequence, and none is asserted here. This decision
       records the current implementation state. Future enhancements to the
       Margin Intelligence Engine -- threshold calibration, targets.yaml
-      state values, repayment recommendations, Phase 2b/2c/2e work -- remain
-      subject to their own governance and are outside the scope of this
-      entry.
+      state values, and repayment recommendations -- remain subject to
+      their own governance and are outside the scope of this entry.
     supporting_artifact: null  # docs/MARGIN_INTELLIGENCE_DESIGN.md and the
                                 # three Phase 2 planning docs describe this
                                 # module but each ends with a now-corrected
