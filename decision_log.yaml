@@ -85,6 +85,54 @@ decisions:
                      # re-testable -- see CLAUDE.md's entry for the full
                      # precision note on what was and wasn't backtested.
 
+  - decision_id: MARGIN-0003
+    date: 2026-07-18
+    category: architecture_governance
+    decision: >
+      Retroactively documents that margin_state.py's classify_margin_state()
+      and concentration_risk_score() are called on every allocate.py
+      invocation other than --levels/--performance, and that the result is
+      displayed in render()'s Margin section as a "Margin risk state" line
+      whenever that section renders (margin debt or a margin request
+      present). This entry does not change any behavior -- the classifier
+      has been live in production prior to this entry. It runs strictly
+      after plan() returns, consuming only plan()'s own output plus
+      holdings/targets margin config, and cannot alter a buy/trim/block
+      decision. Of the four states (NORMAL/CAUTION/RESTRICTED/
+      FORCED_DELEVER), only NORMAL and FORCED_DELEVER are reachable today:
+      targets.yaml's margin: block defines no states: or
+      concentration_adjustment: sub-keys, so every CAUTION/RESTRICTED
+      threshold parameter defaults to None and never fires. FORCED_DELEVER
+      continues to come from the pre-existing, unmodified
+      margin_capacity() hard check.
+    rationale: >
+      No decision_log.yaml or CLAUDE.md entry existed for this classifier
+      despite it running on every normal allocator invocation -- identified
+      in a repository-wide planning review (2026-07-18) and independently
+      re-verified against allocate.py/margin_state.py/holdings.yaml before
+      drafting this entry. No claim is made about when or how the original
+      approval sequence occurred: the repository's root commit introduced
+      margin_state.py, its call site in allocate.py, and four Phase 2
+      planning docs describing it as an unapproved, unimplemented proposal,
+      all in that single commit -- no reconstructable history establishes
+      an approval sequence, and none is asserted here. This decision
+      records the current implementation state. Future enhancements to the
+      Margin Intelligence Engine -- threshold calibration, targets.yaml
+      state values, and repayment recommendations -- remain subject to
+      their own governance and are outside the scope of this entry.
+    supporting_artifact: null  # docs/MARGIN_INTELLIGENCE_DESIGN.md and the
+                                # three Phase 2 planning docs describe this
+                                # module but each ends with a now-corrected
+                                # "not implemented / awaiting approval"
+                                # framing (see the status corrections in
+                                # each document). Not cited as supporting
+                                # artifacts as-is. margin_state.py and
+                                # allocate.py themselves are the actual
+                                # source of truth.
+    status: active  # already live in production. This entry is a
+                     # retroactive governance record, not a new
+                     # authorization.
+
   - decision_id: PI-0001
     date: 2026-07-17
     category: architecture_governance

@@ -1,5 +1,7 @@
 # Margin Intelligence Engine — Design Document
 
+> **STATUS CORRECTION (2026-07-18, `decision_log.yaml` MARGIN-0003):** Contradicted by the current repository state — Section 6's Phase 2a (pure functions, `margin_state.py`) and Phase 2d (informational integration) have shipped. Phases 2b/2c/2e/2f have not. See MARGIN-0003.
+
 _2026-07-17 · Revision 2 — reframed explicitly as risk governance, not timing, per direct instruction. Planning/design pass only, no code changed. Inspection basis (unchanged from Rev 1): `CLAUDE.md` doctrine + Decisions Log, `allocate.py`'s `margin_capacity()`, `targets.yaml`'s `margin:` block, `holdings.yaml`'s live margin state, all six `backtest_*.py` scripts, `test_margin.py` (12 tests, all passing)._
 
 **Governing constraint, stated once and held throughout this document:** margin intelligence is a **risk governance system**. It answers "how much risk is this account currently carrying, and what does that require" — never "does now look like a good time to borrow more." Every component below is checked against that line before it's included.

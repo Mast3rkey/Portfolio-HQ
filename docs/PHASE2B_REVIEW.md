@@ -1,5 +1,7 @@
 # Phase 2B Review — `margin_state.py`
 
+> **STATUS CORRECTION (2026-07-18, `decision_log.yaml` MARGIN-0003):** Phase 2D has since shipped (see `allocate.py`, commented `# Phase 2D`), contradicting this review's stop point ("Stopping here. Not proceeding to Phase 2D."). Of this review's findings: the `concentration_tightening_coefficient` sign gap (Section 1) is fixed (`margin_state.py` validates `concentration_tightening_coefficient < 0.0`). The four related parameters flagged in "Remaining risks" item 2 (`caution_leverage_fraction`, `caution_buffer_comfort_multiplier`, `restricted_leverage_fraction`, `restricted_buffer_comfort_multiplier`) remain unvalidated as of this correction.
+
 _2026-07-17 · Review-only pass, no production code modified. Every claim below was checked directly against `margin_state.py`'s actual code and, where a claim was non-obvious, against a live Python run — not re-asserted from the implementation summary. One real gap was found (Section 1) and is documented, not fixed, per the explicit "do not modify production code" instruction for this pass._
 
 ---
