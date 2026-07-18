@@ -13,6 +13,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
+import yaml
 
 import intelligence_validator as iv
 
@@ -464,6 +465,72 @@ def test_theme_review_reuses_company_review_shape():
     assert any("review" in e for e in result.errors)
 
 
+# ── PI-0008: lifecycle and review are required, not merely type-checked ────────
+
+def test_theme_missing_lifecycle_is_rejected():
+    data = _valid_theme()
+    del data["lifecycle"]
+    result = iv.validate_theme_data(data)
+    assert result.valid is False
+    assert any("lifecycle is required" in e for e in result.errors)
+
+
+def test_theme_lifecycle_set_to_none_is_rejected():
+    data = _valid_theme()
+    data["lifecycle"] = None
+    result = iv.validate_theme_data(data)
+    assert result.valid is False
+    assert any("lifecycle is required" in e for e in result.errors)
+
+
+def test_theme_missing_review_is_rejected():
+    data = _valid_theme()
+    del data["review"]
+    result = iv.validate_theme_data(data)
+    assert result.valid is False
+    assert any("review is required" in e for e in result.errors)
+
+
+def test_theme_review_set_to_none_is_rejected():
+    data = _valid_theme()
+    data["review"] = None
+    result = iv.validate_theme_data(data)
+    assert result.valid is False
+    assert any("review is required" in e for e in result.errors)
+
+
+def test_theme_with_lifecycle_and_review_present_still_passes():
+    """Backward-compatibility guard: a theme record that already supplies
+    both fields (as every PI-0007-approved record does) must be entirely
+    unaffected by PI-0008's stricter requirement."""
+    result = iv.validate_theme_data(_valid_theme())
+    assert result.valid is True
+    assert result.errors == []
+
+
+# ── PI-0008: theme_id must exactly match its own filename ──────────────────────
+
+def test_theme_id_matching_filename_passes(tmp_path):
+    d = tmp_path / "themes"
+    d.mkdir()
+    p = d / "zzzz_theme.yaml"
+    p.write_text(yaml.dump(_valid_theme()))
+    result = iv.validate_theme_file(p)
+    assert result.valid is True
+
+
+def test_theme_id_mismatched_with_filename_is_rejected(tmp_path):
+    d = tmp_path / "themes"
+    d.mkdir()
+    data = _valid_theme()
+    data["theme_id"] = "some_other_id"
+    p = d / "zzzz_theme.yaml"  # filename disagrees with theme_id
+    p.write_text(yaml.dump(data))
+    result = iv.validate_theme_file(p)
+    assert result.valid is False
+    assert any("does not match filename" in e for e in result.errors)
+
+
 def test_theme_with_zero_company_references_is_still_valid():
     """PI-0007 required test (4): a theme's own validity never depends on
     whether any company currently references it -- one-way authority means
@@ -481,6 +548,10 @@ def test_theme_file_and_directory_helpers_roundtrip(tmp_path):
         theme_id: zzzz_theme
         description: fictional
         lifecycle: Emerging
+        review:
+          cadence_days: 90
+          last_reviewed: "2026-01-01"
+          next_due: "2026-04-01"
     """))
     file_result = iv.validate_theme_file(p)
     assert file_result.valid is True
