@@ -32,6 +32,14 @@ referenced theme_id resolves to an existing file under
 time, not a stored index, so it does not violate PI-0006's frozen
 filesystem-as-index doctrine. No theme ever stores, lists, or implies its
 member companies -- authority runs one way only, company -> theme.
+
+PI-0008 hardening, on top of the above (validator-only, no schema change):
+`lifecycle` and `review` are now required on a theme record, not merely
+type-checked when present -- both are human-approval-gated by PI-0007's
+own required-approvals list, so the validator now enforces their presence.
+A theme's declared `theme_id` must also exactly match its own filename
+(without extension), checked at the file level alongside the existing
+company-side reference-integrity check.
 """
 
 from __future__ import annotations
@@ -332,10 +340,13 @@ def validate_directory(directory: str | Path) -> DirectoryValidationResult:
 
 def validate_theme_data(data: object, *, source: str | None = None) -> ValidationResult:
     """Validate an already-parsed theme mapping against PI-0006's frozen
-    schema. Never touches the filesystem. theme_id is required (must be a
-    non-empty string); description/evidence/risks/catalysts/lifecycle/
-    review are type-checked when present, same looseness the company
-    schema already uses for its own optional fields."""
+    schema. Never touches the filesystem. theme_id, lifecycle, and review
+    are required (PI-0008 hardening: all three are human-approval-gated by
+    PI-0007's own required-approvals list, so the validator now enforces
+    their presence rather than only their shape when present).
+    description/evidence/risks/catalysts remain type-checked when present,
+    same looseness the company schema already uses for its own optional
+    fields."""
     errors: list[str] = []
 
     if not isinstance(data, dict):
@@ -356,7 +367,18 @@ def validate_theme_data(data: object, *, source: str | None = None) -> Validatio
             if not isinstance(v, list) or not all(isinstance(x, str) for x in v):
                 errors.append(f"{field_name} must be a list of strings")
 
+    if data.get("lifecycle") is None:
+        errors.append(
+            "lifecycle is required (PI-0008): a theme's initial lifecycle "
+            "value is human-approval-gated by PI-0007, not optional"
+        )
     _validate_lifecycle(data.get("lifecycle"), errors)
+
+    if data.get("review") is None:
+        errors.append(
+            "review is required (PI-0008): a theme's review cadence is "
+            "human-approval-gated by PI-0007, not optional"
+        )
     _validate_review(data.get("review"), errors)
 
     # PI-0006: a theme never stores, lists, or implies its member
@@ -375,7 +397,10 @@ def validate_theme_data(data: object, *, source: str | None = None) -> Validatio
 
 def validate_theme_file(path: str | Path) -> ValidationResult:
     """Read and validate a single theme YAML file. Read-only, same
-    guarantee as validate_company_file."""
+    guarantee as validate_company_file. PI-0008: also enforces that the
+    theme's declared theme_id exactly matches its filename (without
+    extension) -- a live filesystem-adjacent check, not a stored index,
+    same category as validate_company_file's theme-reference check."""
     path = Path(path)
     source = str(path)
     try:
@@ -391,7 +416,17 @@ def validate_theme_file(path: str | Path) -> ValidationResult:
     if data is None:
         return ValidationResult(valid=False, errors=["file is empty"], source=source)
 
-    return validate_theme_data(data, source=source)
+    result = validate_theme_data(data, source=source)
+    if isinstance(data, dict):
+        theme_id = data.get("theme_id")
+        if isinstance(theme_id, str) and theme_id.strip() and theme_id != path.stem:
+            result.errors.append(
+                f"theme_id {theme_id!r} does not match filename {path.stem!r} "
+                f"(PI-0008: a theme's declared theme_id must exactly match its "
+                f"own filename, without extension)"
+            )
+            result.valid = not result.errors
+    return result
 
 
 def validate_themes_directory(directory: str | Path) -> DirectoryValidationResult:
