@@ -2,7 +2,7 @@
 
 **Document status:** Synthesis of existing, adopted investment policy. This manual originates no new policy, changes no doctrine, and recommends no code. Authority remains with `CLAUDE.md` (narrative source of truth), `targets.yaml` (numeric config truth), and `decision_log.yaml` (structured decision record). If those change, this manual must be regenerated to match — it is not itself an amendment mechanism.
 
-**As of:** 2026-07-18. Net equity ~$5,545 (gross ~$8,994 less margin debt ~$3,450 as of the 2026-07-13 revision baseline); margin buffer 61.08% as of the 2026-07-14 sync. These are point-in-time reference figures, not policy — policy is the rules below, which apply regardless of where these numbers sit on any given day.
+**As of:** 2026-07-18. Net equity ~$5,545 (gross ~$8,994 less margin debt ~$3,450) and margin buffer 61.08% are the **2026-07-13/07-14 doctrine-revision baseline** from `CLAUDE.md` — not live figures. `holdings.yaml`'s `margin:` block has synced more recently than this baseline; check it directly for the current margin debt and buffer. These are point-in-time reference figures, not policy — policy is the rules below, which apply regardless of where these numbers sit on any given day.
 
 ---
 
@@ -21,6 +21,7 @@ This is a **decision-support system, not an execution system.** It never places 
   - A QQQ 200-EMA regime gate that blocked/zeroed deployment when QQQ was below its 200-day EMA was backtested (25.49% vs. 28.05% annualized TWR, a 2.56pp/yr cost) and **removed from `allocate.py`**. Regime status is still computed and displayed every run, purely informational — it no longer blocks or delays any deployment.
   - A per-ticker 200-SMA/RSI trend gate on the *buy* side was tested (27.64% vs. 28.05%, +0.41pp, inside noise) and **kept unchanged** — it still gates individual buys (see §7), just wasn't found to justify removal.
 - **Tier weighting exists to express conviction, not to chase return.** A four-arm backtest (current vs. equal-weight vs. flatter vs. steeper gradation) found every variant within 0.75pp of current — no measurable performance difference from tier-weight structure in either direction. Weights are a conviction ladder, not a performance lever.
+- **Buy-level staging (`--levels`) kept unchanged.** A three-arm rung backtest (current SMA−ATR rungs vs. S/R rungs vs. market-buy, pre-committed 1.0pp threshold) found all arms within the noise threshold — S/R rungs rejected (lost to both other arms), current rungs kept as a non-gating staging aid, not a buy gate. Question closed (`reports/rung_backtest.md`).
 - **Crypto sleeve sizing is conviction-based, not timing-based** — it competes in the same gap-ranking as every other line, with no directional or valuation view driving size (see §4).
 
 ## 3. Tier Philosophy
