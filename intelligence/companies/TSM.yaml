@@ -1,0 +1,71 @@
+sector: Information Technology
+industry: Semiconductors & Semiconductor Equipment
+portfolio_role_ref: T1
+themes: [ai_infrastructure]
+competitive_advantages:
+  - "Leading-edge process-technology and advanced-packaging capability"
+  - "Deeply embedded customer collaboration and high design-in/switching costs"
+  - "Manufacturing scale and execution across a broad technology portfolio"
+  - "Continuing leading-edge roadmap, including N2, N2P, and A16"
+risks:
+  - risk: "Customer concentration -- largest customer 19% and second-largest customer 17% of 2025 revenue per Form 20-F, combining to 78% for the top ten; customer identities are not disclosed"
+    severity: moderate
+    identified: "2026-07-19"
+    status: monitoring
+  - risk: "Taiwan/cross-strait geopolitical and political-stability exposure, including tariff, sanctions, and export-control risk broadly disclosed in the Form 20-F"
+    severity: moderate
+    identified: "2026-07-19"
+    status: monitoring
+  - risk: "Nanjing (China) facility export-license risk -- the VEU authorization expired in December 2025; an annual export license currently permits continued operation; renewal or continuation is not assured"
+    severity: moderate
+    identified: "2026-07-19"
+    status: monitoring
+  - risk: "Taiwan natural-disaster and utility-disruption exposure -- recognized, insurance-net losses of approximately NT$3.0 billion (April 2024) and NT$5.3 billion (January 2025) from earthquake events, alongside disclosed water/electricity/utility-disruption risk"
+    severity: moderate
+    identified: "2026-07-19"
+    status: monitoring
+  - risk: "N2/node-transition execution -- approximately 3-4 percentage points of second-half-2026 gross-margin dilution pressure, partially offset by leading-edge demand, cost improvement, productivity gains, and capacity optimization"
+    severity: moderate
+    identified: "2026-07-19"
+    status: monitoring
+  - risk: "Overseas-fab ramp and cost execution -- a very large, newly expanded Arizona investment commitment (US$265 billion total, per management's Q2 2026 call) plus Japan and Germany facilities carry multi-year construction, staffing, and cost-to-plan execution risk"
+    severity: moderate
+    identified: "2026-07-19"
+    status: monitoring
+  - risk: "Extreme capital intensity -- Q2 2026 capital expenditure represented approximately 39% of Q2 2026 revenue amid a raised FY2026 capex guidance of US$60-64 billion"
+    severity: moderate
+    identified: "2026-07-19"
+    status: monitoring
+catalysts: []
+conviction:
+  rating: High
+  rationale: "TSMC's verified financial quality, leading-edge process and manufacturing position, embedded customer relationships, high switching costs, and material AI/HPC demand exposure support High conviction. Conviction is High rather than Very High because Taiwan/cross-strait and Nanjing export-license risk, customer concentration, extreme capital intensity, overseas-fab execution, and semiconductor cyclicality remain material. This rating explicitly excludes valuation, entry price, allocation, trading, and margin judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-19"
+  next_due: "2026-10-17"
+  log:
+    - date: "2026-07-19"
+      note: "Research scope, source set, qualitative findings, risk register, conviction.rating, portfolio_role_ref, theme reference, review cadence, and the final YAML and Markdown artifacts were explicitly approved by the human principal under PI-0012 before implementation."
+sources:
+  - note: "TSMC, Q2 2026 Earnings Release -- Q2 2026 revenue, net income, EPS, margins, node mix, 2025 full-year customer/product count (12,682 products, 534 customers), safe-harbor risk categories. Directly opened and inspected during independent review."
+    url: "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-07/a80d7933be643644081584087731f73b22ea5a2c/2Q26%20EarningsRelease.pdf"
+    date: "2026-07-16"
+  - note: "TSMC, Q2 2026 Presentation -- Q1 2026 comparative figures, Q2 platform mix, balance sheet, cash flow, Q3 2026 guidance, full-year revenue outlook. Directly opened and inspected during independent review."
+    url: "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-07/0e4d9625c9ef46521afd54002f835e45a9035043/2Q26%20Presentation%20%28E%29.pdf"
+    date: "2026-07-16"
+  - note: "TSMC Q2 2026 earnings call transcript (TSMC-hosted, LSEG-edited) -- N2/overseas-fab dilution and offsetting factors, AI/HPC/agentic-AI demand commentary, five-year technology-partner-selection statement, advanced-packaging tightness, dividend remarks, additional US$100 billion Arizona announcement and US$265 billion total. Company-hosted edited transcript, not equivalent to a company-authored regulatory filing; directly opened and inspected during independent review."
+    url: "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-07/547d1696765e05ce3adb81c108ce1c8c1682b80c/TSMC%202Q26%20Transcript.pdf"
+    date: "2026-07-16"
+  - note: "TSMC, 2025 Annual Report -- N2P/A16 second-half-2026 volume-production timing, N2 entering high-volume manufacturing in Q4 2025 with good yield, AI-related demand discussion, overseas-fab progress, FY2025 results and dividend. Directly opened and inspected during independent review."
+    url: "https://investor.tsmc.com/static/annualReports/2025/english/index.html"
+    date: "2026-04-16"
+  - note: "TSMC, 2025 Form 20-F, filed with the SEC -- customer concentration, FY2025 aggregate long-term debt, official risk factors including geopolitical/political-stability exposure, tariffs/sanctions/export controls, the Nanjing export-license status, Taiwan manufacturing concentration, and quantified earthquake losses. Directly opened and inspected during independent review."
+    url: "https://www.sec.gov/Archives/edgar/data/1046179/000162828026025362/tsm-20251231.htm"
+    date: "2026-04-16"
+  - note: "TSMC, June 2026 Revenue, Form 6-K -- June 2026 and H1 2026 revenue, used as light context only. Directly opened and inspected during independent review."
+    url: "https://www.sec.gov/Archives/edgar/data/1046179/000104617926000447/tsm-revenue20260713.htm"
+    date: "2026-07-13"
+  - note: "TrendForce, Q1 2026 pure-play foundry-share release -- sole numerical source for the 72% Q1 2026 foundry-share figure used in this record. Directly opened during independent review."
+    url: "https://www.trendforce.com/presscenter/news/20260612-13095.html"
+    date: "2026-06-12"
