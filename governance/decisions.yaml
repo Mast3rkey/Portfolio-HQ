@@ -27,3 +27,10 @@ decisions:
     related_decisions: [GOV-0001, PI-0001, PI-0004, PI-0006]
     supporting_artifact: null
     file: governance/decisions/ONTO-0001-investment-ontology-freeze.md
+  - decision_id: PI-0011
+    date: 2026-07-19
+    status: Accepted
+    category: portfolio_intelligence
+    related_decisions: [GOV-0001, PI-0001, PI-0002, PI-0003, PI-0006, PI-0007, PI-0010, ONTO-0001]
+    supporting_artifact: null
+    file: governance/decisions/PI-0011-intelligence-operations-v1.md
