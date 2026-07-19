@@ -18,8 +18,8 @@ if [ "$BRANCH" != "main" ]; then
     echo "ERROR: not on main (currently: ${BRANCH:-detached HEAD}). Refusing to proceed." >&2
     exit 1
 fi
-if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
-    echo "ERROR: tracked working-tree changes present. Refusing to proceed." >&2
+if [ -n "$(git status --porcelain)" ]; then
+    echo "ERROR: working-tree changes or untracked files present. Refusing to proceed." >&2
     git status --short >&2
     exit 1
 fi
