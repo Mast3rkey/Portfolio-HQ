@@ -69,6 +69,18 @@ if [ ${#MISSING[@]} -gt 0 ]; then
     exit 1
 fi
 
+echo "==> Verifying Alpaca connectivity and credentials are actually valid"
+echo "    (reuses alpaca_client.py's own connectivity diagnostic; no secret values printed)"
+if ! .venv/bin/python alpaca_client.py; then
+    echo ""
+    echo "STOPPED before any read-only report."
+    echo "ALPACA_API_KEY/ALPACA_API_SECRET/ALPACA_BASE_URL are all set, but the"
+    echo "live connectivity check above failed — the values may be wrong, expired,"
+    echo "or ALPACA_BASE_URL may not point at the paper-api endpoint. Re-check"
+    echo "them in Claude Code's environment/secrets configuration."
+    exit 1
+fi
+
 echo "==> Running read-only Health View"
 .venv/bin/python allocate.py --health
 
