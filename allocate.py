@@ -46,19 +46,36 @@ STALE_MARGIN_DAYS = 2   # warn if margin debt/buffer haven't been synced in this
 
 
 def _margin_buffer_age_days(synced_at) -> float | None:
-    """Days since holdings.yaml's margin.synced_at, or None if missing/unparseable.
-    Fails safe: a malformed or absent date never raises and never yields 0 (which
-    would read as 'freshly synced' and hide real staleness) -- it yields 'age
-    unknown', which every caller (render(), classify_margin_state() via main())
-    treats as 'do not judge staleness from this'. Single source of truth so the
-    review banner and the risk-classifier's own stale reason are always computed
-    from the identical age, never contradict each other."""
+    """Days since holdings.yaml's margin.synced_at, or None if missing,
+    unparseable, OR in the future. Fails safe: a malformed/absent/future date
+    never raises and never yields a fabricated number (0 would read as
+    'freshly synced' and hide real staleness; a negative number for a future
+    date is nonsensical, not 'fresher than fresh') -- it yields 'age unknown',
+    which every caller (render(), classify_margin_state() via main()) treats
+    as 'do not judge staleness from this'. Single source of truth so the
+    review banner and the risk-classifier's own reasons are always computed
+    from the identical age, never contradict each other. Pair with
+    _margin_buffer_age_unverifiable() at the call site to distinguish
+    'no age info at all' from 'an age was attempted and is invalid' --
+    this function alone conflates the two into the same None."""
     if not synced_at:
         return None
     try:
-        return (date.today() - date.fromisoformat(str(synced_at))).days
+        age = (date.today() - date.fromisoformat(str(synced_at))).days
     except ValueError:
         return None
+    return age if age >= 0 else None
+
+
+def _margin_buffer_age_unverifiable(synced_at) -> bool:
+    """True when synced_at is present but does not resolve to a valid,
+    non-negative age (malformed string or a future date) or is absent
+    entirely -- i.e. whenever _margin_buffer_age_days(synced_at) is None.
+    Kept as a distinct call (rather than inferring this from the age being
+    None at each call site) so main()'s wiring into classify_margin_state()
+    reads as an explicit decision, matching that function's own explicit
+    buffer_data_unverifiable parameter."""
+    return _margin_buffer_age_days(synced_at) is None
 
 
 # ── config / state io ──────────────────────────────────────────────────────────
@@ -572,26 +589,29 @@ def render(result, review: bool) -> str:
             L.append("")
             L.append(f"> Margin request clipped — {mg['block_reason']}.")
         stale_banner_shown = age_days is not None and age_days >= STALE_MARGIN_DAYS
+        unverifiable_banner_shown = age_days is None and mg["requested"] > 0
         if stale_banner_shown:
             L.append("")
             L.append(f"> ⚠️ **Margin data is {age_days} day(s) old** (last synced {synced_at}) — "
                       "re-check Robinhood and run `update-margin` before trusting this leverage/buffer read.")
-        elif age_days is None and mg["requested"] > 0:
+        elif unverifiable_banner_shown:
             L.append("")
-            L.append("> ⚠️ **No sync date on record for margin state** — run `update-margin` "
-                      "to establish one.")
+            L.append("> ⚠️ **No valid sync date on record for margin state** (missing, "
+                      "malformed, or in the future) — run `update-margin` to establish one.")
         ms = result.get("margin_state")
         if ms is not None:
             L.append("")
             L.append(f"**Margin risk state: {ms.current_state}**")
             if ms.reasons:
                 for reason in ms.reasons:
-                    # The banner above already surfaced "N day(s) old" staleness
-                    # with a synced_at date and a call to action -- skip
-                    # classify_margin_state()'s own same-fact reason line here
-                    # so the two don't say the same thing twice.
+                    # The banners above already surfaced these same facts (age +
+                    # synced_at + a call to action) -- skip classify_margin_state()'s
+                    # own same-fact reason line here so the two don't say the same
+                    # thing twice.
                     if stale_banner_shown and reason.startswith("margin data is") \
                             and "day(s) old" in reason:
+                        continue
+                    if unverifiable_banner_shown and reason.startswith("margin sync date is"):
                         continue
                     L.append(f"- {reason}")
             if ms.violated_constraints:
@@ -1009,9 +1029,18 @@ def main():
     ap.add_argument("--no-log", action="store_true",
                     help="suppress the timestamped allocation-log file and the "
                          "performance_log.csv snapshot this run would otherwise write, "
-                         "for a genuinely read-only check. Standard behavior (both "
-                         "writes happen) is unchanged when this flag is omitted.")
+                         "for a genuinely read-only check. Only valid together with "
+                         "--review (a real --cash/--margin run must keep its audit "
+                         "trail; --health never writes a log to begin with). Standard "
+                         "behavior (both writes happen) is unchanged when this flag "
+                         "is omitted.")
     args = ap.parse_args()
+    if args.no_log and not args.review:
+        ap.error("--no-log is only valid together with --review — it exists to keep "
+                 "the read-only phone check read-only. A --cash/--margin allocation "
+                 "run must keep its audit trail (log file + performance_log.csv), and "
+                 "--health never writes either to begin with, so --no-log is not "
+                 "needed there.")
     if args.performance:
         print(render_performance())
         return
@@ -1082,7 +1111,9 @@ def main():
     caution_cfg = states_cfg.get("caution", {}) or {}
     restricted_cfg = states_cfg.get("restricted", {}) or {}
     concentration_cfg = margin_cfg.get("concentration_adjustment", {}) or {}
-    buffer_data_age_days = _margin_buffer_age_days(margin_state.get("synced_at"))
+    synced_at_raw = margin_state.get("synced_at")
+    buffer_data_age_days = _margin_buffer_age_days(synced_at_raw)
+    buffer_data_unverifiable = _margin_buffer_age_unverifiable(synced_at_raw)
     result["margin_state"] = classify_margin_state(
         gross=result["margin"]["gross"],
         margin_debt=result["margin"]["debt"],
@@ -1093,6 +1124,7 @@ def main():
         concentration_source=concentration_source,
         buffer_data_age_days=buffer_data_age_days,
         stale_threshold_days=float(STALE_MARGIN_DAYS),
+        buffer_data_unverifiable=buffer_data_unverifiable,
         caution_leverage_fraction=caution_cfg.get("leverage_fraction_of_cap"),
         caution_buffer_comfort_multiplier=caution_cfg.get("buffer_comfort_multiplier"),
         restricted_leverage_fraction=restricted_cfg.get("leverage_fraction_of_cap"),

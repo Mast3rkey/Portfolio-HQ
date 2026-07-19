@@ -45,14 +45,16 @@ def _flat_metrics(tickers, rsi=50):
     return {t: {"price": 100.0, "rsi14": rsi, "sma200": 90.0} for t in tickers}
 
 
-def _attach_margin_state(result, targets, buffer_data_age_days=None, stale_threshold_days=2.0):
+def _attach_margin_state(result, targets, buffer_data_age_days=None, stale_threshold_days=2.0,
+                         buffer_data_unverifiable=False):
     """Reproduces exactly the block added to allocate.py's main() after
     plan() returns — kept in one place so tests exercise the real
     composition (concentration_risk_score -> classify_margin_state) rather
     than a paraphrase of it. Reads plan()'s own `ratio_to_cap` field (added
     for the Health View) rather than recomputing value/(book*pct/100) a
     second time — mirrors main()'s current wiring exactly. `buffer_data_age_days`
-    mirrors main()'s _margin_buffer_age_days(margin.synced_at) wiring."""
+    /`buffer_data_unverifiable` mirror main()'s _margin_buffer_age_days()/
+    _margin_buffer_age_unverifiable(margin.synced_at) wiring."""
     cluster_proximities = {
         f"cluster:{c['name']}": c["ratio_to_cap"]
         for c in result.get("clusters", [])
@@ -70,6 +72,7 @@ def _attach_margin_state(result, targets, buffer_data_age_days=None, stale_thres
         concentration_source=source,
         buffer_data_age_days=buffer_data_age_days,
         stale_threshold_days=stale_threshold_days,
+        buffer_data_unverifiable=buffer_data_unverifiable,
         caution_leverage_fraction=margin_cfg.get("states", {}).get("caution", {}).get("leverage_fraction_of_cap"),
         restricted_leverage_fraction=margin_cfg.get("states", {}).get("restricted", {}).get("leverage_fraction_of_cap"),
         caution_buffer_comfort_multiplier=margin_cfg.get("states", {}).get("caution", {}).get("buffer_comfort_multiplier"),
@@ -691,13 +694,18 @@ def test_health_flag_cli_path_is_read_only(tmp_path, monkeypatch, capsys):
 
 # ── read-only-check-margin-truthfulness correction ─────────────────────────
 #
-# Covers: (1) --no-log suppresses the timestamped allocation log and the
-# performance_log.csv snapshot without changing the advisory content itself;
-# (2) normal --review keeps writing both, unchanged; (3) fresh/stale/missing
-# margin.synced_at feeding classify_margin_state() via _margin_buffer_age_days()
-# surfaces (or doesn't surface) verify_margin_data correctly, fails safe on
-# bad data, and never touches plan()'s own buy/trim/block/cash_left/margin
-# decisions -- classify_margin_state() runs strictly after plan() returns.
+# Covers: (1) --no-log is restricted to --review (a --cash/--margin run or a
+# bare invocation must reject it, so it can never bypass the audit trail);
+# (2) normal --cash/--margin/--review logging is unchanged; (3) fresh/stale/
+# missing/malformed/future margin.synced_at feeding classify_margin_state()
+# via _margin_buffer_age_days()/_margin_buffer_age_unverifiable() surfaces
+# verify_margin_data correctly with an inclusive >=2-day stale boundary that
+# matches render()'s pre-existing banner, never fabricates a numeric age for
+# invalid/future dates, and never touches plan()'s own buy/trim/block/
+# cash_left/margin decisions -- classify_margin_state() runs strictly after
+# plan() returns. (4) the standard review shows each staleness/unverifiable
+# explanation exactly once, never duplicated between the banner and the
+# classifier's own reason text.
 
 def _review_cli_targets_and_holdings(tmp_path, synced_at="2026-07-18",
                                      debt=100.0, buffer_pct=50.0):
@@ -740,7 +748,36 @@ def _strip_timestamp_line(text):
     return "\n".join(l for l in text.splitlines() if not l.startswith("# Allocation advisory"))
 
 
-# ── required test 1 & 2: --no-log suppresses writes; normal --review doesn't ──
+# ── finding 1: --no-log is restricted to --review ──────────────────────────
+# required tests 2, 3, 4: bare / --cash / --margin + --no-log all rejected.
+
+@pytest.mark.parametrize("argv_tail", [
+    ["--no-log"],
+    ["--cash", "500", "--no-log"],
+    ["--margin", "500", "--no-log"],
+])
+def test_no_log_outside_review_is_rejected(argv_tail, monkeypatch, capsys):
+    # No TARGETS_FILE/HOLDINGS_FILE/client patching needed: the rejection
+    # happens immediately after argparse, before any file or network access.
+    monkeypatch.setattr(sys, "argv", ["allocate.py", *argv_tail])
+    with pytest.raises(SystemExit) as exc_info:
+        allocate.main()
+    assert exc_info.value.code == 2   # argparse's own error exit code
+    err = capsys.readouterr().err
+    assert "--no-log" in err
+    assert "--review" in err
+
+
+# required test 1: --review --no-log remains valid.
+
+def test_review_no_log_is_accepted(tmp_path, monkeypatch, capsys):
+    targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path)
+    _patch_review_cli(monkeypatch, targets_file, holdings_file,
+                      tmp_path / "logs", tmp_path / "perf.csv")
+    monkeypatch.setattr(sys, "argv", ["allocate.py", "--review", "--no-log"])
+    allocate.main()   # must not raise / exit
+    assert "# Allocation advisory" in capsys.readouterr().out
+
 
 def test_review_no_log_matches_normal_advisory_and_suppresses_writes(tmp_path, monkeypatch, capsys):
     targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path)
@@ -790,7 +827,28 @@ def test_review_no_log_matches_normal_advisory_and_suppresses_writes(tmp_path, m
     assert "# Allocation advisory" in out_no_log
 
 
-# ── required test 3: the phone script invokes the no-write review path ────
+# required test 5: normal --cash/--margin/--review logging is unchanged
+# (without --no-log involved at all).
+
+@pytest.mark.parametrize("argv_tail", [["--cash", "500"], ["--margin", "500"], ["--review"]])
+def test_normal_logging_unchanged_without_no_log(argv_tail, tmp_path, monkeypatch, capsys):
+    targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path)
+    logs_dir = tmp_path / "logs"
+    perf_log = tmp_path / "perf.csv"
+    perf_header = "date,net_equity,gross,margin_debt,qqq_price,voo_price,note\n"
+    perf_log.write_text(perf_header)
+    _patch_review_cli(monkeypatch, targets_file, holdings_file, logs_dir, perf_log)
+    calls = []
+    monkeypatch.setattr(allocate, "log_performance", lambda *a, **k: calls.append((a, k)))
+    monkeypatch.setattr(sys, "argv", ["allocate.py", *argv_tail])
+    allocate.main()
+    capsys.readouterr()
+
+    assert logs_dir.exists() and list(logs_dir.glob("allocation-*.md"))
+    assert len(calls) == 1
+
+
+# required test 14: the phone script invokes the no-write review path.
 
 def test_run_portfolio_check_script_uses_no_log_review():
     from pathlib import Path
@@ -803,48 +861,101 @@ def test_run_portfolio_check_script_uses_no_log_review():
         "use --no-log so the phone check stays genuinely read-only")
 
 
-# ── required test 4 & 5: fresh vs. stale margin data in the Health View ────
+# ── finding 2: unified >=2-day staleness boundary ──────────────────────────
+# required tests 6, 7, 8: age 1 fresh; age exactly 2 stale + verify_margin_data;
+# age > 2 stale. Age 0 included too, matching margin_state.py's own unit
+# coverage of the same boundary.
 
-def test_fresh_margin_data_no_stale_warning_in_health_view(tmp_path, monkeypatch, capsys):
-    today = date.today().isoformat()
-    targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path, synced_at=today)
+@pytest.mark.parametrize("days_old,expect_stale", [
+    (0, False),
+    (1, False),
+    (2, True),     # inclusive boundary, matches render()'s pre-existing banner
+    (5, True),
+])
+def test_margin_data_staleness_boundary_in_health_view(days_old, expect_stale, tmp_path, monkeypatch, capsys):
+    synced_at = (date.today() - timedelta(days=days_old)).isoformat()
+    targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path, synced_at=synced_at)
     _patch_review_cli(monkeypatch, targets_file, holdings_file,
                       tmp_path / "logs", tmp_path / "perf.csv")
     monkeypatch.setattr(sys, "argv", ["allocate.py", "--health"])
     allocate.main()
     out = capsys.readouterr().out
 
-    assert VERIFY_MARGIN_DATA not in out
-    assert "stale_margin_data" not in out
+    if expect_stale:
+        assert VERIFY_MARGIN_DATA in out
+        assert "stale_margin_data" in out
+    else:
+        assert VERIFY_MARGIN_DATA not in out
+        assert "stale_margin_data" not in out
+        assert "unverifiable_margin_data" not in out
 
 
-def test_stale_margin_data_surfaces_verify_margin_data_in_health_view(tmp_path, monkeypatch, capsys):
-    stale = (date.today() - timedelta(days=5)).isoformat()
-    targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path, synced_at=stale)
+# ── findings 3 & 4: missing/malformed/future sync dates are unverifiable ───
+# required tests 9, 10, 11: each surfaces verify_margin_data without crashing,
+# never fabricating a numeric age.
+
+@pytest.mark.parametrize("label,synced_at_factory", [
+    ("missing", lambda: None),
+    ("malformed", lambda: "not-a-date"),
+    ("future", lambda: (date.today() + timedelta(days=3)).isoformat()),
+])
+def test_unverifiable_sync_dates_surface_verify_margin_data_without_crashing(
+        label, synced_at_factory, tmp_path, monkeypatch, capsys):
+    targets_file, holdings_file = _review_cli_targets_and_holdings(
+        tmp_path, synced_at=synced_at_factory())
     _patch_review_cli(monkeypatch, targets_file, holdings_file,
                       tmp_path / "logs", tmp_path / "perf.csv")
+    captured = {}
+    def _spy_render_health(result):
+        captured["result"] = result
+        return "SENTINEL"
+    monkeypatch.setattr(allocate, "render_health", _spy_render_health)
     monkeypatch.setattr(sys, "argv", ["allocate.py", "--health"])
-    allocate.main()
-    out = capsys.readouterr().out
+    allocate.main()   # must not raise for any of the three synced_at shapes
+    assert "SENTINEL" in capsys.readouterr().out
 
-    assert VERIFY_MARGIN_DATA in out
-    assert "stale_margin_data" in out
+    ms = captured["result"]["margin_state"]
+    assert VERIFY_MARGIN_DATA in ms.allowed_actions
+    assert "unverifiable_margin_data" in ms.violated_constraints
+    assert "stale_margin_data" not in ms.violated_constraints
+    assert any("cannot be verified" in r for r in ms.reasons)
+    # never fabricate a numeric age for an invalid/missing/future date
+    assert not any("day(s) old" in r for r in ms.reasons)
 
 
-# ── required test 6: missing/invalid sync dates fail safe ─────────────────
-
-def test_margin_buffer_age_days_missing_and_invalid_fail_safe():
+def test_margin_buffer_age_days_fails_safe_on_missing_malformed_and_future():
     assert allocate._margin_buffer_age_days(None) is None
     assert allocate._margin_buffer_age_days("") is None
     assert allocate._margin_buffer_age_days("not-a-date") is None
     assert allocate._margin_buffer_age_days("2026-13-40") is None
+    future = (date.today() + timedelta(days=1)).isoformat()
+    assert allocate._margin_buffer_age_days(future) is None   # never a fabricated negative age
     assert allocate._margin_buffer_age_days(date.today().isoformat()) == 0
 
 
-def test_missing_or_invalid_sync_date_does_not_alter_allocation_or_crash(tmp_path, monkeypatch, capsys):
+def test_margin_buffer_age_unverifiable_matches_age_days_none():
     today = date.today().isoformat()
+    future = (date.today() + timedelta(days=1)).isoformat()
+    assert allocate._margin_buffer_age_unverifiable(today) is False
+    assert allocate._margin_buffer_age_unverifiable(None) is True
+    assert allocate._margin_buffer_age_unverifiable("garbage") is True
+    assert allocate._margin_buffer_age_unverifiable(future) is True
+
+
+# required test 12: no freshness condition (fresh/stale/missing/malformed/
+# future) changes buys, trims, blocked rows, cash_left, margin allowed, or
+# margin used -- classify_margin_state() runs strictly after plan() returns.
+
+def test_no_freshness_condition_changes_allocation_or_margin_amounts(tmp_path, monkeypatch, capsys):
+    today = date.today().isoformat()
+    stale = (date.today() - timedelta(days=5)).isoformat()
+    future = (date.today() + timedelta(days=3)).isoformat()
+    scenarios = {
+        "fresh": today, "stale": stale, "missing": None,
+        "malformed": "not-a-date", "future": future,
+    }
     captured = {}
-    for label, synced_at in (("valid", today), ("missing", None), ("malformed", "not-a-date")):
+    for label, synced_at in scenarios.items():
         targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path, synced_at=synced_at)
         _patch_review_cli(monkeypatch, targets_file, holdings_file,
                           tmp_path / f"logs_{label}", tmp_path / f"perf_{label}.csv")
@@ -854,24 +965,24 @@ def test_missing_or_invalid_sync_date_does_not_alter_allocation_or_crash(tmp_pat
             return f"SENTINEL_{_label}"
         monkeypatch.setattr(allocate, "render_health", _spy_render_health)
         monkeypatch.setattr(sys, "argv", ["allocate.py", "--health"])
-        allocate.main()   # must not raise for any of the three synced_at shapes
+        allocate.main()   # must not raise for any of the five synced_at shapes
         assert f"SENTINEL_{label}" in capsys.readouterr().out
 
-    for key in ("buys", "trims", "blocked", "cash_left"):
-        assert captured["valid"][key] == captured["missing"][key] == captured["malformed"][key]
-    assert (captured["valid"]["margin"]["allowed"]
-            == captured["missing"]["margin"]["allowed"]
-            == captured["malformed"]["margin"]["allowed"])
+    baseline = captured["fresh"]
+    for label, result in captured.items():
+        for key in ("buys", "trims", "blocked", "cash_left"):
+            assert result[key] == baseline[key], f"{key} differs for {label!r}"
+        assert result["margin"]["allowed"] == baseline["margin"]["allowed"], \
+            f"margin allowed differs for {label!r}"
+        assert result["margin"]["used"] == baseline["margin"]["used"], \
+            f"margin used differs for {label!r}"
 
-    # age-unknown (missing/malformed) must never be *misjudged* as stale --
-    # "don't know" and "known stale" are different findings.
-    assert "stale_margin_data" not in captured["missing"]["margin_state"].violated_constraints
-    assert "stale_margin_data" not in captured["malformed"]["margin_state"].violated_constraints
-
-
-# ── required test 7: classification remains strictly post-plan ────────────
 
 def test_buffer_data_age_days_cannot_influence_buys_trims_blocked_cash_left_margin_allowed():
+    # Unit-level companion to the CLI test above: directly varies
+    # buffer_data_age_days / buffer_data_unverifiable at the plan()+
+    # classify_margin_state() layer, proving the post-plan invariant holds
+    # independent of any CLI/YAML wiring.
     targets = _base_targets()
     roster = build_roster(targets)
     holdings = {"DDD": 2000.0, "AAA": 500.0}
@@ -881,19 +992,52 @@ def test_buffer_data_age_days_cannot_influence_buys_trims_blocked_cash_left_marg
                     margin_debt=100.0, margin_buffer_pct=50.0)
     result_b = plan(targets, holdings, roster, metrics, True, True, cash=500.0,
                     margin_debt=100.0, margin_buffer_pct=50.0)
+    result_c = plan(targets, holdings, roster, metrics, True, True, cash=500.0,
+                    margin_debt=100.0, margin_buffer_pct=50.0)
 
     _attach_margin_state(result_a, targets, buffer_data_age_days=0.1,
                          stale_threshold_days=float(allocate.STALE_MARGIN_DAYS))
     _attach_margin_state(result_b, targets, buffer_data_age_days=30.0,
                          stale_threshold_days=float(allocate.STALE_MARGIN_DAYS))
+    _attach_margin_state(result_c, targets, buffer_data_unverifiable=True)
 
-    assert result_a["buys"] == result_b["buys"]
-    assert result_a["trims"] == result_b["trims"]
-    assert result_a["blocked"] == result_b["blocked"]
-    assert result_a["cash_left"] == result_b["cash_left"]
-    assert result_a["margin"]["allowed"] == result_b["margin"]["allowed"]
+    for other in (result_b, result_c):
+        assert result_a["buys"] == other["buys"]
+        assert result_a["trims"] == other["trims"]
+        assert result_a["blocked"] == other["blocked"]
+        assert result_a["cash_left"] == other["cash_left"]
+        assert result_a["margin"]["allowed"] == other["margin"]["allowed"]
+        assert result_a["margin"]["used"] == other["margin"]["used"]
 
-    # sanity: the differing age actually reached the classifier (else this
-    # test would trivially pass without proving anything about wiring).
+    # sanity: the differing age/unverifiable flag actually reached the
+    # classifier (else this test would trivially pass without proving
+    # anything about wiring).
     assert "stale_margin_data" not in result_a["margin_state"].violated_constraints
     assert "stale_margin_data" in result_b["margin_state"].violated_constraints
+    assert "unverifiable_margin_data" in result_c["margin_state"].violated_constraints
+
+
+# ── finding 2 (cont'd): standard review shows each staleness/unverifiable
+# explanation exactly once -- required test 13.
+
+def test_review_shows_stale_explanation_exactly_once(tmp_path, monkeypatch, capsys):
+    stale = (date.today() - timedelta(days=5)).isoformat()
+    targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path, synced_at=stale)
+    _patch_review_cli(monkeypatch, targets_file, holdings_file,
+                      tmp_path / "logs", tmp_path / "perf.csv")
+    monkeypatch.setattr(sys, "argv", ["allocate.py", "--review", "--no-log"])
+    allocate.main()
+    out = capsys.readouterr().out
+
+    assert out.count("day(s) old") == 1
+
+
+def test_review_shows_unverifiable_explanation_exactly_once(tmp_path, monkeypatch, capsys):
+    targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path, synced_at=None)
+    _patch_review_cli(monkeypatch, targets_file, holdings_file,
+                      tmp_path / "logs", tmp_path / "perf.csv")
+    monkeypatch.setattr(sys, "argv", ["allocate.py", "--review", "--no-log"])
+    allocate.main()
+    out = capsys.readouterr().out
+
+    assert out.count("cannot be verified") == 1

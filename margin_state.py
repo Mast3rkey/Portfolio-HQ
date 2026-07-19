@@ -133,6 +133,7 @@ def classify_margin_state(
     concentration_min_fraction: float = 0.5,
     buffer_data_age_days: float | None = None,
     stale_threshold_days: float = 2.0,
+    buffer_data_unverifiable: bool = False,
 ) -> MarginStateResult:
     """Classify current margin risk. Pure function: every input is a number
     or None: no fetch, no clock read beyond what the caller supplies via
@@ -150,6 +151,17 @@ def classify_margin_state(
     margin_debt; leverage = gross / net_equity) rather than accepted as
     separate inputs, so a caller can never pass an internally-inconsistent
     pair (e.g. a net_equity that doesn't match gross - debt).
+
+    `buffer_data_age_days=None` alone means "the caller isn't tracking sync
+    age at all" — a legitimate, silent omission (e.g. a caller that never
+    wires up a sync timestamp). `buffer_data_unverifiable=True` is a
+    distinct, explicit signal: the caller DID try to determine an age and
+    could not (the sync record is missing, malformed, or dated in the
+    future — a future date is invalid data, not "fresher than fresh," and
+    must never be reported as a fabricated negative age). When
+    `buffer_data_unverifiable` is True and `buffer_pct` is present, this
+    always flags VERIFY_MARGIN_DATA with its own explanatory reason,
+    distinct from (and never combined with) the age-based staleness reason.
     """
     # ---- input validation: fail fast on malformed data, not on extreme-but-
     # real account states (see the net_equity <= 0 handling below, which is
@@ -177,6 +189,9 @@ def classify_margin_state(
         raise ValueError(f"concentration_min_fraction must be in [0, 1], got {concentration_min_fraction}")
     if buffer_data_age_days is not None and buffer_data_age_days < 0:
         raise ValueError(f"buffer_data_age_days must be >= 0 or None, got {buffer_data_age_days}")
+    if buffer_data_unverifiable and buffer_data_age_days is not None:
+        raise ValueError("buffer_data_age_days must be None when buffer_data_unverifiable=True "
+                          "— do not pass a fabricated age alongside an explicit unverifiable flag")
     if caution_leverage_fraction is not None and not (0.0 < caution_leverage_fraction < 1.0):
         raise ValueError(f"caution_leverage_fraction must be None or strictly between 0 and 1, "
                           f"got {caution_leverage_fraction}")
@@ -234,13 +249,23 @@ def classify_margin_state(
                         f"at {concentration_score:.2f}")
 
     # ---- staleness / missing data: informational, never forces a state ----
+    # Priority order matters: missing buffer_pct (nothing synced at all) takes
+    # precedence over an unverifiable sync date, which takes precedence over a
+    # known-but-stale age -- each is a strictly narrower condition than the
+    # last, so only the most informative single reason is ever reported.
     stale = False
     verify_data = False
     if buffer_pct is None:
         reasons.append("buffer_pct unavailable (never synced) — buffer-based "
                         "checks skipped, classification uses leverage only")
         verify_data = True
-    elif buffer_data_age_days is not None and buffer_data_age_days > stale_threshold_days:
+    elif buffer_data_unverifiable:
+        verify_data = True
+        reasons.append("margin sync date is missing, malformed, or in the future — "
+                        "buffer freshness cannot be verified; re-sync before trusting "
+                        "this leverage/buffer read")
+        violated.append("unverifiable_margin_data")
+    elif buffer_data_age_days is not None and buffer_data_age_days >= stale_threshold_days:
         stale = True
         verify_data = True
         reasons.append(f"margin data is {buffer_data_age_days:.1f} day(s) old "
