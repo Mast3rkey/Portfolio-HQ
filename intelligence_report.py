@@ -11,14 +11,25 @@ any Company or Theme Intelligence record, never writes `holdings.yaml` or
 one generated artifact — `intelligence/reports/staleness_report.md` — and
 nothing else. Every other output (role-drift, coverage) is stdout only.
 
-Reuses `intelligence_validator.py`'s **public** API only
-(`validate_company_file`, `validate_directory`, `validate_theme_file`,
-`validate_themes_directory`). No underscore-prefixed private function of
-that module is imported or called anywhere in this file — theme-reference
-resolution and reverse-membership rejection are `intelligence_validator.py`'s
-own, unmodified, already-tested behavior; this module only surfaces those
+Reuses `intelligence_validator.py`'s **public** API only. The two functions
+actually called directly are `validate_company_file` and
+`validate_themes_directory`; `validate_themes_directory` internally performs
+the existing per-file `validate_theme_file` checks (schema, closed
+vocabularies, reverse-membership-key rejection) for every theme file it
+scans, so those checks run without this module calling them itself. No
+underscore-prefixed private function of `intelligence_validator.py` is
+imported or called anywhere in this file — theme-reference resolution and
+reverse-membership rejection are `intelligence_validator.py`'s own,
+unmodified, already-tested behavior; this module only surfaces those
 results, it does not duplicate, reinterpret, or independently reimplement
 them.
+
+`run_portfolio_check.sh` never invokes this module as an operational
+reporting command and never regenerates the tracked staleness report; its
+`pytest -q` run does import and exercise this module's mechanics via
+`test_intelligence_report.py`, but no test there may treat an advisory
+finding (a staleness or role-drift outcome) as a failure — only schema
+conformance and code invariants may gate the suite.
 
 Staleness scope is literal to `docs/PORTFOLIO_INTELLIGENCE_SPEC.md` §18:
 `intelligence/companies/*.yaml` only. Theme Intelligence's own
@@ -42,7 +53,7 @@ from __future__ import annotations
 import argparse
 import sys
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import yaml
@@ -146,6 +157,17 @@ def _ticker_from_path(path: Path) -> str:
 
 
 def _parse_iso_date(value: object) -> date | None:
+    """Accepts a valid ISO-date string, or an actual `datetime.date` value
+    (PyYAML decodes an unquoted `YYYY-MM-DD` scalar into one). Narrowest
+    implementation: a `datetime.datetime` (a full timestamp, decoded from a
+    YAML value that also carries a time component) is deliberately NOT
+    silently truncated to its calendar date — that would substitute a
+    different, untested schema meaning. It is treated as unparseable here
+    (surfaced as "unable to evaluate" by callers), not accepted."""
+    if isinstance(value, datetime):
+        return None
+    if isinstance(value, date):
+        return value
     if not isinstance(value, str):
         return None
     try:
@@ -185,8 +207,23 @@ def collect_staleness_findings(
 
         data = yaml.safe_load(path.read_text()) or {}
 
-        review = data.get("review") or {}
-        if "next_due" in review:
+        review = data.get("review")
+        if review is None:
+            # No `review:` key at all, or an explicit `review: null` — both
+            # are schema-valid (review is an optional field per spec §9),
+            # but leave nothing to evaluate. Never silently skipped, and
+            # never classified as overdue (PI-0011 correction 2).
+            unable.append(UnableToEvaluate(
+                ticker=ticker,
+                field_name="review.next_due",
+                raw_value=None,
+                reason="review block is missing (no review key, or review is null) — cannot evaluate staleness",
+            ))
+        else:
+            # A non-None `review` is guaranteed by
+            # intelligence_validator.py's own required-keys check to be a
+            # dict already containing a `next_due` key if this record is
+            # schema-valid (which it is, by this point in the loop).
             next_due_raw = review.get("next_due")
             next_due = _parse_iso_date(next_due_raw)
             if next_due is None:
@@ -194,12 +231,12 @@ def collect_staleness_findings(
                     ticker=ticker,
                     field_name="review.next_due",
                     raw_value=next_due_raw,
-                    reason="unparseable or non-string ISO date",
+                    reason="missing, unparseable, or non-date/non-string ISO date",
                 ))
             elif next_due < as_of_date:
                 overdue.append(OverdueReview(
                     ticker=ticker,
-                    next_due=next_due_raw,
+                    next_due=next_due.isoformat(),
                     days_overdue=(as_of_date - next_due).days,
                 ))
             # next_due == as_of_date, or next_due > as_of_date: not overdue.
@@ -217,7 +254,7 @@ def collect_staleness_findings(
                     ticker=ticker,
                     field_name=f"catalysts[].expected ({label!r})",
                     raw_value=expected_raw,
-                    reason="unparseable or non-string ISO date",
+                    reason="missing, unparseable, or non-date/non-string ISO date",
                 ))
                 continue
             if not isinstance(status, str):
@@ -232,7 +269,7 @@ def collect_staleness_findings(
                 lapsed.append(LapsedCatalyst(
                     ticker=ticker,
                     catalyst=label,
-                    expected=expected_raw,
+                    expected=expected.isoformat(),
                     status=status,
                     days_overdue=(as_of_date - expected).days,
                 ))
@@ -373,6 +410,17 @@ def build_coverage_rollup(companies_dir: Path | str, themes_dir: Path | str) -> 
 
 # ── stage 2: pure rendering — no filesystem I/O of any kind ──────────────
 
+def _escape_markdown_cell(value: object) -> str:
+    """Rendering-only escaping so a human-authored value (a catalyst label,
+    a validator error message, a raw field value) can never break a
+    Markdown table's row/column structure. Does not alter any source
+    record and adds no schema restriction — output formatting only."""
+    text = str(value)
+    text = text.replace("\r\n", " ").replace("\r", " ").replace("\n", " ")
+    text = text.replace("|", "\\|")
+    return text
+
+
 def render_staleness_report(findings: StalenessFindings) -> str:
     as_of = findings.as_of_date.isoformat()
     lines: list[str] = [
@@ -387,7 +435,10 @@ def render_staleness_report(findings: StalenessFindings) -> str:
         lines.append("| Ticker | next_due | Days overdue |")
         lines.append("|---|---|---|")
         for o in findings.overdue_reviews:
-            lines.append(f"| {o.ticker} | {o.next_due} | {o.days_overdue} |")
+            lines.append(
+                f"| {_escape_markdown_cell(o.ticker)} | {_escape_markdown_cell(o.next_due)} | "
+                f"{_escape_markdown_cell(o.days_overdue)} |"
+            )
     else:
         lines.append(f"No companies have an overdue review as of {as_of}.")
     lines.append("")
@@ -397,7 +448,11 @@ def render_staleness_report(findings: StalenessFindings) -> str:
         lines.append("| Ticker | Catalyst | Expected | Status | Days overdue |")
         lines.append("|---|---|---|---|---|")
         for c in findings.lapsed_catalysts:
-            lines.append(f"| {c.ticker} | {c.catalyst} | {c.expected} | {c.status} | {c.days_overdue} |")
+            lines.append(
+                f"| {_escape_markdown_cell(c.ticker)} | {_escape_markdown_cell(c.catalyst)} | "
+                f"{_escape_markdown_cell(c.expected)} | {_escape_markdown_cell(c.status)} | "
+                f"{_escape_markdown_cell(c.days_overdue)} |"
+            )
     else:
         lines.append(f"No lapsed catalysts as of {as_of}.")
     lines.append("")
@@ -407,7 +462,10 @@ def render_staleness_report(findings: StalenessFindings) -> str:
         lines.append("| Ticker | Field | Raw value | Reason |")
         lines.append("|---|---|---|---|")
         for u in findings.unable_to_evaluate:
-            lines.append(f"| {u.ticker} | {u.field_name} | {u.raw_value!r} | {u.reason} |")
+            lines.append(
+                f"| {_escape_markdown_cell(u.ticker)} | {_escape_markdown_cell(u.field_name)} | "
+                f"{_escape_markdown_cell(repr(u.raw_value))} | {_escape_markdown_cell(u.reason)} |"
+            )
     else:
         lines.append(f"Nothing flagged as unable to evaluate as of {as_of}.")
     lines.append("")
@@ -417,7 +475,8 @@ def render_staleness_report(findings: StalenessFindings) -> str:
         lines.append("| Ticker | Validator error(s) |")
         lines.append("|---|---|")
         for i in findings.schema_invalid:
-            lines.append(f"| {i.ticker} | {'; '.join(i.errors)} |")
+            errors_cell = "; ".join(_escape_markdown_cell(e) for e in i.errors)
+            lines.append(f"| {_escape_markdown_cell(i.ticker)} | {errors_cell} |")
     else:
         lines.append(f"No schema-invalid company records as of {as_of}.")
     lines.append("")

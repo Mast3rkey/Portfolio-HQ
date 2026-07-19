@@ -164,14 +164,16 @@ results.**
 ### 5. Theme-reference validation — reused, not reimplemented
 
 `intelligence_report.py` calls only `intelligence_validator.py`'s **public**
-functions — `validate_company_file`, `validate_directory`,
-`validate_theme_file`, `validate_themes_directory` — never an
-underscore-prefixed private function (e.g. `_validate_theme_references`,
-`_validate_themes_field`). `validate_company_file` already performs
+functions, never an underscore-prefixed private function (e.g.
+`_validate_theme_references`, `_validate_themes_field`). The two public
+functions actually called directly are `validate_company_file` and
+`validate_themes_directory` — `validate_company_file` already performs
 company→theme reference resolution as part of its own existing, tested
-behavior; `validate_theme_file`/`validate_themes_directory` already enforce
-the theme schema and reject reverse-membership keys
-(`companies`/`members`/`company_count`). This decision authorizes surfacing
+behavior, and `validate_themes_directory` internally performs the existing
+per-file `validate_theme_file` checks (theme schema enforcement and
+rejection of reverse-membership keys — `companies`/`members`/`company_count`)
+for every theme file it scans, so those checks run without this module
+calling `validate_theme_file` itself. This decision authorizes surfacing
 those existing public results through a CLI — it does not duplicate,
 reinterpret, or independently reimplement them.
 
@@ -205,9 +207,12 @@ A corrected architecture, replacing the first draft's self-contradictory
    approved directory is a genuine I/O failure, raised clearly rather than
    silently written elsewhere.
 
-Role-drift and coverage functions are pure in the same sense as stage 2:
-they read via stage-1-style scans and return data/text for the CLI to
-print; neither ever writes a file.
+Role-drift and coverage are **source-read-only collection operations**: they
+read repository files and return immutable results for stdout rendering, but
+perform no writes. Only the rendering stage is pure and performs no
+filesystem I/O — role-drift and coverage collection is not "pure" in that
+stricter sense, since it reads files, but it is source-read-only in exactly
+the same sense as stage 1.
 
 ### 8. CLI contract
 
@@ -225,6 +230,29 @@ write anything. No arbitrary directory is created at runtime — the
 implementation PR creates and tracks `intelligence/reports/` and its report;
 a missing or unwritable approved directory during later execution is exit
 `1`, not a silent mkdir.
+
+**Test-suite exercise is not operational invocation.** `run_portfolio_check.sh`
+runs the repository's full `pytest -q` suite, which imports
+`intelligence_report.py` and exercises its functions through
+`test_intelligence_report.py` — this is ordinary test coverage, identical in
+kind to how that same suite already exercises `intelligence_validator.py`,
+`allocate.py`, and every other tested module. It is not the prohibited
+"automatic invocation from the phone workflow": `run_portfolio_check.sh`
+never calls `intelligence_report.py` as an operational reporting command, and
+never regenerates the tracked `intelligence/reports/staleness_report.md` —
+zero files under `intelligence/reports/` are touched by
+`run_portfolio_check.sh` itself. What makes this boundary real rather than
+merely asserted is enforced inside the test module: **no test may treat an
+advisory finding — a staleness result, or a role-drift `MISMATCH`/
+`NOT_IN_TARGETS`/`AMBIGUOUS_TARGET_MEMBERSHIP` outcome — as a pass/fail
+condition.** Only schema conformance and code invariants (deterministic
+ordering, non-mutation of source files, single-writer/no-directory-creation
+guarantees, both-direction import isolation) may gate the suite. A test
+asserting, for example, zero real-portfolio role-drift mismatches would
+silently convert an advisory finding into a `pytest -q` failure the moment
+one legitimately existed — and because `run_portfolio_check.sh` stops on any
+failing test, that would make role drift an unintended phone-workflow gate
+in practice, contrary to this decision's advisory-only design.
 
 ### 9. Generated-report tracking
 
@@ -302,10 +330,13 @@ underscore-prefixed functions by name as "reuse." Calling a private function
 directly from another module is not the one-responsibility separation the
 spec's §3 governing principles require — it is a second, undeclared
 coupling to implementation detail that could change without notice. The
-public functions (`validate_company_file`, `validate_directory`,
-`validate_theme_file`, `validate_themes_directory`) already expose
-everything this decision needs; nothing here required touching
-`intelligence_validator.py`'s private surface.
+two public functions actually called directly — `validate_company_file` and
+`validate_themes_directory` (the latter internally performing the existing
+per-file `validate_theme_file` checks for every theme file it scans) —
+already expose everything this decision needs; nothing here required
+touching `intelligence_validator.py`'s private surface, and nothing here
+claims a direct call to a public function this module does not actually
+use.
 
 The role-drift advisory-only wording (item 4) is not new invention — it is
 the direct, explicit preservation of two already-frozen rules operating

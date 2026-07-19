@@ -106,9 +106,12 @@ aggregation currently affects allocator behavior.
 layer over `intelligence/companies/` and `intelligence/themes/`, authorized
 by `governance/decisions/PI-0011-intelligence-operations-v1.md`. Like
 `intelligence_validator.py`, it has no import relationship with
-`allocate.py` or `margin_state.py` in either direction, and it is never
-called by them or by `run_portfolio_check.sh` — it's run manually, on
-demand.
+`allocate.py` or `margin_state.py` in either direction. `run_portfolio_check.sh`
+never invokes it as an operational reporting command and never regenerates
+the tracked staleness report — it's run manually, on demand. (Its full
+`pytest -q` run does import and exercise this module's mechanics via
+`test_intelligence_report.py`, same as any other module's tests; no test
+there treats an advisory finding as a failure — see below.)
 
 ```bash
 python intelligence_report.py --staleness            # regenerate intelligence/reports/staleness_report.md
@@ -137,10 +140,20 @@ python intelligence_report.py --staleness --as-of 2026-08-01   # deterministic a
   allocator policy, and the company record stays exactly as a human
   authored it until separately reviewed.
 - **Theme-reference integrity and coverage** reuse
-  `intelligence_validator.py`'s **public** API only
-  (`validate_company_file`, `validate_theme_file`,
-  `validate_themes_directory`) — no second validator, no
-  `intelligence/index.yaml`, no cached relationship edges. Stdout-only.
+  `intelligence_validator.py`'s **public** API only — `validate_company_file`
+  and `validate_themes_directory` are the two functions actually called
+  directly; `validate_themes_directory` internally performs the existing
+  per-file `validate_theme_file` checks (schema, closed vocabularies, and
+  reverse-membership-key rejection) for every theme file it scans. No
+  second validator, no `intelligence/index.yaml`, no cached relationship
+  edges. Stdout-only.
+- **Role-drift and coverage-rollup findings never gate anything** — not the
+  allocator, not this repository's test suite, and not the phone workflow.
+  They are source-read-only *collection* operations (they read repository
+  files and return results for stdout rendering; only the report-rendering
+  stage is pure, with no filesystem I/O at all) — see
+  `governance/decisions/PI-0011-intelligence-operations-v1.md` for the full
+  advisory-boundary rationale.
 - **No ontology integration**: this layer does not read or apply
   `docs/INVESTMENT_ONTOLOGY.md`.
 

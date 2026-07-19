@@ -13,8 +13,9 @@ from __future__ import annotations
 
 import ast
 import importlib
+import re
 import textwrap
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import pytest
@@ -184,6 +185,137 @@ def test_schema_valid_but_non_string_catalyst_status(tmp_path):
     assert u.raw_value == 123
 
 
+# ── staleness: missing review date is surfaced, never silently skipped ────
+
+def test_no_review_key_at_all_is_unable_to_evaluate(tmp_path):
+    """A validator-accepted company record with no `review:` key at all
+    (review is optional per spec §9) must never be silently skipped —
+    PI-0011 correction 2 requires an explicit Unable-to-evaluate finding,
+    and it must never be classified as overdue."""
+    d = tmp_path / "companies"
+    d.mkdir()
+    company = _valid_company()
+    del company["review"]
+    _write_yaml(d / "ZZZZ.yaml", company)
+
+    findings = ir.collect_staleness_findings(d, as_of_date=date(2026, 7, 19))
+
+    assert findings.schema_invalid == ()  # still schema-valid: review is optional
+    assert findings.overdue_reviews == ()  # never classified as overdue
+    assert len(findings.unable_to_evaluate) == 1
+    u = findings.unable_to_evaluate[0]
+    assert u.ticker == "ZZZZ"
+    assert u.field_name == "review.next_due"
+    assert u.raw_value is None
+    assert "missing" in u.reason.lower()
+
+
+def test_review_explicit_null_is_unable_to_evaluate(tmp_path):
+    """`review: null` is schema-valid (same as an absent key) but must be
+    surfaced the same way — never silently skipped, never overdue."""
+    d = tmp_path / "companies"
+    d.mkdir()
+    company = _valid_company()
+    company["review"] = None
+    _write_yaml(d / "ZZZZ.yaml", company)
+
+    findings = ir.collect_staleness_findings(d, as_of_date=date(2026, 7, 19))
+
+    assert findings.schema_invalid == ()
+    assert findings.overdue_reviews == ()
+    assert len(findings.unable_to_evaluate) == 1
+    u = findings.unable_to_evaluate[0]
+    assert u.ticker == "ZZZZ"
+    assert u.field_name == "review.next_due"
+    assert u.raw_value is None
+
+
+def test_review_missing_required_keys_stays_schema_invalid_not_unable_to_evaluate(tmp_path):
+    """A `review:` mapping present but missing required keys
+    (cadence_days/last_reviewed/next_due) is ALREADY schema-invalid under
+    the existing, unmodified intelligence_validator.py — that verdict must
+    be preserved exactly. It goes only to Schema-invalid, never to Unable
+    to evaluate (no double-reporting of the same underlying problem)."""
+    d = tmp_path / "companies"
+    d.mkdir()
+    _write_yaml(d / "ZZZZ.yaml", {"review": {"next_due": "2020-01-01"}})
+
+    findings = ir.collect_staleness_findings(d, as_of_date=date(2026, 7, 19))
+
+    assert [i.ticker for i in findings.schema_invalid] == ["ZZZZ"]
+    assert findings.unable_to_evaluate == ()
+    assert findings.overdue_reviews == ()
+
+
+# ── staleness: PyYAML-decoded date objects are accepted directly ──────────
+
+def test_review_next_due_as_yaml_date_object_is_evaluated_normally(tmp_path):
+    """PyYAML decodes an unquoted `next_due: 2026-07-01` into an actual
+    datetime.date object, not a string. A valid date object must be
+    evaluated normally (PI-0011 correction 3), not routed to
+    Unable-to-evaluate."""
+    d = tmp_path / "companies"
+    d.mkdir()
+    p = d / "ZZZZ.yaml"
+    company = _valid_company(review={
+        "cadence_days": 90, "last_reviewed": "2026-01-01", "next_due": date(2026, 7, 1),
+    })
+    p.write_text(yaml.safe_dump(company, sort_keys=False))
+
+    # sanity: confirm the actual round trip through YAML really does
+    # produce a date object, not a string, before evaluating the claim
+    reloaded = yaml.safe_load(p.read_text())
+    assert isinstance(reloaded["review"]["next_due"], date)
+    assert not isinstance(reloaded["review"]["next_due"], str)
+
+    findings = ir.collect_staleness_findings(d, as_of_date=date(2026, 7, 19))
+    assert findings.unable_to_evaluate == ()
+    assert findings.schema_invalid == ()
+    assert [o.ticker for o in findings.overdue_reviews] == ["ZZZZ"]
+    assert findings.overdue_reviews[0].next_due == "2026-07-01"  # canonical ISO text, per correction 3
+
+
+def test_catalyst_expected_as_yaml_date_object_is_evaluated_normally(tmp_path):
+    d = tmp_path / "companies"
+    d.mkdir()
+    p = d / "ZZZZ.yaml"
+    company = _valid_company(catalysts=[
+        {"catalyst": "made-up catalyst", "expected": date(2026, 6, 1), "status": "pending"},
+    ])
+    p.write_text(yaml.safe_dump(company, sort_keys=False))
+
+    reloaded = yaml.safe_load(p.read_text())
+    assert isinstance(reloaded["catalysts"][0]["expected"], date)
+
+    findings = ir.collect_staleness_findings(d, as_of_date=date(2026, 7, 19))
+    assert findings.unable_to_evaluate == ()
+    assert [c.ticker for c in findings.lapsed_catalysts] == ["ZZZZ"]
+    assert findings.lapsed_catalysts[0].expected == "2026-06-01"
+
+
+def test_review_next_due_as_full_datetime_is_unable_to_evaluate_not_truncated(tmp_path):
+    """A full datetime.datetime timestamp (decoded from a YAML value that
+    also carries a time component) must NOT be silently truncated to its
+    calendar date — that would substitute an untested schema meaning.
+    Narrowest implementation: treated as unable-to-evaluate instead."""
+    d = tmp_path / "companies"
+    d.mkdir()
+    p = d / "ZZZZ.yaml"
+    company = _valid_company(review={
+        "cadence_days": 90, "last_reviewed": "2026-01-01",
+        "next_due": datetime(2026, 7, 1, 10, 30),
+    })
+    p.write_text(yaml.safe_dump(company, sort_keys=False))
+
+    reloaded = yaml.safe_load(p.read_text())
+    assert isinstance(reloaded["review"]["next_due"], datetime)
+
+    findings = ir.collect_staleness_findings(d, as_of_date=date(2026, 7, 19))
+    assert findings.overdue_reviews == ()
+    assert len(findings.unable_to_evaluate) == 1
+    assert findings.unable_to_evaluate[0].field_name == "review.next_due"
+
+
 # ── staleness: deterministic ordering ──────────────────────────────────────
 
 def test_staleness_deterministic_alphabetical_ordering(tmp_path):
@@ -238,6 +370,81 @@ def test_render_populated_report_contains_all_section_headers(tmp_path):
         assert header in text
     assert "_As of: 2026-07-19." in text
     assert "ZZZZ" in text  # coverage note lists the scanned ticker
+
+
+# ── render: Markdown table-cell escaping (pipe / CR / newline) ────────────
+
+def test_render_escapes_pipe_and_newlines_in_catalyst_label():
+    """A human-authored catalyst label containing a pipe and embedded
+    CRLF/LF must not break the Markdown table into extra columns or rows
+    (PI-0011 correction 4) — output formatting only, no source-record
+    change."""
+    poison = "weird|pipe\r\nand\nnewlines"
+    findings = ir.StalenessFindings(
+        as_of_date=date(2026, 7, 19),
+        companies_scanned=("ZZZZ",),
+        lapsed_catalysts=(ir.LapsedCatalyst(
+            ticker="ZZZZ", catalyst=poison, expected="2026-06-01",
+            status="pending", days_overdue=5,
+        ),),
+    )
+    text = ir.render_staleness_report(findings)
+
+    assert "\r" not in text  # carriage returns never survive into the report
+    matching_lines = [ln for ln in text.splitlines() if "weird" in ln]
+    assert len(matching_lines) == 1  # the embedded newlines did not fragment this into extra lines
+    row = matching_lines[0]
+    assert row.startswith("|") and row.endswith("|")
+    assert "\\|" in row  # the embedded pipe was escaped, not left as a raw column delimiter
+    # exactly 5 columns -> 6 true delimiters; the escaped embedded pipe must
+    # not be counted as a 7th delimiter
+    unescaped_pipes = re.findall(r"(?<!\\)\|", row)
+    assert len(unescaped_pipes) == 6
+
+
+def test_render_escapes_pipe_and_newlines_in_validator_error_text():
+    """A validator error message containing a pipe and embedded newline
+    must not break the Schema-invalid table."""
+    poison = "bad value|contains a pipe\r\nand a newline\nand another"
+    findings = ir.StalenessFindings(
+        as_of_date=date(2026, 7, 19),
+        companies_scanned=("ZZZZ",),
+        schema_invalid=(ir.SchemaInvalidRecord(ticker="ZZZZ", errors=(poison,)),),
+    )
+    text = ir.render_staleness_report(findings)
+
+    assert "\r" not in text
+    matching_lines = [ln for ln in text.splitlines() if "bad value" in ln]
+    assert len(matching_lines) == 1
+    row = matching_lines[0]
+    assert row.startswith("|") and row.endswith("|")
+    assert "\\|" in row
+    # 2 columns -> 3 true delimiters
+    unescaped_pipes = re.findall(r"(?<!\\)\|", row)
+    assert len(unescaped_pipes) == 3
+
+
+def test_render_escapes_pipe_in_unable_to_evaluate_reason_and_raw_value():
+    findings = ir.StalenessFindings(
+        as_of_date=date(2026, 7, 19),
+        companies_scanned=("ZZZZ",),
+        unable_to_evaluate=(ir.UnableToEvaluate(
+            ticker="ZZZZ",
+            field_name="review.next_due",
+            raw_value="bad|value\nwith a break",
+            reason="unparseable|reason\nwith a break",
+        ),),
+    )
+    text = ir.render_staleness_report(findings)
+
+    assert "\r" not in text
+    matching_lines = [ln for ln in text.splitlines() if "unparseable" in ln]
+    assert len(matching_lines) == 1
+    row = matching_lines[0]
+    assert row.startswith("|") and row.endswith("|")
+    # 4 columns -> 5 true delimiters
+    unescaped_pipes = re.findall(r"(?<!\\)\|", row)
+    assert len(unescaped_pipes) == 5
 
 
 # ── role-drift ──────────────────────────────────────────────────────────────
@@ -584,15 +791,39 @@ def test_real_repository_coverage_matches_filesystem_glob():
     assert rollup.theme_validation_errors == ()
 
 
-def test_real_repository_role_drift_has_no_mismatches_today():
-    """Regression check on real, currently-governed data — not a hard-coded
-    roster. If this ever fails, it means a real company record and
-    targets.yaml have genuinely drifted, which is exactly what PI-0011
-    exists to surface."""
-    report = ir.check_portfolio_role_drift(Path("intelligence/companies"), Path("targets.yaml"))
-    assert report.checked > 0
-    assert report.mismatched == 0
-    assert report.ambiguous == 0
+def test_real_repository_role_drift_is_a_non_gating_smoke_test():
+    """Role-drift findings (MISMATCH / NOT_IN_TARGETS /
+    AMBIGUOUS_TARGET_MEMBERSHIP) are advisory human-review output, not a
+    code invariant — PI-0011 requires this test to NEVER fail merely
+    because the real portfolio currently has one (a role-drift finding is
+    an expected, legitimate, time-varying state, not a bug). This test
+    only asserts the scan's own internal consistency and non-mutation
+    guarantees; it makes no assertion about *how many* (or whether zero)
+    advisory findings currently exist."""
+    companies_dir = Path("intelligence/companies")
+    targets_path = Path("targets.yaml")
+    before_targets = targets_path.read_bytes()
+    before_companies = {p: p.read_bytes() for p in companies_dir.glob("*.yaml")}
+
+    report = ir.check_portfolio_role_drift(companies_dir, targets_path)
+
+    # the scan completed and its own internal counts are self-consistent
+    assert report.checked == report.matched + report.mismatched + report.not_in_targets + report.ambiguous
+
+    # every individually-listed finding is a real advisory state, never MATCH
+    assert all(f.status != ir.ROLE_MATCH for f in report.findings)
+    assert all(
+        f.status in (ir.ROLE_MISMATCH, ir.ROLE_NOT_IN_TARGETS, ir.ROLE_AMBIGUOUS)
+        for f in report.findings
+    )
+
+    # deterministic ordering
+    tickers = [f.ticker for f in report.findings]
+    assert tickers == sorted(tickers)
+
+    # neither source was touched by running the check
+    assert targets_path.read_bytes() == before_targets
+    assert {p: p.read_bytes() for p in companies_dir.glob("*.yaml")} == before_companies
 
 
 def test_real_repository_source_files_remain_byte_identical(tmp_path):
