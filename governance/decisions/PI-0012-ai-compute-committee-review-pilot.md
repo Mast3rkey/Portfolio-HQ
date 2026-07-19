@@ -51,12 +51,14 @@ workloads. Its own narrative deliberately permits later company-side
 expansion without changing that identity, and the theme record itself
 stores no reverse company membership (authority runs one way only, company
 → theme, per PI-0006). `PI-0007` authorized implementation of exactly the
-NVDA and GEV company-side references to that theme; no third company may
-reference it without its own separately approved governance decision. This
-decision does not change that theme's scope or authorize any new reference
-to it — TSM's possible future theme reference, if any, remains undecided
-until a human separately reviews TSM's evidence against the theme's
-existing Non-membership standard.
+NVDA and GEV company-side references to that theme.
+
+This decision does not change that theme's conceptual scope and does not
+modify `ai_infrastructure.yaml` or `.md`. It does, however, conditionally
+authorize exactly one possible new company-side reference: see the Decision
+section below for the precise conditional TSM→`ai_infrastructure` authority
+this decision grants, and the boundary that authority does not cross. No
+company other than TSM may reference the theme under this decision.
 
 "AI Compute" is only the non-authoritative name of this bounded committee
 review initiative. It is not a new Theme Intelligence record, an ontology
@@ -66,7 +68,7 @@ sleeve, a target, or a cluster. No file called `ai_compute.yaml` or
 
 ## Decision
 
-**Authorizes exactly five things, and nothing else:**
+**Authorizes exactly six things, and nothing else:**
 
 1. **Operational use of `docs/INVESTMENT_ONTOLOGY.md`'s Section E
    standardized company-review vocabulary** (Economic Role, Moat,
@@ -108,7 +110,20 @@ sleeve, a target, or a cluster. No file called `ai_compute.yaml` or
    `intelligence/companies/TSM.yaml` and `intelligence/companies/TSM.md`,
    through a later, separately reviewed implementation PR. This decision
    creates neither file itself.
-5. **The governance index and `CLAUDE.md` pointer entries associated with
+5. **Conditional TSM → `ai_infrastructure` theme reference.** PI-0012
+   conditionally authorizes exactly one possible new company-side theme
+   reference: TSM may reference `ai_infrastructure` in its future Company
+   Intelligence YAML only if the TSM research review demonstrates that the
+   company meets the existing theme record's Non-membership standard **and**
+   the human principal explicitly approves both that conclusion and the
+   exact `themes: [ai_infrastructure]` value. If either condition is not
+   satisfied, the TSM record must omit the theme reference. This conditional
+   authority applies only to TSM: it does not authorize a reference for any
+   other company, does not modify the theme's conceptual identity, does not
+   modify `ai_infrastructure.yaml` or `.md`, does not store reverse
+   membership, and does not treat theme membership as a tier, sizing, or
+   allocation conclusion.
+6. **The governance index and `CLAUDE.md` pointer entries associated with
    this decision** (`governance/decisions.yaml`, `CLAUDE.md`'s Decisions
    Log), filed in this same PR.
 
@@ -126,15 +141,104 @@ must independently determine TSM's economic role, moat, bottleneck power,
 financial quality, portfolio uniqueness, and every other substantive review
 conclusion listed in the template above.
 
+### Authorized TSM pilot review questions
+
+This subsection is the authoritative record of the eleven-question
+methodology referenced in Decision item 2, so the full methodology survives
+in the repository independent of any external conversation. It applies only
+to the TSM pilot (see "Applies only to TSM" below).
+
+1. **Economic/company role**
+   - What function does TSM serve within the relevant economic system or
+     supply chain?
+   - Is this descriptive role distinct from its `portfolio_role_ref`, which
+     remains only a human-authored tier/category reference?
+
+2. **Investment thesis**
+   - What is the durable, long-term reason to own or monitor TSM?
+   - Which secular demand drivers support that thesis?
+   - Which claims are established facts versus committee inference?
+
+3. **Moat**
+   - What makes TSM difficult to displace?
+   - Is the advantage technological, structural, regulatory, ecosystem-based,
+     scale-based, customer-embedded, or some evidenced combination?
+   - What could realistically weaken it?
+
+4. **Bottleneck power**
+   - Does TSM control a real chokepoint?
+   - Can customers route around it?
+   - What substitutes or alternative suppliers exist?
+   - The review must be permitted to conclude that no durable bottleneck is
+     established.
+
+5. **Financial quality**
+   - What does the evidence show about balance-sheet strength?
+   - Margin and cash-generation quality?
+   - Reinvestment requirements?
+   - Capital intensity and cyclicality?
+
+6. **Capital allocation**
+   - How has management deployed cash among reinvestment, acquisitions,
+     buybacks, dividends, and balance-sheet priorities?
+   - What evidence supports value creation or destruction?
+   - Do not use stock-price performance alone as proof.
+
+7. **Secular tailwinds**
+   - Which multi-year structural demand drivers are evidenced?
+   - Which apparent strengths may instead reflect a temporary semiconductor
+     cycle?
+
+8. **Execution risk**
+   - What must management successfully execute in the future?
+   - Which parts of the thesis are already established versus dependent on
+     future delivery?
+
+9. **Portfolio uniqueness**
+   - What distinct exposure would TSM add to the documented portfolio
+     reasoning?
+   - Which current holdings overlap with that exposure?
+   - What economically important exposure, if any, would be absent without
+     TSM?
+
+10. **Replacement candidate**
+    - Which current holding or outside alternative could perform a similar
+      economic function?
+    - This is descriptive comparison only and is not a recommendation to
+      replace, sell, trim, buy, or add anything.
+
+11. **Capital Priority**
+    - Apply only `ONTO-0001`'s bounded definition: the human-reviewed case
+      for whether additional capital deserves consideration relative to
+      current policy and available alternatives.
+    - Do not produce a score, ranking, league table, next-dollar list, buy
+      recommendation, target-weight instruction, promotion, or demotion.
+
+**Output-mapping rule:**
+
+- These eleven dimensions belong in the human review packet and future TSM
+  Markdown narrative.
+- They do not create eleven new YAML fields.
+- `TSM.yaml` must remain within the existing frozen Company Intelligence
+  schema (`docs/PORTFOLIO_INTELLIGENCE_SPEC.md` §9).
+- No ontology field, scorecard field, or connection to `portfolio_role_ref`
+  is authorized.
+
+**Applies only to TSM:** this methodology is documented here as the
+approved TSM-pilot review process. It has no standing authority over any
+other company. A future decision may adopt it by explicit reference for a
+different company; PI-0012 itself grants no such authority.
+
 ### Required human approvals before any implementation PR opens (TSM)
 
 Research scope; sources; economic-role description; risks and catalysts;
 `portfolio_role_ref` (descriptive only, per `PI-0003`'s unchanged doctrine,
-fixed at authoring time, not derived from `targets.yaml`); an explicit
-human decision on whether TSM's evidence meets `ai_infrastructure.yaml`'s
-own Non-membership standard and therefore whether `themes: [ai_infrastructure]`
-is added, or whether TSM carries no theme reference; final YAML; final
-Markdown narrative.
+fixed at authoring time, not derived from `targets.yaml`); the conditional
+theme-reference decision described in Decision item 5 above — explicit human
+approval of both (a) the conclusion that TSM's evidence meets
+`ai_infrastructure.yaml`'s own Non-membership standard, and (b) the exact
+`themes: [ai_infrastructure]` value, or, failing either, the record must
+omit the theme reference entirely; final YAML; final Markdown narrative.
 
 **Conviction rating**, specifically: either (a) human approval of
 `conviction.rating` where a rating is included, and any included value must
@@ -167,11 +271,18 @@ under any interpretation:
 - any research conclusion about TSM (economic role, moat, bottleneck power,
   financial quality, portfolio uniqueness, or any other substantive
   finding) — those remain for the future committee review to determine;
-- any file creation in this PR, including `TSM.yaml`, `TSM.md`, or any
-  `ai_compute.yaml`/`ai_compute.md`;
+- any Company Intelligence, Theme Intelligence, research, schema,
+  implementation, report, or AI Compute artifact creation in this
+  governance-only PR, including no `TSM.yaml`, `TSM.md`, `ai_compute.yaml`,
+  or `ai_compute.md`. This PR creates exactly three files: this governance
+  decision file, its `governance/decisions.yaml` index entry, and its
+  `CLAUDE.md` pointer — no investment-research or Intelligence artifact;
 - any second AI Compute company beyond TSM (ASML, AVGO, AMD, AMAT, KLAC,
   LRCX, MRVL, INTC, and any re-review of NVDA all remain unauthorized, with
   no presumed sequence);
+- any company-side `ai_infrastructure` (or any other theme) reference for
+  any company other than TSM, and even for TSM, any reference not backed by
+  both required approvals under Decision item 5;
 - any new Theme Intelligence record;
 - any change to `ai_infrastructure.yaml`/`.md`, `COST.yaml`/`.md`,
   `GEV.yaml`/`.md`, `ISRG.yaml`/`.md`, `TMO.yaml`/`.md`, or `XOM.yaml`/`.md`;
@@ -282,3 +393,7 @@ implementation PR is required to create `TSM.yaml`/`TSM.md`, gated behind
 the human approvals listed above. No second company, no new theme, and no
 extension of the template or evidence standard beyond TSM is authorized;
 each would require its own future, separately-approved governance decision.
+TSM's own future record may or may not reference `ai_infrastructure`,
+exactly as conditioned under Decision item 5 — this decision does not
+itself add, default-authorize, or guarantee that reference; it becomes real
+only if both required approvals are separately obtained.
