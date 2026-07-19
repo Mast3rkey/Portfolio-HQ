@@ -161,12 +161,73 @@ def test_fresh_buffer_data_within_threshold_is_not_stale():
     assert VERIFY_MARGIN_DATA not in r.allowed_actions
 
 
-def test_data_age_exactly_at_threshold_is_not_stale():
+def test_data_age_zero_is_fresh():
+    r = classify_margin_state(
+        gross=100.0, margin_debt=20.0, buffer_pct=60.0,
+        leverage_cap=1.8, buffer_floor_pct=30.0,
+        buffer_data_age_days=0.0, stale_threshold_days=2.0)
+    assert "stale_margin_data" not in r.violated_constraints
+    assert VERIFY_MARGIN_DATA not in r.allowed_actions
+
+
+def test_data_age_exactly_at_threshold_is_stale():
+    # Boundary is inclusive (>=), not exclusive -- read-only-check-margin-
+    # truthfulness correction: aligned with render()'s pre-existing
+    # >= STALE_MARGIN_DAYS banner threshold so a --review run and a --health
+    # run agree on whether exactly-2-days-old data is stale.
     r = classify_margin_state(
         gross=100.0, margin_debt=20.0, buffer_pct=60.0,
         leverage_cap=1.8, buffer_floor_pct=30.0,
         buffer_data_age_days=2.0, stale_threshold_days=2.0)
+    assert "stale_margin_data" in r.violated_constraints
+    assert VERIFY_MARGIN_DATA in r.allowed_actions
+
+
+def test_data_age_above_threshold_is_stale():
+    r = classify_margin_state(
+        gross=100.0, margin_debt=20.0, buffer_pct=60.0,
+        leverage_cap=1.8, buffer_floor_pct=30.0,
+        buffer_data_age_days=10.0, stale_threshold_days=2.0)
+    assert "stale_margin_data" in r.violated_constraints
+    assert VERIFY_MARGIN_DATA in r.allowed_actions
+
+
+# ── unverifiable margin sync data (missing/malformed/future date) ──────────
+# Distinct from "caller isn't tracking age at all" (buffer_data_age_days=None
+# alone) -- buffer_data_unverifiable=True is an explicit "an age WAS
+# attempted and is invalid" signal the caller (allocate.py) sets when a
+# sync date is missing, malformed, or dated in the future.
+
+def test_unverifiable_sync_data_flags_verify_and_distinct_violated_constraint():
+    r = classify_margin_state(
+        gross=100.0, margin_debt=20.0, buffer_pct=60.0,
+        leverage_cap=1.8, buffer_floor_pct=30.0,
+        buffer_data_unverifiable=True)
+    assert "unverifiable_margin_data" in r.violated_constraints
     assert "stale_margin_data" not in r.violated_constraints
+    assert VERIFY_MARGIN_DATA in r.allowed_actions
+    assert any("cannot be verified" in reason for reason in r.reasons)
+
+
+def test_unverifiable_sync_data_does_not_force_a_state():
+    r = classify_margin_state(
+        gross=100.0, margin_debt=20.0, buffer_pct=60.0,
+        leverage_cap=1.8, buffer_floor_pct=30.0,
+        buffer_data_unverifiable=True)
+    assert r.current_state == "NORMAL"
+
+
+def test_missing_buffer_pct_takes_priority_over_unverifiable_sync_date():
+    # buffer_pct is None -> the pre-existing "never synced" path must win;
+    # there's no buffer to judge freshness on in the first place, so the two
+    # reasons must never both appear.
+    r = classify_margin_state(
+        gross=100.0, margin_debt=20.0, buffer_pct=None,
+        leverage_cap=1.8, buffer_floor_pct=30.0,
+        buffer_data_unverifiable=True)
+    assert any("unavailable" in reason for reason in r.reasons)
+    assert not any("cannot be verified" in reason for reason in r.reasons)
+    assert "unverifiable_margin_data" not in r.violated_constraints
 
 
 # ── concentration tightening ────────────────────────────────────────────────
@@ -253,6 +314,8 @@ def test_unset_thresholds_never_fire_caution_or_restricted():
          concentration_min_fraction=1.5),
     dict(gross=100.0, margin_debt=0.0, buffer_pct=50.0, leverage_cap=1.8, buffer_floor_pct=30.0,
          buffer_data_age_days=-1.0),
+    dict(gross=100.0, margin_debt=0.0, buffer_pct=50.0, leverage_cap=1.8, buffer_floor_pct=30.0,
+         buffer_data_unverifiable=True, buffer_data_age_days=1.0),
     dict(gross=100.0, margin_debt=0.0, buffer_pct=50.0, leverage_cap=1.8, buffer_floor_pct=30.0,
          concentration_tightening_coefficient=-0.01),
     dict(gross=100.0, margin_debt=0.0, buffer_pct=50.0, leverage_cap=1.8, buffer_floor_pct=30.0,

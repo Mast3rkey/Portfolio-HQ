@@ -12,7 +12,7 @@ Usage:
     python allocate.py --review          # rebalance check, no new cash
     python allocate.py update-shares         # paste "TICKER qty" lines, Ctrl-D (stocks/ETFs)
     python allocate.py update-crypto-shares  # paste "COIN qty" lines, Ctrl-D (BTC/ETH/SOL)
-    python allocate.py update-holdings       # paste "TICKER value" lines, Ctrl-D (SKHY only)
+    python allocate.py update-holdings       # paste "TICKER value" lines, Ctrl-D (manual fallback)
 """
 
 from __future__ import annotations
@@ -43,6 +43,39 @@ DAILY_LIMIT = 320  # margin above the ~290-300 trading days in DAYS_BACK, so a
                     # holiday-heavy stretch can't starve the 200-SMA of bars
 DAYS_BACK = 420
 STALE_MARGIN_DAYS = 2   # warn if margin debt/buffer haven't been synced in this many days
+
+
+def _margin_buffer_age_days(synced_at) -> float | None:
+    """Days since holdings.yaml's margin.synced_at, or None if missing,
+    unparseable, OR in the future. Fails safe: a malformed/absent/future date
+    never raises and never yields a fabricated number (0 would read as
+    'freshly synced' and hide real staleness; a negative number for a future
+    date is nonsensical, not 'fresher than fresh') -- it yields 'age unknown',
+    which every caller (render(), classify_margin_state() via main()) treats
+    as 'do not judge staleness from this'. Single source of truth so the
+    review banner and the risk-classifier's own reasons are always computed
+    from the identical age, never contradict each other. Pair with
+    _margin_buffer_age_unverifiable() at the call site to distinguish
+    'no age info at all' from 'an age was attempted and is invalid' --
+    this function alone conflates the two into the same None."""
+    if not synced_at:
+        return None
+    try:
+        age = (date.today() - date.fromisoformat(str(synced_at))).days
+    except ValueError:
+        return None
+    return age if age >= 0 else None
+
+
+def _margin_buffer_age_unverifiable(synced_at) -> bool:
+    """True when synced_at is present but does not resolve to a valid,
+    non-negative age (malformed string or a future date) or is absent
+    entirely -- i.e. whenever _margin_buffer_age_days(synced_at) is None.
+    Kept as a distinct call (rather than inferring this from the age being
+    None at each call site) so main()'s wiring into classify_margin_state()
+    reads as an explicit decision, matching that function's own explicit
+    buffer_data_unverifiable parameter."""
+    return _margin_buffer_age_days(synced_at) is None
 
 
 # ── config / state io ──────────────────────────────────────────────────────────
@@ -101,8 +134,7 @@ def resolve_holdings(client, metrics: dict | None = None,
                      crypto_prices: dict | None = None) -> dict[str, float]:
     """Live-value every share-tracked position (qty x latest price); fall back to the
     manual dollar snapshot in 'holdings' for anything with no share/coin count or no
-    live price (SKHY — permanent zero-coverage gap on the free IEX feed — is the only
-    remaining manual-only entry). 'shares' and 'crypto_shares' are the source of truth
+    live price. 'shares' and 'crypto_shares' are the source of truth
     for any ticker/coin present there; 'holdings' entries are only the fallback/override
     layer. Pass 'metrics' (from fetch_market) and 'crypto_prices' ({coin: price}, e.g.
     from crypto.fetch_crypto) to reuse prices already fetched this run and avoid a
@@ -537,13 +569,8 @@ def render(result, review: bool) -> str:
     if mg["debt"] > 0 or mg["requested"] > 0:
         lev_s = f"{mg['leverage_current']:.2f}x" if mg["leverage_current"] is not None else "n/a"
         buf_s = f"{mg['buffer_pct']:.1f}%" if mg["buffer_pct"] is not None else "unsynced"
-        age_days = None
         synced_at = mg.get("synced_at")
-        if synced_at:
-            try:
-                age_days = (date.today() - date.fromisoformat(str(synced_at))).days
-            except ValueError:
-                age_days = None
+        age_days = _margin_buffer_age_days(synced_at)
         L.append("")
         L.append("## Margin")
         L.append("| | |")
@@ -561,20 +588,31 @@ def render(result, review: bool) -> str:
         elif mg["block_reason"]:
             L.append("")
             L.append(f"> Margin request clipped — {mg['block_reason']}.")
-        if age_days is not None and age_days >= STALE_MARGIN_DAYS:
+        stale_banner_shown = age_days is not None and age_days >= STALE_MARGIN_DAYS
+        unverifiable_banner_shown = age_days is None and mg["requested"] > 0
+        if stale_banner_shown:
             L.append("")
             L.append(f"> ⚠️ **Margin data is {age_days} day(s) old** (last synced {synced_at}) — "
                       "re-check Robinhood and run `update-margin` before trusting this leverage/buffer read.")
-        elif age_days is None and mg["requested"] > 0:
+        elif unverifiable_banner_shown:
             L.append("")
-            L.append("> ⚠️ **No sync date on record for margin state** — run `update-margin` "
-                      "to establish one.")
+            L.append("> ⚠️ **No valid sync date on record for margin state** (missing, "
+                      "malformed, or in the future) — run `update-margin` to establish one.")
         ms = result.get("margin_state")
         if ms is not None:
             L.append("")
             L.append(f"**Margin risk state: {ms.current_state}**")
             if ms.reasons:
                 for reason in ms.reasons:
+                    # The banners above already surfaced these same facts (age +
+                    # synced_at + a call to action) -- skip classify_margin_state()'s
+                    # own same-fact reason line here so the two don't say the same
+                    # thing twice.
+                    if stale_banner_shown and reason.startswith("margin data is") \
+                            and "day(s) old" in reason:
+                        continue
+                    if unverifiable_banner_shown and reason.startswith("margin sync date is"):
+                        continue
                     L.append(f"- {reason}")
             if ms.violated_constraints:
                 L.append(f"- Violated constraints: {', '.join(ms.violated_constraints)}")
@@ -710,9 +748,9 @@ def _parse_ticker_value_pairs(text: str) -> dict[str, float]:
 
 def update_holdings(replace: bool = False, confirm: bool = False):
     mode = "REPLACE all" if replace else "MERGE into existing"
-    print(f"Paste 'TICKER value' lines (e.g. 'SKHY 24.45'). End with Ctrl-D.\n"
+    print(f"Paste 'TICKER value' lines (e.g. 'TICKER 24.45'). End with Ctrl-D.\n"
           f"Mode: {mode} manual holdings. This is only for positions NOT tracked by "
-          f"share/coin count (SKHY is the only one left) — anything in 'shares' or\n"
+          f"share/coin count — anything in 'shares' or\n"
           f"'crypto_shares' is live-priced and overrides whatever's pasted here. Use "
           f"'update-shares' for a stock/ETF, 'update-crypto-shares' for a coin.\n",
           file=sys.stderr)
@@ -800,9 +838,8 @@ def write_state(holdings: dict | None, margin: dict | None, shares: dict | None,
                 "'update-crypto-shares'\n"
                 "# after a real buy/sell/trim changes a count.\n"
                 "# 'holdings' (ticker: dollar value) is the manual fallback for anything\n"
-                "# NOT share-tracked: just SKHY now (permanent zero-coverage gap on the\n"
-                "# free IEX feed — RSI/trend gates can never fire for it).\n"
-                "# Update it with 'allocate.py update-holdings'.\n")
+                "# NOT share-tracked. Currently empty/unused.\n"
+                "# Update it with 'allocate.py update-holdings' if a future ticker needs it.\n")
         if margin:
             f.write("# margin: synced via 'allocate.py update-margin <debt> <buffer_pct>' — "
                     "buffer_pct comes from Robinhood directly (per-security maintenance\n"
@@ -989,7 +1026,21 @@ def main():
     ap.add_argument("--health", action="store_true",
                     help="snapshot risk/health view (leverage, buffer, clusters, crypto "
                          "sleeve, T1/T2 proximity) — observational, no new cash")
+    ap.add_argument("--no-log", action="store_true",
+                    help="suppress the timestamped allocation-log file and the "
+                         "performance_log.csv snapshot this run would otherwise write, "
+                         "for a genuinely read-only check. Only valid together with "
+                         "--review (a real --cash/--margin run must keep its audit "
+                         "trail; --health never writes a log to begin with). Standard "
+                         "behavior (both writes happen) is unchanged when this flag "
+                         "is omitted.")
     args = ap.parse_args()
+    if args.no_log and not args.review:
+        ap.error("--no-log is only valid together with --review — it exists to keep "
+                 "the read-only phone check read-only. A --cash/--margin allocation "
+                 "run must keep its audit trail (log file + performance_log.csv), and "
+                 "--health never writes either to begin with, so --no-log is not "
+                 "needed there.")
     if args.performance:
         print(render_performance())
         return
@@ -1033,7 +1084,7 @@ def main():
               if coins else {})
     crypto_price_map = {c: d["price"] for c, d in prices.items() if d["price"] is not None}
 
-    holdings = resolve_holdings(client, metrics, crypto_price_map)  # live qty x price; SKHY manual
+    holdings = resolve_holdings(client, metrics, crypto_price_map)  # live qty x price
 
     result = plan(targets, holdings, roster, metrics, regime_ok, regime_known, args.cash,
                   margin_debt=margin_debt, margin_buffer_pct=margin_buffer_pct,
@@ -1060,6 +1111,9 @@ def main():
     caution_cfg = states_cfg.get("caution", {}) or {}
     restricted_cfg = states_cfg.get("restricted", {}) or {}
     concentration_cfg = margin_cfg.get("concentration_adjustment", {}) or {}
+    synced_at_raw = margin_state.get("synced_at")
+    buffer_data_age_days = _margin_buffer_age_days(synced_at_raw)
+    buffer_data_unverifiable = _margin_buffer_age_unverifiable(synced_at_raw)
     result["margin_state"] = classify_margin_state(
         gross=result["margin"]["gross"],
         margin_debt=result["margin"]["debt"],
@@ -1068,6 +1122,9 @@ def main():
         buffer_floor_pct=result["margin"]["buffer_floor_pct"],
         concentration_score=concentration_score,
         concentration_source=concentration_source,
+        buffer_data_age_days=buffer_data_age_days,
+        stale_threshold_days=float(STALE_MARGIN_DAYS),
+        buffer_data_unverifiable=buffer_data_unverifiable,
         caution_leverage_fraction=caution_cfg.get("leverage_fraction_of_cap"),
         caution_buffer_comfort_multiplier=caution_cfg.get("buffer_comfort_multiplier"),
         restricted_leverage_fraction=restricted_cfg.get("leverage_fraction_of_cap"),
@@ -1093,11 +1150,15 @@ def main():
     out = render(result, review=args.review)
     print(out)
 
-    LOGS_DIR.mkdir(exist_ok=True)
-    log_path = LOGS_DIR / f"allocation-{datetime.now().strftime('%Y-%m-%dT%H%M%S')}.md"
-    log_path.write_text(out + "\n")
-    print(f"\n[logged to {log_path}]", file=sys.stderr)
-    log_performance(client=client, quiet=True, resolved_holdings=holdings)   # auto-snapshot
+    if args.no_log:
+        print("\n[--no-log: allocation log and performance_log.csv snapshot both "
+              "suppressed]", file=sys.stderr)
+    else:
+        LOGS_DIR.mkdir(exist_ok=True)
+        log_path = LOGS_DIR / f"allocation-{datetime.now().strftime('%Y-%m-%dT%H%M%S')}.md"
+        log_path.write_text(out + "\n")
+        print(f"\n[logged to {log_path}]", file=sys.stderr)
+        log_performance(client=client, quiet=True, resolved_holdings=holdings)   # auto-snapshot
 
 
 if __name__ == "__main__":

@@ -3,9 +3,11 @@
 #
 # Cloud sessions are ephemeral: each one starts from a fresh clone with no
 # .venv and no installed packages. This script rebuilds what's needed, runs
-# the test suite, and prints --health + --review. It never writes portfolio
-# state, never runs an update-* subcommand, and never places an order — order
-# -placement methods don't exist in alpaca_client.py by design (see CLAUDE.md).
+# the test suite, and prints --health + --review (the latter with --no-log,
+# so it doesn't write the timestamped allocation log or touch
+# performance_log.csv). It never writes portfolio state, never runs an
+# update-* subcommand, and never places an order — order-placement methods
+# don't exist in alpaca_client.py by design (see CLAUDE.md).
 #
 # Usage: ./run_portfolio_check.sh
 
@@ -86,7 +88,7 @@ echo "==> Running read-only Health View"
 
 echo ""
 echo "==> Running read-only allocation review"
-.venv/bin/python allocate.py --review
+.venv/bin/python allocate.py --review --no-log
 
 echo ""
 echo "==> Done. No update-* command was run. No order was placed."
