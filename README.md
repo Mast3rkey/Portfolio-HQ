@@ -38,7 +38,9 @@ governance/decisions/   structured decision records (ADR-style), one file per de
 
 intelligence/companies/     Company Intelligence: per-company research records (implemented, opt-in, advisory-only)
 intelligence/themes/        Theme Intelligence: theme-level research records (implemented, opt-in, advisory-only)
+intelligence/reports/       generated, tracked staleness output only (staleness_report.md; overwritten in place, PI-0011)
 intelligence_validator.py   read-only schema validator for intelligence/ (zero coupling with allocate.py/margin_state.py)
+intelligence_report.py      source-read-only staleness/role-drift/coverage reporting over intelligence/ (zero coupling with allocate.py/margin_state.py; PI-0011)
 
 backtest_*.py          one-shot backtests, each testing exactly one doctrine question
 verify_rungs.py         verification charts for the rung backtest
@@ -97,6 +99,63 @@ buy, trim, or block.
 ranking, weighting, or allocator-visible integration — remains deferred and
 unauthorized. Neither Theme Intelligence nor Portfolio Intelligence
 aggregation currently affects allocator behavior.
+
+## Intelligence Operations (source-read-only, PI-0011)
+
+`intelligence_report.py` is a separate, source-read-only reporting/checking
+layer over `intelligence/companies/` and `intelligence/themes/`, authorized
+by `governance/decisions/PI-0011-intelligence-operations-v1.md`. Like
+`intelligence_validator.py`, it has no import relationship with
+`allocate.py` or `margin_state.py` in either direction. `run_portfolio_check.sh`
+never invokes it as an operational reporting command and never regenerates
+the tracked staleness report — it's run manually, on demand. (Its full
+`pytest -q` run does import and exercise this module's mechanics via
+`test_intelligence_report.py`, same as any other module's tests; no test
+there treats an advisory finding as a failure — see below.)
+
+```bash
+python intelligence_report.py --staleness            # regenerate intelligence/reports/staleness_report.md
+python intelligence_report.py --role-drift           # stdout only — portfolio_role_ref vs. targets.yaml, this run only
+python intelligence_report.py --coverage             # stdout only — filesystem-derived counts and company→theme references
+python intelligence_report.py --all                  # all three in one run
+python intelligence_report.py --staleness --as-of 2026-08-01   # deterministic as-of date, for review or testing
+```
+
+- **Source-read-only**: this module can never rewrite `holdings.yaml`,
+  `targets.yaml`, or any Company/Theme Intelligence source record. It is
+  permitted to overwrite exactly one generated artifact —
+  `intelligence/reports/staleness_report.md` — and no other file.
+- **Staleness report** evaluates `intelligence/companies/*.yaml` only: a
+  company's `review.next_due`, and any catalyst whose `expected` date has
+  passed while its `status` is still exactly `"pending"` (a narrow
+  reporting heuristic, not a closed schema vocabulary). **Theme
+  Intelligence staleness is out of scope for V1.**
+- **Role drift is advisory human-review output only, stdout-only.** It
+  compares each company's `portfolio_role_ref` against its ticker's actual
+  tier membership in `targets.yaml` (internal repository-key comparison —
+  no symbol-normalization map) and reports `MATCH` / `MISMATCH` /
+  `NOT_IN_TARGETS` / `AMBIGUOUS_TARGET_MEMBERSHIP`. A mismatch never
+  rewrites either source and is never treated as invalidating the
+  Intelligence record — `targets.yaml` remains authoritative for current
+  allocator policy, and the company record stays exactly as a human
+  authored it until separately reviewed.
+- **Theme-reference integrity and coverage** reuse
+  `intelligence_validator.py`'s **public** API only — `validate_company_file`
+  and `validate_themes_directory` are the two functions actually called
+  directly; `validate_themes_directory` internally performs the existing
+  per-file `validate_theme_file` checks (schema, closed vocabularies, and
+  reverse-membership-key rejection) for every theme file it scans. No
+  second validator, no `intelligence/index.yaml`, no cached relationship
+  edges. Stdout-only.
+- **Role-drift and coverage-rollup findings never gate anything** — not the
+  allocator, not this repository's test suite, and not the phone workflow.
+  They are source-read-only *collection* operations (they read repository
+  files and return results for stdout rendering; only the report-rendering
+  stage is pure, with no filesystem I/O at all) — see
+  `governance/decisions/PI-0011-intelligence-operations-v1.md` for the full
+  advisory-boundary rationale.
+- **No ontology integration**: this layer does not read or apply
+  `docs/INVESTMENT_ONTOLOGY.md`.
 
 ## Allocation workflow
 
