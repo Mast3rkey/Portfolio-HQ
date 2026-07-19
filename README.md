@@ -220,9 +220,14 @@ Doctrine (from `CLAUDE.md`, enforced in `targets.yaml`'s `margin:` block and
   No discretionary lever-up on a market view — margin is fuel within a fixed
   ceiling, not a timing tool.
 - **30% margin-buffer floor**, hard cutoff. Before any margin-funded buy, the
-  tool checks the *projected* post-trade buffer; if it would drop below 30%,
-  the buy is blocked outright (no partial taper). A buffer already below 30%
-  is treated as a forced de-lever signal.
+  tool checks the *most recently synced* buffer against the 30% floor; if that
+  synced buffer is already below 30%, the buy is blocked outright (no partial
+  taper) and it's treated as a forced de-lever signal. Independently, the
+  requested margin amount is clipped to the 1.8x leverage cap. **The tool
+  cannot calculate Robinhood's exact projected post-trade buffer** — no such
+  formula exists in this codebase; only the currently-synced figure is ever
+  checked, so margin data must be freshly synced before relying on it for a
+  margin-funded decision, and synced again after execution.
 - Buffer % is **synced from Robinhood, never derived** (see above). Every run
   shows the buffer's sync date and warns if it's gone stale
   (`STALE_MARGIN_DAYS`, currently 2 days).

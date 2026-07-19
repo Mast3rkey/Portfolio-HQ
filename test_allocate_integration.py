@@ -11,6 +11,7 @@ and the cluster/T1T2 trims) or margin_state.py's classifier internals
 
 import copy
 import sys
+from datetime import date, timedelta
 
 import pytest
 import yaml
@@ -19,6 +20,7 @@ import allocate
 from allocate import build_roster, plan, render, render_health
 from margin_state import (
     ALLOWED_ACTIONS,
+    VERIFY_MARGIN_DATA,
     classify_margin_state,
     concentration_risk_score,
 )
@@ -43,13 +45,14 @@ def _flat_metrics(tickers, rsi=50):
     return {t: {"price": 100.0, "rsi14": rsi, "sma200": 90.0} for t in tickers}
 
 
-def _attach_margin_state(result, targets):
+def _attach_margin_state(result, targets, buffer_data_age_days=None, stale_threshold_days=2.0):
     """Reproduces exactly the block added to allocate.py's main() after
     plan() returns — kept in one place so tests exercise the real
     composition (concentration_risk_score -> classify_margin_state) rather
     than a paraphrase of it. Reads plan()'s own `ratio_to_cap` field (added
     for the Health View) rather than recomputing value/(book*pct/100) a
-    second time — mirrors main()'s current wiring exactly."""
+    second time — mirrors main()'s current wiring exactly. `buffer_data_age_days`
+    mirrors main()'s _margin_buffer_age_days(margin.synced_at) wiring."""
     cluster_proximities = {
         f"cluster:{c['name']}": c["ratio_to_cap"]
         for c in result.get("clusters", [])
@@ -65,6 +68,8 @@ def _attach_margin_state(result, targets):
         buffer_floor_pct=result["margin"]["buffer_floor_pct"],
         concentration_score=score,
         concentration_source=source,
+        buffer_data_age_days=buffer_data_age_days,
+        stale_threshold_days=stale_threshold_days,
         caution_leverage_fraction=margin_cfg.get("states", {}).get("caution", {}).get("leverage_fraction_of_cap"),
         restricted_leverage_fraction=margin_cfg.get("states", {}).get("restricted", {}).get("leverage_fraction_of_cap"),
         caution_buffer_comfort_multiplier=margin_cfg.get("states", {}).get("caution", {}).get("buffer_comfort_multiplier"),
@@ -682,3 +687,213 @@ def test_health_flag_cli_path_is_read_only(tmp_path, monkeypatch, capsys):
     assert "margin_state" in result
     assert "t1t2_proximity" in result
     assert "crypto_sleeve" in result
+
+
+# ── read-only-check-margin-truthfulness correction ─────────────────────────
+#
+# Covers: (1) --no-log suppresses the timestamped allocation log and the
+# performance_log.csv snapshot without changing the advisory content itself;
+# (2) normal --review keeps writing both, unchanged; (3) fresh/stale/missing
+# margin.synced_at feeding classify_margin_state() via _margin_buffer_age_days()
+# surfaces (or doesn't surface) verify_margin_data correctly, fails safe on
+# bad data, and never touches plan()'s own buy/trim/block/cash_left/margin
+# decisions -- classify_margin_state() runs strictly after plan() returns.
+
+def _review_cli_targets_and_holdings(tmp_path, synced_at="2026-07-18",
+                                     debt=100.0, buffer_pct=50.0):
+    targets_file = tmp_path / "targets.yaml"
+    holdings_file = tmp_path / "holdings.yaml"
+    with targets_file.open("w") as f:
+        yaml.safe_dump({
+            "tiers": {"T1": {"weight_pct": 10.0, "tickers": ["AAA"]}},
+            "caps": {"clusters": []},
+            "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
+                     "earnings_blackout_days": 7, "trim_rsi": 60,
+                     "t1t2_trim_mult": 1.5},
+            "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
+            "crypto": {},
+        }, f)
+    with holdings_file.open("w") as f:
+        yaml.safe_dump({
+            "holdings": {}, "shares": {"AAA": 10.0}, "crypto_shares": {},
+            "margin": {"debt": debt, "buffer_pct": buffer_pct, "synced_at": synced_at},
+        }, f)
+    return targets_file, holdings_file
+
+
+def _patch_review_cli(monkeypatch, targets_file, holdings_file, logs_dir, perf_log_file):
+    monkeypatch.setattr(allocate, "TARGETS_FILE", targets_file)
+    monkeypatch.setattr(allocate, "HOLDINGS_FILE", holdings_file)
+    monkeypatch.setattr(allocate, "LOGS_DIR", logs_dir)
+    monkeypatch.setattr(allocate, "PERF_LOG_FILE", perf_log_file)
+    monkeypatch.setattr(allocate, "AlpacaPaperClient", lambda: object())
+    monkeypatch.setattr(
+        allocate, "fetch_market",
+        lambda client, tickers, regime_ticker: (
+            {"AAA": {"price": 100.0, "rsi14": 50.0, "sma200": 90.0}}, True, True))
+    monkeypatch.setattr(
+        allocate, "resolve_holdings",
+        lambda client, metrics=None, crypto_prices=None: {"AAA": 1000.0})
+
+
+def _strip_timestamp_line(text):
+    return "\n".join(l for l in text.splitlines() if not l.startswith("# Allocation advisory"))
+
+
+# ── required test 1 & 2: --no-log suppresses writes; normal --review doesn't ──
+
+def test_review_no_log_matches_normal_advisory_and_suppresses_writes(tmp_path, monkeypatch, capsys):
+    targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path)
+    perf_header = "date,net_equity,gross,margin_debt,qqq_price,voo_price,note\n"
+
+    # -- run 1: normal --review. log_performance replaced with a recording
+    # spy (not a real write -- no network/live-holdings resolution here) so
+    # this test asserts *that* it was invoked, not its internal correctness
+    # (already covered by log_performance's own existing tests).
+    logs_dir_a = tmp_path / "logs_a"
+    perf_log_a = tmp_path / "perf_a.csv"
+    perf_log_a.write_text(perf_header)
+    _patch_review_cli(monkeypatch, targets_file, holdings_file, logs_dir_a, perf_log_a)
+    calls = []
+    monkeypatch.setattr(allocate, "log_performance", lambda *a, **k: calls.append((a, k)))
+    monkeypatch.setattr(sys, "argv", ["allocate.py", "--review"])
+    allocate.main()
+    out_normal = capsys.readouterr().out
+
+    assert logs_dir_a.exists() and list(logs_dir_a.glob("allocation-*.md")), \
+        "normal --review must still write the timestamped allocation log"
+    assert len(calls) == 1, "normal --review must still call log_performance()"
+
+    # -- run 2: --review --no-log. log_performance forbidden outright; any
+    # call at all is the bug this correction exists to prevent.
+    logs_dir_b = tmp_path / "logs_b"
+    perf_log_b = tmp_path / "perf_b.csv"
+    perf_log_b.write_text(perf_header)
+    _patch_review_cli(monkeypatch, targets_file, holdings_file, logs_dir_b, perf_log_b)
+
+    def _forbidden(*a, **k):
+        raise AssertionError("log_performance must not run under --review --no-log")
+    monkeypatch.setattr(allocate, "log_performance", _forbidden)
+    monkeypatch.setattr(sys, "argv", ["allocate.py", "--review", "--no-log"])
+    allocate.main()
+    out_no_log = capsys.readouterr().out
+
+    assert not logs_dir_b.exists(), "--no-log must not create the logs/ directory at all"
+    assert perf_log_b.read_text() == perf_header, \
+        "--no-log must leave performance_log.csv byte-identical"
+
+    # Same advisory body in both runs -- the --no-log branch sits strictly
+    # after render()/print(out), so content cannot differ by construction;
+    # this proves it rather than assuming it. Only the timestamp header line
+    # (wall-clock, not content) is allowed to differ between the two runs.
+    assert _strip_timestamp_line(out_no_log) == _strip_timestamp_line(out_normal)
+    assert "# Allocation advisory" in out_no_log
+
+
+# ── required test 3: the phone script invokes the no-write review path ────
+
+def test_run_portfolio_check_script_uses_no_log_review():
+    from pathlib import Path
+    script = Path(__file__).resolve().parent / "run_portfolio_check.sh"
+    text = script.read_text()
+    review_lines = [l for l in text.splitlines() if "allocate.py --review" in l]
+    assert review_lines, "run_portfolio_check.sh must invoke allocate.py --review"
+    assert all("--no-log" in l for l in review_lines), (
+        "every allocate.py --review invocation in run_portfolio_check.sh must "
+        "use --no-log so the phone check stays genuinely read-only")
+
+
+# ── required test 4 & 5: fresh vs. stale margin data in the Health View ────
+
+def test_fresh_margin_data_no_stale_warning_in_health_view(tmp_path, monkeypatch, capsys):
+    today = date.today().isoformat()
+    targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path, synced_at=today)
+    _patch_review_cli(monkeypatch, targets_file, holdings_file,
+                      tmp_path / "logs", tmp_path / "perf.csv")
+    monkeypatch.setattr(sys, "argv", ["allocate.py", "--health"])
+    allocate.main()
+    out = capsys.readouterr().out
+
+    assert VERIFY_MARGIN_DATA not in out
+    assert "stale_margin_data" not in out
+
+
+def test_stale_margin_data_surfaces_verify_margin_data_in_health_view(tmp_path, monkeypatch, capsys):
+    stale = (date.today() - timedelta(days=5)).isoformat()
+    targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path, synced_at=stale)
+    _patch_review_cli(monkeypatch, targets_file, holdings_file,
+                      tmp_path / "logs", tmp_path / "perf.csv")
+    monkeypatch.setattr(sys, "argv", ["allocate.py", "--health"])
+    allocate.main()
+    out = capsys.readouterr().out
+
+    assert VERIFY_MARGIN_DATA in out
+    assert "stale_margin_data" in out
+
+
+# ── required test 6: missing/invalid sync dates fail safe ─────────────────
+
+def test_margin_buffer_age_days_missing_and_invalid_fail_safe():
+    assert allocate._margin_buffer_age_days(None) is None
+    assert allocate._margin_buffer_age_days("") is None
+    assert allocate._margin_buffer_age_days("not-a-date") is None
+    assert allocate._margin_buffer_age_days("2026-13-40") is None
+    assert allocate._margin_buffer_age_days(date.today().isoformat()) == 0
+
+
+def test_missing_or_invalid_sync_date_does_not_alter_allocation_or_crash(tmp_path, monkeypatch, capsys):
+    today = date.today().isoformat()
+    captured = {}
+    for label, synced_at in (("valid", today), ("missing", None), ("malformed", "not-a-date")):
+        targets_file, holdings_file = _review_cli_targets_and_holdings(tmp_path, synced_at=synced_at)
+        _patch_review_cli(monkeypatch, targets_file, holdings_file,
+                          tmp_path / f"logs_{label}", tmp_path / f"perf_{label}.csv")
+
+        def _spy_render_health(result, _label=label):
+            captured[_label] = result
+            return f"SENTINEL_{_label}"
+        monkeypatch.setattr(allocate, "render_health", _spy_render_health)
+        monkeypatch.setattr(sys, "argv", ["allocate.py", "--health"])
+        allocate.main()   # must not raise for any of the three synced_at shapes
+        assert f"SENTINEL_{label}" in capsys.readouterr().out
+
+    for key in ("buys", "trims", "blocked", "cash_left"):
+        assert captured["valid"][key] == captured["missing"][key] == captured["malformed"][key]
+    assert (captured["valid"]["margin"]["allowed"]
+            == captured["missing"]["margin"]["allowed"]
+            == captured["malformed"]["margin"]["allowed"])
+
+    # age-unknown (missing/malformed) must never be *misjudged* as stale --
+    # "don't know" and "known stale" are different findings.
+    assert "stale_margin_data" not in captured["missing"]["margin_state"].violated_constraints
+    assert "stale_margin_data" not in captured["malformed"]["margin_state"].violated_constraints
+
+
+# ── required test 7: classification remains strictly post-plan ────────────
+
+def test_buffer_data_age_days_cannot_influence_buys_trims_blocked_cash_left_margin_allowed():
+    targets = _base_targets()
+    roster = build_roster(targets)
+    holdings = {"DDD": 2000.0, "AAA": 500.0}
+    metrics = _flat_metrics(["DDD", "AAA"])
+
+    result_a = plan(targets, holdings, roster, metrics, True, True, cash=500.0,
+                    margin_debt=100.0, margin_buffer_pct=50.0)
+    result_b = plan(targets, holdings, roster, metrics, True, True, cash=500.0,
+                    margin_debt=100.0, margin_buffer_pct=50.0)
+
+    _attach_margin_state(result_a, targets, buffer_data_age_days=0.1,
+                         stale_threshold_days=float(allocate.STALE_MARGIN_DAYS))
+    _attach_margin_state(result_b, targets, buffer_data_age_days=30.0,
+                         stale_threshold_days=float(allocate.STALE_MARGIN_DAYS))
+
+    assert result_a["buys"] == result_b["buys"]
+    assert result_a["trims"] == result_b["trims"]
+    assert result_a["blocked"] == result_b["blocked"]
+    assert result_a["cash_left"] == result_b["cash_left"]
+    assert result_a["margin"]["allowed"] == result_b["margin"]["allowed"]
+
+    # sanity: the differing age actually reached the classifier (else this
+    # test would trivially pass without proving anything about wiring).
+    assert "stale_margin_data" not in result_a["margin_state"].violated_constraints
+    assert "stale_margin_data" in result_b["margin_state"].violated_constraints

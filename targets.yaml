@@ -5,7 +5,9 @@
 # Paste your final roster into the `tickers:` lists below. ETF and spec lists
 # are pre-filled per spec; edit freely.
 
-regime_ticker: QQQ          # ticker whose EMA regime gates all new buys
+regime_ticker: QQQ          # ticker whose 200-EMA regime status is shown; informational
+                            # only since the regime-gate backtest verdict (see CLAUDE.md
+                            # Decisions Log) — it no longer gates any buy
 
 tiers:
   T1:
