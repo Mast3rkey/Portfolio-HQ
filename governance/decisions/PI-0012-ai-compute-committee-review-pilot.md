@@ -123,9 +123,10 @@ sleeve, a target, or a cluster. No file called `ai_compute.yaml` or
    modify `ai_infrastructure.yaml` or `.md`, does not store reverse
    membership, and does not treat theme membership as a tier, sizing, or
    allocation conclusion.
-6. **The governance index and `CLAUDE.md` pointer entries associated with
-   this decision** (`governance/decisions.yaml`, `CLAUDE.md`'s Decisions
-   Log), filed in this same PR.
+6. **The governance-index entry and `CLAUDE.md` pointer entry associated
+   with this decision** — modifications to the existing
+   `governance/decisions.yaml` and `CLAUDE.md` files, not new files, filed
+   in this same PR.
 
 ### Selection rationale (neutral — no research conclusion prejudged)
 
@@ -274,15 +275,23 @@ under any interpretation:
 - any Company Intelligence, Theme Intelligence, research, schema,
   implementation, report, or AI Compute artifact creation in this
   governance-only PR, including no `TSM.yaml`, `TSM.md`, `ai_compute.yaml`,
-  or `ai_compute.md`. This PR creates exactly three files: this governance
-  decision file, its `governance/decisions.yaml` index entry, and its
-  `CLAUDE.md` pointer — no investment-research or Intelligence artifact;
+  or `ai_compute.md`. This governance-only PR changes exactly three files.
+  It creates exactly one new file — this governance decision file
+  (`governance/decisions/PI-0012-ai-compute-committee-review-pilot.md`) —
+  and modifies exactly two existing files: `governance/decisions.yaml`, by
+  adding the PI-0012 index entry, and `CLAUDE.md`, by adding the PI-0012
+  Decisions Log pointer. It creates no investment-research or Intelligence
+  artifact;
 - any second AI Compute company beyond TSM (ASML, AVGO, AMD, AMAT, KLAC,
   LRCX, MRVL, INTC, and any re-review of NVDA all remain unauthorized, with
   no presumed sequence);
-- any company-side `ai_infrastructure` (or any other theme) reference for
-  any company other than TSM, and even for TSM, any reference not backed by
-  both required approvals under Decision item 5;
+- any company-side theme reference for TSM other than `ai_infrastructure`;
+  PI-0012 conditionally authorizes only the exact TSM → `ai_infrastructure`
+  reference described in Decision item 5, and only when both required
+  evidence and human-approval conditions are satisfied;
+- any new company-side theme reference for any company other than TSM under
+  this decision. The existing NVDA and GEV references remain unchanged and
+  continue to derive their authority solely from `PI-0007`;
 - any new Theme Intelligence record;
 - any change to `ai_infrastructure.yaml`/`.md`, `COST.yaml`/`.md`,
   `GEV.yaml`/`.md`, `ISRG.yaml`/`.md`, `TMO.yaml`/`.md`, or `XOM.yaml`/`.md`;
