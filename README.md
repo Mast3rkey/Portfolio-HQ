@@ -111,6 +111,7 @@ aggregation currently affects allocator behavior.
    python allocate.py --review         # rebalance check, no new cash —
                                         # underweights + trim candidates
    python allocate.py --levels         # buy-rung staging report (see below)
+   python allocate.py --health         # read-only risk/health snapshot (see below)
    ```
 3. **Execute manually on Robinhood.**
 4. **Sync fills back** (see "Updating holdings" below).
@@ -151,6 +152,28 @@ floored at the 200-SMA) as staging points for manual limit orders. Stamps a
 one-word stance (`BUYABLE` / `WAIT` / `BLOCKED` / `NO-DATA`) per name. Same
 regime-is-informational-only rule as the main allocator. This tool places no
 orders here either — it's staging guidance, not execution.
+
+### `--health` — read-only portfolio risk/health snapshot
+
+A read-only view of risk state that the standard report doesn't surface for
+anything not currently actionable — e.g. a cluster comfortably under its cap,
+or a T1/T2 name over its own target but still under the 1.5× ceiling, appear
+nowhere in `--review`'s buy/trim/block rows today. `--health` shows all of it
+at once: book, leverage vs. cap, buffer (last synced) vs. floor, the full
+margin risk-state explanation, every cluster's %-of-book and ratio-to-cap,
+crypto-sleeve drift from target, and every T1/T2 name's ratio-to-target and
+ratio-to-ceiling. Every figure is read straight from `plan()`'s and
+`margin_state.py`'s own existing computations — nothing is recomputed a
+second way, and no new threshold is introduced.
+
+`--health` is observational only, same pattern as `--review`: cash and margin
+are forced to zero before `plan()` runs, so it can never add deployable
+buying power. It **does not place an order, does not change any buy/trim/
+block decision, and does not write `holdings.yaml`, `targets.yaml`, or any
+other file** — it only prints a snapshot. There is no composite health score
+or overall healthy/unhealthy verdict; every metric is shown individually,
+labeled with its own unit and comparison point, exactly as the underlying
+system already computes it.
 
 ## Updating holdings
 
