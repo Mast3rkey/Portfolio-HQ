@@ -9,137 +9,198 @@ supporting_artifact: null
 
 ## Context
 
-COST has been held at T2 (`weight_pct` 1.65%) since the current tier
-structure was established. No prior accepted decision addresses a T2→T1
-promotion question for COST specifically. The one prior mention of COST in
-`CLAUDE.md`'s Decisions Log is incidental: the AAPL band→T2 promotion entry
-("Tier-fit scan: AAPL promoted band → T2; AVGO stays at T2," PR #58) cites
-COST only as an example of T2's existing "quality compounder" character
-alongside WMT/MA/BRK.B — that entry evaluated AAPL and AVGO, not COST, and
-reached no verdict on COST's own tier placement. `TGT-0001`'s
-Prior-Decision Supersession list (AMZN, AVGO, AAPL) accordingly does not
-include COST, and this filing supersedes no prior COST-specific reasoning
-because none exists.
+The principal has approved, in principle, promoting COST from T2 to T1.
+This decision records the principal's approval and authorizes the
+exact `targets.yaml` change described below, subject to merge on main,
+applying TGT-0001's Mandatory Disclosure Template and Ex-Ante
+Cluster-Compatibility Rule to a concrete proposal for the first time
+since TGT-0001 was adopted the same day.
 
-This filing follows `TGT-0001` (accepted the same day,
-`governance/decisions/TGT-0001-additive-target-budget-policy.md`), which
-requires every future roster/tier-change proposal to satisfy a Mandatory
-Disclosure Template and an Ex-Ante Cluster-Compatibility Rule before
-approval. This is the first proposal filed under that policy.
+Recomputed directly from `targets.yaml` at `origin/main` commit
+`4108974`: T1 (9 tickers × 3.35%) 30.15%, T2 (15 tickers × 1.65%) 24.75%,
+ETF (3 × 2.30%) 6.90%, band (33 × 0.75%) 24.75%, spec (5 × 1.00%) 5.00%,
+crypto sleeve 10.0% — nominal target total **101.55%**. COST is currently
+in T2 and belongs to no configured correlation cluster (`semis`,
+`power_infra`, `oil`).
 
-Recomputed directly from `targets.yaml` at filing time, prior to this
-change: T1 (9 tickers × 3.35%) = 30.15%; T2 (15 tickers × 1.65%) = 24.75%,
-including COST. `targets.yaml`'s `caps.clusters` list (semis, power_infra,
-oil) does not include COST in any cluster's `tickers:` array. `targets.yaml`'s
-`gates.t1t2_trim_mult` (1.5) is unchanged and applies to both tiers.
+A search of CLAUDE.md's Decisions Log, `decision_log.yaml`, and every
+file under `governance/decisions/` found no prior decision that set,
+reviewed, or reconsidered COST's tier placement — unlike AMZN (PR #18)
+and AVGO (PR #58), which have an explicit "considered for T1, kept at
+T2" record. TGT-0001's Prior-Decision Supersession list names AMZN,
+AVGO, and AAPL specifically; COST is not among them, and no other
+applicable placement reasoning was found. No supersession obligation
+applies to this filing.
 
-Current-book snapshot (evidence only, not governing authority):
-`performance_log.csv`, row dated 2026-07-20 — net_equity (book) $6,150.00,
-gross $7,405.64, margin_debt $1,255.64. This snapshot is cited only for the
-Mandatory Disclosure Template's theoretical-gross-exposure calculation
-below; it establishes nothing about COST's live holdings value, trim
-status, or any other runtime allocator state, and this decision does not
-run or rely on a live `allocate.py` check.
+COST has an existing Company Intelligence record (`PI-0003`,
+`PI-0004`) with a frozen `conviction.rating: High` and
+`portfolio_role_ref: T2`. That record is advisory only, per its own
+doctrine (`PI-0003`): it may inform but cannot authorize a tier
+decision, and this filing does not treat it as authorizing one.
 
 ## Decision
 
-**COST is promoted from T2 to T1**, effective in `targets.yaml`: appended
-to `tiers.T1.tickers`, removed from `tiers.T2.tickers`. COST's per-name
-target weight changes from 1.65% (T2) to 3.35% (T1).
-
-This decision rests on the principal's own qualitative judgment that COST
-independently possesses the qualities the principal associates with T1
-placement. It is not derived from a mechanical test, a scoring model, a
-ranking exercise, or any comparison against other T2 or band names — no
-such ranking is imported into or relied upon by this decision.
-
-This decision is scoped narrowly. It does not:
-
-1. **Adopt a general T1 admission standard.** No mechanical test,
-   checklist, or scoring threshold for T1 admission is established by this
-   decision. A future proposal to promote a different name to T1 requires
-   its own separate justification and its own separate governance filing.
-2. **Re-rank or reconsider existing T1 holdings.** ASML, TSM, MSFT, GOOGL,
-   META, NVDA, GEV, LLY, and V are unaffected — their placement, weighting,
-   and standing rationale are untouched.
-3. **Authorize another promotion.** This decision authorizes exactly one
-   change: COST, T2 to T1. It does not open, pre-approve, or create a
-   presumption in favor of any other roster or tier change.
-4. **Touch MA.** MA remains at T2, unchanged. Any future change to MA's
-   placement requires its own new decision.
-5. **Bring ISRG into scope.** ISRG is not addressed by this decision in any
-   way — no Company Intelligence work, no tier review, nothing.
-6. **Treat Company Intelligence as authoritative.** COST's existing Company
-   Intelligence record (`intelligence/companies/COST.yaml`/`COST.md`,
-   `PI-0003`) remains exactly what `PI-0001` defined it to be: advisory,
-   descriptive-only, and without authority over allocator behavior or tier
-   placement. This decision does not read from, write to, or rely on that
-   record, and does not modify it.
-7. **Authorize margin, a trade, or a live allocation action.** This
-   decision changes declarative target configuration only. It does not
-   request, recommend, authorize, or size any margin use; does not
-   instruct or authorize any trade; and does not run or constitute a live
-   allocation check.
+1. **COST is promoted from T2 to T1**, effective on merge of the
+   `targets.yaml` change this decision authorizes. Target weight changes
+   from 1.65% to 3.35% (+1.70 percentage points).
+2. **Basis is COST's own qualities, not a formally adopted admission
+   standard.** The principal determined that COST independently
+   possesses the quality, durability, balance-sheet strength,
+   capital-allocation discipline, cycle resilience, thesis clarity, and
+   resistance to permanent impairment necessary for T1 placement in
+   this portfolio. This portfolio has no separately adopted, generally
+   applicable "T1 admission standard" document or test that COST is
+   being measured against — the qualities above are evaluated on COST
+   specifically, not against a codified rubric. Diversification is a
+   supporting portfolio benefit, not the basis for the decision: COST
+   adds a consumer membership-retail demand driver not currently
+   represented in T1's existing names.
+3. **This decision does not constitute a comparative downgrade,
+   re-ranking, or reconsideration of any existing T1 holding.** No
+   existing T1 name is ranked against COST, downgraded, or reopened by
+   this decision. The earlier 12-company ranking exercise referenced in
+   principal deliberation is not imported into this governance record.
+4. **This decision does not establish a generally applicable T1
+   admission doctrine, mechanical test, or authority for any other
+   ticker promotion.** It authorizes exactly one promotion (COST) on
+   its own merits. The "hybrid T1 philosophy" raised in deliberation
+   remains an analytical hypothesis, not accepted doctrine, and is not
+   adopted here. Nothing in this decision approves, rejects, or
+   predetermines another ticker's placement. Any future proposal must
+   be evaluated under the authority and repository evidence effective
+   at that time.
+5. **AVGO and AMZN remain at T2** under their own existing, unsuperseded
+   reasoning (TGT-0001 Prior-Decision Supersession). **MA remains at
+   T2**; no decision or supersession obligation is created for MA by
+   this filing. **ISRG is out of scope**; its Company Intelligence
+   refresh is a separate, later task not touched here.
+6. **No margin, trade, or live allocation action is requested,
+   recommended, or authorized by this decision.** This is a
+   configuration-governance filing only.
 
 ### Mandatory disclosure (per TGT-0001)
 
 - **Ticker:** COST
-- **Current sleeve / proposed sleeve:** T2 → T1
-- **Current target % / proposed target %:** 1.65% → 3.35% (+1.70pp)
-- **Total nominal target percentage before / after:** 101.55% → 103.25%
-- **Amount above 100% before / after:** +1.55pp → +3.25pp
-- **Implied fully-filled gross-exposure multiple before / after:** 1.0155x
-  → 1.0325x
-- **Theoretical additional gross exposure above book at snapshot:** +1.70pp
-  × $6,150.00 (net equity, 2026-07-20 snapshot) ≈ **+$104.55** — a
-  hypothetical figure assuming every target is simultaneously filled to
-  100% of weight, not how the allocator behaves in debt-free cash-only
-  operation (`TGT-0001`'s Cash-Only Behavior section), and not itself a
-  margin request.
-- **Source and freshness of book snapshot:** `performance_log.csv`, row
-  dated 2026-07-20 (net_equity 6150.00, gross 7405.64, margin_debt
-  1255.64) — filed same-day.
-- **Margin statement:** This disclosure does not request or authorize
-  margin. Margin remains a separate human input per `TGT-0001`'s Margin
-  Separation section.
-- **Debt-free cash-only gap:** widens by 1.70pp (101.55% → 103.25% nominal
-  target sum, both already above 100%).
-- **Combined cumulative consequences:** none — this is the only roster/tier
-  change under consideration in this filing.
-- **Trim-regime consequences:** COST moves from T2's mechanical, no-RSI-gate
-  T1/T2 concentration-ceiling coverage to T1's — the same mechanism
-  (`gates.t1t2_trim_mult`, 1.5x, floored at target), now applied at COST's
-  new 3.35% target instead of its former 1.65% target. Band/spec RSI-gated
-  trims never applied to COST and continue not to. No cluster-cap trim
-  applies — see below.
-- **Cluster-target totals before/after:** unaffected. COST is not a member
-  of `semis`, `power_infra`, or `oil` in `targets.yaml`'s `caps.clusters`,
-  before or after this change. No cluster's configured target total
-  changes as a result of this decision.
+- **Current → proposed sleeve:** T2 → T1
+- **Current → proposed target:** 1.65% → 3.35%
+- **Percentage-point change:** +1.70pp
+- **Nominal target total, before → after:** 101.55% → 103.25%
+- **Amount above 100%, before → after:** 1.55pp → 3.25pp
+- **Implied fully-filled gross-exposure multiple, before → after:**
+  1.0155× → 1.0325×
+- **Theoretical additional gross exposure above book, current-book
+  snapshot:** **$104.55**, computed as net-equity book × 1.70pp
+  (**$6,150.00 × 0.0170 = $104.55**).
+  - **Source:** `performance_log.csv`, row dated `2026-07-20`
+    (`net_equity,6150.0`) — a same-day committed repository snapshot
+    generated by `allocate.py` from live-resolved holdings, committed
+    in the same commit as the current `origin/main` HEAD (`4108974`,
+    PR #106).
+  - **Freshness:** same calendar date as this filing. The row is
+    written by `allocate.py`'s `log_performance()` (line ~898), which
+    computes `net_equity = gross - margin_debt` from live-resolved
+    holdings at the time that run executed.
+  - **Cross-check:** the same row's `gross` (7405.64) minus
+    `margin_debt` (1255.64) reproduces `net_equity` (6150.00) exactly.
+  - **What this figure is, explicitly:** net equity (book), per
+    CLAUDE.md's definition. **What it is not:** not gross holdings
+    value ($7,405.64), not margin capacity, not margin debt
+    ($1,255.64), not buying power, and not leverage headroom. None of
+    those substitute figures were used.
+  - **Search performed before using this figure:** inspected
+    `performance_log.csv` in full (6 rows, 2026-07-13 through
+    2026-07-20); inspected the PR #106 commit (`4108974`) diff, which
+    added exactly the 2026-07-20 row and nothing else; checked for a
+    `logs/` directory (none exists in this checkout) and for any other
+    same-day report file (none found). The 2026-07-20
+    `performance_log.csv` row was the only same-day, committed
+    net-equity figure found, and it is used here as a snapshot input to
+    this calculation — not cited as governing or authoritative in its
+    own right.
+- **This disclosure does not request or authorize margin.**
+- **Debt-free cash-only satisfiability:** at 101.55%, the complete
+  configured target set could not be simultaneously fully funded using
+  only 100% of net equity. Increasing the configured total to 103.25%
+  widens that gap, so some targets may remain underfilled in debt-free
+  cash-only operation — expected, unchanged allocator behavior
+  (`plan()`'s largest-gap-first mechanism).
+- **Combined cumulative consequences:** this filing contains one tier
+  change with a cumulative nominal-target increase of +1.70 percentage
+  points. No additional promotion, demotion, removal, or weight change
+  is bundled with it.
+- **Trim-regime consequences:** COST's T1/T2 concentration-ceiling trim
+  threshold rises from 1.65% × 1.5 = 2.475% of book to
+  3.35% × 1.5 = 5.025% of book (at the $6,150.00 snapshot:
+  $6,150.00 × 2.475% = **$152.21** → $6,150.00 × 5.025% = **$309.04**).
+  COST is not in `caps.clusters`, so no cluster-cap trim threshold is
+  affected. No band/spec RSI-gated trim applies to a T1/T2 name.
+- **Cluster-target totals, before/after, for every cluster the ticker
+  belongs to:** N/A — COST belongs to no configured cluster.
 
-### Ex-ante cluster-compatibility (per TGT-0001)
+### Ex-ante cluster-compatibility check (per TGT-0001)
 
-COST is not listed in any cluster's `tickers:` array. This decision changes
-no cluster's membership or configured target total. The Ex-Ante
-Cluster-Compatibility Rule is satisfied trivially — there is nothing to
-check.
+COST is not a member of any `caps.clusters` entry. No cluster's
+configured target-weight total is affected. Check passes trivially.
+
+### Cash-only behavior
+
+At 101.55%, the complete configured target set could not be
+simultaneously fully funded using only 100% of net equity. Increasing
+the configured total to 103.25% widens that gap, so some targets may
+remain underfilled in debt-free cash-only operation. This does not
+itself request, authorize, recommend, size, or determine margin use.
+
+## Rationale
+
+The principal determined that COST independently possesses the
+quality, durability, balance-sheet strength, capital-allocation
+discipline, cycle resilience, thesis clarity, and resistance to
+permanent impairment necessary for T1 placement in this portfolio.
+This decision does not constitute a comparative downgrade, re-ranking,
+or reconsideration of any existing T1 holding.
+
+COST's Company Intelligence record (`PI-0003`, `PI-0004`) — conviction
+rating `High`, thesis and risk content already on file — supports this
+judgment as background evidence but is advisory only and does not
+itself authorize the tier change; the authorizing act is the
+principal's own determination, recorded here.
+
+This is a qualitative portfolio-role decision and makes no claim of
+demonstrated future outperformance.
+
+This filing follows TGT-0001's additive-by-default policy: the
+promotion is evaluated and approved on its own merits, with no
+universal offsetting demotion required as a precondition, and complies
+with TGT-0001's Mandatory Disclosure Template and Ex-Ante
+Cluster-Compatibility Rule in full above.
+
+## Alternatives Considered
+
+- **Leave COST at T2 (status quo).** Rejected per the principal's
+  in-principle approval of promotion.
+- **Adopt a general "hybrid T1" admission doctrine** governing future
+  promotions beyond COST. Rejected for this filing — see Decision
+  item 4.
+- **Offset the promotion with a T1 demotion or T2 removal elsewhere.**
+  Rejected: TGT-0001 already establishes additive-by-default as
+  standing policy.
+- **Restate the earlier 12-company comparative ranking in this ADR.**
+  Rejected per explicit principal instruction.
 
 ## Consequences
 
-`targets.yaml`: COST appended to `tiers.T1.tickers`, removed from
-`tiers.T2.tickers`. No other line in `targets.yaml` changes — cluster
-definitions, gate parameters, ETF/band/spec tiers, and the crypto sleeve
-are all unaffected.
+**Changes:** COST moves from `targets.yaml`'s T2 ticker list to its T1
+ticker list. T1 becomes 10 tickers (33.50% nominal), T2 becomes 14
+tickers (23.10% nominal). Nominal target total rises 101.55% →
+103.25%. COST's T1/T2 concentration-ceiling trim threshold rises from
+2.475% ($152.21) to 5.025% ($309.04) of book at the disclosed
+snapshot. `governance/decisions.yaml` gains one row. CLAUDE.md's
+Decisions Log gains one pointer entry.
 
-T1 becomes 10 names (33.50% nominal); T2 becomes 14 names (23.10% nominal).
-The configured nominal target sum rises from 101.55% to 103.25% of book,
-per the disclosure above.
-
-`CLAUDE.md`'s Decisions Log gains one short pointer entry.
-`governance/decisions.yaml` gains one new row for this entry.
-
-This decision changes no allocator code, no cluster cap, no margin
-parameter, no other ticker's tier or weight, and no Company or Theme
-Intelligence record. It does not run, and is not informed by, a live
-`allocate.py` check — the recomputed figures above come from `targets.yaml`
-and `performance_log.csv` directly, not from a live allocation run.
+**Does not change:** any other ticker's tier or weight; MA's placement;
+ISRG (out of scope); any cluster-cap number or membership; the 1.8x
+leverage cap or 30% buffer floor; `allocate.py` allocator code or
+logic; any existing T1 holding's standing, ranking, or review status;
+Company or Theme Intelligence content; current holdings, cash, debt,
+or margin-buffer state; and the recommendation-only, manual-execution
+model.
