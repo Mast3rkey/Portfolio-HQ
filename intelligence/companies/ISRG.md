@@ -1,10 +1,11 @@
 # ISRG — Intuitive Surgical, Inc.
 
-Last updated: 2026-07-20 -- scheduled review under PI-0009's cadence,
-finalized through explicit human review and approval. Originally
-created 2026-07-18 as Portfolio HQ's fifth Portfolio Intelligence
-record, and the first of two records created under the
-`life_sciences_tools_medtech` Theme Intelligence pilot
+Last updated: 2026-07-20 -- an unscheduled, principal-authorized
+evidence refresh prompted by the tier review (not a scheduled
+PI-0009-cadence review), finalized through explicit human review and
+approval. Originally created 2026-07-18 as Portfolio HQ's fifth
+Portfolio Intelligence record, and the first of two records created
+under the `life_sciences_tools_medtech` Theme Intelligence pilot
 (decision_log.yaml PI-0006/PI-0007 process precedent; PI-0009 Human
 Approval Record).
 
@@ -243,12 +244,14 @@ governed exclusively by `targets.yaml`.
 
 ## Sources
 
-See YAML `sources[]` for the structured register -- five primary-
+See YAML `sources[]` for the structured register -- six primary-
 document citations as of the 2026-07-20 review: Intuitive's Q2 2026
 earnings release, Intuitive's da Vinci 5 cardiac-clearance release,
-Medtronic's Hugo first-U.S.-procedure release, J&J's OTTAVA
-submission/pivotal-study release, and Intuitive's FY2025 Form 10-K --
-all five directly rendered this review. The original record's two
-FY2025-cycle sources (results release and 10-K, both then blocked from
-direct rendering) are superseded for figures now directly sourced;
-the 10-K citation is retained and upgraded to directly inspected.
+Medtronic's Hugo first-U.S.-procedure release, J&J's OTTAVA FDA De
+Novo submission release (January 7, 2026), J&J's OTTAVA pivotal
+clinical study results release (May 5, 2026), and Intuitive's FY2025
+Form 10-K -- all six directly rendered this review. The original
+record's two FY2025-cycle sources (results release and 10-K, both
+then blocked from direct rendering) are superseded for figures now
+directly sourced; the 10-K citation is retained and upgraded to
+directly inspected.
