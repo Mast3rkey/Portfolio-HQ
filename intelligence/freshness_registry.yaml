@@ -1,0 +1,68 @@
+# intelligence/freshness_registry.yaml — AUTO-0001 static enrollment configuration.
+# Owned by AUTO-0001. Contains enrollment/monitoring configuration only — no
+# conviction, portfolio_role_ref, tier, target, weight, cluster membership, or
+# any allocator-visible fact, and no copy of review.last_reviewed/next_due/
+# cadence_days (those remain owned by each company's own Company Intelligence
+# record; PI-0011 is the reporting consumer of those fields, not their owner).
+# A row's presence here means monitoring MAY run for
+# that ticker once its checkpoint (intelligence/freshness_checkpoints.yaml) is
+# verified — see monitoring_enabled below. This file never gains a row for a
+# ticker without its own existing, cited Company Intelligence record.
+schema_version: 1
+tickers:
+  - ticker: COST
+    company_record_authority: PI-0003
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: XOM
+    company_record_authority: PI-0005
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: NVDA
+    company_record_authority: PI-0007
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: GEV
+    company_record_authority: PI-0007
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: ISRG
+    company_record_authority: PI-0009
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: TMO
+    company_record_authority: PI-0009
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: TSM
+    company_record_authority: PI-0012
+    enrollment_authority: AUTO-0001
+    enrolled_at: "2026-07-19"
+    template_version: v1
+    filing_trigger_profile: foreign_private_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false

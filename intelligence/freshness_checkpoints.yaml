@@ -1,0 +1,43 @@
+# intelligence/freshness_checkpoints.yaml — AUTO-0001 incorporated-evidence
+# checkpoints. Owned by AUTO-0001. Records, per enrolled ticker, exactly which
+# official filings/releases have been incorporated into that ticker's Company
+# Intelligence record, as ordered channels (see docs/FRESHNESS_PLANNER_V1_SPEC.md
+# §5). Never duplicates review.last_reviewed/next_due/cadence_days (owned by
+# the company record itself; PI-0011 is the reporting consumer of those
+# fields, not their owner). Updated only through a human-
+# reviewed incorporation, bootstrap, or correction PR — never by the monitor,
+# never by Claude. Every row below starts checkpoint_status: pending with an
+# empty channel set: no baseline value in this file was inferred, guessed, or
+# derived from review.last_reviewed, free-form source prose, a file timestamp,
+# or retrieval time. Establishing real channel values is separate, per-company
+# reviewed work belonging to a future bootstrap PR, not this filing.
+schema_version: 1
+tickers:
+  - ticker: COST
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: XOM
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: NVDA
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: GEV
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: ISRG
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: TMO
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: TSM
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
