@@ -159,6 +159,26 @@ def test_monitor_state_closed_vocabulary_rejection(bad_state):
         fstate.evaluate_freshness_state(**_base_kwargs(latest_monitor_state=bad_state))
 
 
+@pytest.mark.parametrize("unhashable_status", [[], {}, ["pending"], {"status": "pending"}])
+def test_checkpoint_status_unhashable_value_raises_valueerror_not_typeerror(unhashable_status):
+    """checkpoint_status must be type-checked before closed-set
+    membership -- `in` against a set raises TypeError for an unhashable
+    value, which would violate this function's all-invalid-input-raises-
+    ValueError contract if the type check weren't done first."""
+    with pytest.raises(ValueError):
+        fstate.evaluate_freshness_state(**_base_kwargs(checkpoint_status=unhashable_status))
+
+
+@pytest.mark.parametrize("unhashable_state", [[], {}, ["healthy"], {"state": "healthy"}])
+def test_latest_monitor_state_unhashable_value_raises_valueerror_not_typeerror(unhashable_state):
+    """Same type-before-membership guard as checkpoint_status above, for
+    latest_monitor_state when monitor_record_exists=True."""
+    with pytest.raises(ValueError):
+        fstate.evaluate_freshness_state(
+            **_base_kwargs(monitor_record_exists=True, latest_monitor_state=unhashable_state)
+        )
+
+
 @pytest.mark.parametrize("good_status", ["pending", "verified"])
 def test_checkpoint_status_accepts_both_valid_values(good_status):
     fstate.evaluate_freshness_state(**_base_kwargs(checkpoint_status=good_status))

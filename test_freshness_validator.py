@@ -72,15 +72,27 @@ def _complete_domestic_channels(ticker_suffix: str = "") -> dict:
     }
 
 
-def _complete_fpi_channels(ticker_suffix: str = "", earnings_release=None) -> dict:
+# Distinguishes "argument omitted" from "explicit None" -- a bare `None`
+# default would make an explicit `earnings_release=None` call
+# indistinguishable from omission, silently building a default complete
+# object instead of the null value the caller actually asked for.
+_UNSET = object()
+
+
+def _complete_fpi_channels(ticker_suffix: str = "", earnings_release=_UNSET) -> dict:
+    """Three distinct, explicit states for earnings_release:
+    - omitted (default) -> a default complete channel object;
+    - explicit None -> the null value itself, unmodified;
+    - explicit mapping -> that mapping, unmodified."""
     channels = {}
     for name in ("annual_20f", "earnings_6k_watermark"):
         channels[name] = _domestic_channel(name, stable_source_id=f"acc-{name}{ticker_suffix}")
-    channels["earnings_release"] = (
-        earnings_release
-        if earnings_release is not None
-        else _domestic_channel("earnings_release", stable_source_id=f"acc-er{ticker_suffix}")
-    )
+    if earnings_release is _UNSET:
+        channels["earnings_release"] = _domestic_channel(
+            "earnings_release", stable_source_id=f"acc-er{ticker_suffix}"
+        )
+    else:
+        channels["earnings_release"] = earnings_release
     return channels
 
 
@@ -203,12 +215,18 @@ def test_registry_ticker_no_normalization_lowercase_is_distinct():
     assert result.valid is True
 
 
-@pytest.mark.parametrize("bad_profile", ["DOMESTIC_ISSUER_V1", "domestic", "", None, 5])
+@pytest.mark.parametrize("bad_profile", [
+    "DOMESTIC_ISSUER_V1", "domestic", "", None, 5,
+    [],                          # unhashable -- `in` against a set must not raise TypeError
+    {},                            # unhashable
+    ["domestic_issuer_v1"],         # unhashable, and would even textually resemble a valid value
+    {"profile": "domestic_issuer_v1"},  # unhashable
+])
 def test_registry_invalid_filing_trigger_profile_rejected(bad_profile):
     row = _registry_row(filing_trigger_profile=bad_profile)
     reg = _registry_doc([row])
     chk = _checkpoints_doc([_checkpoint_row()])
-    result = fval.validate_registry_and_checkpoints(reg, chk)
+    result = fval.validate_registry_and_checkpoints(reg, chk)  # must not raise TypeError
     assert result.valid is False
     assert any("filing_trigger_profile" in e for e in result.errors)
 
@@ -296,12 +314,18 @@ def test_checkpoint_row_missing_each_required_key(missing_key):
     assert any("missing required key" in e and missing_key in e for e in result.errors)
 
 
-@pytest.mark.parametrize("bad_status", ["Pending", "VERIFIED", "", None, 5])
+@pytest.mark.parametrize("bad_status", [
+    "Pending", "VERIFIED", "", None, 5,
+    [],                     # unhashable -- `in` against a set must not raise TypeError
+    {},                       # unhashable
+    ["pending"],               # unhashable
+    {"status": "pending"},      # unhashable
+])
 def test_checkpoint_status_closed_vocabulary(bad_status):
     row = _checkpoint_row(checkpoint_status=bad_status)
     reg = _registry_doc([_registry_row()])
     chk = _checkpoints_doc([row])
-    result = fval.validate_registry_and_checkpoints(reg, chk)
+    result = fval.validate_registry_and_checkpoints(reg, chk)  # must not raise TypeError
     assert result.valid is False
     assert any("checkpoint_status" in e for e in result.errors)
 
@@ -499,7 +523,23 @@ def test_domestic_verified_every_other_channel_rejects_null(null_channel):
 
 
 def test_fpi_verified_exact_channel_set_all_complete_passes():
-    row = _checkpoint_row(checkpoint_status="verified", channels=_complete_fpi_channels())
+    # earnings_release omitted -> helper builds a default complete object.
+    channels = _complete_fpi_channels()
+    assert isinstance(channels["earnings_release"], dict)
+    row = _checkpoint_row(checkpoint_status="verified", channels=channels)
+    reg = _registry_doc([_registry_row(filing_trigger_profile="foreign_private_issuer_v1", monitoring_enabled=True)])
+    chk = _checkpoints_doc([row])
+    result = fval.validate_registry_and_checkpoints(reg, chk)
+    assert result.valid is True
+
+
+def test_fpi_verified_earnings_release_explicit_complete_object_passes():
+    # earnings_release explicitly supplied as a complete mapping (distinct
+    # from the omitted-default case above) -- also succeeds.
+    explicit_object = _domestic_channel("earnings_release", stable_source_id="acc-er-explicit")
+    channels = _complete_fpi_channels(earnings_release=explicit_object)
+    assert channels["earnings_release"] == explicit_object
+    row = _checkpoint_row(checkpoint_status="verified", channels=channels)
     reg = _registry_doc([_registry_row(filing_trigger_profile="foreign_private_issuer_v1", monitoring_enabled=True)])
     chk = _checkpoints_doc([row])
     result = fval.validate_registry_and_checkpoints(reg, chk)
@@ -518,7 +558,14 @@ def test_fpi_verified_missing_channel_key_fails():
 
 
 def test_fpi_verified_earnings_release_nullable():
-    row = _checkpoint_row(checkpoint_status="verified", channels=_complete_fpi_channels(earnings_release=None))
+    channels = _complete_fpi_channels(earnings_release=None)
+    # Prior bug: the helper treated a bare `None` default as "omitted"
+    # and silently built a default complete object instead, so this
+    # assertion is what actually proves the null case is being
+    # exercised -- without it, the test below would pass even if
+    # earnings_release were never really null.
+    assert channels["earnings_release"] is None
+    row = _checkpoint_row(checkpoint_status="verified", channels=channels)
     reg = _registry_doc([_registry_row(filing_trigger_profile="foreign_private_issuer_v1", monitoring_enabled=True)])
     chk = _checkpoints_doc([row])
     result = fval.validate_registry_and_checkpoints(reg, chk)
@@ -577,6 +624,84 @@ def test_channel_not_valid_for_profile_rejected():
     result = fval.validate_registry_and_checkpoints(reg, chk)
     assert result.valid is False
     assert any("not valid for filing_trigger_profile" in e for e in result.errors)
+
+
+def test_pending_domestic_checkpoint_rejects_fpi_only_channel_key_even_when_null():
+    """A domestic-profile ticker's checkpoint populating {"annual_20f":
+    None} is invalid -- a null value is not a shortcut around key
+    validity, and this must be rejected even while checkpoint_status is
+    still pending."""
+    row = _checkpoint_row(checkpoint_status="pending", channels={"annual_20f": None})
+    reg = _registry_doc([_registry_row(filing_trigger_profile="domestic_issuer_v1")])
+    chk = _checkpoints_doc([row])
+    result = fval.validate_registry_and_checkpoints(reg, chk)
+    assert result.valid is False
+    assert any("annual_20f" in e and "not valid for filing_trigger_profile" in e for e in result.errors)
+
+
+def test_pending_fpi_checkpoint_rejects_domestic_only_channel_key_even_when_null():
+    row = _checkpoint_row(checkpoint_status="pending", channels={"annual_filing": None})
+    reg = _registry_doc([_registry_row(filing_trigger_profile="foreign_private_issuer_v1")])
+    chk = _checkpoints_doc([row])
+    result = fval.validate_registry_and_checkpoints(reg, chk)
+    assert result.valid is False
+    assert any("annual_filing" in e and "not valid for filing_trigger_profile" in e for e in result.errors)
+
+
+def test_pending_checkpoint_rejects_unknown_channel_key_with_null_value():
+    row = _checkpoint_row(checkpoint_status="pending", channels={"unknown_channel": None})
+    reg = _registry_doc([_registry_row()])
+    chk = _checkpoints_doc([row])
+    result = fval.validate_registry_and_checkpoints(reg, chk)
+    assert result.valid is False
+    assert any("unknown_channel" in e and "closed channel-name universe" in e for e in result.errors)
+
+
+def test_pending_checkpoint_rejects_unknown_populated_channel_key():
+    row = _checkpoint_row(
+        checkpoint_status="pending",
+        channels={"unknown_channel": _domestic_channel("annual_filing", channel_name="unknown_channel")},
+    )
+    reg = _registry_doc([_registry_row()])
+    chk = _checkpoints_doc([row])
+    result = fval.validate_registry_and_checkpoints(reg, chk)
+    assert result.valid is False
+    assert any("unknown_channel" in e and "closed channel-name universe" in e for e in result.errors)
+
+
+@pytest.mark.parametrize("bad_key", [5, 5.0, True, None, (1, 2)])
+def test_non_string_channel_key_rejected(bad_key):
+    row = _checkpoint_row(checkpoint_status="pending", channels={bad_key: None})
+    reg = _registry_doc([_registry_row()])
+    chk = _checkpoints_doc([row])
+    result = fval.validate_registry_and_checkpoints(reg, chk)
+    assert result.valid is False
+    assert any("channel key must be a string" in e for e in result.errors)
+
+
+def test_verified_checkpoint_malformed_heterogeneous_keys_returns_invalid_not_typeerror():
+    """A verified checkpoint whose channels mapping mixes int/tuple/str
+    keys must never crash the diagnostic that reports the mismatched key
+    set (which sorts the actual keys for the error message) -- it must
+    return a normal invalid ValidationResult."""
+    channels = {5: None, (1, 2): "not-even-a-mapping", "annual_filing": None}
+    row = _checkpoint_row(checkpoint_status="verified", channels=channels)
+    reg = _registry_doc([_registry_row(filing_trigger_profile="domestic_issuer_v1", monitoring_enabled=True)])
+    chk = _checkpoints_doc([row])
+    result = fval.validate_registry_and_checkpoints(reg, chk)  # must not raise
+    assert result.valid is False
+    assert result.errors
+
+
+def test_verified_checkpoint_still_valid_when_channel_keys_are_all_governed_and_complete():
+    """Sanity companion to the heterogeneous-key crash test: a verified
+    domestic checkpoint with only governed, correctly-typed keys still
+    validates cleanly (the new key checks don't over-reject valid input)."""
+    row = _checkpoint_row(checkpoint_status="verified", channels=_complete_domestic_channels())
+    reg = _registry_doc([_registry_row(filing_trigger_profile="domestic_issuer_v1", monitoring_enabled=True)])
+    chk = _checkpoints_doc([row])
+    result = fval.validate_registry_and_checkpoints(reg, chk)
+    assert result.valid is True
 
 
 def test_duplicate_stable_source_id_across_two_tickers_rejected():

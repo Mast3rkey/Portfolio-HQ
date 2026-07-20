@@ -20,24 +20,18 @@ _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 #    pinned here to catch any accidental future drift in the hashing
 #    contract) ─────────────────────────────────────────────────────────────
 
+# Literal, pre-computed regression vectors -- deliberately NOT derived via
+# hashlib/json here, and NOT via freshness_identity.py itself, so these
+# tests catch any accidental future drift in the hashing/canonicalization
+# contract rather than trivially re-deriving and re-confirming whatever
+# the implementation currently happens to produce.
+_CADENCE_GOLDEN_VECTOR = "01aece2fe34ed6cb24454a17059ad684203ed018f3f0ea82dbb23cd67d52db67"
+_TASK_INSTANCE_GOLDEN_VECTOR = "c5a68de999a002d9e0569592a1be23f93bac94c638c3049f65f0983e9889f72a"
+
+
 def test_cadence_fingerprint_golden_vector():
     result = fid.compute_cadence_fingerprint(ticker="COST", next_due="2026-07-19", template_version="v1")
-    assert _HEX64.match(result)
-    # Pinned literal value for the exact canonical payload
-    # [["fingerprint_type","cadence_v1"],["ticker","COST"],["next_due","2026-07-19"],["template_version","v1"]]
-    import hashlib, json
-    expected_payload = json.dumps(
-        [
-            ["fingerprint_type", "cadence_v1"],
-            ["ticker", "COST"],
-            ["next_due", "2026-07-19"],
-            ["template_version", "v1"],
-        ],
-        ensure_ascii=True,
-        separators=(",", ":"),
-    )
-    expected = hashlib.sha256(expected_payload.encode("utf-8")).hexdigest()
-    assert result == expected
+    assert result == _CADENCE_GOLDEN_VECTOR
 
 
 def test_task_instance_id_golden_vector():
@@ -46,21 +40,7 @@ def test_task_instance_id_golden_vector():
         fingerprint_assignments=[(FP_A, 1), (FP_B, 2)],
         template_version="v1",
     )
-    assert _HEX64.match(result)
-    import hashlib, json
-    expected_payload = json.dumps(
-        [
-            ["fingerprint_type", "task_instance_v1"],
-            ["ticker", "COST"],
-            ["episode_id", "ep-1"],
-            ["fingerprint_assignments", [[FP_A, 1], [FP_B, 2]]],
-            ["template_version", "v1"],
-        ],
-        ensure_ascii=True,
-        separators=(",", ":"),
-    )
-    expected = hashlib.sha256(expected_payload.encode("utf-8")).hexdigest()
-    assert result == expected
+    assert result == _TASK_INSTANCE_GOLDEN_VECTOR
 
 
 # ── domain separation ────────────────────────────────────────────────────────

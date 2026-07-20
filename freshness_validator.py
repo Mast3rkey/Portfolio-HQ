@@ -57,6 +57,16 @@ _PROFILE_CHANNELS = {
     "foreign_private_issuer_v1": _FPI_CHANNELS,
 }
 
+# AUTO-0002 correction: the union of both profiles' closed channel-name
+# universes. A channel key outside this union is invalid regardless of
+# profile, checkpoint_status, or null-ness of its value — "channels is a
+# mapping whose keys are channel names drawn from a profile-closed set"
+# (Decision §1) is enforced at the row level, independent of which
+# specific profile a ticker carries (that narrower, profile-specific
+# check happens in the cross-file invariants once the registry row is
+# known).
+_CLOSED_CHANNEL_NAMES = set(_DOMESTIC_CHANNELS) | set(_FPI_CHANNELS)
+
 # AUTO-0002 Decision §1: official-form mappings fixed as new precision —
 # the specification states only parenthetical labels, never exact literals.
 _CHANNEL_OFFICIAL_FORM_TYPE = {
@@ -196,12 +206,17 @@ def _validate_registry_row(row: dict, errors: list[str]) -> None:
             f"a date or strict YYYY-MM-DD string, got {row['enrolled_at']!r}"
         )
 
-    if "filing_trigger_profile" in row and row["filing_trigger_profile"] not in _FILING_TRIGGER_PROFILES:
-        errors.append(
-            f"registry row {row.get('ticker', '<unknown>')!r}: filing_trigger_profile "
-            f"must be exactly one of {sorted(_FILING_TRIGGER_PROFILES)}, got "
-            f"{row['filing_trigger_profile']!r}"
-        )
+    if "filing_trigger_profile" in row:
+        profile_value = row["filing_trigger_profile"]
+        # Type-checked before set membership: an unhashable value (list,
+        # dict) would raise TypeError from `in` against a set, not the
+        # fail-closed ValidationResult this validator must always return.
+        if not isinstance(profile_value, str) or profile_value not in _FILING_TRIGGER_PROFILES:
+            errors.append(
+                f"registry row {row.get('ticker', '<unknown>')!r}: filing_trigger_profile "
+                f"must be exactly one of {sorted(_FILING_TRIGGER_PROFILES)}, got "
+                f"{profile_value!r}"
+            )
 
     if "monitoring_enabled" in row and not isinstance(row["monitoring_enabled"], bool):
         errors.append(
@@ -281,11 +296,15 @@ def _validate_checkpoint_row(row: dict, errors: list[str]) -> None:
     if "ticker" in row and not _is_non_empty_str(row["ticker"]):
         errors.append(f"checkpoint row {ticker!r}: ticker must be a non-empty string, got {row['ticker']!r}")
 
-    if "checkpoint_status" in row and row["checkpoint_status"] not in _CHECKPOINT_STATUSES:
-        errors.append(
-            f"checkpoint row {ticker!r}: checkpoint_status must be exactly one of "
-            f"{sorted(_CHECKPOINT_STATUSES)}, got {row['checkpoint_status']!r}"
-        )
+    if "checkpoint_status" in row:
+        status_value = row["checkpoint_status"]
+        # Type-checked before set membership -- same unhashable-value
+        # crash risk as filing_trigger_profile above.
+        if not isinstance(status_value, str) or status_value not in _CHECKPOINT_STATUSES:
+            errors.append(
+                f"checkpoint row {ticker!r}: checkpoint_status must be exactly one of "
+                f"{sorted(_CHECKPOINT_STATUSES)}, got {status_value!r}"
+            )
 
     if "established_by" in row:
         eb = row["established_by"]
@@ -302,32 +321,28 @@ def _validate_checkpoint_row(row: dict, errors: list[str]) -> None:
         errors.append(f"checkpoint row {ticker!r}: channels must be a mapping, got {type(channels).__name__}")
         return
 
-    # Determine which profile universe applies for per-channel-name/
-    # official_form_type validation. A channel keyed outside either
-    # universe is still validated on its own object shape, but its name
-    # can't be checked against a profile-specific literal.
-    known_names = set(_DOMESTIC_CHANNELS) | set(_FPI_CHANNELS)
+    # AUTO-0002 Decision §1: "channels is a mapping whose keys are channel
+    # names drawn from a profile-closed set" -- enforced here at the row
+    # level against the UNION of both profiles' universes, independent of
+    # checkpoint_status and independent of whether the value is null.
+    # Key validation happens before any null-value shortcut: an unknown
+    # or non-string key is invalid even when its value is None. Narrowing
+    # to the ticker's own specific profile happens later, in the
+    # cross-file invariants, once the registry row's profile is known.
     for channel_key, channel_value in channels.items():
-        if channel_key in known_names:
-            _validate_channel_object(channel_key, channel_value, ticker, errors)
-        else:
-            # Not one of the two closed profile universes at all — still
-            # validate structurally where possible, using its own key as
-            # the expected channel_name (form-type check is skipped since
-            # there is no known mapping for an unrecognized channel name).
-            if channel_value is not None:
-                if not isinstance(channel_value, dict):
-                    errors.append(
-                        f"checkpoint row {ticker!r}: channel {channel_key!r} must be "
-                        f"a mapping or null, got {type(channel_value).__name__}"
-                    )
-                else:
-                    missing_ch = _CHANNEL_REQUIRED_KEYS - channel_value.keys()
-                    if missing_ch:
-                        errors.append(
-                            f"checkpoint row {ticker!r}: channel {channel_key!r} "
-                            f"missing required key(s): {sorted(missing_ch)}"
-                        )
+        if not isinstance(channel_key, str):
+            errors.append(
+                f"checkpoint row {ticker!r}: channel key must be a string, got "
+                f"{channel_key!r} ({type(channel_key).__name__})"
+            )
+            continue
+        if channel_key not in _CLOSED_CHANNEL_NAMES:
+            errors.append(
+                f"checkpoint row {ticker!r}: channel key {channel_key!r} is not part "
+                f"of the closed channel-name universe {sorted(_CLOSED_CHANNEL_NAMES)}"
+            )
+            continue
+        _validate_channel_object(channel_key, channel_value, ticker, errors)
 
 
 def _verified_channel_requirements(row: dict, profile: str | None, errors: list[str]) -> None:
@@ -339,7 +354,10 @@ def _verified_channel_requirements(row: dict, profile: str | None, errors: list[
     ticker = row.get("ticker", "<unknown>")
     if row.get("checkpoint_status") != "verified":
         return
-    if profile not in _PROFILE_CHANNELS:
+    # Type-checked before dict membership -- an unhashable profile value
+    # (list, dict) would raise TypeError from `in` against a dict, not
+    # the fail-closed early-return this validator must always take.
+    if not isinstance(profile, str) or profile not in _PROFILE_CHANNELS:
         # Profile itself is invalid/unknown — already reported by the
         # registry row check; nothing further to check here.
         return
@@ -351,10 +369,15 @@ def _verified_channel_requirements(row: dict, profile: str | None, errors: list[
     required_names = set(_PROFILE_CHANNELS[profile])
     actual_keys = set(channels.keys())
     if actual_keys != required_names:
+        # sorted(..., key=repr): actual_keys may contain a malformed,
+        # heterogeneous mix of types (already flagged separately by the
+        # row-level key checks) -- plain sorted() would raise TypeError
+        # comparing e.g. int and str, which must never happen here. This
+        # diagnostic must always return, never crash.
         errors.append(
             f"checkpoint row {ticker!r}: verified checkpoint's channel key set must "
             f"equal exactly {sorted(required_names)} for profile {profile!r}, got "
-            f"{sorted(actual_keys)}"
+            f"{sorted(actual_keys, key=repr)}"
         )
 
     nullable_names = {"earnings_release"} if profile == "foreign_private_issuer_v1" else set()
@@ -428,11 +451,18 @@ def _validate_cross_file_invariants(
         _verified_channel_requirements(chk_row, profile, errors)
 
         channels = chk_row.get("channels")
-        if isinstance(channels, dict) and profile in _PROFILE_CHANNELS:
+        # Type-checked before dict membership -- same unhashable-value
+        # crash risk as _verified_channel_requirements above.
+        if isinstance(channels, dict) and isinstance(profile, str) and profile in _PROFILE_CHANNELS:
             allowed = set(_PROFILE_CHANNELS[profile])
             for channel_key, channel_value in channels.items():
-                if channel_value is None:
-                    continue
+                # Checked regardless of null-ness -- a wrong-profile key
+                # is invalid whether or not it carries a value (e.g. a
+                # domestic ticker's checkpoint populating {"annual_20f":
+                # None} is still invalid; a null value is not a shortcut
+                # around key validity). channel_key is always hashable
+                # (guaranteed by dict construction), so this membership
+                # test itself never raises even for a malformed key type.
                 if channel_key not in allowed:
                     errors.append(
                         f"ticker {t!r}: channel {channel_key!r} is not valid for "

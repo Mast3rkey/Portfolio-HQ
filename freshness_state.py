@@ -63,6 +63,15 @@ def evaluate_freshness_state(
     _validate_bool(monitoring_enabled, "monitoring_enabled")
     _validate_bool(monitor_record_exists, "monitor_record_exists")
 
+    # Type-checked before closed-set membership: an unhashable value
+    # (list, dict) would raise TypeError from `in` against a set, not
+    # the ValueError this function's contract guarantees for all invalid
+    # input.
+    if not isinstance(checkpoint_status, str):
+        raise ValueError(
+            f"checkpoint_status must be a str, got {checkpoint_status!r} "
+            f"({type(checkpoint_status).__name__})"
+        )
     if checkpoint_status not in _CHECKPOINT_STATUSES:
         raise ValueError(
             f"checkpoint_status must be exactly one of {sorted(_CHECKPOINT_STATUSES)}, "
@@ -79,11 +88,18 @@ def evaluate_freshness_state(
             "monitor_record_exists is True but latest_monitor_state is None — a "
             "monitor run always records a state"
         )
-    if monitor_record_exists is True and latest_monitor_state not in _MONITOR_STATES:
-        raise ValueError(
-            f"latest_monitor_state must be exactly one of {sorted(_MONITOR_STATES)} "
-            f"when monitor_record_exists is True, got {latest_monitor_state!r}"
-        )
+    if monitor_record_exists is True:
+        # Same type-before-membership guard as checkpoint_status above.
+        if not isinstance(latest_monitor_state, str):
+            raise ValueError(
+                f"latest_monitor_state must be a str, got {latest_monitor_state!r} "
+                f"({type(latest_monitor_state).__name__})"
+            )
+        if latest_monitor_state not in _MONITOR_STATES:
+            raise ValueError(
+                f"latest_monitor_state must be exactly one of {sorted(_MONITOR_STATES)} "
+                f"when monitor_record_exists is True, got {latest_monitor_state!r}"
+            )
 
     outstanding_snap = _snapshot_fingerprint_set(outstanding, "outstanding")
     assigned_snap = _snapshot_fingerprint_set(assigned, "assigned")
