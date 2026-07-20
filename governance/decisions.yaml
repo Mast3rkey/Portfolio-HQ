@@ -76,3 +76,10 @@ decisions:
     related_decisions: [GOV-0001, AUTO-0001, AUTO-0002, PI-0011]
     supporting_artifact: null
     file: governance/decisions/AUTO-0003-cadence-trigger-core.md
+  - decision_id: TGT-0001
+    date: 2026-07-20
+    status: Accepted
+    category: portfolio_construction_governance
+    related_decisions: [GOV-0001, MARGIN-0001, PI-0001]
+    supporting_artifact: null
+    file: governance/decisions/TGT-0001-additive-target-budget-policy.md
