@@ -55,3 +55,10 @@ decisions:
     related_decisions: [GOV-0001, PI-0004, PI-0009, PI-0012, PI-0013]
     supporting_artifact: null
     file: governance/decisions/PI-0014-intc-syk-dhr-bounded-evidence-review.md
+  - decision_id: AUTO-0001
+    date: 2026-07-19
+    status: Accepted
+    category: research_automation
+    related_decisions: [GOV-0001, PI-0011, PI-0014]
+    supporting_artifact: docs/FRESHNESS_PLANNER_V1_SPEC.md
+    file: governance/decisions/AUTO-0001-freshness-planner-v1.md
