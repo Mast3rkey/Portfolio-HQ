@@ -3,12 +3,9 @@
 # -traded position or coin — live-valued every run via Alpaca (qty x
 # latest price). Update with 'allocate.py update-shares' / 'update-crypto-shares'
 # after a real buy/sell/trim changes a count.
-# 'holdings' (ticker: dollar value) is the manual fallback for any position
-# that cannot be share-priced. Currently empty/unused — SKHY was the only
-# occupant until the 2026-07-14 symbol/data resolution moved it into the
-# normal share-tracked 'shares' block above (see CLAUDE.md's Open Items).
-# Update it with 'allocate.py update-holdings' if a future ticker ever needs
-# this fallback again.
+# 'holdings' (ticker: dollar value) is the manual fallback for anything
+# NOT share-tracked. Currently empty/unused.
+# Update it with 'allocate.py update-holdings' if a future ticker needs it.
 # margin: synced via 'allocate.py update-margin <debt> <buffer_pct>' — buffer_pct comes from Robinhood directly (per-security maintenance
 # ratios aren't available via Alpaca), so it's only as fresh as the last sync. Verify on Robinhood before any large margin-funded buy.
 # IMPORTANT: always use Robinhood's own DISPLAYED buffer % — do not derive
@@ -16,9 +13,9 @@
 # against real screens and it doesn't reconcile (off by several points);
 # Robinhood's actual formula weights something this simple subtraction misses.
 margin:
-  debt: 1255.64
-  buffer_pct: 62.46
-  synced_at: 2026-07-17
+  debt: 1087.65
+  buffer_pct: 62.94
+  synced_at: 2026-07-20
 holdings:
   {}
 shares:
@@ -79,14 +76,14 @@ shares:
   SYK: 0.311095
   TMO: 0.2038
   TSLA: 0.252735
-  TSM: 0.456002
+  TSM: 0.520584
   UBER: 1.40443
   UNH: 0.100012
   V: 0.55877
   VRT: 0.332404
   WDC: 0.15222
   WMT: 0.864518
-  XOM: 0.553764
+  XOM: 0.309994
 crypto_shares:
   ETH: 0.209552
   SOL: 4.30301
