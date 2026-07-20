@@ -36,6 +36,8 @@ from freshness_identity import (
     compute_cadence_fingerprint as _compute_cadence_fingerprint,
 )
 
+__all__ = ("compute_due_cadence_fingerprint",)
+
 _CHECKPOINT_STATUSES = ("pending", "verified")
 _ASCII_DIGITS = frozenset("0123456789")
 

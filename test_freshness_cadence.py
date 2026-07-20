@@ -323,11 +323,9 @@ def test_invalid_input_never_masked_by_otherwise_none_outcome(
         fc.compute_due_cadence_fingerprint(**kwargs)
 
 
-def test_true_plus_pending_invariant_raises_even_with_other_invalid_field():
-    # The monitoring_enabled=True + checkpoint_status="pending" contradiction
-    # itself must still surface as ValueError even when paired with an
-    # already-invalid ticker -- no invalid combination is ever silently
-    # allowed to resolve to a gated None first.
+def test_true_plus_pending_invariant_raises_valueerror():
+    # monitoring_enabled=True together with checkpoint_status="pending" is
+    # an invalid combination and must raise ValueError.
     with pytest.raises(ValueError):
         fc.compute_due_cadence_fingerprint(
             ticker="ZZZZ", monitoring_enabled=True, checkpoint_status="pending",
@@ -475,12 +473,32 @@ def _module_ast():
 
 
 def test_exactly_one_public_function_defined():
-    public_names = sorted(n for n in dir(fc) if not n.startswith("_") and callable(getattr(fc, n)))
-    own_functions = sorted(
-        n for n in public_names
-        if getattr(getattr(fc, n), "__module__", None) == fc.__name__
-    )
-    assert own_functions == ["compute_due_cadence_fingerprint"]
+    # The module explicitly declares its export contract via __all__ --
+    # dir()/`__module__` alone cannot distinguish an intentional export
+    # from an incidentally public-looking imported name (e.g. `date`,
+    # `datetime`, `unicodedata` are all module-level names visible via
+    # dir(fc), but none of them is authorized as part of this module's
+    # public surface merely because their own __module__ differs from
+    # freshness_cadence).
+    assert hasattr(fc, "__all__")
+    assert fc.__all__ == ("compute_due_cadence_fingerprint",)
+    assert callable(fc.compute_due_cadence_fingerprint)
+
+    for name in fc.__all__:
+        assert not name.startswith("_")
+    assert "date" not in fc.__all__
+    assert "datetime" not in fc.__all__
+    assert "unicodedata" not in fc.__all__
+    assert "_compute_cadence_fingerprint" not in fc.__all__
+    assert "_normalize_open_string" not in fc.__all__
+    assert "_parse_strict_date" not in fc.__all__
+
+    # The only module-level function without a leading underscore remains
+    # compute_due_cadence_fingerprint.
+    tree = _module_ast()
+    top_level_funcs = [n.name for n in tree.body if isinstance(n, ast.FunctionDef)]
+    public_funcs = [n for n in top_level_funcs if not n.startswith("_")]
+    assert public_funcs == ["compute_due_cadence_fingerprint"]
 
 
 def test_every_other_module_level_function_is_private():
