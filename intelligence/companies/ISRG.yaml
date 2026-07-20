@@ -3,37 +3,46 @@ industry: Health Care Equipment
 portfolio_role_ref: T2
 themes: [life_sciences_tools_medtech]
 competitive_advantages:
-  - "Broad-based FY2025 growth across systems (+26%), recurring instruments and accessories (+19%), and service revenue (+20%) simultaneously -- recurring revenue lines growing nearly as fast as, or faster than, systems sales, indicating durable rather than one-time revenue growth"
-  - "da Vinci installed base grew 12% to 11,106 systems at 2025 year-end; Ion platform procedures grew approximately 51%, evidence of both platform durability and expansion into a second product line"
+  - "Broad-based Q2 2026 growth across systems (+19%), recurring instruments and accessories (+18%), and service revenue (approximately +21%) simultaneously -- recurring revenue lines growing at rates comparable to systems sales, indicating durable rather than one-time revenue growth"
+  - "da Vinci installed base grew 12% to 11,710 systems and Ion installed base grew 21% to 1,096 systems as of Q2 2026; worldwide combined procedures grew 16% (da Vinci +15%, Ion +36%), evidence of both platform durability and continued expansion into a second product line"
+  - "Balance-sheet resilience: $8.63B cash, cash equivalents, and investments against $2.58B total liabilities at Q2 2026 quarter-end"
 risks:
-  - risk: "Competitive entry into robotic-assisted surgery from other device manufacturers"
+  - risk: "Competitive entry into robotic-assisted surgery is no longer hypothetical: Medtronic's Hugo system received FDA clearance and completed its first U.S. commercial procedure in February 2026, and Johnson & Johnson's OTTAVA completed a 30-patient pivotal study (reported May 2026, all procedures completed robotically without conversion) after a January 2026 FDA De Novo submission"
+    severity: moderate
+    identified: "2026-07-20"
+    status: monitoring
+  - risk: "Reimbursement and hospital capital-budget exposure, since systems sales depend on hospital capital-spending decisions and procedures depend on payer reimbursement; Intuitive's own FY2025 Form 10-K (directly inspected this review) names hospital capital spending and reimbursement among its material risk factors"
     severity: moderate
     identified: "2026-07-18"
     status: monitoring
-  - risk: "Reimbursement and hospital capital-budget exposure, since systems sales depend on hospital capital-spending decisions and procedures depend on payer reimbursement"
+  - risk: "Sole- and single-source supplier concentration and potential customer-switching exposure under lease arrangements, per Intuitive's own FY2025 Form 10-K risk factors (directly inspected this review)"
     severity: moderate
-    identified: "2026-07-18"
+    identified: "2026-07-20"
     status: monitoring
   - risk: "Regulatory and clearance risk for new platforms, systems, and surgical indications"
     severity: moderate
     identified: "2026-07-18"
     status: monitoring
-  - risk: "Execution risk in the ongoing da Vinci 5 rollout, which remains in an active, only-partially-complete adoption phase as of the Q4 2025 placement data (303 of 532 systems placed were da Vinci 5)"
-    severity: low
-    identified: "2026-07-18"
-    status: monitoring
 conviction:
   rating: High
-  rationale: "ISRG's FY2025 results show broad-based growth across systems, recurring instruments and accessories, and service revenue simultaneously -- Systems revenue up 26%, Instruments and accessories revenue up 19%, and Service revenue up 20% -- with the recurring revenue lines growing nearly as fast as, or faster than, systems sales, indicating durable rather than one-time revenue growth. The installed base grew 12% to 11,106 da Vinci systems, and the newer Ion platform grew procedures by approximately 51%, evidence of both platform durability and expansion into a second product line. Conviction is High rather than Very High because of real, disclosed-relevant competitive-entry risk into robotic-assisted surgery and reimbursement/hospital-capital-budget exposure, and because a full enumeration of Intuitive's own Form 10-K risk-factor text was not independently inspected in this packet's research. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments, and was not inferred from ISRG's existing T2 portfolio-tier placement -- it was reasoned solely from the disclosed growth breadth described above."
+  rationale: "ISRG's Q2 2026 results show broad-based growth across systems (+19%), recurring instruments and accessories (+18%), and service revenue (approximately +21%) simultaneously, with worldwide combined procedures up 16% (da Vinci +15%, Ion +36%) and the installed base expanding across both platforms (da Vinci +12% to 11,710; Ion +21% to 1,096). Six-month 2026 revenue grew from $4.69B to $5.66B and operating income grew from $1.32B to $1.83B, with $8.63B of cash, cash equivalents, and investments against $2.58B of total liabilities -- durable growth on a resilient balance sheet. Conviction stays High rather than Very High, and T1 promotion is deliberately withheld, because competitive entry into robotic-assisted surgery has moved from disclosed risk to observed fact since the prior review: Medtronic's Hugo reached U.S. commercial use in February 2026 and J&J's OTTAVA cleared a pivotal study in May 2026 en route to FDA review. There is not yet enough evidence on pricing, hospital switching, placement share, or sustained market-share effects to conclude this transition leaves ISRG's competitive position unchanged. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments, and was not inferred from ISRG's existing T2 portfolio-tier placement -- it was reasoned solely from the disclosed growth and competitive evidence described above."
 review:
   cadence_days: 90
-  last_reviewed: "2026-07-18"
-  next_due: "2026-10-16"
+  last_reviewed: "2026-07-20"
+  next_due: "2026-10-18"
   log:
     - date: "2026-07-18"
       note: "Record created through AI-assisted research and drafting; finalized through explicit human review and approval under PI-0009. Portfolio HQ's fifth company record, and the first of two records created under the life_sciences_tools_medtech theme pilot."
+    - date: "2026-07-20"
+      note: "Scheduled review under PI-0009's cadence. Refreshed operating evidence to Q2 2026 primary-source figures (directly rendered from Intuitive's own investor-relations release, resolving the prior record's single-search-synthesized-source limitation). Directly inspected Intuitive's FY2025 Form 10-K risk-factor text (previously not independently inspected) and added the supplier-concentration/lease-switching risk it discloses. Added Medtronic Hugo's February 2026 U.S. commercial entry and J&J OTTAVA's January 2026 FDA submission and May 2026 pivotal-study results as concrete competitive developments. Governance conclusion: retain T2, retain conviction High, promotion to T1 not yet warranted pending observable evidence of the competitive transition's effect on pricing, hospital switching, and placement share. No change to portfolio_role_ref, conviction.rating, targets.yaml, or any allocator behavior."
 sources:
-  - note: "Intuitive Surgical, Q4 and full-year 2025 earnings release -- FY2025 total revenue ($10.1B, +21%), procedure growth (worldwide +19%, da Vinci +18%, Ion +51%), Systems revenue ($2.47B, +26%), Instruments and accessories revenue ($6.02B, +19%), Service revenue ($1.57B, +20%), da Vinci installed base (11,106, +12%), Q4 2025 system placements (532 total, 303 da Vinci 5). Direct rendering blocked (HTTP 403) in the research environment across multiple access attempts; figures obtained via search-engine synthesis of secondary sources, not directly rendered or read by this repository's tooling. This source rests on a single search-synthesized result and was not independently cross-checked against a second, separately rendered source -- a residual limitation disclosed explicitly."
-    url: "https://isrg.intuitive.com/news-releases/news-release-details/intuitive-announces-fourth-quarter-earnings-5/"
-  - note: "Intuitive Surgical, FY2025 Form 10-K -- identified as the source for enumerated risk-factor detail; direct rendering blocked (HTTP 403) in the research environment. Risk categories in this record are understood from general secondary coverage, not confirmed word-for-word against Intuitive's own filed risk-factor language."
+  - note: "Intuitive Surgical, Q2 2026 earnings release -- directly rendered this review. Revenue $2.89B (+19%), Instruments and accessories revenue +18%, Systems revenue +19%, Service revenue $472.4M vs $391.2M prior year (approximately +21%), worldwide combined procedures +16% (da Vinci +15%, Ion +36%), da Vinci installed base 11,710 (+12%), Ion installed base 1,096 (+21%), Q2 2026 da Vinci placements 468 (246 da Vinci 5) vs 395 (180 da Vinci 5) prior year, six-month revenue $4.69B to $5.66B, six-month operating income $1.32B to $1.83B, quarter-end cash/investments $8.63B vs total liabilities $2.58B."
+    url: "https://isrg.intuitive.com/news-releases/news-release-details/intuitive-announces-second-quarter-earnings-6"
+  - note: "Intuitive Surgical, da Vinci 5 FDA clearance for selected cardiac procedures, January 2026 -- directly rendered this review; supports the expanding-indications element of the thesis and is weighed as counterevidence against the competitive-entry risk below."
+    url: "https://isrg.intuitive.com/news-releases/news-release-details/da-vinci-5-cleared-cardiac-procedures"
+  - note: "Medtronic, first U.S. commercial procedure with Hugo robotic-assisted surgery system, February 2026 -- directly rendered this review. Supports the competitive-entry risk: Hugo reached FDA clearance and U.S. commercial use."
+    url: "https://news.medtronic.com/2026-02-17-Medtronic-announces-first-surgery-with-Hugo-TM-robotic-assisted-surgery-system-in-the-U-S-performed-at-Cleveland-Clinic"
+  - note: "Johnson & Johnson, OTTAVA FDA De Novo submission (January 2026) and 30-patient pivotal study results (reported May 2026, safety and performance endpoints met, all procedures completed robotically without conversion) -- directly rendered this review. Supports the competitive-entry risk."
+    url: "https://investor.jnj.com/investor-news/news-details/2026/Johnson--Johnson-Submits-OTTAVA-Robotic-Surgical-System-to-the-U-S--Food-and-Drug-Administration/default.aspx"
+  - note: "Intuitive Surgical, FY2025 Form 10-K -- directly inspected this review (previously not independently inspected; prior record's risk-factor detail rested on general secondary coverage). Confirms competitive, hospital capital-spending, reimbursement, sole/single-source-supplier, and lease-switching risk factors in Intuitive's own filed language."
     url: "https://www.sec.gov/Archives/edgar/data/1035267/000103526726000010/isrg-20251231.htm"
