@@ -1,27 +1,51 @@
 # ISRG — Intuitive Surgical, Inc.
 
-Last updated: 2026-07-18 -- created through AI-assisted research and
-drafting, finalized through explicit human review and approval under
-PI-0009. Portfolio HQ's fifth Portfolio Intelligence record, and the
-first of two records created under the `life_sciences_tools_medtech`
-Theme Intelligence pilot (decision_log.yaml PI-0006/PI-0007 process
-precedent; PI-0009 Human Approval Record).
+Last updated: 2026-07-20 -- an unscheduled, principal-authorized
+evidence refresh prompted by the tier review (not a scheduled
+PI-0009-cadence review), finalized through explicit human review and
+approval. Originally created 2026-07-18 as Portfolio HQ's fifth
+Portfolio Intelligence record, and the first of two records created
+under the `life_sciences_tools_medtech` Theme Intelligence pilot
+(decision_log.yaml PI-0006/PI-0007 process precedent; PI-0009 Human
+Approval Record).
 
 ## Source-access disclosure
 
-Direct rendering of Intuitive Surgical's primary documents was not
-achieved in the research environment for this record -- every
-attempted direct fetch against Intuitive's own investor-relations
-domain and SEC EDGAR in this research pass returned HTTP 403. The
-figures below are secondary corroboration: obtained via search-engine
-synthesis of secondary search results describing Intuitive's cited
-release, not rendered directly by this repository's tooling. This
-source rests on a single search-synthesized result and was not
-independently cross-checked against a second, separately rendered
-source -- a residual limitation disclosed explicitly rather than
-presented as more solid than it is. No claim in this record is labeled
-directly inspected first-party. This caveat applies once, to the whole
-record, and is not repeated per figure below.
+**Update, 2026-07-20 review:** this review directly rendered
+Intuitive's own Q2 2026 earnings release, its da Vinci 5 cardiac-
+clearance release, Medtronic's Hugo competitor release, and
+Intuitive's FY2025 Form 10-K -- resolving the original record's
+access limitation described below for these four documents. Every
+figure and risk-factor claim sourced from these four fetches is
+treated as directly inspected first-party.
+
+**J&J sources, access limitation (distinct from the four documents
+above):** both official Johnson & Johnson release pages -- the OTTAVA
+FDA De Novo submission release and the OTTAVA pivotal clinical study
+results release -- returned HTTP 403 when this filing agent attempted
+to directly render them. Their dates, exact titles, and the facts
+attributed to them in this record were corroborated through web
+search against the official J&J releases and against the
+principal-approved research report that preceded this filing, not
+directly rendered by the filing agent. This is a narrower, distinct
+limitation from the original 2026-07-18 record's blanket "not directly
+rendered" disclosure below: the four non-J&J sources in this review
+were directly rendered, only the two J&J sources were not.
+
+The original record's figures (2026-07-18, described below) remain
+secondary corroboration and are superseded by this review's
+primary-source figures wherever they overlap.
+
+**Original disclosure, 2026-07-18 (kept for record; superseded above
+for figures now directly sourced):** direct rendering of Intuitive
+Surgical's primary documents was not achieved in the research
+environment for the original record -- every attempted direct fetch
+against Intuitive's own investor-relations domain and SEC EDGAR in
+that research pass returned HTTP 403. The FY2025 figures in that pass
+were secondary corroboration obtained via search-engine synthesis, not
+rendered directly, and rested on a single search-synthesized result
+not independently cross-checked against a second, separately rendered
+source.
 
 ## Business summary
 
@@ -29,15 +53,19 @@ Intuitive Surgical supplies robotic-assisted surgical systems -- the
 da Vinci platform and the newer Ion platform -- through a business
 model that combines capital-equipment sales (systems) with recurring,
 procedure-linked revenue (instruments and accessories, and service).
-For fiscal year 2025: total revenue was $10.1 billion, up 21%
-year-over-year. Worldwide procedures (da Vinci and Ion combined) grew
-approximately 19% (da Vinci procedures approximately 18%, Ion
-procedures approximately 51%). Systems revenue was $2.47 billion
-(+26%); Instruments and accessories revenue was $6.02 billion (+19%);
-Service revenue was $1.57 billion (+20%). The da Vinci installed base
-reached 11,106 systems at 2025 year-end, up 12% from 9,902 at the end
-of 2024. In the fourth quarter of 2025, 532 da Vinci systems were
-placed, of which 303 were da Vinci 5 systems.
+For the second quarter of 2026: revenue was $2.89 billion, up 19%
+year-over-year. Instruments and accessories revenue grew 18%; systems
+revenue grew 19%; service revenue grew from $391.2 million to $472.4
+million, approximately 21%. Worldwide combined procedures grew 16%
+(da Vinci procedures +15%, Ion procedures +36%). The da Vinci
+installed base reached 11,710 systems, up 12%; the Ion installed base
+reached 1,096 systems, up 21%. In the quarter, Intuitive placed 468
+da Vinci systems (246 da Vinci 5) versus 395 systems (180 da Vinci 5)
+a year earlier. Six-month 2026 revenue grew from $4.69 billion to
+$5.66 billion, and six-month operating income grew from $1.32 billion
+to $1.83 billion. Intuitive ended the quarter with $8.63 billion of
+cash, cash equivalents, and investments against $2.58 billion of
+total liabilities.
 
 ## Investment thesis (business-quality description, not a
 recommendation)
@@ -45,16 +73,26 @@ recommendation)
 **Concise statement:** Intuitive Surgical supplies robotic-assisted
 surgical systems through a business model combining capital-equipment
 sales with recurring, procedure-linked revenue, with recurring revenue
-components in FY2025 growing at rates comparable to or exceeding
-systems revenue growth.
+components in Q2 2026 growing at rates comparable to systems revenue
+growth, against a competitive landscape that has moved from disclosed
+risk to observed entry since the prior review.
 
-**Expanded narrative:** in FY2025, the recurring revenue components
-(instruments and accessories, and service) grew nearly as fast as, or
-faster than, systems revenue itself -- a structurally favorable
-characteristic, since it indicates revenue durability tied to
-installed-base utilization rather than one-time capital sales alone.
-This is reported here as the current disclosed condition, not as a
-prediction that this growth pattern continues into future periods.
+**Expanded narrative:** in Q2 2026, the recurring revenue components
+(instruments and accessories, and service) grew at rates comparable to
+systems revenue itself -- a structurally favorable characteristic,
+since it indicates revenue durability tied to installed-base
+utilization rather than one-time capital sales alone. This is reported
+here as the current disclosed condition, not as a prediction that this
+growth pattern continues into future periods. Since the prior review,
+the competitive backdrop has become concrete rather than hypothetical:
+Medtronic's Hugo system reached FDA clearance and completed its first
+U.S. commercial procedure in February 2026, and Johnson & Johnson's
+OTTAVA advanced through an FDA De Novo submission (January 2026) and a
+30-patient pivotal study meeting its safety and performance endpoints
+(reported May 2026). This is weighed as a real change in the
+competitive picture, not as an imminent threat to current growth --
+Intuitive's own Q2 2026 results show no observable deceleration
+attributable to either competitor yet.
 
 **Conditions relevant to monitoring this thesis** (qualitative,
 observable -- no arbitrary numerical threshold, consistent with
@@ -67,6 +105,8 @@ PI-0004's precedent for COST/XOM):
 - The da Vinci 5 rollout continues without a material, disclosed ramp
   or adoption problem
 - No material loss of competitive position in robotic-assisted surgery
+  to Hugo, OTTAVA, or other entrants -- specifically, no material loss
+  of placement share, pricing power, or hospital-switching activity
 
 **Conditions that would weaken confidence in the above** (analytical
 judgment, qualitative and observable, no numerical trigger):
@@ -74,8 +114,8 @@ judgment, qualitative and observable, no numerical trigger):
   growth
 - A material, sustained deceleration in procedure growth
 - A disclosed, material execution failure in the da Vinci 5 rollout
-- Evidence of material competitive share loss in robotic-assisted
-  surgery
+- Evidence of material competitive share loss to Hugo, OTTAVA, or
+  another entrant in robotic-assisted surgery
 
 ## Competitive advantages — detail
 
@@ -83,37 +123,54 @@ judgment, qualitative and observable, no numerical trigger):
 evidence lives here.)*
 
 1. **Broad-based, simultaneous growth across revenue lines.** Evidence:
-   FY2025 Systems revenue +26%, Instruments and accessories +19%,
-   Service +20%. Limitation: this figure is secondary corroboration,
-   single-source, not independently cross-checked against a second
-   rendered source in this research pass.
+   Q2 2026 revenue $2.89B (+19%); Instruments and accessories +18%,
+   Systems +19%, Service $472.4M vs $391.2M prior year (approximately
+   +21%). Directly sourced from Intuitive's own Q2 2026 earnings
+   release this review.
 2. **Installed-base and platform expansion.** Evidence: da Vinci
-   installed base up 12% to 11,106 systems; Ion platform procedures up
-   approximately 51%. Limitation: same sourcing limitation as above.
+   installed base up 12% to 11,710 systems; Ion installed base up 21%
+   to 1,096 systems; worldwide combined procedures up 16% (da Vinci
+   +15%, Ion +36%). Directly sourced, same release.
+3. **Balance-sheet resilience.** Evidence: $8.63B cash, cash
+   equivalents, and investments against $2.58B total liabilities at
+   Q2 2026 quarter-end. Directly sourced, same release.
 
 ## Risks — detail
 
 Category framing (not a schema field, recorded here only, same
 convention COST's, XOM's, NVDA's, and GEV's records established):
-- Competitive entry into robotic-assisted surgery: competitive/
-  structural
+- Competitive entry into robotic-assisted surgery (Hugo, OTTAVA):
+  competitive/structural
 - Reimbursement and hospital capital-budget exposure: regulatory/
   commercial
+- Supplier concentration and lease-driven customer switching:
+  operational/commercial
 - Regulatory and clearance risk for new platforms and indications:
   regulatory
-- da Vinci 5 rollout execution risk: operational
 
-**Important limitation, disclosed explicitly:** the specific
+**Update, 2026-07-20 review:** Intuitive's FY2025 Form 10-K was
+directly inspected this review (resolving the prior record's
+limitation, described below). It confirms, in Intuitive's own filed
+language, material risk factors covering competition, hospital capital
+spending, reimbursement, sole- and single-source supplier
+concentration, and potential customer switching under lease
+arrangements. Separately, competitive entry is no longer only a
+disclosed risk-factor category -- Medtronic's Hugo and J&J's OTTAVA
+have both taken concrete regulatory and commercial steps since the
+prior review (detail above and in Sources).
+
+**Original limitation, 2026-07-18 (superseded above):** the specific
 enumerated risk-factor text of Intuitive's own Form 10-K was not
-independently inspected in this research pass. The four risk
-categories above are understood from general secondary coverage of
-Intuitive's disclosed business, not confirmed word-for-word against
-Intuitive's own filed risk-factor language.
+independently inspected in the original research pass; the risk
+categories in that record were understood from general secondary
+coverage, not confirmed word-for-word against Intuitive's own filed
+risk-factor language.
 
 Observable indicators worth monitoring: quarterly procedure growth (da
 Vinci, Ion, total), recurring-revenue growth rate relative to systems
-revenue growth, da Vinci 5 adoption pace, and any material competitive
-or regulatory development.
+revenue growth, da Vinci 5 adoption pace, and any material development
+in Hugo's or OTTAVA's U.S. commercial rollout (placement counts,
+pricing, hospital-switching activity, or FDA clearance status).
 
 ## Catalyst
 
@@ -123,7 +180,9 @@ procedure growth are both directionally relevant to this thesis, but
 no specific future date for either was confirmed in this research
 pass. Including an unconfirmed date would repeat the exact error
 corrected during COST's own drafting (see COST.md's catalyst section)
-and XOM's drafting (see XOM.md's catalyst section).
+and XOM's drafting (see XOM.md's catalyst section). Da Vinci 5's FDA
+clearance for selected cardiac procedures (January 2026) is recorded
+as realized evidence supporting the thesis, not a forward catalyst.
 
 ## Review framework
 
@@ -135,40 +194,53 @@ and XOM's drafting (see XOM.md's catalyst section).
     revenue growth
   - A material, sustained deceleration in procedure growth
   - A disclosed, material execution failure in the da Vinci 5 rollout
-  - Evidence of material competitive share loss
+  - Evidence of material competitive share loss to Hugo, OTTAVA, or
+    another entrant -- specifically placement share, pricing, or
+    hospital-switching activity
+  - Hugo or OTTAVA reaching a materially wider U.S. commercial
+    footprint (broad multi-hospital rollout, not isolated first cases)
   - A significant leadership change
 - **Metrics worth monitoring each review:** quarterly total revenue,
   Systems/Instruments and accessories/Service revenue and growth
-  rates, procedure growth (da Vinci, Ion, total), and da Vinci
-  installed base.
+  rates, procedure growth (da Vinci, Ion, total), da Vinci installed
+  base, and Hugo/OTTAVA placement and adoption data as it becomes
+  available.
 
 ## Conviction
 
 **Rating: High**
 
-**Rationale:** ISRG's FY2025 results show broad-based growth across
-systems, recurring instruments and accessories, and service revenue
-simultaneously -- Systems revenue up 26%, Instruments and accessories
-revenue up 19%, and Service revenue up 20% -- with the recurring
-revenue lines growing nearly as fast as, or faster than, systems
-sales, indicating durable rather than one-time revenue growth. The
-installed base grew 12% to 11,106 da Vinci systems, and the newer Ion
-platform grew procedures by approximately 51%, evidence of both
-platform durability and expansion into a second product line.
-Conviction is High rather than Very High because of real, disclosed-
-relevant competitive-entry risk into robotic-assisted surgery and
-reimbursement/hospital-capital-budget exposure, and because a full
-enumeration of Intuitive's own Form 10-K risk-factor text was not
-independently inspected in this research pass. This rating explicitly
-excludes valuation, entry-price, allocation, trading, and margin
-judgments, and was not inferred from ISRG's existing T2 portfolio-tier
-placement -- it was reasoned solely from the disclosed growth breadth
-described above.
+**Rationale:** ISRG's Q2 2026 results show broad-based growth across
+systems (+19%), recurring instruments and accessories (+18%), and
+service revenue (approximately +21%) simultaneously, with worldwide
+combined procedures up 16% (da Vinci +15%, Ion +36%) and the installed
+base expanding across both platforms (da Vinci +12% to 11,710; Ion
++21% to 1,096). Six-month 2026 revenue grew from $4.69B to $5.66B and
+operating income grew from $1.32B to $1.83B, against a resilient
+balance sheet ($8.63B cash/investments vs $2.58B total liabilities).
+Conviction stays High rather than Very High, and this review
+deliberately withholds T1 promotion, because competitive entry into
+robotic-assisted surgery has moved from disclosed risk to observed
+fact since the prior review: Medtronic's Hugo reached U.S. commercial
+use in February 2026, and J&J's OTTAVA cleared a 30-patient pivotal
+study in May 2026 en route to FDA review. Intuitive's own growth shows
+no observable damage from either yet, and da Vinci 5's January 2026
+cardiac-procedure clearance is real counterevidence of continued
+platform strength -- but there is not yet enough evidence on pricing,
+hospital switching, placement share, or sustained market-share effects
+to conclude the competitive transition leaves ISRG's position
+unchanged. This rating explicitly excludes valuation, entry-price,
+allocation, trading, and margin judgments, and was not inferred from
+ISRG's existing T2 portfolio-tier placement -- it was reasoned solely
+from the disclosed growth and competitive evidence described above.
 
 This rating and rationale reflect human judgment, approved after
 independent review of AI-assisted research -- the research and
 drafting process does not itself constitute the human judgment this
-record requires; the approval decision does.
+record requires; the approval decision does. The 2026-07-20 review
+reached the same conclusion as 2026-07-18 (retain T2, retain High)
+after directly weighing new, concrete competitive evidence -- this is
+a reaffirmation on stronger evidence, not an unexamined carry-forward.
 
 ## Theme membership
 
@@ -187,7 +259,17 @@ governed exclusively by `targets.yaml`.
 
 ## Sources
 
-See YAML `sources[]` for the structured register -- two primary-
-document citations (Intuitive's Q4/FY2025 results release and FY2025
-Form 10-K), each disclosing that direct rendering was blocked in the
-research environment per the disclosure above.
+See YAML `sources[]` for the structured register -- six primary-
+document citations as of the 2026-07-20 review, split by access
+method. **Four directly rendered or inspected by the filing agent:**
+Intuitive's Q2 2026 earnings release, Intuitive's da Vinci 5
+cardiac-clearance release, Medtronic's Hugo first-U.S.-procedure
+release, and Intuitive's FY2025 Form 10-K. **Two blocked from direct
+rendering (HTTP 403) and corroborated instead via web search against
+the official releases and the principal-approved research report:**
+J&J's OTTAVA FDA De Novo submission release (January 7, 2026) and
+J&J's OTTAVA pivotal clinical study results release (May 5, 2026).
+The original record's two FY2025-cycle sources (results release and
+10-K, both then blocked from direct rendering) are superseded for
+figures now directly sourced; the 10-K citation is retained and
+upgraded to directly inspected.
