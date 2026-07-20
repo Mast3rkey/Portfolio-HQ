@@ -2,7 +2,7 @@
 
 _Adopted 2026-07-18 (`governance/decisions/GOV-0001-governance-architecture-adopted.md`). Distills principles already adopted in CLAUDE.md's Decisions Log — this document originates nothing new. It exists so the **why** behind the system's non-negotiable rules survives independent of any specific numeric value, ticker, or gate implementation._
 
-**This is not the operational source of truth.** CLAUDE.md remains that — current parameters (the 1.8x leverage cap, the 30% buffer floor, tier weights, cluster caps), the workflow, and the full narrative Decisions Log all live there and change as the portfolio does. This document changes rarely, and only through its own amendment process (below). If the two ever appear to conflict, CLAUDE.md's Decisions Log is the more recent and more specific record — treat a conflict as a sign this document needs a deliberate amendment, not as license to ignore either one.
+**This Constitution is the highest-authority statement of the system's durable governing principles.** CLAUDE.md is the operational synthesis and current-parameter record — current parameters, workflow, and the full narrative Decisions Log live there and change as the portfolio does. CLAUDE.md operates under this Constitution, not alongside or above it. This document changes rarely, and only through its own amendment process (§7). If this document and a lower-authority source conflict, this document remains controlling; a material, task-relevant conflict must be surfaced, and the affected mutation is blocked until the lower-authority source is corrected or this document is amended through §7. Recency or specificity never permits a lower-authority source to override it. See §8 and `governance/decisions/GOV-0002-operational-precedence-hierarchy.md`.
 
 **Two domain constitutions extend this one by reference, not duplication**: `docs/MARGIN_DOCTRINE.md` (margin philosophy, in full) and `docs/PORTFOLIO_INTELLIGENCE_SPEC.md` (Company/Theme Intelligence's non-negotiables, §20/24). Their content is not repeated here — this document states the same underlying principles at a higher level and points to them for the complete argument.
 
@@ -38,6 +38,10 @@ Any claim about this repository's code, data, or behavior that originates outsid
 
 This document changes less often, and with more deliberation, than an ordinary committee decision. An amendment requires its own governance decision (see `governance/decisions/`), explicitly categorized as a constitutional amendment rather than an ordinary decision, and must state what principle is changing and why the prior version no longer holds. It is not amended as a side effect of an unrelated policy change, a new company review, or a new tier decision — those operate at the Policy and Company/Theme layers below this one and do not, by themselves, alter anything here.
 
+## 8. Operational precedence
+
+CLAUDE.md is this system's operational synthesis — current parameters, workflow, and narrative decision index — not a superior authority. Where sources conflict, higher authority remains controlling; a lower-authority source cannot override, amend, or silently supersede a higher one. A material, task-relevant conflict blocks the affected mutation until it is reconciled. The lower-authority source is corrected to match, unless the higher-authority source is itself amended through its own governed process. Recency or specificity never permits a lower-authority source to override a higher one. The complete operational precedence hierarchy, and its full conflict-resolution rules, are stated in `governance/decisions/GOV-0002-operational-precedence-hierarchy.md`, not reproduced here.
+
 ---
 
-_Changelog: 2026-07-18 — initial adoption (GOV-0001)._
+_Changelog: 2026-07-18 — initial adoption (GOV-0001). 2026-07-20 — introduction conflict sentence revised, §8 (Operational precedence) added; complete cross-document authority hierarchy stated in `governance/decisions/GOV-0002-operational-precedence-hierarchy.md` (GOV-0002)._

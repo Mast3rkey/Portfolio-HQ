@@ -90,3 +90,10 @@ decisions:
     related_decisions: [TGT-0001, GOV-0001, PI-0003, PI-0004]
     supporting_artifact: null
     file: governance/decisions/TGT-0002-cost-promotion-t2-to-t1.md
+  - decision_id: GOV-0002
+    date: 2026-07-20
+    status: Accepted
+    category: constitutional_amendment
+    related_decisions: [GOV-0001]
+    supporting_artifact: null
+    file: governance/decisions/GOV-0002-operational-precedence-hierarchy.md
