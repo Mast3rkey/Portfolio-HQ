@@ -42,7 +42,7 @@ Per-ticker target weights (`targets.yaml`, config truth):
 - **AMZN kept at T2, not promoted to T1** — T1 is already 7-of-9 names one AI-infrastructure trade; sizing up another mega-cap there compounds a flagged concentration rather than fixing it.
 - **AVGO stays at T2, not promoted to T1** — same reasoning as AMZN, and AVGO is itself a `semis` cluster member, so promotion would compound that concentration more directly.
 - **COST promoted T2 → T1** (2026-07-20; TGT-0002) — the principal determined that COST independently met the quality, durability, balance-sheet, capital-allocation, cycle-resilience, thesis-clarity, and permanent-impairment-resistance considerations required for T1 placement; diversification was a supporting benefit, not the basis, and no other ticker's placement changed.
-- **AAPL promoted band → T2** (2026-07-14) — fits T2's "quality compounder" character (alongside COST/WMT/MA/BRK.B) better than band's cyclical/smaller-cap character, and doesn't touch the T1 concentration question.
+- **AAPL promoted band → T2** (2026-07-14) — fit T2's "quality compounder" character (alongside COST/WMT/MA/BRK.B at the time; COST was later promoted to T1 under TGT-0002) better than band's cyclical/smaller-cap character, and did not touch the T1 concentration question.
 - **VMC exited, consolidated into MLM** (2026-07-13) — both were direct aggregates-industry peers; holding both was redundant sector exposure, not diversification.
 - A full 65-name tier-fit scan found the rest of the roster reasonably placed; no other promotions/demotions flagged.
 
