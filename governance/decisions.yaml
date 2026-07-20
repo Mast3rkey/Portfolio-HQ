@@ -69,3 +69,10 @@ decisions:
     related_decisions: [GOV-0001, AUTO-0001]
     supporting_artifact: null
     file: governance/decisions/AUTO-0002-freshness-local-foundation.md
+  - decision_id: AUTO-0003
+    date: 2026-07-20
+    status: Accepted
+    category: research_automation
+    related_decisions: [GOV-0001, AUTO-0001, AUTO-0002, PI-0011]
+    supporting_artifact: null
+    file: governance/decisions/AUTO-0003-cadence-trigger-core.md
