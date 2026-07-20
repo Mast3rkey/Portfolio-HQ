@@ -12,11 +12,11 @@ regime_ticker: QQQ          # ticker whose 200-EMA regime status is shown; infor
 tiers:
   T1:
     weight_pct: 3.35        # per-ticker target, each name in the list
-    tickers: [ASML, TSM, MSFT, GOOGL, META, NVDA, GEV, LLY, V]
+    tickers: [ASML, TSM, MSFT, GOOGL, META, NVDA, GEV, LLY, V, COST]
   T2:
     weight_pct: 1.65
     # AAPL added 2026-07-14 — promoted from band (see Decisions Log).
-    tickers: [AVGO, AMZN, CEG, PWR, ISRG, TMO, DHR, SYK, MA, BRK.B, WMT, COST, EQIX, MLM, AAPL]
+    tickers: [AVGO, AMZN, CEG, PWR, ISRG, TMO, DHR, SYK, MA, BRK.B, WMT, EQIX, MLM, AAPL]
   ETF:
     weight_pct: 2.30
     tickers: [SPY, QQQ, GLD]
