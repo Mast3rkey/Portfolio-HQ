@@ -13,13 +13,28 @@ Approval Record).
 
 **Update, 2026-07-20 review:** this review directly rendered
 Intuitive's own Q2 2026 earnings release, its da Vinci 5 cardiac-
-clearance release, Medtronic's and J&J's competitor releases, and
+clearance release, Medtronic's Hugo competitor release, and
 Intuitive's FY2025 Form 10-K -- resolving the original record's
-access limitation described below. Every figure and risk-factor claim
-sourced from this review's fetches is treated as directly inspected
-first-party; the original record's figures (2026-07-18, described
-below) remain secondary corroboration and are superseded by this
-review's primary-source figures wherever they overlap.
+access limitation described below for these four documents. Every
+figure and risk-factor claim sourced from these four fetches is
+treated as directly inspected first-party.
+
+**J&J sources, access limitation (distinct from the four documents
+above):** both official Johnson & Johnson release pages -- the OTTAVA
+FDA De Novo submission release and the OTTAVA pivotal clinical study
+results release -- returned HTTP 403 when this filing agent attempted
+to directly render them. Their dates, exact titles, and the facts
+attributed to them in this record were corroborated through web
+search against the official J&J releases and against the
+principal-approved research report that preceded this filing, not
+directly rendered by the filing agent. This is a narrower, distinct
+limitation from the original 2026-07-18 record's blanket "not directly
+rendered" disclosure below: the four non-J&J sources in this review
+were directly rendered, only the two J&J sources were not.
+
+The original record's figures (2026-07-18, described below) remain
+secondary corroboration and are superseded by this review's
+primary-source figures wherever they overlap.
 
 **Original disclosure, 2026-07-18 (kept for record; superseded above
 for figures now directly sourced):** direct rendering of Intuitive
@@ -245,13 +260,16 @@ governed exclusively by `targets.yaml`.
 ## Sources
 
 See YAML `sources[]` for the structured register -- six primary-
-document citations as of the 2026-07-20 review: Intuitive's Q2 2026
-earnings release, Intuitive's da Vinci 5 cardiac-clearance release,
-Medtronic's Hugo first-U.S.-procedure release, J&J's OTTAVA FDA De
-Novo submission release (January 7, 2026), J&J's OTTAVA pivotal
-clinical study results release (May 5, 2026), and Intuitive's FY2025
-Form 10-K -- all six directly rendered this review. The original
-record's two FY2025-cycle sources (results release and 10-K, both
-then blocked from direct rendering) are superseded for figures now
-directly sourced; the 10-K citation is retained and upgraded to
-directly inspected.
+document citations as of the 2026-07-20 review, split by access
+method. **Four directly rendered or inspected by the filing agent:**
+Intuitive's Q2 2026 earnings release, Intuitive's da Vinci 5
+cardiac-clearance release, Medtronic's Hugo first-U.S.-procedure
+release, and Intuitive's FY2025 Form 10-K. **Two blocked from direct
+rendering (HTTP 403) and corroborated instead via web search against
+the official releases and the principal-approved research report:**
+J&J's OTTAVA FDA De Novo submission release (January 7, 2026) and
+J&J's OTTAVA pivotal clinical study results release (May 5, 2026).
+The original record's two FY2025-cycle sources (results release and
+10-K, both then blocked from direct rendering) are superseded for
+figures now directly sourced; the 10-K citation is retained and
+upgraded to directly inspected.
