@@ -62,3 +62,10 @@ decisions:
     related_decisions: [GOV-0001, PI-0011, PI-0014]
     supporting_artifact: docs/FRESHNESS_PLANNER_V1_SPEC.md
     file: governance/decisions/AUTO-0001-freshness-planner-v1.md
+  - decision_id: AUTO-0002
+    date: 2026-07-19
+    status: Accepted
+    category: research_automation
+    related_decisions: [GOV-0001, AUTO-0001]
+    supporting_artifact: null
+    file: governance/decisions/AUTO-0002-freshness-local-foundation.md
