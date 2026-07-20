@@ -1,6 +1,6 @@
 sector: Consumer Staples
 industry: Discount Stores / Warehouse Clubs
-portfolio_role_ref: T2
+portfolio_role_ref: T1
 competitive_advantages:
   - "Membership-fee-funded low-margin model creates a durable price advantage competitors without a comparable membership base struggle to match"
   - "High membership renewal rates (92.2% U.S./Canada, 89.7% worldwide, per Q3 FY2026 disclosure) indicate durable recurring-revenue loyalty"
@@ -41,6 +41,8 @@ review:
   log:
     - date: "2026-07-17"
       note: "Initial record created through AI-assisted research and drafting; finalized through explicit human review and approval under PI-0003. Portfolio HQ's first Portfolio Intelligence pilot record."
+    - date: "2026-07-20"
+      note: "Human portfolio-role review following TGT-0002 updated portfolio_role_ref from T2 to T1. This remains an advisory Company Intelligence characterization only and does not authorize, derive, or alter allocation policy, targets, conviction, thesis, risks, catalysts, or review cadence. The mismatch was surfaced by intelligence_report.py --role-drift under PI-0011."
 sources:
   - note: "Costco Wholesale Corp Form 10-K, fiscal year ended 2025-08-31, filed with SEC 2025-10-07 (accession 0000909832-25-000101) -- membership fee revenue, renewal rates, warehouse/country count, net sales, net income, risk-factor categories. Direct rendering blocked (HTTP 403) in the research environment across multiple access attempts; figures corroborated via independent search results, not directly verified against rendered primary text."
     url: "https://www.sec.gov/Archives/edgar/data/909832/000090983225000101/cost-20250831.htm"
