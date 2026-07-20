@@ -1,6 +1,7 @@
 """Tests for freshness_state.py (AUTO-0002 bounded local-foundation scope)."""
 
 import ast
+import collections.abc
 from pathlib import Path
 
 import pytest
@@ -10,6 +11,26 @@ import freshness_state as fstate
 FP_A = "a" * 64
 FP_B = "b" * 64
 FP_C = "c" * 64
+
+
+class _CustomFingerprintSet(collections.abc.Set):
+    """A minimal, non-built-in collections.abc.Set implementation --
+    proves the function accepts any conforming Set, not just literal
+    `set`/`frozenset`, and can be constructed to yield an unhashable
+    member (a plain Python list/dict), which `set`/`frozenset` literals
+    cannot represent in the first place."""
+
+    def __init__(self, items):
+        self._items = list(items)
+
+    def __contains__(self, item):
+        return item in self._items
+
+    def __iter__(self):
+        return iter(self._items)
+
+    def __len__(self):
+        return len(self._items)
 
 
 def _base_kwargs(**overrides) -> dict:
@@ -207,6 +228,27 @@ def test_fingerprint_arguments_reject_non_set_types(field, bad_collection):
 def test_set_and_frozenset_both_accepted():
     assert fstate.evaluate_freshness_state(**_base_kwargs(outstanding={FP_A})) == "review_due"
     assert fstate.evaluate_freshness_state(**_base_kwargs(outstanding=frozenset({FP_A}))) == "review_due"
+
+
+def test_custom_set_with_valid_digest_is_accepted():
+    """A conforming, non-built-in collections.abc.Set with one valid
+    lowercase 64-character digest is accepted exactly like a literal
+    set/frozenset would be."""
+    custom = _CustomFingerprintSet([FP_A])
+    assert fstate.evaluate_freshness_state(**_base_kwargs(outstanding=custom)) == "review_due"
+
+
+@pytest.mark.parametrize("unhashable_member", [["not", "hashable"], {"not": "hashable"}])
+@pytest.mark.parametrize("field", ["outstanding", "assigned", "awaiting_human_incorporation", "incorporated"])
+def test_custom_set_unhashable_member_raises_valueerror_not_typeerror(field, unhashable_member):
+    """A custom collections.abc.Set can yield an unhashable member (a
+    list or dict) that `frozenset(value)` would reject with TypeError --
+    that must surface as this function's documented ValueError contract,
+    not an uncaught TypeError, and member-format validation must still
+    get the chance to run and produce the diagnostic."""
+    custom = _CustomFingerprintSet([unhashable_member])
+    with pytest.raises(ValueError):
+        fstate.evaluate_freshness_state(**_base_kwargs(**{field: custom}))
 
 
 @pytest.mark.parametrize("bad_member", [

@@ -35,7 +35,18 @@ def _snapshot_fingerprint_set(value: object, name: str) -> frozenset[str]:
             f"{name} must be an instance of collections.abc.Set (set or frozenset), "
             f"got {value!r} ({type(value).__name__})"
         )
-    snapshot = frozenset(value)
+    # A conforming collections.abc.Set is not guaranteed to yield only
+    # hashable members -- a custom implementation could still produce an
+    # unhashable member (e.g. a list or dict), which frozenset() would
+    # reject with TypeError. That must surface as this function's
+    # documented ValueError contract, not an uncaught TypeError, so the
+    # member-format validation below always gets the chance to run.
+    try:
+        snapshot = frozenset(value)
+    except TypeError as exc:
+        raise ValueError(
+            f"{name} contains a member that cannot be represented in a frozenset"
+        ) from exc
     for member in snapshot:
         if not isinstance(member, str) or not _FINGERPRINT_RE.match(member):
             raise ValueError(
