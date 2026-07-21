@@ -7,9 +7,13 @@ name: CI
 # not to persist it past that step (persist-credentials: false below).
 # Downloading actions and Python packages still requires ordinary CI
 # network access (github.com, the Actions marketplace, PyPI) — this is not
-# a network-free workflow — but the test and validation commands run here
-# never contact Alpaca, Robinhood, or any other brokerage or live
-# market-data service (verified — see PR description).
+# a network-free workflow. Within the test suite itself: production
+# market-data clients (Alpaca, yfinance/Yahoo) are never invoked by the
+# ordinary deterministic test suite — allocate.plan()'s earnings lookup is
+# replaced with a controlled pytest fixture (conftest.py's autouse
+# no_live_earnings_lookup), and the dedicated earnings.py tests
+# (test_earnings.py) exercise it against mocked provider objects only, not
+# a live network call.
 
 on:
   pull_request:
