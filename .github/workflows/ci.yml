@@ -1,8 +1,15 @@
 name: CI
 
-# Secret-free, network-free integrity checks only. No brokerage credentials,
-# API tokens, or live market data are used or required anywhere in this
-# workflow — see README/PR description for why that's sufficient.
+# No user-provided or repository secrets are required. No Alpaca,
+# Robinhood, brokerage, live-account, or live market-data credentials are
+# used anywhere in this workflow. GitHub Actions supplies its own standard,
+# ephemeral, read-only GITHUB_TOKEN for checkout, and checkout is configured
+# not to persist it past that step (persist-credentials: false below).
+# Downloading actions and Python packages still requires ordinary CI
+# network access (github.com, the Actions marketplace, PyPI) — this is not
+# a network-free workflow — but the test and validation commands run here
+# never contact Alpaca, Robinhood, or any other brokerage or live
+# market-data service (verified — see PR description).
 
 on:
   pull_request:
@@ -25,20 +32,25 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Whitespace / diff integrity check
         env:
           EVENT_NAME: ${{ github.event_name }}
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
           BEFORE_SHA: ${{ github.event.before }}
         run: |
           set -euo pipefail
           if [ "$EVENT_NAME" = "pull_request" ]; then
-            # Don't assume actions/checkout already created an origin/<base>
-            # tracking ref for a pull_request event — it may only have
-            # fetched the PR's merge ref. Fetch the base ref explicitly.
-            git fetch --no-tags origin "$BASE_REF"
-            BASE="$(git merge-base FETCH_HEAD HEAD)"
+            # fetch-depth: 0 already pulled all history for all branches
+            # during checkout, so the PR's base commit should already be
+            # present — no second (authenticated) fetch needed here.
+            # Verify that explicitly rather than assuming it.
+            if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+              echo "ERROR: PR base commit $BASE_SHA not found in the checkout." >&2
+              exit 1
+            fi
+            BASE="$(git merge-base "$BASE_SHA" HEAD)"
           else
             BASE="$BEFORE_SHA"
             if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
@@ -57,10 +69,7 @@ jobs:
           cache-dependency-path: requirements.txt
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest
+        run: python -m pip install -r requirements.txt
 
       - name: YAML parse check (all tracked .yaml/.yml files)
         run: |
