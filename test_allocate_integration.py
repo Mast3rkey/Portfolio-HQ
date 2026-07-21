@@ -416,7 +416,10 @@ def test_crypto_sleeve_none_when_not_configured():
 # fallbacks for one config value. Now there is exactly one resolution
 # (`_resolve_crypto_sleeve_pct`), surfaced in the result as
 # `crypto_sleeve_pct`, which both plan()'s own gap math and main()'s rendered
-# `result["crypto"]["sleeve_pct"]` field read from.
+# `result["crypto"]["sleeve_pct"]` field read from. The tests directly below
+# exercise only plan() and the resolver in isolation; the direct main()
+# production-path proof (including `result["crypto"]["sleeve_pct"]` itself)
+# lives further down, alongside the equivalent P1-4 coverage.
 
 def test_crypto_sleeve_pct_custom_value_used_consistently():
     targets = _crypto_targets(sleeve_pct=17.5)   # deliberately not 10.0 or 0
@@ -459,49 +462,126 @@ def test_crypto_sleeve_disabled_no_coins_configured_no_error():
     assert result["crypto_sleeve_pct"] is None
 
 
-# ── NUM-0001 P1-4: concentration_min_fraction must preserve explicit 0.0 ───
-# main()'s `concentration_cfg.get("min_fraction") or 0.5` idiom discarded an
-# explicitly configured 0.0 (falsy in Python). `_attach_margin_state` above
-# has been updated to mirror the fixed wiring; these tests spy on
-# classify_margin_state() to prove the exact kwarg value that reaches it.
+# ── NUM-0001 P1-3 + P1-4: direct main() production-path coverage ───────────
+# The plan()-level tests above (P1-3) and _attach_margin_state()-based tests
+# formerly here (P1-4) proved the resolvers and the test file's own mirror of
+# main()'s post-plan() block, but neither executed allocate.main() itself --
+# a revert of main()'s real wiring (result["crypto"]["sleeve_pct"] back to
+# its old independent `crypto_cfg.get("sleeve_pct", 10)` fallback, or
+# concentration_min_fraction back to `... or 0.5`) could pass both sets of
+# tests above unchanged. These two tests instead drive the actual CLI path
+# (argparse -> --health -> plan() -> classify_margin_state() -> crypto dict
+# construction -> render_health()) with every network/live-data boundary
+# faked out, the same technique test_health_flag_cli_path_is_read_only uses
+# above, so they observe allocate.py's real composition, not a paraphrase.
 
-def _capture_classify_kwargs(monkeypatch):
+def _crypto_health_targets_and_holdings(tmp_path, min_fraction):
+    """min_fraction=None omits margin.concentration_adjustment entirely
+    (the "absent" case); any other value sets concentration_adjustment.
+    min_fraction explicitly (the "explicit, including 0.0" case)."""
+    targets_file = tmp_path / "targets.yaml"
+    holdings_file = tmp_path / "holdings.yaml"
+    margin_cfg = {"leverage_cap": 1.8, "buffer_floor_pct": 30.0}
+    if min_fraction is not None:
+        margin_cfg["concentration_adjustment"] = {"min_fraction": min_fraction}
+    with targets_file.open("w") as f:
+        yaml.safe_dump({
+            "tiers": {"T1": {"weight_pct": 50.0, "tickers": ["AAA"]}},
+            "caps": {"clusters": []},
+            "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
+                     "earnings_blackout_days": 7, "trim_rsi": 60,
+                     "t1t2_trim_mult": 1.5},
+            "margin": margin_cfg,
+            # sleeve_pct deliberately not 10.0 (main()'s old fallback) or 0
+            # (plan()'s old fallback) -- a value distinct from both former
+            # independent defaults, so this only passes if a single resolved
+            # value threads through every consumer.
+            "crypto": {"coins": ["ETH", "SOL"], "sleeve_pct": 17.5},
+        }, f)
+    with holdings_file.open("w") as f:
+        yaml.safe_dump({
+            "holdings": {}, "shares": {"AAA": 1.0},
+            "crypto_shares": {"ETH": 1.0, "SOL": 1.0},
+            # debt=0/buffer=50 keeps margin_capacity()/classify_margin_state()
+            # in an unremarkable NORMAL state -- irrelevant to what these
+            # tests check, so kept deliberately boring.
+            "margin": {"debt": 0.0, "buffer_pct": 50.0, "synced_at": "2026-07-18"},
+        }, f)
+    return targets_file, holdings_file
+
+
+def _patch_crypto_health_cli(monkeypatch, targets_file, holdings_file):
+    monkeypatch.setattr(allocate, "TARGETS_FILE", targets_file)
+    monkeypatch.setattr(allocate, "HOLDINGS_FILE", holdings_file)
+    monkeypatch.setattr(allocate, "AlpacaPaperClient", lambda: object())
+    monkeypatch.setattr(
+        allocate, "fetch_market",
+        lambda client, tickers, regime_ticker: (
+            {"AAA": {"price": 100.0, "rsi14": 50.0, "sma200": 90.0}}, True, True))
+    monkeypatch.setattr(
+        allocate, "fetch_crypto",
+        lambda client, coins, coingecko_ids: {
+            "ETH": {"price": 100.0, "source": "test"},
+            "SOL": {"price": 100.0, "source": "test"},
+        })
+    # AAA=50 + ETH=30 + SOL=20 -> book=100, AAA exactly at its 50% target
+    # (no trim/buy noise), crypto sleeve=50 vs the 17.5% target (no gap
+    # candidate either) -- a boring, fully-resolved book so the only things
+    # under test are the sleeve_pct/min_fraction resolutions themselves.
+    monkeypatch.setattr(
+        allocate, "resolve_holdings",
+        lambda client, metrics=None, crypto_prices=None: {
+            "AAA": 50.0, "ETH": 30.0, "SOL": 20.0})
+
+
+def _spy_classify_margin_state(monkeypatch):
     captured = {}
-    real = classify_margin_state
+    real = allocate.classify_margin_state
 
     def spy(**kwargs):
         captured.update(kwargs)
         return real(**kwargs)
 
-    monkeypatch.setattr(sys.modules[__name__], "classify_margin_state", spy)
+    monkeypatch.setattr(allocate, "classify_margin_state", spy)
     return captured
 
 
-def test_concentration_min_fraction_explicit_zero_passes_through_unchanged(monkeypatch):
-    captured = _capture_classify_kwargs(monkeypatch)
-    targets = _base_targets()
-    targets["margin"]["concentration_adjustment"] = {"min_fraction": 0.0}
-    roster = build_roster(targets)
-    holdings = {"DDD": 2000.0, "AAA": 500.0}
-    metrics = _flat_metrics(["DDD", "AAA"])
-    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+def test_main_production_path_explicit_zero_min_fraction_and_custom_sleeve_pct(
+        tmp_path, monkeypatch):
+    targets_file, holdings_file = _crypto_health_targets_and_holdings(
+        tmp_path, min_fraction=0.0)
+    _patch_crypto_health_cli(monkeypatch, targets_file, holdings_file)
+    captured_kwargs = _spy_classify_margin_state(monkeypatch)
 
-    _attach_margin_state(result, targets)
+    render_health_calls = []
+    monkeypatch.setattr(
+        allocate, "render_health",
+        lambda result: (render_health_calls.append(result), "SENTINEL")[1])
 
-    assert captured["concentration_min_fraction"] == 0.0
+    monkeypatch.setattr(sys, "argv", ["allocate.py", "--health"])
+    allocate.main()   # the real production path, not a test-side mirror
+
+    assert captured_kwargs["concentration_min_fraction"] == 0.0
+
+    assert len(render_health_calls) == 1
+    result = render_health_calls[0]
+    assert result["crypto_sleeve_pct"] == 17.5
+    assert result["crypto_sleeve"]["target_pct"] == 17.5
+    assert result["crypto"]["sleeve_pct"] == 17.5
 
 
-def test_concentration_min_fraction_absent_defaults_to_half(monkeypatch):
-    captured = _capture_classify_kwargs(monkeypatch)
-    targets = _base_targets()   # no concentration_adjustment block at all
-    roster = build_roster(targets)
-    holdings = {"DDD": 2000.0, "AAA": 500.0}
-    metrics = _flat_metrics(["DDD", "AAA"])
-    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+def test_main_production_path_absent_min_fraction_defaults_to_half(
+        tmp_path, monkeypatch):
+    targets_file, holdings_file = _crypto_health_targets_and_holdings(
+        tmp_path, min_fraction=None)
+    _patch_crypto_health_cli(monkeypatch, targets_file, holdings_file)
+    captured_kwargs = _spy_classify_margin_state(monkeypatch)
+    monkeypatch.setattr(allocate, "render_health", lambda result: "SENTINEL")
 
-    _attach_margin_state(result, targets)
+    monkeypatch.setattr(sys, "argv", ["allocate.py", "--health"])
+    allocate.main()
 
-    assert captured["concentration_min_fraction"] == 0.5
+    assert captured_kwargs["concentration_min_fraction"] == 0.5
 
 
 # ── Health View V1: plan() t1t2_proximity contract ─────────────────────────
