@@ -165,25 +165,44 @@ has already begun. Every company-specific filed authorization under §B must
 do exactly one of the following:
 
 1. **name the exact two-to-five comparator set** the review will use; or
-2. **define and justify a comparator-selection method** — a stated,
-   repeatable rule for which alternatives qualify (e.g. "the portfolio's
-   other members of this ticker's own correlated-cluster cap, if any exist,
-   up to five, ranked by weight") — precise enough that applying it does not
-   require further discretionary judgment about *whether* a candidate
-   comparator qualifies, only which two to five results the rule selects.
+2. **define and justify a deterministic, relevance-based qualifying rule**
+   that produces a complete set of two to five companies **without ranking,
+   ordering, or scoring them.** An acceptable method states a criterion for
+   *membership* in the comparator set, not a criterion for *ordering*
+   candidates against each other — for example: "all other currently held
+   companies that share the subject company's governed correlated-cluster
+   membership, but only when that complete qualifying set contains between
+   two and five companies." A method must never rely on company ranking,
+   portfolio-weight ranking, target-gap ranking, conviction ranking, quality
+   ranking, numeric scoring, or any other ordered league-table logic — a
+   method answers only "does this candidate qualify," never "which
+   qualifying candidates rank highest."
+
+**When a proposed method would produce fewer than two companies, more than
+five companies, or an ambiguous set that would require discretionary
+ordering, ranking, or selection to narrow down to two-to-five, the
+company-specific filed authorization must instead name the exact
+two-to-five comparator set** — a method is only usable when it is precise
+enough, on its own, to yield a complete, unambiguous two-to-five-company set
+with no further judgment call.
 
 When the authorization names the exact set, the review packet uses that set
-and no other. When the authorization instead defines a method, the review
-packet may name its final two-to-five comparators only by applying that
-pre-authorized method — **the review packet must document, for each
-resulting comparator, why it satisfies the authorized method** (not merely
-assert relevance from scratch). **The review packet may not select, add, or
-substitute a comparator that was not either named in §B's authorization or
-produced by applying §B's pre-authorized method** — there is no
-review-packet-only, post-hoc comparator selection.
+and no other. When the authorization instead defines a qualifying method,
+the review packet may name its final two-to-five comparators only by
+applying that pre-authorized method exactly as stated. **The review packet
+may not narrow, expand, order, rank, substitute, or otherwise modify the
+pre-authorized set** — there is no review-packet-only, post-hoc comparator
+selection.
 
-For each comparator actually used, the review must additionally state:
+For each comparator actually used, the review must state **all** of the
+following:
 
+- why that comparator is **substantively relevant** to this subject
+  company's capital-priority review (satisfying a pre-authorized method is
+  not itself a substitute for this explanation — the review must still
+  explain the comparator's relevance in its own terms);
+- when a qualifying method was used, why this specific comparator satisfies
+  that pre-authorized method;
 - its own distinct economic role;
 - its principal overlap or complementarity with the subject company;
 - the opportunity-cost reason capital might instead go to it.
@@ -193,7 +212,9 @@ packet. **Explicitly prohibited, without exception:**
 
 - a standing ranking of any companies against each other;
 - a league table;
-- numeric or weighted scoring of any kind;
+- numeric or weighted scoring of any kind, including any comparator-set
+  qualifying method that ranks, orders, or scores candidates rather than
+  merely testing membership;
 - a computed or derived conviction value;
 - an automated or recurring next-dollar list;
 - a live or stored opportunity map;
