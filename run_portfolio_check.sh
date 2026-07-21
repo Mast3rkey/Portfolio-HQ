@@ -9,26 +9,77 @@
 # update-* subcommand, and never places an order — order-placement methods
 # don't exist in alpaca_client.py by design (see CLAUDE.md).
 #
+# It also never fetches or syncs git state on its own: it fails fast if the
+# repo isn't already on a clean, synchronized main (see check_repo_sync_guard
+# below) and tells you the exact command to run instead of running it for
+# you. Per CLAUDE.md's git sync doctrine, resyncing with origin/main is a
+# deliberate, visible action, not something this script does silently.
+#
 # Usage: ./run_portfolio_check.sh
 
 set -euo pipefail
+
+# check_repo_sync_guard — fail-fast repository-state guard.
+#
+# Verifies the repo is starting from a synchronized 'main' before anything
+# else runs: current branch is main, the working tree is clean, origin/main
+# exists locally, and local HEAD equals origin/main. It only inspects
+# existing git state (whatever origin/main was last fetched to, e.g. by the
+# initial clone) — it never fetches, resets, discards, stashes, switches
+# branches, or otherwise mutates the repository. On any failed condition it
+# prints a concise, actionable fix and returns non-zero; per CLAUDE.md's git
+# sync doctrine ("no session's local copy is authoritative"), resyncing is
+# an explicit, visible action the operator/agent takes, not something this
+# script does silently on their behalf.
+#
+# Defined as a function (rather than inline top-level code) so it can be
+# sourced and exercised in isolation by test_run_portfolio_check_guard.py
+# without running the rest of the bootstrap.
+check_repo_sync_guard() {
+    local branch
+    branch="$(git branch --show-current)"
+    if [ "$branch" != "main" ]; then
+        echo "ERROR: not on main (currently: ${branch:-detached HEAD}). Refusing to proceed." >&2
+        echo "Fix: git checkout main" >&2
+        return 1
+    fi
+
+    if [ -n "$(git status --porcelain)" ]; then
+        echo "ERROR: working-tree changes or untracked files present. Refusing to proceed." >&2
+        git status --short >&2
+        echo "Fix: commit, stash, or remove the changes above, then re-run." >&2
+        return 1
+    fi
+
+    if ! git rev-parse --verify --quiet refs/remotes/origin/main >/dev/null; then
+        echo "ERROR: origin/main does not exist locally (no such remote-tracking ref). Refusing to proceed." >&2
+        echo "Fix: git fetch origin main" >&2
+        return 1
+    fi
+
+    local local_head origin_main
+    local_head="$(git rev-parse HEAD)"
+    origin_main="$(git rev-parse refs/remotes/origin/main)"
+    if [ "$local_head" != "$origin_main" ]; then
+        echo "ERROR: local main ($local_head) does not match origin/main ($origin_main). Refusing to proceed." >&2
+        echo "This script does not fetch or sync automatically." >&2
+        echo "Fix: git fetch origin main && git pull --ff-only origin main" >&2
+        return 1
+    fi
+
+    echo "==> Repository state OK: on main, clean, synchronized with origin/main ($local_head)"
+}
+
+# Only run the full bootstrap when executed directly (./run_portfolio_check.sh),
+# not when sourced (e.g. by tests wanting check_repo_sync_guard in isolation).
+if [ "${BASH_SOURCE[0]}" != "${0}" ]; then
+    return 0
+fi
+
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-echo "==> Checking git state (must be on a clean 'main')"
-BRANCH="$(git branch --show-current)"
-if [ "$BRANCH" != "main" ]; then
-    echo "ERROR: not on main (currently: ${BRANCH:-detached HEAD}). Refusing to proceed." >&2
-    exit 1
-fi
-if [ -n "$(git status --porcelain)" ]; then
-    echo "ERROR: working-tree changes or untracked files present. Refusing to proceed." >&2
-    git status --short >&2
-    exit 1
-fi
-
-echo "==> Fetching and fast-forwarding main"
-git fetch origin main --prune
-git pull --ff-only origin main
+echo "==> Checking repository state (must start from synchronized main)"
+check_repo_sync_guard
 
 echo "==> Setting up .venv (repo-local, never global, never sudo)"
 if [ ! -x ".venv/bin/python" ]; then

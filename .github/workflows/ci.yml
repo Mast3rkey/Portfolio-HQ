@@ -1,0 +1,85 @@
+name: CI
+
+# Secret-free, network-free integrity checks only. No brokerage credentials,
+# API tokens, or live market data are used or required anywhere in this
+# workflow — see README/PR description for why that's sufficient.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Whitespace / diff integrity check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            # Don't assume actions/checkout already created an origin/<base>
+            # tracking ref for a pull_request event — it may only have
+            # fetched the PR's merge ref. Fetch the base ref explicitly.
+            git fetch --no-tags origin "$BASE_REF"
+            BASE="$(git merge-base FETCH_HEAD HEAD)"
+          else
+            BASE="$BEFORE_SHA"
+            if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+              echo "No usable previous SHA for this push (e.g. new branch); diffing against the parent commit instead."
+              BASE="$(git rev-parse HEAD^1)"
+            fi
+          fi
+          echo "Diff-checking range: ${BASE}..HEAD"
+          git diff --check "${BASE}" HEAD
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: YAML parse check (all tracked .yaml/.yml files)
+        run: |
+          python -c "
+          import pathlib, subprocess, sys, yaml
+          files = subprocess.run(
+              ['git', 'ls-files', '*.yaml', '*.yml'],
+              capture_output=True, text=True, check=True,
+          ).stdout.splitlines()
+          failed = False
+          for f in files:
+              try:
+                  yaml.safe_load(pathlib.Path(f).read_text())
+              except yaml.YAMLError as exc:
+                  print(f'INVALID YAML: {f}: {exc}', file=sys.stderr)
+                  failed = True
+          print(f'Parsed {len(files)} tracked YAML file(s).')
+          sys.exit(1 if failed else 0)
+          "
+
+      - name: Run test suite
+        run: python -m pytest -q
