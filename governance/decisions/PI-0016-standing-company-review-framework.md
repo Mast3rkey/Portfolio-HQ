@@ -159,12 +159,31 @@ generalized from `PI-0012`'s TSM-specific standard:
 A review conducted under PI-0016 may answer, for its one subject company
 only: *"if one new dollar were available, why should it go to this company
 instead of the next-best available portfolio alternative?"* — as a bounded,
-human-reviewed qualitative comparison against **two to five named
-alternatives**, selected and justified in that company's own research
-authorization (§B) or in the review packet itself. For each comparator, the
-review must state:
+human-reviewed qualitative comparison against **exactly two to five named
+alternatives**. The comparator set is not free to be invented once research
+has already begun. Every company-specific filed authorization under §B must
+do exactly one of the following:
 
-- why it is a relevant comparator;
+1. **name the exact two-to-five comparator set** the review will use; or
+2. **define and justify a comparator-selection method** — a stated,
+   repeatable rule for which alternatives qualify (e.g. "the portfolio's
+   other members of this ticker's own correlated-cluster cap, if any exist,
+   up to five, ranked by weight") — precise enough that applying it does not
+   require further discretionary judgment about *whether* a candidate
+   comparator qualifies, only which two to five results the rule selects.
+
+When the authorization names the exact set, the review packet uses that set
+and no other. When the authorization instead defines a method, the review
+packet may name its final two-to-five comparators only by applying that
+pre-authorized method — **the review packet must document, for each
+resulting comparator, why it satisfies the authorized method** (not merely
+assert relevance from scratch). **The review packet may not select, add, or
+substitute a comparator that was not either named in §B's authorization or
+produced by applying §B's pre-authorized method** — there is no
+review-packet-only, post-hoc comparator selection.
+
+For each comparator actually used, the review must additionally state:
+
 - its own distinct economic role;
 - its principal overlap or complementarity with the subject company;
 - the opportunity-cost reason capital might instead go to it.
@@ -313,8 +332,15 @@ currency is a separate, `review.next_due`-driven concern (`docs/
 PORTFOLIO_INTELLIGENCE_SPEC.md` §13, §18; `PI-0011`'s staleness reporting).
 A single review that only ever produced one policy-shaped conclusion would
 have no way to say "the tier is still right, but the record needs new
-sources" — exactly the situation `PI-0013`'s design review flagged as
-possible.
+sources." This distinction was identified during the principal's later
+review of the standing-framework design, using the prior NVIDIA discussion
+as the concrete example: current policy may remain appropriate while the
+supporting Company Intelligence record independently needs refreshed
+evidence. `PI-0013` itself made no such finding — its actual authority is
+the repository-fact reconciliation gate, the holdings/targets/Intelligence/
+theme verification it requires, and its deliberate refusal to freeze a
+standing candidate-selection doctrine, all unchanged and unextended by this
+paragraph.
 
 Requiring per-company selection to be its own filed decision (§B), rather
 than an informal sign-off, follows `PI-0013`'s own text precisely: "a future,
@@ -352,9 +378,9 @@ and §E operate under, without reopening or extending it).
   wholly separate framework for every other sector of the roster.
 - **Adopt Option D (continue one full governance decision, methodology and
   all, per company).** Rejected: this is the status quo the principal asked
-  to move past — every future company would re-litigate the same
-  eleven-dimension structure, evidence standard, and capital-priority
-  boundary `PI-0012` already worked out once.
+  to move past — every future company would re-litigate the reusable review
+  methodology, evidence standard, and capital-priority boundary `PI-0012`
+  already worked out once.
 - **Let per-company selection be an informal chat approval instead of a
   filed decision.** Rejected per the principal's explicit correction:
   `PI-0013` requires a future selection proposal to state and justify its own
