@@ -18,13 +18,21 @@ This is not a stylistic preference. In June 2026 a band-overlay automated-tradin
 
 ## 3. Margin is risk governance, not alpha
 
-Margin only amplifies whatever edge the underlying portfolio already has — it is not itself a source of edge, and it is not a timing tool. There is no "right time to borrow more" or "right time to borrow less" computed from a market read, a valuation judgment, or a volatility level; this system has explicitly rejected that framing as not backtestable, because the premise (leverage as a source of edge to time) is false, not because a backtest came back unfavorable. Margin interest is a guaranteed cost, treated as a hurdle rate, never as a rounding error. Every margin rule this system runs is a fixed, mechanical ceiling or floor with no discretionary exception path.
+Margin only amplifies whatever edge the underlying portfolio already has — it is not itself a source of edge. This is a mathematical identity, not an empirical claim, and no evidence changes it.
 
-The full doctrine — including exactly which questions the Margin Intelligence Engine can and cannot answer — lives in `docs/MARGIN_DOCTRINE.md`. This constitution states the principle; that document is its complete, authoritative expression.
+Discretionary or predictive judgment may never increase leverage beyond a governed recommendation or the fixed cap, and may never bypass the buffer floor or a repayment rule — this remains absolute. The operator may always decline a recommendation, use less margin than recommended or allowed, or repay more or sooner than any rule requires: discretion in this system is asymmetric, always available to reduce risk, never available to exceed a governed limit.
+
+Separately: whether a rules-based, pre-registered, evidence-gated conditional rule — keyed to observable account- or market-state conditions, evaluated net of financing cost and realistic risk constraints — outperforms a fixed posture is an open empirical question, not a closed one. It may be researched only under its own separately governed research charter, and adopted only through its own separate governance decision meeting this system's existing evidentiary bar. Opening a research charter authorizes nothing on its own.
+
+Margin interest is a guaranteed cost, treated as a hurdle rate, never a rounding error. The 1.8x leverage cap and 30% buffer floor remain unchanged by this amendment. Any conditional rule later adopted operates strictly inside those limits — no dynamic rule may raise the cap or lower the floor; changing either requires its own separate future constitutional or governance decision. A high buffer, a low maintenance ratio, or any other favorable-looking account signal is never, by itself, automatic permission to borrow more.
+
+The full doctrine lives in `docs/MARGIN_DOCTRINE.md`, brought into conformance with this amendment (`governance/decisions/GOV-0003-margin-conditional-research-permitted.md`).
 
 ## 4. No predictive research
 
 No price targets, no "opportunity maps," no standing research or scoring layer that runs ahead of a deposit and tells the operator what to buy before there's money to allocate. Opportunities are computed at runtime, on deposit day, from live data and current gaps against target — never precomputed, never speculative. A proposal to add a new analysis, research, or thesis-generation system must be checked against Principle 2's evidence first.
+
+A bounded, retrospective, pre-registered backtest into whether a rules-based conditional margin-deployment or repayment rule would have historically produced a better net risk-adjusted outcome is not, by itself, the standing predictive layer this principle excludes — provided it produces no live signal, opportunity map, price target, opaque score, continuous indicator, or precomputed recommendation, and authorizes no automation or production behavior on its own. Any operational rule such research might suggest requires its own separate governance decision, under the same evidentiary bar as every rule in this system; recommendation-only, manual execution is unaffected throughout and after any such research.
 
 ## 5. Fixed, mechanical, no-exception limits
 
@@ -44,4 +52,4 @@ CLAUDE.md is this system's operational synthesis — current parameters, workflo
 
 ---
 
-_Changelog: 2026-07-18 — initial adoption (GOV-0001). 2026-07-20 — introduction conflict sentence revised, §8 (Operational precedence) added; complete cross-document authority hierarchy stated in `governance/decisions/GOV-0002-operational-precedence-hierarchy.md` (GOV-0002)._
+_Changelog: 2026-07-18 — initial adoption (GOV-0001). 2026-07-20 — introduction conflict sentence revised, §8 (Operational precedence) added; complete cross-document authority hierarchy stated in `governance/decisions/GOV-0002-operational-precedence-hierarchy.md` (GOV-0002). 2026-07-21 — §3 narrowed to permit bounded, evidence-gated conditional-margin research under separate governance while preserving the no-alpha identity, asymmetric operator discretion, and the unchanged 1.8x cap/30% buffer floor; §4 gained a narrow carve-out for exactly that research (`governance/decisions/GOV-0003-margin-conditional-research-permitted.md`)._
