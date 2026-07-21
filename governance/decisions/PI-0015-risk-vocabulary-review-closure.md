@@ -72,24 +72,36 @@ were a discovered vocabulary — the identical overfitting risk `PI-0004`
 itself warned against, and the same reasoning `PI-0011` already applied
 to `catalyst.status`.
 
-**`PI-0004`'s numeric "3-5 records" trigger is retired and replaced with
-two field-specific, evidence-driven triggers** — a bare record count
-already proved to be a weak signal in this instance, since crossing it
-produced no new information:
+**`PI-0004`'s numeric "3-5 records" trigger is retired outright and is not
+replaced by any other record-count threshold.** A bare record count
+already proved to be a weak signal in this instance — seven records
+crossed `PI-0004`'s own bar and produced no new information (fewer
+distinct values than the bar was set to detect). In its place, both
+fields get exact, evidence-driven triggers, keyed to what would actually
+constitute new information, not to how many files exist:
 
-- **`risks[].severity`**: revisit closure the first time any Company
-  Intelligence record uses a `severity` value other than `moderate` or
-  `low` (e.g., a record records a real `high`-severity risk), **or** once
-  10 total Company Intelligence records exist, whichever occurs first.
-- **`risks[].status`**: revisit closure the first time any Company
-  Intelligence record uses a `status` value other than `monitoring` (e.g.,
-  `resolved`, `escalated`, `mitigated`), **or** once 10 total Company
-  Intelligence records exist, whichever occurs first.
+- **`risks[].severity`** must be revisited when any one of the following
+  occurs:
+  - a future author proposes a `severity` value outside the currently
+    observed lowercase set (`moderate`, `low`);
+  - reviewers materially disagree about what `severity` measures (e.g.,
+    business impact vs. likelihood vs. urgency vs. portfolio-relative
+    impact);
+  - reviewers materially disagree about how a specific risk should be
+    labeled;
+  - a future amendment to the `risks[]` schema is proposed.
+- **`risks[].status`** must be revisited when any one of the following
+  occurs:
+  - an actual risk-state transition away from `monitoring` occurs on any
+    real record;
+  - a future author proposes any alternative `status` value;
+  - a future amendment to the `risks[]` schema is proposed.
 
-Either trigger, once met, authorizes only a future revisit review — not
-an automatic freeze. Closing either vocabulary still requires its own
-separate governance decision, applying the same evidentiary discipline
-this one did.
+For both fields: a trigger opens a new governance evidence review only —
+it does not automatically freeze a vocabulary. No proposed value becomes
+controlled doctrine merely by triggering a review. Any later freeze still
+requires its own separately accepted governance decision, applying the
+same evidentiary discipline this one did.
 
 **No schema, validator, or test change is authorized by this decision.**
 `intelligence_validator.py` gains no new enforcement for either field.
@@ -118,12 +130,15 @@ data point risks standardizing the wrong thing prematurely." That concern
 is fully vindicated by what seven records actually show — two `severity`
 values with the intuitively expected third (`high`) entirely unobserved,
 and a single `status` value used without exception. A record-count-only
-trigger already misled expectations once (more records did not produce
-more variation); replacing it with a value-based trigger, with the
-original count-style backstop retained at a higher threshold (10, not
-3-5), targets the actual signal that would justify closure — real
-disagreement in usage — rather than a number that, on this evidence,
-turned out not to correlate with it.
+trigger already misled expectations once here: crossing `PI-0004`'s own
+3-5-record bar produced no new variation at all, so a bare count is
+demonstrated on this evidence not to track the thing that actually
+matters. Retaining any numeric record-count trigger — at the original
+threshold or a higher one — would repeat exactly the mechanism just shown
+to fail; the replacement triggers above are evidence-driven instead,
+keyed to an actual new value, an actual disagreement, an actual status
+transition, or an actual schema-amendment proposal, so that the next
+review is triggered by real information rather than by file count alone.
 
 `TSM`'s own internal usage — seven risks spanning routine execution items
 and existential geopolitical/export-control exposure, all rated
