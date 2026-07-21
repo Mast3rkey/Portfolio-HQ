@@ -66,7 +66,9 @@ Every parameter classed "externally imposed" records: source; observed/verified 
 
 ### 11. False-precision prohibitions
 
-No parameter may be described as "optimal," "validated," "verified," or "derived" unless its recorded evidence class actually supports that specific word under the definitions in §1.
+A source, configured value, observation, or calculation may be described as verified when the proposition being verified is stated precisely — e.g., "this config key is verified to contain value X," "this branch's behavior was verified against a test," or "this count was verified by direct enumeration." That kind of factual verification is not restricted by this section and remains ordinary practice throughout this repository's documentation.
+
+No parameter may be described, without qualification, as economically validated, empirically verified, optimal, or derived in a way implying economic correctness, unless its recorded evidence class under §1 actually supports that specific claim. Confirming that a source contains a value, that an observation was made, or that a calculation was performed correctly is not, by itself, a claim about whether the underlying number is economically right — those are different propositions, and a record must not blur them by reusing "verified" to mean both without qualification.
 
 ### 12. Review-trigger handling
 
@@ -86,7 +88,7 @@ This decision classifies no existing parameter as operative policy. The supporti
 
 ### 16. Transition rules
 
-Every current safeguard remains exactly as binding as it was before this decision: the 1.8x leverage cap, the 30% buffer floor, every cluster cap, every gate, every tier weight, and every trim rule. Nothing in this framework suspends, loosens, or pauses any existing safeguard merely because this decision newly labels its provenance class.
+Every current safeguard remains exactly as binding as it was before this decision: the 1.8x leverage cap, the 30% buffer floor, every cluster cap, every gate, every tier weight, and every trim rule. Nothing suspends, loosens, or pauses an existing safeguard merely because a supporting audit describes its provenance, or because a future governed review classifies it under this framework.
 
 ## Explicit statements
 
@@ -108,7 +110,7 @@ The supporting audit (`docs/NUMERIC_PARAMETER_PROVENANCE_AUDIT.md`) is a dated e
 
 ## Rationale
 
-The audit demonstrated concrete, real classification errors under the repository's prior informal approach — most notably, the 1.8x leverage cap and 30% buffer floor had been informally treated in places as if a later leverage-level sweep bore on their validity, when that sweep in fact failed to distinguish 1.8x from adjacent tested levels and neither validated nor invalidated either provisional guardrail (a distinction `MARGIN-0004` already established and this decision carries forward unedited, not revisits). Similarly, `band.cap_multiple` and `trim_rsi` had been informally described in ways that blurred "evidence bracketed a range without disqualifying the current value" with "evidence calibrated this specific number." Without a named, shared standard, this conflation will keep recurring across future backtests, decisions, and reviews. This decision does not resolve any specific instance found by the audit — it establishes the vocabulary and required-fields discipline so future work can state its evidentiary basis precisely, and gives the repository a place to record when a stated review trigger (e.g., `PI-0004`'s) has been met but not yet acted on, rather than letting that fact go unrecorded.
+The audit demonstrated concrete, real classification errors under the repository's prior informal approach. Most notably, the 1.8x leverage cap and 30% buffer floor sit in two evidentially distinct — and previously blurred-together — situations that this decision keeps separate: a later leverage-level sweep (1.2x–2.0x) exists and bears specifically on the 1.8x leverage cap, but it failed to distinguish 1.8x from its adjacent tested levels (flat/identical from 1.6x–2.0x) and neither validated, optimized, nor invalidated it; no equivalent sweep of alternative floor levels exists at all for the 30% buffer floor — its evidentiary situation is "never tested," not "tested but non-selecting." Both remain provisional governance guardrails under `MARGIN-0004`'s unedited authority, but for two different reasons, and this decision does not imply the leverage sweep bears on the buffer floor's validity in any way. Similarly, `band.cap_multiple` and `trim_rsi` had been informally described in ways that blurred "evidence bracketed a range without disqualifying the current value" with "evidence calibrated this specific number." Without a named, shared standard, this conflation will keep recurring across future backtests, decisions, and reviews. This decision does not resolve any specific instance found by the audit — it establishes the vocabulary and required-fields discipline so future work can state its evidentiary basis precisely, and gives the repository a place to record when a stated review trigger (e.g., `PI-0004`'s) has been met but not yet acted on, rather than letting that fact go unrecorded.
 
 ## Alternatives Considered
 
