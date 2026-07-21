@@ -73,7 +73,7 @@ the schema frozen in `docs/PORTFOLIO_INTELLIGENCE_SPEC.md`. Coverage is
 opt-in; a company with no file is not an error. The current set of covered
 companies is whatever files exist under `intelligence/companies/` — this
 README does not restate it as a fixed roster. (As of this writing: COST,
-GEV, ISRG, NVDA, TMO, XOM — a snapshot, not a ceiling or a target.)
+GEV, ISRG, NVDA, TMO, TSM, XOM — a snapshot, not a ceiling or a target.)
 
 `intelligence/themes/` holds theme records — shared narrative, evidence,
 risks, catalysts, and a closed `lifecycle` vocabulary (no conviction rating,
@@ -84,8 +84,8 @@ company references zero or more themes via its own `themes:` field;
 authority runs one way only, company → theme (a theme file never lists its
 member companies). The current set of themes is whatever files exist under
 `intelligence/themes/`. (As of this writing: `ai_infrastructure`, referenced
-by GEV and NVDA; `life_sciences_tools_medtech`, referenced by ISRG and TMO —
-again a snapshot, not a ceiling.)
+by GEV, NVDA, and TSM; `life_sciences_tools_medtech`, referenced by ISRG and
+TMO — again a snapshot, not a ceiling.)
 
 **Company and Theme Intelligence have zero authority over allocator
 recommendations, targets, tiers, or weights.** `intelligence_validator.py`
