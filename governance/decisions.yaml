@@ -111,3 +111,10 @@ decisions:
     related_decisions: [GOV-0003, MARGIN-0001, MARGIN-0002, MARGIN-0003]
     supporting_artifact: docs/PHASE7_RESEARCH_PROGRAM_CLOSURE.md
     file: governance/decisions/MARGIN-0004-phase3-7a-closure-reconciliation.md
+  - decision_id: NUM-0001
+    date: 2026-07-21
+    status: Accepted
+    category: numeric_governance
+    related_decisions: [GOV-0001, GOV-0002, GOV-0003, MARGIN-0004, TGT-0001, PI-0004]
+    supporting_artifact: docs/NUMERIC_PARAMETER_PROVENANCE_AUDIT.md
+    file: governance/decisions/NUM-0001-numeric-parameter-provenance-standards.md
