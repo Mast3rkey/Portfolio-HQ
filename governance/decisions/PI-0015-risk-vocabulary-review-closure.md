@@ -64,21 +64,31 @@ closed vocabulary is created for either field; both remain open,
 free-text strings exactly as `docs/PORTFOLIO_INTELLIGENCE_SPEC.md` §9
 already specifies.
 
-Seven records produced **less** differentiated usage than `PI-0004`'s own
-3-5-record bar anticipated, not more: two `severity` values (never the
-plausible third, `high`) and one `status` value. Freezing either field on
-this evidence would encode the absence of observed variation as if it
-were a discovered vocabulary — the identical overfitting risk `PI-0004`
-itself warned against, and the same reasoning `PI-0011` already applied
-to `catalyst.status`.
+The seven-record corpus still does not provide enough semantic
+differentiation to justify closing either vocabulary: severity remains
+limited to two observed labels (`moderate`, `low` — the plausible third,
+`high`, has never appeared) and status to one (`monitoring`). Freezing
+either field on this evidence would encode the absence of observed
+variation as if it were a discovered vocabulary — the identical
+overfitting risk `PI-0004` itself warned against, and the same reasoning
+`PI-0011` already applied to `catalyst.status`.
 
 **`PI-0004`'s numeric "3-5 records" trigger is retired outright and is not
-replaced by any other record-count threshold.** A bare record count
-already proved to be a weak signal in this instance — seven records
-crossed `PI-0004`'s own bar and produced no new information (fewer
-distinct values than the bar was set to detect). In its place, both
-fields get exact, evidence-driven triggers, keyed to what would actually
-constitute new information, not to how many files exist:
+replaced by any other record-count threshold.** The trigger did exactly
+what it was written to do: it required this review once 3-5 records
+existed, and this review is that required review, now completed. What
+the review found is a separate, factual matter: the six company records
+created after the COST pilot (GEV, ISRG, NVDA, TMO, TSM, XOM) introduced
+no severity or status value beyond COST's own original set —
+`moderate`/`low` for severity, `monitoring` for status. Retiring the
+record-count mechanism itself is a new judgment made by this decision, on
+the strength of that completed review — not a finding that `PI-0004`'s
+trigger was defective or was designed to detect any particular number or
+degree of values; `PI-0004` required a revisit once a record threshold
+was crossed, not any specific resulting variation. In place of a further
+record-count trigger, both fields get exact, evidence-driven triggers,
+keyed to what would actually constitute new information, not to how many
+files exist:
 
 - **`risks[].severity`** must be revisited when any one of the following
   occurs:
@@ -126,19 +136,25 @@ no schema amendment, and no second review is authorized by this decision.
 `PI-0004` set an explicit, falsifiable revisit condition rather than
 leaving the deferral open-ended, and named the specific anti-overfitting
 concern it was guarding against: "freezing a vocabulary against a single
-data point risks standardizing the wrong thing prematurely." That concern
-is fully vindicated by what seven records actually show — two `severity`
-values with the intuitively expected third (`high`) entirely unobserved,
-and a single `status` value used without exception. A record-count-only
-trigger already misled expectations once here: crossing `PI-0004`'s own
-3-5-record bar produced no new variation at all, so a bare count is
-demonstrated on this evidence not to track the thing that actually
-matters. Retaining any numeric record-count trigger — at the original
-threshold or a higher one — would repeat exactly the mechanism just shown
-to fail; the replacement triggers above are evidence-driven instead,
-keyed to an actual new value, an actual disagreement, an actual status
-transition, or an actual schema-amendment proposal, so that the next
-review is triggered by real information rather than by file count alone.
+data point risks standardizing the wrong thing prematurely." That trigger
+worked exactly as designed — it required this review once 3-5 records
+existed, and this decision is that review, completed. What the review
+found is a factual matter distinct from what the trigger was built to
+detect: the COST pilot record already used `moderate`, `low`, and
+`monitoring`, and none of the six records added afterward (GEV, ISRG,
+NVDA, TMO, TSM, XOM) introduced any severity or status value beyond that
+original set. The resulting seven-record corpus still lacks enough
+semantic differentiation to justify closing either vocabulary now.
+Retiring the record-count mechanism and replacing it with evidence-driven
+triggers is this decision's own judgment about what would make a future
+review worth running — not evidence that `PI-0004`'s original trigger
+failed or was designed to detect any specific quantity of variation. A
+trigger keyed only to file count cannot distinguish "no new information
+arrived" from "new information arrived"; the replacement triggers above
+are evidence-driven instead, keyed to an actual new value, an actual
+disagreement, an actual status transition, or an actual schema-amendment
+proposal, so that the next review is triggered by real information
+rather than by file count alone.
 
 `TSM`'s own internal usage — seven risks spanning routine execution items
 and existential geopolitical/export-control exposure, all rated
@@ -176,12 +192,15 @@ that no record has yet needed anything else.
   to justify any closed vocabulary.
 - **Leave both open with no new review trigger, i.e. simply extend
   `PI-0004`'s deferral unchanged.** Rejected: `PI-0004`'s own "3-5
-  records" trigger has now been met and shown to be a weak signal (seven
-  records produced no new variation); restating the same numeric trigger
-  without correction would repeat a condition already demonstrated not to
-  track the thing that actually matters. A field-specific, value-based
-  trigger is a strictly more informative replacement, not a mere
-  restatement.
+  records" trigger already did its job — it produced this review — but a
+  bare record count cannot itself distinguish a corpus that introduced
+  real new values from one that didn't, which is exactly what happened
+  here (the six post-COST records added no severity or status value
+  beyond COST's own original `moderate`/`low`/`monitoring` set).
+  Restating the same numeric trigger without correction would leave that
+  same blind spot in place for the next review. A field-specific,
+  value-based trigger is a strictly more informative replacement, not a
+  mere restatement.
 
 ## Consequences
 
