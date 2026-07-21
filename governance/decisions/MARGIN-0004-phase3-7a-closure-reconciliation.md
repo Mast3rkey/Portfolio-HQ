@@ -31,9 +31,9 @@ revised MARGIN-0004 workstream." Both passages describe the
 margin-drag-vs-unlevered question as untested ("this has never actually
 been tested... Phase 1... exists specifically to close this gap") and
 promise a future dated update "once Phase 1 produces that answer." Phase
-3–7A's Test A already produced that answer, and `docs/
-PHASE5B_GOVERNANCE_DECISION.md` already recorded what that evidence
-implied for production — but neither fact was ever written back into
+3–7A's Test A produced the evidence that section anticipated, and
+`docs/PHASE5B_GOVERNANCE_DECISION.md` recorded what that evidence
+justified for production — but neither fact was ever written back into
 these two passages, leaving them stale relative to the repository's own
 history.
 
@@ -43,7 +43,8 @@ history.
 summarized below; `docs/PHASE7_RESEARCH_PROGRAM_CLOSURE.md` remains the
 canonical source — this entry summarizes, it does not replace or
 duplicate it): margin-drag-vs-unlevered
-baseline (+5.58pp TWR / -4.40pp MaxDD, 1.8x vs. unlevered, hypothetical/
+baseline (+5.58pp TWR / -4.40pp MaxDD, a scenario configured with a
+1.8x leverage cap versus an unlevered baseline, hypothetical/
 simulated, 2021–2026 window); a 1.2x–2.0x leverage-level sweep (flat
 above 1.4x in this window); Model B profit-harvest repayment (monotonic
 across repay_fraction 10/25/50%: -0.98/-2.32/-3.56pp TWR, +0.97/+2.07/
@@ -103,13 +104,16 @@ Constitution §6 requires verifying claims before acting on them, and by
 the same logic this repository has already applied to external review
 claims, a repository's own doctrine text should stay consistent with
 what the repository's own settled history actually shows. Leaving "this
-has never actually been tested" standing after Phase 3–7A settled
-exactly that question — and leaving a promised dated update unwritten
-after the evidence it was waiting for already existed — is stale
-institutional memory, not a live claim. Correcting it is a
-documentation-accuracy act, not a new research or policy decision:
-nothing about the 1.8x cap, the 30% floor, or any production behavior
-changes as a result.
+has never actually been tested" standing after Phase 3–7A generated the
+evidence the doctrine had promised to record — evidence `docs/
+PHASE5B_GOVERNANCE_DECISION.md` went on to evaluate, and on which basis
+it maintained the then-current production posture — and leaving a
+promised dated update unwritten after that evidence already existed, is
+stale institutional memory, not a live claim. Correcting it is a
+documentation-accuracy act, not a new research or policy decision, and
+not a claim that the mixed evidence amounts to a simple proof: nothing
+about the 1.8x cap, the 30% floor, or any production behavior changes as
+a result.
 
 ## Alternatives Considered
 
