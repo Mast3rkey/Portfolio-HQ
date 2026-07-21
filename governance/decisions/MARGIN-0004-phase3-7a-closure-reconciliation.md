@@ -39,9 +39,10 @@ history.
 
 ## Decision
 
-**A. What Phase 3–7A tested** (preserved in full; `docs/
-PHASE7_RESEARCH_PROGRAM_CLOSURE.md` remains the canonical source — this
-entry summarizes, it does not replace it): margin-drag-vs-unlevered
+**A. What Phase 3–7A tested** (preserved without reclassification and
+summarized below; `docs/PHASE7_RESEARCH_PROGRAM_CLOSURE.md` remains the
+canonical source — this entry summarizes, it does not replace or
+duplicate it): margin-drag-vs-unlevered
 baseline (+5.58pp TWR / -4.40pp MaxDD, 1.8x vs. unlevered, hypothetical/
 simulated, 2021–2026 window); a 1.2x–2.0x leverage-level sweep (flat
 above 1.4x in this window); Model B profit-harvest repayment (monotonic
@@ -67,8 +68,10 @@ margin-funded capital); initial-margin, maintenance-margin,
 buying-power, and liquidation-mechanics modeled as distinct concepts
 rather than one leverage-cap clip; a financing-duration metric
 independent of interest-cost totals; and dividend cash flows as a
-repayment-capacity input (no dividend tracking exists anywhere in this
-repository).
+repayment-capacity input — Phase 3–7A did not model dividend cash flows
+as a repayment-capacity input (a statement about this research program's
+charter, not a claim that no dividend information appears anywhere else
+in this repository for other purposes).
 
 **C. What GOV-0003 changed:** it did not invalidate, reopen, or
 retroactively reclassify any Phase 3–7A finding or verdict — the
@@ -85,7 +88,14 @@ floor; recommendation-only, manual execution; no live signal, no
 opportunity map, no precomputed recommendation; no allocator behavior
 change; no code change; `targets.yaml`, `holdings.yaml`, `allocate.py`,
 `margin_state.py`, `margin_simulation.py`, `alpaca_client.py`, every test
-file, `decision_log.yaml`, and every Phase 3–7A evidence artifact.
+file, `decision_log.yaml`, and every Phase 3–7A evidence artifact. Both
+numerical thresholds were originally adopted as provisional governance
+guardrails, not derived from this or any backtest, and remaining
+unchanged in this decision does not mean either has been empirically
+proven safe, optimal, sufficient, or permanently immune from
+reconsideration — changing either threshold, if ever proposed, requires
+its own future, separate, explicitly governed research and approval, and
+this decision neither begins nor authorizes that research.
 
 ## Rationale
 
