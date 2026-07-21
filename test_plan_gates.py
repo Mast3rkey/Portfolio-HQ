@@ -289,3 +289,44 @@ def test_band_at_cap_hot_rsi_does_not_trim():
                  regime_known=True, cash=75.0)
 
     assert result["trims"] == []
+
+
+# ── NUM-0001 P1-2: band trim must use the configured cap_multiple ──────────
+# plan() previously hardcoded 1.25 in the trim-branch overweight_limit and
+# reason string, ignoring band.cap_multiple already resolved into `cap_mult`
+# one line earlier (and already used correctly by the buy-side ceiling). A
+# cap_multiple other than 1.25 (e.g. 1.40) previously desynchronized the buy
+# ceiling from the trim threshold; it must now control both identically.
+
+def test_band_custom_cap_multiple_controls_trim_threshold_and_reason():
+    targets = _band_targets(weight_pct=20.0, trim_rsi=60.0)
+    targets["tiers"]["band"]["cap_multiple"] = 1.40
+    roster = build_roster(targets)
+    # book=100 (BND 40 + cash 60) -> target=20, overweight_limit=20*1.40=28;
+    # current (40) is above it.
+    holdings = {"BND": 40.0}
+    metrics = {"BND": {"price": 100.0, "rsi14": 70.0, "sma200": 90.0}}
+
+    result = plan(targets, holdings, roster, metrics, regime_ok=True,
+                 regime_known=True, cash=60.0)
+
+    trims_by_ticker = {t["ticker"]: t for t in result["trims"]}
+    assert set(trims_by_ticker) == {"BND"}
+    assert trims_by_ticker["BND"]["dollars"] == 20.0   # trimmed to target (20), not to 1.40x (28)
+    assert "1.40x target" in trims_by_ticker["BND"]["reason"]
+    assert "RSI 70.0>60" in trims_by_ticker["BND"]["reason"]
+
+
+def test_band_custom_cap_multiple_exactly_at_boundary_not_trimmed():
+    targets = _band_targets(weight_pct=20.0, trim_rsi=60.0)
+    targets["tiers"]["band"]["cap_multiple"] = 1.40
+    roster = build_roster(targets)
+    # book=100 (BND 28 + cash 72) -> target=20, overweight_limit=20*1.40=28
+    # exactly -- current is AT the configured boundary, not over it.
+    holdings = {"BND": 28.0}
+    metrics = {"BND": {"price": 100.0, "rsi14": 90.0, "sma200": 90.0}}
+
+    result = plan(targets, holdings, roster, metrics, regime_ok=True,
+                 regime_known=True, cash=72.0)
+
+    assert result["trims"] == []

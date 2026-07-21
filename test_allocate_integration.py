@@ -78,7 +78,9 @@ def _attach_margin_state(result, targets, buffer_data_age_days=None, stale_thres
         caution_buffer_comfort_multiplier=margin_cfg.get("states", {}).get("caution", {}).get("buffer_comfort_multiplier"),
         restricted_buffer_comfort_multiplier=margin_cfg.get("states", {}).get("restricted", {}).get("buffer_comfort_multiplier"),
         concentration_tightening_coefficient=margin_cfg.get("concentration_adjustment", {}).get("tightening_coefficient") or 0.0,
-        concentration_min_fraction=margin_cfg.get("concentration_adjustment", {}).get("min_fraction") or 0.5,
+        concentration_min_fraction=(
+            0.5 if margin_cfg.get("concentration_adjustment", {}).get("min_fraction") is None
+            else margin_cfg.get("concentration_adjustment", {})["min_fraction"]),
     )
     return result
 
@@ -405,6 +407,101 @@ def test_crypto_sleeve_none_when_not_configured():
     result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
 
     assert result["crypto_sleeve"] is None
+    assert result["crypto_sleeve_pct"] is None
+
+
+# ── NUM-0001 P1-3: single canonical crypto.sleeve_pct resolution ───────────
+# plan() previously defaulted a missing sleeve_pct to 0 while main()'s result/
+# Health-View metadata defaulted the identical key to 10 -- two independent
+# fallbacks for one config value. Now there is exactly one resolution
+# (`_resolve_crypto_sleeve_pct`), surfaced in the result as
+# `crypto_sleeve_pct`, which both plan()'s own gap math and main()'s rendered
+# `result["crypto"]["sleeve_pct"]` field read from.
+
+def test_crypto_sleeve_pct_custom_value_used_consistently():
+    targets = _crypto_targets(sleeve_pct=17.5)   # deliberately not 10.0 or 0
+    roster = build_roster(targets)
+    holdings = {"ETH": 60.0, "SOL": 40.0, "PAD": 900.0}   # sleeve=100, book=1000
+    result = plan(targets, holdings, roster, {}, True, True, cash=0.0)
+
+    assert result["crypto_sleeve_pct"] == 17.5
+    assert result["crypto_sleeve"]["target_pct"] == 17.5   # same resolved value
+
+
+def test_crypto_sleeve_pct_missing_with_coins_configured_fails_clearly():
+    targets = _crypto_targets()
+    del targets["crypto"]["sleeve_pct"]
+    roster = build_roster(targets)
+    holdings = {"ETH": 30.0, "SOL": 20.0}
+
+    with pytest.raises(ValueError, match="sleeve_pct"):
+        plan(targets, holdings, roster, {}, True, True, cash=0.0)
+
+
+def test_crypto_sleeve_pct_non_numeric_fails_clearly():
+    targets = _crypto_targets(sleeve_pct="lots")
+    roster = build_roster(targets)
+    holdings = {"ETH": 30.0, "SOL": 20.0}
+
+    with pytest.raises(ValueError, match="not numeric"):
+        plan(targets, holdings, roster, {}, True, True, cash=0.0)
+
+
+def test_crypto_sleeve_disabled_no_coins_configured_no_error():
+    targets = _base_targets()   # crypto: {} -- sleeve genuinely absent/disabled
+    roster = build_roster(targets)
+    holdings = {"DDD": 2000.0, "AAA": 500.0}
+    metrics = _flat_metrics(["DDD", "AAA"])
+
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+
+    assert result["crypto_sleeve"] is None
+    assert result["crypto_sleeve_pct"] is None
+
+
+# ── NUM-0001 P1-4: concentration_min_fraction must preserve explicit 0.0 ───
+# main()'s `concentration_cfg.get("min_fraction") or 0.5` idiom discarded an
+# explicitly configured 0.0 (falsy in Python). `_attach_margin_state` above
+# has been updated to mirror the fixed wiring; these tests spy on
+# classify_margin_state() to prove the exact kwarg value that reaches it.
+
+def _capture_classify_kwargs(monkeypatch):
+    captured = {}
+    real = classify_margin_state
+
+    def spy(**kwargs):
+        captured.update(kwargs)
+        return real(**kwargs)
+
+    monkeypatch.setattr(sys.modules[__name__], "classify_margin_state", spy)
+    return captured
+
+
+def test_concentration_min_fraction_explicit_zero_passes_through_unchanged(monkeypatch):
+    captured = _capture_classify_kwargs(monkeypatch)
+    targets = _base_targets()
+    targets["margin"]["concentration_adjustment"] = {"min_fraction": 0.0}
+    roster = build_roster(targets)
+    holdings = {"DDD": 2000.0, "AAA": 500.0}
+    metrics = _flat_metrics(["DDD", "AAA"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+
+    _attach_margin_state(result, targets)
+
+    assert captured["concentration_min_fraction"] == 0.0
+
+
+def test_concentration_min_fraction_absent_defaults_to_half(monkeypatch):
+    captured = _capture_classify_kwargs(monkeypatch)
+    targets = _base_targets()   # no concentration_adjustment block at all
+    roster = build_roster(targets)
+    holdings = {"DDD": 2000.0, "AAA": 500.0}
+    metrics = _flat_metrics(["DDD", "AAA"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+
+    _attach_margin_state(result, targets)
+
+    assert captured["concentration_min_fraction"] == 0.5
 
 
 # ── Health View V1: plan() t1t2_proximity contract ─────────────────────────
