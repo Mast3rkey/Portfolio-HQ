@@ -97,3 +97,10 @@ decisions:
     related_decisions: [GOV-0001]
     supporting_artifact: null
     file: governance/decisions/GOV-0002-operational-precedence-hierarchy.md
+  - decision_id: GOV-0003
+    date: 2026-07-21
+    status: Accepted
+    category: constitutional_amendment
+    related_decisions: [GOV-0001, GOV-0002]
+    supporting_artifact: null
+    file: governance/decisions/GOV-0003-margin-conditional-research-permitted.md
