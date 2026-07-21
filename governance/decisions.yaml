@@ -125,3 +125,10 @@ decisions:
     related_decisions: [GOV-0001, PI-0001, PI-0002, PI-0003, PI-0004, PI-0005, PI-0006, PI-0007, PI-0009, PI-0011, PI-0012, PI-0013, ONTO-0001]
     supporting_artifact: null
     file: governance/decisions/PI-0015-risk-vocabulary-review-closure.md
+  - decision_id: PI-0016
+    date: 2026-07-21
+    status: Accepted
+    category: portfolio_intelligence
+    related_decisions: [GOV-0001, PI-0004, PI-0006, PI-0007, PI-0009, PI-0010, PI-0011, PI-0012, PI-0013, PI-0014, ONTO-0001]
+    supporting_artifact: null
+    file: governance/decisions/PI-0016-standing-company-review-framework.md
