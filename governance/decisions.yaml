@@ -118,3 +118,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, GOV-0003, MARGIN-0004, TGT-0001, PI-0004]
     supporting_artifact: docs/NUMERIC_PARAMETER_PROVENANCE_AUDIT.md
     file: governance/decisions/NUM-0001-numeric-parameter-provenance-standards.md
+  - decision_id: PI-0015
+    date: 2026-07-21
+    status: Accepted
+    category: portfolio_intelligence
+    related_decisions: [GOV-0001, PI-0001, PI-0002, PI-0003, PI-0004, PI-0005, PI-0006, PI-0007, PI-0009, PI-0011, PI-0012, PI-0013, ONTO-0001]
+    supporting_artifact: null
+    file: governance/decisions/PI-0015-risk-vocabulary-review-closure.md
