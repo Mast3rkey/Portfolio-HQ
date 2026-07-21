@@ -104,3 +104,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002]
     supporting_artifact: null
     file: governance/decisions/GOV-0003-margin-conditional-research-permitted.md
+  - decision_id: MARGIN-0004
+    date: 2026-07-21
+    status: Accepted
+    category: margin_doctrine
+    related_decisions: [GOV-0003, MARGIN-0001, MARGIN-0002, MARGIN-0003]
+    supporting_artifact: docs/PHASE7_RESEARCH_PROGRAM_CLOSURE.md
+    file: governance/decisions/MARGIN-0004-phase3-7a-closure-reconciliation.md
