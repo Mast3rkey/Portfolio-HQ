@@ -174,6 +174,49 @@ def resolve_holdings(client, metrics: dict | None = None,
 
 # ── core allocation logic ──────────────────────────────────────────────────────
 
+def _resolve_margin_config(targets: dict) -> tuple[float, float]:
+    """targets.yaml is the sole canonical owner of leverage_cap/buffer_floor_pct.
+    Both are safety-critical (the 1.8x cap and 30% floor) so a missing or
+    malformed margin: block must fail loudly rather than silently substitute
+    the historical 1.8/30.0 defaults (NUM-0001 P1-1)."""
+    margin_cfg = targets.get("margin")
+    if not isinstance(margin_cfg, dict):
+        raise ValueError(
+            "targets.yaml 'margin' block is missing or not a mapping — "
+            "required keys: leverage_cap, buffer_floor_pct")
+    missing = [k for k in ("leverage_cap", "buffer_floor_pct") if k not in margin_cfg]
+    if missing:
+        raise ValueError(
+            f"targets.yaml 'margin' block missing required key(s): {', '.join(missing)}")
+    try:
+        leverage_cap = float(margin_cfg["leverage_cap"])
+        buffer_floor_pct = float(margin_cfg["buffer_floor_pct"])
+    except (TypeError, ValueError):
+        raise ValueError(
+            "targets.yaml 'margin' block has a non-numeric leverage_cap or "
+            "buffer_floor_pct")
+    return leverage_cap, buffer_floor_pct
+
+
+def _resolve_crypto_sleeve_pct(crypto_cfg: dict, coins: list[str]) -> float | None:
+    """Single canonical resolution of crypto.sleeve_pct, used identically by
+    plan()'s sleeve-gap math and main()'s Health View/result metadata
+    (NUM-0001 P1-3: these previously defaulted independently to 0 and 10).
+    Returns None when the sleeve is genuinely disabled (no coins configured).
+    Coins configured with a missing or non-numeric sleeve_pct fails loudly
+    instead of silently inventing a target."""
+    if not coins:
+        return None
+    if "sleeve_pct" not in crypto_cfg:
+        raise ValueError(
+            "targets.yaml 'crypto' block has coins configured but no "
+            "'sleeve_pct' key")
+    try:
+        return float(crypto_cfg["sleeve_pct"])
+    except (TypeError, ValueError):
+        raise ValueError("targets.yaml 'crypto.sleeve_pct' is not numeric")
+
+
 def margin_capacity(gross, margin_debt, cash, leverage_cap, buffer_pct, buffer_floor_pct,
                     margin_requested):
     """Structural leverage-cap + buffer-floor check (July 2026 margin doctrine).
@@ -194,7 +237,6 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
          margin_debt=0.0, margin_buffer_pct=None, margin_requested=0.0):
     gates = targets.get("gates", {})
     caps = targets.get("caps", {})
-    margin_cfg = targets.get("margin", {})
     min_lot = float(gates.get("min_lot_dollars", 25))
     trend_rsi_override = float(gates.get("trend_rsi_override", 30))
     blackout_days = int(gates.get("earnings_blackout_days", 7))
@@ -206,8 +248,7 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     clusters = [{"name": c["name"], "pct": float(c["pct"]),
                 "tickers": {t.upper() for t in c["tickers"]}}
                for c in (caps.get("clusters", []) or [])]
-    leverage_cap = float(margin_cfg.get("leverage_cap", 1.8))
-    buffer_floor_pct = float(margin_cfg.get("buffer_floor_pct", 30.0))
+    leverage_cap, buffer_floor_pct = _resolve_margin_config(targets)
 
     gross = sum(float(v) for v in holdings.values())
     net_equity, margin_allowed, forced_delever, margin_block_reason = margin_capacity(
@@ -263,11 +304,11 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
         cap_mult = meta["cap_multiple"] if meta["tier"] == "band" else (
             1.0 if meta["fixed"] else meta["cap_multiple"])
         if meta["tier"] in ("band", "spec"):
-            overweight_limit = target_dollars * (1.25 if meta["tier"] == "band" else 1.0)
+            overweight_limit = target_dollars * cap_mult
             if current > overweight_limit and rsi is not None and rsi > trim_rsi:
                 trims.append({**base, "action": "TRIM",
                               "dollars": current - target_dollars,
-                              "reason": f"> {'1.25x' if meta['tier']=='band' else '1.0x'} target, RSI {rsi:.1f}>{trim_rsi:.0f}"})
+                              "reason": f"> {cap_mult:.2f}x target, RSI {rsi:.1f}>{trim_rsi:.0f}"})
                 continue
 
         # ---- T1/T2 concentration ceiling: mechanical, no RSI gate ---------
@@ -372,12 +413,12 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
     # (no trend/RSI/earnings). Coin split within the sleeve is manual.
     crypto_cfg = targets.get("crypto", {}) or {}
     sleeve_coins = [c.upper() for c in crypto_cfg.get("coins", [])]
-    sleeve_pct = float(crypto_cfg.get("sleeve_pct", 0))
+    sleeve_pct = _resolve_crypto_sleeve_pct(crypto_cfg, sleeve_coins)
     # Health View support: an always-present state record (current/target/drift)
     # independent of the buy_candidates entry below, which only ever appears
     # when the sleeve is meaningfully underweight — not a state interface.
     crypto_sleeve: dict | None = None
-    if sleeve_coins and sleeve_pct > 0:
+    if sleeve_coins and sleeve_pct and sleeve_pct > 0:
         sleeve_val = sum(float(holdings.get(c, 0.0)) for c in sleeve_coins)
         sleeve_target = book * sleeve_pct / 100.0
         sleeve_gap = sleeve_target - sleeve_val
@@ -449,6 +490,7 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
             for c in clusters
         ],
         "crypto_sleeve": crypto_sleeve,
+        "crypto_sleeve_pct": sleeve_pct,
         "t1t2_proximity": t1t2_proximity,
         "margin": {
             "gross": gross, "net_equity": net_equity, "debt": margin_debt,
@@ -1130,7 +1172,8 @@ def main():
         restricted_leverage_fraction=restricted_cfg.get("leverage_fraction_of_cap"),
         restricted_buffer_comfort_multiplier=restricted_cfg.get("buffer_comfort_multiplier"),
         concentration_tightening_coefficient=concentration_cfg.get("tightening_coefficient") or 0.0,
-        concentration_min_fraction=concentration_cfg.get("min_fraction") or 0.5,
+        concentration_min_fraction=(0.5 if concentration_cfg.get("min_fraction") is None
+                                     else concentration_cfg["min_fraction"]),
     )
 
     # Crypto sleeve — priced live via 'crypto_shares' (ETH/SOL) or manual 'holdings'
@@ -1140,7 +1183,7 @@ def main():
         result["crypto"] = {
             "coins": coins, "prices": prices, "holdings": crypto_holdings,
             "sleeve_total": sum(crypto_holdings.values()),
-            "sleeve_pct": float(crypto_cfg.get("sleeve_pct", 10)),
+            "sleeve_pct": result["crypto_sleeve_pct"],
         }
 
     if args.health:

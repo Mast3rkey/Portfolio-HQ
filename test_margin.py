@@ -5,7 +5,85 @@ These cover the most financially consequential code in the repo — added
 after a system audit found no automated coverage existed for either.
 """
 
+import pytest
+
 from allocate import build_roster, margin_capacity, plan
+
+
+# ── margin config resolution (plan()) ───────────────────────────────────────
+# targets.yaml is the sole canonical owner of leverage_cap/buffer_floor_pct.
+# plan() previously did `margin_cfg.get("leverage_cap", 1.8)` /
+# `margin_cfg.get("buffer_floor_pct", 30.0)`, which silently substituted the
+# historical hardcoded defaults for a missing block or key (NUM-0001 P1-1) --
+# these are the two most safety-critical parameters in the system, so a
+# missing/invalid config must now fail loudly instead.
+
+def _minimal_targets(margin_cfg):
+    return {
+        "tiers": {"T1": {"weight_pct": 10.0, "tickers": ["ZZZ"]}},
+        "caps": {"clusters": []},
+        "gates": {"min_lot_dollars": 1, "trend_rsi_override": 30,
+                 "earnings_blackout_days": 7, "trim_rsi": 60, "t1t2_trim_mult": 100.0},
+        "margin": margin_cfg,
+        "crypto": {},
+    }
+
+
+def test_missing_margin_block_fails_loudly():
+    targets = _minimal_targets(margin_cfg={})
+    del targets["margin"]
+    roster = build_roster(targets)
+
+    with pytest.raises(ValueError, match="margin"):
+        plan(targets, {"ZZZ": 0.0}, roster, {}, True, True, cash=100.0)
+
+
+def test_missing_leverage_cap_fails_loudly():
+    targets = _minimal_targets(margin_cfg={"buffer_floor_pct": 30.0})
+    roster = build_roster(targets)
+
+    with pytest.raises(ValueError, match="leverage_cap"):
+        plan(targets, {"ZZZ": 0.0}, roster, {}, True, True, cash=100.0)
+
+
+def test_missing_buffer_floor_pct_fails_loudly():
+    targets = _minimal_targets(margin_cfg={"leverage_cap": 1.8})
+    roster = build_roster(targets)
+
+    with pytest.raises(ValueError, match="buffer_floor_pct"):
+        plan(targets, {"ZZZ": 0.0}, roster, {}, True, True, cash=100.0)
+
+
+def test_structurally_invalid_margin_config_fails_clearly():
+    targets = _minimal_targets(margin_cfg="not-a-mapping")
+    roster = build_roster(targets)
+
+    with pytest.raises(ValueError, match="mapping"):
+        plan(targets, {"ZZZ": 0.0}, roster, {}, True, True, cash=100.0)
+
+
+def test_margin_config_non_numeric_value_fails_clearly():
+    targets = _minimal_targets(margin_cfg={"leverage_cap": "high", "buffer_floor_pct": 30.0})
+    roster = build_roster(targets)
+
+    with pytest.raises(ValueError, match="non-numeric"):
+        plan(targets, {"ZZZ": 0.0}, roster, {}, True, True, cash=100.0)
+
+
+def test_valid_margin_config_behaves_exactly_as_before():
+    # The existing 1.8x / 30.0% configuration must produce byte-identical
+    # margin_capacity output to before this change -- only the resolution
+    # path (explicit lookup vs. .get(key, default)) changed, not the values.
+    targets = _minimal_targets(margin_cfg={"leverage_cap": 1.8, "buffer_floor_pct": 30.0})
+    roster = build_roster(targets)
+
+    result = plan(targets, {"ZZZ": 0.0}, roster, {}, True, True, cash=100.0,
+                 margin_debt=0.0, margin_buffer_pct=50.0, margin_requested=50.0)
+
+    assert result["margin"]["leverage_cap"] == 1.8
+    assert result["margin"]["buffer_floor_pct"] == 30.0
+    assert result["margin"]["allowed"] == 50.0   # under cap, not clipped
+    assert result["margin"]["forced_delever"] is False
 
 
 # ── margin_capacity() ────────────────────────────────────────────────────────
