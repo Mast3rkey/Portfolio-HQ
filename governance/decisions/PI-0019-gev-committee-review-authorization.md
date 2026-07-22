@@ -341,12 +341,17 @@ operate under, unchanged and unextended here).
   match `PI-0017`'s own presentation convention.
 - **Include CAT or TSLA as additional comparators**, since both were scanned
   as correlated with the `power_infra` group when the cluster cap was built.
-  Rejected: `targets.yaml`'s own comment and the CLAUDE.md Decisions Log
-  record that both were deliberately excluded from the `power_infra` cluster
-  itself for weak fundamental fit — including them here as comparators would
-  contradict that governed exclusion and would push the set to five names
-  without a stated reason beyond "also correlated," which PI-0016 §E does
-  not treat as sufficient on its own.
+  Not selected: CAT and TSLA were not selected. Neither is a member of the
+  governed `power_infra` cluster, so neither satisfies this authorization's
+  selected deterministic rule: all other current holdings that share GEV's
+  actual governed cluster membership. The repository's historical
+  explanation for excluding CAT and TSLA from that cluster — weaker
+  fundamental fit to the specific power-infrastructure mechanism — supports
+  their lower relevance here, but does not create a governance prohibition
+  against their use as comparators in some other separately authorized
+  review. Including them here would also have pushed the set to five names
+  under a different, unauthorized selection basis than the one this decision
+  actually adopts.
 - **Fold this authorization and GEV's future review findings into one
   combined decision.** Rejected: exactly the blurring `PI-0013`'s own
   rationale warns against — authorization and findings are different
