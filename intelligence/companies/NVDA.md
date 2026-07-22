@@ -23,18 +23,22 @@ rejection). This is the same access pattern already disclosed in the
 original 2026-07-18 record for COST, XOM, and NVDA itself.
 
 **Independent PR review subsequently rendered the primary sources this
-session could not.** An independent reviewer of implementation PR #126
-directly rendered and inspected NVIDIA's Q1 FY2027 press release and Form
-10-Q, the BIS January 2026 licensing-policy announcement, the White House
-January 2026 tariff proclamation, and BIS's May 2026 guidance, and
-supplied the verified facts incorporated into this corrected version.
-Wherever this record states a fact as primary-source-verified below, that
+session could not.** Across two rounds of independent review of
+implementation PR #126, an independent reviewer directly rendered and
+inspected NVIDIA's Q1 FY2027 press release and Form 10-Q, the BIS January
+2026 licensing-policy announcement, the White House January 2026 tariff
+proclamation, BIS's own May 31, 2026 guidance document (its full
+substantive text, not merely its date), and NVIDIA's investor-relations
+event-details page confirming the Q2 FY2027 results date — and supplied
+the verified facts incorporated into this corrected version. Wherever
+this record states a fact as primary-source-verified below, that
 verification was performed during PR review, not by this implementation
 session directly — this session's own attempts to render those same URLs
-remained blocked throughout. Facts not covered by that independent
-review, or facts this record could not obtain to a confident, specific
-standard even with that review's input, are retained below as explicitly
-unresolved rather than asserted.
+remained blocked throughout. As of this final correction pass, no
+material claim in this record remains classified as unresolved; any fact
+this record could not obtain to a confident, specific standard even with
+that review's input would be retained as explicitly unresolved rather
+than asserted, per the same discipline applied throughout this refresh.
 
 ## Business summary
 
@@ -56,10 +60,11 @@ expenses of $7.6 billion (+52% YoY); GAAP net income was $58.321 billion
 cash flow was $50.3 billion against capital expenditure of approximately
 $1.8 billion, yielding free cash flow of $48.6 billion — NVIDIA returned
 approximately $20.0 billion to shareholders in the quarter through
-buybacks and dividends. A second reporting cycle, Q2 FY2027, is expected
-around 2026-08-26 per secondary calendar aggregators — this date is not
-independently confirmed against a NVIDIA-issued announcement in this pass
-and is treated as an estimate, not a scheduled fact.
+buybacks and dividends. NVIDIA's Q2 FY2027 financial-results event is
+officially scheduled for **2026-08-26**, per NVIDIA's own investor-relations
+event-details page, independently rendered and inspected during PR review
+(this implementation session's own attempt to access `investor.nvidia.com`
+remained blocked) — no longer treated as an unconfirmed estimate.
 
 **Operating-income-to-net-income bridge (Q1 FY2027, per the Form 10-Q,
 independently inspected during PR review):** operating income $53.536B;
@@ -88,6 +93,15 @@ expense, the cash/marketable-securities position, and the
 operating-income-to-net-income bridge as unresolved — all three are now
 resolved above using the Form 10-Q's own figures, confirmed via
 independent PR review.
+
+**Corrected in this final pass:** the prior version also asserted that
+Blackwell-class (B200) and Rubin-class products remain "strictly
+restricted from China export" — an unsupported overstatement, now removed
+and replaced in the Risks section below with the narrower facts the Form
+10-Q itself supports. The 2026-05-31 BIS guidance, previously confirmed
+only as to its date, is now fully primary-source-verified (see Risks
+below), and the Q2 FY2027 earnings date is now an officially confirmed
+fact rather than a secondary estimate (see above).
 
 ## Investment thesis (business-quality description, not a
 recommendation)
@@ -205,22 +219,31 @@ screening, and independent U.S. testing. Separately, a White House
 proclamation dated 2026-01-14 imposed a 25% tariff on certain imported
 advanced-computing chips, subject to stated exclusions — **this tariff is
 a distinct action, not a condition of the BIS licensing rule**, and this
-record does not conflate the two. Blackwell-class (B200) and Rubin-class
-products remain reported as strictly restricted from China export. (2)
-BIS issued further guidance on export-restriction scope for
-advanced-computing items dated **2026-05-31** (not 2026-06-01, which is
-only the publication date of a secondary news article reporting on it).
-Secondary press coverage of that guidance (e.g., Al Jazeera, published
-2026-06-01) characterizes it as closing a "beneficial-ownership loophole"
-— extending restrictions to entities headquartered in, or with an
-ultimate parent headquartered in, Country Group D:5 or Macau, regardless
-of the entity's own physical location, addressing a reported route
-through Malaysia/Singapore/UAE-incorporated subsidiaries. **This
-"beneficial-ownership loophole" framing is a secondary characterization,
-not confirmed as BIS's own terminology or content** — this implementation
-session could not directly render the guidance PDF itself, and no
-confirmation of its exact text was supplied during PR review beyond the
-corrected date.
+record does not conflate the two. Per NVIDIA's own Q1 FY2027 Form 10-Q
+(independently inspected during PR review): licensing requirements
+established in October 2023 covered B200 and other products exceeding
+specified performance thresholds; beginning in February 2026 the U.S.
+government granted licenses allowing small amounts of H200 products to be
+shipped to specific China-based customers, though NVIDIA had generated no
+revenue under this H200 licensing program as of the filing and did not
+know whether imports would ultimately be allowed into China; licensed
+H200 units require U.S. inspection before shipment; and NVIDIA stated
+that, as of the end of Q1 FY2027, it was effectively foreclosed from
+competing in China's data-center compute market. **No Rubin-specific
+China-export restriction is asserted here** — the original record's
+"Rubin-class products remain strictly restricted" claim was removed as
+unsupported by any dedicated primary source. (2) BIS issued further
+guidance on export-restriction scope for advanced-computing items dated
+**2026-05-31**, independently rendered and inspected during PR review:
+the official one-page guidance states, in BIS's own language, that a
+license is required to export advanced-computing items to entities
+headquartered in Country Group D:5 or Macau, or to entities whose
+ultimate parent is headquartered in Country Group D:5 or Macau, even
+where the entity itself is located outside those destinations. This is
+now a primary-source-verified fact, not a secondary characterization —
+the prior version's "beneficial-ownership loophole" framing and its
+dependency on a secondary news article are both removed in favor of the
+guidance's own stated language.
 
 **Competition in AI accelerator hardware — now grounded in NVIDIA's own
 risk-factor language rather than unsourced market-share precision.** Per
@@ -269,13 +292,16 @@ silicon, and architecture-generation ramp commentary.
 
 ## Catalyst
 
-No catalyst entry is included in this record's structured schema, per the
-existing convention — no specific future date is confirmed by this record
-to the standard that would justify a dated `catalysts[]` entry. Q2 FY2027
-results are expected around 2026-08-26 per secondary calendar aggregators;
-this record explicitly treats that date as an unconfirmed estimate, not a
-company-announced fact, consistent with the correction already applied to
-COST's and XOM's own catalyst sections.
+NVIDIA's Q2 FY2027 financial-results event is officially scheduled for
+**2026-08-26**, confirmed via NVIDIA's own investor-relations event-details
+page, independently rendered and inspected during PR review (see YAML
+`sources[]`) — this is now a company-confirmed fact, not a secondary
+estimate. No `catalysts[]` entry is added to this record's structured
+schema for it, consistent with the existing corpus convention (no company
+record in this corpus currently populates `catalysts[]` with a dated
+entry); the confirmed date is instead recorded here and in the source
+register, the same treatment already applied to every other confirmed-date
+development in this record.
 
 ## Review framework
 
@@ -348,14 +374,16 @@ single primary-document citation (NVIDIA's Q4/FY2026 results press
 release, disclosed as access-blocked) is preserved unchanged. This
 2026-07-22 refresh adds further entries: NVIDIA's Q1 FY2027 press release
 and Form 10-Q, a BIS licensing-policy announcement, a White House tariff
-proclamation, and further BIS guidance — each labeled `PRIMARY` in the
-YAML `note` field, reflecting that these documents were independently
-rendered and inspected during PR review of this implementation PR, even
-though this implementation session's own direct-access attempts against
-every one of them remained blocked (see Source-access disclosure). One
-entry (the 2026-05-31 BIS guidance's own substantive text) is explicitly
-labeled as unconfirmed beyond its corrected date, with its "beneficial-
-ownership loophole" characterization attributed to secondary press only.
-A remaining secondary-only entry (a filing mirror of the 2026-05-18 board
-actions) is retained as corroboration, not as the sole basis for facts
-that are otherwise primary-source-verified.
+proclamation, BIS's own May 31, 2026 guidance, and NVIDIA's
+investor-relations event-details page confirming the Q2 FY2027 results
+date — each labeled `PRIMARY` in the YAML `note` field, reflecting that
+these documents were independently rendered and inspected during PR
+review of this implementation PR, even though this implementation
+session's own direct-access attempts against every one of them remained
+blocked (see Source-access disclosure). Following the final correction
+pass, the May 31 BIS guidance entry is fully primary-source-verified as
+to both its date and its own substantive text — the guidance's own
+language, not a secondary characterization, is what this record now
+states. One remaining secondary-only entry (a filing mirror of the
+2026-05-18 board actions) is retained as corroboration, not as the sole
+basis for facts that are otherwise primary-source-verified.
