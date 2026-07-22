@@ -139,3 +139,10 @@ decisions:
     related_decisions: [GOV-0001, AUTO-0001, PI-0004, PI-0006, PI-0007, PI-0009, PI-0012, PI-0013, PI-0016, ONTO-0001]
     supporting_artifact: null
     file: governance/decisions/PI-0017-nvda-committee-review-authorization.md
+  - decision_id: PI-0018
+    date: 2026-07-22
+    status: Accepted
+    category: portfolio_intelligence
+    related_decisions: [GOV-0001, PI-0003, PI-0004, PI-0006, PI-0007, PI-0009, PI-0016, PI-0017, ONTO-0001]
+    supporting_artifact: null
+    file: governance/decisions/PI-0018-nvda-intelligence-refresh-authorization.md
