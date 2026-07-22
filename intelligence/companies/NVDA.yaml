@@ -3,39 +3,58 @@ industry: Semiconductors & Semiconductor Equipment
 portfolio_role_ref: T1
 themes: [ai_infrastructure]
 competitive_advantages:
-  - "Dominant, reported position in AI accelerated-compute hardware -- FY2026 Data Center segment revenue of $193.7 billion, up 68% year-over-year, now the company's dominant reported revenue segment"
+  - "Dominant, reported position in AI accelerated-compute hardware -- Q1 FY2027 (quarter ended 2026-04-26) Data Center segment revenue of $75.2 billion, up 92% year-over-year and 21% sequentially, accelerating from FY2026's own 68% YoY full-year growth rate; Data Center computing revenue $60B (+77% YoY) and networking revenue $15B (nearly tripling YoY)"
+  - "Q1 FY2027 total revenue $81.6 billion, up 85% year-over-year; GAAP operating income $53.5 billion (+147% YoY); GAAP net income $58.3 billion (+211% YoY); GAAP diluted EPS $1.87"
+  - "Materially expanded capital-return posture -- board approved a quarterly dividend increase from $0.01 to $0.25 per share and an additional $80.0 billion share-repurchase authorization on 2026-05-18, alongside Q1 FY2027 free cash flow of $48.6 billion"
 risks:
-  - risk: "Customer/hyperscaler concentration -- a large share of Data Center revenue is understood to be concentrated among a small number of large customers"
+  - risk: "Customer/hyperscaler concentration -- Q1 FY2027 secondary reporting describes three direct customers at approximately 21%, 17%, and 16% of total revenue (attributed primarily to the Compute & Networking segment), plus disclosed indirect-customer concentration through cloud-service-provider purchasing; these figures are understood from secondary aggregation of the Q1 FY2027 Form 10-Q, not independently verified by this repository against the filed document itself"
     severity: moderate
     identified: "2026-07-18"
     status: monitoring
-  - risk: "Export-control and geopolitical policy exposure affecting which customers and regions can be served"
+  - risk: "Export-control and geopolitical policy exposure affecting which customers and regions can be served -- more active since the prior review: a 2026-01-15 BIS rule moved H200/MI325X-class China export-license review from presumption-of-denial to case-by-case (subject to a 25% tariff, a 50% volume cap, third-party testing, and KYC requirements, following a 2025-12-08 presidential announcement), while Blackwell-class (B200) and Rubin-class products remain reported as strictly restricted from China export; a 2026-06-01 BIS guidance update is reported to have closed a beneficial-ownership loophole (subsidiaries of Country Group D:5/Macau-headquartered or -parented entities in third countries such as Malaysia, Singapore, and the UAE) that had reportedly allowed some advanced-chip flow to Chinese-linked entities"
     severity: moderate
     identified: "2026-07-18"
     status: monitoring
-  - risk: "Intense competition in AI accelerator hardware"
+  - risk: "Intense competition in AI accelerator hardware -- reported ~80% AI-accelerator market share in 2026 alongside a faster-growing hyperscaler custom-ASIC threat (Google TPU, AWS Trainium, Microsoft Maia, Meta MTIA, largely fabricated via Broadcom/Marvell co-design) concentrated in inference workloads, plus AMD's competing Instinct/MI400 line"
     severity: moderate
     identified: "2026-07-18"
     status: monitoring
-  - risk: "Supply-chain concentration risk in advanced semiconductor manufacturing capacity"
+  - risk: "Supply-chain concentration risk in advanced semiconductor manufacturing and packaging capacity -- reported reliance on TSMC's CoWoS-L advanced-packaging capacity (NVIDIA reported as TSMC's largest single CoWoS allocation, with industry-wide CoWoS capacity reported sold out into 2026)"
     severity: low
     identified: "2026-07-18"
     status: monitoring
-  - risk: "Execution risk on each new compute-architecture-generation transition (ramp timing, yield)"
+  - risk: "Execution risk on each new compute-architecture-generation transition (ramp timing, yield) -- applies to the Blackwell-generation ramp referenced in Q1 FY2027 results and to subsequent architecture transitions"
     severity: low
     identified: "2026-07-18"
     status: monitoring
 conviction:
   rating: High
-  rationale: "NVIDIA's Data Center segment revenue reached $193.7 billion in FY2026, up 68% year-over-year -- a demonstrated position in the AI-infrastructure compute buildout. Conviction is High rather than Very High because customer/hyperscaler concentration and export-control/geopolitical exposure are real, disclosed risk categories. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments."
+  rationale: "NVIDIA's Data Center segment revenue reached $75.2 billion in Q1 FY2027 (quarter ended 2026-04-26), up 92% year-over-year -- an acceleration from FY2026's own 68% YoY growth rate, and a continued demonstrated position in the AI-infrastructure compute buildout. Conviction is High rather than Very High because customer/hyperscaler concentration (now reported with specific, if not yet primary-source-verified, percentages), export-control/geopolitical exposure (more active since the prior review, including a January 2026 licensing-policy change and a June 2026 loophole-closing guidance update), and a growing hyperscaler custom-silicon competitive threat are real, disclosed risk categories. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments."
 review:
   cadence_days: 90
-  last_reviewed: "2026-07-18"
-  next_due: "2026-10-16"
+  last_reviewed: "2026-07-22"
+  next_due: "2026-10-20"
   log:
     - date: "2026-07-18"
       note: "Record created through AI-assisted research and drafting; finalized through explicit human review and approval under PI-0007. Portfolio HQ's third company record and first under the ai_infrastructure theme."
+    - date: "2026-07-22"
+      note: "Evidence refresh authorized by PI-0018 (following the PI-0017 committee review's Intelligence-maintenance recommendation). Incorporated Q1 FY2027 results (reported 2026-05-20: revenue $81.6B, Data Center $75.2B/+92% YoY, operating income $53.5B, net income $58.3B, EPS $1.87), the 2026-05-18 dividend increase ($0.01->$0.25/share) and additional $80.0B buyback authorization, quantified customer-concentration figures, and more granular export-control developments (2026-01-15 BIS case-by-case rule; 2026-06-01 BIS beneficial-ownership loophole guidance). Direct primary-source access (SEC EDGAR, NVIDIA investor-relations domains, bis.gov) was attempted and confirmed blocked at this environment's network-policy layer (CONNECT tunnel 403, verified via the proxy's own relay-failure log, not merely a site-side error) -- all new claims are sourced to secondary aggregation and classified as such, consistent with PI-0018 Sec D's fallback provision. conviction.rating preserved at High per PI-0018 Sec E; no tier/target/holdings/allocator/margin change made. R&D expense, total cash-and-marketable-securities balance, and the precise operating-income-to-net-income bridge (income tax provision / other income detail) could not be resolved to this session's confidence standard and are retained as unresolved rather than asserted."
 sources:
   - note: "NVIDIA, 'NVIDIA Announces Financial Results for Fourth Quarter and Fiscal 2026,' official press release, published 2026-02-25 -- FY2026 total revenue ($215.938B, +65% YoY), Data Center segment revenue ($193.7B, +68% YoY). No specific enumerated risk-factor text was independently inspected against NVIDIA's own FY2026 Form 10-K in this research pass; principal risks above are understood from general secondary coverage, not confirmed against NVIDIA's filed risk-factor language. Direct rendering blocked (HTTP 403) in the research environment; figures user-inspected and independently corroborated via multiple search results, not directly rendered by this repository's tooling."
     url: "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026"
     date: "2026-02-25"
+  - note: "SECONDARY, PI-0018 refresh pass (2026-07-22). NVIDIA's official Q1 FY2027 press release and Form 10-Q are identified at the URLs below but returned a network-policy CONNECT-tunnel 403 in this session (confirmed via this environment's proxy relay-failure log, not a site-side error) -- not directly rendered. Figures (total revenue $81.6B/+85% YoY, Data Center revenue $75.2B/+92% YoY/+21% QoQ with $60B compute/$15B networking split, GAAP gross margin 74.9%, GAAP operating income $53.5B/+147% YoY, GAAP operating expenses $7.6B/+52% YoY, GAAP net income $58.3B/+211% YoY, GAAP diluted EPS $1.87, operating cash flow $50.3B, capex ~$1.8B, free cash flow $48.6B, ~$20.0B returned to shareholders in the quarter) are corroborated across multiple independent secondary aggregators (CNBC, Yahoo Finance, StockTitan, TIKR, The Motley Fool) converging on the same values, not from a single unverified source."
+    url: "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/q1fy27pr.htm"
+    date: "2026-05-20"
+  - note: "SECONDARY, PI-0018 refresh pass (2026-07-22). NVIDIA's Q1 FY2027 Form 10-Q, identified at the URL below, returned the same network-policy block described in the source above -- not directly rendered. Customer-concentration figures (three direct customers at approximately 21%, 17%, and 16% of total revenue, primarily attributed to the Compute & Networking segment, plus disclosed indirect concentration through cloud-service-provider purchasing) are drawn from secondary synthesis of the filing's text and are explicitly classified here as a third-party claim, not an established fact independently confirmed against the filed document."
+    url: "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/nvda-20260426.htm"
+    date: "2026-05-20"
+  - note: "SECONDARY, PI-0018 refresh pass (2026-07-22). Board actions of 2026-05-18: quarterly dividend increased from $0.01 to $0.25 per share (record date 2026-06-04) and an additional $80.0 billion share-repurchase authorization (no expiration), stacking on a reported $38.5 billion prior-program remainder for roughly $118B+ in total capacity. Corroborated across multiple independent secondary sources (StreetInsider, TipRanks, The Motley Fool, Yahoo Finance). Not directly rendered against NVIDIA's own 8-K in this session (same network-policy block)."
+    url: "https://www.stocktitan.net/sec-filings/NVDA/8-k-nvidia-corp-reports-material-event-56086a88bbb4.html"
+    date: "2026-05-18"
+  - note: "SECONDARY, PI-0018 refresh pass (2026-07-22). U.S. Bureau of Industry and Security policy actions: a 2026-01-15 final rule shifting H200/MI325X-class China export-license review from presumption-of-denial to case-by-case (25% tariff, 50% volume cap, third-party testing, KYC requirements), following a 2025-12-08 presidential announcement; Blackwell (B200) and Rubin-class products reported as remaining strictly restricted from China export. bis.gov itself returned the same network-policy block described above when this session attempted direct access; this entry is sourced to secondary reporting only (Introl, Congress.gov CRS summary as cited by secondary aggregators)."
+    url: "https://www.bis.gov/press-release/department-commerce-revises-license-review-policy-semiconductors-exported-china"
+    date: "2026-01-15"
+  - note: "SECONDARY, PI-0018 refresh pass (2026-07-22). A 2026-06-01 BIS guidance update reported to close a beneficial-ownership loophole -- export restrictions on advanced AI chips applying to any entity headquartered in, or with an ultimate parent headquartered in, Country Group D:5 or Macau, regardless of the entity's own physical location (closing a reported Malaysia/Singapore/UAE subsidiary route). This is committee-inference-adjacent secondary reporting (multiple trade-press aggregators), not independently confirmed against BIS's own primary text, which this session could not directly access (same network-policy block)."
+    url: "https://www.aljazeera.com/economy/2026/6/1/us-says-ban-on-ai-chip-shipments-applies-to-chinese-firms-outside-china"
+    date: "2026-06-01"
