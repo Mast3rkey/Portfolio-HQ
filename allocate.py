@@ -981,7 +981,11 @@ def log_performance(note: str = "", client=None, quiet: bool = False,
     rows.sort(key=lambda r: r["date"])
 
     with open(PERF_LOG_FILE, "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=PERF_FIELDS)
+        # csv's default "excel" dialect writes CRLF regardless of platform;
+        # every other tracked file in this repo is LF-only, and CI's
+        # git-diff-check step flags a rewritten CRLF row as trailing
+        # whitespace. Force LF to match repo convention.
+        w = csv.DictWriter(f, fieldnames=PERF_FIELDS, lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     if quiet:
