@@ -3,35 +3,38 @@
 Last updated: 2026-07-22 — evidence refresh authorized by
 `governance/decisions/PI-0018-nvda-intelligence-refresh-authorization.md`,
 following the PI-0017 committee review's Intelligence-maintenance
-recommendation. Originally created 2026-07-18 through AI-assisted research
-and drafting, finalized through explicit human review and approval under
-PI-0007. Portfolio HQ's third Portfolio Intelligence record, and the first
-of two records created under the `ai_infrastructure` Theme Intelligence
-pilot (`decision_log.yaml` PI-0006/PI-0007).
+recommendation, with factual corrections applied following independent PR
+review of the implementation PR (#126). Originally created 2026-07-18
+through AI-assisted research and drafting, finalized through explicit
+human review and approval under PI-0007. Portfolio HQ's third Portfolio
+Intelligence record, and the first of two records created under the
+`ai_infrastructure` Theme Intelligence pilot (`decision_log.yaml`
+PI-0006/PI-0007).
 
 ## Source-access disclosure
 
-**Research cutoff for this refresh: 2026-07-22.** Direct rendering of
-NVIDIA's and the U.S. government's primary documents was attempted and
-confirmed unavailable in this research environment, not merely assumed:
-this session directly tested `www.sec.gov`, `investor.nvidia.com`,
+**Research cutoff for this refresh: 2026-07-22.** This implementation
+session directly tested `www.sec.gov`, `investor.nvidia.com`,
 `nvidianews.nvidia.com`, `www.bis.gov`, `efts.sec.gov`, and
-`www.congress.gov` and every one returned a network-policy CONNECT-tunnel
-403, confirmed against this environment's own proxy relay-failure log (a
-policy denial at the gateway, not a site-side rejection). This is the same
-access pattern already disclosed in the original 2026-07-18 record for
-COST, XOM, and NVDA itself, now independently re-confirmed rather than
-re-assumed. Every new figure and claim added by this refresh is therefore
-sourced to secondary aggregation (financial news outlets, filing mirrors,
-and trade press), explicitly labeled as such, and corroborated across
-multiple independent secondary sources converging on the same values where
-possible, per `PI-0018` Sec D's evidence standard and fallback provision.
-Where a figure could not be corroborated to this session's confidence
-standard, it is recorded below as an unresolved item rather than asserted.
-No NVIDIA Form 10-K or 10-Q filing URL is asserted as directly rendered by
-this record — the identified URLs in the YAML `sources[]` block are cited
-as the primary document's location, with their access-blocked status
-disclosed alongside each.
+`www.congress.gov` and every one returned a network-policy
+CONNECT-tunnel 403, confirmed against this environment's own proxy
+relay-failure log (a policy denial at the gateway, not a site-side
+rejection). This is the same access pattern already disclosed in the
+original 2026-07-18 record for COST, XOM, and NVDA itself.
+
+**Independent PR review subsequently rendered the primary sources this
+session could not.** An independent reviewer of implementation PR #126
+directly rendered and inspected NVIDIA's Q1 FY2027 press release and Form
+10-Q, the BIS January 2026 licensing-policy announcement, the White House
+January 2026 tariff proclamation, and BIS's May 2026 guidance, and
+supplied the verified facts incorporated into this corrected version.
+Wherever this record states a fact as primary-source-verified below, that
+verification was performed during PR review, not by this implementation
+session directly — this session's own attempts to render those same URLs
+remained blocked throughout. Facts not covered by that independent
+review, or facts this record could not obtain to a confident, specific
+standard even with that review's input, are retained below as explicitly
+unresolved rather than asserted.
 
 ## Business summary
 
@@ -44,34 +47,47 @@ Data Center segment revenue was $193.7 billion, up 68% year-over-year.
 reporting cycle since the original record — showed acceleration rather
 than deceleration: total revenue $81.6 billion, up 85% year-over-year;
 Data Center segment revenue a record $75.2 billion, up 92% year-over-year
-and 21% sequentially (Data Center computing revenue $60 billion, +77% YoY;
-Data Center networking revenue $15 billion, nearly tripling YoY). GAAP
-gross margin was 74.9%; GAAP operating income was $53.5 billion (+147%
-YoY) on GAAP operating expenses of $7.6 billion (+52% YoY); GAAP net
-income was $58.3 billion (+211% YoY) on GAAP diluted EPS of $1.87.
-Operating cash flow was $50.3 billion against capital expenditure of
-approximately $1.8 billion, yielding free cash flow of $48.6 billion —
-NVIDIA returned approximately $20.0 billion to shareholders in the quarter
-through buybacks and dividends. A second reporting cycle, Q2 FY2027, is
-expected around 2026-08-26 per secondary calendar aggregators — this date
-is not independently confirmed against a NVIDIA-issued announcement in
-this pass and is treated as an estimate, not a scheduled fact.
+and 21% sequentially (Data Center compute revenue $60.4 billion; Data
+Center networking revenue $14.8 billion). GAAP gross margin was 74.9%;
+GAAP operating income was $53.536 billion (+147% YoY) on GAAP operating
+expenses of $7.6 billion (+52% YoY); GAAP net income was $58.321 billion
+(+211% YoY) on **GAAP diluted EPS of $2.39** (non-GAAP diluted EPS $1.87
+— the two are distinct figures and are not interchangeable). Operating
+cash flow was $50.3 billion against capital expenditure of approximately
+$1.8 billion, yielding free cash flow of $48.6 billion — NVIDIA returned
+approximately $20.0 billion to shareholders in the quarter through
+buybacks and dividends. A second reporting cycle, Q2 FY2027, is expected
+around 2026-08-26 per secondary calendar aggregators — this date is not
+independently confirmed against a NVIDIA-issued announcement in this pass
+and is treated as an estimate, not a scheduled fact.
 
-**Unresolved from this refresh, disclosed rather than silently omitted:**
-(1) the precise Q1 FY2027 R&D expense figure — secondary sources suggested
-a range but did not converge with sufficient consistency for this record
-to assert a specific dollar figure with confidence; (2) NVIDIA's total
-cash-and-marketable-securities balance at quarter-end — sources found
-disclosed a $13.2 billion cash-and-equivalents figure and a separate $27.4
-billion lock-up-restricted-investment component without a clearly
-reconciled combined total; (3) the exact operating-income-to-net-income
-bridge — Q1 FY2027 net income ($58.3B) exceeds operating income ($53.5B),
-which secondary sources attribute directionally to a large "other income,
-net" line (including unrealized gains of $13.4 billion on marketable
-equity securities held at period end) net of an income-tax provision, but
-the precise other-income and tax-provision split was not resolved to this
-session's confidence standard. All three remain open, not converted to
-fact and not dropped.
+**Operating-income-to-net-income bridge (Q1 FY2027, per the Form 10-Q,
+independently inspected during PR review):** operating income $53.536B;
+interest income $0.540B; interest expense $0.102B; other income, net
+$15.929B; total other income, net $16.367B; income before tax $69.903B;
+income-tax expense $11.582B; net income $58.321B. The increase in other
+income was primarily driven by $13.4 billion in unrealized gains on
+publicly-held equity securities and $2.6 billion in unrealized gains on
+non-marketable equity securities.
+
+**Cash and investment position (Q1 FY2027, per the Form 10-Q):** cash and
+cash equivalents $13.237 billion; marketable debt securities $37.098
+billion (cash, cash equivalents, and marketable debt securities combined:
+$50.335 billion); current marketable equity securities $30.237 billion;
+long-term publicly-held equity securities of $8.864 billion reported
+separately in Other assets. These categories are kept distinct rather
+than collapsed into a single ambiguous total, per the filing's own
+presentation.
+
+**R&D expense (Q1 FY2027, per the Form 10-Q):** $6.321 billion.
+
+**Corrected from the prior version of this refresh:** the prior version
+of this record mislabeled non-GAAP diluted EPS ($1.87) as the GAAP figure;
+the correct GAAP diluted EPS is $2.39. The prior version also left R&D
+expense, the cash/marketable-securities position, and the
+operating-income-to-net-income bridge as unresolved — all three are now
+resolved above using the Form 10-Q's own figures, confirmed via
+independent PR review.
 
 ## Investment thesis (business-quality description, not a
 recommendation)
@@ -101,20 +117,20 @@ for COST/XOM):
 - Data Center segment revenue continues at or above recently reported
   growth rates, without a material, sustained reversal
 - No material loss of position among the largest hyperscaler customers,
-  now more concretely disclosed as three direct customers at
-  approximately 21%/17%/16% of Q1 FY2027 revenue (secondary-sourced, see
-  Risks below)
+  now confirmed against the Q1 FY2027 Form 10-Q's own text as three
+  direct customers at 21%/17%/16% of revenue and 30%/18%/16% of accounts
+  receivable (see Risks below)
 - Export-control or geopolitical policy does not materially restrict
-  addressable market beyond what is currently disclosed — now a more
-  active area than at the original record's writing, with a January 2026
-  licensing-policy change and a June 2026 loophole-closing guidance
-  update both reported since
+  addressable market beyond what is currently disclosed — two distinct
+  regulatory developments (a January 2026 BIS licensing-policy change and
+  separate tariff proclamation, and further BIS guidance dated
+  2026-05-31) predated but were not fully captured in the original
+  2026-07-18 record
 - Each new compute-architecture-generation transition executes without a
   material, disclosed ramp or yield problem
-- Hyperscaler custom-silicon competitors (Google TPU, AWS Trainium,
-  Microsoft Maia, Meta MTIA) do not materially displace NVIDIA's share of
-  inference workloads specifically, reported as the segment where
-  custom-ASIC competition is most concentrated
+- NVIDIA's own disclosed risk that some customers are developing their
+  own ASICs and workload-optimized products does not materially displace
+  NVIDIA's position with those same customers
 
 **Conditions that would weaken confidence in the above** (analytical
 judgment, qualitative and observable, no numerical trigger):
@@ -123,12 +139,11 @@ judgment, qualitative and observable, no numerical trigger):
 - Evidence of material customer concentration risk materializing (a large
   customer meaningfully reducing orders)
 - A material new export-control or geopolitical restriction, or evidence
-  that the June 2026 loophole-closing guidance is not effectively enforced
+  that the 2026-05-31 BIS guidance is not effectively enforced
 - A disclosed, material execution failure in a new architecture
   generation's ramp
-- Evidence that hyperscaler custom-ASIC adoption is materially eroding
-  NVIDIA's inference-workload position faster than new architecture
-  generations can offset
+- Evidence that customer-developed ASICs are materially displacing
+  NVIDIA's position faster than new architecture generations can offset
 
 ## Competitive advantages — detail
 
@@ -139,20 +154,22 @@ lives here.)*
    growth rate.** Evidence: FY2026 Data Center segment revenue of $193.7
    billion (+68% YoY), followed by Q1 FY2027 Data Center segment revenue
    of $75.2 billion in a single quarter (+92% YoY, +21% sequentially),
-   split $60 billion compute (+77% YoY) and $15 billion networking (nearly
-   tripling YoY). Limitation: these figures are corroborated across
-   multiple independent secondary aggregators, not directly rendered by
-   this repository's tooling in this pass (see Source-access disclosure);
-   the specific competitive-moat mechanisms (e.g., software ecosystem
-   lock-in) were not independently verified against NVIDIA's own filed
-   disclosures in this pass, same limitation as the original record.
+   split $60.4 billion compute and $14.8 billion networking. These Q1
+   FY2027 figures were independently inspected against NVIDIA's own press
+   release and Form 10-Q during PR review; this implementation session's
+   own attempt to render those documents directly remained blocked (see
+   Source-access disclosure). The specific competitive-moat mechanisms
+   (e.g., software ecosystem lock-in) were not independently verified
+   against NVIDIA's own filed disclosures in this pass, same limitation as
+   the original record.
 2. **Materially expanded shareholder capital return.** Evidence: board
    approval on 2026-05-18 of a quarterly dividend increase from $0.01 to
    $0.25 per share and an additional $80.0 billion share-repurchase
    authorization (no expiration), against Q1 FY2027 free cash flow of
-   $48.6 billion. Limitation: corroborated across multiple secondary
-   sources (StreetInsider, TipRanks, The Motley Fool, Yahoo Finance), not
-   directly rendered against NVIDIA's own 8-K in this pass.
+   $48.6 billion. Primary-source-verified via NVIDIA's own Q1 FY2027 press
+   release, independently inspected during PR review; also corroborated
+   across multiple secondary sources (StreetInsider, TipRanks, The Motley
+   Fool, Yahoo Finance).
 
 ## Risks — detail
 
@@ -161,58 +178,73 @@ COST's, XOM's, and the original NVDA record established):
 - Customer/hyperscaler concentration: structural/commercial
 - Export control and geopolitical policy: regulatory/geopolitical
 - Competition in AI accelerator hardware: competitive/structural
-- Semiconductor manufacturing and advanced-packaging supply-chain
-  concentration: operational/structural
+- Supply-chain and manufacturing-capacity concentration: operational/structural
 - Architecture-generation transition execution: operational
 
-**Customer/hyperscaler concentration — now more specifically quantified,
-still not primary-source-verified.** Secondary synthesis of NVIDIA's Q1
-FY2027 Form 10-Q describes three direct customers at approximately 21%,
-17%, and 16% of total revenue (attributed primarily to the Compute &
-Networking segment), plus separately disclosed indirect-customer
-concentration arising from a limited number of cloud-service-provider
-relationships. This is recorded as a third-party claim, not an established
-fact — this record does not independently confirm these percentages
-against the filed document itself, and does not name or speculate about
-the identity of any specific customer beyond what is quantified above.
+**Customer/hyperscaler concentration — now an established, primary-source-
+verified fact, not a secondary estimate.** NVIDIA's Q1 FY2027 Form 10-Q
+discloses that three direct customers represented 21%, 17%, and 16% of
+total revenue, and three direct customers represented 30%, 18%, and 16%
+of accounts receivable as of 2026-04-26 — customer identities are not
+disclosed, and this record does not speculate about them. NVIDIA also
+discloses indirect-customer revenue concentration arising from a limited
+number of cloud-service-provider relationships. These figures were
+independently inspected against the 10-Q's own text during PR review of
+this implementation PR; this record no longer classifies them as a
+third-party or secondary claim.
 
-**Export-control and geopolitical policy — materially more active since
-the original record.** Two distinct developments since 2026-07-18:
-(1) a 2026-01-15 BIS final rule reported to shift H200/MI325X-class China
-export-license review from presumption-of-denial to case-by-case,
-conditioned on a 25% tariff, a 50% volume cap, third-party testing, and
-KYC requirements, following a 2025-12-08 presidential announcement
-permitting the change; Blackwell-class (B200) and Rubin-class products are
-reported as remaining strictly restricted from China export. (2) A
-2026-06-01 BIS guidance update reported to close a beneficial-ownership
-loophole — extending export restrictions to any entity headquartered in,
-or with an ultimate parent headquartered in, Country Group D:5 or Macau,
-regardless of the entity's own physical location, closing a reported route
-through Malaysia/Singapore/UAE-incorporated subsidiaries that may have
-allowed some advanced-chip flow to Chinese-linked entities. Both
-developments are sourced to secondary/trade-press reporting; this record
-did not independently access BIS's own primary text (blocked, see
-Source-access disclosure) and does not assert a specific revenue impact
-figure for either development.
+**Export-control and geopolitical policy — two distinct developments,
+correctly dated, that predated but were not fully captured in the
+original record.** (1) The Bureau of Industry and Security announced a
+licensing-policy revision on 2026-01-13; the final rule took effect
+2026-01-15, moving China export-license review for H200/MI325X-class and
+similar qualifying chips from presumption-of-denial to case-by-case when
+specified conditions are met: U.S. supply availability, no diversion of
+foundry capacity from U.S. customers, purchaser compliance/customer
+screening, and independent U.S. testing. Separately, a White House
+proclamation dated 2026-01-14 imposed a 25% tariff on certain imported
+advanced-computing chips, subject to stated exclusions — **this tariff is
+a distinct action, not a condition of the BIS licensing rule**, and this
+record does not conflate the two. Blackwell-class (B200) and Rubin-class
+products remain reported as strictly restricted from China export. (2)
+BIS issued further guidance on export-restriction scope for
+advanced-computing items dated **2026-05-31** (not 2026-06-01, which is
+only the publication date of a secondary news article reporting on it).
+Secondary press coverage of that guidance (e.g., Al Jazeera, published
+2026-06-01) characterizes it as closing a "beneficial-ownership loophole"
+— extending restrictions to entities headquartered in, or with an
+ultimate parent headquartered in, Country Group D:5 or Macau, regardless
+of the entity's own physical location, addressing a reported route
+through Malaysia/Singapore/UAE-incorporated subsidiaries. **This
+"beneficial-ownership loophole" framing is a secondary characterization,
+not confirmed as BIS's own terminology or content** — this implementation
+session could not directly render the guidance PDF itself, and no
+confirmation of its exact text was supplied during PR review beyond the
+corrected date.
 
-**Competition in AI accelerator hardware — a growing hyperscaler
-custom-silicon dimension, not previously detailed.** NVIDIA is reported to
-hold approximately 80% of the AI-accelerator market in 2026, but custom
-ASICs from Google (TPU), Amazon (Trainium), Microsoft (Maia), and Meta
-(MTIA) — largely co-designed with and fabricated via Broadcom/Marvell —
-are reported as the faster-growing competitive threat, concentrated in
-inference workloads specifically, alongside AMD's competing Instinct/MI400
-line. This record does not adopt any specific future market-share
-projection found in secondary sources as a fact; it records the reported
-current competitive landscape only.
+**Competition in AI accelerator hardware — now grounded in NVIDIA's own
+risk-factor language rather than unsourced market-share precision.** Per
+NVIDIA's Q1 FY2027 Form 10-Q (independently inspected during PR review):
+some customers are developing their own ASICs and other
+workload-optimized products, and competition may adversely affect
+NVIDIA's market share and financial results. This record does not assert
+a specific market-share percentage (e.g., an "~80%" figure), a
+"faster-growing" comparative claim, or an inference-workload-concentration
+claim for competing custom silicon — each was removed because it lacked a
+specific, fully classified source entry (issuer, title, date, URL,
+classification, and exact claim supported) sufficient to state it as
+fact.
 
-**Semiconductor manufacturing and advanced-packaging supply-chain
-concentration.** NVIDIA is reported as TSMC's largest single allocation of
-CoWoS-L advanced-packaging capacity (secondary industry estimates cite a
-majority share of 2025-2026 CoWoS capacity), with industry-wide CoWoS
-capacity reported as sold out into 2026 — a bottleneck this record treats
-as a supply-side operational risk to NVIDIA's own shipment volumes, not a
-demand-side concern.
+**Supply-chain and manufacturing-capacity concentration — now grounded in
+NVIDIA's own risk-factor language.** Per NVIDIA's Q1 FY2027 Form 10-Q
+(independently inspected during PR review): competitors and customers may
+constrain NVIDIA's ability to procure foundry capacity and scarce inputs;
+NVIDIA has experienced manufacturing lead times exceeding 12 months; and
+foundry partners and contract manufacturers may be unable to provide
+sufficient capacity. This record no longer asserts a specific named
+foundry-partner capacity-allocation percentage or a "sold out through
+2026" characterization, since neither was backed by a specific, fully
+classified source at the standard this record now applies.
 
 **Architecture-generation transition execution.** Unchanged in kind from
 the original record: each new compute-architecture generation (most
@@ -221,20 +253,19 @@ timing and yield execution risk. No specific disclosed execution failure
 was identified in this pass.
 
 **Important limitation carried forward from the original record:** the
-specific enumerated risk-factor text of NVIDIA's own Form 10-K/10-Q was
-not independently inspected in this refresh pass either — the five risk
-categories above remain understood from secondary coverage of NVIDIA's
-disclosed condition, not confirmed word-for-word against NVIDIA's own
-filed risk-factor language. This refresh adds more specific, dated
-secondary evidence within each category; it does not close this
-underlying evidentiary gap.
+specific enumerated risk-factor text of NVIDIA's own Form 10-K was not
+independently inspected in the original 2026-07-18 pass; this refresh's
+independent PR review did directly inspect the Q1 FY2027 Form 10-Q's own
+risk-factor and financial-statement text (see entries above), narrowing
+but not fully closing that original gap — the FY2026 Form 10-K's own text
+remains uninspected.
 
 Observable indicators worth monitoring: quarterly Data Center segment
 revenue trend and its compute/networking split, any further disclosed
 customer-concentration commentary, any material export-control policy
-development (particularly enforcement of the June 2026 guidance),
-competitive product announcements from hyperscaler custom-silicon programs
-and AMD, and architecture-generation ramp commentary.
+development (particularly enforcement of the 2026-05-31 BIS guidance),
+competitive product announcements from customers developing their own
+silicon, and architecture-generation ramp commentary.
 
 ## Catalyst
 
@@ -257,11 +288,10 @@ COST's and XOM's own catalyst sections.
     revenue
   - A disclosed material customer-concentration event
   - A material new export-control or geopolitical restriction, or a
-    material enforcement development on the June 2026 guidance
+    material enforcement development on the 2026-05-31 BIS guidance
   - A disclosed material execution failure in a new architecture
     generation's ramp
-  - Evidence of material hyperscaler custom-silicon share erosion in
-    inference workloads
+  - Evidence of material displacement by customer-developed ASICs
   - A significant leadership change
 - **Metrics worth monitoring each review:** quarterly Data Center segment
   revenue and its compute/networking split and growth rate, total company
@@ -279,22 +309,25 @@ approval per PI-0018 Sec E).
 in Q1 FY2027 alone, up 92% year-over-year — an acceleration from FY2026's
 own 68% YoY growth rate, and a continued demonstrated position in the
 AI-infrastructure compute buildout. Conviction is High rather than Very
-High because customer/hyperscaler concentration (now reported with
-specific, if not yet primary-source-verified, percentages), export-control
-and geopolitical exposure (more active since the original record, with a
-January 2026 licensing change and a June 2026 loophole-closing guidance
-update both reported since), and a growing hyperscaler custom-silicon
-competitive threat concentrated in inference workloads are all real,
-disclosed risk categories. This rating explicitly excludes valuation,
-entry-price, allocation, trading, and margin judgments.
+High because customer/hyperscaler concentration (now confirmed against the
+Q1 FY2027 Form 10-Q's own text: three direct customers at 21%/17%/16% of
+revenue and 30%/18%/16% of accounts receivable), export-control and
+geopolitical exposure (a January 2026 BIS licensing-policy change and
+separate tariff proclamation, both predating but not fully captured in
+the original 2026-07-18 record, plus further BIS guidance dated
+2026-05-31), and competition from customers developing their own ASICs
+(per NVIDIA's own risk-factor disclosure) are all real, disclosed risk
+categories. This rating explicitly excludes valuation, entry-price,
+allocation, trading, and margin judgments.
 
 This rating and rationale reflect human judgment, approved after
 independent review of AI-assisted research — the research and drafting
 process does not itself constitute the human judgment this record
 requires; the approval decision does. The PI-0017 committee review's own
 advisory policy recommendation was "Keep current policy," not a rating
-change, and this refresh does not treat that recommendation as license to
-change the rating either.
+change, and this refresh does not treat that recommendation, nor the
+independent PR review's factual corrections, as license to change the
+rating either.
 
 ## Theme membership
 
@@ -313,11 +346,16 @@ refresh makes no change to theme membership or the theme record itself.
 See YAML `sources[]` for the structured register. The original record's
 single primary-document citation (NVIDIA's Q4/FY2026 results press
 release, disclosed as access-blocked) is preserved unchanged. This
-2026-07-22 refresh adds five further entries, all explicitly labeled
-SECONDARY in their `note` field, each identifying the primary document's
-URL where one exists (NVIDIA's Q1 FY2027 press release and Form 10-Q, a
-filing-mirror report of the 2026-05-18 board actions, and the two BIS
-policy developments) while disclosing that direct rendering of every one
-of them was blocked by this environment's network policy in this pass, not
-merely assumed blocked. No source added by this refresh is treated as an
-established fact independent of that disclosed limitation.
+2026-07-22 refresh adds further entries: NVIDIA's Q1 FY2027 press release
+and Form 10-Q, a BIS licensing-policy announcement, a White House tariff
+proclamation, and further BIS guidance — each labeled `PRIMARY` in the
+YAML `note` field, reflecting that these documents were independently
+rendered and inspected during PR review of this implementation PR, even
+though this implementation session's own direct-access attempts against
+every one of them remained blocked (see Source-access disclosure). One
+entry (the 2026-05-31 BIS guidance's own substantive text) is explicitly
+labeled as unconfirmed beyond its corrected date, with its "beneficial-
+ownership loophole" characterization attributed to secondary press only.
+A remaining secondary-only entry (a filing mirror of the 2026-05-18 board
+actions) is retained as corroboration, not as the sole basis for facts
+that are otherwise primary-source-verified.
