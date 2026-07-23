@@ -38,8 +38,10 @@ filing time:
 - `COST.yaml`'s `portfolio_role_ref` is **T1**; `conviction.rating` is
   **High**.
 - The record originated as Portfolio HQ's **first** Company Intelligence
-  pilot (`governance/decisions/PI-0003...` per `decision_log.yaml`; record's
-  own header: "Portfolio HQ's first Portfolio Intelligence pilot record"),
+  pilot (`PI-0003`, recorded in the repository-root `decision_log.yaml` —
+  not a `governance/decisions/` ADR file, since PI-0001 through PI-0009
+  predate that layer per `GOV-0001`; the record's own header separately
+  states: "Portfolio HQ's first Portfolio Intelligence pilot record"),
   created 2026-07-17 through AI-assisted research and human approval at a
   time when COST's `portfolio_role_ref` was **T2**. `review.log`'s
   2026-07-20 entry records that a later human portfolio-role review,
@@ -234,6 +236,25 @@ strictly to role, quality, overlap, opportunity cost, and capital priority
 as PI-0016 §E defines them; and no persistent cross-company comparison
 structure, index, or table of any kind — inside or outside `intelligence/`
 — may be created as part of, or as a byproduct of, this comparison.
+
+**Comparator-description provenance disclosure.** Repository verification
+for this comparator set is limited to current holdings status, governed
+tier, target where applicable, and cluster non-membership — each confirmed
+directly against `targets.yaml` and `holdings.yaml` as cited above, and
+each comparator's absence from any existing Company Intelligence record
+confirmed directly against the `intelligence/companies/` directory listing.
+The business-model descriptions used above to explain each comparator's
+relevance — Walmart's Sam's Club format, Amazon's Prime/AWS/advertising
+businesses, Berkshire Hathaway's capital-stewardship characterization, and
+Visa's payments-network economics — were supplied in the principal-approved
+authorization brief for this filing and reflect stable general background
+about these companies, not findings pulled from any repository file (none
+of WMT, AMZN, BRK.B, or V has an existing Company Intelligence record for
+such content to come from). These descriptions are neutral hypotheses for
+the future review to independently test and source at PI-0016 §D's evidence
+standard, not repository-derived research findings themselves. No external
+company research or source collection was conducted in authorizing this
+filing.
 
 ### E. Known evidence limitations, disclosed at authorization time
 
