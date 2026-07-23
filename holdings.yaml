@@ -13,7 +13,7 @@
 # against real screens and it doesn't reconcile (off by several points);
 # Robinhood's actual formula weights something this simple subtraction misses.
 margin:
-  debt: 1113.65
+  debt: 1590.4
   buffer_pct: 63.12
   synced_at: 2026-07-22
 holdings:
@@ -86,5 +86,5 @@ shares:
   XOM: 0.309994
 crypto_shares:
   BTC: 0.00460473
-  ETH: 0.209551695426805
+  ETH: 0.09626669542680465
   SOL: 4.305982115
