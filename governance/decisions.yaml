@@ -174,3 +174,10 @@ decisions:
     related_decisions: [GOV-0001, PI-0003, PI-0004, PI-0016, PI-0018, PI-0020, PI-0021, TGT-0002, ONTO-0001]
     supporting_artifact: null
     file: governance/decisions/PI-0022-cost-intelligence-refresh-authorization.md
+  - decision_id: MARGIN-0005
+    date: 2026-07-23
+    status: Accepted
+    category: research_charter
+    related_decisions: [GOV-0002, GOV-0003, MARGIN-0003, MARGIN-0004, TGT-0001, NUM-0001, PI-0001, PI-0011, PI-0015]
+    supporting_artifact: research/margin_target_study/PROTOCOL_V2.md
+    file: governance/decisions/MARGIN-0005-margin-target-research-charter.md

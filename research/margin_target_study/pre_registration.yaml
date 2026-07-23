@@ -1,0 +1,222 @@
+# pre_registration.yaml — frozen pre-registration for the MARGIN-0005 research program.
+# Filed in the same G0 PR as PROTOCOL_V2.md and the MARGIN-0005 charter; SHA-256 pinned
+# in the charter. Any change after pinning is a charter amendment (new governance decision,
+# new pinned hash); silent edits are detectable by hash mismatch and void any result
+# produced after the edit. No simulation may run before the G0 PR merges and the pinned
+# hashes verify against the committed blobs.
+# All results produced under this registration are HYPOTHETICAL / SIMULATED.
+
+program: margin_deployment_and_target_sizing_v1
+charter: governance/decisions/MARGIN-0005-margin-target-research-charter.md
+protocol: research/margin_target_study/PROTOCOL_V2.md
+frozen_date: "2026-07-23"
+
+trial_ceiling:
+  enumerated_development_configurations: 286
+  untouched_test_simulations: 10
+  data_correction_reserve: 4          # data-correction re-runs only; never new arms/parameters; every use logged with cause
+  hard_total: 300
+  unused_capacity: lapses_never_reallocated
+  enforcement: runtime_trial_ledger   # trial_ledger.jsonl, append-only, config-hash per run, failures included
+
+tracks:
+  track1_point_in_time:
+    role: shadow_substrate_only
+    historical_claims: none
+  track2_current_roster:
+    label_required: SURVIVORSHIP-BIASED
+    claims: arm_relative_only
+    universe: roster_63_no_crypto     # backtest_regime.py convention (excl. SPCX, SKHY)
+    deposits: monthly_2000_first_trading_day
+    train: {start: "2021-06-01", end: "2024-06-30"}
+    validation: {start: "2024-07-01", end: "2025-06-30"}
+    development_boundary: "2025-06-30"
+    untouched_test: {start: "2025-07-01", end: run_date}
+  track3_benchmark_overlays:
+    books: [SPY, QQQ]
+    role: leverage_mechanics_only_never_blended_with_track2
+    train: {start: "1999-01-01", end: "2015-12-31"}
+    validation: {start: "2016-01-01", end: "2020-12-31"}
+    development_boundary: "2020-12-31"
+    untouched_test: {start: "2021-01-01", end: run_date}
+
+untouched_test_isolation:
+  loader: development_mode_truncates_at_boundary   # untouched mode legal only inside G4 runner (test T-U1)
+  development_code_may_not: [read, simulate, store, display, summarize]  # untouched-period data
+  walk_forward_paths: development_period_only
+  candidate_freeze:
+    artifact: research/margin_target_study/candidate_freeze.yaml
+    append_only: true
+    max_finalists: {study_a: 2, study_b: 2, study_c: 2}
+    contents: [finalist_ids, full_configuration_hashes, freeze_timestamp]
+    sequence: freeze_before_any_untouched_run
+  untouched_runs:
+    explicit_simulate_calls: true
+    count_toward_ceiling: true
+    ledger:
+      study_a_finalists_x_books: 6    # <=2 finalists x {Track2 roster, Track3 SPY, Track3 QQQ}
+      study_b_finalists_track2: 2
+      study_c_finalists_track2: 2
+      max_total: 10
+    spent_exactly_once: true
+    regeneration_with_modified_candidates: requires_charter_amendment
+
+studies:
+  study_a:
+    targets: frozen_current_targets_yaml
+    arms:
+      controls: [A-0a_cash_only, A-0b_margin_every_deposit_phase3_testB_anchor, A-1_unlevered]
+      fixed_ladder: {levels: [1.10, 1.25, 1.50, 1.80], note: "1.80 = diagnostic ceiling arm only, never a candidate"}
+      A6_trend: {L_hi: [1.10, 1.25, 1.50], signal: benchmark_close_gt_200sma_t_minus_1}
+      A7_vol_target: {sigma_target: [0.10, 0.15], L_max: [1.25, 1.50], source: [account, benchmark], window_days: 63}
+      A8_staged_pullback: {tranches: {"-10pct": 1.10, "-15pct": 1.25, "-20pct": 1.40}, configs: 1}
+      A9_crash_only: {trigger_drawdown: -0.20, L_star: [1.25, 1.50], repay_priority_recovery: -0.05}
+      A10_regime: {L_hi: [1.10, 1.25], signal: benchmark_200ema_risk_on}
+      A11_trend_plus_vol: {source: surviving_A6_A7_grid_points_only, max_configs: 4}
+    mechanics:
+      signal_lag: close_t_minus_1_execute_close_t
+      draw_limits: {max_per_week: 1, max_fraction_net_equity: 0.10, days: deposit_or_signal_change_only}
+      delever: {size: uncapped, timing: next_session}
+      dead_band: 0.05
+      recipient_default: production_gap_machine_all_gates_caps_live
+      recipient_variants_on_survivors: [etf_sleeve_first, maintenance_aware_eligibility]
+      leverage_cap: 1.8               # hard, never exceeded, never a target
+      buffer_floor_replication: maintenance_excess_proxy_block_and_forced_delever
+    repayment_policies:
+      invariants: [risk_limit_cures_always_first, no_policy_ever_borrows]
+      families:
+        R1_deposits_first: {}
+        R2_dividends_first: {control: reinvest}
+        R3_governed_trims_first: {}
+        R4_cost_hurdle: {apr_hurdle: [0.06, 0.08]}
+        R5_trend_vol_deterioration: {trend: below_200sma, vol: 1.5x_trailing_3yr_median, action: repay_to_1.00x}
+        R6_maintenance_deterioration: {band_above_floor_pp: 10, staged_fraction_per_week: 0.25}
+        R7_intelligence_advisory: {classification: prospective_shadow_only, historical_configs: 0}
+        R8_restore_to_target_only: {}
+        R9_full_repayment_to_1.00x: {}
+        RB_model_b_profit_harvest_reference: {repay_fraction: 0.10, configs: 1}
+      categorical_separation:
+        profit_path_never_pooled_with_target_restoration: true
+        gain_percentage_never_equated_with_thesis_completion: true
+  study_b:
+    leverage: 1.00
+    arms:
+      B0_baseline: current_targets_yaml_nominal_sum_103.25pct
+      B1_tier_multipliers: {tiers: [T1, T2, band], multipliers: [0.8, 1.2]}
+      B2_sleeves:
+        etf: [0.10, 0.13]
+        crypto: {values: [0.05, 0.15], conditional_on: crypto_outcome_a, no_cash_like_proxy: true}
+      B3_cluster_constrained: {configured_cluster_totals_as_fraction_of_caps: [0.75, 0.50], tgt0001_exante_rule: enforced_by_construction}
+      B4_concentration_reductions: [t1_flatten_to_2.50_redistribute_pro_rata, semis_x0.75_etf_absorbs]
+      B5_nominal_budgets: [1.10, 1.20]
+      B6_comparators_non_adoptable: [inverse_vol, equal_risk_contribution]
+    exclusions: [per_ticker_optimization, conviction_scores, intelligence_controlled_targets]
+    reporting: company_tier_sleeve_cluster_total_effects_kept_distinct_never_merged
+  study_c:
+    sequence: only_after_a_and_b_verdicts_frozen
+    combinations: max_2_overlays_x_max_2_structures_plus_B0
+    max_configs: 6
+    no_new_parameters: true
+  study_d:
+    classification: prospective_shadow_research
+    historical_trial_budget: 0
+    semantics: [annotation_only_control, whole_cycle_draw_freeze, account_level_repayment_advisory]
+    prohibited: [ticker_level_recipient_veto, recipient_inclusion_or_exclusion, redirecting_margin_dollars_among_securities,
+                 increasing_leverage, changing_tiers_or_targets, altering_allocator_output, opaque_scores]
+    flag_ledger: research/margin_target_study/intelligence_flag_events.yaml   # append-only, human-authored, source-pinned
+    intelligence_records: read_only_never_created_or_modified_by_research_code
+    veto_lapse_days: 90
+    historical_replay: requires_charter_amendment_and_adequacy_bar   # >=12 months records, >=20 dated flag events
+
+ledger:                       # counts are maxima; survivor-dependent lines lapse unused
+  study_a_track2: 63
+  study_a_track3: 66
+  survivor_sensitivities_track2: 33
+  study_b_track2: 22
+  study_c: 6
+  stress_mandatory: 72        # 9 scenarios x <=8 subjects (<=6 finalists + A-1 + A-0b)
+  stress_diagnostic: 24       # 4 scenarios x <=6 finalists
+  enumerated_development_total: 286
+  untouched_test: 10
+  reserve_data_correction_only: 4
+  hard_total: 300
+
+metrics:
+  return: [cagr_twr_net_of_financing, benchmark_relative_spy_qqq_a1]
+  path: [max_drawdown, time_under_water, recovery_duration, worst_month, worst_quarter, worst_year]
+  risk_adjusted: [sharpe, sortino, calmar, downside_deviation]
+  cost_activity: [borrowing_cost_total_and_pp_yr, turnover, cost_adjusted_twr_bps_0_5_15]
+  leverage_path: [peak, time_weighted_mean, pct_days_gt_0.9x_cap, financing_duration_debt_days]
+  failure: [proxy_floor_breaches, maintenance_breaches_under_stress, forced_liquidation_events, concentration_cap_breaches]
+  tail: [p_dd_ge_40, p_dd_ge_60, bootstrap_expected_shortfall_worst_5pct]
+  output: pareto_frontier_no_automatic_winner
+
+thresholds:
+  adoption_relevant_gap_pp_yr: 1.0        # net TWR, incremental cost basis
+  maxdd_tolerance_pp: 1.0
+  mandatory_stress: {forced_liquidations: 0, proxy_floor_breach_max_sessions: 5}
+  materiality_bands: {material_pp: 2.0, noise_pp: 0.5}
+  walk_forward: {step_months: 6, retention: sign_and_50pct_edge_in_70pct_folds}
+  plateau_rule: {neighbor_retention: 0.50, isolated_sharp_optima: rejected_outright}
+  bootstrap: {method: stationary_block, mean_block_days: 21, resamples: 1000}
+  dsr: {trial_count: actual_disclosed, fail_below: 0_at_95pct}
+
+rejection_criteria_any_one_suffices:
+  - gate_failure
+  - plateau_failure
+  - walk_forward_failure
+  - dsr_le_0
+  - edge_vanishes_net_of_financing
+  - edge_vanishes_fully_allocated_basis_and_gold_not_independently_justified
+  - edge_depends_on_uninterrupted_deposits
+  - any_forced_liquidation_in_mandatory_stress
+  - liquidation_sequencing_variant_flip   # -> reclassified requires_prospective_data
+
+costs:
+  interest: {accrual: daily_capitalized, free_tier_usd: 1000, base_rate: fed_funds_plus_calibrated_spread, replication_case: flat_5pct}
+  gold_subscription: {usd_per_month_estimate: 5, verify_at_G1: true, provenance: Estimated}
+  bases: {headline: incremental_subscription_sunk, sensitivity: fully_allocated_plus_no_free_tier_counterfactual}
+  stress_rates: [plus_300bps, spread_x2, plus_400bps_over_6mo_path]
+
+dividends:
+  primary_path: split_adjusted_prices_plus_explicit_pit_dividend_cash
+  credit: ex_date
+  sensitivity: pay_date_lag_30d
+  total_return_series: reconciliation_validation_only_quarantined   # tests T-D1..T-D5
+  reconciliation_tolerance_pp_yr: 0.3
+
+stress:
+  mandatory_12A:
+    scenarios: [gfc_2008_track3_replay, q4_2018_track3_replay, pandemic_2020_track3_replay,
+                rate_plus_400bps_6mo, maintenance_30_to_35_pct_with_4210g8,
+                overnight_gap_-7pct, overnight_gap_-13pct, overnight_gap_-20pct,
+                slow_bear_-35pct_18mo]
+    adoption_criteria_apply: true
+    data: development_window_and_synthetic_only
+  diagnostic_12B:
+    scenarios: [synthetic_-65pct_index, doubled_maintenance_mid_crash,
+                concatenated_worst_decile_blocks, combined_gap_rate_maintenance]
+    auto_disqualifying: false   # unless principal promotes a scenario by charter amendment
+
+shadow:
+  mode: batch_retrospective_quarterly_replay_never_live_indicator
+  prerequisite: backlog_item_5_logging_separate_authorization
+  completion_gate:
+    elapsed_minimum: {quarterly_evaluations: 2, months: 6, sufficient: false}
+    event_minimums:
+      conditional_deployment: {transitions: 5, complete_cycles: 2}
+      episodic_deployment: {drawdown_trigger_episodes: 3, may_remain_insufficient_indefinitely: true}
+      repayment_rules: {trigger_events: 5, hold_observations: 10}
+      intelligence_veto: {resolved_veto_events: 5, non_veto_quarters: 2}
+    insufficient_events: classified_insufficient_evidence_never_pass_by_elapsed_time
+
+assumptions_registry:
+  convention: known_estimated_hypothetical_plus_NUM-0001_class
+  artifact: research/margin_target_study/assumptions_ledger.yaml   # authorized-future; populated at G1
+  initial_entries:
+    leverage_cap_1.8x: {class: provisional_governance_guardrail, source: doctrine_2026-07-13}
+    buffer_floor_30pct: {class: provisional_governance_guardrail, source: doctrine_2026-07-13}
+    maintenance_proxy_floor: {class: provisional_governance_guardrail, until: calibration_adequacy}
+    proxy_calibration_adequacy: {paired_observations: 25, buffer_range_pp: 10}
+    interest_rate_series: {class: empirically_calibrated_estimate, anchors: [doctrine_5pct, phase7a_5.75pct_le_50k]}
+    gold_subscription_cost: {class: estimated, verify_at_G1: true}
