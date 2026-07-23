@@ -1,93 +1,57 @@
 # GEV — GE Vernova Inc.
 
-Last updated: 2026-07-23 -- bounded corrective pass on draft PR #132,
-addressing an independent review of the 2026-07-22 evidence-only
-refresh (itself implemented under
+Last updated: 2026-07-22 -- evidence refresh implemented under
 `governance/decisions/PI-0020-gev-intelligence-refresh-authorization.md`,
 following the `PI-0019` committee review's principal-approved
-"Intelligence refresh recommended" conclusion). Original record created
-2026-07-18 through AI-assisted research and drafting, finalized through
-explicit human review and approval under `PI-0007` -- Portfolio HQ's
-fourth Portfolio Intelligence record, and the second of two records
-created under the `ai_infrastructure` Theme Intelligence pilot
-(`decision_log.yaml` PI-0006/PI-0007). This corrective pass is
-evidence-accuracy-only: it does not change `review.last_reviewed` or
-`review.next_due` (both still represent the 2026-07-22 evidence-refresh
-cycle, per `review.log`), and it does not change `conviction.rating`.
+"Intelligence refresh recommended" conclusion, followed the same
+Eastern calendar day by a bounded corrective pass addressing an
+independent review of that refresh. See `GEV.yaml`'s `review.log` for
+the itemized record of both passes. Original record created 2026-07-18
+through AI-assisted research and drafting, finalized through explicit
+human review and approval under `PI-0007` -- Portfolio HQ's fourth
+Portfolio Intelligence record, and the second of two records created
+under the `ai_infrastructure` Theme Intelligence pilot
+(`decision_log.yaml` PI-0006/PI-0007).
 
 ## Source-access disclosure
 
-Direct rendering of GE Vernova's primary documents has not been
-achieved in this research environment across any pass on this record
-(2026-07-18 original, 2026-07-22 refresh, or this 2026-07-23 corrective
-pass). This section names exactly what was attempted rather than making
-an undifferentiated blanket claim, per this pass's own reassessment:
+Direct rendering of GE Vernova's primary documents (SEC EDGAR,
+`gevernova.com`) has not been achieved in this research environment
+across any pass on this record (2026-07-18 original, 2026-07-22
+refresh, or the same-day corrective pass) -- every attempted direct
+fetch against those hosts, plus representative secondary syndication
+outlets (Benzinga, MarketScreener, TradingView, StockTitan, Yahoo
+Finance, BusinessWire, Morningstar, BNN Bloomberg), returned HTTP 403.
+This is the same access pattern already disclosed in COST's and XOM's
+records.
 
-- **SEC EDGAR** -- retested 2026-07-23: `www.sec.gov` root, the
-  `data.sec.gov/submissions/...` filing-index API, and the specific Q1
-  2026 and Q2 2026 8-K/10-Q exhibit URLs cited in `sources[]` below (both
-  the PDF and, where available, the HTML exhibit form). All returned
-  HTTP 403.
-- **`gevernova.com`** -- retested 2026-07-23: site root, the investor-
-  relations landing page, and the specific press-release URLs cited in
-  `sources[]` below. All returned HTTP 403.
-- **A reader-proxy workaround** (routing a primary SEC URL through a
-  third-party text-extraction relay, attempted only in this
-  2026-07-23 pass as an additional avenue) -- also returned HTTP 403.
-- **Representative secondary syndication outlets** (Benzinga,
-  MarketScreener, TradingView, StockTitan, Yahoo Finance, BusinessWire,
-  Morningstar, BNN Bloomberg) -- retried in the 2026-07-22 pass and
-  spot-retested in this 2026-07-23 pass. All returned HTTP 403 to this
-  repository's direct-fetch tooling.
+Figures in this record are corroborated across multiple independent
+secondary outlets per claim (cross-checked, not single-sourced) via a
+search-and-synthesis capability that can retrieve and quote source
+content even when this repository's own direct-fetch tooling cannot
+render the page. That capability's output is **not** treated as
+equivalent to an independently verified direct primary-source read: no
+claim in this record is presented as a confirmed primary-document quote
+unless independently reproduced. Where a claim's underlying metric
+basis could not be pinned down this way, it is disclosed as an
+unresolved uncertainty rather than stated as fact -- see the Wind
+segment's full-year loss-guide metric basis in the Risks section below
+for the one case where that applies in this record. This caveat applies
+once, to the whole record, and is not repeated per figure below. An
+earlier draft of the underlying research also asserted a specific
+Power-segment-only backlog figure (~$94.4 billion) that could not be
+independently reconfirmed and was withdrawn prior to the 2026-07-18
+approval -- it does not appear anywhere in this record.
 
-This is a genuine, repeatedly retested limitation of this session's
-direct-fetch tooling against these specific hosts, not a narrowed
-description standing in for a broader one -- every host actually
-attempted, across all three passes, failed identically. It is the same
-access pattern already disclosed in COST's and XOM's records. **What
-does succeed, and is the actual evidentiary basis for every factual
-claim in this record:** a separate search-and-synthesis capability that
-retrieves and quotes source content server-side even when this
-repository's own direct-fetch tooling cannot render the page. Every
-material figure below is corroborated across **multiple independent
-secondary outlets per claim** (cross-checked, not single-sourced) via
-that capability, including, where the underlying primary document's own
-exact wording could be located through it (e.g. the Q1 2026 Wind
-segment-EBITDA guidance language, the FY2025 orders description, and
-the December 2025 dividend/buyback figures), direct quotation of that
-primary wording -- see the per-entry notes in `sources[]` for which
-claims reach that standard. This caveat applies once, to the whole
-record, and is not repeated per figure below. An earlier draft of the
-underlying research also asserted a specific Power-segment-only backlog
-figure (~$94.4 billion) that could not be independently reconfirmed and
-was withdrawn prior to the 2026-07-18 approval -- it does not appear
-anywhere in this record.
-
-**Explicit correction from the 2026-07-22 refresh, unchanged by this
-pass:** the prior (2026-07-18) version of this record stated that
-management's ~$200 billion total-backlog target "predates, and was not
-accelerated by, the Q1 2026 results." That statement was incorrect.
-Multiple independent secondary sources describing the Q1 2026 earnings
-call (reported 2026-04-22) confirm management accelerated the target
-from year-end 2028 to year-end 2027 at that call, reaffirmed at the Q2
-2026 call. The 2026-07-22 refresh corrected the record rather than
-silently editing over the error -- see the Catalyst section below and
-the corresponding `sources[]` entry.
-
-**Corrections made in this 2026-07-23 pass** (full detail in each
-affected section below and in `GEV.yaml`'s `review.log`): (1) the
-FY2025 $59.3 billion orders figure, mislabeled since the original
-2026-07-18 record as "Power/Electrification orders," is corrected to
-total-company orders, led by equipment at Power and Electrification and
-services in each segment; (2) an independent reviewer's proposed
-EBIT/EBITDA relabeling of the Wind segment loss figures was
-investigated against primary-source-quoted language and **rejected** --
-the metric is segment EBITDA, as this record already stated throughout,
-and no basis-mismatch caveat has been added; (3) the Wind/European
-Electrification margin-softness risk's `identified` date, incorrectly
-moved to 2026-07-22 by the prior refresh, is restored to its true
-original value of 2026-07-18; (4) two literal "SS" encoding artifacts
-(intended as the section symbol, §) are corrected.
+**Explicit correction, retained from the 2026-07-22 refresh:** the
+prior (2026-07-18) version of this record stated that management's
+~$200 billion total-backlog target "predates, and was not accelerated
+by, the Q1 2026 results." That statement was incorrect. Multiple
+independent secondary sources describing the Q1 2026 earnings call
+(reported 2026-04-22) confirm management accelerated the target from
+year-end 2028 to year-end 2027 at that call, reaffirmed at the Q2 2026
+call -- see the Catalyst section below and the corresponding
+`sources[]` entry.
 
 ## Business summary
 
@@ -96,9 +60,7 @@ turbines, grid/electrification products) into a demand environment that
 includes, but is not limited to, AI data-center power buildout. Fiscal
 year 2025: total-company orders of $59.3 billion (up 34% organically,
 led by equipment at Power and Electrification and services in each
-segment -- corrected 2026-07-23; an earlier version of this record
-inaccurately described this figure as "Power/Electrification orders"),
-total backlog $150 billion (+$31.2 billion year-over-year), revenue
+segment), total backlog $150 billion (+$31.2 billion year-over-year), revenue
 $38.1 billion, net
 income $4.9 billion (including a $2.9 billion tax benefit). Q1 2026: the
 Electrification segment booked $2.4 billion in equipment orders
@@ -300,11 +262,20 @@ million in Q1 2026 (-26.7% margin, vs. -$146 million/-7.9% margin a
 year earlier) and $275 million in Q2 2026 (-13.6% margin, vs. -7.3% a
 year earlier) -- so the loss narrowed sequentially quarter-over-quarter
 even as it remains larger, in both quarters, than the prior-year
-comparable period. Management maintained FY2026 Wind EBITDA-loss
+comparable period. Management maintained FY2026 Wind full-year loss
 guidance of approximately $400 million at both the Q1 and Q2 2026
-calls. Reported through secondary sources (official transcript,
-prepared remarks, and webcast replay were not directly inspected in
-this research pass -- HTTP 403 on every attempted primary fetch): CFO
+calls. **This full-year guide's exact metric basis (segment EBITDA vs.
+EBIT) is not established by an independently reproducible
+primary-source read.** This record infers segment EBITDA as the more
+likely basis, by analogy to GE Vernova's standing per-segment EBITDA
+reporting convention -- independently corroborated for the Q1/Q2
+quarterly actuals above -- but multiple secondary sources describe this
+specific full-year figure as an EBIT loss instead. It is treated here
+as an unresolved metric-basis uncertainty, not a confirmed fact, unlike
+the quarterly actuals above. Reported through secondary sources
+(official transcript, prepared remarks, and webcast replay were not
+directly inspected in this research pass -- HTTP 403 on every attempted
+primary fetch): CFO
 Ken Parks guided Q3 2026 Wind revenue to decline at a low-double-digit
 rate year-over-year with segment EBITDA approximately break-even, and
 characterized H1 2026's weaker results as reflecting equipment shipped
@@ -312,16 +283,21 @@ under contracts signed before current tariff conditions, with H2 2026
 shipments carrying better tariff protection.
 
 **Committee arithmetic, explicitly labeled (not company guidance):**
-summing the two separately company-reported quarterly losses ($382M +
-$275M) gives a cumulative H1 2026 Wind EBITDA loss of approximately
-$657 million. If the approximately $400 million FY2026 loss guidance
-holds, that implies approximately $257 million of positive H2 2026 Wind
-EBITDA ($657M H1 loss less $400M FY loss). **GE Vernova did not guide
-to, and this record does not assert, any specific positive-dollar-amount
-H2 2026 Wind EBITDA figure** -- the $257 million figure is this
-repository's own arithmetic on company-reported inputs, presented here
-once, clearly labeled, per PI-0020 §D.2, and must not be read or cited
-elsewhere as management guidance.
+summing the two separately company-reported quarterly segment-EBITDA
+losses ($382M + $275M) gives a cumulative H1 2026 Wind EBITDA loss of
+approximately $657 million. If the approximately $400 million FY2026
+loss guidance holds on the same basis, that implies approximately $257
+million of positive H2 2026 Wind EBITDA ($657M H1 loss less $400M FY
+loss). **GE Vernova did not guide to, and this record does not assert,
+any specific positive-dollar-amount H2 2026 Wind EBITDA figure** -- the
+$257 million figure is this repository's own arithmetic on
+company-reported inputs, presented here once, clearly labeled, per
+PI-0020 §D.2, and must not be read or cited elsewhere as management
+guidance. **This arithmetic assumes the FY2026 guide shares the H1
+actuals' segment-EBITDA basis; as noted above, that basis is not
+independently confirmed** -- if the guide is instead EBIT-basis, this
+comparison is not strictly apples-to-apples and the implied H2 figure
+should be read with that caveat.
 
 **Tariff exposure (newly added by this refresh).** Management's net
 2026 tariff-impact estimate was $100-200 million as of the Q2 2026
@@ -406,14 +382,10 @@ allocation, trading, and margin judgments.
 This rating and rationale reflect human judgment, approved after
 independent review of AI-assisted research -- the research and
 drafting process does not itself constitute the human judgment this
-record requires; the approval decision does. The 2026-07-22 refresh
-updates the rationale's supporting evidence only, under `PI-0020`'s
-explicit authorization to preserve `conviction.rating: Medium` as
-baseline; it does not itself constitute a new conviction judgment. The
-2026-07-23 corrective pass changes only the orders-description wording
-above (total-company orders, not "Power/Electrification orders") and
-does not touch the rating or otherwise alter this rationale's
-substance.
+record requires; the approval decision does. This refresh updates the
+rationale's supporting evidence only, under `PI-0020`'s explicit
+authorization to preserve `conviction.rating: Medium` as baseline; it
+does not itself constitute a new conviction judgment.
 
 ## Theme membership
 
@@ -428,28 +400,24 @@ imply anything about GEV's allocator treatment, tier weight, or
 cluster-cap status, all of which remain governed exclusively by
 `targets.yaml`. Unchanged by this refresh.
 
-## Unresolved items and access limitations (this refresh, and the
-2026-07-23 corrective pass)
+## Unresolved items and access limitations
 
 - Direct primary-source rendering (SEC EDGAR, `gevernova.com`, and
   every secondary outlet URL cited above) remained HTTP 403-blocked
-  throughout the 2026-07-22 refresh and was retested and reconfirmed
-  blocked in the 2026-07-23 corrective pass -- see the Source-access
-  disclosure section at the top of this file for the exact hosts and
-  methods retested. Every claim in this record is corroborated across
-  multiple independent secondary outlets rather than independently
-  primary-read, though several claims reach direct quotation of the
-  primary document's own language via a search-and-synthesis capability
-  that succeeds even when this repository's direct-fetch tooling does
-  not -- see `sources[]` for which entries reach that standard.
-- Two items raised by an independent review and investigated in the
-  2026-07-23 corrective pass are now resolved, not open: whether the
-  FY2025 $59.3B figure is "Power/Electrification orders" or
-  total-company orders (resolved: total-company orders, corrected
-  throughout this record); and whether the Wind segment loss figures
-  should be relabeled from EBITDA to EBIT (resolved: EBITDA is correct,
-  confirmed against the primary filing's own quoted language -- no
-  relabeling made).
+  throughout every pass on this record -- see the Source-access
+  disclosure section at the top of this file. Every claim in this
+  record is corroborated across multiple independent secondary outlets
+  rather than independently primary-read; see `sources[]` for per-claim
+  detail.
+- The FY2025 $59.3B orders figure is total-company orders, not "Power/
+  Electrification orders" -- an earlier version of this record's
+  mislabeling, now corrected throughout.
+- **Open, not resolved:** the Wind segment's approximately $400 million
+  FY2026 full-year loss guide's exact metric basis (segment EBITDA vs.
+  EBIT) is not independently confirmed via a reproducible primary-source
+  read. See the Risks section above for the full treatment. This is
+  distinct from the quarterly Wind actuals ($382M Q1, $275M Q2), which
+  are independently corroborated as segment EBITDA.
 - The exact Q2 2026 10-Q total-long-term-borrowings-excluding-finance-
   leases figure (~$2.6B) is secondary-corroborated only, not
   independently confirmed against the primary balance sheet line item
@@ -485,18 +453,12 @@ cluster-cap status, all of which remain governed exclusively by
 
 See YAML `sources[]` for the structured register -- two primary-
 document citations carried forward from the original record (GE
-Vernova's Q4/FY2025 and Q1 2026 results releases; both had their notes
-amended, not their underlying claims changed, in the 2026-07-23
-corrective pass -- the Q4/FY2025 note's orders description was
-corrected from "Power/Electrification orders" to total-company orders,
-and the Q1 2026 note gained the Wind segment-EBITDA primary-language
-citation), plus six new entries added by the 2026-07-22 refresh (the Q1
-2026 earnings-call backlog-acceleration correction, the December 2025
-investor-update capital-allocation press release, the Prolec GE
-acquisition/senior-notes closing press release, the Q2 2026 Form 8-K
-results, the Q2 2026 Form 10-Q balance-sheet/tariff citation, and the
-Q2 2026 earnings-call Wind commentary with its mandatory
-secondary-reported provenance labeling). Every entry discloses that
-direct rendering was blocked in the research environment, per the
-disclosure above, which also names the specific hosts and methods
-retested in the 2026-07-23 pass.
+Vernova's Q4/FY2025 and Q1 2026 results releases), plus six entries
+added by this refresh (the Q1 2026 earnings-call backlog-acceleration
+correction, the December 2025 investor-update capital-allocation press
+release, the Prolec GE acquisition/senior-notes closing press release,
+the Q2 2026 Form 8-K results, the Q2 2026 Form 10-Q balance-sheet/
+tariff citation, and the Q2 2026 earnings-call Wind commentary with its
+mandatory secondary-reported provenance labeling). Every entry
+discloses that direct rendering was blocked in the research
+environment, per the disclosure above.
