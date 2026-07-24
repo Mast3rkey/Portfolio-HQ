@@ -1,0 +1,97 @@
+# account_evidence_20260724.yaml — MARGIN-0005 G1 account-specific evidence record.
+# Redacted evidence EXTRACT (principal-supplied Robinhood app screenshots,
+# provided in-session 2026-07-24). The screenshot images themselves are NOT
+# committed (privacy; no unredacted personal evidence is committed). This file
+# records only visibly supported facts with provenance. Nothing here is
+# inferred; fields the screenshots do not show remain unresolved or are marked
+# not-account-verifiable.
+
+recorded: "2026-07-24"
+artifact_channel: "principal-supplied screenshots delivered in the Claude session (conversation attachments; no file artifact on disk, so no image SHA-256 is available — limitation recorded)"
+device_time_visible: "07:27-07:28 (device clock in status bar)"
+screenshot_date: "2026-07-24 (per principal statement accompanying the images)"
+
+evidence:
+  - id: EV-GOLD-01
+    artifact: "Robinhood Gold membership screen"
+    privacy_description: "membership management screen; no account number, name, or balance visible beyond membership terms"
+    facts:
+      gold_membership_active: true            # membership screen with Cancel membership option present
+      plan: annual
+      stated_price: "$50/year"
+      member_since: "2025-12-15"
+      next_billing_date: "2027-05-10"
+      payment_method: "Brokerage cash"
+    limitations:
+      - "no historical $50 debit is evidenced; the actual past billing amount is NOT inferred (only the currently stated price is recorded)"
+      - "the interval member-since 2025-12-15 -> next-billing 2027-05-10 is not explained by anything visible on screen; recorded as displayed, not interpreted"
+  - id: EV-MARGIN-02
+    artifact: "Robinhood margin interest screen"
+    privacy_description: "interest panel plus per-position maintenance table (3 of N positions visible)"
+    facts:
+      displayed_annual_margin_rate_pct: 5.00
+      first_1000_interest_free_badge: "'$1K interest-free' shown on this account"
+      displayed_daily_interest_usd: 0.08
+      position_maintenance_sample:
+        - {symbol: MSFT, shares: 0.74, maint_ratio_pct: 25, maint_req_usd: 71.73}
+        - {symbol: GLD, shares: 0.62, maint_ratio_pct: 25, maint_req_usd: 57.51}
+        - {symbol: TSM, shares: 0.52, maint_ratio_pct: 25, maint_req_usd: 53.96}
+    limitations:
+      - "rate tier context (<=50k) implied by balance but tier table not shown on this screen"
+  - id: EV-BUFFER-03
+    artifact: "Robinhood buying power + margin buffer screens"
+    privacy_description: "account aggregates only"
+    facts:
+      buying_power_usd: 4195.66
+      cash_usd: 0.00
+      margin_total_usd: 5686.24
+      margin_used_usd: 1490.52
+      pending_orders_usd: -0.06
+      margin_buffer_pct_displayed: 62.88
+      portfolio_value_usd: 6192.93
+      total_maintenance_requirement_usd: 2558.88
+      buffer_usd: 3388.42
+      margin_available_usd: 4195.66
+    notes:
+      - "PAIRED (debt, displayed-buffer) OBSERVATION for the maintenance-excess
+         proxy calibration lane (assumptions A-03/A-04): (1490.52, 62.88%) at
+         2026-07-24 ~07:27 device time, with portfolio value 6192.93 and total
+         maint req 2558.88 — a fully specified calibration point"
+
+separately_recorded_unreconciled:
+  screenshot_margin_used_usd: {value: 1490.52, as_of: "2026-07-24 ~07:27 device time", source: EV-BUFFER-03}
+  connected_account_margin_debt_usd: {value: 1590.52, as_of: "2026-07-24", source: "principal-stated connected-account observation"}
+  repository_holdings_yaml_margin_debt_usd: {value: 1590.40, synced_at: "2026-07-22", source: "holdings.yaml margin block (read-only)"}
+  principal_reported_deposit_usd: {value: 100.00, date: "2026-07-24", source: "principal statement"}
+  reconciliation: >
+    NOT PERFORMED — per explicit instruction, the $100 difference between the
+    screenshot margin-used figure and the connected-account observation is
+    recorded separately and not reconciled without evidence.
+  arithmetic_context_informational_only: >
+    Not a reconciliation. At the displayed 5.00% rate with the $1,000 free
+    tier: (1490.52-1000) x 0.05/365 = $0.067/day; (1590.52-1000) x 0.05/365 =
+    $0.081/day; the screen displays $0.08/day. Recorded as neutral arithmetic
+    context for the independent reviewer.
+
+placeholder_resolutions:   # resolves report §9 / assumption A-21
+  active_gold_subscription_status: {status: VERIFIED, value: active, evidence: EV-GOLD-01}
+  monthly_vs_annual_plan: {status: VERIFIED, value: annual, evidence: EV-GOLD-01}
+  actual_billed_subscription_cost:
+    status: VERIFIED
+    value: "$50/year currently stated on the account's membership screen"
+    evidence: EV-GOLD-01
+    limitation: "current stated price only; no historical debit evidenced or inferred"
+  app_displayed_margin_rate: {status: VERIFIED, value: "5.00% annual", evidence: EV-MARGIN-02}
+  first_1000_interest_free_treatment: {status: VERIFIED, value: "active on this account ('$1K interest-free')", evidence: EV-MARGIN-02}
+  non_gold_or_downgrade_terms:
+    status: NOT_APPLICABLE_AS_ACCOUNT_EVIDENCE
+    rationale: >
+      The account is subscribed; a counterfactual unsubscribed state produces
+      no account-specific display to verify. The counterfactual basis is
+      necessarily provider-generic and is recorded separately (see
+      robinhood_margin_rate_evidence.yaml): current published terms give ALL
+      customers the same tiered rates (5.00% <= $50k as of Jul 2026), with
+      Gold's margin benefit being exactly the first-$1,000 free tier; the
+      unsubscribed counterfactual is therefore: same 5.00% rate, no free tier,
+      no $50/yr subscription cost. Classification: Estimated (generic provider
+      terms, multi-source consistent, flagged for primary confirmation).

@@ -1,0 +1,188 @@
+# assumptions_ledger.yaml — MARGIN-0005 G1 artifact (charter §4; protocol §13;
+# pre_registration.yaml assumptions_registry.artifact).
+# Convention: Known / Estimated / Hypothetical + NUM-0001 provenance class.
+# Populated at G1 per the pre-registration's initial_entries plus every numeric
+# assumption G1 data work touched. Sensitivity requirements reference the
+# pre-registered sensitivity lines (§9.3) — no simulation was run at G1.
+
+ledger_version: "G1-2026-07-24-r2"
+authority: governance/decisions/MARGIN-0005-margin-target-research-charter.md
+num_0001: governance/decisions/NUM-0001-numeric-parameter-provenance-standards.md
+
+assumptions:
+  - id: A-01
+    value: "1.8x gross/equity structural leverage cap"
+    classification: Known (governed limit)
+    num_0001_class: provisional_governance_guardrail
+    source: "doctrine 2026-07-13; pre_registration initial_entries"
+    affects: "every Study A/C arm (hard clip); §12 stress"
+    sensitivity: "none — governed constraint, never varied except labeled §12B diagnostics"
+    unresolved: false
+  - id: A-02
+    value: "30% margin-buffer floor (replicated via maintenance-excess proxy)"
+    classification: Known (governed limit)
+    num_0001_class: provisional_governance_guardrail
+    source: "doctrine 2026-07-13; pre_registration initial_entries"
+    affects: "blocking/forced-de-lever behavior in every arm"
+    sensitivity: "proxy floor calibration per A-03/A-04"
+    unresolved: false
+  - id: A-03
+    value: "maintenance-excess proxy floor (numeric level unset at G1)"
+    classification: Hypothetical until calibrated
+    num_0001_class: provisional_governance_guardrail
+    source: "protocol §8.5; calibration against real synced-buffer pairs"
+    affects: "forced-de-lever realism in all arms"
+    sensitivity: "mandatory once calibrated; provisional until A-04 adequacy met"
+    unresolved: true
+  - id: A-04
+    value: ">=25 paired (debt, displayed-buffer) observations spanning >=10pp buffer range"
+    classification: Known (pre-registered adequacy bar)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "pre_registration assumptions_registry.initial_entries.proxy_calibration_adequacy"
+    affects: "when A-03 may leave provisional status"
+    sensitivity: "n/a (adequacy bar)"
+    unresolved: false
+  - id: A-05
+    value: "constructed borrowing rate = max(floor, DFF + calibrated spread); anchors per pre-registration: doctrine ~5% (Jul 2026), Phase 7A ~5.75% <=$50k (Dec 2025); measured implied spreads over official DFF are ERA-DEPENDENT: +2.41pp (2020-12), +2.67pp (2022-11), +2.11pp (2025-12), +1.37pp (2026-07) — the earlier draft claim of a constant ~+2.5pp spread is withdrawn (falsified by measured DFF); flat-5% retained as replication case"
+    classification: Estimated
+    num_0001_class: empirically_calibrated_estimate
+    source: "pre_registration costs.interest; data/rates/robinhood_margin_rate_evidence.yaml"
+    affects: "financing cost in every levered arm; §8.7 cost bases"
+    sensitivity: "pre-registered stress rates (+300bps, 2x spread, +400bps/6mo path); S-2 line"
+    unresolved: "RESOLVED 2026-07-24: DFF acquired (A-06); D-4 settled — DFF base index kept (measured DFF-vs-target-upper delta only 0.16-0.17pp, immaterial). Measured era-dependent issuer spreads over DFF: +2.41pp (2020-12), +2.67pp (2022-11), +2.11pp (2025-12), +1.37pp (2026-07) — spread calibration method (constant per pre-registered late-era anchors vs dated to the full observation set) is a G2 pre-run decision; model form unchanged"
+  - id: A-06
+    value: "Fed Funds Effective (DFF) ACQUIRED 2026-07-24 from the principal-supplied official FRED export (observation_date,DFF; 26,320 rows 1954-07-01 -> 2026-07-22; source sha256 78f1994d...404a2c, verified against the principal's independently computed hash). Stored dev-bounded 1999-01-01 -> 2025-06-30 (9,678 rows) at data/rates/dff.json (sha256 ddb9255a...8956d5); US-government public domain, committed"
+    classification: Known (official primary source, hash-verified)
+    num_0001_class: externally_imposed
+    source: "FRED series DFF via principal-supplied fredgraph CSV; ingestion validation in data_acquisition.py ingest_dff"
+    affects: "A-05 construction; Track 3 financing realism"
+    sensitivity: "pre-registered stress rates (+300bps, 2x spread, +400bps/6mo)"
+    unresolved: false
+  - id: A-07
+    value: "Gold subscription VERIFIED: annual plan, $50/year currently stated on the account (member since 2025-12-15; next billing 2027-05-10; paid from brokerage cash). Supersedes the pre-registration's $5/mo estimate — its verify_at_G1 flag is hereby satisfied; the frozen pre-registration text is unchanged"
+    classification: Known (account-verified, 2026-07-24)
+    num_0001_class: externally_imposed
+    source: "data/evidence/account_evidence_20260724.yaml EV-GOLD-01"
+    affects: "fully-allocated cost basis ($50/yr); subscription-sensitivity flags"
+    sensitivity: "two cost bases (incremental vs fully-allocated) — post-processing, 0 trials"
+    unresolved: "historical billed debit not evidenced (current stated price only) — limitation, not a blocker"
+  - id: A-08
+    value: "first $1,000 of margin interest-free — VERIFIED active on this account ('$1K interest-free', displayed alongside 5.00% annual rate and $0.08 daily interest)"
+    classification: Known (account-verified, 2026-07-24)
+    num_0001_class: externally_imposed
+    source: "data/evidence/account_evidence_20260724.yaml EV-MARGIN-02"
+    affects: "daily interest accrual (accrues on max(0, debt - free tier))"
+    sensitivity: "no-free-tier unsubscribed counterfactual (pre-registered cost basis)"
+    unresolved: false
+  - id: A-09
+    value: "unsubscribed counterfactual: same tiered rate (5.00% <= $50k as of Jul 2026 — under current published terms all customers share the tiered schedule), no free tier, no $50/yr subscription cost. Historical constructed series still uses the era-appropriate separate non-Gold schedule for earlier periods (RH-2022-11: target upper + 6.5pp, no free tier)"
+    classification: Estimated (generic provider terms; account-specific verification definitionally unavailable while subscribed)
+    num_0001_class: empirically_calibrated_estimate
+    source: "robinhood_margin_rate_evidence.yaml RH-2026-07-NONGOLD; account_evidence_20260724.yaml placeholder resolution"
+    affects: "fully-allocated cost basis companion run"
+    sensitivity: "cost-basis post-processing"
+    unresolved: false
+  - id: A-10
+    value: "risk-free series = Yahoo ^IRX 13-week T-bill discount yield (fallback)"
+    classification: Estimated (fallback source)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "protocol §10 'risk-free series ... with a disclosed fallback band'; primary sources network-blocked"
+    affects: "Sharpe/Sortino only (never financing cost)"
+    sensitivity: "disclosed fallback band wherever used"
+    unresolved: false
+  - id: A-11
+    value: "dividend credit on ex_date; pay-date +30d lag as sensitivity"
+    classification: Known (pre-registered rule)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "pre_registration dividends.credit / dividends.sensitivity"
+    affects: "primary accounting path; R2 repayment family"
+    sensitivity: "S-4 pre-registered line (+30d lag)"
+    unresolved: false
+  - id: A-12
+    value: "T-D3 tolerance +/-0.3pp/yr per ticker-portfolio"
+    classification: Known (pre-registered threshold)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "pre_registration dividends.reconciliation_tolerance_pp_yr"
+    affects: "G1 pass criterion"
+    sensitivity: "n/a (fixed threshold)"
+    unresolved: false
+  - id: A-13
+    value: "PRIMARY dividend convention = GROSS DECLARED pre-tax cash per share (principal direction D-2, 2026-07-24); vendor net-convention amounts retained per row as vendor_net; withholding/ADR fees/broker net treatment recorded separately in data/dividends/withholding_register.yaml"
+    classification: Known (directed convention)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "principal direction D-2; full-roster cross-source measurement (G1 report §5)"
+    affects: "primary accounting path; T-D3; R2 family (net realism = separate sensitivity citing A-19)"
+    sensitivity: "net-cash sensitivity per withholding_register.yaml once account evidence (B3) exists"
+    unresolved: false
+  - id: A-14
+    value: "spin-off/in-kind distributions ARE modeled in the primary path via the PIT corporate-action ledger (principal decision D-1, 2026-07-24): 4 in-window events (MRK/OGN, IBM/KD, DHR/VLTO, WDC/SNDK)"
+    classification: Known (directed accounting extension)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "data/corporate_actions/spinoffs.json (vendor records + hand-authored primary-source records)"
+    affects: "primary path completeness; T-D3 (all four former failures now pass at <=0.157pp/yr)"
+    sensitivity: "valuation rule per A-17"
+    unresolved: false
+  - id: A-15
+    value: "crypto equity-session calendar mapping: session D consumes crypto bar t=D-1 (UTC) — last completed daily close (19/20:00 ET on D-1... i.e. 00:00Z bucket end) at or before the 16:00 ET equity close"
+    classification: Known (mathematically derived from bucket convention)
+    num_0001_class: mathematically_derived
+    source: "Alpaca crypto daily bars bucket at 00:00 UTC (verified in acquisition); protocol §4 calendar rule"
+    affects: "would affect Study B crypto configs — LAPSED under crypto outcome (b)"
+    sensitivity: "n/a (outcome b)"
+    unresolved: false
+  - id: A-16
+    value: "IEX-feed closes as primary prices, with one documented ticker-specific source exception (decision D-3 outcome A): GEV uses Alpaca SIP (consolidated) — dated evidence: 7 sessions with |SIP−IEX| > 0.15%, worst 2024-12-23 1.618%, 2024-09-17 0.573%, 2024-04-02 0.286%; no corporate action involved; GEV T-D3 now 0.003pp/yr"
+    classification: Known repository convention + documented exception
+    num_0001_class: evidence_bounded_governance_selection
+    source: "repository-established price source (data/backtest); same-vendor SIP historical feed verified available; G1 report §D-3"
+    affects: "GEV price leg; cross-check vs data/backtest shows expected GEV-only divergence"
+    sensitivity: "roster-wide SIP migration is a possible future improvement requiring its own decision — NOT adopted here"
+    unresolved: false
+  - id: A-17
+    value: "in-kind distribution valuation: ratio x distributed security's consolidated (SIP) close on the parent's ex-distribution session, credited as reinvestable cash that session; fractions per cash-in-lieu convention"
+    classification: Known (specified convention)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "data/corporate_actions/spinoffs.json meta.valuation_rule; corroborated by T-D3 v2 pass on all four events"
+    affects: "spin-off cash-equivalents in the primary path"
+    sensitivity: "child-close valuation date is the one free choice; T-D3 tolerance bounds its effect at <=0.157pp/yr on affected names"
+    unresolved: false
+  - id: A-18
+    value: "constructed borrowing-rate input = FRED DFF (Federal Funds Effective) + pre-registered calibrated spread — pinned; NOT replaced by the target-range upper bound (principal direction D-4). Robinhood's published target-upper+spread mechanism recorded as cross-check/limitation; if the two constructions diverge materially enough to alter costs or a candidate classification, a MARGIN-0005 charter amendment is required before simulations"
+    classification: Known construction, data ACQUIRED (2026-07-24)
+    num_0001_class: empirically_calibrated_estimate
+    source: "pre_registration costs.interest; principal direction D-4; data/rates/dff.json (official FRED, hash-verified)"
+    affects: "financing cost in every levered arm"
+    sensitivity: "pre-registered stress rates; measured reconstruction comparison recorded in G1 report §7 — DFF-vs-target-upper base delta 0.16-0.17pp (immaterial); era-dependent issuer spread range 1.37-2.67pp fully enveloped by the pre-registered 2x-spread stress line; worst-case constant-anchor calibration bias ~0.4pp/yr on a 1.5x candidate (inside the pre-registered 0.5pp noise band)"
+    unresolved: "no charter amendment required — model form unchanged; calibration method documented as a G2 pre-run decision"
+  - id: A-19
+    value: "foreign withholding / ADR fee register: TSM ~21% TW withholding (measured 0.78 vendor ratio), ASML 15% NL (measured 0.850), ETN 25% Irish DWT modeled by vendor but US holders typically exempt (measured 0.750, account treatment UNRESOLVED), BABA ADS depositary fee (~$0.02/ADS)"
+    classification: Known public tax-regime facts + repository measurements
+    num_0001_class: empirically_calibrated_estimate
+    source: "data/dividends/withholding_register.yaml (sources per issuer)"
+    affects: "net-cash sensitivities only; never netted into the primary gross ledger"
+    sensitivity: "activated only with account-level evidence (B3)"
+    unresolved: "ETN account treatment + all account-level net verification pending B3"
+  - id: A-20
+    value: "crypto outcome (b) — CRYPTO TARGET SIZING OUT OF SCOPE — accepted by principal 2026-07-24: the two Study B crypto configurations (ledger B-4L) lapse; capacity cannot be reallocated; BTC/ETH data remain documented but support no crypto-sizing conclusion; no cash-like proxy"
+    classification: Known (governed outcome, principal-accepted)
+    num_0001_class: externally_imposed (governed outcome)
+    source: "protocol §4 crypto gap row; SOL 416-day coverage hole evidence (manifest crypto_bars)"
+    affects: "Study B ledger line B-4L (lapsed)"
+    sensitivity: "n/a"
+    unresolved: false
+  - id: A-21
+    value: "Robinhood Gold account-specific fields — RESOLVED 2026-07-24 from principal-supplied screenshots (data/evidence/account_evidence_20260724.yaml): Gold status VERIFIED active; plan VERIFIED annual; billed cost VERIFIED $50/year currently stated (historical debit not evidenced, not inferred); app-displayed rate VERIFIED 5.00%; first-$1,000 treatment VERIFIED active; non-Gold/downgrade terms NOT APPLICABLE as account evidence (counterfactual state; generic-provider basis recorded separately). Screenshot images NOT committed (privacy); redacted fact extract only; no image hash available (conversation-supplied, no file artifact) — recorded limitation"
+    classification: Known (account-verified except the definitionally-counterfactual field)
+    num_0001_class: externally_imposed
+    source: "data/evidence/account_evidence_20260724.yaml (evidence IDs EV-GOLD-01, EV-MARGIN-02, EV-BUFFER-03)"
+    affects: "Gold cost bases (A-07/A-08/A-09); subscription-sensitivity flags"
+    sensitivity: "two cost bases post-processing"
+    unresolved: false
+  - id: A-22
+    value: "Separately recorded, deliberately UNRECONCILED margin-debt observations of 2026-07-24: screenshot margin-used $1,490.52 (~07:27 device time); principal-stated connected-account debt $1,590.52; repository holdings.yaml debt $1,590.40 (synced 2026-07-22); principal-reported $100.00 deposit same day. Per explicit instruction the $100 difference is not reconciled without evidence; neutral arithmetic context recorded in the evidence file. The screenshot's (debt=1490.52, buffer=62.88%, portfolio=6192.93, maint_req=2558.88) tuple is a fully-specified paired observation for the maintenance-proxy calibration lane (A-03/A-04)"
+    classification: Known observations, unreconciled by instruction
+    num_0001_class: externally_imposed (observations)
+    source: "data/evidence/account_evidence_20260724.yaml separately_recorded_unreconciled"
+    affects: "maintenance-proxy calibration corpus only; no G1 dataset depends on reconciling them"
+    sensitivity: "n/a"
+    unresolved: "reconciliation deferred pending evidence (not a G1 blocker)"

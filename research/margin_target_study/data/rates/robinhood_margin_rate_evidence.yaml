@@ -1,0 +1,98 @@
+# robinhood_margin_rate_evidence.yaml — MARGIN-0005 G1 evidence file.
+# Hand-recorded, source-pinned margin-rate observations anchoring the governed
+# constructed borrowing-rate series (PROTOCOL_V2.md §4 gap row, §8.7).
+# EVIDENCE ONLY: no calibration is performed at G1; spread calibration is G2+
+# work under the pre-registered construction max(floor, FedFunds + spread).
+# Account-specific terms are NEVER inferred from these generic observations
+# (task rule + charter §7: Gold cost verified against the account's actual
+# terms) — account verification is BLOCKER B3 in G1_DATA_VALIDATION_REPORT.md.
+
+recorded: "2026-07-24"
+recorded_by: "G1 data-acquisition session (MARGIN-0005)"
+
+observations:
+  - id: RH-2020-12
+    date: "2020-12-21"
+    fact: "Robinhood lowered its (then-flat, Gold-only) margin rate from 5% to 2.5%"
+    source: "Robinhood newsroom — 'Robinhood Lowers Margin Interest Rate from 5% to 2.5%'"
+    url: "https://robinhood.com/us/en/newsroom/robinhood-lowers-margin-interest-rate-from-5-to-2-5/"
+    classification: primary_issuer_announcement
+  - id: RH-2022-11
+    date: "2022-11-03"
+    fact: >
+      Rate increase announced: Gold 5.75% -> 6.5%, non-Gold 9.75% -> 10.75%.
+      Mechanism reported: upper bound of the Target Federal Funds Rate plus 2.5%
+      (Gold) or 6.5% (non-Gold).
+    source: "The Motley Fool coverage of the Robinhood announcement (secondary, citing issuer)"
+    url: "https://www.fool.com/money/buying-stocks/articles/robinhood-increases-its-margin-rates-heres-what-it-means-for-you"
+    classification: secondary_reporting_of_issuer_announcement
+  - id: RH-2025-12-PHASE7A
+    date: "2025-12 (as-of date given by source S5)"
+    fact: >
+      Tiered schedule confirmed: first $1,000 interest-free (Gold), then ~5.75%
+      up to $50,000, stepping down at higher balances.
+    source: "docs/PHASE7A_BROKER_MECHANICS_ASSUMPTION_REGISTRY.md (source S5, EVIDENCE_INVENTORY §2 item 6)"
+    url: "repository-internal"
+    classification: repository_recorded_evidence
+  - id: RH-2026-07
+    date: "2026-07 (current published schedule at G1)"
+    fact: >
+      Tiered schedule: 5.0% <= $50k; 4.8% $50-100k; 4.5% $100k-1M; 4.25% $1-10M;
+      4.2% $10-50M; 3.95% >= $50M. Gold $5/month includes first $1,000 of margin
+      interest-free; above that, standard tiered rates. Rate floats with the
+      Federal Funds Target Rate (upper bound) and can change without notice.
+    source: >
+      Web search aggregation of Robinhood's published schedule (robinhood.com
+      support page returns 403 to automated fetch from this environment;
+      secondary aggregators: firstcard.app, margintrade.com, wallstreetsurvivor.com)
+    url: "https://www.firstcard.app/learn/robinhood-margin-interest-rate (and peers)"
+    classification: secondary_aggregation_flagged_for_primary_confirmation
+  - id: RH-DOCTRINE
+    date: "2026-07-13"
+    fact: "~5% APR, first $1,000 free, per the Robinhood terms this account uses"
+    source: "docs/MARGIN_DOCTRINE.md (doctrine anchor)"
+    url: "repository-internal"
+    classification: repository_doctrine_anchor
+
+consistency_note: >
+  CORRECTED 2026-07-24 after official DFF ingestion (an earlier draft of this
+  note guessed "~+2.5pp consistent across observations" from assumed Fed
+  levels; the measured data falsify that guess and it is withdrawn).
+  Measured implied spreads of the observed Gold lowest-tier rate over the
+  Federal Funds EFFECTIVE rate (DFF, official FRED data):
+  2020-12-21: 2.50 − 0.09 = +2.41pp; 2022-11-03: 6.50 − 3.83 = +2.67pp;
+  2025-12-15: 5.75 − 3.64 = +2.11pp; 2026-07-22: 5.00 − 3.63 = +1.37pp.
+  The spread is ERA-DEPENDENT (declining pricing regime), not constant.
+  Where both legs are recorded, DFF sits only 0.16-0.17pp below the target
+  upper bound — the choice of base index (DFF, as pre-registered, vs the
+  issuer's target-upper description) is immaterial and is absorbed by
+  calibration; the target-upper mechanism remains a cross-check only.
+  Spread calibration itself (constant per the pre-registration's two late-era
+  anchors vs dated to the full observation set) is a G2 pre-run decision
+  documented in G1_DATA_VALIDATION_REPORT.md §7 — the model form
+  max(floor, DFF + calibrated spread) is unchanged either way.
+
+additional_observations:
+  - id: RH-2026-07-NONGOLD
+    date: "2026-07 (current published terms at evidence round)"
+    fact: >
+      Under the current published model, ALL customers pay the same tiered
+      margin rates (5.00% <= $50k as of Jul 2026); Robinhood Gold's margin
+      benefit is exactly the first-$1,000 interest-free tier. The unsubscribed
+      counterfactual is therefore: same tiered rate, no free tier, no
+      subscription cost. (Contrast: the RH-2022-11 era had a separate, higher
+      non-Gold schedule — that regime evidence is retained above for the
+      historical constructed series.)
+    source: "web search aggregation (finder.com, gremlin.money, firstcard.app), multi-source consistent"
+    classification: secondary_aggregation_flagged_for_primary_confirmation
+
+account_specific:   # resolved 2026-07-24 — see data/evidence/account_evidence_20260724.yaml
+  gold_subscription_status: "VERIFIED active (EV-GOLD-01)"
+  plan: "VERIFIED annual, $50/year currently stated (EV-GOLD-01; historical debit not evidenced, not inferred)"
+  subscribed_rate_shown_in_app: "VERIFIED 5.00% annual (EV-MARGIN-02)"
+  first_1000_interest_free: "VERIFIED active on this account (EV-MARGIN-02)"
+  unsubscribed_counterfactual_rate_and_terms: >
+      NOT ACCOUNT-VERIFIABLE while subscribed (counterfactual state displays
+      nothing); basis recorded from generic provider terms per
+      RH-2026-07-NONGOLD — same tiered rate, no free tier, no subscription
+      cost — classification Estimated
