@@ -50,10 +50,65 @@ TWR and MaxDD reuse backtest_regime.py's existing, already-tested
 dedup discipline as every other backtest module in this repo
 (backtest_t1t2_trim.py, backtest_trims.py, etc. already import shared
 primitives from backtest_regime.py this same way).
+
+## MARGIN-0005 G2A additive capabilities
+
+Authorized by the MARGIN-0005 research charter (§4: engine area, additive,
+output-neutral when unconsumed) and PROTOCOL_V2.md §13's named additive
+list. All of the following are OPTIONAL inputs; when every one is absent,
+simulate()'s legacy behavior and outputs are unchanged (proven by the
+pinned regression tests in test_margin_simulation.py):
+
+  - `daily_rates` — an optional daily borrowing-APR series (decimal APR,
+    same unit as `interest_apr`), consumed as a point-in-time step
+    function: the rate for day d is the value at the greatest key <= d,
+    never a later one (structurally no-lookahead — the lookup cannot see
+    keys after d).
+  - `dividend_events` — explicit per-share dividend CASH credited on the
+    event date to holders of record in the simulation. The engine accepts
+    no adjusted-price series of any kind for dividends: dividend income
+    enters only as explicit cash, per the governed primary accounting
+    path (split-adjusted prices + explicit dividend cash).
+  - `corporate_action_events` — explicit non-cash corporate actions
+    (spin-offs / in-kind distributions) valued per assumptions-ledger
+    A-17: shares_held x ratio x unit_value credited as reinvestable cash
+    on the event date, fractions inherently cash-in-lieu (the whole
+    entitlement is cash — no child position is created).
+  - `maintenance_requirement_fn` (ScenarioConfig) — generic
+    maintenance-requirement callback: {ticker: position $value} -> $
+    required maintenance. The engine computes and outputs a daily
+    maintenance-excess series (net_equity - requirement), exposes the
+    opening excess to pre-trade hooks via PortfolioState, and blocks new
+    margin draws on any day whose OPENING maintenance excess is negative.
+    This is the maintenance-excess PROXY named in PROTOCOL_V2.md §8.5 —
+    never called or compared to a real displayed buffer.
+  - `liquidation` (ScenarioConfig, LiquidationConfig) — forced-liquidation
+    mechanics per PROTOCOL_V2.md §8.6: cure = shortfall x cure_multiplier,
+    executed next session (or same-day in the explicit stress mode),
+    pro-rata or largest-position-first sequencing, proceeds to debt
+    paydown first. A structural guard raises if a liquidation ever
+    increases leverage (it cannot, by the arithmetic — the guard makes
+    that an enforced invariant, not an assumption).
+  - `RepaymentDecision.leverage_target` — generalized pre-trade
+    leverage-target hook: a policy may command a target leverage for the
+    day; the engine clamps it to [1.0, min(scenario cap, 1.8)] (the 1.8x
+    governed structural cap is a hard bound here, never exceedable by any
+    policy), repays down toward the target when above it, and may draw
+    toward it (through the same weighted-gap allocator) when below it,
+    subject to a caller-supplied dead band.
+  - Complete daily path outputs — debt, interest, cash, maintenance
+    excess, dividend credits, corporate-action credits, liquidation
+    events — alongside the existing book/gross/leverage series.
+
+This module still performs NO file or network I/O, imports nothing from
+allocate.py/margin_state.py, and reads nothing under
+research/margin_target_study/ — all data arrives in memory from the
+caller. It writes nothing anywhere.
 """
 
 from __future__ import annotations
 
+import bisect
 from dataclasses import dataclass, field
 from datetime import date
 from functools import partial
@@ -90,12 +145,19 @@ class PortfolioState:
     Fields match docs/PHASE3_MARGIN_EVIDENCE_FRAMEWORK.md's required
     "Portfolio state" concept list exactly: gross exposure, net equity,
     margin debt, leverage ratio, cash, positions.
+
+    `maintenance_excess` (MARGIN-0005 G2A addition, default None) is the
+    day's OPENING maintenance-excess proxy value (net_equity minus the
+    scenario's maintenance requirement), populated only when the scenario
+    supplies a `maintenance_requirement_fn` — None otherwise, so every
+    pre-existing construction site and policy is unaffected.
     """
     day_index: int
     cash: float
     positions: dict[str, float]      # ticker -> shares held
     margin_debt: float
     gross: float                     # market value of held positions only (cash excluded — matches doctrine's "gross holdings.yaml total")
+    maintenance_excess: float | None = None
 
     @property
     def net_equity(self) -> float:
@@ -206,9 +268,73 @@ class RepaymentDecision:
     place of the scenario's normal `leverage_cap` — simulate() further
     clamps this to `min(effective_leverage_cap, scenario.leverage_cap)`,
     so no policy can ever raise capacity above the scenario's own hard
-    cap, only tighten it."""
+    cap, only tighten it.
+
+    `leverage_target` (MARGIN-0005 G2A addition, default None) is the
+    generalized pre-trade leverage-target hook: when set, simulate()
+    clamps it to [LEVERAGE_TARGET_HARD_MIN, min(scenario.leverage_cap,
+    LEVERAGE_TARGET_HARD_MAX)] — i.e. always within [1.0, 1.8] regardless
+    of what any policy requests — then (a) tightens today's effective
+    allocation cap to the target, (b) repays down toward the target when
+    the opening leverage exceeds it by more than `dead_band`, and (c) may
+    draw toward the target through the weighted-gap allocator when the
+    post-allocation leverage is below it by more than `dead_band`.
+    `dead_band` is in leverage units (e.g. 0.05) and defaults to 0.0 —
+    the engine bakes in no numeric default of its own."""
     repay_amount: float = 0.0
     effective_leverage_cap: float | None = None
+    leverage_target: float | None = None
+    dead_band: float = 0.0
+
+
+# Governed structural bounds for the leverage-target hook. 1.8 is the
+# doctrine leverage cap (a governed constraint this engine treats as a hard
+# ceiling for any policy-commanded target); 1.0 is unlevered — no target
+# below it is meaningful (a policy wanting zero debt repays to 1.0).
+LEVERAGE_TARGET_HARD_MIN = 1.0
+LEVERAGE_TARGET_HARD_MAX = 1.8
+
+
+@dataclass(frozen=True)
+class LiquidationConfig:
+    """MARGIN-0005 G2A forced-liquidation mechanics (PROTOCOL_V2.md §8.6).
+
+    `cure_multiplier`: the cure is shortfall x this multiplier (the
+    protocol's pre-registered value is 1.25 — supplied explicitly by the
+    caller, never baked in as a default, per this repo's standing
+    no-guessed-parameters rule).
+    `sequencing`: "pro_rata" (primary) or "largest_first" (variant).
+    `same_day`: False = cure executes next session (default realism);
+    True = the explicit no-notice same-day STRESS mode only.
+    """
+    cure_multiplier: float
+    sequencing: str
+    same_day: bool = False
+
+    def __post_init__(self):
+        if self.cure_multiplier < 1.0:
+            raise ValueError(
+                f"cure_multiplier must be >= 1.0 (cure at least the shortfall), "
+                f"got {self.cure_multiplier}")
+        if self.sequencing not in ("pro_rata", "largest_first"):
+            raise ValueError(
+                f"sequencing must be 'pro_rata' or 'largest_first', got {self.sequencing!r}")
+
+
+def _rate_for_date(sorted_rate_dates: list[str], daily_rates: dict[str, float],
+                   d: str) -> float:
+    """Point-in-time step-function rate lookup: the rate for date `d` is
+    the value at the greatest key <= d. Structurally no-lookahead — the
+    bisect only ever inspects keys at or before `d`; a rate observation
+    dated after `d` cannot influence the result. Raises if no observation
+    exists at or before `d` (an explicit error beats silently falling back
+    to some other rate)."""
+    idx = bisect.bisect_right(sorted_rate_dates, d) - 1
+    if idx < 0:
+        raise ValueError(
+            f"daily_rates has no entry at or before {d} — the series must "
+            "cover the simulation window from its first accrual day")
+    return daily_rates[sorted_rate_dates[idx]]
 
 
 class ModelBProfitHarvest:
@@ -348,6 +474,14 @@ class ScenarioConfig:
     repayment_fn: Callable[[PortfolioState, float | None], float] = repayment_model_0
     repayment_model_name: str = "MODEL_0"
     pre_trade_fn: Callable[[PortfolioState, float | None], RepaymentDecision] | None = None
+    # MARGIN-0005 G2A additions (both default None — output-neutral when absent):
+    # maintenance_requirement_fn: {ticker: position $value} -> required
+    # maintenance $ (the generic maintenance-excess-proxy callback).
+    maintenance_requirement_fn: Callable[[dict[str, float]], float] | None = None
+    # liquidation: forced-liquidation mechanics; requires
+    # maintenance_requirement_fn (simulate() rejects the combination
+    # liquidation-without-maintenance at entry).
+    liquidation: LiquidationConfig | None = None
 
 
 def scenario_unlevered(name: str = "A") -> ScenarioConfig:
@@ -500,6 +634,16 @@ class SimulationResult:
     deposit_total: float
     tracked_values: dict[str, list[float]] = field(default_factory=dict)
     tax_lot_events: list[dict] = field(default_factory=list)
+    # MARGIN-0005 G2A additions — complete daily path outputs. All are
+    # additive fields with defaults: no pre-existing field's value changes,
+    # and any external constructor that predates them still works.
+    debt_series: list[float] = field(default_factory=list)
+    cash_series: list[float] = field(default_factory=list)
+    interest_series: list[float] = field(default_factory=list)
+    maintenance_excess_series: list = field(default_factory=list)  # float | None per day
+    dividend_credit_series: list[float] = field(default_factory=list)
+    corporate_action_credit_series: list[float] = field(default_factory=list)
+    liquidation_events: list[dict] = field(default_factory=list)
 
     def metrics(self, near_cap_fraction: float = 0.9,
                concentration_inputs: dict | None = None) -> dict:
@@ -658,12 +802,140 @@ def _fund_repayment(cash: float, shares: dict[str, float], closes: dict[str, flo
     return cash
 
 
+def _position_values(shares: dict[str, float], closes: dict[str, float]) -> dict[str, float]:
+    """{ticker: dollar value} for positions that are both held (>0 shares)
+    and priced today — the exact input shape the generic
+    `maintenance_requirement_fn` callback consumes."""
+    return {s: shares[s] * closes[s] for s in shares
+            if shares.get(s, 0.0) > 0 and closes.get(s) is not None}
+
+
+def _weighted_gap_allocate(weights: dict[str, float], elig: list[str],
+                           closes: dict[str, float], shares: dict[str, float],
+                           lots: dict[str, list[Lot]], book: float,
+                           buying_power: float, cash: float, margin_debt: float,
+                           min_lot: float, day_index: int, day_date: str,
+                           events: list[dict]) -> tuple[float, float]:
+    """The weighted-dollar-gap allocation pass, extracted VERBATIM from
+    simulate()'s deposit block (MARGIN-0005 G2A refactor) so the
+    leverage-target draw path can reuse the identical mechanics instead of
+    growing a second, slightly-different allocator. Every arithmetic
+    operation and its order is unchanged from the pre-G2A inline code —
+    the pinned regression tests in test_margin_simulation.py prove the
+    extraction is value-identical. Mutates `shares`/`lots` in place;
+    returns the updated (cash, margin_debt)."""
+    w_sum = sum(weights.get(s, 0.0) for s in elig if s in closes)
+    if w_sum > 0 and buying_power >= min_lot:
+        targets = {s: book * weights.get(s, 0.0) / w_sum
+                  for s in elig if s in closes}
+        gaps = sorted(
+            ((targets[s] - shares.get(s, 0.0) * closes[s], s) for s in targets),
+            reverse=True)
+        remaining = buying_power
+        for gap, s in gaps:
+            if gap < min_lot or remaining < min_lot:
+                continue
+            spend = min(gap, remaining)
+            bought = spend / closes[s]
+            shares[s] = shares.get(s, 0.0) + bought
+            lots.setdefault(s, []).append(
+                Lot(ticker=s, shares=bought, acquisition_day=day_index,
+                    acquisition_date=day_date, cost_basis_price=closes[s]))
+            remaining -= spend
+        spent = buying_power - remaining
+        from_cash = min(cash, spent)
+        from_margin = max(0.0, spent - from_cash)
+        cash -= from_cash
+        if from_margin > 0:
+            margin_debt += from_margin
+            events.append({"day": day_index, "kind": "margin_draw", "amount": from_margin})
+    return cash, margin_debt
+
+
+def _execute_forced_liquidation(shares: dict[str, float], closes: dict[str, float],
+                                cash: float, margin_debt: float, cure_target: float,
+                                sequencing: str, lots: dict[str, list[Lot]],
+                                day_index: int, day_date: str,
+                                tax_lot_events: list[dict], events: list[dict],
+                                liquidation_events: list[dict],
+                                trigger_day: int, shortfall: float,
+                                same_day: bool) -> tuple[float, float]:
+    """Execute one forced liquidation (MARGIN-0005 G2A, PROTOCOL_V2.md
+    §8.6): sell `cure_target` dollars of positions (bounded by what is
+    actually held and priced), proceeds to debt paydown first, any excess
+    beyond the debt to cash. Sequencing is pro-rata across priced
+    positions or largest-position-first. Mutates `shares`/`lots` in
+    place; returns updated (cash, margin_debt).
+
+    Structural invariant, enforced not assumed: a forced liquidation can
+    NEVER increase leverage. Selling S and repaying min(S, debt) leaves
+    net equity unchanged (trim-funded paydown) or moves leverage to 1.0
+    (debt extinguished, remainder to cash) — both weakly decrease
+    gross/net-equity. The post-check raises RuntimeError if the invariant
+    were ever violated by a future edit."""
+    priced = _position_values(shares, closes)
+    gross_now = sum(priced.values())
+    pre_ne = gross_now - margin_debt
+    pre_lev = (gross_now / pre_ne) if pre_ne > 0 else None
+    target = min(cure_target, gross_now)
+    sold_total = 0.0
+    sold_by_ticker: dict[str, float] = {}
+    if target > 0 and gross_now > 0:
+        if sequencing == "pro_rata":
+            frac = target / gross_now
+            for s, val in priced.items():
+                px = closes[s]
+                sell_val = val * frac
+                shares_sold = sell_val / px
+                shares[s] -= shares_sold
+                sold_total += sell_val
+                sold_by_ticker[s] = sell_val
+                if s in lots:
+                    tax_lot_events.extend(_consume_fifo_lots(
+                        lots[s], shares_sold, px, day_index, day_date, s))
+        else:  # largest_first (validated by LiquidationConfig)
+            remaining = target
+            for s, val in sorted(priced.items(), key=lambda kv: kv[1], reverse=True):
+                if remaining <= 1e-12:
+                    break
+                px = closes[s]
+                sell_val = min(val, remaining)
+                shares_sold = sell_val / px
+                shares[s] -= shares_sold
+                sold_total += sell_val
+                sold_by_ticker[s] = sell_val
+                remaining -= sell_val
+                if s in lots:
+                    tax_lot_events.extend(_consume_fifo_lots(
+                        lots[s], shares_sold, px, day_index, day_date, s))
+    debt_repaid = min(sold_total, margin_debt)
+    margin_debt -= debt_repaid
+    cash += sold_total - debt_repaid
+    post_gross = gross_now - sold_total
+    post_ne = post_gross - margin_debt
+    post_lev = (post_gross / post_ne) if post_ne > 0 else None
+    if pre_lev is not None and post_lev is not None and post_lev > pre_lev + 1e-9:
+        raise RuntimeError(
+            "forced liquidation increased leverage — structural invariant violated")
+    ev = {"day": day_index, "kind": "forced_liquidation", "trigger_day": trigger_day,
+          "shortfall": shortfall, "cure_target": cure_target,
+          "sold_total": sold_total, "debt_repaid": debt_repaid,
+          "sold_by_ticker": sold_by_ticker, "sequencing": sequencing,
+          "same_day": same_day, "pre_leverage": pre_lev, "post_leverage": post_lev}
+    events.append(ev)
+    liquidation_events.append(ev)
+    return cash, margin_debt
+
+
 def simulate(scenario: ScenarioConfig, weights: dict[str, float],
             aligned: dict[str, tuple[list[float | None], int | None]],
             calendar: list[str], deposit_days: list[str],
             deposit_amount: float | None = 0.0, min_lot: float = 25.0,
             deposit_schedule: dict[str, float] | None = None,
-            track_tickers: list[str] | None = None) -> SimulationResult:
+            track_tickers: list[str] | None = None,
+            daily_rates: dict[str, float] | None = None,
+            dividend_events: dict[str, dict[str, float]] | None = None,
+            corporate_action_events: dict[str, list[dict]] | None = None) -> SimulationResult:
     """Run one scenario through aligned historical (or synthetic, for
     tests) daily closes.
 
@@ -728,7 +1000,29 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
     quantities the engine already computes, per
     docs/PHASE6A_IMPLEMENTATION_APPROVAL.md's "preserve all existing
     outputs and labels" constraint.
+
+    MARGIN-0005 G2A additions (see the module docstring's G2A section for
+    the full contract): `daily_rates` (optional point-in-time daily APR
+    step series, decimal APR — when present it replaces `interest_apr`
+    for accrual; `interest_free_amount` still applies), `dividend_events`
+    ({date: {ticker: gross cash per share}} — credited to cash exactly
+    once, on the event date, for shares held at that day's open-of-day
+    position state; a return component, deliberately NOT an external flow),
+    `corporate_action_events` ({date: [{ticker, ratio, unit_value}]} —
+    shares_held x ratio x unit_value credited as reinvestable cash, per
+    assumptions-ledger A-17), plus the ScenarioConfig-level
+    `maintenance_requirement_fn`/`liquidation` mechanics and the
+    `RepaymentDecision.leverage_target` hook. All optional; all
+    output-neutral when absent.
     """
+    if scenario.liquidation is not None and scenario.maintenance_requirement_fn is None:
+        raise ValueError(
+            "ScenarioConfig.liquidation requires maintenance_requirement_fn — "
+            "forced liquidation is triggered by the maintenance-excess proxy")
+    if daily_rates is not None and not daily_rates:
+        raise ValueError("daily_rates provided but empty")
+    sorted_rate_dates = sorted(daily_rates) if daily_rates else None
+
     dep_set = set(deposit_days)
     cash = 0.0
     shares: dict[str, float] = {}
@@ -746,6 +1040,15 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
     # output); consumed only by callers that read `tax_lot_events`.
     lots: dict[str, list[Lot]] = {}
     tax_lot_events: list[dict] = []
+    # MARGIN-0005 G2A daily path outputs + liquidation bookkeeping
+    debt_series: list[float] = []
+    cash_series: list[float] = []
+    interest_series: list[float] = []
+    maintenance_excess_series: list = []
+    dividend_credit_series: list[float] = []
+    corporate_action_credit_series: list[float] = []
+    liquidation_events: list[dict] = []
+    pending_liquidation: dict | None = None
 
     for i, d in enumerate(calendar):
         elig = [s for s in aligned if aligned[s][1] is not None and i >= aligned[s][1]]
@@ -753,16 +1056,64 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
                  if aligned[s][0][i] is not None}
         gross = sum(shares.get(s, 0.0) * px for s, px in closes.items())
 
+        # ---- (G2A) pending forced liquidation executes first --------------
+        # Next-session mode: the broker's cure, sized on the trigger day's
+        # shortfall, executes at THIS session's prices before any policy,
+        # accrual, or trading — the broker acts before the account holder.
+        if pending_liquidation is not None:
+            cash, margin_debt = _execute_forced_liquidation(
+                shares, closes, cash, margin_debt,
+                cure_target=pending_liquidation["cure_target"],
+                sequencing=scenario.liquidation.sequencing, lots=lots,
+                day_index=i, day_date=d, tax_lot_events=tax_lot_events,
+                events=events, liquidation_events=liquidation_events,
+                trigger_day=pending_liquidation["trigger_day"],
+                shortfall=pending_liquidation["shortfall"], same_day=False)
+            pending_liquidation = None
+            gross = sum(shares.get(s, 0.0) * closes.get(s, 0.0) for s in shares)
+
+        # ---- (G2A) opening maintenance-excess proxy ------------------------
+        # Computed on opening mark-to-market state; exposed to pre-trade
+        # hooks via PortfolioState.maintenance_excess, and a negative
+        # opening excess blocks all new margin draws today (the
+        # maintenance-excess-proxy draw block, PROTOCOL_V2.md §5).
+        opening_excess: float | None = None
+        if scenario.maintenance_requirement_fn is not None:
+            opening_excess = (gross - margin_debt) - scenario.maintenance_requirement_fn(
+                _position_values(shares, closes))
+        draws_blocked = opening_excess is not None and opening_excess < 0
+
         # ---- pre-trade hook (Model B/C only; None for Model 0/A) -----------
         # Evaluated on TODAY's OPENING mark-to-market state -- yesterday's
         # shares priced at today's close, before interest/deposit/trade --
         # see the module-level comment above ModelBProfitHarvest for why.
         effective_leverage_cap_today = scenario.leverage_cap
+        target_leverage_today: float | None = None
+        target_dead_band = 0.0
         if scenario.pre_trade_fn is not None:
             state_pre = PortfolioState(day_index=i, cash=cash, positions=dict(shares),
-                                       margin_debt=margin_debt, gross=gross)
+                                       margin_debt=margin_debt, gross=gross,
+                                       maintenance_excess=opening_excess)
             decision = scenario.pre_trade_fn(state_pre, prior_gross)
-            pre_repay = max(0.0, min(decision.repay_amount, margin_debt))
+            desired_repay = decision.repay_amount
+            if decision.leverage_target is not None:
+                # Generalized leverage-target hook (G2A): clamp to
+                # [1.0, min(scenario cap, 1.8)] — the governed 1.8x cap is
+                # a hard structural bound no policy can exceed, and no
+                # target below unlevered (1.0) is meaningful.
+                target_leverage_today = min(
+                    max(decision.leverage_target, LEVERAGE_TARGET_HARD_MIN),
+                    scenario.leverage_cap, LEVERAGE_TARGET_HARD_MAX)
+                target_dead_band = max(0.0, decision.dead_band)
+                effective_leverage_cap_today = min(effective_leverage_cap_today,
+                                                   target_leverage_today)
+                ne_pre = gross - margin_debt
+                if ne_pre > 0 and gross / ne_pre > target_leverage_today + target_dead_band:
+                    # trim-funded exact de-lever formula (same derivation
+                    # as ModelCRiskReset's reset trim — see that comment)
+                    desired_repay = max(desired_repay,
+                                        gross - target_leverage_today * ne_pre)
+            pre_repay = max(0.0, min(desired_repay, margin_debt))
             if pre_repay > 0:
                 cash = _fund_repayment(cash, shares, closes, gross, pre_repay,
                                        lots=lots, sale_day=i, sale_date=d,
@@ -777,15 +1128,59 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
                 # a pre-trade hook can only ever TIGHTEN today's cap, never
                 # loosen it past the scenario's own.
                 effective_leverage_cap_today = min(decision.effective_leverage_cap,
-                                                   scenario.leverage_cap)
+                                                   effective_leverage_cap_today)
 
         # ---- daily interest accrual, capitalized into margin_debt --------
-        if margin_debt > 0 and scenario.interest_apr > 0:
-            taxable_debt = max(0.0, margin_debt - scenario.interest_free_amount)
-            interest = taxable_debt * (scenario.interest_apr / 365.0)
-            if interest > 0:
-                margin_debt += interest
-                events.append({"day": i, "kind": "interest_accrual", "amount": interest})
+        # G2A: when `daily_rates` is supplied it replaces the flat
+        # scenario.interest_apr for accrual (point-in-time step lookup,
+        # no-lookahead); the free tier applies identically either way.
+        interest_today = 0.0
+        if margin_debt > 0:
+            if sorted_rate_dates is not None:
+                apr_today = _rate_for_date(sorted_rate_dates, daily_rates, d)
+            else:
+                apr_today = scenario.interest_apr
+            if apr_today > 0:
+                taxable_debt = max(0.0, margin_debt - scenario.interest_free_amount)
+                interest = taxable_debt * (apr_today / 365.0)
+                if interest > 0:
+                    margin_debt += interest
+                    interest_today = interest
+                    events.append({"day": i, "kind": "interest_accrual", "amount": interest})
+
+        # ---- (G2A) explicit dividend cash + corporate-action credits ------
+        # Both are return components credited to cash exactly once, on the
+        # event date, for shares held at this point of the day (before
+        # today's deposit-driven buys — a share bought today is not a
+        # holder of record for today's event). Deliberately NOT added to
+        # `flows`: TWR must treat them as return, not as external flow.
+        dividend_today = 0.0
+        if dividend_events is not None:
+            for t, per_share in (dividend_events.get(d) or {}).items():
+                held = shares.get(t, 0.0)
+                if held > 0 and per_share > 0:
+                    amt = held * per_share
+                    cash += amt
+                    dividend_today += amt
+                    events.append({"day": i, "kind": "dividend", "ticker": t,
+                                  "amount": amt, "per_share": per_share})
+        ca_today = 0.0
+        if corporate_action_events is not None:
+            for ca in (corporate_action_events.get(d) or []):
+                held = shares.get(ca["ticker"], 0.0)
+                if held > 0:
+                    # A-17 valuation: ratio x distributed unit's value,
+                    # credited entirely as reinvestable cash — fractional
+                    # entitlements are inherently cash-in-lieu because the
+                    # whole entitlement is cash; no child position exists.
+                    amt = held * ca["ratio"] * ca["unit_value"]
+                    if amt > 0:
+                        cash += amt
+                        ca_today += amt
+                        events.append({"day": i, "kind": "corporate_action_credit",
+                                      "ticker": ca["ticker"], "amount": amt,
+                                      "ratio": ca["ratio"],
+                                      "unit_value": ca["unit_value"]})
 
         # ---- deposit + weighted-gap allocation ----------------------------
         todays_deposit = (deposit_schedule or {}).get(d, deposit_amount or 0.0)
@@ -795,40 +1190,45 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
             events.append({"day": i, "kind": "deposit", "amount": todays_deposit})
 
             net_equity = gross - margin_debt
-            margin_allowed = _leverage_capped_margin(
+            margin_allowed = 0.0 if draws_blocked else _leverage_capped_margin(
                 gross, margin_debt, cash, effective_leverage_cap_today, requested=float("inf"))
             buying_power = cash + margin_allowed
             book = net_equity + cash
-            w_sum = sum(weights.get(s, 0.0) for s in elig if s in closes)
-            if w_sum > 0 and buying_power >= min_lot:
-                targets = {s: book * weights.get(s, 0.0) / w_sum
-                          for s in elig if s in closes}
-                gaps = sorted(
-                    ((targets[s] - shares.get(s, 0.0) * closes[s], s) for s in targets),
-                    reverse=True)
-                remaining = buying_power
-                for gap, s in gaps:
-                    if gap < min_lot or remaining < min_lot:
-                        continue
-                    spend = min(gap, remaining)
-                    bought = spend / closes[s]
-                    shares[s] = shares.get(s, 0.0) + bought
-                    lots.setdefault(s, []).append(
-                        Lot(ticker=s, shares=bought, acquisition_day=i,
-                            acquisition_date=d, cost_basis_price=closes[s]))
-                    remaining -= spend
-                spent = buying_power - remaining
-                from_cash = min(cash, spent)
-                from_margin = max(0.0, spent - from_cash)
-                cash -= from_cash
-                if from_margin > 0:
-                    margin_debt += from_margin
-                    events.append({"day": i, "kind": "margin_draw", "amount": from_margin})
+            cash, margin_debt = _weighted_gap_allocate(
+                weights, elig, closes, shares, lots, book, buying_power,
+                cash, margin_debt, min_lot, i, d, events)
+
+        # ---- (G2A) leverage-target draw toward target ----------------------
+        # Runs only when a pre-trade hook commanded a leverage target and
+        # the post-allocation leverage is still below it by more than the
+        # dead band. Draws are blocked while the opening maintenance
+        # excess is negative, same as deposit-day draws. The allocation
+        # book here is the LEVERED target gross (target x opening net
+        # equity, single-pass, no iteration) — the weighted-gap targets
+        # must aim at the target gross exposure or the allocator would
+        # stop at unlevered book and no draw could ever occur. The margin
+        # clip at `target_leverage_today` (itself already clamped to
+        # [1.0, min(scenario cap, 1.8)]) structurally prevents any
+        # overshoot past the target or the governed cap.
+        if target_leverage_today is not None and not draws_blocked:
+            gross = sum(shares.get(s, 0.0) * closes.get(s, 0.0) for s in shares)
+            ne_now = gross - margin_debt
+            lev_now = (gross / ne_now) if ne_now > 0 else None
+            if lev_now is not None and lev_now + target_dead_band < target_leverage_today:
+                margin_allowed = _leverage_capped_margin(
+                    gross, margin_debt, cash, target_leverage_today, requested=float("inf"))
+                buying_power = cash + margin_allowed
+                if buying_power >= min_lot:
+                    levered_book = target_leverage_today * ne_now
+                    cash, margin_debt = _weighted_gap_allocate(
+                        weights, elig, closes, shares, lots, levered_book, buying_power,
+                        cash, margin_debt, min_lot, i, d, events)
 
         # ---- repayment policy ----------------------------------------------
         gross = sum(shares.get(s, 0.0) * closes.get(s, 0.0) for s in shares)
         state = PortfolioState(day_index=i, cash=cash, positions=dict(shares),
-                               margin_debt=margin_debt, gross=gross)
+                               margin_debt=margin_debt, gross=gross,
+                               maintenance_excess=opening_excess)
         repay = scenario.repayment_fn(state, prior_gross)
         repay = max(0.0, min(repay, margin_debt))
         if repay > 0:
@@ -842,9 +1242,44 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
         # ---- mark to market --------------------------------------------------
         gross = sum(shares.get(s, 0.0) * closes.get(s, 0.0) for s in shares)
         net_equity = gross - margin_debt
+
+        # ---- (G2A) end-of-day maintenance evaluation + liquidation trigger --
+        eod_excess: float | None = None
+        if scenario.maintenance_requirement_fn is not None:
+            eod_excess = net_equity - scenario.maintenance_requirement_fn(
+                _position_values(shares, closes))
+            if (eod_excess < 0 and scenario.liquidation is not None
+                    and pending_liquidation is None):
+                shortfall = -eod_excess
+                cure_target = shortfall * scenario.liquidation.cure_multiplier
+                if scenario.liquidation.same_day:
+                    # explicit no-notice same-day STRESS mode only
+                    cash, margin_debt = _execute_forced_liquidation(
+                        shares, closes, cash, margin_debt, cure_target=cure_target,
+                        sequencing=scenario.liquidation.sequencing, lots=lots,
+                        day_index=i, day_date=d, tax_lot_events=tax_lot_events,
+                        events=events, liquidation_events=liquidation_events,
+                        trigger_day=i, shortfall=shortfall, same_day=True)
+                    gross = sum(shares.get(s, 0.0) * closes.get(s, 0.0) for s in shares)
+                    net_equity = gross - margin_debt
+                    eod_excess = net_equity - scenario.maintenance_requirement_fn(
+                        _position_values(shares, closes))
+                else:
+                    pending_liquidation = {"trigger_day": i, "shortfall": shortfall,
+                                           "cure_target": cure_target}
+                    events.append({"day": i, "kind": "maintenance_shortfall",
+                                  "shortfall": shortfall, "cure_target": cure_target,
+                                  "executes": "next_session"})
+
         book_values.append(net_equity + cash)
         gross_series.append(gross)
         leverage_series.append((gross / net_equity) if net_equity > 0 else None)
+        debt_series.append(margin_debt)
+        cash_series.append(cash)
+        interest_series.append(interest_today)
+        maintenance_excess_series.append(eod_excess)
+        dividend_credit_series.append(dividend_today)
+        corporate_action_credit_series.append(ca_today)
         for t in tracked_values:
             tracked_values[t].append(shares.get(t, 0.0) * closes.get(t, 0.0))
         prior_gross = gross
@@ -863,6 +1298,13 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
         deposit_total=sum(flows.values()),
         tracked_values=tracked_values,
         tax_lot_events=tax_lot_events,
+        debt_series=debt_series,
+        cash_series=cash_series,
+        interest_series=interest_series,
+        maintenance_excess_series=maintenance_excess_series,
+        dividend_credit_series=dividend_credit_series,
+        corporate_action_credit_series=corporate_action_credit_series,
+        liquidation_events=liquidation_events,
     )
 
 

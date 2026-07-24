@@ -5,7 +5,7 @@
 # assumption G1 data work touched. Sensitivity requirements reference the
 # pre-registered sensitivity lines (§9.3) — no simulation was run at G1.
 
-ledger_version: "G1-2026-07-24-r2"
+ledger_version: "G2A-2026-07-24-r1"
 authority: governance/decisions/MARGIN-0005-margin-target-research-charter.md
 num_0001: governance/decisions/NUM-0001-numeric-parameter-provenance-standards.md
 
@@ -186,3 +186,50 @@ assumptions:
     affects: "maintenance-proxy calibration corpus only; no G1 dataset depends on reconciling them"
     sensitivity: "n/a"
     unresolved: "reconciliation deferred pending evidence (not a G1 blocker)"
+  - id: A-23
+    value: >
+      G2A PRE-RUN PIN (recorded and staged BEFORE the first simulate() call of the
+      G2A engine round, per the G1 independent review's binding condition):
+      borrowing-spread calibration method = DATED, POINT-IN-TIME, PIECEWISE-CONSTANT
+      spread schedule over daily official DFF — the exact calibration option
+      G1_DATA_VALIDATION_REPORT.md §7 documented as the G2 pre-run decision and
+      recommended. Model form unchanged from A-05/A-18: rate(t) =
+      max(floor, DFF(t) + spread(t)). Spread rule: on and after each source-pinned
+      Robinhood observation date, spread(t) = the implied spread of the most recent
+      observation with date <= t (step function; NO interpolation between
+      observations — interpolating would consume a future observation). For dates
+      BEFORE the first observation (2020-12-21), spread(t) = the earliest observed
+      spread (+2.41pp) as an explicitly ESTIMATED backward extension — this
+      pre-first-observation extension is RETROSPECTIVE ESTIMATION, not point-in-time
+      broker history, and is so labeled wherever it appears. The frozen observation
+      set is exactly the four G1-recorded observations (below); observations are
+      never added, removed, averaged, optimized, or selected after any simulation
+      result exists. The issuer target-upper construction remains a validation
+      cross-check only (never the base index). The pre-registered flat-5%
+      replication case and the pre-registered spread-stress cases (+300bps,
+      2x spread, +400bps/6mo path) are preserved unchanged. The floor parameter
+      remains UNSET at G2A (no study-run rate series is constructed at G2A); any
+      floor value used later must be fixed and NUM-0001-classified before any
+      Study A/B/C run constructs the production research series.
+    frozen_observation_set:
+      canonical_json_sha256: "8f32cdcd80b96b4d4bb3ec667df9d0deee70e1e7155f5efc4e344464df0f0480"
+      canonicalization: "json.dumps(observations, sort_keys=True, separators=(',',':')) over the list below, UTF-8"
+      observations:
+        - {date: "2020-12-21", source_id: "RH-2020-12", robinhood_gold_rate_pct: 2.50, dff_pct: 0.09, implied_spread_pp: 2.41}
+        - {date: "2022-11-03", source_id: "RH-2022-11", robinhood_gold_rate_pct: 6.50, dff_pct: 3.83, implied_spread_pp: 2.67}
+        - {date: "2025-12-15", source_id: "RH-2025-12-PHASE7A", robinhood_gold_rate_pct: 5.75, dff_pct: 3.64, implied_spread_pp: 2.11}
+        - {date: "2026-07-22", source_id: "RH-2026-07", robinhood_gold_rate_pct: 5.00, dff_pct: 3.63, implied_spread_pp: 1.37}
+      observation_sources: "data/rates/robinhood_margin_rate_evidence.yaml (source-pinned observations + corrected consistency_note); 2026-07-22 rate additionally account-verified (EV-MARGIN-02)"
+      dff_leg_provenance: >
+        2020-12-21 and 2022-11-03 DFF legs re-verified at G2A against the committed
+        dev-bounded data/rates/dff.json (sha256 ddb9255a94e1f6c1bc89be78aa99513029730fd3561c9263fe69bae32e8956d5,
+        from source CSV sha256 78f1994d99606e5a36c7297dae71be82be0ac4339177e3a4da552755b6404a2c).
+        2025-12-15 and 2026-07-22 DFF legs are post-development-boundary and are
+        quoted verbatim from the merged G1 record (G1_DATA_VALIDATION_REPORT.md §7
+        reconstruction table) — no post-boundary series was read or stored at G2A.
+    classification: Known (pinned method) over Estimated inputs (spread series; backward extension explicitly Estimated)
+    num_0001_class: empirically_calibrated_estimate
+    source: "G1_DATA_VALIDATION_REPORT.md §7; data/rates/robinhood_margin_rate_evidence.yaml; data/rates/dff.json"
+    affects: "financing cost in every levered arm once study runs begin; engine variable-rate input (G2A capability) consumes any such series generically"
+    sensitivity: "pre-registered stress rates (+300bps, 2x spread, +400bps/6mo); flat-5% replication case"
+    unresolved: false
