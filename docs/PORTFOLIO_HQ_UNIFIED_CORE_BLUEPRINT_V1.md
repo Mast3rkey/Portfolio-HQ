@@ -8,6 +8,22 @@ change, no research execution, no Intelligence expansion, and no trade or order.
 does not itself become effective; see OPS-0002 for the governance action that
 scopes what this planning package authorizes and what it does not._
 
+_**2026-07-24 architecture correction:** the original draft of this document
+incorrectly cast Company/Theme Intelligence as permanently display-only —
+annotation and explanation beside the allocator's output, with no path to
+influence targets, tiers, clusters, or policy at all. That was a material error,
+corrected in this revision throughout §§3–7, §10, and §12: Intelligence is the
+intended primary analytical and organizational basis for **recommending** how
+target allocation is set — retain, promote, or demote a tier; raise, lower, or
+retain a target; introduce, remove, or redefine a cluster; adjust capital
+priority — but no such recommendation becomes effective merely because it
+exists. It reaches the allocator only after principal review, any required
+governance approval, and a separate bounded update to `targets.yaml` or another
+governing source. The allocator itself still never imports or interprets raw
+Intelligence at runtime. This correction changes planning architecture only —
+see OPS-0002's own changelog note for the corresponding governance-record
+correction._
+
 ---
 
 ## 0. Provenance and a note on source material
@@ -39,8 +55,8 @@ next-best alternatives, and what uncertainty could change that conclusion?**
 This is a planning artifact. It:
 
 - proposes the WS-0002 planning baseline (definitions, boundaries, milestone);
-- does **not** design, build, or authorize any code, allocator change, research
-  execution, or Intelligence expansion;
+- does **not** design, build, or authorize any code, allocator change, target/
+  tier/cluster/policy change, research execution, or Intelligence expansion;
 - is scoped by, and subordinate to, OPS-0002, which is the actual governance
   action authorizing anything about this planning package's review and audit.
 
@@ -77,53 +93,173 @@ established.
 ## 3. Three-layer architecture
 
 The smallest coherent architecture Portfolio-HQ needs is three layers, strictly
-separated by what may cross between them.
+separated by what may cross between them **at runtime** — which is a narrower
+boundary than "Intelligence has no influence on policy at all." Intelligence is
+intended to be the primary analytical and organizational basis for recommending
+*how governed policy itself should be set*; it is not intended to remain
+permanently confined to annotation beside an unchangeable allocator.
 
 ### Layer 1 — Authoritative deterministic allocation core
 
-Holdings (`holdings.yaml`), targets and tiers (`targets.yaml`), live market data
-(`alpaca_client.py`, read-only), the allocator (`allocate.py`), and the hard
-margin/concentration constraints (`margin_state.py`, the 1.8x leverage cap, the
-30% buffer floor, the correlated-cluster caps, the T1/T2 concentration ceiling).
+Current holdings (`holdings.yaml`), accepted targets and tiers (`targets.yaml`),
+accepted concentration and margin policy (correlated-cluster caps, the T1/T2
+concentration ceiling, the 1.8x leverage cap, the 30% buffer floor —
+`margin_state.py`), live market data (`alpaca_client.py`, read-only), and the
+allocator (`allocate.py`). At runtime, this layer consumes **only accepted,
+governed policy and verified account/market state** — never raw Intelligence.
 Output is a reproducible numeric recommendation: buys, trims, and blocks, computed
-deterministically from current state and governed policy. This layer is
+deterministically from current state and currently accepted policy. This layer is
 **recommendation-only** — no order-placement path exists or is to be reintroduced
-(Constitution §1).
+(Constitution §1). `allocate.py` must not import, read, or interpret any file
+under `intelligence/` (or any future portfolio-level Intelligence output) to
+recalculate gaps, buys, trims, weights, tiers, targets, or margin — that
+prohibition is unchanged by this correction and is exactly what keeps the
+allocator deterministic.
 
-### Layer 2 — Advisory decision-context layer
+### Layer 2 — Intelligence, portfolio organization, and policy-recommendation layer
 
 Company and Theme Intelligence (`intelligence/companies/`, `intelligence/themes/`),
-research evidence, freshness state, uncertainty, thesis-break conditions, overlap
-and opportunity-cost context, and evidence conflicts/gaps. Verified current
-coverage: 7 company records (COST, GEV, ISRG, NVDA, TMO, TSM, XOM) and 2 theme
-records (`ai_infrastructure`, `life_sciences_tools_medtech`).
+research evidence, freshness state, uncertainty, thesis-break conditions, overlap,
+correlation, and opportunity-cost context, and evidence conflicts/gaps. Verified
+current coverage: 7 company records (COST, GEV, ISRG, NVDA, TMO, TSM, XOM) and 2
+theme records (`ai_infrastructure`, `life_sciences_tools_medtech`).
 
-This layer **may only** annotate, explain, compare, or warn. It **may not** change
-targets, tiers, weights, gaps, buys, trims, margin, or any allocator output — this
-is a required system boundary (PI-0001 and successors), not an oversight to be
-fixed by tighter coupling.
+This layer is responsible for organizing and evaluating, per holding and per
+theme:
 
-### Layer 3 — Human decision and manual-execution layer
+- each holding's economic function and portfolio role;
+- company quality, moat, durability, and financial strength;
+- thesis, evidence, uncertainty, risks, and thesis-break conditions;
+- current business quality versus present capital priority;
+- comparison with next-best capital uses;
+- theme, sector, industry, customer, supplier, geographic, regulatory,
+  commodity, factor, and macro exposure;
+- structural and economic overlap among holdings;
+- measured return correlation where evidence and methodology support it (see
+  "Correlation and organizational understanding" below);
+- concentration and hidden cluster risk;
+- evidence freshness and conflicts;
+- implications for tiers, per-holding targets, target weights, cluster
+  membership, concentration policy, and portfolio organization generally.
 
-The principal reviews the governed Layer 1 recommendation together with Layer 2's
-advisory context, may decline it or use less capital than recommended, and
-executes manually in Robinhood. Fills and account state (share counts, margin
-debt/buffer) are synced back into `holdings.yaml` afterward. No layer above this
-one ever places an order.
+From this evaluation, Layer 2 **may produce explicit governed recommendations**,
+for example: retain, promote, or demote a holding's tier; raise, lower, or retain
+a per-holding target; introduce, remove, or redefine a concentration cluster;
+recommend reducing exposure where several individually attractive holdings create
+excessive combined dependence; increase or decrease capital priority based on
+portfolio role and opportunity cost; or retain a high-quality company while
+recommending a lower present target because its opportunity cost or overlap has
+changed. Every such recommendation must carry evidence, reasoning, uncertainty,
+alternatives considered, expected portfolio benefit, and thesis-break conditions
+where relevant — the same evidentiary bar the PI-series Company Intelligence
+reviews (PI-0012, PI-0016 forward) already hold themselves to.
 
-**Explicitly not authorized by this blueprint:** a scoring engine, a computed
-conviction number, a theme-ranking mechanism, an opaque aggregation of Layer 2
-content into a number, or any coupling that lets Layer 2 or Layer 3 output feed
-back into Layer 1's computation. Every prior rejection of a standing
-analysis/scoring/opportunity-map layer in the CLAUDE.md Decisions Log and the
-Constitution (§§2, 4) applies here without exception.
+**A recommendation under this layer remains advisory until accepted through
+governance** (see "The essential distinction" and "Governed policy-development
+flow" below). Nothing in this layer computes a numeric score, a conviction
+value, or a ranking that any code path consumes automatically.
 
-## 4. Intelligence value — assessed, not dismissed
+### Layer 3 — Principal decision, policy adoption, and manual execution
 
-Company/Theme Intelligence carries zero allocator coupling by design (Layer 2
-above) — that separation is a required boundary, not evidence the layer is
-valueless. This blueprint explicitly rejects treating "does it move allocator
-math" as the test of Intelligence's worth. The correct assessment axes are:
+1. The principal reviews Layer 2's recommendation and evidence.
+2. The principal accepts, rejects, narrows, or defers it.
+3. The principal authorizes any governance decision the change requires (a new
+   or amended entry under `governance/decisions/`, following existing precedent
+   such as TGT-0001/TGT-0002 for target/tier changes).
+4. The principal authorizes a bounded policy/configuration PR implementing
+   exactly the accepted change.
+5. Once merged, the deterministic allocator applies the newly accepted policy —
+   an ordinary `targets.yaml` (or equivalent governing-source) input, computed
+   through the same mechanism as every existing target.
+6. The principal manually executes any resulting recommendation in Robinhood.
+7. Fills and account state (share counts, margin debt/buffer) are synced back
+   into `holdings.yaml` afterward.
+
+No layer above Layer 1 ever places an order, and no step above short-circuits
+step 3/4's governance and implementation requirement.
+
+### The essential distinction (runtime control vs. policy recommendation)
+
+- Raw Intelligence must not be imported by `allocate.py` or used at runtime to
+  recalculate gaps, buys, trims, weights, tiers, targets, or margin.
+- Intelligence may, and is intended to, recommend changes to the policy inputs
+  the allocator later uses.
+- No Intelligence recommendation becomes effective merely because it exists.
+- A principal decision, and any required governance filing, must explicitly
+  accept it before it has any effect.
+- The accepted change is then implemented through a separate, bounded update to
+  `targets.yaml` or the applicable governing source — never by the Intelligence
+  record or its authoring process directly.
+- The allocator remains deterministic because it consumes **accepted policy**,
+  never raw advisory conclusions, opaque scores, or unaccepted recommendations.
+
+### Governed policy-development flow
+
+```
+Evidence
+  → Intelligence synthesis (Company/Theme records)
+  → portfolio-level organization and comparison
+  → target/tier/cluster/policy recommendation
+  → principal review and required governance approval
+  → governed policy update (targets.yaml or another governing source)
+  → deterministic allocation (allocate.py applies accepted policy)
+  → manual execution (Robinhood)
+  → state reconciliation (holdings.yaml/margin sync)
+```
+
+This is a **governed policy-development loop** — periodic, human-gated, and
+recorded — never a runtime Intelligence-to-allocator coupling. Nothing in this
+flow lets Layer 2 output reach Layer 1 without passing through principal review,
+governance acceptance, and a bounded implementation PR.
+
+### Correlation and organizational understanding
+
+Two distinct kinds of evidence inform Layer 2's cluster/overlap/target
+recommendations, and this blueprint deliberately keeps them separate rather than
+collapsing them into one opaque score:
+
+**Economic or structural overlap** — shared exposure through demand drivers,
+technology cycles, customers, suppliers, financing conditions, regulation,
+geography, commodities, macroeconomic dependencies, or common portfolio function.
+This is a qualitative, evidence-based judgment (the same kind already made for
+the `semis`, `power_infra`, and `oil` clusters' mechanism tests in the CLAUDE.md
+Decisions Log).
+
+**Measured return correlation** — an observed security-return relationship over
+a defined time window, a documented data source, a stated sampling frequency, an
+explicit methodology, and known regime/sample limitations (the same kind of
+evidence the semis/power_infra/oil/T1-AI-infra correlation scans already produced
+and recorded).
+
+Neither substitutes for the other, and neither alone is dispositive:
+
+- low recent price correlation does not prove economic independence;
+- high price correlation does not by itself prove identical economic roles;
+- both forms of evidence may inform a governed cluster or target recommendation
+  produced by Layer 2;
+- **neither automatically changes policy** — both still route through "The
+  essential distinction" and the governed policy-development flow above.
+
+### What remains explicitly prohibited
+
+A scoring engine, a computed conviction number, a theme-ranking mechanism, an
+opaque aggregation of Layer 2 content into a number, or automatic/silent
+adoption of any Layer 2 recommendation are all still explicitly **not**
+authorized by this blueprint. What has changed from the original draft is
+narrower and precise: Layer 2 output may, through principal review and
+governance acceptance, become a new Layer 1 policy input (a target, tier,
+cluster definition, or capital-priority weighting) — it may never become a
+runtime input that `allocate.py` reads, interprets, or is silently adjusted by.
+Every prior rejection of a standing analysis/scoring/opportunity-map layer in
+the CLAUDE.md Decisions Log and the Constitution (§§2, 4) applies here
+without exception.
+
+## 4. Intelligence value and policy-recommendation role
+
+Company/Theme Intelligence is the intended primary analytical and organizational
+basis for recommending how target allocation is set across holdings — not merely
+a passive annotation layer. Its value is assessed, and its further expansion
+prioritized, on:
 
 - contribution to thesis understanding and risk/thesis-break recognition;
 - evidence freshness (the freshness/staleness reporting already built under
@@ -131,32 +267,50 @@ math" as the test of Intelligence's worth. The correct assessment axes are:
 - comparative business quality across capital-priority comparators (the method
   PI-0016 already generalizes);
 - opportunity-cost judgment support (Layer 2 presenting the next-best eligible
-  uses of capital and the business-quality/risk differences between them); and
+  uses of capital and the business-quality/risk differences between them);
+- **quality and actionability of the policy recommendations it produces** — does
+  a tier/target/cluster recommendation carry the evidence, reasoning,
+  alternatives, and thesis-break conditions §3 requires; and
 - demonstrated improvement in the principal's actual decision quality over time.
 
-Further Intelligence expansion (new companies, new themes, validator hardening)
-may still be paused, deferred, or prioritized selectively — but only on evidence,
-expected decision value, workload, and opportunity cost, never on the false
-premise that a layer without allocator authority has no value. No new Intelligence
-expansion is proposed, scoped, or authorized by this blueprint.
+Further Intelligence expansion (new companies, new themes, validator hardening,
+or a future portfolio-level Intelligence capability that aggregates across
+existing company/theme records) may still be paused, deferred, or prioritized
+selectively — but only on evidence, expected decision value, workload, and
+opportunity cost. **No portfolio-level Intelligence engine, computed conviction
+system, or opaque scoring mechanism is designed, scoped, or authorized by this
+blueprint** — only the recommendation *role* described in §3 is defined here;
+building any such capability is its own future, separately authorized
+implementation.
 
 ## 5. Opportunity cost
 
-- **Largest-dollar-gap-first** (`allocate.py`'s `plan()`) is the governed,
-  deterministic, policy-driven mechanical capital-priority rule inside the
-  allocation core. It remains exactly that: deterministic and policy-driven,
-  gated by trend/earnings/caps as already documented in CLAUDE.md.
-- Layer 2 may present the next-best eligible uses of capital, business-quality
-  differences, risks, uncertainties, and relevant research **as context
-  alongside** the Layer 1 recommendation — never as a silent recalculation or
-  override of it. A comparator table in a Company Intelligence review (e.g. the
-  PI-0016/PI-0017/PI-0019/PI-0021 methodology's 2–5-comparator capital-priority
-  comparison) is advisory narrative, not a second allocator.
-- No advisory-layer content may be substituted for, or blended into, the
-  Layer 1 numeric recommendation. This is the same rule as §3's layer boundary,
-  restated here because opportunity cost is the specific place a well-meaning
-  design could quietly reintroduce coupling (e.g., "just nudge the ranking by
-  conviction") — that path is explicitly closed.
+Two distinct questions must stay visibly separate:
+
+1. **Runtime allocation under currently accepted policy** — largest-dollar-gap-
+   first (`allocate.py`'s `plan()`) is the governed, deterministic, policy-driven
+   mechanical capital-priority rule inside the allocation core, applied to
+   whatever targets/tiers/clusters are currently accepted. It remains exactly
+   that: deterministic and policy-driven, gated by trend/earnings/caps as already
+   documented in CLAUDE.md. Layer 2 may not secretly nudge or override any given
+   run of this computation.
+2. **Periodic governed review of whether that policy should change** — Layer 2
+   may evaluate whether the currently accepted targets/tiers/clusters still
+   represent the best portfolio policy, and may recommend a different target,
+   tier, or cluster treatment based on business quality, portfolio role,
+   overlap, risk, and next-best capital use (§3's Layer 2 responsibilities and
+   recommendation types). Such a recommendation is presented **as a
+   recommendation**, with its own evidence and reasoning, alongside — never
+   inside — any current allocator run. Once, and only once, the principal
+   accepts it and it is implemented as a bounded update to `targets.yaml` or
+   another governing source (§3's Layer 3 steps 3–5), it becomes a normal
+   deterministic allocator input for every subsequent run.
+
+A comparator table in a Company Intelligence review (e.g. the
+PI-0016/PI-0017/PI-0019/PI-0021 methodology's 2–5-comparator capital-priority
+comparison) is advisory narrative supporting question 2 above — it is never a
+second allocator, and it never substitutes for, or is blended into, question 1's
+Layer 1 numeric recommendation for the run currently being presented.
 
 ## 6. Terminal acceptance milestone — the end-to-end allocation check
 
@@ -174,18 +328,29 @@ qualifying run must draw on, and make explicit:
   floor, and `margin_state.py`'s risk-state classification, unchanged authority);
 - concentration and overlap controls (correlated-cluster caps, the T1/T2
   concentration ceiling);
-- the Layer 1 allocator recommendation;
-- relevant Layer 2 advisory Intelligence/research context, presented as context,
-  never as an override;
+- **the Layer 1 allocator recommendation under currently accepted policy** —
+  presented as the executable action;
+- relevant Layer 2 Intelligence/portfolio-organization context and next-best
+  governed alternatives, presented alongside the recommendation, never blended
+  into it;
+- any separately identified candidate policy change Layer 2 has surfaced (a
+  tier/target/cluster recommendation not yet accepted) — presented explicitly
+  as **advisory and requiring its own separate governance approval**, never as
+  part of the current run's executable output;
 - explicit uncertainty and degraded-data handling (e.g. `earnings:unavailable`,
   stale margin sync, illiquid/staked crypto);
 - reproducible logs (the same run, same inputs, same output);
 - clear abstention when inputs are insufficient, rather than a guess presented
   as confident output;
 - concise, user-facing output (bold headers, tables, zero preamble, per
-  CLAUDE.md's Formatting section); and
+  CLAUDE.md's Formatting section), **visibly distinguishing (a) actions valid
+  under current accepted policy from (b) advisory policy-review recommendations
+  that require separate approval**; and
 - manual Robinhood execution only — this milestone does not authorize, imply, or
   move toward automated order placement.
+
+No unapproved Intelligence recommendation may ever be presented as an executable
+allocation instruction under this milestone.
 
 This blueprint states the target; it does not design its presentation, schedule
 its implementation, or authorize building it. That remains WS-0003's own future,
@@ -200,7 +365,8 @@ implementation work, not just this package:
   validated in one pass — avoid unnecessary prompt/session/PR fragmentation.
 - Preserve separate authorization, independent review, and post-merge validation
   exactly where they materially reduce risk (as this package itself does for
-  WS-0002) — not as ceremony applied uniformly regardless of stakes.
+  WS-0002, and as §3's Layer 3 does for every future accepted policy change) —
+  not as ceremony applied uniformly regardless of stakes.
 - Every material phase of work must have a credible, statable benefit to
   sustainable returns, capital protection, decision quality, reliability, or
   usability.
@@ -252,9 +418,21 @@ Standing Queue wording.
 
 ## 10. Explicit exclusions from this planning package
 
-None of the following is created, proposed, or implied by this blueprint or by
-OPS-0002:
+None of the following is created, proposed, authorized, or implied by this
+blueprint or by OPS-0002:
 
+- any target, tier, cluster, cap, holding, margin, allocator, Intelligence
+  record, or production-code change;
+- implementation of a portfolio-level Intelligence engine (an aggregation
+  capability spanning multiple company/theme records into a single view or
+  score);
+- computed conviction of any kind;
+- opaque scoring of any kind;
+- automatic target mutation;
+- automatic policy adoption (every policy change still requires the full §3
+  Layer 3 sequence: principal review, governance approval, bounded PR);
+- research execution;
+- trades or orders;
 - a separate branch-cleanup workstream;
 - a standalone Fable workstream;
 - a separate end-to-end-allocation workstream (the milestone in §6 is tracked
@@ -277,7 +455,13 @@ OPS-0002:
 
 Restated plainly, in case any section above is read in isolation: this document
 authorizes no implementation, no allocator/`targets.yaml`/`holdings.yaml`/
-`margin_state.py` change, no research execution, no Intelligence expansion, no
-trade, and no order. Its only effect, subject to OPS-0002 and this exact PR
-remaining in draft and unmerged until the independent audit in §8(1) completes,
-is to serve as the proposed WS-0002 planning baseline.
+`margin_state.py` change, no target/tier/cluster/capital-priority policy change,
+no portfolio-level Intelligence engine, no computed conviction or opaque
+scoring, no automatic target mutation or automatic policy adoption, no research
+execution, no Intelligence-record expansion, no trade, and no order. Its only
+effect, subject to OPS-0002 and this exact PR remaining in draft and unmerged
+until the independent audit in §8(1) completes, is to serve as the proposed
+WS-0002 planning baseline — including the corrected architecture in §3–§7 under
+which Intelligence is the intended recommending basis for governed policy
+changes, reaching the allocator only through principal review, governance
+acceptance, and a separate bounded implementation.
