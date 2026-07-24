@@ -1,0 +1,261 @@
+# operations/WORKSTREAMS.yaml — Portfolio-HQ workstream register (OPS-0001).
+#
+# This is an OPERATIONAL COORDINATION register, not an authority source. It
+# preserves active priorities, planning intent, dependencies, blockers,
+# verified milestones, and exact next actions across Claude Code sessions,
+# ChatGPT conversations, branches, PRs, and research programs. It does not
+# originate investment policy, governance authority, research authority,
+# approval, or implementation authority, and cannot override the Constitution,
+# an accepted governance decision, a frozen protocol, targets.yaml,
+# holdings.yaml, production code/tests, or live GitHub state.
+#
+# Live repository and GitHub facts always supersede any cached field below —
+# verify against the actual repo/PR/branch state before acting on anything
+# here. Owning files (the governance decision, the protocol, the PR itself)
+# control when a conflict arises; this register only points to them.
+#
+# See governance/decisions/OPS-0001-portfolio-hq-workstream-register.md for
+# the full authority boundary, status/authorization rules, and scope.
+
+workstreams:
+  - id: WS-0001
+    title: MARGIN-0005 margin/target research program
+    objective: >
+      Execute the MARGIN-0005 research charter's bounded, pre-registered
+      program (Studies A/B/C/D per PROTOCOL_V2.md) into whether a
+      rules-based, evidence-gated conditional margin-deployment or
+      target-sizing rule outperforms the current fixed posture — ending
+      honestly, with the fixed posture unchanged, at any pre-declared
+      stopping gate if the evidence does not support a change.
+    governing_authority:
+      - GOV-0003
+      - MARGIN-0005
+      - research/margin_target_study/PROTOCOL_V2.md (pinned SHA-256, charter §3)
+      - research/margin_target_study/pre_registration.yaml (pinned SHA-256, charter §3)
+    status: in_progress
+    priority: primary
+    dependencies: []
+    authorized_scope: >
+      Exactly MARGIN-0005 §4's approved-file table, executed only through
+      ≤3 individually-reviewed S2 implementation PRs (2 of 3 used: G2A,
+      G2B), strictly within the 300-run trial ceiling. No simulation before
+      the G1 data gate passed (confirmed merged) and none has run since —
+      trial_ledger.jsonl and candidate_freeze.yaml both confirmed absent as
+      of this register's last_verified_main_sha.
+    prohibited_scope: >
+      No modification of holdings.yaml, targets.yaml, allocate.py,
+      margin_state.py, Intelligence records, CLAUDE.md doctrine text, or
+      the Constitution by research code or by virtue of any result; no
+      live signal, opportunity map, price target, opaque score, or
+      precomputed recommendation; no order; no re-running of a closed
+      Decisions-Log question as a variant; no result changes any
+      production policy, parameter, target, tier, cap, or floor without
+      its own separate future governance decision (G8).
+    milestones:
+      - gate: G0
+        description: Charter (MARGIN-0005) + pinned PROTOCOL_V2.md + pre_registration.yaml filed and merged; hashes verified from committed blobs.
+        pr: 137
+        status: merged
+        date: "2026-07-24"
+      - gate: G1
+        description: >
+          Data-adequacy gate passed — official DFF ingested/validated,
+          dividend reconciliation (T-D3) PASS 63/63 tickers + both Track 3
+          books, crypto outcome (b) accepted (crypto sizing declared
+          outside Study B's evidentiary scope, B-4L lapsed), account/Gold
+          evidence recorded, data_manifest.yaml complete. G1_DATA_VALIDATION_REPORT.md
+          itself records that "T-D1–T-D5 engine proofs remain G2 work and
+          are not claimed" at this gate.
+        pr: 138
+        status: merged
+        date: "2026-07-24"
+      - gate: G2A
+        description: >
+          First of ≤3 authorized S2 PRs — additive margin_simulation.py
+          engine extensions (rate series, dividend/corporate-action cash,
+          maintenance-excess proxy, forced liquidation, leverage-target
+          hook) plus 127 new engine tests. Legacy Phase 3 replication
+          anchors reproduce exactly. Independently reviewed twice
+          (original + 2 remediation rounds), both PASS.
+        pr: 139
+        status: merged
+        date: "2026-07-24"
+      - gate: G2B
+        description: >
+          Second of ≤3 authorized S2 PRs — repayment_lib.py (R1–R9, R-B
+          repayment-policy families), 93 new tests, nothing wired into
+          simulate(). Independent review disposition — PASS WITH
+          NON-BLOCKING OBSERVATIONS — flagged a pre-S3 R2 integration
+          constraint (see evidence_refs and next_action below).
+        pr: 140
+        status: merged
+        date: "2026-07-24"
+    evidence_refs:
+      - research/margin_target_study/PROTOCOL_V2.md
+      - research/margin_target_study/pre_registration.yaml
+      - research/margin_target_study/G1_DATA_VALIDATION_REPORT.md
+      - research/margin_target_study/assumptions_ledger.yaml
+      - research/margin_target_study/data_manifest.yaml
+      - margin_simulation.py
+      - repayment_lib.py
+      - test_margin_simulation.py
+      - test_repayment_lib.py
+      - >
+        PR #140 independent-review disposition, "Future S3 integration
+        constraint — R2": r2_dividends_first must not be wired into
+        simulate()'s pre-trade hook using a same-day dividend amount
+        before that dividend is actually credited to cash — under
+        insufficient idle cash that ordering could fund a repayment by
+        selling shares before the dividend lands. This is recorded as a
+        pre-S3 integration constraint to resolve before any S3 wiring or
+        registered Study A use of R2 — it is not a production defect (R2
+        is not wired into anything yet) and it does not, on its own,
+        currently block the G2 gate.
+    next_action: >
+      Perform a read-only final S2/G2 scope determination that reconciles
+      the charter §4 approved-file table, the remaining unimplemented
+      libraries and tests (overlay_lib.py, maintenance_lib.py,
+      dividend_ledger.py, target_variants.py, validation_lib.py, and their
+      companion tests), the protocol's literal G2 gate text (T-1 anchors,
+      T-D1–T-D5, T-U1/T-U2), the ≤3-PR S2 ceiling (2 of 3 already used),
+      and the pre-S3 R2 integration constraint above; then seek explicit
+      principal authorization for the smallest coherent final S2 PR. This
+      workstream-register implementation does not authorize or begin that
+      PR.
+    completion_criteria: >
+      Governed by the charter's own stopping conditions (§10) and §12/§13:
+      the program stops — reporting what it has, preserving the fixed
+      1.8x cap and 30% buffer floor unchanged, with nothing adopted — on
+      any of: honest null at G3/G4; trial-ceiling exhaustion without a
+      charter amendment; unresolved G1 data-gate failure; engine-integrity
+      failure; a principal stop order at any time; or a discovered
+      material conflict with a higher-authority source. Per protocol
+      §18/§19 the program can end honestly at G3, G4, G5, or G7 with
+      nothing altered — G5 is not the only valid completion point. G8
+      (adoption via its own separate future governance decision) is
+      required only if a rule is ever proposed for production; it is not
+      a required completion condition for the research charter itself.
+    blocker: null
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: b4951515b222d56114769030354504558726c2ec
+    last_verified_date: "2026-07-24"
+    authorized_by: GOV-0003; MARGIN-0005 (accepted governance decisions)
+    supersedes: null
+    superseded_by: null
+
+  - id: WS-0002
+    title: Unified Portfolio-HQ core architecture and optimization audit
+    objective: >
+      Determine how allocation, holdings, targets, margin, research,
+      Intelligence, backtests, risk, evidence, governance, and opportunity
+      cost should combine into the most meaningful conclusion for
+      sustainable portfolio performance. No architecture or implementation
+      change is authorized by recording this intent.
+    governing_authority:
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
+    status: recommended
+    priority: secondary
+    dependencies:
+      - WS-0001
+    authorized_scope: "none — durable planning intent only"
+    prohibited_scope: >
+      Any architecture design, allocator/targets/holdings/margin/
+      Intelligence change, or implementation work; this entry authorizes
+      recording the intent only.
+    milestones: []
+    evidence_refs: []
+    next_action: >
+      None authorized. A future, separately filed decision must scope and
+      authorize the audit itself before any work begins.
+    completion_criteria: >
+      Not applicable — no execution is authorized under this workstream.
+      Would be defined by whatever future decision authorizes the audit.
+    blocker: >
+      Sequencing preference, not a hard block: recommended that WS-0001
+      first reach an appropriate stable stopping point (G3, G4, G5, or
+      G7, or an honest null), unless the principal explicitly
+      reprioritizes this workstream sooner.
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: b4951515b222d56114769030354504558726c2ec
+    last_verified_date: "2026-07-24"
+    authorized_by: null
+    supersedes: null
+    superseded_by: null
+
+  - id: WS-0003
+    title: Daily allocation-check user experience
+    objective: >
+      Preserve durable, high-level requirements for a daily
+      allocation-check experience — concise, user-friendly, action-first,
+      meaningful, easy to understand, surfacing triggers and funding
+      scenarios only where material. Detailed presentation design remains
+      deferred until WS-0002's unified core determines which information
+      is economically meaningful.
+    governing_authority:
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
+    status: proposed
+    priority: secondary
+    dependencies:
+      - WS-0002
+    authorized_scope: "none — durable planning intent only"
+    prohibited_scope: >
+      Any presentation, UX, or reporting implementation; any allocator
+      output change; this entry authorizes recording the intent only.
+    milestones: []
+    evidence_refs: []
+    next_action: >
+      None authorized. Detailed design work is deferred until WS-0002
+      reaches a conclusion on which information is economically
+      meaningful, and any implementation still requires its own future
+      authorization.
+    completion_criteria: >
+      Not applicable — no execution is authorized under this workstream.
+    blocker: >
+      Depends on WS-0002 reaching a conclusion; WS-0002 itself is not yet
+      authorized to begin.
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: b4951515b222d56114769030354504558726c2ec
+    last_verified_date: "2026-07-24"
+    authorized_by: null
+    supersedes: null
+    superseded_by: null
+
+  - id: WS-0004
+    title: Guardrail-calibration research
+    objective: >
+      Record potential future evidentiary calibration of the 1.8x
+      leverage cap and the 30% maintenance-buffer floor as a durable
+      planning intent. No research execution or parameter change is
+      authorized by recording this intent.
+    governing_authority:
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
+    status: proposed
+    priority: secondary
+    dependencies:
+      - WS-0001
+    authorized_scope: "none — durable planning intent only"
+    prohibited_scope: >
+      Any research execution, simulation, or parameter/cap/floor change;
+      this entry authorizes recording the intent only.
+    milestones: []
+    evidence_refs: []
+    next_action: >
+      None authorized. A future, separate research charter (its own
+      governance decision, meeting the same evidentiary bar as
+      MARGIN-0005) must be accepted before any work begins.
+    completion_criteria: >
+      Not applicable — no execution is authorized under this workstream.
+    blocker: >
+      Requires both WS-0001 reaching a governed stopping point and a
+      separate future research charter being accepted — neither has
+      occurred.
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: b4951515b222d56114769030354504558726c2ec
+    last_verified_date: "2026-07-24"
+    authorized_by: null
+    supersedes: null
+    superseded_by: null
