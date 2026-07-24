@@ -1870,3 +1870,289 @@ def test_g2a_maintenance_requirement_non_numeric_raises():
 def test_g2a_validated_maintenance_requirement_helper_accepts_valid_input():
     assert _validated_maintenance_requirement(lambda pv: 42.0, {}) == pytest.approx(42.0)
     assert _validated_maintenance_requirement(lambda pv: 0, {}) == pytest.approx(0.0)
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# MARGIN-0005 G2A second remediation (post-independent-re-review corrective
+# commit). One finding from the independent re-review of the first
+# remediation commit: corporate-action credit still read live `shares` at
+# credit time rather than the opening-holdings snapshot already used for
+# dividends. Fixed here with the identical principle, narrowly, no
+# corporate-action policy or security-ledger redesign. Still G2 engine-
+# integrity tests on synthetic data — NOT registered Study A/B/C trials.
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ── corporate-action entitlement survives same-day liquidation/trim/sale ────
+
+def test_g2a_corporate_action_entitlement_only_day():
+    aligned = {"A": ([10.0] * 3, 0)}
+    calendar = ["2026-05-01", "2026-05-02", "2026-05-03"]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=70.0, min_lot=1.0,
+                      corporate_action_events={
+                          calendar[1]: [{"ticker": "A", "ratio": 1.0 / 3.0,
+                                         "unit_value": 30.0}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    assert ca_events[0]["day"] == 1
+    assert ca_events[0]["amount"] == pytest.approx(7.0 * (1.0 / 3.0) * 30.0)
+    assert result.corporate_action_credit_series[1] == pytest.approx(ca_events[0]["amount"])
+    assert sum(result.corporate_action_credit_series) == pytest.approx(
+        ca_events[0]["amount"])
+
+
+def test_g2a_corporate_action_entitlement_survives_pending_liquidation_on_event_date():
+    sc, weights, aligned, calendar, deposit_days, schedule = _breach_fixture("pro_rata")
+    control = simulate(sc, weights, aligned, calendar, deposit_days,
+                       deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                       track_tickers=["A"])
+    assert control.liquidation_events and control.liquidation_events[0]["day"] == 3
+    pre_liquidation_a_shares = control.tracked_values["A"][2] / 100.0  # EOD day2 = opening day3
+
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                      corporate_action_events={calendar[3]: [
+                          {"ticker": "A", "ratio": 0.1, "unit_value": 37.0}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    assert ca_events[0]["day"] == 3
+    assert ca_events[0]["amount"] == pytest.approx(pre_liquidation_a_shares * 0.1 * 37.0)
+    # sanity: the same-morning liquidation really did trim A
+    assert result.liquidation_events[0]["sold_by_ticker"].get("A", 0.0) > 0
+    assert result.corporate_action_credit_series[3] == pytest.approx(ca_events[0]["amount"])
+
+
+def test_g2a_corporate_action_entitlement_survives_same_day_stress_liquidation_on_event_date():
+    sc, weights, aligned, calendar, deposit_days, schedule = _breach_fixture(
+        "pro_rata", same_day=True)
+    control = simulate(sc, weights, aligned, calendar, deposit_days,
+                       deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                       track_tickers=["A"])
+    assert control.liquidation_events and control.liquidation_events[0]["day"] == 2
+    opening_day2_a_shares = control.tracked_values["A"][1] / 100.0  # EOD day1 = opening day2
+
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                      corporate_action_events={calendar[2]: [
+                          {"ticker": "A", "ratio": 0.2, "unit_value": 26.38}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    assert ca_events[0]["day"] == 2
+    assert ca_events[0]["amount"] == pytest.approx(opening_day2_a_shares * 0.2 * 26.38)
+    assert result.liquidation_events and result.liquidation_events[0]["day"] == 2
+
+
+def test_g2a_corporate_action_entitlement_survives_pre_trade_trim_on_event_date():
+    class SwitchingPolicy:
+        def __call__(self, state, prior_gross):
+            target = 1.5 if state.day_index < 2 else 1.1
+            return RepaymentDecision(leverage_target=target)
+
+    aligned = {"A": ([100.0] * 4, 0)}
+    calendar = [f"2026-07-{d:02d}" for d in range(1, 5)]
+    sc = ScenarioConfig(name="switch-ca", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0, pre_trade_fn=SwitchingPolicy())
+    control = simulate(sc, {"A": 1.0}, aligned, calendar,
+                       deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                       track_tickers=["A"])
+    assert any(e["kind"] == "repayment" and e["day"] == 2 for e in control.events)
+    opening_day2_a_shares = control.tracked_values["A"][1] / 100.0  # EOD day1 = opening day2
+
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      track_tickers=["A"],
+                      corporate_action_events={calendar[2]: [
+                          {"ticker": "A", "ratio": 1.0 / 3.0, "unit_value": 85.12}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    assert ca_events[0]["day"] == 2
+    assert ca_events[0]["amount"] == pytest.approx(
+        opening_day2_a_shares * (1.0 / 3.0) * 85.12)
+    # the pre-trade trim really did reduce A's holding that same day
+    assert result.tracked_values["A"][2] < opening_day2_a_shares * 100.0
+
+
+def test_g2a_corporate_action_entitlement_survives_leverage_target_sale_on_event_date():
+    # A leverage-target hook that switches DOWN (1.6 -> 1.0) forces a
+    # trim-funded sale via the same pre-trade repay path -- distinct test
+    # from the "trim" case above only in framing (drop straight to
+    # unlevered), covering the "leverage-target sale" scenario explicitly.
+    class SwitchingPolicy:
+        def __call__(self, state, prior_gross):
+            target = 1.6 if state.day_index < 2 else 1.0
+            return RepaymentDecision(leverage_target=target)
+
+    aligned = {"A": ([100.0] * 4, 0)}
+    calendar = [f"2026-08-{d:02d}" for d in range(1, 5)]
+    sc = ScenarioConfig(name="lev-target-sale", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0, pre_trade_fn=SwitchingPolicy())
+    control = simulate(sc, {"A": 1.0}, aligned, calendar,
+                       deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                       track_tickers=["A"])
+    opening_day2_a_shares = control.tracked_values["A"][1] / 100.0
+
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      track_tickers=["A"],
+                      corporate_action_events={calendar[2]: [
+                          {"ticker": "A", "ratio": 1.0 / 3.0, "unit_value": 48.60}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    assert ca_events[0]["amount"] == pytest.approx(
+        opening_day2_a_shares * (1.0 / 3.0) * 48.60)
+    # the leverage-target sale fully de-levers to 1.0x -- proves a real sale
+    assert result.tracked_values["A"][2] == pytest.approx(100.0)
+    assert result.tracked_values["A"][2] < opening_day2_a_shares * 100.0
+
+
+def test_g2a_corporate_action_entitlement_not_retroactive_for_same_day_acquisition():
+    aligned = {"A": ([100.0] * 3, 0), "B": ([100.0] * 3, 0)}
+    calendar = [f"2026-09-{d:02d}" for d in range(1, 4)]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0, "B": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      corporate_action_events={calendar[0]: [
+                          {"ticker": "A", "ratio": 0.5, "unit_value": 40.0},
+                          {"ticker": "Z", "ratio": 0.5, "unit_value": 40.0}]})
+    assert [e for e in result.events if e["kind"] == "corporate_action_credit"] == []
+    assert sum(result.corporate_action_credit_series) == 0.0
+
+
+def test_g2a_dividend_and_corporate_action_same_date_independently_correct():
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = ["2026-10-01", "2026-10-02", "2026-10-03"]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      dividend_events={calendar[1]: {"A": 1.0}},
+                      corporate_action_events={calendar[1]: [
+                          {"ticker": "A", "ratio": 0.05, "unit_value": 40.0}]})
+    div = next(e for e in result.events if e["kind"] == "dividend")
+    ca = next(e for e in result.events if e["kind"] == "corporate_action_credit")
+    assert div["amount"] == pytest.approx(1.0 * 1.0)
+    assert ca["amount"] == pytest.approx(1.0 * 0.05 * 40.0)
+    assert div["amount"] != ca["amount"]
+    assert result.dividend_credit_series[1] == pytest.approx(div["amount"])
+    assert result.corporate_action_credit_series[1] == pytest.approx(ca["amount"])
+    assert len([e for e in result.events if e["kind"] == "dividend"]) == 1
+    assert len([e for e in result.events if e["kind"] == "corporate_action_credit"]) == 1
+
+
+def test_g2a_corporate_action_credit_exactly_once_no_duplicate():
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = ["2026-10-01", "2026-10-02", "2026-10-03"]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      corporate_action_events={calendar[1]: [
+                          {"ticker": "A", "ratio": 0.1, "unit_value": 37.0}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    # deterministic re-run credits exactly once again, same amount
+    result2 = simulate(sc, {"A": 1.0}, aligned, calendar,
+                       deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                       corporate_action_events={calendar[1]: [
+                           {"ticker": "A", "ratio": 0.1, "unit_value": 37.0}]})
+    assert result.corporate_action_credit_series == result2.corporate_action_credit_series
+    assert result.events == result2.events
+
+
+# ── A-17 fractional ratio / cash-in-lieu arithmetic, real spin-off fixtures ──
+
+def test_g2a_corporate_action_fractional_ratio_and_cash_in_lieu_real_fixtures():
+    # Small deterministic fixtures matching the G1-governed ratios exactly
+    # (not production price histories) — MRK->OGN, IBM->KD, DHR->VLTO,
+    # WDC->SNDK. The fractional portion of the entitlement is inherently
+    # cash-in-lieu because the WHOLE entitlement is credited as cash — no
+    # child position is ever created, whole units included.
+    cases = [
+        # held-share counts are this test's own synthetic choice (not a G1
+        # production holding), picked so every case exercises a genuinely
+        # fractional entitlement; ratio and child_close are the G1-governed
+        # facts under test and are unchanged from the real records.
+        ("MRK->OGN", 0.1, 37.00, 12),
+        ("IBM->KD", 0.2, 26.38, 7),
+        ("DHR->VLTO", 1.0 / 3.0, 85.12, 5),
+        ("WDC->SNDK", 1.0 / 3.0, 48.60, 4),
+    ]
+    for name, ratio, child_close, held_target in cases:
+        px = 100.0
+        dep = held_target * px
+        aligned = {"P": ([px] * 3, 0)}
+        cal = ["2026-05-01", "2026-05-02", "2026-05-03"]
+        result = simulate(scenario_unlevered(), {"P": 1.0}, aligned, cal, [cal[0]],
+                          deposit_amount=dep, min_lot=1.0,
+                          corporate_action_events={cal[1]: [
+                              {"ticker": "P", "ratio": ratio, "unit_value": child_close}]})
+        expected = held_target * ratio * child_close
+        got = sum(result.corporate_action_credit_series)
+        assert got == pytest.approx(expected), name
+        # entitlement is fractional (a non-integer number of distributed
+        # units) yet the FULL amount, whole units included, is cash
+        entitlement_units = held_target * ratio
+        assert entitlement_units != int(entitlement_units), \
+            f"{name}: fixture must exercise a genuinely fractional entitlement"
+        # no child position ever appears anywhere in the result
+        assert "corporate_action_events" not in dir(result)  # no such field at all
+        assert not any(k.lower().startswith(name.split("->")[1].lower())
+                       for k in getattr(result, "tracked_values", {}))
+
+
+def test_g2a_corporate_action_multiple_events_on_separate_dates():
+    aligned = {"A": ([100.0] * 4, 0)}
+    calendar = ["2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04"]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      corporate_action_events={
+                          calendar[1]: [{"ticker": "A", "ratio": 0.1, "unit_value": 37.0}],
+                          calendar[3]: [{"ticker": "A", "ratio": 0.2, "unit_value": 26.38}],
+                      })
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert [e["day"] for e in ca_events] == [1, 3]
+    assert ca_events[0]["amount"] == pytest.approx(1.0 * 0.1 * 37.0)
+    assert ca_events[1]["amount"] == pytest.approx(1.0 * 0.2 * 26.38)
+    assert result.corporate_action_credit_series[1] == pytest.approx(ca_events[0]["amount"])
+    assert result.corporate_action_credit_series[3] == pytest.approx(ca_events[1]["amount"])
+    assert result.corporate_action_credit_series[0] == 0.0
+    assert result.corporate_action_credit_series[2] == 0.0
+
+
+# ── path reconciliation: CA credit enters cash exactly once ─────────────────
+
+def test_g2a_corporate_action_credit_enters_cash_exactly_once_path_reconciliation():
+    aligned = {"A": ([100.0] * 4, 0)}
+    calendar = ["2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04"]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      corporate_action_events={calendar[2]: [
+                          {"ticker": "A", "ratio": 0.1, "unit_value": 37.0}]})
+    ca_amount = 1.0 * 0.1 * 37.0
+    # cash reconciles day-by-day: 0 before the event, exactly ca_amount from
+    # the event date onward (unlevered, no deposit/repay after day0)
+    assert result.cash_series[0] == pytest.approx(0.0)
+    assert result.cash_series[1] == pytest.approx(0.0)
+    assert result.cash_series[2] == pytest.approx(ca_amount)
+    assert result.cash_series[3] == pytest.approx(ca_amount)
+    # book value jumps by exactly the CA credit on the event date, and only then
+    assert result.book_values[2] - result.book_values[1] == pytest.approx(ca_amount)
+    for i in (0, 1):
+        assert result.book_values[i] == pytest.approx(100.0)
+    # CA cash is distinct from deposits (flows) and from price returns
+    assert result.flows == {0: 100.0}
+    assert ca_amount not in result.flows.values()
+
+
+# ── legacy neutrality: unchanged when corporate-action input is absent ─────
+
+def test_g2a_corporate_action_legacy_unchanged_when_absent():
+    aligned, calendar, deposit_days, schedule, weights = _regression_fixture()
+    sc = scenario_fixed_leverage(1.8, interest_apr=0.20, interest_free_amount=0.0)
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    assert result.final_margin_debt == pytest.approx(6.673974604366053)
+    assert result.metrics()["final_book_value"] == pytest.approx(166.65935872896728)
+    assert result.corporate_action_credit_series == [0.0] * len(calendar)
+    assert [e for e in result.events if e["kind"] == "corporate_action_credit"] == []

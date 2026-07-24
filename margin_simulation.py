@@ -79,9 +79,16 @@ pinned regression tests in test_margin_simulation.py):
     test_g2a_dividend_entitlement_* below).
   - `corporate_action_events` — explicit non-cash corporate actions
     (spin-offs / in-kind distributions) valued per assumptions-ledger
-    A-17: shares_held x ratio x unit_value credited as reinvestable cash
+    A-17: opening-entitled shares x ratio x distributed-security SIP close
+    on the parent's ex-distribution session, credited as reinvestable cash
     on the event date, fractions inherently cash-in-lieu (the whole
-    entitlement is cash — no child position is created).
+    entitlement is cash — no child position is created or tracked).
+    Entitlement is determined from the same OPENING holdings snapshot as
+    dividends (remediation of a second G2A independent-review finding: see
+    test_g2a_corporate_action_entitlement_* below) — a share held at the
+    open of the event date keeps its distribution even if sold later that
+    same day, while a share bought later that same day cannot
+    retroactively receive it.
   - `maintenance_requirement_fn` (ScenarioConfig) — generic
     maintenance-requirement callback: {ticker: position $value} -> $
     required maintenance, validated on every call (a non-finite, negative,
@@ -1070,8 +1077,10 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
     once, on the event date, for shares held at that day's open-of-day
     position state; a return component, deliberately NOT an external flow),
     `corporate_action_events` ({date: [{ticker, ratio, unit_value}]} —
-    shares_held x ratio x unit_value credited as reinvestable cash, per
-    assumptions-ledger A-17), plus the ScenarioConfig-level
+    shares held at that day's opening snapshot x ratio x unit_value
+    credited as reinvestable cash, per assumptions-ledger A-17; entitlement
+    uses the same opening-holdings-snapshot principle as `dividend_events`
+    above), plus the ScenarioConfig-level
     `maintenance_requirement_fn`/`liquidation` mechanics and the
     `RepaymentDecision.leverage_target` hook. All optional; all
     output-neutral when absent.
@@ -1262,12 +1271,23 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
         ca_today = 0.0
         if corporate_action_events is not None:
             for ca in (corporate_action_events.get(d) or []):
-                held = shares.get(ca["ticker"], 0.0)
+                # Corporate-action entitlement (G2A remediation, item 5) uses
+                # `opening_holdings_snapshot` — the same principle as the
+                # dividend fix above, captured at the very top of this day's
+                # loop iteration, before pending-liquidation execution,
+                # pre-trade trim/repay, leverage-target sales, or any of
+                # today's own buys. A share held at the opening snapshot is
+                # entitled to the distribution even if sold later this same
+                # day; a share bought later today is not yet in the
+                # snapshot and cannot retroactively receive it.
+                held = opening_holdings_snapshot.get(ca["ticker"], 0.0)
                 if held > 0:
-                    # A-17 valuation: ratio x distributed unit's value,
-                    # credited entirely as reinvestable cash — fractional
-                    # entitlements are inherently cash-in-lieu because the
-                    # whole entitlement is cash; no child position exists.
+                    # A-17 valuation: opening-entitled shares x distribution
+                    # ratio x distributed-security SIP close on the parent's
+                    # ex-distribution session, credited entirely as
+                    # reinvestable cash — fractional entitlements are
+                    # inherently cash-in-lieu because the whole entitlement
+                    # is cash; no child position exists or is tracked.
                     amt = held * ca["ratio"] * ca["unit_value"]
                     if amt > 0:
                         cash += amt
