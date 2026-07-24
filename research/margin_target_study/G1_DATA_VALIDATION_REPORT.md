@@ -3,7 +3,7 @@
 **Program:** margin_deployment_and_target_sizing_v1
 **Authority:** `governance/decisions/MARGIN-0005-margin-target-research-charter.md` §1.2, §7
 **Protocol:** `research/margin_target_study/PROTOCOL_V2.md` §4, §11, §14, §18
-**Executed:** initial G1 2026-07-24 (commit `6efd716`); remediation same day (this revision)
+**Executed:** initial G1 2026-07-24 (`6efd716`); remediation (`1df11f5`); account-evidence round (this revision)
 **Base:** `origin/main` = `f984665936203c0505e8603de7c870beb64f7f21`
 
 **No `simulate()` call was made in either round, zero of the 300 registered trials were consumed, no
@@ -243,33 +243,42 @@ but **cannot support any crypto target-sizing conclusion under this charter**; *
 introduced. Basis: SOL/USD 416-day coverage hole (2023-07-06 → 2024-08-26) in the protocol-named source.
 This acceptance is **not** degraded-mode approval for any other dataset.
 
-## 9. Gold account evidence — placeholders (nothing verified, nothing invented)
+## 9. Gold account evidence — RESOLVED from principal-supplied screenshots (2026-07-24)
 
-Public Robinhood terms are recorded as **generic provider evidence only** (`robinhood_margin_rate_evidence.yaml`).
-Account-specific fields, all **[PENDING PRINCIPAL EVIDENCE]** (assumption A-21):
+Redacted evidence extract: `data/evidence/account_evidence_20260724.yaml` (evidence IDs EV-GOLD-01,
+EV-MARGIN-02, EV-BUFFER-03). The screenshot images themselves are **not committed** (privacy — no
+unredacted personal evidence in the repository); only visibly supported facts are recorded, with the
+limitation that conversation-supplied images leave no file artifact to hash.
 
-| Field | Status |
+| Field | Resolution |
 |---|---|
-| Active Gold subscription status | [PENDING] |
-| Monthly vs annual plan | [PENDING] |
-| Actual billed cost | [PENDING] |
-| App-displayed margin rate | [PENDING] |
-| First-$1,000 treatment on this account | [PENDING] |
-| Non-Gold / downgrade terms | [PENDING] |
+| Active Gold subscription status | **VERIFIED** — active (membership screen, EV-GOLD-01) |
+| Monthly vs annual plan | **VERIFIED** — annual (EV-GOLD-01) |
+| Actual billed subscription cost | **VERIFIED** — $50/year currently stated; member since 2025-12-15, next billing 2027-05-10, paid from brokerage cash. *No historical $50 debit is evidenced or inferred* (limitation) |
+| App-displayed margin rate | **VERIFIED** — 5.00% annual (EV-MARGIN-02); matches the published ≤$50k tier and the doctrine ~5% anchor |
+| First-$1,000 interest-free treatment | **VERIFIED** — "$1K interest-free" active on this account (EV-MARGIN-02) |
+| Non-Gold / downgrade terms | **NOT APPLICABLE as account evidence** — the account is subscribed; a counterfactual state displays nothing account-specific. Counterfactual basis recorded separately from generic provider terms (all customers share the tiered schedule; Gold's margin benefit is exactly the $1K free tier), classification Estimated |
 
-Intake procedure on supply: inspect the artifact; record evidence date, account-specific value, source
-artifact, locator, hash where applicable, and a privacy-preserving description. **No unredacted personal
-screenshot will be committed without explicit principal authorization** — a redacted extract or recorded
-facts with provenance is preferred.
+Also displayed and recorded: the member-since→next-billing interval (2025-12-15 → 2027-05-10) is not
+explained by anything visible — recorded as displayed, not interpreted.
+
+**Separately recorded, deliberately unreconciled** (assumption A-22, per explicit instruction): screenshot
+margin-used **$1,490.52** (2026-07-24 ~07:27 device time) · principal-stated connected-account debt
+**$1,590.52** (2026-07-24) · repository `holdings.yaml` debt **$1,590.40** (synced 2026-07-22) ·
+principal-reported **$100.00 deposit** (2026-07-24). The $100 difference is not reconciled without
+evidence; neutral arithmetic context only, in the evidence file. The screenshot's full
+(debt 1,490.52, buffer 62.88%, portfolio 6,192.93, maint-req 2,558.88) tuple is banked as a
+fully-specified paired observation for the maintenance-proxy calibration lane (A-03/A-04), and the
+per-position 25% maintenance ratios (MSFT/GLD/TSM) corroborate the proxy's baseline m_i = 25%.
 
 ## 10. Validation results (remediation round)
 
 - YAML parse: all new/updated YAML + config YAML clean.
-- Deterministic validators (`data_acquisition.py validate`): every section passes — prices (0 dup/nonpos/
-  beyond-boundary; missing sim-window sessions ≤3; RKLB's 13 gaps are pre-2021-06-01 warm-up only), sealed
-  archive hash match with zero seal-time anomalies, dividend ledger v2 clean, corporate-action ledger clean,
-  crypto assertions, Track 3 boundaries, ^IRX — **except the single open DFF item**, which the validator
-  correctly reports as a blocker (overall FAIL by design until DFF is ingested).
+- Deterministic validators (`data_acquisition.py validate`): every section passes — prices, sealed archive,
+  dividend ledger v2, corporate-action ledger, crypto assertions, Track 3 boundaries, ^IRX, **and the new
+  account-evidence completeness check (6/6 fields VERIFIED or NOT-APPLICABLE)** — **except the single open
+  DFF item**, which the validator correctly reports as a blocker (overall FAIL by design until DFF is
+  ingested).
 - T-D3 v2: **PASS 63/63 + 2/2** (§6).
 - Manifest hashes: regenerated (11 datasets, 202 per-file entries) and spot-verified.
 - Untouched-boundary checks: all OK (§2.3); Track 3 untouched never acquired.
@@ -279,22 +288,21 @@ facts with provenance is preferred.
 
 ## 11. Remaining blockers and verdict
 
-Resolved this round: **B1** (T-D3 — D-1/D-2/D-3 implemented, full pass), crypto outcome acceptance
-recorded. Remaining:
+Resolved across rounds: **B1** (T-D3 — D-1/D-2/D-3, full pass), crypto outcome acceptance, and now
+**B3** (Gold/account evidence — §9, all six fields VERIFIED or legitimately NOT APPLICABLE). Remaining:
 
-- **B2′ (DFF):** awaiting the principal-supplied FRED DFF CSV (or a network-policy allowlist addition);
-  ingestion + validation + reconstruction comparison are implemented and one command away.
-- **B3 (Gold/account evidence):** the six [PENDING] fields in §9.
+- **B2′ (DFF) — the single open item.** The official CSV did not reach this session (attempt log §7).
+  Ingestion, validation, dev-bounding, and the DFF-vs-target-upper reconstruction comparison are
+  implemented and one command away: `python3 research/margin_target_study/data_acquisition.py dff <file>`.
 
-Because charter §7 requires the borrowing-rate series acquired and costs verified against the account's
-actual terms, and no degraded mode is self-approvable:
+Charter §7 requires the Fed-funds-anchored borrowing-rate series acquired before G1 can pass, and no
+degraded mode is self-approvable, therefore:
 
 > ## **G1 DATA GATE BLOCKED**
 >
-> Narrowed to exactly two bounded items: **B2′** (supply DFF CSV → `python3
-> research/margin_target_study/data_acquisition.py dff <file>`) and **B3** (six account-evidence fields).
-> All other G1 requirements pass. On resolution, the gate can be re-verdicted without re-doing any
-> acquisition or reconciliation work.
+> On exactly one bounded item: **B2′ — supply the FRED DFF CSV** (attach `fredgraph.csv` in chat, approve
+> the Drive request, or allowlist `fred.stlouisfed.org`). Every other G1 requirement passes. On ingestion
+> the gate re-verdicts without re-doing any acquisition, reconciliation, or evidence work.
 
 **G2 was not begun.**
 

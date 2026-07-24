@@ -1,4 +1,4 @@
-# data_manifest.yaml — MARGIN-0005 G1 artifact (charter §1.2, protocol §4/§13), v2 remediation.
+# data_manifest.yaml — MARGIN-0005 G1 artifact (charter §1.2, protocol §4/§13), v2 remediation + evidence round.
 # Every acquired dataset: source, timestamps, coverage, transformations, hashes,
 # validation results, limitations, licensing, untouched-isolation status.
 manifest: MARGIN-0005 G1 data manifest (v2, remediation)
@@ -877,7 +877,9 @@ datasets:
     locator: https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF&cosd=1999-01-01 ; ingest via `python3 research/margin_target_study/data_acquisition.py
       dff <csv>`
     source_classification: primary official (US government public domain, committable once supplied)
-    acquired_at: PENDING — principal has verified DFF exists through 2026-07-22; awaiting file
+    acquired_at: 'PENDING — third-round attempt 2026-07-24: FRED re-verified blocked (CONNECT 403); no CSV on disk
+      or any branch; Drive connector requires interactive approval unavailable to this session; Gmail disconnected.
+      Awaiting file via chat attachment, Drive approval, or network allowlist'
     coverage: 'required: 1999-01-01 -> >=2025-06-30 daily (incl. weekends); expected header DATE,DFF or observation_date,DFF;
       missing values "."'
     permitted_development_boundary: stored file will be dev-bounded at 2025-06-30
@@ -905,10 +907,11 @@ datasets:
     adjustment_mode: n/a
     transformations: n/a
     location: research/margin_target_study/data/rates/robinhood_margin_rate_evidence.yaml (committed)
-    validation: internal consistency of Gold lowest-tier spread (~+2.5pp over Fed target upper) across dated observations
+    validation: internal consistency of Gold lowest-tier spread (~+2.5pp over Fed target upper) across dated observations;
+      app-displayed 5.00% matches the published <=50k tier and doctrine ~5% anchor
     limitations:
-    - 'account-specific Gold fields remain PENDING PRINCIPAL EVIDENCE (blocker B3): subscription status, monthly-vs-annual
-      plan, actual billed cost, app-displayed rate, first-$1,000 treatment, non-Gold/downgrade terms'
+    - account-specific fields RESOLVED 2026-07-24 — see account_evidence_gold_margin dataset; unsubscribed counterfactual
+      is NOT account-verifiable while subscribed (generic provider basis recorded, Estimated)
     licensing: facts with citations; committed
     untouched_isolation: n/a
     files: {}
@@ -1192,3 +1195,30 @@ datasets:
         rows: 1493
         coverage: 2020-07-27 -> 2026-07-10
         sha256: 41a7ab1ee06791189bfd4fa1a9a0f0ed50c1eb4f11662dbba9fe918690b0f832
+  account_evidence_gold_margin:
+    purpose: 'Account-specific Robinhood Gold/margin evidence (charter §7: Gold cost verified against the account''s
+      actual terms) — redacted fact extract, resolves report §9 placeholders'
+    source: principal-supplied Robinhood app screenshots, delivered in-session 2026-07-24 (device time 07:27-07:28)
+    locator: research/margin_target_study/data/evidence/account_evidence_20260724.yaml
+    source_classification: account-specific evidence (principal-supplied); redacted extract committed, images NOT
+      committed
+    acquired_at: '2026-07-24'
+    coverage: point-in-time account state 2026-07-24; membership terms as displayed
+    permitted_development_boundary: n/a (evidence record)
+    adjustment_mode: n/a
+    transformations: manual transcription of visibly supported facts only; nothing inferred
+    location: research/margin_target_study/data/evidence/ (committed)
+    validation: 'validate() account-evidence completeness check: 6/6 fields VERIFIED or NOT-APPLICABLE; margin-used
+      vs connected-account debt recorded separately and deliberately unreconciled (A-22)'
+    limitations:
+    - conversation-supplied images leave no file artifact — no image SHA-256 available (recorded)
+    - historical $50 billing debit not evidenced (current stated price only)
+    - member-since -> next-billing interval not explained by visible evidence; recorded as displayed
+    licensing: principal-owned account data, redacted extract with principal-supplied authorization for these facts
+    untouched_isolation: n/a
+    files:
+      evidence/account_evidence_20260724.yaml:
+        rows: 3
+        coverage: '2026-07-24'
+        bytes: 5745
+        sha256: 57de5061f7ff73a40a3f8f11ab791c2d56f44eb0dbe1ea5602e15f35f83bd8a3

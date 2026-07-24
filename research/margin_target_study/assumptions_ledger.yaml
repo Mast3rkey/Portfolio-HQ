@@ -57,31 +57,31 @@ assumptions:
     source: "all primary hosts denied by environment network policy (CONNECT 403): fred.stlouisfed.org, api.stlouisfed.org, federalreserve.gov, markets.newyorkfed.org, treasury.gov"
     affects: "A-05 construction; Track 3 financing realism"
     sensitivity: "n/a until acquired"
-    unresolved: "BLOCKER B2 — needs network-policy allowlist addition or principal-accepted alternative"
+    unresolved: "BLOCKER B2' — 2026-07-24 evidence round: FRED re-verified blocked (403); no CSV found on disk, in any repo branch, or via reachable connectors (Google Drive tool calls require an interactive approval unavailable to this session; Gmail disconnected). Ingestion path ready: data_acquisition.py dff <csv>"
   - id: A-07
-    value: "Gold subscription $5/month (~$60/yr)"
-    classification: Estimated (published price; account billing unverified)
-    num_0001_class: empirically_calibrated_estimate
-    source: "published schedule (RH-2026-07); pre_registration costs.gold_subscription verify_at_G1=true"
-    affects: "fully-allocated cost basis; subscription-sensitivity flags"
-    sensitivity: "two cost bases (incremental vs fully-allocated) — post-processing, 0 trials"
-    unresolved: "BLOCKER B3 — account-specific verification unavailable this session"
-  - id: A-08
-    value: "first $1,000 of margin interest-free (Gold benefit)"
-    classification: Known per published terms and doctrine; account applicability unverified
+    value: "Gold subscription VERIFIED: annual plan, $50/year currently stated on the account (member since 2025-12-15; next billing 2027-05-10; paid from brokerage cash). Supersedes the pre-registration's $5/mo estimate — its verify_at_G1 flag is hereby satisfied; the frozen pre-registration text is unchanged"
+    classification: Known (account-verified, 2026-07-24)
     num_0001_class: externally_imposed
-    source: "docs/MARGIN_DOCTRINE.md; RH-2026-07 observation"
+    source: "data/evidence/account_evidence_20260724.yaml EV-GOLD-01"
+    affects: "fully-allocated cost basis ($50/yr); subscription-sensitivity flags"
+    sensitivity: "two cost bases (incremental vs fully-allocated) — post-processing, 0 trials"
+    unresolved: "historical billed debit not evidenced (current stated price only) — limitation, not a blocker"
+  - id: A-08
+    value: "first $1,000 of margin interest-free — VERIFIED active on this account ('$1K interest-free', displayed alongside 5.00% annual rate and $0.08 daily interest)"
+    classification: Known (account-verified, 2026-07-24)
+    num_0001_class: externally_imposed
+    source: "data/evidence/account_evidence_20260724.yaml EV-MARGIN-02"
     affects: "daily interest accrual (accrues on max(0, debt - free tier))"
     sensitivity: "no-free-tier unsubscribed counterfactual (pre-registered cost basis)"
-    unresolved: "linked to B3 (Gold status)"
+    unresolved: false
   - id: A-09
-    value: "unsubscribed counterfactual margin rate"
-    classification: Hypothetical pending verification
-    num_0001_class: unsupported_unclassified_until_acquired
-    source: "historical evidence only (2022-11: non-Gold = target upper + 6.5pp, no free tier); current schedule unconfirmed"
+    value: "unsubscribed counterfactual: same tiered rate (5.00% <= $50k as of Jul 2026 — under current published terms all customers share the tiered schedule), no free tier, no $50/yr subscription cost. Historical constructed series still uses the era-appropriate separate non-Gold schedule for earlier periods (RH-2022-11: target upper + 6.5pp, no free tier)"
+    classification: Estimated (generic provider terms; account-specific verification definitionally unavailable while subscribed)
+    num_0001_class: empirically_calibrated_estimate
+    source: "robinhood_margin_rate_evidence.yaml RH-2026-07-NONGOLD; account_evidence_20260724.yaml placeholder resolution"
     affects: "fully-allocated cost basis companion run"
     sensitivity: "cost-basis post-processing"
-    unresolved: "BLOCKER B3 (part of consolidated account-terms request)"
+    unresolved: false
   - id: A-10
     value: "risk-free series = Yahoo ^IRX 13-week T-bill discount yield (fallback)"
     classification: Estimated (fallback source)
@@ -171,10 +171,18 @@ assumptions:
     sensitivity: "n/a"
     unresolved: false
   - id: A-21
-    value: "Robinhood Gold account-specific terms — ALL PENDING PRINCIPAL EVIDENCE: [PENDING] active Gold subscription status; [PENDING] monthly vs annual plan; [PENDING] actual billed cost; [PENDING] app-displayed margin rate; [PENDING] first-$1,000 treatment on this account; [PENDING] non-Gold/downgrade terms. Public terms recorded as generic provider evidence only; nothing marked verified"
-    classification: Hypothetical until account evidence supplied
-    num_0001_class: unsupported_unclassified_until_acquired
-    source: "task rule: account-specific terms never inferred from generic pages; Gmail connector token expired"
+    value: "Robinhood Gold account-specific fields — RESOLVED 2026-07-24 from principal-supplied screenshots (data/evidence/account_evidence_20260724.yaml): Gold status VERIFIED active; plan VERIFIED annual; billed cost VERIFIED $50/year currently stated (historical debit not evidenced, not inferred); app-displayed rate VERIFIED 5.00%; first-$1,000 treatment VERIFIED active; non-Gold/downgrade terms NOT APPLICABLE as account evidence (counterfactual state; generic-provider basis recorded separately). Screenshot images NOT committed (privacy); redacted fact extract only; no image hash available (conversation-supplied, no file artifact) — recorded limitation"
+    classification: Known (account-verified except the definitionally-counterfactual field)
+    num_0001_class: externally_imposed
+    source: "data/evidence/account_evidence_20260724.yaml (evidence IDs EV-GOLD-01, EV-MARGIN-02, EV-BUFFER-03)"
     affects: "Gold cost bases (A-07/A-08/A-09); subscription-sensitivity flags"
-    sensitivity: "two cost bases post-processing once verified"
-    unresolved: "BLOCKER B3 — evidence intake procedure: principal uploads screenshots/statements; record evidence date, value, artifact, locator, hash; redact before any commit unless explicitly authorized"
+    sensitivity: "two cost bases post-processing"
+    unresolved: false
+  - id: A-22
+    value: "Separately recorded, deliberately UNRECONCILED margin-debt observations of 2026-07-24: screenshot margin-used $1,490.52 (~07:27 device time); principal-stated connected-account debt $1,590.52; repository holdings.yaml debt $1,590.40 (synced 2026-07-22); principal-reported $100.00 deposit same day. Per explicit instruction the $100 difference is not reconciled without evidence; neutral arithmetic context recorded in the evidence file. The screenshot's (debt=1490.52, buffer=62.88%, portfolio=6192.93, maint_req=2558.88) tuple is a fully-specified paired observation for the maintenance-proxy calibration lane (A-03/A-04)"
+    classification: Known observations, unreconciled by instruction
+    num_0001_class: externally_imposed (observations)
+    source: "data/evidence/account_evidence_20260724.yaml separately_recorded_unreconciled"
+    affects: "maintenance-proxy calibration corpus only; no G1 dataset depends on reconciling them"
+    sensitivity: "n/a"
+    unresolved: "reconciliation deferred pending evidence (not a G1 blocker)"

@@ -66,10 +66,27 @@ consistency_note: >
   pre-registered) or target-upper (issuer mechanism) is recorded as decision
   item D-4 in G1_DATA_VALIDATION_REPORT.md.
 
-unresolved_account_specific:
-  - gold_subscription_status: "not verifiable this session (Gmail connector token expired; no account evidence in repository)"
-  - gold_actual_billed_cost: "unverified ($5/mo is the published price, Estimated)"
-  - subscribed_rate_shown_in_app: "unverified"
-  - unsubscribed_counterfactual_rate_and_terms: >
-      unverified; historical evidence (RH-2022-11) shows non-Gold = target upper
-      + 6.5pp and no free tier; current non-Gold schedule not confirmed
+additional_observations:
+  - id: RH-2026-07-NONGOLD
+    date: "2026-07 (current published terms at evidence round)"
+    fact: >
+      Under the current published model, ALL customers pay the same tiered
+      margin rates (5.00% <= $50k as of Jul 2026); Robinhood Gold's margin
+      benefit is exactly the first-$1,000 interest-free tier. The unsubscribed
+      counterfactual is therefore: same tiered rate, no free tier, no
+      subscription cost. (Contrast: the RH-2022-11 era had a separate, higher
+      non-Gold schedule — that regime evidence is retained above for the
+      historical constructed series.)
+    source: "web search aggregation (finder.com, gremlin.money, firstcard.app), multi-source consistent"
+    classification: secondary_aggregation_flagged_for_primary_confirmation
+
+account_specific:   # resolved 2026-07-24 — see data/evidence/account_evidence_20260724.yaml
+  gold_subscription_status: "VERIFIED active (EV-GOLD-01)"
+  plan: "VERIFIED annual, $50/year currently stated (EV-GOLD-01; historical debit not evidenced, not inferred)"
+  subscribed_rate_shown_in_app: "VERIFIED 5.00% annual (EV-MARGIN-02)"
+  first_1000_interest_free: "VERIFIED active on this account (EV-MARGIN-02)"
+  unsubscribed_counterfactual_rate_and_terms: >
+      NOT ACCOUNT-VERIFIABLE while subscribed (counterfactual state displays
+      nothing); basis recorded from generic provider terms per
+      RH-2026-07-NONGOLD — same tiered rate, no free tier, no subscription
+      cost — classification Estimated

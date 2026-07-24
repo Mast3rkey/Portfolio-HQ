@@ -987,6 +987,23 @@ def validate(report_path: Path | None = None) -> bool:
             "ingested and validated.")
         ok = False
 
+    say("\n== account-specific Gold evidence ==")
+    evf = DATA / "evidence" / "account_evidence_20260724.yaml"
+    if evf.exists():
+        import yaml as _yaml
+        acc = _yaml.safe_load(evf.read_text())
+        res = acc.get("placeholder_resolutions", {})
+        bad_fields = [k for k, v in res.items()
+                      if not str(v.get("status", "")).startswith(("VERIFIED", "NOT_APPLICABLE"))]
+        say(f"  fields resolved: {len(res)}; "
+            + "; ".join(f"{k}={v['status']}" for k, v in res.items()))
+        if bad_fields or len(res) < 6:
+            say(f"  INCOMPLETE: {bad_fields or 'missing fields'}")
+            ok = False
+    else:
+        say("  MISSING account evidence record")
+        ok = False
+
     say("\n== untouched-test boundary status ==")
     maxdiv = max(r["ex_date"] for r in rows)
     checks = [("dividend ledger max ex_date", maxdiv, DEV_BOUNDARY_T2)]
