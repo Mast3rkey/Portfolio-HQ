@@ -33,7 +33,7 @@ workstreams:
       - research/margin_target_study/PROTOCOL_V2.md (pinned SHA-256, charter §3)
       - research/margin_target_study/pre_registration.yaml (pinned SHA-256, charter §3)
     status: in_progress
-    priority: primary
+    priority: secondary
     dependencies: []
     authorized_scope: >
       Exactly MARGIN-0005 §4's approved-file table, executed only through
@@ -135,10 +135,18 @@ workstreams:
       (adoption via its own separate future governance decision) is
       required only if a rule is ever proposed for production; it is not
       a required completion condition for the research charter itself.
-    blocker: null
+    blocker: >
+      Principal sequencing hold (OPS-0002, 2026-07-24): further WS-0001
+      implementation — specifically the next_action below (the read-only S2/G2
+      scope determination and any resulting final S2 PR) — is held pending
+      completion of the WS-0002 planning package and its first independent
+      audit, unless the principal separately authorizes proceeding sooner. This
+      is a sequencing preference, not a finding of technical defect,
+      cancellation, or completion; all MARGIN-0005 authority, milestones, and
+      completion criteria above are unchanged and remain fully in force.
     active_branch: null
     active_pr: null
-    last_verified_main_sha: b4951515b222d56114769030354504558726c2ec
+    last_verified_main_sha: 69723a69bb863cc792ac3f09818be64fe628ffd4
     last_verified_date: "2026-07-24"
     authorized_by: GOV-0003; MARGIN-0005 (accepted governance decisions)
     supersedes: null
@@ -154,33 +162,58 @@ workstreams:
       change is authorized by recording this intent.
     governing_authority:
       - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
-    status: recommended
-    priority: secondary
-    dependencies:
-      - WS-0001
-    authorized_scope: "none — durable planning intent only"
+      - governance/decisions/OPS-0002-unified-core-planning-and-audit-gate.md
+    status: review
+    priority: primary
+    dependencies: []
+    authorized_scope: >
+      Exactly: completion of the WS-0002 planning package
+      (docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md), independent
+      high-capability audit of it, reconciliation of that audit's findings,
+      and principal acceptance of the resulting planning baseline — per
+      OPS-0002. No architecture implementation or allocator/targets/
+      holdings/margin/Intelligence change is authorized.
     prohibited_scope: >
-      Any architecture design, allocator/targets/holdings/margin/
-      Intelligence change, or implementation work; this entry authorizes
-      recording the intent only.
-    milestones: []
-    evidence_refs: []
+      Any architecture implementation, allocator/targets/holdings/margin/
+      Intelligence change, research execution, trade, or order; this entry
+      authorizes the planning package and its independent audit only.
+    milestones:
+      - gate: planning-package-drafted
+        description: >
+          Draft WS-0002 planning baseline (docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md)
+          and its scoping decision (OPS-0002) filed together on a single
+          draft, unmerged pull request.
+        pr: null
+        status: drafted
+        date: "2026-07-24"
+    evidence_refs:
+      - docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md
+      - governance/decisions/OPS-0002-unified-core-planning-and-audit-gate.md
     next_action: >
-      None authorized. A future, separately filed decision must scope and
-      authorize the audit itself before any work begins.
+      Independent high-capability audit — currently intended to be performed
+      by Fable, or another explicitly authorized high-capability reviewer —
+      of this draft PR's exact head commit; reconciliation of that audit's
+      findings; then principal acceptance of the planning baseline. No
+      implementation begins until acceptance and a separate future
+      authorization scoping it.
     completion_criteria: >
-      Not applicable — no execution is authorized under this workstream.
-      Would be defined by whatever future decision authorizes the audit.
+      This workstream entry's planning phase completes when: the planning
+      package is independently audited against its exact head commit, audit
+      findings are reconciled, and the principal explicitly accepts the
+      resulting planning baseline. That acceptance does not itself authorize
+      implementation — a further separate authorization is required before
+      any WS-0002 implementation work begins (OPS-0002).
     blocker: >
-      Sequencing preference, not a hard block: recommended that WS-0001
-      first reach an appropriate stable stopping point (G3, G4, G5, or
-      G7, or an honest null), unless the principal explicitly
-      reprioritizes this workstream sooner.
-    active_branch: null
+      The implementing pull request must remain in draft state and unmerged
+      until the independent audit above is complete (OPS-0002). WS-0002 no
+      longer depends on WS-0001 reaching a stopping point — the principal
+      has explicitly reprioritized planning sooner, per OPS-0001's own
+      stated override condition.
+    active_branch: claude/ws-0002-planning-baseline-dcblbf
     active_pr: null
-    last_verified_main_sha: b4951515b222d56114769030354504558726c2ec
+    last_verified_main_sha: 69723a69bb863cc792ac3f09818be64fe628ffd4
     last_verified_date: "2026-07-24"
-    authorized_by: null
+    authorized_by: "Principal authorization (session dcblbf, 2026-07-24); OPS-0002"
     supersedes: null
     superseded_by: null
 
@@ -203,8 +236,23 @@ workstreams:
     prohibited_scope: >
       Any presentation, UX, or reporting implementation; any allocator
       output change; this entry authorizes recording the intent only.
-    milestones: []
-    evidence_refs: []
+    milestones:
+      - gate: terminal-acceptance-definition
+        description: >
+          Terminal end-to-end allocation-check acceptance milestone defined
+          in docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md §6 (per
+          OPS-0002) — a reproducible run that answers, honestly: given
+          current governed policy, portfolio state, risk constraints, and
+          available evidence, what is the best governed use of available
+          capital now, what are the next-best alternatives, and what
+          uncertainty could change that conclusion — using manual Robinhood
+          execution only. Recorded as a target definition only; no UX
+          design or implementation is authorized by recording it.
+        pr: null
+        status: defined
+        date: "2026-07-24"
+    evidence_refs:
+      - docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md
     next_action: >
       None authorized. Detailed design work is deferred until WS-0002
       reaches a conclusion on which information is economically
@@ -214,10 +262,10 @@ workstreams:
       Not applicable — no execution is authorized under this workstream.
     blocker: >
       Depends on WS-0002 reaching a conclusion; WS-0002 itself is not yet
-      authorized to begin.
+      authorized to begin implementation.
     active_branch: null
     active_pr: null
-    last_verified_main_sha: b4951515b222d56114769030354504558726c2ec
+    last_verified_main_sha: 69723a69bb863cc792ac3f09818be64fe628ffd4
     last_verified_date: "2026-07-24"
     authorized_by: null
     supersedes: null
