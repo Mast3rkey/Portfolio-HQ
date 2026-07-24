@@ -99,7 +99,7 @@ workstreams:
           integration constraint; recommends a smallest coherent final S2
           PR scope. Authorizes no implementation, simulation, or trial
           consumption.
-        pr: null
+        pr: 144
         status: documented
         date: "2026-07-24"
     evidence_refs:
