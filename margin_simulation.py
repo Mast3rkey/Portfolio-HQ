@@ -68,7 +68,15 @@ pinned regression tests in test_margin_simulation.py):
     event date to holders of record in the simulation. The engine accepts
     no adjusted-price series of any kind for dividends: dividend income
     enters only as explicit cash, per the governed primary accounting
-    path (split-adjusted prices + explicit dividend cash).
+    path (split-adjusted prices + explicit dividend cash). Entitlement is
+    determined from the OPENING holdings snapshot for the event date —
+    captured before any same-day mutation (pending-liquidation execution,
+    pre-trade trim/repay, same-day stress liquidation, or today's own
+    buys) — so a share held at the open of the event date keeps its
+    dividend even if sold later that same day, while a share bought later
+    that same day is not a holder of record and cannot retroactively
+    receive it (remediation of a G2A independent-review finding: see
+    test_g2a_dividend_entitlement_* below).
   - `corporate_action_events` — explicit non-cash corporate actions
     (spin-offs / in-kind distributions) valued per assumptions-ledger
     A-17: shares_held x ratio x unit_value credited as reinvestable cash
@@ -76,19 +84,29 @@ pinned regression tests in test_margin_simulation.py):
     entitlement is cash — no child position is created).
   - `maintenance_requirement_fn` (ScenarioConfig) — generic
     maintenance-requirement callback: {ticker: position $value} -> $
-    required maintenance. The engine computes and outputs a daily
-    maintenance-excess series (net_equity - requirement), exposes the
-    opening excess to pre-trade hooks via PortfolioState, and blocks new
-    margin draws on any day whose OPENING maintenance excess is negative.
-    This is the maintenance-excess PROXY named in PROTOCOL_V2.md §8.5 —
-    never called or compared to a real displayed buffer.
+    required maintenance, validated on every call (a non-finite, negative,
+    or non-numeric return raises `ValueError` rather than silently
+    driving a spurious reading). The engine computes and outputs a daily
+    maintenance-excess series (full account equity — gross position value
+    + idle cash - margin debt, via `_account_equity` — minus the
+    requirement; remediation of a G2A independent-review finding that the
+    original formula omitted idle cash), exposes the opening excess to
+    pre-trade hooks via PortfolioState, and blocks new margin draws on any
+    day whose OPENING maintenance excess is negative. This is the
+    maintenance-excess PROXY named in PROTOCOL_V2.md §8.5 — never called
+    or compared to a real displayed buffer.
   - `liquidation` (ScenarioConfig, LiquidationConfig) — forced-liquidation
     mechanics per PROTOCOL_V2.md §8.6: cure = shortfall x cure_multiplier,
     executed next session (or same-day in the explicit stress mode),
     pro-rata or largest-position-first sequencing, proceeds to debt
     paydown first. A structural guard raises if a liquidation ever
     increases leverage (it cannot, by the arithmetic — the guard makes
-    that an enforced invariant, not an assumption).
+    that an enforced invariant, not an assumption). Forced liquidation
+    never fires against a debt-free account (remediation of a G2A
+    independent-review finding: a malformed or merely very tight
+    requirement function could otherwise trigger a liquidation with no
+    borrowed exposure to call) — the maintenance-excess proxy is still
+    computed and reported at zero debt, just never acted on.
   - `RepaymentDecision.leverage_target` — generalized pre-trade
     leverage-target hook: a policy may command a target leverage for the
     day; the engine clamps it to [1.0, min(scenario cap, 1.8)] (the 1.8x
@@ -109,6 +127,7 @@ caller. It writes nothing anywhere.
 from __future__ import annotations
 
 import bisect
+import math
 from dataclasses import dataclass, field
 from datetime import date
 from functools import partial
@@ -810,6 +829,48 @@ def _position_values(shares: dict[str, float], closes: dict[str, float]) -> dict
             if shares.get(s, 0.0) > 0 and closes.get(s) is not None}
 
 
+def _account_equity(gross: float, cash: float, margin_debt: float) -> float:
+    """MARGIN-0005 G2A remediation (item 3): the economically complete
+    long-only account-equity identity used by the maintenance-excess
+    proxy — gross position market value + idle cash - margin debt. This is
+    deliberately distinct from `PortfolioState.net_equity` (gross -
+    margin_debt), which excludes cash and remains the quantity
+    `leverage_ratio`/`book`/TWR are built on: changing THAT definition
+    would alter the pre-G2A pinned regression values, which this
+    correction must not do. Idle cash is counted exactly once here — it
+    already lives only in `cash`, never inside `gross` (which is share
+    value only), so there is no double-count risk between the two terms.
+    Dividend and corporate-action credits reach this formula purely
+    through the `cash` term (see the G2A dividend/CA credit block above),
+    so they too are counted exactly once, on whatever day they land."""
+    return gross + cash - margin_debt
+
+
+def _validated_maintenance_requirement(
+        requirement_fn: Callable[[dict[str, float]], float],
+        position_values: dict[str, float]) -> float:
+    """MARGIN-0005 G2A remediation (item 4): calls the caller-supplied
+    `maintenance_requirement_fn` and validates its output before it can
+    influence anything. A malformed, non-finite, or negative requirement
+    is a caller bug, not a market signal — it must fail loudly here rather
+    than silently drive a spurious maintenance-excess reading or (worse) a
+    forced liquidation with no economic basis."""
+    requirement = requirement_fn(position_values)
+    if not isinstance(requirement, (int, float)) or isinstance(requirement, bool):
+        raise ValueError(
+            f"maintenance_requirement_fn must return a real number, "
+            f"got {requirement!r}")
+    if math.isnan(requirement) or math.isinf(requirement):
+        raise ValueError(
+            f"maintenance_requirement_fn returned a non-finite value: "
+            f"{requirement!r}")
+    if requirement < 0:
+        raise ValueError(
+            f"maintenance_requirement_fn must return a non-negative dollar "
+            f"requirement, got {requirement!r}")
+    return float(requirement)
+
+
 def _weighted_gap_allocate(weights: dict[str, float], elig: list[str],
                            closes: dict[str, float], shares: dict[str, float],
                            lots: dict[str, list[Lot]], book: float,
@@ -1056,6 +1117,20 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
                  if aligned[s][0][i] is not None}
         gross = sum(shares.get(s, 0.0) * px for s, px in closes.items())
 
+        # ---- (G2A remediation, item 2) opening holdings snapshot -----------
+        # Captured BEFORE any same-day mutation whatsoever — pending-
+        # liquidation execution, pre-trade trim/repay, deposit-driven buys,
+        # the leverage-target draw, post-allocation repayment, and any
+        # end-of-day same-day stress liquidation. Dividend entitlement is
+        # determined from THIS snapshot, not from `shares` at credit time:
+        # a share held at the start of the event date keeps its dividend
+        # even if sold later that same day (by a forced cure or a repayment
+        # policy), while a share bought later that same day is not a holder
+        # of record and cannot retroactively receive it. See the
+        # test_g2a_dividend_entitlement_* tests below for the exact
+        # same-day-mutation scenarios this fixes.
+        opening_holdings_snapshot = dict(shares)
+
         # ---- (G2A) pending forced liquidation executes first --------------
         # Next-session mode: the broker's cure, sized on the trigger day's
         # shortfall, executes at THIS session's prices before any policy,
@@ -1077,10 +1152,20 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
         # hooks via PortfolioState.maintenance_excess, and a negative
         # opening excess blocks all new margin draws today (the
         # maintenance-excess-proxy draw block, PROTOCOL_V2.md §5).
+        #
+        # G2A remediation (item 3): uses the full account-equity identity
+        # (gross + idle cash - debt, via `_account_equity`), not net_equity
+        # alone — idle cash (including any dividend/corporate-action credit
+        # already received this run) genuinely stands between the account
+        # and a maintenance shortfall and must be counted. The requirement
+        # itself is validated (item 4) before use — a malformed, non-finite,
+        # or negative caller-supplied value fails loudly here rather than
+        # silently producing a nonsensical excess reading.
         opening_excess: float | None = None
         if scenario.maintenance_requirement_fn is not None:
-            opening_excess = (gross - margin_debt) - scenario.maintenance_requirement_fn(
-                _position_values(shares, closes))
+            requirement = _validated_maintenance_requirement(
+                scenario.maintenance_requirement_fn, _position_values(shares, closes))
+            opening_excess = _account_equity(gross, cash, margin_debt) - requirement
         draws_blocked = opening_excess is not None and opening_excess < 0
 
         # ---- pre-trade hook (Model B/C only; None for Model 0/A) -----------
@@ -1150,14 +1235,24 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
 
         # ---- (G2A) explicit dividend cash + corporate-action credits ------
         # Both are return components credited to cash exactly once, on the
-        # event date, for shares held at this point of the day (before
-        # today's deposit-driven buys — a share bought today is not a
-        # holder of record for today's event). Deliberately NOT added to
-        # `flows`: TWR must treat them as return, not as external flow.
+        # event date. Deliberately NOT added to `flows`: TWR must treat
+        # them as return, not as external flow.
+        #
+        # Dividend entitlement (G2A remediation, item 2) uses
+        # `opening_holdings_snapshot` — captured at the very top of this
+        # day's loop iteration, before pending-liquidation execution,
+        # pre-trade trim/repay, or any of today's own buys — NOT `shares`
+        # at this point, which may already have been reduced by a same-day
+        # cure/trim that ran earlier in this same iteration. A share held
+        # at the opening snapshot is a holder of record for today's event
+        # and receives the dividend even if a forced cure or repayment
+        # policy sells it later this same day; a share bought later today
+        # (by the deposit-allocation or leverage-target-draw steps below)
+        # is not yet in the snapshot and cannot retroactively receive it.
         dividend_today = 0.0
         if dividend_events is not None:
             for t, per_share in (dividend_events.get(d) or {}).items():
-                held = shares.get(t, 0.0)
+                held = opening_holdings_snapshot.get(t, 0.0)
                 if held > 0 and per_share > 0:
                     amt = held * per_share
                     cash += amt
@@ -1244,11 +1339,26 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
         net_equity = gross - margin_debt
 
         # ---- (G2A) end-of-day maintenance evaluation + liquidation trigger --
+        # G2A remediation (item 3): full account-equity identity (gross +
+        # idle cash - debt), same rationale as the opening-excess proxy
+        # above — this is the proxy value reported into
+        # maintenance_excess_series and is always computed and reported
+        # when a requirement function is configured, regardless of debt.
+        #
+        # G2A remediation (item 4): forced liquidation is a margin-call
+        # mechanism — it must never fire against a debt-free account
+        # (`margin_debt > 0` gate below), however negative a requirement
+        # (malformed or merely very tight) makes the proxy look. There is
+        # no borrowed exposure for a broker to call in that state. The
+        # requirement is validated (fails loudly on non-finite/negative
+        # input) before it can drive any reading, forced-liquidation or not.
         eod_excess: float | None = None
         if scenario.maintenance_requirement_fn is not None:
-            eod_excess = net_equity - scenario.maintenance_requirement_fn(
-                _position_values(shares, closes))
-            if (eod_excess < 0 and scenario.liquidation is not None
+            requirement = _validated_maintenance_requirement(
+                scenario.maintenance_requirement_fn, _position_values(shares, closes))
+            eod_excess = _account_equity(gross, cash, margin_debt) - requirement
+            if (eod_excess < 0 and margin_debt > 0
+                    and scenario.liquidation is not None
                     and pending_liquidation is None):
                 shortfall = -eod_excess
                 cure_target = shortfall * scenario.liquidation.cure_multiplier
@@ -1262,8 +1372,9 @@ def simulate(scenario: ScenarioConfig, weights: dict[str, float],
                         trigger_day=i, shortfall=shortfall, same_day=True)
                     gross = sum(shares.get(s, 0.0) * closes.get(s, 0.0) for s in shares)
                     net_equity = gross - margin_debt
-                    eod_excess = net_equity - scenario.maintenance_requirement_fn(
-                        _position_values(shares, closes))
+                    requirement = _validated_maintenance_requirement(
+                        scenario.maintenance_requirement_fn, _position_values(shares, closes))
+                    eod_excess = _account_equity(gross, cash, margin_debt) - requirement
                 else:
                     pending_liquidation = {"trigger_day": i, "shortfall": shortfall,
                                            "cure_target": cure_target}
