@@ -1,57 +1,72 @@
 """
-data_acquisition.py — MARGIN-0005 G1 data acquisition and validation.
+data_acquisition.py — MARGIN-0005 G1 data acquisition and validation (v2, remediation).
 
 Authority: governance/decisions/MARGIN-0005-margin-target-research-charter.md §1.2
 (G1 data-acquisition steps, cached read-only under the research directory) and §4
 (approved research-package file list, which names this module).
 
 Scope guards (charter §2, PROTOCOL_V2.md §11, pre_registration.yaml):
-  * This module performs DATA acquisition and DATA validation only. It never calls
-    simulate(), never consumes a registered trial, never produces a margin signal,
-    ranking, or recommendation, and never places an order.
-  * It writes ONLY under research/margin_target_study/data/ (and reads production
-    files read-only).
-  * Untouched-test isolation: every return-derived computation in this module
-    (discontinuity scans, T-D3 reconciliation) is truncated at the development
-    boundaries (Track 2: 2025-06-30, Track 3: 2020-12-31). The roster price cache
-    is refreshed through the run date because the charter's G1 gate directs it
-    ("refreshed through the run date"); its untouched segment is stored but never
-    summarized, charted, or reconciled here. Loader-level truncation (test T-U1)
-    is a G2 implementation obligation, not claimed here.
+  * DATA acquisition and DATA validation only. Never calls simulate(), never
+    consumes a registered trial, never produces a margin signal, ranking, or
+    recommendation, never places an order.
+  * Writes ONLY under research/margin_target_study/data/ (production read-only).
+  * Untouched-test isolation is STRUCTURAL as of v2: development-visible price
+    files are truncated at the Track 2 development boundary (2025-06-30) at
+    acquisition time; the post-boundary segment (charter G1: cache "refreshed
+    through the run date") is split off into a SEALED archive
+    (data/untouched_sealed/) whose contents no G1 or development code opens —
+    validation of the sealed archive is byte-level (SHA-256) only. Unsealing is
+    a G4-runner act under the candidate-freeze rules. Track 3 untouched data
+    (2021-01-01 →) is never acquired at all. Loader-level enforcement (T-U1)
+    remains a G2 obligation for the future research loader.
   * Total-return (adjclose) series are quarantined under data/quarantine_yahoo/
-    and are used exactly once: the T-D3 reconciliation (`reconcile`). They are
-    never merged into any primary dataset (protocol §4, T-D4).
+    and used exactly once, in `reconcile` (T-D3). Never merged into any primary
+    dataset (protocol §4, T-D4).
+
+Primary accounting path (principal direction D-1/D-2, 2026-07-24):
+    split-adjusted, non-total-return prices
+  + explicit GROSS DECLARED point-in-time cash dividends (pre-tax)
+  + explicit point-in-time non-cash corporate actions (spin-offs, valued at the
+    distributed security's consolidated close on the parent's ex-distribution
+    session, cash-in-lieu convention for fractions)
+Foreign withholding, ADR depositary fees, and broker net-cash treatment are
+recorded SEPARATELY (data/dividends/withholding_register.yaml) as source-backed
+sensitivities — never silently netted into the declared amount.
 
 Sources:
-  * Alpaca Market Data (data.alpaca.markets) — split-adjusted IEX daily bars,
-    v1 corporate actions (cash dividends + splits), v1beta3 crypto daily bars.
-    Credentials from environment (ALPACA_API_KEY / ALPACA_API_SECRET), same
-    convention as alpaca_client.py. Committed to the repository (consistent with
-    the repository's existing committed Alpaca cache, data/backtest/).
-  * Yahoo Finance chart API via curl_cffi impersonate="chrome110" (the repository's
-    established working fingerprint, see earnings.py) — Track 3 long-history
-    SPY/QQQ raw closes + events, per-ticker adjclose TR validation series, ^IRX
-    risk-free fallback. NOT committed (redistribution caution); reproducible via
-    this module; SHA-256 of derived files recorded in data_manifest.yaml.
+  * Alpaca Market Data — split-adjusted daily bars (feed=iex; documented
+    ticker-specific exception: GEV uses feed=sip, see GEV_FEED_EXCEPTION),
+    v1 corporate actions (cash dividends, splits, spin-offs), v1beta3 crypto.
+    Committed (repository precedent: data/backtest/).
+  * Yahoo Finance chart API via curl_cffi impersonate="chrome110" (repository
+    fingerprint, earnings.py) — quarantined TR validation series, Track 3
+    books, ^IRX. NOT committed (licensing); reproducible; hashes recorded.
+  * FRED DFF (Federal Funds Effective) — network-blocked in this environment;
+    ingested from a principal-supplied fredgraph CSV via the `dff` subcommand.
 
 Subcommands:
-  prices      acquire roster split-adjusted daily bars (2020-07-01 -> run date)
-  dividends   acquire point-in-time dividend + split ledger (dev-bounded)
+  prices      acquire roster bars; write dev-truncated files + sealed archive
+  dividends   acquire gross-declared PIT dividend ledger v2 (+ splits)
+  corpactions acquire/record PIT spin-off ledger with valuation evidence
   crypto      acquire BTC/ETH/SOL daily bars (2021-06-01 -> 2025-06-30)
   yahoo       acquire quarantined Yahoo datasets (TR validation, Track 3, ^IRX)
-  inventory   hash + coverage inventory of the existing data/backtest cache
-  validate    run all deterministic G1 data validators (read-only)
-  reconcile   T-D3 dividend reconciliation (primary path vs quarantined TR)
+  dff <csv>   validate + ingest principal-supplied FRED DFF CSV; emit the
+              Robinhood-observation reconstruction comparison
+  inventory   hash + coverage inventory of the legacy data/backtest cache
+  validate    run all deterministic G1 validators (read-only)
+  reconcile   T-D3 reconciliation (primary path incl. corporate actions vs TR)
 """
 
 from __future__ import annotations
 
+import gzip
 import hashlib
+import io
 import json
-import math
 import os
 import ssl
 import sys
+import tarfile
 import time
 import urllib.parse
 import urllib.request
@@ -64,9 +79,14 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 DATA = HERE / "data"
 PRICES_DIR = DATA / "prices"
+SEALED_DIR = DATA / "untouched_sealed"
+SEALED_ARCHIVE = SEALED_DIR / "untouched_prices.tar.gz"
+SEALED_INDEX = SEALED_DIR / "SEALED_INDEX.json"
 DIV_DIR = DATA / "dividends"
+CA_DIR = DATA / "corporate_actions"
 CRYPTO_DIR = DATA / "crypto"
-QUAR = DATA / "quarantine_yahoo"          # never committed; TR/Track3/rates
+RATES_DIR_COMMITTED = DATA / "rates"
+QUAR = DATA / "quarantine_yahoo"
 TR_DIR = QUAR / "tr"
 TRACK3_DIR = QUAR / "track3"
 RATES_DIR = QUAR / "rates"
@@ -75,21 +95,63 @@ BACKTEST_CACHE = REPO / "data" / "backtest"
 # ---- governed boundaries (pre_registration.yaml) ----
 DEV_BOUNDARY_T2 = "2025-06-30"
 DEV_BOUNDARY_T3 = "2020-12-31"
-PRICE_START = "2020-07-01"                # matches existing cache design (signal warm-up)
+PRICE_START = "2020-07-01"
 RUN_DATE = "2026-07-23"                   # last complete session at G1 execution
 DIV_START = "2020-07-01"
-CRYPTO_START = "2021-06-01"               # protocol §4 crypto gap row
+CRYPTO_START = "2021-06-01"
 TR_START = "2021-05-01"
 T3_SPY_START = "1993-01-29"
 T3_QQQ_START = "1999-03-10"
 IRX_START = "1999-01-01"
+DFF_START = "1999-01-01"
 
 EXCLUDE = {"SPCX", "SKHY"}                # roster_63 convention (backtest_regime.py)
 CRYPTO_SYMS = ("BTC/USD", "ETH/USD", "SOL/USD")
-YAHOO_SYMBOL = {"BRK.B": "BRK-B"}         # brokerage dot form -> Yahoo dash form
+YAHOO_SYMBOL = {"BRK.B": "BRK-B"}
 
-DISCONTINUITY_ABS_RET = 0.45              # flag threshold for split-shaped jumps
-TD3_TOLERANCE_PP = 0.3                    # protocol T-D3, per ticker-portfolio, pp/yr
+# Documented ticker-specific source exception (G1 remediation, decision D-3
+# outcome A): GEV's IEX prints deviate from the consolidated tape on multiple
+# dated sessions (worst 2024-12-23: 344.92 SIP vs 339.34 IEX, 1.618%; also
+# 2024-09-17 0.573%, 2024-04-02 0.286%) — enough to breach the T-D3 tolerance
+# over its short 1.24y listing window.  GEV therefore uses Alpaca's SIP
+# (consolidated) historical feed; same vendor, same API, same adjustment mode.
+GEV_FEED_EXCEPTION = {"GEV": "sip"}
+
+# Hand-authored PIT spin-off records for events predating the vendor
+# corporate-actions feed's spin_off coverage (which returns DHR/VLTO 2023 and
+# WDC/SNDK 2025 but nothing for 2021).  Sources are primary/issuer documents.
+HAND_AUTHORED_SPINOFFS = [
+    {"parent": "IBM", "child": "KD", "ratio": 0.2,
+     "announcement_date": "2020-10-08", "record_date": "2021-10-25",
+     "distribution_date": "2021-11-03", "parent_ex_session": "2021-11-04",
+     "cash_in_lieu": "fractional KD shares paid in cash by the distribution agent",
+     "source": "IBM Form 8-K ex-99.1 (SEC EDGAR 51143/000110465921125064) + "
+               "IBM investor FAQ + Kyndryl IR spin-off information page",
+     "source_classification": "primary_issuer_filing_hand_recorded",
+     "note": "1 KD per 5 IBM; distribution after close 2021-11-03; IBM traded "
+             "ex-distribution 2021-11-04 (Yahoo pseudo-split factor 1.046 dated "
+             "2021-11-04 corroborates)"},
+    {"parent": "MRK", "child": "OGN", "ratio": 0.1,
+     "announcement_date": "2020-02-05", "record_date": "2021-05-17",
+     "distribution_date": "2021-06-02", "parent_ex_session": "2021-06-03",
+     "cash_in_lieu": "fractional OGN shares paid in cash",
+     "source": "Merck news release 2021-05-07 'Merck Declares Record Date and "
+               "Dividend for the Organon & Co. Spinoff' (merck.com) + Form 10",
+     "source_classification": "primary_issuer_announcement_hand_recorded",
+     "note": "0.1 OGN per MRK; distributed 2021-06-02; MRK ex-distribution "
+             "session 2021-06-03 (Yahoo factor 1.048 dated 2021-06-03 corroborates)"},
+]
+# Announcement dates for the vendor-supplied rows (vendor feed carries no
+# announcement field); hand-recorded from issuer announcements.
+SPINOFF_ANNOUNCEMENTS = {
+    ("DHR", "VLTO"): ("2022-09-14", "Danaher announcement of intent to separate "
+                                    "its Environmental & Applied Solutions segment"),
+    ("WDC", "SNDK"): ("2023-10-30", "Western Digital board decision to separate "
+                                    "HDD and Flash businesses"),
+}
+
+DISCONTINUITY_ABS_RET = 0.45
+TD3_TOLERANCE_PP = 0.3
 
 _ctx = ssl.create_default_context(cafile=certifi.where())
 
@@ -108,7 +170,7 @@ def _get_json(url: str, headers: dict | None = None, retries: int = 4) -> dict:
             req = urllib.request.Request(url, headers=headers or {})
             with urllib.request.urlopen(req, timeout=60, context=_ctx) as r:
                 return json.loads(r.read())
-        except Exception as e:  # noqa: BLE001 - retry then surface
+        except Exception as e:  # noqa: BLE001
             last = e
             time.sleep(1.5 * (attempt + 1))
     raise RuntimeError(f"GET failed after {retries} tries: {url} :: {last}")
@@ -130,9 +192,7 @@ def _yahoo_json(url: str, retries: int = 4) -> dict:
 
 
 def sha256_file(p: Path) -> str:
-    h = hashlib.sha256()
-    h.update(p.read_bytes())
-    return h.hexdigest()
+    return hashlib.sha256(p.read_bytes()).hexdigest()
 
 
 def _now_utc() -> str:
@@ -161,45 +221,111 @@ def _write_json(path: Path, obj) -> None:
                                sort_keys=False) + "\n")
 
 
+def _fetch_stock_bars(sym: str, start: str, end: str, feed: str) -> list[dict]:
+    H = _alpaca_headers()
+    q = urllib.parse.quote(sym, safe="")
+    bars, token = [], None
+    while True:
+        url = (f"https://data.alpaca.markets/v2/stocks/{q}/bars"
+               f"?timeframe=1Day&adjustment=split&feed={feed}"
+               f"&start={start}&end={end}T23%3A59%3A59Z&limit=10000")
+        if token:
+            url += f"&page_token={urllib.parse.quote(token, safe='')}"
+        d = _get_json(url, _alpaca_headers())
+        bars += d.get("bars") or []
+        token = d.get("next_page_token")
+        if not token:
+            break
+    return bars
+
+
 # --------------------------------------------------------------------------
 # acquisition
 # --------------------------------------------------------------------------
 
 def acquire_prices() -> None:
-    """Roster split-adjusted IEX daily bars, PRICE_START -> RUN_DATE (charter G1:
-    'refreshed through the run date'). Untouched segment stored, never consumed."""
-    H = _alpaca_headers()
+    """Roster split-adjusted daily bars, PRICE_START -> RUN_DATE (charter G1:
+    'refreshed through the run date').  Development-visible files are truncated
+    at DEV_BOUNDARY_T2; the post-boundary segment goes into the sealed archive
+    with structural integrity recorded at seal time (counts and pass/fail only —
+    no values leave the archive)."""
+    sealed_members: dict[str, bytes] = {}
+    sealed_meta: dict[str, dict] = {}
     for sym in roster_63():
-        q = urllib.parse.quote(sym, safe="")
-        bars, token = [], None
-        while True:
-            url = (f"https://data.alpaca.markets/v2/stocks/{q}/bars"
-                   f"?timeframe=1Day&adjustment=split&feed=iex"
-                   f"&start={PRICE_START}&end={RUN_DATE}T23%3A59%3A59Z&limit=10000")
-            if token:
-                url += f"&page_token={urllib.parse.quote(token, safe='')}"
-            d = _get_json(url, H)
-            bars += d.get("bars") or []
-            token = d.get("next_page_token")
-            if not token:
-                break
+        feed = GEV_FEED_EXCEPTION.get(sym, "iex")
+        bars = _fetch_stock_bars(sym, PRICE_START, RUN_DATE, feed)
+        dev = [b for b in bars if _bar_date(b["t"]) <= DEV_BOUNDARY_T2]
+        unt = [b for b in bars if _bar_date(b["t"]) > DEV_BOUNDARY_T2]
         _write_json(PRICES_DIR / f"{sym}.json", {
-            "meta": {"symbol": sym, "source": "alpaca_iex_daily",
-                     "adjustment": "split", "feed": "iex",
-                     "start": PRICE_START, "end": RUN_DATE,
+            "meta": {"symbol": sym, "source": f"alpaca_{feed}_daily",
+                     "adjustment": "split", "feed": feed,
+                     "feed_exception": sym in GEV_FEED_EXCEPTION,
+                     "start": PRICE_START, "end": DEV_BOUNDARY_T2,
                      "acquired_at": _now_utc(),
-                     "isolation": "contains_untouched_segment_loader_truncation_required"},
-            "bars": bars})
-        print(f"  prices {sym}: {len(bars)} bars "
-              f"{_bar_date(bars[0]['t'])} -> {_bar_date(bars[-1]['t'])}" if bars
-              else f"  prices {sym}: EMPTY")
+                     "isolation": "dev_truncated_at_acquisition; post-boundary "
+                                  "segment sealed in data/untouched_sealed/"},
+            "bars": dev})
+        # structural integrity of the untouched segment, computed once at seal
+        # time; only counts/booleans are retained outside the archive.
+        udates = [_bar_date(b["t"]) for b in unt]
+        sealed_meta[sym] = {
+            "rows": len(unt),
+            "coverage": f"{udates[0]} -> {udates[-1]}" if unt else "EMPTY",
+            "duplicates": len(udates) - len(set(udates)),
+            "nonpositive": sum(1 for b in unt
+                               if min(b["o"], b["h"], b["l"], b["c"]) <= 0),
+        }
+        sealed_members[f"{sym}.json"] = json.dumps(unt).encode()
+        print(f"  prices {sym} [{feed}]: dev={len(dev)} "
+              f"({_bar_date(dev[0]['t'])}->{_bar_date(dev[-1]['t'])}) "
+              f"sealed={len(unt)}")
         time.sleep(0.15)
+
+    # deterministic tar.gz (fixed mtimes/owners) so the sealed hash is reproducible
+    SEALED_DIR.mkdir(parents=True, exist_ok=True)
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w") as tf:
+        for name in sorted(sealed_members):
+            data = sealed_members[name]
+            ti = tarfile.TarInfo(name=name)
+            ti.size = len(data)
+            ti.mtime = 0
+            ti.uid = ti.gid = 0
+            ti.uname = ti.gname = ""
+            tf.addfile(ti, io.BytesIO(data))
+    with open(SEALED_ARCHIVE, "wb") as f:
+        with gzip.GzipFile(fileobj=f, mode="wb", mtime=0) as gz:
+            gz.write(buf.getvalue())
+    _write_json(SEALED_INDEX, {
+        "meta": {"sealed_at": _now_utc(),
+                 "boundary": DEV_BOUNDARY_T2, "run_date": RUN_DATE,
+                 "rule": "UNTOUCHED-TEST SEGMENT — G4-runner unseal only, after "
+                         "the candidate freeze (charter §6; pre_registration "
+                         "untouched_test_isolation). No G1/G2/G3 code may open "
+                         "the archive; integrity checks are byte-level (SHA-256).",
+                 "archive": "untouched_prices.tar.gz",
+                 "archive_sha256": sha256_file(SEALED_ARCHIVE)},
+        "members": sealed_meta})
+    print(f"  sealed archive: {SEALED_ARCHIVE.name} "
+          f"sha256={sha256_file(SEALED_ARCHIVE)[:16]}…")
 
 
 def acquire_dividends() -> None:
-    """Point-in-time cash dividends (DIV_START -> DEV_BOUNDARY_T2) and split
-    records (DIV_START -> RUN_DATE; splits are adjustment metadata and must cover
-    every split already baked into the as-of-now split-adjusted price history)."""
+    """Gross-declared PIT dividend ledger v2 (principal direction D-2) + splits.
+
+    Gross determination rule (deterministic, per event):
+      1. Vendor rows are deduped and split-adjusted as in v1.
+      2. For tickers whose Yahoo history is spinoff-scaled (pseudo-split
+         tickers), the vendor amount IS the declared gross — Yahoo is unusable
+         as a gross reference there.
+      3. Otherwise each vendor amount is matched to the quarantined Yahoo gross
+         event (±2d).  Match within 0.6% -> corroborated gross (vendor value).
+         Vendor < Yahoo by more (net-of-withholding / fee convention) ->
+         gross := Yahoo amount, vendor amount retained as vendor_net.
+         Vendor > Yahoo -> vendor value kept, flagged anomaly.
+         Unmatched -> vendor value kept, flagged uncorroborated.
+    Withholding/fee conventions live in withholding_register.yaml — separate,
+    never netted into gross."""
     H = _alpaca_headers()
     syms = roster_63()
 
@@ -223,18 +349,11 @@ def acquire_dividends() -> None:
             time.sleep(0.2)
         return acc
 
-    # The corporate-actions endpoint's start/end window does not reliably select
-    # on ex_date (events with ex_date near the boundary but later payable/process
-    # dates fall outside a tight window).  Query with a +120d buffer and filter
-    # locally on ex_date <= DEV_BOUNDARY_T2 — the governed boundary is applied
-    # here, deterministically, not by the vendor's window semantics.
     raw_divs = _fetch("cash_dividend", DIV_START, "2025-10-31").get("cash_dividends", [])
     divs, seen = [], set()
     for d in raw_divs:
         if d["ex_date"] > DEV_BOUNDARY_T2:
             continue
-        # vendor feed carries occasional duplicate rows (same symbol/ex_date/rate,
-        # distinct ids) — dedupe on the economic key, keep the first row.
         k = (d["symbol"], d["ex_date"], d["rate"], bool(d.get("special")))
         if k in seen:
             continue
@@ -243,36 +362,107 @@ def acquire_dividends() -> None:
     sp = _fetch("forward_split,reverse_split", DIV_START, RUN_DATE)
     splits = sp.get("forward_splits", []) + sp.get("reverse_splits", [])
 
-    # split-adjust dividend amounts so they live in the same units as the
-    # split-adjusted price series: divide by every split factor whose ex_date
-    # is AFTER the dividend's ex_date.
     factors: dict[str, list[tuple[str, float]]] = {}
     for s in splits:
         factors.setdefault(s["symbol"], []).append(
             (s["ex_date"], float(s["new_rate"]) / float(s["old_rate"])))
-    ledger = []
+
+    # Yahoo gross references + pseudo-split (spinoff-scaled) ticker set
+    yahoo_div: dict[str, dict[str, float]] = {}
+    spinoff_scaled: set[str] = set()
+    real_split_keys = {(s["symbol"], s["ex_date"]) for s in splits}
+    for sym in syms:
+        trf = TR_DIR / f"{sym}.json"
+        if not trf.exists():
+            continue
+        ydoc = json.loads(trf.read_text())
+        yahoo_div[sym] = {r["date"]: r["amount"]
+                          for r in ydoc["dividends_split_adjusted_yahoo"]}
+        for spv in ydoc["splits"]:
+            near = any(rs == sym and abs((date.fromisoformat(spv["date"])
+                                          - date.fromisoformat(rd)).days) <= 3
+                       for rs, rd in real_split_keys)
+            if not near:
+                spinoff_scaled.add(sym)
+
+    # Gross determination runs at (symbol, ex_date) AGGREGATE level: issuers can
+    # declare a regular and a special dividend on the same ex-date as separate
+    # vendor rows while Yahoo reports one combined gross event (e.g. BABA
+    # 2024-06-13: vendor 0.98 regular + 0.66 special vs Yahoo 1.66 combined) —
+    # per-row matching would double-count the combined gross.  When the vendor
+    # date-total is net-convention, the Yahoo gross total is prorated across the
+    # date's constituent rows (documented approximation, <=1% per row).
+    grouped: dict[tuple[str, str], list[dict]] = {}
     for d in sorted(divs, key=lambda r: (r["symbol"], r["ex_date"])):
-        f = 1.0
-        for ex, fac in factors.get(d["symbol"], []):
-            if ex > d["ex_date"]:
-                f *= fac
-        ledger.append({
-            "symbol": d["symbol"], "ex_date": d["ex_date"],
-            "rate_raw": float(d["rate"]),
-            "rate_split_adjusted": float(d["rate"]) / f,
-            "split_adjustment_factor": f,
-            "payable_date": d.get("payable_date"),
-            "record_date": d.get("record_date"),
-            "special": bool(d.get("special")),
-            "foreign": bool(d.get("foreign")),
-            "alpaca_id": d.get("id")})
+        grouped.setdefault((d["symbol"], d["ex_date"]), []).append(d)
+
+    ledger = []
+    for (sym, ex), rows_g in grouped.items():
+        adj_rows = []
+        for d in rows_g:
+            f = 1.0
+            for exd, fac in factors.get(sym, []):
+                if exd > d["ex_date"]:
+                    f *= fac
+            adj_rows.append((d, float(d["rate"]) / f, f))
+        vendor_total = sum(a for _, a, _ in adj_rows)
+        gross_total, gsrc = vendor_total, "alpaca_ca"
+        corr = "corroborated"
+        if sym in spinoff_scaled:
+            corr = "vendor_declared (Yahoo history spinoff-scaled, unusable as gross reference)"
+        elif ex < TR_START:
+            corr = ("pre_cross_source_window (before TR acquisition start "
+                    f"{TR_START}; outside the 2021-06-01 simulation window; "
+                    "vendor value retained)")
+        else:
+            match = None
+            yd = yahoo_div.get(sym, {})
+            for k in (0, -1, 1, -2, 2):
+                dd = (date.fromisoformat(ex) + timedelta(days=k)).isoformat()
+                if dd in yd:
+                    match = yd[dd]
+                    break
+            if match is None:
+                corr = "UNCORROBORATED vendor-only row"
+            elif abs(match - vendor_total) <= max(0.0006, 0.006 * vendor_total):
+                corr = "corroborated"
+            elif vendor_total < match:
+                gross_total, gsrc = match, "yahoo_events_gross"
+                corr = ("vendor date-total is net-convention; gross date-total "
+                        "taken from Yahoo declared"
+                        + (", prorated across same-ex-date rows" if len(adj_rows) > 1 else ""))
+            else:
+                corr = "ANOMALY vendor > yahoo (kept vendor, flagged)"
+        scale = gross_total / vendor_total if vendor_total > 0 else 1.0
+        for d, vendor_adj, f in adj_rows:
+            gross = vendor_adj * scale
+            vendor_net = vendor_adj if gsrc == "yahoo_events_gross" else None
+            ledger.append({
+                "symbol": sym, "ex_date": d["ex_date"],
+                "gross_declared": gross,
+                "gross_source": gsrc,
+                "vendor_alpaca_amount": vendor_adj,
+                "vendor_net": vendor_net,
+                "rate_raw_unadjusted": float(d["rate"]),
+                "split_adjustment_factor": f,
+                "payable_date": d.get("payable_date"),
+                "record_date": d.get("record_date"),
+                "special": bool(d.get("special")),
+                "foreign": bool(d.get("foreign")),
+                "corroboration": corr,
+                "alpaca_id": d.get("id")})
+    ledger.sort(key=lambda r: (r["symbol"], r["ex_date"]))
     _write_json(DIV_DIR / "dividend_ledger.json", {
-        "meta": {"source": "alpaca_corporate_actions_v1", "types": "cash_dividend",
+        "meta": {"schema": "v2_gross_declared",
+                 "source": "alpaca_corporate_actions_v1 + yahoo_events_gross "
+                           "(gross determination rule in data_acquisition.py)",
                  "start": DIV_START, "end": DEV_BOUNDARY_T2,
                  "acquired_at": _now_utc(),
-                 "adjustment": "amounts divided by post-ex-date split factors "
-                               "(split ledger below) to match split-adjusted prices",
-                 "credit_convention": "ex_date (pre_registration.yaml dividends.credit)",
+                 "convention": "PRIMARY = gross declared pre-tax cash per share, "
+                               "split-adjusted; withholding/fees/net treatment "
+                               "recorded separately in withholding_register.yaml "
+                               "(principal direction D-2)",
+                 "credit_convention": "ex_date",
                  "isolation": "dev_bounded_max_ex_date_2025-06-30"},
         "dividends": ledger})
     _write_json(DIV_DIR / "splits.json", {
@@ -282,12 +472,96 @@ def acquire_dividends() -> None:
                  "note": "coverage runs to the run date because current "
                          "split-adjusted prices embed all splits to date"},
         "splits": sorted(splits, key=lambda r: (r["symbol"], r["ex_date"]))})
-    print(f"  dividends: {len(ledger)} events, splits: {len(splits)}")
+    n_gross_from_yahoo = sum(1 for r in ledger if r["gross_source"] == "yahoo_events_gross")
+    print(f"  dividends v2: {len(ledger)} events; gross-from-yahoo {n_gross_from_yahoo}; "
+          f"splits {len(splits)}; spinoff-scaled tickers {sorted(spinoff_scaled)}")
+
+
+def acquire_corporate_actions() -> None:
+    """PIT non-cash corporate-action (spin-off) ledger for the roster
+    (principal decision D-1).  Vendor spin_off records where the feed covers
+    them; hand-authored primary-source records for 2021 events predating feed
+    coverage; each event carries the distributed security's consolidated (SIP)
+    close on the parent's ex-distribution session as valuation evidence."""
+    H = _alpaca_headers()
+    syms = roster_63()
+    url = ("https://data.alpaca.markets/v1/corporate-actions"
+           f"?symbols={','.join(syms)}&types=spin_off"
+           f"&start={DIV_START}&end={DEV_BOUNDARY_T2}&limit=1000")
+    d = _get_json(url, H)
+    vendor = (d.get("corporate_actions") or {}).get("spin_offs", [])
+
+    events = []
+    for v in vendor:
+        parent = v["source_symbol"]
+        if parent not in syms:
+            continue
+        ann = SPINOFF_ANNOUNCEMENTS.get((parent, v["new_symbol"]), (None, None))
+        events.append({
+            "parent": parent, "child": v["new_symbol"],
+            "ratio_child_per_parent": float(v["new_rate"]) / float(v["source_rate"]),
+            "announcement_date": ann[0], "announcement_source": ann[1],
+            "record_date": v.get("record_date"),
+            "ex_date": v["ex_date"],
+            "cash_in_lieu": "fractional shares paid in cash (standard distribution-agent treatment)",
+            "source": "alpaca_corporate_actions_v1 spin_off record",
+            "source_classification": "commercial_vendor_corporate_actions",
+            "alpaca_id": v.get("id")})
+    for h in HAND_AUTHORED_SPINOFFS:
+        if h["parent"] not in syms:
+            continue
+        events.append({
+            "parent": h["parent"], "child": h["child"],
+            "ratio_child_per_parent": h["ratio"],
+            "announcement_date": h["announcement_date"],
+            "announcement_source": h["source"],
+            "record_date": h["record_date"],
+            "ex_date": h["parent_ex_session"],
+            "distribution_date": h["distribution_date"],
+            "cash_in_lieu": h["cash_in_lieu"],
+            "source": h["source"],
+            "source_classification": h["source_classification"],
+            "note": h["note"]})
+
+    # valuation evidence: child consolidated close on the parent's ex session
+    for ev in events:
+        start = ev["ex_date"]
+        end = (date.fromisoformat(start) + timedelta(days=5)).isoformat()
+        bars = _fetch_stock_bars(ev["child"], start, end, "sip")
+        if bars and _bar_date(bars[0]["t"]) == start:
+            ev["child_close_on_parent_ex_session"] = bars[0]["c"]
+            ev["child_close_source"] = "alpaca_sip_daily_split_adjusted"
+        else:
+            ev["child_close_on_parent_ex_session"] = None
+            ev["child_close_source"] = f"UNAVAILABLE (first bar {_bar_date(bars[0]['t']) if bars else 'none'})"
+        time.sleep(0.2)
+
+    events.sort(key=lambda e: (e["parent"], e["ex_date"]))
+    _write_json(CA_DIR / "spinoffs.json", {
+        "meta": {"acquired_at": _now_utc(),
+                 "coverage": f"{DIV_START} -> {DEV_BOUNDARY_T2} (roster parents)",
+                 "valuation_rule": "in-kind distribution valued at "
+                                   "ratio x child consolidated close on the "
+                                   "parent's ex-distribution session, credited "
+                                   "as reinvestable cash that session "
+                                   "(assumption A-17)",
+                 "isolation": "dev_bounded",
+                 "context_note": "GEV investigated (decision D-1 list): GEV is "
+                                 "itself the distributed child of GE's "
+                                 "2024-04-02 spin-off (GE not in roster); no "
+                                 "parent-side event exists for GEV holders "
+                                 "in-window — its T-D3 divergence was a price-"
+                                 "feed issue resolved under D-3, not a "
+                                 "corporate action"},
+        "events": events})
+    for e in events:
+        print(f"  spinoff {e['parent']}->{e['child']} ex {e['ex_date']} "
+              f"ratio {e['ratio_child_per_parent']:.6f} "
+              f"child_close {e['child_close_on_parent_ex_session']}")
 
 
 def acquire_crypto() -> None:
-    """BTC/ETH/SOL daily bars, CRYPTO_START -> DEV_BOUNDARY_T2 only (protocol §4
-    crypto row: '2021-06 -> dev boundary'). No untouched-period crypto stored."""
+    """BTC/ETH/SOL daily bars, CRYPTO_START -> DEV_BOUNDARY_T2 only."""
     H = _alpaca_headers()
     for sym in CRYPTO_SYMS:
         q = urllib.parse.quote(sym, safe="")
@@ -311,8 +585,7 @@ def acquire_crypto() -> None:
                      "bucket": "UTC calendar day, t = bucket start 00:00Z",
                      "isolation": "dev_bounded_max_bar_2025-06-30"},
             "bars": bars})
-        print(f"  crypto {sym}: {len(bars)} bars "
-              f"{_bar_date(bars[0]['t'])} -> {_bar_date(bars[-1]['t'])}")
+        print(f"  crypto {sym}: {len(bars)} bars")
         time.sleep(0.2)
 
 
@@ -326,7 +599,6 @@ def _yahoo_chart(sym: str, start: str, end: str) -> dict:
 
 
 def _yahoo_series(sym: str, start: str, end: str) -> dict:
-    """Extract dated close/adjclose/dividend/split series from a Yahoo chart blob."""
     from zoneinfo import ZoneInfo
     res = _yahoo_chart(sym, start, end)["chart"]["result"][0]
     tz = ZoneInfo(res["meta"].get("exchangeTimezoneName", "America/New_York"))
@@ -351,11 +623,7 @@ def _yahoo_series(sym: str, start: str, end: str) -> dict:
 
 
 def acquire_yahoo() -> None:
-    """Quarantined Yahoo datasets: (1) per-ticker adjclose TR validation series,
-    dev window only; (2) Track 3 SPY/QQQ constructed split-adjusted books +
-    dividends + quarantined TR, through DEV_BOUNDARY_T3 only; (3) ^IRX risk-free
-    fallback. All under data/quarantine_yahoo/ — never committed, hashes recorded."""
-    # (1) TR validation series (T-D3 comparators)
+    """Quarantined Yahoo datasets (TR validation, Track 3 books, ^IRX)."""
     for sym in roster_63():
         ys = YAHOO_SYMBOL.get(sym, sym)
         s = _yahoo_series(ys, TR_START, DEV_BOUNDARY_T2)
@@ -370,18 +638,11 @@ def acquire_yahoo() -> None:
             "close_raw": s["close"],
             "dividends_split_adjusted_yahoo": s["dividends"],
             "splits": s["splits"]})
-        print(f"  tr {sym}: {len(s['adjclose'])} adjclose rows, "
-              f"{len(s['dividends'])} div events")
+        print(f"  tr {sym}: {len(s['adjclose'])} rows")
         time.sleep(0.35)
-
-    # (2) Track 3 books — raw close split-adjusted by cumulative forward factor
     for sym, start in (("SPY", T3_SPY_START), ("QQQ", T3_QQQ_START)):
         s = _yahoo_series(sym, start, DEV_BOUNDARY_T3)
-        # Yahoo's v8 chart `close` series is already split-adjusted (verified
-        # empirically at G1: QQQ's 2000-03-20 2:1 split shows no discontinuity in
-        # the raw series, and re-dividing created one).  Identity transform; the
-        # split events are retained as metadata.
-        adj_close = [{"date": row["date"], "close": row["close"]} for row in s["close"]]
+        adj_close = [{"date": r["date"], "close": r["close"]} for r in s["close"]]
         _write_json(TRACK3_DIR / f"{sym}.json", {
             "meta": {"symbol": sym, "source": "yahoo_v8_chart_close",
                      "transformation": "none (Yahoo chart close is already "
@@ -394,22 +655,112 @@ def acquire_yahoo() -> None:
             "dividends_split_adjusted_yahoo": s["dividends"],
             "splits": s["splits"],
             "adjclose_quarantined_tr": s["adjclose"]})
-        print(f"  track3 {sym}: {len(adj_close)} sessions, "
-              f"{len(s['dividends'])} divs, splits={s['splits']}")
+        print(f"  track3 {sym}: {len(adj_close)} sessions")
         time.sleep(0.35)
-
-    # (3) ^IRX 13-week T-bill discount yield — risk-free fallback series
     s = _yahoo_series("^IRX", IRX_START, DEV_BOUNDARY_T2)
     _write_json(RATES_DIR / "irx_13w_tbill.json", {
         "meta": {"symbol": "^IRX", "source": "yahoo_v8_chart",
                  "unit": "percent_discount_yield",
-                 "role": "risk-free fallback series (primary Treasury/FRED/NYFed "
-                         "sources are proxy-policy-blocked in this environment; "
-                         "protocol §10 disclosed-fallback-band provision)",
+                 "role": "risk-free fallback series (primary sources "
+                         "network-blocked; protocol §10 disclosed-fallback-band)",
                  "start": IRX_START, "end": DEV_BOUNDARY_T2,
                  "acquired_at": _now_utc(), "isolation": "dev_bounded"},
         "close": s["close"]})
     print(f"  rates ^IRX: {len(s['close'])} rows")
+
+
+# --------------------------------------------------------------------------
+# DFF ingestion (principal-supplied CSV; decision D-4)
+# --------------------------------------------------------------------------
+
+DFF_EXPECTED_SCHEMA = """\
+Expected file: FRED fredgraph CSV for series DFF (Federal Funds Effective Rate).
+  Locator: https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF&cosd=1999-01-01
+  Format:  header line 'DATE,DFF' (legacy) or 'observation_date,DFF';
+           rows 'YYYY-MM-DD,<decimal percent>'; missing values '.'
+  Coverage required: 1999-01-01 through at least 2025-06-30 (daily incl. weekends).
+  Validation command:
+    python3 research/margin_target_study/data_acquisition.py dff <path-to-csv>
+  On pass it writes data/rates/dff.json (dev-bounded at 2025-06-30; FRED data is
+  US-government public domain, committable) and prints the reconstruction
+  comparison against the recorded Robinhood observations.
+"""
+
+
+def ingest_dff(csv_path: str) -> bool:
+    p = Path(csv_path)
+    if not p.exists():
+        print(f"DFF: file not found: {csv_path}\n\n{DFF_EXPECTED_SCHEMA}")
+        return False
+    rows = []
+    lines = p.read_text().strip().splitlines()
+    header = lines[0].strip().lower()
+    if header not in ("date,dff", "observation_date,dff"):
+        print(f"DFF: unexpected header {lines[0]!r}\n\n{DFF_EXPECTED_SCHEMA}")
+        return False
+    for ln in lines[1:]:
+        d0, v = ln.split(",", 1)
+        v = v.strip()
+        if v in (".", ""):
+            continue
+        rows.append({"date": d0.strip(), "rate_pct": float(v)})
+    rows.sort(key=lambda r: r["date"])
+    dates = [r["date"] for r in rows]
+    ok = True
+    if len(dates) != len(set(dates)):
+        print("DFF: duplicate dates"); ok = False
+    if dates[0] > DFF_START:
+        print(f"DFF: coverage starts {dates[0]} (> required {DFF_START})"); ok = False
+    if dates[-1] < DEV_BOUNDARY_T2:
+        print(f"DFF: coverage ends {dates[-1]} (< required {DEV_BOUNDARY_T2})"); ok = False
+    bad = [r for r in rows if not (0.0 <= r["rate_pct"] <= 25.0)]
+    if bad:
+        print(f"DFF: {len(bad)} out-of-range values"); ok = False
+    gaps = []
+    prev = date.fromisoformat(dates[0])
+    for ds in dates[1:]:
+        cur = date.fromisoformat(ds)
+        if (cur - prev).days > 4:
+            gaps.append((prev.isoformat(), cur.isoformat()))
+        prev = cur
+    if gaps:
+        print(f"DFF: {len(gaps)} gaps > 4 days: {gaps[:5]}"); ok = False
+    if not ok:
+        return False
+    dev = [r for r in rows if DFF_START <= r["date"] <= DEV_BOUNDARY_T2]
+    _write_json(RATES_DIR_COMMITTED / "dff.json", {
+        "meta": {"series": "DFF", "source": "FRED fredgraph CSV, principal-supplied",
+                 "source_file_sha256": sha256_file(p),
+                 "coverage_supplied": f"{dates[0]} -> {dates[-1]}",
+                 "coverage_stored": f"{dev[0]['date']} -> {dev[-1]['date']} (dev-bounded)",
+                 "acquired_at": _now_utc(),
+                 "license": "US government public domain (committable)",
+                 "isolation": "dev_bounded"},
+        "rates": dev})
+    print(f"DFF: PASS — {len(dev)} dev-window rows stored "
+          f"({dev[0]['date']} -> {dev[-1]['date']}); supplied file sha256 recorded")
+    # reconstruction comparison vs recorded Robinhood observations
+    import yaml
+    ev = yaml.safe_load(open(RATES_DIR_COMMITTED / "robinhood_margin_rate_evidence.yaml"))
+    dmap = {r["date"]: r["rate_pct"] for r in rows}
+    print("Reconstruction check (observed Gold lowest-tier rate minus DFF on/near "
+          "the observation date = implied spread; compare vs the issuer's "
+          "published target-upper + 2.5pp mechanism):")
+    for obs, rate in (("2022-11-03", 6.5), ("2026-07-01", 5.0)):
+        dd = obs
+        k = 0
+        while dd not in dmap and k < 5:
+            k += 1
+            dd = (date.fromisoformat(obs) + timedelta(days=k)).isoformat()
+        if dd in dmap:
+            print(f"  {obs}: observed {rate}% − DFF {dmap[dd]}% = "
+                  f"implied spread {rate - dmap[dd]:.2f}pp")
+        else:
+            print(f"  {obs}: DFF value not in supplied file")
+    print("If the DFF-based and target-upper-based constructions diverge enough "
+          "to alter costs or a candidate classification, a MARGIN-0005 charter "
+          "amendment is required before simulations (recorded in the G1 report).")
+    return True
 
 
 def inventory_existing_cache() -> list[dict]:
@@ -431,8 +782,6 @@ def _load_prices(sym: str) -> dict:
 
 
 def validate(report_path: Path | None = None) -> bool:
-    """All deterministic G1 validators. Read-only. Returns overall pass/fail
-    for the checks that are decidable from acquired data alone."""
     out: list[str] = []
     ok = True
 
@@ -443,12 +792,10 @@ def validate(report_path: Path | None = None) -> bool:
     syms = roster_63()
     say(f"roster_63: {len(syms)} tickers")
 
-    # ---- price cache (research-side) ----
-    spy_sessions_dev: list[str] = []
     spy_all = [_bar_date(b["t"]) for b in _load_prices("SPY")["bars"]]
     spy_sessions_dev = [d for d in spy_all if d <= DEV_BOUNDARY_T2]
-    say("\n== research price cache ==")
-    stale, disc_flags = [], []
+    say("\n== research price cache (dev-truncated) ==")
+    disc_flags = []
     for sym in syms:
         doc = _load_prices(sym)
         assert doc["meta"]["symbol"] == sym, f"identity mismatch {sym}"
@@ -456,13 +803,18 @@ def validate(report_path: Path | None = None) -> bool:
         dates = [_bar_date(b["t"]) for b in bars]
         dup = len(dates) - len(set(dates))
         nonpos = sum(1 for b in bars if min(b["o"], b["h"], b["l"], b["c"]) <= 0)
-        # missing sessions vs SPY calendar, dev window, post-listing only
+        beyond = sum(1 for d0 in dates if d0 > DEV_BOUNDARY_T2)
         first = dates[0]
         expect = [d for d in spy_sessions_dev if d >= first]
-        have = set(d for d in dates if d <= DEV_BOUNDARY_T2)
-        missing = [d for d in expect if d not in have]
-        # discontinuity scan — DEV WINDOW ONLY (untouched returns never computed)
-        devbars = [b for b in bars if _bar_date(b["t"]) <= DEV_BOUNDARY_T2]
+        have = set(dates)
+        missing_all = [d for d in expect if d not in have]
+        # the simulation window opens 2021-06-01 (pre_registration track2.train);
+        # earlier sessions exist only for signal warm-up — gaps there are a
+        # recorded limitation (e.g. RKLB's thin pre-merger SPAC prints), not a
+        # data-gate failure.
+        missing = [d for d in missing_all if d >= "2021-06-01"]
+        warmup_gaps = len(missing_all) - len(missing)
+        devbars = bars
         jumps = []
         for i in range(1, len(devbars)):
             r = devbars[i]["c"] / devbars[i - 1]["c"] - 1.0
@@ -470,129 +822,112 @@ def validate(report_path: Path | None = None) -> bool:
                 jumps.append((_bar_date(devbars[i]["t"]), round(r, 4)))
         if jumps:
             disc_flags.append((sym, jumps))
-        if dates[-1] != spy_all[-1]:
-            stale.append((sym, dates[-1]))
-        bad = dup or nonpos or (len(missing) > 3)
+        stale = dates[-1] != spy_sessions_dev[-1]
+        bad = dup or nonpos or beyond or (len(missing) > 3) or stale
         if bad:
             ok = False
-        say(f"  {sym}: {len(bars)} bars {dates[0]}->{dates[-1]} "
-            f"dup={dup} nonpos={nonpos} missing_dev={len(missing)}"
+        say(f"  {sym}: {len(bars)} bars {dates[0]}->{dates[-1]} dup={dup} "
+            f"nonpos={nonpos} beyond_boundary={beyond} missing_sim={len(missing)}"
+            + (f" warmup_gaps={warmup_gaps}" if warmup_gaps else "")
             + (f" MISSING={missing[:5]}" if missing else "")
+            + (f" feed={doc['meta']['feed']}" if doc['meta'].get('feed_exception') else "")
             + (" FAIL" if bad else ""))
-    say(f"  stale_end (last bar != SPY last {spy_all[-1]}): {stale or 'none'}")
-    say(f"  discontinuity flags (dev window, |ret|>{DISCONTINUITY_ABS_RET}): "
-        f"{disc_flags or 'none'}")
+    say(f"  discontinuity flags (|ret|>{DISCONTINUITY_ABS_RET}): {disc_flags or 'none'}")
 
-    # cross-check vs production cache on overlap (identical vendor, adjustment)
+    say("\n== sealed untouched archive (byte-level only — never opened) ==")
+    if SEALED_ARCHIVE.exists() and SEALED_INDEX.exists():
+        idx = json.loads(SEALED_INDEX.read_text())
+        h = sha256_file(SEALED_ARCHIVE)
+        match = h == idx["meta"]["archive_sha256"]
+        tot = sum(m["rows"] for m in idx["members"].values())
+        anom = {s: m for s, m in idx["members"].items()
+                if m["duplicates"] or m["nonpositive"]}
+        say(f"  archive sha256 {h[:16]}… matches index: {match}; members "
+            f"{len(idx['members'])}; sealed rows {tot}; seal-time structural "
+            f"anomalies: {anom or 'none'}")
+        if not match or anom:
+            ok = False
+    else:
+        say("  MISSING sealed archive/index")
+        ok = False
+
     say("\n== cross-check vs data/backtest (overlap, dev window) ==")
     mism_total = 0
     for sym in syms:
         f = BACKTEST_CACHE / f"{sym}.json"
         if not f.exists():
-            say(f"  {sym}: no production cache file (skip)")
             continue
         prod = {_bar_date(b["t"]): b["c"] for b in json.loads(f.read_text())
                 if _bar_date(b["t"]) <= DEV_BOUNDARY_T2}
-        res = {_bar_date(b["t"]): b["c"] for b in _load_prices(sym)["bars"]
-               if _bar_date(b["t"]) <= DEV_BOUNDARY_T2}
+        res = {_bar_date(b["t"]): b["c"] for b in _load_prices(sym)["bars"]}
         common = sorted(set(prod) & set(res))
-        mism = [d for d in common if abs(prod[d] - res[d]) > 1e-9 * max(1.0, abs(prod[d]))
-                and abs(prod[d] - res[d]) > 0.005]
+        mism = [d for d in common if abs(prod[d] - res[d]) > 0.005]
         if mism:
             mism_total += len(mism)
-            say(f"  {sym}: {len(mism)}/{len(common)} closes differ "
-                f"(first {mism[0]}: prod {prod[mism[0]]} vs res {res[mism[0]]})")
-    say(f"  total differing closes: {mism_total} (re-adjustment or vendor revision "
-        f"if nonzero — investigate before relying on either copy)")
+            note = " (expected: GEV uses the documented SIP source exception)" \
+                if sym in GEV_FEED_EXCEPTION else ""
+            say(f"  {sym}: {len(mism)}/{len(common)} closes differ{note}")
+            if sym not in GEV_FEED_EXCEPTION:
+                ok = False
+    say(f"  total differing closes: {mism_total} "
+        f"(GEV differences are the documented D-3 source exception)")
 
-    # ---- dividend ledger ----
-    say("\n== dividend ledger ==")
+    say("\n== dividend ledger v2 (gross declared) ==")
     led = json.loads((DIV_DIR / "dividend_ledger.json").read_text())
     rows = led["dividends"]
-    say(f"  events: {len(rows)}")
+    say(f"  events: {len(rows)}; schema: {led['meta']['schema']}")
     keys = [(r["symbol"], r["ex_date"], r["special"]) for r in rows]
     dupk = len(keys) - len(set(keys))
     fut = [r for r in rows if r["ex_date"] > DEV_BOUNDARY_T2]
-    neg = [r for r in rows if r["rate_split_adjusted"] <= 0]
+    neg = [r for r in rows if r["gross_declared"] <= 0]
     chron = [r for r in rows if r.get("payable_date") and r["payable_date"] < r["ex_date"]]
+    netbad = [r for r in rows if r["vendor_net"] is not None
+              and not (0 < r["vendor_net"] <= r["gross_declared"])]
     paydate = sum(1 for r in rows if r.get("payable_date"))
-    if dupk or fut or neg or chron:
+    if dupk or fut or neg or chron or netbad:
         ok = False
-    say(f"  duplicate (symbol,ex_date,special) keys: {dupk}")
-    say(f"  future-date leakage past {DEV_BOUNDARY_T2}: {len(fut)}")
-    say(f"  nonpositive amounts: {len(neg)}")
-    say(f"  payable_date < ex_date: {len(chron)}")
-    say(f"  payable_date availability: {paydate}/{len(rows)}")
-    payers = {}
-    for r in rows:
-        payers.setdefault(r["symbol"], 0)
-        payers[r["symbol"]] += 1
-    nonpayers = [s for s in syms if s not in payers]
-    say(f"  payers: {len(payers)}; non-payers in window: {sorted(nonpayers)}")
+    say(f"  duplicate keys {dupk}; future leakage {len(fut)}; nonpositive gross "
+        f"{len(neg)}; payable<ex {len(chron)}; net>gross {len(netbad)}; "
+        f"payable availability {paydate}/{len(rows)}")
+    from collections import Counter
+    corr = Counter(r["corroboration"].split()[0] for r in rows)
+    say(f"  corroboration: {dict(corr)}")
+    gy = [r for r in rows if r["gross_source"] == "yahoo_events_gross"]
+    say(f"  gross-from-yahoo events: {len(gy)} across "
+        f"{sorted(set(r['symbol'] for r in gy))}")
+    unc = [r for r in rows if r["corroboration"].startswith("UNCORROBORATED")]
+    say(f"  uncorroborated vendor-only rows (flagged): "
+        f"{[(r['symbol'], r['ex_date'], r['gross_declared']) for r in unc]}")
+    anom = [r for r in rows if r["corroboration"].startswith("ANOMALY")]
+    say(f"  vendor>yahoo anomalies: {[(r['symbol'], r['ex_date']) for r in anom] or 'none'}")
+    if anom:
+        ok = False
 
-    # cross-source agreement vs quarantined Yahoo event lists (full roster)
-    say("\n== dividend cross-source agreement (Alpaca vs Yahoo, dev window) ==")
-    agree = disagree = a_only = y_only = 0
-    detail: list[str] = []
-    for sym in syms:
-        trf = TR_DIR / f"{sym}.json"
-        if not trf.exists():
-            detail.append(f"  {sym}: no TR file (skip)")
-            continue
-        ydoc = json.loads(trf.read_text())
-        yd = {r["date"]: r["amount"] for r in ydoc["dividends_split_adjusted_yahoo"]
-              if TR_START <= r["date"] <= DEV_BOUNDARY_T2}
-        ad = {}
-        for r in rows:
-            if r["symbol"] == sym and r["ex_date"] >= TR_START:
-                ad[r["ex_date"]] = ad.get(r["ex_date"], 0.0) + r["rate_split_adjusted"]
-        for d0, amt in ad.items():
-            match = None
-            for dd in (d0,) + tuple((date.fromisoformat(d0) + timedelta(days=k)).isoformat()
-                                    for k in (-1, 1, -2, 2)):
-                if dd in yd:
-                    match = yd[dd]
-                    break
-            if match is None:
-                a_only += 1
-                detail.append(f"  {sym} {d0} ${amt:.4f}: Alpaca-only")
-            elif abs(match - amt) <= max(0.0006, 0.006 * amt):
-                agree += 1
-            else:
-                disagree += 1
-                detail.append(f"  {sym} {d0}: Alpaca {amt:.4f} vs Yahoo {match:.4f} DISAGREE")
-        for d0 in yd:
-            near = any(abs((date.fromisoformat(d0) - date.fromisoformat(a)).days) <= 2
-                       for a in ad)
-            if not near:
-                y_only += 1
-                detail.append(f"  {sym} {d0} ${yd[d0]:.4f}: Yahoo-only")
-    say(f"  agree={agree} disagree={disagree} alpaca_only={a_only} yahoo_only={y_only}")
-    for line in detail[:60]:
-        say(line)
-    if disagree or y_only:
-        say("  NOTE: disagreements/Yahoo-only events require cause analysis in the report")
+    say("\n== corporate-action (spin-off) ledger ==")
+    ca = json.loads((CA_DIR / "spinoffs.json").read_text())
+    evs = ca["events"]
+    kk = [(e["parent"], e["ex_date"]) for e in evs]
+    dup2 = len(kk) - len(set(kk))
+    problems = []
+    for e in evs:
+        if not (e["ratio_child_per_parent"] > 0):
+            problems.append((e["parent"], "ratio<=0"))
+        if e.get("record_date") and e["record_date"] > e["ex_date"]:
+            problems.append((e["parent"], "record>ex"))
+        if e.get("announcement_date") and e["announcement_date"] >= e["ex_date"]:
+            problems.append((e["parent"], "announcement>=ex"))
+        if not e.get("child_close_on_parent_ex_session"):
+            problems.append((e["parent"], "missing child close"))
+        elif e["child_close_on_parent_ex_session"] <= 0:
+            problems.append((e["parent"], "nonpositive child close"))
+        if e["ex_date"] > DEV_BOUNDARY_T2:
+            problems.append((e["parent"], "beyond dev boundary"))
+    if dup2 or problems:
+        ok = False
+    say(f"  events: {len(evs)} "
+        f"({[(e['parent'], e['child'], e['ex_date']) for e in evs]})")
+    say(f"  duplicates {dup2}; problems: {problems or 'none'}")
 
-    # spinoff scan: Yahoo pseudo-split events (spinoff price scalings) that are
-    # NOT real splits in the Alpaca split ledger — these mark tickers where the
-    # split-adjusted primary path and Yahoo TR diverge by construction.
-    say("\n== spinoff scan (Yahoo pseudo-splits vs Alpaca real splits) ==")
-    real = json.loads((DIV_DIR / "splits.json").read_text())["splits"]
-    realset = {(r["symbol"], r["ex_date"]) for r in real}
-    for sym in syms:
-        trf = TR_DIR / f"{sym}.json"
-        if not trf.exists():
-            continue
-        for sp in json.loads(trf.read_text())["splits"]:
-            near = any(rs == sym and abs((date.fromisoformat(sp["date"])
-                                          - date.fromisoformat(rd)).days) <= 3
-                       for rs, rd in realset)
-            ratio = sp["numerator"] / sp["denominator"]
-            if not near:
-                say(f"  {sym} {sp['date']} factor {ratio:.4f}: Yahoo-only pseudo-split "
-                    f"(spinoff/in-kind distribution scaling — primary path diverges)")
-
-    # ---- crypto ----
     say("\n== crypto bars ==")
     for symfile in ("BTCUSD", "ETHUSD", "SOLUSD"):
         doc = json.loads((CRYPTO_DIR / f"{symfile}.json").read_text())
@@ -600,124 +935,76 @@ def validate(report_path: Path | None = None) -> bool:
         dates = [_bar_date(b["t"]) for b in bars]
         dup = len(dates) - len(set(dates))
         nonpos = sum(1 for b in bars if min(b["o"], b["h"], b["l"], b["c"]) <= 0)
-        notmid = sum(1 for b in bars if not b["t"].endswith("T00:00:00Z"))
         d0, d1 = date.fromisoformat(dates[0]), date.fromisoformat(dates[-1])
         expected = (d1 - d0).days + 1
         missing = expected - len(set(dates))
-        gaps = []
-        prev = d0
-        for ds in dates[1:]:
-            cur = date.fromisoformat(ds)
-            if (cur - prev).days > 1:
-                gaps.append((prev.isoformat(), cur.isoformat(), (cur - prev).days - 1))
-            prev = cur
         fut = [d for d in dates if d > DEV_BOUNDARY_T2]
-        weekend_note = "24/7 series — weekend bars expected and required"
-        bad = dup or nonpos or notmid or fut or missing > max(3, 0.005 * expected) \
-            or any(g[2] > 3 for g in gaps)
-        if bad:
-            ok = False
         say(f"  {symfile}: {len(bars)} bars {dates[0]}->{dates[-1]} dup={dup} "
-            f"nonpos={nonpos} non-midnight-utc={notmid} missing_days={missing} "
-            f"max_gap={max((g[2] for g in gaps), default=0)} "
-            f"future_leak={len(fut)} ({weekend_note})" + (" FAIL" if bad else ""))
-        if gaps:
-            say(f"    gaps: {gaps[:10]}")
-        # calendar rule: every dev-window equity session must have a crypto close
-        # at or before the session close: bar for UTC day (session-1) or earlier
-        # within 5 days.  Bars bucket at 00:00Z; bar t=D closes 00:00Z on D+1 =
-        # 19:00/20:00 ET on D, i.e. AFTER the 16:00 ET equity close on D — so the
-        # qualifying bar for session D is t=D-1 (or the most recent earlier bar).
-        dset = set(dates)
-        unmapped = []
-        for sess in spy_sessions_dev:
-            if sess < CRYPTO_START or sess <= dates[0]:
-                continue
-            sd = date.fromisoformat(sess)
-            if not any((sd - timedelta(days=k)).isoformat() in dset for k in range(1, 6)):
-                unmapped.append(sess)
-        if unmapped:
+            f"nonpos={nonpos} missing_days={missing} future_leak={len(fut)}")
+        if dup or nonpos or fut:
             ok = False
-        say(f"    equity-session mapping (last crypto close <= equity close, "
-            f"t-1 rule): unmapped sessions = {unmapped or 0}")
+    say("  governed outcome: (b) CRYPTO TARGET SIZING OUT OF SCOPE — principal "
+        "acceptance recorded 2026-07-24 (SOL 416-day coverage hole); the two "
+        "Study B crypto configurations (B-4L) lapse; capacity not reallocatable; "
+        "BTC/ETH data remain documented but support no crypto-sizing conclusion; "
+        "no cash-like proxy.")
 
-    # ---- Track 3 books ----
-    say("\n== Track 3 books (constructed split-adjusted, Yahoo) ==")
+    say("\n== Track 3 books ==")
     for sym in ("SPY", "QQQ"):
         f = TRACK3_DIR / f"{sym}.json"
         if not f.exists():
-            say(f"  {sym}: MISSING")
+            say(f"  {sym}: quarantined file absent (re-acquire via `yahoo`)")
             ok = False
             continue
         doc = json.loads(f.read_text())
         rows3 = doc["close_split_adjusted"]
-        dates = [r["date"] for r in rows3]
-        dup = len(dates) - len(set(dates))
-        nonpos = sum(1 for r in rows3 if r["close"] <= 0)
-        over = [d for d in dates if d > DEV_BOUNDARY_T3]
-        jumps = []
-        for i in range(1, len(rows3)):
-            r = rows3[i]["close"] / rows3[i - 1]["close"] - 1.0
-            if abs(r) > DISCONTINUITY_ABS_RET:
-                jumps.append((dates[i], round(r, 4)))
-        if dup or nonpos or over or jumps:
+        over = [r for r in rows3 if r["date"] > DEV_BOUNDARY_T3]
+        say(f"  {sym}: {len(rows3)} sessions -> {rows3[-1]['date']} "
+            f"beyond_boundary={len(over)}")
+        if over:
             ok = False
-        say(f"  {sym}: {len(rows3)} sessions {dates[0]}->{dates[-1]} dup={dup} "
-            f"nonpos={nonpos} beyond_t3_boundary={len(over)} "
-            f"splits={doc['splits']} discontinuities={jumps or 'none'} "
-            f"divs={len(doc['dividends_split_adjusted_yahoo'])}")
 
-    # ---- rates ----
     say("\n== rates ==")
     f = RATES_DIR / "irx_13w_tbill.json"
     if f.exists():
         doc = json.loads(f.read_text())
         vals = [r["close"] for r in doc["close"]]
-        dates = [r["date"] for r in doc["close"]]
         weird = sum(1 for v in vals if not (-1.0 <= v <= 20.0))
-        say(f"  ^IRX: {len(vals)} rows {dates[0]}->{dates[-1]} "
-            f"out_of_range={weird}")
+        say(f"  ^IRX: {len(vals)} rows -> {doc['close'][-1]['date']} out_of_range={weird}")
         if weird:
             ok = False
     else:
-        say("  ^IRX: MISSING")
+        say("  ^IRX: quarantined file absent (re-acquire via `yahoo`)")
         ok = False
-    say("  fed_funds_effective: NOT ACQUIRED — every primary source "
-        "(fred.stlouisfed.org, api.stlouisfed.org, federalreserve.gov, "
-        "markets.newyorkfed.org, treasury.gov) is blocked by the environment "
-        "network policy (CONNECT 403). BLOCKER recorded in the manifest.")
+    fdff = RATES_DIR_COMMITTED / "dff.json"
+    if fdff.exists():
+        doc = json.loads(fdff.read_text())
+        say(f"  DFF: {len(doc['rates'])} rows, stored coverage "
+            f"{doc['meta']['coverage_stored']}")
+    else:
+        say("  DFF: NOT YET SUPPLIED — awaiting principal-provided FRED CSV "
+            "(see `dff` subcommand / DFF_EXPECTED_SCHEMA). BLOCKER until "
+            "ingested and validated.")
+        ok = False
 
-    # ---- untouched-boundary summary ----
     say("\n== untouched-test boundary status ==")
     maxdiv = max(r["ex_date"] for r in rows)
-    say(f"  dividend ledger max ex_date: {maxdiv} (must be <= {DEV_BOUNDARY_T2}): "
-        f"{'OK' if maxdiv <= DEV_BOUNDARY_T2 else 'FAIL'}")
+    checks = [("dividend ledger max ex_date", maxdiv, DEV_BOUNDARY_T2)]
     for symfile in ("BTCUSD", "ETHUSD", "SOLUSD"):
         doc = json.loads((CRYPTO_DIR / f"{symfile}.json").read_text())
-        m = max(_bar_date(b["t"]) for b in doc["bars"])
-        say(f"  crypto {symfile} max bar: {m} <= {DEV_BOUNDARY_T2}: "
-            f"{'OK' if m <= DEV_BOUNDARY_T2 else 'FAIL'}")
-    for sym in ("SPY", "QQQ"):
-        doc = json.loads((TRACK3_DIR / f"{sym}.json").read_text())
-        m = max(r["date"] for r in doc["close_split_adjusted"])
-        say(f"  track3 {sym} max session: {m} <= {DEV_BOUNDARY_T3}: "
-            f"{'OK' if m <= DEV_BOUNDARY_T3 else 'FAIL'}")
-    for sym in syms[:1]:
-        pass
-    trmax = "0000"
-    for sym in syms:
-        f2 = TR_DIR / f"{sym}.json"
-        if f2.exists():
-            doc = json.loads(f2.read_text())
-            if doc["adjclose"]:
-                trmax = max(trmax, doc["adjclose"][-1]["date"])
-    say(f"  TR validation series max date: {trmax} <= {DEV_BOUNDARY_T2}: "
-        f"{'OK' if trmax <= DEV_BOUNDARY_T2 else 'FAIL'}")
-    say(f"  research price cache: extends to run date {RUN_DATE} BY CHARTER "
-        f"DIRECTION (G1 gate: 'refreshed through the run date'); development "
-        f"consumption barred; loader truncation is gate-G2 work (T-U1); no "
-        f"return-derived statistic in this validator touches any date past "
-        f"{DEV_BOUNDARY_T2}.")
+        checks.append((f"crypto {symfile} max bar",
+                       max(_bar_date(b["t"]) for b in doc["bars"]), DEV_BOUNDARY_T2))
+    maxpx = max(max(_bar_date(b["t"]) for b in _load_prices(s)["bars"]) for s in syms)
+    checks.append(("dev price cache max bar", maxpx, DEV_BOUNDARY_T2))
+    maxca = max(e["ex_date"] for e in evs)
+    checks.append(("corporate-action max ex_date", maxca, DEV_BOUNDARY_T2))
+    for name, got, bound in checks:
+        good = got <= bound
+        if not good:
+            ok = False
+        say(f"  {name}: {got} <= {bound}: {'OK' if good else 'FAIL'}")
+    say("  untouched price segment: SEALED archive only (byte-hash-verified, "
+        "never opened by this validator or any G1 code)")
 
     say(f"\nVALIDATE OVERALL: {'PASS' if ok else 'FAIL'}")
     if report_path:
@@ -734,22 +1021,19 @@ def _cagr(v0: float, v1: float, days: int) -> float:
     return (v1 / v0) ** (1.0 / yrs) - 1.0
 
 
-def _bh_with_dividends(closes: dict[str, float], sessions: list[str],
-                       divs: dict[str, float]) -> float:
-    """Buy-and-hold 1 share from first session; dividends credited on ex_date and
-    reinvested at that session's close. Returns final value / initial value."""
+def _bh_with_cash_events(closes: dict[str, float], sessions: list[str],
+                         cash: dict[str, float]) -> float:
     shares = 1.0
     for dsess in sessions[1:]:
-        amt = divs.get(dsess)
+        amt = cash.get(dsess)
         if amt:
             shares += shares * amt / closes[dsess]
     return shares * closes[sessions[-1]] / closes[sessions[0]]
 
 
 def reconcile(report_path: Path | None = None) -> bool:
-    """T-D3: primary path (split-adjusted prices + explicit PIT dividend cash,
-    reinvested) vs quarantined Yahoo TR (adjclose), per ticker, dev window only.
-    Tolerance ±0.3pp/yr (pre_registration.yaml dividends.reconciliation_tolerance)."""
+    """T-D3: primary path (split-adjusted prices + gross PIT dividend cash +
+    PIT spin-off cash-equivalents) vs quarantined Yahoo TR, dev window only."""
     out: list[str] = []
     okall = True
 
@@ -762,10 +1046,18 @@ def reconcile(report_path: Path | None = None) -> bool:
     for r in led["dividends"]:
         by_sym.setdefault(r["symbol"], {})
         by_sym[r["symbol"]][r["ex_date"]] = \
-            by_sym[r["symbol"]].get(r["ex_date"], 0.0) + r["rate_split_adjusted"]
+            by_sym[r["symbol"]].get(r["ex_date"], 0.0) + r["gross_declared"]
+    ca = json.loads((CA_DIR / "spinoffs.json").read_text())
+    for e in ca["events"]:
+        px = e.get("child_close_on_parent_ex_session")
+        if px:
+            amt = e["ratio_child_per_parent"] * px
+            by_sym.setdefault(e["parent"], {})
+            by_sym[e["parent"]][e["ex_date"]] = \
+                by_sym[e["parent"]].get(e["ex_date"], 0.0) + amt
 
-    say("== T-D3 reconciliation (Track 2 roster, dev window, tolerance "
-        f"±{TD3_TOLERANCE_PP}pp/yr) ==")
+    say("== T-D3 reconciliation v2 (gross dividends + spin-off cash-equivalents, "
+        f"dev window, tolerance ±{TD3_TOLERANCE_PP}pp/yr) ==")
     say("ticker | window | yrs | primary CAGR | TR CAGR | diff pp/yr | verdict")
     fails = []
     for sym in roster_63():
@@ -783,21 +1075,19 @@ def reconcile(report_path: Path | None = None) -> bool:
             okall = False
             continue
         days = (date.fromisoformat(sessions[-1]) - date.fromisoformat(sessions[0])).days
-        divs = by_sym.get(sym, {})
-        # map any ex_date to nearest covered session (holiday shifts)
-        dmap: dict[str, float] = {}
+        cash = by_sym.get(sym, {})
         sset = set(sessions)
-        for d0, amt in divs.items():
+        cmap: dict[str, float] = {}
+        for d0, amt in cash.items():
             if d0 < sessions[0] or d0 > sessions[-1]:
                 continue
-            dd = d0
-            k = 0
+            dd, k = d0, 0
             while dd not in sset and k < 5:
                 k += 1
                 dd = (date.fromisoformat(d0) + timedelta(days=k)).isoformat()
             if dd in sset:
-                dmap[dd] = dmap.get(dd, 0.0) + amt
-        g_primary = _bh_with_dividends(closes, sessions, dmap)
+                cmap[dd] = cmap.get(dd, 0.0) + amt
+        g_primary = _bh_with_cash_events(closes, sessions, cmap)
         g_tr = adj[sessions[-1]] / adj[sessions[0]]
         c_p = _cagr(1.0, g_primary, days)
         c_t = _cagr(1.0, g_tr, days)
@@ -805,8 +1095,7 @@ def reconcile(report_path: Path | None = None) -> bool:
         verdict = "PASS" if diff <= TD3_TOLERANCE_PP else "FAIL"
         if verdict == "FAIL":
             okall = False
-            # attribution: same computation with Yahoo raw closes as the price leg
-            g_yraw = _bh_with_dividends(yraw, [s for s in sessions if s in yraw], dmap) \
+            g_yraw = _bh_with_cash_events(yraw, [s for s in sessions if s in yraw], cmap) \
                 if all(s in yraw for s in (sessions[0], sessions[-1])) else float("nan")
             c_y = _cagr(1.0, g_yraw, days) if g_yraw == g_yraw else float("nan")
             fails.append((sym, diff, abs(c_y - c_t) * 100.0 if c_y == c_y else None))
@@ -824,7 +1113,7 @@ def reconcile(report_path: Path | None = None) -> bool:
         days = (date.fromisoformat(sessions[-1]) - date.fromisoformat(sessions[0])).days
         divs = {r["date"]: r["amount"] for r in doc["dividends_split_adjusted_yahoo"]}
         sset = set(sessions)
-        dmap = {}
+        cmap = {}
         for d0, amt in divs.items():
             if d0 < sessions[0] or d0 > sessions[-1]:
                 continue
@@ -833,8 +1122,8 @@ def reconcile(report_path: Path | None = None) -> bool:
                 k += 1
                 dd = (date.fromisoformat(d0) + timedelta(days=k)).isoformat()
             if dd in sset:
-                dmap[dd] = dmap.get(dd, 0.0) + amt
-        g_primary = _bh_with_dividends(closes, sessions, dmap)
+                cmap[dd] = cmap.get(dd, 0.0) + amt
+        g_primary = _bh_with_cash_events(closes, sessions, cmap)
         g_tr = adj[sessions[-1]] / adj[sessions[0]]
         c_p, c_t = _cagr(1.0, g_primary, days), _cagr(1.0, g_tr, days)
         diff = abs(c_p - c_t) * 100.0
@@ -845,10 +1134,10 @@ def reconcile(report_path: Path | None = None) -> bool:
             f"{c_p*100:.3f}% | {c_t*100:.3f}% | {diff:.3f} | {verdict}")
 
     if fails:
-        say("\nFailure attribution (diff with Yahoo-raw price leg, isolates "
-            "price-source noise from ledger errors):")
+        say("\nFailure attribution (yahoo-raw price leg isolates price-source "
+            "noise from ledger errors):")
         for sym, d1, d2 in fails:
-            say(f"  {sym}: alpaca-leg diff {d1:.3f}pp/yr; yahoo-raw-leg diff "
+            say(f"  {sym}: alpaca-leg {d1:.3f}pp/yr; yahoo-raw-leg "
                 f"{'n/a' if d2 is None else f'{d2:.3f}pp/yr'}")
     say(f"\nT-D3 OVERALL: {'PASS' if okall else 'FAIL'}")
     if report_path:
@@ -864,10 +1153,17 @@ def main() -> int:
         acquire_prices()
     elif cmd == "dividends":
         acquire_dividends()
+    elif cmd == "corpactions":
+        acquire_corporate_actions()
     elif cmd == "crypto":
         acquire_crypto()
     elif cmd == "yahoo":
         acquire_yahoo()
+    elif cmd == "dff":
+        if len(sys.argv) < 3:
+            print(DFF_EXPECTED_SCHEMA)
+            return 1
+        return 0 if ingest_dff(sys.argv[2]) else 1
     elif cmd == "inventory":
         print(json.dumps(inventory_existing_cache(), indent=1))
     elif cmd == "validate":

@@ -1,142 +1,150 @@
-# G1_DATA_VALIDATION_REPORT.md — MARGIN-0005 gate G1 (data acquisition, validation, provenance, adequacy verdict)
+# G1_DATA_VALIDATION_REPORT.md — MARGIN-0005 gate G1 (v2, blocker remediation)
 
 **Program:** margin_deployment_and_target_sizing_v1
-**Authority:** `governance/decisions/MARGIN-0005-margin-target-research-charter.md` (§1.2 data acquisition; §7 required data gates)
-**Protocol:** `research/margin_target_study/PROTOCOL_V2.md` (§4 gap dispositions, §11 isolation, §14 T-D3, §18 G1)
-**Executed:** 2026-07-24 (run date for refresh purposes: 2026-07-23, last complete session)
-**Base commit:** `f984665936203c0505e8603de7c870beb64f7f21` (origin/main, matching the task's last-known merged SHA)
+**Authority:** `governance/decisions/MARGIN-0005-margin-target-research-charter.md` §1.2, §7
+**Protocol:** `research/margin_target_study/PROTOCOL_V2.md` §4, §11, §14, §18
+**Executed:** initial G1 2026-07-24 (commit `6efd716`); remediation same day (this revision)
+**Base:** `origin/main` = `f984665936203c0505e8603de7c870beb64f7f21`
 
-All content in this report is data validation. **No `simulate()` call was made, no registered trial was
-consumed, no candidate, ranking, margin signal, target recommendation, trade, or order was produced.**
-`trial_ledger.jsonl` and `candidate_freeze.yaml` do not exist and were not fabricated.
+**No `simulate()` call was made in either round, zero of the 300 registered trials were consumed, no
+candidate, ranking, margin signal, target recommendation, trade, or order was produced.** `trial_ledger.jsonl`,
+`candidate_freeze.yaml`, `intelligence_flag_events.yaml`, and results artifacts do not exist. G2 was not begun.
+Pinned hashes recomputed from `origin/main` blobs at remediation preflight — both **exact**.
 
 ---
 
-## 1. Preflight and pinned-hash verification
+## 1. Remediation preflight
 
-- Repository: `Mast3rkey/Portfolio-HQ`; branch `claude/margin-g1-data-validation-dhsm6f` created from verified `origin/main` = `f984665` (exact match to the task authority). Working tree clean at start. Open PRs at preflight: **none** — no overlapping margin/research/data/allocator/target/holdings/Intelligence/governance work in flight.
-- Pinned-hash recomputation from committed blobs (`git cat-file blob origin/main:<path> | sha256sum`):
-  - `PROTOCOL_V2.md` → `d794a4c09fa81dbaa147bb830da91b75221a35175f47c8bd979b75e3fc154e21` — **exact match**.
-  - `pre_registration.yaml` → `e3b101e336f2ff30c013908a4c2b30918e9adf59cbb26499d2774927e472120e` — **exact match**.
-- Neither pinned artifact, nor the charter, nor any production or governance file is modified by this PR.
+PR #138: open, draft, head `6efd716` (unmoved since the initial round), base `f984665`, 74 files, no
+comments/reviews/threads, no CI checks configured, `mergeable_state: clean`. No other open PRs — no
+overlapping work. Working tree clean before remediation. The initial commit was **not amended or
+force-pushed**; remediation is one additional narrow commit so the audit trail (v1 → v2) stays visible.
 
-## 2. Source plan (as executed)
+## 2. Untouched-test compliance audit (pre-work, as directed)
 
-| Need | Source used | Status |
-|---|---|---|
-| 63-ticker split-adjusted roster prices | Alpaca v2 bars, `adjustment=split`, `feed=iex` (repository-established vendor) — fresh research-side cache, refreshed through run date per charter §7 | ACQUIRED |
-| PIT dividend ledger (ex-date, amount, pay date) | Alpaca v1 corporate-actions `cash_dividend` (+ split records for adjustment consistency) | ACQUIRED |
-| SPY/QQQ benchmark + TR validation series | Yahoo v8 chart (quarantined namespace); Track 3 long history 1993/1999→2020-12-31 | ACQUIRED (quarantined, not committed) |
-| Risk-free series | Yahoo `^IRX` fallback (protocol §10 disclosed-fallback provision) — primary Treasury/FRED sources network-blocked | ACQUIRED (fallback, disclosed) |
-| Fed Funds effective | FRED / Fed H.15 / NY Fed EFFR / Treasury — **all denied by environment network policy (CONNECT 403)** | **BLOCKED (B2)** |
-| Robinhood margin-rate evidence | Issuer newsroom + repository Phase-7A/doctrine anchors + flagged secondary aggregation | ACQUIRED (`data/rates/robinhood_margin_rate_evidence.yaml`) |
-| Gold account-specific terms | Gmail connector (token expired), repository (no account billing evidence) | **UNVERIFIED (B3)** |
-| BTC/ETH/SOL PIT daily bars 2021-06→dev boundary | Alpaca v1beta3 crypto (protocol-named method) | ACQUIRED; SOL coverage FAILS (§8) |
+### 2.1 Authoritative wording
 
-No source was silently substituted: every deviation from a primary source is recorded here and in
-`data_manifest.yaml` with its cause (network-policy denial) and its disclosure obligation.
+- Charter §7 (G1 gate): *"Split-adjusted price cache verified (continuity checks), **refreshed through the
+  run date**."*
+- Charter §6: *"Development, validation, parameter-stability, bootstrap-selection, and G3 reporting code
+  **cannot read, simulate, store, display, or summarize untouched-period data** (loader truncation,
+  test-enforced)."*
+- Protocol §11.1: *"The research data loader serves development mode by default and **physically truncates
+  all series at the development boundary**; untouched-mode loading requires an explicit flag that is legal
+  only inside the G4 runner, enforced by test (§14 T-U1)."*
+- `pre_registration.yaml` `untouched_test_isolation`: `loader: development_mode_truncates_at_boundary`;
+  `development_code_may_not: [read, simulate, store, display, summarize]`.
 
-## 3. Untouched-test isolation (boundary implementation and proof)
+Determination: **acquisition** of post-development-boundary raw prices is permitted — charter §7 expressly
+directs the run-date refresh at G1, and the loader-truncation design presupposes that stored series extend
+past the boundary (the pre-existing `data/backtest` cache on `main` already does). **Storage in a
+sealed/quarantined cache** is therefore permitted and is the intended shape. **Structural-integrity
+inspection** at acquisition time is within §7's own "verified (continuity checks)" direction. What the
+accepted rules bar is *development* code reading/summarizing untouched-period data — the consumption side.
 
-Governing text: pre_registration `untouched_test_isolation` (loader truncation; development code may not
-read/simulate/store/display/summarize untouched-period data) and charter §7 ("Split-adjusted price cache
-verified (continuity checks), **refreshed through the run date**"). These are consistent under exactly one
-reading, which G1 implements: **acquisition may cover the charter-directed range; consumption is what is
-barred.** The committed repository already stores untouched-period rows (`data/backtest/*.json` ends
-2026-07-10 on `main`), confirming storage-level presence with loader-level quarantine is the intended design.
-The physical-truncation loader itself is gate-G2 work (test T-U1) and is **not claimed here**.
+### 2.2 Exact read audit of the initial G1 round (commit `6efd716`)
 
-Boundary status of every G1 dataset (validator output, `data_acquisition.py validate`):
+| Action | Code path | Post-2025-06-30 (T2) | Post-2020-12-31 (T3) |
+|---|---|---|---|
+| Acquisition (fetch+store) | `acquire_prices` (v1) | yes — charter-directed refresh | **never acquired** |
+| Hash / byte integrity | manifest generation | bytes only | n/a |
+| Date/coverage inspection | v1 `validate()` duplicate-date, stale-end checks | yes (dates only) | none |
+| Price-value inspection | v1 `validate()` nonpositive check | yes — values compared to 0 in memory; boolean counts output only | none |
+| Return calculation | v1 discontinuity scan, cross-check, `reconcile()` | **no — hard-filtered ≤ 2025-06-30** | **no** |
+| Reporting/display/summary | report, manifest, PR | coverage endpoint dates only; **no untouched value or return anywhere** | none |
 
-- dividend ledger max ex_date: **2025-06-30** ≤ 2025-06-30 — OK
-- crypto BTC/ETH/SOL max bar: **2025-06-30** ≤ 2025-06-30 — OK (Track 2 dev boundary; nothing later acquired)
-- Track 3 SPY/QQQ max session: **2020-12-31** ≤ 2020-12-31 — OK (Track 3 untouched period **not even acquired**)
-- TR validation series max date: **2025-06-30** ≤ 2025-06-30 — OK
-- research price cache: extends to 2026-07-23 **by charter direction**; every return-derived computation in
-  G1 (discontinuity scans, T-D3, cross-checks) is hard-filtered to ≤ 2025-06-30 in code
-  (`data_acquisition.py`, `validate()`/`reconcile()`); the untouched segment appears in no G1 statistic,
-  table, chart, or summary.
+Track 3: untouched-period data (2021-01-01 →) was never acquired, read, or stored in any form.
 
-Reproduction commands: `python3 research/margin_target_study/data_acquisition.py validate` (boundary
-section at end of output) and `python3 research/margin_target_study/data_acquisition.py reconcile`.
+**Verdict: NO BREACH.** No development/validation/reporting code computed, displayed, stored (outside the
+acquisition cache), or summarized any untouched-period value or return. The single gray-zone action — the
+v1 structural nonpositive check touching post-boundary price values in memory — was acquisition-verification
+under charter §7's own wording, produced only boolean counts, and is preserved un-rewritten in git history
+(commit `6efd716`).
 
-## 4. Roster price validation (charter §7 bullet 1)
+### 2.3 Mechanical quarantine (implemented this round)
 
-Research-side cache `research/margin_target_study/data/prices/` (63 files, 9,950,851 bytes; per-file SHA-256
-in `data_manifest.yaml`):
+Ambiguity removed structurally: `acquire_prices` v2 splits at the boundary — development-visible files
+(`data/prices/*.json`) now contain **no bar after 2025-06-30** (validator-asserted per file), and the
+post-boundary segment (2025-07-01 → 2026-07-23, 63 members, 16,821 rows) lives only in
+`data/untouched_sealed/untouched_prices.tar.gz` (deterministic archive, SHA-256
+`c18fdd9f1db896ea5c91ea674f12de7728c4812f9d47f1700c72f795b14de618` recorded in `SEALED_INDEX.json`). Seal-time integrity (duplicates 0, nonpositive 0
+per member) was computed once during acquisition; only counts persist outside the archive. After sealing,
+**no G1 code opens the archive** — `validate()` verifies it byte-level (hash) only; proof:
+`grep -n "tarfile\|SEALED_ARCHIVE" research/margin_target_study/data_acquisition.py` shows archive opening
+only inside `acquire_prices` (seal creation). Unsealing is a G4-runner act after the candidate freeze.
+G2 strategy loaders were **not** implemented; loader-level T-U1 enforcement remains G2 work.
 
-- Ticker identity: 63/63 files match their queried symbol.
-- Duplicates: **0** across all tickers. Nonpositive OHLC: **0**.
-- Missing sessions vs the SPY master calendar (dev window, post-listing): 0 for 60 tickers; TSM 3
-  (2021-04-19, 2021-10-25, 2022-03-08 — IEX thin-tape days, each ≤3 total), within the ≤3 acceptance line.
-- Stale end dates: **none** — all 63 end 2026-07-23 (run date).
-- Split discontinuities (dev window): one flag, HOOD 2021-08-04 +50.4% — a real price move (verified
-  meme-rally session), not an adjustment error.
-- Adjustment-mode cross-check vs the production cache `data/backtest/` on the full overlap ≤ 2025-06-30:
-  **0 differing closes across all 63 tickers** — the research cache is bit-consistent with the repository's
-  established split-adjusted source.
-- Legacy cache inventory (65 files incl. exited TM/VMC, excluded SPCX/SKHY): coverage ends 2026-07-10;
-  per-file SHA-256 recorded in `data_manifest.yaml` (`legacy_backtest_cache`). Not modified by this PR.
+## 3. D-1 — Corporate-action resolution (spin-offs)
 
-**Price gate: PASS.**
+New PIT dataset `data/corporate_actions/spinoffs.json`. Vendor `spin_off` records exist for DHR→VLTO and
+WDC→SNDK; the 2021 events predate the vendor feed's coverage and are hand-authored from issuer documents
+(per-event `source_classification` distinguishes them). GEV was investigated as directed: it is itself the
+distributed child of GE's 2024-04-02 spin-off (GE not in roster) — no parent-side event exists for roster
+holders; GEV's divergence was a price-feed issue (D-3), not a corporate action.
 
-## 5. Point-in-time dividend ledger (charter §7 bullet 2)
+| Parent → Child | Announced | Record | Ex/parent session | Ratio | Child close (SIP, ex session) | Source |
+|---|---|---|---|---|---|---|
+| MRK → OGN | 2020-02-05 | 2021-05-17 | 2021-06-03 | 0.1 | $37.00 | Merck 2021-05-07 release (hand-recorded) |
+| IBM → KD | 2020-10-08 | 2021-10-25 | 2021-11-04 | 0.2 | $26.38 | IBM 8-K ex-99.1 / Kyndryl IR (hand-recorded) |
+| DHR → VLTO | 2022-09-14 | — (vendor) | 2023-10-02 | 1/3 | $85.12 | Alpaca CA spin_off record |
+| WDC → SNDK | 2023-10-30 | 2025-02-12 | 2025-02-24 | 1/3 | $48.60 | Alpaca CA spin_off record |
 
-`data/dividends/dividend_ledger.json`: **822 events, 47 payers**, ex-dates 2020-07-31 → 2025-06-30, from
-Alpaca corporate actions with split adjustment (factors from `data/dividends/splits.json`, 19 split records
-queried through the run date because as-of-now split-adjusted prices embed all splits to date).
+All four carry cash-in-lieu treatment for fractions, acquisition timestamps, and per-event classification.
+The primary accounting path is now: **split-adjusted non-TR prices + explicit gross cash dividends +
+explicit PIT non-cash corporate actions** (valuation rule A-17: ratio × child consolidated close on the
+parent's ex session, credited as reinvestable cash). No holding was excluded; no approximate cash
+substitution beyond the stated, validated valuation rule; total-return prices remain barred from the
+primary path.
 
-Two acquisition-semantics defects were found and fixed during G1 (both documented in the module):
-vendor duplicate rows (2, deduped on economic key) and the vendor window filtering on payable/process
-rather than ex date (fixed by +120d buffered query with local ex-date filter; recovers 10 late-June-2025
-events that a naive query silently drops).
+## 4. D-2 — Dividend convention (gross declared primary)
 
-Validation results:
-- Uniqueness (symbol, ex_date, special): **0 duplicates**. Nonpositive amounts: **0**.
-- Chronology: **0** payable_date < ex_date. Payment-date availability: **822/822 (100%)**.
-- Future-date leakage: **0** events past 2025-06-30.
-- Split consistency: NVDA (4:1 2021, 10:1 2024), WMT, AVGO, AMZN, GOOGL, TSLA-era splits all reconcile —
-  the split-adjustment transformation agrees with Yahoo's independently split-adjusted amounts everywhere
-  the sources agree on gross-vs-net convention (below).
-- Full-roster cross-source comparison (not just a sample) vs quarantined Yahoo events:
-  **agree 637 / disagree 55 / Alpaca-only 1 / Yahoo-only 0.** Every disagreement is cause-classified:
-  - **TSM (17 events, ratio ≈0.78)** — Alpaca records net of ~21% Taiwan withholding; Yahoo gross.
-  - **ASML (15 events, ratio 0.85)** — net of 15% Dutch withholding vs gross.
-  - **ETN (9 events, ratio 0.75)** — Irish-DWT-net convention vs gross (US holders typically receive gross).
-  - **BABA (2 events, −$0.02)** — ADS depositary fee.
-  - **DHR (9) / IBM (1) / MRK (2)** — Yahoo scales pre-spinoff dividend history by its spinoff pseudo-split
-    factor; Alpaca records the actual declared amounts (Alpaca is correct for these).
-  - **Alpaca-only:** ASML 2024-12-02 $0.5938 — uncorroborated by the issuer's published dividend calendar;
-    retained as acquired, flagged as a suspected vendor artifact (~0.02pp/yr impact, ASML passes T-D3).
-- No dividend is double-counted anywhere: the primary path never touches TR-adjusted prices (T-D2/T-D4
-  proofs are engine tests at G2; the *data* prerequisites they need are in place and validated).
+`dividend_ledger.json` rebuilt as **schema v2_gross_declared**: primary amount = gross declared pre-tax
+cash per share (split-adjusted); the vendor's net-convention amounts are retained per row (`vendor_net`),
+never silently netted. Gross determination runs at (symbol, ex-date) **aggregate** level — necessary
+because issuers declare regular + special dividends on one ex-date as separate vendor rows while the gross
+reference reports one combined event (BABA 2024-06-13: vendor 0.98 + 0.66 vs combined gross 1.66; per-row
+matching would double-count — caught by T-D3 during remediation, fixed, documented in the module).
 
-**Ledger integrity: PASS.** One open accounting-convention decision (net-vs-gross for foreign issuers) is
-escalated as **D-2**, and the structural spinoff exclusion as **D-1** (§6).
+Results: 822 events — 596 corroborated (vendor = gross), 46 gross-from-Yahoo across TSM/ASML/ETN/BABA
+(net-convention vendor rows), 63 vendor-declared on the spinoff-scaled tickers (Yahoo unusable as gross
+reference there), 116 pre-cross-source-window rows (all before 2021-05-01, outside the simulation window),
+1 uncorroborated flagged row (ASML 2024-12-02, retained + flagged, ~0.02pp/yr). Integrity: 0 duplicates,
+0 nonpositive gross, 0 payable<ex, 0 net>gross, 0 future leakage, payable dates 822/822.
 
-## 6. T-D3 reconciliation (charter §7 bullet 2; tolerance ±0.3pp/yr)
+ADR/withholding documentation (separate, source-backed): `data/dividends/withholding_register.yaml` —
+TSM (1 ADR = 5 ordinary; TW 21%; measured vendor ratio ~0.78), ASML (1:1; NL 15%; measured 0.850 exactly),
+ETN (US-listed Irish plc; vendor models full 25% DWT; US holders typically exempt — account treatment
+UNRESOLVED pending B3), BABA (1 ADS = 8 ordinary; ~$0.02/ADS depositary fee). These are sensitivities;
+the primary ledger stays gross. T-D3 now compares gross-convention primary vs gross-convention TR — both
+sides shown in §6.
 
-Method: buy-and-hold with dividends reinvested on ex-date at close, primary path (research split-adjusted
-prices + PIT ledger) vs quarantined Yahoo TR (adjclose), Track 2 dev window 2021-06-01 → 2025-06-30;
-Track 3 books same-source check over 1999→2020. Computed by `data_acquisition.py reconcile` — a data-
-validation path, not the production simulator, consuming zero registered trials.
+## 5. D-3 — GEV resolution (outcome A)
 
-**Result: 57/63 tickers PASS; both Track 3 books PASS (SPY 0.003, QQQ 0.001pp/yr). 6 FAIL, all
-cause-attributed; none is a ledger or double-count error:**
+Root cause established with dated, same-vendor comparisons — not waived as "noise": Alpaca SIP
+(consolidated) vs Alpaca IEX daily closes for GEV over its full 312-session dev window: 7 sessions differ
+by >0.15%, worst **2024-12-23: 344.92 vs 339.34 (1.618%)**, also 2024-09-17 (0.573%) and the listing
+session 2024-04-02 (140.00 vs 139.60, 0.286%); mean |diff| 0.05%. No corporate action is involved (§3).
+The IEX prints on those dated sessions deviate from the consolidated tape; over GEV's short 1.24-year
+window this breached the T-D3 tolerance.
 
-| Ticker | Diff pp/yr | Attribution (alpaca-leg vs yahoo-raw-leg isolation) |
-|---|---|---|
-| WDC | 6.813 | Sandisk spinoff 2025-02-24 (factor 1.323): price-leg structural; yahoo-raw leg passes at 0.001 |
-| DHR | 2.850 | Veralto spinoff 2023-10-02 (1.128): price-leg structural; yahoo-raw leg 0.024 |
-| IBM | 1.358 | Kyndryl spinoff 2021-11-04 (1.046): price-leg structural; yahoo-raw leg 0.056 |
-| MRK | 1.249 | Organon spinoff 2021-06-03 (1.048): price-leg structural; yahoo-raw leg 0.013 |
-| GEV | 0.665 | IEX-vs-consolidated endpoint noise on a 1.24y window (start close 139.60 vs 140.00); yahoo-raw leg 0.003 — ledger clean |
-| TSM | 0.457 | Withholding convention: ledger carries net-of-21% actual US-holder cash; TR benchmark is gross. Yahoo-raw leg 0.468 confirms it is not price-sourced |
+**Resolution (outcome A):** documented ticker-specific source exception — GEV's primary series uses Alpaca
+**SIP** (same vendor, same API, same split-adjustment mode), constant `GEV_FEED_EXCEPTION` in
+`data_acquisition.py`, provenance in the manifest, dated evidence above. GEV T-D3: **0.003pp/yr PASS**.
+GEV was not excluded; the tolerance was not widened; the series is the vendor's consolidated tape, not an
+unexplained adjustment. (Roster-wide SIP migration is noted as a possible future improvement requiring its
+own decision — not adopted here.)
 
-Near-tolerance disclosures (passing): ETN 0.256 (same withholding-convention divergence), ASML 0.091,
-BRK.B 0.033. Median absolute diff across the 57 passers: ~0.02pp/yr.
+## 6. T-D3 reconciliation v2 — **PASS, all 63 tickers + both Track 3 books**
 
-Full 63-ticker + Track 3 table:
+Primary path (split-adjusted prices + gross PIT dividends + spin-off cash-equivalents) vs quarantined
+Yahoo TR, dev window, tolerance ±0.3pp/yr:
+
+- Former failures, now: WDC **0.157**, DHR **0.105**, IBM **0.050**, MRK **0.011**, TSM **0.016**,
+  GEV **0.003**, plus BABA **0.020** and ETN **0.004** after the aggregate-level gross rule.
+- Track 3 same-source construction check: SPY **0.003**, QQQ **0.001**.
+- Worst diff across the entire roster: WDC 0.157pp/yr; median ≈ 0.02pp/yr.
+
+Full table:
 
 | ticker | window | yrs | primary CAGR | TR CAGR | diff pp/yr | verdict |
 | AAPL | 2021-06-01->2025-06-30 | 4.08 | 13.691% | 13.676% | 0.015 | PASS |
@@ -144,9 +152,9 @@ Full 63-ticker + Track 3 table:
 | AMAT | 2021-06-01->2025-06-30 | 4.08 | 8.060% | 8.052% | 0.008 | PASS |
 | AMD | 2021-06-01->2025-06-30 | 4.08 | 14.804% | 14.799% | 0.005 | PASS |
 | AMZN | 2021-06-01->2025-06-30 | 4.08 | 7.883% | 7.892% | 0.008 | PASS |
-| ASML | 2021-06-01->2025-06-30 | 4.08 | 5.303% | 5.394% | 0.091 | PASS |
+| ASML | 2021-06-01->2025-06-30 | 4.08 | 5.449% | 5.394% | 0.055 | PASS |
 | AVGO | 2021-06-01->2025-06-30 | 4.08 | 58.050% | 58.037% | 0.013 | PASS |
-| BABA | 2021-06-01->2025-06-30 | 4.08 | -13.855% | -13.860% | 0.005 | PASS |
+| BABA | 2021-06-01->2025-06-30 | 4.08 | -13.840% | -13.860% | 0.020 | PASS |
 | BRK.B | 2021-06-01->2025-06-30 | 4.08 | 13.462% | 13.495% | 0.033 | PASS |
 | CAT | 2021-06-01->2025-06-30 | 4.08 | 14.387% | 14.383% | 0.004 | PASS |
 | CEG | 2022-02-02->2025-06-30 | 3.41 | 71.602% | 71.529% | 0.073 | PASS |
@@ -155,16 +163,16 @@ Full 63-ticker + Track 3 table:
 | CRWD | 2021-06-01->2025-06-30 | 4.08 | 22.549% | 22.566% | 0.016 | PASS |
 | CVX | 2021-06-01->2025-06-30 | 4.08 | 11.895% | 11.902% | 0.007 | PASS |
 | DELL | 2021-06-01->2025-06-30 | 4.08 | 25.731% | 25.745% | 0.014 | PASS |
-| DHR | 2021-06-01->2025-06-30 | 4.08 | -4.741% | -1.891% | 2.850 | FAIL |
+| DHR | 2021-06-01->2025-06-30 | 4.08 | -1.786% | -1.891% | 0.105 | PASS |
 | EQIX | 2021-06-01->2025-06-30 | 4.08 | 3.728% | 3.717% | 0.010 | PASS |
-| ETN | 2021-06-01->2025-06-30 | 4.08 | 26.284% | 26.540% | 0.256 | PASS |
-| GEV | 2024-04-02->2025-06-30 | 1.24 | 192.473% | 191.808% | 0.665 | FAIL |
+| ETN | 2021-06-01->2025-06-30 | 4.08 | 26.536% | 26.540% | 0.004 | PASS |
+| GEV | 2024-04-02->2025-06-30 | 1.24 | 191.805% | 191.808% | 0.003 | PASS |
 | GILD | 2021-06-01->2025-06-30 | 4.08 | 18.587% | 18.609% | 0.023 | PASS |
 | GLD | 2021-06-01->2025-06-30 | 4.08 | 14.115% | 14.112% | 0.003 | PASS |
 | GNRC | 2021-06-01->2025-06-30 | 4.08 | -17.996% | -17.998% | 0.002 | PASS |
 | GOOGL | 2021-06-01->2025-06-30 | 4.08 | 10.254% | 10.252% | 0.002 | PASS |
 | HOOD | 2021-07-29->2025-06-30 | 3.92 | 28.784% | 28.698% | 0.086 | PASS |
-| IBM | 2021-06-01->2025-06-30 | 4.08 | 24.260% | 25.619% | 1.358 | FAIL |
+| IBM | 2021-06-01->2025-06-30 | 4.08 | 25.569% | 25.619% | 0.050 | PASS |
 | INTC | 2021-06-01->2025-06-30 | 4.08 | -18.675% | -18.676% | 0.002 | PASS |
 | ISRG | 2021-06-01->2025-06-30 | 4.08 | 17.785% | 17.786% | 0.001 | PASS |
 | JNJ | 2021-06-01->2025-06-30 | 4.08 | 0.874% | 0.877% | 0.003 | PASS |
@@ -175,7 +183,7 @@ Full 63-ticker + Track 3 table:
 | MA | 2021-06-01->2025-06-30 | 4.08 | 12.182% | 12.186% | 0.003 | PASS |
 | META | 2021-06-01->2025-06-30 | 4.08 | 22.079% | 22.057% | 0.023 | PASS |
 | MLM | 2021-06-01->2025-06-30 | 4.08 | 11.339% | 11.309% | 0.030 | PASS |
-| MRK | 2021-06-01->2025-06-30 | 4.08 | 4.555% | 5.803% | 1.249 | FAIL |
+| MRK | 2021-06-01->2025-06-30 | 4.08 | 5.814% | 5.803% | 0.011 | PASS |
 | MRVL | 2021-06-01->2025-06-30 | 4.08 | 13.017% | 13.031% | 0.014 | PASS |
 | MSFT | 2021-06-01->2025-06-30 | 4.08 | 19.664% | 19.642% | 0.022 | PASS |
 | MU | 2021-06-01->2025-06-30 | 4.08 | 10.421% | 10.417% | 0.004 | PASS |
@@ -194,141 +202,101 @@ Full 63-ticker + Track 3 table:
 | SYK | 2021-06-01->2025-06-30 | 4.08 | 12.473% | 12.496% | 0.023 | PASS |
 | TMO | 2021-06-01->2025-06-30 | 4.08 | -2.115% | -2.102% | 0.014 | PASS |
 | TSLA | 2021-06-01->2025-06-30 | 4.08 | 10.960% | 10.942% | 0.017 | PASS |
-| TSM | 2021-06-01->2025-06-30 | 4.08 | 18.903% | 19.360% | 0.457 | FAIL |
+| TSM | 2021-06-01->2025-06-30 | 4.08 | 19.376% | 19.360% | 0.016 | PASS |
 | UBER | 2021-06-01->2025-06-30 | 4.08 | 15.974% | 15.969% | 0.005 | PASS |
 | UNH | 2021-06-01->2025-06-30 | 4.08 | -4.787% | -4.791% | 0.004 | PASS |
 | V | 2021-06-01->2025-06-30 | 4.08 | 12.453% | 12.444% | 0.008 | PASS |
 | VRT | 2021-06-01->2025-06-30 | 4.08 | 49.583% | 49.602% | 0.019 | PASS |
-| WDC | 2021-06-01->2025-06-30 | 4.08 | -3.937% | 2.877% | 6.813 | FAIL |
+| WDC | 2021-06-01->2025-06-30 | 4.08 | 3.033% | 2.877% | 0.157 | PASS |
 | WMT | 2021-06-01->2025-06-30 | 4.08 | 21.164% | 21.172% | 0.008 | PASS |
 | XOM | 2021-06-01->2025-06-30 | 4.08 | 19.625% | 19.618% | 0.006 | PASS |
 | SPY | 1999-01-04->2020-12-31 | 21.99y | 7.137% | 7.135% | 0.003 | PASS |
 | QQQ | 1999-03-10->2020-12-31 | 21.81y | 9.374% | 9.373% | 0.001 | PASS |
 
-**Interpretation.** The dividend ledger itself reconciles cleanly — wherever the price legs are consistent,
-diffs collapse to ≤0.06pp/yr. The failures isolate two pre-existing structural properties (spinoff value
-outside the pre-registered primary path; IEX endpoint noise) and one accounting-convention divergence
-(withholding). Per protocol §14 T-D3, **failure blocks G1** absent the principal's explicit acceptance of
-degraded-mode disclosures — escalated as **B1** with decision items **D-1/D-2/D-3** (§10).
+T-D1–T-D5 engine proofs remain G2 work and are not claimed.
 
-T-D1–T-D5 are engine tests: **not claimed complete** — G1 establishes the data adequacy they require; G2
-implements and tests the governed engine boundaries.
+## 7. D-4 — Federal Funds (DFF) acquisition and reconstruction
 
-## 7. Rates and borrowing-cost evidence (charter §7 bullet 3)
+The pinned construction is unchanged: **DFF + pre-registered calibrated spread** (per
+`pre_registration.yaml` `costs.interest`); the target-range upper bound does **not** replace DFF. Direct
+acquisition remains blocked — re-verified this round: CONNECT-tunnel 403 on `fred.stlouisfed.org` (and all
+alternate primary hosts in the v1 evidence). The principal has verified DFF exists through 2026-07-22.
 
-- **Risk-free:** `^IRX` 13-week T-bill discount yield, 6,655 rows 1999-01-04 → 2025-06-30, 0 out-of-range
-  values. This is a **fallback source** (all primary Treasury/FRED/H.15/NY-Fed hosts are network-policy
-  blocked) used under protocol §10's disclosed-fallback-band provision; Sharpe/Sortino use only.
-- **Fed Funds effective: NOT ACQUIRED — BLOCKER B2.** Exact evidence: CONNECT-tunnel 403 (proxy policy
-  denial) on `fred.stlouisfed.org`, `api.stlouisfed.org`, `www.federalreserve.gov` (H.15 datadownload),
-  `markets.newyorkfed.org` (EFFR API), `api.fiscaldata.treasury.gov`, `home.treasury.gov`. Remediation
-  options: (i) allowlist one primary host in the environment network policy (the repository has precedent:
-  the Yahoo-host allowlist fix of 2026-07-15); (ii) principal-accepted alternative construction from the
-  FOMC target-range decision record (see D-4); (iii) principal-accepted degraded mode.
-- **Margin-rate observations:** recorded source-pinned in `data/rates/robinhood_margin_rate_evidence.yaml`
-  (2020-12 primary announcement; 2022-11 rate change with the explicit target-upper+spread mechanism;
-  Phase 7A Dec-2025 tier evidence; current Jul-2026 published schedule). Internal consistency: the Gold
-  lowest-tier spread is ~+2.5pp over the Fed target upper bound in every dated observation — supporting,
-  not yet calibrating, the pre-registered construction.
-- **Cost separation recorded** (assumptions A-05, A-07, A-08, A-09): margin interest (Estimated,
-  constructed series pending B2); first-$1,000 Gold free tier (Known per terms; account applicability
-  pending B3); Gold subscription $5/mo (Estimated; **billing unverified — B3**); subscribed rate
-  (unverified — B3); unsubscribed counterfactual (historical +4pp evidence only; current terms
-  unverified — B3); incremental vs fully-allocated bases (pre-registered post-processing, no trials).
-- **Account-specific verification:** attempted via the user's Gmail connector — token expired,
-  non-interactive session cannot re-authorize. No account billing evidence exists in the repository.
-  Per the task rule ("Do not infer account-specific terms from generic marketing pages"), these remain
-  **unverified**, and G1 therefore cannot pass (consolidated request in §10).
+Manual-supply path implemented and documented (`data_acquisition.py dff <csv>` + `DFF_EXPECTED_SCHEMA`):
+expected file = FRED fredgraph CSV for DFF (`header DATE,DFF` or `observation_date,DFF`; rows
+`YYYY-MM-DD,<percent>`; missing "."), coverage 1999-01-01 → ≥2025-06-30. The ingestion validator checks
+header, duplicates, coverage span, value range [0,25], gaps >4 days; on pass it stores dev-bounded
+`data/rates/dff.json` (FRED data is US-government public domain — committable), records the supplied file's
+SHA-256, and emits the reconstruction comparison: implied spread (observed Robinhood Gold lowest-tier rate
+− DFF) on each recorded observation date vs the issuer's published target-upper + 2.5pp mechanism (recorded
+as cross-check and limitation). **If the DFF-based and target-upper-based constructions diverge materially
+enough to alter costs or a future candidate classification, a MARGIN-0005 charter amendment is required
+before simulations** — no model choice is made silently.
 
-Every numeric assumption is NUM-0001-classified in `assumptions_ledger.yaml` (A-01…A-16).
+## 8. Crypto outcome — principal acceptance recorded
 
-## 8. Crypto outcome (charter §7 bullet 4) — **formally recorded**
+> **CRYPTO TARGET SIZING OUT OF SCOPE** (outcome b) — **accepted by the principal 2026-07-24.**
 
-Protocol-named method executed: Alpaca `get_crypto_bars`, paged, 2021-06-01 → 2025-06-30.
+Confirmed consequences: the two Study B crypto configurations (ledger line B-4L) **lapse**; their trial
+capacity **cannot be reallocated**; BTC/ETH data (1491/1491 days each, fully validated) remain documented
+but **cannot support any crypto target-sizing conclusion under this charter**; **no cash-like proxy** is
+introduced. Basis: SOL/USD 416-day coverage hole (2023-07-06 → 2024-08-26) in the protocol-named source.
+This acceptance is **not** degraded-mode approval for any other dataset.
 
-- **BTC/USD: 1491/1491 days** — 0 duplicates, 0 nonpositive, 0 gaps, UTC-midnight buckets verified,
-  equity-session mapping (t−1 rule, last crypto close ≤ each equity close, no future-bar leakage) complete.
-- **ETH/USD: 1491/1491 days** — identical clean profile.
-- **SOL/USD: FAIL — 1073/1491 days.** A **416-day coverage hole 2023-07-06 → 2024-08-26** (the vendor's
-  SOL suspension/relisting era) plus a 2-day gap 2023-06-23→26; 289 dev-window equity sessions have no
-  qualifying SOL close. Full permitted coverage and pagination-completeness validations fail.
-- Independent spot-checks (BTC/ETH sample closes vs public UTC-midnight references) were consistent;
-  immaterial given the outcome below.
+## 9. Gold account evidence — placeholders (nothing verified, nothing invented)
 
-Per the protocol's two-outcome rule (no third option, no cash-like proxy, no partial-sleeve variant, and
-outcome A only if **every** required validation passes):
+Public Robinhood terms are recorded as **generic provider evidence only** (`robinhood_margin_rate_evidence.yaml`).
+Account-specific fields, all **[PENDING PRINCIPAL EVIDENCE]** (assumption A-21):
 
-> **B. CRYPTO TARGET SIZING OUT OF SCOPE** — SOL acquisition/validation failed; the two Study B crypto
-> configurations (ledger line B-4L, ≤2 runs) **lapse and their budget lapses with them**; no crypto-sizing
-> conclusion may be produced by this program; the exclusion must be restated in the final report.
-
-## 9. Artifacts created (exact file list of this PR)
-
-| File | Role |
+| Field | Status |
 |---|---|
-| `research/margin_target_study/data_acquisition.py` | Charter-§4-approved module: reproducible acquisition + deterministic validators + T-D3 |
-| `research/margin_target_study/data_manifest.yaml` | Charter §7 manifest — 9 datasets, 199 per-file hash entries, sources, coverage, transformations, validation, limitations, licensing, isolation status |
-| `research/margin_target_study/assumptions_ledger.yaml` | A-01…A-16, Known/Estimated/Hypothetical + NUM-0001 classes |
-| `research/margin_target_study/G1_DATA_VALIDATION_REPORT.md` | this report |
-| `research/margin_target_study/data/prices/*.json` (63) | committed primary-path price cache (Alpaca; repository-policy precedent) |
-| `research/margin_target_study/data/dividends/dividend_ledger.json`, `splits.json` | committed PIT ledger + split records |
-| `research/margin_target_study/data/crypto/{BTCUSD,ETHUSD,SOLUSD}.json` | committed crypto bars (evidence for the recorded outcome) |
-| `research/margin_target_study/data/rates/robinhood_margin_rate_evidence.yaml` | committed hand-authored, source-pinned rate evidence |
+| Active Gold subscription status | [PENDING] |
+| Monthly vs annual plan | [PENDING] |
+| Actual billed cost | [PENDING] |
+| App-displayed margin rate | [PENDING] |
+| First-$1,000 treatment on this account | [PENDING] |
+| Non-Gold / downgrade terms | [PENDING] |
 
-**Not committed** (Yahoo redistribution caution; reproducible via `data_acquisition.py yahoo`; SHA-256 and
-byte counts recorded in the manifest): `data/quarantine_yahoo/tr/*` (63), `data/quarantine_yahoo/track3/*`
-(2), `data/quarantine_yahoo/rates/irx_13w_tbill.json`. Not created (later-stage artifacts, not fabricated):
-`trial_ledger.jsonl`, `candidate_freeze.yaml`, `intelligence_flag_events.yaml`, any results/**.
+Intake procedure on supply: inspect the artifact; record evidence date, account-specific value, source
+artifact, locator, hash where applicable, and a privacy-preserving description. **No unredacted personal
+screenshot will be committed without explicit principal authorization** — a redacted extract or recorded
+facts with provenance is preferred.
 
-## 10. Blockers and decisions required (consolidated — principal input needed)
+## 10. Validation results (remediation round)
 
-**B1 — T-D3 tolerance breaches (6 tickers, §6).** Decisions:
-- **D-1 (spinoffs):** choose one for DHR/IBM/MRK/WDC — (a) accept as a disclosed structural limitation of
-  the pre-registered primary path (arm-relative claims unaffected; absolute levels understated for these 4);
-  (b) authorize adding in-kind distribution cash-equivalents to the ledger from corporate-action spin_off
-  records (a primary-path accounting extension — needs its own validation round); (c) exclude the 4 tickers
-  from dividend-sensitive analyses. G1 recommends none — the choice is an accounting-policy call.
-- **D-2 (withholding convention):** ledger currently carries vendor amounts (net for TSM/ASML/BABA-fee,
-  0.75x-gross for ETN, gross elsewhere). Options: keep as-acquired (disclosed, most conservative for TSM);
-  normalize to gross; or normalize to modeled US-retail net. Affects TSM's T-D3 verdict and the R2 family.
-- **D-3 (GEV):** accept 0.665pp/yr as disclosed IEX endpoint noise on a 1.24-year window (no data fix
-  exists at the free tier), or exclude GEV from T-D3 scope on window-length grounds.
+- YAML parse: all new/updated YAML + config YAML clean.
+- Deterministic validators (`data_acquisition.py validate`): every section passes — prices (0 dup/nonpos/
+  beyond-boundary; missing sim-window sessions ≤3; RKLB's 13 gaps are pre-2021-06-01 warm-up only), sealed
+  archive hash match with zero seal-time anomalies, dividend ledger v2 clean, corporate-action ledger clean,
+  crypto assertions, Track 3 boundaries, ^IRX — **except the single open DFF item**, which the validator
+  correctly reports as a blocker (overall FAIL by design until DFF is ingested).
+- T-D3 v2: **PASS 63/63 + 2/2** (§6).
+- Manifest hashes: regenerated (11 datasets, 202 per-file entries) and spot-verified.
+- Untouched-boundary checks: all OK (§2.3); Track 3 untouched never acquired.
+- `python -m pytest -q`: full suite green (see PR).
+- `git diff --check`: clean; protected paths untouched (every changed file inside
+  `research/margin_target_study/`); `simulate()` never called; zero trials consumed; pinned hashes exact.
 
-**B2 — Fed Funds series unacquirable** (§7): allowlist a primary host (preferred; one-line network-policy
-change, repository precedent 2026-07-15), or approve an alternative construction (D-4), or accept degraded
-mode explicitly.
-- **D-4:** the protocol pre-registers Fed Funds *effective* + spread; Robinhood's published mechanism uses
-  the *target upper bound* + spread. Once B2 unblocks, choose the construction input (or run both, one as
-  sensitivity — no extra simulation trials, §8.7 post-processing).
+## 11. Remaining blockers and verdict
 
-**B3 — Gold/account-specific terms unverified.** Needed from the principal (or a re-authorized Gmail /
-uploaded statement): (1) Gold subscription status; (2) actual billed cost ($5/mo assumed); (3) the margin
-rate currently shown in the app; (4) the unsubscribed counterfactual rate/terms if displayed. The Gmail
-connector needs re-authorization in claude.ai connector settings if email evidence should be used.
+Resolved this round: **B1** (T-D3 — D-1/D-2/D-3 implemented, full pass), crypto outcome acceptance
+recorded. Remaining:
 
-**Recorded outcome (not a blocker): crypto outcome B** (§8) — no principal action required; noted for the
-final report.
+- **B2′ (DFF):** awaiting the principal-supplied FRED DFF CSV (or a network-policy allowlist addition);
+  ingestion + validation + reconstruction comparison are implemented and one command away.
+- **B3 (Gold/account evidence):** the six [PENDING] fields in §9.
 
-## 11. G1 verdict
-
-Pass-criteria checklist: pinned hashes exact **✓**; price data **PASS**; dividend ledger **PASS** (with D-2
-open); T-D3 **FAIL for 6/63 with full cause attribution** → principal acceptance required; benchmarks **PASS**;
-risk-free **fallback acquired, disclosed**; Fed Funds **BLOCKED**; Gold/account terms **UNVERIFIED**;
-crypto outcome **B formally recorded ✓**; untouched isolation **proven for G1's scope ✓**; manifests and
-assumptions **complete ✓**; prohibited files/activities **none ✓**.
-
-Degraded-mode acceptance is reserved to the principal (charter §7: "Any degraded mode proceeds only on the
-principal's explicit, recorded acceptance"). This session does not self-approve it. Therefore:
+Because charter §7 requires the borrowing-rate series acquired and costs verified against the account's
+actual terms, and no degraded mode is self-approvable:
 
 > ## **G1 DATA GATE BLOCKED**
 >
-> Bounded, fully-enumerated blockers: **B1** (T-D3 disclosures/decisions D-1–D-3), **B2** (Fed Funds
-> acquisition path / D-4), **B3** (account-terms verification). Everything else required of G1 is complete,
-> validated, manifest-recorded, and reproducible. On resolution of B1–B3 the gate can be re-verdicted
-> without re-doing the acquisition work (data-correction paths are documented per item).
+> Narrowed to exactly two bounded items: **B2′** (supply DFF CSV → `python3
+> research/margin_target_study/data_acquisition.py dff <file>`) and **B3** (six account-evidence fields).
+> All other G1 requirements pass. On resolution, the gate can be re-verdicted without re-doing any
+> acquisition or reconciliation work.
 
-**G2 was not begun**: no engine, overlay, repayment, maintenance, shadow, or loader code exists in this PR;
-`margin_simulation.py` and its tests are untouched.
+**G2 was not begun.**
 
 ---
 

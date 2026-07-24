@@ -5,7 +5,7 @@
 # assumption G1 data work touched. Sensitivity requirements reference the
 # pre-registered sensitivity lines (§9.3) — no simulation was run at G1.
 
-ledger_version: "G1-2026-07-24"
+ledger_version: "G1-2026-07-24-r2"
 authority: governance/decisions/MARGIN-0005-margin-target-research-charter.md
 num_0001: governance/decisions/NUM-0001-numeric-parameter-provenance-standards.md
 
@@ -107,21 +107,21 @@ assumptions:
     sensitivity: "n/a (fixed threshold)"
     unresolved: false
   - id: A-13
-    value: "foreign-issuer dividend amounts as acquired from Alpaca (TSM net of ~21% withholding; ASML net of 15%; BABA net of ADS fee; ETN rows 0.75x gross)"
-    classification: Known data behavior; convention decision open
-    num_0001_class: unsupported_unclassified_until_decided
-    source: "full-roster cross-source comparison (G1 report §5)"
-    affects: "dividend cash realism per foreign issuer; T-D3 TSM result; R2 family"
-    sensitivity: "if convention changed, re-derive ledger (data-correction path)"
-    unresolved: "decision item D-2"
+    value: "PRIMARY dividend convention = GROSS DECLARED pre-tax cash per share (principal direction D-2, 2026-07-24); vendor net-convention amounts retained per row as vendor_net; withholding/ADR fees/broker net treatment recorded separately in data/dividends/withholding_register.yaml"
+    classification: Known (directed convention)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "principal direction D-2; full-roster cross-source measurement (G1 report §5)"
+    affects: "primary accounting path; T-D3; R2 family (net realism = separate sensitivity citing A-19)"
+    sensitivity: "net-cash sensitivity per withholding_register.yaml once account evidence (B3) exists"
+    unresolved: false
   - id: A-14
-    value: "spinoff/in-kind distributions NOT modeled in the primary path (DHR/IBM/MRK/WDC affected in-window)"
-    classification: Known structural property of the pre-registered primary path
-    num_0001_class: unsupported_unclassified_until_decided
-    source: "T-D3 failure attribution (G1 report §6); Yahoo pseudo-split scan"
-    affects: "absolute return levels for 4 tickers; arm-relative claims unaffected (shared bias)"
-    sensitivity: "options enumerated as decision item D-1"
-    unresolved: "decision item D-1"
+    value: "spin-off/in-kind distributions ARE modeled in the primary path via the PIT corporate-action ledger (principal decision D-1, 2026-07-24): 4 in-window events (MRK/OGN, IBM/KD, DHR/VLTO, WDC/SNDK)"
+    classification: Known (directed accounting extension)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "data/corporate_actions/spinoffs.json (vendor records + hand-authored primary-source records)"
+    affects: "primary path completeness; T-D3 (all four former failures now pass at <=0.157pp/yr)"
+    sensitivity: "valuation rule per A-17"
+    unresolved: false
   - id: A-15
     value: "crypto equity-session calendar mapping: session D consumes crypto bar t=D-1 (UTC) — last completed daily close (19/20:00 ET on D-1... i.e. 00:00Z bucket end) at or before the 16:00 ET equity close"
     classification: Known (mathematically derived from bucket convention)
@@ -131,10 +131,50 @@ assumptions:
     sensitivity: "n/a (outcome b)"
     unresolved: false
   - id: A-16
-    value: "IEX-feed closes as primary prices (vs consolidated tape)"
-    classification: Known repository convention
+    value: "IEX-feed closes as primary prices, with one documented ticker-specific source exception (decision D-3 outcome A): GEV uses Alpaca SIP (consolidated) — dated evidence: 7 sessions with |SIP−IEX| > 0.15%, worst 2024-12-23 1.618%, 2024-09-17 0.573%, 2024-04-02 0.286%; no corporate action involved; GEV T-D3 now 0.003pp/yr"
+    classification: Known repository convention + documented exception
     num_0001_class: evidence_bounded_governance_selection
-    source: "repository-established price source (data/backtest); free-tier constraint"
-    affects: "endpoint-level noise (GEV T-D3 case: 0.29% start-price difference)"
-    sensitivity: "disclosed; no alternative source available at current data tier"
+    source: "repository-established price source (data/backtest); same-vendor SIP historical feed verified available; G1 report §D-3"
+    affects: "GEV price leg; cross-check vs data/backtest shows expected GEV-only divergence"
+    sensitivity: "roster-wide SIP migration is a possible future improvement requiring its own decision — NOT adopted here"
     unresolved: false
+  - id: A-17
+    value: "in-kind distribution valuation: ratio x distributed security's consolidated (SIP) close on the parent's ex-distribution session, credited as reinvestable cash that session; fractions per cash-in-lieu convention"
+    classification: Known (specified convention)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "data/corporate_actions/spinoffs.json meta.valuation_rule; corroborated by T-D3 v2 pass on all four events"
+    affects: "spin-off cash-equivalents in the primary path"
+    sensitivity: "child-close valuation date is the one free choice; T-D3 tolerance bounds its effect at <=0.157pp/yr on affected names"
+    unresolved: false
+  - id: A-18
+    value: "constructed borrowing-rate input = FRED DFF (Federal Funds Effective) + pre-registered calibrated spread — pinned; NOT replaced by the target-range upper bound (principal direction D-4). Robinhood's published target-upper+spread mechanism recorded as cross-check/limitation; if the two constructions diverge materially enough to alter costs or a candidate classification, a MARGIN-0005 charter amendment is required before simulations"
+    classification: Known construction, data PENDING
+    num_0001_class: empirically_calibrated_estimate (pending input series)
+    source: "pre_registration costs.interest; principal direction D-4; DFF verified by principal to exist through 2026-07-22"
+    affects: "financing cost in every levered arm"
+    sensitivity: "pre-registered stress rates; DFF-vs-target-upper comparison emitted by the `dff` ingestion validator"
+    unresolved: "BLOCKER — awaiting principal-supplied FRED CSV or network-policy allowlist (ingestion path implemented and documented)"
+  - id: A-19
+    value: "foreign withholding / ADR fee register: TSM ~21% TW withholding (measured 0.78 vendor ratio), ASML 15% NL (measured 0.850), ETN 25% Irish DWT modeled by vendor but US holders typically exempt (measured 0.750, account treatment UNRESOLVED), BABA ADS depositary fee (~$0.02/ADS)"
+    classification: Known public tax-regime facts + repository measurements
+    num_0001_class: empirically_calibrated_estimate
+    source: "data/dividends/withholding_register.yaml (sources per issuer)"
+    affects: "net-cash sensitivities only; never netted into the primary gross ledger"
+    sensitivity: "activated only with account-level evidence (B3)"
+    unresolved: "ETN account treatment + all account-level net verification pending B3"
+  - id: A-20
+    value: "crypto outcome (b) — CRYPTO TARGET SIZING OUT OF SCOPE — accepted by principal 2026-07-24: the two Study B crypto configurations (ledger B-4L) lapse; capacity cannot be reallocated; BTC/ETH data remain documented but support no crypto-sizing conclusion; no cash-like proxy"
+    classification: Known (governed outcome, principal-accepted)
+    num_0001_class: externally_imposed (governed outcome)
+    source: "protocol §4 crypto gap row; SOL 416-day coverage hole evidence (manifest crypto_bars)"
+    affects: "Study B ledger line B-4L (lapsed)"
+    sensitivity: "n/a"
+    unresolved: false
+  - id: A-21
+    value: "Robinhood Gold account-specific terms — ALL PENDING PRINCIPAL EVIDENCE: [PENDING] active Gold subscription status; [PENDING] monthly vs annual plan; [PENDING] actual billed cost; [PENDING] app-displayed margin rate; [PENDING] first-$1,000 treatment on this account; [PENDING] non-Gold/downgrade terms. Public terms recorded as generic provider evidence only; nothing marked verified"
+    classification: Hypothetical until account evidence supplied
+    num_0001_class: unsupported_unclassified_until_acquired
+    source: "task rule: account-specific terms never inferred from generic pages; Gmail connector token expired"
+    affects: "Gold cost bases (A-07/A-08/A-09); subscription-sensitivity flags"
+    sensitivity: "two cost bases post-processing once verified"
+    unresolved: "BLOCKER B3 — evidence intake procedure: principal uploads screenshots/statements; record evidence date, value, artifact, locator, hash; redact before any commit unless explicitly authorized"
