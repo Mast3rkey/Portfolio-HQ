@@ -1,5 +1,11 @@
 # Portfolio-HQ Unified Core Blueprint V1
 
+_**2026-07-24 acceptance status:** this planning baseline was independently audited,
+reconciled, accepted by the principal, and merged through PR #143. The original
+draft-status paragraph below is retained as filing history. OPS-0003 records the
+resulting workstream-priority and lifecycle transition. No substantive architecture
+text in §§1–12 is changed by this note._
+
 _Draft planning baseline for WS-0002 (`operations/WORKSTREAMS.yaml`), filed under
 `governance/decisions/OPS-0002-unified-core-planning-and-audit-gate.md`. Status:
 **draft, unaudited, unmerged.** This document is planning and architecture material
