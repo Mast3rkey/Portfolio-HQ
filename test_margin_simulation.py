@@ -792,3 +792,1367 @@ def test_module_has_no_yaml_config_io():
     src = open(margin_simulation.__file__).read()
     assert "yaml.safe_load" not in src
     assert "open(HERE" not in src
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# MARGIN-0005 G2A — additive engine capabilities (charter §4; PROTOCOL_V2 §13).
+# Everything below tests the G2A additions and their output-neutrality. These
+# are G2 engine-integrity tests on synthetic data — NOT registered Study A/B/C
+# trials; no trial_ledger.jsonl exists or is created, and zero of the 300
+# registered configurations are consumed by anything in this file.
+# ═════════════════════════════════════════════════════════════════════════════
+
+import ast as _ast
+import hashlib as _hashlib
+import inspect as _inspect
+import json as _json
+import os as _os
+
+from margin_simulation import (
+    LEVERAGE_TARGET_HARD_MAX,
+    LEVERAGE_TARGET_HARD_MIN,
+    LiquidationConfig,
+    _rate_for_date,
+)
+
+_RESEARCH_DIR = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                              "research", "margin_target_study")
+
+
+# ── output neutrality when every new input is absent ────────────────────────
+
+def test_g2a_output_neutrality_legacy_fields_unchanged_when_new_inputs_absent():
+    # The exact pinned pre-G2A regression values (test_regression_scenario_
+    # fixed_leverage_unchanged) must still hold with no new input supplied,
+    # and the new daily-path outputs must exist without altering them.
+    aligned, calendar, deposit_days, schedule, weights = _regression_fixture()
+    sc = scenario_fixed_leverage(1.8, interest_apr=0.20, interest_free_amount=0.0)
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    assert result.final_margin_debt == pytest.approx(6.673974604366053)
+    assert result.metrics()["final_book_value"] == pytest.approx(166.65935872896728)
+    # new series populated, correct lengths, inert values
+    n = len(calendar)
+    assert len(result.debt_series) == n
+    assert len(result.cash_series) == n
+    assert len(result.interest_series) == n
+    assert result.debt_series[-1] == pytest.approx(result.final_margin_debt)
+    assert result.maintenance_excess_series == [None] * n
+    assert result.dividend_credit_series == [0.0] * n
+    assert result.corporate_action_credit_series == [0.0] * n
+    assert result.liquidation_events == []
+    # no new event kinds appear without new inputs
+    kinds = {e["kind"] for e in result.events}
+    assert kinds <= {"deposit", "margin_draw", "interest_accrual", "repayment"}
+
+
+def test_g2a_explicit_none_inputs_identical_to_omitted():
+    aligned, calendar, deposit_days, schedule, weights = _regression_fixture()
+    sc = scenario_fixed_leverage(1.8, interest_apr=0.20, interest_free_amount=0.0)
+    a = simulate(sc, weights, aligned, calendar, deposit_days,
+                 deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    b = simulate(sc, weights, aligned, calendar, deposit_days,
+                 deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                 daily_rates=None, dividend_events=None, corporate_action_events=None)
+    assert a.book_values == b.book_values
+    assert a.events == b.events
+    assert a.final_margin_debt == b.final_margin_debt
+
+
+# ── variable-rate daily accrual (point-in-time step function) ───────────────
+
+def _levered_flat_fixture():
+    """A eligible day 0, B day 2 -- forces a margin draw on day 2 (same
+    delayed-eligibility mechanism as the pre-existing fixtures), flat
+    prices so interest arithmetic is hand-computable."""
+    aligned = {"A": ([100.0] * 5, 0), "B": ([100.0] * 5, 2)}
+    calendar = [f"2026-02-{d:02d}" for d in range(1, 6)]
+    deposit_days = [calendar[0], calendar[2]]
+    schedule = {calendar[0]: 60.0, calendar[2]: 20.0}
+    weights = {"A": 1.0, "B": 1.0}
+    return aligned, calendar, deposit_days, schedule, weights
+
+
+def test_g2a_daily_rates_step_function_accrual():
+    aligned, calendar, deposit_days, schedule, weights = _levered_flat_fixture()
+    sc = scenario_fixed_leverage(1.8, interest_apr=0.0, interest_free_amount=0.0)
+    # rate 36.5%/yr from day 0, stepping to 73%/yr on day 4 -> daily rates
+    # of exactly 0.1% then 0.2% of the debt entering the day
+    rates = {calendar[0]: 0.365, calendar[4]: 0.730}
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                      daily_rates=rates)
+    draw = next(e for e in result.events if e["kind"] == "margin_draw")
+    debt0 = draw["amount"]
+    assert debt0 > 0
+    ints = [e for e in result.events if e["kind"] == "interest_accrual"]
+    # debt drawn on day 2 -> accrual on days 3 and 4 only
+    assert [e["day"] for e in ints] == [3, 4]
+    assert ints[0]["amount"] == pytest.approx(debt0 * 0.365 / 365.0)
+    debt_after_day3 = debt0 + ints[0]["amount"]
+    assert ints[1]["amount"] == pytest.approx(debt_after_day3 * 0.730 / 365.0)
+    # interest_series mirrors the events
+    assert result.interest_series[3] == pytest.approx(ints[0]["amount"])
+    assert result.interest_series[4] == pytest.approx(ints[1]["amount"])
+
+
+def test_g2a_daily_rates_constant_equals_flat_apr():
+    aligned, calendar, deposit_days, schedule, weights = _regression_fixture()
+    sc_flat = scenario_fixed_leverage(1.8, interest_apr=0.20, interest_free_amount=0.0)
+    flat = simulate(sc_flat, weights, aligned, calendar, deposit_days,
+                    deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    sc_zero = scenario_fixed_leverage(1.8, interest_apr=0.0, interest_free_amount=0.0)
+    varied = simulate(sc_zero, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                      daily_rates={calendar[0]: 0.20})
+    assert varied.final_margin_debt == pytest.approx(flat.final_margin_debt)
+    assert varied.book_values == pytest.approx(flat.book_values)
+
+
+def test_g2a_daily_rates_no_lookahead_future_rate_change_cannot_affect_past():
+    aligned, calendar, deposit_days, schedule, weights = _levered_flat_fixture()
+    sc = scenario_fixed_leverage(1.8, interest_apr=0.0, interest_free_amount=0.0)
+    base = simulate(sc, weights, aligned, calendar, deposit_days,
+                    deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                    daily_rates={calendar[0]: 0.365})
+    bumped = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                      daily_rates={calendar[0]: 0.365, calendar[4]: 9.999})
+    # days 0-3 byte-identical; only day 4 may differ
+    assert base.book_values[:4] == bumped.book_values[:4]
+    assert base.interest_series[:4] == bumped.interest_series[:4]
+    assert bumped.interest_series[4] > base.interest_series[4]
+
+
+def test_g2a_rate_lookup_uses_most_recent_at_or_before_date_only():
+    dates = ["2026-01-01", "2026-01-10"]
+    rates = {"2026-01-01": 0.05, "2026-01-10": 0.07}
+    assert _rate_for_date(dates, rates, "2026-01-01") == 0.05
+    assert _rate_for_date(dates, rates, "2026-01-09") == 0.05   # no interpolation
+    assert _rate_for_date(dates, rates, "2026-01-10") == 0.07   # on the observation date
+    assert _rate_for_date(dates, rates, "2027-12-31") == 0.07
+    with pytest.raises(ValueError):
+        _rate_for_date(dates, rates, "2025-12-31")  # before first observation
+
+
+def test_g2a_daily_rates_empty_dict_rejected():
+    aligned, calendar, deposit_days, schedule, weights = _regression_fixture()
+    sc = scenario_fixed_leverage(1.8, interest_apr=0.0, interest_free_amount=0.0)
+    with pytest.raises(ValueError):
+        simulate(sc, weights, aligned, calendar, deposit_days,
+                 deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                 daily_rates={})
+
+
+def test_g2a_first_1000_free_tier_applies_under_daily_rates():
+    # Debt below the free tier accrues nothing; only the excess accrues.
+    # Fixture arithmetic: day 0 buys A $3,000 cash; day 2's $500 deposit
+    # leaves B's $1,750 target gap funded $500 cash + $1,250 margin ->
+    # debt $1,250, of which only $250 is above the $1,000 free tier.
+    aligned = {"A": ([100.0] * 4, 0), "B": ([100.0] * 4, 2)}
+    calendar = [f"2026-03-{d:02d}" for d in range(1, 5)]
+    schedule = {calendar[0]: 3000.0, calendar[2]: 500.0}
+    sc = ScenarioConfig(name="free-tier", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=1000.0)
+    r = simulate(sc, {"A": 1.0, "B": 1.0}, aligned, calendar,
+                 deposit_days=[calendar[0], calendar[2]],
+                 deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                 daily_rates={calendar[0]: 0.365})
+    draw = next(e for e in r.events if e["kind"] == "margin_draw")
+    assert draw["amount"] == pytest.approx(1250.0)
+    ints = [e for e in r.events if e["kind"] == "interest_accrual"]
+    assert len(ints) == 1
+    assert ints[0]["day"] == 3
+    assert ints[0]["amount"] == pytest.approx((1250.0 - 1000.0) * 0.365 / 365.0)
+
+
+# ── explicit dividend cash ───────────────────────────────────────────────────
+
+def test_g2a_dividend_cash_credited_exactly_once():
+    aligned = {"A": ([100.0] * 4, 0)}
+    calendar = [f"2026-04-{d:02d}" for d in range(1, 5)]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      dividend_events={calendar[2]: {"A": 2.5}})
+    # 1.0 share held from day 0 -> $2.50 credited once, on day 2, never again
+    div_events = [e for e in result.events if e["kind"] == "dividend"]
+    assert len(div_events) == 1
+    assert div_events[0]["day"] == 2
+    assert div_events[0]["amount"] == pytest.approx(2.5)
+    assert sum(result.dividend_credit_series) == pytest.approx(2.5)
+    assert result.dividend_credit_series[2] == pytest.approx(2.5)
+    # the credit lands in book value (return component)
+    assert result.book_values[2] == pytest.approx(102.5)
+    assert result.book_values[3] == pytest.approx(102.5)
+
+
+def test_g2a_dividend_not_credited_for_unheld_or_not_yet_bought_shares():
+    aligned = {"A": ([100.0] * 3, 0), "B": ([100.0] * 3, 0)}
+    calendar = [f"2026-04-{d:02d}" for d in range(1, 4)]
+    sc = scenario_unlevered()
+    # dividend on day 0 for A: credited BEFORE the deposit-driven buy, so
+    # zero shares are held at credit time -> no credit. Dividend for a
+    # never-held ticker Z -> no credit either.
+    result = simulate(sc, {"A": 1.0, "B": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      dividend_events={calendar[0]: {"A": 5.0, "Z": 9.9}})
+    assert [e for e in result.events if e["kind"] == "dividend"] == []
+    assert sum(result.dividend_credit_series) == 0.0
+
+
+def test_g2a_dividend_cash_is_return_not_external_flow():
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = [f"2026-04-{d:02d}" for d in range(1, 4)]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      dividend_events={calendar[1]: {"A": 1.0}})
+    # flows records only the deposit -- the dividend is NOT a flow, so TWR
+    # counts it as return
+    assert result.flows == {0: 100.0}
+    assert result.metrics()["ann_twr_pct"] > 0.0
+
+
+def test_g2a_no_total_return_price_path_exists_in_primary_engine():
+    # Structural bar (protocol T-D4 direction, engine side): the primary
+    # engine accepts prices only through `aligned` and dividend income only
+    # as explicit cash -- no simulate() parameter or module symbol offers a
+    # TR-price input.
+    params = _inspect.signature(simulate).parameters
+    for name in params:
+        lowered = name.lower()
+        assert "total" not in lowered and "tr_" not in lowered
+    import margin_simulation
+    module_symbols = [n for n in dir(margin_simulation) if not n.startswith("__")]
+    for n in module_symbols:
+        assert "total_return" not in n.lower()
+
+
+# ── explicit non-cash corporate actions (A-17 valuation) ────────────────────
+
+def test_g2a_corporate_action_ratio_valuation_and_cash_in_lieu():
+    # 7 shares held, ratio 1/3, child close $30: entitlement 2 1/3 units,
+    # credited ENTIRELY as cash = 7 x (1/3) x 30 = $70 -- the fractional
+    # 1/3 unit is inherently cash-in-lieu because the whole entitlement is
+    # cash and no child position is created.
+    aligned = {"A": ([10.0] * 3, 0)}
+    calendar = [f"2026-05-{d:02d}" for d in range(1, 4)]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=70.0, min_lot=1.0,
+                      corporate_action_events={
+                          calendar[1]: [{"ticker": "A", "ratio": 1.0 / 3.0,
+                                         "unit_value": 30.0}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    assert ca_events[0]["amount"] == pytest.approx(7.0 * (1.0 / 3.0) * 30.0)
+    assert sum(result.corporate_action_credit_series) == pytest.approx(70.0)
+    # no child position appears
+    assert set(result.tracked_values) == set()
+    assert result.book_values[1] == pytest.approx(70.0 + 70.0)
+
+
+def test_g2a_corporate_action_no_holding_no_credit():
+    aligned = {"A": ([10.0] * 2, 0)}
+    calendar = ["2026-05-01", "2026-05-02"]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=50.0, min_lot=1.0,
+                      corporate_action_events={
+                          calendar[1]: [{"ticker": "Z", "ratio": 0.5, "unit_value": 40.0}]})
+    assert [e for e in result.events if e["kind"] == "corporate_action_credit"] == []
+    assert sum(result.corporate_action_credit_series) == 0.0
+
+
+# ── maintenance-excess proxy ─────────────────────────────────────────────────
+
+def _maintenance_25pct(position_values):
+    return 0.25 * sum(position_values.values())
+
+
+def _levered_state_fixture():
+    """A day 0, B day 2; deposit 60 then 20 -> after day 2: gross 100,
+    debt 20, net equity 80, leverage 1.25 (hand-derived; matches the
+    pre-existing margin-draw fixture arithmetic). Flat prices."""
+    aligned = {"A": ([100.0] * 5, 0), "B": ([100.0] * 5, 2)}
+    calendar = [f"2026-06-{d:02d}" for d in range(1, 6)]
+    deposit_days = [calendar[0], calendar[2]]
+    schedule = {calendar[0]: 60.0, calendar[2]: 20.0}
+    weights = {"A": 1.0, "B": 1.0}
+    return aligned, calendar, deposit_days, schedule, weights
+
+
+def test_g2a_maintenance_excess_series_computed_daily():
+    aligned, calendar, deposit_days, schedule, weights = _levered_state_fixture()
+    sc = ScenarioConfig(name="maint", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0,
+                        maintenance_requirement_fn=_maintenance_25pct)
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    # day 0: gross 60, debt 0, ne 60 -> excess = 60 - 15 = 45
+    assert result.maintenance_excess_series[0] == pytest.approx(45.0)
+    # day 2 on: gross 100, debt 20, ne 80 -> excess = 80 - 25 = 55
+    assert result.maintenance_excess_series[2] == pytest.approx(55.0)
+    assert result.maintenance_excess_series[4] == pytest.approx(55.0)
+    # legacy outputs unaffected by observation alone
+    assert result.final_margin_debt == pytest.approx(20.0)
+    assert result.liquidation_events == []
+
+
+def test_g2a_maintenance_fn_absent_series_is_none_and_behavior_pinned():
+    aligned, calendar, deposit_days, schedule, weights = _regression_fixture()
+    sc = scenario_fixed_leverage(1.8, interest_apr=0.20, interest_free_amount=0.0)
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    assert result.maintenance_excess_series == [None] * len(calendar)
+    assert result.final_margin_debt == pytest.approx(6.673974604366053)
+
+
+def test_g2a_margin_draws_blocked_while_opening_maintenance_excess_negative():
+    # Requirement deliberately > gross (generic callback, synthetic unit
+    # test): opening excess is negative on day 2, so the deposit that day
+    # may invest CASH only -- no margin draw. The control run (no
+    # maintenance fn) draws $20 of margin from the identical fixture.
+    aligned, calendar, deposit_days, schedule, weights = _levered_state_fixture()
+    control = simulate(scenario_fixed_leverage(1.8, interest_apr=0.0,
+                                               interest_free_amount=0.0),
+                       weights, aligned, calendar, deposit_days,
+                       deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    assert any(e["kind"] == "margin_draw" for e in control.events)
+
+    sc = ScenarioConfig(name="blocked", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0,
+                        maintenance_requirement_fn=lambda pv: 1.1 * sum(pv.values()))
+    blocked = simulate(sc, weights, aligned, calendar, deposit_days,
+                       deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    assert not any(e["kind"] == "margin_draw" for e in blocked.events)
+    assert blocked.final_margin_debt == 0.0
+
+
+# ── forced liquidation ───────────────────────────────────────────────────────
+
+def _breach_fixture(sequencing, same_day=False, cure_multiplier=1.25):
+    """Levered state (gross 100, debt 20, ne 80 after day 2) with a 90%
+    maintenance requirement: end-of-day-2 excess = 80 - 90 = -10 ->
+    shortfall 10, cure 12.50 at multiplier 1.25."""
+    aligned, calendar, deposit_days, schedule, weights = _levered_state_fixture()
+    sc = ScenarioConfig(
+        name=f"liq-{sequencing}", leverage_cap=1.8, interest_apr=0.0,
+        interest_free_amount=0.0,
+        maintenance_requirement_fn=lambda pv: 0.9 * sum(pv.values()),
+        liquidation=LiquidationConfig(cure_multiplier=cure_multiplier,
+                                      sequencing=sequencing, same_day=same_day))
+    return sc, weights, aligned, calendar, deposit_days, schedule
+
+
+def test_g2a_forced_liquidation_cure_sizing_and_next_session_timing():
+    sc, weights, aligned, calendar, deposit_days, schedule = _breach_fixture("pro_rata")
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    # breach detected at day 2 close (excess -10); cure executes day 3
+    shortfall_ev = next(e for e in result.events if e["kind"] == "maintenance_shortfall")
+    assert shortfall_ev["day"] == 2
+    assert shortfall_ev["shortfall"] == pytest.approx(10.0)
+    assert shortfall_ev["cure_target"] == pytest.approx(12.5)   # 10 x 1.25
+    assert len(result.liquidation_events) == 1
+    liq = result.liquidation_events[0]
+    assert liq["day"] == 3
+    assert liq["trigger_day"] == 2
+    assert liq["same_day"] is False
+    assert liq["sold_total"] == pytest.approx(12.5)
+    assert liq["debt_repaid"] == pytest.approx(12.5)
+    # post-cure: gross 87.5, debt 7.5, ne 80 -> excess 80 - 78.75 = +1.25
+    assert result.maintenance_excess_series[3] == pytest.approx(1.25)
+    assert result.debt_series[3] == pytest.approx(7.5)
+
+
+def test_g2a_forced_liquidation_same_day_stress_mode():
+    sc, weights, aligned, calendar, deposit_days, schedule = _breach_fixture(
+        "pro_rata", same_day=True)
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    liq = result.liquidation_events[0]
+    assert liq["day"] == 2          # executes the trigger day itself
+    assert liq["trigger_day"] == 2
+    assert liq["same_day"] is True
+    # day-2 close series already reflect the cure
+    assert result.debt_series[2] == pytest.approx(7.5)
+    assert result.maintenance_excess_series[2] == pytest.approx(1.25)
+
+
+def test_g2a_liquidation_pro_rata_sequencing_sells_proportionally():
+    sc, weights, aligned, calendar, deposit_days, schedule = _breach_fixture("pro_rata")
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    sold = result.liquidation_events[0]["sold_by_ticker"]
+    # positions at execution: A $60, B $40 of gross 100 -> 12.5 pro-rata
+    assert sold["A"] == pytest.approx(12.5 * 0.60)
+    assert sold["B"] == pytest.approx(12.5 * 0.40)
+
+
+def test_g2a_liquidation_largest_first_sequencing_sells_largest_position_only():
+    sc, weights, aligned, calendar, deposit_days, schedule = _breach_fixture("largest_first")
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    sold = result.liquidation_events[0]["sold_by_ticker"]
+    # A ($60) is largest and fully covers the $12.50 cure -> B untouched
+    assert sold == {"A": pytest.approx(12.5)}
+
+
+def test_g2a_liquidation_never_increases_leverage():
+    for sequencing in ("pro_rata", "largest_first"):
+        for same_day in (False, True):
+            sc, weights, aligned, calendar, deposit_days, schedule = _breach_fixture(
+                sequencing, same_day=same_day)
+            result = simulate(sc, weights, aligned, calendar, deposit_days,
+                              deposit_amount=None, min_lot=1.0,
+                              deposit_schedule=schedule)
+            assert result.liquidation_events, (sequencing, same_day)
+            for liq in result.liquidation_events:
+                pre, post = liq["pre_leverage"], liq["post_leverage"]
+                if pre is not None and post is not None:
+                    assert post <= pre + 1e-9, (sequencing, same_day)
+
+
+def test_g2a_liquidation_requires_maintenance_fn():
+    sc = ScenarioConfig(name="bad", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0,
+                        liquidation=LiquidationConfig(cure_multiplier=1.25,
+                                                      sequencing="pro_rata"))
+    aligned = {"A": ([100.0], 0)}
+    with pytest.raises(ValueError):
+        simulate(sc, {"A": 1.0}, aligned, ["2026-01-01"], ["2026-01-01"],
+                 deposit_amount=100.0, min_lot=1.0)
+
+
+def test_g2a_liquidation_config_validation():
+    with pytest.raises(ValueError):
+        LiquidationConfig(cure_multiplier=0.9, sequencing="pro_rata")
+    with pytest.raises(ValueError):
+        LiquidationConfig(cure_multiplier=1.25, sequencing="alphabetical")
+
+
+# ── generalized pre-trade leverage-target hook ───────────────────────────────
+
+class _FixedTargetPolicy:
+    """Test-only pure policy: command a constant leverage target."""
+    def __init__(self, target, dead_band=0.0):
+        self.target = target
+        self.dead_band = dead_band
+
+    def __call__(self, state, prior_gross):
+        return RepaymentDecision(leverage_target=self.target, dead_band=self.dead_band)
+
+
+def _target_hook_scenario(target, leverage_cap=1.8, dead_band=0.0):
+    return ScenarioConfig(name=f"target-{target}", leverage_cap=leverage_cap,
+                          interest_apr=0.0, interest_free_amount=0.0,
+                          pre_trade_fn=_FixedTargetPolicy(target, dead_band))
+
+
+def test_g2a_leverage_target_draws_toward_target():
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = [f"2026-07-{d:02d}" for d in range(1, 4)]
+    sc = _target_hook_scenario(1.5)
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0)
+    # deposit buys $100 cash-funded; the target pass draws $50 of margin
+    # to reach gross 150 = 1.5 x ne 100
+    assert result.final_margin_debt == pytest.approx(50.0)
+    assert result.leverage_series[-1] == pytest.approx(1.5)
+    assert any(e["kind"] == "margin_draw" for e in result.events)
+
+
+def test_g2a_leverage_target_repays_down_when_above_target():
+    # Start levered at 1.5x via the target hook, then a policy that
+    # switches its target to 1.1 -> engine repays down to exactly 1.1
+    # (trim-funded arithmetic).
+    class SwitchingPolicy:
+        def __call__(self, state, prior_gross):
+            target = 1.5 if state.day_index < 2 else 1.1
+            return RepaymentDecision(leverage_target=target)
+
+    aligned = {"A": ([100.0] * 4, 0)}
+    calendar = [f"2026-07-{d:02d}" for d in range(1, 5)]
+    sc = ScenarioConfig(name="switch", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0, pre_trade_fn=SwitchingPolicy())
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0)
+    assert result.leverage_series[1] == pytest.approx(1.5)
+    assert result.leverage_series[2] == pytest.approx(1.1)
+    repays = [e for e in result.events if e["kind"] == "repayment"]
+    assert repays and repays[0]["source"] == "pre_trade"
+
+
+def test_g2a_leverage_target_always_constrained_to_1_0_to_1_8():
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = [f"2026-07-{d:02d}" for d in range(1, 4)]
+    # a policy demanding 5.0x on a scenario whose own cap is ALSO loose
+    # (2.5) still gets clamped to the 1.8 hard bound
+    sc_high = _target_hook_scenario(5.0, leverage_cap=2.5)
+    high = simulate(sc_high, {"A": 1.0}, aligned, calendar,
+                    deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0)
+    assert all(lv is None or lv <= LEVERAGE_TARGET_HARD_MAX + 1e-9
+               for lv in high.leverage_series)
+    assert high.leverage_series[-1] == pytest.approx(1.8)
+    # a policy demanding 0.3x is clamped to 1.0 -- fully de-levered, never
+    # a forced under-1.0 state
+    sc_low = _target_hook_scenario(0.3)
+    low = simulate(sc_low, {"A": 1.0}, aligned, calendar,
+                   deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0)
+    assert low.final_margin_debt == pytest.approx(0.0)
+    assert all(lv is None or lv <= 1.0 + 1e-9 for lv in low.leverage_series)
+    assert LEVERAGE_TARGET_HARD_MIN == 1.0 and LEVERAGE_TARGET_HARD_MAX == 1.8
+
+
+def test_g2a_leverage_target_dead_band_suppresses_small_moves():
+    # At exactly 1.5x, a 1.52 target with a 0.05 dead band must neither
+    # draw nor repay.
+    class BandedPolicy:
+        def __call__(self, state, prior_gross):
+            return RepaymentDecision(leverage_target=1.52, dead_band=0.05) \
+                if state.day_index >= 1 else RepaymentDecision(leverage_target=1.5)
+
+    aligned = {"A": ([100.0] * 4, 0)}
+    calendar = [f"2026-07-{d:02d}" for d in range(1, 5)]
+    sc = ScenarioConfig(name="band", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0, pre_trade_fn=BandedPolicy())
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0)
+    assert result.leverage_series[0] == pytest.approx(1.5)
+    # after day 0, no further draws or repayments
+    later = [e for e in result.events
+             if e["day"] > 0 and e["kind"] in ("margin_draw", "repayment")]
+    assert later == []
+    assert result.leverage_series[-1] == pytest.approx(1.5)
+
+
+def test_g2a_leverage_target_none_changes_nothing():
+    aligned, calendar, deposit_days, schedule, weights = _regression_fixture()
+    sc = scenario_fixed_leverage(1.8, interest_apr=0.20, interest_free_amount=0.0)
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    assert result.final_margin_debt == pytest.approx(6.673974604366053)
+
+
+# ── structural no-lookahead (engine-wide) ────────────────────────────────────
+
+def test_g2a_perturbing_future_prices_cannot_change_past_outputs():
+    aligned, calendar, deposit_days, schedule, weights = _levered_state_fixture()
+    sc = ScenarioConfig(name="nl", leverage_cap=1.8, interest_apr=0.05,
+                        interest_free_amount=0.0,
+                        maintenance_requirement_fn=_maintenance_25pct,
+                        pre_trade_fn=_FixedTargetPolicy(1.3))
+    base = simulate(sc, weights, aligned, calendar, deposit_days,
+                    deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                    dividend_events={calendar[1]: {"A": 0.5}})
+    perturbed_aligned = {
+        "A": ([100.0, 100.0, 100.0, 100.0, 37.0], 0),   # only day 4 differs
+        "B": ([100.0] * 5, 2),
+    }
+    sc2 = ScenarioConfig(name="nl", leverage_cap=1.8, interest_apr=0.05,
+                         interest_free_amount=0.0,
+                         maintenance_requirement_fn=_maintenance_25pct,
+                         pre_trade_fn=_FixedTargetPolicy(1.3))
+    pert = simulate(sc2, weights, perturbed_aligned, calendar, deposit_days,
+                    deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                    dividend_events={calendar[1]: {"A": 0.5}})
+    assert base.book_values[:4] == pert.book_values[:4]
+    assert base.debt_series[:4] == pert.debt_series[:4]
+    assert [e for e in base.events if e["day"] < 4] == \
+           [e for e in pert.events if e["day"] < 4]
+
+
+# ── determinism ──────────────────────────────────────────────────────────────
+
+def test_g2a_deterministic_under_fixed_inputs():
+    sc_args = dict(name="det", leverage_cap=1.8, interest_apr=0.0,
+                   interest_free_amount=0.0,
+                   maintenance_requirement_fn=_maintenance_25pct)
+    aligned, calendar, deposit_days, schedule, weights = _levered_state_fixture()
+    kwargs = dict(deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                  daily_rates={calendar[0]: 0.05},
+                  dividend_events={calendar[3]: {"A": 1.0}},
+                  corporate_action_events={calendar[4]: [
+                      {"ticker": "A", "ratio": 0.1, "unit_value": 20.0}]})
+    r1 = simulate(ScenarioConfig(**sc_args, pre_trade_fn=_FixedTargetPolicy(1.4)),
+                  weights, aligned, calendar, deposit_days, **kwargs)
+    r2 = simulate(ScenarioConfig(**sc_args, pre_trade_fn=_FixedTargetPolicy(1.4)),
+                  weights, aligned, calendar, deposit_days, **kwargs)
+    assert r1.book_values == r2.book_values
+    assert r1.debt_series == r2.debt_series
+    assert r1.cash_series == r2.cash_series
+    assert r1.interest_series == r2.interest_series
+    assert r1.events == r2.events
+    assert r1.maintenance_excess_series == r2.maintenance_excess_series
+
+
+# ── hypothetical-label / banned-phrase safeguards with G2A features on ──────
+
+def test_g2a_label_and_banned_phrase_guard_hold_with_new_features_active():
+    sc, weights, aligned, calendar, deposit_days, schedule = _breach_fixture("pro_rata")
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                      dividend_events={calendar[1]: {"A": 0.25}})
+    assert result.label == HYPOTHETICAL_LABEL
+    text = render_metrics(result.metrics(), assumptions={"leverage_cap": 1.8})
+    _assert_no_banned_language(text)
+    assert HYPOTHETICAL_LABEL in text
+
+
+# ── untouched-test isolation (structural) ────────────────────────────────────
+
+def test_g2a_engine_module_cannot_touch_files_or_sealed_archive():
+    # The engine performs no file/network I/O at all: it imports none of
+    # the modules that could open the sealed archive (tarfile) or any file
+    # (os/pathlib/io/json), and its code contains no open() call. Data
+    # reaches it only in memory. This structurally proves normal G2
+    # development paths through this engine cannot access the sealed
+    # untouched archive.
+    import margin_simulation
+    tree = _ast.parse(open(margin_simulation.__file__).read())
+    imported = set()
+    for node in _ast.walk(tree):
+        if isinstance(node, _ast.Import):
+            imported.update(a.name.split(".")[0] for a in node.names)
+        elif isinstance(node, _ast.ImportFrom) and node.module:
+            imported.add(node.module.split(".")[0])
+    forbidden = {"tarfile", "os", "pathlib", "io", "json", "shutil",
+                 "subprocess", "urllib", "requests"}
+    assert imported & forbidden == set(), imported & forbidden
+    open_calls = [n for n in _ast.walk(tree)
+                  if isinstance(n, _ast.Call)
+                  and isinstance(n.func, _ast.Name) and n.func.id == "open"]
+    assert open_calls == []
+
+
+def test_g2a_dev_price_cache_contains_no_bar_after_development_boundary():
+    # The development-visible research price files must remain truncated at
+    # the Track 2 boundary -- the G1 seal held through G2A.
+    prices_dir = _os.path.join(_RESEARCH_DIR, "data", "prices")
+    assert _os.path.isdir(prices_dir)
+    boundary = "2025-06-30"
+    checked = 0
+    for fname in sorted(_os.listdir(prices_dir)):
+        if not fname.endswith(".json"):
+            continue
+        with open(_os.path.join(prices_dir, fname)) as f:
+            doc = _json.load(f)
+        last_date = doc["bars"][-1]["t"][:10]
+        assert last_date <= boundary, (fname, last_date)
+        checked += 1
+    assert checked == 63
+
+
+def test_g2a_sealed_archive_opened_only_at_the_seal_creation_site():
+    # data_acquisition.py may touch tarfile only inside acquire_prices()
+    # (seal creation). No other function -- and therefore no G2
+    # development path -- opens the archive; unsealing is a G4-runner act.
+    path = _os.path.join(_RESEARCH_DIR, "data_acquisition.py")
+    tree = _ast.parse(open(path).read())
+    offenders = []
+
+    def scan(node, owner):
+        for child in _ast.iter_child_nodes(node):
+            child_owner = child.name if isinstance(
+                child, (_ast.FunctionDef, _ast.AsyncFunctionDef)) else owner
+            if isinstance(child, _ast.Attribute) and isinstance(child.value, _ast.Name) \
+                    and child.value.id == "tarfile":
+                if owner != "acquire_prices":
+                    offenders.append((owner, child.attr))
+            scan(child, child_owner)
+
+    scan(tree, "<module>")
+    assert offenders == [], offenders
+
+
+def test_g2a_sealed_index_boundary_and_archive_hash_intact():
+    sealed_dir = _os.path.join(_RESEARCH_DIR, "data", "untouched_sealed")
+    with open(_os.path.join(sealed_dir, "SEALED_INDEX.json")) as f:
+        idx = _json.load(f)
+    assert idx["meta"]["boundary"] == "2025-06-30"
+    h = _hashlib.sha256()
+    with open(_os.path.join(sealed_dir, "untouched_prices.tar.gz"), "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    # byte-level integrity only -- the archive is never opened here
+    assert h.hexdigest() == idx["meta"]["archive_sha256"]
+
+
+def test_g2a_no_trial_ledger_exists_zero_registered_trials_consumed():
+    # G2A runs engine-integrity tests only; the registered-trial ledger
+    # must not exist until Study runs are separately authorized (G3).
+    assert not _os.path.exists(_os.path.join(_RESEARCH_DIR, "trial_ledger.jsonl"))
+    assert not _os.path.exists(_os.path.join(_RESEARCH_DIR, "candidate_freeze.yaml"))
+
+
+# ── the G2A rate pin (assumptions-ledger A-23) ───────────────────────────────
+
+def test_g2a_pinned_spread_observation_set_matches_recorded_hash():
+    import yaml
+    with open(_os.path.join(_RESEARCH_DIR, "assumptions_ledger.yaml")) as f:
+        ledger = yaml.safe_load(f)
+    a23 = next(a for a in ledger["assumptions"] if a["id"] == "A-23")
+    frozen = a23["frozen_observation_set"]
+    obs = frozen["observations"]
+    assert len(obs) == 4
+    assert [o["date"] for o in obs] == \
+        ["2020-12-21", "2022-11-03", "2025-12-15", "2026-07-22"]
+    assert [o["implied_spread_pp"] for o in obs] == [2.41, 2.67, 2.11, 1.37]
+    recomputed = _hashlib.sha256(
+        _json.dumps(obs, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    assert recomputed == frozen["canonical_json_sha256"]
+    # the two in-development-window DFF legs match the committed dataset
+    with open(_os.path.join(_RESEARCH_DIR, "data", "rates", "dff.json")) as f:
+        dff = {r["date"]: r["rate_pct"] for r in _json.load(f)["rates"]}
+    assert dff["2020-12-21"] == pytest.approx(obs[0]["dff_pct"])
+    assert dff["2022-11-03"] == pytest.approx(obs[1]["dff_pct"])
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# MARGIN-0005 G2A remediation (post-independent-review corrective commit).
+# Three engine corrections, each addressing one independent-review finding:
+#   (2) dividend entitlement must survive same-day liquidation/trim, not use
+#       post-mutation shares;
+#   (3) the maintenance-excess proxy must count idle cash (full account-
+#       equity identity), not net_equity alone;
+#   (4) forced liquidation must never fire against a debt-free account, and
+#       a malformed/non-finite/negative maintenance requirement must raise.
+# Still G2 engine-integrity tests on synthetic data — NOT registered Study
+# A/B/C trials; no trial_ledger.jsonl exists or is created here.
+# ═════════════════════════════════════════════════════════════════════════════
+
+from margin_simulation import _account_equity, _validated_maintenance_requirement
+
+
+# ── (2) dividend entitlement survives same-day liquidation/trim ─────────────
+
+def test_g2a_dividend_entitlement_survives_pending_liquidation_on_event_date():
+    # A next-session (pending) liquidation queued from yesterday's breach
+    # executes at the very top of the event date's own loop iteration --
+    # BEFORE the dividend used to be credited under the pre-remediation
+    # code (which read `shares` post-mutation). A holder of record at the
+    # OPENING of the event date (= end of the prior day, since nothing
+    # else happens overnight) must still receive the dividend even though
+    # the morning's cure trims that same position.
+    sc, weights, aligned, calendar, deposit_days, schedule = _breach_fixture("pro_rata")
+    control = simulate(sc, weights, aligned, calendar, deposit_days,
+                       deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                       track_tickers=["A"])
+    assert control.liquidation_events and control.liquidation_events[0]["day"] == 3
+    pre_liquidation_a_shares = control.tracked_values["A"][2] / 100.0  # EOD day2 = opening day3
+
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                      dividend_events={calendar[3]: {"A": 1.0}})
+    div_events = [e for e in result.events if e["kind"] == "dividend"]
+    assert len(div_events) == 1
+    assert div_events[0]["day"] == 3
+    assert div_events[0]["amount"] == pytest.approx(pre_liquidation_a_shares * 1.0)
+    # sanity: the same-morning liquidation really did trim A -- proving this
+    # test would have failed under the pre-remediation post-mutation read
+    assert result.liquidation_events[0]["sold_by_ticker"].get("A", 0.0) > 0
+    assert result.dividend_credit_series[3] == pytest.approx(div_events[0]["amount"])
+
+
+def test_g2a_dividend_entitlement_survives_same_day_stress_liquidation_on_event_date():
+    sc, weights, aligned, calendar, deposit_days, schedule = _breach_fixture(
+        "pro_rata", same_day=True)
+    control = simulate(sc, weights, aligned, calendar, deposit_days,
+                       deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                       track_tickers=["A"])
+    assert control.liquidation_events and control.liquidation_events[0]["day"] == 2
+    opening_day2_a_shares = control.tracked_values["A"][1] / 100.0  # EOD day1 = opening day2
+
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                      dividend_events={calendar[2]: {"A": 2.0}})
+    div_events = [e for e in result.events if e["kind"] == "dividend"]
+    assert len(div_events) == 1
+    assert div_events[0]["day"] == 2
+    assert div_events[0]["amount"] == pytest.approx(opening_day2_a_shares * 2.0)
+    # the same-day stress liquidation still fires later that same day
+    assert result.liquidation_events and result.liquidation_events[0]["day"] == 2
+
+
+def test_g2a_dividend_entitlement_survives_pre_trade_trim_on_event_date():
+    class SwitchingPolicy:
+        def __call__(self, state, prior_gross):
+            target = 1.5 if state.day_index < 2 else 1.1
+            return RepaymentDecision(leverage_target=target)
+
+    aligned = {"A": ([100.0] * 4, 0)}
+    calendar = [f"2026-07-{d:02d}" for d in range(1, 5)]
+    sc = ScenarioConfig(name="switch-div", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0, pre_trade_fn=SwitchingPolicy())
+    control = simulate(sc, {"A": 1.0}, aligned, calendar,
+                       deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                       track_tickers=["A"])
+    assert any(e["kind"] == "repayment" and e["day"] == 2 for e in control.events)
+    opening_day2_a_shares = control.tracked_values["A"][1] / 100.0  # EOD day1 = opening day2
+
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      track_tickers=["A"],
+                      dividend_events={calendar[2]: {"A": 0.10}})
+    div_events = [e for e in result.events if e["kind"] == "dividend"]
+    assert len(div_events) == 1
+    assert div_events[0]["day"] == 2
+    assert div_events[0]["amount"] == pytest.approx(opening_day2_a_shares * 0.10)
+    # the pre-trade trim really did reduce A's holding that same day
+    assert result.tracked_values["A"][2] < opening_day2_a_shares * 100.0
+
+
+def test_g2a_dividend_entitlement_not_retroactive_for_same_day_acquisition():
+    # A deposit-driven buy happens strictly AFTER the dividend block in the
+    # day loop, so shares acquired today (or a ticker never held before
+    # today) cannot receive today's dividend -- this already held under the
+    # pre-remediation code (the buy always came after the credit); the
+    # opening-snapshot fix must not change that.
+    aligned = {"A": ([100.0] * 3, 0), "B": ([100.0] * 3, 0)}
+    calendar = [f"2026-04-{d:02d}" for d in range(1, 4)]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0, "B": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      dividend_events={calendar[0]: {"A": 5.0, "Z": 9.9}})
+    assert [e for e in result.events if e["kind"] == "dividend"] == []
+    assert sum(result.dividend_credit_series) == 0.0
+
+
+def test_g2a_dividend_and_corporate_action_and_interest_reconcile_on_a_shared_day():
+    # Multiple event kinds on one day, each credited independently, exactly
+    # once, distinctly sized, none conflated with another.
+    aligned, calendar, deposit_days, schedule, weights = _levered_flat_fixture()
+    sc = scenario_fixed_leverage(1.8, interest_apr=0.365, interest_free_amount=0.0)
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                      dividend_events={calendar[3]: {"A": 1.0}},
+                      corporate_action_events={calendar[3]: [
+                          {"ticker": "A", "ratio": 0.05, "unit_value": 40.0}]})
+    day3 = 3
+    kinds = [e["kind"] for e in result.events if e["day"] == day3]
+    assert "interest_accrual" in kinds
+    assert "dividend" in kinds
+    assert "corporate_action_credit" in kinds
+    div = next(e for e in result.events if e["kind"] == "dividend")
+    ca = next(e for e in result.events if e["kind"] == "corporate_action_credit")
+    interest = next(e for e in result.events
+                    if e["kind"] == "interest_accrual" and e["day"] == day3)
+    assert div["amount"] == pytest.approx(0.6 * 1.0)
+    assert ca["amount"] == pytest.approx(0.6 * 0.05 * 40.0)
+    assert div["amount"] != ca["amount"]
+    assert result.dividend_credit_series[day3] == pytest.approx(div["amount"])
+    assert result.corporate_action_credit_series[day3] == pytest.approx(ca["amount"])
+    assert result.interest_series[day3] == pytest.approx(interest["amount"])
+    # each kind credited exactly once anywhere in the run -- no duplicate
+    assert len([e for e in result.events if e["kind"] == "dividend"]) == 1
+    assert len([e for e in result.events if e["kind"] == "corporate_action_credit"]) == 1
+
+
+# ── (3) maintenance-excess proxy counts idle cash (account-equity identity) ─
+
+def test_g2a_account_equity_helper_matches_documented_identity():
+    assert _account_equity(gross=150.0, cash=12.0, margin_debt=40.0) == pytest.approx(122.0)
+    assert _account_equity(gross=0.0, cash=0.0, margin_debt=0.0) == 0.0
+
+
+def test_g2a_maintenance_equity_includes_idle_cash_prevents_artificial_breach():
+    # A dividend lands on a non-deposit day (calendar[1]) and is NOT
+    # reinvested (no allocation runs on a non-deposit day), so it sits as
+    # genuinely idle cash -- exactly the case the pre-remediation
+    # net_equity-only formula ignored.
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = ["2026-09-01", "2026-09-02", "2026-09-03"]
+    sc = ScenarioConfig(name="cash-cushion", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0,
+                        maintenance_requirement_fn=lambda pv: 1.05 * sum(pv.values()))
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      dividend_events={calendar[1]: {"A": 50.0}})
+    # day0: fully invested, gross 100, cash 0 -> equity 100, requirement
+    # 105 -> a real breach (no cash cushion yet)
+    assert result.maintenance_excess_series[0] == pytest.approx(100.0 - 105.0)
+    assert result.maintenance_excess_series[0] < 0
+    # day1: $50 idle dividend cash -> equity 100 + 50 = 150, requirement
+    # 105 -> the cash cushion ALONE flips this from breach to no-breach
+    assert result.cash_series[1] == pytest.approx(50.0)
+    assert result.maintenance_excess_series[1] == pytest.approx(150.0 - 105.0)
+    assert result.maintenance_excess_series[1] > 0
+
+
+def test_g2a_idle_cash_partially_cures_shortfall_and_correctly_sizes_liquidation():
+    # A price crash creates a real maintenance breach on day 2. A dividend
+    # that landed (and sat idle) on day 1 -- before the crash -- cushions
+    # the day-2 breach by exactly its own dollar amount: smaller shortfall,
+    # smaller cure_target, smaller liquidation -- not a full cure, a partial
+    # one, and the resulting liquidation is correctly sized to the reduced
+    # shortfall.
+    class Day0OnlyTarget:
+        def __call__(self, state, prior_gross):
+            if state.day_index == 0:
+                return RepaymentDecision(leverage_target=1.5)
+            return RepaymentDecision()
+
+    aligned = {"A": ([100.0, 100.0, 60.0, 60.0], 0)}
+    calendar = ["2026-11-01", "2026-11-02", "2026-11-03", "2026-11-04"]
+    sc = ScenarioConfig(name="crash", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0, pre_trade_fn=Day0OnlyTarget(),
+                        maintenance_requirement_fn=lambda pv: 0.5 * sum(pv.values()),
+                        liquidation=LiquidationConfig(cure_multiplier=1.0,
+                                                      sequencing="pro_rata", same_day=True))
+    baseline = simulate(sc, {"A": 1.0}, aligned, calendar, deposit_days=[calendar[0]],
+                        deposit_amount=100.0, min_lot=1.0)
+    cushioned = simulate(sc, {"A": 1.0}, aligned, calendar, deposit_days=[calendar[0]],
+                         deposit_amount=100.0, min_lot=1.0,
+                         dividend_events={calendar[1]: {"A": 2.0}})
+
+    dividend_amount = 2.0 * 1.5  # 1.5 shares (from the 1.5x day-0 draw) x $2/share
+    b_first = next(e for e in baseline.events if e["kind"] == "forced_liquidation")
+    c_first = next(e for e in cushioned.events if e["kind"] == "forced_liquidation")
+    assert b_first["day"] == c_first["day"] == 2
+    assert c_first["shortfall"] == pytest.approx(b_first["shortfall"] - dividend_amount)
+    assert c_first["cure_target"] == pytest.approx(b_first["cure_target"] - dividend_amount)
+    assert c_first["sold_total"] < b_first["sold_total"]
+    assert c_first["shortfall"] > 0   # still a real, partial breach -- not fully cured
+
+
+def test_g2a_dividend_cash_affects_maintenance_equity_exactly_once():
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = ["2026-12-01", "2026-12-02", "2026-12-03"]
+    sc = ScenarioConfig(name="div-maint", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0,
+                        maintenance_requirement_fn=lambda pv: 0.5 * sum(pv.values()))
+    no_div = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0)
+    with_div = simulate(sc, {"A": 1.0}, aligned, calendar,
+                        deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                        dividend_events={calendar[1]: {"A": 3.0}})
+    # gross/debt paths identical -- the dividend is pure idle cash, no
+    # position or debt effect
+    assert no_div.gross_series == with_div.gross_series
+    assert no_div.debt_series == with_div.debt_series
+    assert with_div.maintenance_excess_series[0] == pytest.approx(
+        no_div.maintenance_excess_series[0])
+    # from day 1 on, the excess differs by EXACTLY the dividend amount,
+    # once -- not re-applied or compounding day over day
+    for i in (1, 2):
+        assert with_div.maintenance_excess_series[i] == pytest.approx(
+            no_div.maintenance_excess_series[i] + 3.0)
+
+
+def test_g2a_corporate_action_cash_affects_maintenance_equity_exactly_once():
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = ["2026-12-01", "2026-12-02", "2026-12-03"]
+    sc = ScenarioConfig(name="ca-maint", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0,
+                        maintenance_requirement_fn=lambda pv: 0.5 * sum(pv.values()))
+    no_ca = simulate(sc, {"A": 1.0}, aligned, calendar,
+                     deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0)
+    with_ca = simulate(sc, {"A": 1.0}, aligned, calendar,
+                       deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                       corporate_action_events={calendar[1]: [
+                           {"ticker": "A", "ratio": 0.02, "unit_value": 25.0}]})
+    ca_amount = 1.0 * 0.02 * 25.0   # 1.0 share held (single-ticker full-cash buy)
+    assert no_ca.gross_series == with_ca.gross_series
+    assert no_ca.debt_series == with_ca.debt_series
+    for i in (1, 2):
+        assert with_ca.maintenance_excess_series[i] == pytest.approx(
+            no_ca.maintenance_excess_series[i] + ca_amount)
+
+
+def test_g2a_zero_idle_cash_reproduces_prior_maintenance_calculation():
+    # In a fixture where cash happens to be exactly 0 at every observation
+    # point (the pre-existing test_g2a_maintenance_excess_series_computed_
+    # daily fixture), the new account-equity formula must reproduce the
+    # exact pre-remediation pinned values -- proving the correction is a
+    # pure extension, not a change, when there is no cash to count.
+    aligned, calendar, deposit_days, schedule, weights = _levered_state_fixture()
+    sc = ScenarioConfig(name="maint", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0,
+                        maintenance_requirement_fn=_maintenance_25pct)
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    assert result.cash_series[0] == pytest.approx(0.0)
+    assert result.cash_series[2] == pytest.approx(0.0)
+    assert result.cash_series[4] == pytest.approx(0.0)
+    assert result.maintenance_excess_series[0] == pytest.approx(45.0)
+    assert result.maintenance_excess_series[2] == pytest.approx(55.0)
+    assert result.maintenance_excess_series[4] == pytest.approx(55.0)
+
+
+# ── (4) forced liquidation never fires at zero debt; malformed input raises ─
+
+def test_g2a_pathological_requirement_at_zero_debt_never_liquidates():
+    # A single-ticker deposit never draws margin (target always equals
+    # cash in hand -- see the pre-existing fixtures), so debt is 0
+    # throughout. Even an absurdly tight (but well-formed: finite,
+    # non-negative, numeric) requirement must never trigger a forced sale
+    # -- there is no borrowed exposure to call. The proxy value is still
+    # computed and reported for observability.
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = ["2027-01-01", "2027-01-02", "2027-01-03"]
+    sc = ScenarioConfig(name="zero-debt-pathological", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0,
+                        maintenance_requirement_fn=lambda pv: 100.0 * sum(pv.values()),
+                        liquidation=LiquidationConfig(cure_multiplier=1.25,
+                                                      sequencing="pro_rata"))
+    result = simulate(sc, {"A": 1.0}, aligned, calendar, deposit_days=[calendar[0]],
+                      deposit_amount=100.0, min_lot=1.0)
+    assert result.liquidation_events == []
+    assert result.final_margin_debt == 0.0
+    assert all(e["kind"] != "forced_liquidation" for e in result.events)
+    assert all(e["kind"] != "maintenance_shortfall" for e in result.events)
+    assert all(x is not None and x < 0 for x in result.maintenance_excess_series)
+
+
+def test_g2a_debt_crossing_exactly_to_zero_during_cure_stops_further_liquidation():
+    # An aggressive same-day cure sells the ENTIRE position, fully
+    # extinguishing debt in one shot (debt lands exactly at 0.0). Even
+    # though the (pathological) requirement stays enormous relative to
+    # whatever gross remains, no further liquidation may occur once debt
+    # is 0 -- the loop must converge, not repeat.
+    class Day0OnlyTarget:
+        def __call__(self, state, prior_gross):
+            if state.day_index == 0:
+                return RepaymentDecision(leverage_target=1.5)
+            return RepaymentDecision()
+
+    aligned = {"A": ([100.0, 100.0, 60.0, 60.0, 60.0], 0)}
+    calendar = [f"2027-02-{d:02d}" for d in range(1, 6)]
+    sc = ScenarioConfig(name="wipe-debt", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0, pre_trade_fn=Day0OnlyTarget(),
+                        maintenance_requirement_fn=lambda pv: 100.0 * sum(pv.values()),
+                        liquidation=LiquidationConfig(cure_multiplier=1.0,
+                                                      sequencing="pro_rata", same_day=True))
+    result = simulate(sc, {"A": 1.0}, aligned, calendar, deposit_days=[calendar[0]],
+                      deposit_amount=100.0, min_lot=1.0)
+    assert result.debt_series[0] == pytest.approx(0.0)   # wiped same day it was drawn
+    assert result.final_margin_debt == 0.0
+    assert len(result.liquidation_events) == 1            # exactly one -- no repeat cascade
+    assert all(d == pytest.approx(0.0) for d in result.debt_series)
+
+
+def test_g2a_maintenance_requirement_nan_and_infinity_raise():
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = ["2027-01-01", "2027-01-02", "2027-01-03"]
+    for bad in (float("nan"), float("inf"), float("-inf")):
+        sc = ScenarioConfig(name="bad", leverage_cap=1.8, interest_apr=0.0,
+                            interest_free_amount=0.0,
+                            maintenance_requirement_fn=lambda pv, b=bad: b)
+        with pytest.raises(ValueError):
+            simulate(sc, {"A": 1.0}, aligned, calendar, deposit_days=[calendar[0]],
+                    deposit_amount=100.0, min_lot=1.0)
+
+
+def test_g2a_maintenance_requirement_negative_raises():
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = ["2027-01-01", "2027-01-02", "2027-01-03"]
+    sc = ScenarioConfig(name="neg", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0,
+                        maintenance_requirement_fn=lambda pv: -5.0)
+    with pytest.raises(ValueError):
+        simulate(sc, {"A": 1.0}, aligned, calendar, deposit_days=[calendar[0]],
+                deposit_amount=100.0, min_lot=1.0)
+
+
+def test_g2a_maintenance_requirement_non_numeric_raises():
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = ["2027-01-01", "2027-01-02", "2027-01-03"]
+    sc = ScenarioConfig(name="str-bad", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0,
+                        maintenance_requirement_fn=lambda pv: "not-a-number")
+    with pytest.raises(ValueError):
+        simulate(sc, {"A": 1.0}, aligned, calendar, deposit_days=[calendar[0]],
+                deposit_amount=100.0, min_lot=1.0)
+
+
+def test_g2a_validated_maintenance_requirement_helper_accepts_valid_input():
+    assert _validated_maintenance_requirement(lambda pv: 42.0, {}) == pytest.approx(42.0)
+    assert _validated_maintenance_requirement(lambda pv: 0, {}) == pytest.approx(0.0)
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# MARGIN-0005 G2A second remediation (post-independent-re-review corrective
+# commit). One finding from the independent re-review of the first
+# remediation commit: corporate-action credit still read live `shares` at
+# credit time rather than the opening-holdings snapshot already used for
+# dividends. Fixed here with the identical principle, narrowly, no
+# corporate-action policy or security-ledger redesign. Still G2 engine-
+# integrity tests on synthetic data — NOT registered Study A/B/C trials.
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ── corporate-action entitlement survives same-day liquidation/trim/sale ────
+
+def test_g2a_corporate_action_entitlement_only_day():
+    aligned = {"A": ([10.0] * 3, 0)}
+    calendar = ["2026-05-01", "2026-05-02", "2026-05-03"]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=70.0, min_lot=1.0,
+                      corporate_action_events={
+                          calendar[1]: [{"ticker": "A", "ratio": 1.0 / 3.0,
+                                         "unit_value": 30.0}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    assert ca_events[0]["day"] == 1
+    assert ca_events[0]["amount"] == pytest.approx(7.0 * (1.0 / 3.0) * 30.0)
+    assert result.corporate_action_credit_series[1] == pytest.approx(ca_events[0]["amount"])
+    assert sum(result.corporate_action_credit_series) == pytest.approx(
+        ca_events[0]["amount"])
+
+
+def test_g2a_corporate_action_entitlement_survives_pending_liquidation_on_event_date():
+    sc, weights, aligned, calendar, deposit_days, schedule = _breach_fixture("pro_rata")
+    control = simulate(sc, weights, aligned, calendar, deposit_days,
+                       deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                       track_tickers=["A"])
+    assert control.liquidation_events and control.liquidation_events[0]["day"] == 3
+    pre_liquidation_a_shares = control.tracked_values["A"][2] / 100.0  # EOD day2 = opening day3
+
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                      corporate_action_events={calendar[3]: [
+                          {"ticker": "A", "ratio": 0.1, "unit_value": 37.0}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    assert ca_events[0]["day"] == 3
+    assert ca_events[0]["amount"] == pytest.approx(pre_liquidation_a_shares * 0.1 * 37.0)
+    # sanity: the same-morning liquidation really did trim A
+    assert result.liquidation_events[0]["sold_by_ticker"].get("A", 0.0) > 0
+    assert result.corporate_action_credit_series[3] == pytest.approx(ca_events[0]["amount"])
+
+
+def test_g2a_corporate_action_entitlement_survives_same_day_stress_liquidation_on_event_date():
+    sc, weights, aligned, calendar, deposit_days, schedule = _breach_fixture(
+        "pro_rata", same_day=True)
+    control = simulate(sc, weights, aligned, calendar, deposit_days,
+                       deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                       track_tickers=["A"])
+    assert control.liquidation_events and control.liquidation_events[0]["day"] == 2
+    opening_day2_a_shares = control.tracked_values["A"][1] / 100.0  # EOD day1 = opening day2
+
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule,
+                      corporate_action_events={calendar[2]: [
+                          {"ticker": "A", "ratio": 0.2, "unit_value": 26.38}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    assert ca_events[0]["day"] == 2
+    assert ca_events[0]["amount"] == pytest.approx(opening_day2_a_shares * 0.2 * 26.38)
+    assert result.liquidation_events and result.liquidation_events[0]["day"] == 2
+
+
+def test_g2a_corporate_action_entitlement_survives_pre_trade_trim_on_event_date():
+    class SwitchingPolicy:
+        def __call__(self, state, prior_gross):
+            target = 1.5 if state.day_index < 2 else 1.1
+            return RepaymentDecision(leverage_target=target)
+
+    aligned = {"A": ([100.0] * 4, 0)}
+    calendar = [f"2026-07-{d:02d}" for d in range(1, 5)]
+    sc = ScenarioConfig(name="switch-ca", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0, pre_trade_fn=SwitchingPolicy())
+    control = simulate(sc, {"A": 1.0}, aligned, calendar,
+                       deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                       track_tickers=["A"])
+    assert any(e["kind"] == "repayment" and e["day"] == 2 for e in control.events)
+    opening_day2_a_shares = control.tracked_values["A"][1] / 100.0  # EOD day1 = opening day2
+
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      track_tickers=["A"],
+                      corporate_action_events={calendar[2]: [
+                          {"ticker": "A", "ratio": 1.0 / 3.0, "unit_value": 85.12}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    assert ca_events[0]["day"] == 2
+    assert ca_events[0]["amount"] == pytest.approx(
+        opening_day2_a_shares * (1.0 / 3.0) * 85.12)
+    # the pre-trade trim really did reduce A's holding that same day
+    assert result.tracked_values["A"][2] < opening_day2_a_shares * 100.0
+
+
+def test_g2a_corporate_action_entitlement_survives_leverage_target_sale_on_event_date():
+    # A leverage-target hook that switches DOWN (1.6 -> 1.0) forces a
+    # trim-funded sale via the same pre-trade repay path -- distinct test
+    # from the "trim" case above only in framing (drop straight to
+    # unlevered), covering the "leverage-target sale" scenario explicitly.
+    class SwitchingPolicy:
+        def __call__(self, state, prior_gross):
+            target = 1.6 if state.day_index < 2 else 1.0
+            return RepaymentDecision(leverage_target=target)
+
+    aligned = {"A": ([100.0] * 4, 0)}
+    calendar = [f"2026-08-{d:02d}" for d in range(1, 5)]
+    sc = ScenarioConfig(name="lev-target-sale", leverage_cap=1.8, interest_apr=0.0,
+                        interest_free_amount=0.0, pre_trade_fn=SwitchingPolicy())
+    control = simulate(sc, {"A": 1.0}, aligned, calendar,
+                       deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                       track_tickers=["A"])
+    opening_day2_a_shares = control.tracked_values["A"][1] / 100.0
+
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      track_tickers=["A"],
+                      corporate_action_events={calendar[2]: [
+                          {"ticker": "A", "ratio": 1.0 / 3.0, "unit_value": 48.60}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    assert ca_events[0]["amount"] == pytest.approx(
+        opening_day2_a_shares * (1.0 / 3.0) * 48.60)
+    # the leverage-target sale fully de-levers to 1.0x -- proves a real sale
+    assert result.tracked_values["A"][2] == pytest.approx(100.0)
+    assert result.tracked_values["A"][2] < opening_day2_a_shares * 100.0
+
+
+def test_g2a_corporate_action_entitlement_not_retroactive_for_same_day_acquisition():
+    aligned = {"A": ([100.0] * 3, 0), "B": ([100.0] * 3, 0)}
+    calendar = [f"2026-09-{d:02d}" for d in range(1, 4)]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0, "B": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      corporate_action_events={calendar[0]: [
+                          {"ticker": "A", "ratio": 0.5, "unit_value": 40.0},
+                          {"ticker": "Z", "ratio": 0.5, "unit_value": 40.0}]})
+    assert [e for e in result.events if e["kind"] == "corporate_action_credit"] == []
+    assert sum(result.corporate_action_credit_series) == 0.0
+
+
+def test_g2a_dividend_and_corporate_action_same_date_independently_correct():
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = ["2026-10-01", "2026-10-02", "2026-10-03"]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      dividend_events={calendar[1]: {"A": 1.0}},
+                      corporate_action_events={calendar[1]: [
+                          {"ticker": "A", "ratio": 0.05, "unit_value": 40.0}]})
+    div = next(e for e in result.events if e["kind"] == "dividend")
+    ca = next(e for e in result.events if e["kind"] == "corporate_action_credit")
+    assert div["amount"] == pytest.approx(1.0 * 1.0)
+    assert ca["amount"] == pytest.approx(1.0 * 0.05 * 40.0)
+    assert div["amount"] != ca["amount"]
+    assert result.dividend_credit_series[1] == pytest.approx(div["amount"])
+    assert result.corporate_action_credit_series[1] == pytest.approx(ca["amount"])
+    assert len([e for e in result.events if e["kind"] == "dividend"]) == 1
+    assert len([e for e in result.events if e["kind"] == "corporate_action_credit"]) == 1
+
+
+def test_g2a_corporate_action_credit_exactly_once_no_duplicate():
+    aligned = {"A": ([100.0] * 3, 0)}
+    calendar = ["2026-10-01", "2026-10-02", "2026-10-03"]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      corporate_action_events={calendar[1]: [
+                          {"ticker": "A", "ratio": 0.1, "unit_value": 37.0}]})
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert len(ca_events) == 1
+    # deterministic re-run credits exactly once again, same amount
+    result2 = simulate(sc, {"A": 1.0}, aligned, calendar,
+                       deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                       corporate_action_events={calendar[1]: [
+                           {"ticker": "A", "ratio": 0.1, "unit_value": 37.0}]})
+    assert result.corporate_action_credit_series == result2.corporate_action_credit_series
+    assert result.events == result2.events
+
+
+# ── A-17 fractional ratio / cash-in-lieu arithmetic, real spin-off fixtures ──
+
+def test_g2a_corporate_action_fractional_ratio_and_cash_in_lieu_real_fixtures():
+    # Small deterministic fixtures matching the G1-governed ratios exactly
+    # (not production price histories) — MRK->OGN, IBM->KD, DHR->VLTO,
+    # WDC->SNDK. The fractional portion of the entitlement is inherently
+    # cash-in-lieu because the WHOLE entitlement is credited as cash — no
+    # child position is ever created, whole units included.
+    cases = [
+        # held-share counts are this test's own synthetic choice (not a G1
+        # production holding), picked so every case exercises a genuinely
+        # fractional entitlement; ratio and child_close are the G1-governed
+        # facts under test and are unchanged from the real records.
+        ("MRK->OGN", 0.1, 37.00, 12),
+        ("IBM->KD", 0.2, 26.38, 7),
+        ("DHR->VLTO", 1.0 / 3.0, 85.12, 5),
+        ("WDC->SNDK", 1.0 / 3.0, 48.60, 4),
+    ]
+    for name, ratio, child_close, held_target in cases:
+        px = 100.0
+        dep = held_target * px
+        aligned = {"P": ([px] * 3, 0)}
+        cal = ["2026-05-01", "2026-05-02", "2026-05-03"]
+        result = simulate(scenario_unlevered(), {"P": 1.0}, aligned, cal, [cal[0]],
+                          deposit_amount=dep, min_lot=1.0,
+                          corporate_action_events={cal[1]: [
+                              {"ticker": "P", "ratio": ratio, "unit_value": child_close}]})
+        expected = held_target * ratio * child_close
+        got = sum(result.corporate_action_credit_series)
+        assert got == pytest.approx(expected), name
+        # entitlement is fractional (a non-integer number of distributed
+        # units) yet the FULL amount, whole units included, is cash
+        entitlement_units = held_target * ratio
+        assert entitlement_units != int(entitlement_units), \
+            f"{name}: fixture must exercise a genuinely fractional entitlement"
+        # no child position ever appears anywhere in the result
+        assert "corporate_action_events" not in dir(result)  # no such field at all
+        assert not any(k.lower().startswith(name.split("->")[1].lower())
+                       for k in getattr(result, "tracked_values", {}))
+
+
+def test_g2a_corporate_action_multiple_events_on_separate_dates():
+    aligned = {"A": ([100.0] * 4, 0)}
+    calendar = ["2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04"]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      corporate_action_events={
+                          calendar[1]: [{"ticker": "A", "ratio": 0.1, "unit_value": 37.0}],
+                          calendar[3]: [{"ticker": "A", "ratio": 0.2, "unit_value": 26.38}],
+                      })
+    ca_events = [e for e in result.events if e["kind"] == "corporate_action_credit"]
+    assert [e["day"] for e in ca_events] == [1, 3]
+    assert ca_events[0]["amount"] == pytest.approx(1.0 * 0.1 * 37.0)
+    assert ca_events[1]["amount"] == pytest.approx(1.0 * 0.2 * 26.38)
+    assert result.corporate_action_credit_series[1] == pytest.approx(ca_events[0]["amount"])
+    assert result.corporate_action_credit_series[3] == pytest.approx(ca_events[1]["amount"])
+    assert result.corporate_action_credit_series[0] == 0.0
+    assert result.corporate_action_credit_series[2] == 0.0
+
+
+# ── path reconciliation: CA credit enters cash exactly once ─────────────────
+
+def test_g2a_corporate_action_credit_enters_cash_exactly_once_path_reconciliation():
+    aligned = {"A": ([100.0] * 4, 0)}
+    calendar = ["2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04"]
+    sc = scenario_unlevered()
+    result = simulate(sc, {"A": 1.0}, aligned, calendar,
+                      deposit_days=[calendar[0]], deposit_amount=100.0, min_lot=1.0,
+                      corporate_action_events={calendar[2]: [
+                          {"ticker": "A", "ratio": 0.1, "unit_value": 37.0}]})
+    ca_amount = 1.0 * 0.1 * 37.0
+    # cash reconciles day-by-day: 0 before the event, exactly ca_amount from
+    # the event date onward (unlevered, no deposit/repay after day0)
+    assert result.cash_series[0] == pytest.approx(0.0)
+    assert result.cash_series[1] == pytest.approx(0.0)
+    assert result.cash_series[2] == pytest.approx(ca_amount)
+    assert result.cash_series[3] == pytest.approx(ca_amount)
+    # book value jumps by exactly the CA credit on the event date, and only then
+    assert result.book_values[2] - result.book_values[1] == pytest.approx(ca_amount)
+    for i in (0, 1):
+        assert result.book_values[i] == pytest.approx(100.0)
+    # CA cash is distinct from deposits (flows) and from price returns
+    assert result.flows == {0: 100.0}
+    assert ca_amount not in result.flows.values()
+
+
+# ── legacy neutrality: unchanged when corporate-action input is absent ─────
+
+def test_g2a_corporate_action_legacy_unchanged_when_absent():
+    aligned, calendar, deposit_days, schedule, weights = _regression_fixture()
+    sc = scenario_fixed_leverage(1.8, interest_apr=0.20, interest_free_amount=0.0)
+    result = simulate(sc, weights, aligned, calendar, deposit_days,
+                      deposit_amount=None, min_lot=1.0, deposit_schedule=schedule)
+    assert result.final_margin_debt == pytest.approx(6.673974604366053)
+    assert result.metrics()["final_book_value"] == pytest.approx(166.65935872896728)
+    assert result.corporate_action_credit_series == [0.0] * len(calendar)
+    assert [e for e in result.events if e["kind"] == "corporate_action_credit"] == []
