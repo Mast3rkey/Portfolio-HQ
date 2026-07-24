@@ -1,0 +1,140 @@
+# assumptions_ledger.yaml — MARGIN-0005 G1 artifact (charter §4; protocol §13;
+# pre_registration.yaml assumptions_registry.artifact).
+# Convention: Known / Estimated / Hypothetical + NUM-0001 provenance class.
+# Populated at G1 per the pre-registration's initial_entries plus every numeric
+# assumption G1 data work touched. Sensitivity requirements reference the
+# pre-registered sensitivity lines (§9.3) — no simulation was run at G1.
+
+ledger_version: "G1-2026-07-24"
+authority: governance/decisions/MARGIN-0005-margin-target-research-charter.md
+num_0001: governance/decisions/NUM-0001-numeric-parameter-provenance-standards.md
+
+assumptions:
+  - id: A-01
+    value: "1.8x gross/equity structural leverage cap"
+    classification: Known (governed limit)
+    num_0001_class: provisional_governance_guardrail
+    source: "doctrine 2026-07-13; pre_registration initial_entries"
+    affects: "every Study A/C arm (hard clip); §12 stress"
+    sensitivity: "none — governed constraint, never varied except labeled §12B diagnostics"
+    unresolved: false
+  - id: A-02
+    value: "30% margin-buffer floor (replicated via maintenance-excess proxy)"
+    classification: Known (governed limit)
+    num_0001_class: provisional_governance_guardrail
+    source: "doctrine 2026-07-13; pre_registration initial_entries"
+    affects: "blocking/forced-de-lever behavior in every arm"
+    sensitivity: "proxy floor calibration per A-03/A-04"
+    unresolved: false
+  - id: A-03
+    value: "maintenance-excess proxy floor (numeric level unset at G1)"
+    classification: Hypothetical until calibrated
+    num_0001_class: provisional_governance_guardrail
+    source: "protocol §8.5; calibration against real synced-buffer pairs"
+    affects: "forced-de-lever realism in all arms"
+    sensitivity: "mandatory once calibrated; provisional until A-04 adequacy met"
+    unresolved: true
+  - id: A-04
+    value: ">=25 paired (debt, displayed-buffer) observations spanning >=10pp buffer range"
+    classification: Known (pre-registered adequacy bar)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "pre_registration assumptions_registry.initial_entries.proxy_calibration_adequacy"
+    affects: "when A-03 may leave provisional status"
+    sensitivity: "n/a (adequacy bar)"
+    unresolved: false
+  - id: A-05
+    value: "constructed borrowing rate = max(floor, FedFunds + calibrated spread); anchors: doctrine ~5%, Phase 7A ~5.75% <=$50k (Dec 2025), current published 5.0% <=$50k (Jul 2026); Gold lowest-tier spread ~+2.5pp over Fed target upper across three dated observations; flat-5% retained as replication case"
+    classification: Estimated
+    num_0001_class: empirically_calibrated_estimate
+    source: "pre_registration costs.interest; data/rates/robinhood_margin_rate_evidence.yaml"
+    affects: "financing cost in every levered arm; §8.7 cost bases"
+    sensitivity: "pre-registered stress rates (+300bps, 2x spread, +400bps/6mo path); S-2 line"
+    unresolved: "input series blocked (see A-06); effective-vs-target-upper construction choice is decision item D-4"
+  - id: A-06
+    value: "Fed Funds series 1999 -> 2025-06-30"
+    classification: Known quantity, NOT ACQUIRED
+    num_0001_class: unsupported_unclassified_until_acquired
+    source: "all primary hosts denied by environment network policy (CONNECT 403): fred.stlouisfed.org, api.stlouisfed.org, federalreserve.gov, markets.newyorkfed.org, treasury.gov"
+    affects: "A-05 construction; Track 3 financing realism"
+    sensitivity: "n/a until acquired"
+    unresolved: "BLOCKER B2 — needs network-policy allowlist addition or principal-accepted alternative"
+  - id: A-07
+    value: "Gold subscription $5/month (~$60/yr)"
+    classification: Estimated (published price; account billing unverified)
+    num_0001_class: empirically_calibrated_estimate
+    source: "published schedule (RH-2026-07); pre_registration costs.gold_subscription verify_at_G1=true"
+    affects: "fully-allocated cost basis; subscription-sensitivity flags"
+    sensitivity: "two cost bases (incremental vs fully-allocated) — post-processing, 0 trials"
+    unresolved: "BLOCKER B3 — account-specific verification unavailable this session"
+  - id: A-08
+    value: "first $1,000 of margin interest-free (Gold benefit)"
+    classification: Known per published terms and doctrine; account applicability unverified
+    num_0001_class: externally_imposed
+    source: "docs/MARGIN_DOCTRINE.md; RH-2026-07 observation"
+    affects: "daily interest accrual (accrues on max(0, debt - free tier))"
+    sensitivity: "no-free-tier unsubscribed counterfactual (pre-registered cost basis)"
+    unresolved: "linked to B3 (Gold status)"
+  - id: A-09
+    value: "unsubscribed counterfactual margin rate"
+    classification: Hypothetical pending verification
+    num_0001_class: unsupported_unclassified_until_acquired
+    source: "historical evidence only (2022-11: non-Gold = target upper + 6.5pp, no free tier); current schedule unconfirmed"
+    affects: "fully-allocated cost basis companion run"
+    sensitivity: "cost-basis post-processing"
+    unresolved: "BLOCKER B3 (part of consolidated account-terms request)"
+  - id: A-10
+    value: "risk-free series = Yahoo ^IRX 13-week T-bill discount yield (fallback)"
+    classification: Estimated (fallback source)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "protocol §10 'risk-free series ... with a disclosed fallback band'; primary sources network-blocked"
+    affects: "Sharpe/Sortino only (never financing cost)"
+    sensitivity: "disclosed fallback band wherever used"
+    unresolved: false
+  - id: A-11
+    value: "dividend credit on ex_date; pay-date +30d lag as sensitivity"
+    classification: Known (pre-registered rule)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "pre_registration dividends.credit / dividends.sensitivity"
+    affects: "primary accounting path; R2 repayment family"
+    sensitivity: "S-4 pre-registered line (+30d lag)"
+    unresolved: false
+  - id: A-12
+    value: "T-D3 tolerance +/-0.3pp/yr per ticker-portfolio"
+    classification: Known (pre-registered threshold)
+    num_0001_class: evidence_bounded_governance_selection
+    source: "pre_registration dividends.reconciliation_tolerance_pp_yr"
+    affects: "G1 pass criterion"
+    sensitivity: "n/a (fixed threshold)"
+    unresolved: false
+  - id: A-13
+    value: "foreign-issuer dividend amounts as acquired from Alpaca (TSM net of ~21% withholding; ASML net of 15%; BABA net of ADS fee; ETN rows 0.75x gross)"
+    classification: Known data behavior; convention decision open
+    num_0001_class: unsupported_unclassified_until_decided
+    source: "full-roster cross-source comparison (G1 report §5)"
+    affects: "dividend cash realism per foreign issuer; T-D3 TSM result; R2 family"
+    sensitivity: "if convention changed, re-derive ledger (data-correction path)"
+    unresolved: "decision item D-2"
+  - id: A-14
+    value: "spinoff/in-kind distributions NOT modeled in the primary path (DHR/IBM/MRK/WDC affected in-window)"
+    classification: Known structural property of the pre-registered primary path
+    num_0001_class: unsupported_unclassified_until_decided
+    source: "T-D3 failure attribution (G1 report §6); Yahoo pseudo-split scan"
+    affects: "absolute return levels for 4 tickers; arm-relative claims unaffected (shared bias)"
+    sensitivity: "options enumerated as decision item D-1"
+    unresolved: "decision item D-1"
+  - id: A-15
+    value: "crypto equity-session calendar mapping: session D consumes crypto bar t=D-1 (UTC) — last completed daily close (19/20:00 ET on D-1... i.e. 00:00Z bucket end) at or before the 16:00 ET equity close"
+    classification: Known (mathematically derived from bucket convention)
+    num_0001_class: mathematically_derived
+    source: "Alpaca crypto daily bars bucket at 00:00 UTC (verified in acquisition); protocol §4 calendar rule"
+    affects: "would affect Study B crypto configs — LAPSED under crypto outcome (b)"
+    sensitivity: "n/a (outcome b)"
+    unresolved: false
+  - id: A-16
+    value: "IEX-feed closes as primary prices (vs consolidated tape)"
+    classification: Known repository convention
+    num_0001_class: evidence_bounded_governance_selection
+    source: "repository-established price source (data/backtest); free-tier constraint"
+    affects: "endpoint-level noise (GEV T-D3 case: 0.29% start-price difference)"
+    sensitivity: "disclosed; no alternative source available at current data tier"
+    unresolved: false
