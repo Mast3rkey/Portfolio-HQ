@@ -271,7 +271,14 @@ prioritized, on:
 - **quality and actionability of the policy recommendations it produces** — does
   a tier/target/cluster recommendation carry the evidence, reasoning,
   alternatives, and thesis-break conditions §3 requires; and
-- demonstrated improvement in the principal's actual decision quality over time.
+- **improvement in the principal's actual decision quality — measurement basis
+  qualified, not asserted.** Where sufficient governed recommendation history
+  exists, decision usefulness is assessed using traceable accepted, rejected,
+  narrowed, deferred, or declined recommendations and their documented reasons
+  — not by claiming causal investment-performance attribution the available
+  data cannot support. Until sufficient recommendation history exists, this
+  measurement basis remains **deliberately unresolved** and cannot, by itself,
+  justify further Intelligence expansion or added complexity.
 
 Further Intelligence expansion (new companies, new themes, validator hardening,
 or a future portfolio-level Intelligence capability that aggregates across
@@ -337,6 +344,16 @@ qualifying run must draw on, and make explicit:
   tier/target/cluster recommendation not yet accepted) — presented explicitly
   as **advisory and requiring its own separate governance approval**, never as
   part of the current run's executable output;
+- **freshness/staleness state of any Intelligence and research evidence relied
+  upon**, using the existing PI-0011 freshness/staleness reporting framework
+  where applicable; when that evidence is stale, unknown, or insufficient, the
+  run must explicitly disclose this and abstain from presenting any policy
+  recommendation whose reliability depends on it;
+- **explicit surfacing of any known unresolved factual, data, authority, or
+  policy conflict affecting the run's inputs** (e.g. the `holdings.yaml`/
+  `CLAUDE.md`/`targets.yaml` BTC conflict recorded in §9), identifying the
+  authoritative owner of the conflict, and abstaining from or isolating any
+  conclusion the conflict would materially affect;
 - explicit uncertainty and degraded-data handling (e.g. `earnings:unavailable`,
   stale margin sync, illiquid/staked crypto);
 - reproducible logs (the same run, same inputs, same output);
