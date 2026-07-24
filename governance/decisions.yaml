@@ -181,3 +181,10 @@ decisions:
     related_decisions: [GOV-0002, GOV-0003, MARGIN-0003, MARGIN-0004, TGT-0001, NUM-0001, PI-0001, PI-0011, PI-0015]
     supporting_artifact: research/margin_target_study/PROTOCOL_V2.md
     file: governance/decisions/MARGIN-0005-margin-target-research-charter.md
+  - decision_id: OPS-0001
+    date: 2026-07-24
+    status: Accepted
+    category: operations_coordination
+    related_decisions: [GOV-0001, GOV-0002, MARGIN-0005]
+    supporting_artifact: operations/WORKSTREAMS.yaml
+    file: governance/decisions/OPS-0001-portfolio-hq-workstream-register.md
