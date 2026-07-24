@@ -55,16 +55,22 @@ observations:
     classification: repository_doctrine_anchor
 
 consistency_note: >
-  The Gold lowest-tier spread over the Federal Funds Target upper bound is
-  ~+2.5pp in every dated observation where both legs are known (2022-11: 6.5 vs
-  4.0 upper; 2025-12: ~5.75 consistent with a ~3.25 upper mid-easing; 2026-07:
-  5.0 consistent with a ~2.5 upper). This supports — but does not yet calibrate —
-  the pre-registered construction max(floor, FedFunds + spread). NOTE the
-  protocol names Fed Funds EFFECTIVE as the construction input while Robinhood's
-  own published mechanism references the TARGET upper bound; the two differ by a
-  small, regime-dependent amount. Whether to construct from effective (as
-  pre-registered) or target-upper (issuer mechanism) is recorded as decision
-  item D-4 in G1_DATA_VALIDATION_REPORT.md.
+  CORRECTED 2026-07-24 after official DFF ingestion (an earlier draft of this
+  note guessed "~+2.5pp consistent across observations" from assumed Fed
+  levels; the measured data falsify that guess and it is withdrawn).
+  Measured implied spreads of the observed Gold lowest-tier rate over the
+  Federal Funds EFFECTIVE rate (DFF, official FRED data):
+  2020-12-21: 2.50 − 0.09 = +2.41pp; 2022-11-03: 6.50 − 3.83 = +2.67pp;
+  2025-12-15: 5.75 − 3.64 = +2.11pp; 2026-07-22: 5.00 − 3.63 = +1.37pp.
+  The spread is ERA-DEPENDENT (declining pricing regime), not constant.
+  Where both legs are recorded, DFF sits only 0.16-0.17pp below the target
+  upper bound — the choice of base index (DFF, as pre-registered, vs the
+  issuer's target-upper description) is immaterial and is absorbed by
+  calibration; the target-upper mechanism remains a cross-check only.
+  Spread calibration itself (constant per the pre-registration's two late-era
+  anchors vs dated to the full observation set) is a G2 pre-run decision
+  documented in G1_DATA_VALIDATION_REPORT.md §7 — the model form
+  max(floor, DFF + calibrated spread) is unchanged either way.
 
 additional_observations:
   - id: RH-2026-07-NONGOLD

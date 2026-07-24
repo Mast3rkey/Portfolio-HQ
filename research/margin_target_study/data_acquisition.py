@@ -739,27 +739,38 @@ def ingest_dff(csv_path: str) -> bool:
         "rates": dev})
     print(f"DFF: PASS — {len(dev)} dev-window rows stored "
           f"({dev[0]['date']} -> {dev[-1]['date']}); supplied file sha256 recorded")
-    # reconstruction comparison vs recorded Robinhood observations
-    import yaml
-    ev = yaml.safe_load(open(RATES_DIR_COMMITTED / "robinhood_margin_rate_evidence.yaml"))
+    # reconstruction comparison vs ALL recorded Robinhood observations
     dmap = {r["date"]: r["rate_pct"] for r in rows}
-    print("Reconstruction check (observed Gold lowest-tier rate minus DFF on/near "
-          "the observation date = implied spread; compare vs the issuer's "
-          "published target-upper + 2.5pp mechanism):")
-    for obs, rate in (("2022-11-03", 6.5), ("2026-07-01", 5.0)):
-        dd = obs
-        k = 0
+
+    def dff_at(d0: str) -> float | None:
+        dd, k = d0, 0
         while dd not in dmap and k < 5:
             k += 1
-            dd = (date.fromisoformat(obs) + timedelta(days=k)).isoformat()
-        if dd in dmap:
-            print(f"  {obs}: observed {rate}% − DFF {dmap[dd]}% = "
-                  f"implied spread {rate - dmap[dd]:.2f}pp")
-        else:
+            dd = (date.fromisoformat(d0) + timedelta(days=k)).isoformat()
+        return dmap.get(dd)
+
+    OBS = [  # (date, observed Gold lowest-tier rate %, target-range upper bound % where recorded)
+        ("2020-12-21", 2.50, 0.25),   # RH-2020-12 (flat 2.5% era; target 0.00-0.25)
+        ("2022-11-03", 6.50, 4.00),   # RH-2022-11 (mechanism reported: upper + 2.5)
+        ("2025-12-15", 5.75, None),   # RH-2025-12 Phase 7A tier evidence (as-of Dec 2025)
+        ("2026-07-22", 5.00, None),   # RH-2026-07 published schedule + account-displayed 5.00%
+    ]
+    print("Reconstruction comparison (pinned model: DFF + calibrated spread; "
+          "target-upper mechanism = cross-check only):")
+    for obs, rate, upper in OBS:
+        dv = dff_at(obs)
+        if dv is None:
             print(f"  {obs}: DFF value not in supplied file")
-    print("If the DFF-based and target-upper-based constructions diverge enough "
-          "to alter costs or a candidate classification, a MARGIN-0005 charter "
-          "amendment is required before simulations (recorded in the G1 report).")
+            continue
+        line = f"  {obs}: observed {rate}% − DFF {dv}% = implied DFF-spread {rate - dv:.2f}pp"
+        if upper is not None:
+            line += (f" | target-upper {upper}% ⇒ upper-spread {rate - upper:.2f}pp; "
+                     f"DFF-vs-upper base delta {upper - dv:.2f}pp")
+        print(line)
+    print("Materiality assessment against pre-registered bands is recorded in "
+          "G1_DATA_VALIDATION_REPORT.md §7; a material divergence that could "
+          "alter a candidate classification requires a MARGIN-0005 charter "
+          "amendment before simulations.")
     return True
 
 

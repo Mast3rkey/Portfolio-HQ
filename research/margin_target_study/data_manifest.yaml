@@ -1,4 +1,4 @@
-# data_manifest.yaml — MARGIN-0005 G1 artifact (charter §1.2, protocol §4/§13), v2 remediation + evidence round.
+# data_manifest.yaml — MARGIN-0005 G1 artifact (charter §1.2, protocol §4/§13), final G1 revision.
 # Every acquired dataset: source, timestamps, coverage, transformations, hashes,
 # validation results, limitations, licensing, untouched-isolation status.
 manifest: MARGIN-0005 G1 data manifest (v2, remediation)
@@ -870,31 +870,38 @@ datasets:
         bytes: 324969
         sha256: 546e1db23b1b47f60886d9b973f05142d720b7ccb618f104628448308b7fc5e6
   fed_funds_effective_dff:
-    purpose: 'Input to the pinned constructed borrowing-rate series: DFF + pre-registered calibrated spread (principal
-      direction D-4 — DFF is NOT replaced by the target-range upper bound)'
-    source: FRED series DFF — environment network-blocked (CONNECT 403 on all primary hosts, re-verified 2026-07-24);
-      principal-supplied fredgraph CSV ingestion path implemented
-    locator: https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF&cosd=1999-01-01 ; ingest via `python3 research/margin_target_study/data_acquisition.py
-      dff <csv>`
-    source_classification: primary official (US government public domain, committable once supplied)
-    acquired_at: 'PENDING — third-round attempt 2026-07-24: FRED re-verified blocked (CONNECT 403); no CSV on disk
-      or any branch; Drive connector requires interactive approval unavailable to this session; Gmail disconnected.
-      Awaiting file via chat attachment, Drive approval, or network allowlist'
-    coverage: 'required: 1999-01-01 -> >=2025-06-30 daily (incl. weekends); expected header DATE,DFF or observation_date,DFF;
-      missing values "."'
-    permitted_development_boundary: stored file will be dev-bounded at 2025-06-30
-    adjustment_mode: n/a
-    transformations: dev-boundary filter on ingestion
-    location: research/margin_target_study/data/rates/dff.json (created on ingestion)
-    validation: 'ingestion validator: header check, duplicate dates, coverage span, values [0,25], gaps >4 days;
-      then reconstruction comparison vs recorded Robinhood observations; material divergence between DFF-based and
-      target-upper-based constructions => charter amendment required before simulations'
+    purpose: 'Input to the pinned constructed borrowing-rate series: max(floor, DFF + pre-registered calibrated
+      spread); target-upper mechanism cross-check only (D-4)'
+    source: FRED series DFF — official fredgraph export, principal-supplied 2026-07-24 (direct acquisition remained
+      network-blocked); source facts independently verified by principal and re-verified here
+    locator: 'supplied file a22d05d8-DFF.csv (session upload); canonical: https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF'
+    source_classification: primary official (US government public domain)
+    acquired_at: '2026-07-24T11:57:03Z'
+    coverage: supplied 1954-07-01 -> 2026-07-22 (26,320 rows, header observation_date,DFF, sha256 78f1994d99606e5a36c7297dae71be82be0ac4339177e3a4da552755b6404a2c);
+      stored dev-bounded 1999-01-01 -> 2025-06-30 (9,678 rows)
+    permitted_development_boundary: 2025-06-30 — stored file dev-bounded; post-boundary supplied rows not stored
+      (G4 re-ingests through its own run date)
+    adjustment_mode: n/a (rate series)
+    transformations: official header observation_date,DFF accepted natively (source CSV NOT edited or rewritten);
+      missing-value '.' rows dropped; dev-boundary filter on storage — all recorded here and in ingest_dff
+    location: research/margin_target_study/data/rates/dff.json (committed; public domain)
+    validation: 'ingest_dff PASS: header check, 0 duplicate dates, chronological, 0 out-of-range values ([0,25]),
+      0 gaps >4 days, coverage spans requirement; reconstruction comparison vs all four recorded Robinhood observations:
+      implied DFF-spreads +2.41/+2.67/+2.11/+1.37pp (2020-12/2022-11/2025-12/2026-07); DFF-vs-target-upper base
+      delta 0.16-0.17pp (immaterial — pinned DFF construction stands); era-dependent spread finding recorded, calibration
+      method = G2 pre-run decision, no charter amendment required (G1 report §7)'
     limitations:
-    - Robinhood's own published mechanism references the TARGET upper bound + spread — recorded as cross-check and
-      limitation; the pinned construction input remains DFF
+    - issuer spread over DFF is era-dependent (declining pricing regime); constant late-era-anchor calibration would
+      understate 2021-2023 borrowing cost by up to ~1.3pp rate-level (~0.4pp/yr net-TWR on a 1.5x candidate, inside
+      the pre-registered noise band; enveloped by the 2x-spread stress line)
     licensing: US government public domain
-    untouched_isolation: dev-bounded on ingestion
-    files: {}
+    untouched_isolation: dev-bounded on storage
+    files:
+      rates/dff.json:
+        rows: 9678
+        coverage: 1999-01-01 -> 2025-06-30
+        bytes: 367116
+        sha256: ddb9255a94e1f6c1bc89be78aa99513029730fd3561c9263fe69bae32e8956d5
   robinhood_margin_rate_evidence:
     purpose: Authoritative margin-rate observations anchoring the constructed borrowing-rate series; Gold terms
       evidence; cross-check target for the DFF reconstruction
@@ -907,14 +914,20 @@ datasets:
     adjustment_mode: n/a
     transformations: n/a
     location: research/margin_target_study/data/rates/robinhood_margin_rate_evidence.yaml (committed)
-    validation: internal consistency of Gold lowest-tier spread (~+2.5pp over Fed target upper) across dated observations;
-      app-displayed 5.00% matches the published <=50k tier and doctrine ~5% anchor
+    validation: 'measured against official DFF 2026-07-24: implied spreads +2.41/+2.67/+2.11/+1.37pp — era-dependent,
+      corrected consistency note in-file; app-displayed 5.00% matches the published <=50k tier and doctrine ~5%
+      anchor'
     limitations:
     - account-specific fields RESOLVED 2026-07-24 — see account_evidence_gold_margin dataset; unsubscribed counterfactual
       is NOT account-verifiable while subscribed (generic provider basis recorded, Estimated)
     licensing: facts with citations; committed
     untouched_isolation: n/a
-    files: {}
+    files:
+      rates/robinhood_margin_rate_evidence.yaml:
+        rows: 5
+        coverage: observations 2020-12 -> 2026-07
+        bytes: 5782
+        sha256: 2d11020b80c5d945dfb52a0a914586dd8cbf2d6b2d16d4c9488e08ed85538b51
   legacy_backtest_cache:
     purpose: Pre-existing production backtest price cache (verified read-only; NOT modified)
     source: Alpaca IEX daily, split-adjusted (repository history)

@@ -1,9 +1,9 @@
-# G1_DATA_VALIDATION_REPORT.md — MARGIN-0005 gate G1 (v2, blocker remediation)
+# G1_DATA_VALIDATION_REPORT.md — MARGIN-0005 gate G1 (final: all blockers resolved)
 
 **Program:** margin_deployment_and_target_sizing_v1
 **Authority:** `governance/decisions/MARGIN-0005-margin-target-research-charter.md` §1.2, §7
 **Protocol:** `research/margin_target_study/PROTOCOL_V2.md` §4, §11, §14, §18
-**Executed:** initial G1 2026-07-24 (`6efd716`); remediation (`1df11f5`); account-evidence round (this revision)
+**Executed:** initial G1 2026-07-24 (`6efd716`); remediation (`1df11f5`); account evidence (`c0b4a8f`); DFF closure (this revision)
 **Base:** `origin/main` = `f984665936203c0505e8603de7c870beb64f7f21`
 
 **No `simulate()` call was made in either round, zero of the 300 registered trials were consumed, no
@@ -215,23 +215,56 @@ Full table:
 
 T-D1–T-D5 engine proofs remain G2 work and are not claimed.
 
-## 7. D-4 — Federal Funds (DFF) acquisition and reconstruction
+## 7. D-4 — Federal Funds (DFF): acquired, validated, reconstruction compared
 
-The pinned construction is unchanged: **DFF + pre-registered calibrated spread** (per
-`pre_registration.yaml` `costs.interest`); the target-range upper bound does **not** replace DFF. Direct
-acquisition remains blocked — re-verified this round: CONNECT-tunnel 403 on `fred.stlouisfed.org` (and all
-alternate primary hosts in the v1 evidence). The principal has verified DFF exists through 2026-07-22.
+**Acquired (final round, 2026-07-24):** the principal-supplied official FRED export `DFF.csv` —
+SHA-256 `78f1994d99606e5a36c7297dae71be82be0ac4339177e3a4da552755b6404a2c` **verified equal to the
+principal's independently computed hash**; official schema `observation_date,DFF` accepted natively
+(the source CSV was **not** edited or rewritten — column-name normalization happens only inside the
+reproducible ingestion transformation); 26,320 rows, 1954-07-01 → 2026-07-22, latest 3.63 — all
+matching the principal's independently verified facts. Ingestion validation (`ingest_dff`): 0 duplicate
+dates, chronological, 0 malformed/out-of-range values, 0 gaps >4 days, coverage spans the requirement.
+Stored **dev-bounded** (1999-01-01 → 2025-06-30, 9,678 rows) at `data/rates/dff.json`
+(SHA-256 `ddb9255a94e1f6c1bc89be78aa99513029730fd3561c9263fe69bae32e8956d5`; US-government public
+domain, committed); post-boundary supplied rows are not stored — G4 re-ingests through its own run date.
 
-Manual-supply path implemented and documented (`data_acquisition.py dff <csv>` + `DFF_EXPECTED_SCHEMA`):
-expected file = FRED fredgraph CSV for DFF (`header DATE,DFF` or `observation_date,DFF`; rows
-`YYYY-MM-DD,<percent>`; missing "."), coverage 1999-01-01 → ≥2025-06-30. The ingestion validator checks
-header, duplicates, coverage span, value range [0,25], gaps >4 days; on pass it stores dev-bounded
-`data/rates/dff.json` (FRED data is US-government public domain — committable), records the supplied file's
-SHA-256, and emits the reconstruction comparison: implied spread (observed Robinhood Gold lowest-tier rate
-− DFF) on each recorded observation date vs the issuer's published target-upper + 2.5pp mechanism (recorded
-as cross-check and limitation). **If the DFF-based and target-upper-based constructions diverge materially
-enough to alter costs or a future candidate classification, a MARGIN-0005 charter amendment is required
-before simulations** — no model choice is made silently.
+**Pinned model preserved:** max(floor, **DFF** + pre-registered calibrated spread). The target-range
+upper bound is **not** substituted; the issuer's target-upper pricing description is a cross-check only.
+
+**Reconstruction comparison against every recorded Robinhood observation:**
+
+| Observation | Observed Gold ≤$50k rate | DFF | Implied DFF-spread | Target-upper cross-check |
+|---|---|---|---|---|
+| 2020-12-21 | 2.50% | 0.09% | **+2.41pp** | upper 0.25% → +2.25pp; base delta 0.16pp |
+| 2022-11-03 | 6.50% | 3.83% | **+2.67pp** | upper 4.00% → +2.50pp; base delta 0.17pp |
+| 2025-12-15 | 5.75% | 3.64% | **+2.11pp** | — |
+| 2026-07-22 | 5.00% (published + account-displayed) | 3.63% | **+1.37pp** | — |
+
+**Materiality, stated under the pre-registered assumptions:**
+
+1. **Base-index choice (DFF vs target-upper): immaterial.** Where both legs are recorded, DFF sits
+   0.16–0.17pp below the target upper — far inside the pre-registered ≤0.5pp noise band and fully
+   absorbed by calibration. The pinned DFF construction stands; **no model change, no charter
+   amendment required on this axis.**
+2. **The issuer's spread over DFF is era-dependent** (2.41 → 2.67 → 2.11 → 1.37pp; a declining pricing
+   regime). An earlier draft note in the evidence file guessed a constant ~+2.5pp — that guess is
+   **withdrawn and corrected in-file** (falsified by measured DFF). Consequence: a constant spread
+   calibrated to the pre-registration's two named late-era anchors would understate 2021-2023
+   borrowing costs by up to ~1.3pp at rate level; translated through debt/equity, that is ≈0.2pp/yr
+   net-TWR on a 1.25x candidate and **≈0.4pp/yr on a 1.5x candidate — inside the pre-registered
+   0.5pp noise band**, and the entire observed spread range (≤2.67pp) is enveloped by the
+   pre-registered 2×-spread stress line (S-2) plus the flat-5% replication case, with "edge vanishes
+   net of financing" already a pre-registered rejection rule. The 1.8x arm (~0.6pp/yr) is a
+   diagnostic ceiling arm, never a candidate. **Verdict: the divergence does not require changing the
+   pinned model and does not by itself alter candidate classifications under the pre-registered
+   bands — no charter amendment required.** The remaining free choice — constant-anchor vs dated
+   calibration of the spread (both are "DFF + calibrated spread") — is documented as a **G2 pre-run
+   decision** with the full dated observation set recorded above; G1 recommends the dated
+   calibration and notes that any G2 proposal to alter the model *form* or the pre-registered
+   anchors would be a charter amendment.
+
+Attempt history for completeness: direct FRED access was network-blocked in all three prior rounds
+(CONNECT 403, evidence in earlier revisions); the official file arrived via principal upload.
 
 ## 8. Crypto outcome — principal acceptance recorded
 
@@ -276,9 +309,8 @@ per-position 25% maintenance ratios (MSFT/GLD/TSM) corroborate the proxy's basel
 - YAML parse: all new/updated YAML + config YAML clean.
 - Deterministic validators (`data_acquisition.py validate`): every section passes — prices, sealed archive,
   dividend ledger v2, corporate-action ledger, crypto assertions, Track 3 boundaries, ^IRX, **and the new
-  account-evidence completeness check (6/6 fields VERIFIED or NOT-APPLICABLE)** — **except the single open
-  DFF item**, which the validator correctly reports as a blocker (overall FAIL by design until DFF is
-  ingested).
+  account-evidence completeness check (6/6 fields VERIFIED or NOT-APPLICABLE)** and the DFF dataset —
+  **VALIDATE OVERALL: PASS**.
 - T-D3 v2: **PASS 63/63 + 2/2** (§6).
 - Manifest hashes: regenerated (11 datasets, 202 per-file entries) and spot-verified.
 - Untouched-boundary checks: all OK (§2.3); Track 3 untouched never acquired.
@@ -286,23 +318,31 @@ per-position 25% maintenance ratios (MSFT/GLD/TSM) corroborate the proxy's basel
 - `git diff --check`: clean; protected paths untouched (every changed file inside
   `research/margin_target_study/`); `simulate()` never called; zero trials consumed; pinned hashes exact.
 
-## 11. Remaining blockers and verdict
+## 11. Final G1 checklist and verdict
 
-Resolved across rounds: **B1** (T-D3 — D-1/D-2/D-3, full pass), crypto outcome acceptance, and now
-**B3** (Gold/account evidence — §9, all six fields VERIFIED or legitimately NOT APPLICABLE). Remaining:
+- Pinned hashes exact (every round) ✓
+- Price data: PASS (dev-truncated cache, GEV SIP exception documented, sealed untouched archive
+  hash-verified) ✓
+- Dividend ledger v2 (gross declared) + withholding register: PASS ✓
+- Corporate-action ledger (4 spin-offs, PIT, sourced): PASS ✓
+- T-D3: **PASS 63/63 tickers + both Track 3 books** (worst 0.157pp/yr) ✓
+- Benchmarks + quarantined TR + Track 3 books: PASS ✓
+- Risk-free (^IRX fallback, protocol-sanctioned disclosure): acquired ✓
+- **DFF: acquired from the official export, hash-verified, validated, dev-bounded; reconstruction
+  comparison recorded; no charter amendment required (§7)** ✓
+- Gold/account terms: **verified** (six fields VERIFIED or legitimately NOT APPLICABLE, §9) ✓
+- Crypto outcome (b) formally recorded and principal-accepted ✓
+- Untouched-test isolation: structural (sealed archive; Track 3 untouched never acquired) ✓
+- `data_manifest.yaml` complete (12 datasets, per-file hashes); `assumptions_ledger.yaml` complete
+  (A-01…A-22, NUM-0001-classified) ✓
+- No degraded mode used or approved; no prohibited file or activity ✓
 
-- **B2′ (DFF) — the single open item.** The official CSV did not reach this session (attempt log §7).
-  Ingestion, validation, dev-bounding, and the DFF-vs-target-upper reconstruction comparison are
-  implemented and one command away: `python3 research/margin_target_study/data_acquisition.py dff <file>`.
-
-Charter §7 requires the Fed-funds-anchored borrowing-rate series acquired before G1 can pass, and no
-degraded mode is self-approvable, therefore:
-
-> ## **G1 DATA GATE BLOCKED**
+> ## **G1 DATA GATE PASSED**
 >
-> On exactly one bounded item: **B2′ — supply the FRED DFF CSV** (attach `fredgraph.csv` in chat, approve
-> the Drive request, or allowlist `fred.stlouisfed.org`). Every other G1 requirement passes. On ingestion
-> the gate re-verdicts without re-doing any acquisition, reconciliation, or evidence work.
+> Every charter-§7 requirement is satisfied without degraded mode. Per charter §11 each gate is a
+> recorded review outcome — this PR is the record, and it awaits independent review before merge.
+> No simulation may run before G2's engine gates (T-1, T-D1–T-D5, T-U1/T-U2) are separately
+> implemented, reviewed, and merged.
 
 **G2 was not begun.**
 

@@ -43,21 +43,21 @@ assumptions:
     sensitivity: "n/a (adequacy bar)"
     unresolved: false
   - id: A-05
-    value: "constructed borrowing rate = max(floor, FedFunds + calibrated spread); anchors: doctrine ~5%, Phase 7A ~5.75% <=$50k (Dec 2025), current published 5.0% <=$50k (Jul 2026); Gold lowest-tier spread ~+2.5pp over Fed target upper across three dated observations; flat-5% retained as replication case"
+    value: "constructed borrowing rate = max(floor, DFF + calibrated spread); anchors per pre-registration: doctrine ~5% (Jul 2026), Phase 7A ~5.75% <=$50k (Dec 2025); measured implied spreads over official DFF are ERA-DEPENDENT: +2.41pp (2020-12), +2.67pp (2022-11), +2.11pp (2025-12), +1.37pp (2026-07) — the earlier draft claim of a constant ~+2.5pp spread is withdrawn (falsified by measured DFF); flat-5% retained as replication case"
     classification: Estimated
     num_0001_class: empirically_calibrated_estimate
     source: "pre_registration costs.interest; data/rates/robinhood_margin_rate_evidence.yaml"
     affects: "financing cost in every levered arm; §8.7 cost bases"
     sensitivity: "pre-registered stress rates (+300bps, 2x spread, +400bps/6mo path); S-2 line"
-    unresolved: "input series blocked (see A-06); effective-vs-target-upper construction choice is decision item D-4"
+    unresolved: "RESOLVED 2026-07-24: DFF acquired (A-06); D-4 settled — DFF base index kept (measured DFF-vs-target-upper delta only 0.16-0.17pp, immaterial). Measured era-dependent issuer spreads over DFF: +2.41pp (2020-12), +2.67pp (2022-11), +2.11pp (2025-12), +1.37pp (2026-07) — spread calibration method (constant per pre-registered late-era anchors vs dated to the full observation set) is a G2 pre-run decision; model form unchanged"
   - id: A-06
-    value: "Fed Funds series 1999 -> 2025-06-30"
-    classification: Known quantity, NOT ACQUIRED
-    num_0001_class: unsupported_unclassified_until_acquired
-    source: "all primary hosts denied by environment network policy (CONNECT 403): fred.stlouisfed.org, api.stlouisfed.org, federalreserve.gov, markets.newyorkfed.org, treasury.gov"
+    value: "Fed Funds Effective (DFF) ACQUIRED 2026-07-24 from the principal-supplied official FRED export (observation_date,DFF; 26,320 rows 1954-07-01 -> 2026-07-22; source sha256 78f1994d...404a2c, verified against the principal's independently computed hash). Stored dev-bounded 1999-01-01 -> 2025-06-30 (9,678 rows) at data/rates/dff.json (sha256 ddb9255a...8956d5); US-government public domain, committed"
+    classification: Known (official primary source, hash-verified)
+    num_0001_class: externally_imposed
+    source: "FRED series DFF via principal-supplied fredgraph CSV; ingestion validation in data_acquisition.py ingest_dff"
     affects: "A-05 construction; Track 3 financing realism"
-    sensitivity: "n/a until acquired"
-    unresolved: "BLOCKER B2' — 2026-07-24 evidence round: FRED re-verified blocked (403); no CSV found on disk, in any repo branch, or via reachable connectors (Google Drive tool calls require an interactive approval unavailable to this session; Gmail disconnected). Ingestion path ready: data_acquisition.py dff <csv>"
+    sensitivity: "pre-registered stress rates (+300bps, 2x spread, +400bps/6mo)"
+    unresolved: false
   - id: A-07
     value: "Gold subscription VERIFIED: annual plan, $50/year currently stated on the account (member since 2025-12-15; next billing 2027-05-10; paid from brokerage cash). Supersedes the pre-registration's $5/mo estimate — its verify_at_G1 flag is hereby satisfied; the frozen pre-registration text is unchanged"
     classification: Known (account-verified, 2026-07-24)
@@ -148,12 +148,12 @@ assumptions:
     unresolved: false
   - id: A-18
     value: "constructed borrowing-rate input = FRED DFF (Federal Funds Effective) + pre-registered calibrated spread — pinned; NOT replaced by the target-range upper bound (principal direction D-4). Robinhood's published target-upper+spread mechanism recorded as cross-check/limitation; if the two constructions diverge materially enough to alter costs or a candidate classification, a MARGIN-0005 charter amendment is required before simulations"
-    classification: Known construction, data PENDING
-    num_0001_class: empirically_calibrated_estimate (pending input series)
-    source: "pre_registration costs.interest; principal direction D-4; DFF verified by principal to exist through 2026-07-22"
+    classification: Known construction, data ACQUIRED (2026-07-24)
+    num_0001_class: empirically_calibrated_estimate
+    source: "pre_registration costs.interest; principal direction D-4; data/rates/dff.json (official FRED, hash-verified)"
     affects: "financing cost in every levered arm"
-    sensitivity: "pre-registered stress rates; DFF-vs-target-upper comparison emitted by the `dff` ingestion validator"
-    unresolved: "BLOCKER — awaiting principal-supplied FRED CSV or network-policy allowlist (ingestion path implemented and documented)"
+    sensitivity: "pre-registered stress rates; measured reconstruction comparison recorded in G1 report §7 — DFF-vs-target-upper base delta 0.16-0.17pp (immaterial); era-dependent issuer spread range 1.37-2.67pp fully enveloped by the pre-registered 2x-spread stress line; worst-case constant-anchor calibration bias ~0.4pp/yr on a 1.5x candidate (inside the pre-registered 0.5pp noise band)"
+    unresolved: "no charter amendment required — model form unchanged; calibration method documented as a G2 pre-run decision"
   - id: A-19
     value: "foreign withholding / ADR fee register: TSM ~21% TW withholding (measured 0.78 vendor ratio), ASML 15% NL (measured 0.850), ETN 25% Irish DWT modeled by vendor but US holders typically exempt (measured 0.750, account treatment UNRESOLVED), BABA ADS depositary fee (~$0.02/ADS)"
     classification: Known public tax-regime facts + repository measurements
