@@ -112,7 +112,7 @@ workstreams:
         is not wired into anything yet) and it does not, on its own,
         currently block the G2 gate.
     next_action: >
-      Perform a read-only final S2/G2C scope determination that reconciles
+      Perform a read-only final S2/G2 scope determination that reconciles
       the charter §4 approved-file table, the remaining unimplemented
       libraries and tests (overlay_lib.py, maintenance_lib.py,
       dividend_ledger.py, target_variants.py, validation_lib.py, and their
