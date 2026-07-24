@@ -195,3 +195,10 @@ decisions:
     related_decisions: [OPS-0001, GOV-0001, GOV-0002, GOV-0003, MARGIN-0005]
     supporting_artifact: docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md
     file: governance/decisions/OPS-0002-unified-core-planning-and-audit-gate.md
+  - decision_id: OPS-0003
+    date: 2026-07-24
+    status: Accepted
+    category: operations_coordination
+    related_decisions: [OPS-0001, OPS-0002, GOV-0002, GOV-0003, MARGIN-0005]
+    supporting_artifact: operations/WORKSTREAMS.yaml
+    file: governance/decisions/OPS-0003-post-acceptance-workstream-priority-transition.md
