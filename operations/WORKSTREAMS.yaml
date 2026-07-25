@@ -599,39 +599,73 @@ workstreams:
           of change, capital relevance, thesis uncertainty, cyclicality,
           event/gap risk, regulatory sensitivity, evidence dependence) with
           named candidate review triggers where applicable — no universal
-          cadence. Not authorized to execute — completing Milestones 1-2
-          does not authorize this milestone. **Batch 1 authorized 2026-07-25
-          (PI-0023):** exactly ASML, AMAT, KLAC, and LRCX (the semis-cluster
-          semiconductor capital-equipment sub-segment) — evidence development
-          only, per PI-0023's full research standard, evidence discipline,
-          zero-based discipline, and prohibitions. This milestone's own
-          status stays proposed in aggregate (only Batch 1 is authorized; the
-          milestone as a whole, and any further batch, is not). No research
-          has been performed under PI-0023 itself — it authorizes a later,
-          separate, bounded implementation PR only. **Batch 1 implementation
-          drafted 2026-07-25 (PR #154, branch
-          claude/portfolio-intel-semicon-equipment-to6f7d):** four Company
-          Intelligence records (ASML/AMAT/KLAC/LRCX YAML+Markdown pairs),
-          one hand-authored batch comparison artifact
-          (intelligence/BATCH1_SEMIS_EQUIPMENT_COMPARISON.md), and
-          freshness-registry/checkpoint enrollment rows for all four
-          tickers (monitoring_enabled: false, checkpoint_status: pending).
-          intelligence_validator.py (11 companies, all valid) and
-          freshness_validator.py (OK) both pass; full test suite 1502/1502
-          unchanged. All research is WebSearch-sourced and labeled
-          SECONDARY throughout (WebFetch was blocked on every primary-source
-          domain attempted this session) — every record's own
-          Source-access disclosure states its unresolved data conflicts
-          explicitly rather than silently resolving them. PR #154 is
-          **draft, unmerged**, pending independent claim/source
-          cross-check and independent Fable repository review per PI-0023
-          §E's completion criteria. Batch 1 status stays drafted, not
-          complete, until merge, independent review, post-merge
-          verification, and this register's post-merge synchronization —
-          per OPS-0006 §16.1 and PI-0023 §E, none of which has occurred
-          yet.
+          cadence. **This milestone's own status stays in_progress in
+          aggregate, not complete — only Batch 1 is complete; the milestone
+          as a whole, and any further batch, is not.** Completing Batch 1
+          does not authorize a second Milestone 3 batch or any Milestone 4
+          work. **Batch 1 authorized 2026-07-25 (PI-0023):** exactly ASML,
+          AMAT, KLAC, and LRCX (the semis-cluster semiconductor
+          capital-equipment sub-segment) — evidence development only, per
+          PI-0023's full research standard, evidence discipline, zero-based
+          discipline, and prohibitions.
+
+          **Batch 1 complete 2026-07-25 — implementation PR #154 merged.**
+          Branch `claude/portfolio-intel-semicon-equipment-to6f7d` (confirmed
+          deleted post-merge — no matching remote branch as of this
+          reconciliation). Reviewed head `0425f3a30232e06ea97aabec95c07ccc93fcc0e9`
+          confirmed an ancestor of `main` and the merge commit's direct
+          second parent; merged via merge commit
+          `7f50020e83c6bf3fcf50c2f26a1a0533aaa245af` (2026-07-25T19:26:35Z),
+          confirmed the current `origin/main` tip at this reconciliation.
+          Delivered, confirmed present on `main`: four Company Intelligence
+          records (ASML/AMAT/KLAC/LRCX YAML+Markdown pairs), one
+          hand-authored batch comparison artifact
+          (`intelligence/BATCH1_SEMIS_EQUIPMENT_COMPARISON.md`), and one
+          freshness-registry/checkpoint enrollment row per ticker
+          (`monitoring_enabled: false`, `checkpoint_status: pending`,
+          `enrollment_authority`/`company_record_authority: PI-0023`).
+          Independent Fable full review (`4779913553`, anchored to
+          intermediate head `cb5d4e4`, verdict CHANGES REQUIRED — two
+          blocking findings, both confined to the comparison artifact, no
+          company record required a factual correction) and independent
+          Fable delta review (`4780012239`, anchored to the merged reviewed
+          head `0425f3a3`, verdict "PR #154 APPROVED WITH NON-BLOCKING
+          FINDINGS" — both blocking findings resolved) both completed and
+          remain visible, correctly anchored, on the merged PR. Exact-head
+          CI (`test` check run, run `30171261993`) completed successfully at
+          the reviewed head. This reconciliation independently re-verified
+          post-merge: `intelligence_validator.py` (11 companies, all
+          valid), `freshness_validator.py` (registry/checkpoint
+          cross-validation OK), full pytest suite (1502/1502) on a clean
+          `origin/main` checkout, `git diff --check` clean, and zero touch
+          to `targets.yaml`, `holdings.yaml`, `allocate.py`,
+          `margin_state.py`, any governance decision, or any pre-existing
+          (non-batch) Intelligence record. **Known unresolved evidence gaps
+          and source-access limitations, carried forward from the merged PR
+          (not resolved by this reconciliation, which performs no
+          research):** no primary document (10-K, 8-K, 6-K, press release,
+          IR presentation) was directly opened by either the authoring or
+          the independent reviewing session — WebFetch was blocked on every
+          primary-source domain attempted by both, so every such document
+          is labeled "identified but NOT opened by this session," distinct
+          from secondary journalism; KLAC's process-control market-share
+          range remains genuinely disputed (~50-85% across sources,
+          distinct from its now-resolved China-revenue series); no source
+          found establishing quantitative cycle lead/lag timing between any
+          two of the four companies; several company-specific figure
+          conflicts remain per-record (e.g. LRCX's $2.5B/~13%-of-FY2022
+          arithmetic); no named suppliers found for AMAT, KLAC, or LRCX;
+          ASML's "MATCH Act" remains pending, not enacted. **Confirmed: no
+          tier, target, role, cluster, cap, holdings, allocator, or margin
+          change occurred in PR #154 or in this reconciliation.** This
+          gate's `status: in_progress` reflects the milestone as a whole —
+          Batch 1 is complete (stated above as a subordinate statement
+          within this single gate entry, the schema having no separate
+          per-batch status field), but Milestone 3 itself is not, and this
+          entry authorizes no second Milestone 3 batch and no Milestone 4
+          work.
         pr: 154
-        status: drafted
+        status: in_progress
         date: "2026-07-25"
       - gate: milestone-4-portfolio-relationship-mapping
         description: >
@@ -716,7 +750,10 @@ workstreams:
       - "PR #152 (WS-0005 register sync, merged 2026-07-25, merge commit 88ac03adac8bd4f0a3bc43b36ce097c84998b27b)"
       - governance/decisions/PI-0023-ws0005-milestone3-batch1-semis-equipment.md
       - "PI-0023 merged via PR #153, merge commit 316dc32da2c42df4759dfae4da1e1741906f7657 (confirmed origin/main tip at this session's start)"
-      - "PR #154 (Milestone 3 Batch 1 implementation — ASML/AMAT/KLAC/LRCX Company Intelligence — draft, unmerged, branch claude/portfolio-intel-semicon-equipment-to6f7d)"
+      - "PR #154 (Milestone 3 Batch 1 implementation — ASML/AMAT/KLAC/LRCX Company Intelligence — merged 2026-07-25T19:26:35Z, merge commit 7f50020e83c6bf3fcf50c2f26a1a0533aaa245af, reviewed head 0425f3a30232e06ea97aabec95c07ccc93fcc0e9, source branch claude/portfolio-intel-semicon-equipment-to6f7d confirmed deleted)"
+      - "PR #154 independent Fable full review 4779913553 (anchored to cb5d4e4, CHANGES REQUIRED — 2 blocking findings, both confined to the comparison artifact)"
+      - "PR #154 independent Fable delta review 4780012239 (anchored to reviewed head 0425f3a3, APPROVED WITH NON-BLOCKING FINDINGS — both blocking findings resolved)"
+      - "PR #154 exact-head CI: test check run, run 30171261993, conclusion success"
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -728,18 +765,21 @@ workstreams:
       non-blocking findings (F-2/F-3).
 
       Milestone 3, Batch 1 (ASML, AMAT, KLAC, LRCX) was authorized effective
-      on PI-0023's merge (PR #153, merge commit 316dc32) — see the
-      milestone-3-intelligence-completion gate entry above. Its bounded
-      research implementation PR is now open: **PR #154, draft, unmerged**,
-      covering exactly the four authorized companies per PI-0023's full
-      authorization scope, with validators/tests passing (see the gate
-      entry). Next action: independent claim/source cross-check and
-      independent Fable repository review of PR #154's exact head, then
-      explicit principal acceptance, before it may be marked ready and
-      merged — none of which has occurred yet. This does not authorize a
-      second Milestone 3 batch, Milestone 4, or any later milestone — each
-      still requires its own separate, later, explicit principal
-      authorization per OPS-0006 §5.
+      on PI-0023's merge (PR #153, merge commit 316dc32) and its
+      implementation is now **merged and complete** — PR #154, merge commit
+      7f50020e83c6bf3fcf50c2f26a1a0533aaa245af, reviewed head 0425f3a3,
+      both independent Fable reviews (4779913553, 4780012239) resolved to
+      "APPROVED WITH NON-BLOCKING FINDINGS," exact-head CI green, and this
+      reconciliation's own post-merge validator/test re-verification passing
+      — see the milestone-3-intelligence-completion gate entry above for
+      full detail. **This does not authorize a second Milestone 3 batch,
+      Milestone 4, or any later milestone** — each still requires its own
+      separate, later, explicit principal authorization per OPS-0006 §5.
+      The next governed action on this workstream is a future, separate
+      decision naming either the next Milestone 3 batch (candidate uncovered
+      semis-cluster members: AVGO, AMD, MU, MRVL, WDC, INTC, SKHY) or
+      remaining Milestone 3 scope — not yet selected, proposed, or
+      authorized by this reconciliation.
 
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
@@ -775,30 +815,34 @@ workstreams:
       governance decision, per OPS-0006 §5.
     blocker: >
       None on Milestones 1-2 — complete. None on Milestone 3, Batch 1
-      (ASML, AMAT, KLAC, LRCX) authorization or implementation — PI-0023
-      merged and PR #154 (the implementation) is open, draft, with
-      validators/tests passing. PR #154's own merge is blocked pending
-      independent claim/source cross-check, independent Fable repository
-      review, and explicit principal acceptance — none of which has
-      occurred yet; this is a completion/merge gate on that PR, not an
-      authorization blocker. Milestone 3's remaining scope (any further
-      batch) and Milestones 4 through 9 remain blocked pending their own
-      separate, later, explicit principal authorization; none has been
-      granted by this entry or by anything else.
-    active_branch: claude/portfolio-intel-semicon-equipment-to6f7d
-    active_pr: 154
-    last_verified_main_sha: 316dc32da2c42df4759dfae4da1e1741906f7657
+      (ASML, AMAT, KLAC, LRCX) — PI-0023 merged, implementation PR #154
+      merged (merge commit 7f50020e83c6bf3fcf50c2f26a1a0533aaa245af),
+      independent Fable review resolved to APPROVED WITH NON-BLOCKING
+      FINDINGS, exact-head CI green, and post-merge validator/test
+      re-verification passing — Batch 1 is complete. Milestone 3's
+      remaining scope (any further batch) and Milestones 4 through 9 remain
+      blocked pending their own separate, later, explicit principal
+      authorization; none has been granted by this entry, by PI-0023, or by
+      anything else. This reconciliation itself grants no such
+      authorization.
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: 7f50020e83c6bf3fcf50c2f26a1a0533aaa245af
     last_verified_date: "2026-07-25"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
       roadmap; execution of Milestones 1-2 only, per its 2026-07-25
       amendment — Milestones 3-9 remain unauthorized). Milestones 1-2
       completion recorded per OPS-0006 §16.1 following PR #151's merge and
-      this session's independent post-merge verification and validation —
-      this reconciliation grants no new authorization and does not itself
+      independent post-merge verification and validation — that
+      reconciliation granted no new authorization and did not itself
       authorize Milestone 3. PI-0023 (Milestone 3, Batch 1 — ASML, AMAT,
-      KLAC, LRCX — evidence development only) authorizes exactly that one
-      batch, effective on its own merge; it grants no authority beyond that
-      batch and does not authorize a second batch or any later milestone.
+      KLAC, LRCX — evidence development only) authorized exactly that one
+      batch, effective on its own merge (PR #153); its implementation (PR
+      #154) is now merged, independently reviewed, and post-merge verified
+      per PI-0023 §E and OPS-0006 §16.1 — recorded factually by this
+      reconciliation, which itself grants no authority beyond recording
+      that completion. Neither PI-0023 nor this reconciliation authorizes a
+      second batch or any later milestone.
     supersedes: null
     superseded_by: null
