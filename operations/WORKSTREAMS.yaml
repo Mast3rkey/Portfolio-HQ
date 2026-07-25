@@ -407,6 +407,32 @@ workstreams:
       this entry authorizes recording the intent only.
     milestones: []
     evidence_refs: []
+    candidate_future_research_topics:
+      - no-margin baseline (comparison arm only)
+      - 200-day moving-average eligibility gate
+      - 50-day/200-day trend confirmation
+      - volatility-scaled exposure
+      - staged drawdown deployment
+      - trend-confirmed recovery deployment
+      - borrowing-cost hurdle
+      - margin restricted to current, governed, underweight holdings
+      - explicit deployment, repayment, and deleveraging rules
+      - realistic interest and transaction costs
+      - out-of-sample or walk-forward testing
+      - parameter-sensitivity testing
+      - preserved negative findings (required reporting discipline for any
+        future study, not itself a research topic)
+    candidate_future_research_disclaimer: >
+      Recorded 2026-07-25 as a deferred, unauthorized future research
+      candidate list only, in the same durable-planning-intent spirit as
+      this workstream's existing objective. This entry does not authorize
+      a study; does not consume a MARGIN-0005 trial; does not create a
+      live signal; does not change margin policy; does not modify
+      allocator behavior; and does not authorize live margin use. The
+      1.8x leverage cap and 30% buffer floor remain unchanged and binding.
+      Any future work on any listed item requires its own separate,
+      explicit governance decision meeting the same evidentiary bar as
+      MARGIN-0005/GOV-0003, per this workstream's existing next_action.
     next_action: >
       None authorized. A future, separate research charter (its own
       governance decision, meeting the same evidentiary bar as
@@ -419,8 +445,8 @@ workstreams:
       occurred.
     active_branch: null
     active_pr: null
-    last_verified_main_sha: 3c31c2e9d36d55defc95d89c90ab041f31abf251
-    last_verified_date: "2026-07-24"
+    last_verified_main_sha: 4ff13dfa5ec0a27e55c0eb5f563b4a9c7626c131
+    last_verified_date: "2026-07-25"
     authorized_by: null
     supersedes: null
     superseded_by: null
@@ -483,13 +509,24 @@ workstreams:
           applicable policy as a historical comparison baseline (preserved,
           not treated as presumptively correct); identify missing,
           duplicated, ambiguous, or inconsistent asset records. Authorized to
-          execute per OPS-0006 §5 (2026-07-25 amendment), normally as one
-          bounded audit PR together with Milestone 2. Draft PR opened on
-          branch claude/pr150-merge-ws0005-audit-0qy70q; retained artifact
-          at governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md.
-          Not yet merged; independent Fable review pending.
+          execute per OPS-0006 §5 (2026-07-25 amendment), executed as one
+          bounded audit PR together with Milestone 2. PR #151 merged to
+          main (merge commit 4ff13dfa5ec0a27e55c0eb5f563b4a9c7626c131,
+          parents 05cd6f0782936b670f738da0d447567e000a13d7 (base) and
+          reviewed head 4a2eafe8cfc28f2515e58db05a0e0cc1e6f282fa, merged
+          2026-07-25T15:55:36Z); retained artifact at
+          governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md.
+          Independent Fable full review (4779531873) and delta review
+          (4779547851, resolving the full review's sole non-blocking
+          finding NB-1) both completed and remain visible on the merged
+          PR, correctly anchored. Post-merge verification re-confirmed:
+          reviewed head is the merge commit's direct parent; merged scope
+          exactly the 2 declared files; no unexpected commits; full pytest
+          suite 1502/1502 passed on a clean checkout of current
+          origin/main; working tree and git diff --check both clean.
+          Milestone 1 reaches status: complete per OPS-0006 §16.1.
         pr: 151
-        status: drafted
+        status: complete
         date: "2026-07-25"
       - gate: milestone-2-intelligence-coverage-and-freshness-audit
         description: >
@@ -513,13 +550,21 @@ workstreams:
           recommended Milestone-3 sequencing. Must not refresh research,
           change freshness policy, build automation, or create external
           integrations. Authorized to execute per OPS-0006 §5 (2026-07-25
-          amendment), normally as one bounded audit PR together with
-          Milestone 1. Draft PR opened on branch
-          claude/pr150-merge-ws0005-audit-0qy70q; retained artifact at
+          amendment), executed as one bounded audit PR together with
+          Milestone 1. PR #151 merged to main (merge commit
+          4ff13dfa5ec0a27e55c0eb5f563b4a9c7626c131, parents
+          05cd6f0782936b670f738da0d447567e000a13d7 (base) and reviewed head
+          4a2eafe8cfc28f2515e58db05a0e0cc1e6f282fa, merged
+          2026-07-25T15:55:36Z); retained artifact at
           governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md.
-          Not yet merged; independent Fable review pending.
+          Independent Fable full review (4779531873) and delta review
+          (4779547851) both completed and remain visible on the merged PR,
+          correctly anchored. Post-merge validators re-run clean on current
+          origin/main: intelligence_validator.py (7 companies, 2 themes,
+          all valid) and freshness_validator.py (OK). Milestone 2 reaches
+          status: complete per OPS-0006 §16.1.
         pr: 151
-        status: drafted
+        status: complete
         date: "2026-07-25"
       - gate: milestone-3-intelligence-completion
         description: >
@@ -622,18 +667,24 @@ workstreams:
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md
+      - "PR #151 (merged 2026-07-25T15:55:36Z, merge commit 4ff13dfa5ec0a27e55c0eb5f563b4a9c7626c131)"
+      - "PR #151 independent Fable full review 4779531873 (anchored to 4dba4c9328dd1c2c8d7cf53c95d9ee722c00d991, APPROVED WITH NON-BLOCKING FINDINGS)"
+      - "PR #151 independent Fable delta review 4779547851 (anchored to 4a2eafe8cfc28f2515e58db05a0e0cc1e6f282fa, resolves NB-1, DELTA APPROVED FOR READINESS AND MERGE)"
     next_action: >
-      Draft PR #151 open on branch claude/pr150-merge-ws0005-audit-0qy70q,
-      containing the retained Milestones 1-2 audit artifact
-      (governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md,
-      68 governed assets, per-asset §16.2 completion ledger) plus this
-      register update. Per OPS-0006 §16.1, Milestones 1-2 do not reach
-      status: complete until this PR merges, tests/validators pass, and
-      this register plus governance/decisions.yaml are re-synchronized
-      post-merge. Independent Fable review of this PR is the next required
-      step before merge — not performed by this session. Milestones 3
-      through 9 remain unauthorized; merging this PR does not itself
-      authorize Milestone 3 or any later milestone.
+      Milestones 1-2 are complete (see milestone entries above) — PR #151
+      merged, both independent Fable reviews completed and remain visible
+      and correctly anchored, and post-merge verification/validation
+      (ancestry, merge scope, full pytest suite, both validators, decision
+      index reconciliation, YAML parsing, git diff --check, working-tree
+      cleanliness) all passed on a clean checkout of current origin/main.
+      No Milestone 3 (or later) company-research work has begun, and none
+      is authorized by this entry or by Milestones 1-2 reaching complete —
+      Milestones 3 through 9 remain status: proposed, each requiring its
+      own separate, later, explicit principal authorization per OPS-0006
+      §5. A narrow, factual cleanup of the stale BTC "fully sold" comment
+      in targets.yaml is recorded as a separate deferred next action (see
+      deferred_cleanup_actions below) — not performed in this
+      reconciliation or this branch.
     completion_criteria: >
       Per OPS-0006 §16.1's completion discipline: Milestones 1-2 reach
       status: complete only when the one bounded first audit PR merges;
@@ -642,25 +693,50 @@ workstreams:
       and the §16.2 per-asset ledger are recorded in the retained audit
       artifact; no company Intelligence record was completed or rewritten
       in the process; and this register plus governance/decisions.yaml are
-      factually synchronized to that state. A merged PR alone, a commit, a
-      push, or an open PR does not by itself constitute completion.
-      Completion does not itself authorize Milestone 3 or any later
-      milestone — each requires its own separate future governance
-      decision, per OPS-0006 §5.
+      factually synchronized to that state. All conditions are now met:
+      PR #151 merged; full suite (1502/1502) and both validators passed on
+      a clean origin/main checkout; the artifact and ledger exist
+      unmodified; governance/decisions.yaml required no change (PR #151
+      executed already-accepted OPS-0006 §5 authorization rather than
+      filing a new governance decision, so its OPS-0006 index row is
+      already current). Completion does not itself authorize Milestone 3
+      or any later milestone — each requires its own separate future
+      governance decision, per OPS-0006 §5.
     blocker: >
-      None on Milestones 1-2 execution — OPS-0006 §5 granted it on merge of
-      OPS-0006 itself. Draft PR #151 is open but not merged; independent
-      Fable review has not yet been performed against its exact head, and
-      the principal has not yet accepted it. Milestones 3 through 9 remain
+      None on Milestones 1-2 — complete. Milestones 3 through 9 remain
       blocked pending their own separate, later, explicit principal
-      authorization.
-    active_branch: claude/pr150-merge-ws0005-audit-0qy70q
-    active_pr: 151
-    last_verified_main_sha: 05cd6f0782936b670f738da0d447567e000a13d7
+      authorization; none has been granted by this reconciliation or by
+      anything else.
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: 4ff13dfa5ec0a27e55c0eb5f563b4a9c7626c131
     last_verified_date: "2026-07-25"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
       roadmap; execution of Milestones 1-2 only, per its 2026-07-25
-      amendment — Milestones 3-9 remain unauthorized)
+      amendment — Milestones 3-9 remain unauthorized). Milestones 1-2
+      completion recorded per OPS-0006 §16.1 following PR #151's merge and
+      this session's independent post-merge verification and validation —
+      this reconciliation grants no new authorization and does not itself
+      authorize Milestone 3.
+    deferred_cleanup_actions:
+      - description: >
+          targets.yaml carries a stale comment stating BTC was "fully sold
+          2026-07-13," contradicted by holdings.yaml's current
+          crypto_shares.BTC = 0.00460473 (a verified broker-sync re-add on
+          2026-07-22, commit 2bab50a). Independently identified as FA-3 in
+          governance/audits/WS0002_PHASE_ONE_FABLE_AUDIT_20260724.md and
+          reconfirmed present at PR #151's head by both its own artifact
+          and the independent Fable full review (OBS-1). This is a stale
+          comment/data-reconciliation discrepancy, not a software defect —
+          no BTC holding or target value is incorrect, and no allocator
+          behavior depends on the comment text.
+        status: deferred
+        scope: >
+          A separate, narrow, factual comment correction only — updating
+          the stale comment in targets.yaml to reflect the 2026-07-22
+          broker-sync re-add. Not performed in this reconciliation PR or
+          this branch. Not a tier, target, holdings, allocator, or margin
+          policy change.
     supersedes: null
     superseded_by: null
