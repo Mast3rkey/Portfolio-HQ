@@ -87,29 +87,65 @@ correct behavior, not a double-count, since `simulate()`'s
 `dividend_events` shape carries at most one combined per-share amount per
 (ticker, date).
 
-**Identity precedence (F-5 correction):** the composite key (`symbol`,
-`ex_date`, `special`, `gross_declared`, `payable_date`) is the PRIMARY,
-always-computed identity — it is what T-D1's own distinctness reasoning
-already relies on (two real distinct same-day dividends necessarily differ
-in `special` and/or `gross_declared`, per the docstring above), so it is
-authoritative on its own regardless of whether `alpaca_id` happens to be
-present on a given row. The vendor's own `alpaca_id`, when present on a
-row, STRENGTHENS identity as an additional, independent match key — a row
-is treated as a duplicate of an earlier row if EITHER its composite key OR
-(when present) its `alpaca_id` was already seen. This is deliberately
-symmetric and order-independent: a row with a populated `alpaca_id` and a
-later duplicate that happens to be missing it (a partial re-fetch, a
-manually-entered correction row, or any other reason two copies of the
-same real event might carry inconsistent optional metadata) still
-collapses to one credit either direction — missing OPTIONAL metadata on
-one copy of a duplicate can never split it into two credits. A single
-identity function keyed only by "`alpaca_id` when present, else
-composite" (the pre-F-5 behavior) is exactly the asymmetric case this
-corrects: two rows for the same real event where only one copy carries
-`alpaca_id` would previously fall into different identity buckets (one
-keyed by id, one by composite) and both credit — silently double-counting
-a dividend that a partial data-quality gap in the source feed, not a
-distinct declaration, produced two rows for.
+**Identity model (F-5, refined by NEW-2): core economic identity, separated
+from supplemental metadata.** Rows are grouped by a CORE identity —
+`(symbol, ex_date, special)` — the minimal set of fields T-D1's own
+distinctness reasoning actually relies on (two real distinct same-day
+dividends differ in `special`; that is the one field that legitimately
+separates two credited events on the same day for the same ticker).
+`gross_declared` and `payable_date` are deliberately NOT part of core
+identity — they are supplemental facts ABOUT one declaration, not what
+makes two rows describe different declarations:
+
+* **`gross_declared` in core identity would be wrong in both directions.**
+  Two rows sharing every other field but reporting different amounts are
+  not two distinct dividends — they are the SAME declaration with a data
+  inconsistency (e.g. a corrected re-fetch), and including the amount in
+  identity would silently treat that inconsistency as two real, summed
+  events. (The pre-NEW-2 composite key DID include `gross_declared`,
+  which is exactly how it introduced the "conflicting amount" gap NEW-2
+  closes — see below.)
+* **`payable_date` in core identity is the residual F-5 gap NEW-2
+  closes.** F-5 fixed the `alpaca_id`-presence asymmetry, but the
+  composite key it introduced still included `payable_date`, so two rows
+  for the same declaration that differ only in whether `payable_date` is
+  present would still fall into different composite buckets and both
+  credit. Excluding it from core identity (see below for how it is still
+  used, as supplemental metadata) closes that gap the same way F-5 closed
+  the `alpaca_id` one.
+
+**Within one core-identity group, rows are either a TRUE duplicate (safe
+to silently collapse to one credit) or a CONFLICT (ambiguous — must never
+be silently resolved by row order):**
+
+* If every row in the group reports the SAME `gross_declared` (within
+  float rounding) and every NON-missing `payable_date` in the group
+  agrees, the group is a true duplicate (or duplicates) of one real
+  declaration — collapsed to a single credit, `payable_date` taken from
+  whichever row(s) supplied it (missing `payable_date` on some copies
+  never blocks this).
+* If the group's rows report **different `gross_declared` values**, or
+  **different NON-missing `payable_date` values**, that is a CONFLICT:
+  the data disagrees about what actually happened, and this module MUST
+  NOT silently pick a row by encounter order — the pre-NEW-2 first-seen-
+  wins behavior for an `alpaca_id`-matched pair with a genuinely
+  different amount is exactly this failure mode. `strict=True` (the
+  default, matching this module's existing `build_corporate_action_events`
+  convention) raises `ValueError` naming the conflicting values.
+  `strict=False` excludes that (symbol, ex_date, special) event from the
+  output entirely — deterministic and order-independent (nothing "wins"),
+  never a guess.
+
+Two rows in the SAME group with different `alpaca_id`s are just a
+duplicate report of the same declaration under two vendor row identifiers
+(no conflict, provided the amount/payable-date agree); `alpaca_id` is
+informational only and does not itself gate grouping or conflict
+detection — the group's own agreement/disagreement on the economically
+meaningful fields is authoritative. Grouping and conflict detection are
+computed over the FULL set of rows in a group (via Python `set`
+membership), never by streaming row order, so every outcome — true
+duplicate, conflict-raise, or conflict-exclude — is identical regardless
+of the input list's order.
 
 ## T-D2 (primary-path purity)
 
@@ -125,6 +161,7 @@ isolation tests) rather than an assertion this file makes about itself.
 from __future__ import annotations
 
 import json
+import math
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -165,78 +202,145 @@ def load_corporate_action_ledger(path: str | Path | None = None) -> list[dict]:
 
 # ── dividend events ──────────────────────────────────────────────────────────
 
-def _composite_identity(row: dict) -> tuple:
-    """T-D1 PRIMARY identity — a composite of fields that is identical only
-    for a true duplicate, never for two distinct same-day dividends (which
-    differ in `special` and/or `gross_declared` in every real acquired
-    row). Always computed, regardless of whether `alpaca_id` is present
-    (F-5: the composite key must never depend on optional metadata)."""
-    return ("composite", row["symbol"], row["ex_date"], bool(row.get("special")),
-            round(float(row["gross_declared"]), 10), row.get("payable_date"))
+def _core_identity(row: dict) -> tuple[str, str, bool]:
+    """T-D1 CORE economic identity (NEW-2): `(symbol, ex_date, special)` —
+    the minimal set of fields that determine whether two rows describe the
+    SAME real dividend declaration. Deliberately excludes `gross_declared`
+    and `payable_date` (see the module docstring's "Identity model"
+    section for the full reasoning) — both are supplemental facts about a
+    declaration, not what makes two declarations distinct."""
+    return (row["symbol"], row["ex_date"], bool(row.get("special")))
 
 
-def _alpaca_id_identity(row: dict) -> tuple | None:
-    """T-D1 SECONDARY, strengthening identity — the vendor's own row
-    identifier, when present, is an independent match key: a row whose
-    `alpaca_id` matches an earlier row's is a duplicate even if some
-    composite field happens to differ (e.g. a corrected re-fetch). Returns
-    `None` when absent so callers never mistake "no id" for a real key."""
-    alpaca_id = row.get("alpaca_id")
-    return ("id", alpaca_id) if alpaca_id else None
+def _rounded_amount(row: dict) -> float:
+    return round(float(row["gross_declared"]), 10)
 
 
-def _credited_date(row: dict, convention: str) -> str:
+def _resolve_core_identity_group(rows: list[dict], *, strict: bool
+                                 ) -> tuple[float, str | None] | None:
+    """Resolves every row sharing one CORE identity into a single
+    `(amount, payable_date)` pair, or detects that the group is a CONFLICT
+    (see module docstring). Returns `None` when `strict=False` and a
+    conflict was found — the caller excludes that event entirely. Raises
+    `ValueError` when `strict=True` and a conflict was found. The decision
+    is computed over `set`s of the group's OWN values, never by iteration
+    order, so it is identical for any permutation of `rows`."""
+    amounts = {_rounded_amount(r) for r in rows}
+    if len(amounts) > 1:
+        if strict:
+            raise ValueError(
+                f"conflicting gross_declared amounts for {rows[0]['symbol']} "
+                f"ex {rows[0]['ex_date']} special={bool(rows[0].get('special'))}: "
+                f"{sorted(amounts)} — the same declaration was reported with "
+                "different amounts; this must be resolved upstream (or pass "
+                "strict=False to exclude the event), never silently picked by "
+                "row order")
+        return None
+    amount = next(iter(amounts))
+
+    payable_dates = {p for p in (r.get("payable_date") for r in rows) if p}
+    if len(payable_dates) > 1:
+        if strict:
+            raise ValueError(
+                f"conflicting payable_date values for {rows[0]['symbol']} "
+                f"ex {rows[0]['ex_date']} special={bool(rows[0].get('special'))}: "
+                f"{sorted(payable_dates)} — the same declaration was reported "
+                "with different payable dates; this must be resolved upstream "
+                "(or pass strict=False to exclude the event), never silently "
+                "picked by row order")
+        return None
+    payable_date = next(iter(payable_dates), None)
+
+    return amount, payable_date
+
+
+def _credited_date_for(ex_date: str, payable_date: str | None, convention: str) -> str:
     if convention == CREDIT_CONVENTION_EX_DATE:
-        return row["ex_date"]
+        return ex_date
     if convention == CREDIT_CONVENTION_PAY_DATE_LAG_30D:
-        pay = row.get("payable_date")
-        if pay and pay >= row["ex_date"]:
-            return pay
-        return (date.fromisoformat(row["ex_date"])
+        if payable_date and payable_date >= ex_date:
+            return payable_date
+        return (date.fromisoformat(ex_date)
                 + timedelta(days=PAY_DATE_FALLBACK_LAG_DAYS)).isoformat()
     raise ValueError(f"unknown credit_convention {convention!r}; must be one of {CREDIT_CONVENTIONS}")
 
 
 def build_dividend_events(rows: list[dict], *,
-                          credit_convention: str = CREDIT_CONVENTION_EX_DATE
+                          credit_convention: str = CREDIT_CONVENTION_EX_DATE,
+                          strict: bool = True
                           ) -> dict[str, dict[str, float]]:
     """Build `margin_simulation.simulate()`'s `dividend_events` input:
     `{credited_date: {ticker: gross cash per share}}`.
 
-    T-D1: rows are deduplicated by a symmetric dual-key rule (F-5 —
-    `_composite_identity()` always, plus `_alpaca_id_identity()` when
-    present) before aggregation — a literal duplicate row credits exactly
-    once, never twice, regardless of which copy carries the optional
-    `alpaca_id`. Genuinely distinct same-(ticker, credited_date) events
-    (e.g. regular + special) are summed, matching `simulate()`'s
-    single-per-share-figure-per-day contract. Non-positive `gross_declared`
-    rows are dropped (no negative or zero dividend cash is ever credited)."""
+    T-D1 (NEW-2 refinement of F-5): rows are grouped by CORE identity
+    (`_core_identity()` — `symbol`, `ex_date`, `special`) before
+    aggregation. Within a group, a TRUE duplicate (agreeing amount, and
+    agreeing on every non-missing `payable_date`) credits exactly once
+    regardless of how many copies exist or which optional fields any copy
+    is missing. A CONFLICT (disagreeing amount and/or disagreeing
+    non-missing `payable_date` within a group) is never silently resolved
+    by row order: `strict=True` (default, matching this module's existing
+    `build_corporate_action_events` convention) raises `ValueError` naming
+    the conflicting values; `strict=False` excludes that event from the
+    output. Genuinely distinct same-(ticker, credited_date) events (e.g.
+    regular + special, which differ in `special` and so form separate
+    groups) are summed, matching `simulate()`'s single-per-share-figure-
+    per-day contract. A resolved group whose amount is non-positive is
+    dropped (no negative or zero dividend cash is ever credited)."""
     if credit_convention not in CREDIT_CONVENTIONS:
         raise ValueError(f"unknown credit_convention {credit_convention!r}; "
                          f"must be one of {CREDIT_CONVENTIONS}")
-    seen_composite: set[tuple] = set()
-    seen_ids: set[tuple] = set()
-    events: dict[str, dict[str, float]] = {}
+    groups: dict[tuple[str, str, bool], list[dict]] = {}
     for row in rows:
-        composite = _composite_identity(row)
-        alpaca_id = _alpaca_id_identity(row)
-        is_duplicate = composite in seen_composite or (
-            alpaca_id is not None and alpaca_id in seen_ids)
-        if is_duplicate:
+        groups.setdefault(_core_identity(row), []).append(row)
+
+    events: dict[str, dict[str, float]] = {}
+    for (symbol, ex_date, _special), group_rows in groups.items():
+        resolved = _resolve_core_identity_group(group_rows, strict=strict)
+        if resolved is None:
             continue
-        seen_composite.add(composite)
-        if alpaca_id is not None:
-            seen_ids.add(alpaca_id)
-        amt = float(row["gross_declared"])
-        if amt <= 0:
+        amount, payable_date = resolved
+        if amount <= 0:
             continue
-        credited = _credited_date(row, credit_convention)
+        credited = _credited_date_for(ex_date, payable_date, credit_convention)
         bucket = events.setdefault(credited, {})
-        bucket[row["symbol"]] = bucket.get(row["symbol"], 0.0) + amt
+        bucket[symbol] = bucket.get(symbol, 0.0) + amount
     return events
 
 
 # ── corporate-action (spin-off) events ───────────────────────────────────────
+
+def _valid_positive_finite_number(value: object) -> float | None:
+    """NEW-1/F-12: accepts ONLY a real numeric SCALAR type (`int` or
+    `float`) that is finite and strictly positive; returns the `float`
+    value on success, `None` on any failure. Deliberately rejects:
+
+    * `bool` — despite `bool` being an `int` subclass in Python
+      (`isinstance(True, int)` is `True`), this module has no documented
+      reason to treat a boolean as a numeric price, so it is excluded
+      explicitly rather than silently accepted as `1.0`/`0.0`.
+    * numeric STRINGS (e.g. `"50.0"`) — a malformed or mistyped field that
+      happens to parse is not the same as a field that was actually
+      recorded as a number; coercing strings would let a data-quality bug
+      upstream pass validation silently. This module never calls `float()`
+      on an unchecked value.
+    * non-finite values (`NaN`, `+inf`, `-inf`) — a spin-off valuation can
+      never legitimately be infinite or undefined.
+    * zero and negative values — a distributed security's consolidated
+      close is always a positive price.
+
+    `None` is returned uniformly for every failure mode so the caller
+    (`build_corporate_action_events` below) has one bar to check, not a
+    tangle of a `TypeError` here and a range check there."""
+    if isinstance(value, bool):
+        return None
+    if not isinstance(value, (int, float)):
+        return None
+    numeric = float(value)
+    if not math.isfinite(numeric) or numeric <= 0:
+        return None
+    return numeric
+
 
 def build_corporate_action_events(events: list[dict], *, strict: bool = True
                                   ) -> dict[str, list[dict]]:
@@ -260,20 +364,17 @@ def build_corporate_action_events(events: list[dict], *, strict: bool = True
     `strict=False` skips such an event instead, for callers who have their
     own reason to tolerate an incomplete record.
 
-    F-12 correction: a non-numeric `child_close_on_parent_ex_session`
-    (e.g. a malformed string) is treated the same as a missing/non-positive
-    one — it fails with `ValueError` naming the offending event, never an
-    incidental `TypeError` leaking out of a raw `<=` comparison against a
-    non-numeric value."""
+    F-12/NEW-1 correction: `child_close_on_parent_ex_session` is validated
+    by `_valid_positive_finite_number()` above — only an actual `int`/
+    `float` scalar (never `bool`, never a numeric string, never NaN/±inf,
+    never non-positive) is accepted. Anything else fails with `ValueError`
+    naming the offending event AND the exact rejected value, never an
+    incidental `TypeError`, and never a silent string-to-number coercion."""
     out: dict[str, list[dict]] = {}
     for ev in events:
         raw_unit_value = ev.get("child_close_on_parent_ex_session")
-        unit_value: float | None
-        try:
-            unit_value = float(raw_unit_value) if raw_unit_value is not None else None
-        except (TypeError, ValueError):
-            unit_value = None
-        if unit_value is None or unit_value <= 0:
+        unit_value = _valid_positive_finite_number(raw_unit_value)
+        if unit_value is None:
             if strict:
                 raise ValueError(
                     f"corporate-action event {ev.get('parent')}->{ev.get('child')} "

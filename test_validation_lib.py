@@ -529,6 +529,160 @@ def test_build_dividend_events_distinct_same_day_events_remain_distinct_regardle
     assert events == {"2024-01-05": {"AAA": 0.60}}
 
 
+# ── NEW-2: core-identity dedup + explicit conflict handling (residual F-5 gap) ──
+
+def test_build_dividend_events_payable_date_present_then_missing_is_still_one_credit():
+    # The residual F-5 gap NEW-2 closes: two rows for the same declaration
+    # differing ONLY in whether payable_date is present (not alpaca_id, F-5's
+    # own dimension) must still collapse to one credit.
+    first = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id1")
+    duplicate_no_payable = _div_row("AAA", "2024-01-05", 0.50, payable=None, alpaca_id="id2")
+    events = dividend_ledger.build_dividend_events([first, duplicate_no_payable])
+    assert events == {"2024-01-05": {"AAA": 0.50}}
+
+
+def test_build_dividend_events_payable_date_missing_then_present_is_still_one_credit():
+    # Order-reversed composition of the case above.
+    first_no_payable = _div_row("AAA", "2024-01-05", 0.50, payable=None, alpaca_id="id1")
+    duplicate_with_payable = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id2")
+    events = dividend_ledger.build_dividend_events([first_no_payable, duplicate_with_payable])
+    assert events == {"2024-01-05": {"AAA": 0.50}}
+
+
+def test_build_dividend_events_both_rows_lack_payable_date():
+    row1 = _div_row("AAA", "2024-01-05", 0.50, payable=None, alpaca_id="id1")
+    row2 = _div_row("AAA", "2024-01-05", 0.50, payable=None, alpaca_id="id2")
+    events = dividend_ledger.build_dividend_events([row1, row2])
+    assert events == {"2024-01-05": {"AAA": 0.50}}
+
+
+def test_build_dividend_events_true_duplicate_credited_date_uses_whichever_row_supplied_payable():
+    # When only ONE row of a true-duplicate group supplies payable_date,
+    # the pay-date-lag convention must still resolve to it (order-independent).
+    first = _div_row("AAA", "2024-01-05", 0.50, payable=None, alpaca_id="id1")
+    duplicate_with_payable = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id2")
+    fwd = dividend_ledger.build_dividend_events(
+        [first, duplicate_with_payable],
+        credit_convention=dividend_ledger.CREDIT_CONVENTION_PAY_DATE_LAG_30D)
+    rev = dividend_ledger.build_dividend_events(
+        [duplicate_with_payable, first],
+        credit_convention=dividend_ledger.CREDIT_CONVENTION_PAY_DATE_LAG_30D)
+    assert fwd == rev == {"2024-01-20": {"AAA": 0.50}}
+
+
+def test_build_dividend_events_strict_raises_on_conflicting_payable_dates():
+    # Two rows share every field except payable_date, and BOTH values are
+    # non-empty and genuinely different -- an ambiguous conflict, not a
+    # true duplicate. Must raise in strict mode, naming payable_date, and
+    # must not depend on row order.
+    row1 = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id1")
+    row2 = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-25", alpaca_id="id2")
+    with pytest.raises(ValueError, match="payable_date"):
+        dividend_ledger.build_dividend_events([row1, row2])
+    with pytest.raises(ValueError, match="payable_date"):
+        dividend_ledger.build_dividend_events([row2, row1])
+
+
+def test_build_dividend_events_nonstrict_excludes_conflicting_payable_dates():
+    # strict=False deterministically excludes the conflicting event
+    # entirely -- never a guess at which payable_date "wins", and never
+    # dependent on row order.
+    row1 = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id1")
+    row2 = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-25", alpaca_id="id2")
+    assert dividend_ledger.build_dividend_events([row1, row2], strict=False) == {}
+    assert dividend_ledger.build_dividend_events([row2, row1], strict=False) == {}
+
+
+def test_build_dividend_events_strict_raises_on_matching_id_conflicting_amount():
+    # The previously disclosed first-seen-wins gap: two rows sharing the
+    # SAME alpaca_id (the vendor's own row identifier -- should never
+    # legitimately carry two different amounts) but reporting DIFFERENT
+    # gross_declared values. Must raise, naming gross_declared, regardless
+    # of row order -- never silently pick whichever row was encountered
+    # first.
+    row1 = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id1")
+    row2 = _div_row("AAA", "2024-01-05", 0.55, payable="2024-01-20", alpaca_id="id1")
+    with pytest.raises(ValueError, match="gross_declared"):
+        dividend_ledger.build_dividend_events([row1, row2])
+    with pytest.raises(ValueError, match="gross_declared"):
+        dividend_ledger.build_dividend_events([row2, row1])
+
+
+def test_build_dividend_events_strict_raises_on_same_core_identity_conflicting_amount():
+    # Same core identity (symbol, ex_date, special), no ids at all, but
+    # different amounts -- still a conflict, not two legitimate distinct
+    # events (T-D1's own distinctness reasoning requires a differing
+    # `special` flag for legitimate same-day distinctness, not merely a
+    # differing amount).
+    row1 = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20")
+    row2 = _div_row("AAA", "2024-01-05", 0.60, payable="2024-01-20")
+    with pytest.raises(ValueError, match="gross_declared"):
+        dividend_ledger.build_dividend_events([row1, row2])
+    with pytest.raises(ValueError, match="gross_declared"):
+        dividend_ledger.build_dividend_events([row2, row1])
+
+
+def test_build_dividend_events_nonstrict_excludes_conflicting_amount():
+    row1 = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20")
+    row2 = _div_row("AAA", "2024-01-05", 0.60, payable="2024-01-20")
+    assert dividend_ledger.build_dividend_events([row1, row2], strict=False) == {}
+    assert dividend_ledger.build_dividend_events([row2, row1], strict=False) == {}
+
+
+def test_build_dividend_events_conflict_in_one_group_does_not_affect_other_groups():
+    # A conflicting group (AAA) must not suppress or corrupt output for an
+    # unrelated, unambiguous group (BBB) processed in the same call.
+    conflict_a = _div_row("AAA", "2024-01-05", 0.50, alpaca_id="id1")
+    conflict_b = _div_row("AAA", "2024-01-05", 0.60, alpaca_id="id2")
+    clean = _div_row("BBB", "2024-01-05", 0.30, alpaca_id="id3")
+    events = dividend_ledger.build_dividend_events(
+        [conflict_a, conflict_b, clean], strict=False)
+    assert events == {"2024-01-05": {"BBB": 0.30}}
+
+
+def test_build_dividend_events_true_duplicate_order_independent():
+    first = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id1")
+    duplicate = _div_row("AAA", "2024-01-05", 0.50, payable=None, alpaca_id=None)
+    fwd = dividend_ledger.build_dividend_events([first, duplicate])
+    rev = dividend_ledger.build_dividend_events([duplicate, first])
+    assert fwd == rev == {"2024-01-05": {"AAA": 0.50}}
+
+
+def test_core_identity_helper_excludes_amount_and_payable_date():
+    from dividend_ledger import _core_identity
+    row_a = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id1")
+    row_b = _div_row("AAA", "2024-01-05", 0.99, payable="2024-01-25", alpaca_id="id2")
+    assert _core_identity(row_a) == _core_identity(row_b) == ("AAA", "2024-01-05", False)
+
+
+def test_resolve_core_identity_group_helper_directly():
+    from dividend_ledger import _resolve_core_identity_group
+    agree = [_div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20"),
+             _div_row("AAA", "2024-01-05", 0.50, payable=None)]
+    assert _resolve_core_identity_group(agree, strict=True) == (0.50, "2024-01-20")
+
+    conflict = [_div_row("AAA", "2024-01-05", 0.50),
+               _div_row("AAA", "2024-01-05", 0.60)]
+    with pytest.raises(ValueError):
+        _resolve_core_identity_group(conflict, strict=True)
+    assert _resolve_core_identity_group(conflict, strict=False) is None
+
+
+def test_build_dividend_events_real_g1_ledger_regression_unchanged_by_new_2():
+    # NEW-2 item 7: re-run the real G1-validated dividend ledger through
+    # the corrected code and confirm current-data aggregate behavior is
+    # unchanged. The real ledger's 822 rows are already unique on every
+    # field (every row carries a distinct alpaca_id and payable_date, per
+    # data_acquisition.py's own G1 validation), so grouping by core
+    # identity produces the exact same aggregate output as the pre-NEW-2
+    # rule -- verified directly, not assumed.
+    rows = dividend_ledger.load_dividend_ledger()
+    assert len(rows) == 822
+    events = dividend_ledger.build_dividend_events(rows)
+    assert len(events) == 589          # unchanged distinct credited dates
+    assert sum(len(v) for v in events.values()) == 820   # unchanged (date, ticker) pairs
+
+
 def test_build_dividend_events_drops_nonpositive_amounts():
     row = _div_row("CCC", "2024-03-01", 0.0, alpaca_id="id1")
     events = dividend_ledger.build_dividend_events([row])
@@ -614,6 +768,67 @@ def test_build_corporate_action_events_nonstrict_skips_nonnumeric_unit_value():
     ev = _ca_event("PPP", "CCC", 0.2, "2024-05-01", "not-a-number")
     out = dividend_ledger.build_corporate_action_events([ev], strict=False)
     assert out == {}
+
+
+# ── NEW-1: exhaustive numeric-validation matrix for child_close_on_parent_ex_session ──
+
+@pytest.mark.parametrize("bad_value,label", [
+    ("50.0", "numeric string (must NOT be coerced)"),
+    ("inf", "non-finite numeric string"),
+    (float("inf"), "positive infinity"),
+    (float("-inf"), "negative infinity"),
+    (float("nan"), "NaN"),
+    (True, "bool True (int subclass, must not be treated as 1.0)"),
+    (False, "bool False (int subclass, must not be treated as 0.0)"),
+    (0, "zero"),
+    (0.0, "zero float"),
+    (-5, "negative int"),
+    (-5.0, "negative float"),
+    (None, "missing"),
+    ([], "wrong type: list"),
+])
+def test_build_corporate_action_events_strict_rejects_every_invalid_unit_value(bad_value, label):
+    ev = _ca_event("PPP", "CCC", 0.2, "2024-05-01", bad_value)
+    with pytest.raises(ValueError):
+        dividend_ledger.build_corporate_action_events([ev])
+
+
+@pytest.mark.parametrize("bad_value", [
+    "50.0", "inf", float("inf"), float("-inf"), float("nan"), True, False, 0, None,
+])
+def test_build_corporate_action_events_nonstrict_skips_every_invalid_unit_value(bad_value):
+    ev = _ca_event("PPP", "CCC", 0.2, "2024-05-01", bad_value)
+    out = dividend_ledger.build_corporate_action_events([ev], strict=False)
+    assert out == {}
+
+
+@pytest.mark.parametrize("good_value", [50, 50.0, 0.001, 1e6])
+def test_build_corporate_action_events_accepts_every_valid_positive_finite_number(good_value):
+    # Valid positive finite int/float behavior must be preserved exactly --
+    # the NEW-1 hardening must not reject anything that was previously
+    # (and correctly) accepted.
+    ev = _ca_event("PPP", "CCC", 0.2, "2024-05-01", good_value)
+    out = dividend_ledger.build_corporate_action_events([ev])
+    assert out == {"2024-05-01": [{"ticker": "PPP", "ratio": 0.2, "unit_value": float(good_value)}]}
+
+
+def test_valid_positive_finite_number_helper_directly():
+    # Direct unit coverage of the NEW-1 helper's exact contract, matching
+    # the PR body's "No silent coercion" claim precisely: numeric strings
+    # return None (rejected), not a coerced float.
+    from dividend_ledger import _valid_positive_finite_number
+    assert _valid_positive_finite_number(50) == 50.0
+    assert _valid_positive_finite_number(50.0) == 50.0
+    assert _valid_positive_finite_number("50.0") is None
+    assert _valid_positive_finite_number("inf") is None
+    assert _valid_positive_finite_number(float("inf")) is None
+    assert _valid_positive_finite_number(float("-inf")) is None
+    assert _valid_positive_finite_number(float("nan")) is None
+    assert _valid_positive_finite_number(True) is None
+    assert _valid_positive_finite_number(False) is None
+    assert _valid_positive_finite_number(0) is None
+    assert _valid_positive_finite_number(-5) is None
+    assert _valid_positive_finite_number(None) is None
 
 
 # ═════════════════════════════════════════════════════════════════════════

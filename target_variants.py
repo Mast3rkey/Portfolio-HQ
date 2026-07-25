@@ -275,32 +275,52 @@ def build_b4_semis_reduction(roster: list[TieredWeight], *, semis_cluster: Clust
 
 def build_b5_nominal_budget(roster: list[TieredWeight], *, target_nominal_total: float,
                             clusters: list[ClusterDef]) -> dict:
-    """B-5 — nominal budgets (`pre_registration.yaml` B5_nominal_budgets:
-    `[1.10, 1.20]` — TOTAL nominal portfolio levels of 110% and 120%, per
-    the protocol's own §5 prose): every ticker's weight is scaled uniformly
-    so the roster's total lands EXACTLY at `target_nominal_total`
+    """B-5 — nominal budgets: every ticker's weight is scaled uniformly so
+    the roster's total lands EXACTLY at `target_nominal_total`
     (`scale = target_nominal_total / current_nominal_total`), preserving
     every ticker's relative proportion to every other exactly.
 
     F-2 correction: the pre-F-2 version of this builder treated its
     argument as a MULTIPLIER applied to whatever the roster's own current
-    total happened to be (`weight_pct * factor`) — so a caller passing the
-    registered value `1.10` against a roster whose current total was, say,
-    103.25 produced an output total of 113.575, not the registered 110%
-    level the protocol's B-5 arm actually specifies (a >10x-the-intended-
-    delta error, not a rounding difference). `target_nominal_total` is now
-    the TARGET TOTAL ITSELF, not a scale factor: a caller passing `1.10`
-    receives weights summing to exactly `1.10`; a caller passing `1.20`
-    receives weights summing to exactly `1.20` — matching
-    `pre_registration.yaml`'s literal registered `B5_nominal_budgets`
-    values directly, with no additional caller-side conversion needed and
-    no way to reasonably misread `1.10` as "multiply the current total by
-    1.10." (Contrast `build_b2_etf_sleeve_budget()`'s `new_sleeve_pct`,
-    which is deliberately on the roster's own 0-100 percent-of-book
-    `weight_pct` scale, per its own F-4 docstring note — this function
-    intentionally uses `pre_registration.yaml`'s own literal scale for
-    B-5 instead, since that is the scale its registered arm values are
-    actually expressed in.)"""
+    total happened to be (`weight_pct * factor`), producing an output total
+    that depended on the roster's starting point instead of landing at the
+    registered level (a >10x-the-intended-delta error, not a rounding
+    difference). `target_nominal_total` is now the TARGET TOTAL ITSELF, not
+    a scale factor — the output always sums to exactly the value passed in,
+    regardless of the roster's starting total.
+
+    NEW-3 unit clarification (this parameter is UNIT-GENERIC, not
+    hardcoded to any one scale — pass `target_nominal_total` in the SAME
+    UNITS the roster's own `TieredWeight.weight_pct` values already use,
+    whatever those happen to be for the caller's roster):
+
+    * `pre_registration.yaml`'s `B5_nominal_budgets: [1.10, 1.20]` registers
+      these two budgets in FRACTIONAL notation ("110%" = `1.10`, "120%" =
+      `1.20`). That literal fractional form is the correct
+      `target_nominal_total` ONLY if the caller's roster weights are
+      themselves on a 0-1 fractional scale (current total near `1.0325` for
+      a roster whose nominal sum is 103.25%).
+    * This repository's ACTUAL roster convention (`targets.yaml`,
+      `TieredWeight.weight_pct` everywhere else in this module — e.g. a T1
+      name's `weight_pct` of `3.35` means 3.35% of book, and `B0_baseline`
+      registers the current total as "103.25pct", i.e. a roster summing to
+      `103.25`, not `1.0325`) is 0-100 PERCENT-OF-BOOK. A caller building
+      the B-5 arm from a percent-of-book roster (`target_variants.py`'s own
+      test fixtures included) must convert the registered fractional values
+      to that same percent scale FIRST: `target_nominal_total=110.0` /
+      `target_nominal_total=120.0` — NOT `1.10` / `1.20`, which on a
+      percent-of-book roster would target a total of ~1.1%/1.2% of book, a
+      ~100x-too-small mistake in the opposite direction from the original
+      F-2 bug.
+
+    Passing a value whose scale doesn't match the roster's own units is the
+    one unit mistake this function's math cannot catch on its own (a
+    roster-scale-agnostic function has no reliable, non-arbitrary way to
+    infer which scale a given `target_nominal_total` was intended on) — get
+    the units right at the call site; see
+    `test_b5_nominal_budget_percent_of_book_scale_101_to_110_and_120` in
+    `test_target_variants.py` for a worked percent-of-book example
+    alongside the fractional-scale tests."""
     if not math.isfinite(target_nominal_total) or target_nominal_total <= 0:
         raise ValueError(f"target_nominal_total must be finite and > 0, "
                          f"got {target_nominal_total}")

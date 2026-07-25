@@ -272,6 +272,56 @@ def test_b5_nominal_budget_does_not_multiply_current_total_by_target():
     assert not math.isclose(sum(result["weights"].values()), buggy_multiplier_total)
 
 
+def _percent_of_book_roster():
+    # NEW-3: a small roster already on this repository's REAL 0-100
+    # percent-of-book weight convention (targets.yaml / TieredWeight
+    # everywhere else in this module), current total 103.25 -- matching
+    # pre_registration.yaml's own B0_baseline label
+    # ("current_targets_yaml_nominal_sum_103.25pct") rather than the
+    # fixture roster's smaller, scale-arbitrary total of 13.0.
+    return [
+        TieredWeight("T1A", "T1", 40.0),
+        TieredWeight("T2A", "T2", 30.0),
+        TieredWeight("BANDA", "band", 20.0),
+        TieredWeight("ETFA", "ETF", 13.25),
+    ]
+
+
+def test_b5_nominal_budget_percent_of_book_scale_sums_to_110_and_120():
+    # NEW-3: on a roster using the repository's real percent-of-book scale,
+    # the correct target_nominal_total for the registered "110%"/"120%" B-5
+    # arms is 110.0/120.0 -- NOT pre_registration.yaml's raw fractional
+    # values 1.10/1.20, which on THIS scale would target a total of
+    # roughly 1.1%/1.2% of book (a ~100x-too-small mistake in the opposite
+    # direction from the original F-2 multiplier bug).
+    roster = _percent_of_book_roster()
+    result_110 = build_b5_nominal_budget(roster, target_nominal_total=110.0, clusters=[])
+    result_120 = build_b5_nominal_budget(roster, target_nominal_total=120.0, clusters=[])
+    assert math.isclose(sum(result_110["weights"].values()), 110.0)
+    assert math.isclose(sum(result_120["weights"].values()), 120.0)
+
+    base = _weights(roster)
+    base_total = sum(base.values())
+    assert math.isclose(base_total, 103.25)
+    for t, v in base.items():
+        # relative proportions preserved on the percent-of-book scale too
+        assert math.isclose(result_110["weights"][t] / 110.0, v / base_total, rel_tol=1e-9)
+        assert math.isclose(result_120["weights"][t] / 120.0, v / base_total, rel_tol=1e-9)
+
+
+def test_b5_nominal_budget_fractional_scale_mistake_on_percent_roster_is_off_by_100x():
+    # Pins the exact unit mistake the corrected docstring warns about: on a
+    # percent-of-book roster, passing pre_registration.yaml's raw
+    # fractional value (1.10) instead of the converted percent-of-book
+    # value (110.0) produces a total off by a factor of 100.
+    roster = _percent_of_book_roster()
+    correct = build_b5_nominal_budget(roster, target_nominal_total=110.0, clusters=[])
+    mistaken = build_b5_nominal_budget(roster, target_nominal_total=1.10, clusters=[])
+    assert math.isclose(sum(mistaken["weights"].values()), 1.10)
+    assert math.isclose(sum(mistaken["weights"].values()) * 100.0,
+                        sum(correct["weights"].values()))
+
+
 def test_b5_rejects_nonpositive_target():
     with pytest.raises(ValueError):
         build_b5_nominal_budget(_roster(), target_nominal_total=0.0, clusters=_clusters())
