@@ -497,9 +497,22 @@ workstreams:
           stale research, assets for which no supportable conclusion can yet
           be reached, and a recommended sequence for later Milestone-3
           research batches. Must not complete or rewrite any company
-          Intelligence record. Authorized to execute per OPS-0006 §5
-          (2026-07-25 amendment), normally as one bounded audit PR together
-          with Milestone 1. Not yet executed — no branch or PR exists for it.
+          Intelligence record. Also requires (OPS-0006 §11, 2026-07-25
+          third amendment), report-only: assessing existing freshness
+          infrastructure/validators (freshness_validator.py,
+          freshness_state.py, freshness_identity.py, freshness_cadence.py,
+          intelligence/freshness_registry.yaml,
+          intelligence/freshness_checkpoints.yaml,
+          intelligence_report.py staleness reporting), whether each record
+          has an evidence/review date and next-due/cadence, whether event
+          triggers are recorded, missing/ambiguous/inconsistent/inert
+          freshness metadata, records wrongly read as current, reusable
+          existing capabilities to prefer over a new scanner, and
+          recommended Milestone-3 sequencing. Must not refresh research,
+          change freshness policy, build automation, or create external
+          integrations. Authorized to execute per OPS-0006 §5 (2026-07-25
+          amendment), normally as one bounded audit PR together with
+          Milestone 1. Not yet executed — no branch or PR exists for it.
         pr: null
         status: authorized
         date: "2026-07-25"
@@ -516,9 +529,14 @@ workstreams:
           thesis-deterioration detectability, correlated-loss relationships,
           borrowed-money risk amplifiers) — factual/advisory only, no margin
           recommendation, no safe-leverage calculation, no deployment ranking,
-          no MARGIN-0005 S3 authorization or trial consumption. Not
-          authorized to execute — completing Milestones 1-2 does not
-          authorize this milestone.
+          no MARGIN-0005 S3 authorization or trial consumption. Also requires
+          (OPS-0006 §12, 2026-07-25 third amendment): each new/refreshed
+          record defines a proportional, evidence-driven refresh plan (rate
+          of change, capital relevance, thesis uncertainty, cyclicality,
+          event/gap risk, regulatory sensitivity, evidence dependence) with
+          named candidate review triggers where applicable — no universal
+          cadence. Not authorized to execute — completing Milestones 1-2
+          does not authorize this milestone.
         pr: null
         status: proposed
         date: "2026-07-25"

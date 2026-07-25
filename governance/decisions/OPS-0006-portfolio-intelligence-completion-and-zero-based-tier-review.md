@@ -3,7 +3,7 @@ decision_id: OPS-0006
 date: 2026-07-25
 status: Accepted
 category: operations_coordination
-related_decisions: [OPS-0001, OPS-0002, OPS-0003, OPS-0004, OPS-0005, GOV-0001, GOV-0002, GOV-0003, PI-0001, PI-0006, PI-0011, PI-0016, ONTO-0001, TGT-0001, NUM-0001, MARGIN-0001, MARGIN-0003, MARGIN-0004, MARGIN-0005]
+related_decisions: [OPS-0001, OPS-0002, OPS-0003, OPS-0004, OPS-0005, GOV-0001, GOV-0002, GOV-0003, PI-0001, PI-0006, PI-0011, PI-0016, ONTO-0001, TGT-0001, NUM-0001, MARGIN-0001, MARGIN-0003, MARGIN-0004, MARGIN-0005, AUTO-0001, AUTO-0002, AUTO-0003]
 supporting_artifact: operations/WORKSTREAMS.yaml
 ---
 
@@ -50,6 +50,29 @@ research-then-adopt discipline to WS-0005's specific framing, rather than creati
 to changing the cap or floor. Per `governance/decisions/README.md`'s narrow-correction
 convention and the same same-day, pre-merge, pre-audit pattern used for the first amendment
 above, this is made in place rather than by superseding filing._
+
+_**Third amendment — 2026-07-25 (same-day, pre-merge, pre-review; PR #150 still carries zero
+GitHub reviews at the time of this amendment):** adds new §§10-15, establishing that Company/
+Theme Intelligence is a living evidence system, not a one-time archive. §10 states the lifecycle
+principle (a future governed refresh profile identifying evidence date, last/next review,
+cadence, freshness status, stale reason, material sources, event triggers, review ownership, and
+the information-age-versus-thesis-validity distinction) as a principle only, explicitly
+preserving `AUTO-0001`'s and the Company Intelligence specification's existing field ownership
+and naming no new schema, validator, or record change. §11 extends the already-authorized
+Milestone 2 audit (§4/§5) to freshness/lifecycle gaps, reuse-first infrastructure assessment,
+and sequencing recommendations — report-only, no refresh, no policy change, no automation. §12
+requires each future Milestone-3 (still unauthorized) record to define a proportional,
+evidence-driven refresh plan with named candidate triggers, explicitly rejecting one universal
+cadence. §13 records future scan design preferences (event-driven, low-maintenance,
+reuse-first, primary-source-preferring) and explicit automatic-action prohibitions, without
+authorizing any scan. §14 states that stale/insufficient evidence must be disclosed and may
+require abstention from a future recommendation, while staleness alone never automatically
+triggers a demotion, trim, exit, or margin-policy change. §15 makes explicit what was already
+implicit in §5 and §9: no scanner, scheduler, notification system, or external-data
+integration is authorized by this decision — each requires its own later, separate,
+explicit governance decision and bounded implementation PR. Per `governance/decisions/
+README.md`'s narrow-correction convention and the same same-day, pre-merge, pre-audit pattern
+used for the first two amendments, this is made in place rather than by superseding filing._
 
 ## Context
 
@@ -207,7 +230,8 @@ executed by this filing).
    identify assets for which no supportable conclusion can yet be reached; recommend the
    sequence of later Milestone-3 research batches. **This milestone must not complete or
    rewrite any company Intelligence record** — it audits coverage and freshness, it does not
-   produce or edit content.
+   produce or edit content. **§11 extends this milestone with an explicit lifecycle/freshness-
+   infrastructure assessment, report-only, before any Milestone-3 work is recommended.**
 3. **Intelligence completion** *(not authorized)*. Bounded, research-only PRs completing or
    refreshing records in coherent batches, each addressing (when applicable): what the business
    does; why it may deserve a portfolio role; economic function; moat/competitive position;
@@ -231,6 +255,10 @@ executed by this filing).
    leverage level; rank assets for margin deployment; modify margin policy; modify allocator
    output; substitute for current broker maintenance requirements; substitute for account-level
    holdings or margin state; authorize `MARGIN-0005` S3; or consume a margin trial.
+
+   **Refresh-planning requirement (§12, clearly separated from the above).** Each new or
+   refreshed record must also define an evidence-driven, proportional refresh plan — see §12
+   for the full requirement and candidate trigger list. No universal cadence is imposed.
 4. **Portfolio relationship mapping** *(not authorized)*. Economic systems; common demand
    drivers; customer/supplier dependencies; direct competition; complementary relationships;
    duplicated exposure; shared geopolitical/interest-rate/commodity/regulatory/
@@ -461,6 +489,147 @@ established and `MARGIN-0005` already operates under; this section applies that 
 explicitly to WS-0005's zero-based framing, it does not create a new or different path to
 changing either parameter.
 
+### 10. Intelligence lifecycle principle — a living evidence system, not a one-time archive
+
+Company and Theme Intelligence (`PI-0001`–`PI-0022`) is a **living evidence system**: a
+record's value depends on how current its evidence is relative to the pace of change in the
+underlying business, not merely on whether a record exists at all. Every asset or
+economic-system record must **eventually** have a governed refresh profile identifying:
+
+- the date its evidence reflects (`evidence_as_of`);
+- when it was last fully reviewed (`last_full_review`);
+- when it is next due for review (`next_scheduled_review`);
+- its review cadence, or the rationale for that cadence;
+- its freshness status;
+- a stale reason, when applicable;
+- its material primary sources;
+- event-driven refresh triggers;
+- the type of event that requires a scan, a targeted update, or a full review;
+- review ownership or responsibility;
+- the distinction between **information age** (how long ago the evidence was gathered) and
+  **thesis validity** (whether the conclusion the evidence supports is still true) — the two
+  are related but not identical, and a refresh profile must be able to speak to both.
+
+**This is a principle, not a schema mandate — no new field name above is required verbatim,
+and no schema, validator, or company/theme record changes by virtue of this decision.**
+Several concepts already have a home: `review.cadence_days`/`review.last_reviewed`/
+`review.next_due`/`review.log` are owned by the Company Intelligence specification and each
+company's own record (`PI-0011`/`AUTO-0001` are reporting/enrollment consumers of those
+fields, never their owner — unchanged here); `sources[]` already carries material primary
+sources; `intelligence/freshness_registry.yaml` and `intelligence/freshness_checkpoints.yaml`
+(`AUTO-0001`) already carry `filing_trigger_profile`, checkpoint channels, and monitoring
+enrollment for the seven currently-enrolled tickers; `docs/FRESHNESS_PLANNER_V1_SPEC.md` §9
+already defines a frozen freshness-state vocabulary (`current`/`unverified`/`review_due`/
+`pending_human_review`) for that enrolled-ticker pipeline. Concepts without an existing home
+today — a stored freshness status *on every record*, not just the seven `AUTO-0001`-enrolled
+tickers; a stale reason; explicit review ownership; and the information-age-versus-thesis-
+validity distinction as a first-class, recorded field — are named here as **future extension
+candidates only**. Whether and how to add them is left entirely to later authority (the
+Company Intelligence specification's own governance process, or a future `AUTO-000x`-style
+filing) — this decision recommends, it does not mandate, schedule, or implement.
+
+### 11. Milestone 2 amendment — freshness and lifecycle audit
+
+`§4`'s already-authorized Milestone 2 (Intelligence coverage and freshness audit) additionally
+requires an assessment of:
+
+- existing Intelligence freshness infrastructure and validators (`freshness_validator.py`,
+  `freshness_state.py`, `freshness_identity.py`, `freshness_cadence.py`,
+  `intelligence/freshness_registry.yaml`, `intelligence/freshness_checkpoints.yaml`, and
+  `intelligence_report.py`'s staleness reporting);
+- whether each current record has an evidence date and a review date, under whatever field
+  names it already uses;
+- whether a next-review date or cadence exists for it;
+- whether event triggers are recorded for it, and through what mechanism (e.g. `AUTO-0001`
+  enrollment vs. no mechanism at all);
+- missing, ambiguous, inconsistent, or inert freshness metadata;
+- records marked (or read as) current despite missing supporting evidence;
+- records that are stale, or that cannot be confidently classified as current or stale from
+  what is recorded;
+- asset-specific and system-specific (theme-level) source coverage;
+- reusable existing capabilities that should be preferred over building a new scanner — this
+  audit's own default assumption is reuse-first, per §13 below;
+- recommended sequencing for later Milestone-3 refresh work.
+
+**This audit may report gaps and recommendations only.** Restated from §5's existing Milestone
+2 boundary, made explicit here because it bears directly on freshness/lifecycle findings: it
+must not refresh the underlying research, change freshness policy, build automation, create
+external integrations, or change tiers, targets, or allocation recommendations.
+
+### 12. Future Intelligence-completion requirement — refresh planning
+
+`§4`'s still-unauthorized Milestone 3 (Intelligence completion) additionally requires that
+each future new or refreshed Intelligence record define an appropriate refresh plan based on:
+rate of business or thesis change; capital relevance; thesis uncertainty; cyclicality; event
+and gap risk; regulatory sensitivity; and dependence on earnings, filings, industry reports,
+macro releases, or other material evidence. **Review frequency must be proportional to
+decision relevance and expected rate of change — no single universal daily, weekly, quarterly,
+or annual cadence is imposed**, consistent with `review.cadence_days` already being a
+per-record, not a fixed, value.
+
+Candidate review triggers, where applicable to a given record: earnings releases and
+guidance; 10-K, 10-Q, and material 8-K filings (already the deterministic backbone of
+`AUTO-0001`'s `filing_trigger_profile`); investor days; management or capital-allocation
+changes; major acquisitions, divestitures, financing, or credit events; material customer,
+supplier, partner, or competitive changes; regulation, litigation, reimbursement, export
+controls, or government policy; significant product, clinical, operational, protocol,
+network, custody, or security events; relevant Federal Reserve, SEC, government,
+industry-capacity, commodity, energy, or economic reports; and explicit thesis-break
+indicators already defined in the record. **Not every general report is relevant to every
+holding** — each record or economic-system record should map only to the sources and triggers
+capable of materially affecting its own thesis or portfolio role, not a blanket list applied
+uniformly.
+
+### 13. Future scan design principles
+
+For any future scan design (itself unauthorized — see §15), this decision records a design
+preference: event-driven alerts combined with low-frequency scheduled review, over any
+high-frequency polling default; minimal recurring maintenance burden; primary-source
+preference over secondary summaries; deduplication of repeated information; escalation only
+for material changes, not every observed delta; and **reuse of existing freshness
+infrastructure (§10's list) before creating any new system** — the same discipline `PI-0011`
+already applied by reusing `intelligence_validator.py`'s public API rather than building a
+second validator, and `AUTO-0003` already applied by delegating to `freshness_identity.py`
+rather than reimplementing it.
+
+A future scan should produce advisory statuses such as: no material change; review
+recommended; review required; evidence stale; thesis-break check required. **These exact
+labels are illustrative, not mandatory** — a future implementation should reuse or reconcile
+with `docs/FRESHNESS_PLANNER_V1_SPEC.md` §9's already-frozen freshness-state vocabulary
+(`current`/`unverified`/`review_due`/`pending_human_review`) where the concepts overlap,
+rather than maintaining two unreconciled status vocabularies for adjacent purposes.
+
+A scan must not, under any circumstance, automatically: rewrite accepted Intelligence; change
+a tier, role, target, cap, or holding; rank assets; modify allocator output; declare a thesis
+broken without reviewed human evidence; make a margin recommendation (consistent with §9); or
+substitute headlines or summaries for primary-source analysis.
+
+### 14. Evidence-validity boundary
+
+Stale or insufficient Intelligence must be **disclosed** during any later policy review — a
+gap must be shown as a gap, the same discipline `OPS-0005` §4 already applies to degraded
+inputs generally. Materially stale or incomplete evidence may require **abstention** from a
+tier, target, or policy recommendation at that later review — the honest "we don't have enough
+current evidence to recommend a change here" outcome. **Staleness alone must not automatically
+cause** a demotion, a target reduction, a trim, an exit, or a margin-policy change — those
+require their own evidence-based governance action; staleness is a reason to abstain or flag
+for review, never itself a trading or de-risking signal.
+
+### 15. Future implementation authority — explicit non-grant
+
+**OPS-0006 does not authorize**, and no section above may be read to authorize: an automated
+scanner; recurring jobs; notifications; scheduled external data collection; SEC, Federal
+Reserve, broker, news, or market-data integrations; generated research updates; or production
+workflow coupling. Sections 10-14 record principles and future design preferences only — they
+commission no code, no scanner, no scheduler, and no external-data integration, and this filing
+implements none of them. **Any such implementation requires its own later, explicit governance
+decision and its own bounded implementation PR, filed only after a future audit (Milestone 2,
+or a dedicated follow-on) identifies the smallest useful design** — the same discipline
+`AUTO-0001`/`AUTO-0002`/`AUTO-0003` already applied in sequence (charter → local foundation →
+cadence core, each its own separately authorized filing) before any operational monitoring
+component was built, and the same discipline this decision's own §5 already applies to
+Milestones 3-9.
+
 ## Rationale
 
 This follows the same charter-then-gate discipline `MARGIN-0005` established for margin
@@ -520,6 +689,25 @@ or conversely that the cap/floor are so immune to §5 that even a properly chart
 could not examine alternative values on paper. §9 forecloses both misreadings with the same
 research-then-adopt sequencing `GOV-0003`/`MARGIN-0005` already established, stated here rather
 than left to inference.
+
+**On the third amendment (§§10-15) specifically:** `PI-0011`'s completed staleness reporting
+and `AUTO-0001`/`AUTO-0002`/`AUTO-0003`'s three-layer freshness framework already prove this
+repository can build lifecycle infrastructure carefully and incrementally — but that framework
+today covers exactly seven enrolled tickers, all still `monitoring_enabled: false`, out of
+roughly sixty-five governed holdings, and WS-0005's own Milestone 3/4 will add or refresh
+records for assets outside that enrolled set. Stating the lifecycle principle now, before any
+Milestone-3 record work happens, avoids the same problem §9's Rationale already named for
+margin evidence: retrofitting a refresh-plan requirement onto already-completed research would
+mean revisiting assets a second time. Framing §10's list as *future extension candidates*
+rather than a schema mandate follows `PI-0004`'s and `PI-0015`'s own anti-overfitting
+discipline (do not freeze a vocabulary — `risks[].severity`/`status` in `PI-0015`'s case —
+before enough real usage exists to justify the specific shape) applied here to an even earlier
+stage: before any new field is even proposed, let alone frozen. Explicitly pointing future scan
+design (§13) at `docs/FRESHNESS_PLANNER_V1_SPEC.md` §9's existing state vocabulary, rather than
+inventing a second one, follows the same reuse-before-rebuild principle `PI-0011` and
+`AUTO-0003` already applied to their own adjacent components. §15's explicit non-grant closes
+the same category of ambiguity §5 already closed for Milestones 3-9 generally — naming
+principles for a future scanner is not, and must never be read as, authorizing one.
 
 ## Alternatives Considered
 
@@ -584,6 +772,27 @@ than left to inference.
   unnamed list invites scope creep at the moment a future charter is drafted; naming the
   dimensions now, without commissioning any of them, gives a future charter a concrete starting
   point while still requiring its own full authorization to actually run.
+- **Mandate exact new field names (`evidence_as_of`, `last_full_review`, etc.) on every
+  Intelligence record now.** Rejected — no schema, validator, or record change is authorized by
+  this filing at all; several of the requested concepts already have an owned home under
+  `AUTO-0001`/the Company Intelligence specification, and inventing parallel field names would
+  create exactly the kind of duplicated source of truth this repository's governance layer
+  exists to prevent. §10 names the concepts and records unmet ones as future extension
+  candidates instead.
+- **Authorize a scanner, scheduler, or notification system directly in this filing, since the
+  design principles are already stated.** Rejected — explicitly out of scope for this
+  amendment and for OPS-0006 as a whole (§15); stating a design preference is not the same as
+  commissioning an implementation, and every prior `AUTO-000x` filing in this log built its
+  operational component only after its own separate, narrower authorization.
+- **Invent a second freshness-state vocabulary for the future scan's advisory statuses,
+  independent of `docs/FRESHNESS_PLANNER_V1_SPEC.md` §9's frozen states.** Rejected — two
+  unreconciled vocabularies for adjacent concepts would confuse rather than clarify; §13
+  requires reuse-or-reconciliation with the existing frozen vocabulary instead.
+- **Let staleness alone trigger a mechanical trim or exit**, mirroring how the T1/T2 ceiling
+  and cluster caps trim mechanically on a numeric breach. Rejected — those caps trim on an
+  objective, computable overweight; staleness is an evidence-quality judgment, not a numeric
+  threshold, and treating it as automatically actionable would let an absent or overdue review
+  masquerade as a risk finding. §14 requires disclosure and permits abstention instead.
 
 ## Consequences
 
@@ -608,14 +817,31 @@ disregard either value before a replacement is formally accepted and implemented
 not narrowed.** §9 authorizes no research, no `MARGIN-0005` S3 or successor study, no
 margin-policy recommendation, no production change, and consumes no research trial; it does
 not change either parameter and does not supersede `MARGIN-0001` or any later margin decision.
-WS-0001 moves to `priority: secondary` with its MARGIN-0005 research authority, milestones, and
-S3 gate completely unchanged. WS-0002 remains `priority: secondary`, `status: authorized`,
-with `OPS-0005`'s Phase Two grant fully intact and un-narrowed. WS-0003 and WS-0004 are
-untouched. `operations/WORKSTREAMS.yaml`'s WS-0002 entry is synchronized to live GitHub truth
-(PR #149 merged, `active_branch`/`active_pr` cleared, milestone status corrected, attribution
-strengthened) without reopening `OPS-0005`'s accepted text. No allocator, `targets.yaml`,
-`holdings.yaml`, margin rule, Company/Theme Intelligence record, or production code is touched
-by this decision. This decision and the corresponding `operations/WORKSTREAMS.yaml`
-synchronization become effective only when this exact implementing pull request merges to
-`main` — not when pushed, and not merely when opened as a draft. The next concrete step is
-principal review of this draft PR — not research, not implementation, and not merge.
+**§§10-15 additionally establish that Company/Theme Intelligence is a living evidence system:**
+a future governed refresh profile (evidence date, last/next review, cadence, freshness status,
+stale reason, sources, event triggers, review ownership, information-age-versus-thesis-validity)
+is named as a principle and a set of future extension candidates, explicitly preserving
+`AUTO-0001`'s and the Company Intelligence specification's existing field ownership and
+authorizing no schema, validator, or record change; the already-authorized Milestone 2 audit
+gains an explicit freshness/lifecycle-infrastructure assessment (report-only); the
+still-unauthorized future Milestone 3 gains a proportional, evidence-driven refresh-planning
+requirement with no universal cadence; future scan design preferences (event-driven,
+low-maintenance, reuse-first) and explicit automatic-action prohibitions are recorded without
+authorizing any scan; stale or insufficient evidence must be disclosed and may require
+abstention from a future recommendation, but never automatically triggers a demotion, trim,
+exit, or margin-policy change; and **no automated scanner, recurring job, notification system,
+scheduled external-data collection, SEC/Federal Reserve/broker/news/market-data integration,
+generated research update, or production workflow coupling is authorized by this decision** —
+any such implementation requires its own later, separate, explicit governance decision and
+bounded implementation PR. WS-0001 moves to `priority: secondary` with its MARGIN-0005 research
+authority, milestones, and S3 gate completely unchanged. WS-0002 remains `priority: secondary`,
+`status: authorized`, with `OPS-0005`'s Phase Two grant fully intact and un-narrowed. WS-0003
+and WS-0004 are untouched. `operations/WORKSTREAMS.yaml`'s WS-0002 entry is synchronized to live
+GitHub truth (PR #149 merged, `active_branch`/`active_pr` cleared, milestone status corrected,
+attribution strengthened) without reopening `OPS-0005`'s accepted text. No allocator,
+`targets.yaml`, `holdings.yaml`, margin rule, Company/Theme Intelligence record, freshness
+schema/validator, or production code is touched by this decision. This decision and the
+corresponding `operations/WORKSTREAMS.yaml` synchronization become effective only when this
+exact implementing pull request merges to `main` — not when pushed, and not merely when opened
+as a draft. The next concrete step is principal review of this draft PR — not research, not
+implementation, and not merge.
