@@ -7,6 +7,34 @@ related_decisions: [OPS-0001, OPS-0002, OPS-0003, OPS-0004, OPS-0005, GOV-0001, 
 supporting_artifact: operations/WORKSTREAMS.yaml
 ---
 
+_**Amendment — 2026-07-25 (same-day, pre-merge, pre-review):** the initial version of this
+decision authorized WS-0005's existence, governing purpose, protocol, and nine-milestone
+roadmap, but authorized **zero** milestone execution — including Milestone 1's baseline
+capture. On review before any independent audit occurred (confirmed: PR #150 carries zero
+GitHub reviews at the time of this amendment), the principal identified two scope problems:
+(1) the roadmap did not explicitly require future Intelligence and relationship research to
+preserve evidence that may later matter to margin/leverage-risk analysis, and (2) authorizing
+zero milestone execution would force a second governance decision immediately after this one
+merges, merely to perform a read-only factual inventory and coverage audit — the safest
+possible unit of work in the entire roadmap. This amendment corrects both, in place, per
+`governance/decisions/README.md`'s narrow-correction convention and the same same-day,
+pre-merge, pre-audit pattern `OPS-0002` already used for its own in-place correction ("no
+independent audit has yet occurred against any version of this decision, so there is no
+settled prior audit finding this correction could contradict"). Specifically, this amendment:
+(a) authorizes exactly **Milestones 1 and 2** — baseline/inventory and Intelligence
+coverage/freshness audit — as one bounded first audit PR, effective upon this decision's own
+merge; (b) adds an explicit, clearly-separated margin-relevant-evidence requirement to the
+still-unauthorized future Intelligence-completion milestone (3) and a portfolio-level
+margin-preparation requirement to the still-unauthorized future relationship-mapping milestone
+(4), each bounded by explicit non-authorization prohibitions; (c) clarifies the zero-based
+protocol (§3) to state a policy discipline rather than an unenforceable literal-blindness
+claim. Milestones 3 through 9 remain roadmap-only and unauthorized; nothing about WS-0005's
+`priority: primary` status, WS-0001's secondary sequencing, WS-0002's unaffected `OPS-0005`
+grant, or the F-2/F-3 register reconciliation changes. Every section below reflects the
+amended, current state — the superseded zero-execution text is not reproduced verbatim here,
+consistent with how `OPS-0002`'s own in-place correction was handled, since no independent
+review of the prior text exists for a future reader to reconcile against._
+
 ## Context
 
 `OPS-0001` recorded three durable planning intents without scoping or authorizing any of
@@ -103,97 +131,176 @@ posture's evidence base without permission to act on a mere hunch).
 
 ### 3. Zero-based / blinded-review protocol
 
-Any future WS-0005 research (once separately authorized per §5) must follow this protocol:
+This protocol is a **research discipline**, not a claim of literal information blindness the
+repository can technically enforce — any session or reviewer that has done ordinary repository
+preflight has already read `targets.yaml`, `holdings.yaml`, and CLAUDE.md's current parameters,
+and cannot be made to forget them. The protocol's force comes from what it requires a
+researcher to *do* with that unavoidable prior exposure, not from a pretense that the exposure
+doesn't exist. Any future WS-0005 research (once separately authorized per §5) must follow it:
 
-- **Sealed historical baseline.** Before any first-principles research begins on a given
-  asset or on the portfolio's structure, the current governed tier, target, role, cluster,
-  cap, and applicable policy for every in-scope holding is captured verbatim from
-  `targets.yaml`/`holdings.yaml`/CLAUDE.md/`governance/decisions/` into a dated baseline
-  record, sealed and set aside — not consulted again until reconciliation (below).
+- **Baseline preserved as comparison, not as evidence.** Before any first-principles research
+  begins on a given asset or on the portfolio's structure, the current governed tier, target,
+  role, cluster, cap, and applicable policy for every in-scope holding is captured verbatim
+  from `targets.yaml`/`holdings.yaml`/CLAUDE.md/`governance/decisions/` into a dated baseline
+  record, kept **for later comparison only**. It must never be treated, during the research
+  itself, as evidence, a desired answer, or a presumption of correctness — a holding's current
+  label is a fact to reconcile against, never a reason a conclusion agrees with it.
 - **Research from first principles.** Each asset is researched on its own economic merits —
   what it does, how it makes money, its competitive position, its risks — independent of
   where it currently sits in the tier structure.
-- **Conclusions before comparison.** Initial company-level and portfolio-level conclusions
-  (proposed economic role, relationship map, candidate classification) are formed and
-  recorded **before** the sealed baseline is reopened.
-- **Unblind only at reconciliation.** The baseline is unsealed only at the dedicated
-  reconciliation milestone (§4, Milestone 7) — never earlier, and never partially.
+- **Conclusions formed independently, before formal comparison.** Initial company-level and
+  portfolio-level conclusions (proposed economic role, relationship map, candidate
+  classification) are recorded on their own evidentiary merits **before** the dedicated
+  reconciliation step below formally compares them against the preserved baseline — even
+  though the researcher was never literally unaware the baseline existed.
+- **Explicit comparison at reconciliation.** The formal current-vs-researched comparison
+  happens only at the dedicated reconciliation milestone (§4, Milestone 7) — not earlier, and
+  not partially — so that every holding's old and new conclusions are compared once, together,
+  on the record, rather than piecemeal.
 - **Explicit agreement/disagreement record.** Reconciliation states, for every holding where
   the researched conclusion and the current policy diverge, both positions side by side —
   agreement is recorded as explicitly as disagreement, not left implicit.
 - **No silent inheritance.** An old classification, tier, or "core" label is never carried
   into a proposed framework merely because it already exists — every proposed classification
-  must trace to evidence gathered under the blind protocol, or be explicitly and separately
+  must trace to evidence gathered under this protocol, or be explicitly and separately
   justified as unchanged.
+- **Accepted history is not erased.** This protocol governs how *new* research conclusions
+  are formed and compared — it does not delete, rewrite, or reinterpret any existing accepted
+  governance decision, CLAUDE.md Decisions Log entry, or Company/Theme Intelligence record;
+  every prior decision remains intact and citable exactly as `governance/decisions/README.md`
+  already requires.
 
-### 4. Roadmap — nine sequential milestones (scope ceiling, not a grant to execute)
+### 4. Roadmap — nine sequential milestones (scope ceiling; Milestones 1-2 authorized to execute, 3-9 are not)
 
 The following milestones define the **maximum future scope** WS-0005 may ever cover. Naming
-them here authorizes **none of their execution** — see §5. Each is recorded in
-`operations/WORKSTREAMS.yaml` at `status: proposed`, `pr: null`.
+them here authorizes execution of **only Milestones 1 and 2** — see §5. Milestones 3 through 9
+remain roadmap items only. Each is recorded in `operations/WORKSTREAMS.yaml`; Milestones 1-2 at
+`status: authorized`, Milestones 3-9 at `status: proposed`, all `pr: null` (none has been
+executed by this filing).
 
-1. **Baseline and inventory.** Inventory every currently governed holding and asset type;
-   capture current tier/target/role/cluster/cap/applicable policy; record the baseline
-   separately from any blind research conclusion; identify missing, duplicated, ambiguous, or
-   stale records.
-2. **Intelligence coverage and freshness audit.** For every equity, ETF, crypto asset, cash
-   position, hedge, or other governed asset: Intelligence coverage present/missing, freshness,
-   evidence quality, missing primary-source research, required review priority, and explicit
-   inability-to-conclude where evidence is insufficient.
-3. **Intelligence completion.** Bounded, research-only PRs completing or refreshing records in
-   coherent batches, each addressing (when applicable): what the business does; why it may
-   deserve a portfolio role; economic function; moat/competitive position; financial quality;
-   management and capital allocation; growth drivers; key customers/suppliers/partners/
-   competitors; major risks; thesis-break conditions; replacement candidates; opportunity
-   cost; what exposure disappears if the asset is removed. Advisory only — cannot change
-   policy.
-4. **Portfolio relationship mapping.** Economic systems; common demand drivers; customer/
-   supplier dependencies; direct competition; complementary relationships; duplicated
-   exposure; shared geopolitical/interest-rate/commodity/regulatory/technology-cycle/
-   liquidity risk; correlated thesis failure; missing portfolio functions; next-best
-   alternatives. Structural/economic overlap is kept explicitly distinct from measured
-   historical price correlation (the existing `caps.clusters` mechanism) — the two are never
-   combined into a single unsupported score.
-5. **Zero-based classification and tier-architecture review.** What questions the current
-   tier system answers; where it mixes unrelated concepts; whether one tier label is
-   adequate; the smallest set of candidate frameworks the evidence supports; candidate
-   separation, where useful and not required merely because listed, of economic role,
+1. **Baseline and inventory** *(authorized — see §5)*. Enumerate every currently governed
+   asset (every equity, ETF, band/spec name, and the crypto sleeve); identify asset type;
+   capture the existing governed role, tier, target, cluster, cap, and relevant operating
+   policy for each as a historical comparison baseline, per §3; preserve that policy without
+   treating it as presumptively correct; identify missing, duplicated, ambiguous, or
+   inconsistent asset records.
+2. **Intelligence coverage and freshness audit** *(authorized — see §5)*. For every asset
+   inventoried in Milestone 1: identify whether a Company/Theme Intelligence record exists;
+   identify record type and the applicable schema section; record freshness and evidence
+   quality; identify missing primary-source evidence; identify incomplete or stale research;
+   identify assets for which no supportable conclusion can yet be reached; recommend the
+   sequence of later Milestone-3 research batches. **This milestone must not complete or
+   rewrite any company Intelligence record** — it audits coverage and freshness, it does not
+   produce or edit content.
+3. **Intelligence completion** *(not authorized)*. Bounded, research-only PRs completing or
+   refreshing records in coherent batches, each addressing (when applicable): what the business
+   does; why it may deserve a portfolio role; economic function; moat/competitive position;
+   financial quality; management and capital allocation; growth drivers; key
+   customers/suppliers/partners/competitors; major risks; thesis-break conditions; replacement
+   candidates; opportunity cost; what exposure disappears if the asset is removed. Advisory
+   only — cannot change policy.
+
+   **Margin-relevant evidence requirement (clearly separated from the above).** For every
+   asset, this future milestone's research must also capture applicable evidence that may
+   later matter to margin or leverage-risk analysis: earnings and cash-flow cyclicality;
+   operating and financial leverage; balance-sheet strength; refinancing and funding risk;
+   sensitivity to interest rates, commodities, foreign exchange, regulation, economic activity,
+   technology cycles, and capital-spending cycles; severe drawdown drivers; event and
+   overnight-gap risk; liquidity and position-exit considerations; customer, supplier,
+   counterparty, and jurisdiction concentration; speed and detectability of thesis
+   deterioration; temporary impairment versus permanent thesis failure; relationships with
+   other holdings that could cause simultaneous losses; and characteristics that could become
+   materially more dangerous when financed with borrowed money. **This is advisory evidence for
+   possible later margin research only.** It must not: recommend using margin; calculate a safe
+   leverage level; rank assets for margin deployment; modify margin policy; modify allocator
+   output; substitute for current broker maintenance requirements; substitute for account-level
+   holdings or margin state; authorize `MARGIN-0005` S3; or consume a margin trial.
+4. **Portfolio relationship mapping** *(not authorized)*. Economic systems; common demand
+   drivers; customer/supplier dependencies; direct competition; complementary relationships;
+   duplicated exposure; shared geopolitical/interest-rate/commodity/regulatory/
+   technology-cycle/liquidity risk; correlated thesis failure; missing portfolio functions;
+   next-best alternatives. Structural/economic overlap is kept explicitly distinct from
+   measured historical price correlation (the existing `caps.clusters` mechanism) — the two are
+   never combined into a single unsupported score.
+
+   **Portfolio-level margin preparation (clearly separated from the above).** This future
+   milestone must also require identification of: common drawdown drivers; stress-period
+   concentration; simultaneous thesis-failure pathways; liquidity and gap-risk clusters;
+   potentially prolonged recovery periods; economic exposures that appear diversified by ticker
+   but are concentrated in substance; and portfolio losses that borrowing could amplify. It must
+   require explicit separation among company-level risk, economic-system risk, portfolio-level
+   risk, and margin-amplified risk. **This analysis must not be converted into a leverage
+   recommendation** of any kind.
+
+   **Future evidence register.** This future milestone must produce a clearly separated
+   margin-relevance evidence register, for possible later use by an explicitly authorized
+   `MARGIN-0005` S3 or successor study. The register is factual and advisory; it does not itself
+   authorize a study; it does not consume a trial; it does not change current margin doctrine
+   (the 1.8x leverage cap and 30% buffer floor are untouched throughout); and live broker and
+   portfolio state must be sourced separately, fresh, at the time of any future study — the
+   register is not a substitute for that live sync.
+5. **Zero-based classification and tier-architecture review** *(not authorized)*. What
+   questions the current tier system answers; where it mixes unrelated concepts; whether one
+   tier label is adequate; the smallest set of candidate frameworks the evidence supports;
+   candidate separation, where useful and not required merely because listed, of economic role,
    business quality, thesis uncertainty, capital priority, position boundaries, overlap
    constraints, and review cadence; rejection of unnecessary complexity; no single mechanical
    conviction score substituting for judgment.
-6. **Blind classification.** Apply the candidate framework(s) without using current tiers or
-   targets as desired answers. No repository policy mutation.
-7. **Baseline reconciliation.** Unblind the sealed baseline (§3) and compare current-vs-
-   researched role, tier-vs-proposed capital priority, target-vs-evidence-supported range,
-   cluster-vs-relationship-map, caps-vs-portfolio-level risk, and review cadence-vs-thesis
-   uncertainty. Every proposed difference states evidence, reasoning, uncertainty, opportunity
-   cost, controlling policy, and required governance action.
-8. **Policy recommendation package.** Advisory recommendations only, covering portfolio roles,
-   tier/replacement classification architecture, capital-priority rules, targets/target
-   ranges, maximum position sizes, economic-system/overlap limits, monitoring frequency,
-   thesis-break review rules, and add/hold/trim/exit-review discipline.
-9. **Independent review and later adoption.** Independent Fable review of research coverage,
-   relationship methodology, zero-based protocol adherence, candidate tier architecture, the
-   policy recommendation package, evidence-versus-judgment separation, and absence of hidden
-   scoring or allocator coupling. Any adoption requires its own separate accepted governance
-   decision and a later, separately authorized implementation PR.
+6. **Blind classification** *(not authorized)*. Apply the candidate framework(s) without using
+   current tiers or targets as desired answers, per §3. No repository policy mutation.
+7. **Baseline reconciliation** *(not authorized)*. Formally compare the Milestone-1 baseline
+   (§3) against current-vs-researched role, tier-vs-proposed capital priority,
+   target-vs-evidence-supported range, cluster-vs-relationship-map, caps-vs-portfolio-level
+   risk, and review cadence-vs-thesis uncertainty. Every proposed difference states evidence,
+   reasoning, uncertainty, opportunity cost, controlling policy, and required governance
+   action.
+8. **Policy recommendation package** *(not authorized)*. Advisory recommendations only,
+   covering portfolio roles, tier/replacement classification architecture, capital-priority
+   rules, targets/target ranges, maximum position sizes, economic-system/overlap limits,
+   monitoring frequency, thesis-break review rules, and add/hold/trim/exit-review discipline.
+9. **Independent review and later adoption** *(not authorized)*. Independent Fable review of
+   research coverage, relationship methodology, zero-based protocol adherence, candidate tier
+   architecture, the policy recommendation package, evidence-versus-judgment separation, and
+   absence of hidden scoring or allocator coupling. Any adoption requires its own separate
+   accepted governance decision and a later, separately authorized implementation PR.
 
-### 5. This filing authorizes documentation and framework only
+### 5. Authorization boundary — Milestones 1-2 authorized upon effectiveness; 3-9 remain roadmap only
 
-**This decision authorizes exactly: the existence of WS-0005, its governing purpose, the §3
-protocol, and the §4 roadmap as a scope ceiling.** It authorizes **zero milestone execution** —
-including Milestone 1's baseline capture. No research has been performed, no Intelligence
-record has been created or modified, no company or theme has been selected for review, no
-inventory has been produced, and no code has been written under this filing. Every future
-milestone — Milestone 1 included — requires its own separate, later, explicit principal
-authorization and its own bounded implementation or research PR before any work begins,
-following exactly the discipline `PI-0016` already established for single-company reviews
-("every future company review still requires its own separate, filed, repository-auditable
-research authorization... informal chat sign-off does not suffice") and `MARGIN-0005`'s own
-charter-then-gate structure (a charter names a bounded program; each stage inside it still
-requires its own review before advancing). **No later phase becomes authorized merely because
-an earlier milestone is complete** — closing Milestone 1 does not itself open Milestone 2, and
-so on through Milestone 9.
+**This decision authorizes: the existence of WS-0005, its governing purpose, the §3 protocol,
+the §4 roadmap as a scope ceiling, and — as of this amendment — execution of exactly
+Milestones 1 and 2**, effective the moment this decision's own implementing pull request
+merges to `main` (§9, unchanged). No research has been performed and no code has been written
+under this filing itself — this decision authorizes a later, separate implementation or
+research PR to do that work; it does not do it here.
+
+- **Milestones 1 and 2 are authorized upon OPS-0006 becoming effective.** No further governance
+  decision is required to open that work.
+- **They should normally be completed in one bounded audit PR**, since both are read-only
+  factual inventory/audit work over the same asset list and naturally belong together — unless
+  that implementation PR's own preflight demonstrates that combined scope is unsafe (for
+  example, an asset count or evidence volume that makes one PR unreviewable), in which case it
+  may split into two, still covering only Milestones 1 and 2, nothing more.
+- **The first audit PR may create exactly one retained advisory audit artifact** (e.g. under
+  `intelligence/reports/` or a comparable location matching existing repository convention) **and
+  its dedicated tests or validators, only where repository convention requires them** — mirroring
+  how `PI-0011`/`AUTO-0002` each added a narrow, single-purpose module with its own tests, not a
+  general-purpose framework.
+- **It must not complete or rewrite any company Intelligence record.** Milestone 2 audits
+  coverage and freshness; it does not produce Milestone-3 content.
+- **Milestones 3 through 9 remain roadmap items only.** Naming them in §4 authorizes none of
+  their execution.
+- **Completion of Milestones 1 and 2 does not automatically authorize Milestone 3.** Starting
+  Intelligence-completion batches, relationship conclusions, tier redesign, policy
+  recommendations, or adoption each requires its own separate, later, explicit principal
+  authorization and its own bounded implementation or research PR — following exactly the
+  discipline `PI-0016` already established for single-company reviews ("every future company
+  review still requires its own separate, filed, repository-auditable research authorization...
+  informal chat sign-off does not suffice") and `MARGIN-0005`'s own charter-then-gate structure
+  (a charter names a bounded program; each stage inside it still requires its own review before
+  advancing).
+- **Current tiers and targets remain operational until formally superseded** — nothing about
+  Milestones 1-2's execution changes, suspends, or conditions any accepted policy; per §2, they
+  remain the current operating policy in full force throughout and after this work.
 
 ### 6. Explicit prohibitions
 
@@ -208,7 +315,14 @@ without its own separate governance decision naming it explicitly:
 - Intelligence directly controlling targets, tiers, buys, trims, margin, or allocator output;
 - modifying margin governance (the 1.8x leverage cap and 30% buffer floor are unchanged and
   outside this filing's scope entirely);
-- any `MARGIN-0005` S3 trial, simulation, or research execution;
+- any `MARGIN-0005` S3 trial, simulation, or research execution, and no consumption of any of
+  its 300-run trial ceiling;
+- recommending the use of margin, calculating a safe leverage level, or ranking assets for
+  margin deployment — the §4 Milestone-3/4 margin-relevant evidence and future evidence
+  register are factual and advisory only, never a leverage recommendation;
+- substituting the future evidence register, or any WS-0005 output, for current broker
+  maintenance requirements or for live, freshly synced account-level holdings/margin state —
+  any future margin study must source that state separately, at the time of the study;
 - WS-0002 Phase Two (or any later phase) dashboard/status-layer implementation;
 - WS-0003 or any default-daily-workflow change;
 - production coupling between Intelligence and the allocator;
@@ -295,15 +409,39 @@ created. Reconciling F-2/F-3 in this same filing, rather than a separate one, fo
 next filing that touches the same file, rather than leaving a known non-blocking finding open
 indefinitely.
 
+**On the amendment specifically:** authorizing Milestones 1-2 as one bounded first audit unit,
+rather than leaving all nine milestones unauthorized, follows the same charter-then-gate
+proportionality `MARGIN-0005` already applies — a charter may pre-authorize its own lowest-risk
+opening gate (there, G0/G1's charter-and-data-adequacy work) without pre-authorizing everything
+downstream of it, provided later stages still each require their own review. Milestones 1-2 are
+read-only inventory and coverage/freshness audit work — no company judgment, no thesis, no
+Intelligence content, no policy conclusion — the same category of work `OPS-0002`'s planning
+phase and `MARGIN-0005`'s G1 data-adequacy gate were each pre-authorized to perform without a
+separate per-gate decision. Requiring a second governance filing merely to open that
+lowest-risk work, as the original version of this decision did, added process without reducing
+risk. The margin-relevant-evidence requirement (§4, Milestones 3-4) is added now, at the
+roadmap-definition stage, rather than later, because retrofitting an evidence-capture
+requirement onto already-completed Milestone-3 research would mean re-reviewing assets a
+second time — cheaper to state the requirement before any research begins than after.
+Softening §3's blindness language to a research discipline rather than a literal-enforcement
+claim corrects an overstatement the original text made: no session can be made to have not
+read `targets.yaml`/CLAUDE.md during ordinary preflight, and claiming otherwise would have been
+a claim this repository cannot actually verify — the discipline's real force (evidence first,
+comparison second, no silent inheritance) is unchanged and restated more precisely.
+
 ## Alternatives Considered
 
-- **Authorize Milestone 1 (baseline capture) to begin immediately, since it is read-only
-  inventory with no judgment involved.** Rejected — the task authorizing this filing states
-  plainly "do not perform the research in this session," and `PI-0016`'s own discipline treats
-  "informal... sign-off" as insufficient for any future company-level work; extending that same
-  caution to the first portfolio-level milestone is the more conservative and more consistent
-  reading. Nothing prevents a fast, narrowly-scoped follow-on authorization for Milestone 1
-  specifically.
+- **Leave Milestones 1-2 unauthorized, as the original version of this decision did, and
+  require a second governance filing immediately after merge to open them.** Rejected on
+  amendment — this was the original design, and the principal identified it as adding an
+  unnecessary process step for the single lowest-risk unit of work in the entire roadmap
+  (read-only inventory and coverage audit, no judgment, no content). Milestones 3-9 remain
+  under the original, more conservative rule precisely because they are not this low-risk.
+- **Authorize Milestones 1 through 9 all at once, now that the roadmap is defined.** Rejected —
+  far exceeds the principal's authorization for this amendment, which is bounded to exactly the
+  first audit unit; every milestone from 3 onward involves either judgment (Intelligence
+  content, classification, recommendations) or the margin-relevant evidence capture this same
+  amendment newly requires — none of that is safe to pre-authorize sight-unseen.
 - **Fold WS-0005 into WS-0002 as a new phase, rather than a separate workstream.** Rejected —
   WS-0002 (as reactivated by `OPS-0005`) is scoped narrowly and specifically to a read-only
   status/report *display* layer; its governing question is "what does the system currently
@@ -340,10 +478,20 @@ indefinitely.
 ## Consequences
 
 Going forward: WS-0005 exists as the sole `priority: primary` workstream, with a governing
-purpose, a zero-based/blinded-review protocol, and a nine-milestone roadmap recorded as a
-scope ceiling — no milestone, including the first, is authorized to execute by this filing.
-WS-0001 moves to `priority: secondary` with its MARGIN-0005 research authority, milestones,
-and S3 gate completely unchanged. WS-0002 remains `priority: secondary`, `status: authorized`,
+purpose, a zero-based-research-discipline protocol, and a nine-milestone roadmap recorded as a
+scope ceiling. **Milestones 1 and 2 (baseline/inventory and Intelligence coverage/freshness
+audit) are authorized to execute, in one bounded first audit PR, the moment this decision
+merges** — no further governance decision is required to open that specific work. Milestones 3
+through 9 remain roadmap items only, each requiring its own separate future authorization;
+completing Milestones 1-2 does not itself authorize Milestone 3. The future Milestone-3
+Intelligence-completion work and Milestone-4 relationship-mapping work each carry an explicit,
+clearly-separated margin-relevant-evidence requirement — factual, advisory, and bounded by
+explicit prohibitions against recommending margin use, calculating a safe leverage level,
+ranking assets for margin deployment, or substituting for live broker/account state — so that
+if `MARGIN-0005` S3 or a successor study is ever separately authorized, relevant evidence is
+already gathered rather than needing a second pass over the same assets. WS-0001 moves to
+`priority: secondary` with its MARGIN-0005 research authority, milestones, and S3 gate
+completely unchanged. WS-0002 remains `priority: secondary`, `status: authorized`,
 with `OPS-0005`'s Phase Two grant fully intact and un-narrowed. WS-0003 and WS-0004 are
 untouched. `operations/WORKSTREAMS.yaml`'s WS-0002 entry is synchronized to live GitHub truth
 (PR #149 merged, `active_branch`/`active_pr` cleared, milestone status corrected, attribution

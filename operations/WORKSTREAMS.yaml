@@ -449,12 +449,20 @@ workstreams:
     priority: primary
     dependencies: []
     authorized_scope: >
-      Recording of the governing purpose, the zero-based/blinded-review
-      protocol, and the nine-milestone roadmap only (OPS-0006 §§1-4). No
-      milestone execution is authorized by OPS-0006 — not even Milestone 1's
-      baseline capture. Each milestone requires its own separate, later,
-      explicit principal authorization and its own bounded implementation or
-      research PR before any work begins.
+      Recording of the governing purpose, the zero-based-research-discipline
+      protocol, and the nine-milestone roadmap (OPS-0006 §§1-4), plus —
+      per OPS-0006 §5 (2026-07-25 amendment) — execution of exactly
+      Milestones 1 (baseline and inventory) and 2 (Intelligence coverage and
+      freshness audit), normally as one bounded first audit PR, effective
+      upon OPS-0006 merging. That first audit PR may create one retained
+      advisory audit artifact and its dedicated tests/validators only where
+      repository convention requires them; it must not complete or rewrite
+      any company Intelligence record. Milestones 3 through 9 remain
+      roadmap items only — each requires its own separate, later, explicit
+      principal authorization and its own bounded implementation or research
+      PR before any work begins. Completing Milestones 1-2 does not
+      automatically authorize Milestone 3. Current tiers and targets remain
+      operational until formally superseded throughout.
     prohibited_scope: >
       Changing current tiers, targets, target ranges, or holdings; any
       order; modifying allocation formulas or recommendations; a computed
@@ -470,31 +478,47 @@ workstreams:
     milestones:
       - gate: milestone-1-baseline-and-inventory
         description: >
-          Inventory every currently governed holding and asset type; capture
-          current tier/target/role/cluster/cap/applicable policy; record the
-          baseline separately from any blind research conclusion; identify
-          missing, duplicated, ambiguous, or stale records. Not authorized to
-          execute by OPS-0006 — requires its own separate future
-          authorization.
+          Enumerate every currently governed asset; identify asset type;
+          capture the existing governed role/tier/target/cluster/cap/
+          applicable policy as a historical comparison baseline (preserved,
+          not treated as presumptively correct); identify missing,
+          duplicated, ambiguous, or inconsistent asset records. Authorized to
+          execute per OPS-0006 §5 (2026-07-25 amendment), normally as one
+          bounded audit PR together with Milestone 2. Not yet executed — no
+          branch or PR exists for it.
         pr: null
-        status: proposed
+        status: authorized
         date: "2026-07-25"
       - gate: milestone-2-intelligence-coverage-and-freshness-audit
         description: >
-          For every equity, ETF, crypto asset, cash position, hedge, or other
-          governed asset: Intelligence coverage present/missing, freshness,
-          evidence quality, missing primary-source research, required review
-          priority, explicit inability-to-conclude where evidence is
-          insufficient. Not authorized to execute.
+          For every asset from Milestone 1: identify whether an Intelligence
+          record exists, record type and applicable schema, freshness and
+          evidence quality, missing primary-source evidence, incomplete or
+          stale research, assets for which no supportable conclusion can yet
+          be reached, and a recommended sequence for later Milestone-3
+          research batches. Must not complete or rewrite any company
+          Intelligence record. Authorized to execute per OPS-0006 §5
+          (2026-07-25 amendment), normally as one bounded audit PR together
+          with Milestone 1. Not yet executed — no branch or PR exists for it.
         pr: null
-        status: proposed
+        status: authorized
         date: "2026-07-25"
       - gate: milestone-3-intelligence-completion
         description: >
           Bounded, research-only PRs completing or refreshing Company/Theme
           Intelligence records in coherent batches, per PI-0016's standing
           methodology and its own per-company authorization requirement.
-          Advisory only — cannot change policy. Not authorized to execute.
+          Advisory only — cannot change policy. Also requires (OPS-0006 §4,
+          2026-07-25 amendment), clearly separated from the above: capturing
+          margin-relevant evidence per asset (cyclicality, leverage,
+          balance-sheet strength, refinancing/funding risk, macro
+          sensitivities, drawdown drivers, gap risk, liquidity, concentration,
+          thesis-deterioration detectability, correlated-loss relationships,
+          borrowed-money risk amplifiers) — factual/advisory only, no margin
+          recommendation, no safe-leverage calculation, no deployment ranking,
+          no MARGIN-0005 S3 authorization or trial consumption. Not
+          authorized to execute — completing Milestones 1-2 does not
+          authorize this milestone.
         pr: null
         status: proposed
         date: "2026-07-25"
@@ -505,8 +529,19 @@ workstreams:
           exposure, shared macro/regulatory/technology risk, correlated
           thesis failure, missing portfolio functions, next-best
           alternatives — structural/economic overlap kept explicitly
-          distinct from measured historical price correlation. Not
-          authorized to execute.
+          distinct from measured historical price correlation. Also requires
+          (OPS-0006 §4, 2026-07-25 amendment), clearly separated from the
+          above: portfolio-level margin preparation (common drawdown drivers,
+          stress-period concentration, simultaneous thesis-failure pathways,
+          liquidity/gap-risk clusters, prolonged recovery periods,
+          substance-concentrated exposure, borrowing-amplified losses; explicit
+          separation of company/economic-system/portfolio-level/
+          margin-amplified risk; never a leverage recommendation) and a
+          clearly separated future margin-relevance evidence register
+          (factual/advisory, does not authorize a study, does not consume a
+          trial, does not change margin doctrine; live broker/portfolio state
+          sourced separately at the time of any future study). Not authorized
+          to execute.
         pr: null
         status: proposed
         date: "2026-07-25"
@@ -564,25 +599,34 @@ workstreams:
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
     next_action: >
-      None authorized. The first concrete step, if and when separately
-      authorized, is a bounded Milestone 1 (baseline and inventory)
-      implementation or research PR naming its own scope — this entry does
-      not request, schedule, or imply that authorization.
+      Open the single bounded first audit PR covering Milestones 1 (baseline
+      and inventory) and 2 (Intelligence coverage and freshness audit),
+      authorized by OPS-0006 §5. May produce one retained advisory audit
+      artifact plus its dedicated tests/validators only where repository
+      convention requires them. Must not complete or rewrite any company
+      Intelligence record. Milestones 3 through 9 remain unauthorized;
+      completing this first audit PR does not itself authorize Milestone 3
+      or any later milestone.
     completion_criteria: >
-      Not applicable while unauthorized. A future authorization for each
-      milestone would state that milestone's own completion criteria; this
-      entry does not pre-define them beyond OPS-0006 §4's roadmap
-      description.
+      Milestones 1-2 are complete when: the one bounded first audit PR
+      merges; its dedicated tests/validators (if any) and the full suite
+      pass; the enumerated asset inventory and Intelligence coverage/
+      freshness findings are recorded; and no company Intelligence record
+      was completed or rewritten in the process. Completion does not itself
+      authorize Milestone 3 or any later milestone — each requires its own
+      separate future governance decision, per OPS-0006 §5.
     blocker: >
-      No milestone is authorized to execute — including Milestone 1. Each
-      requires its own separate, later, explicit principal authorization
-      before any work begins, per OPS-0006 §5.
+      None on Milestones 1-2 — OPS-0006 §5 grants their execution upon
+      merge. Implementation has not begun; no branch or PR exists for it
+      yet. Milestones 3 through 9 remain blocked pending their own separate,
+      later, explicit principal authorization.
     active_branch: null
     active_pr: null
     last_verified_main_sha: 536e71f58857f2e55d98169b2e829e392c27a016
     last_verified_date: "2026-07-25"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
-      roadmap only — no milestone execution authorized)
+      roadmap; execution of Milestones 1-2 only, per its 2026-07-25
+      amendment — Milestones 3-9 remain unauthorized)
     supersedes: null
     superseded_by: null
