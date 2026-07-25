@@ -445,7 +445,7 @@ workstreams:
       - governance/decisions/GOV-0001-governance-architecture-adopted.md
       - governance/decisions/GOV-0002-operational-precedence-hierarchy.md
       - governance/decisions/PI-0016-standing-company-review-framework.md (methodology reference only)
-    status: authorized
+    status: in_progress
     priority: primary
     dependencies: []
     authorized_scope: >
@@ -484,10 +484,12 @@ workstreams:
           not treated as presumptively correct); identify missing,
           duplicated, ambiguous, or inconsistent asset records. Authorized to
           execute per OPS-0006 §5 (2026-07-25 amendment), normally as one
-          bounded audit PR together with Milestone 2. Not yet executed — no
-          branch or PR exists for it.
+          bounded audit PR together with Milestone 2. Draft PR opened on
+          branch claude/pr150-merge-ws0005-audit-0qy70q; retained artifact
+          at governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md.
+          Not yet merged; independent Fable review pending.
         pr: null
-        status: authorized
+        status: drafted
         date: "2026-07-25"
       - gate: milestone-2-intelligence-coverage-and-freshness-audit
         description: >
@@ -512,9 +514,12 @@ workstreams:
           change freshness policy, build automation, or create external
           integrations. Authorized to execute per OPS-0006 §5 (2026-07-25
           amendment), normally as one bounded audit PR together with
-          Milestone 1. Not yet executed — no branch or PR exists for it.
+          Milestone 1. Draft PR opened on branch
+          claude/pr150-merge-ws0005-audit-0qy70q; retained artifact at
+          governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md.
+          Not yet merged; independent Fable review pending.
         pr: null
-        status: authorized
+        status: drafted
         date: "2026-07-25"
       - gate: milestone-3-intelligence-completion
         description: >
@@ -616,19 +621,19 @@ workstreams:
         date: "2026-07-25"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
+      - governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md
     next_action: >
-      Per OPS-0006 §16.3, inspect accepted decisions, this register,
-      any retained WS-0005 audit artifacts, Intelligence/freshness
-      records, and open/merged PR state before starting. Open the single
-      bounded first audit PR covering Milestones 1 (baseline and
-      inventory) and 2 (Intelligence coverage and freshness audit),
-      authorized by OPS-0006 §5. May produce one retained advisory audit
-      artifact — carrying the §16.2 per-asset completion ledger — plus its
-      dedicated tests/validators only where repository convention requires
-      them. Must not complete or rewrite any company Intelligence record.
-      Milestones 3 through 9 remain unauthorized; completing this first
-      audit PR does not itself authorize Milestone 3 or any later
-      milestone.
+      Draft PR open on branch claude/pr150-merge-ws0005-audit-0qy70q,
+      containing the retained Milestones 1-2 audit artifact
+      (governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md,
+      68 governed assets, per-asset §16.2 completion ledger) plus this
+      register update. Per OPS-0006 §16.1, Milestones 1-2 do not reach
+      status: complete until this PR merges, tests/validators pass, and
+      this register plus governance/decisions.yaml are re-synchronized
+      post-merge. Independent Fable review of this PR is the next required
+      step before merge — not performed by this session. Milestones 3
+      through 9 remain unauthorized; merging this PR does not itself
+      authorize Milestone 3 or any later milestone.
     completion_criteria: >
       Per OPS-0006 §16.1's completion discipline: Milestones 1-2 reach
       status: complete only when the one bounded first audit PR merges;
@@ -643,13 +648,15 @@ workstreams:
       milestone — each requires its own separate future governance
       decision, per OPS-0006 §5.
     blocker: >
-      None on Milestones 1-2 — OPS-0006 §5 grants their execution upon
-      merge. Implementation has not begun; no branch or PR exists for it
-      yet. Milestones 3 through 9 remain blocked pending their own separate,
-      later, explicit principal authorization.
-    active_branch: null
+      None on Milestones 1-2 execution — OPS-0006 §5 granted it on merge of
+      OPS-0006 itself. The draft PR is open but not merged; independent
+      Fable review has not yet been performed against its exact head, and
+      the principal has not yet accepted it. Milestones 3 through 9 remain
+      blocked pending their own separate, later, explicit principal
+      authorization.
+    active_branch: claude/pr150-merge-ws0005-audit-0qy70q
     active_pr: null
-    last_verified_main_sha: 536e71f58857f2e55d98169b2e829e392c27a016
+    last_verified_main_sha: 05cd6f0782936b670f738da0d447567e000a13d7
     last_verified_date: "2026-07-25"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
