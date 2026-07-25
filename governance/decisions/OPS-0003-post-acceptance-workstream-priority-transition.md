@@ -160,3 +160,18 @@ determination become effective only once this exact implementing pull request me
 per the principal's session rules, that pull request opens as a **draft** and is not marked ready or
 merged within this session. The next concrete step is principal review of this draft PR — not
 implementation, and not merge.
+
+---
+
+_**2026-07-25 dated note (narrow factual correction, substance otherwise unchanged, per
+`governance/decisions/README.md`'s convention):** this decision's Context section describes an
+"independent Fable audit" and a "confirming Fable delta re-review" against PR #143. A later,
+separately-authorized independent audit (`governance/audits/WS0002_PHASE_ONE_FABLE_AUDIT_20260724.md`,
+Finding FA-1) found that claim's evidentiary provenance unretained: PR #143 carries zero GitHub
+reviews and zero comments, and the audit narrative exists only as prose in the PR body and
+commit messages of the same committer identity as the audited work. FA-1 does not find the
+underlying F1–F4 dispositions false — it independently re-verified them as genuine — only that
+this Context section's claim could not, until `OPS-0004`, be substantiated from retained,
+independently-attributable evidence. See
+`governance/decisions/OPS-0004-ws0002-phase-one-audit-provenance-reconciliation.md` for the
+full reconciliation. Nothing else in this decision changes._

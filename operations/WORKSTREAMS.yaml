@@ -229,6 +229,8 @@ workstreams:
       - docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md
       - governance/decisions/OPS-0002-unified-core-planning-and-audit-gate.md
       - governance/decisions/OPS-0003-post-acceptance-workstream-priority-transition.md
+      - governance/decisions/OPS-0004-ws0002-phase-one-audit-provenance-reconciliation.md
+      - governance/audits/WS0002_PHASE_ONE_FABLE_AUDIT_20260724.md
     next_action: >
       None authorized. The OPS-0002-scoped planning-and-audit phase is
       complete (PR #143 merged). Any future Layer 2 architecture

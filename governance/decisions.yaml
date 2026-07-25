@@ -202,3 +202,10 @@ decisions:
     related_decisions: [OPS-0001, OPS-0002, GOV-0002, GOV-0003, MARGIN-0005]
     supporting_artifact: operations/WORKSTREAMS.yaml
     file: governance/decisions/OPS-0003-post-acceptance-workstream-priority-transition.md
+  - decision_id: OPS-0004
+    date: 2026-07-25
+    status: Accepted
+    category: operations_coordination
+    related_decisions: [OPS-0001, OPS-0002, OPS-0003, GOV-0002]
+    supporting_artifact: governance/audits/WS0002_PHASE_ONE_FABLE_AUDIT_20260724.md
+    file: governance/decisions/OPS-0004-ws0002-phase-one-audit-provenance-reconciliation.md
