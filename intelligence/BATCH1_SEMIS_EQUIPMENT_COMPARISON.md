@@ -114,27 +114,51 @@ product-overlap pair (see SS3 below).
   as a competitive relationship, not recorded from ASML's side as a direct
   competitive threat (ASML's record does not name KLAC as a competitor).
 - **AMAT vs. LRCX — the batch's one direct, two-sided competitive
-  relationship.** Both companies' own records independently name the
-  other: AMAT's record states Lam is "described as etch market leader,
-  especially high-aspect-ratio" and "clear second in deposition" after
-  AMAT; LRCX's record states "Applied Materials (deposition/etch overlap —
-  the most direct competitor of the four companies in this batch)."
-  Secondary sources cited in both records put the top-5 WFE vendors
-  (ASML, AMAT, Tokyo Electron, LRCX, KLA) at roughly 75% of industry
-  sales combined — a market-structure fact, not something either company
-  record treats as precisely apportioned between AMAT and LRCX
-  specifically.
-- **AMAT vs. KLAC:** AMAT's own record states KLAC's process-control
-  competition is understood as "exerting indirect pressure via fab
-  capex-allocation competition rather than direct product overlap" — i.e.
-  they compete for the same customer capex dollar, not for the same
-  physical tool sale, except that AMAT is separately reported (in KLAC's
-  record) to hold some process-control tools of its own and to have lost
-  share in that specific sub-segment (reportedly ~13% to under 8%,
-  secondary, unverified exact figures) — a narrow area of genuine, if
-  small, product overlap.
-- **KLAC vs. LRCX:** minimal direct overlap — LRCX's record describes KLA
-  as "more a customer-side WFE-cycle correlate than a competitor."
+  relationship.** Both companies' own records independently describe this
+  relationship, though not in the exact wording an earlier draft of this
+  document quoted (corrected in this pass — see Correction note below).
+  AMAT's own record states its "direct competitive overlap with LRCX
+  (deposition/etch) — the most direct company-to-company competitive
+  relationship found anywhere in this batch"; LRCX's own record states the
+  same relationship from its side ("LRCX's direct competitive overlap with
+  AMAT (deposition/etch — the same relationship noted from AMAT's side in
+  its own record)"). LRCX's record additionally cites secondary sources
+  describing "AMAT and Lam... as the two leading deposition/etch players,
+  with AMAT reportedly leading deposition and Lam leading etch." **Neither
+  record supports a specific combined top-5-WFE-vendor market-share figure
+  (an earlier draft of this document stated "~75%," naming Tokyo Electron
+  as a fifth vendor) — that figure was not independently sourced by either
+  company's record or by this batch's committed research and has been
+  removed as unsupported, not merely re-attributed.**
+- **AMAT vs. KLAC:** neither company's own record describes a direct
+  product-overlap or competitive relationship between the two. KLAC's
+  record separately describes its capex-cycle sensitivity as "indirect
+  relative to AMAT/LRCX in mechanism (tied to node-transition/architecture
+  complexity...) but not indirect in outcome" — i.e., KLAC is exposed to
+  the same underlying WFE-spending cycle as AMAT/LRCX, not to direct
+  product competition with either. **An earlier draft of this document
+  additionally attributed a claim that AMAT holds process-control tools
+  with share "reportedly ~13% to under 8%" to KLAC's record — no such
+  figure or claim exists anywhere in KLAC's committed record, and it has
+  been removed as unsupported (not restated, since no accurate source for
+  it was found during this correction pass).**
+- **KLAC vs. LRCX:** no direct product-overlap or competitive relationship
+  is described in either company's own record — consistent with KLAC's
+  process-control/measurement function being categorically distinct from
+  LRCX's deposition/etch processing function (SS1 above). **An earlier
+  draft of this document attributed a quote ("more a customer-side
+  WFE-cycle correlate than a competitor") to LRCX's record; that exact
+  language does not appear in LRCX's record and has been removed.**
+
+**Correction note (this pass):** the prior version of this section
+attributed several quoted phrases to AMAT's and LRCX's committed records
+that do not appear there verbatim, and asserted two figures (the
+~75% top-5-WFE-vendor share and the ~13%-to-under-8% AMAT process-control
+share) with no supporting source in any of the four company records. This
+pass replaced the misquoted AMAT/LRCX material with the companies' actual
+recorded language and removed the two unsupported figures outright, per an
+independent (Fable) repository review's finding. No fact was added to any
+company record to make this section's prior wording true.
 
 ## 3. Shared customers
 
@@ -307,16 +331,24 @@ breakdown for fiscal 2023 (China 27%, Taiwan 24%, Korea 18%, North America
   risk** for deposition/etch business specifically, per SS2 above — a
   customer choosing between the two for a given process step is the
   batch's one real head-to-head competitive dynamic.
-- **KLAC has limited within-batch substitution risk** — AMAT holds some
-  process-control tools (reportedly declining share in that specific
-  sub-segment) but this is a minor overlap relative to KLAC's core
-  business, per KLAC's own record.
+- **KLAC has no described within-batch substitution risk** — its
+  process-control/measurement function is categorically distinct from
+  AMAT's/LRCX's processing function (SS1 above), and neither AMAT's nor
+  LRCX's own record describes competing in KLAC's process-control/
+  inspection business. **Corrected in this pass** — an earlier draft
+  attributed a claim to KLAC's own record that AMAT holds process-control
+  tools with declining share; no such claim exists in KLAC's record (see
+  SS2's Correction note).
 - Each company's record separately names external (non-batch) competitors
   with more direct substitution relevance: Nikon/Canon for ASML (DUV-only,
-  no EUV competitor); Tokyo Electron for AMAT and LRCX (etch/deposition,
-  also strong in coater/developer tracks neither AMAT nor LRCX
-  competes in directly); Onto Innovation and ASML's own HMI/YieldStar
-  business for KLAC.
+  no EUV competitor); Onto Innovation and ASML's own HMI/YieldStar
+  business for KLAC. **Tokyo Electron is not named in either AMAT's or
+  LRCX's committed record** — it was identified during this batch's
+  original research pass (WebSearch, not independently opened as a
+  primary source) as a plausible etch/deposition/coater-developer-track
+  competitor to both, and is carried forward only as a future-research
+  lead in SS13 below, with that provenance stated accurately rather than
+  attributed to either company's record.
 
 ## 11. Where evidence is insufficient to compare confidently (consolidated)
 
@@ -329,13 +361,27 @@ company records' own disclosed gaps:
 - Shared-supplier concentration — absence of evidence found for AMAT/
   KLAC/LRCX (only ASML's suppliers are specifically named), not evidence
   of absence (SS4).
-- KLAC's true China-revenue exposure — internally inconsistent sources,
-  the batch's single largest data-quality gap (SS9).
-- Precise apportionment of the reported ~75% top-5-WFE-vendor combined
-  market share among AMAT, LRCX, and the other listed vendors specifically
-  (SS2).
+- KLAC's process-control/inspection market-share dominance — sources
+  disagree across a roughly 50-85% range for the same underlying claim
+  (KLAC's own record: "genuinely a data-quality gap"); this is a distinct,
+  still-open gap from KLAC's China-revenue series, which is now reconciled
+  and no longer treated as a gap (see SS9 — corrected in this pass; an
+  earlier draft of this section described the now-reconciled China-revenue
+  series as "internally inconsistent" and "the batch's single largest
+  data-quality gap," which was stale text left over from before that
+  series was reconciled by fiscal year in an earlier remediation pass).
 - COVID-19-era (2020) company-specific impact — not researched to a
   confirmed answer for any of the four companies.
+
+**Correction note (this pass):** this section previously carried a bullet
+describing KLAC's China-revenue exposure as unreconciled/inconsistent,
+which contradicted SS9's own resolved series (27% FY2023, 43% FY2024, 33%
+FY2025, all now treated as primary-verified/cross-corroborated). It also
+carried a bullet about "precise apportionment" of a ~75%
+top-5-WFE-vendor-share figure that has itself been removed from SS2 as
+unsupported (no source found for the underlying figure), so apportioning
+it further is no longer a meaningful open question. Both are corrected
+above, per an independent (Fable) repository review's finding.
 
 ## 12. Margin-relevance evidence — batch-level synthesis (factual, advisory only)
 
@@ -399,7 +445,7 @@ prohibitions.
 
 | Candidate | Possible economic role | Competes against |
 |---|---|---|
-| Tokyo Electron (TEL) | Etch/deposition/coater-developer-track equipment maker, named as a direct competitor to both AMAT and LRCX (and holding some track-related business neither AMAT nor LRCX directly competes in) | Would represent duplicate, not new, exposure to the same WFE-cycle driver AMAT/LRCX already provide — the clearest candidate for "duplicate exposure," per PI-0023's own instruction to distinguish genuinely new from duplicate exposure |
+| Tokyo Electron (TEL) | Etch/deposition/coater-developer-track equipment maker. **Not named in either AMAT's or LRCX's committed company record** — identified during this batch's original research pass (WebSearch, not independently opened as a primary source) as a plausible competitor to both, and carried forward here only as a future-research lead with that provenance stated accurately (corrected in this pass; an earlier draft misattributed this to "the records") | Would represent duplicate, not new, exposure to the same WFE-cycle driver AMAT/LRCX already provide — the clearest candidate for "duplicate exposure," per PI-0023's own instruction to distinguish genuinely new from duplicate exposure |
 | Onto Innovation | Named in KLAC's record as KLA's "closest direct competitor," particularly in packaging-related inspection | Duplicate exposure to KLAC's process-control/inspection role, with a possible narrower differentiation in advanced-packaging-specific inspection — not independently assessed |
 | Naura / AMEC (Chinese domestic equipment makers) | Named across AMAT's and LRCX's records as rising competitive threats gaining share in China specifically | Not a portfolio-exposure candidate in the conventional sense (Chinese A-share/red-chip listings with their own distinct regulatory and accessibility considerations, not assessed here) — recorded only as a competitive-erosion risk to AMAT/LRCX's existing thesis, not as an investable lead |
 
