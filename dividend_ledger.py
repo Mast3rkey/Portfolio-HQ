@@ -147,6 +147,67 @@ membership), never by streaming row order, so every outcome — true
 duplicate, conflict-raise, or conflict-exclude — is identical regardless
 of the input list's order.
 
+## FR-1 — credited amount is RAW, never the comparison-rounded value
+
+An independent delta re-review of NEW-2 found that `_resolve_core_identity_
+group()` was returning `round(amount, 10)` — the SAME value used to detect
+whether a group's rows agree within float-representation tolerance — as
+the CREDITED economic amount. On the real 822-row G1 ledger (every group a
+singleton, so this never involved a real duplicate-resolution choice) this
+silently rounded 39 of 820 credited amounts by up to ~3.34e-11 relative to
+the pre-NEW-2 (790979f) output, which credited the raw, unrounded
+`gross_declared` value directly. Comparison and the credited value are now
+computed separately: `_rounded_for_comparison()` (a real 1e-10 tolerance
+for detecting true-duplicate-vs-conflict, not an economic rounding policy)
+decides duplicate-vs-conflict; the value actually credited is always the
+RAW `gross_declared` of a deterministically chosen representative row —
+`min()` over the group's raw amounts, which is order-independent (never
+depends on which row the input list happened to place first) and, for
+every real G1 group (all singletons), trivially returns that one row's own
+raw value unchanged — byte-for-byte identical to `790979f`'s output for
+every one of the real ledger's 820 (date, ticker) pairs (see
+`test_build_dividend_events_real_g1_ledger_values_match_independent_
+aggregation` in `test_validation_lib.py`, which independently re-aggregates
+the raw ledger — not by calling this module's own function twice — and
+asserts exact value equality, not merely matching counts).
+
+## FR-2/FR-3 — numeric-field validation extended to `gross_declared` and
+`ratio_child_per_parent`; overflow normalized to `ValueError`
+
+NEW-1 validated `child_close_on_parent_ex_session` via
+`_valid_positive_finite_number()` but left `gross_declared` (dividends) and
+`ratio_child_per_parent` (corporate actions) converted through a bare,
+unchecked `float()` call — silently accepting a numeric string (`"0.50"`),
+a non-finite string (`"inf"`), or `NaN`/`±inf` itself. Both fields are now
+validated before any `float()` conversion is trusted:
+
+* `gross_declared` — `_valid_finite_number()` (new): an actual `int`/
+  `float` scalar (never `bool`), finite (rejects `NaN`/`±inf`). Unlike
+  `_valid_positive_finite_number()`, this does NOT reject zero or negative
+  values — a non-positive `gross_declared` is a legitimate "no dividend
+  cash" input this module's own `amount <= 0` drop rule already handles
+  downstream (and `data_acquisition.py`'s G1 `validate()` already flags a
+  non-positive gross as a data-quality issue upstream), not a validation
+  failure. Checked once per row, before grouping: `strict=True` (default)
+  raises `ValueError` naming the row's identity and the rejected value;
+  `strict=False` excludes just that one malformed row (not its whole
+  core-identity group, and never any other group) from consideration.
+* `ratio_child_per_parent` — validated via the existing
+  `_valid_positive_finite_number()` (a spin-off ratio is always a positive
+  number of child shares per parent share, the same economic constraint
+  `child_close_on_parent_ex_session` already carries), on the same
+  strict/nonstrict footing as that field.
+
+Both `_valid_finite_number()` and `_valid_positive_finite_number()` also
+now catch `OverflowError` (FR-3): an arbitrary-precision Python `int` whose
+magnitude cannot be represented as a `float` (e.g. `10**400`, a shape
+`json.load()` can legally produce) previously leaked `OverflowError` — an
+exception type this module's own contract never named — straight out of
+an unguarded `float()` call. Both helpers now treat that case as `None`
+(the same uniform "invalid" outcome as every other failure mode), so it
+surfaces as this module's own `ValueError` (or a deterministic nonstrict
+exclusion), never an incidental `OverflowError`.
+
 ## T-D2 (primary-path purity)
 
 This module reads only the gross-declared dividend ledger and the spin-off
@@ -212,8 +273,49 @@ def _core_identity(row: dict) -> tuple[str, str, bool]:
     return (row["symbol"], row["ex_date"], bool(row.get("special")))
 
 
-def _rounded_amount(row: dict) -> float:
-    return round(float(row["gross_declared"]), 10)
+def _valid_finite_number(value: object) -> float | None:
+    """FR-2: validates `gross_declared` — an actual `int`/`float` scalar
+    (never `bool`, despite `bool` being an `int` subclass), finite
+    (rejects `NaN`/`+inf`/`-inf`, and — FR-3 — an out-of-range magnitude
+    that would raise `OverflowError` inside `float()`, e.g. `10**400`).
+    Deliberately NOT positivity-gated, unlike `_valid_positive_finite_
+    number()` below: a non-positive `gross_declared` is a legitimate "no
+    dividend cash" input (`build_dividend_events()`'s own `amount <= 0`
+    drop rule handles it, not this validator) — `data_acquisition.py`'s G1
+    `validate()` already flags a non-positive gross as a data-quality
+    issue upstream, but this module stays defensive rather than assuming
+    that guarantee holds for every caller. Returns the `float` value on
+    success, `None` on any failure (never coerces a numeric string, never
+    lets a non-finite or out-of-range value pass silently)."""
+    if isinstance(value, bool):
+        return None
+    if not isinstance(value, (int, float)):
+        return None
+    try:
+        numeric = float(value)
+    except OverflowError:
+        return None
+    if not math.isfinite(numeric):
+        return None
+    return numeric
+
+
+def _raw_amount(row: dict) -> float:
+    """RAW (unrounded) `gross_declared` — the value actually credited
+    (FR-1). Callers of this function (`_resolve_core_identity_group`
+    below) only ever see rows that already passed `build_dividend_events`'
+    own per-row `_valid_finite_number()` filter, so this `float()` call is
+    always applied to an already-validated numeric value, never an
+    unchecked one."""
+    return float(row["gross_declared"])
+
+
+def _rounded_for_comparison(row: dict) -> float:
+    """A real 1e-10 float-representation tolerance used ONLY to decide
+    whether a core-identity group's rows are a true duplicate or a
+    conflict (FR-1) — never returned as, or mixed into, the credited
+    economic amount itself."""
+    return round(_raw_amount(row), 10)
 
 
 def _resolve_core_identity_group(rows: list[dict], *, strict: bool
@@ -224,19 +326,26 @@ def _resolve_core_identity_group(rows: list[dict], *, strict: bool
     conflict was found — the caller excludes that event entirely. Raises
     `ValueError` when `strict=True` and a conflict was found. The decision
     is computed over `set`s of the group's OWN values, never by iteration
-    order, so it is identical for any permutation of `rows`."""
-    amounts = {_rounded_amount(r) for r in rows}
-    if len(amounts) > 1:
+    order, so it is identical for any permutation of `rows`.
+
+    FR-1: the returned `amount` is always a RAW (unrounded) value —
+    `min()` over the group's raw amounts, a deterministic, order-
+    independent tie-break among rows already known (via the rounded
+    comparison below) to agree within tolerance. For every real G1
+    ledger group (always a singleton), this trivially returns that one
+    row's own raw value, unchanged."""
+    rounded_set = {_rounded_for_comparison(r) for r in rows}
+    if len(rounded_set) > 1:
         if strict:
             raise ValueError(
                 f"conflicting gross_declared amounts for {rows[0]['symbol']} "
                 f"ex {rows[0]['ex_date']} special={bool(rows[0].get('special'))}: "
-                f"{sorted(amounts)} — the same declaration was reported with "
+                f"{sorted(rounded_set)} — the same declaration was reported with "
                 "different amounts; this must be resolved upstream (or pass "
                 "strict=False to exclude the event), never silently picked by "
                 "row order")
         return None
-    amount = next(iter(amounts))
+    amount = min(_raw_amount(r) for r in rows)
 
     payable_dates = {p for p in (r.get("payable_date") for r in rows) if p}
     if len(payable_dates) > 1:
@@ -286,12 +395,34 @@ def build_dividend_events(rows: list[dict], *,
     regular + special, which differ in `special` and so form separate
     groups) are summed, matching `simulate()`'s single-per-share-figure-
     per-day contract. A resolved group whose amount is non-positive is
-    dropped (no negative or zero dividend cash is ever credited)."""
+    dropped (no negative or zero dividend cash is ever credited).
+
+    FR-2: every row's `gross_declared` is validated via
+    `_valid_finite_number()` BEFORE grouping — an actual `int`/`float`
+    scalar, finite (never a numeric string, `NaN`, `±inf`, or an
+    out-of-range magnitude, FR-3). `strict=True` (default) raises
+    `ValueError` naming the offending row's identity and the rejected
+    value; `strict=False` excludes just that one malformed row (never its
+    whole core-identity group, and never any other group) from
+    consideration."""
     if credit_convention not in CREDIT_CONVENTIONS:
         raise ValueError(f"unknown credit_convention {credit_convention!r}; "
                          f"must be one of {CREDIT_CONVENTIONS}")
-    groups: dict[tuple[str, str, bool], list[dict]] = {}
+    valid_rows: list[dict] = []
     for row in rows:
+        if _valid_finite_number(row.get("gross_declared")) is None:
+            if strict:
+                raise ValueError(
+                    f"invalid gross_declared for {row.get('symbol')} ex "
+                    f"{row.get('ex_date')} special={bool(row.get('special'))}: "
+                    f"{row.get('gross_declared')!r} — must be an actual int/"
+                    "float, finite (not NaN/±inf/a numeric string/bool/None/"
+                    "out-of-range)")
+            continue
+        valid_rows.append(row)
+
+    groups: dict[tuple[str, str, bool], list[dict]] = {}
+    for row in valid_rows:
         groups.setdefault(_core_identity(row), []).append(row)
 
     events: dict[str, dict[str, float]] = {}
@@ -328,15 +459,23 @@ def _valid_positive_finite_number(value: object) -> float | None:
       never legitimately be infinite or undefined.
     * zero and negative values — a distributed security's consolidated
       close is always a positive price.
+    * FR-3: an out-of-range magnitude (e.g. an arbitrary-precision int
+      like `10**400`, a shape `json.load()` can legally produce) that
+      would raise `OverflowError` inside `float()` — caught and treated
+      the same as every other failure mode, never leaking `OverflowError`
+      past this function.
 
     `None` is returned uniformly for every failure mode so the caller
     (`build_corporate_action_events` below) has one bar to check, not a
-    tangle of a `TypeError` here and a range check there."""
+    tangle of a `TypeError`/`OverflowError` here and a range check there."""
     if isinstance(value, bool):
         return None
     if not isinstance(value, (int, float)):
         return None
-    numeric = float(value)
+    try:
+        numeric = float(value)
+    except OverflowError:
+        return None
     if not math.isfinite(numeric) or numeric <= 0:
         return None
     return numeric
@@ -369,23 +508,36 @@ def build_corporate_action_events(events: list[dict], *, strict: bool = True
     `float` scalar (never `bool`, never a numeric string, never NaN/±inf,
     never non-positive) is accepted. Anything else fails with `ValueError`
     naming the offending event AND the exact rejected value, never an
-    incidental `TypeError`, and never a silent string-to-number coercion."""
+    incidental `TypeError`, and never a silent string-to-number coercion.
+
+    FR-2: `ratio_child_per_parent` is now validated the SAME way, via the
+    same `_valid_positive_finite_number()` — a spin-off ratio (child
+    shares per parent share) is always a positive number, the same
+    economic constraint `child_close_on_parent_ex_session` already
+    carries. Previously this field was converted through a bare, unchecked
+    `float()` — silently accepting a numeric string and letting `NaN`/
+    `±inf` pass straight through into the output event."""
     out: dict[str, list[dict]] = {}
     for ev in events:
+        raw_ratio = ev.get("ratio_child_per_parent")
+        ratio = _valid_positive_finite_number(raw_ratio)
         raw_unit_value = ev.get("child_close_on_parent_ex_session")
         unit_value = _valid_positive_finite_number(raw_unit_value)
-        if unit_value is None:
+        if ratio is None or unit_value is None:
             if strict:
+                bad_field, bad_value = (
+                    ("ratio_child_per_parent", raw_ratio) if ratio is None
+                    else ("child_close_on_parent_ex_session", raw_unit_value))
                 raise ValueError(
                     f"corporate-action event {ev.get('parent')}->{ev.get('child')} "
-                    f"ex {ev.get('ex_date')} has no valid "
-                    f"child_close_on_parent_ex_session (got {raw_unit_value!r}) — "
-                    "data_acquisition.py's G1 validate() should already guarantee "
-                    "this; treat as a data-integrity failure, not a silent skip")
+                    f"ex {ev.get('ex_date')} has no valid {bad_field} "
+                    f"(got {bad_value!r}) — data_acquisition.py's G1 validate() "
+                    "should already guarantee this; treat as a data-integrity "
+                    "failure, not a silent skip")
             continue
         out.setdefault(ev["ex_date"], []).append({
             "ticker": ev["parent"],
-            "ratio": float(ev["ratio_child_per_parent"]),
+            "ratio": ratio,
             "unit_value": unit_value,
         })
     return out

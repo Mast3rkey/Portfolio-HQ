@@ -676,11 +676,70 @@ def test_build_dividend_events_real_g1_ledger_regression_unchanged_by_new_2():
     # data_acquisition.py's own G1 validation), so grouping by core
     # identity produces the exact same aggregate output as the pre-NEW-2
     # rule -- verified directly, not assumed.
+    #
+    # NOTE (FR-1): this test checks DATE/PAIR COUNTS only -- it does NOT by
+    # itself establish value-level identity, and did not catch the ~1e-11
+    # amount drift NEW-2 introduced via round(amount, 10) (see the
+    # dedicated value-level test immediately below, which does). Kept here
+    # unchanged as the count-level check it has always been; do not read
+    # this test's name as a claim about credited AMOUNTS.
     rows = dividend_ledger.load_dividend_ledger()
     assert len(rows) == 822
     events = dividend_ledger.build_dividend_events(rows)
     assert len(events) == 589          # unchanged distinct credited dates
     assert sum(len(v) for v in events.values()) == 820   # unchanged (date, ticker) pairs
+
+
+def test_build_dividend_events_real_g1_ledger_values_match_independent_aggregation():
+    # FR-1: value-level regression, not merely counts. An independent
+    # re-review found that NEW-2's _resolve_core_identity_group() returned
+    # round(amount, 10) -- the SAME value used only to detect duplicate-
+    # vs-conflict agreement -- as the CREDITED amount, silently rounding
+    # 39 of the real ledger's 820 (date, ticker) pairs by up to ~3.34e-11
+    # relative to the pre-NEW-2 (790979f) behavior, which credited the
+    # raw, unrounded gross_declared value. The count-only test above could
+    # not catch this (589/820 were unchanged either way).
+    #
+    # This test does NOT call build_dividend_events() twice and compare it
+    # to itself -- `expected` below is computed by a separate, minimal,
+    # independent aggregation loop directly over the raw loaded rows (a
+    # plain per-(ex_date, symbol) sum of raw gross_declared, dropping
+    # non-positive amounts the same way the module's own contract does).
+    # The real G1 ledger has zero true-duplicate or conflicting groups
+    # under core identity (every row is unique on every field, confirmed
+    # by the test above), so this independent per-row sum is a correct,
+    # from-first-principles expectation -- not a restatement of the
+    # production grouping/conflict logic.
+    rows = dividend_ledger.load_dividend_ledger()
+    assert len(rows) == 822
+
+    expected: dict[str, dict[str, float]] = {}
+    for r in rows:
+        amt = float(r["gross_declared"])
+        if amt <= 0:
+            continue
+        bucket = expected.setdefault(r["ex_date"], {})
+        bucket[r["symbol"]] = bucket.get(r["symbol"], 0.0) + amt
+
+    events = dividend_ledger.build_dividend_events(rows)
+
+    assert len(events) == 589
+    assert sum(len(v) for v in events.values()) == 820
+    assert events.keys() == expected.keys()
+    for d in expected:
+        assert events[d].keys() == expected[d].keys()
+        for t in expected[d]:
+            # Exact float equality (not math.isclose) -- this is precisely
+            # the check that fails under the pre-FR-1 round(amount, 10)
+            # behavior for the 39 affected pairs, and passes under the
+            # corrected raw-value behavior.
+            assert events[d][t] == expected[d][t], (d, t, events[d][t], expected[d][t])
+
+    # Exact Python dict/value-structure equality against the independently
+    # computed expectation -- described precisely as structural/value
+    # equality (not a claim of byte-level serialized-file identity, which
+    # this test does not produce or compare).
+    assert events == expected
 
 
 def test_build_dividend_events_drops_nonpositive_amounts():
@@ -727,6 +786,104 @@ def test_build_dividend_events_output_is_engine_compatible():
                                         deposit_amount=100.0, min_lot=1.0,
                                         dividend_events=events)
     assert sum(result.dividend_credit_series) > 0.0
+
+
+# ── FR-2/FR-3: exhaustive numeric-validation matrix for gross_declared ───────
+
+def test_valid_finite_number_helper_directly():
+    # Direct unit coverage of _valid_finite_number()'s exact contract:
+    # unlike _valid_positive_finite_number(), zero and negative values are
+    # VALID here (a non-positive gross_declared is a legitimate "no
+    # dividend cash" input handled downstream, not a validation failure);
+    # everything else (wrong type, bool, numeric string, NaN, +-inf,
+    # out-of-range magnitude) is rejected identically to the positive-only
+    # helper.
+    from dividend_ledger import _valid_finite_number
+    assert _valid_finite_number(50) == 50.0
+    assert _valid_finite_number(50.0) == 50.0
+    assert _valid_finite_number(0) == 0.0
+    assert _valid_finite_number(0.0) == 0.0
+    assert _valid_finite_number(-5) == -5.0
+    assert _valid_finite_number(-5.0) == -5.0
+    assert _valid_finite_number("50.0") is None
+    assert _valid_finite_number("inf") is None
+    assert _valid_finite_number(float("inf")) is None
+    assert _valid_finite_number(float("-inf")) is None
+    assert _valid_finite_number(float("nan")) is None
+    assert _valid_finite_number(True) is None
+    assert _valid_finite_number(False) is None
+    assert _valid_finite_number(None) is None
+    assert _valid_finite_number([]) is None
+    # FR-3: an out-of-range magnitude that would OverflowError inside
+    # float() is rejected the same as every other failure mode, never
+    # leaking OverflowError.
+    assert _valid_finite_number(10 ** 400) is None
+    assert _valid_finite_number(-(10 ** 400)) is None
+
+
+@pytest.mark.parametrize("bad_value,label", [
+    ("50.0", "numeric string (must NOT be coerced)"),
+    ("inf", "non-finite numeric string"),
+    (float("inf"), "positive infinity"),
+    (float("-inf"), "negative infinity"),
+    (float("nan"), "NaN"),
+    (True, "bool True (int subclass, must not be treated as 1.0)"),
+    (False, "bool False (int subclass, must not be treated as 0.0)"),
+    (None, "missing"),
+    ([], "wrong type: list"),
+    (10 ** 400, "extremely large positive int (OverflowError inside float())"),
+    (-(10 ** 400), "extremely large negative int (OverflowError inside float())"),
+])
+def test_build_dividend_events_strict_rejects_every_invalid_gross_declared(bad_value, label):
+    row = _div_row("AAA", "2024-01-05", bad_value, alpaca_id="id1")
+    with pytest.raises(ValueError):
+        dividend_ledger.build_dividend_events([row])
+
+
+@pytest.mark.parametrize("bad_value", [
+    "50.0", "inf", float("inf"), float("-inf"), float("nan"), True, False, None,
+    10 ** 400, -(10 ** 400),
+])
+def test_build_dividend_events_nonstrict_excludes_row_with_invalid_gross_declared(bad_value):
+    row = _div_row("AAA", "2024-01-05", bad_value, alpaca_id="id1")
+    events = dividend_ledger.build_dividend_events([row], strict=False)
+    assert events == {}
+
+
+def test_build_dividend_events_nonstrict_excludes_only_the_malformed_row_not_other_groups():
+    # FR-2 item: nonstrict must exclude just the one malformed ROW (and, by
+    # consequence, any group that becomes empty because of it) -- never
+    # any OTHER group's legitimate credit in the same call.
+    bad = _div_row("AAA", "2024-01-05", "not-a-number", alpaca_id="id1")
+    clean = _div_row("BBB", "2024-01-05", 0.30, alpaca_id="id2")
+    events = dividend_ledger.build_dividend_events([bad, clean], strict=False)
+    assert events == {"2024-01-05": {"BBB": 0.30}}
+
+
+@pytest.mark.parametrize("good_value", [50, 50.0, 0.001, 1e-6, 1e6])
+def test_build_dividend_events_accepts_every_valid_gross_declared(good_value):
+    row = _div_row("AAA", "2024-01-05", good_value, alpaca_id="id1")
+    events = dividend_ledger.build_dividend_events([row])
+    assert events == {"2024-01-05": {"AAA": float(good_value)}}
+
+
+def test_build_dividend_events_strict_error_names_row_identity_and_value():
+    row = _div_row("ZZZ", "2024-06-01", "not-a-number", special=True, alpaca_id="id1")
+    with pytest.raises(ValueError, match="ZZZ") as exc_info:
+        dividend_ledger.build_dividend_events([row])
+    msg = str(exc_info.value)
+    assert "2024-06-01" in msg
+    assert "not-a-number" in msg
+
+
+def test_build_dividend_events_real_g1_ledger_still_valid_under_fr2_validation():
+    # Confirms FR-2's new per-row gross_declared validation does not
+    # reject anything in the real, already-G1-validated ledger -- valid
+    # G1 ledger behavior is unchanged.
+    rows = dividend_ledger.load_dividend_ledger()
+    events = dividend_ledger.build_dividend_events(rows)  # must not raise
+    assert len(events) == 589
+    assert sum(len(v) for v in events.values()) == 820
 
 
 # ── corporate-action events ──────────────────────────────────────────────────
@@ -786,6 +943,8 @@ def test_build_corporate_action_events_nonstrict_skips_nonnumeric_unit_value():
     (-5.0, "negative float"),
     (None, "missing"),
     ([], "wrong type: list"),
+    (10 ** 400, "extremely large positive int (OverflowError inside float(), FR-3)"),
+    (-(10 ** 400), "extremely large negative int (OverflowError inside float(), FR-3)"),
 ])
 def test_build_corporate_action_events_strict_rejects_every_invalid_unit_value(bad_value, label):
     ev = _ca_event("PPP", "CCC", 0.2, "2024-05-01", bad_value)
@@ -795,6 +954,7 @@ def test_build_corporate_action_events_strict_rejects_every_invalid_unit_value(b
 
 @pytest.mark.parametrize("bad_value", [
     "50.0", "inf", float("inf"), float("-inf"), float("nan"), True, False, 0, None,
+    10 ** 400, -(10 ** 400),
 ])
 def test_build_corporate_action_events_nonstrict_skips_every_invalid_unit_value(bad_value):
     ev = _ca_event("PPP", "CCC", 0.2, "2024-05-01", bad_value)
@@ -829,6 +989,69 @@ def test_valid_positive_finite_number_helper_directly():
     assert _valid_positive_finite_number(0) is None
     assert _valid_positive_finite_number(-5) is None
     assert _valid_positive_finite_number(None) is None
+    # FR-3: an out-of-range magnitude that would OverflowError inside
+    # float() is rejected the same as every other failure mode.
+    assert _valid_positive_finite_number(10 ** 400) is None
+    assert _valid_positive_finite_number(-(10 ** 400)) is None
+
+
+# ── FR-2: exhaustive numeric-validation matrix for ratio_child_per_parent ────
+# (mirrors the NEW-1 child_close_on_parent_ex_session matrix above -- a
+# spin-off ratio is validated via the same _valid_positive_finite_number(),
+# on the same economic footing: always a positive number of child shares
+# per parent share, never zero/negative/non-finite/a numeric string.)
+
+@pytest.mark.parametrize("bad_value,label", [
+    ("0.2", "numeric string (must NOT be coerced)"),
+    ("inf", "non-finite numeric string"),
+    (float("inf"), "positive infinity"),
+    (float("-inf"), "negative infinity"),
+    (float("nan"), "NaN"),
+    (True, "bool True (int subclass, must not be treated as 1.0)"),
+    (False, "bool False (int subclass, must not be treated as 0.0)"),
+    (0, "zero"),
+    (0.0, "zero float"),
+    (-0.2, "negative float"),
+    (None, "missing"),
+    ([], "wrong type: list"),
+    (10 ** 400, "extremely large positive int (OverflowError inside float(), FR-3)"),
+    (-(10 ** 400), "extremely large negative int (OverflowError inside float(), FR-3)"),
+])
+def test_build_corporate_action_events_strict_rejects_every_invalid_ratio(bad_value, label):
+    ev = _ca_event("PPP", "CCC", bad_value, "2024-05-01", 50.0)
+    with pytest.raises(ValueError):
+        dividend_ledger.build_corporate_action_events([ev])
+
+
+@pytest.mark.parametrize("bad_value", [
+    "0.2", "inf", float("inf"), float("-inf"), float("nan"), True, False, 0, None,
+    10 ** 400, -(10 ** 400),
+])
+def test_build_corporate_action_events_nonstrict_skips_every_invalid_ratio(bad_value):
+    ev = _ca_event("PPP", "CCC", bad_value, "2024-05-01", 50.0)
+    out = dividend_ledger.build_corporate_action_events([ev], strict=False)
+    assert out == {}
+
+
+@pytest.mark.parametrize("good_value", [0.2, 1, 2.5, 0.001])
+def test_build_corporate_action_events_accepts_every_valid_ratio(good_value):
+    ev = _ca_event("PPP", "CCC", good_value, "2024-05-01", 50.0)
+    out = dividend_ledger.build_corporate_action_events([ev])
+    assert out == {"2024-05-01": [{"ticker": "PPP", "ratio": float(good_value), "unit_value": 50.0}]}
+
+
+def test_build_corporate_action_events_strict_error_names_field_and_value_for_bad_ratio():
+    ev = _ca_event("PPP", "CCC", "not-a-number", "2024-05-01", 50.0)
+    with pytest.raises(ValueError, match="ratio_child_per_parent") as exc_info:
+        dividend_ledger.build_corporate_action_events([ev])
+    assert "not-a-number" in str(exc_info.value)
+
+
+def test_build_corporate_action_events_strict_error_names_field_and_value_for_bad_unit_value():
+    ev = _ca_event("PPP", "CCC", 0.2, "2024-05-01", "not-a-number")
+    with pytest.raises(ValueError, match="child_close_on_parent_ex_session") as exc_info:
+        dividend_ledger.build_corporate_action_events([ev])
+    assert "not-a-number" in str(exc_info.value)
 
 
 # ═════════════════════════════════════════════════════════════════════════
