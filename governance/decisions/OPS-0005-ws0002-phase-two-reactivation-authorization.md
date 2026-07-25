@@ -7,6 +7,24 @@ related_decisions: [OPS-0001, OPS-0002, OPS-0003, OPS-0004, GOV-0002, PI-0011]
 supporting_artifact: docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md
 ---
 
+_**Correction — 2026-07-25 (same-day, pre-merge; addresses Fable independent
+review finding F-1, review ID 4779232640):** the "Alternatives Considered"
+section's final bullet stated that the `governance/decisions.yaml` index row
+and the CLAUDE.md Decisions Log entry were not added by this PR and would
+need a separate follow-up. That was accurate for an earlier revision of this
+PR but is stale at this head: the initial draft omitted both discovery
+updates — a scope error, not a deliberate design choice, once weighed
+against the `OPS-0002`/`OPS-0003`/`OPS-0004` precedent of always including
+them — and this PR was amended before acceptance to include both. No
+separate indexing follow-up remains necessary. The bullet below is corrected
+in place to state this, per `governance/decisions/README.md`'s narrow-
+correction convention and the same-day, pre-merge pattern `OPS-0002` already
+used for its own in-place correction. This correction does not contradict
+Fable's review — it implements the review's own recommended fix — and
+changes nothing else in this decision: the authority granted, permitted/
+prohibited scope, the one-implementation-PR ceiling, effectivity-on-merge,
+Fable Audit Gate #2, and every supersession in §7 are all unchanged._
+
 ## Context
 
 `OPS-0002` scoped and audited a WS-0002 planning baseline
@@ -277,12 +295,15 @@ not a loosening of the underlying discipline.
   require its own separate decision under `OPS-0002` item 7; this filing
   deliberately leaves WS-0001/WS-0002 priority exactly as `OPS-0003` set it.
 - **Fold the Decisions Log / `governance/decisions.yaml` index update into
-  this same PR**, as `OPS-0002`/`OPS-0003`/`OPS-0004` each did. Considered,
-  but the principal's authorization for this filing bounds it to exactly the
-  new decision file and the `operations/WORKSTREAMS.yaml` synchronization —
-  narrower than the usual convention. Recorded here as a known, deliberate
-  gap: the governance index and CLAUDE.md Decisions Log pointer for OPS-0005
-  are not added by this PR and would need a small, separate follow-up.
+  this same PR**, as `OPS-0002`/`OPS-0003`/`OPS-0004` each did. **Corrected
+  2026-07-25 (see the dated correction note above this decision's Context
+  section):** the initial draft of this PR omitted both discovery updates —
+  a scope error, not a deliberate design choice, once weighed against the
+  `OPS-0002`/`OPS-0003`/`OPS-0004` precedent of always including them. This
+  PR was amended before acceptance to include both: the new
+  `governance/decisions.yaml` index row and the CLAUDE.md Decisions Log
+  entry are now part of this same PR. No separate indexing follow-up
+  remains necessary.
 
 ## Consequences
 
