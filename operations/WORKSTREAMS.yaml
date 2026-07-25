@@ -600,7 +600,15 @@ workstreams:
           event/gap risk, regulatory sensitivity, evidence dependence) with
           named candidate review triggers where applicable — no universal
           cadence. Not authorized to execute — completing Milestones 1-2
-          does not authorize this milestone.
+          does not authorize this milestone. **Batch 1 authorized 2026-07-25
+          (PI-0023):** exactly ASML, AMAT, KLAC, and LRCX (the semis-cluster
+          semiconductor capital-equipment sub-segment) — evidence development
+          only, per PI-0023's full research standard, evidence discipline,
+          zero-based discipline, and prohibitions. This milestone's own
+          status stays proposed in aggregate (only Batch 1 is authorized; the
+          milestone as a whole, and any further batch, is not). No research
+          has been performed under PI-0023 itself — it authorizes a later,
+          separate, bounded implementation PR only.
         pr: null
         status: proposed
         date: "2026-07-25"
@@ -684,18 +692,27 @@ workstreams:
       - "PR #151 (merged 2026-07-25T15:55:36Z, merge commit 4ff13dfa5ec0a27e55c0eb5f563b4a9c7626c131)"
       - "PR #151 independent Fable full review 4779531873 (anchored to 4dba4c9328dd1c2c8d7cf53c95d9ee722c00d991, APPROVED WITH NON-BLOCKING FINDINGS)"
       - "PR #151 independent Fable delta review 4779547851 (anchored to 4a2eafe8cfc28f2515e58db05a0e0cc1e6f282fa, resolves NB-1, DELTA APPROVED FOR READINESS AND MERGE)"
+      - "PR #152 (WS-0005 register sync, merged 2026-07-25, merge commit 88ac03adac8bd4f0a3bc43b36ce097c84998b27b)"
+      - governance/decisions/PI-0023-ws0005-milestone3-batch1-semis-equipment.md
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
-      and correctly anchored, and post-merge verification/validation
-      (ancestry, merge scope, full pytest suite, both validators, decision
-      index reconciliation, YAML parsing, git diff --check, working-tree
-      cleanliness) all passed on a clean checkout of current origin/main.
-      No Milestone 3 (or later) company-research work has begun, and none
-      is authorized by this entry or by Milestones 1-2 reaching complete —
-      Milestones 3 through 9 remain status: proposed, each requiring its
-      own separate, later, explicit principal authorization per OPS-0006
-      §5.
+      and correctly anchored, post-merge verification/validation (ancestry,
+      merge scope, full pytest suite, both validators, decision index
+      reconciliation, YAML parsing, git diff --check, working-tree
+      cleanliness) all passed on a clean checkout of current origin/main,
+      and PR #152 independently re-verified that state and reconciled two
+      non-blocking findings (F-2/F-3).
+
+      Milestone 3, Batch 1 (ASML, AMAT, KLAC, LRCX) is authorized effective
+      on PI-0023's merge — see the milestone-3-intelligence-completion gate
+      entry above. Next action once PI-0023 merges: open exactly one
+      bounded research implementation PR covering that batch, per PI-0023's
+      full authorization scope. No research has begun; this decision
+      authorizes it, it does not perform it. This does not authorize a
+      second Milestone 3 batch, Milestone 4, or any later milestone — each
+      still requires its own separate, later, explicit principal
+      authorization per OPS-0006 §5.
 
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
@@ -730,13 +747,15 @@ workstreams:
       or any later milestone — each requires its own separate future
       governance decision, per OPS-0006 §5.
     blocker: >
-      None on Milestones 1-2 — complete. Milestones 3 through 9 remain
-      blocked pending their own separate, later, explicit principal
-      authorization; none has been granted by this reconciliation or by
+      None on Milestones 1-2 — complete. None on Milestone 3, Batch 1
+      (ASML, AMAT, KLAC, LRCX) — authorized effective on PI-0023's merge.
+      Milestone 3's remaining scope (any further batch) and Milestones 4
+      through 9 remain blocked pending their own separate, later, explicit
+      principal authorization; none has been granted by this entry or by
       anything else.
     active_branch: null
     active_pr: null
-    last_verified_main_sha: 4ff13dfa5ec0a27e55c0eb5f563b4a9c7626c131
+    last_verified_main_sha: 88ac03adac8bd4f0a3bc43b36ce097c84998b27b
     last_verified_date: "2026-07-25"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
@@ -745,6 +764,9 @@ workstreams:
       completion recorded per OPS-0006 §16.1 following PR #151's merge and
       this session's independent post-merge verification and validation —
       this reconciliation grants no new authorization and does not itself
-      authorize Milestone 3.
+      authorize Milestone 3. PI-0023 (Milestone 3, Batch 1 — ASML, AMAT,
+      KLAC, LRCX — evidence development only) authorizes exactly that one
+      batch, effective on its own merge; it grants no authority beyond that
+      batch and does not authorize a second batch or any later milestone.
     supersedes: null
     superseded_by: null
