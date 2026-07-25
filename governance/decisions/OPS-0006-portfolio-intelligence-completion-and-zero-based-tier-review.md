@@ -74,6 +74,28 @@ explicit governance decision and bounded implementation PR. Per `governance/deci
 README.md`'s narrow-correction convention and the same same-day, pre-merge, pre-audit pattern
 used for the first two amendments, this is made in place rather than by superseding filing._
 
+_**Fourth amendment — 2026-07-25 (same-day, pre-merge, pre-review; PR #150 still carries zero
+GitHub reviews at the time of this amendment):** adds new §16 (four subsections), the smallest
+complete progress-tracking, completion-evidence, and anti-duplication discipline for WS-0005.
+§16.1 states a milestone completion discipline using `operations/WORKSTREAMS.yaml`'s existing
+fields and `OPS-0001`'s existing status vocabulary — no new register schema — and lists what,
+alone, never constitutes completion (discussion, a local edit, a commit, an open PR, a
+pre-merge test result, etc.). §16.2 requires the future retained Milestones 1-2 audit artifact
+to carry a per-asset completion ledger, reusing existing schema/registry fields where they
+already exist, explicitly kept out of `operations/WORKSTREAMS.yaml` (no per-asset register
+entries, consistent with `OPS-0001`'s existing no-duplicate-dashboard design). §16.3 requires
+any future WS-0005 session to inspect accepted decisions, the register, retained artifacts,
+Intelligence/freshness records, and open/merged PR state before working, and to work only the
+next unfinished authorized unit, never repeating completed work without new evidence, recorded
+staleness, a verified error, an incomplete deliverable, or accepted reopening authority. §16.4
+restates, for progress records specifically, that the register never originates authority and
+that no completion claim may be inferred from a deleted branch, a satisfied blocker, a merged
+PR alone, or stale wording. No authority ceiling changes: Milestones 1-2 remain the only
+executable scope, Milestones 3-9 remain proposed, and §§1-15 are otherwise unchanged. Per
+`governance/decisions/README.md`'s narrow-correction convention and the same same-day,
+pre-merge, pre-audit pattern used for the first three amendments, this is made in place rather
+than by superseding filing._
+
 ## Context
 
 `OPS-0001` recorded three durable planning intents without scoping or authorizing any of
@@ -630,6 +652,59 @@ cadence core, each its own separately authorized filing) before any operational 
 component was built, and the same discipline this decision's own §5 already applies to
 Milestones 3-9.
 
+### 16. Progress ledger, completion evidence, and anti-duplication discipline
+
+**16.1 Milestone completion discipline.** Each WS-0005 milestone's `operations/WORKSTREAMS.yaml`
+entry uses its **existing** `gate`/`description`/`pr`/`status`/`date` fields (no new register
+schema) to carry, once work on it begins: its lifecycle status (`proposed` → `authorized` →
+`in_progress`/`review` → `merged` → `complete`, per `OPS-0001`'s existing status vocabulary —
+`merged` and `complete` are distinct states already, not synonyms); its objective completion
+criteria; retained artifact or evidence references (workstream-level `evidence_refs`, or cited
+inline); the merged PR number and merge commit; a completion date; unresolved gaps,
+limitations, or partial coverage; the exact next action; and whether the next milestone is
+authorized or remains proposed — the last of these is already visible directly from that next
+milestone's own `status` field, requiring no duplicate record. **A milestone may be marked
+`complete` only after**: every deliverable authorized for it exists; its producing PR is
+merged; required tests and validators pass; post-merge verification is complete; and
+`operations/WORKSTREAMS.yaml` and `governance/decisions.yaml` are factually synchronized to
+that state. **None of the following, alone, constitutes completion:** discussion; a
+recommendation; draft research; a local file; an edit; a commit; a push; an open PR; or a
+pre-merge test result.
+
+**16.2 Asset-level completion ledger.** The retained Milestones 1-2 audit artifact (§5, §11 —
+not yet created) must track every governed asset with fields equivalent to: inventory status;
+asset type; applicable Intelligence record or schema; Intelligence coverage status;
+freshness-review status; missing evidence; margin-relevance evidence status (§4 Milestone 3);
+refresh-profile status (§10); retained source or artifact reference; unresolved gap; and next
+required action. **Exact field names are not mandated where an existing schema, registry, or
+index already provides an equivalent** (e.g. a ticker's own `portfolio_role_ref`,
+`sources[]`, or `intelligence/freshness_registry.yaml` row). This detailed, per-asset ledger
+belongs in the retained audit artifact or an appropriate Intelligence index — **not** as one
+`operations/WORKSTREAMS.yaml` record per asset, consistent with `OPS-0001`'s existing "no
+duplicate dashboard" design (a second per-asset rendering in the register would drift from its
+source exactly the way `PI-0001` already rejected a parallel `intelligence/index.yaml`).
+
+**16.3 Anti-duplication preflight.** Before any future WS-0005 session begins work, it must
+inspect: accepted decisions; `operations/WORKSTREAMS.yaml`; any retained WS-0005 audit
+artifacts; Intelligence records, freshness registries, checkpoints, and indexes; merged PRs and
+commits; open PRs and live branches; and any incomplete, partial, blocked, stale, or unresolved
+ledger entries. **The session must work only on the next unfinished authorized unit.**
+Completed work must not be repeated unless there is identified new evidence, recorded
+staleness, a verified error, an incomplete prior deliverable, or accepted reopening authority —
+mirroring the same discipline `governance/decisions/README.md` already applies to decision
+files (correct or supersede explicitly, never silently redo).
+
+**16.4 Integrity boundaries.** Restated and made explicit for WS-0005's own progress records,
+consistent with `OPS-0001`'s pre-existing register discipline (§8 already relies on this same
+principle): the register records verified progress, it never creates authority — completing
+one milestone does not authorize the next (§5, §7 item 5, restated once more here because it
+governs progress-tracking as directly as it governs authorization); partial work stays marked
+partial or in-progress, never rounded up; unavailable evidence and skipped assets must be
+recorded as gaps, never silently treated as complete; corrections and supersessions preserve
+accepted history, per `governance/decisions/README.md`'s convention; and **no completion claim
+may be inferred from a deleted branch, a satisfied blocker, a merged PR alone, or stale
+operational wording** — each requires the full completion discipline in §16.1.
+
 ## Rationale
 
 This follows the same charter-then-gate discipline `MARGIN-0005` established for margin
@@ -708,6 +783,20 @@ inventing a second one, follows the same reuse-before-rebuild principle `PI-0011
 `AUTO-0003` already applied to their own adjacent components. §15's explicit non-grant closes
 the same category of ambiguity §5 already closed for Milestones 3-9 generally — naming
 principles for a future scanner is not, and must never be read as, authorizing one.
+
+**On the fourth amendment (§16) specifically:** a workstream spanning nine milestones and up to
+~65 assets is exactly the shape where "merged" quietly gets read as "done" without anyone
+having stated the difference — `OPS-0001`'s status vocabulary already distinguishes `merged`
+from `complete`, but nothing before this amendment said a WS-0005 milestone must actually reach
+`complete`'s stricter bar before later work treats it as finished. §16.1 states that bar using
+only fields the register already has, the same minimal-schema discipline `OPS-0001` itself
+applied when it rejected a validator/dashboard/CI addition for v1. §16.2 keeps the necessarily
+large per-asset ledger out of the register for the identical reason `OPS-0001` rejected a
+generated Markdown dashboard and `PI-0001` rejected `intelligence/index.yaml` — a ~65-row
+register would drift from its source the moment any of those rows changed elsewhere. §16.3/§16.4
+exist because a multi-session, multi-milestone workstream is precisely where duplicated work or
+a false completion claim would first surface, and stating the discipline once, now, is cheaper
+than discovering the gap after Milestone 3 work has already been done twice.
 
 ## Alternatives Considered
 
@@ -793,6 +882,15 @@ principles for a future scanner is not, and must never be read as, authorizing o
   objective, computable overweight; staleness is an evidence-quality judgment, not a numeric
   threshold, and treating it as automatically actionable would let an absent or overdue review
   masquerade as a risk finding. §14 requires disclosure and permits abstention instead.
+- **Add a new `operations/WORKSTREAMS.yaml` schema field, or one register row per governed
+  asset, for the completion/asset ledgers.** Rejected — §16.1 reuses the register's existing
+  fields exactly; §16.2 deliberately keeps the necessarily large per-asset ledger inside the
+  retained audit artifact instead, the same no-duplicate-dashboard reasoning `OPS-0001` and
+  `PI-0001` already applied to their own adjacent designs.
+- **Leave completion/anti-duplication discipline unstated and rely on ordinary session
+  judgment.** Rejected — a nine-milestone, multi-session, ~65-asset workstream is exactly the
+  shape where "merged" silently reads as "done" or where two sessions duplicate the same
+  unfinished unit; stating the discipline once, briefly, costs one section.
 
 ## Consequences
 
@@ -833,8 +931,16 @@ exit, or margin-policy change; and **no automated scanner, recurring job, notifi
 scheduled external-data collection, SEC/Federal Reserve/broker/news/market-data integration,
 generated research update, or production workflow coupling is authorized by this decision** —
 any such implementation requires its own later, separate, explicit governance decision and
-bounded implementation PR. WS-0001 moves to `priority: secondary` with its MARGIN-0005 research
-authority, milestones, and S3 gate completely unchanged. WS-0002 remains `priority: secondary`,
+bounded implementation PR. **§16 additionally establishes the smallest complete progress-
+tracking, completion-evidence, and anti-duplication discipline for WS-0005**, using the
+register's existing fields and status vocabulary, no new schema: a milestone reaches `complete`
+only after every authorized deliverable exists, its PR is merged, tests/validators pass, and
+`operations/WORKSTREAMS.yaml`/`governance/decisions.yaml` are synchronized — never from
+discussion, a commit, a push, or an open PR alone; the future audit artifact carries a per-asset
+completion ledger, kept out of the register; and every future WS-0005 session must inspect
+prior state and work only the next unfinished authorized unit, never repeating completed work
+without new evidence or accepted reopening authority. WS-0001 moves to `priority: secondary`
+with its MARGIN-0005 research authority, milestones, and S3 gate completely unchanged. WS-0002 remains `priority: secondary`,
 `status: authorized`, with `OPS-0005`'s Phase Two grant fully intact and un-narrowed. WS-0003
 and WS-0004 are untouched. `operations/WORKSTREAMS.yaml`'s WS-0002 entry is synchronized to live
 GitHub truth (PR #149 merged, `active_branch`/`active_pr` cleared, milestone status corrected,

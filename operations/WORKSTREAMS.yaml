@@ -617,22 +617,31 @@ workstreams:
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
     next_action: >
-      Open the single bounded first audit PR covering Milestones 1 (baseline
-      and inventory) and 2 (Intelligence coverage and freshness audit),
+      Per OPS-0006 §16.3, inspect accepted decisions, this register,
+      any retained WS-0005 audit artifacts, Intelligence/freshness
+      records, and open/merged PR state before starting. Open the single
+      bounded first audit PR covering Milestones 1 (baseline and
+      inventory) and 2 (Intelligence coverage and freshness audit),
       authorized by OPS-0006 §5. May produce one retained advisory audit
-      artifact plus its dedicated tests/validators only where repository
-      convention requires them. Must not complete or rewrite any company
-      Intelligence record. Milestones 3 through 9 remain unauthorized;
-      completing this first audit PR does not itself authorize Milestone 3
-      or any later milestone.
+      artifact — carrying the §16.2 per-asset completion ledger — plus its
+      dedicated tests/validators only where repository convention requires
+      them. Must not complete or rewrite any company Intelligence record.
+      Milestones 3 through 9 remain unauthorized; completing this first
+      audit PR does not itself authorize Milestone 3 or any later
+      milestone.
     completion_criteria: >
-      Milestones 1-2 are complete when: the one bounded first audit PR
-      merges; its dedicated tests/validators (if any) and the full suite
-      pass; the enumerated asset inventory and Intelligence coverage/
-      freshness findings are recorded; and no company Intelligence record
-      was completed or rewritten in the process. Completion does not itself
-      authorize Milestone 3 or any later milestone — each requires its own
-      separate future governance decision, per OPS-0006 §5.
+      Per OPS-0006 §16.1's completion discipline: Milestones 1-2 reach
+      status: complete only when the one bounded first audit PR merges;
+      its dedicated tests/validators (if any) and the full suite pass; the
+      enumerated asset inventory, Intelligence coverage/freshness findings,
+      and the §16.2 per-asset ledger are recorded in the retained audit
+      artifact; no company Intelligence record was completed or rewritten
+      in the process; and this register plus governance/decisions.yaml are
+      factually synchronized to that state. A merged PR alone, a commit, a
+      push, or an open PR does not by itself constitute completion.
+      Completion does not itself authorize Milestone 3 or any later
+      milestone — each requires its own separate future governance
+      decision, per OPS-0006 §5.
     blocker: >
       None on Milestones 1-2 — OPS-0006 §5 grants their execution upon
       merge. Implementation has not begun; no branch or PR exists for it
