@@ -254,7 +254,7 @@ Grouped by shared economic system / evidence overlap, to reduce duplication if a
 2. **power_infra cluster, uncovered members** (ETN, VRT, PWR) — 3 of 4 cluster members uncovered; GEV's existing record already documents the cluster's shared driver.
 3. **oil cluster, uncovered member** (CVX) — 1 of 2; XOM's existing record already documents the shared crude-oil mechanism, likely directly reusable context.
 4. **life_sciences_tools_medtech theme, deferred candidates** (SYK, DHR) — both already named and reasoned about in the existing theme file and PI-0014's conversational review; a future record for either would extend, not originate, existing analysis.
-5. **T1/T2 names with no coverage and no cluster overlap** (AVGO already listed under semis; remaining: ASML listed under semis; AMZN, CEG, MA, BRK.B, WMT, EQIX, MLM, AAPL) — no shared mechanism identified in this audit; would be independent, single-company batches if ever pursued.
+5. **T1/T2 names with no coverage and no cluster overlap** (AVGO already listed under semis; remaining: ASML listed under semis; MSFT, GOOGL, META, LLY, V, AMZN, CEG, MA, BRK.B, WMT, EQIX, MLM, AAPL) — no shared mechanism identified in this audit; would be independent, single-company batches if ever pursued.
 
 This batching is a grouping suggestion only, based on already-existing shared evidence and cluster/theme structure — it ranks nothing, authorizes nothing, and creates no research charter or trial consumption.
 
