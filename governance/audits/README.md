@@ -15,7 +15,9 @@ as the work it describes.
   not a repository edit.
 - Referenced by the governance decision(s) that rely on it via `supporting_artifact` in that
   decision's frontmatter, and by SHA-256 in the decision's own text where identity matters.
-- Any future audit gate that a governance decision names as a completion condition (e.g.
-  `OPS-0002` item 4's two remaining checkpoints) is satisfied only by a retained, attributable
-  artifact filed here — narrative-only claims in a PR body or commit message no longer suffice
-  as of `OPS-0004`.
+- `OPS-0002` item 4's two remaining architecture audit checkpoints (after material architecture
+  implementation; before final end-to-end acceptance) are satisfied only by a retained,
+  attributable artifact filed here — narrative-only claims in a PR body or commit message no
+  longer suffice for those two checkpoints as of `OPS-0004`. A future governance decision may
+  explicitly adopt this same convention for other audit gates; `OPS-0004` does not, by itself,
+  impose this requirement on any audit gate beyond those two checkpoints.

@@ -172,10 +172,11 @@ future audit satisfying one of `OPS-0002` item 4's two remaining checkpoints mus
 retained artifact under `governance/audits/` as part of that checkpoint's completion. No
 WS-0002 implementation, no WS-0001/`MARGIN-0005` change, no action on PR #145, and no
 allocator/`targets.yaml`/`holdings.yaml`/margin/Intelligence/production-code/trade/order change
-results from this decision. This decision, the retained artifact, the `governance/audits/`
-README, and the `OPS-0003` note become effective once this exact implementing commit is pushed
-to the designated branch and, per the principal's standing instructions for this repository, a
-pull request is opened only if and when the principal asks for one.
+results from this decision. This decision, the retained audit artifact, the audit-retention
+convention, and the appended `OPS-0003` factual note become effective only when the exact
+implementing pull request merges to `main` after independent review — not when the implementing
+commit is pushed or a pull request is merely opened. The next concrete step is that independent
+review, not merge.
 
 ---
 
