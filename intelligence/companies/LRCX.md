@@ -48,6 +48,29 @@ this record:**
 - Whether COVID-19-era (2020) disruption materially affected Lam
   specifically was not researched to a confirmed answer.
 
+**Remediation pass (2026-07-25):** a preliminary external primary-source
+cross-check requested two corrections, both applied. (1) **Precisely
+sequenced the 2022-2023 memory-downturn quarters**, which the original
+draft under-specified as a single "~31% YoY" figure without naming both
+compared quarters or distinguishing it from the cycle's other declines: the
+31.4% YoY decline compares Q1 FY2024 (quarter ended 2023-09-24) to Q1
+FY2023 (quarter ended 2022-09-25), and is now explicitly distinguished
+from two separate sequential (quarter-over-quarter) declines in the two
+preceding quarters — 26.7% (Q3 FY2023 vs. Q2 FY2023) and 17.1% (Q4 FY2023
+vs. Q3 FY2023). See the Risks section below for the full quarter-by-quarter
+sequence. (2) **Added an official citation for the ~7% workforce
+reduction**: Form 8-K filed 2023-01-23 (SEC EDGAR accession
+0000707549-23-000005), with CEO Tim Archer's commentary on the 2023-01-25
+Q2 FY2023 earnings call — that commentary itself cites both slowing
+wafer-fabrication-equipment demand and the effect of the most recent US
+export-control regulations as reasons, retained here as a mixed,
+company-stated causation rather than simplified to a single cause. This
+session's own WebFetch access remained blocked (HTTP 403) throughout this
+remediation pass; the corrections rest on multiple independent,
+mutually-corroborating WebSearch results identifying Lam's own quarterly
+8-K exhibits by filing date and accession number, not on the external
+cross-check's claim alone.
+
 ## Business summary
 
 Lam Research primarily supplies plasma etch and thin-film deposition
@@ -87,9 +110,14 @@ major NAND customer") and its growing CSBG recurring-revenue base (a
 management target of >1.5x growth by calendar 2028 versus calendar 2024)
 are real structural positives found in this research. Set against that:
 the 2022-2023 memory/WFE downturn is the single sharpest downturn evidence
-found for any company in this batch — a documented 31% YoY single-quarter
-revenue decline (Q1 FY2024) and a 7%-of-workforce layoff explicitly
-attributed to declining demand, export controls, and a memory glut. One
+found for any company in this batch — a documented 31.4% year-over-year
+revenue decline (Q1 FY2024, quarter ended 2023-09-24, versus Q1 FY2023,
+quarter ended 2022-09-25 — distinct from two separate sequential 26.7% and
+17.1% quarter-over-quarter declines in the two preceding quarters, see
+Risks below) and a ~7%-of-workforce layoff (Form 8-K filed 2023-01-23;
+CEO commentary on the 2023-01-25 earnings call cited both declining demand
+and export-control effects — a mixed, company-stated cause, not a single
+attribution this record asserts independently). One
 secondary source frames Lam's relative valuation discount versus peers as
 reflecting the market's own caution about this specific concentration —
 i.e., the market itself appears to price Lam as carrying more concentrated
@@ -142,25 +170,49 @@ convention):
 - Data-quality (the FY2025 revenue conflict): evidentiary
 - Stock-price volatility: market
 
-**The 2022-2023 memory downturn, in detail (the clearest and most severe
-downturn episode found anywhere in this batch's research):**
-- Lam forecast 2023 WFE spending would fall more than 20% industry-wide,
-  driven by memory-customer capex destocking.
-- Guidance for the affected quarter was cut from a prior $3.8B to a
-  $2.8-3.4B range — roughly -20% quarter-over-quarter at the midpoint.
-- Q1 FY2024 (quarter ended 2023-09-24) realized revenue -31% YoY to
-  $3.48B, adjusted EPS -34% YoY — the single sharpest quarterly decline
-  figure found for any company in this batch.
-- January 2023: approximately 1,300 jobs (7% of workforce) cut, plus
-  approximately 1,400 temporary positions eliminated, explicitly
-  attributed to declining semiconductor demand, US export controls, and a
-  memory supply glut.
+**The 2022-2023 memory downturn, precisely sequenced by quarter (the
+clearest and most severe downturn episode found anywhere in this batch's
+research — remediation pass, 2026-07-25):**
+
+| Quarter | Period ended | Revenue | Change |
+|---|---|---|---|
+| Q1 FY2023 | 2022-09-25 | $5,074M | — |
+| Q2 FY2023 | 2022-12-25 | $5,278M | cycle peak |
+| Q3 FY2023 | 2023-03-26 | $3,870M | -26.7% QoQ |
+| Q4 FY2023 | 2023-06-25 | $3,207M | -17.1% QoQ |
+| Q1 FY2024 | 2023-09-24 | $3,482M | +8.6% QoQ; **-31.4% YoY vs. Q1 FY2023** |
+
+The often-cited "~31% decline" is the **Q1 FY2024-vs-Q1 FY2023
+year-over-year comparison specifically** — it is not the same figure as,
+and should not be conflated with, the two sequential quarter-over-quarter
+declines (26.7% and 17.1%) that occurred in the two quarters immediately
+before it. Lam forecast 2023 WFE spending would fall more than 20%
+industry-wide, driven by memory-customer capex destocking; guidance for
+the Q3 FY2023 quarter was cut from a prior $3.8B to a $2.8-3.4B range —
+roughly -20% quarter-over-quarter at the midpoint, consistent with the
+26.7% QoQ decline that quarter actually realized. Q1 FY2024's -31.4% YoY
+revenue decline (adjusted EPS -34% YoY) is the single sharpest quarterly
+decline figure found for any company in this batch.
+
+Separately: on **2023-01-23**, Lam filed a Form 8-K (SEC EDGAR accession
+0000707549-23-000005) disclosing a restructuring plan; CEO Tim Archer
+publicly discussed a reduction of approximately 1,300 employee positions
+(approximately 7% of total workforce) plus approximately 1,400
+temporary-worker positions on the **2023-01-25** Q2 FY2023 earnings call
+(quarter ended 2022-12-25) — that commentary cited both slowing
+wafer-fabrication-equipment demand and the effect of the most recent US
+export-control regulations as reasons, a mixed, company-stated causation
+this record retains as stated rather than simplifying to a single cause.
+The restructuring plan was expected to be substantially completed by the
+end of the quarter ending 2023-06-25 (Q4 FY2023, the quarter that realized
+the -17.1% QoQ decline in the table above).
 
 **Export-control shock timeline (dated instances):**
 - **October 2022** — following the Biden administration's BIS action, Lam
   estimated it would lose as much as $2.5B, approximately 13% of FY2022
   revenue.
-- **2023 (exact date not confirmed)** — a secondary source states Lam lost
+- **2023 (exact date not confirmed — distinct from the 2023-01-23
+  workforce-reduction 8-K above)** — a secondary source states Lam lost
   the ability to service certain already-installed China equipment
   following 2023 restrictions, with AMEC (a Chinese competitor) reportedly
   developing replacement parts (electrostatic chucks) to fill the
@@ -179,8 +231,10 @@ Per `PI-0023` SSB.16 and `OPS-0006` SS4's Milestone 3 requirement.
 
 - **Cyclicality**: the 2022-2023 memory downturn (detailed above) is the
   single most severe, best-quantified downturn episode found for any
-  company in this four-company batch — a 31% YoY single-quarter revenue
-  decline and a 7%-workforce layoff. A 2019 memory downturn also affected
+  company in this four-company batch — a 31.4% YoY revenue decline
+  (Q1 FY2024 vs. Q1 FY2023, distinct from the cycle's two sequential QoQ
+  declines) and a ~7%-workforce layoff (officially filed 2023-01-23). A
+  2019 memory downturn also affected
   Lam (industry DRAM revenue -37.5%, NAND -23.1%), with Lam's own
   non-GAAP EPS declining from $17.44 (calendar 2018) to $14.51 (calendar
   2019), roughly -16.8%, though calendar 2019 was still characterized as

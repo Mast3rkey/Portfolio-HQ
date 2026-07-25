@@ -16,14 +16,29 @@ narrower "primary-source domains blocked" pattern seen in the other three
 records, though the practical effect is the same: no primary document was
 independently rendered and inspected.
 
-**Unresolved data conflicts and gaps found in research, not resolved by
-this record:**
-- **China revenue percentage — the least reliably established figure of
-  any company in this batch.** Sources disagreed and were internally
-  inconsistent: one synthesis stated "33% in fiscal 2025... down from
-  41-44% in 2024... anticipated 30% or high 20s in 2025," a set of
-  statements that read as internally contradictory on their own terms.
-  This record does **not** adopt a specific year-by-year China percentage.
+**Remediation pass (2026-07-25):** a preliminary external primary-source
+cross-check identified that the original draft's "internally inconsistent"
+China-revenue framing was itself the error — the underlying figures, once
+reconciled by fiscal year, are not actually contradictory. KLA's own
+FY2025 10-K, cross-corroborated across multiple independent secondary
+sources, shows China at **33.3% of total revenue in FY2025** (fiscal year
+ended 2025-06-30), down from **42.8% in FY2024** (ended 2024-06-30) — a
+real, material, and reconcilable year-over-year decline, not a data
+conflict. FY2023's specific China percentage was not found in this
+research pass and remains an open gap, distinguished here from a
+disagreement (no two sources dispute a FY2023 figure — none was found at
+all). This session's own WebFetch access remained blocked (HTTP 403)
+throughout this remediation pass; the reconciliation rests on multiple
+independent, mutually-corroborating WebSearch results, not on the external
+cross-check's claim alone. The process-control market-share disagreement
+(50-85% depending on source) and the Q4 FY2026 EPS-guidance
+split-adjustment question below are retained as genuine, unresolved
+same-metric conflicts — this record only retains an "unresolved" label
+where sources actually disagree on the same metric for the same period,
+per the corrected discipline applied in this remediation pass.
+
+**Remaining unresolved data conflicts and gaps found in research, not
+resolved by this record:**
 - Process-control/inspection market-share claims ranged from roughly 50%
   to 85% depending on source and sub-segment — internally inconsistent,
   read as SEO/content-aggregator-style output in several cases. A "58%"
@@ -94,15 +109,24 @@ flags each figure's basis where the distinction matters (see Margin-
 relevance evidence below for the price-drawdown figures, which are
 post-split-adjusted).
 
+**China revenue, by fiscal year** (reconciled in this record's 2026-07-25
+remediation pass): 42.8% of total revenue in FY2024, declining to 33.3% in
+FY2025 — a real, material, year-over-year decline reflecting the effect of
+tightened US export controls on China-bound shipments. Management has
+reportedly guided China toward the mid-20s percent of total revenue over
+time. FY2023's specific percentage was not found in this research pass —
+an open gap distinct from a source disagreement.
+
 ## Investment thesis (business-quality description, not a recommendation)
 
 **Concise statement:** KLA holds a reported dominant position in
 semiconductor process control and inspection, with this batch's highest
-gross margin and clearest backlog-conversion disclosure — but this
-record's own research could not establish a reliable China-revenue
-percentage or a consistent market-share figure, a genuine evidentiary gap
-distinct from (and in some respects larger than) the disclosed-but-severe
-export-control risk found for ASML and AMAT.
+gross margin and clearest backlog-conversion disclosure — and a real,
+material, reconciled China-revenue decline (42.8% FY2024 to 33.3% FY2025)
+comparable in kind to the export-control exposure found for ASML and AMAT.
+This record's process-control market-share claims, unlike the China
+figures, remain a genuine unresolved data-quality gap (sources disagree
+50-85% for the same underlying claim).
 
 **Expanded narrative:** KLA's structural position — inspecting rather than
 processing wafers — gives it exposure to a genuinely distinct economic
@@ -113,31 +137,31 @@ around, advanced packaging) rather than to raw wafer-capacity additions,
 which would imply a different (not necessarily less severe) cyclicality
 profile than AMAT's or LRCX's deposition/etch exposure. However, this
 record's research could not find a single reliable, quantified source
-establishing either KLA's actual market-share dominance or its actual
-China-revenue trajectory — both of which are frequently cited as strengths
-or risks in secondary commentary without consistent supporting numbers.
-FY2024's confirmed ~6.5% revenue decline is direct evidence against an
-unqualified "process control is acyclical" reading of that commentary, even
-while the *qualitative* stickiness argument (process control tools are
-"harder to cut without creating bigger downstream yield costs," per one
-source) may still hold directionally.
+establishing KLA's actual market-share dominance — a genuine, unresolved
+data-quality gap, unlike China revenue, which this record's remediation
+pass reconciled to a real, material year-over-year decline (42.8% FY2024
+to 33.3% FY2025). FY2024's confirmed ~6.5% revenue decline is direct
+evidence against an unqualified "process control is acyclical" reading of
+secondary commentary, even while the *qualitative* stickiness argument
+(process control tools are "harder to cut without creating bigger
+downstream yield costs," per one source) may still hold directionally.
 
 **Conditions relevant to monitoring this thesis** (qualitative, observable):
 - Q4 FY2026 results (2026-07-28, immediately following this record's
-  cutoff) resolving the guidance-EPS reconciliation question and disclosing
-  the April 2026 Hua Hong-related revenue impact
-- China revenue percentage stabilizing at a level consistent with whatever
-  the primary 10-K geographic table actually shows (not yet independently
-  confirmed by this record)
+  cutoff) resolving the guidance-EPS split-adjustment question and
+  disclosing the April 2026 Hua Hong-related revenue impact
+- China revenue continuing its FY2024-to-FY2025 declining trend toward
+  management's reportedly guided mid-20s percent-of-revenue range, rather
+  than reversing or accelerating further
 - No further material export-control escalation beyond the April 2026
   Hua Hong shipment halt
 - Backlog conversion continuing at the previously reported 71-76%
   within-12-months rate
 
 **Conditions that would weaken confidence in the above:**
-- A confirmed, primary-sourced China-revenue percentage materially higher
-  than this record's unresolved 30-44% range would suggest greater
-  concentration risk than currently understood
+- A confirmed China-revenue percentage for a future period materially
+  higher than the FY2025 33.3% level, reversing the FY2024-to-FY2025
+  decline
 - A second consecutive down fiscal year (which would undercut the
   "process control is comparatively resilient" qualitative framing)
 - A material, disclosed dollar impact from the April 2026 Hua Hong episode
@@ -149,21 +173,25 @@ source) may still hold directionally.
 
 ## Competitive advantages — detail
 
-KLA's process-control dominance claim is treated in this record with
-explicit caution rather than as an established fact — see the Source-
-access disclosure above for the range of inconsistent market-share figures
-found. What is better evidenced: KLA's FY2025 gross margin (62.3%) is the
-highest of any company in this batch, and its 17-consecutive-year dividend
-growth record and backlog-conversion disclosure (71-76% within 12 months)
-are more specific and better-corroborated capital-allocation/visibility
-facts than the disputed share-percentage claims.
+KLA's process-control dominance *market-share* claim is treated in this
+record with explicit caution rather than as an established fact — see the
+Source-access disclosure above for the range of inconsistent market-share
+figures found. What is better evidenced: KLA's FY2025 gross margin (62.3%,
+GAAP basis) is the highest of any company in this batch, and its
+17-consecutive-year dividend growth record and backlog-conversion
+disclosure (71-76% within 12 months) are more specific and
+better-corroborated capital-allocation/visibility facts than the disputed
+share-percentage claims.
 
 ## Risks — detail
 
 Category framing (not a schema field, matching the existing corpus
 convention):
-- China revenue concentration — data-quality risk as much as exposure risk
-  for this specific company: regulatory/geopolitical/evidentiary
+- China revenue concentration — a real, reconciled exposure (not merely a
+  data-quality problem, corrected in this record's remediation pass):
+  regulatory/geopolitical/commercial
+- Process-control market-share uncertainty — genuinely a data-quality gap,
+  distinct from China revenue: evidentiary
 - Export-control shock exposure: regulatory/geopolitical
 - Cyclicality (FY2024 confirmed decline): structural
 - Recent stock-price volatility: market
@@ -218,11 +246,11 @@ Per `PI-0023` SSB.16 and `OPS-0006` SS4's Milestone 3 requirement.
   roughly 65-75% of FY2025 revenue and memory customers (SK Hynix, Micron)
   roughly 15-25% — secondary, unverified, directional only.
 - **Export-control/geopolitical exposure**: two dated shock episodes
-  (October 2022, April 2026) with the China-revenue percentage itself
-  being the single least-resolved figure in this entire batch's research —
-  a genuine "we don't know how exposed this company actually is" gap that
-  is itself margin-relevant (an unknown concentration is harder to size
-  risk around than a disclosed-but-large one).
+  (October 2022, April 2026), plus a real, reconciled China-revenue
+  decline (42.8% FY2024 to 33.3% FY2025) — a material, disclosed exposure,
+  corrected in this record's remediation pass from an earlier draft that
+  treated the underlying figures as too unreliable to characterize at all.
+  FY2023's specific China percentage remains an open data gap.
 - **Customer concentration**: TSMC reportedly approximately 23% of FY2023
   revenue (secondary, single data point, not tracked across other years in
   this research pass).
@@ -261,9 +289,10 @@ evidence for any conclusion in this record.
   - The 2026-07-28 Q4 FY2026 release, specifically to resolve the
     guidance-EPS reconciliation question and obtain the April 2026 Hua
     Hong-episode dollar impact
-  - Any primary-source confirmation (10-K geographic table) of KLA's
-    actual China revenue percentage — a standing research gap this record
-    identifies rather than resolves
+  - A primary-source (10-K geographic table) confirmation of KLA's FY2026
+    China revenue percentage, to extend the reconciled FY2024/FY2025 series
+    this record establishes; FY2023's percentage also remains an open,
+    lower-priority gap
   - A second consecutive down fiscal year
   - A material competitive-share-loss disclosure (e.g. to Onto Innovation
     or ASML's HMI/YieldStar business)
@@ -276,11 +305,14 @@ evidence for any conclusion in this record.
 ## Conviction
 
 **Rating: Medium.** See YAML `conviction.rationale` for the full reasoning.
-Note explicitly that this rating rests partly on an **evidentiary gap**
-(China revenue percentage, market-share claims) rather than solely on a
-disclosed-but-quantified risk, distinguishing KLAC's Medium rating's basis
-somewhat from ASML's and AMAT's, whose Medium ratings rest more on
-disclosed-and-severe risk than on unresolved data quality.
+Following this record's 2026-07-25 remediation pass, this rating now rests
+on the same basis as ASML's and AMAT's Medium ratings — a real, disclosed,
+quantified risk (China revenue concentration, reconciled to a 42.8%-to-
+33.3% FY2024-to-FY2025 decline) — rather than primarily on an evidentiary
+gap. The genuine evidentiary gap that remains (process-control
+market-share claims, which disagree 50-85% across sources for the same
+underlying claim) is a real but narrower basis than the original draft's
+framing implied.
 
 ## Batch membership
 

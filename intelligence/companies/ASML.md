@@ -45,6 +45,29 @@ record:**
   specifically was not researched to a confirmed answer this pass —
   flagged as an open gap, not asserted either way.
 
+**Remediation pass (2026-07-25):** a preliminary external primary-source
+cross-check identified one imprecision in this record's original draft —
+a risk-entry sentence described China's shipment-share decline as
+"36% to 14% across two 2026 quarters," which incorrectly implied the 36%
+figure itself fell within calendar 2026. This has been corrected
+throughout: 36% is ASML's **Q4 2025** net-system-sales China share
+(reported alongside FY2025 full-year results, 2026-01-29); 19% is the
+**Q1 2026** figure (reported ~2026-04-15); 14% is the **Q2 2026** figure
+(reported 2026-07-15) — i.e., the decline from 36% to 14% happened *across*
+two 2026 quarters (Q1 and Q2), starting from a Q4 2025 baseline, not
+*within* two 2026 quarters. This session's own WebFetch access remained
+blocked (HTTP 403) on every primary-source domain re-attempted during this
+remediation pass; the correction rests on multiple independent,
+mutually-corroborating WebSearch results (ASML's own press-release titles,
+the SEC 6-K filing index, and independent news coverage) rather than on
+the external cross-check's claim alone or on a single secondary source.
+The EUR43-45B FY2026 guidance figure required no correction and is
+retained as previously supported. This pass also added ASML's Q1 2026
+headline results (EUR8.8B total net sales, EUR2.8B net income, reported
+~2026-04-15) and a management color-commentary fact from the Q2 2026 call
+(current China demand characterized as domestic/mature-node logic-driven
+rather than leading-edge) — both new facts, not corrections.
+
 ## Business summary
 
 ASML designs, manufactures, and services photolithography systems — the
@@ -57,8 +80,9 @@ recurring and higher-margin, smoothing earnings between system-sale
 cycles). Q2 2026 (reported 2026-07-15): total net sales EUR9.3B (system
 sales EUR6.6B, of which EUV EUR3.8B / 57%; Installed Base Management
 EUR2.8B, beating guidance by roughly EUR300M), gross margin 54.0%, net
-income EUR2.9B. FY2025 (reported 2026-01-29): total net sales EUR32.7B, net
-income EUR9.6B, gross margin 52.8%.
+income EUR2.9B. Q1 2026 (reported ~2026-04-15): total net sales EUR8.8B,
+net income EUR2.8B. FY2025 (reported 2026-01-29): total net sales
+EUR32.7B, net income EUR9.6B, gross margin 52.8%.
 
 ASML is the **sole commercial supplier of EUV (extreme ultraviolet)
 lithography systems worldwide** — required for leading-edge logic below

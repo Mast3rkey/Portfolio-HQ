@@ -23,10 +23,6 @@ record — do not silently pick a side:**
 - Current quarterly dividend rate: $0.46/share in one source vs.
   $0.53/share in another — plausibly two different dates in a sequence of
   increases, sequencing not established here.
-- September 2025 BIS "Affiliates Rule" China-revenue impact: disclosed as
-  ~$110M (Q4 FY2025) plus ~$600M (FY2026) in one source, vs. a separately
-  reported $710M figure in another — possibly the same fact stated two
-  ways (sum vs. a different accounting), not reconciled here.
 - An AMEC (Chinese competitor) claim of a 5nm-class etch tool "in
   validation" at a TSMC advanced-logic line — an unusual claim for a
   Chinese-made tool, found in only one source, explicitly not treated as
@@ -46,6 +42,36 @@ record — do not silently pick a side:**
   precise figure.
 - Whether COVID-19-era (2020) disruption materially affected AMAT
   specifically was not researched to a confirmed answer this pass.
+
+**Remediation pass (2026-07-25):** a preliminary external primary-source
+cross-check identified several required corrections. (1) **Removed an
+unsupported comparative claim** that AMAT carries "the batch's highest and
+most volatile" China-revenue concentration — LRCX's own record shows a
+higher single-quarter peak (43%, Q1 FY2026) and KLAC's FY2024 figure
+(42.8% of total revenue, per KLA's own 10-K) also exceeds AMAT's 24-30%
+range; see the batch comparison artifact for the normalized cross-company
+table. (2) **Resolved the "$710M vs. $110M+$600M" item** previously listed
+above as an unreconciled conflict — $710M is simply the arithmetic sum of
+the two disclosed BIS Affiliates Rule figures, not a separate or
+conflicting number. (3) **Separated the October 2025 workforce reduction
+from a direct export-control-causation claim** — the original draft stated
+the reduction was "explicitly attributed by the company to export-control
+tightening," which overstated what the sources actually support: the
+company's own stated rationale (per secondary paraphrase) emphasized
+automation/digitalization/restructuring, while multiple outlets separately
+noted the announcement's temporal proximity to the September 2025 BIS
+rule, without a primary source establishing direct causation between the
+two. (4) **Added a previously-missed, materially significant fact**: on
+2026-02-11, Applied Materials paid a $252.5 million BIS civil penalty (the
+second-highest BIS penalty on record) settling 56 illegal reexports of
+semiconductor manufacturing equipment to SMIC (a Chinese Entity List
+party) between 2021-2022 — a confirmed historical compliance violation,
+distinct from the general industry-wide export-control rules already
+disclosed, now reflected throughout this record. This session's own
+WebFetch access remained blocked (HTTP 403) throughout this remediation
+pass; all corrections rest on multiple independent, mutually-corroborating
+WebSearch results, including a direct match to bis.gov's own press-release
+title for the settlement.
 
 ## Business summary
 
@@ -78,8 +104,10 @@ pressure, discussed further below.
 
 **Concise statement:** Applied Materials is the broadest-coverage
 semiconductor-equipment supplier in this batch, with a record FY2025 and an
-accelerating Q2 FY2026 — but it also carries this batch's highest and most
-volatile China-revenue exposure, under active, repeated, and unresolved
+accelerating Q2 FY2026 — but it carries material, actively-moving
+China-revenue exposure (though not the batch's highest single-period peak
+— see the batch comparison artifact), a confirmed historical
+export-compliance violation (a February 2026 BIS settlement), and repeated
 regulatory pressure.
 
 **Expanded narrative:** AMAT's breadth (deposition, etch, CMP, ion
@@ -94,12 +122,19 @@ China-export-control costs — three separate dated tightening waves in
 roughly three years (October 2022, October 2023, September 2025), each
 with its own disclosed dollar impact, plus a reported (unofficial,
 unresolved) Chinese domestic-content mandate that would independently cap
-AMAT's addressable China share regardless of any further US action. The
-October 2025 workforce reduction (~4%, ~1,400 jobs), explicitly attributed
-by the company to export-control tightening, is a concrete, recent
-disconfirming data point that this record does not minimize: management is
-actively downsizing in response to the same dynamic it also frames as a
-manageable headwind in growth commentary.
+AMAT's addressable China share regardless of any further US action.
+Separately, and distinct from the general industry-wide export-control
+environment, AMAT itself has a confirmed compliance-violation history: a
+February 2026 BIS settlement ($252.5 million civil penalty, the
+second-highest on record) for illegal reexports of equipment to SMIC
+between 2021-2022 — direct evidence about AMAT's own past export-control
+conduct, not merely industry-wide regulatory risk. The October 2025
+workforce reduction (~4%, ~1,400 jobs) is a concrete, recent data point
+this record does not minimize, though its cause is genuinely mixed across
+sources: the company's own stated rationale emphasized automation and
+restructuring, while the announcement's timing coincided with the
+September 2025 BIS rule's disclosed revenue impact — this record states
+both facts without asserting a single cause.
 
 **Conditions relevant to monitoring this thesis** (qualitative, observable):
 - Q3 FY2026 results against the company's own guidance (~$8.95B revenue,
@@ -139,13 +174,21 @@ confidence in this research pass.
 Category framing (not a schema field, matching the existing corpus
 convention):
 - China revenue concentration and export-control exposure: regulatory/
-  geopolitical/commercial (the dominant risk category for AMAT)
+  geopolitical/commercial
+- **AMAT's own confirmed export-compliance violation** (February 2026 BIS
+  settlement): compliance/regulatory — distinct in kind from the shared
+  industry-wide export-control-environment risk, since this reflects
+  AMAT's own past conduct, not merely the regulatory backdrop
 - Chinese domestic-equipment competitive erosion: competitive/structural
-- Workforce reduction: operational (a lagging indicator of the above two)
+- Workforce reduction: operational (temporally coincident with, but not
+  established as caused by, the above)
 - Capex cyclicality: structural
 
-**China exposure detail (the numbers, stated with their source
-conflicts, not resolved to a single figure):**
+**China exposure detail (the numbers, by period and basis — a genuine
+same-period, same-basis conflict is not present in what was found; the
+different percentages below reflect different periods and/or different
+revenue denominators, stated explicitly rather than presented as
+unresolved disagreement):**
 
 | Period | China % | Basis |
 |---|---|---|
@@ -156,15 +199,19 @@ conflicts, not resolved to a single figure):**
 | Q2 FY2026 | 24% | Semiconductor Systems + AGS |
 
 China exposure has moved in a roughly 24-30% band across the last five
-quarters found in research rather than declining smoothly, which is
+periods found in research rather than declining smoothly, which is
 consistent with lumpy systems-revenue recognition (shipments can be
 deferred or cancelled unevenly around license-approval timing) rather than
-a steady glide-down attributable purely to policy. This record does not
-have a confirmed comparison of AMAT's China percentage against KLAC's or
-LRCX's for the same periods — see the batch comparison artifact for what
-could and could not be established across all four companies.
+a steady glide-down attributable purely to policy. **This record does not
+claim AMAT's China exposure is the batch's highest** — an earlier draft
+made that comparative claim without a consistent, same-period, same-basis
+comparison; LRCX's own record shows a higher single-quarter peak (43%,
+Q1 FY2026) and KLAC's FY2024 figure (42.8% of total revenue, per KLA's own
+10-K) also exceeds AMAT's range. See the batch comparison artifact for the
+normalized cross-company table.
 
-**Export-control shock timeline (dated instances):**
+**Export-control shock timeline (dated instances) — kept separate from
+AMAT's own compliance-violation history below:**
 - **October 2022** — BIS export controls on semiconductor manufacturing
   equipment/technology to China. AMAT revised Q4 FY2022 guidance down (from
   $6.65B +/- $400M to $6.4B +/- $250M), attributing an estimated ~$400M
@@ -175,10 +222,41 @@ could and could not be established across all four companies.
 - **September 29, 2025 ("BIS Affiliates Rule")** — expanded Entity List
   coverage to subsidiaries of already-blacklisted Chinese companies. AMAT
   disclosed an estimated ~$110M Q4 FY2025 and ~$600M FY2026 revenue impact
-  (one source separately cited a $710M figure, not reconciled).
+  — a separately reported $710M figure is simply the sum of these two
+  disclosed figures, not a separate or conflicting number (corrected in
+  this remediation pass).
 - **October 23, 2025** — AMAT announced a ~4% (~1,400 jobs) workforce
-  reduction with a $160-180M associated charge, explicitly attributed to
-  tightening export controls and a need to streamline operations.
+  reduction with a $160-180M associated charge, mostly recognized in Q4
+  FY2025. The company's own stated rationale (per secondary paraphrase)
+  emphasized automation/digitalization/geographic-shift-driven
+  restructuring; multiple outlets separately noted the announcement's
+  temporal proximity to the BIS Affiliates Rule above, but no source found
+  in this research establishes that export controls directly caused the
+  reduction — this record states both facts without asserting a single
+  cause (corrected in this remediation pass from an earlier draft that
+  asserted direct causation).
+
+**AMAT's own confirmed export-compliance violation (distinct from the
+shock timeline above — this is about AMAT's own past conduct, not the
+regulatory environment):** on 2026-02-11, Applied Materials, Inc. and its
+subsidiary Applied Materials Korea, Ltd. entered into a settlement
+agreement with BIS, paying a $252.5 million civil penalty — the statutory
+maximum, and the second-highest BIS penalty on record (after Seagate
+Technology's $300M in 2023) — for 56 violations of the Export
+Administration Regulations: unauthorized reexport and attempted reexport
+of semiconductor manufacturing equipment (approximately $126M in
+ion-implantation equipment, assembled in South Korea, reportedly using
+largely US-origin parts) to Semiconductor Manufacturing International
+Corporation (SMIC) and its subsidiaries — a BIS Entity List party since
+December 2020 — during approximately March 2021 to June 2022. The
+settlement also requires two internal export-compliance audits and imposes
+a three-year suspended denial order. This was a fact missed in the
+original research pass, added in this remediation pass after an external
+primary-source cross-check flagged it; it is cross-corroborated across
+multiple independent legal/trade-press outlets and matches BIS's own
+press-release title, though this session's own WebFetch attempt against
+bis.gov returned HTTP 403 and the settlement documents themselves were not
+directly opened by this session.
 
 **Chinese domestic-competitor progression** (secondary, consistent across
 multiple sources but not primary-verified): Naura's nine-month FY2025
@@ -223,11 +301,18 @@ Per `PI-0023` SSB.16 and `OPS-0006` SS4's Milestone 3 requirement.
   foundry/logic-and-other 67%, DRAM 29%, NAND/Flash 4% — secondary,
   unverified against a primary transcript), so AMAT is sensitive to both
   logic-capex and memory-pricing cycles rather than concentrated in either.
-- **Export-control/geopolitical exposure**: the highest and most
-  frequently-shocked of any company in this batch on a *dollar-impact
-  disclosure* basis (three separate dated, quantified impacts in roughly
-  three years, plus a reported unofficial domestic-content mandate) — see
-  the Risks section above and the batch comparison artifact.
+- **Export-control/geopolitical exposure**: frequently-shocked on a
+  *dollar-impact disclosure* basis (three separate dated, quantified
+  regulatory impacts in roughly three years, plus a reported unofficial
+  domestic-content mandate) — this record does not claim AMAT is the most
+  exposed of the four companies in this batch on this dimension, only that
+  it is well-documented and material; see the Risks section above and the
+  batch comparison artifact for the cross-company comparison. AMAT is also
+  the only company in this batch with a confirmed historical
+  export-compliance violation of its own (the February 2026 BIS
+  settlement) — a distinct, company-specific data point from the shared
+  regulatory-environment exposure the other companies in this batch also
+  face.
 - **Customer concentration**: FY2025 10-K reportedly discloses two
   customers at approximately 19% and approximately 15% of net revenue
   (~34% combined) — secondary-sourced, customer identities not disclosed
