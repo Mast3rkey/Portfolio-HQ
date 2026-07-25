@@ -271,7 +271,55 @@ def overlay_a9_crash_only(drawdown: float, *, trigger_drawdown: float, l_star: f
     `pre_registration.yaml` A9_crash_only's `repay_priority_recovery:
     -0.05`) forces the target back to `1.00` with repay priority,
     overriding a still-negative-but-recovering drawdown. Neither trigger
-    active: no-op posture at `1.00`."""
+    active: no-op posture at `1.00`.
+
+    ## Calling contract (F-3 clarification) — `drawdown` is TROUGH-anchored
+    during a held episode, not the raw current-day value
+
+    This function is pure and stateless (T-4) — it holds no memory of
+    a prior call — so the CALLER (a future `run_study_a.py`, S3 scope) is
+    responsible for supplying two distinct, independently-tracked t-1
+    quantities on every call, not one shared "current drawdown" value:
+
+    * `drawdown` — during an ACTIVE, still-held crash episode (from the
+      day the trigger first fires until `recovered` goes `True`), this
+      must be the EPISODE'S TROUGH: the deepest (most negative)
+      `drawdown_from_peak_series()` value observed since the trigger
+      fired, monotonically updated to a new low on any day price falls
+      further, and otherwise held flat through interim bounces. Before any
+      trigger and after an episode exits/resets, it is simply the current
+      day's drawdown (trough and current coincide when there is no held
+      episode). This is deliberately NOT the raw current-day drawdown
+      throughout a held episode — see the naive-interpretation warning
+      below.
+    * `recovered` — a SEPARATE flag the caller derives from the ACTUAL
+      CURRENT drawdown (not the trough) crossing the `-0.05`
+      `repay_priority_recovery` threshold: `True` from the first day
+      current drawdown rises to `>= -0.05` and LATCHED there until the
+      next trigger (a new episode, trough resets to that day's drawdown).
+
+    **Why**: `pre_registration.yaml`'s A-9 design deliberately holds
+    leverage at `l_star` through the WHOLE episode down to a much
+    shallower `-0.05` recovery point, not merely while today's drawdown
+    happens to sit below the `-0.20` trigger. A **naive interpretation**
+    that feeds this function the raw, un-anchored current-day drawdown on
+    every call gets this wrong: once price bounces from a -30% trough to,
+    say, -15% (still well short of the -5% recovery bar), `drawdown <=
+    trigger_drawdown` (`-0.15 <= -0.20`) is `False`, and with `recovered`
+    still `False` the function falls through to the `1.00` no-op branch —
+    prematurely de-levering mid-episode, a full crash-recovery cycle
+    before the registered design intends. Passing the trough (still
+    `-0.30`) instead correctly keeps the `elif` branch active and holds
+    `l_star` until `recovered` itself flips. See
+    `test_overlay_a9_full_episode_trough_anchored_vs_naive_current_drawdown`
+    in `test_overlay_lib.py` for a complete no-trigger -> trigger -> trough
+    -> partial-recovery -> repay-priority -> reset episode trace, run
+    against both interpretations, pinning the trough-anchored contract as
+    correct and the naive one as wrong at the partial-recovery step.
+
+    This module remains library-level and explicit-input-only by design —
+    it does not itself track trough state or implement a runner; that
+    bookkeeping is S3 scope, deliberately kept out of this pure function."""
     if trigger_drawdown >= 0:
         raise ValueError(f"trigger_drawdown must be a negative drawdown, got {trigger_drawdown}")
     if l_star <= 0:

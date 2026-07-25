@@ -77,16 +77,39 @@ read ahead of it.
 
 ## T-D1 (dividend uniqueness)
 
-Raw ledger rows are deduplicated by identity — the vendor's own `alpaca_id`
-when present, else a composite (`symbol`, `ex_date`, `special`,
-`gross_declared`, `payable_date`) key — BEFORE aggregation, so a literal
-duplicate row (accidental re-fetch, re-import, or a hand-constructed
-duplicate-injection test) can never be credited twice. Two genuinely
-DISTINCT same-day events for one ticker (e.g. a regular + a special
-dividend sharing an `ex_date`, both real rows in the acquired ledger) are
-summed into one combined per-share figure for that date — correct
-behavior, not a double-count, since `simulate()`'s `dividend_events` shape
-carries at most one combined per-share amount per (ticker, date).
+Raw ledger rows are deduplicated by identity BEFORE aggregation, so a
+literal duplicate row (accidental re-fetch, re-import, or a
+hand-constructed duplicate-injection test) can never be credited twice.
+Two genuinely DISTINCT same-day events for one ticker (e.g. a regular + a
+special dividend sharing an `ex_date`, both real rows in the acquired
+ledger) are summed into one combined per-share figure for that date —
+correct behavior, not a double-count, since `simulate()`'s
+`dividend_events` shape carries at most one combined per-share amount per
+(ticker, date).
+
+**Identity precedence (F-5 correction):** the composite key (`symbol`,
+`ex_date`, `special`, `gross_declared`, `payable_date`) is the PRIMARY,
+always-computed identity — it is what T-D1's own distinctness reasoning
+already relies on (two real distinct same-day dividends necessarily differ
+in `special` and/or `gross_declared`, per the docstring above), so it is
+authoritative on its own regardless of whether `alpaca_id` happens to be
+present on a given row. The vendor's own `alpaca_id`, when present on a
+row, STRENGTHENS identity as an additional, independent match key — a row
+is treated as a duplicate of an earlier row if EITHER its composite key OR
+(when present) its `alpaca_id` was already seen. This is deliberately
+symmetric and order-independent: a row with a populated `alpaca_id` and a
+later duplicate that happens to be missing it (a partial re-fetch, a
+manually-entered correction row, or any other reason two copies of the
+same real event might carry inconsistent optional metadata) still
+collapses to one credit either direction — missing OPTIONAL metadata on
+one copy of a duplicate can never split it into two credits. A single
+identity function keyed only by "`alpaca_id` when present, else
+composite" (the pre-F-5 behavior) is exactly the asymmetric case this
+corrects: two rows for the same real event where only one copy carries
+`alpaca_id` would previously fall into different identity buckets (one
+keyed by id, one by composite) and both credit — silently double-counting
+a dividend that a partial data-quality gap in the source feed, not a
+distinct declaration, produced two rows for.
 
 ## T-D2 (primary-path purity)
 
@@ -142,16 +165,24 @@ def load_corporate_action_ledger(path: str | Path | None = None) -> list[dict]:
 
 # ── dividend events ──────────────────────────────────────────────────────────
 
-def _row_identity(row: dict) -> tuple:
-    """Deduplication key for T-D1 — the vendor's own row identifier when
-    available (the strongest signal a row is a literal re-fetch of the same
-    event), else a composite of fields that would be identical only for a
-    true duplicate, never for two distinct same-day dividends (which differ
-    in `special` and/or `gross_declared` in every real acquired row)."""
-    if row.get("alpaca_id"):
-        return ("id", row["alpaca_id"])
+def _composite_identity(row: dict) -> tuple:
+    """T-D1 PRIMARY identity — a composite of fields that is identical only
+    for a true duplicate, never for two distinct same-day dividends (which
+    differ in `special` and/or `gross_declared` in every real acquired
+    row). Always computed, regardless of whether `alpaca_id` is present
+    (F-5: the composite key must never depend on optional metadata)."""
     return ("composite", row["symbol"], row["ex_date"], bool(row.get("special")),
             round(float(row["gross_declared"]), 10), row.get("payable_date"))
+
+
+def _alpaca_id_identity(row: dict) -> tuple | None:
+    """T-D1 SECONDARY, strengthening identity — the vendor's own row
+    identifier, when present, is an independent match key: a row whose
+    `alpaca_id` matches an earlier row's is a duplicate even if some
+    composite field happens to differ (e.g. a corrected re-fetch). Returns
+    `None` when absent so callers never mistake "no id" for a real key."""
+    alpaca_id = row.get("alpaca_id")
+    return ("id", alpaca_id) if alpaca_id else None
 
 
 def _credited_date(row: dict, convention: str) -> str:
@@ -172,22 +203,30 @@ def build_dividend_events(rows: list[dict], *,
     """Build `margin_simulation.simulate()`'s `dividend_events` input:
     `{credited_date: {ticker: gross cash per share}}`.
 
-    T-D1: rows are deduplicated by `_row_identity()` before aggregation — a
-    literal duplicate row credits exactly once, never twice. Genuinely
-    distinct same-(ticker, credited_date) events (e.g. regular + special)
-    are summed, matching `simulate()`'s single-per-share-figure-per-day
-    contract. Non-positive `gross_declared` rows are dropped (no negative
-    or zero dividend cash is ever credited)."""
+    T-D1: rows are deduplicated by a symmetric dual-key rule (F-5 —
+    `_composite_identity()` always, plus `_alpaca_id_identity()` when
+    present) before aggregation — a literal duplicate row credits exactly
+    once, never twice, regardless of which copy carries the optional
+    `alpaca_id`. Genuinely distinct same-(ticker, credited_date) events
+    (e.g. regular + special) are summed, matching `simulate()`'s
+    single-per-share-figure-per-day contract. Non-positive `gross_declared`
+    rows are dropped (no negative or zero dividend cash is ever credited)."""
     if credit_convention not in CREDIT_CONVENTIONS:
         raise ValueError(f"unknown credit_convention {credit_convention!r}; "
                          f"must be one of {CREDIT_CONVENTIONS}")
-    seen: set[tuple] = set()
+    seen_composite: set[tuple] = set()
+    seen_ids: set[tuple] = set()
     events: dict[str, dict[str, float]] = {}
     for row in rows:
-        ident = _row_identity(row)
-        if ident in seen:
+        composite = _composite_identity(row)
+        alpaca_id = _alpaca_id_identity(row)
+        is_duplicate = composite in seen_composite or (
+            alpaca_id is not None and alpaca_id in seen_ids)
+        if is_duplicate:
             continue
-        seen.add(ident)
+        seen_composite.add(composite)
+        if alpaca_id is not None:
+            seen_ids.add(alpaca_id)
         amt = float(row["gross_declared"])
         if amt <= 0:
             continue
@@ -219,22 +258,33 @@ def build_corporate_action_events(events: list[dict], *, strict: bool = True
     failure upstream, not a case to silently skip (repo convention: fail
     loudly on malformed input rather than produce a nonsensical reading).
     `strict=False` skips such an event instead, for callers who have their
-    own reason to tolerate an incomplete record."""
+    own reason to tolerate an incomplete record.
+
+    F-12 correction: a non-numeric `child_close_on_parent_ex_session`
+    (e.g. a malformed string) is treated the same as a missing/non-positive
+    one — it fails with `ValueError` naming the offending event, never an
+    incidental `TypeError` leaking out of a raw `<=` comparison against a
+    non-numeric value."""
     out: dict[str, list[dict]] = {}
     for ev in events:
-        unit_value = ev.get("child_close_on_parent_ex_session")
-        if not unit_value or unit_value <= 0:
+        raw_unit_value = ev.get("child_close_on_parent_ex_session")
+        unit_value: float | None
+        try:
+            unit_value = float(raw_unit_value) if raw_unit_value is not None else None
+        except (TypeError, ValueError):
+            unit_value = None
+        if unit_value is None or unit_value <= 0:
             if strict:
                 raise ValueError(
                     f"corporate-action event {ev.get('parent')}->{ev.get('child')} "
                     f"ex {ev.get('ex_date')} has no valid "
-                    "child_close_on_parent_ex_session — data_acquisition.py's G1 "
-                    "validate() should already guarantee this; treat as a "
-                    "data-integrity failure, not a silent skip")
+                    f"child_close_on_parent_ex_session (got {raw_unit_value!r}) — "
+                    "data_acquisition.py's G1 validate() should already guarantee "
+                    "this; treat as a data-integrity failure, not a silent skip")
             continue
         out.setdefault(ev["ex_date"], []).append({
             "ticker": ev["parent"],
             "ratio": float(ev["ratio_child_per_parent"]),
-            "unit_value": float(unit_value),
+            "unit_value": unit_value,
         })
     return out

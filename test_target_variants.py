@@ -140,6 +140,28 @@ def test_b2_etf_sleeve_rejects_zero_current_weight():
         build_b2_etf_sleeve_budget(roster, etf_tickers=("E",), new_sleeve_pct=1.0, clusters=[])
 
 
+def test_b2_etf_sleeve_pct_is_percent_of_book_not_a_fraction():
+    # F-4: new_sleeve_pct is on the roster's own 0-100 weight_pct scale
+    # (e.g. 10.0 means "10% of book"), matching TieredWeight.weight_pct --
+    # NOT a 0-1 fraction. pre_registration.yaml's B2_sleeves.etf: [0.10,
+    # 0.13] registers these budgets as fractions (10%, 13%); a correct S3
+    # caller converts 0.10 -> 10.0 before calling this function.
+    correct = build_b2_etf_sleeve_budget(_roster(), etf_tickers=("E", "F"),
+                                        new_sleeve_pct=10.0, clusters=_clusters())
+    assert math.isclose(correct["weights"]["E"] + correct["weights"]["F"], 10.0)
+
+    # Passing the RAW registered fraction (0.10) directly, without
+    # converting to this module's percent-of-book scale, targets a sleeve
+    # roughly 100x smaller than the registered 10%-of-book arm actually
+    # intends -- pinning the exact unit mistake the docstring warns about,
+    # not merely asserting the two calls differ.
+    naive_fraction = build_b2_etf_sleeve_budget(_roster(), etf_tickers=("E", "F"),
+                                               new_sleeve_pct=0.10, clusters=_clusters())
+    naive_total = naive_fraction["weights"]["E"] + naive_fraction["weights"]["F"]
+    assert math.isclose(naive_total, 0.10)
+    assert math.isclose(naive_total * 100.0, correct["weights"]["E"] + correct["weights"]["F"])
+
+
 # ═════════════════════════════════════════════════════════════════════════
 # B-3 cluster-constrained (enforced by construction)
 # ═════════════════════════════════════════════════════════════════════════
@@ -212,17 +234,58 @@ def test_b4_semis_reduction_rejects_bad_factor():
 # B-5 nominal budgets
 # ═════════════════════════════════════════════════════════════════════════
 
-def test_b5_nominal_budget_scales_every_ticker_uniformly():
-    result = build_b5_nominal_budget(_roster(), factor=1.1, clusters=_clusters())
+def test_b5_nominal_budget_sums_to_exact_target_1_10():
+    # F-2: target_nominal_total is the TARGET TOTAL itself (matching
+    # pre_registration.yaml's literal registered B5_nominal_budgets value
+    # of 1.10 = "110%"), NOT a multiplier applied to the roster's own
+    # current total -- pins the corrected semantics directly.
+    result = build_b5_nominal_budget(_roster(), target_nominal_total=1.10, clusters=_clusters())
+    assert math.isclose(sum(result["weights"].values()), 1.10)
+
+
+def test_b5_nominal_budget_sums_to_exact_target_1_20():
+    result = build_b5_nominal_budget(_roster(), target_nominal_total=1.20, clusters=_clusters())
+    assert math.isclose(sum(result["weights"].values()), 1.20)
+
+
+def test_b5_nominal_budget_preserves_relative_proportions():
+    result = build_b5_nominal_budget(_roster(), target_nominal_total=1.10, clusters=_clusters())
     w = result["weights"]
     base = _weights()
+    base_total = sum(base.values())
+    new_total = sum(w.values())
     for t, v in base.items():
-        assert math.isclose(w[t], v * 1.1)
+        # every ticker's SHARE of the new total equals its share of the old total
+        assert math.isclose(w[t] / new_total, v / base_total, rel_tol=1e-9)
+    # pairwise ratios between any two tickers are exactly unchanged
+    assert math.isclose(w["A"] / w["B"], base["A"] / base["B"], rel_tol=1e-9)
+    assert math.isclose(w["E"] / w["F"], base["E"] / base["F"], rel_tol=1e-9)
 
 
-def test_b5_rejects_nonpositive_factor():
+def test_b5_nominal_budget_does_not_multiply_current_total_by_target():
+    # F-2 regression guard: the pre-F-2 (buggy) behavior would have produced
+    # sum == current_total * target_nominal_total (13.0 * 1.10 = 14.3 for
+    # this fixture roster) -- explicitly assert the corrected output is NOT
+    # that, on top of the positive sum==1.10 assertion above.
+    result = build_b5_nominal_budget(_roster(), target_nominal_total=1.10, clusters=_clusters())
+    buggy_multiplier_total = sum(_weights().values()) * 1.10
+    assert not math.isclose(sum(result["weights"].values()), buggy_multiplier_total)
+
+
+def test_b5_rejects_nonpositive_target():
     with pytest.raises(ValueError):
-        build_b5_nominal_budget(_roster(), factor=0.0, clusters=_clusters())
+        build_b5_nominal_budget(_roster(), target_nominal_total=0.0, clusters=_clusters())
+    with pytest.raises(ValueError):
+        build_b5_nominal_budget(_roster(), target_nominal_total=-1.10, clusters=_clusters())
+
+
+def test_b5_rejects_nan_and_infinite_target():
+    with pytest.raises(ValueError):
+        build_b5_nominal_budget(_roster(), target_nominal_total=float("nan"), clusters=_clusters())
+    with pytest.raises(ValueError):
+        build_b5_nominal_budget(_roster(), target_nominal_total=float("inf"), clusters=_clusters())
+    with pytest.raises(ValueError):
+        build_b5_nominal_budget(_roster(), target_nominal_total=float("-inf"), clusters=_clusters())
 
 
 # ═════════════════════════════════════════════════════════════════════════

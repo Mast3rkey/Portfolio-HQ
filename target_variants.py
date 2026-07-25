@@ -62,6 +62,7 @@ direction. No file or network I/O anywhere in this module. Never calls
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 
@@ -159,9 +160,25 @@ def build_b2_etf_sleeve_budget(roster: list[TieredWeight], *, etf_tickers: tuple
                                new_sleeve_pct: float, clusters: list[ClusterDef]) -> dict:
     """B-2 (ETF half only — see module docstring on crypto's G1 outcome
     (b) exclusion): rescales the ETF-sleeve tickers so their weights sum to
-    exactly `new_sleeve_pct` (`pre_registration.yaml` B2_sleeves.etf:
-    `[0.10, 0.13]`), preserving their RELATIVE proportions to each other;
-    every non-ETF ticker's weight is unchanged."""
+    exactly `new_sleeve_pct`, preserving their RELATIVE proportions to each
+    other; every non-ETF ticker's weight is unchanged.
+
+    F-4 unit clarification: `new_sleeve_pct` is on the SAME 0-100
+    percent-of-book scale as `TieredWeight.weight_pct` everywhere else in
+    this module (e.g. a T1 name's `weight_pct` of `3.35` means 3.35% of
+    book, per `targets.yaml`'s own convention) — it is NOT a 0-1 fraction.
+    `pre_registration.yaml` `B2_sleeves.etf: [0.10, 0.13]` expresses these
+    same two registered budgets as fractions (10%, 13%); a caller (a
+    future `run_study_b.py`) building the B-2 arm from that registered
+    grid MUST convert to this module's percent-of-book scale before
+    calling — pass `new_sleeve_pct=10.0` / `new_sleeve_pct=13.0`, never
+    `0.10` / `0.13`. Passing the raw fractional form here would silently
+    target an ETF sleeve roughly 100x smaller than the registered arm
+    (e.g. 0.10 means "0.10% of book," not "10% of book") — exactly the
+    unit mistake this docstring exists to rule out; see
+    `test_b2_etf_sleeve_pct_is_percent_of_book_not_a_fraction` in
+    `test_target_variants.py` for a worked, pinned example of the correct
+    conversion."""
     if new_sleeve_pct <= 0:
         raise ValueError(f"new_sleeve_pct must be > 0, got {new_sleeve_pct}")
     base = _weights_of(roster)
@@ -256,15 +273,44 @@ def build_b4_semis_reduction(roster: list[TieredWeight], *, semis_cluster: Clust
            "cluster_check": check_cluster_compatibility(weights, clusters)}
 
 
-def build_b5_nominal_budget(roster: list[TieredWeight], *, factor: float,
+def build_b5_nominal_budget(roster: list[TieredWeight], *, target_nominal_total: float,
                             clusters: list[ClusterDef]) -> dict:
     """B-5 — nominal budgets (`pre_registration.yaml` B5_nominal_budgets:
-    `[1.10, 1.20]`): every ticker's weight scaled uniformly by `factor`,
-    preserving all relative proportions exactly."""
-    if factor <= 0:
-        raise ValueError(f"factor must be > 0, got {factor}")
-    weights = {r.ticker: r.weight_pct * factor for r in roster}
-    return {"variant_id": f"B5_nominal_{factor}", "weights": weights,
+    `[1.10, 1.20]` — TOTAL nominal portfolio levels of 110% and 120%, per
+    the protocol's own §5 prose): every ticker's weight is scaled uniformly
+    so the roster's total lands EXACTLY at `target_nominal_total`
+    (`scale = target_nominal_total / current_nominal_total`), preserving
+    every ticker's relative proportion to every other exactly.
+
+    F-2 correction: the pre-F-2 version of this builder treated its
+    argument as a MULTIPLIER applied to whatever the roster's own current
+    total happened to be (`weight_pct * factor`) — so a caller passing the
+    registered value `1.10` against a roster whose current total was, say,
+    103.25 produced an output total of 113.575, not the registered 110%
+    level the protocol's B-5 arm actually specifies (a >10x-the-intended-
+    delta error, not a rounding difference). `target_nominal_total` is now
+    the TARGET TOTAL ITSELF, not a scale factor: a caller passing `1.10`
+    receives weights summing to exactly `1.10`; a caller passing `1.20`
+    receives weights summing to exactly `1.20` — matching
+    `pre_registration.yaml`'s literal registered `B5_nominal_budgets`
+    values directly, with no additional caller-side conversion needed and
+    no way to reasonably misread `1.10` as "multiply the current total by
+    1.10." (Contrast `build_b2_etf_sleeve_budget()`'s `new_sleeve_pct`,
+    which is deliberately on the roster's own 0-100 percent-of-book
+    `weight_pct` scale, per its own F-4 docstring note — this function
+    intentionally uses `pre_registration.yaml`'s own literal scale for
+    B-5 instead, since that is the scale its registered arm values are
+    actually expressed in.)"""
+    if not math.isfinite(target_nominal_total) or target_nominal_total <= 0:
+        raise ValueError(f"target_nominal_total must be finite and > 0, "
+                         f"got {target_nominal_total}")
+    base = _weights_of(roster)
+    current_nominal_total = sum(base.values())
+    if current_nominal_total <= 0:
+        raise ValueError("roster has zero current nominal total — cannot rescale proportionally")
+    scale = target_nominal_total / current_nominal_total
+    weights = {t: w * scale for t, w in base.items()}
+    return {"variant_id": f"B5_nominal_{target_nominal_total}", "weights": weights,
            "cluster_check": check_cluster_compatibility(weights, clusters)}
 
 

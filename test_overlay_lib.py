@@ -213,6 +213,61 @@ def test_overlay_a9_crash_only_triggers_and_recovers():
     assert recovered.leverage_target == 1.0  # recovery overrides an otherwise-triggered drawdown
 
 
+def test_overlay_a9_full_episode_trough_anchored_vs_naive_current_drawdown():
+    # F-3: a complete no-trigger -> trigger -> trough -> partial-recovery ->
+    # repay-priority -> reset episode, proving the correct calling contract
+    # (drawdown = episode trough while held; recovered = a separately
+    # tracked current-drawdown-vs-(-0.05) flag) against the documented
+    # naive interpretation (feeding raw current-day drawdown throughout).
+    trigger_drawdown, l_star = -0.20, 1.25
+
+    def call(drawdown, recovered):
+        return overlay_a9_crash_only(drawdown, trigger_drawdown=trigger_drawdown,
+                                     l_star=l_star, recovered=recovered).leverage_target
+
+    # Day 0 -- no-trigger state: a mild dip, well short of the -20% trigger.
+    assert call(-0.05, recovered=False) == 1.0
+
+    # Day 1 -- trigger at or below -20%: first breach: trough == current == -0.22.
+    assert math.isclose(call(-0.22, recovered=False), l_star)
+
+    # Day 2 -- trough deepens further to -0.30 (still no recovery).
+    assert math.isclose(call(-0.30, recovered=False), l_star)
+
+    # Day 3 -- partial recovery: current price has bounced to -0.15 (short of
+    # the -5% recovery bar), but under the CORRECT contract the caller still
+    # passes the EPISODE TROUGH (-0.30, unchanged by an interim bounce) and
+    # recovered stays False (current -0.15 has not reached -0.05) -- leverage
+    # must remain held at l_star through the whole episode, not just while
+    # today's raw drawdown sits below the trigger.
+    correct_partial_recovery = call(-0.30, recovered=False)
+    assert math.isclose(correct_partial_recovery, l_star), (
+        "trough-anchored contract must hold l_star through a partial bounce")
+
+    # The NAIVE interpretation -- feeding the raw current-day drawdown
+    # (-0.15) instead of the trough, still with recovered=False -- is
+    # documented as WRONG: it prematurely de-levers a full crash-recovery
+    # cycle before the registered -5% recovery point is ever reached. This
+    # assertion pins that the two interpretations genuinely diverge (not a
+    # test of desired behavior for the naive path -- a demonstration of why
+    # the docstring's contract matters).
+    naive_partial_recovery = call(-0.15, recovered=False)
+    assert naive_partial_recovery == 1.0
+    assert correct_partial_recovery != naive_partial_recovery
+
+    # Day 4 -- repay-priority state: current drawdown finally reaches -0.04
+    # (>= -0.05) -- the caller flips recovered=True. This forces the exit
+    # to 1.00 EVEN THOUGH the trough value passed in is still deeply
+    # negative (-0.30) -- recovered overrides a "still-negative-but-
+    # recovering drawdown" exactly as the base docstring states.
+    assert call(-0.30, recovered=True) == 1.0
+
+    # Day 5 -- exit/reset: a new, unrelated mild dip after the episode has
+    # fully closed; trough resets to the current (shallow) value for any
+    # future episode, recovered is no longer relevant.
+    assert call(-0.02, recovered=False) == 1.0
+
+
 def test_overlay_a9_rejects_bad_params():
     with pytest.raises(ValueError):
         overlay_a9_crash_only(-0.1, trigger_drawdown=0.05, l_star=1.25, recovered=False)

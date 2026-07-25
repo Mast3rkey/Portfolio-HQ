@@ -86,8 +86,13 @@ def test_no_production_module_imports_the_new_s2_modules():
 # ═════════════════════════════════════════════════════════════════════════
 
 @pytest.mark.parametrize("modname", ["dividend_ledger", "overlay_lib",
-                                     "target_variants", "margin_simulation"])
+                                     "target_variants", "margin_simulation",
+                                     "repayment_lib"])
 def test_module_does_not_reference_tr_namespace(modname):
+    # F-10: repayment_lib.py (a pre-existing, merged G2B module this PR does
+    # not modify) is added to this scan -- it must be as clean of the TR
+    # namespace as every other non-validation_lib module; it was previously
+    # omitted from this parametrization, not exempted from the rule.
     assert_module_does_not_reference_tr_namespace(os.path.join(_ROOT, f"{modname}.py"))
 
 
@@ -311,13 +316,43 @@ def test_expected_max_sharpe_rejects_bad_n_trials():
         expected_max_sharpe(-5)
 
 
-def test_probabilistic_sharpe_ratio_matches_simple_formula_at_zero_benchmark():
-    # With skew=0, kurtosis=3 (normal) and sr_benchmark=0, PSR reduces to
-    # Phi(sr_hat * sqrt(n_obs - 1)) -- a hand-derivable special case.
-    sr_hat, n_obs = 1.2, 101
+def test_probabilistic_sharpe_ratio_matches_hand_derived_reduction_at_zero_benchmark():
+    # F-1 correction: at skew=0, kurtosis=3 (normal) and sr_benchmark=0 the
+    # PSR denominator does NOT vanish -- it is sqrt(1 - skew*sr_hat +
+    # ((kurtosis-1)/4)*sr_hat**2) = sqrt(1 + sr_hat**2/2) at these values,
+    # never 1. The PREVIOUS version of this test claimed the false
+    # reduction Phi(sr_hat * sqrt(n_obs - 1)) (denominator dropped
+    # entirely) and happened to pass only because its chosen inputs
+    # (sr_hat=1.2, n_obs=101) saturate both the correct and the false
+    # formula to exactly 1.0 in double precision -- proving nothing. This
+    # anchor (sr_hat=0.20, n_obs=26) is deliberately chosen to sit well
+    # inside (0, 1) for both formulas so the two genuinely diverge
+    # (|correct - false| ~ 0.0024, verified below), making this a real,
+    # non-vacuous independent check.
+    #
+    # The expected value is hand-derived here using ONLY math.erf (the
+    # stdlib primitive) -- not validation_lib.norm_cdf, not
+    # probabilistic_sharpe_ratio()'s own denom/z computation, and not any
+    # other part of the production PSR helper chain -- so this test cannot
+    # pass merely because the implementation is internally self-consistent
+    # with itself.
+    sr_hat, n_obs = 0.20, 26
     got = probabilistic_sharpe_ratio(sr_hat, 0.0, n_obs)
-    expect = norm_cdf(sr_hat * math.sqrt(n_obs - 1))
-    assert math.isclose(got, expect, rel_tol=1e-9)
+
+    correct_denom = math.sqrt(1.0 + sr_hat ** 2 / 2.0)   # skew=0, kurtosis=3 case
+    correct_z = sr_hat * math.sqrt(n_obs - 1) / correct_denom
+    expect_correct = 0.5 * (1.0 + math.erf(correct_z / math.sqrt(2.0)))
+    assert math.isclose(got, expect_correct, rel_tol=1e-9)
+
+    # This assertion is the one that would have FAILED under the old,
+    # mathematically false "denominator vanishes" formula -- pinning that
+    # this test genuinely discriminates between the two, not just at this
+    # one input but structurally (the false formula omits correct_denom
+    # entirely, and correct_denom != 1 here by construction since sr_hat != 0).
+    false_denominator_dropped = 0.5 * (1.0 + math.erf(
+        sr_hat * math.sqrt(n_obs - 1) / math.sqrt(2.0)))
+    assert not math.isclose(got, false_denominator_dropped, abs_tol=1e-6)
+    assert abs(expect_correct - false_denominator_dropped) > 1e-3
 
 
 def test_probabilistic_sharpe_ratio_rejects_too_few_observations():
@@ -437,6 +472,63 @@ def test_build_dividend_events_composite_key_dedup_without_alpaca_id():
     assert events == {"2024-02-01": {"BBB": 0.30}}
 
 
+# ── F-5: symmetric dividend-identity dedup (id-presence must not matter) ────
+
+def test_build_dividend_events_dedup_first_has_id_duplicate_lacks_id():
+    # Same real event, two rows: the first carries alpaca_id, the second
+    # (e.g. a partial re-fetch) does not. Must still credit exactly once --
+    # the pre-F-5 asymmetric identity (id-keyed vs composite-keyed buckets)
+    # would have double-credited this case.
+    first = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id1")
+    duplicate_no_id = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id=None)
+    events = dividend_ledger.build_dividend_events([first, duplicate_no_id])
+    assert events == {"2024-01-05": {"AAA": 0.50}}
+
+
+def test_build_dividend_events_dedup_first_lacks_id_duplicate_has_id():
+    # The reverse order/composition of the case above -- identity must be
+    # order-independent, not just symmetric in which row happens first.
+    first_no_id = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id=None)
+    duplicate_with_id = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id1")
+    events = dividend_ledger.build_dividend_events([first_no_id, duplicate_with_id])
+    assert events == {"2024-01-05": {"AAA": 0.50}}
+
+
+def test_build_dividend_events_dedup_both_have_same_id():
+    row = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id1")
+    duplicate = dict(row)
+    events = dividend_ledger.build_dividend_events([row, duplicate])
+    assert events == {"2024-01-05": {"AAA": 0.50}}
+
+
+def test_build_dividend_events_dedup_different_ids_same_composite_fields():
+    # Two rows with DIFFERENT alpaca_id values but identical composite
+    # fields (symbol, ex_date, special, gross_declared, payable_date). Per
+    # T-D1's own distinctness reasoning, two genuinely distinct same-day
+    # dividends always differ in special and/or gross_declared -- so
+    # identical composite fields mean this is the same real event
+    # (e.g. a duplicate ingested under two different vendor row ids), and
+    # the composite key (the PRIMARY identity) correctly collapses it to
+    # one credit even though the ids themselves differ.
+    row_a = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id1")
+    row_b = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id="id2")
+    events = dividend_ledger.build_dividend_events([row_a, row_b])
+    assert events == {"2024-01-05": {"AAA": 0.50}}
+
+
+def test_build_dividend_events_distinct_same_day_events_remain_distinct_regardless_of_id():
+    # A regular + special dividend sharing an ex_date are genuinely
+    # distinct (differ in `special`/`gross_declared`) and must remain
+    # separately creditable (summed) under the corrected symmetric rule,
+    # exactly as under the pre-F-5 rule -- the fix must not over-collapse
+    # legitimately distinct events.
+    regular_no_id = _div_row("AAA", "2024-01-05", 0.50, payable="2024-01-20", alpaca_id=None)
+    special_with_id = _div_row("AAA", "2024-01-05", 0.10, special=True,
+                               payable="2024-01-20", alpaca_id="id2")
+    events = dividend_ledger.build_dividend_events([regular_no_id, special_with_id])
+    assert events == {"2024-01-05": {"AAA": 0.60}}
+
+
 def test_build_dividend_events_drops_nonpositive_amounts():
     row = _div_row("CCC", "2024-03-01", 0.0, alpaca_id="id1")
     events = dividend_ledger.build_dividend_events([row])
@@ -504,6 +596,22 @@ def test_build_corporate_action_events_strict_raises_on_missing_unit_value():
 
 def test_build_corporate_action_events_nonstrict_skips_missing_unit_value():
     ev = _ca_event("PPP", "CCC", 0.2, "2024-05-01", None)
+    out = dividend_ledger.build_corporate_action_events([ev], strict=False)
+    assert out == {}
+
+
+def test_build_corporate_action_events_strict_raises_valueerror_on_nonnumeric_unit_value():
+    # F-12: a non-numeric child_close_on_parent_ex_session (e.g. a
+    # malformed string) must fail with ValueError -- the module's intended
+    # input-validation exception type -- not an incidental TypeError
+    # leaking from a raw `<=` comparison against a non-numeric value.
+    ev = _ca_event("PPP", "CCC", 0.2, "2024-05-01", "not-a-number")
+    with pytest.raises(ValueError):
+        dividend_ledger.build_corporate_action_events([ev])
+
+
+def test_build_corporate_action_events_nonstrict_skips_nonnumeric_unit_value():
+    ev = _ca_event("PPP", "CCC", 0.2, "2024-05-01", "not-a-number")
     out = dividend_ledger.build_corporate_action_events([ev], strict=False)
     assert out == {}
 
