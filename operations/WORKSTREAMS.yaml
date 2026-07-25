@@ -407,36 +407,50 @@ workstreams:
       this entry authorizes recording the intent only.
     milestones: []
     evidence_refs: []
-    candidate_future_research_topics:
-      - no-margin baseline (comparison arm only)
-      - 200-day moving-average eligibility gate
-      - 50-day/200-day trend confirmation
-      - volatility-scaled exposure
-      - staged drawdown deployment
-      - trend-confirmed recovery deployment
-      - borrowing-cost hurdle
-      - margin restricted to current, governed, underweight holdings
-      - explicit deployment, repayment, and deleveraging rules
-      - realistic interest and transaction costs
-      - out-of-sample or walk-forward testing
-      - parameter-sensitivity testing
-      - preserved negative findings (required reporting discipline for any
-        future study, not itself a research topic)
-    candidate_future_research_disclaimer: >
-      Recorded 2026-07-25 as a deferred, unauthorized future research
-      candidate list only, in the same durable-planning-intent spirit as
-      this workstream's existing objective. This entry does not authorize
-      a study; does not consume a MARGIN-0005 trial; does not create a
-      live signal; does not change margin policy; does not modify
-      allocator behavior; and does not authorize live margin use. The
-      1.8x leverage cap and 30% buffer floor remain unchanged and binding.
-      Any future work on any listed item requires its own separate,
-      explicit governance decision meeting the same evidentiary bar as
-      MARGIN-0005/GOV-0003, per this workstream's existing next_action.
     next_action: >
       None authorized. A future, separate research charter (its own
       governance decision, meeting the same evidentiary bar as
-      MARGIN-0005) must be accepted before any work begins.
+      MARGIN-0005) must be accepted before any work begins. Recorded
+      2026-07-25 as a deferred, unauthorized future research candidate
+      list only, in the same durable-planning-intent spirit as this
+      workstream's objective: no-margin baseline (comparison arm only),
+      200-day moving-average eligibility gate, 50-day/200-day trend
+      confirmation, volatility-scaled exposure, staged drawdown
+      deployment, trend-confirmed recovery deployment, borrowing-cost
+      hurdle, margin restricted to current governed underweight
+      holdings, explicit deployment/repayment/deleveraging rules,
+      realistic interest and transaction costs, out-of-sample or
+      walk-forward testing, parameter-sensitivity testing, and
+      preserved negative findings (a required reporting discipline for
+      any future study, not itself a research topic).
+
+      Cross-reference (2026-07-25): most of these topics are already
+      represented in WS-0001's frozen MARGIN-0005 pre_registration.yaml
+      as existing arms, controls, cost rules, sensitivity work, and
+      walk-forward requirements, not new ideas — no-margin baseline
+      (A-0a/A-1 controls), the 200-day MA gate (A6), volatility-scaled
+      exposure (A7), staged drawdown deployment (A8), trend-confirmed
+      recovery (A9), borrowing-cost hurdle (R4),
+      deployment/repayment/deleveraging rules (R1-R9), margin
+      restricted to underweight holdings, realistic costs,
+      walk-forward testing, parameter-sensitivity testing, and the
+      preserved-negative-findings discipline. Only the 50-day/200-day
+      trend cross is genuinely new, outside the frozen
+      pre-registration — it too is deferred and unauthorized alongside
+      every other listed topic. Listing these topics here does not
+      create new MARGIN-0005 variants; does not reopen or authorize
+      reruns of any MARGIN-0005 question; does not modify the frozen
+      MARGIN-0005 pre_registration.yaml; and does not consume a trial.
+      Any future study on any listed item — whether under WS-0001's
+      charter or a new one — still requires its own separate, explicit
+      governance decision meeting the same evidentiary bar as
+      MARGIN-0005/GOV-0003; MARGIN-0005 and Decisions-Log negative and
+      null findings remain preserved and are not reopened by this
+      list. This entry does not authorize a study; does not consume a
+      MARGIN-0005 trial; does not create a live signal; does not
+      change margin policy; does not modify allocator behavior; and
+      does not authorize live margin use. The 1.8x leverage cap and
+      30% buffer floor remain unchanged and binding.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream.
     blocker: >
@@ -681,10 +695,23 @@ workstreams:
       is authorized by this entry or by Milestones 1-2 reaching complete —
       Milestones 3 through 9 remain status: proposed, each requiring its
       own separate, later, explicit principal authorization per OPS-0006
-      §5. A narrow, factual cleanup of the stale BTC "fully sold" comment
-      in targets.yaml is recorded as a separate deferred next action (see
-      deferred_cleanup_actions below) — not performed in this
-      reconciliation or this branch.
+      §5.
+
+      Separately: targets.yaml carries a stale comment stating BTC was
+      "fully sold 2026-07-13," contradicted by holdings.yaml's current
+      crypto_shares.BTC = 0.00460473 (a verified broker-sync re-add on
+      2026-07-22, commit 2bab50a). Independently identified as FA-3 in
+      governance/audits/WS0002_PHASE_ONE_FABLE_AUDIT_20260724.md and
+      reconfirmed present at PR #151's head by both its own artifact and
+      the independent Fable full review (OBS-1). This is a stale
+      comment/data-reconciliation discrepancy, not a software defect — no
+      BTC holding or target value is incorrect, and no allocator behavior
+      depends on the comment text. Its correction is a separate, narrow,
+      factual comment-only fix to targets.yaml (reflecting the
+      2026-07-22 broker-sync re-add) — not a tier, target, holdings,
+      allocator, or margin-policy change. It is not performed in this
+      reconciliation or this branch; it remains an unauthorized,
+      unscheduled next action.
     completion_criteria: >
       Per OPS-0006 §16.1's completion discipline: Milestones 1-2 reach
       status: complete only when the one bounded first audit PR merges;
@@ -719,24 +746,5 @@ workstreams:
       this session's independent post-merge verification and validation —
       this reconciliation grants no new authorization and does not itself
       authorize Milestone 3.
-    deferred_cleanup_actions:
-      - description: >
-          targets.yaml carries a stale comment stating BTC was "fully sold
-          2026-07-13," contradicted by holdings.yaml's current
-          crypto_shares.BTC = 0.00460473 (a verified broker-sync re-add on
-          2026-07-22, commit 2bab50a). Independently identified as FA-3 in
-          governance/audits/WS0002_PHASE_ONE_FABLE_AUDIT_20260724.md and
-          reconfirmed present at PR #151's head by both its own artifact
-          and the independent Fable full review (OBS-1). This is a stale
-          comment/data-reconciliation discrepancy, not a software defect —
-          no BTC holding or target value is incorrect, and no allocator
-          behavior depends on the comment text.
-        status: deferred
-        scope: >
-          A separate, narrow, factual comment correction only — updating
-          the stale comment in targets.yaml to reflect the 2026-07-22
-          broker-sync re-add. Not performed in this reconciliation PR or
-          this branch. Not a tier, target, holdings, allocator, or margin
-          policy change.
     supersedes: null
     superseded_by: null
