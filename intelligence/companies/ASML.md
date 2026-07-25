@@ -77,15 +77,26 @@ presentation, filed under the name
 described as a generic search-result summary. This session still did not
 open the PDF directly (WebFetch returned HTTP 403). A separate search in
 this pass surfaced a conflicting regional breakdown citing China at
-**29.1%** of Q2 2026 net system sales — this figure is explicitly **not
-adopted**: the 14% figure used throughout this record is corroborated
-identically across at least three independent searches spanning the
-original research pass and both remediation passes, while 29.1% appeared
-once, unattributed to a specific document, and its structure (summing
-several small sub-regions to exactly 100%) suggests possible conflation
-with a different metric or period. This discrepancy is now stated
-explicitly in the Risks section rather than silently resolved. Sourcing
-throughout this record was also reclassified along two axes: document type
+**29.1%** of Q2 2026 net system sales, flagged at the time as a possible
+conflict pending further verification.
+
+**Third remediation pass (2026-07-25), source-accounting resolution:**
+the 29.1% figure is now **removed entirely** as a stated geographic-sales
+conflict, rather than merely flagged and not adopted. A fresh, independent
+search this pass again returned only the 14%/43%/30%/9% breakdown, with no
+repeat appearance of 29.1% anywhere — it was never traced to any specific
+document (primary or secondary) across three separate research passes, and
+its structure (several small named sub-regions summing to exactly 100%,
+including an implausibly precise "Netherlands 0.1%") is consistent with it
+belonging to a different financial metric or reporting period, not ASML's
+own geographic net-system-sales table. Per the discipline that a
+percentage belonging to a different metric should not be treated as
+contradictory geographic-sales evidence, this record no longer describes
+29.1% as an open discrepancy anywhere. The Q4 2025 (36%) and Q1 2026 (19%)
+figures remain directly supported across multiple independent sources; the
+Q2 2026 figure (14%) is retained specifically on the strength of ASML's
+own named investor-relations presentation. Sourcing throughout this record
+was also reclassified along two axes: document type
 (PRIMARY — ASML's own press releases and investor presentation; SECONDARY
 — news-outlet coverage of an underlying primary action, e.g. the October
 2024 guidance-cut reporting or Dutch export-control policy coverage) and
@@ -351,14 +362,15 @@ authorized scope.
 ## Sources
 
 See YAML `sources[]` for the structured register, which distinguishes two
-independent axes (corrected in this record's second remediation pass):
-**document type** (PRIMARY — ASML's own press releases and investor
-presentations; SECONDARY — news-outlet coverage of an underlying primary
-action) and **this session's access status** (every primary document is
-labeled "identified but NOT opened by this session" — no primary document
-was independently rendered and inspected by this implementation session at
-any point, including during either remediation pass). This record requires
-independent PR review (full primary-source verification, per this
-repository's "verify before acting on external review" guardrail) before
-its figures should be treated as confirmed — the 29.1%-vs-14% China-share
-discrepancy noted above should be a priority for that verification.
+independent axes (corrected across this record's second and third
+remediation passes): **document type** (PRIMARY — ASML's own press
+releases and investor presentations; SECONDARY — news-outlet coverage of
+an underlying primary action) and **this session's access status** (every
+primary document is labeled "identified but NOT opened by this session" —
+no primary document was independently rendered and inspected by this
+implementation session at any point, including during any remediation
+pass). This record requires independent PR review (full primary-source
+verification, per this repository's "verify before acting on external
+review" guardrail) before its figures should be treated as confirmed — the
+customer-concentration percentages (TSMC ~24%, top-10 >80%) remain the
+priority open item for that verification.

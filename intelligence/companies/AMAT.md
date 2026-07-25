@@ -106,6 +106,34 @@ shifts" phrase found in earlier research is now attributed to secondary
 press coverage, not confirmed as the 8-K's or the CEO email's own
 language.
 
+**Third remediation pass (2026-07-25), source-accounting resolution:**
+following a delta primary-source check performed outside this session
+reporting that the BIS order had been directly opened, the prior
+"unresolved date-range discrepancy" (March 2021-June 2022 vs. November
+2020-July 2022) is now **resolved**. The BIS order's Statement of Charges
+specifies **56 total violations**: 54 completed reexports of
+ion-implantation equipment (Charges 1-54, between **March 23, 2021 and
+June 3, 2022**), plus 2 attempted reexports (Charges 55-56, dated
+**November 8, 2020** and **July 18, 2022**). Affected recipients: SMIC and
+its listed Entity List subsidiaries. AMAT's own "November 2020-July 2022"
+case-window language is the broader overall period spanning the earliest
+to the latest charge — fully consistent with, not contradicting, the
+detailed 54+2 breakdown; both date ranges were accurate descriptions of
+different parts of the same charge structure, not competing claims. This
+session independently re-searched (rather than accepting the delta
+check's claim on its own authority) and found the same 54+2=56 structure,
+exact dates, and SMIC/AMK identification corroborated across eight
+additional independent legal/trade-press sources (Torres Trade Law,
+Fenwick, ArentFox Schiff, Manufacturing Dive, Supply Chain Dive, FD
+Associates, Washington Trade & Tariff Letter, Tom's Hardware, Kharon) —
+this convergent, independent corroboration is the basis for resolving the
+discrepancy, not the delta check's claim alone. This session's own
+WebFetch access to bis.gov and media.bis.gov remained blocked (HTTP 403)
+throughout all three passes; this record's confidence in the charge
+structure rests on the density and independence of secondary sources
+describing the order's content, not on this session's own direct reading
+of the order.
+
 ## Business summary
 
 Applied Materials is the largest US-based semiconductor equipment maker by
@@ -158,15 +186,13 @@ unresolved) Chinese domestic-content mandate that would independently cap
 AMAT's addressable China share regardless of any further US action.
 Separately, and distinct from the general industry-wide export-control
 environment, AMAT itself has a confirmed compliance-violation history: a
-February 2026 BIS settlement ($252.5 million civil penalty, the
-second-highest on record) resolving allegations of illegal reexports of
-semiconductor manufacturing equipment to China — the specific "56
-violations"/SMIC characterization commonly reported is not independently
-verified against the primary charging document by this record, and one
-newer source describes the violation period and recipient differently
-(see Risks below for the full discrepancy) — direct evidence about AMAT's
-own past export-control conduct, not merely industry-wide regulatory risk.
-The October 2025
+BIS settlement ($252.5 million civil penalty, the second-highest on
+record) resolving 56 total violations — 54 completed reexports of
+ion-implantation equipment (March 23, 2021-June 3, 2022) plus 2 attempted
+reexports (November 8, 2020 and July 18, 2022) — to SMIC and its listed
+subsidiaries (see Risks below for the full charge-structure detail) —
+direct evidence about AMAT's own past export-control conduct, not merely
+industry-wide regulatory risk. The October 2025
 workforce reduction (~4%, ~1,400 jobs) is a concrete, recent data point
 this record does not minimize, though its cause is genuinely mixed across
 sources: the company's own stated rationale emphasized automation and
@@ -286,35 +312,45 @@ AMAT's own compliance-violation history below:**
 
 **AMAT's own confirmed export-compliance violation (distinct from the
 shock timeline above — this is about AMAT's own past conduct, not the
-regulatory environment). Corrected for date and narrowed for unverified
-detail in this record's second remediation pass (2026-07-25):** Applied
-Materials, Inc. and its subsidiary Applied Materials Korea, Ltd. entered
-into a settlement agreement with BIS. Two distinct primary-issuer press
-releases exist, each with its own date: AMAT's own ("Applied Materials
-Reaches Resolution with the U.S. Department of Commerce") is dated
-**2026-02-11**; BIS's own is dated **2026-02-12**. Neither was directly
-opened by this session (WebFetch blocked, HTTP 403, on
-ir.appliedmaterials.com, bis.gov, media.bis.gov, and globenewswire.com on
-every attempt across both remediation passes). Well-corroborated across
-multiple independent sources: a $252.5 million civil penalty — the
+regulatory environment):** Applied Materials, Inc. and its subsidiary
+Applied Materials Korea, Ltd. (AMK) entered into a settlement agreement
+with BIS resolving **56 total violations** of the Export Administration
+Regulations. Two distinct primary-issuer press releases exist, each with
+its own date: AMAT's own ("Applied Materials Reaches Resolution with the
+U.S. Department of Commerce") is dated **2026-02-11**; BIS's own is dated
+**2026-02-12**. Neither was directly opened by this session (WebFetch
+blocked, HTTP 403, on ir.appliedmaterials.com, bis.gov, media.bis.gov, and
+globenewswire.com on every attempt across all three passes).
+
+**Charge structure, resolved in a third remediation pass (2026-07-25):**
+the BIS order's Statement of Charges specifies **54 completed reexports**
+of ion-implantation equipment (Charges 1-54, between **March 23, 2021 and
+June 3, 2022**), plus **2 attempted reexports** (Charges 55-56, dated
+**November 8, 2020** and **July 18, 2022**) — 56 charges total. Affected
+recipients: Semiconductor Manufacturing International Corporation (SMIC)
+and its listed Entity List subsidiaries. AMAT's own "November 2020-July
+2022" case-window language (found in earlier research) is the **broader
+overall case period** — spanning the earliest to the latest charge — and
+is fully consistent with, not contradicting, this detailed breakdown; a
+prior draft of this record treated these as two competing, unresolved date
+ranges, which was itself the error. This session independently
+re-searched rather than accepting an external cross-check's claim on its
+own authority, and found the same 54+2=56 structure, exact dates, and
+SMIC/AMK identification corroborated across eight independent
+legal/trade-press sources (Torres Trade Law, Fenwick, ArentFox Schiff,
+Manufacturing Dive, Supply Chain Dive, FD Associates, Washington Trade &
+Tariff Letter, Tom's Hardware, Kharon) — this convergent, independent
+corroboration is the basis for treating the charge structure as resolved,
+not the external check's claim alone. This session's own WebFetch access
+to bis.gov and media.bis.gov remained blocked (HTTP 403) throughout, so
+this record's confidence rests on the density and independence of
+secondary sources describing the order's own content, not on this
+session's direct reading of it. $252.5 million civil penalty — the
 statutory maximum, and the second-highest BIS penalty on record (after
 Seagate Technology's $300M in 2023) — against a total transaction value at
-issue of approximately $126 million; two required internal
-export-compliance audits; a three-year suspended denial order.
-
-**NOT independently verified against the primary charging document, and
-now explicitly narrowed rather than stated as settled fact:** the "56
-violations" figure and the identification of Semiconductor Manufacturing
-International Corporation (SMIC) specifically as the recipient are
-reported consistently across several trade-press/legal-advisory sources
-(Manufacturing Dive, Supply Chain Dive, Fenwick, Wiggin and Dana) — but a
-separately-found, independent legal-advisory source (Arnold & Porter)
-describes the recipient only as "a restricted Chinese entity" and states
-the violation period as approximately **November 2020 to July 2022**,
-conflicting with the "approximately March 2021 to June 2022" period cited
-by the earlier sources. This session still could not open the BIS charging
-letter/order or either press release directly, so this discrepancy is
-stated explicitly rather than resolved in either direction.
+issue of approximately $126 million (the 54 completed reexports alone
+valued at approximately $118.45 million per one source); two required
+internal export-compliance audits; a three-year suspended denial order.
 
 **Chinese domestic-competitor progression** (secondary, consistent across
 multiple sources but not primary-verified): Naura's nine-month FY2025
@@ -438,17 +474,23 @@ exists in this repository; creating one is outside `PI-0023`'s scope).
 
 ## Sources
 
-See YAML `sources[]`, which now distinguishes two independent axes
-(corrected in this record's second remediation pass): **document type**
-(PRIMARY — an issuer- or regulator-authored filing/press release, e.g.
-AMAT's 10-K, 8-K, or press releases, and BIS's own press release; versus
-SECONDARY — journalism or analysis about a primary document, e.g. CNBC,
-trade-press, or legal-advisory coverage) and **this session's access
-status** (every primary document in this record is labeled "identified but
-NOT opened by this session" — WebFetch returned HTTP 403 on every
-attempted domain across the original research pass and both remediation
-passes; no primary document was independently rendered and inspected).
-News outlets like CNBC are labeled secondary context only and never
-presented as if interchangeable with the primary filing they report on.
-Requires independent PR review and full primary-source verification, per
-this repository's "verify before acting on external review" guardrail.
+See YAML `sources[]`, which distinguishes two independent axes (corrected
+across this record's second and third remediation passes): **document
+type** (PRIMARY — an issuer- or regulator-authored filing/press release,
+e.g. AMAT's 10-K, 8-K, or press releases, and BIS's own press release and
+order; versus SECONDARY — journalism or analysis about a primary
+document, e.g. CNBC, trade-press, or legal-advisory coverage) and **this
+session's access status** (every primary document in this record is
+labeled "identified but NOT opened by this session" — WebFetch returned
+HTTP 403 on every attempted domain across the original research pass and
+all three remediation passes; no primary document was independently
+rendered and inspected by this session). The BIS order's charge structure
+(§ Risks above) is treated with high confidence despite this session never
+opening it directly, on the strength of convergent, independent
+corroboration across eight separate legal/trade-press sources — a
+qualitatively stronger basis than a single secondary relay, though still
+distinct from this session's own direct verification. News outlets like
+CNBC are labeled secondary context only and never presented as if
+interchangeable with the primary filing they report on. Requires
+independent PR review and full primary-source verification, per this
+repository's "verify before acting on external review" guardrail.
