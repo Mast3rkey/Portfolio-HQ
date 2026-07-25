@@ -3,7 +3,7 @@ decision_id: OPS-0006
 date: 2026-07-25
 status: Accepted
 category: operations_coordination
-related_decisions: [OPS-0001, OPS-0002, OPS-0003, OPS-0004, OPS-0005, GOV-0001, GOV-0002, GOV-0003, PI-0001, PI-0006, PI-0011, PI-0016, ONTO-0001, TGT-0001, NUM-0001]
+related_decisions: [OPS-0001, OPS-0002, OPS-0003, OPS-0004, OPS-0005, GOV-0001, GOV-0002, GOV-0003, PI-0001, PI-0006, PI-0011, PI-0016, ONTO-0001, TGT-0001, NUM-0001, MARGIN-0001, MARGIN-0003, MARGIN-0004, MARGIN-0005]
 supporting_artifact: operations/WORKSTREAMS.yaml
 ---
 
@@ -34,6 +34,22 @@ grant, or the F-2/F-3 register reconciliation changes. Every section below refle
 amended, current state — the superseded zero-execution text is not reproduced verbatim here,
 consistent with how `OPS-0002`'s own in-place correction was handled, since no independent
 review of the prior text exists for a future reader to reconcile against._
+
+_**Second amendment — 2026-07-25 (same-day, pre-merge, pre-review; PR #150 still carries zero
+GitHub reviews at the time of this amendment):** adds new §9, "Zero-based future margin-policy
+review," stating explicitly how WS-0005's zero-based principle (§2, §3) applies to the 1.8x
+leverage cap and 30% buffer floor specifically — both remain binding operational guardrails
+until formally superseded, while simultaneously being provisional, doctrine-status baseline
+values (per `NUM-0001`) that a future, separately authorized margin study must not treat as
+pre-defended assumptions or as constraints on which candidate policies it may examine on paper,
+subject to the one stated exception already in Constitution §3: no live system may exceed or
+disregard either value before a replacement policy is formally accepted and implemented. §9
+authorizes no research, no `MARGIN-0005` S3 or successor study, no margin-policy recommendation,
+and no change to either parameter — it restates and applies `GOV-0003`'s already-accepted
+research-then-adopt discipline to WS-0005's specific framing, rather than creating a new path
+to changing the cap or floor. Per `governance/decisions/README.md`'s narrow-correction
+convention and the same same-day, pre-merge, pre-audit pattern used for the first amendment
+above, this is made in place rather than by superseding filing._
 
 ## Context
 
@@ -385,6 +401,66 @@ from PR #149's retained review comments — `mcp__github__pull_request_read`, re
   mirrors exactly how `OPS-0003` reconciled WS-0002's fields after PR #143 merged without
   reopening `OPS-0002`.
 
+### 9. Zero-based future margin-policy review
+
+This section states, for the avoidance of doubt where WS-0005's zero-based principle (§2, §3)
+intersects the account's margin parameters, exactly how those parameters are and are not to be
+treated once a future margin study is separately authorized (`WS-0004`, or a `MARGIN-0005`
+successor). It grants no research authority itself — see the explicit non-authorizations below.
+
+- **The current governed margin parameters remain binding operational safety guardrails until
+  formally superseded.** The 1.8x leverage cap and the 30% buffer floor (`targets.yaml`'s
+  `margin:` block; Constitution §3/§5; `MARGIN-0001` and its accepted successors) continue to
+  govern every live trade, buy, and de-lever decision exactly as they do today. Nothing in this
+  section, or in WS-0005 generally, changes that.
+- **They are simultaneously provisional historical baseline values, not empirically validated,
+  optimal, or permanent desired outcomes.** Per `NUM-0001`'s own provenance classification,
+  both are recorded as *provisional governance guardrails* — doctrine decisions, not backtest
+  verdicts (Constitution §5: "state the limit, apply it, and don't relitigate it without a
+  genuinely new leverage regime in the data"). That doctrine status is exactly why they are not
+  to be treated, in any future separately authorized research, as: assumptions that research
+  must defend; or constraints on which candidate policies a separately authorized margin study
+  may examine. The sole exception, stated in Constitution §3 itself and restated here for
+  clarity: **no live system may exceed or disregard the current cap or floor before a
+  replacement policy is formally accepted and implemented** — this is a bound on production
+  behavior, never on what a bounded research charter may examine on paper.
+- **Sequencing.** Restating and applying §7 item 4: any future margin research proceeds from
+  first principles only after WS-0005's portfolio Intelligence, relationship mapping, policy
+  review, and unlevered stress-analysis work are sufficiently complete. This is the same
+  sequencing preference already recorded in §7 item 4, made explicit here because it bears
+  directly on how any future margin study's evidence base is built.
+- **What a future, separately authorized margin study should compare** (naming candidate
+  dimensions, not commissioning the study): no-margin operation; the current policy;
+  alternative leverage ceilings; alternative buffer requirements; concentration-adjusted or
+  asset-sensitive risk limits; deployment, holding, repayment, and deleveraging rules; broker
+  maintenance and liquidation mechanics; financing cost; and liquidity, gap, recovery-duration,
+  and permanent-loss risk.
+- **No preferential treatment for the incumbent values.** The current 1.8x and 30% figures may
+  appear in that future study as historical baselines — they must not be treated as desired
+  answers, and must not receive preferential treatment merely because they are already
+  implemented. This is the same evidentiary discipline §2/§3 already state for tiers and
+  targets, applied here explicitly to the two margin parameters because of their doctrine
+  status under Constitution §5.
+
+**This decision does not:**
+
+- change either current parameter (the 1.8x leverage cap and 30% buffer floor are unchanged by
+  this filing, exactly as every prior margin-related decision in this log has stated);
+- supersede `MARGIN-0001` or any later accepted margin decision (`MARGIN-0003`, `MARGIN-0004`,
+  `MARGIN-0005`, `GOV-0003`, `NUM-0001`);
+- authorize `MARGIN-0005` S3 or a successor study;
+- authorize any margin-policy recommendation;
+- authorize any production change;
+- consume any research trial (zero of `MARGIN-0005`'s 300-run trial ceiling is spent by this
+  filing, exactly as §6 already states for the whole of WS-0005).
+
+**Any decision to retain, replace, tighten, or loosen the current margin parameters requires
+its own separate accepted margin-governance decision, filed after the relevant research and
+independent review** — the same two-step research-then-adopt discipline `GOV-0003` already
+established and `MARGIN-0005` already operates under; this section applies that discipline
+explicitly to WS-0005's zero-based framing, it does not create a new or different path to
+changing either parameter.
+
 ## Rationale
 
 This follows the same charter-then-gate discipline `MARGIN-0005` established for margin
@@ -428,6 +504,22 @@ claim corrects an overstatement the original text made: no session can be made t
 read `targets.yaml`/CLAUDE.md during ordinary preflight, and claiming otherwise would have been
 a claim this repository cannot actually verify — the discipline's real force (evidence first,
 comparison second, no silent inheritance) is unchanged and restated more precisely.
+
+**On the second amendment (§9) specifically:** the leverage cap and buffer floor occupy a
+different governance category than an ordinary tier or target — Constitution §5 names them
+doctrine, "deliberately immune to discretionary override," while `GOV-0003` already narrowed
+that immunity by exactly one carve-out: bounded, pre-registered, evidence-gated *research* into
+whether a conditional rule outperforms the fixed posture is permitted, though "opening a
+research charter authorizes nothing on its own" and adoption still requires its own decision.
+§9 does not expand that carve-out — it applies it precisely to WS-0005's specific context,
+where the zero-based principle (§2/§3) could otherwise be read as ambiguous about whether it
+reaches the two margin parameters at all. Leaving that ambiguous would have created a real risk
+either direction: a future reader could wrongly conclude WS-0005's zero-based framing quietly
+extends to relitigating the cap/floor without `GOV-0003`'s own charter-and-adoption discipline,
+or conversely that the cap/floor are so immune to §5 that even a properly chartered future study
+could not examine alternative values on paper. §9 forecloses both misreadings with the same
+research-then-adopt sequencing `GOV-0003`/`MARGIN-0005` already established, stated here rather
+than left to inference.
 
 ## Alternatives Considered
 
@@ -474,6 +566,24 @@ comparison second, no silent inheritance) is unchanged and restated more precise
   `OPS-0005` themselves. A future milestone-specific authorization may introduce its own
   supporting document if that milestone's scope justifies one; none is required to establish
   the workstream itself.
+- **Say nothing about the margin parameters in WS-0005's zero-based framing, and let the
+  existing `GOV-0003`/Constitution §5 text govern by silent inference.** Rejected on the second
+  amendment — leaving the intersection unstated risks exactly the two opposite misreadings §9's
+  Rationale describes (silent expansion of the zero-based principle into the cap/floor without
+  `GOV-0003`'s charter discipline, or an over-broad reading of §5's "immune to discretionary
+  override" that would block even a properly chartered study from examining alternative values
+  on paper). Stating it explicitly costs one section and forecloses both.
+- **Have §9 itself authorize a margin research charter or name WS-0004 as newly active.**
+  Rejected — exceeds what was asked; §9 is confined to stating a framing/sequencing principle
+  for *whenever* such research is later, separately authorized, and explicitly enumerates six
+  things it does not do, including authorizing any study or trial consumption. WS-0004 remains
+  exactly as dormant as `OPS-0001` left it.
+- **Let the future study's comparison list (no-margin operation, alternative ceilings/floors,
+  concentration-adjusted limits, deployment/repayment rules, broker mechanics, financing cost,
+  liquidity/gap/recovery/permanent-loss risk) be open-ended rather than named.** Rejected — an
+  unnamed list invites scope creep at the moment a future charter is drafted; naming the
+  dimensions now, without commissioning any of them, gives a future charter a concrete starting
+  point while still requiring its own full authorization to actually run.
 
 ## Consequences
 
@@ -489,9 +599,17 @@ clearly-separated margin-relevant-evidence requirement — factual, advisory, an
 explicit prohibitions against recommending margin use, calculating a safe leverage level,
 ranking assets for margin deployment, or substituting for live broker/account state — so that
 if `MARGIN-0005` S3 or a successor study is ever separately authorized, relevant evidence is
-already gathered rather than needing a second pass over the same assets. WS-0001 moves to
-`priority: secondary` with its MARGIN-0005 research authority, milestones, and S3 gate
-completely unchanged. WS-0002 remains `priority: secondary`, `status: authorized`,
+already gathered rather than needing a second pass over the same assets. **§9 additionally
+records, for the avoidance of doubt, that the 1.8x leverage cap and 30% buffer floor remain
+binding operational guardrails until formally superseded, while being provisional, doctrine-
+status baseline values that a future, separately authorized margin study must evaluate without
+pre-defending or preferring — the one Constitution §3 exception (no live system may exceed or
+disregard either value before a replacement is formally accepted and implemented) is restated,
+not narrowed.** §9 authorizes no research, no `MARGIN-0005` S3 or successor study, no
+margin-policy recommendation, no production change, and consumes no research trial; it does
+not change either parameter and does not supersede `MARGIN-0001` or any later margin decision.
+WS-0001 moves to `priority: secondary` with its MARGIN-0005 research authority, milestones, and
+S3 gate completely unchanged. WS-0002 remains `priority: secondary`, `status: authorized`,
 with `OPS-0005`'s Phase Two grant fully intact and un-narrowed. WS-0003 and WS-0004 are
 untouched. `operations/WORKSTREAMS.yaml`'s WS-0002 entry is synchronized to live GitHub truth
 (PR #149 merged, `active_branch`/`active_pr` cleared, milestone status corrected, attribution
