@@ -38,11 +38,13 @@ workstreams:
     dependencies: []
     authorized_scope: >
       Exactly MARGIN-0005 §4's approved-file table, executed only through
-      ≤3 individually-reviewed S2 implementation PRs (2 of 3 used: G2A,
-      G2B), strictly within the 300-run trial ceiling. No simulation before
-      the G1 data gate passed (confirmed merged) and none has run since —
-      trial_ledger.jsonl and candidate_freeze.yaml both confirmed absent as
-      of this register's last_verified_main_sha.
+      ≤3 individually-reviewed S2 implementation PRs (3 of 3 used: G2A,
+      G2B, S2-final/PR #145) — the charter's ≤3 S2-PR ceiling is now
+      exhausted; no further S2 implementation PR may open without a charter
+      amendment. Strictly within the 300-run trial ceiling. No simulation
+      before the G1 data gate passed (confirmed merged) and none has run
+      since — trial_ledger.jsonl and candidate_freeze.yaml both confirmed
+      absent as of this register's last_verified_main_sha.
     prohibited_scope: >
       No modification of holdings.yaml, targets.yaml, allocate.py,
       margin_state.py, Intelligence records, CLAUDE.md doctrine text, or
@@ -102,6 +104,29 @@ workstreams:
         pr: 144
         status: documented
         date: "2026-07-24"
+      - gate: S2-final
+        description: >
+          Third and final of ≤3 authorized S2 PRs — dividend_ledger.py,
+          validation_lib.py, overlay_lib.py, target_variants.py, plus
+          test_validation_lib.py, test_overlay_lib.py,
+          test_target_variants.py (256/256 focused tests; 1502/1502 full
+          suite; intelligence_validator.py and freshness_validator.py both
+          clean). Implements S2_G2_SCOPE_DETERMINATION.md's §5 recommended
+          scope exactly, closing every literal G2-gate criterion named in
+          protocol §18 (T-1, T-D1–T-D5, T-U1/T-U2 — T-1/T-D3/T-D5 already
+          satisfied at G1/G2B). Three bounded remediation rounds (F-1–F-5,
+          F-10, F-12; NEW-1–NEW-3; FR-1–FR-3) plus a final, fresh,
+          session-independent review at exact head
+          32600d01e4e577ca77fa4f607ffb66384865baeb — verdict "PR #145
+          APPROVED WITH NON-BLOCKING FINDINGS" (two Observation findings,
+          FB-1/FB-2, both non-blocking). maintenance_lib.py confirmed not
+          built (its function was already achieved additively in G2A).
+          Zero production wiring; zero of the 300-run trial ceiling
+          consumed; trial_ledger.jsonl, candidate_freeze.yaml, and
+          intelligence_flag_events.yaml all confirmed absent post-merge.
+        pr: 145
+        status: merged
+        date: "2026-07-25"
     evidence_refs:
       - research/margin_target_study/PROTOCOL_V2.md
       - research/margin_target_study/pre_registration.yaml
@@ -113,6 +138,13 @@ workstreams:
       - test_margin_simulation.py
       - test_repayment_lib.py
       - research/margin_target_study/S2_G2_SCOPE_DETERMINATION.md
+      - dividend_ledger.py
+      - validation_lib.py
+      - overlay_lib.py
+      - target_variants.py
+      - test_validation_lib.py
+      - test_overlay_lib.py
+      - test_target_variants.py
       - >
         PR #140 independent-review disposition, "Future S3 integration
         constraint — R2": r2_dividends_first must not be wired into
@@ -123,27 +155,27 @@ workstreams:
         pre-S3 integration constraint to resolve before any S3 wiring or
         registered Study A use of R2 — it is not a production defect (R2
         is not wired into anything yet) and it does not, on its own,
-        currently block the G2 gate.
+        currently block the G2 gate. dividend_ledger.py's credited-date
+        keying (S2-final, PR #145) structurally addresses this constraint
+        per S2_G2_SCOPE_DETERMINATION.md §4; the constraint remains
+        recorded here as it still governs any future R2 wiring at S3.
     next_action: >
-      The read-only S2/G2 scope determination is complete
-      (research/margin_target_study/S2_G2_SCOPE_DETERMINATION.md, filed
-      under OPS-0003). It recommends a smallest coherent final S2 PR scope
-      — dividend_ledger.py, validation_lib.py, overlay_lib.py,
-      target_variants.py, plus test_validation_lib.py, test_overlay_lib.py,
-      and test_target_variants.py — sufficient to literally close every
-      named G2 gate criterion (T-1, T-D1–T-D5, T-U1/T-U2; T-1/T-D3/T-D5
-      already satisfied) while leaving Study A/B minimally executable at
-      S3; it recommends excluding maintenance_lib.py as likely redundant
-      with G2A's already-built maintenance-excess-proxy/forced-liquidation
-      work (pending explicit confirmation by that PR's own independent
-      review) and excludes every later-stage/study-run artifact
-      (run_study_*.py, run_stress_suite.py, shadow_replay.py,
-      trial_ledger.jsonl, candidate_freeze.yaml,
-      intelligence_flag_events.yaml, results/**). Opening that PR — the
-      3rd and final S2 PR under the charter's ≤3 ceiling — requires its
-      own separate, explicit principal authorization. This
-      workstream-register entry and the scope determination itself do not
-      authorize or begin that PR.
+      S2 implementation is complete — all 3 of the charter's ≤3 authorized
+      S2 PRs are merged (G2A #139, G2B #140, S2-final #145, exact head
+      32600d01e4e577ca77fa4f607ffb66384865baeb, merged into main at
+      88ad09a171ee6cf6d3600f8e0e28dc28d55697ea). Per
+      S2_G2_SCOPE_DETERMINATION.md §3 and PR #145's independently-reviewed,
+      verified content, every literal G2-gate criterion named in protocol
+      §18 (T-1, T-D1–T-D5, T-U1/T-U2) is now satisfied; maintenance_lib.py
+      is confirmed not needed (redundant with G2A). No S3 authority exists:
+      opening S3 (registered Study A/B/C execution, any trial consumption,
+      any run_study_*.py/run_stress_suite.py/shadow_replay.py, any
+      trial_ledger.jsonl or candidate_freeze.yaml) requires its own
+      separate, explicit future principal authorization that has not been
+      granted. This register entry does not originate, infer, or shortcut
+      that authorization — literal G2-criteria completion does not by
+      itself create S3 authority under MARGIN-0005 or any other controlling
+      decision.
     completion_criteria: >
       Governed by the charter's own stopping conditions (§10) and §12/§13:
       the program stops — reporting what it has, preserving the fixed
@@ -158,18 +190,17 @@ workstreams:
       required only if a rule is ever proposed for production; it is not
       a required completion condition for the research charter itself.
     blocker: >
-      None on priority. OPS-0002's sequencing hold (2026-07-24) is satisfied:
-      PR #143 completed the WS-0002 planning package and its first independent
-      audit. OPS-0003 (2026-07-24) restores WS-0001 to priority: primary
-      accordingly and commissions the S2/G2 scope determination named in
-      next_action, now complete. Opening the final, authorized S2
-      implementation PR that determination recommends still requires its own
-      separate, explicit principal authorization — that requirement is
-      unchanged by this restoration.
+      None on priority (unchanged from OPS-0003). The charter's ≤3 S2-PR
+      ceiling is now exhausted — 3 of 3 used (G2A #139, G2B #140, S2-final
+      #145) — so no further S2 implementation PR may open without a charter
+      amendment. The open item is S3 authorization: no accepted decision has
+      granted it, and none is inferred or created here. Opening S3 remains
+      its own separate, explicit future principal authorization, exactly as
+      this workstream's prior next_action already stated.
     active_branch: null
     active_pr: null
-    last_verified_main_sha: 3c31c2e9d36d55defc95d89c90ab041f31abf251
-    last_verified_date: "2026-07-24"
+    last_verified_main_sha: 88ad09a171ee6cf6d3600f8e0e28dc28d55697ea
+    last_verified_date: "2026-07-25"
     authorized_by: >
       GOV-0003; MARGIN-0005 (research authority, accepted governance
       decisions); OPS-0003 (priority restoration only)
