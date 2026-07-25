@@ -10,9 +10,9 @@ supporting_artifact: null
 ## Context
 
 `PI-0023` authorized WS-0005 Milestone 3's first batch (ASML, AMAT, KLAC, LRCX — the `semis`
-cluster's capital-equipment sub-segment) and recorded, in its own Rationale and Alternatives
-Considered sections, that the cluster's other uncovered members — including MU and SKHY — "each
-remain individually eligible for its own future, separately authorized batch." `PI-0023`'s
+cluster's capital-equipment sub-segment) and recorded, in its Alternatives Considered section,
+that of the cluster's other uncovered members — including MU and SKHY — "each remains
+individually eligible for its own future, separately authorized batch." `PI-0023`'s
 implementation (PR #154) is merged and complete; `operations/WORKSTREAMS.yaml`'s WS-0005 entry
 records Milestone 3 as `status: in_progress` (Batch 1 complete, milestone as a whole not complete)
 and its `next_action` names, without selecting or authorizing, "candidate uncovered semis-cluster
@@ -42,11 +42,13 @@ own selection):
   cluster. No Company Intelligence record exists; no freshness_registry/checkpoints row exists.
 - **WDC** — `holdings.yaml` `shares.WDC: 0.15222` (a governed holding, unaffected by this
   decision); `targets.yaml` places it in `band` and in `semis`. `targets.yaml`'s `semis` cluster
-  comment (authored 2026-07-14, unchanged since) reads: "the equipment (KLAC/LRCX/AMAT) and memory
-  (MU/WDC) names crash hardest" — grouping MU and WDC together as "memory" names. That grouping
-  predates Western Digital's February 2025 separation of its Flash (NAND) business into the
-  independent, publicly traded Sandisk Corporation (SNDK); the WDC business remaining after that
-  separation is centered on HDD (hard-disk-drive) storage, not DRAM/NAND/HBM memory manufacturing.
+  comment (dated 2026-07-14 in repository content, unchanged since) reads: "the equipment
+  (KLAC/LRCX/AMAT) and memory (MU/WDC) names crash hardest" — grouping MU and WDC together as
+  "memory" names. The comment itself is dated July 2026, but its treatment of WDC as a
+  flash-memory peer of MU reflects Western Digital's business composition before its February 2025
+  separation of the Flash (NAND) business into the independent, publicly traded Sandisk
+  Corporation (SNDK), and appears stale after that separation; the WDC business remaining after it
+  is centered on HDD (hard-disk-drive) storage, not DRAM/NAND/HBM memory manufacturing.
   This decision finds that comment stale as a factual description of WDC's current business — see
   §"WDC / Sandisk boundary" below — but does not correct it here; correction is recorded as a
   separate, unauthorized, future factual-reconciliation item.
@@ -322,8 +324,9 @@ demand — the same category of shared, comparable driver that justified batchin
 AMAT/KLAC/LRCX in `PI-0023` rather than authorizing single-company filings.
 
 **Why WDC is excluded.** `targets.yaml`'s existing cluster comment groups MU and WDC as "memory"
-names, but that grouping predates Western Digital's February 2025 separation of its Flash business
-into Sandisk (SNDK) — the WDC that remains is an HDD storage company, a different technology and
+names, but that characterization reflects Western Digital's business composition before its
+February 2025 separation of the Flash business into Sandisk (SNDK), and appears stale after that
+separation — the WDC that remains is an HDD storage company, a different technology and
 economic function from DRAM/NAND/HBM memory manufacturing. Including WDC in a "memory cycle"
 batch after that separation would misclassify its current business on the same stale-grouping
 basis this decision independently identifies as needing future correction, not perpetuate it here.
