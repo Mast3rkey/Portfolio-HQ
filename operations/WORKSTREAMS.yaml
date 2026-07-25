@@ -34,7 +34,7 @@ workstreams:
       - research/margin_target_study/PROTOCOL_V2.md (pinned SHA-256, charter §3)
       - research/margin_target_study/pre_registration.yaml (pinned SHA-256, charter §3)
     status: in_progress
-    priority: primary
+    priority: secondary
     dependencies: []
     authorized_scope: >
       Exactly MARGIN-0005 §4's approved-file table, executed only through
@@ -190,20 +190,25 @@ workstreams:
       required only if a rule is ever proposed for production; it is not
       a required completion condition for the research charter itself.
     blocker: >
-      None on priority (unchanged from OPS-0003). The charter's ≤3 S2-PR
-      ceiling is now exhausted — 3 of 3 used (G2A #139, G2B #140, S2-final
-      #145) — so no further S2 implementation PR may open without a charter
-      amendment. The open item is S3 authorization: no accepted decision has
-      granted it, and none is inferred or created here. Opening S3 remains
-      its own separate, explicit future principal authorization, exactly as
-      this workstream's prior next_action already stated.
+      Priority moved to secondary by OPS-0006 (sequencing action only — WS-0005
+      is now the sole priority: primary workstream). This is not a finding that
+      MARGIN-0005 is cancelled, technically defective, or complete, and does
+      not alter, grant, or withdraw S3 authorization in either direction. The
+      charter's ≤3 S2-PR ceiling is separately already exhausted — 3 of 3 used
+      (G2A #139, G2B #140, S2-final #145) — so no further S2 implementation PR
+      may open without a charter amendment. The open item remains S3
+      authorization: no accepted decision has granted it, and none is inferred
+      or created here or by OPS-0006. Opening S3 remains its own separate,
+      explicit future principal authorization, exactly as this workstream's
+      prior next_action already stated.
     active_branch: null
     active_pr: null
-    last_verified_main_sha: 88ad09a171ee6cf6d3600f8e0e28dc28d55697ea
+    last_verified_main_sha: 536e71f58857f2e55d98169b2e829e392c27a016
     last_verified_date: "2026-07-25"
     authorized_by: >
       GOV-0003; MARGIN-0005 (research authority, accepted governance
-      decisions); OPS-0003 (priority restoration only)
+      decisions); OPS-0003 (priority restoration only); OPS-0006 (priority
+      moved to secondary, sequencing only)
     supersedes: null
     superseded_by: null
 
@@ -270,15 +275,17 @@ workstreams:
         date: "2026-07-24"
       - gate: phase-two-reactivation-authorized
         description: >
-          OPS-0005 filed on draft PR #149: WS-0002 narrowly reactivated for
-          exactly one bounded Phase Two implementation PR (read-only,
-          stdout-only status/report layer), gated on Fable Audit Gate #2
-          (blueprint §8 checkpoint 2, retained artifact per OPS-0004 §5) plus
-          explicit principal acceptance before that PR may merge. This
-          milestone becomes effective only once PR #149 merges; no Phase Two
-          implementation has begun and no branch/PR exists for it yet.
+          OPS-0005 filed and merged via PR #149 (merge commit
+          536e71f58857f2e55d98169b2e829e392c27a016, matching origin/main's
+          current tip): WS-0002 narrowly reactivated for exactly one bounded
+          Phase Two implementation PR (read-only, stdout-only status/report
+          layer), gated on Fable Audit Gate #2 (blueprint §8 checkpoint 2,
+          retained artifact per OPS-0004 §5) plus explicit principal
+          acceptance before that PR may merge. This milestone is now
+          effective. No Phase Two implementation has begun and no branch/PR
+          exists for it yet.
         pr: 149
-        status: drafted
+        status: merged
         date: "2026-07-25"
     evidence_refs:
       - docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md
@@ -287,6 +294,7 @@ workstreams:
       - governance/decisions/OPS-0004-ws0002-phase-one-audit-provenance-reconciliation.md
       - governance/audits/WS0002_PHASE_ONE_FABLE_AUDIT_20260724.md
       - governance/decisions/OPS-0005-ws0002-phase-two-reactivation-authorization.md
+      - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
     next_action: >
       Open the single bounded Phase Two implementation PR authorized by
       OPS-0005 §3 (one status/report module, its tests, minimal doc pointer
@@ -296,6 +304,9 @@ workstreams:
       explicitly accepted both the implementation and the audit's
       conclusions. Phase Three, WS-0003, and any default-workflow integration
       remain unauthorized and are not requested or scheduled by this entry.
+      OPS-0006 does not require this PR to open before, after, or in any
+      particular order relative to WS-0005 work — it only records WS-0005 as
+      the new primary workstream.
     completion_criteria: >
       Phase Two is complete when: the one authorized implementation PR
       merges; its dedicated tests and the full suite pass; Fable Audit Gate
@@ -310,14 +321,16 @@ workstreams:
       The Fable Audit Gate #2 + principal-acceptance requirement is a
       completion/merge gate on that future PR, not a current blocker to
       opening it.
-    active_branch: claude/ws-0002-phase-two-governance-3mmzo4
-    active_pr: 149
-    last_verified_main_sha: f74d42f3c0a58f929f85ba2b89d8deb7925056ff
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: 536e71f58857f2e55d98169b2e829e392c27a016
     last_verified_date: "2026-07-25"
     authorized_by: >
-      Principal authorization (this session, explicit, bounded to the Phase
-      Two read-only status/report layer); OPS-0005; planning-and-audit
-      completion recorded by OPS-0003, provenance reconciled by OPS-0004
+      Principal authorization (session_01RwQaRKJASFVViAP2nbVA73, explicit,
+      bounded to the Phase Two read-only status/report layer); OPS-0005;
+      planning-and-audit completion recorded by OPS-0003, provenance
+      reconciled by OPS-0004; PR #149 merge and register sync (F-2/F-3
+      reconciliation) recorded by OPS-0006
     supersedes: null
     superseded_by: null
 
@@ -409,5 +422,238 @@ workstreams:
     last_verified_main_sha: 3c31c2e9d36d55defc95d89c90ab041f31abf251
     last_verified_date: "2026-07-24"
     authorized_by: null
+    supersedes: null
+    superseded_by: null
+
+  - id: WS-0005
+    title: >
+      Portfolio Intelligence Completion, Relationship Mapping, and
+      Zero-Based Tier Architecture Review
+    objective: >
+      Understand every asset from first principles, understand how the
+      assets interact, and use that evidence to design the simplest
+      defensible portfolio-role, capital-priority, tier, target, and review
+      framework. Existing tiers, targets, roles, caps, and position sizes
+      remain the current operating policy in full force until formally
+      superseded, and are never treated as presumptively correct evidence
+      during this workstream's own research. See OPS-0006 for the complete
+      zero-based/blinded-review protocol and nine-milestone roadmap — not
+      restated here.
+    governing_authority:
+      - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
+      - governance/decisions/GOV-0001-governance-architecture-adopted.md
+      - governance/decisions/GOV-0002-operational-precedence-hierarchy.md
+      - governance/decisions/PI-0016-standing-company-review-framework.md (methodology reference only)
+    status: authorized
+    priority: primary
+    dependencies: []
+    authorized_scope: >
+      Recording of the governing purpose, the zero-based-research-discipline
+      protocol, and the nine-milestone roadmap (OPS-0006 §§1-4), plus —
+      per OPS-0006 §5 (2026-07-25 amendment) — execution of exactly
+      Milestones 1 (baseline and inventory) and 2 (Intelligence coverage and
+      freshness audit), normally as one bounded first audit PR, effective
+      upon OPS-0006 merging. That first audit PR may create one retained
+      advisory audit artifact and its dedicated tests/validators only where
+      repository convention requires them; it must not complete or rewrite
+      any company Intelligence record. Milestones 3 through 9 remain
+      roadmap items only — each requires its own separate, later, explicit
+      principal authorization and its own bounded implementation or research
+      PR before any work begins. Completing Milestones 1-2 does not
+      automatically authorize Milestone 3. Current tiers and targets remain
+      operational until formally superseded throughout.
+    prohibited_scope: >
+      Changing current tiers, targets, target ranges, or holdings; any
+      order; modifying allocation formulas or recommendations; a computed
+      conviction score that controls capital; automatic ranking or
+      aggregation that determines policy; Intelligence directly controlling
+      targets, tiers, buys, trims, margin, or allocator output; any change
+      to margin governance (1.8x leverage cap / 30% buffer floor unchanged
+      and out of scope); any MARGIN-0005 S3 trial, simulation, or research
+      execution; WS-0002 Phase Two (or later) dashboard/status-layer
+      implementation; WS-0003 or default-daily-workflow changes; production
+      coupling between Intelligence and the allocator; any generated report
+      replacing an authoritative file; unrelated cleanup.
+    milestones:
+      - gate: milestone-1-baseline-and-inventory
+        description: >
+          Enumerate every currently governed asset; identify asset type;
+          capture the existing governed role/tier/target/cluster/cap/
+          applicable policy as a historical comparison baseline (preserved,
+          not treated as presumptively correct); identify missing,
+          duplicated, ambiguous, or inconsistent asset records. Authorized to
+          execute per OPS-0006 §5 (2026-07-25 amendment), normally as one
+          bounded audit PR together with Milestone 2. Not yet executed — no
+          branch or PR exists for it.
+        pr: null
+        status: authorized
+        date: "2026-07-25"
+      - gate: milestone-2-intelligence-coverage-and-freshness-audit
+        description: >
+          For every asset from Milestone 1: identify whether an Intelligence
+          record exists, record type and applicable schema, freshness and
+          evidence quality, missing primary-source evidence, incomplete or
+          stale research, assets for which no supportable conclusion can yet
+          be reached, and a recommended sequence for later Milestone-3
+          research batches. Must not complete or rewrite any company
+          Intelligence record. Also requires (OPS-0006 §11, 2026-07-25
+          third amendment), report-only: assessing existing freshness
+          infrastructure/validators (freshness_validator.py,
+          freshness_state.py, freshness_identity.py, freshness_cadence.py,
+          intelligence/freshness_registry.yaml,
+          intelligence/freshness_checkpoints.yaml,
+          intelligence_report.py staleness reporting), whether each record
+          has an evidence/review date and next-due/cadence, whether event
+          triggers are recorded, missing/ambiguous/inconsistent/inert
+          freshness metadata, records wrongly read as current, reusable
+          existing capabilities to prefer over a new scanner, and
+          recommended Milestone-3 sequencing. Must not refresh research,
+          change freshness policy, build automation, or create external
+          integrations. Authorized to execute per OPS-0006 §5 (2026-07-25
+          amendment), normally as one bounded audit PR together with
+          Milestone 1. Not yet executed — no branch or PR exists for it.
+        pr: null
+        status: authorized
+        date: "2026-07-25"
+      - gate: milestone-3-intelligence-completion
+        description: >
+          Bounded, research-only PRs completing or refreshing Company/Theme
+          Intelligence records in coherent batches, per PI-0016's standing
+          methodology and its own per-company authorization requirement.
+          Advisory only — cannot change policy. Also requires (OPS-0006 §4,
+          2026-07-25 amendment), clearly separated from the above: capturing
+          margin-relevant evidence per asset (cyclicality, leverage,
+          balance-sheet strength, refinancing/funding risk, macro
+          sensitivities, drawdown drivers, gap risk, liquidity, concentration,
+          thesis-deterioration detectability, correlated-loss relationships,
+          borrowed-money risk amplifiers) — factual/advisory only, no margin
+          recommendation, no safe-leverage calculation, no deployment ranking,
+          no MARGIN-0005 S3 authorization or trial consumption. Also requires
+          (OPS-0006 §12, 2026-07-25 third amendment): each new/refreshed
+          record defines a proportional, evidence-driven refresh plan (rate
+          of change, capital relevance, thesis uncertainty, cyclicality,
+          event/gap risk, regulatory sensitivity, evidence dependence) with
+          named candidate review triggers where applicable — no universal
+          cadence. Not authorized to execute — completing Milestones 1-2
+          does not authorize this milestone.
+        pr: null
+        status: proposed
+        date: "2026-07-25"
+      - gate: milestone-4-portfolio-relationship-mapping
+        description: >
+          Map economic systems, demand drivers, customer/supplier
+          dependencies, competition, complementary relationships, duplicated
+          exposure, shared macro/regulatory/technology risk, correlated
+          thesis failure, missing portfolio functions, next-best
+          alternatives — structural/economic overlap kept explicitly
+          distinct from measured historical price correlation. Also requires
+          (OPS-0006 §4, 2026-07-25 amendment), clearly separated from the
+          above: portfolio-level margin preparation (common drawdown drivers,
+          stress-period concentration, simultaneous thesis-failure pathways,
+          liquidity/gap-risk clusters, prolonged recovery periods,
+          substance-concentrated exposure, borrowing-amplified losses; explicit
+          separation of company/economic-system/portfolio-level/
+          margin-amplified risk; never a leverage recommendation) and a
+          clearly separated future margin-relevance evidence register
+          (factual/advisory, does not authorize a study, does not consume a
+          trial, does not change margin doctrine; live broker/portfolio state
+          sourced separately at the time of any future study). Not authorized
+          to execute.
+        pr: null
+        status: proposed
+        date: "2026-07-25"
+      - gate: milestone-5-zero-based-classification-and-tier-architecture-review
+        description: >
+          Determine what questions the current tier system answers, where it
+          mixes unrelated concepts, whether one tier label is adequate; design
+          the smallest set of evidence-supported candidate frameworks; reject
+          unnecessary complexity; no single mechanical conviction score
+          substituting for judgment. Not authorized to execute.
+        pr: null
+        status: proposed
+        date: "2026-07-25"
+      - gate: milestone-6-blind-classification
+        description: >
+          Apply the candidate framework(s) without using current tiers or
+          targets as desired answers. No repository policy mutation. Not
+          authorized to execute.
+        pr: null
+        status: proposed
+        date: "2026-07-25"
+      - gate: milestone-7-baseline-reconciliation
+        description: >
+          Unblind the sealed baseline and compare current-vs-researched role,
+          tier-vs-proposed capital priority, target-vs-evidence-supported
+          range, cluster-vs-relationship-map, caps-vs-portfolio risk, review
+          cadence-vs-thesis uncertainty; every difference states evidence,
+          reasoning, uncertainty, opportunity cost, controlling policy, and
+          required governance action. Not authorized to execute.
+        pr: null
+        status: proposed
+        date: "2026-07-25"
+      - gate: milestone-8-policy-recommendation-package
+        description: >
+          Advisory-only recommendations covering portfolio roles, tier/
+          replacement classification architecture, capital-priority rules,
+          targets/target ranges, maximum position sizes, economic-system/
+          overlap limits, monitoring frequency, thesis-break review rules,
+          add/hold/trim/exit-review discipline. Not authorized to execute.
+        pr: null
+        status: proposed
+        date: "2026-07-25"
+      - gate: milestone-9-independent-review-and-later-adoption
+        description: >
+          Independent Fable review of research coverage, relationship
+          methodology, zero-based protocol adherence, candidate tier
+          architecture, the policy recommendation package, evidence-versus-
+          judgment separation, and absence of hidden scoring or allocator
+          coupling. Any adoption requires its own separate accepted
+          governance decision and a later, separately authorized
+          implementation PR. Not authorized to execute.
+        pr: null
+        status: proposed
+        date: "2026-07-25"
+    evidence_refs:
+      - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
+    next_action: >
+      Per OPS-0006 §16.3, inspect accepted decisions, this register,
+      any retained WS-0005 audit artifacts, Intelligence/freshness
+      records, and open/merged PR state before starting. Open the single
+      bounded first audit PR covering Milestones 1 (baseline and
+      inventory) and 2 (Intelligence coverage and freshness audit),
+      authorized by OPS-0006 §5. May produce one retained advisory audit
+      artifact — carrying the §16.2 per-asset completion ledger — plus its
+      dedicated tests/validators only where repository convention requires
+      them. Must not complete or rewrite any company Intelligence record.
+      Milestones 3 through 9 remain unauthorized; completing this first
+      audit PR does not itself authorize Milestone 3 or any later
+      milestone.
+    completion_criteria: >
+      Per OPS-0006 §16.1's completion discipline: Milestones 1-2 reach
+      status: complete only when the one bounded first audit PR merges;
+      its dedicated tests/validators (if any) and the full suite pass; the
+      enumerated asset inventory, Intelligence coverage/freshness findings,
+      and the §16.2 per-asset ledger are recorded in the retained audit
+      artifact; no company Intelligence record was completed or rewritten
+      in the process; and this register plus governance/decisions.yaml are
+      factually synchronized to that state. A merged PR alone, a commit, a
+      push, or an open PR does not by itself constitute completion.
+      Completion does not itself authorize Milestone 3 or any later
+      milestone — each requires its own separate future governance
+      decision, per OPS-0006 §5.
+    blocker: >
+      None on Milestones 1-2 — OPS-0006 §5 grants their execution upon
+      merge. Implementation has not begun; no branch or PR exists for it
+      yet. Milestones 3 through 9 remain blocked pending their own separate,
+      later, explicit principal authorization.
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: 536e71f58857f2e55d98169b2e829e392c27a016
+    last_verified_date: "2026-07-25"
+    authorized_by: >
+      OPS-0006 (workstream establishment, governing purpose, protocol, and
+      roadmap; execution of Milestones 1-2 only, per its 2026-07-25
+      amendment — Milestones 3-9 remain unauthorized)
     supersedes: null
     superseded_by: null
