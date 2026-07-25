@@ -71,6 +71,24 @@ mutually-corroborating WebSearch results identifying Lam's own quarterly
 8-K exhibits by filing date and accession number, not on the external
 cross-check's claim alone.
 
+**Second remediation pass (2026-07-25), source-accounting
+micro-remediation:** identified and cited the exact per-quarter 8-K
+Exhibit 99.1 URL for each of the five quarters in the downturn sequence
+(Q1 FY2023 through Q1 FY2024) — see the Risks section's table below —
+rather than a single generic SEC-EDGAR-index citation covering the whole
+episode. Confirmed that Q2 FY2023's exhibit shares the same 8-K accession
+number (0000707549-23-000005) as the workforce-reduction 8-K: the January
+2023 earnings release and the restructuring disclosure were filed
+together in one submission. This session still did not open any of these
+exhibits directly — WebFetch returned HTTP 403 on every attempt across
+this and the prior remediation pass. Sourcing throughout this record was
+also reclassified along two axes: document type (PRIMARY — Lam's own
+press releases and 8-K exhibits; SECONDARY — news-outlet relay of an
+underlying primary action not independently identified by URL, e.g. the
+2026 "affiliate rule" impact and the stock-price-volatility figures) and
+this session's access status (every primary document labeled "identified
+but NOT opened by this session").
+
 ## Business summary
 
 Lam Research primarily supplies plasma etch and thin-film deposition
@@ -172,15 +190,21 @@ convention):
 
 **The 2022-2023 memory downturn, precisely sequenced by quarter (the
 clearest and most severe downturn episode found anywhere in this batch's
-research — remediation pass, 2026-07-25):**
+research). Each row cites its own specific 8-K Exhibit 99.1, identified by
+exact URL in this record's second remediation pass (2026-07-25) — none
+opened directly by this session, WebFetch returned HTTP 403 on every
+attempt:**
 
-| Quarter | Period ended | Revenue | Change |
-|---|---|---|---|
-| Q1 FY2023 | 2022-09-25 | $5,074M | — |
-| Q2 FY2023 | 2022-12-25 | $5,278M | cycle peak |
-| Q3 FY2023 | 2023-03-26 | $3,870M | -26.7% QoQ |
-| Q4 FY2023 | 2023-06-25 | $3,207M | -17.1% QoQ |
-| Q1 FY2024 | 2023-09-24 | $3,482M | +8.6% QoQ; **-31.4% YoY vs. Q1 FY2023** |
+| Quarter | Period ended | Revenue | Change | Primary exhibit (identified, not opened) |
+|---|---|---|---|---|
+| Q1 FY2023 | 2022-09-25 | $5,074M | — | `sec.gov/.../000070754922000119/lrcx_exhibitx991xq1x2023.htm` |
+| Q2 FY2023 | 2022-12-25 | $5,278M | cycle peak | `sec.gov/.../000070754923000005/lrcx_exhibitx991xq2x2023.htm` (same 8-K accession as the workforce-reduction filing below) |
+| Q3 FY2023 | 2023-03-26 | $3,870M | -26.7% QoQ | `sec.gov/.../000070754923000077/lrcx_exhibitx991xq3x2023.htm` |
+| Q4 FY2023 | 2023-06-25 | $3,207M | -17.1% QoQ | `sec.gov/.../000070754923000091/lrcx_exhibitx991xq4x2023.htm` |
+| Q1 FY2024 | 2023-09-24 | $3,482M | +8.6% QoQ; **-31.4% YoY vs. Q1 FY2023** | `sec.gov/.../000070754923000112/lrcx_exhibitx991xq1x2024.htm` |
+
+(Full URLs, all under `https://www.sec.gov/Archives/edgar/data/707549/`,
+are given in full in YAML `sources[]`.)
 
 The often-cited "~31% decline" is the **Q1 FY2024-vs-Q1 FY2023
 year-over-year comparison specifically** — it is not the same figure as,
@@ -357,9 +381,16 @@ repository).
 
 ## Sources
 
-See YAML `sources[]`. All sources in this record are SECONDARY — no
-primary document was independently rendered and inspected this session.
-Requires independent PR review and primary-source verification, per this
+See YAML `sources[]`, which distinguishes two independent axes (corrected
+in this record's second remediation pass): **document type** (PRIMARY —
+Lam's own press releases and 8-K exhibits, including the exact per-quarter
+exhibits cited in the Risks section's table above; SECONDARY — news-outlet
+relay of an underlying primary action not independently identified by
+URL) and **this session's access status** (every primary document is
+labeled "identified but NOT opened by this session" — no primary document
+was independently rendered and inspected this session, at any point across
+the original research pass or either remediation pass). Requires
+independent PR review and full primary-source verification, per this
 repository's "verify before acting on external review" guardrail — the
 FY2025 revenue conflict ($18.44B vs. $14.6B) in particular should be a
 priority for that verification.

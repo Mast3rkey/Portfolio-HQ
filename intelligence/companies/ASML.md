@@ -68,6 +68,30 @@ headline results (EUR8.8B total net sales, EUR2.8B net income, reported
 (current China demand characterized as domestic/mature-node logic-driven
 rather than leading-edge) — both new facts, not corrections.
 
+**Second remediation pass (2026-07-25), source-accounting
+micro-remediation:** the geographic net-system-sales breakdown (South
+Korea 43%, Taiwan 30%, China 14%, US 9%) is now cited to the exact
+official document that contains it — ASML's own Q2 2026 investor-relations
+presentation, filed under the name
+`2026_07_15_Presentation-Investor-Relations-Q2-2026.pdf` — rather than
+described as a generic search-result summary. This session still did not
+open the PDF directly (WebFetch returned HTTP 403). A separate search in
+this pass surfaced a conflicting regional breakdown citing China at
+**29.1%** of Q2 2026 net system sales — this figure is explicitly **not
+adopted**: the 14% figure used throughout this record is corroborated
+identically across at least three independent searches spanning the
+original research pass and both remediation passes, while 29.1% appeared
+once, unattributed to a specific document, and its structure (summing
+several small sub-regions to exactly 100%) suggests possible conflation
+with a different metric or period. This discrepancy is now stated
+explicitly in the Risks section rather than silently resolved. Sourcing
+throughout this record was also reclassified along two axes: document type
+(PRIMARY — ASML's own press releases and investor presentation; SECONDARY
+— news-outlet coverage of an underlying primary action, e.g. the October
+2024 guidance-cut reporting or Dutch export-control policy coverage) and
+this session's access status (every primary document is labeled
+"identified but NOT opened by this session").
+
 ## Business summary
 
 ASML designs, manufactures, and services photolithography systems — the
@@ -326,10 +350,15 @@ authorized scope.
 
 ## Sources
 
-See YAML `sources[]` for the structured register. All sources in this
-record are labeled SECONDARY per the Source-access disclosure above — no
-primary document was independently rendered and inspected by this
-implementation session. This record requires independent PR review
-(primary-source verification, per this repository's "verify before acting
-on external review" guardrail) before its figures should be treated as
-confirmed.
+See YAML `sources[]` for the structured register, which distinguishes two
+independent axes (corrected in this record's second remediation pass):
+**document type** (PRIMARY — ASML's own press releases and investor
+presentations; SECONDARY — news-outlet coverage of an underlying primary
+action) and **this session's access status** (every primary document is
+labeled "identified but NOT opened by this session" — no primary document
+was independently rendered and inspected by this implementation session at
+any point, including during either remediation pass). This record requires
+independent PR review (full primary-source verification, per this
+repository's "verify before acting on external review" guardrail) before
+its figures should be treated as confirmed — the 29.1%-vs-14% China-share
+discrepancy noted above should be a priority for that verification.

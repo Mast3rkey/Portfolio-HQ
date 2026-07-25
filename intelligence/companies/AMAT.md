@@ -63,15 +63,48 @@ noted the announcement's temporal proximity to the September 2025 BIS
 rule, without a primary source establishing direct causation between the
 two. (4) **Added a previously-missed, materially significant fact**: on
 2026-02-11, Applied Materials paid a $252.5 million BIS civil penalty (the
-second-highest BIS penalty on record) settling 56 illegal reexports of
-semiconductor manufacturing equipment to SMIC (a Chinese Entity List
-party) between 2021-2022 — a confirmed historical compliance violation,
-distinct from the general industry-wide export-control rules already
-disclosed, now reflected throughout this record. This session's own
-WebFetch access remained blocked (HTTP 403) throughout this remediation
-pass; all corrections rest on multiple independent, mutually-corroborating
-WebSearch results, including a direct match to bis.gov's own press-release
-title for the settlement.
+second-highest BIS penalty on record) settling reported illegal reexports
+of semiconductor manufacturing equipment — a confirmed historical
+compliance violation, distinct from the general industry-wide
+export-control rules already disclosed, now reflected throughout this
+record. This session's own WebFetch access remained blocked (HTTP 403)
+throughout this remediation pass; all corrections rest on multiple
+independent, mutually-corroborating WebSearch results, including a direct
+match to bis.gov's own press-release title for the settlement.
+
+**Second remediation pass (2026-07-25), source-accounting
+micro-remediation:** further corrections applied. (1) **BIS settlement
+date corrected/split**: AMAT's own press release ("Applied Materials
+Reaches Resolution with the U.S. Department of Commerce") is dated
+2026-02-11; BIS's own press release is dated **2026-02-12** — both are
+now stated explicitly, since they are two distinct documents from two
+distinct issuers, rather than a single date. (2) **"56 violations to
+SMIC" narrowed**: this session still could not open the BIS charging
+letter/order, or either press release, directly — WebFetch remained
+blocked on bis.gov, media.bis.gov, and ir.appliedmaterials.com throughout
+this pass. A newly-found, independent legal-advisory source (Arnold &
+Porter) describes the violation period as approximately **November 2020
+to July 2022** and names the recipient only as "a restricted Chinese
+entity," which conflicts with the March 2021-to-June 2022 period and
+explicit "SMIC" identification found in earlier sources. Both are now
+stated as an **explicit, unresolved discrepancy** rather than a single
+settled fact — see the Risks section below for the full accounting.
+(3) **Source-type reclassification**: CNBC and other news outlets are now
+labeled SECONDARY (context only) throughout this record, never presented
+as if interchangeable with a primary source. AMAT's own Form 8-K (filed
+2025-10-23, SEC EDGAR accession 0001628280-25-046107) and its Exhibit 99.1
+CEO employee email are now cited by exact URL and labeled PRIMARY
+DOCUMENT, IDENTIFIED BUT NOT OPENED BY THIS SESSION — this distinguishes
+the document's *type* (an issuer-authored primary filing) from this
+session's *access status* (never independently rendered; WebFetch
+returned HTTP 403 on every attempt). (4) **Workforce-reduction causation
+language softened** to match only what the 8-K's own relayed text
+supports: neutral restructuring language ("to position the Company for
+continued growth as a more competitive and productive organization"),
+with no cause named. The "automation, digitalization and geographic
+shifts" phrase found in earlier research is now attributed to secondary
+press coverage, not confirmed as the 8-K's or the CEO email's own
+language.
 
 ## Business summary
 
@@ -126,9 +159,14 @@ AMAT's addressable China share regardless of any further US action.
 Separately, and distinct from the general industry-wide export-control
 environment, AMAT itself has a confirmed compliance-violation history: a
 February 2026 BIS settlement ($252.5 million civil penalty, the
-second-highest on record) for illegal reexports of equipment to SMIC
-between 2021-2022 — direct evidence about AMAT's own past export-control
-conduct, not merely industry-wide regulatory risk. The October 2025
+second-highest on record) resolving allegations of illegal reexports of
+semiconductor manufacturing equipment to China — the specific "56
+violations"/SMIC characterization commonly reported is not independently
+verified against the primary charging document by this record, and one
+newer source describes the violation period and recipient differently
+(see Risks below for the full discrepancy) — direct evidence about AMAT's
+own past export-control conduct, not merely industry-wide regulatory risk.
+The October 2025
 workforce reduction (~4%, ~1,400 jobs) is a concrete, recent data point
 this record does not minimize, though its cause is genuinely mixed across
 sources: the company's own stated rationale emphasized automation and
@@ -225,38 +263,58 @@ AMAT's own compliance-violation history below:**
   — a separately reported $710M figure is simply the sum of these two
   disclosed figures, not a separate or conflicting number (corrected in
   this remediation pass).
-- **October 23, 2025** — AMAT announced a ~4% (~1,400 jobs) workforce
-  reduction with a $160-180M associated charge, mostly recognized in Q4
-  FY2025. The company's own stated rationale (per secondary paraphrase)
-  emphasized automation/digitalization/geographic-shift-driven
-  restructuring; multiple outlets separately noted the announcement's
-  temporal proximity to the BIS Affiliates Rule above, but no source found
-  in this research establishes that export controls directly caused the
-  reduction — this record states both facts without asserting a single
-  cause (corrected in this remediation pass from an earlier draft that
-  asserted direct causation).
+- **October 23, 2025** — AMAT filed a Form 8-K (Item 2.05; SEC EDGAR CIK
+  0000006951, accession 0001628280-25-046107 — **PRIMARY DOCUMENT,
+  identified but not opened by this session**, WebFetch blocked HTTP 403
+  on every attempt) disclosing a workforce reduction affecting
+  approximately 4% of its global workforce, with associated charges of
+  approximately $160-180M (primarily severance), mostly to be recognized
+  in Q4 FY2025, plan completion expected by Q1 FY2026. The 8-K's own
+  relayed text uses neutral restructuring language — "to position the
+  Company for continued growth as a more competitive and productive
+  organization" — without naming export controls, automation, or any
+  other specific cause. A CEO (Gary E. Dickerson) email to employees is
+  separately filed as Exhibit 99.1 to the same 8-K, also not directly
+  opened by this session. **Secondary context only** (CNBC and other news
+  coverage, not treated as primary sources): multiple outlets reported the
+  announcement's temporal proximity to the BIS Affiliates Rule above, and
+  one secondary source attributed a quote about "automation, digitalization
+  and geographic shifts... redefining our workforce needs" to the
+  company — this record does not confirm that quote originates in the
+  8-K's own text or the CEO's Exhibit 99.1 email. No source found in this
+  research establishes that export controls directly caused the reduction.
 
 **AMAT's own confirmed export-compliance violation (distinct from the
 shock timeline above — this is about AMAT's own past conduct, not the
-regulatory environment):** on 2026-02-11, Applied Materials, Inc. and its
-subsidiary Applied Materials Korea, Ltd. entered into a settlement
-agreement with BIS, paying a $252.5 million civil penalty — the statutory
-maximum, and the second-highest BIS penalty on record (after Seagate
-Technology's $300M in 2023) — for 56 violations of the Export
-Administration Regulations: unauthorized reexport and attempted reexport
-of semiconductor manufacturing equipment (approximately $126M in
-ion-implantation equipment, assembled in South Korea, reportedly using
-largely US-origin parts) to Semiconductor Manufacturing International
-Corporation (SMIC) and its subsidiaries — a BIS Entity List party since
-December 2020 — during approximately March 2021 to June 2022. The
-settlement also requires two internal export-compliance audits and imposes
-a three-year suspended denial order. This was a fact missed in the
-original research pass, added in this remediation pass after an external
-primary-source cross-check flagged it; it is cross-corroborated across
-multiple independent legal/trade-press outlets and matches BIS's own
-press-release title, though this session's own WebFetch attempt against
-bis.gov returned HTTP 403 and the settlement documents themselves were not
-directly opened by this session.
+regulatory environment). Corrected for date and narrowed for unverified
+detail in this record's second remediation pass (2026-07-25):** Applied
+Materials, Inc. and its subsidiary Applied Materials Korea, Ltd. entered
+into a settlement agreement with BIS. Two distinct primary-issuer press
+releases exist, each with its own date: AMAT's own ("Applied Materials
+Reaches Resolution with the U.S. Department of Commerce") is dated
+**2026-02-11**; BIS's own is dated **2026-02-12**. Neither was directly
+opened by this session (WebFetch blocked, HTTP 403, on
+ir.appliedmaterials.com, bis.gov, media.bis.gov, and globenewswire.com on
+every attempt across both remediation passes). Well-corroborated across
+multiple independent sources: a $252.5 million civil penalty — the
+statutory maximum, and the second-highest BIS penalty on record (after
+Seagate Technology's $300M in 2023) — against a total transaction value at
+issue of approximately $126 million; two required internal
+export-compliance audits; a three-year suspended denial order.
+
+**NOT independently verified against the primary charging document, and
+now explicitly narrowed rather than stated as settled fact:** the "56
+violations" figure and the identification of Semiconductor Manufacturing
+International Corporation (SMIC) specifically as the recipient are
+reported consistently across several trade-press/legal-advisory sources
+(Manufacturing Dive, Supply Chain Dive, Fenwick, Wiggin and Dana) — but a
+separately-found, independent legal-advisory source (Arnold & Porter)
+describes the recipient only as "a restricted Chinese entity" and states
+the violation period as approximately **November 2020 to July 2022**,
+conflicting with the "approximately March 2021 to June 2022" period cited
+by the earlier sources. This session still could not open the BIS charging
+letter/order or either press release directly, so this discrepancy is
+stated explicitly rather than resolved in either direction.
 
 **Chinese domestic-competitor progression** (secondary, consistent across
 multiple sources but not primary-verified): Naura's nine-month FY2025
@@ -380,7 +438,17 @@ exists in this repository; creating one is outside `PI-0023`'s scope).
 
 ## Sources
 
-See YAML `sources[]`. All sources in this record are SECONDARY — no
-primary document was independently rendered and inspected this session.
-Requires independent PR review and primary-source verification, per this
-repository's "verify before acting on external review" guardrail.
+See YAML `sources[]`, which now distinguishes two independent axes
+(corrected in this record's second remediation pass): **document type**
+(PRIMARY — an issuer- or regulator-authored filing/press release, e.g.
+AMAT's 10-K, 8-K, or press releases, and BIS's own press release; versus
+SECONDARY — journalism or analysis about a primary document, e.g. CNBC,
+trade-press, or legal-advisory coverage) and **this session's access
+status** (every primary document in this record is labeled "identified but
+NOT opened by this session" — WebFetch returned HTTP 403 on every
+attempted domain across the original research pass and both remediation
+passes; no primary document was independently rendered and inspected).
+News outlets like CNBC are labeled secondary context only and never
+presented as if interchangeable with the primary filing they report on.
+Requires independent PR review and full primary-source verification, per
+this repository's "verify before acting on external review" guardrail.

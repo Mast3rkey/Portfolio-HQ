@@ -21,13 +21,10 @@ cross-check identified that the original draft's "internally inconsistent"
 China-revenue framing was itself the error — the underlying figures, once
 reconciled by fiscal year, are not actually contradictory. KLA's own
 FY2025 10-K, cross-corroborated across multiple independent secondary
-sources, shows China at **33.3% of total revenue in FY2025** (fiscal year
-ended 2025-06-30), down from **42.8% in FY2024** (ended 2024-06-30) — a
+sources, shows China at **33% of total revenue in FY2025** (fiscal year
+ended 2025-06-30), down from **43% in FY2024** (ended 2024-06-30) — a
 real, material, and reconcilable year-over-year decline, not a data
-conflict. FY2023's specific China percentage was not found in this
-research pass and remains an open gap, distinguished here from a
-disagreement (no two sources dispute a FY2023 figure — none was found at
-all). This session's own WebFetch access remained blocked (HTTP 403)
+conflict. This session's own WebFetch access remained blocked (HTTP 403)
 throughout this remediation pass; the reconciliation rests on multiple
 independent, mutually-corroborating WebSearch results, not on the external
 cross-check's claim alone. The process-control market-share disagreement
@@ -36,6 +33,29 @@ split-adjustment question below are retained as genuine, unresolved
 same-metric conflicts — this record only retains an "unresolved" label
 where sources actually disagree on the same metric for the same period,
 per the corrected discipline applied in this remediation pass.
+
+**Second remediation pass (2026-07-25), source-accounting
+micro-remediation:** the 43%/33% figures above were restated in this pass
+from decimal figures (42.8%/33.3%) used in the first remediation pass.
+Those decimals traced to a third-party financial-data aggregator whose own
+precision was not confirmed to originate in KLA's filing text; the 43%/33%
+figures, by contrast, were independently re-confirmed via a direct
+WebSearch match to a filing-summary source quoting the 10-K's own stated
+language: "Revenue from customers in China was 33% of revenue in 2025
+(43% in 2024)." This record does not claim KLA itself reported
+decimal-precision percentages — that claim is now explicitly retracted.
+**FY2023 China revenue is now stated at 27%**, per the external
+cross-check, filling what was previously recorded as an open gap — but
+this specific figure could not be independently re-corroborated by a
+second search in this remediation pass (unlike 43%/33%, which were), and
+is therefore flagged as lower-confidence than the FY2024/FY2025 figures
+rather than presented with equal certainty. Sourcing throughout this
+record was also reclassified along two axes: document type (PRIMARY —
+KLA's own 10-K, press releases, board actions; versus SECONDARY — news
+coverage of an underlying primary action, such as reporting on the
+October 2022 BIS rules or the April 2026 Hua Hong order) and this
+session's access status (every primary document is labeled "identified
+but NOT opened by this session" — WebFetch remained blocked throughout).
 
 **Remaining unresolved data conflicts and gaps found in research, not
 resolved by this record:**
@@ -109,20 +129,25 @@ flags each figure's basis where the distinction matters (see Margin-
 relevance evidence below for the price-drawdown figures, which are
 post-split-adjusted).
 
-**China revenue, by fiscal year** (reconciled in this record's 2026-07-25
-remediation pass): 42.8% of total revenue in FY2024, declining to 33.3% in
-FY2025 — a real, material, year-over-year decline reflecting the effect of
-tightened US export controls on China-bound shipments. Management has
-reportedly guided China toward the mid-20s percent of total revenue over
-time. FY2023's specific percentage was not found in this research pass —
-an open gap distinct from a source disagreement.
+**China revenue, by fiscal year** (KLA's own reported whole-percentage
+figures, per the 10-K's own stated language: "Revenue from customers in
+China was 33% of revenue in 2025 (43% in 2024)"): 43% of total revenue in
+FY2024, declining to 33% in FY2025 — a real, material, year-over-year
+decline reflecting the effect of tightened US export controls on
+China-bound shipments. FY2023 is separately reported at 27%, per the
+external cross-check applied in this record's second remediation pass,
+though this specific figure was not independently re-corroborated by a
+second search this pass (unlike 43%/33%, which were) — treated as
+lower-confidence than the FY2024/FY2025 figures accordingly. Management
+has reportedly guided China toward the mid-20s percent of total revenue
+over time.
 
 ## Investment thesis (business-quality description, not a recommendation)
 
 **Concise statement:** KLA holds a reported dominant position in
 semiconductor process control and inspection, with this batch's highest
 gross margin and clearest backlog-conversion disclosure — and a real,
-material, reconciled China-revenue decline (42.8% FY2024 to 33.3% FY2025)
+material, reconciled China-revenue decline (43% FY2024 to 33% FY2025)
 comparable in kind to the export-control exposure found for ASML and AMAT.
 This record's process-control market-share claims, unlike the China
 figures, remain a genuine unresolved data-quality gap (sources disagree
@@ -139,8 +164,8 @@ profile than AMAT's or LRCX's deposition/etch exposure. However, this
 record's research could not find a single reliable, quantified source
 establishing KLA's actual market-share dominance — a genuine, unresolved
 data-quality gap, unlike China revenue, which this record's remediation
-pass reconciled to a real, material year-over-year decline (42.8% FY2024
-to 33.3% FY2025). FY2024's confirmed ~6.5% revenue decline is direct
+pass reconciled to a real, material year-over-year decline (43% FY2024
+to 33% FY2025). FY2024's confirmed ~6.5% revenue decline is direct
 evidence against an unqualified "process control is acyclical" reading of
 secondary commentary, even while the *qualitative* stickiness argument
 (process control tools are "harder to cut without creating bigger
@@ -160,7 +185,7 @@ downstream yield costs," per one source) may still hold directionally.
 
 **Conditions that would weaken confidence in the above:**
 - A confirmed China-revenue percentage for a future period materially
-  higher than the FY2025 33.3% level, reversing the FY2024-to-FY2025
+  higher than the FY2025 33% level, reversing the FY2024-to-FY2025
   decline
 - A second consecutive down fiscal year (which would undercut the
   "process control is comparatively resilient" qualitative framing)
@@ -247,10 +272,10 @@ Per `PI-0023` SSB.16 and `OPS-0006` SS4's Milestone 3 requirement.
   roughly 15-25% — secondary, unverified, directional only.
 - **Export-control/geopolitical exposure**: two dated shock episodes
   (October 2022, April 2026), plus a real, reconciled China-revenue
-  decline (42.8% FY2024 to 33.3% FY2025) — a material, disclosed exposure,
-  corrected in this record's remediation pass from an earlier draft that
-  treated the underlying figures as too unreliable to characterize at all.
-  FY2023's specific China percentage remains an open data gap.
+  decline (43% FY2024 to 33% FY2025, 27% FY2023 at lower confidence) — a
+  material, disclosed exposure, corrected in this record's remediation
+  passes from an earlier draft that treated the underlying figures as too
+  unreliable to characterize at all.
 - **Customer concentration**: TSMC reportedly approximately 23% of FY2023
   revenue (secondary, single data point, not tracked across other years in
   this research pass).
@@ -290,9 +315,11 @@ evidence for any conclusion in this record.
     guidance-EPS reconciliation question and obtain the April 2026 Hua
     Hong-episode dollar impact
   - A primary-source (10-K geographic table) confirmation of KLA's FY2026
-    China revenue percentage, to extend the reconciled FY2024/FY2025 series
-    this record establishes; FY2023's percentage also remains an open,
-    lower-priority gap
+    China revenue percentage, to extend the reconciled FY2023/FY2024/FY2025
+    (27%/43%/33%) series this record establishes; independent
+    re-corroboration of the FY2023 27% figure specifically also remains a
+    lower-priority open item, since it was not re-confirmed by a second
+    search in this record's second remediation pass
   - A second consecutive down fiscal year
   - A material competitive-share-loss disclosure (e.g. to Onto Innovation
     or ASML's HMI/YieldStar business)
@@ -307,8 +334,8 @@ evidence for any conclusion in this record.
 **Rating: Medium.** See YAML `conviction.rationale` for the full reasoning.
 Following this record's 2026-07-25 remediation pass, this rating now rests
 on the same basis as ASML's and AMAT's Medium ratings — a real, disclosed,
-quantified risk (China revenue concentration, reconciled to a 42.8%-to-
-33.3% FY2024-to-FY2025 decline) — rather than primarily on an evidentiary
+quantified risk (China revenue concentration, reconciled to a 43%-to-
+33% FY2024-to-FY2025 decline) — rather than primarily on an evidentiary
 gap. The genuine evidentiary gap that remains (process-control
 market-share claims, which disagree 50-85% across sources for the same
 underlying claim) is a real but narrower basis than the original draft's
@@ -327,11 +354,18 @@ claimed finding of either resilience or synchrony. No `themes:` reference
 
 ## Sources
 
-See YAML `sources[]`. All sources in this record are SECONDARY — no
-primary document was independently rendered and inspected this session
-(WebFetch returned HTTP 403 on every domain attempted, a broader failure
-than the narrower blocking pattern in the other three records). Requires
-independent PR review and primary-source verification, per this
-repository's "verify before acting on external review" guardrail — this
-record's China-revenue-percentage gap in particular should be a priority
-for that verification.
+See YAML `sources[]`, which distinguishes two independent axes (corrected
+in this record's second remediation pass): **document type** (PRIMARY —
+KLA's own 10-K, press releases, and board actions; versus SECONDARY —
+news-outlet reporting on an underlying primary action, e.g. coverage of
+the October 2022 BIS rules or the April 2026 Hua Hong order) and **this
+session's access status** (every primary document in this record is
+labeled "identified but NOT opened by this session" — WebFetch returned
+HTTP 403 on every domain attempted across the original research pass and
+both remediation passes, a broader failure than the narrower blocking
+pattern in the other three records; no primary document was independently
+rendered and inspected). Requires independent PR review and full
+primary-source verification, per this repository's "verify before acting
+on external review" guardrail — the FY2023 China-revenue figure (27%,
+not independently re-corroborated this pass) and the process-control
+market-share disagreement should be priorities for that verification.

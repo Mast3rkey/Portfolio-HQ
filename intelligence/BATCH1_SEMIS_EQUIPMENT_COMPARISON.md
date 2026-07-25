@@ -25,10 +25,10 @@ prohibition on predictive research or opportunity maps.
 **Remediation pass (2026-07-25):** following a preliminary external
 primary-source cross-check on the underlying company records, this
 document was updated to match: the China-exposure comparison table (§9)
-now reflects KLAC's reconciled by-fiscal-year figures (42.8% FY2024 ->
-33.3% FY2025, not an unresolved conflict) and drops the claim that AMAT
+now reflects KLAC's reconciled by-fiscal-year figures (43% FY2024 ->
+33% FY2025, not an unresolved conflict) and drops the claim that AMAT
 carries the batch's highest China exposure (LRCX's 43% Q1 FY2026 peak and
-KLAC's FY2024 42.8% figure both exceed AMAT's range); the cyclicality
+KLAC's FY2024 43% figure both exceed AMAT's range); the cyclicality
 table (§6) now cites LRCX's precisely-sequenced 31.4% YoY decline
 (Q1 FY2024 vs. Q1 FY2023) rather than an unqualified "~31%" figure; and
 §8's export-control table notes AMAT's additional, distinct February 2026
@@ -36,15 +36,38 @@ BIS settlement (a confirmed compliance violation, not merely a shared
 regulatory-environment risk). See each company's own record for the full
 correction detail and citations.
 
+**Second remediation pass (2026-07-25), source-accounting
+micro-remediation:** further corrected to match each company's own
+second-pass corrections: AMAT's BIS settlement date is now stated as two
+distinct dates (AMAT's own press release 2026-02-11; BIS's own press
+release 2026-02-12), and the "56 violations to SMIC" characterization is
+now narrowed as unverified against the primary charging document (§8);
+KLAC's China-revenue figures are now stated as KLA's own reported
+whole-percentage figures (43%/33%/27% for FY2024/FY2025/FY2023) rather
+than a third-party-calculated decimal, with FY2023's 27% flagged as
+lower-confidence (not independently re-corroborated) than FY2024/FY2025
+(§9); ASML's geographic-sales figures are now cited to the exact official
+investor-relations presentation containing the table, with a conflicting
+29.1%-China figure found once and explicitly not adopted (§8-9); and
+LRCX's downturn-quarter citations now include the exact per-quarter 8-K
+exhibit URL for each of the five quarters in the sequence (§6). See each
+company's own record for full detail.
+
 **Source-access disclosure (applies to this whole document):** every fact
 below is inherited from the four companies' own Company Intelligence
 records, each of which discloses that WebFetch was blocked (HTTP 403) on
-primary-source domains throughout this research pass and that all figures
-are therefore secondary-sourced. This document adds no new primary
-research of its own — it only compares and cross-references what the four
-company records already established. Where a company record flags a
-figure as unresolved or internally conflicting, this document repeats that
-flag rather than resolving it.
+every primary-source domain attempted throughout this research pass and
+both remediation passes — no primary document was independently rendered
+and inspected by this session at any point. Each underlying record now
+distinguishes document type (PRIMARY — an issuer- or regulator-authored
+filing/press release; SECONDARY — journalism or analysis about one) from
+this session's access status (every primary document is labeled
+"identified but NOT opened by this session"); this document inherits that
+same distinction rather than re-stating it. This document adds no new
+primary research of its own — it only compares and cross-references what
+the four company records already established. Where a company record
+flags a figure as unresolved or internally conflicting, this document
+repeats that flag rather than resolving it.
 
 ## 1. Distinct economic function (no overlap in what each company sells)
 
@@ -145,7 +168,7 @@ outside `PI-0023`'s authorized scope).
 |---|---|---|
 | ASML | Revenue never fell YoY in the 2022-2025 window researched (backlog-smoothed); stock fell ~30% from its 2021 ATH during the 2022 downturn (approximate); a guidance-cut-driven ~16-20% two-day stock drop in October 2024 (fundamentals-timing, not a realized multi-quarter earnings decline) | Revenue: low/smoothed. Order/stock: high, but distinctly guidance-cut-driven rather than realized-earnings-driven in the one clear recent episode found |
 | AMAT | FY2019 revenue guided down ~16% (2019 memory downturn); one third-party source (Trefis, unverified) cites an average 23% peak-to-trough stock decline across 15 historical shocks and a ~55% deepest historical drawdown | Moderate-to-high by the one third-party framing found, not independently corroborated to a second source |
-| KLAC | FY2024 confirmed revenue decline of ~6.5% (the only company in the batch with a directly confirmed, primary-adjacent recent annual revenue decline figure); no comparable-quality drawdown or 2022-2023-specific figure found | Lowest confirmed magnitude of the four by this measure, though see SS9 below — KLAC also carries a genuine, reconciled China-revenue decline (42.8% FY2024 to 33.3% FY2025) not reflected in this row's revenue-decline metric |
+| KLAC | FY2024 confirmed revenue decline of ~6.5% (the only company in the batch with a directly confirmed, primary-adjacent recent annual revenue decline figure); no comparable-quality drawdown or 2022-2023-specific figure found | Lowest confirmed magnitude of the four by this measure, though see SS9 below — KLAC also carries a genuine, reconciled China-revenue decline (43% FY2024 to 33% FY2025) not reflected in this row's revenue-decline metric |
 | LRCX | Q1 FY2024 revenue -31.4% YoY (vs. Q1 FY2023 specifically — distinct from two separate sequential 26.7% and 17.1% QoQ declines in the two preceding quarters), adjusted EPS -34% YoY (2022-2023 memory downturn) — the single sharpest, best-quantified quarterly decline found anywhere in this batch; a ~7%-workforce layoff in the same episode, officially filed 2023-01-23 | Highest confirmed magnitude of the four |
 
 **This table should not be read as a ranking of investment quality** — it
@@ -201,9 +224,9 @@ differs meaningfully:
 
 | Company | Regime | Most severe disclosed/estimated impact found |
 |---|---|---|
-| ASML | Dutch/EU export licensing (EUV blocked since 2019, DUV licensing since Sept 2023), layered under a separate US pressure/legislative track (the pending, not-yet-enacted "MATCH Act") | China net-system-sales share: 36% (Q4 2025) -> 19% (Q1 2026) -> 14% (Q2 2026) — a decline across two 2026 quarters starting from a Q4 2025 baseline (corrected in this record's remediation pass from an earlier, imprecise "two quarters" framing that did not clearly separate the starting baseline from the quarters of actual decline); October 2024 guidance-cut episode (~16-20% two-day stock decline) was demand-timing-driven, not directly an export-control event |
-| AMAT | US BIS regime only (Oct 2022, Oct 2023, Sept 2025 actions), plus a reported-but-unofficial Chinese domestic-content mandate, **plus AMAT's own confirmed compliance violation** — a Feb 2026 BIS settlement ($252.5M penalty, 56 illegal reexports to SMIC, 2021-2022) distinct from the shared regulatory-environment risk the other three companies also face | ~$400M disclosed Oct 2022 impact; ~$110M+$600M disclosed Sept 2025 impact ($710M combined is the sum of these two, not a separate figure — corrected in this record's remediation pass); $252.5M BIS settlement penalty (Feb 2026, a confirmed compliance cost, not a market-access impact estimate) |
-| KLAC | US BIS regime only (Oct 2022, Apr 2026) | $600-900M estimated Oct 2022 impact; Apr 2026 Hua Hong-related impact magnitude undisclosed as of this record's evidence date; China revenue itself declined from 42.8% (FY2024) to 33.3% (FY2025) of total revenue, reconciled in this record's remediation pass |
+| ASML | Dutch/EU export licensing (EUV blocked since 2019, DUV licensing since Sept 2023), layered under a separate US pressure/legislative track (the pending, not-yet-enacted "MATCH Act") | China net-system-sales share, per ASML's own Q2 2026 investor presentation (identified but not opened this session): 36% (Q4 2025) -> 19% (Q1 2026) -> 14% (Q2 2026) — a decline across two 2026 quarters starting from a Q4 2025 baseline. A conflicting 29.1% figure for Q2 2026 surfaced once in this batch's second remediation pass and was explicitly not adopted (single, unattributed appearance vs. 14%'s repeated cross-corroboration — see ASML's own record). October 2024 guidance-cut episode (~16-20% two-day stock decline) was demand-timing-driven, not directly an export-control event |
+| AMAT | US BIS regime only (Oct 2022, Oct 2023, Sept 2025 actions), plus a reported-but-unofficial Chinese domestic-content mandate, **plus AMAT's own confirmed compliance violation** — a BIS settlement (AMAT's own press release dated 2026-02-11; BIS's own press release dated 2026-02-12) distinct from the shared regulatory-environment risk the other three companies also face | ~$400M disclosed Oct 2022 impact; ~$110M+$600M disclosed Sept 2025 impact ($710M combined is the sum of these two, not a separate figure); $252.5M BIS settlement penalty, well-corroborated as to amount — the specific "56 violations"/"SMIC" characterization is reported across multiple secondary/legal-advisory sources but is NOT verified against the primary charging document, and one newer source describes the violation period and named recipient differently (see AMAT's own record for the full discrepancy) |
+| KLAC | US BIS regime only (Oct 2022, Apr 2026) | $600-900M estimated Oct 2022 impact; Apr 2026 Hua Hong-related impact magnitude undisclosed as of this record's evidence date; China revenue itself declined from 43% (FY2024) to 33% (FY2025) of total revenue, reconciled in this record's remediation pass |
 | LRCX | US BIS regime only (Oct 2022, a 2023 servicing-restriction episode, a 2026 "affiliate rule") | ~$2.5B (~13% of FY2022 revenue) estimated Oct 2022 impact — the largest single disclosed percentage-of-revenue impact found in the batch; ~$600M disclosed calendar-2026 impact from the newer rule |
 
 **ASML is structurally distinct from the other three** — it is the only
@@ -231,17 +254,17 @@ KLAC's China-revenue figures by fiscal year rather than presenting them as
 an internally inconsistent range, and to remove an unsupported claim
 (previously stated in an earlier draft of AMAT's own record) that AMAT
 carries the batch's highest China exposure — on the figures actually
-found, LRCX's single-quarter peak (43%) and KLAC's FY2024 figure (42.8%)
+found, LRCX's single-quarter peak (43%) and KLAC's FY2024 figure (43%)
 both exceed anything found for AMAT.
 
 | Company | China revenue (most recent/best-available figures, by period) | Confidence |
 |---|---|---|
 | ASML | 36% (Q4 2025) -> 19% (Q1 2026) -> 14% (Q2 2026) of net system sales; FY2026 guided toward ~20% full-year average | Moderate-to-high — company-guided figures, quarterly shipment mix corroborated across multiple independent sources |
 | AMAT | 24-30% range across FY2022-Q2 FY2026 periods, moving unevenly (not the batch's highest — see below) | Moderate — multiple sources roughly agree on the range, though exact-period figures/bases differ (systems+services vs. total revenue) |
-| KLAC | 42.8% (FY2024) -> 33.3% (FY2025) of total revenue, a real reconciled decline; FY2023 not found (gap, not conflict) | Moderate-to-high for FY2024/FY2025 (KLA's own 10-K, cross-corroborated); low only for the still-missing FY2023 figure |
+| KLAC | 27% (FY2023) -> 43% (FY2024) -> 33% (FY2025) of total revenue, per KLA's own reported whole-percentage figures ("Revenue from customers in China was 33% of revenue in 2025 (43% in 2024)," per the 10-K's own stated language) | Moderate-to-high for FY2024/FY2025 (independently re-confirmed via direct WebSearch match to a filing-summary source this pass); lower confidence for FY2023's 27% specifically (not independently re-corroborated by a second search) |
 | LRCX | 34% (FY2025 full year) -> 43% peak (Q1 FY2026) -> guided below 30% (calendar 2026) — the batch's single largest disclosed percentage-of-revenue peak | Moderate-to-high — the clearest, most consistently sourced China-percentage trajectory in the batch |
 
-**On a peak-percentage basis, LRCX (43%) and KLAC (42.8%) both exceed
+**On a peak-percentage basis, LRCX (43%) and KLAC (43%) both exceed
 AMAT's range (24-30%)** — this record does not claim AMAT carries the
 batch's highest China exposure, correcting an earlier draft of AMAT's own
 record that made that comparative claim without a consistent, same-period,
@@ -250,9 +273,11 @@ disclose or are guided toward China representing a smaller share of
 revenue going forward (ASML ~20% FY2026 guide; KLAC reportedly guided
 toward the mid-20s; LRCX guided below 30% for calendar 2026); AMAT's own
 record did not find a forward-looking company guidance figure for its
-China percentage specifically. KLAC's FY2023 percentage remains the one
-genuine, unresolved data gap in this table (not a source disagreement —
-no figure for that year was found at all).
+China percentage specifically. KLAC's FY2024/FY2025 figures are now
+independently re-confirmed at higher confidence than the FY2023 27%
+figure, which was not re-corroborated by a second search in this pass —
+the 27% figure is retained per the external cross-check's instruction but
+treated as the one remaining lower-confidence data point in this table.
 
 ## 10. Differentiation and substitution risk
 
