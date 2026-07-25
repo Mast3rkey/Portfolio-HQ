@@ -661,8 +661,24 @@ workstreams:
           gate's `status: in_progress` reflects the milestone as a whole —
           Batch 1 is complete (stated above as a subordinate statement
           within this single gate entry, the schema having no separate
-          per-batch status field), but Milestone 3 itself is not, and this
-          entry authorizes no second Milestone 3 batch and no Milestone 4
+          per-batch status field), but Milestone 3 itself is not.
+
+          **Batch 2 authorized 2026-07-25 (PI-0024):** exactly MU and SKHY (current DRAM/NAND
+          memory manufacturers within the `semis` cluster) — evidence development only, per
+          PI-0024's full research standard, evidence discipline, zero-based discipline, and
+          prohibitions. WDC is explicitly excluded (Western Digital separated its Flash business
+          into Sandisk in February 2025; the remaining WDC business is centered on HDD storage,
+          not the DRAM/NAND/HBM memory-cycle function this batch examines) — WDC's own role,
+          tier, target, cluster, and holding status are unchanged. PI-0024 also identifies
+          `targets.yaml`'s existing `semis` cluster comment ("...memory (MU/WDC) names crash
+          hardest") as stale following that separation, but does not correct it — recorded as a
+          separate, unauthorized, future factual-reconciliation item. PI-0024 explicitly prohibits
+          any future implementation session from automatically contracting this batch to MU alone
+          (or expanding it) for any reason, including source-access difficulty — insufficient
+          primary evidence for either company requires stopping and returning for explicit
+          principal amendment, not silent scope narrowing. This batch has not been implemented:
+          no MU or SKHY Company Intelligence record, freshness-registry row, or comparison
+          artifact exists yet. This entry authorizes no third Milestone 3 batch and no Milestone 4
           work.
         pr: 154
         status: in_progress
@@ -755,6 +771,7 @@ workstreams:
       - "PR #154 independent Fable delta review 4780012239 (anchored to reviewed head 0425f3a3, APPROVED WITH NON-BLOCKING FINDINGS — both blocking findings resolved)"
       - "PR #154 exact-head CI: test check run, run 30171261993, conclusion success"
       - "PR #155 independent Fable review 4780123504 (model claude-fable-5, session session_01HZKBDaSPytN1EtErbsP1AT, anchored to exact PR #155 head cdcedb6732cae9b0dabd650ce065f7f0576175e1, verdict APPROVED WITH NON-BLOCKING FINDINGS — issued post-merge, not a pre-merge gate: PR #155 merged mid-review at 2026-07-25T19:59:11Z while this review was in progress, and the merged head is byte-identical to the reviewed head cdcedb6732cae9b0dabd650ce065f7f0576175e1)"
+      - governance/decisions/PI-0024-ws0005-milestone3-batch2-memory.md
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -783,11 +800,23 @@ workstreams:
       review (4780123504). **This does not authorize a second Milestone 3
       batch, Milestone 4, or any later milestone** — each still requires its own
       separate, later, explicit principal authorization per OPS-0006 §5.
-      The next governed action on this workstream is a future, separate
-      decision naming either the next Milestone 3 batch (candidate uncovered
-      semis-cluster members: AVGO, AMD, MU, MRVL, WDC, INTC, SKHY) or
-      remaining Milestone 3 scope — not yet selected, proposed, or
-      authorized by this reconciliation.
+
+      Milestone 3, Batch 2 (MU, SKHY) is now authorized, effective on
+      PI-0024's merge — see the milestone-3-intelligence-completion gate
+      entry above. Next action once PI-0024 merges: open exactly one bounded
+      research implementation PR covering that batch, per PI-0024's full
+      authorization scope (§§A-J), including its explicit prohibition on
+      automatically contracting the batch to MU alone for any reason. WDC is
+      explicitly excluded from this batch (Sandisk separation, February
+      2025) and remains ungoverned by this authorization; `targets.yaml`'s
+      stale MU/WDC cluster comment is identified but not corrected. No
+      research has begun; this decision authorizes it, it does not perform
+      it. This does not authorize a third Milestone 3 batch, Milestone 4, or
+      any later milestone — each still requires its own separate, later,
+      explicit principal authorization per OPS-0006 §5. Remaining
+      candidate uncovered semis-cluster members for a possible future batch:
+      AVGO, AMD, MRVL, INTC — not yet selected, proposed, or authorized by
+      this filing.
 
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
@@ -827,15 +856,17 @@ workstreams:
       merged (merge commit 7f50020e83c6bf3fcf50c2f26a1a0533aaa245af),
       independent Fable review resolved to APPROVED WITH NON-BLOCKING
       FINDINGS, exact-head CI green, and post-merge validator/test
-      re-verification passing — Batch 1 is complete. Milestone 3's
-      remaining scope (any further batch) and Milestones 4 through 9 remain
-      blocked pending their own separate, later, explicit principal
-      authorization; none has been granted by this entry, by PI-0023, or by
-      anything else. This reconciliation itself grants no such
-      authorization.
+      re-verification passing — Batch 1 is complete. None on Milestone 3,
+      Batch 2 authorization (MU, SKHY) — PI-0024 authorizes it; its
+      implementation has not begun and no branch/PR exists for it yet.
+      Milestone 3's remaining scope (any further batch beyond MU/SKHY) and
+      Milestones 4 through 9 remain blocked pending their own separate,
+      later, explicit principal authorization; none has been granted by
+      this entry, by PI-0023, by PI-0024, or by anything else. This
+      reconciliation itself grants no such authorization.
     active_branch: null
     active_pr: null
-    last_verified_main_sha: 7f50020e83c6bf3fcf50c2f26a1a0533aaa245af
+    last_verified_main_sha: 956859935caa9375d8d16abfc25743526a7da146
     last_verified_date: "2026-07-25"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
@@ -850,7 +881,10 @@ workstreams:
       #154) is now merged, independently reviewed, and post-merge verified
       per PI-0023 §E and OPS-0006 §16.1 — recorded factually by this
       reconciliation, which itself grants no authority beyond recording
-      that completion. Neither PI-0023 nor this reconciliation authorizes a
-      second batch or any later milestone.
+      that completion. PI-0024 (Milestone 3, Batch 2 — MU, SKHY — evidence
+      development only) authorizes exactly that second batch, effective on
+      its own merge, excludes WDC explicitly, and prohibits any future
+      contraction of the batch to MU alone. Neither PI-0023, PI-0024, nor
+      this filing authorizes a third batch or any later milestone.
     supersedes: null
     superseded_by: null
