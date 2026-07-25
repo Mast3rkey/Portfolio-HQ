@@ -66,3 +66,35 @@ tickers:
     filing_trigger_profile: foreign_private_issuer_v1
     refresh_policy: path_a_fixed_scope_v1
     monitoring_enabled: false
+  - ticker: ASML
+    company_record_authority: PI-0023
+    enrollment_authority: PI-0023
+    enrolled_at: "2026-07-25"
+    template_version: v1
+    filing_trigger_profile: foreign_private_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: AMAT
+    company_record_authority: PI-0023
+    enrollment_authority: PI-0023
+    enrolled_at: "2026-07-25"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: KLAC
+    company_record_authority: PI-0023
+    enrollment_authority: PI-0023
+    enrolled_at: "2026-07-25"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: LRCX
+    company_record_authority: PI-0023
+    enrollment_authority: PI-0023
+    enrolled_at: "2026-07-25"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false

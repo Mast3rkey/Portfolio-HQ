@@ -41,3 +41,19 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: ASML
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: AMAT
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: KLAC
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: LRCX
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
