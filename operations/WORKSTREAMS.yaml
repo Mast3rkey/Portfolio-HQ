@@ -754,6 +754,7 @@ workstreams:
       - "PR #154 independent Fable full review 4779913553 (anchored to cb5d4e4, CHANGES REQUIRED — 2 blocking findings, both confined to the comparison artifact)"
       - "PR #154 independent Fable delta review 4780012239 (anchored to reviewed head 0425f3a3, APPROVED WITH NON-BLOCKING FINDINGS — both blocking findings resolved)"
       - "PR #154 exact-head CI: test check run, run 30171261993, conclusion success"
+      - "PR #155 (WS-0005 register reconciliation of PR #154's merge — merged 2026-07-25T19:59:11Z, merge commit 549e77c0d48d8b55e5b1c0474a375a9d72732c60; independent Fable post-merge review 4780123504, anchored to the exact merged head cdcedb6732cae9b0dabd650ce065f7f0576175e1, verdict APPROVED WITH NON-BLOCKING FINDINGS — explicitly a post-merge verification artifact, submitted after the principal's merge; not a pre-merge gate and not a WS-0002 audit-gate artifact)"
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -768,8 +769,11 @@ workstreams:
       on PI-0023's merge (PR #153, merge commit 316dc32) and its
       implementation is now **merged and complete** — PR #154, merge commit
       7f50020e83c6bf3fcf50c2f26a1a0533aaa245af, reviewed head 0425f3a3,
-      both independent Fable reviews (4779913553, 4780012239) resolved to
-      "APPROVED WITH NON-BLOCKING FINDINGS," exact-head CI green, and this
+      independent Fable full review 4779913553 (verdict CHANGES REQUIRED at
+      intermediate head cb5d4e4 — both blocking findings subsequently
+      corrected) and independent Fable delta review 4780012239 (verdict
+      "APPROVED WITH NON-BLOCKING FINDINGS" at the merged reviewed head
+      0425f3a3), exact-head CI green, and this
       reconciliation's own post-merge validator/test re-verification passing
       — see the milestone-3-intelligence-completion gate entry above for
       full detail. **This does not authorize a second Milestone 3 batch,
