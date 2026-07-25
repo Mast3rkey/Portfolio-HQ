@@ -139,6 +139,18 @@ establish:
     be observable before, or only after, a large price decline. This evidence **must not**
     recommend borrowing, leverage, deployment timing, or a margin ceiling of any kind — matching
     `OPS-0006` §4 Milestone 3's own margin-relevant-evidence requirement exactly.
+17. **External opportunity and replacement-candidate scan** — identify credible non-owned
+    competitors, substitutes, or missing-system candidates revealed by the research; explain the
+    economic role each candidate could serve; state which current holding or capital use it would
+    compete against; distinguish genuinely new exposure from duplicate exposure; retain no more
+    than a small, evidence-supported candidate list; treat all candidates as **advisory
+    future-research leads only**.
+
+    **This scan does not authorize:** adding a holding; changing `holdings.yaml`; assigning tiers
+    or targets; ranking candidates mechanically; expanding the current four-company research
+    batch; or beginning research on an outside candidate without its own separate, future
+    authorization. It is a leads list for a possible future, separately-authorized review — not a
+    conclusion, a recommendation, or a trigger for any repository or portfolio change.
 
 ### C. Zero-based discipline
 
@@ -204,6 +216,9 @@ This decision authorizes none of the following, under any interpretation:
   no portfolio-level margin-preparation register, and no next-best-alternative *ranking* (§B.13
   is descriptive only).
 - Automatic authorization of any later Milestone 3 batch.
+- Expanding the current four-company batch, or beginning research on any external
+  competitor/substitute/candidate identified by §B.17's opportunity scan, without its own
+  separate, future authorization — §B.17 is a leads list, not a research trigger.
 - Any generated report replacing an authoritative Company Intelligence record — the YAML/Markdown
   pair remains the sole authoritative artifact per company, per the unchanged filesystem-as-index
   doctrine (`PI-0001`).
