@@ -209,3 +209,10 @@ decisions:
     related_decisions: [OPS-0001, OPS-0002, OPS-0003, GOV-0002]
     supporting_artifact: governance/audits/WS0002_PHASE_ONE_FABLE_AUDIT_20260724.md
     file: governance/decisions/OPS-0004-ws0002-phase-one-audit-provenance-reconciliation.md
+  - decision_id: OPS-0005
+    date: 2026-07-25
+    status: Accepted
+    category: operations_coordination
+    related_decisions: [OPS-0001, OPS-0002, OPS-0003, OPS-0004, GOV-0002, PI-0011]
+    supporting_artifact: docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md
+    file: governance/decisions/OPS-0005-ws0002-phase-two-reactivation-authorization.md
