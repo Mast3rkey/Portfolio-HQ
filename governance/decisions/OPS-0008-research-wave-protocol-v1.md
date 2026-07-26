@@ -222,6 +222,43 @@ This decision does not itself authorize Batch 5 research implementation — that
 (in the same PR) to also merge, and even then only a later, separate implementation PR — not opened
 by this filing — may begin, itself gated on its own review cycle under §§2-6 above.
 
+### 12. Hard boundaries
+
+The following boundaries were previously stated only by cross-reference to `OPS-0006`/`OPS-0007`
+and to this decision's own Consequences section. They are restated here as this protocol's own
+explicit, standalone operative limits — added following an independent exact-head review that
+found relying on cross-reference alone insufficient for a durable, prospective protocol document —
+so that no future batch session can read this protocol as silently granting any of the following:
+
+- **No scoring, ranking, composite index, or automatic aggregation** of any company, batch, or
+  research finding, under any interpretation of this protocol.
+- **No automatic tier, target, role, cluster, cap, holdings, allocation, margin, or execution
+  recommendation** may be generated or implied by any wave conducted under this protocol.
+- **No Intelligence output produced under this protocol may directly control allocator or margin
+  behavior** — Company/Theme Intelligence remains advisory input to human judgment only, never a
+  mechanically load-bearing input to `allocate.py`, `margin_state.py`, or any production path.
+- **No trade or order capability** exists, or is created, by any wave conducted under this
+  protocol, its source-readiness gate, its evidence-recovery method, or its review cycle.
+- **Every future research wave still requires its own separate, explicit, later governance
+  decision** naming its own companies — adopting this protocol does not itself authorize any wave,
+  including a first, second, or any subsequent one; a wave's own `PI-####` authorization remains
+  the sole source of that wave's scope, exactly as `OPS-0006` §5 already requires.
+- **No Milestone 4 (relationship mapping), any later WS-0005 milestone, or any `OPS-0007` §8 step-I
+  authority is created by this protocol** — this decision governs only the shape of future
+  Milestone 3 waves; it neither advances nor authorizes any milestone or step beyond Milestone 3.
+- **An evidence-recovery session engaged under §2's standing pre-authorization has sourcing and
+  factual-recovery authority only** — it gains no tier, target, cluster, ranking, margin, allocator,
+  or other policy authority of any kind, exactly as §2 already states and is restated here as a
+  standalone boundary for emphasis.
+- **Stale, incomplete, or inaccessible evidence may require disclosure, a pause in drafting, or
+  abstention from a conclusion — never an automatic policy change.** Consistent with `OPS-0006`
+  §14's evidence-validity boundary, staleness or an evidentiary gap discovered under this protocol
+  is never itself a trigger for a tier, target, trim, exit, or margin-policy action.
+
+These boundaries narrow nothing already stated elsewhere in this protocol or in `OPS-0006`/
+`OPS-0007` — they make explicit, as this protocol's own standalone text, limits that previously
+existed only by inference or cross-reference.
+
 ## Rationale
 
 **Why a default two-PR lifecycle with read-only post-merge verification, not three or four.** The

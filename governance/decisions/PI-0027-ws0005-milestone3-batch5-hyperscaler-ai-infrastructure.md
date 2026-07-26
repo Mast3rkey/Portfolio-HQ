@@ -179,6 +179,21 @@ establish, at minimum:
     records, as a hyperscaler customer of already-covered semis-cluster companies without AMZN's own
     economics ever having been independently verified — that specific cross-reference must be
     addressed; antitrust exposure (FTC litigation and related matters).
+23. **Capital-priority comparison, explicitly separated from business quality** (added following an
+    independent exact-head review that found this requirement ambiguous in the original text). For
+    each of MSFT, GOOGL, META, and AMZN individually, the research must: separate an assessment of
+    business quality (competitive position, moat, financial strength — items 1-16 above) from a
+    distinct assessment of capital priority (whether the next investment dollar is better spent on
+    this company than on a governed alternative); compare the company against the next-best use of
+    capital among this repository's other governed holdings in `targets.yaml`; state explicitly, in
+    addition to item 14's exposure-if-absent requirement, why the next investment dollar might or
+    might not favor this company relative to those alternatives; and identify redundancy,
+    substitutes, and duplicated exposure with other governed holdings, extending item 7's
+    customer/supplier/competitor/substitute analysis to a capital-priority lens specifically. **This
+    comparison must preserve uncertainty and judgment in prose and must not produce a numerical
+    score, a composite index, or an automatic ranking of any kind** — consistent with §G's existing
+    prohibition on any ranking or composite score. It remains advisory research evidence only: it
+    recommends no trade, and it does not itself change any tier, target, allocation, or policy.
 
 ### C. Batch comparison requirements
 
@@ -211,6 +226,15 @@ META, and AMZN:
    observation requires its own separate, later, explicit governance decision.
 9. Common correlated-loss mechanisms across the batch and against the already-covered semis-cluster
    names.
+10. **A capital-priority comparison across all four companies** (added following an independent
+    exact-head review), addressing the same business-quality-versus-capital-priority separation and
+    next-best-use-of-capital discussion required per §B.23 individually, but at the batch level:
+    whether the four companies, taken together, compete for capital against each other or against
+    other already-covered governed holdings; where redundancy or duplicated capital-priority
+    reasoning exists among them; and why the next investment dollar might or might not favor one of
+    the four over another or over an already-covered alternative. **Presented as advisory prose and
+    uncertainty-preserving judgment only — never as a score, index, or ranking**, consistent with
+    §B.23 and §G.
 
 **The comparison artifact must remain analytical and advisory only.** It must not mechanically score
 or rank the four companies, must not declare a preferred holding, must not alter a tier, target, role,
