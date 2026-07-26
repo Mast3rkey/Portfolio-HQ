@@ -1106,7 +1106,7 @@ workstreams:
       architecture, or allocation scenario exists or is authorized to exist
       yet.
     active_branch: claude/ws-0005-capability-review-rcj430
-    active_pr: null
+    active_pr: 162
     last_verified_main_sha: b20922bc51e1040081505f236065cb4fe5b23a33
     last_verified_date: "2026-07-26"
     authorized_by: >
