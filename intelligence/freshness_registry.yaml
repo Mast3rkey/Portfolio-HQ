@@ -146,3 +146,27 @@ tickers:
     filing_trigger_profile: domestic_issuer_v1
     refresh_policy: path_a_fixed_scope_v1
     monitoring_enabled: false
+  - ticker: ETN
+    company_record_authority: PI-0026
+    enrollment_authority: PI-0026
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: VRT
+    company_record_authority: PI-0026
+    enrollment_authority: PI-0026
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: PWR
+    company_record_authority: PI-0026
+    enrollment_authority: PI-0026
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false

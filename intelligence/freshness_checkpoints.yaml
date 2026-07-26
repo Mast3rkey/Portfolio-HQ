@@ -81,3 +81,15 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: ETN
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: VRT
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: PWR
+    checkpoint_status: pending
+    channels: {}
+    established_by: null

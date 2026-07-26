@@ -928,7 +928,177 @@ workstreams:
           official-and-provisional Monday allocation-check package — eligible following step H's
           completion, but deferred, unbegun, and subject to its own separate implementation,
           review, and execution gates).
-        pr: 161
+
+          **Batch 4 implementation drafted 2026-07-26 (not merged, not complete).** Preflight for
+          this implementation independently re-confirmed: repository identity (`Mast3rkey/Portfolio-HQ`);
+          origin fetched and pruned; working tree clean; local `main` and `origin/main` both containing
+          `PI-0026`'s merge commit `92ea06705b1707d8b7644e311e4f086f462e9573` as an ancestor (0 ahead/0
+          behind); zero open pull requests (no overlap with ETN/VRT/PWR Batch 4); `PI-0026` read in full.
+          Implementation branch `claude/ws0005-batch4-etn-vrt-pwr-impl`, base verified `origin/main`
+          `92ea06705b1707d8b7644e311e4f086f462e9573`. WebFetch re-confirmed blocked (HTTP 403) on SEC
+          EDGAR, each company's own investor-relations domain, and a non-target control domain
+          (`example.com`) — the same tool/proxy-level block Batch 1-3 disclosed. Delivered:
+          `intelligence/companies/ETN.yaml`/`.md`, `VRT.yaml`/`.md`, `PWR.yaml`/`.md` (three Company
+          Intelligence records, all `intelligence_validator.py`-clean); one hand-authored batch
+          comparison artifact (`intelligence/BATCH4_POWER_INFRASTRUCTURE_COMPARISON.md`); one
+          freshness-registry and one freshness-checkpoint enrollment row per ticker
+          (`monitoring_enabled: false`, `checkpoint_status: pending`,
+          `enrollment_authority`/`company_record_authority: PI-0026`). All research is WebSearch-sourced
+          or primary-cited-but-not-directly-inspected, explicitly disclosed in each record's
+          Source-access disclosure section — no primary document was directly opened by this session.
+          Conviction ratings: ETN Medium; VRT Medium; PWR Medium — reasoned independently per company
+          from disclosed evidence, not inferred from existing tier placement, per `OPS-0006` §§2/3's
+          zero-based discipline. Material unresolved evidence gaps are disclosed, not silently closed:
+          two research-integrity corrections on ETN (a discarded internally-inconsistent segment-revenue
+          table; a name-collision false lead tracing an apparent Eaton tariff-litigation hit to Judge
+          Richard K. Eaton of the U.S. Court of International Trade, not the company); an unreconciled
+          VRT backlog discrepancy ($15B at Q4 2025 vs. $12.45B at Q1 2026); and, for PWR, a stale
+          (FY2023) customer-concentration figure, a stale (2023-09) confirmed S&P rating action, two
+          legacy litigation matters of unconfirmed current status, and an unresolved FY2025 adjusted-EBITDA
+          figure. GEV's existing record (`intelligence/companies/GEV.yaml`/`GEV.md`) and its freshness
+          rows are confirmed untouched via `git diff` against the pre-batch base. Independently
+          re-verified before commit: `intelligence_validator.py` (20 companies, all valid),
+          `freshness_validator.py` (OK), full pytest suite (1502/1502), `git diff --check` (clean), and
+          exactly the 9 authorized files changed — `targets.yaml`, `holdings.yaml`, `allocate.py`,
+          `margin_state.py`, every pre-existing Company/Theme Intelligence record (GEV included), and
+          every governance decision file confirmed byte-identical to the pre-batch base. Pushed and
+          opened as draft PR **#166** (`https://github.com/Mast3rkey/Portfolio-HQ/pull/166`) — the
+          structured `active_pr: 166` field below is this entry's authoritative record of the number.
+          Batch 4 is not complete until PR #166 clears exact-head independent review under `OPS-0007`
+          §1's capability-based standard, any required bounded correction and re-review, explicit
+          principal acceptance, marking ready, merge, and post-merge ancestry/scope/validator/test
+          verification. This entry authorizes no fifth Milestone 3 batch, no Milestone 4 work, and no
+          advancement of OPS-0007 §8 step I.
+
+          **Bounded evidence-recovery correction applied 2026-07-26 (PR #166 still open, draft,
+          unmerged).** An independent exact-head review of PR #166's first draft head
+          (`246fa1c8f4436608640b4a3dfbac58393e209b65`) found, per `PI-0026` §D, that the implementation
+          continued to completed Company Intelligence records, conviction ratings, a comparison
+          artifact, and a draft PR after determining no primary source could be opened — the correct
+          response under §D is to try reasonable official alternatives, then stop and return for
+          explicit principal direction, not to proceed. **The original WebSearch-only implementation
+          was not itself corrected or reversed by this entry — it is the retained record of what was
+          producible without primary-source access, and the correction below is layered on top of it,
+          not a claim that the original pass never happened.** The principal explicitly authorized
+          using an independently retained **GPT-5.6 Thinking primary-source audit**
+          (retained at `governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md` as of the second
+          correction pass below) as the bounded PI-0026 evidence-recovery method — this is
+          a narrow, PI-0026-scoped authorization, not a change to the authorized company set (still
+          exactly ETN, VRT, PWR), not an authorization of Batch 5 or Milestone 4, and not a tier/
+          target/cluster/cap/allocation/margin/trade authorization of any kind. **Provenance, stated
+          precisely and not blurred:** the implementing Claude session remained access-blocked
+          throughout, including during this correction, and did not itself open or inspect any
+          primary document at any point; GPT-5.6 Thinking, acting as an independent external auditor,
+          separately inspected official ETN/VRT/PWR documents (Eaton's Q1 2026 results release, Boyd
+          Thermal completion announcement, and Mobility Group/Dana announcement; Vertiv's Q1 2026
+          results release, Q1 2026 Form 10-Q, Q4/FY2025 results release, and refinancing/ratings
+          announcement; Quanta's 2025 Form 10-K and Q1 2026 results release) and reported specific
+          corrections, which this session applied without independently re-verifying them beyond what
+          the audit itself states. One bounded correction commit
+          (`fb0b6886291d4b71562b658af9b068b2f54aee6d`) resolved the audit's four Major findings (M1-M4)
+          across `ETN.yaml`/`.md`, `VRT.yaml`/`.md`, `PWR.yaml`/`.md`, and the comparison artifact —
+          see the retained artifact (path above) for the full finding-by-finding detail and the PR
+          #166 body for an itemized summary of what changed per company. All three conviction ratings
+          were independently reassessed against the corrected evidence, not mechanically preserved,
+          and each remains Medium. Re-verified after the correction: `intelligence_validator.py` (20
+          companies, all valid), `freshness_validator.py` (OK), full pytest suite (1502/1502),
+          `git diff --check` (clean), and `targets.yaml`, `holdings.yaml`, `allocate.py`,
+          `margin_state.py`, `GEV.yaml`/`.md`, GEV's freshness rows, and every governance decision file
+          confirmed byte-identical to the pre-batch base. **Live cumulative file/insertion/deletion/
+          commit counts are intentionally not restated here — they are volatile across correction
+          passes and are maintained authoritatively in the PR #166 body, recomputed against the live
+          PR after each push; do not treat any count in this entry as current without checking the PR
+          directly.** **PR #166 remains open, draft, and unmerged** — the corrected records are not yet
+          accepted, merged, final, or eligible for any PROVISIONAL downstream use per `OPS-0007` §3.
+
+          **Second bounded correction, 2026-07-26 (M5/M6/m3 from the corrected-head review).** An
+          independent exact-head review of the first correction's head (`6c67eb0573d9482a8bfe6e308cd00a8cd4284aca`)
+          — retained verbatim at `governance/audits/PR166_CORRECTED_HEAD_REVIEW_20260726.md`
+          (SHA-256 `6cc720e4982235dfb2533d4304be5870ab4d3c8b9badbe5039b94801d002ef94`), reviewer
+          GPT-5.6 Thinking, verdict CHANGES REQUIRED — found three further issues. **M5 (Major):** PWR's
+          data-center exposure remained materially misstated as entirely indirect; Quanta's official
+          2025 Form 10-K and its official Cupertino Electric (CEI) acquisition materials establish a
+          direct, in-facility data-center channel (CEI: 25+ years of data-center experience, electrical
+          design/installation/commissioning/maintenance, modular-electrical-system manufacturing, more
+          than 20 million square feet of installed data-center electrical systems, hyperscaler/
+          technology customers) distinct from PWR's separate indirect utility/grid channel (AEP) — no
+          percentage of revenue attributable to either channel is asserted. **M6 (Major):** the
+          controlling GPT-5.6 Thinking primary-source audit was referenced as "retained" in this
+          register and the PR body but did not exist anywhere in the repository — corrected by
+          committing both review artifacts verbatim to `governance/audits/` (see paths/SHA-256 above
+          and below). **m3 (Minor):** cumulative PR statistics and commit count had gone stale between
+          commits; this register no longer states volatile cumulative counts for that reason (see
+          above). Corrections applied in one further bounded commit: (a) both review artifacts
+          committed verbatim to `governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md` (SHA-256
+          `84247603636e532aa2bceb01be2a9697fba52fecfc0a82639eae89a5cfd47f90`) and
+          `governance/audits/PR166_CORRECTED_HEAD_REVIEW_20260726.md` (SHA-256 above); (b) `PWR.yaml`/
+          `PWR.md` corrected to distinguish PWR's direct CEI channel from its indirect AEP/utility
+          channel, with new source entries citing the official CEI acquisition release and CEI
+          operating-company profile page (both independently inspected by GPT-5.6 Thinking, not by
+          this Claude session); (c) the comparison artifact's §1, §2, §3, §4, and §12 revised to
+          remove the entirely-indirect PWR framing and reassess overlap/diversification accordingly —
+          PWR's CEI channel is now recognized as partially overlapping with VRT's in-building presence,
+          without ranking, scoring, or recommending any tier/target/cluster/cap/allocation/trade/margin
+          action. `PWR.yaml`'s conviction rating was reassessed again and remains Medium (this
+          correction reinforces rather than changes the rationale). **PR #166 remains open, draft, and
+          unmerged** after this second correction as well. A **fresh, exact-head** independent GPT-5.6
+          Thinking (or other `OPS-0007` §1-eligible reviewer) review of this twice-corrected state,
+          followed by explicit principal acceptance, marking ready, merge, and post-merge verification,
+          all remain required before Batch 4 can be considered complete. This entry authorizes no fifth
+          Milestone 3 batch, no Milestone 4 work, and no advancement of `OPS-0007` §8 step I — unchanged
+          from the prior entries above.
+
+          **Third bounded correction, 2026-07-26 (CI-cleanliness and provenance normalization,
+          no substantive change).** Exact-head CI on the second-correction head
+          (`8ff06c73524329855d6a34850cd1aa1cb34ab6f0`) failed: the repository's `test` workflow runs
+          `git diff --check` under `set -euo pipefail` before any test execution, and both newly
+          retained artifacts under `governance/audits/` contained intentional Markdown hard-line-break
+          trailing whitespace, which that gate treats as an error, aborting the job before pytest ran.
+          Independently confirmed via the failed job's own logs that trailing whitespace in exactly
+          those two files was the sole cause — no other file, workflow, test, or production-code change
+          was involved. Per explicit principal direction, quality/truth/provenance/repository integrity
+          take priority over preserving the original external-attachment bytes as such — the substantive
+          audit content plus a truthful chain of custody is what matters. Trailing Markdown whitespace
+          only was removed from both retained files; no word, punctuation, heading, paragraph order,
+          URL, finding, classification, verdict, cited SHA, date, or other substantive content was
+          changed. Verified before commit: `diff -Z` (ignoring only trailing whitespace) between each
+          original attachment and its normalized committed copy returned zero differences (semantic
+          identity confirmed); re-normalizing the normalized copy was a no-op (idempotent); line counts
+          identical (185 lines / 119 lines, unchanged). No CI workflow file was modified and no CI rule
+          was weakened or excepted -- the underlying `git diff --check` gate remains fully in force for
+          every future change, including any future retained artifact.
+
+          Per-artifact record:
+          - **`governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md`** — reviewer GPT-5.6 Thinking;
+            review type independent primary-source recovery audit; reviewed/audited head
+            `246fa1c8f4436608640b4a3dfbac58393e209b65`; verdict CHANGES REQUIRED; original
+            external-attachment SHA-256 (source-artifact provenance, the file as originally supplied to
+            this session) `84247603636e532aa2bceb01be2a9697fba52fecfc0a82639eae89a5cfd47f90`; normalized
+            committed-file SHA-256 (repository copy, after this correction)
+            `9787050266aae7e96906d16bea69452d86ca9b33c575fdbd9d4c03ca8074a4fb`; normalization performed:
+            trailing Markdown whitespace removed only, substantive text unchanged; reason: repository
+            `git diff --check` and CI cleanliness; verification method: `diff -Z` semantic-identity
+            comparison against the original attachment (zero differences) plus an idempotency re-check.
+          - **`governance/audits/PR166_CORRECTED_HEAD_REVIEW_20260726.md`** — reviewer GPT-5.6 Thinking;
+            review type independent exact-head review; reviewed head
+            `6c67eb0573d9482a8bfe6e308cd00a8cd4284aca`; verdict CHANGES REQUIRED; original
+            external-attachment SHA-256 (source-artifact provenance)
+            `6cc720e4982235dfb2533d4304be5870ab4d3c8b9badbe5039b94801d002ef94`; normalized committed-file
+            SHA-256 (repository copy, after this correction)
+            `0514163d4d40c3aa69ecb5d9e90a895d88bcafdf09de5ecb07e795941350b294`; normalization performed:
+            trailing Markdown whitespace removed only, substantive text unchanged; reason: repository
+            `git diff --check` and CI cleanliness; verification method: `diff -Z` semantic-identity
+            comparison against the original attachment (zero differences) plus an idempotency re-check.
+
+          The normalized committed-file checksums above are **not** presented as matching the original
+          external-attachment bytes -- they are a distinct, newly-computed identity for the
+          text-normalized repository copies, kept alongside (not in place of) the original
+          external-attachment checksums, which remain the source-artifact provenance record. **PR #166
+          remains open, draft, unmerged, incomplete, and unaccepted** after this normalization pass; no
+          Intelligence record, policy, allocation, margin, or execution content changed in this pass.
+          This entry authorizes no fifth Milestone 3 batch, no Milestone 4 work, and no advancement of
+          `OPS-0007` §8 step I.
+        pr: 166
         status: in_progress
         date: "2026-07-26"
       - gate: milestone-4-portfolio-relationship-mapping
@@ -1281,6 +1451,65 @@ workstreams:
       fifth Milestone 3 batch, no Milestone 4 work, and no advancement of
       OPS-0007 §8 step I.
 
+      **PI-0026 merged 2026-07-26 via PR #165 — effective.** Independently
+      re-confirmed at this implementation's own preflight: `origin/main`
+      contains PI-0026's merge commit `92ea06705b1707d8b7644e311e4f086f462e9573`
+      as an ancestor; zero open pull requests existed (no overlap with
+      ETN/VRT/PWR); `governance/decisions.yaml` and `CLAUDE.md` both carry the
+      `PI-0026` entry. **PI-0026's research-implementation PR is now open:
+      draft PR #166** (`claude/ws0005-batch4-etn-vrt-pwr-impl`, base
+      `92ea06705b1707d8b7644e311e4f086f462e9573`), containing the nine
+      authorized draft deliverables (one YAML + one Markdown record per
+      company, one comparison artifact, one freshness-registry row and one
+      freshness-checkpoint row per company). **These records exist only on
+      PR #166's draft branch — they are not yet accepted, merged, final, or
+      eligible for PROVISIONAL downstream use** per `OPS-0007` §3: PR #166
+      still requires its own independent exact-head review under `OPS-0007`
+      §1's capability-based standard, any bounded correction and re-review,
+      explicit principal acceptance, marking ready, merge, and post-merge
+      ancestry/scope/validator/test verification before its records carry
+      any repository authority. No fifth Milestone 3 batch, Milestone 4-9
+      work, or advancement of `OPS-0007` §8 step I is authorized by PI-0026,
+      by PR #166's filing, or by this entry.
+
+      **PR #166 bounded evidence-recovery correction applied 2026-07-26.**
+      An independent exact-head review of PR #166's original draft head
+      found a `PI-0026` §D stop-condition violation (research proceeded to
+      completion after determining no primary source could be opened,
+      rather than stopping for principal direction). The principal
+      explicitly authorized a retained GPT-5.6 Thinking primary-source
+      audit as the bounded PI-0026 evidence-recovery method — narrow in
+      scope: still exactly ETN/VRT/PWR, no Batch 5, no Milestone 4, no
+      tier/target/cluster/allocator/margin authority. One bounded
+      correction commit (`fb0b6886291d4b71562b658af9b068b2f54aee6d`)
+      applied the audit's findings across all three company records and
+      the comparison artifact, with correction provenance stated
+      precisely (this Claude session never opened a primary document,
+      including during the correction; GPT-5.6 Thinking's external audit
+      did). See the `milestone-3-intelligence-completion` gate entry
+      above for the full itemized correction record. PR #166 **remains
+      open, draft, and unmerged**; a fresh exact-head independent review
+      of the corrected state and explicit principal acceptance are both
+      still required before Batch 4 can be considered complete. This
+      correction authorizes no fifth Milestone 3 batch, no Milestone 4
+      work, and no advancement of `OPS-0007` §8 step I.
+
+      **A second bounded correction followed the same day** (M5/M6/m3
+      from a further independent exact-head review, retained at
+      `governance/audits/PR166_CORRECTED_HEAD_REVIEW_20260726.md`,
+      alongside the first review retained at
+      `governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md`) —
+      correcting a surviving misstatement that PWR's data-center
+      exposure was entirely indirect (Quanta's CEI subsidiary performs
+      direct, in-facility data-center electrical work) and retaining
+      both controlling review artifacts under `governance/audits/` for
+      the first time. See the `milestone-3-intelligence-completion` gate
+      entry above for full detail. PR #166 **remains open, draft, and
+      unmerged** after this second correction as well; live cumulative
+      file/insertion/deletion/commit counts are maintained in the PR body
+      only, not restated here, since they go stale between correction
+      passes.
+
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
       crypto_shares.BTC = 0.00460473 (a verified broker-sync re-add on
@@ -1406,9 +1635,9 @@ workstreams:
       authorized to run by this entry. A fourth Milestone 3 batch and
       Milestones 4 through 9 remain unauthorized and blocked, unaffected by
       this reconciliation.
-    active_branch: claude/pr-163-reconciliation-8rqkhx
-    active_pr: 164
-    last_verified_main_sha: 603e957cf8ea4ddebf070926ef3996f827f9e7e9
+    active_branch: claude/ws0005-batch4-etn-vrt-pwr-impl
+    active_pr: 166
+    last_verified_main_sha: 92ea06705b1707d8b7644e311e4f086f462e9573
     last_verified_date: "2026-07-26"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
@@ -1457,6 +1686,16 @@ workstreams:
       Milestone 4-9 execution, and does not itself review, correct, mark
       ready, or merge PR #161. This reconciliation itself does not review,
       correct, mark ready, or merge itself, and does not begin OPS-0007 §5
-      work.
+      work. **PI-0026 (Milestone 3, Batch 4 — ETN, VRT, PWR — evidence
+      development only) has merged**, via PR #165 (merge commit
+      92ea06705b1707d8b7644e311e4f086f462e9573) — confirmed status: Accepted
+      and effective; it authorizes exactly that fourth batch's governance
+      package and its research implementation PR **#166** (draft, unmerged,
+      containing the nine authorized draft deliverables), gated on PR #166's
+      own independent exact-head review under `OPS-0007` §1, any bounded
+      correction and re-review, and explicit principal acceptance before
+      merge. Neither PI-0026 nor PR #166's filing authorizes a fifth
+      Milestone 3 batch, any Milestone 4-9 work, or advancement of `OPS-0007`
+      §8 step I.
     supersedes: null
     superseded_by: null
