@@ -1,0 +1,103 @@
+# operations/provisional/ws0005_provisional_target_scenario_20260726.yaml
+#
+# PROVISIONAL, ADVISORY, SCENARIO-ONLY. Authorized by OPS-0007 §4/§5.
+# NOT production policy. NOT targets.yaml. Never read by allocate.py's default
+# workflow — usable only via an explicit, separately authorized future PR that
+# loads this file as an in-memory scenario `targets` dict and passes it to
+# allocate.py's existing pure functions (build_roster(), plan()), per
+# OPS-0007 §5's authorized approach. targets.yaml remains byte-untouched.
+#
+# Schema: intentionally identical in shape to targets.yaml (same top-level
+# keys: regime_ticker, tiers, crypto, caps, levels, gates, margin) so it is
+# loadable by the existing build_roster()/plan() functions without any
+# allocate.py change, per OPS-0007 §5's own finding that plan()/build_roster()
+# already accept `targets` as an explicit parameter. No new top-level key is
+# added — all provenance/methodology/evidence metadata lives in the
+# accompanying WS0005_PRELIMINARY_PORTFOLIO_ARCHITECTURE_20260726.md and
+# WS0005_CURRENT_POLICY_RECONCILIATION_20260726.md files instead, so this
+# file stays strictly schema-compatible.
+#
+# WEIGHTS: identical to production targets.yaml for every tier and every
+# ticker. This is a deliberate, evidence-based finding, not an oversight or a
+# placeholder: the preliminary zero-based review documented in
+# WS0005_PRELIMINARY_PORTFOLIO_ARCHITECTURE_20260726.md found the evidence
+# gathered for all 17 ACCEPTED/PROVISIONAL-Intelligence-covered holdings
+# consistent with — not requiring a change from — their current governed
+# tier and target. One directional observation (AVGO's evidence trending
+# toward the stronger end of T2, TMO's toward the more moderate end) is
+# recorded narratively in the reconciliation artifact but is NOT implemented
+# as a target change here, because targets.yaml's tier structure applies one
+# uniform weight_pct to every ticker in a tier — expressing a single-ticker
+# differentiated weight would require either a full tier reassignment (a
+# larger, non-preliminary claim this pass does not make) or a schema change
+# (out of scope, not authorized). Net target-weight change among the 17
+# covered holdings: 0.00 percentage points — reconciles trivially against
+# production. Every one of the other 48 roster entries (45 non-covered
+# companies + 3 ETFs) is NOT INDEPENDENTLY RE-DERIVED and is carried forward
+# byte-identical to targets.yaml, per OPS-0007 §4's explicit requirement.
+#
+# Roster: byte-identical to targets.yaml — no ticker added, removed, or
+# substituted. Margin/leverage/buffer-floor gates: byte-identical to
+# targets.yaml (1.8x cap, 30% floor, unchanged). Any future allocation run
+# using this file must be run with margin requested = $0, per OPS-0007 §5.
+#
+# Evidence cutoff / provenance: see the Mandatory provisional metadata
+# section of WS0005_PRELIMINARY_PORTFOLIO_ARCHITECTURE_20260726.md for
+# creation date, source Intelligence commit heads, holdings-snapshot date,
+# assumptions, unresolved evidence, and expiration/supersession rule.
+
+regime_ticker: QQQ
+
+tiers:
+  T1:
+    weight_pct: 3.35
+    tickers: [ASML, TSM, MSFT, GOOGL, META, NVDA, GEV, LLY, V, COST]
+  T2:
+    weight_pct: 1.65
+    tickers: [AVGO, AMZN, CEG, PWR, ISRG, TMO, DHR, SYK, MA, BRK.B, WMT, EQIX, MLM, AAPL]
+  ETF:
+    weight_pct: 2.30
+    tickers: [SPY, QQQ, GLD]
+  band:
+    weight_pct: 0.75
+    cap_multiple: 1.25
+    tickers: [KLAC, LRCX, AMAT, AMD, MU, MRVL, WDC, VRT, ETN, CAT, GNRC, IBM, NOW,
+              CRM, ORCL, NFLX, SHOP, CRWD, PANW, UBER, JPM, HOOD, XOM, CVX,
+              RTX, ABBV, MRK, JNJ, GILD, UNH, BABA, SKHY, DELL]
+  spec:
+    weight_pct: 1.00
+    fixed: true
+    tickers: [INTC, SPCX, RKLB, TSLA, PLTR]
+
+crypto:
+  sleeve_pct: 10.0
+  coins: [BTC, ETH, SOL]
+  coingecko_ids: {}
+
+caps:
+  clusters:
+    - name: semis
+      pct: 25.0
+      tickers: [ASML, TSM, NVDA, AVGO, AMD, MU, MRVL, KLAC, LRCX, AMAT, WDC, INTC, SKHY]
+    - name: power_infra
+      pct: 20.0
+      tickers: [GEV, ETN, VRT, PWR]
+    - name: oil
+      pct: 20.0
+      tickers: [XOM, CVX]
+
+levels:
+  rung_atr_multipliers: [1.0, 2.0, 3.0]
+  practicality_cap_pct: 25
+  swing_low_sessions: 60
+
+gates:
+  min_lot_dollars: 25
+  trend_rsi_override: 30
+  earnings_blackout_days: 7
+  trim_rsi: 60
+  t1t2_trim_mult: 1.5
+
+margin:
+  leverage_cap: 1.8
+  buffer_floor_pct: 30.0
