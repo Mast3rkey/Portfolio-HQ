@@ -1368,7 +1368,7 @@ workstreams:
       Milestones 4 through 9 remain unauthorized and blocked, unaffected by
       this reconciliation.
     active_branch: claude/pr-163-reconciliation-8rqkhx
-    active_pr: null
+    active_pr: 164
     last_verified_main_sha: 603e957cf8ea4ddebf070926ef3996f827f9e7e9
     last_verified_date: "2026-07-26"
     authorized_by: >
