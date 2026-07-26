@@ -29,27 +29,34 @@ alternative ranking, and does not create a composite score of any
 kind** — per `PI-0026` §C's explicit instruction and the Constitution's
 standing prohibition on predictive research or opportunity maps.
 
-**Bounded correction, 2026-07-26 (provenance statement).** This
-document's original draft relied on the same WebSearch-only research
-as `ETN.yaml`/`.md`, `VRT.yaml`/`.md`, and `PWR.yaml`/`.md` before their
-2026-07-26 correction. This Claude session remained access-blocked
-throughout -- it did not open or inspect any primary document at any
-point, including for this correction pass. Separately, **GPT-5.6
-Thinking, acting as an independent external auditor, inspected official
-documents for all three companies** (see each company's own `sources[]`
-for the exact URLs) and reported specific factual corrections back
-through a retained audit artifact. The principal explicitly authorized
-treating that retained, independently inspected audit as the bounded
-PI-0026 evidence-recovery method. This document is revised to remove or
-correct every passage that relied on since-corrected premises (PWR
-having no manufacturing activity, VRT's unsupported backlog decline,
-VRT's incorrect 0.8x-1.0x current leverage, ETN's Boyd Thermal close
-date being unresolved, and Eaton's Mobility Group transaction being
-framed as a simple standalone spin) -- see §1, §2, §4, §5, §8, §12, and
-§14 below for the specific corrections. The high-level conclusion that
-the four companies occupy distinct, complementary positions is
-retained only because it survives being rebuilt on the corrected facts,
-not because it was mechanically carried forward.
+**Bounded corrections, 2026-07-26 (provenance statement, two separate
+passes).** This document's original draft relied on the same
+WebSearch-only research as `ETN.yaml`/`.md`, `VRT.yaml`/`.md`, and
+`PWR.yaml`/`.md` before their 2026-07-26 corrections. This Claude
+session remained access-blocked throughout -- it did not open or
+inspect any primary document at any point, including for either
+correction pass. **First pass:** GPT-5.6 Thinking, acting as an
+independent external auditor, inspected official documents for all
+three companies (see each company's own `sources[]` for the exact
+URLs) and reported specific factual corrections, applied here to
+remove or correct every passage that relied on since-corrected premises
+(PWR having no manufacturing activity, VRT's unsupported backlog
+decline, VRT's incorrect 0.8x-1.0x current leverage, ETN's Boyd Thermal
+close date being unresolved, and Eaton's Mobility Group transaction
+being framed as a simple standalone spin). **Second pass:** a follow-up
+independent exact-head review by GPT-5.6 Thinking found this document's
+first-pass correction still materially misstated PWR's data-center
+exposure as entirely indirect, and reported a further correction,
+applied here across §1, §2, §3, §4, and §12 below. Both reviews are
+retained verbatim at
+`governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md` and
+`governance/audits/PR166_CORRECTED_HEAD_REVIEW_20260726.md`. The
+principal explicitly authorized treating both retained, independently
+inspected reviews as the bounded PI-0026 evidence-recovery method. The
+high-level conclusion that the four companies occupy predominantly
+distinct, complementary positions is retained only because it survives
+being rebuilt on the corrected facts across both passes, not because it
+was mechanically carried forward.
 
 **GEV boundary, restated explicitly.** GEV is the `power_infra`
 cluster's fourth and only-previously-covered member (`PI-0007`,
@@ -125,14 +132,26 @@ not solely third-party equipment PWR installs. PWR builds the
 infrastructure that carries and delivers the power ETN's switchgear/
 distribution equipment and GEV's turbines generate, while VRT's
 equipment sits inside the data center consuming that delivered power.
-**Read together, GEV (generation) → ETN (distribution/switching) → PWR
-(transmission/grid construction, plus some of its own transformer/
-component manufacturing) → VRT (in-building thermal/power management)
-trace a genuinely sequential path from power generation to the chip
-actually being cooled** — a materially different comparison shape than
-any prior batch, where the shared driver (AI-data-center power/
-electricity demand) manifests as a **supply chain**, not merely a
-correlated basket of similarly-exposed equipment makers.
+**Second correction, 2026-07-26:** the "sequential path" framing below
+is not as clean a hand-off as originally described — a separate
+independent review found that PWR, through its CEI subsidiary, also
+performs direct, in-facility electrical design/installation/
+manufacturing work for data centers (more than 20 million square feet
+installed, per CEI's own official materials), meaning PWR's own work
+sometimes extends inside the facility alongside VRT's, not only up to
+the property line. **Read together, GEV (generation) → ETN
+(distribution/switching) → PWR (transmission/grid construction, plus
+some of its own transformer/component manufacturing, **and** direct
+in-facility electrical work via CEI) → VRT (in-building thermal/power
+management) trace a path from power generation to the chip actually
+being cooled that is sequential in its dominant pattern but not a
+strict one-company-per-stage hand-off** — PWR's CEI channel overlaps
+with the "in-building" stage VRT also occupies. This remains a
+materially different comparison shape than any prior batch, where the
+shared driver (AI-data-center power/electricity demand) manifests as a
+**supply chain with a partial overlap at one stage**, not a strictly
+sequential chain or merely a correlated basket of similarly-exposed
+equipment makers.
 
 ## 2. Direct versus indirect data-center exposure
 
@@ -141,22 +160,29 @@ correlated basket of similarly-exposed equipment makers.
 | VRT | Data center is essentially the whole business (cooling/power management sold directly into data-center builds); AI/hyperscaler-driven liquid cooling is the current primary growth narrative | **Most direct** — data center is not a segment, it is nearly the entire company |
 | GEV (existing context) | Electrification segment discloses data-center-specific order figures (>$5B combined H1 2026 orders per GEV's own record); Power segment's gas-turbine demand is driven by broader grid/generation needs, only partly data-center-specific | Direct in Electrification, more indirect/broader in Power |
 | ETN | Electrical segment discloses data center as its fastest-growing named vertical (Electrical backlog +48% YoY, Q1 2026, per ETN's official results release; a ~240% YoY data-center-order-growth figure is separately reported in secondary commentary but an independent primary-source audit could not locate it in Eaton's official Q1 2026 release — see `ETN.yaml`/`ETN.md`), and non-data-center end markets (utility, industrial, institutional) are argued by at least one secondary source to still comprise the majority of Electrical backlog; Aerospace segment has no data-center exposure at all | Partial and diluted — real, but a minority of the whole company by at least one independent read |
-| PWR | Data-center exposure is entirely indirect, via utility/grid-transmission work that serves data-center-driven electricity demand (the AEP 765 kV partnership is explicitly framed around "the rapidly growing data center market," but the work itself is grid infrastructure, not anything installed inside a data center) | **Most indirect** — PWR never sells anything to, or installs anything inside, a data center itself; it builds the grid that feeds it |
+| PWR | **Corrected 2026-07-26 — two distinct channels, not one.** (A) **Direct, in-facility**: via Cupertino Electric, Inc. (CEI), Quanta designs, engineers, procures, constructs, installs, commissions, maintains, and manufactures modular electrical systems for data centers, serving hyperscaler and technology customers directly — CEI has more than 25 years of data-center industry experience and has installed electrical systems in more than 20 million square feet of data centers, per Quanta's own official 2025 Form 10-K and CEI acquisition materials. (B) **Indirect**: utility/grid-transmission work serving data-center-driven electricity demand from outside the facility (the AEP 765 kV partnership). This record's first correction pass still described PWR's exposure as entirely indirect — that was itself corrected by a second independent review; see `PWR.yaml`/`PWR.md` for full detail. | **Both direct and indirect** — PWR is not the batch's most-indirect member; it has genuine, official, in-facility electrical work (Channel A) alongside grid-side work (Channel B). No percentage of revenue attributable to either channel or to data centers overall is disclosed. |
 
 **No company in this batch discloses a clean percentage of revenue
 attributable to data centers specifically** — VRT's concentration is
 qualitative/structural (the business is built around data centers) but
 not quantified as a percentage; ETN discloses order-growth rates, not
-revenue share; PWR's exposure is a named contractual relationship
-(AEP) without a disclosed dollar allocation to data-center-specific
-work within that broader transmission agreement.
+revenue share; PWR's exposure spans a direct, named acquisition (CEI)
+and an indirect, named contractual relationship (AEP), with no
+disclosed dollar or percentage allocation for either channel.
 
 ## 3. Utility and grid-capital-spending exposure
 
 PWR is the most directly levered to utility capital-spending cycles by
-business model — its entire revenue is contract-services work for
-utilities, telecom carriers, and pipeline operators, evidenced
-concretely by the AEP $72B 2026-2030 capital-plan partnership. GEV's
+business model — the large majority of its revenue is contract-services
+work for utilities, telecom carriers, and pipeline operators, evidenced
+concretely by the AEP $72B 2026-2030 capital-plan partnership.
+**Corrected 2026-07-26:** this is not PWR's entire revenue base — its
+official customer end-market mix discloses Technology, Manufacturing
+and Communications at 13% of revenue, and its CEI subsidiary sells
+directly to hyperscaler/technology customers (see §2 and §4) — but
+Utility and Power alone is 70% of revenue per the same disclosure, so
+utility-capex-cycle exposure remains PWR's dominant driver even after
+this correction. GEV's
 Power segment (gas turbines, grid equipment) is also directly levered
 to utility/grid capex, evidenced by its own gas-equipment
 backlog-and-slot-reservation growth (100 GW to 116 GW in one quarter,
@@ -170,31 +196,47 @@ delivered to those data centers flows through utility infrastructure.
 
 ## 4. Customer and supplier overlap
 
-**Overlap is more indirect than direct across this batch.** ETN and VRT
-are both named, in their own records, as competitors to *each other*
-in some overlapping categories (electrical/power-management equipment
-for data centers) even while occupying different primary niches (ETN
-broader/diversified, VRT data-center-pure). Neither ETN's nor VRT's own
-record discloses a shared named customer with PWR, and PWR's own record
-discloses no shared named customer with GEV, ETN, or VRT — its
-customers are utilities (AEP being the only one named with a specific,
-dated relationship) and telecom carriers, a different customer class
-than the hyperscalers and colocation operators VRT's record describes.
-**A plausible, un-evidenced structural overlap** (judgment, not a
-sourced claim): the same hyperscalers/data-center developers that are
-VRT's and GEV's Electrification-segment customers are, at the far end
-of the grid, the entities whose electricity demand growth is driving
-utilities like AEP to spend the capital that funds PWR's transmission
-contracts — an indirect demand-chain link, not a disclosed shared
-customer relationship. No supplier overlap was found or asserted across
-any pair in this batch. **Corrected 2026-07-26:** PWR does manufacture
-some equipment of its own (power transformers and related electrical
-components, per its official 2025 Form 10-K), but no record in this
-batch confirms a supplier relationship between PWR and GEV/ETN/VRT --
-PWR's manufacturing capability appears to support its own EPC/service
-work rather than to supply the other three companies, and it may
-separately install GEV's/ETN's/VRT's products on job sites, which none
-of the four companies' own records confirms directly either way.
+**Corrected 2026-07-26: overlap is closer to direct than this document
+previously stated, at least for PWR's CEI channel.** ETN and VRT are
+both named, in their own records, as competitors to *each other* in
+some overlapping categories (electrical/power-management equipment for
+data centers) even while occupying different primary niches (ETN
+broader/diversified, VRT data-center-pure). This document's original
+correction pass stated that PWR's customers were exclusively utilities
+and telecom carriers, "a different customer class than the hyperscalers
+and colocation operators VRT's record describes" — **that statement was
+itself corrected by a second independent review**: PWR's own official
+2025 Form 10-K discloses that its customer base includes hyperscalers
+and technology companies, served directly through CEI's in-facility
+electrical work, and CEI's own operating-company profile confirms more
+than 20 million square feet of installed data-center electrical
+systems. **PWR therefore overlaps with VRT (and, to a lesser extent,
+ETN) on customer class — both may ultimately serve hyperscaler/
+technology-company demand for data-center electrical/thermal
+infrastructure — though no record in this batch discloses a specific
+named shared customer** (no single hyperscaler is named as a customer
+of both PWR/CEI and VRT, or both PWR/CEI and ETN). PWR's AEP
+relationship remains a separate, indirect, utility-side customer
+relationship, distinct from CEI's direct hyperscaler/technology
+customers. **A plausible, un-evidenced structural overlap** (judgment,
+not a sourced claim): the same hyperscalers/data-center developers that
+are VRT's and GEV's Electrification-segment customers, and now also
+understood as CEI's direct customers, are, at the far end of the grid,
+also the entities whose electricity demand growth is driving utilities
+like AEP to spend the capital that funds PWR's transmission
+contracts — meaning PWR may serve the same hyperscaler end-customers
+through two different channels (direct via CEI, indirect via
+utility-funded grid work) without either channel being a disclosed,
+named, shared-customer relationship with GEV/ETN/VRT. No supplier
+overlap was found or asserted across any pair in this batch: PWR does
+manufacture some equipment of its own (power transformers, related
+electrical components, and CEI's modular electrical systems), but no
+record in this batch confirms a supplier relationship between PWR and
+GEV/ETN/VRT — PWR's manufacturing capability appears to support its own
+EPC/service work rather than to supply the other three companies, and
+it may separately install GEV's/ETN's/VRT's products on job sites,
+which none of the four companies' own records confirms directly either
+way.
 
 ## 5. Backlog composition and execution risk
 
@@ -351,21 +393,30 @@ identified across all four records.
 ## 12. Genuine diversification versus duplicated exposure
 
 **This batch's clearest finding is that the four companies are
-functionally complementary, not duplicative, along the value chain
-described in §1** — GEV generates power, ETN distributes/switches it,
-PWR builds and maintains the grid that carries it, and VRT manages it
-(thermally and electrically) once it reaches the building housing the
-compute. Holding all four is not the same as holding four versions of
-the same equipment-manufacturer bet: PWR in particular is a genuinely
-different economic animal (labor-intensive services vs. equipment
-manufacturing) that would be lost entirely if the cluster consisted
-only of GEV/ETN/VRT. Within the equipment-manufacturer subset, ETN and
-VRT show the most business-model overlap (both are named as competitors
-to each other in some product categories), while GEV's broader
-power-generation scope and PWR's primarily-services model (corrected
-2026-07-26 to acknowledge PWR's own secondary, still-subordinate
-manufacturing capability -- see §1) each add distinct exposure the
-other three do not replicate. **This finding is about
+predominantly complementary, not duplicative, along the value chain
+described in §1 — though with one genuine overlap point corrected
+2026-07-26.** GEV generates power, ETN distributes/switches it, PWR
+builds and maintains the grid that carries it (and, via CEI, also
+performs direct in-facility electrical work), and VRT manages power and
+thermal load once it reaches the building housing the compute. Holding
+all four is not the same as holding four versions of the same
+equipment-manufacturer bet: PWR in particular remains a genuinely
+different economic animal by primary function (labor-intensive services
+vs. equipment manufacturing) that would be lost largely, though not
+entirely, if the cluster consisted only of GEV/ETN/VRT — CEI's direct
+data-center electrical work is the one point where PWR's exposure is
+not fully distinct from VRT's in-building presence, even though the two
+companies sell different things (VRT: thermal/power-management
+equipment; PWR/CEI: electrical-system design, installation, and
+modular-system manufacturing). Within the equipment-manufacturer
+subset, ETN and VRT show the most business-model overlap (both are
+named as competitors to each other in some product categories), while
+GEV's broader power-generation scope and PWR's primarily-services model
+(corrected 2026-07-26 to acknowledge both PWR's own secondary,
+still-subordinate manufacturing capability and its direct, not merely
+indirect, data-center customer channel -- see §§1-2) each add
+substantial distinct exposure the other three do not replicate, even
+after accounting for the CEI/VRT overlap point. **This finding is about
 structural/economic function, not measured price correlation** — no
 correlation coefficient was computed for any pair in this batch,
 consistent with `OPS-0006` §4's explicit distinction between the two
@@ -473,12 +524,17 @@ deployment-timing conclusion of any kind.
 ETN, VRT, and PWR — together with existing-context GEV — complete
 first-coverage research for the entire governed `power_infra` cluster.
 The batch's clearest structural finding is that the four companies
-occupy genuinely distinct, largely complementary positions across the
+occupy predominantly distinct, complementary positions across the
 power-generation-to-data-center value chain (§1), bound together by a
 real, independently-corroborated shared demand driver rather than by
-operational similarity (§13). Each company carries its own,
-company-specific set of disclosed risks and evidence gaps, documented
-individually in `ETN.yaml`/`.md`, `VRT.yaml`/`.md`, and `PWR.yaml`/`.md`.
+operational similarity (§13) -- with one genuine, corrected overlap
+point: PWR, through its Cupertino Electric (CEI) subsidiary, performs
+direct, in-facility electrical work for data centers that partially
+overlaps with VRT's in-building presence, distinct from PWR's separate
+indirect utility/grid channel (§2, §4, §12). Each company carries its
+own, company-specific set of disclosed risks and evidence gaps,
+documented individually in `ETN.yaml`/`.md`, `VRT.yaml`/`.md`, and
+`PWR.yaml`/`.md`.
 **This document does not rank the four companies, does not recommend
 any tier, target, cluster, cap, holding, allocator, trade, or margin
 action, and does not alter GEV's existing record in any way.** Any

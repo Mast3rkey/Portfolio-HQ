@@ -25,21 +25,31 @@ accordingly.** Quanta's Q2 2026 earnings release is scheduled for
 2026-07-30 -- after this record's drafting date -- and is not reflected
 here; the next scheduled review should incorporate it.
 
-**Bounded correction, 2026-07-26 (provenance statement).** This
-Claude session remained access-blocked throughout -- it did not open
-or inspect any primary document at any point, including for this
-correction pass. Separately, **GPT-5.6 Thinking, acting as an
-independent external auditor, inspected Quanta's official 2025 Form
-10-K and its official Q1 2026 results release** and reported specific
-factual corrections back through a retained audit artifact. The
-principal explicitly authorized treating that retained, independently
-inspected audit as the bounded PI-0026 evidence-recovery method. Every
-correction below is attributed to that external audit, not to this
-Claude session having gained primary-source access -- this session
-applies the audit's findings, it does not independently re-verify them
-beyond what the audit itself states. See `PWR.yaml`'s `review.log` for
-the itemized correction record and `sources[]` for the exact official
-URLs the audit inspected.
+**Bounded corrections, 2026-07-26 (provenance statement, two separate
+passes).** This Claude session remained access-blocked throughout -- it
+did not open or inspect any primary document at any point, including
+for either correction pass. **First pass:** GPT-5.6 Thinking, acting as
+an independent external auditor, inspected Quanta's official 2025 Form
+10-K and its official Q1 2026 results release and reported specific
+factual corrections (manufacturing capability, employee count,
+collective-bargaining coverage, customer concentration, customer
+end-market mix, legacy litigation weighting). **Second pass:** a
+follow-up independent exact-head review by GPT-5.6 Thinking found this
+record's first correction pass still misstated Quanta's data-center
+exposure as entirely indirect, and inspected the same 2025 Form 10-K
+plus Quanta's official Cupertino Electric acquisition release and CEI
+operating-company profile page to establish a direct, in-facility
+data-center channel (see "Data-center exposure" below). Both reviews
+are retained verbatim at `governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md`
+and `governance/audits/PR166_CORRECTED_HEAD_REVIEW_20260726.md`. The
+principal explicitly authorized treating both retained, independently
+inspected reviews as the bounded PI-0026 evidence-recovery method.
+Every correction below is attributed to one of these external reviews,
+not to this Claude session having gained primary-source access -- this
+session applies the reviews' findings, it does not independently
+re-verify them beyond what each review itself states. See `PWR.yaml`'s
+`review.log` for the itemized correction record and `sources[]` for
+the exact official URLs inspected.
 
 ## Business summary
 
@@ -129,23 +139,57 @@ backlog ($36.2 billion) and approaches total company backlog, strongly
 suggesting the original source conflated a different metric. **This
 figure is not used anywhere else in this record.**
 
-## Data-center and grid demand -- the AEP partnership
+## Data-center exposure -- two distinct channels, corrected 2026-07-26
 
-The clearest, most specific evidence of Quanta's data-center-adjacent
-exposure is a **named, contractual relationship**, not a general market
-narrative: in November 2025, Quanta and American Electric Power (AEP)
-announced a strategic partnership comprising (a) a Cooperation and
-Commitment Agreement for 765 kV and other high-voltage transmission
+**This record's first correction pass (2026-07-26) still described
+Quanta's data-center exposure as entirely indirect -- that
+characterization was itself materially wrong, and is corrected here by
+a second independent primary-source review** (GPT-5.6 Thinking,
+retained at `governance/audits/PR166_CORRECTED_HEAD_REVIEW_20260726.md`).
+Quanta has **two distinct data-center-relevant channels**, not one:
+
+**Channel A -- direct, in-facility electrical work, through Cupertino
+Electric, Inc. (CEI).** Quanta's official 2025 Form 10-K states the
+company provides design and installation of electrical systems for
+large load centers, including data centers, that its customer base
+includes hyperscalers and technology companies, and that the CEI
+acquisition increased demand for Quanta's critical-path electrical
+design and installation solutions from the technology and data-center
+industry. Quanta's own official CEI acquisition release and CEI's
+operating-company profile page state CEI has more than 25 years of
+data-center industry experience, designs and installs critical
+electrical systems, has installed electrical systems in more than 20
+million square feet of data centers, and is a custom manufacturer of
+modular electrical systems for large-scale data centers. This is real,
+official, in-facility data-center work -- electrical-system design,
+engineering, procurement, construction, installation, commissioning,
+maintenance, and modular-electrical-system manufacturing -- sold
+directly to hyperscaler and technology customers, not merely grid
+infrastructure serving data centers from the outside. See the M&A
+section below for the acquisition's own terms.
+
+**Channel B -- indirect utility/grid exposure, evidenced by the AEP
+partnership.** In November 2025, Quanta and American Electric Power
+(AEP) announced a strategic partnership comprising (a) a Cooperation
+and Commitment Agreement for 765 kV and other high-voltage transmission
 EPC work, explicitly tied to AEP's $72 billion 2026-2030 capital plan
 and "the rapidly growing data center market" -- with Quanta described
 in the release as the most experienced 765 kV constructor in the United
 States -- and (b) a Development Services Agreement to expand domestic
 manufacturing capacity for extra-high-voltage transformers and
-breakers. This is a verifiable, named commercial relationship, distinct
-from the more diffuse "we serve data-center-adjacent utility demand"
-framing found for some peers. Quanta also installed more than 6,100 MW
-of domestic solar-generating capacity in 2025 (a self-reported figure),
+breakers. This is a verifiable, named commercial relationship, but it
+is grid/transmission infrastructure that serves data-center-driven
+electricity demand from the utility side -- distinct from Channel A's
+inside-the-facility work. Quanta also installed more than 6,100 MW of
+domestic solar-generating capacity in 2025 (a self-reported figure),
 work now folded into the Electric segment post-reorganization.
+
+**No percentage of total Quanta revenue attributable to data centers
+(Channel A, Channel B, or combined) is disclosed or estimated anywhere
+in this record.** The correction here is about the existence and
+nature of direct in-facility exposure, not its size relative to
+Quanta's total business, which remains genuinely primarily a
+utility/grid-services company by revenue.
 
 ## Customers, concentration, and competitors
 
@@ -239,9 +283,18 @@ $1.54 billion upfront (roughly $1.3 billion cash plus approximately
 earnout of up to $200 million on performance targets -- CEI, founded
 1954 and headquartered in San Jose, is described as the sixth-largest
 electrical solutions provider in the U.S., serving technology,
-renewable-energy, and commercial customers, and "joins fellow solar
-contractors Blattner, Ryan Companies and RPCS under the Quanta banner"
-(confirming Blattner Energy, a large utility-scale solar/wind EPC firm,
+renewable-energy, and commercial customers. **Corrected 2026-07-26:**
+CEI is not merely a general technology/renewables acquisition -- per
+Quanta's own official acquisition release and CEI's own operating-company
+profile page, CEI has more than 25 years of data-center industry
+experience, designs and installs critical electrical systems, has
+installed electrical systems in more than 20 million square feet of
+data centers, and is a custom manufacturer of modular electrical
+systems for large-scale data centers -- CEI is Quanta's direct,
+in-facility data-center channel (see the section above). CEI "joins
+fellow solar contractors Blattner, Ryan Companies and RPCS under the
+Quanta banner" (confirming Blattner Energy, a large utility-scale
+solar/wind EPC firm,
 as a prior Quanta acquisition; its transaction date was not found in
 this research pass). Smaller, more recently named deals ("Tri-City and
 Wilson," cited in a single source as enhancing load-center/
@@ -368,15 +421,17 @@ in this record, and this record does not recommend any change to it.
 - **Correlated-loss mechanism with ETN/VRT:** independently corroborated
   across multiple third-party sources that group Quanta with Eaton and
   Vertiv specifically as complementary plays on the same AI-data-center
-  power-buildout demand driver (Quanta providing physical grid/
-  power-delivery construction; Vertiv providing modular/prefabricated
-  power systems; Eaton providing power-management equipment). This is a
-  distinct, named, cross-source-corroborated shared driver, directly
-  relevant to the existing `power_infra` cluster-cap rationale -- **no
-  price-correlation coefficient was computed in this research pass**;
-  this is structural/economic overlap evidence, not measured historical
-  price correlation, consistent with `OPS-0006`'s own distinction
-  between the two.
+  power-buildout demand driver (Quanta providing both physical grid/
+  power-delivery construction and, via CEI, direct in-facility
+  electrical design/installation/manufacturing for hyperscaler/technology
+  customers, per the correction above; Vertiv providing modular/
+  prefabricated power systems; Eaton providing power-management
+  equipment). This is a distinct, named, cross-source-corroborated
+  shared driver, directly relevant to the existing `power_infra`
+  cluster-cap rationale -- **no price-correlation coefficient was
+  computed in this research pass**; this is structural/economic overlap
+  evidence, not measured historical price correlation, consistent with
+  `OPS-0006`'s own distinction between the two.
 - **Historical drawdown behavior:** not found via WebSearch in this
   pass -- this record did not locate a specific disclosed peak-to-trough
   stock-price drawdown statistic for PWR; direct price-history analysis
@@ -490,11 +545,12 @@ why Medium still holds.
 ## Unresolved items and access limitations
 
 - No primary document was directly opened by **this Claude session** at
-  any point, including during the 2026-07-26 correction pass (see
-  Source-access disclosure above). Two official Quanta documents were
-  independently inspected by GPT-5.6 Thinking during an external audit,
-  and their findings are applied here with that provenance preserved.
-- **Resolved by the 2026-07-26 audit, no longer unresolved:** the
+  any point, including during either the 2026-07-26 correction pass or
+  the second 2026-07-26 correction pass (see Source-access disclosure
+  above). Four official Quanta documents were independently inspected
+  by GPT-5.6 Thinking across two separate external reviews, and their
+  findings are applied here with that provenance preserved.
+- **Resolved by the first 2026-07-26 audit, no longer unresolved:** the
   "does not manufacture equipment at all" characterization (corrected --
   Quanta does manufacture power transformers and related electrical
   components as a secondary capability); employee count (now ~69,500,
@@ -502,6 +558,13 @@ why Medium still holds.
   prior "not found" gap); customer concentration (now current 8%/30%
   figures, not stale FY2023 6%/31% figures); customer end-market mix
   (now disclosed: 70%/17%/13%, previously not found).
+- **Resolved by the second 2026-07-26 review, no longer unresolved:**
+  the "data-center exposure is entirely indirect" characterization
+  this record's first correction pass still carried -- corrected to
+  recognize Quanta's direct, in-facility data-center channel through
+  Cupertino Electric, Inc. (CEI), distinct from its indirect
+  utility/grid channel (AEP). No percentage of revenue attributable to
+  data centers is asserted by either channel.
 - **Downgraded to non-decision-bearing by the audit:** the Maurepas
   Pipeline dispute and PRONATEL arbitration -- not located in the
   inspected 2025 Form 10-K, but their absence is not itself treated as
@@ -529,8 +592,12 @@ why Medium still holds.
 
 See `PWR.yaml`'s `sources[]` for the structured register. Most entries
 disclose that direct primary-document rendering was blocked for this
-Claude session; two entries (the official 2025 Form 10-K and the Q1
-2026 results release) are instead sourced to GPT-5.6 Thinking's
-independent external audit of Quanta's own official documents, with
-that provenance stated explicitly in each entry's `note` field -- this
-Claude session did not itself open either of them.
+Claude session; four entries (the official 2025 Form 10-K, the Q1 2026
+results release, the official Cupertino Electric acquisition release,
+and the official CEI operating-company profile page) are instead
+sourced to GPT-5.6 Thinking's independent inspection of Quanta's own
+official documents across two separate external reviews, with that
+provenance stated explicitly in each entry's `note` field -- this
+Claude session did not itself open any of them. The two retained
+review artifacts are at `governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md`
+and `governance/audits/PR166_CORRECTED_HEAD_REVIEW_20260726.md`.

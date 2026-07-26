@@ -981,7 +981,8 @@ workstreams:
           producible without primary-source access, and the correction below is layered on top of it,
           not a claim that the original pass never happened.** The principal explicitly authorized
           using an independently retained **GPT-5.6 Thinking primary-source audit**
-          (`PR166_PRIMARY_SOURCE_AUDIT.md`) as the bounded PI-0026 evidence-recovery method — this is
+          (retained at `governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md` as of the second
+          correction pass below) as the bounded PI-0026 evidence-recovery method — this is
           a narrow, PI-0026-scoped authorization, not a change to the authorized company set (still
           exactly ETN, VRT, PWR), not an authorization of Batch 5 or Milestone 4, and not a tier/
           target/cluster/cap/allocation/margin/trade authorization of any kind. **Provenance, stated
@@ -996,22 +997,56 @@ workstreams:
           the audit itself states. One bounded correction commit
           (`fb0b6886291d4b71562b658af9b068b2f54aee6d`) resolved the audit's four Major findings (M1-M4)
           across `ETN.yaml`/`.md`, `VRT.yaml`/`.md`, `PWR.yaml`/`.md`, and the comparison artifact —
-          see `PR166_PRIMARY_SOURCE_AUDIT.md` for the full finding-by-finding detail and this session's
-          own PR #166 body update for an itemized summary of what changed per company. All three
-          conviction ratings were independently reassessed against the corrected evidence, not
-          mechanically preserved, and each remains Medium. Re-verified after the correction:
-          `intelligence_validator.py` (20 companies, all valid), `freshness_validator.py` (OK), full
-          pytest suite (1502/1502), `git diff --check` (clean), exactly 10 cumulative files changed
-          across all three commits (2242 insertions, 5 deletions), and `targets.yaml`, `holdings.yaml`,
-          `allocate.py`, `margin_state.py`, `GEV.yaml`/`.md`, GEV's freshness rows, and every governance
-          decision file confirmed byte-identical to the pre-batch base. **PR #166 remains open, draft,
-          and unmerged** — the corrected records are not yet accepted, merged, final, or eligible for
-          any PROVISIONAL downstream use per `OPS-0007` §3. A **fresh, exact-head** independent
-          GPT-5.6 Thinking (or other `OPS-0007` §1-eligible reviewer) review of this corrected state,
+          see the retained artifact (path above) for the full finding-by-finding detail and the PR
+          #166 body for an itemized summary of what changed per company. All three conviction ratings
+          were independently reassessed against the corrected evidence, not mechanically preserved,
+          and each remains Medium. Re-verified after the correction: `intelligence_validator.py` (20
+          companies, all valid), `freshness_validator.py` (OK), full pytest suite (1502/1502),
+          `git diff --check` (clean), and `targets.yaml`, `holdings.yaml`, `allocate.py`,
+          `margin_state.py`, `GEV.yaml`/`.md`, GEV's freshness rows, and every governance decision file
+          confirmed byte-identical to the pre-batch base. **Live cumulative file/insertion/deletion/
+          commit counts are intentionally not restated here — they are volatile across correction
+          passes and are maintained authoritatively in the PR #166 body, recomputed against the live
+          PR after each push; do not treat any count in this entry as current without checking the PR
+          directly.** **PR #166 remains open, draft, and unmerged** — the corrected records are not yet
+          accepted, merged, final, or eligible for any PROVISIONAL downstream use per `OPS-0007` §3.
+
+          **Second bounded correction, 2026-07-26 (M5/M6/m3 from the corrected-head review).** An
+          independent exact-head review of the first correction's head (`6c67eb0573d9482a8bfe6e308cd00a8cd4284aca`)
+          — retained verbatim at `governance/audits/PR166_CORRECTED_HEAD_REVIEW_20260726.md`
+          (SHA-256 `6cc720e4982235dfb2533d4304be5870ab4d3c8b9badbe5039b94801d002ef94`), reviewer
+          GPT-5.6 Thinking, verdict CHANGES REQUIRED — found three further issues. **M5 (Major):** PWR's
+          data-center exposure remained materially misstated as entirely indirect; Quanta's official
+          2025 Form 10-K and its official Cupertino Electric (CEI) acquisition materials establish a
+          direct, in-facility data-center channel (CEI: 25+ years of data-center experience, electrical
+          design/installation/commissioning/maintenance, modular-electrical-system manufacturing, more
+          than 20 million square feet of installed data-center electrical systems, hyperscaler/
+          technology customers) distinct from PWR's separate indirect utility/grid channel (AEP) — no
+          percentage of revenue attributable to either channel is asserted. **M6 (Major):** the
+          controlling GPT-5.6 Thinking primary-source audit was referenced as "retained" in this
+          register and the PR body but did not exist anywhere in the repository — corrected by
+          committing both review artifacts verbatim to `governance/audits/` (see paths/SHA-256 above
+          and below). **m3 (Minor):** cumulative PR statistics and commit count had gone stale between
+          commits; this register no longer states volatile cumulative counts for that reason (see
+          above). Corrections applied in one further bounded commit: (a) both review artifacts
+          committed verbatim to `governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md` (SHA-256
+          `84247603636e532aa2bceb01be2a9697fba52fecfc0a82639eae89a5cfd47f90`) and
+          `governance/audits/PR166_CORRECTED_HEAD_REVIEW_20260726.md` (SHA-256 above); (b) `PWR.yaml`/
+          `PWR.md` corrected to distinguish PWR's direct CEI channel from its indirect AEP/utility
+          channel, with new source entries citing the official CEI acquisition release and CEI
+          operating-company profile page (both independently inspected by GPT-5.6 Thinking, not by
+          this Claude session); (c) the comparison artifact's §1, §2, §3, §4, and §12 revised to
+          remove the entirely-indirect PWR framing and reassess overlap/diversification accordingly —
+          PWR's CEI channel is now recognized as partially overlapping with VRT's in-building presence,
+          without ranking, scoring, or recommending any tier/target/cluster/cap/allocation/trade/margin
+          action. `PWR.yaml`'s conviction rating was reassessed again and remains Medium (this
+          correction reinforces rather than changes the rationale). **PR #166 remains open, draft, and
+          unmerged** after this second correction as well. A **fresh, exact-head** independent GPT-5.6
+          Thinking (or other `OPS-0007` §1-eligible reviewer) review of this twice-corrected state,
           followed by explicit principal acceptance, marking ready, merge, and post-merge verification,
-          all remain required before Batch 4 can be considered complete. This entry authorizes no
-          fifth Milestone 3 batch, no Milestone 4 work, and no advancement of `OPS-0007` §8 step I —
-          unchanged from the prior entry above.
+          all remain required before Batch 4 can be considered complete. This entry authorizes no fifth
+          Milestone 3 batch, no Milestone 4 work, and no advancement of `OPS-0007` §8 step I — unchanged
+          from the prior entries above.
         pr: 166
         status: in_progress
         date: "2026-07-26"
@@ -1407,6 +1442,22 @@ workstreams:
       still required before Batch 4 can be considered complete. This
       correction authorizes no fifth Milestone 3 batch, no Milestone 4
       work, and no advancement of `OPS-0007` §8 step I.
+
+      **A second bounded correction followed the same day** (M5/M6/m3
+      from a further independent exact-head review, retained at
+      `governance/audits/PR166_CORRECTED_HEAD_REVIEW_20260726.md`,
+      alongside the first review retained at
+      `governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md`) —
+      correcting a surviving misstatement that PWR's data-center
+      exposure was entirely indirect (Quanta's CEI subsidiary performs
+      direct, in-facility data-center electrical work) and retaining
+      both controlling review artifacts under `governance/audits/` for
+      the first time. See the `milestone-3-intelligence-completion` gate
+      entry above for full detail. PR #166 **remains open, draft, and
+      unmerged** after this second correction as well; live cumulative
+      file/insertion/deletion/commit counts are maintained in the PR body
+      only, not restated here, since they go stale between correction
+      passes.
 
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
