@@ -67,14 +67,34 @@ attributable to ARM competition was located in this research pass.
 
 Intel Foundry segment revenue was $5.8B in Q2 2026, up 31% YoY (+6%
 sequentially), of which **external (non-Intel) revenue was $293M** [S1] — a
-small but nonzero and reportedly growing contribution. Design wins/
-commitments are reported across AMD, NVIDIA, Marvell, Microsoft, Micron, and
-OpenAI for 18A-related work, with a US aerospace-and-defense customer
-bringing external-customer commitments on Intel 18A to six by one secondary
-count [S4]. Specific reported programs include a Microsoft Maia 2 AI-
-processor contract and an AI-fabric-chip agreement with Amazon [S4] — **both
-secondary-sourced and not independently verified against a primary
-customer-disclosure filing this session opened.**
+small but nonzero and reportedly growing contribution.
+
+**Fortinet is Intel Foundry's one actually-named, publicly confirmed
+external customer** [S7], disclosed 2026-07-21: Intel will co-develop and
+manufacture Fortinet's next-generation Security Processor 6 custom silicon
+(powering the FortiGate firewall lineup) at Intel's Fab 34 facility in
+Leixlip, Ireland, on the **Intel 4 process node** — a mature node that
+debuted in 2022, not 18A or 14A. Multiple independent, concordant outlets
+(SiliconANGLE, Tom's Hardware, The Register, TechTimes) report this as
+Intel's first willingness to publicly name an external Intel 4 customer,
+roughly three years after that node entered high-volume production
+exclusively for Intel's own chips [S7]. This is a real, confirmed customer
+relationship on a mature node — it is not evidence of 18A or 14A external
+traction specifically.
+
+Separately, design wins/commitments for **18A specifically** are reported
+across AMD, NVIDIA, Marvell, Microsoft, Micron, and OpenAI, with a US
+aerospace-and-defense customer bringing external-customer commitments on
+Intel 18A to six by one secondary count [S4]. Specific reported programs
+include a Microsoft Maia 2 AI-processor contract and an AI-fabric-chip
+agreement with Amazon [S4]. **These 18A-specific names remain hedged/
+secondary-sourced and unconfirmed by any primary disclosure this session
+opened — in contrast to Fortinet's Intel-4 relationship, which is
+independently and concordantly reported across multiple outlets as an
+actual named, announced customer relationship, not a rumored design win.
+This record does not conflate the two categories: one confirmed mature-node
+customer (Fortinet) versus six hedged/rumored leading-edge-node design wins
+(the 18A list).**
 
 **Critically, this credibility is explicitly conditional going forward, not
 established:** Intel has disclosed that it may pause or discontinue pursuit
@@ -255,3 +275,4 @@ received a theme assignment either.
 - [S4] SECONDARY, restructuring/layoff coverage (TechPowerUp, KORE1, circuit-chip.com), 2026-07-26
 - [S5] SECONDARY, 14A external-demand-contingency analysis (Forbes, Electronics Weekly, Manufacturing Dive), 2026-07-26
 - [S6] SECONDARY, capital-investment and government/NVIDIA/SoftBank stake coverage (TechRepublic, Data Center Dynamics, ts2.tech, NIST CHIPS program pages), 2026-07-26
+- [S7] SECONDARY, Intel Foundry's Fortinet customer disclosure (SiliconANGLE, Tom's Hardware, The Register, TechTimes — independently located in this bounded correction pass), 2026-07-21

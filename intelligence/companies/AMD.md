@@ -66,17 +66,27 @@ the field.
 
 ## Hyperscaler and enterprise demand
 
-AMD's FY2025 Form 10-K is reported to disclose that **two customers each
-individually represented more than 10% of consolidated revenue** in fiscal
-2025 [S2]. Separately, secondary coverage names Microsoft, Dell,
-Hewlett-Packard Enterprise, Lenovo, Sony, and unnamed hyperscale cloud
-operators as significant customers [S2] — **this record does not conflate
-that broader significant-customer list with the specific two >10%-of-revenue
-customers**, whose identities were not confirmed in the secondary coverage
-reviewed. This concentration sits alongside the OpenAI/Meta commitment
-concentration in the AI-accelerator growth story specifically (see above) —
-a structurally similar risk shape to Broadcom's and Marvell's AI-customer
-concentration disclosed elsewhere in this batch, though AMD's disclosed base
+**This claim is preserved as UNRESOLVED, not settled fact.** A single
+secondary source reported that AMD's FY2025 Form 10-K discloses that two
+customers each individually represented more than 10% of consolidated
+revenue in fiscal 2025 [S2]. A fresh, independent search performed in this
+bounded correction pass — specifically targeting this figure — did not
+locate a second source confirming or precisely restating it, and did not
+locate a source contradicting it either; the evidence is genuinely
+inconclusive. The 10-K itself (PRIMARY, NOT OPENED — WebFetch returned HTTP
+403 on every attempt across both the original research pass and this
+correction pass) is the only source that could resolve this with certainty,
+and it was not directly inspected by any session. **This record does not
+name or imply which two customers, if any, exceed 10%.** Separately,
+secondary coverage names Microsoft, Dell, Hewlett-Packard Enterprise,
+Lenovo, Sony, and unnamed hyperscale cloud operators as significant
+customers generally [S2] — a materially weaker and broader claim than a
+specific >10%-of-revenue disclosure, and this record does not conflate the
+two. Independent of whether the specific >10% figure is ever confirmed, the
+OpenAI/Meta commitment concentration in the AI-accelerator growth story
+specifically (see above) is itself a separately-evidenced, structurally
+similar risk shape to Broadcom's and Marvell's AI-customer concentration
+disclosed elsewhere in this batch, though AMD's disclosed base
 of named significant customers is broader than either.
 
 ## Product-roadmap execution
@@ -136,11 +146,12 @@ rather than uniform across AMD's business.
 
 ## Customer and ecosystem concentration
 
-See "Hyperscaler and enterprise demand" above for the >10%-of-revenue
-customer disclosure, and "Data-center CPUs, accelerators, and AI
-positioning" for the OpenAI/Meta commitment concentration specific to the
-AI-accelerator growth story. Both mechanisms are recorded as distinct
-concentration risks, not merged into one figure.
+See "Hyperscaler and enterprise demand" above for the unresolved
+>10%-of-revenue two-customer claim, and "Data-center CPUs, accelerators, and
+AI positioning" for the OpenAI/Meta commitment concentration specific to the
+AI-accelerator growth story — a separately-evidenced concentration risk that
+does not depend on the unresolved claim being confirmed. Both mechanisms are
+recorded as distinct, not merged into one figure.
 
 ## Margin-relevant execution, drawdown, supply-chain, and gap risks
 
@@ -195,7 +206,8 @@ rating, role, or any other research conclusion above.**
   guidance; a disclosed development in the OpenAI or Meta multi-gigawatt
   commitment (deployment milestone reached, delayed, or renegotiated); a
   material change in China export-control policy or a new quantified revenue
-  impact; a material change in the >10%-of-revenue customer disclosure; a
+  impact; primary-source resolution (confirmation or refutation) of the
+  unresolved >10%-of-revenue two-customer claim; a
   significant MI450/Helios ramp update (on-track, delayed, or ahead of plan).
 - Metrics worth monitoring each review: quarterly Data Center revenue and AI-
   accelerator share of it, cash/debt balance, Gaming/Client segment trend

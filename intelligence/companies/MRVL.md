@@ -46,10 +46,18 @@ custom-silicon growth expectation to "more than double" year-over-year,
 driven by existing-program growth, more than 10 XPU-attach programs
 reaching higher volumes, and a new Tier 1 XPU program entering volume
 production; a longer-term target model reportedly targets custom revenue
-exceeding $10B in FY2029 [S3]. Marvell announced two 2026 acquisitions —
-Celestial AI and XConn — reported as intended to enhance custom-silicon and
-interconnect capabilities, alongside an expanded NVIDIA partnership to
-support AI-infrastructure connectivity [S3].
+exceeding $10B in FY2029 [S3]. Marvell completed two distinct 2026
+acquisitions to strengthen this pipeline — **Celestial AI** (photonic/
+optical scale-up connectivity; upfront consideration $1.0B cash plus
+approximately 27.2M shares valued at approximately $2.25B, total deal value
+up to $5.5B including revenue-milestone earnouts reaching $2B cumulative
+Celestial revenue by FY2029; closed 2026-02-02) and **XConn Technologies**
+(PCIe/CXL switching silicon strengthening the UALink scale-up switch
+roadmap; approximately $540M, approximately 60% cash/40% stock, announced
+2026-01-06, closed 2026-02-10) [S6, S7] — alongside an expanded NVIDIA
+partnership to support AI-infrastructure connectivity [S3]. These are two
+separate transactions with different technology focuses, deal structures,
+and price tags, not a single combined acquisition figure.
 
 ## Hyperscaler and customer concentration
 
@@ -66,14 +74,30 @@ independently verified against a primary customer-concentration disclosure
 (e.g., a 10-K note) this session opened — the concentration is nonetheless
 directionally consistent and severe across every source found.
 
-A specific, actively-disconfirming signal was found and is preserved rather
-than downplayed: **at least one analyst downgrade is reported to have cited
-the likely loss of Amazon's next-generation Trainium chip business to a
-competitor** [S5]. If accurate, and given Amazon's reported position as one
+A specific competitive-loss signal exists but is **actively and credibly
+disputed** — this record presents both sides rather than omitting or
+overstating either one. At least one analyst downgrade is reported to have
+cited the likely loss of Amazon's next-generation Trainium chip business to
+a competitor [S5]. If accurate, and given Amazon's reported position as one
 of Marvell's two largest Data Center customers, this would represent a
 direct, named erosion of Marvell's largest disclosed customer relationship
-in its fastest-growing segment. This record could not independently confirm
-or refute the claim against a primary source.
+in its fastest-growing segment. **Against this, JPMorgan analyst Harlan Sur
+— a named, independently identified contrarian view, not this record's own
+synthesis — is reported to have reaffirmed an Overweight rating and
+dismissed the share-loss concern directly**, stating "there's too much
+noise, but not a single customer order has been lost" [S8]. A separate
+JPMorgan-relayed report states Marvell management itself described its
+Microsoft and Amazon custom-chip business as "on track," and that Marvell
+reiterated purchase orders secured for all of calendar-year 2026 for the
+next-generation Trainium 3 XPU program at AWS specifically, with the
+Microsoft 3nm Maia AI XPU program remaining on track to ramp in the second
+half of calendar 2026 into 2027 [S8]. **This record does not adopt either
+the downgrade's loss claim or JPMorgan's contrary reassurance as settled
+fact** — both are secondary/analyst evidence, not a primary disclosure this
+session opened, and the two credible interpretations genuinely conflict.
+What can be said without dispute: Amazon's Trainium-program status at
+Marvell was, at the time of this research, an actively contested question
+among covering analysts, not a quietly-settled one in either direction.
 
 ## Dependence on AI-infrastructure buildout
 
@@ -125,31 +149,41 @@ As of 2026-05-02, Marvell's outstanding senior notes ranged from $499.9M to
 $750.0M across maturities from 2026 to 2035, and its 2025 Revolving Credit
 Facility was reported undrawn and available for draw-down through
 2030-06-30 [S2] — providing contingent liquidity separate from the
-outstanding notes. The 2026 Celestial AI and XConn acquisitions add
-near-term integration execution risk on top of Marvell's existing organic
-design-win pipeline; **no acquisition purchase price, financing structure,
-or integration-timeline detail was located in this research pass.**
+outstanding notes. The 2026 Celestial AI and XConn acquisitions — see the
+Business summary section above for their distinct prices and structures —
+add near-term integration execution risk on top of Marvell's existing
+organic design-win pipeline. Both carry multi-year, back-loaded
+revenue-ramp assumptions management itself has guided to: Celestial AI
+contributing from FY2028 (ramping to a $500M annualized rate by Q4 FY2028
+and $1B by Q4 FY2029), and XConn contributing from Q3 FY2027 (ramping to a
+$50M annualized run rate by Q4 FY2027 and $100M in FY2028) [S6, S7] — both
+figures identified via a company press release not directly opened by this
+session (PRIMARY, NOT OPENED), independently corroborated across multiple
+secondary outlets. Integration execution against these specific ramp
+targets is the near-term risk this record flags; it does not itself assess
+the likelihood either target is met.
 
 ## Margin-relevant liquidity, concentration, and gap-risk amplifiers
 
 *(Factual, advisory only — no leverage, deployment-timing, or margin-ceiling
 recommendation.)* Marvell's undrawn revolving credit facility (available
 through 2030) [S2] is a real, disclosed liquidity backstop. Against that,
-Marvell carries this batch's most concentrated and most specifically-named
-customer-loss signal (the reported Amazon-Trainium downgrade), which is a
-**correlated-loss mechanism of unusual specificity**: if accurate, it
-identifies a named, current risk to Marvell's largest customer relationship
-in its fastest-growing segment, not a generic hyperscaler-slowdown scenario.
-The simultaneous severe legacy-segment contraction (Carrier -75%,
+Marvell's undisputed customer concentration (Amazon and Google reported at
+60%+ of Data Center revenue) is this batch's most concentrated and most
+specifically-named concentration exposure, whichever way the disputed
+Amazon-Trainium signal resolves: a **correlated-loss mechanism of unusual
+specificity**, since even the contrarian JPMorgan view does not dispute the
+underlying concentration, only whether a specific loss has occurred. The
+simultaneous severe legacy-segment contraction (Carrier -75%,
 Enterprise -58% YoY) [S4] means Marvell has comparatively less
 non-Data-Center revenue to fall back on if Data Center growth were to
 disappoint, relative to AMD's broader four-segment diversification disclosed
 elsewhere in this batch. **Gap risk:** design-win-to-revenue-conversion
 timing uncertainty (above) means a delay in the "new Tier 1 XPU program"
 volume production, or in any of the 18 disclosed sockets, could produce a
-sudden guidance shortfall against management's own raised targets, a
-pattern this record flags as a real forward risk given the still-unresolved
-Amazon-Trainium signal.
+sudden guidance shortfall against management's own raised targets — a
+pattern this record flags as a real forward risk independent of how the
+disputed Amazon-Trainium signal ultimately resolves.
 
 ## What exposure would be lost if MRVL were absent from the portfolio
 
@@ -223,3 +257,6 @@ received a theme assignment either.
 - [S3] SECONDARY, custom-silicon/design-win coverage (Futurum Group, Forbes-style analyst coverage, overlapping financial-news outlets), 2026-07-26
 - [S4] SECONDARY, company-profile and segment-cyclicality coverage (Morningstar/GuruFocus-style aggregation, overlapping trade press), 2026-07-26
 - [S5] SECONDARY, customer-concentration and competitive-loss coverage (Forbes and overlapping analyst-downgrade coverage), 2026-07-26
+- [S6] Marvell Technology, Inc. press release, "Marvell Completes Acquisition of XConn Technologies" (PRIMARY, NOT OPENED — WebFetch returned HTTP 403), https://investor.marvell.com/news-events/press-releases/detail/1007/marvell-completes-acquisition-of-xconn-technologies, 2026-02-10
+- [S7] Marvell Technology, Inc. press release, "Marvell Completes Acquisition of Celestial AI" (PRIMARY, NOT OPENED — WebFetch returned HTTP 403), https://investor.marvell.com/news-events/press-releases/detail/1005/marvell-completes-acquisition-of-celestial-ai, 2026-02-02
+- [S8] SECONDARY, JPMorgan analyst commentary on the Amazon-Trainium concentration signal (Investing.com, Sherwood News — independently located in this bounded correction pass), 2026-07-26

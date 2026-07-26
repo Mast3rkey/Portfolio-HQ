@@ -140,20 +140,27 @@ concentration — but the shape differs:
 | Company | Concentration evidence | Notably named customers/counterparties |
 |---|---|---|
 | AVGO | ~40% of net revenue from top 5 end customers (company-wide, FY2025 10-K per secondary coverage); AI-segment concentration in a small named roster | Google, Meta, OpenAI, Anthropic, Apple (XPU/AI roster) |
-| AMD | Two customers each >10% of FY2025 consolidated revenue (identities not confirmed as those specific two) | Microsoft, Dell, HPE, Lenovo, Sony named as broader significant customers; OpenAI and Meta named for multi-gigawatt AI-accelerator commitments |
-| MRVL | ~45% via single distributor; ~82% via top-10 customers; Amazon+Google reported 60%+ of Data Center revenue | Amazon, Google named specifically — the most concentrated, most specifically-named exposure in the batch |
-| INTC | Not quantified in this research pass at the customer-percentage level | AMD, NVIDIA, Marvell, Microsoft, Micron, OpenAI named as Intel Foundry 18A design-win/commitment customers (a foundry-customer list, not a product-revenue-customer list) |
+| AMD | A single secondary source's claim of two customers each >10% of FY2025 consolidated revenue is **unresolved** — neither confirmed nor refuted by independent search; identities not implied | Microsoft, Dell, HPE, Lenovo, Sony named as broader significant customers; OpenAI and Meta named for multi-gigawatt AI-accelerator commitments (a separately-evidenced concentration risk independent of the unresolved >10% claim) |
+| MRVL | ~45% via single distributor; ~82% via top-10 customers; Amazon+Google reported 60%+ of Data Center revenue (undisputed even by the contrarian JPMorgan view on the separate Amazon-Trainium question, see §5) | Amazon, Google named specifically — the most concentrated, most specifically-named exposure in the batch |
+| INTC | Not quantified in this research pass at the customer-percentage level | **Fortinet — Intel Foundry's one confirmed, named external customer** (Intel 4 node, disclosed 2026-07-21); separately, AMD, NVIDIA, Marvell, Microsoft, Micron, OpenAI named as hedged/unconfirmed Intel 18A design-win/commitment customers (a foundry-customer list, not a product-revenue-customer list, and a materially different confidence level than the confirmed Fortinet relationship) |
 
 **MRVL's concentration is both the most severe and the most specifically
-named** (Amazon + Google at 60%+ of its fastest-growing segment), and it is
-the only company in the batch with an actively-disconfirming, named
-competitive-loss signal attached to that concentration (the reported
-Amazon-Trainium loss, `MRVL.yaml`). **INTC's customer list is structurally
-different in kind** — it names *foundry* customers (companies paying Intel
-to manufacture their chips) rather than *product* customers (companies
-buying Intel's own chips), a distinction this document preserves rather
-than conflating with the other three companies' product-customer
-concentration.
+named** (Amazon + Google at 60%+ of its fastest-growing segment, undisputed
+even by the contrarian view below), and it is the only company in the batch
+with an actively **disputed** — not simply disconfirming — named
+competitive-loss signal attached to that concentration: a reported analyst
+downgrade's Amazon-Trainium loss claim versus a named JPMorgan contrarian
+view reporting no lost customer orders and reiterated CY2026 purchase
+orders (`MRVL.yaml`; both credible, secondary, and unresolved against each
+other). **INTC's customer list is structurally different in kind on two
+axes** — it names *foundry* customers (companies paying Intel to
+manufacture their chips) rather than *product* customers (companies buying
+Intel's own chips), a distinction this document preserves rather than
+conflating with the other three companies' product-customer concentration;
+and within that foundry-customer list, Fortinet is the batch's (and, among
+this repository's covered `semis`-cluster companies, likely the only)
+**confirmed, named** external-customer relationship, standing apart from
+the remaining six hedged/rumored 18A design-win names.
 
 ## 7. Acquisition and integration dependence
 
@@ -161,7 +168,7 @@ concentration.
 |---|---|---|
 | AVGO | VMware (~$69B, closed Nov 2023) | Migration to VCF subscription reported >87% of top 10,000 customers, but active customer-relations/pricing backlash documented |
 | AMD | Xilinx (2022, embedded/FPGA) | Reported to have "sat dormant for years" before "finally clicking" in 2025-2026; Embedded segment returned to growth in Q1 FY2026 |
-| MRVL | Celestial AI, XConn (both 2026, custom-silicon/interconnect) | Too recent for integration-status evidence; no purchase price, financing, or timeline detail located |
+| MRVL | Celestial AI (~$1.0B cash + ~$2.25B stock upfront, up to $5.5B total with earnouts, closed 2026-02-02) and XConn (~$540M, ~60% cash/40% stock, closed 2026-02-10) — two distinct 2026 transactions, custom-silicon/interconnect | Too recent for integration-status evidence; both carry management-guided, back-loaded revenue-ramp targets (Celestial from FY2028; XConn from Q3 FY2027) integration execution has not yet had time to test |
 | INTC | None material identified in this research pass | Not applicable |
 
 AVGO's VMware integration and AMD's Xilinx integration are both several
@@ -225,9 +232,29 @@ shapes.
 
 INTC is the only company in this batch (or, among this repository's
 covered `semis`-cluster companies, likely the only one at all) with a direct
-US government equity stake (reported 8.4%-9.9%-10% depending on source/date,
-unresolved in `INTC.yaml`) arising from CHIPS Act grant conversion, plus
-additional NVIDIA (~4%) and SoftBank (~2%) equity stakes. This creates a
+US government equity stake arising from CHIPS Act grant conversion, plus
+additional NVIDIA (~4%) and SoftBank (~2%) equity stakes. **The government
+ownership percentage is reported inconsistently across sources and is not
+compressed into a single range here** — `INTC.yaml`/`INTC.md` record four
+distinct values found across different sources: **9%** and **10%**
+(rounded/headline figures from initial announcement-era coverage, August-
+September 2025, when the CHIPS-grant-to-equity conversion was first
+reported); **9.9%** (a more precise figure also dated to the same
+announcement window); and **8.4%** (the most recent figure found, dated
+2026-03-20, sourced to a later secondary-filing-adjacent disclosure of
+433,323,000 shares outstanding as of that date). This record does not adopt
+one value as correct. A plausible, but independently unconfirmed, reading is
+that the 8.4% figure reflects *dilution* from subsequent share issuances
+(the NVIDIA and SoftBank private placements both occurred after the initial
+government-stake transaction) reducing the government's percentage of a
+larger total share count without necessarily changing its absolute share
+count — but this record does not treat that explanation as established,
+since no source directly confirms the government's absolute share count
+was unchanged between the two measurement dates. Whether the differing
+figures represent initial-versus-diluted ownership, different transactions,
+approximate-versus-precise reporting, or genuinely different measurement
+dates therefore remains an open evidentiary question, not a resolved fact
+compressed for convenience. This creates a
 governance and national-security-politicization dimension unique to INTC in
 this batch: CHIPS Act/DFA funding terms are reported to restrict dividends
 and buybacks and preserve US government remedies for breach — commercial
@@ -332,8 +359,11 @@ company-specific shock.
   regulatory action can produce sudden, discrete earnings hits.
 - **MRVL**: the most severe simultaneous legacy-segment contraction in the
   batch (Carrier -75%, Enterprise -58% YoY), meaning less non-AI revenue to
-  fall back on, plus the batch's single most specific named customer-loss
-  signal (the reported Amazon-Trainium loss).
+  fall back on, plus the batch's most concentrated, most specifically-named
+  customer exposure (Amazon+Google, undisputed) and its single most
+  actively-*disputed* named signal (the Amazon-Trainium loss claim versus a
+  named JPMorgan contrarian view) — a real, unresolved uncertainty either
+  way, not a one-sided confirmed loss.
 - **INTC**: the batch's highest capital intensity and only large,
   fixed-project delay risk (the Ohio project), plus a unique governance/
   national-security-politicization dimension from its new government/
@@ -350,8 +380,9 @@ Each company's own record defines its own review triggers (see each
   to a pause/discontinuation — a rare case of a company pre-announcing what
   evidence would cause it to abandon a core strategic bet.
 - **MRVL**'s thesis deterioration would likely be detectable first through
-  a confirmed Amazon-Trainium loss or a broader Data Center guidance miss —
-  both are named, trackable events, not vague sentiment shifts.
+  a resolution of the disputed Amazon-Trainium claim (in either direction)
+  or a broader Data Center guidance miss — both are named, trackable events,
+  not vague sentiment shifts.
 - **AMD**'s thesis deterioration would likely be detectable through a
   disclosed delay or renegotiation of the OpenAI/Meta multi-gigawatt
   commitments, or a China export-control policy change.
@@ -373,13 +404,17 @@ applied, consolidated from all four company records' own disclosed gaps:
   for AVGO, AMD, or MRVL — inferred structurally, not confirmed
   company-specifically.
 - **The exact current US government ownership percentage in INTC** is
-  reported inconsistently (8.4%-10%) across sources and is not resolved by
-  this document.
+  reported inconsistently across four distinct values found (9%, 9.9%, 10%
+  at announcement time; 8.4% at a later measurement date) — see §10 above
+  for the full disclosure — and is not resolved by this document.
 - **No quantified China/export-control exposure** was located for MRVL in
   this research pass.
-- **No acquisition purchase price, financing structure, or integration-
-  timeline detail** was located for MRVL's 2026 Celestial AI/XConn
-  acquisitions.
+- **MRVL's 2026 Celestial AI/XConn acquisition prices and structures were
+  located** in this bounded correction pass (§7 above; both figures sourced
+  to company press releases identified but not directly opened) — no longer
+  an evidence gap. Integration *outcome* remains genuinely unassessable
+  given both transactions' recency and management's own back-loaded revenue
+  guidance.
 - **No direct, quantitative AVGO-vs-MRVL competitive-overlap measure**
   (e.g., shared customer dollar amounts, or evidence of the two companies
   competing head-to-head for the same specific XPU design win) was located
@@ -389,7 +424,114 @@ applied, consolidated from all four company records' own disclosed gaps:
 - **No measured historical price-correlation figure** for any pairing
   within this batch, consistent with §12's explicit scope limitation.
 
-## 16. External opportunity and replacement-candidate scan — batch-level consolidation
+## 16. Cross-batch structural and correlated-risk overlap with Batch 1 (ASML, AMAT, KLAC, LRCX)
+
+Added in this bounded correction pass (addressing independent-review finding
+F8). This section is descriptive only — it does not rank companies across
+batches, does not recommend a cluster-level capital-allocation change, and
+does not create a composite score. All four Batch 1 companies and all four
+Batch 3 companies share membership in the same governed `semis`
+correlated-cluster cap (`targets.yaml`, ≤25% of book) — this section
+examines *why* that shared membership is economically coherent, not merely
+that it exists on paper.
+
+**Shared exposure to AI and advanced-node semiconductor capex.** Batch 1
+(ASML lithography; AMAT/KLAC/LRCX deposition/etch/process-control) sells
+capital equipment to the same foundries and IDMs whose own capacity
+expansion is driven substantially by the same AI-infrastructure demand this
+document's §8 identifies as Batch 3's central shared risk mechanism. This is
+not a coincidental overlap: Batch 1's own comparison artifact
+(`intelligence/BATCH1_SEMIS_EQUIPMENT_COMPARISON.md`) and this repository's
+TSM Company Intelligence record both independently document that
+semiconductor-capital-expenditure cycles are the equipment makers' primary
+demand driver, and Batch 3's AVGO/AMD/MRVL records each depend on the same
+advanced-node/advanced-packaging manufacturing capacity that Batch 1's
+companies help build.
+
+**Equipment demand depends on foundry and IDM capacity expansion — and
+Batch 3 contains both the demand-side customers and, uniquely, a capacity-
+building IDM.** AVGO, AMD, and MRVL are fabless — they do not buy
+semiconductor capital equipment directly, but their growth drives TSMC's
+(and other foundries') capacity expansion, which in turn drives foundry
+purchases of ASML/AMAT/KLAC/LRCX equipment. **INTC is structurally
+different and creates the batch's most direct link to Batch 1**: as an IDM
+building its own fabs (Arizona, Ohio, New Mexico, Oregon; >$100B total
+planned investment, per `INTC.yaml`), Intel is very likely a **direct
+purchaser** of the same categories of lithography, deposition, etch, and
+process-control equipment Batch 1's four companies produce — this document
+does not have a confirmed, named Intel-ASML/AMAT/KLAC/LRCX supplier
+relationship for the current build-out specifically (a gap, not a finding
+of absence), but the structural relationship (IDM fab construction requires
+this equipment category, near-universally, in current industry practice) is
+a materially closer and more direct link than AVGO/AMD/MRVL's indirect,
+foundry-intermediated relationship to the same equipment demand.
+
+**How AMD/AVGO/MRVL fabless growth indirectly drives TSMC and
+packaging/equipment demand.** §5 of this document already establishes that
+AVGO, AMD, and MRVL all depend on TSMC and advanced-packaging capacity, and
+that TSMC management has itself stated advanced-packaging capacity is
+currently tight enough to constrain customer growth (per this repository's
+TSM record). Every incremental unit of AVGO/AMD/MRVL demand that TSMC
+fulfills by adding capacity is, mechanically, incremental demand for the
+categories of equipment Batch 1's four companies sell to TSMC. This is an
+indirect, foundry-intermediated transmission channel, distinct from INTC's
+direct-purchaser relationship described above.
+
+**Common downside pathways.** Both batches would plausibly be affected,
+though not necessarily identically or simultaneously, by:
+- **AI-capex slowdown**: a broad hyperscaler/frontier-lab AI-infrastructure
+  pullback (this document's §8) would eventually reduce foundry/IDM capacity-
+  expansion orders, which would reduce Batch 1's equipment demand — likely
+  with a lag, since capital-equipment orders and fab construction are
+  longer-cycle commitments than chip-product demand.
+- **Export controls**: Batch 1's own comparison artifact documents ASML's
+  and the equipment makers' own China/export-control exposure; this
+  document's §9 documents AVGO's and AMD's realized China/export-control
+  impacts. A broad escalation could affect both batches simultaneously,
+  though through different specific mechanisms (equipment-export
+  restrictions to China for Batch 1; product/chip-export restrictions for
+  Batch 3).
+- **Node delays**: a delay in a major foundry's or IDM's node ramp (e.g.
+  INTC's own disclosed 18A/14A execution risk, or TSMC's N2/N2P/A16
+  timeline per this repository's TSM record) directly delays the equipment
+  purchases Batch 1 depends on, while also directly affecting the fabless
+  Batch 3 companies' own product roadmaps if they are customers of the
+  delayed node.
+- **Customer concentration**: both batches show material customer
+  concentration — Batch 1's equipment makers concentrate revenue among a
+  small number of foundries/IDMs (per Batch 1's own comparison artifact);
+  Batch 3's fabless companies concentrate among a small number of
+  hyperscaler/frontier-lab customers (this document's §6). A shock to either
+  concentrated customer base could transmit, with different lags, to the
+  other batch.
+- **Semiconductor-cycle contraction**: a broad, non-AI-specific
+  semiconductor downturn (the kind Batch 1's and Batch 2's own comparison
+  artifacts document historically, e.g. the 2022-2023 memory-cycle
+  contraction) would likely reduce capital spending industry-wide,
+  affecting Batch 1's equipment orders and Batch 3's non-AI product lines
+  (MRVL's Carrier/Enterprise segments; AMD's Gaming/Client segments)
+  simultaneously, even if the AI-specific portions of both batches remained
+  comparatively insulated.
+
+**Structural/economic overlap versus measured historical price
+correlation, restated for this cross-batch comparison.** Consistent with
+§12's scope limitation for within-batch comparison, **no measured
+historical price-correlation figure between any Batch 1 and any Batch 3
+company was computed, sourced, or is presented here.** The overlap
+described above is a structural/economic-mechanism analysis only — the same
+kind of analysis `OPS-0006` §4 Milestone 4's own text distinguishes from
+"measured historical price correlation" — and this section does not
+substitute for, or anticipate the conclusions of, the still-unauthorized
+Milestone 4 relationship-mapping work.
+
+**No ranking or capital-allocation recommendation.** This section does not
+conclude that either batch is a "better" or "safer" cluster exposure, does
+not recommend adjusting the `semis` cluster cap, and does not recommend any
+trim, buy, or reallocation between the two batches' companies. It documents
+why the existing, unchanged `targets.yaml` cluster-cap membership is
+economically coherent for both batches — nothing more.
+
+## 17. External opportunity and replacement-candidate scan — batch-level consolidation
 
 Per each company's own record (§B.11/B.18-equivalent field). Consolidated
 here as a small, evidence-supported leads list. **All items below are
@@ -408,7 +550,7 @@ No candidate above is recommended for purchase, tier assignment, or further
 research by this document. Any future research on any of them requires its
 own separate authorization, per `PI-0025` §H.
 
-## 17. Zero-based discipline note
+## 18. Zero-based discipline note
 
 Per `OPS-0006` §§2/3 and `PI-0025` §F, this comparison was constructed from
 the four companies' own independently-researched records, each of which
