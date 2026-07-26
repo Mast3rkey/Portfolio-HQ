@@ -1,96 +1,124 @@
 # WS-0005 Coverage-Gap Register
 
 **PROVISIONAL, ADVISORY.** Companion to `WS0005_PRELIMINARY_PORTFOLIO_ARCHITECTURE_20260726.md`.
-Every holding in `holdings.yaml`'s `shares:` block **without** a qualifying
-ACCEPTED or PROVISIONAL Company Intelligence record — 45 companies plus 3
-ETFs, 48 entries total. **No candidate here is ranked for capital
-allocation.** Current role, tier, and target are preserved **exactly** for
-every entry in this register, labeled `temporary current-policy baseline —
-not independently re-derived` throughout — this register does not infer, and
-this package does not treat, the existing policy as correct for any of them.
 
-## Why these 48 are not independently re-derived (applies uniformly unless noted)
+**Bounded correction note (this revision):** an independent ChatGPT review
+(review `4781581139`, verdict CHANGES REQUIRED) found the prior revision
+grouped multiple tickers into single rows and omitted required fields for
+the T2/band/spec/ETF sections. This revision gives **every one of the 45
+uncovered company holdings its own explicit row with all nine required
+fields**, and treats the 3 ETFs as a **separate structural category** with
+their own full disposition — never presented as "uncovered companies."
+
+## Roster counts (corrected)
+
+- **65** total share-target roster entries (`holdings.yaml`'s `shares:` block).
+- **62** are company holdings.
+  - **17** carry qualifying Company Intelligence (13 ACCEPTED + 4
+    PROVISIONAL — see `WS0005_CURRENT_POLICY_RECONCILIATION_20260726.md`).
+  - **45** are covered in this register as NOT INDEPENDENTLY RE-DERIVED.
+- **3** are ETFs (SPY, QQQ, GLD), a structurally separate category, covered
+  in its own section below.
+
+**No candidate in this register is ranked for capital allocation.** Every
+row's current role, tier, and target is preserved **exactly**, labeled
+`temporary current-policy baseline — not independently re-derived` — this
+register does not infer, and this package does not treat, the existing
+policy as correct for any of them. Any language below describing a gap as
+having greater or lesser materiality reflects **research-coverage urgency
+only** — it is not a capital ranking and does not select, authorize, or
+imply any future research batch.
+
+## Why these 45 are not independently re-derived (uniform reason, applies to every row unless a row states otherwise)
 
 No Company Intelligence record exists for these tickers because no WS-0005
 Milestone-3 research batch has yet been authorized covering them. `PI-0023`
 (Batch 1), `PI-0024` (Batch 2), and `PI-0025` (Batch 3) each named an exact,
-bounded company list — none of these 48 tickers was included in any of the
+bounded company list — none of these 45 tickers was included in any of the
 three. Coverage for any of them requires its own future, separately
-authorized Milestone-3 batch (or, for the three T1 megacaps MSFT/GOOGL/META,
-potentially a dedicated `PI-0016`-style committee review given their scale)
-— this register does not select, propose, or authorize any such batch; it
-only records the gap.
+authorized Milestone-3 batch (or, for the largest T1 megacaps, potentially a
+dedicated `PI-0016`-style committee review) — this register does not select,
+propose, or authorize any such batch; it only records the gap, per ticker.
 
-## T1 tier (0.75%–0.25pp confidence-weighted risk band; 3.35% target each)
+## T1 tier — 5 uncovered company holdings (3.35% target each)
 
-| Ticker | Current target | Missing research | Material risk of relying on baseline | Could a gap materially affect a future scenario result? | Future research trigger |
-|---|---|---|---|---|---|
-| MSFT | 3.35% | Full Company Intelligence record | **Highest-priority gap in the register** — MSFT is a top-5-by-weight T1 holding with no independent evidence check at all; `CLAUDE.md`'s own Decisions Log already flags T1 as "7-of-9 names in the identified AI-infrastructure grouping," a concentration finding that predates any of MSFT's own economics being independently verified | Yes — MSFT is large enough that a materially adverse finding could argue for a real target change, unlike most band-tier gaps | Milestone-3 batch or dedicated committee review authorization |
-| GOOGL | 3.35% | Full Company Intelligence record | Same AI-infra-grouping concentration finding as MSFT; no independent verification of GOOGL's own AI-capex-cycle exposure exists | Yes | Milestone-3 batch or dedicated committee review authorization |
-| META | 3.35% | Full Company Intelligence record | Same AI-infra-grouping concentration finding; META recurs as a named customer across all three semis-batch comparison artifacts (a demand-side counterparty to holdings this repository has researched) without META's own supply/demand economics ever being independently verified | Yes | Milestone-3 batch or dedicated committee review authorization |
-| LLY | 3.35% | Full Company Intelligence record | GLP-1/obesity-drug franchise concentration and patent-cliff timing are unverified by this repository | Yes | Milestone-3 batch or dedicated committee review authorization |
-| V | 3.35% | Full Company Intelligence record | Payments-network economics, regulatory/interchange-fee risk unverified | Yes | Milestone-3 batch or dedicated committee review authorization |
+| Ticker | Current target | Current role/tier baseline | Label | Missing research | Material risk of relying on baseline | Could the gap materially affect a future scenario result? | Future research trigger |
+|---|---|---|---|---|---|---|---|
+| MSFT | 3.35% | T1 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record (economic role, competitive position, financial quality, AI-capex exposure, cloud/enterprise-software concentration, risks) | High materiality because of existing portfolio weight — MSFT is a top-tier T1 holding with no independent evidence check at all; recurs as a named AI-infrastructure/hyperscaler counterparty across all three completed semis-batch comparison artifacts without its own economics ever being verified | Yes — a materially adverse finding could argue for a real target change, unlike most smaller-weight gaps | Milestone-3 batch or dedicated committee-review authorization (research-coverage urgency only — not a batch selection or authorization) |
+| GOOGL | 3.35% | T1 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | High materiality because of existing portfolio weight — same AI-infrastructure-concentration finding as MSFT (`CLAUDE.md` Decisions Log's own "7-of-9 T1 names" observation); GOOGL's TPU/AI-capex economics are referenced by name in TSM's and AVGO's own records without independent verification of GOOGL itself | Yes | Milestone-3 batch or dedicated committee-review authorization (research-coverage urgency only) |
+| META | 3.35% | T1 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | High materiality because of existing portfolio weight — same T1 AI-infra-concentration finding; META recurs as a named hyperscaler customer across AVGO's and AMD's own records without its own supply/demand economics being independently verified | Yes | Milestone-3 batch or dedicated committee-review authorization (research-coverage urgency only) |
+| LLY | 3.35% | T1 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record (GLP-1/obesity-drug franchise concentration, patent-cliff timing, pipeline durability) | High materiality because of existing portfolio weight; no other pharmaceutical holding provides a cross-check on LLY's own franchise-concentration risk | Yes | Milestone-3 batch or dedicated committee-review authorization (research-coverage urgency only) |
+| V | 3.35% | T1 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record (payments-network economics, interchange-fee regulatory risk, MA overlap) | High materiality because of existing portfolio weight; MA (also uncovered, T2) shares the same regulatory exposure with no independent verification of either | Yes | Milestone-3 batch or dedicated committee-review authorization (research-coverage urgency only) |
 
-## T2 tier (1.65% target each)
+## T2 tier — 11 uncovered company holdings (1.65% target each)
 
-| Ticker | Current target | Notable gap-specific context |
-|---|---|---|
-| AMZN | 1.65% | Named repeatedly as a hyperscaler customer/counterparty across AVGO, MRVL, and MU/SKHY's own Company Intelligence records (Trainium program, AWS demand) without AMZN's own economics being independently verified — a real informational asymmetry given how much of this repository's semis-cluster research assumes AMZN as a stable demand source |
-| CEG | 1.65% | Power/utility economics, nuclear-relicensing and AI-datacenter power-purchase-agreement exposure unverified |
-| PWR | 1.65% | Member of the governed `power_infra` cluster cap (with GEV) but has no own-name Intelligence record despite GEV's own record existing |
-| DHR | 1.65% | Life-sciences-tools diversified peer to TMO (which is ACCEPTED) — no independent verification of DHR's own segment mix or China exposure |
-| SYK | 1.65% | Named as a considered-but-deferred candidate in `PI-0014`'s bounded evidence review; still no filed record |
-| MA | 1.65% | Payments-network peer to V; same unverified regulatory/interchange exposure |
-| BRK.B | 1.65% | Named as a comparator in COST's own `PI-0021` committee review; conglomerate-scale economics unverified in their own right |
-| WMT | 1.65% | Named as a comparator in COST's own `PI-0021` committee review; own-name economics unverified |
-| EQIX | 1.65% | Data-center REIT — direct AI-infrastructure real-estate exposure, thematically adjacent to `ai_infrastructure` but no own-name record or theme membership |
-| MLM | 1.65% | Aggregates/infrastructure economics unverified; absorbed VMC's exposure per the 2026-07-13 consolidation decision but no dedicated record exists |
-| AAPL | 1.65% | Promoted band→T2 as a doctrine decision (see `CLAUDE.md` Decisions Log); own-name Intelligence never filed |
+| Ticker | Current target | Current role/tier baseline | Label | Missing research | Material risk of relying on baseline | Could the gap materially affect a future scenario result? | Future research trigger |
+|---|---|---|---|---|---|---|---|
+| AMZN | 1.65% | T2 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Moderate-high materiality — named repeatedly as a hyperscaler customer/counterparty across AVGO's, MRVL's, and MU/SKHY's own records (AWS Trainium program, AWS demand) without AMZN's own economics ever being independently verified; a real informational asymmetry given how much semis-cluster research assumes AMZN as a stable demand source | Yes | Milestone-3 batch or dedicated committee-review authorization (research-coverage urgency only) |
+| CEG | 1.65% | T2 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record (power/utility economics, nuclear-relicensing status, AI-datacenter power-purchase-agreement exposure) | Moderate materiality | Possibly | Milestone-3 batch authorization (research-coverage urgency only) |
+| PWR | 1.65% | T2 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Moderate materiality — `power_infra` cluster-cap member alongside GEV (covered); no own-name record despite GEV's own record existing and informing the cluster-cap's derivation | Possibly — cluster-cap-level findings could matter even at moderate per-name weight | Milestone-3 batch authorization (research-coverage urgency only) |
+| DHR | 1.65% | T2 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Moderate materiality — life-sciences-tools diversified peer to TMO (covered); no independent verification of DHR's own segment mix or China exposure | Possibly | Milestone-3 batch authorization (research-coverage urgency only) |
+| SYK | 1.65% | T2 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Moderate materiality — named as a considered-but-deferred candidate in `PI-0014`'s bounded evidence review; still no filed record | Possibly | Milestone-3 batch authorization (research-coverage urgency only) |
+| MA | 1.65% | T2 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record (payments-network economics, regulatory/interchange exposure) | Moderate materiality — same regulatory-exposure category as V (uncovered, T1) | Possibly | Milestone-3 batch authorization (research-coverage urgency only) |
+| BRK.B | 1.65% | T2 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record (conglomerate-scale economics, capital-allocation history) | Moderate materiality — named as a comparator in COST's own `PI-0021` committee review; own-name economics never independently verified in their own right | Possibly | Milestone-3 batch authorization (research-coverage urgency only) |
+| WMT | 1.65% | T2 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Moderate materiality — named as a comparator in COST's own `PI-0021` committee review; own-name economics never independently verified | Possibly | Milestone-3 batch authorization (research-coverage urgency only) |
+| EQIX | 1.65% | T2 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record (data-center REIT economics, AI-infrastructure real-estate exposure) | Moderate materiality — thematically adjacent to `ai_infrastructure` (no theme membership or own-name record exists) | Possibly | Milestone-3 batch authorization (research-coverage urgency only) |
+| MLM | 1.65% | T2 core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record (aggregates/infrastructure economics) | Moderate materiality — absorbed VMC's exposure per the 2026-07-13 consolidation decision but no dedicated record exists for the combined position | Possibly | Milestone-3 batch authorization (research-coverage urgency only) |
+| AAPL | 1.65% | T2 core holding (promoted band→T2, doctrine decision) | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Moderate-high materiality given portfolio scale, though the promotion itself was a considered doctrine decision, not an unexamined default | Possibly | Milestone-3 batch or dedicated committee-review authorization (research-coverage urgency only) |
 
-*(All T2 gaps: missing full Company Intelligence record; material risk is
-moderate-to-high given T2's meaningful per-name weight; future trigger:
-Milestone-3 batch or committee-review authorization.)*
+## Band tier — 25 uncovered company holdings (0.75% target each, cap 1.25×)
 
-## Band tier (0.75% target each, cap 1.25×) — 25 tickers
+| Ticker | Current target | Current role/tier baseline | Label | Missing research | Material risk of relying on baseline | Could the gap materially affect a future scenario result? | Future research trigger |
+|---|---|---|---|---|---|---|---|
+| WDC | 0.75% | band core holding, `semis` cluster-cap member | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record (post-Sandisk-separation HDD-storage economics) | Moderate — **explicitly excluded from Batch 2** (`PI-0024`) on the finding that its post-separation HDD business is a different economic function from the DRAM/NAND/HBM bet MU/SKHY examine; `targets.yaml`'s stale MU/WDC cluster comment (identified, not corrected, per `PI-0024` §E) remains a separate, unauthorized factual-reconciliation item, distinct from this coverage gap | Low-moderate | Milestone-3 batch authorization, separate from the unrelated `targets.yaml` comment correction (research-coverage urgency only) |
+| VRT | 0.75% | band core holding, `power_infra` cluster-cap member | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Moderate — `power_infra` cluster-cap member alongside GEV (covered) and PWR/ETN (also uncovered) | Possibly | Milestone-3 batch authorization (research-coverage urgency only) |
+| ETN | 0.75% | band core holding, `power_infra` cluster-cap member | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Moderate — same `power_infra` cluster-cap exposure as VRT | Possibly | Milestone-3 batch authorization (research-coverage urgency only) |
+| CAT | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low-moderate — explicitly considered and excluded from the `power_infra` cluster cap on fundamental-fit grounds (`CLAUDE.md` Decisions Log); still uncovered as a standalone holding | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| GNRC | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| IBM | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| NOW | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| CRM | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| ORCL | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| NFLX | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| SHOP | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| CRWD | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| PANW | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| UBER | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| JPM | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record (bank-specific financial and regulatory-capital analysis) | Low-moderate — financial-sector holdings carry structurally different risk factors (regulatory capital, credit cycle) than the industrial/tech names dominating this register | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| HOOD | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| CVX | 0.75% | band core holding, `oil` cluster-cap member | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Moderate — `oil` cluster-cap member alongside XOM (covered); no own-name record despite the cap's own derivation resting partly on XOM's researched drawdown history | Possibly | Milestone-3 batch authorization (research-coverage urgency only) |
+| RTX | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| ABBV | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| MRK | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| JNJ | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| GILD | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| UNH | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
+| BABA | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record (foreign-issuer/China-domiciled structure and economics) | Moderate — geopolitical/China-domiciled exposure entirely unverified by this repository, a materially different risk category than most other band names given the geopolitical-exposure pattern already documented for MU/SKHY/AVGO/AMD | Possibly | Milestone-3 batch authorization (research-coverage urgency only) |
+| DELL | 0.75% | band core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low | Milestone-3 batch authorization (research-coverage urgency only) |
 
-| Ticker | Notable gap-specific context |
-|---|---|
-| WDC | **Explicitly excluded from Batch 2 (`PI-0024`)** on the finding that its post-Sandisk-separation HDD business is a different economic function from the DRAM/NAND/HBM bet MU/SKHY examine — `targets.yaml`'s stale MU/WDC cluster comment (identified, not corrected, per `PI-0024` §E) remains an open, separate, unauthorized factual-reconciliation item, distinct from a coverage gap |
-| VRT, ETN | `power_infra` cluster-cap members alongside GEV/PWR; no own-name records |
-| CAT | Explicitly considered and excluded from the `power_infra` cap on fundamental-fit grounds (`CLAUDE.md` Decisions Log) — still uncovered |
-| GNRC, IBM, NOW, CRM, ORCL, NFLX, SHOP, CRWD, PANW, UBER, JPM, HOOD, DELL | No Intelligence record; no batch has ever named any of these |
-| CVX | `oil` cluster-cap member alongside XOM (ACCEPTED); no own-name record despite the cap's own derivation resting partly on XOM's researched drawdown history |
-| RTX, ABBV, MRK, JNJ, GILD, UNH | No Intelligence record; no batch has ever named any of these |
-| BABA | Foreign-issuer/China-domiciled exposure entirely unverified by this repository — arguably a higher-priority gap than most band names given the geopolitical-exposure pattern already documented for MU/SKHY/AVGO/AMD |
+## Spec tier — 4 uncovered company holdings (1.00% fixed target each)
 
-*(All band gaps: missing full Company Intelligence record; material risk is
-generally lower per-name given band's smaller 0.75% weight, except BABA
-(geopolitical) and cluster-cap members (VRT/ETN/CAT/CVX) where a cap-level
-finding could matter even at small per-name weight; future trigger:
-Milestone-3 batch authorization.)*
+| Ticker | Current target | Current role/tier baseline | Label | Missing research | Material risk of relying on baseline | Could the gap materially affect a future scenario result? | Future research trigger |
+|---|---|---|---|---|---|---|---|
+| SPCX | 1.00% (fixed) | spec core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low-moderate — private/pre-IPO-adjacent structure may complicate standard evidence-gathering | Low (spec's fixed sizing already caps this holding at exactly target) | Milestone-3 batch authorization (research-coverage urgency only) |
+| RKLB | 1.00% (fixed) | spec core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Moderate — `CLAUDE.md`'s own `trim_backtest.md` Decisions Log entry documents a realized -28.6% drawdown at ~3.6x intended size for this name specifically, but no formal Company Intelligence record exists to contextualize that history | Low (spec's fixed sizing already caps this holding at exactly target) | Milestone-3 batch authorization (research-coverage urgency only) |
+| TSLA | 1.00% (fixed) | spec core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low-moderate — explicitly considered and excluded from the `power_infra` cluster cap on fundamental-fit grounds; still uncovered as a standalone holding | Low (spec's fixed sizing already caps this holding at exactly target) | Milestone-3 batch authorization (research-coverage urgency only) |
+| PLTR | 1.00% (fixed) | spec core holding | temporary current-policy baseline — not independently re-derived | Full Company Intelligence record | Low | Low (spec's fixed sizing already caps this holding at exactly target) | Milestone-3 batch authorization (research-coverage urgency only) |
 
-## Spec tier (1.00% fixed target each) — 4 tickers
+## ETF baseline — 3 roster entries, a separate structural category (2.30% target each)
 
-| Ticker | Notable gap-specific context |
-|---|---|
-| SPCX | No Intelligence record; private/pre-IPO-adjacent structure may complicate standard evidence-gathering |
-| RKLB | Explicitly named in `CLAUDE.md`'s own `trim_backtest.md` Decisions Log entry (RKLB's realized -28.6% drawdown at ~3.6x intended size was the disqualifying case for the never-trim backtest arm) — a name this repository already has real risk evidence about, but no formal Company Intelligence record |
-| TSLA | Explicitly considered and excluded from the `power_infra` cluster cap on fundamental-fit grounds; no own-name record |
-| PLTR | No Intelligence record; no batch has ever named this ticker |
+**These are not "uncovered companies."** Index/commodity-tracking funds are
+a structurally different category from an operating company — the Company
+Intelligence schema (`docs/PORTFOLIO_INTELLIGENCE_SPEC.md`) is built for
+company-level economic role, competitive position, and business-risk
+analysis, which does not map onto a passive fund's actual risk profile
+(tracking error, expense ratio, underlying-index composition, liquidity of
+the fund itself — not a company's competitive moat or balance sheet). This
+section gives each ETF its own full, explicit disposition rather than
+folding them into the company register.
 
-*(All spec gaps: missing full Company Intelligence record; spec's fixed,
-non-cap-exceeding sizing limits downside from a coverage gap somewhat versus
-band; future trigger: Milestone-3 batch authorization.)*
-
-## ETF sleeve (2.30% target each) — 3 tickers, structurally different category
-
-| Ticker | Why not applicable in the same sense |
-|---|---|
-| SPY, QQQ, GLD | Index/commodity-tracking funds, not operating companies — the Company Intelligence schema (`docs/PORTFOLIO_INTELLIGENCE_SPEC.md`) is built for company-level economic/competitive/risk analysis, which does not map cleanly onto a passive fund. This register does not propose a Company Intelligence record for any of the three; it records their absence from any evidence-gathering process only for completeness. No material risk beyond the fund's own well-known, broadly-disclosed tracking characteristics. |
-
-## Crypto sleeve — not applicable to this register
-
-BTC/ETH/SOL are governed by the crypto sleeve (`targets.yaml`'s `crypto:`
-block), a fundamentally different allocation mechanism (aggregate sleeve gap,
-not per-coin target) — outside this register's company-level scope entirely,
-consistent with every prior WS-0005 milestone's own scoping.
+| Ticker | Current target | ETF role | Why Company Intelligence is structurally inapplicable | Baseline treatment | Relevant fund-level research gap, if any | Could this materially affect a future scenario result? | Future review trigger |
+|---|---|---|---|---|---|---|---|
+| SPY | 2.30% | Broad US large-cap equity index exposure (ETF sleeve) | Tracks a diversified index (S&P 500), not a single operating company; no competitive position, management team, or balance sheet of its own to analyze under the Company Intelligence schema | temporary current-policy baseline — no Company Intelligence record authorized or applicable | None material identified — SPY's tracking characteristics, expense ratio, and liquidity are broadly disclosed and well-established | No — SPY's role is diversified market-beta exposure, not a name-specific thesis this scenario reasons about | None specific to this register; any future review would be fund-level (expense ratio change, tracking-error anomaly), not company-research-driven |
+| QQQ | 2.30% | Nasdaq-100 index exposure (ETF sleeve); also the account's `regime_ticker` for informational 200-EMA display | Same as SPY — tracks an index, not a single company | temporary current-policy baseline — no Company Intelligence record authorized or applicable | None material identified | No | None specific to this register |
+| GLD | 2.30% | Gold-commodity-tracking exposure (ETF sleeve) | Tracks a physical commodity price, not a company at all — the Company Intelligence schema's economic-role/competitive-position/business-risk fields do not apply to a commodity-tracking instrument in any form | temporary current-policy baseline — no Company Intelligence record authorized or applicable; structurally inapplicable, not merely unresearched | None material identified — GLD's physical-backing and tracking mechanics are well-established and disclosed by the fund | No | None specific to this register |

@@ -21,20 +21,27 @@
 # ticker. This is a deliberate, evidence-based finding, not an oversight or a
 # placeholder: the preliminary zero-based review documented in
 # WS0005_PRELIMINARY_PORTFOLIO_ARCHITECTURE_20260726.md found the evidence
-# gathered for all 17 ACCEPTED/PROVISIONAL-Intelligence-covered holdings
-# consistent with — not requiring a change from — their current governed
-# tier and target. One directional observation (AVGO's evidence trending
-# toward the stronger end of T2, TMO's toward the more moderate end) is
-# recorded narratively in the reconciliation artifact but is NOT implemented
-# as a target change here, because targets.yaml's tier structure applies one
+# gathered for all 17 company holdings carrying qualifying Intelligence —
+# 13 ACCEPTED (COST, XOM, NVDA, GEV, ISRG, TMO, TSM, ASML, AMAT, KLAC, LRCX,
+# MU, SKHY, per OPS-0007 §4's own "the thirteen existing records") and 4
+# PROVISIONAL (AVGO, AMD, MRVL, INTC — PR #161's records, independently
+# confirmed to satisfy OPS-0007 §3's five-part definition) — consistent
+# with, not requiring a change from, their current governed tier and
+# target. One directional observation (AVGO's evidence trending toward the
+# stronger end of T2, TMO's toward the more moderate end) is recorded
+# narratively in the reconciliation artifact but is NOT implemented as a
+# target change here, because targets.yaml's tier structure applies one
 # uniform weight_pct to every ticker in a tier — expressing a single-ticker
 # differentiated weight would require either a full tier reassignment (a
 # larger, non-preliminary claim this pass does not make) or a schema change
 # (out of scope, not authorized). Net target-weight change among the 17
 # covered holdings: 0.00 percentage points — reconciles trivially against
-# production. Every one of the other 48 roster entries (45 non-covered
-# companies + 3 ETFs) is NOT INDEPENDENTLY RE-DERIVED and is carried forward
-# byte-identical to targets.yaml, per OPS-0007 §4's explicit requirement.
+# production. Of the roster's 65 total share-target entries: 62 are company
+# holdings (17 covered as above; 45 NOT INDEPENDENTLY RE-DERIVED, carried
+# forward byte-identical to targets.yaml, per OPS-0007 §4's explicit
+# requirement) and 3 are ETFs (SPY/QQQ/GLD — a structurally separate
+# category, not "uncovered companies"; Company Intelligence does not apply
+# to a passive fund), also carried forward byte-identical.
 #
 # Roster: byte-identical to targets.yaml — no ticker added, removed, or
 # substituted. Margin/leverage/buffer-floor gates: byte-identical to

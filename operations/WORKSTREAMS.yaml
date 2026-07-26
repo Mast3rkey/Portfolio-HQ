@@ -908,10 +908,11 @@ workstreams:
           CI succeeded at the exact merged head; independent review retained and anchored; one bounded
           correction pass followed; principal explicit acceptance; post-merge verification complete)
           is satisfied. **This entry does not declare Milestone 3 complete in aggregate** — of the
-          portfolio's 65 non-ETF share-tracked holdings, only 17 now carry a qualifying (ACCEPTED or
-          PROVISIONAL) Company Intelligence record; the remaining 48 (45 companies + 3 ETFs) have no
-          record at all, per the coverage-gap register in
-          `operations/provisional/WS0005_COVERAGE_GAP_REGISTER_20260726.md`. Milestone 3 therefore
+          portfolio's 62 company holdings (65 total roster entries, less 3 ETFs), only 17 now carry
+          a qualifying (13 ACCEPTED or 4 PROVISIONAL, per `OPS-0007` §4) Company Intelligence
+          record; the remaining 45 companies have no record at all, per the coverage-gap register in
+          `operations/provisional/WS0005_COVERAGE_GAP_REGISTER_20260726.md` (the 3 ETFs are a
+          separate structural category, not uncovered companies). Milestone 3 therefore
           remains `status: in_progress`, based on actual remaining-coverage state, not merely on
           precedent. This entry authorizes no fourth Milestone 3 batch and no Milestone 4-9 work.
         pr: 161
@@ -1032,7 +1033,8 @@ workstreams:
       - operations/provisional/ws0005_provisional_target_scenario_20260726.yaml
       - operations/provisional/WS0005_COVERAGE_GAP_REGISTER_20260726.md
       - operations/provisional/WS0005_CURRENT_POLICY_RECONCILIATION_20260726.md
-      - "Preliminary portfolio-architecture and target-scenario package (OPS-0007 §4), filed on branch claude/ws0005-provisional-portfolio-architecture, base verified post-merge origin/main 270b47163bde6999dd336ff327965bbc7b5fd031: classifies all 65 non-ETF roster holdings into ACCEPTED (7), PROVISIONAL (10), and NOT INDEPENDENTLY RE-DERIVED (48); finds, for the 17 ACCEPTED/PROVISIONAL holdings, the evidence gathered consistent with current governed tier/target placement, with zero net target-weight change (28.70pp both current and scenario); makes no change to targets.yaml, holdings.yaml, allocate.py, or margin_state.py; runs no Monday allocation check. Not yet merged, not yet independently reviewed."
+      - "Preliminary portfolio-architecture and target-scenario package (OPS-0007 §4), filed on branch claude/ws0005-provisional-portfolio-architecture, base verified post-merge origin/main 270b47163bde6999dd336ff327965bbc7b5fd031: classifies the 62 company holdings (of 65 total roster entries; 3 are ETFs, a separate category) into ACCEPTED (13, per OPS-0007 §4's own 'the thirteen existing records'), PROVISIONAL (4: AVGO/AMD/MRVL/INTC), and NOT INDEPENDENTLY RE-DERIVED (45); finds, for the 17 ACCEPTED/PROVISIONAL holdings, the evidence gathered consistent with current governed tier/target placement, with zero net target-weight change (28.70pp both current and scenario); makes no change to targets.yaml, holdings.yaml, allocate.py, or margin_state.py; runs no Monday allocation check."
+      - "PR #163 independent ChatGPT review 4781581139 (session chatgpt-pr163-review-20260726-01, COMMENTED-state GitHub review, anchored via its own commit_id field to exact head 605f7961cd47b3f35b5d945d546717ca7b4e1b90) — verdict CHANGES REQUIRED: Major 1 (evidence-status classification conflicted with OPS-0007 §4's own 'thirteen existing records' text), Major 2 (17-holding reconciliation lacked a per-holding decision trail), Major 3 (coverage-gap register grouped tickers and omitted required fields), plus two Minor findings (misstated roster count; ambiguous research-priority wording). One bounded correction pass resolves all five findings. A fresh exact-head independent re-review remains required before principal acceptance or merge."
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -1183,26 +1185,30 @@ workstreams:
       independently satisfy every element and are identified as
       PROVISIONAL** — see the milestone-3-intelligence-completion gate entry
       for the full determination. Milestone 3 remains `status: in_progress`
-      in aggregate: 17 of 65 non-ETF roster holdings now carry a qualifying
-      Company Intelligence record; 48 do not (see
-      `operations/provisional/WS0005_COVERAGE_GAP_REGISTER_20260726.md`). No
-      fourth Milestone 3 batch or Milestone 4-9 work is authorized by this
-      merge.
+      in aggregate: of the roster's 65 total entries (62 companies + 3
+      ETFs), 17 companies now carry a qualifying (13 ACCEPTED or 4
+      PROVISIONAL) Company Intelligence record; 45 companies do not (the 3
+      ETFs are a separate structural category, not uncovered companies —
+      see `operations/provisional/WS0005_COVERAGE_GAP_REGISTER_20260726.md`).
+      No fourth Milestone 3 batch or Milestone 4-9 work is authorized by
+      this merge.
 
       **Preliminary portfolio-architecture and target-scenario package
-      (OPS-0007 §4/§5) filed 2026-07-26, not yet merged, not yet
-      independently reviewed.** Branch
-      claude/ws0005-provisional-portfolio-architecture, base verified
+      (OPS-0007 §4/§5) filed 2026-07-26, independently reviewed by ChatGPT
+      (review 4781581139, CHANGES REQUIRED), one bounded correction pass
+      applied, not yet merged, fresh exact-head re-review still required.**
+      Branch claude/ws0005-provisional-portfolio-architecture, base verified
       post-merge origin/main 270b47163bde6999dd336ff327965bbc7b5fd031.
-      Classifies all 65 non-ETF roster holdings into ACCEPTED (7:
-      COST/XOM/NVDA/GEV/ISRG/TMO/TSM), PROVISIONAL (10: ASML/AMAT/KLAC/LRCX/
-      MU/SKHY/AVGO/AMD/MRVL/INTC), and NOT INDEPENDENTLY RE-DERIVED (48).
-      Finds the evidence gathered for all 17 ACCEPTED/PROVISIONAL holdings
-      consistent with current governed tier/target placement; zero net
-      target-weight change (28.70pp both current and scenario, independently
-      verified via allocate.py's own build_roster()). No target.yaml,
-      holdings.yaml, allocate.py, or margin_state.py change; no Monday
-      allocation check run; this entry records the filing only and grants no
+      Classifies the 62 company holdings into ACCEPTED (13, per OPS-0007
+      §4's own "the thirteen existing records": COST/XOM/NVDA/GEV/ISRG/TMO/
+      TSM/ASML/AMAT/KLAC/LRCX/MU/SKHY), PROVISIONAL (4: AVGO/AMD/MRVL/INTC),
+      and NOT INDEPENDENTLY RE-DERIVED (45); the 3 ETFs (SPY/QQQ/GLD) are a
+      separate structural category. Finds the evidence gathered for all 17
+      ACCEPTED/PROVISIONAL holdings consistent with current governed
+      tier/target placement; zero net target-weight change (28.70pp both
+      current and scenario, independently verified via allocate.py's own
+      build_roster()). No targets.yaml, holdings.yaml, allocate.py, or
+      margin_state.py change; no Monday allocation check run; this entry records the filing only and grants no
       authority until its own PR is independently reviewed, principal-
       accepted, and merged.
 
@@ -1282,11 +1288,24 @@ workstreams:
       complete and passing — see the milestone-3-intelligence-completion
       gate entry above for the full seventeen-gate list. AVGO/AMD/MRVL/INTC
       independently confirmed PROVISIONAL per OPS-0007 §3. Milestone 3
-      remains blocked in aggregate (17 of 65 non-ETF holdings covered; 48
-      not — see the coverage-gap register) pending its own separate, later,
-      explicit principal authorization for any further batch; none has been
+      remains blocked in aggregate (17 of 62 company holdings covered; 45
+      not, plus 3 ETFs as a separate structural category — see the
+      coverage-gap register) pending its own separate, later, explicit
+      principal authorization for any further batch; none has been
       granted by this entry, by PI-0023, by PI-0024, by PI-0025, or by
       anything else.
+
+      **PR #163 (preliminary architecture package) independent ChatGPT
+      review 4781581139: CHANGES REQUIRED** (three Major findings — evidence-
+      status classification, missing per-holding decision trail, incomplete
+      coverage-gap register — plus two Minor findings). One bounded
+      correction pass applied, resolving the classification to OPS-0007
+      §4's own literal 13-ACCEPTED/4-PROVISIONAL structure, expanding the
+      reconciliation to a full 20-field per-holding record for all 17
+      covered holdings, and giving every one of the 45 uncovered companies
+      (plus the 3 ETFs, as a separate section) its own explicit row. A
+      fresh, exact-head independent re-review remains required before
+      principal acceptance or merge.
 
       **OPS-0007 (capability-based independent-review standard; PROVISIONAL
       Intelligence category; preliminary-architecture and scenario-only

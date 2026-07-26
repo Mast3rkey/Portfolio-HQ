@@ -6,6 +6,19 @@ Authorized by `governance/decisions/OPS-0007-capability-based-review-provisional
 PR #161's merge and post-merge PROVISIONAL-status determination (see Mandatory
 provisional metadata below for exact heads/commits).
 
+**Bounded correction note (this revision):** an independent ChatGPT review
+(review `4781581139`, verdict CHANGES REQUIRED, session identifier
+`chatgpt-pr163-review-20260726-01`) found three Major findings in the prior
+revision: (1) the evidence-status classification (7 ACCEPTED / 10
+PROVISIONAL) conflicted with `OPS-0007` §4's own literal text, which treats
+"the thirteen existing records" collectively as currently accepted
+Intelligence; (2) the 17-holding reconciliation used global narrative
+paragraphs instead of a per-holding decision trail, making the zero-change
+conclusion unauditable; (3) the coverage-gap register grouped multiple
+tickers per row and omitted required fields. This revision corrects all
+three, plus two Minor findings (a misstated roster count, and ambiguous
+research-priority wording) — see each section below for the specific fix.
+
 ## What this document is and is not
 
 This is a **preliminary, evidence-based organization** of the current portfolio's
@@ -20,7 +33,7 @@ authorized to run, not performed here). It is:
   or `margin_state.py`; a future decision may adopt, revise, or discard any
   conclusion here without cost, per OPS-0007 §6's sunset discipline;
 - **not a claim that portfolio-wide research is complete** — only 17 of the
-  portfolio's 65 non-ETF holdings currently have any Company Intelligence
+  portfolio's 62 company holdings currently have any Company Intelligence
   record (see Coverage classification below and the companion Coverage-Gap
   Register).
 
@@ -31,82 +44,133 @@ complete, in whole or in part, beyond what is factually recorded in
 `operations/WORKSTREAMS.yaml`; or authorize a fourth Milestone-3 batch or any
 Milestone-4-9 execution.
 
+## Roster counts (corrected)
+
+`holdings.yaml`'s `shares:` block contains **65 total share-target roster
+entries**. Of those:
+
+- **62 are company holdings**, of which:
+  - **17 carry a qualifying Company Intelligence record** (13 ACCEPTED + 4
+    PROVISIONAL — see Coverage classification below);
+  - **45 are NOT INDEPENDENTLY RE-DERIVED** (full register in
+    `WS0005_COVERAGE_GAP_REGISTER_20260726.md`).
+- **3 are ETFs** (SPY, QQQ, GLD) — a structurally separate category, not
+  "uncovered companies"; see that register's own ETF-baseline section.
+
+(The prior revision's "65 non-ETF holdings" phrasing was incorrect and is
+retracted — the roster is 65 total entries, of which 62 are companies and 3
+are ETFs, not 65 non-ETF entries.)
+
 ## Coverage classification
 
-Every one of the portfolio's 65 non-ETF share-tracked holdings (per
-`holdings.yaml`'s `shares:` block) is classified into exactly one of three
-evidence-status categories, determined from retained governance and review
-evidence — never inferred from the mere existence of a YAML file.
+Every one of the 62 company holdings is classified into exactly one of two
+evidence-status categories defined by `OPS-0007` §4 itself, plus the
+structurally separate ETF category — determined from retained governance and
+review evidence, never inferred from the mere existence of a YAML file.
 
-| Category | Count | Definition |
+| Category | Count | Definition (per `OPS-0007` §4) |
 |---|---|---|
-| **ACCEPTED INTELLIGENCE** | 7 | Company Intelligence record that has, in addition to OPS-0007 §3's five elements, undergone `PI-0016`'s standing committee-review methodology or an equivalent explicit, field-by-field human approval recorded in its own `review.log` (not merely a whole-PR acceptance) |
-| **PROVISIONAL INTELLIGENCE** | 10 | Company Intelligence record that independently satisfies every one of OPS-0007 §3's five elements — eligible-reviewed, bounded-corrected/re-reviewed if needed, principal-accepted, **merged to `main`**, and post-merge ancestry/scope/validator/test-verified — but has not yet undergone the deeper `PI-0016`-style committee review or WS-0005's own later Milestone-9 review |
-| **NOT INDEPENDENTLY RE-DERIVED** | 48 (45 companies + 3 ETFs) | No qualifying Company Intelligence record exists; current governed policy is preserved as an unchanged, temporary baseline only |
+| **ACCEPTED INTELLIGENCE** | 13 | `OPS-0007` §4's own "the thirteen existing records" — every Company Intelligence record that existed and was merged to `main` before PR #161, regardless of which prior process (a `PI-0016`-style committee review, or a first-coverage `PI-####` batch authorization) produced it |
+| **PROVISIONAL INTELLIGENCE** | 4 | PR #161's four records (AVGO, AMD, MRVL, INTC) — the only batch that has ever been required to satisfy, and has now independently satisfied, `OPS-0007` §3's five-part PROVISIONAL definition, because it is the first batch to merge after `OPS-0007` itself existed |
+| **NOT INDEPENDENTLY RE-DERIVED** | 45 companies (+ 3 ETFs, separate category) | No qualifying Company Intelligence record exists; current governed policy is preserved as an unchanged, temporary baseline only |
 
-### ACCEPTED INTELLIGENCE (7)
+### ACCEPTED INTELLIGENCE (13)
 
-COST, XOM, NVDA, GEV, ISRG, TMO, TSM. Each record's own `review.log` documents
-an explicit, named human-principal approval event under its own dedicated
-`PI-####` authorization (`PI-0003`/`TGT-0002` for COST; `PI-0005` for XOM;
-`PI-0007`/`PI-0017`/`PI-0018` for NVDA; `PI-0007`/`PI-0019`/`PI-0020` for GEV;
-`PI-0011`-era first-coverage plus later refresh for ISRG; `PI-0009` for TMO;
-`PI-0012`/`PI-0013` for TSM) — several (COST, NVDA, GEV) went through `PI-0016`'s
-full standing committee-review methodology with an explicit "Keep current
-policy" advisory conclusion recorded. These are treated as the strongest
-evidentiary tier available in this repository today.
+COST, XOM, NVDA, GEV, ISRG, TMO, TSM, ASML, AMAT, KLAC, LRCX, MU, SKHY —
+exactly `OPS-0007` §4's own enumerated "thirteen existing records," quoted
+verbatim: *"currently accepted Intelligence (the thirteen existing records,
+plus any batch — including PR #161's AVGO/AMD/MRVL/INTC records — only once
+it meets every element of §3's five-part PROVISIONAL definition...)."*
+`OPS-0007` §2 separately confirms that "every existing retained Fable review
+on this repository's merged history remains valid exactly as recorded; this
+decision changes no past review's status" — meaning all 13 records' prior
+review/merge history (each under its own `PI-####` authorization, predating
+`OPS-0007`) is unaffected and treated as already-accepted.
 
-### PROVISIONAL INTELLIGENCE (10)
+**Correction retracted from the prior revision:** the prior revision split
+this group into a narrower 7-record "ACCEPTED" set (requiring a `PI-0016`
+committee review) and moved the other 6 (ASML, AMAT, KLAC, LRCX, MU, SKHY)
+into "PROVISIONAL." `OPS-0007` §4's text does not draw that line — it treats
+all 13 pre-PR-#161 records as one accepted set. This revision follows that
+literal structure. Governance authority to redefine the ACCEPTED/PROVISIONAL
+boundary itself was not sought and is out of scope for this bounded
+correction.
 
-ASML, AMAT, KLAC, LRCX (Batch 1, `PI-0023`); MU, SKHY (Batch 2, `PI-0024`);
-AVGO, AMD, MRVL, INTC (Batch 3, `PI-0025`). Independently verified against
-`operations/WORKSTREAMS.yaml` and each batch's own merge/review evidence: all
-three batches are merged to `main`, independently reviewed (Fable for
-Batches 1-2; an eligible independent reviewer under `OPS-0007` §1 for Batch 3),
-principal-accepted, and post-merge validator/test-verified. **None has yet
-undergone `PI-0016`'s deeper committee-review methodology or WS-0005's own
-Milestone-9 review** — each record's own `review.log` explicitly states its
-conviction rating "reflect[s] AI-assisted research pending independent PR
-review and human approval" at authoring time, a disclosure this package does
-not paper over. PROVISIONAL status here means exactly OPS-0007 §3's five
-elements are satisfied — nothing more.
+**Distinguishing accepted standing from deeper review depth (a non-
+reclassifying annotation).** All 13 are ACCEPTED under `OPS-0007` §4. Within
+that single category, this pass separately notes — for transparency, not as
+a reclassification — that seven of the thirteen (COST, XOM, NVDA, GEV, ISRG,
+TMO, TSM) additionally underwent `PI-0016`'s standing committee-review
+methodology or an equivalent explicit, field-by-field human-approval process
+recorded in their own `review.log`, while six (ASML, AMAT, KLAC, LRCX, MU,
+SKHY) were accepted via first-coverage `PI-0023`/`PI-0024` batch review and
+principal acceptance without that deeper committee-review layer. Both groups
+are equally ACCEPTED for `OPS-0007` §4 purposes; the underlying evidence
+quality and review depth genuinely differ and are recorded per-holding in
+`WS0005_CURRENT_POLICY_RECONCILIATION_20260726.md`'s own evidence-quality
+field, not smoothed into a single label.
 
-### NOT INDEPENDENTLY RE-DERIVED (48)
+### PROVISIONAL INTELLIGENCE (4)
 
-Every other roster entry. Full register in the companion
-`WS0005_COVERAGE_GAP_REGISTER_20260726.md`. Current role, tier, and target for
-each is preserved **exactly**, labeled `temporary current-policy baseline —
-not independently re-derived` throughout this package — never treated as
-independently confirmed, never treated as evidence the placement is correct.
+AVGO, AMD, MRVL, INTC (Batch 3, `PI-0025`, PR #161). Independently verified
+against `operations/WORKSTREAMS.yaml` and PR #161's own merge/review
+evidence: eligible-reviewed under `OPS-0007` §1 (reviews `4781479573`,
+`4781536364`), bounded-corrected for the one material finding, principal-
+accepted, merged to `main` at `270b47163bde6999dd336ff327965bbc7b5fd031`,
+and post-merge ancestry/scope/validator/test-verified — all five elements of
+`OPS-0007` §3 independently confirmed satisfied. **None has yet undergone
+`PI-0016`'s deeper committee-review methodology or WS-0005's own Milestone-9
+review** — each record's own `review.log` explicitly states its conviction
+rating "reflect[s] AI-assisted research pending independent PR review and
+human approval" at authoring time, a disclosure this package does not paper
+over. PROVISIONAL status here means exactly `OPS-0007` §3's five elements
+are satisfied — nothing more.
+
+### NOT INDEPENDENTLY RE-DERIVED (45 companies)
+
+Every other company roster entry. Full register, one explicit row per
+ticker (no grouping), in the companion
+`WS0005_COVERAGE_GAP_REGISTER_20260726.md`. Current role, tier, and target
+for each is preserved **exactly**, labeled `temporary current-policy
+baseline — not independently re-derived` throughout this package — never
+treated as independently confirmed, never treated as evidence the placement
+is correct.
+
+### ETF BASELINE (3) — a separate structural category
+
+SPY, QQQ, GLD. These are **not** "uncovered companies" — they are index/
+commodity-tracking funds, a structurally different category the Company
+Intelligence schema does not apply to (see the coverage-gap register's own
+ETF-baseline section for each fund's full disposition). Current target
+preserved exactly for all three.
 
 ## Methodology (qualitative, not a composite score)
 
 For each of the 17 ACCEPTED/PROVISIONAL holdings, this pass reasoned — from
 each record's own disclosed evidence, before comparing to current policy, per
-`OPS-0006` §§2/3's zero-based discipline — through: economic-role uniqueness;
-durable competitive position; conviction and its stated rationale; business
-and balance-sheet quality; cyclicality; customer/supplier concentration;
-capital intensity; geopolitical/export-control exposure; liquidity and
-refinancing risk; correlated-loss pathways; thesis-break detectability;
-expected recovery duration after impairment; overlap with other holdings; and
-evidence quality/unresolved uncertainty. No numeric score was computed or
-combined across these factors — each holding's candidate range and point
-target reflect a written, falsifiable judgment call, reproduced in full in
-`WS0005_CURRENT_POLICY_RECONCILIATION_20260726.md`.
+`OPS-0006` §§2/3's zero-based discipline — through the full 20-field decision
+trail now given per holding in `WS0005_CURRENT_POLICY_RECONCILIATION_20260726.md`:
+economic role, evidence-derived candidate role, conviction, evidence
+quality, confidence, distinct portfolio function, meaningful overlap/
+redundancy, major risk amplifiers, thesis-deterioration detectability,
+candidate tier, candidate target range, point target, target change, a
+zero-based reason for preserving or changing the candidate tier/point target
+(never citing the current target itself as evidence), unresolved evidence,
+and possible later allocator-output difference. No numeric score was
+computed or combined across these factors.
 
 **Central finding of this pass: for all 17 covered holdings, the evidence
 gathered is consistent with — does not decisively contradict — current
 governed tier and target placement.** This is itself a real, disclosed,
-zero-based conclusion (an "evidence-consistent" finding), not a default —
-three of the seven ACCEPTED-tier holdings (COST, NVDA, GEV) reached this
-conclusion through `PI-0016`'s own explicit "Keep current policy" committee
-output; the remaining 14 reached it through this pass's own independent
-reasoning, documented per-holding in the reconciliation table. **This is
-explicitly different from the NOT INDEPENDENTLY RE-DERIVED category**: those
-48 holdings' current policy is preserved because no evidence check has
-occurred at all; these 17 holdings' current policy is preserved because an
-evidence check occurred and did not surface a specific, schema-expressible
-reason to differ (see below).
+zero-based conclusion, not a default — several of the 13 ACCEPTED holdings
+(COST, NVDA, GEV) reached this conclusion through `PI-0016`'s own explicit
+"Keep current policy" committee output; the remaining 14 reached it through
+this pass's own independent, now fully per-holding-documented reasoning in
+the reconciliation artifact. **This is explicitly different from the NOT
+INDEPENDENTLY RE-DERIVED category**: those 45 companies' current policy is
+preserved because no evidence check has occurred at all; these 17 holdings'
+current policy is preserved because an evidence check occurred, per holding,
+and did not surface a specific, schema-expressible reason to differ.
 
 **One directional observation, not implemented as a target change.** AVGO's
 evidence (rapidly accelerating AI-semiconductor revenue, an improving credit
@@ -122,14 +186,18 @@ a schema change to support per-ticker overrides (out of scope, not
 authorized, and not necessary on the evidence gathered so far). This
 structural limitation is itself a relevant finding for the still-unauthorized
 Milestone 5 (zero-based classification/tier-architecture review) and is
-recorded here for that future work, not resolved by this pass.
+recorded here for that future work, not resolved by this pass. A second,
+more clearly unresolved tension (ASML's Medium conviction sitting at T1
+without a `PI-0016`-style deeper review, unlike GEV's equivalent, already-
+examined tension) is recorded per-holding in the reconciliation artifact and
+similarly not resolved here.
 
 **Net result: zero target-weight change among the 17 covered holdings.**
 Production total for these 17: 28.70 percentage points (5×3.35 T1 + 3×1.65 T2
 + 8×0.75 band + 1×1.00 spec). Scenario total: 28.70 percentage points —
-reconciles exactly, trivially, because no point target differs from current
+reconciles exactly, because no point target differs from current
 policy. Full per-holding candidate role/tier/range/point-target table with
-reasoning: `WS0005_CURRENT_POLICY_RECONCILIATION_20260726.md`.
+20-field reasoning per ticker: `WS0005_CURRENT_POLICY_RECONCILIATION_20260726.md`.
 
 ## Proof unsupported holdings are unchanged
 
@@ -144,19 +212,28 @@ against both files as they exist on disk.
 ## Coverage gaps
 
 See the companion `WS0005_COVERAGE_GAP_REGISTER_20260726.md` for the full
-per-holding register (45 companies + 3 ETFs): current target/role/tier
-baseline, why each is not independently re-derived, material risk of relying
-on the temporary baseline, missing research, whether the gap could materially
-affect a future provisional allocation result, and an appropriate future
-research trigger. No candidate is ranked for capital allocation.
+register: **one explicit row per each of the 45 uncovered company holdings**
+(current target/role/tier baseline, why not independently re-derived,
+missing research, material risk of relying on the temporary baseline,
+whether the gap could materially affect a future provisional allocation
+result, and a future research trigger), plus a **separate, fully-disposed
+ETF-baseline section** for SPY/QQQ/GLD. No candidate is ranked for capital
+allocation. Any discussion of a gap's materiality reflects
+**research-coverage urgency only** — never a capital ranking, and never a
+batch selection or authorization. (The prior revision's "highest-priority
+gap"/"higher-priority gap" phrasing has been replaced throughout the
+register with neutral materiality language, per the independent review's
+Minor 2 finding.)
 
 ## Assumptions and unresolved evidence
 
 - Every ACCEPTED/PROVISIONAL record's own disclosed unresolved-evidence items
   (e.g. AMD's unresolved >10%-customer claim, INTC's four-value government-
-  stake range, MRVL's disputed Amazon-Trainium signal) are preserved exactly
-  as each record discloses them — this package does not resolve, smooth over,
-  or silently drop any of them.
+  stake range, MRVL's disputed Amazon-Trainium signal, MU's entirely-missing
+  customer-concentration figure, SKHY's never-opened F-1/424B4 section) are
+  preserved exactly as each record discloses them, now indexed per-holding in
+  the reconciliation artifact's own item 19 for each ticker — this package
+  does not resolve, smooth over, or silently drop any of them.
 - This package assumes each of the 17 records' conviction rating and
   disclosed risk picture remain current as of this package's evidence
   cutoff (below); no record was re-researched for this pass.
@@ -168,7 +245,8 @@ research trigger. No candidate is ranked for capital allocation.
 
 ## Mandatory provisional metadata
 
-- **Creation date:** 2026-07-26.
+- **Creation date:** 2026-07-26 (this revision: bounded correction pass
+  following independent review `4781581139`).
 - **Evidence cutoff:** 2026-07-26 (matches every ACCEPTED/PROVISIONAL
   record's own `review.last_reviewed` date for records reviewed this
   session's batch cycle; earlier for the pre-existing ACCEPTED records —
@@ -189,9 +267,9 @@ research trigger. No candidate is ranked for capital allocation.
   live.
 - **Expiration date:** 2026-08-10 (15 calendar days from creation — shorter
   than the 30-day maximum this package's own authorization permits, given
-  four of the ten PROVISIONAL records are less than 48 hours old at creation
-  and their evidence is comparatively less battle-tested than the ACCEPTED
-  tier's).
+  four of the thirteen ACCEPTED records now carry a PROVISIONAL sibling
+  batch created same-day, and PROVISIONAL records' evidence is comparatively
+  less battle-tested than the deeper-reviewed ACCEPTED subset's).
 - **Mandatory earlier re-review triggers** (per OPS-0007 §6): a deeper Fable
   or other eligible-reviewer audit becomes available; any underlying
   ACCEPTED/PROVISIONAL record materially changes; research coverage
@@ -220,12 +298,15 @@ research trigger. No candidate is ranked for capital allocation.
   `git diff --check`, decision-index reconciliation, and the exactly-one-
   primary-workstream invariant all re-run clean — see this package's PR
   description for exact results.
+- Roster-count reconciliation independently re-verified: 65 total = 62
+  companies (17 covered + 45 uncovered) + 3 ETFs.
 
 ## Next step
 
-Independent ChatGPT (or any other eligible reviewer under `OPS-0007` §1)
-review of this preliminary architecture and target-scenario package, anchored
-to its exact PR head. This package's own PR remains in draft and unmerged
-throughout. No Monday live allocation check has been run or is authorized to
-run by this package alone — that remains OPS-0007 §5's own later, separate,
-bounded authorization.
+A fresh, exact-head independent ChatGPT re-review of this bounded correction
+pass, anchored to its new exact head — the same reviewing session that
+returned review `4781581139` (session identifier
+`chatgpt-pr163-review-20260726-01`). This package's own PR remains in draft
+and unmerged throughout. No Monday live allocation check has been run or is
+authorized to run by this package alone — that remains OPS-0007 §5's own
+later, separate, bounded authorization.
