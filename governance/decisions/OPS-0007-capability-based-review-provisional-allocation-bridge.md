@@ -30,8 +30,11 @@ substance of the review gate (what the review must do) — nothing more.
 
 Separately, WS-0005's roadmap (`OPS-0006` §4) currently authorizes only Milestones 1-2 to execute;
 Milestone 3 (Intelligence completion) proceeds batch-by-batch under its own `PI-####`
-authorizations (`PI-0023` merged and complete, `PI-0024` merged, `PI-0025` filed and gating PR
-#161); Milestones 4 through 9 (relationship mapping, zero-based classification, blind
+authorizations (`PI-0023` merged and complete, `PI-0024` merged, `PI-0025` **merged and effective**
+— its own governance PR #160 merged to `main` at `b20922bc51e1040081505f236065cb4fe5b23a33`,
+independently reviewed and principal-accepted before that merge — and now gating PR #161, its
+currently open, draft, unmerged research-implementation PR); Milestones 4 through 9 (relationship
+mapping, zero-based classification, blind
 classification, baseline reconciliation, the policy recommendation package, and final adoption)
 remain entirely unauthorized roadmap items. The principal separately directs that currently
 available, independently reviewed Intelligence should be usable now, under an explicit provisional
@@ -160,12 +163,28 @@ this filing performs.
 
 ### 3. Provisional Intelligence status
 
-A new advisory category, **PROVISIONAL**, is defined for Company or Theme Intelligence content
-that has cleared an eligible independent review under §1 but has not yet been subjected to
-WS-0005's later, deeper, portfolio-wide review (Milestones 4-9, and any future dedicated Fable
-review of the completed workstream per `OPS-0006` §4 Milestone 9).
+A new advisory category, **PROVISIONAL**, is defined for Company or Theme Intelligence content that
+has, at minimum, all five of the following — a batch that has only been independently reviewed but
+not yet merged does **not** qualify:
 
-Provisional Intelligence:
+1. Passed eligible independent, exact-head review under §1.
+2. Completed any required bounded correction and exact-head re-review (§1.11) for every material
+   finding from that review.
+3. Received explicit principal acceptance, at its exact final head.
+4. **Merged to authoritative `main` at that exact reviewed, principal-accepted head.** An
+   independently reviewed but unmerged draft PR — including PR #161 as it stands at this filing —
+   does not qualify for PROVISIONAL status merely by having been reviewed.
+5. Passed post-merge ancestry, scope, validator, and test re-verification on the merged state, with
+   `operations/WORKSTREAMS.yaml` factually synchronized to that merged state.
+
+Content that has not yet cleared all five elements is not PROVISIONAL — it remains draft research
+with no standing under this decision, exactly as it had before this filing, and may not be drawn on
+under §4 or §5. PROVISIONAL content that later clears WS-0005's later, deeper, portfolio-wide review
+(Milestones 4-9, and any future dedicated eligible-reviewer audit of the completed workstream per
+`OPS-0006` §4 Milestone 9) is confirmed, corrected, or superseded by that deeper review's own
+conclusion, per §6.
+
+Provisional Intelligence, once it meets all five elements above:
 
 - **May** inform preliminary research organization, candidate economic roles, classifications,
   tiers, target ranges, and scenario analysis, exactly as authorized in §4 and §5 below.
@@ -190,8 +209,14 @@ mandate" approach `OPS-0006` §10 already used for the broader Intelligence-life
 
 Authorized: **one later, separate, bounded implementation PR** (not opened by this filing) may use:
 
-- currently accepted Intelligence (the thirteen existing records plus any batch, including PR
-  #161's AVGO/AMD/MRVL/INTC records, that has cleared an eligible independent review under §1);
+- currently accepted Intelligence (the thirteen existing records, plus any batch — including PR
+  #161's AVGO/AMD/MRVL/INTC records — **only once it meets every element of §3's five-part
+  PROVISIONAL definition**: eligible-reviewed, bounded-corrected and re-reviewed if required,
+  principal-accepted, **merged to `main` at that exact head**, and post-merge ancestry/scope/
+  validator/test-verified with `operations/WORKSTREAMS.yaml` synchronized. An independently
+  reviewed but unmerged draft — PR #161 as it stands at this filing — does not qualify; this
+  future PR may not draw on PR #161's records until PR #161 itself has separately completed
+  merge and post-merge verification);
 - explicitly identified incomplete or uncovered holdings (every roster ticker without a Company
   Intelligence record, named as such, not silently omitted);
 - current `targets.yaml` policy, preserved only as an unchanged comparison baseline, per `OPS-0006`
@@ -241,6 +266,21 @@ containing:
    after a real, principal-executed trade) — never a sync manufactured to fit the scenario.
 8. **No automatic order placement** — this tool places no orders under any authorization; that
    constraint is unaffected and restated, not created, by this section.
+
+**Advisory allocation output, distinguished from trade execution.** This governance filing itself
+recommends no trade. The §4 preliminary-architecture PR recommends no specific buy, trim, sale, or
+execution. **The allocation-check package authorized by this section may display the existing
+allocator's ordinary advisory output** — including provisional buy, underweight, blocked, or trim
+comparisons, exactly where the allocator's existing gap/cap/trim logic naturally produces them, for
+both the official and the provisional scenario runs. Displaying that advisory output is not the same
+thing as executing it: no output produced under this section is automatically authoritative; no
+order may be placed or routed automatically under any circumstance; margin requested remains $0
+throughout; no provisional-only conclusion creates a mandatory trim, sale, or removal of any
+holding; and explicit principal review is required before any manual execution of anything the
+package displays — identical to how every other allocator recommendation already works under this
+system's Identity & Role. This does not relax §7's prohibition on this decision or any later PR
+executing, routing, or automatically placing a trade — it clarifies that advisory display of what
+the allocator would recommend is the entire, intended content of §5, not something §7 forbids.
 
 **The provisional scenario must initially be:**
 
@@ -295,14 +335,23 @@ snapshot of what the evidence supported at the time, not an error to be erased.
 
 This decision, and any later PR authorized under it, must not:
 
-- merge, modify, or mark ready PR #161;
+- This governance filing, and the later §4/§5 architecture/scenario PRs, may not themselves merge,
+  modify, or mark ready PR #161 — PR #161 may, however, proceed separately through its own
+  `PI-0025` process (as modified by §2: independent review, bounded correction if required,
+  exact-head re-review, principal acceptance, marking ready, merge, and post-merge verification) once
+  this decision is effective. §4/§5 work may only draw on PR #161's records after that separate
+  process independently completes every element of §3's five-part PROVISIONAL definition;
 - change `targets.yaml`;
 - change any holding, tier, role, cluster, cap, or weight in production;
 - modify `allocate.py` or `margin_state.py` (see §5's narrow exception process, which is not
   exercised by this filing);
 - authorize margin deployment of any kind;
 - change the 1.8x leverage cap or the 30% buffer floor;
-- recommend or execute a trade;
+- execute, route, or automatically place any trade or order, under any circumstance (see §5, which
+  explicitly authorizes the allocation-check package's *advisory* buy/trim/underweight/blocked
+  output — displaying an advisory recommendation is not execution, and remains subject to explicit
+  principal review before any manual execution; this bullet prohibits the execution, not the
+  advisory display, of a trade);
 - begin a fourth Milestone 3 research batch;
 - declare Milestone 3 (in aggregate), Milestones 4 through 8, Milestone 9, or WS-0005 as a whole
   complete;
@@ -325,16 +374,25 @@ B. One consolidated, bounded correction pass, only if that review returns a supp
    Major) finding.
 C. Exact-head re-review by an eligible reviewer and a retained artifact, per §1.11.
 D. Explicit principal acceptance of PR #161 at its exact final head.
-E. A provisional-use determination — whether and how PR #161's four new records, once merged,
-   enter PROVISIONAL status per §3.
-F. Creation of one preliminary architecture/target-scenario package, per §4.
-G. The official-and-provisional Monday allocation-check package, per §5.
-H. Later Fable (or other eligible reviewer) deeper review of WS-0005 as a whole, and supersession
+E. PR #161 marked ready and merged to `main`, under `PI-0025` as modified by §2 — this decision
+   itself performs none of steps A-E; they belong solely to PR #161's own separate process.
+F. Post-merge ancestry, scope, validator, and test re-verification of PR #161's merged state, with
+   `operations/WORKSTREAMS.yaml` factually synchronized — completing every element of §3's
+   five-part PROVISIONAL definition.
+G. A provisional-use determination — whether and how PR #161's four merged, post-merge-verified
+   records enter PROVISIONAL status per §3, now that steps A-F are complete.
+H. Creation of one preliminary architecture/target-scenario package, per §4 — drawing only on
+   Intelligence that has independently completed steps A-F (or the equivalent for any other batch).
+I. The official-and-provisional Monday allocation-check package, per §5.
+J. Later Fable (or other eligible reviewer) deeper review of WS-0005 as a whole, and supersession
    of any provisional conclusion, when that deeper review becomes available.
 
 **PR #161 still may not merge until its exact-head independent review, any required correction,
-exact-head re-review, and explicit principal acceptance are complete** — nothing in this decision
-shortens, waives, or bypasses that sequence; it only widens which reviewers can perform step A/C.
+exact-head re-review, and explicit principal acceptance are complete (steps A-D)** — nothing in this
+decision shortens, waives, or bypasses that sequence; it only widens which reviewers can perform
+step A/C. **No content from PR #161 may enter PROVISIONAL status or be drawn on under §4/§5 until
+steps E and F — merge and post-merge verification — also complete**, per §3's five-part definition;
+an independent review and principal acceptance alone (steps A-D) are necessary but not sufficient.
 
 ### 9. Governance package scope (this filing)
 
@@ -401,6 +459,27 @@ would be exactly the kind of unnecessary production-code coupling `OPS-0006` §6
 ("production coupling between Intelligence and the allocator"); the isolated-copy or in-memory-
 parameter approaches are sufficient on the evidence available now.
 
+**Why §5's advisory output is not the same thing as a trade recommendation §7 prohibits (bounded
+correction, this pass).** An independent review correctly identified that §5 authorizes an
+allocation-check package while §7, as originally drafted, prohibited any later PR from
+"recommend[ing] or execut[ing] a trade" — read literally, that would forbid the allocator's own
+ordinary advisory output, making §5 self-defeating. The allocator has never distinguished "display
+what the gap machine would buy" from "place an order" as separate concepts needing separate
+authorization — displaying advisory output is what every existing `allocate.py` run already does,
+and manual principal-reviewed execution has always been the separate, human step downstream of it.
+§5 and §7 are corrected to state that distinction explicitly, rather than leaving it to be inferred.
+
+**Why PROVISIONAL status requires merge and post-merge verification, not just review (bounded
+correction, this pass).** The same independent review correctly identified that §3's original text
+("has cleared an eligible independent review... but has not yet been subjected to... deeper...
+review") would let an independently reviewed but still-unmerged draft feed §4/§5 work — inconsistent
+with this repository's own settled convention that review and even principal acceptance are
+necessary but not sufficient for a change to carry repository authority (`governance/decisions/
+README.md`; `OPS-0006` §16.1: "none of the following, alone, constitutes completion... draft
+research... an open PR"). §3, §4, and §8 are corrected to require the full chain — review,
+correction if needed, re-review, principal acceptance, merge to `main`, and post-merge verification
+— before any batch (PR #161's included) is eligible for PROVISIONAL status or for use under §4/§5.
+
 ## Alternatives Considered
 
 - **Wait for Fable access to return before any further WS-0005 review.** Rejected — the principal's
@@ -422,8 +501,23 @@ parameter approaches are sufficient on the evidence available now.
 - **Authorize the preliminary architecture and allocation-scenario work to proceed immediately in
   this same filing.** Rejected — the principal's explicit instruction confines this filing to
   process authorization only; the actual preliminary-architecture and scenario PRs are separate,
-  later, and still gated on PR #161's own independent review and principal acceptance where they
-  depend on its content.
+  later, and still gated, where they depend on PR #161's content, on PR #161 independently
+  completing review, correction if needed, re-review, principal acceptance, merge, and post-merge
+  verification (§3's full five-part definition) — not on review and acceptance alone.
+- **Grant PROVISIONAL status the moment PR #161 clears independent review and principal
+  acceptance, without waiting for its merge.** Rejected — an independently reviewed but unmerged
+  draft is still just a draft: it carries no repository authority until merged, exactly as this
+  repository's own governance convention already treats every other decision and implementation PR
+  (`governance/decisions/README.md`; `OPS-0006` §16.1's "none of the following, alone, constitutes
+  completion... an open PR"). Treating review alone as sufficient would let a reviewed-but-unmerged
+  batch feed downstream architecture and scenario work that could be silently invalidated if the
+  reviewed head never merges or is further corrected before merging.
+- **Prohibit the allocation-check package from displaying any buy/trim/underweight/blocked
+  comparison, to avoid any appearance of a trade recommendation.** Rejected — the allocator's
+  advisory output is the entire point of running an allocation check at all; suppressing it would
+  make §5 authorize an empty exercise. The correct boundary, applied here, is between *displaying*
+  an advisory recommendation (authorized, exactly as every other allocator run already does) and
+  *executing* one (prohibited, per §7, under every authorization in this repository).
 - **Authorize a minimal `allocate.py` change now to make scenario-running more convenient.**
   Rejected — code inspection shows no change is currently necessary; §5 leaves the door open only
   if a later preflight demonstrates genuine need, and even then requires its own separate
@@ -451,12 +545,17 @@ trial ceiling.
 
 **PR #161 is untouched by this filing** — its state (open, draft, unmerged, head
 `e37392b075e26d55f2996bcd86487c93b453623a`) is exactly as found at this decision's preflight, and
-remains gated on its own independent review, correction if needed, exact-head re-review, and
-principal acceptance (§8), now performable by any eligible reviewer under §1, not only Fable.
+remains gated on its own independent review, correction if needed, exact-head re-review, principal
+acceptance, merge, and post-merge ancestry/scope/validator/test verification (§3, §8), now
+performable — for the review/correction/re-review steps — by any eligible reviewer under §1, not
+only Fable. **PR #161's records do not enter PROVISIONAL status, and may not be drawn on under §4
+or §5, until it independently completes every one of those steps** — review and principal
+acceptance alone are not sufficient.
 
 **No preliminary architecture, no target scenario, and no allocation check of any kind has been
 performed by this filing** — §4 and §5 authorize a later, separate implementation only. **No
-Milestone 3 batch beyond `PI-0023`/`PI-0024`/`PI-0025` (once merged), and no Milestone 4 through 9
-work, is authorized or implied by this decision.** The next concrete step is this governance PR's
+Milestone 3 batch beyond `PI-0023`/`PI-0024`/`PI-0025`'s own already-authorized batch (PR #161,
+once it separately merges and passes post-merge verification), and no Milestone 4 through 9 work,
+is authorized or implied by this decision.** The next concrete step is this governance PR's
 own independent review, per §10 — not PR #161 work, not the preliminary-architecture PR, and not
 the allocation-check package.
