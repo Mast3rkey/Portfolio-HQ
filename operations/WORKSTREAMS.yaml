@@ -711,16 +711,88 @@ workstreams:
           or internally-conflicting figures independently cross-checked by the synthesizing session
           via separate WebSearch queries. `intelligence_validator.py` (13 companies, all valid,
           including MU and SKHY), `freshness_validator.py` (OK), and YAML parsing all re-run clean
-          on the implementation branch. Pushed and opened as draft PR **#158**
-          (`https://github.com/Mast3rkey/Portfolio-HQ/pull/158`). **This batch remains unmerged and
-          incomplete** per this entry's own and `PI-0024` §I's completion criteria (no independent
-          Fable review yet exists for this implementation; not marked ready; not merged to `main`;
-          no post-merge re-verification performed) — a draft PR, an open branch, and a passing local
-          validation run do not by themselves constitute completion, per `OPS-0006` §16.1 and
-          `PI-0024` §I. This entry
-          authorizes no third Milestone 3 batch and no Milestone 4 work; no tier, target, cluster,
-          allocator, or margin review has begun.
-        pr: 154
+          on the implementation branch. Pushed and opened as draft PR #158
+          (`https://github.com/Mast3rkey/Portfolio-HQ/pull/158`).
+
+          **Bounded correction pass (2026-07-26).** An independent Fable review (4780292852-class,
+          full review anchored to head `78d5045`) returned APPROVED WITH NON-BLOCKING FINDINGS —
+          two Minor findings: (F-1) the MU.yaml `sources[]` entry labeled "FY2025 Form 10-K"
+          actually cited a Q2 FY2025 earnings-release 8-K exhibit URL with a garbled filing-year
+          reference; (F-2) SKHY's ADR-premium risk cited a stale premium range and omitted
+          pre-cutoff reporting of a 2026-07-29 two-way-conversion event. One bounded correction
+          commit (`957a223278e154a9bdd20033911cec79f0696c37`) resolved both, touching exactly
+          `intelligence/companies/MU.yaml`, `intelligence/companies/SKHY.yaml`,
+          `intelligence/companies/SKHY.md` — no other file, no substantive figure, no conclusion,
+          and no `conviction.rating` changed (SKHY's Medium rating was explicitly reassessed against
+          the corrected evidence and retained, per the review log). Cumulative PR scope re-confirmed
+          unchanged at exactly the 8 files.
+
+          **Batch 2 merged 2026-07-26 — implementation PR #158 merged, principal-accepted.** A
+          second independent Fable review (`4780782073`, submitted as a COMMENTED-state GitHub
+          review because GitHub blocks an APPROVE-state self-review from the authoring account —
+          verdict carried in the review body, not the GitHub review-state field, matching this
+          repository's established retained-artifact convention) independently re-verified the
+          correction at the exact corrected head and returned **APPROVED FOR READINESS AND MERGE**,
+          anchored to `957a223278e154a9bdd20033911cec79f0696c37` — confirmed via the review's own
+          `commit_id` field, not merely its body text. The principal then explicitly accepted the
+          implementation at that exact head and authorized merge conditional on all gates re-passing.
+          Ten pre-merge gates were independently re-verified immediately before merging: PR open/
+          draft/unmerged; head exactly `957a223`; `mergeable_state: clean`, base `main`; review
+          `4780782073` present and anchored to that exact SHA; its body containing the literal verdict
+          "APPROVED FOR READINESS AND MERGE"; exact-head CI run `30184811368` independently fetched
+          as `status: completed` / `conclusion: success`; no commit added after the review (last
+          commit timestamp precedes the review's `submitted_at`); changed-file scope independently
+          re-confirmed as exactly 8 files via local `git diff --stat`; no unresolved Blocking/Major/
+          Minor finding (one non-blocking Advisory only); no overlapping open PR or branch. PR #158
+          was marked ready, the head was immediately re-confirmed unchanged, and the PR was merged
+          (merge method: merge commit) — merge commit `6740f9eca95303e97368f3d010bf99fba1cb404b`,
+          parents `883c8e859616e631617adcf973fc6a6ba93eca44` (base) and
+          `957a223278e154a9bdd20033911cec79f0696c37` (the reviewed, principal-accepted head — exactly,
+          confirmed the merge commit's direct second parent), merged 2026-07-26T02:47:43Z by
+          `Mast3rkey`. Remote branch-deletion was attempted and failed with an HTTP 403 at the git
+          proxy level (a permission restriction, not a git conflict) — reported here as a known,
+          non-blocking gap; the branch (`claude/ws0005-batch2-mu-skhy-impl-2`) remains present
+          remotely but is fully merged and inactive.
+
+          **Post-merge verification (independent, this synchronization).** Local `main` fetched and
+          fast-forwarded cleanly to `6740f9e`; reviewed head `957a223` independently confirmed an
+          ancestor of `origin/main`; merge-commit diff independently re-confirmed as exactly the same
+          8 files (1479 insertions, 26 deletions); `intelligence/companies/MU.{yaml,md}`,
+          `intelligence/companies/SKHY.{yaml,md}`, `intelligence/BATCH2_MEMORY_COMPARISON.md`, and
+          one freshness-registry/checkpoint row per ticker confirmed present on `main`.
+          `intelligence_validator.py` (13 companies, 2 themes, all valid), `freshness_validator.py`
+          (OK), full pytest suite (1502/1502), `git diff --check` (clean), and decision-index
+          reconciliation (33 filed ↔ 33 indexed, no orphans, `PI-0024` present in both) all re-run
+          clean on the merged state. Independently confirmed via `git diff` against the pre-batch
+          base: `holdings.yaml`, `targets.yaml`, `allocate.py`, `margin_state.py`,
+          `governance/decisions/`, and `governance/decisions.yaml` are byte-identical to their
+          pre-batch state — no tier, target, holdings, cluster, allocator, margin, or governance
+          change occurred anywhere in this batch.
+
+          **Completion status, precisely stated.** By `PI-0024` §I's own enumerated criteria (both
+          records exist with required evidence/freshness metadata; comparison artifact exists;
+          freshness rows added; unresolved evidence gaps explicitly retained, not dropped; the PR is
+          merged to `main`; both validators and the full test suite pass against the merged state;
+          `git diff --check` is clean; CI succeeded at the exact merged head; an independent,
+          attributable Fable review is retained and anchored to that unchanged exact head; exactly
+          one bounded correction pass followed that review's findings; the principal explicitly
+          accepted the implementation; post-merge ancestry/scope/validator/test re-verification is
+          complete) — every enumerated element is now satisfied. **This entry nonetheless does not
+          declare WS-0005 Batch 2 "fully complete."** Per this repository's own discipline
+          (`OPS-0006` §16.1: a milestone/batch reaches complete status only once the register itself
+          is factually synchronized to that state — never from an edit, a commit, a push, or an open
+          PR alone) and this synchronization's own explicit governing instruction, this
+          synchronization — the very update recording the above — is itself being published via a
+          new, separate, bounded post-merge synchronization PR that requires its own independent
+          Fable review before its accuracy is treated as verified. **WS-0005 Batch 2 should be
+          described as merged and its PI-0024 §I criteria as satisfied, but not as "fully complete"
+          until that synchronization PR has itself been independently reviewed and merged.** This
+          entry authorizes no third Milestone 3 batch and no Milestone 4 work; no tier, target,
+          cluster, allocator, or margin review has begun or is authorized by this synchronization.
+          `targets.yaml`'s stale MU/WDC `semis`-cluster comment remains exactly as `PI-0024` §E left
+          it — identified, not corrected, a separate, unauthorized, future factual-reconciliation
+          item.
+        pr: 158
         status: in_progress
         date: "2026-07-26"
       - gate: milestone-4-portfolio-relationship-mapping
@@ -812,7 +884,11 @@ workstreams:
       - "PR #154 exact-head CI: test check run, run 30171261993, conclusion success"
       - "PR #155 independent Fable review 4780123504 (model claude-fable-5, session session_01HZKBDaSPytN1EtErbsP1AT, anchored to exact PR #155 head cdcedb6732cae9b0dabd650ce065f7f0576175e1, verdict APPROVED WITH NON-BLOCKING FINDINGS — issued post-merge, not a pre-merge gate: PR #155 merged mid-review at 2026-07-25T19:59:11Z while this review was in progress, and the merged head is byte-identical to the reviewed head cdcedb6732cae9b0dabd650ce065f7f0576175e1)"
       - governance/decisions/PI-0024-ws0005-milestone3-batch2-memory.md
-      - "Milestone 3 Batch 2 implementation draft: PR #158 (branch claude/ws0005-batch2-mu-skhy-impl-2), base origin/main 883c8e859616e631617adcf973fc6a6ba93eca44 (verified merge commit of PR #157), opened 2026-07-26 as a draft — not marked ready, not merged, not independently reviewed, not complete"
+      - "PR #158 (Milestone 3 Batch 2 implementation — MU/SKHY Company Intelligence — merged 2026-07-26T02:47:43Z, merge commit 6740f9eca95303e97368f3d010bf99fba1cb404b, reviewed/principal-accepted head 957a223278e154a9bdd20033911cec79f0696c37, source branch claude/ws0005-batch2-mu-skhy-impl-2; remote branch-deletion attempted and failed with HTTP 403 at the git-proxy level, non-blocking, branch remains present but merged/inactive)"
+      - "PR #158 independent Fable full review (anchored to intermediate head 78d5045, APPROVED WITH NON-BLOCKING FINDINGS — two Minor findings, both resolved by the bounded correction commit 957a223278e154a9bdd20033911cec79f0696c37)"
+      - "PR #158 independent Fable review 4780782073 (COMMENTED-state GitHub review — GitHub blocks an APPROVE-state self-review from the authoring account, verdict carried in the review body per this repository's established retained-artifact convention — anchored via its own commit_id field to the exact reviewed/merged head 957a223278e154a9bdd20033911cec79f0696c37, verdict APPROVED FOR READINESS AND MERGE)"
+      - "PR #158 exact-head CI: test check run, run 30184811368, conclusion success, confirmed at exactly 957a223278e154a9bdd20033911cec79f0696c37"
+      - "Principal explicit acceptance of the MU/SKHY Batch 2 implementation at exact head 957a223278e154a9bdd20033911cec79f0696c37, authorizing merge conditional on all pre-merge gates re-passing (all ten independently re-verified immediately before merge — see the milestone-3-intelligence-completion gate entry above for the full list)"
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -842,21 +918,31 @@ workstreams:
       batch, Milestone 4, or any later milestone** — each still requires its own
       separate, later, explicit principal authorization per OPS-0006 §5.
 
-      Milestone 3, Batch 2 (MU, SKHY) is now authorized, effective on
-      PI-0024's merge — see the milestone-3-intelligence-completion gate
-      entry above. **Implementation drafted 2026-07-26** on branch
-      `claude/ws0005-batch2-mu-skhy-impl-2` from verified `origin/main`
-      `883c8e859616e631617adcf973fc6a6ba93eca44`: MU and SKHY Company
-      Intelligence records, the batch comparison artifact, and freshness
-      enrollment rows for both tickers now exist on that branch; a draft PR
-      has been opened: draft PR #158.
-      **Next action: independent Fable review of that draft PR's exact
-      head**, per PI-0024 §I's completion gate — no such review has occurred
-      yet, so the batch is not complete regardless of the draft PR's
-      existence, per OPS-0006 §16.1. WDC is explicitly excluded from this
-      batch (Sandisk separation, February 2025) and remains ungoverned by
-      this authorization; `targets.yaml`'s stale MU/WDC cluster comment is
-      identified but not corrected. This does not authorize a third
+      Milestone 3, Batch 2 (MU, SKHY) was authorized effective on PI-0024's
+      merge (PR #157, merge commit 883c8e8) and its implementation is now
+      **merged** — PR #158, merge commit 6740f9eca95303e97368f3d010bf99fba1cb404b,
+      reviewed/principal-accepted head 957a223278e154a9bdd20033911cec79f0696c37.
+      One bounded correction pass (commit 957a223) resolved the two Minor
+      findings from the first independent Fable review (anchored to
+      intermediate head 78d5045); a second independent Fable review
+      (4780782073, anchored to the corrected exact head) returned APPROVED
+      FOR READINESS AND MERGE; the principal explicitly accepted the
+      implementation at that exact head; all ten pre-merge gates were
+      independently re-verified immediately before merging — see the
+      milestone-3-intelligence-completion gate entry above for full detail.
+      Post-merge ancestry/scope/validator/test re-verification is complete
+      and passing (1502/1502 tests, both validators, git diff --check,
+      decision-index reconciliation). **Per PI-0024 §I's own enumerated
+      completion criteria, every element is now satisfied — but this
+      register update is itself being published via a new, separate
+      post-merge synchronization PR that requires its own independent Fable
+      review before its accuracy is treated as verified; WS-0005 Batch 2
+      should therefore be described as merged, not yet as "fully
+      complete."** WDC is explicitly excluded from this batch (Sandisk
+      separation, February 2025) and remains ungoverned by this
+      authorization; `targets.yaml`'s stale MU/WDC cluster comment is
+      identified but not corrected — a separate, unauthorized, future
+      factual-reconciliation item. This does not authorize a third
       Milestone 3 batch, Milestone 4, or any later milestone — each still
       requires its own separate, later, explicit principal authorization per
       OPS-0006 §5. Remaining candidate uncovered semis-cluster members for a
@@ -902,20 +988,29 @@ workstreams:
       independent Fable review resolved to APPROVED WITH NON-BLOCKING
       FINDINGS, exact-head CI green, and post-merge validator/test
       re-verification passing — Batch 1 is complete. **Milestone 3, Batch 2
-      (MU, SKHY): PI-0024 authorizes it; implementation is drafted (branch
-      `claude/ws0005-batch2-mu-skhy-impl-2`, draft PR #158) but not marked
-      ready, not merged, not independently reviewed, and not
-      complete** — the blocker to completion is exactly one independent
-      Fable review of the draft PR's exact head plus post-merge
-      verification, per PI-0024 §I and OPS-0006 §16.1; neither has occurred.
-      Milestone 3's remaining scope (any further batch beyond MU/SKHY) and
-      Milestones 4 through 9 remain blocked pending their own separate,
-      later, explicit principal authorization; none has been granted by
-      this entry, by PI-0023, by PI-0024, or by anything else. This
-      reconciliation itself grants no such authorization.
-    active_branch: claude/ws0005-batch2-mu-skhy-impl-2
-    active_pr: 158
-    last_verified_main_sha: 883c8e859616e631617adcf973fc6a6ba93eca44
+      (MU, SKHY): merged** — PR #158, merge commit
+      6740f9eca95303e97368f3d010bf99fba1cb404b, reviewed/principal-accepted
+      head 957a223278e154a9bdd20033911cec79f0696c37, independent Fable
+      review 4780782073 APPROVED FOR READINESS AND MERGE, exact-head CI
+      30184811368 succeeded, principal explicit acceptance recorded, all ten
+      pre-merge gates independently re-verified, post-merge
+      ancestry/scope/validator/test re-verification complete and passing.
+      Per PI-0024 §I's own criteria every element is satisfied; the sole
+      remaining item is that this register-synchronization update itself is
+      published via a separate post-merge synchronization PR requiring its
+      own independent Fable review before its accuracy is treated as
+      verified — until that review lands, WS-0005 Batch 2 is described as
+      merged, not yet as "fully complete." Remote branch-deletion for
+      `claude/ws0005-batch2-mu-skhy-impl-2` failed with HTTP 403 at the git
+      proxy level — non-blocking, the branch is merged/inactive but remains
+      present remotely. Milestone 3's remaining scope (any further batch
+      beyond MU/SKHY) and Milestones 4 through 9 remain blocked pending
+      their own separate, later, explicit principal authorization; none has
+      been granted by this entry, by PI-0023, by PI-0024, or by anything
+      else. This reconciliation itself grants no such authorization.
+    active_branch: claude/ws0005-batch2-postmerge-sync
+    active_pr: 159
+    last_verified_main_sha: 6740f9eca95303e97368f3d010bf99fba1cb404b
     last_verified_date: "2026-07-26"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
