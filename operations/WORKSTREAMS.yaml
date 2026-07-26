@@ -1095,7 +1095,7 @@ workstreams:
       as complete. A fourth Milestone 3 batch and Milestones 4 through 9
       remain unauthorized and blocked, unaffected by this filing.
     active_branch: claude/ws0005-batch3-avgo-amd-mrvl-intc-impl
-    active_pr: null
+    active_pr: 161
     last_verified_main_sha: b20922bc51e1040081505f236065cb4fe5b23a33
     last_verified_date: "2026-07-26"
     authorized_by: >
