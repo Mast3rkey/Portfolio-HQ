@@ -57,3 +57,11 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: MU
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: SKHY
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
