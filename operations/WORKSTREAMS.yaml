@@ -915,6 +915,17 @@ workstreams:
           separate structural category, not uncovered companies). Milestone 3 therefore
           remains `status: in_progress`, based on actual remaining-coverage state, not merely on
           precedent. This entry authorizes no fourth Milestone 3 batch and no Milestone 4-9 work.
+
+          **Batch 4 authorized 2026-07-26 (PI-0026):** exactly ETN, VRT, and PWR — the three
+          currently uncovered members of the governed `power_infra` correlated-cluster cap
+          (`targets.yaml`'s `caps.clusters`, ≤20% of book: `GEV, ETN, VRT, PWR`) — evidence
+          development only, per PI-0026's full research standard, evidence discipline, zero-based
+          discipline, and prohibitions. GEV, the cluster's fourth and only-covered member (existing
+          record from PI-0007, refreshed under PI-0019/PI-0020), may be used as existing comparison
+          context in the batch's comparison artifact, but its record is explicitly prohibited from
+          being edited, refreshed, or reassessed by this batch. This entry authorizes no fifth
+          Milestone 3 batch, no Milestone 4 work, and no advancement of OPS-0007 §8 step I (the
+          still-gated Monday allocation-check package).
         pr: 161
         status: in_progress
         date: "2026-07-26"
@@ -1038,6 +1049,8 @@ workstreams:
       - "PR #163 independent ChatGPT exact-head re-review 4781685302 (same review-session identifier chatgpt-pr163-review-20260726-01, COMMENTED-state GitHub review, anchored via its own commit_id field to the corrected exact head e4e533b2a4e4d24e00b5b2c2fe74c08623dfe66c) — all five prior findings (Major 1-3, Minor 1-2) independently re-verified RESOLVED against actual file content; three non-blocking wording/presentation findings noted (none changing a ticker, tier, target, range, or scenario total); exact-head CI run 30200829299 (test check run 89790355251) independently re-confirmed status: completed, conclusion: success. Verdict APPROVED WITH NON-BLOCKING FINDINGS — PR #163 stated as eligible for principal acceptance and merge at that exact head provided head and CI remained unchanged; this review did not itself mark the PR ready or merge it."
       - "PR #163 merged 2026-07-26T12:09:50Z by Mast3rkey — merge commit 603e957cf8ea4ddebf070926ef3996f827f9e7e9, parents 270b47163bde6999dd336ff327965bbc7b5fd031 (base, PR #161's own merge commit) and e4e533b2a4e4d24e00b5b2c2fe74c08623dfe66c (the reviewed head — independently confirmed the merge commit's direct second parent and an ancestor of origin/main). Remote branch-deletion for claude/ws0005-provisional-portfolio-architecture attempted by GitHub at merge time and failed with HTTP 403 at the git-proxy level — non-blocking, same known gap as every prior batch; the branch remains present remotely at the merged head but is fully merged and inactive (independently re-confirmed via git ls-remote, this reconciliation)."
       - "Post-merge verification (independent, this reconciliation, session distinct from the PR #163 authoring/correction session): origin/main fetched and confirmed at 603e957cf8ea4ddebf070926ef3996f827f9e7e9; merge-commit diff independently re-confirmed as exactly the 5 reviewed files (operations/WORKSTREAMS.yaml plus the four operations/provisional/ artifacts); intelligence_validator.py (17 companies, 2 themes, all valid) and freshness_validator.py (OK) both re-run clean; full pytest suite 1502/1502 passed; git diff --check clean; decision-index reconciliation 35 filed (governance/decisions/*.md less README.md) ↔ 35 indexed (governance/decisions.yaml), no orphans, PI-0025 and OPS-0007 both present in both. Independently confirmed via git diff (270b4716..603e957c): targets.yaml, holdings.yaml, allocate.py, margin_state.py, every Company/Theme Intelligence record, CLAUDE.md, governance/decisions.yaml, and every governance decision file are byte-identical across PR #163 — zero diff. No tier, target, holdings, cluster, allocator, margin, Intelligence-record, or governance-decision change occurred in PR #163. This reconciliation also found this session's local main ref stale (unrelated history, pre-dating a repository history rewrite, zero unique local commits) and safely reset it to origin/main before proceeding — recorded here for transparency, not a repository-state finding."
+      - "PR #164 (WS-0005 register sync reconciling PR #163's merge/post-merge state, merged 2026-07-26T13:43:14Z, merge commit f16796ce02cd9a8dd36341ee30e65e1d165d9f06, confirmed origin/main tip at this filing's base)"
+      - governance/decisions/PI-0026-ws0005-milestone3-batch4-power-infrastructure.md
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -1241,6 +1254,28 @@ workstreams:
       completes.** No Milestone 4-9 work, no fourth Milestone 3 batch, and no
       margin/tier/target/holdings/allocator change is authorized or implied
       by this synchronization.
+
+      **PR #164 (register sync reconciling PR #163's merge/post-merge state)
+      merged 2026-07-26T13:43:14Z, merge commit
+      f16796ce02cd9a8dd36341ee30e65e1d165d9f06 — confirmed origin/main's tip
+      at this filing's base.** OPS-0007 §8 step H is thereby fully closed
+      (merged, post-merge verified, and that verification's own register
+      sync itself merged); step I (the official-and-provisional Monday
+      allocation-check package) remains gated, unbegun, and unauthorized by
+      that PR or by this entry.
+
+      **Milestone 3, Batch 4 (ETN, VRT, PWR) governance authorization
+      (PI-0026) filed 2026-07-26 — this entry.** Covers exactly the three
+      currently uncovered members of the governed `power_infra`
+      correlated-cluster cap (GEV, ETN, VRT, PWR — GEV already covered,
+      refreshed under PI-0019/PI-0020). This decision is not yet merged and
+      is not yet effective; the research-implementation PR it would
+      authorize may not open until PI-0026 itself is independently
+      reviewed, principal-accepted, and merged. No research has been
+      performed; no Company Intelligence record, comparison artifact, or
+      freshness row exists for ETN, VRT, or PWR. This entry authorizes no
+      fifth Milestone 3 batch, no Milestone 4 work, and no advancement of
+      OPS-0007 §8 step I.
 
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
