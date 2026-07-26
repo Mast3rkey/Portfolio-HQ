@@ -237,3 +237,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, PI-0011, PI-0013, PI-0016, PI-0023, AUTO-0001]
     supporting_artifact: null
     file: governance/decisions/PI-0024-ws0005-milestone3-batch2-memory.md
+  - decision_id: PI-0025
+    date: 2026-07-26
+    status: Accepted
+    category: portfolio_intelligence
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, PI-0011, PI-0013, PI-0016, PI-0023, PI-0024, AUTO-0001]
+    supporting_artifact: null
+    file: governance/decisions/PI-0025-ws0005-milestone3-batch3-compute-networking.md
