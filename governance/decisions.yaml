@@ -244,3 +244,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, PI-0011, PI-0013, PI-0016, PI-0023, PI-0024, AUTO-0001]
     supporting_artifact: null
     file: governance/decisions/PI-0025-ws0005-milestone3-batch3-compute-networking.md
+  - decision_id: OPS-0007
+    date: 2026-07-26
+    status: Accepted
+    category: operations_coordination
+    related_decisions: [OPS-0001, OPS-0002, OPS-0003, OPS-0004, OPS-0005, OPS-0006, GOV-0001, GOV-0002, GOV-0003, PI-0011, PI-0013, PI-0016, PI-0023, PI-0024, PI-0025, NUM-0001]
+    supporting_artifact: null
+    file: governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md
