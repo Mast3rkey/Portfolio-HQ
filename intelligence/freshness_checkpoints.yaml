@@ -65,3 +65,19 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: AVGO
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: AMD
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: MRVL
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: INTC
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
