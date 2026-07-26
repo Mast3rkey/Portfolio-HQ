@@ -1306,7 +1306,7 @@ workstreams:
       Milestones 4 through 9 remain unauthorized and blocked, unaffected by
       this filing.
     active_branch: claude/ws0005-provisional-portfolio-architecture
-    active_pr: null
+    active_pr: 163
     last_verified_main_sha: 270b47163bde6999dd336ff327965bbc7b5fd031
     last_verified_date: "2026-07-26"
     authorized_by: >
