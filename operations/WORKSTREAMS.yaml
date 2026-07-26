@@ -1835,7 +1835,7 @@ workstreams:
       does not begin Milestone 4, OPS-0007 §8 step I, or any allocation/margin/trade work,
       and does not review, correct, mark ready, or merge itself.
     active_branch: claude/ws-0005-protocol-design-kti23b
-    active_pr: null
+    active_pr: 168
     last_verified_main_sha: 1aba3e74d3847aa278b774f3b0956c786b6ee480
     last_verified_date: "2026-07-26"
     authorized_by: >
