@@ -1,12 +1,12 @@
 # PR #166 Corrected-Head Exact-Head Review
 
-**Reviewer:** GPT-5.6 Thinking  
-**Review type:** independent exact-head review  
-**PR:** #166  
-**Base:** `92ea06705b1707d8b7644e311e4f086f462e9573`  
-**Reviewed head:** `6c67eb0573d9482a8bfe6e308cd00a8cd4284aca`  
-**Evidence bundle:** `PR166_CORRECTED_DELTA_EVIDENCE_BUNDLE.md`  
-**Evidence bundle SHA-256:** `09e3a8bcbaa5ec9ea2a46e09e8bacca33bfc0fee672cdaea2a51c2352358b3ea`  
+**Reviewer:** GPT-5.6 Thinking
+**Review type:** independent exact-head review
+**PR:** #166
+**Base:** `92ea06705b1707d8b7644e311e4f086f462e9573`
+**Reviewed head:** `6c67eb0573d9482a8bfe6e308cd00a8cd4284aca`
+**Evidence bundle:** `PR166_CORRECTED_DELTA_EVIDENCE_BUNDLE.md`
+**Evidence bundle SHA-256:** `09e3a8bcbaa5ec9ea2a46e09e8bacca33bfc0fee672cdaea2a51c2352358b3ea`
 **Verdict:** **CHANGES REQUIRED**
 
 ## Independence and scope
@@ -36,11 +36,11 @@ These claims are contradicted by official Quanta evidence:
 
 Official sources independently inspected:
 
-- Quanta 2025 Form 10-K:  
+- Quanta 2025 Form 10-K:
   `https://www.sec.gov/Archives/edgar/data/1050915/000105091526000006/pwr-20251231.htm`
-- Quanta acquisition of Cupertino Electric:  
+- Quanta acquisition of Cupertino Electric:
   `https://investors.quantaservices.com/news-events/press-releases/detail/360/quanta-services-acquires-cupertino-electric-inc-a-premier-electrical-infrastructure-solutions-provider-to-the-technology-and-renewable-energy-industries`
-- Quanta operating-company profile for Cupertino Electric:  
+- Quanta operating-company profile for Cupertino Electric:
   `https://www.quantaservices.com/companies/cupertino-electric-inc`
 
 Required correction:

@@ -1047,6 +1047,57 @@ workstreams:
           all remain required before Batch 4 can be considered complete. This entry authorizes no fifth
           Milestone 3 batch, no Milestone 4 work, and no advancement of `OPS-0007` §8 step I — unchanged
           from the prior entries above.
+
+          **Third bounded correction, 2026-07-26 (CI-cleanliness and provenance normalization,
+          no substantive change).** Exact-head CI on the second-correction head
+          (`8ff06c73524329855d6a34850cd1aa1cb34ab6f0`) failed: the repository's `test` workflow runs
+          `git diff --check` under `set -euo pipefail` before any test execution, and both newly
+          retained artifacts under `governance/audits/` contained intentional Markdown hard-line-break
+          trailing whitespace, which that gate treats as an error, aborting the job before pytest ran.
+          Independently confirmed via the failed job's own logs that trailing whitespace in exactly
+          those two files was the sole cause — no other file, workflow, test, or production-code change
+          was involved. Per explicit principal direction, quality/truth/provenance/repository integrity
+          take priority over preserving the original external-attachment bytes as such — the substantive
+          audit content plus a truthful chain of custody is what matters. Trailing Markdown whitespace
+          only was removed from both retained files; no word, punctuation, heading, paragraph order,
+          URL, finding, classification, verdict, cited SHA, date, or other substantive content was
+          changed. Verified before commit: `diff -Z` (ignoring only trailing whitespace) between each
+          original attachment and its normalized committed copy returned zero differences (semantic
+          identity confirmed); re-normalizing the normalized copy was a no-op (idempotent); line counts
+          identical (185 lines / 119 lines, unchanged). No CI workflow file was modified and no CI rule
+          was weakened or excepted -- the underlying `git diff --check` gate remains fully in force for
+          every future change, including any future retained artifact.
+
+          Per-artifact record:
+          - **`governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md`** — reviewer GPT-5.6 Thinking;
+            review type independent primary-source recovery audit; reviewed/audited head
+            `246fa1c8f4436608640b4a3dfbac58393e209b65`; verdict CHANGES REQUIRED; original
+            external-attachment SHA-256 (source-artifact provenance, the file as originally supplied to
+            this session) `84247603636e532aa2bceb01be2a9697fba52fecfc0a82639eae89a5cfd47f90`; normalized
+            committed-file SHA-256 (repository copy, after this correction)
+            `9787050266aae7e96906d16bea69452d86ca9b33c575fdbd9d4c03ca8074a4fb`; normalization performed:
+            trailing Markdown whitespace removed only, substantive text unchanged; reason: repository
+            `git diff --check` and CI cleanliness; verification method: `diff -Z` semantic-identity
+            comparison against the original attachment (zero differences) plus an idempotency re-check.
+          - **`governance/audits/PR166_CORRECTED_HEAD_REVIEW_20260726.md`** — reviewer GPT-5.6 Thinking;
+            review type independent exact-head review; reviewed head
+            `6c67eb0573d9482a8bfe6e308cd00a8cd4284aca`; verdict CHANGES REQUIRED; original
+            external-attachment SHA-256 (source-artifact provenance)
+            `6cc720e4982235dfb2533d4304be5870ab4d3c8b9badbe5039b94801d002ef94`; normalized committed-file
+            SHA-256 (repository copy, after this correction)
+            `0514163d4d40c3aa69ecb5d9e90a895d88bcafdf09de5ecb07e795941350b294`; normalization performed:
+            trailing Markdown whitespace removed only, substantive text unchanged; reason: repository
+            `git diff --check` and CI cleanliness; verification method: `diff -Z` semantic-identity
+            comparison against the original attachment (zero differences) plus an idempotency re-check.
+
+          The normalized committed-file checksums above are **not** presented as matching the original
+          external-attachment bytes -- they are a distinct, newly-computed identity for the
+          text-normalized repository copies, kept alongside (not in place of) the original
+          external-attachment checksums, which remain the source-artifact provenance record. **PR #166
+          remains open, draft, unmerged, incomplete, and unaccepted** after this normalization pass; no
+          Intelligence record, policy, allocation, margin, or execution content changed in this pass.
+          This entry authorizes no fifth Milestone 3 batch, no Milestone 4 work, and no advancement of
+          `OPS-0007` §8 step I.
         pr: 166
         status: in_progress
         date: "2026-07-26"

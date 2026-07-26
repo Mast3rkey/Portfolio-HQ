@@ -1,11 +1,11 @@
 # PR #166 Primary-Source Audit
 
-**Reviewer:** GPT-5.6 Thinking  
-**Review type:** independent primary-source recovery audit  
-**PR:** #166  
-**Base:** `92ea06705b1707d8b7644e311e4f086f462e9573`  
-**Audited head:** `246fa1c8f4436608640b4a3dfbac58393e209b65`  
-**Evidence bundle SHA-256:** `0fddf2eadd6e15ed25c3e34b8f64337e0550473c001faf2bc740bf7ce8c4f44b`  
+**Reviewer:** GPT-5.6 Thinking
+**Review type:** independent primary-source recovery audit
+**PR:** #166
+**Base:** `92ea06705b1707d8b7644e311e4f086f462e9573`
+**Audited head:** `246fa1c8f4436608640b4a3dfbac58393e209b65`
+**Evidence bundle SHA-256:** `0fddf2eadd6e15ed25c3e34b8f64337e0550473c001faf2bc740bf7ce8c4f44b`
 **Verdict:** **CHANGES REQUIRED**
 
 ## Independence and method
@@ -48,11 +48,11 @@ Required corrections:
 
 Official sources inspected:
 
-- Eaton Q1 2026 results:  
+- Eaton Q1 2026 results:
   https://www.eaton.com/us/en-us/company/news-insights/news-releases/2026/eaton-reports-record-first-quarter-2026-results.html
-- Boyd Thermal completion:  
+- Boyd Thermal completion:
   https://www.eaton.com/sg/en-us/company/news-insights/news-releases/2026/eaton-completes-acquisition-of-leading-liquid-cooling-solutions-provider-boyd-thermal.html
-- Eaton Mobility Group / Dana definitive transaction:  
+- Eaton Mobility Group / Dana definitive transaction:
   https://www.eaton.com/us/en-us/company/news-insights/news-releases/2026/eaton-mobility-group-enters-agreement-to-combine-with-dana.html
 
 ### M2 — Major — VRT leverage and financial-evidence statements are materially wrong or unnecessarily unresolved
@@ -84,13 +84,13 @@ Required corrections:
 
 Official sources inspected:
 
-- Vertiv Q1 2026 results:  
+- Vertiv Q1 2026 results:
   https://investors.vertiv.com/news/news-details/2026/Vertiv-Reports-Strong-First-Quarter-with-Diluted-EPS-Growth-of-136-Adjusted-Diluted-EPS-Growth-of-83-Raises-Full-Year-Guidance/default.aspx
-- Vertiv Q1 2026 Form 10-Q:  
+- Vertiv Q1 2026 Form 10-Q:
   https://www.sec.gov/Archives/edgar/data/1674101/000162828026026556/vrt-20260331.htm
-- Vertiv Q4/FY2025 results:  
+- Vertiv Q4/FY2025 results:
   https://investors.vertiv.com/news/news-details/2026/Vertiv-Reports-Strong-Fourth-Quarter-with-Organic-Orders-Growth-of-252-and-Diluted-EPS-Growth-of-200-Adjusted-Diluted-EPS-37/
-- Vertiv refinancing and ratings:  
+- Vertiv refinancing and ratings:
   https://investors.vertiv.com/news/news-details/2026/Vertiv-Announces-Completion-of-2-1-Billion-Senior-Unsecured-Bond-Offering-and-2-5-Billion-Senior-Unsecured-Revolving-Credit-Facility/
 
 ### M3 — Major — PWR’s business model and current disclosure are misstated
@@ -125,9 +125,9 @@ Required corrections:
 
 Official sources inspected:
 
-- Quanta 2025 Form 10-K:  
+- Quanta 2025 Form 10-K:
   https://www.sec.gov/Archives/edgar/data/1050915/000105091526000006/pwr-20251231.htm
-- Quanta Q1 2026 results:  
+- Quanta Q1 2026 results:
   https://investors.quantaservices.com/news-events/press-releases/detail/396/quanta-services-reports-first-quarter-2026-results
 
 ### M4 — Major — The comparison artifact inherits material company errors
