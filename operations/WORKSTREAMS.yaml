@@ -1907,10 +1907,67 @@ workstreams:
       before merge — Milestone 3, Batch 4 (ETN, VRT, PWR) is fully complete.
       **PI-0027 (Milestone 3, Batch 5 — MSFT, GOOGL, META, AMZN — evidence
       development only, EQIX explicitly deferred) and OPS-0008 (Research Wave
-      Protocol v1) are filed together in this same governance PR, both
-      effective only upon that PR's own merge.** Neither authorizes a sixth
-      Milestone 3 batch, any Milestone 4-9 work, or advancement of
-      `OPS-0007` step I. This filing itself does not review, correct, mark
-      ready, or merge itself.
+      Protocol v1) have since merged**, via PR #168 (merge commit
+      `86884377d653a3f5413d9c43b0b20142381f629a`, reviewed head
+      `e8c28d938397f6d76740094665c6cd03f5079d64`, confirmed `origin/main`'s
+      tip) — both effective. Neither authorizes a sixth Milestone 3 batch,
+      any Milestone 4-9 work, or advancement of `OPS-0007` step I.
+
+      **Milestone 3, Batch 5 (MSFT, GOOGL, META, AMZN) implementation
+      drafted 2026-07-26 (not merged, not complete).** A prior session
+      attempted this batch, found `OPS-0008` §2's mandatory source-readiness
+      gate blocked (SEC EDGAR fully blocked; GOOGL/META/AMZN
+      investor-relations domains fully blocked; MSFT partially accessible
+      via two `microsoft.com/investor` pages only), and correctly stopped
+      before drafting, producing `BATCH5_SOURCE_READINESS_MANIFEST.md`
+      (SHA-256 `8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211`).
+      The principal supplied an independent evidence-recovery audit
+      performed by GPT-5.6 Thinking (2026-07-26) under `OPS-0008` §2's
+      standing pre-authorization; this session independently verified the
+      audit's SHA-256 (`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`)
+      and its own cited manifest checksum before relying on it, then
+      retained the audit verbatim at
+      `governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md`
+      (byte-identical copy, checksum re-verified post-copy) per `OPS-0008`
+      §2's explicit retention convention. Implementation then proceeded on
+      branch `claude/ws0005-batch5-hyperscaler-impl`, base `origin/main`
+      `86884377d653a3f5413d9c43b0b20142381f629a`:
+      `intelligence/companies/MSFT.yaml`/`MSFT.md`,
+      `intelligence/companies/GOOGL.yaml`/`GOOGL.md`,
+      `intelligence/companies/META.yaml`/`META.md`, and
+      `intelligence/companies/AMZN.yaml`/`AMZN.md` created; one
+      hand-authored comparison artifact
+      (`intelligence/BATCH5_HYPERSCALER_AI_INFRASTRUCTURE_COMPARISON.md`)
+      created; one freshness-registry and one freshness-checkpoint row
+      added per ticker (`monitoring_enabled: false`,
+      `checkpoint_status: pending`,
+      `enrollment_authority`/`company_record_authority: PI-0027`). Every
+      fact not explicitly attributed to this session's own two successful
+      `microsoft.com` fetches is sourced to the retained GPT-5.6 Thinking
+      audit, with per-claim attribution disclosed in each record. `EQIX`
+      is absent; no existing Company or Theme Intelligence record was
+      modified; no tier/target/holdings/cluster/cap/allocator/margin file
+      was touched. Post-drafting validation, run by this session:
+      `intelligence_validator.py` — 24 companies (20 pre-existing + 4 new),
+      all valid; 2 themes, both valid, unmodified; `freshness_validator.py`
+      — registry/checkpoint cross-validation OK; decision
+      filed-versus-indexed reconciliation — 38 filed = 38 indexed;
+      exactly-one-primary-workstream check — WS-0005 remains sole
+      `priority: primary`; focused Intelligence/freshness tests — 678/678
+      passed; full pytest suite — 1502/1502 passed (same count as the
+      pre-batch baseline, confirming no test file was added or removed);
+      `git diff --check` — clean except expected trailing-whitespace
+      markers inside the byte-identical retained audit copy (Markdown
+      hard-line-break syntax in the original GPT-5.6 Thinking document,
+      preserved deliberately per the "do not edit or paraphrase the
+      retained audit" instruction rather than reformatted, which would
+      have broken its checksum match). **This entry does not itself
+      constitute independent review or principal acceptance** — the
+      implementation PR remains in draft state pending exact-head
+      independent review under `OPS-0007` §1's capability-based standard
+      and explicit principal acceptance before merge, per `PI-0027` §I and
+      `OPS-0008` §§4-5. Neither this drafting nor this register entry
+      authorizes a sixth Milestone 3 batch, any Milestone 4-9 work, or
+      advancement of `OPS-0007` §8 step I.
     supersedes: null
     superseded_by: null

@@ -93,3 +93,19 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: MSFT
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: GOOGL
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: META
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: AMZN
+    checkpoint_status: pending
+    channels: {}
+    established_by: null

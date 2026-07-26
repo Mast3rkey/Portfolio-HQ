@@ -1,0 +1,65 @@
+sector: Consumer Discretionary
+industry: Broadline Retail
+portfolio_role_ref: T2
+competitive_advantages:
+  - "Diversified revenue base with a highly profitable cloud segment layered on top: Q1 2026 (quarter ended 2026-03-31) net sales $181.519B, operating income $23.852B, net income $30.255B. Sales by category: online stores $64.254B, third-party seller services $41.578B, advertising services $17.243B, subscription services $13.427B, AWS $37.587B. Segment sales: North America $104.143B, International $39.789B, AWS $37.587B. Per Amazon's own Q1 2026 Form 10-Q, independently inspected by GPT-5.6 Thinking (2026-07-26 evidence-recovery audit; this Claude session did not itself open this document -- see Source-access disclosure in AMZN.md)."
+  - "AWS is disproportionately the profit engine, not merely a growth story: Q1 2026 segment operating income was North America $8.267B, International $1.424B, and AWS $14.161B -- AWS alone generated more operating income than the North America and International retail segments combined ($9.691B). AWS sales grew 28% YoY, which Amazon attributed mainly to customer usage, partly offset by long-term-contract pricing changes."
+  - "Very strong liquidity: total cash, cash equivalents, and marketable securities were $143.089B at 2026-03-31 -- the second-largest liquidity figure among this batch's four companies."
+  - "Multiple large, disclosed AI-lab commitments giving Amazon exposure to more than one frontier AI developer, not a single-counterparty bet: AWS and OpenAI expanded an existing $38B commercial arrangement by $100B over eight years (including AWS-chip performance obligations); Amazon separately invested $15B in OpenAI Series C preferred stock in Q1 2026 with a conditional commitment for an additional $35B, and disclosed cumulative Anthropic investments through Q4 2025 plus a subsequent $5B preferred-stock investment, an amended AWS arrangement with its own AWS-chip performance obligations, a potential financing facility of up to $20B, and an option for up to $5B of future equity investment."
+risks:
+  - risk: "Capital spending and debt have expanded materially -- AWS growth is not capital-light: Q1 2026 cash capital expenditures were $43.2B, compared with $24.3B in Q1 2025 (nearly double), primarily technology infrastructure (mostly supporting AWS growth) and fulfillment capacity. Technology and infrastructure expense was $29.567B, +29% YoY. At 2026-03-31, Amazon reported $121.8B of unsecured senior notes outstanding, including major U.S.-dollar and euro issuances in March 2026 -- a real, disclosed increase in financial leverage accompanying the capex acceleration."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Profit concentration in AWS: AWS operating income ($14.161B) exceeded the combined operating income of the North America and International retail segments ($9.691B) in Q1 2026 -- a disproportionate reliance on a single segment for consolidated profitability, even though AWS is a smaller share of consolidated net sales than the retail segments."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Very large, complex AI-lab financial commitments carry counterparty, financing, and delivery risk, not pure upside: the disclosed OpenAI ($100B expanded arrangement, $15B invested plus a conditional $35B commitment) and Anthropic ($5B preferred investment, a potential $20B financing facility, an option for up to $5B more equity) commitments are contractual disclosures and options, not realized revenue or fully deployed capital. AWS-chip performance obligations embedded in these arrangements create delivery risk distinct from a simple cloud-capacity sale."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Active FTC/state antitrust litigation alleging monopoly maintenance in online superstores and marketplace services through interlocking practices -- these remain government allegations in active litigation, not adjudicated facts, per Amazon's own 10-Q disclosure of the litigation and the FTC's own case materials."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Preliminary EU regulatory exposure: on 2026-06-25 the European Commission announced a preliminary view that AWS (and, separately, Azure) should be designated a Digital Markets Act gatekeeper for cloud services, citing gateway importance, entrenchment, switching costs, ecosystem breadth, and AI tools/partnerships. This is a regulator preliminary finding, not a final adjudicated designation."
+    severity: low
+    identified: "2026-07-26"
+    status: monitoring
+catalysts:
+  - catalyst: "FTC/state marketplace-monopolization litigation developments (civil action 2:23-cv-01495)"
+    expected: "2026-12-31"
+    status: pending
+  - catalyst: "European Commission final determination on whether AWS is designated a DMA cloud gatekeeper, following the 2026-06-25 preliminary position"
+    expected: "2027-01-31"
+    status: pending
+  - catalyst: "AWS-chip performance-obligation delivery milestones embedded in the expanded OpenAI arrangement and the amended Anthropic arrangement"
+    expected: "2027-12-31"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "Amazon shows a genuinely diversified revenue base (retail, third-party marketplace, advertising, subscriptions) layered with a disproportionately profitable cloud segment -- AWS generated more Q1 2026 operating income ($14.161B) than the North America and International retail segments combined ($9.691B) -- and very strong liquidity ($143.089B). Conviction is held at Medium rather than High because of concrete, current tensions: capital expenditures nearly doubled year over year and are increasingly funded by new debt issuance ($121.8B of unsecured notes outstanding, with major new issuances in March 2026); Amazon's consolidated profitability is disproportionately concentrated in a single segment (AWS); its multiple, very large AI-lab commitments (OpenAI, Anthropic) carry real counterparty, financing, and chip-performance-delivery risk and are not equivalent to realized revenue or deployed capital; and Amazon faces active FTC/state antitrust litigation alleging marketplace monopoly maintenance, an unresolved matter, alongside a preliminary EU cloud-gatekeeper regulatory exposure. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments, and does not treat disclosed AI-lab contract amounts or options as realized revenue or capital already deployed."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-26"
+  next_due: "2026-10-24"
+  log:
+    - date: "2026-07-26"
+      note: "Record created under governance/decisions/PI-0027-ws0005-milestone3-batch5-hyperscaler-ai-infrastructure.md and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline (no prior Amazon Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3 Batch 5, alongside MSFT, GOOGL, and META (EQIX explicitly deferred). This Claude Code session's own direct WebFetch attempts on this date were blocked (HTTP 403) on every Amazon domain tested (ir.aboutamazon.com, aboutamazon.com, press.aboutamazon.com) and on SEC EDGAR and Amazon's Q4-IR-hosted CDN PDF earnings release -- zero primary documents were opened directly by this session for AMZN. Per OPS-0008 Section 2's mandatory stop-before-drafting gate, this session paused, produced BATCH5_SOURCE_READINESS_MANIFEST.md (SHA-256 8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211), and the principal supplied an independent evidence-recovery audit performed by GPT-5.6 Thinking (2026-07-26), retained verbatim at governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md (SHA-256 98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909, independently verified by this session before use). Every fact in this record is sourced to that retained audit -- this Claude session did not itself open Amazon's Q1 2026 Form 10-Q, earnings-release exhibit, or the FTC/EU case materials. Also addressed here per PI-0027 Section B.22: AMZN was named, unverified, as a hyperscaler customer of already-covered semis-cluster companies in Batch 1/3 records -- this record establishes AMZN's own economics independently via the sources above, but does not itself confirm or deny any specific named supplier relationship with NVDA, TSM, AVGO, AMD, or MRVL, which was not quantified in any source this record relies on."
+sources:
+  - note: "Amazon.com, Inc., Form 10-Q for the quarter ended 2026-03-31 (accession 0001018724-26-000014, filed 2026-04-30) -- Financial Statements, Investments and strategic arrangements, Debt, Segment Information, MD&A, Liquidity and Capital Resources, and Legal Proceedings/Risk Factors sections. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session (WebFetch confirmed blocked, HTTP 403, on SEC EDGAR). Supports Q1 2026 net sales/operating income/net income, category and segment sales/operating income tables, AWS growth rate, capex, technology/infrastructure expense, cash position, debt outstanding, and the OpenAI/Anthropic investment and commitment disclosures."
+    url: "https://www.sec.gov/Archives/edgar/data/1018724/000101872426000014/amzn-20260331.htm"
+    date: "2026-04-30"
+  - note: "Amazon.com, Inc., 'Amazon.com Announces First Quarter Results' -- official Q1 2026 earnings release, filed as an SEC exhibit to an 8-K. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session (this session's own attempt to fetch Amazon's Q4-IR-CDN-hosted PDF of this release was also blocked, HTTP 403)."
+    url: "https://www.sec.gov/Archives/edgar/data/1018724/000101872426000012/amzn-20260331xex991.htm"
+    date: "2026-04-29"
+  - note: "U.S. Federal Trade Commission, case page for Amazon.com, Inc. (Amazon eCommerce), matter numbers 1910129 and 1910130, civil action 2:23-cv-01495 -- case summary, complaint history, court order history. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session."
+    url: "https://www.ftc.gov/legal-library/browse/cases-proceedings/1910129-1910130-amazoncom-inc-amazon-ecommerce"
+    date: "2026-07-26"
+  - note: "European Commission, preliminary position that AWS and Azure should be designated Digital Markets Act gatekeepers for cloud services. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session. Establishes a preliminary, not final, regulator position."
+    url: "https://digital-markets-act.ec.europa.eu/commission-reaches-preliminary-position-amazons-and-microsofts-market-leading-cloud-services-should-2026-06-25_en"
+    date: "2026-06-25"
+  - note: "GPT-5.6 Thinking, WS-0005 Milestone 3 Batch 5 Primary-Source Evidence-Recovery Audit -- retained audit synthesizing the four sources above into claim-level extracts with required fact labeling. This session verified the retained repository copy's SHA-256 matches the value supplied with the audit before relying on it."
+    url: "governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md"
+    date: "2026-07-26"

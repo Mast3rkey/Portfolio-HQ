@@ -1,0 +1,66 @@
+sector: Information Technology
+industry: Systems Software
+portfolio_role_ref: T1
+competitive_advantages:
+  - "Diversified, profitable three-segment structure, all growing (FY2025, year ended 2025-06-30): Productivity and Business Processes $120.810B revenue / $69.773B operating income; Intelligent Cloud $106.265B revenue / $44.589B operating income; More Personal Computing $54.649B revenue / $14.166B operating income -- total FY2025 revenue $281.724B, operating income $128.528B, net income $101.832B. Azure grew 34% in FY2025 and accelerated to 40% YoY (GAAP) in FY2026 Q3 (quarter ended 2026-03-31); Microsoft Cloud revenue that quarter was $54.5B, +29% YoY. All figures per Microsoft's own FY2025 Annual Report and FY2026 Q3 earnings release, independently inspected by GPT-5.6 Thinking (2026-07-26 evidence-recovery audit; this Claude session did not itself open these documents -- see Source-access disclosure in MSFT.md)."
+  - "Real, already-monetizing AI business, not solely a capex narrative: management stated Microsoft's AI business exceeded a $37 billion annual revenue run rate, up 123% YoY, as of the FY2026 Q3 call (2026-04-29) -- an issuer-defined management metric, not a separately audited reportable segment, and treated here as such, not as GAAP-equivalent disclosure."
+  - "Deep, contractually formalized OpenAI relationship: a long-term strategic partnership dating to 2019, with reciprocal revenue-sharing arrangements, rights to OpenAI intellectual property for integration into Microsoft products, Azure exclusivity for the OpenAI API, and a right of first refusal on new OpenAI capacity needs, per Microsoft's own FY2025 Annual Report business discussion. This is listed as an advantage (a structural, contractually-secured AI-model relationship most competitors lack) and, separately, as a risk below (concentration and complexity)."
+  - "Financial strength to fund the AI buildout without emergency financing: $94.6B in cash, cash equivalents, and short-term investments at 2025-06-30; FY2025 free-cash-generative enough to fund $64.551B of property-and-equipment additions (FY2025, up from $44.477B in FY2024) alongside $13.0B of buybacks and $24.082B of dividends paid in the same year. FY2026 Q3 capital expenditures were $31.9B, with management stating roughly two-thirds related to short-lived assets (primarily GPUs and CPUs)."
+  - "Own custom-silicon program disclosed by management on the FY2026 Q3 call: Maia 200 AI accelerators live in Iowa and Arizona datacenters, Cobalt CPUs deployed in nearly half of Microsoft's datacenter regions, and custom networking/security/virtualization silicon supporting millions of servers. These are issuer management claims from an official transcript, not independently benchmarked performance findings, and are not corroborated here against a second source."
+risks:
+  - risk: "AI-infrastructure capital intensity is pressuring Microsoft's own reported cloud profitability, not merely a narrative concern: Microsoft's FY2025 Annual Report states Microsoft Cloud gross margin was 69% in FY2025, with the year-over-year pressure attributed partly to scaling AI infrastructure (partly offset by Azure efficiencies). Management separately guided to more than $40B of Q4 FY2026 capex and approximately $190B for calendar 2026 -- forward-looking estimates, not realized facts -- funded predominantly from a business whose own cloud margin is already under disclosed pressure from the same buildout."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Azure capacity has been running behind disclosed demand: management stated on the FY2026 Q3 call that Azure demand continued to exceed available capacity and that it expected capacity constraints to persist through at least 2026 -- an operational constraint that can delay the conversion of already-signed demand into recognized revenue, independent of whether that demand itself is durable."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "OpenAI relationship concentration and complexity: the 2019-dated partnership's reciprocal revenue-sharing, IP-integration rights, Azure API exclusivity, and right-of-first-refusal terms create a single, unusually deep counterparty dependency rather than a diversified customer base for this specific AI relationship. Microsoft's FY2026 Q3 GAAP results included the impact of its OpenAI investment; the earnings release presented non-GAAP results excluding that effect separately, indicating the investment's accounting impact is itself large enough to warrant a standing non-GAAP carve-out."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Live, though preliminary, EU cloud regulatory exposure: on 2026-06-25 the European Commission announced a preliminary view that Azure (and separately AWS) should be designated a Digital Markets Act gatekeeper for cloud services, citing gateway importance, user-base entrenchment, lock-in, high switching costs, ecosystem breadth, and AI tools/partnerships. This is a regulator preliminary finding, not a final adjudicated designation, and its eventual scope and remedies (if finalized) are not established by any source inspected in this audit."
+    severity: low
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Evidence-completeness gap, disclosed rather than papered over: the evidence-recovery audit underlying this record inspected Microsoft's FY2025 Annual Report and FY2026 Q3 earnings release/transcript, plus one EU regulator statement, but did not separately inspect a standalone Form 10-K/10-Q as filed with the SEC, nor any U.S. antitrust primary document specific to Microsoft. No customer represented more than 10% of Microsoft's FY2025 revenue per the inspected annual-report disclosure, but specific supplier concentration (e.g., dependence on NVDA, AMD, or TSM capacity) was not quantified in any source this record relies on."
+    severity: low
+    identified: "2026-07-26"
+    status: monitoring
+catalysts:
+  - catalyst: "European Commission final determination on whether Azure (and AWS) are designated DMA cloud gatekeepers, following the 2026-06-25 preliminary position"
+    expected: "2027-01-31"
+    status: pending
+  - catalyst: "FY2026 Q4 earnings release -- test of the >$40B guided Q4 capex and whether Azure capacity constraints eased or persisted"
+    expected: "2026-07-29"
+    status: pending
+  - catalyst: "Full calendar-2026 capital-expenditure realization against management's ~$190B guide"
+    expected: "2026-12-31"
+    status: pending
+conviction:
+  rating: High
+  rationale: "Microsoft shows diversified, already-profitable growth across all three reporting segments (FY2025 revenue $281.724B, operating income $128.528B; FY2026 Q3 Microsoft Cloud +29% YoY, Azure +40% YoY), a real (not purely narrative) AI monetization signal (management-stated $37B AI annual revenue run rate, +123% YoY -- read as a management metric, not an audited segment), and the balance-sheet strength ($94.6B cash/short-term investments, $13.0B FY2025 buybacks plus $24.082B dividends) to fund a large capex buildout without financial strain evident in the record. Conviction is held at High rather than Very High because of concrete, current, evidence-based tensions rather than only a generic capex-risk disclaimer: disclosed cloud-gross-margin compression specifically attributed to AI-infrastructure scaling; an Azure capacity constraint that can delay revenue realization independent of underlying demand; an unusually deep, complex, and financially entangled OpenAI relationship large enough to require its own non-GAAP carve-out; and a live, though still preliminary, EU DMA cloud-gatekeeper regulatory exposure. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments, and does not treat forward-looking capex or AI-run-rate guidance as realized fact."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-26"
+  next_due: "2026-10-24"
+  log:
+    - date: "2026-07-26"
+      note: "Record created under governance/decisions/PI-0027-ws0005-milestone3-batch5-hyperscaler-ai-infrastructure.md and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline (no prior Microsoft Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3 Batch 5, alongside GOOGL, META, and AMZN (EQIX explicitly deferred). This Claude Code session's own direct WebFetch attempts on this date were blocked (HTTP 403) on SEC EDGAR and on every non-microsoft.com investor-relations domain tested; two microsoft.com/investor pages did render directly for this session (see MSFT.md Source-access disclosure), but full 10-K/10-Q/antitrust-primary-document coverage was not achieved directly by this session. Per OPS-0008 Section 2's mandatory stop-before-drafting gate, this session paused, produced BATCH5_SOURCE_READINESS_MANIFEST.md (SHA-256 8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211), and the principal supplied an independent evidence-recovery audit performed by GPT-5.6 Thinking (2026-07-26), retained verbatim at governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md (SHA-256 98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909, independently verified by this session against the delivered file before use). Every fact in this record not directly attributed to this session's own two successful microsoft.com fetches is sourced to that retained audit, with GPT-5.6 Thinking's inspection explicitly attributed as the inspector -- this Claude session did not itself open the FY2025 Annual Report, the FY2026 Q3 transcript, or the EU Commission statement beyond what the audit reports."
+sources:
+  - note: "Microsoft Corporation, 2025 Annual Report (fiscal year ended 2025-06-30) -- Shareholder Letter, Business, Operating Segments, MD&A, Summary Results of Operations, Cash/Cash Equivalents and Investments, Cash Flows, Property and Equipment, Segment Information and Geographic Data, and OpenAI partnership disclosure sections. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session (WebFetch confirmed blocked, HTTP 403, on every SEC EDGAR path attempted). Supports FY2025 revenue/operating income/net income, segment results, Azure/Cloud growth and margin, capex, cash position, buybacks/dividends, datacenter commitments, and the OpenAI partnership terms."
+    url: "https://www.microsoft.com/investor/reports/ar25/index.html"
+    date: "2025-07-30"
+  - note: "Microsoft Corporation, 'Microsoft Cloud and AI Strength Fuels Third Quarter Results' -- official FY2026 Q3 earnings release (quarter ended 2026-03-31). This Claude session directly fetched and rendered this page itself on 2026-07-26 (one of two successful microsoft.com investor-relations fetches prior to the source-readiness gate being invoked), independently corroborating the same headline figures GPT-5.6 Thinking's later audit also reports (revenue $82.9B, Cloud/Azure growth rates)."
+    url: "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q3/press-release-webcast"
+    date: "2026-04-29"
+  - note: "Microsoft Corporation, FY2026 Q3 earnings conference call, official transcript -- prepared remarks, financial results, capital expenditures, custom silicon (Maia 200, Cobalt), datacenter capacity, and outlook. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session."
+    url: "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3"
+    date: "2026-04-29"
+  - note: "European Commission, preliminary position that Azure and AWS should be designated Digital Markets Act gatekeepers for cloud services. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session. Establishes a preliminary, not final, regulator position."
+    url: "https://digital-markets-act.ec.europa.eu/commission-reaches-preliminary-position-amazons-and-microsofts-market-leading-cloud-services-should-2026-06-25_en"
+    date: "2026-06-25"
+  - note: "GPT-5.6 Thinking, WS-0005 Milestone 3 Batch 5 Primary-Source Evidence-Recovery Audit -- the retained audit synthesizing the four sources above (and the equivalent GOOGL/META/AMZN sources) into claim-level extracts with required fact labeling (filed fact / issuer statement / forward-looking guidance / regulator preliminary finding). This session verified the retained repository copy's SHA-256 matches the value supplied with the audit before relying on it."
+    url: "governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md"
+    date: "2026-07-26"
