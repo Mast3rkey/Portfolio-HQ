@@ -1098,6 +1098,76 @@ workstreams:
           Intelligence record, policy, allocation, margin, or execution content changed in this pass.
           This entry authorizes no fifth Milestone 3 batch, no Milestone 4 work, and no advancement of
           `OPS-0007` §8 step I.
+
+          **PR #166 merged and independently post-merge verified (this reconciliation, session distinct
+          from every PR #166 authoring/correction/relay session).** A fresh, exact-head independent
+          review (GitHub review `4782271261`, reviewer GPT-5.6 Thinking, relayed to GitHub by login
+          `Mast3rkey`, COMMENTED-state — same retained-artifact convention as every prior batch — anchored
+          via its own `commit_id` field to exact head `921e1b6f98987eac6d5713024c87e12a504837dc`, submitted
+          `2026-07-26T17:50:06Z`) resolved M5/M6/m3 and returned **APPROVED FOR READINESS AND MERGE**,
+          evidence-bundle SHA-256 `6ef89c58007cdae51fba9278324126d526ae34e3a462e5a3f2f51e031cbac56a`. The
+          review body was recovered from GitHub via the API (not retyped), the standard Claude Code relay
+          footer identified and removed (exactly one match, no content following it), and trailing
+          spaces/tabs normalized — the resulting text's SHA-256 (`21e2206219aae82fc229f921505669e8f62b2c85b2f384744eced81d591a0723`)
+          matches the independently expected value exactly. Retained verbatim at
+          `governance/audits/PR166_FINAL_DELTA_REVIEW_20260726.md`; the original external SHA-256 as
+          separately reported by GPT (`6f7a2a1d6dd43f46b23f11c8f30b7c094adecd7b1b8c4b15861be804cc0297d0`) is
+          recorded as source-artifact provenance only — this session did not independently re-hash that
+          original external file, only the GitHub-hosted review body. PR #166 was merged
+          `2026-07-26T17:52:48Z` by `Mast3rkey` (merge commit `810ffd35b1c8b126886d9dd0e6372383bee3c534`,
+          parents `92ea06705b1707d8b7644e311e4f086f462e9573` (base, confirmed the merge commit's direct
+          first parent) and `921e1b6f98987eac6d5713024c87e12a504837dc` (the reviewed head, confirmed the
+          merge commit's direct second parent) — no unreviewed commit entered the merge). The merge action
+          itself, taken by the principal after the review's submission, is recorded here as the principal's
+          acceptance and merge decision; no acceptance sentence is quoted or invented.
+
+          **Post-merge verification (independent, this reconciliation):** `origin/main` fetched and
+          confirmed at `810ffd35b1c8b126886d9dd0e6372383bee3c534` — the merge commit itself, not advanced
+          further. Merge-commit diff against base independently re-confirmed as exactly the twelve files
+          (both `governance/audits/PR166_*.md` artifacts, the comparison artifact, `ETN`/`PWR`/`VRT`
+          YAML+MD pairs, both freshness files, `operations/WORKSTREAMS.yaml`) — the merge commit's own tree
+          is byte-identical to the reviewed head's tree (zero diff `921e1b6f..810ffd35`). Both
+          previously retained audit-artifact checksums re-confirmed unchanged (primary-source audit
+          `9787050266aae7e96906d16bea69452d86ca9b33c575fdbd9d4c03ca8074a4fb`; corrected-head review
+          `0514163d4d40c3aa69ecb5d9e90a895d88bcafdf09de5ecb07e795941350b294`). `intelligence_validator.py`
+          (20 companies, all valid) and `freshness_validator.py` (OK) both re-run clean; full pytest suite
+          **1,502/1,502** passed; `git diff --check` clean; decision-index reconciliation **36 filed**
+          (`governance/decisions/*.md` less `README.md`) ↔ **36 indexed** (`governance/decisions.yaml`), no
+          orphans, `PI-0026` present in both; exactly **one** `priority: primary` workstream (`WS-0005`)
+          confirmed. Independently confirmed via `git diff` (`92ea0670..810ffd35`): `targets.yaml`,
+          `holdings.yaml`, `allocate.py`, `margin_state.py`, `GEV.yaml`/`GEV.md` and GEV's freshness rows,
+          every other pre-existing Company/Theme Intelligence record, every test file, and every
+          governance decision file are byte-identical across the merge — zero diff outside the twelve
+          authorized files.
+
+          **PROVISIONAL-status determination (per `OPS-0007` §3, this reconciliation).** All five elements
+          are independently confirmed satisfied for ETN, VRT, and PWR: (1) eligible independent exact-head
+          review (`4782271261`, unconditional APPROVED FOR READINESS AND MERGE with no further correction
+          required); (2) no bounded correction/re-review needed at this final stage; (3) the principal's
+          merge action at the exact final head `921e1b6f98987eac6d5713024c87e12a504837dc`; (4) merged to
+          authoritative `main` at that exact head (`810ffd35b1c8b126886d9dd0e6372383bee3c534`); (5)
+          post-merge ancestry/scope/validator/test verification complete and passing, this entry factually
+          synchronized to that state. **ETN, VRT, and PWR are therefore identified as PROVISIONAL** —
+          independently reviewed under `OPS-0007`, merged and post-merge verified, but not yet subjected to
+          `PI-0016`'s deeper committee-review methodology or WS-0005's own later Milestone-9 review. This
+          determination alters no file's schema and is recorded here as review metadata, not a schema
+          field. **Milestone 3, Batch 4 (ETN, VRT, PWR) is now complete** per `PI-0026`'s own criteria.
+          **This does not declare Milestone 3 complete in aggregate** — of the portfolio's 62 company
+          holdings (65 total roster entries, less 3 ETFs), 20 now carry a qualifying Company Intelligence
+          record; 42 remain uncovered. Milestone 3 therefore remains `status: in_progress`. This entry
+          authorizes no fifth Milestone 3 batch, no Milestone 4 work, and no advancement of `OPS-0007` §8
+          step I.
+
+          **This factual reconciliation itself** — the retained review artifact plus this
+          `operations/WORKSTREAMS.yaml` synchronization — is being published via a new, separate draft PR
+          on branch `claude/ws0005-batch4-postmerge-reconcile` (base `origin/main` at
+          `810ffd35b1c8b126886d9dd0e6372383bee3c534`), authored by a session distinct from every PR #166
+          authoring/correction/relay session. It requires its own independent exact-head review under
+          `OPS-0007` §1 and explicit principal acceptance before it may be marked ready or merged — it does
+          not mark itself ready, does not merge itself, and does not review its own work. It performs no
+          Company/Theme Intelligence, tier, target, role, cluster, cap, holdings, allocator, margin, or
+          trade change of any kind, begins no fifth Milestone 3 batch, no Milestone 4 work, and no
+          advancement of `OPS-0007` §8 step I.
         pr: 166
         status: in_progress
         date: "2026-07-26"
@@ -1223,6 +1293,10 @@ workstreams:
       - "Post-merge verification (independent, this reconciliation, session distinct from the PR #163 authoring/correction session): origin/main fetched and confirmed at 603e957cf8ea4ddebf070926ef3996f827f9e7e9; merge-commit diff independently re-confirmed as exactly the 5 reviewed files (operations/WORKSTREAMS.yaml plus the four operations/provisional/ artifacts); intelligence_validator.py (17 companies, 2 themes, all valid) and freshness_validator.py (OK) both re-run clean; full pytest suite 1502/1502 passed; git diff --check clean; decision-index reconciliation 35 filed (governance/decisions/*.md less README.md) ↔ 35 indexed (governance/decisions.yaml), no orphans, PI-0025 and OPS-0007 both present in both. Independently confirmed via git diff (270b4716..603e957c): targets.yaml, holdings.yaml, allocate.py, margin_state.py, every Company/Theme Intelligence record, CLAUDE.md, governance/decisions.yaml, and every governance decision file are byte-identical across PR #163 — zero diff. No tier, target, holdings, cluster, allocator, margin, Intelligence-record, or governance-decision change occurred in PR #163. This reconciliation also found this session's local main ref stale (unrelated history, pre-dating a repository history rewrite, zero unique local commits) and safely reset it to origin/main before proceeding — recorded here for transparency, not a repository-state finding."
       - "PR #164 (WS-0005 register sync reconciling PR #163's merge/post-merge state, merged 2026-07-26T13:43:14Z, merge commit f16796ce02cd9a8dd36341ee30e65e1d165d9f06, confirmed origin/main tip at this filing's base)"
       - governance/decisions/PI-0026-ws0005-milestone3-batch4-power-infrastructure.md
+      - "PR #166 (Milestone 3 Batch 4 implementation — ETN/VRT/PWR Company Intelligence — merged 2026-07-26T17:52:48Z, merge commit 810ffd35b1c8b126886d9dd0e6372383bee3c534, parents 92ea06705b1707d8b7644e311e4f086f462e9573 (base, confirmed direct first parent) and 921e1b6f98987eac6d5713024c87e12a504837dc (reviewed head, confirmed direct second parent), merged_by Mast3rkey, source branch claude/ws0005-batch4-etn-vrt-pwr-impl)"
+      - "PR #166 independent review 4782271261 (reviewer GPT-5.6 Thinking, relayed to GitHub by login Mast3rkey, COMMENTED-state GitHub review — same retained-artifact convention as prior batches — anchored via its own commit_id field to the exact reviewed/merged head 921e1b6f98987eac6d5713024c87e12a504837dc, submitted 2026-07-26T17:50:06Z, verdict APPROVED FOR READINESS AND MERGE, evidence-bundle SHA-256 6ef89c58007cdae51fba9278324126d526ae34e3a462e5a3f2f51e031cbac56a). Final review body retained verbatim (fetched from GitHub via the API, standard Claude Code relay footer removed, trailing spaces/tabs normalized) at governance/audits/PR166_FINAL_DELTA_REVIEW_20260726.md, normalized committed-file SHA-256 21e2206219aae82fc229f921505669e8f62b2c85b2f384744eced81d591a0723 — original external GPT-reported SHA-256 6f7a2a1d6dd43f46b23f11c8f30b7c094adecd7b1b8c4b15861be804cc0297d0 recorded separately as source-artifact provenance; this session did not independently re-hash that original external file, only the GitHub-hosted review body."
+      - "PROVISIONAL-status determination (OPS-0007 §3): ETN, VRT, PWR independently confirmed to satisfy all five elements — eligible review (4782271261, unconditional APPROVED FOR READINESS AND MERGE), no further correction required, the principal's merge action at exact head 921e1b6f98987eac6d5713024c87e12a504837dc, merge to main at 810ffd35b1c8b126886d9dd0e6372383bee3c534, and post-merge ancestry/scope/validator/test verification — recorded by this reconciliation, not as a schema change"
+      - "Post-merge verification (independent, this reconciliation, session distinct from every PR #166 authoring/correction/relay session): origin/main fetched and confirmed at 810ffd35b1c8b126886d9dd0e6372383bee3c534 (the merge commit itself, unadvanced); merge-commit diff independently re-confirmed as exactly the twelve files; prior retained-audit checksums re-confirmed unchanged (primary-source audit 9787050266aae7e96906d16bea69452d86ca9b33c575fdbd9d4c03ca8074a4fb; corrected-head review 0514163d4d40c3aa69ecb5d9e90a895d88bcafdf09de5ecb07e795941350b294); intelligence_validator.py (20 companies, all valid) and freshness_validator.py (OK) both re-run clean; full pytest suite 1502/1502 passed; git diff --check clean; decision-index reconciliation 36 filed (governance/decisions/*.md less README.md) ↔ 36 indexed (governance/decisions.yaml), no orphans, PI-0026 present in both; exactly one priority: primary workstream (WS-0005) confirmed. Independently confirmed via git diff (92ea0670..810ffd35): targets.yaml, holdings.yaml, allocate.py, margin_state.py, GEV.yaml/GEV.md and GEV's freshness rows, every other pre-existing Company/Theme Intelligence record, every test file, and every governance decision file are byte-identical across the merge — zero diff outside the twelve authorized files."
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -1510,6 +1584,30 @@ workstreams:
       only, not restated here, since they go stale between correction
       passes.
 
+      **A third pass (CI-cleanliness normalization only) and PR #166's final
+      merge followed the same day.** Trailing Markdown whitespace in both
+      retained audit artifacts was normalized (no substantive content
+      changed) to clear the repository's `git diff --check` CI gate; exact-
+      head CI then succeeded (check run 89820782173). A fresh, exact-head
+      independent review (4782271261, GPT-5.6 Thinking, relayed by
+      Mast3rkey, anchored to 921e1b6f98987eac6d5713024c87e12a504837dc)
+      returned APPROVED FOR READINESS AND MERGE. PR #166 was merged
+      2026-07-26T17:52:48Z by Mast3rkey (merge commit
+      810ffd35b1c8b126886d9dd0e6372383bee3c534, parents
+      92ea06705b1707d8b7644e311e4f086f462e9573 (base) and
+      921e1b6f98987eac6d5713024c87e12a504837dc (the reviewed head, confirmed
+      the merge commit's direct second parent)). **Milestone 3, Batch 4
+      (ETN, VRT, PWR) is now merged and, per an independent post-merge
+      verification performed by a separate reconciliation session, complete**
+      — see the milestone-3-intelligence-completion gate entry above for the
+      full post-merge verification and PROVISIONAL-status determination.
+      That same reconciliation session opened its own new, separate draft PR
+      (branch claude/ws0005-batch4-postmerge-reconcile) to record the
+      retained final review artifact and this factual synchronization; that
+      PR itself remains open, draft, and unmerged, pending its own
+      independent review and principal acceptance. This does not authorize a
+      fifth Milestone 3 batch, Milestone 4, or any later milestone.
+
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
       crypto_shares.BTC = 0.00460473 (a verified broker-sync re-add on
@@ -1635,9 +1733,33 @@ workstreams:
       authorized to run by this entry. A fourth Milestone 3 batch and
       Milestones 4 through 9 remain unauthorized and blocked, unaffected by
       this reconciliation.
-    active_branch: claude/ws0005-batch4-etn-vrt-pwr-impl
-    active_pr: 166
-    last_verified_main_sha: 92ea06705b1707d8b7644e311e4f086f462e9573
+
+      **Milestone 3, Batch 4 (ETN, VRT, PWR): merged and, per independent
+      post-merge verification (this reconciliation, a session distinct from
+      every PR #166 authoring/correction/relay session), complete.**
+      Governance PR #165 merged (merge commit
+      92ea06705b1707d8b7644e311e4f086f462e9573); implementation PR #166
+      independently reviewed (4782271261, GPT-5.6 Thinking via relay
+      Mast3rkey, APPROVED FOR READINESS AND MERGE) and merged (merge commit
+      810ffd35b1c8b126886d9dd0e6372383bee3c534, parents
+      92ea06705b1707d8b7644e311e4f086f462e9573 (base) and
+      921e1b6f98987eac6d5713024c87e12a504837dc (reviewed head)); post-merge
+      ancestry/scope/validator/test verification complete and passing — see
+      the milestone-3-intelligence-completion gate entry above for full
+      detail. ETN/VRT/PWR independently confirmed PROVISIONAL per OPS-0007
+      §3. Milestone 3 remains blocked in aggregate (20 of 62 company holdings
+      covered; 42 not, plus 3 ETFs as a separate structural category) pending
+      its own separate, later, explicit principal authorization for any
+      further batch; none has been granted by this entry, by PI-0023,
+      PI-0024, PI-0025, PI-0026, or by anything else. This reconciliation
+      itself grants no such authorization, does not begin Milestone 4,
+      OPS-0007 §8 step I, or any allocation/margin/trade work, and does not
+      review, correct, mark ready, or merge itself — it requires its own
+      independent exact-head review and explicit principal acceptance before
+      it may be marked ready or merged.
+    active_branch: claude/ws0005-batch4-postmerge-reconcile
+    active_pr: null
+    last_verified_main_sha: 810ffd35b1c8b126886d9dd0e6372383bee3c534
     last_verified_date: "2026-07-26"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
@@ -1689,13 +1811,17 @@ workstreams:
       work. **PI-0026 (Milestone 3, Batch 4 — ETN, VRT, PWR — evidence
       development only) has merged**, via PR #165 (merge commit
       92ea06705b1707d8b7644e311e4f086f462e9573) — confirmed status: Accepted
-      and effective; it authorizes exactly that fourth batch's governance
-      package and its research implementation PR **#166** (draft, unmerged,
-      containing the nine authorized draft deliverables), gated on PR #166's
-      own independent exact-head review under `OPS-0007` §1, any bounded
-      correction and re-review, and explicit principal acceptance before
-      merge. Neither PI-0026 nor PR #166's filing authorizes a fifth
-      Milestone 3 batch, any Milestone 4-9 work, or advancement of `OPS-0007`
-      §8 step I.
+      and effective; it authorized exactly that fourth batch's governance
+      package and its research implementation PR **#166**, **now merged**
+      (merge commit `810ffd35b1c8b126886d9dd0e6372383bee3c534`, parents
+      `92ea06705b1707d8b7644e311e4f086f462e9573` (base) and
+      `921e1b6f98987eac6d5713024c87e12a504837dc` (the reviewed head)) after
+      independent exact-head review `4782271261` (APPROVED FOR READINESS AND
+      MERGE) and the principal's merge action — recorded by this
+      reconciliation, which itself grants no authority beyond recording that
+      completion. Neither PI-0026, PR #166 (merged), nor this reconciliation
+      authorizes a fifth Milestone 3 batch, any Milestone 4-9 work, or
+      advancement of `OPS-0007` §8 step I. This reconciliation itself does
+      not review, correct, mark ready, or merge itself.
     supersedes: null
     superseded_by: null
