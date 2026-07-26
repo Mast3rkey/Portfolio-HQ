@@ -62,6 +62,30 @@ research results for source quality, factual accuracy, freshness" step:
    condition requiring a further deliberate corporate action by SK hynix
    itself.
 
+**Bounded remediation pass (2026-07-26), same day, following an independent
+Fable review of the initial draft PR (#158):** the review found this
+record's ADR-premium figures ("up to 51%, narrowing to roughly 30-33%")
+were already materially stale relative to accessible evidence, and that the
+record omitted pre-cutoff reporting of a 2026-07-29 two-way-conversion
+event. An independent WebSearch re-check in this pass found: (a) a more
+granular, lower premium trajectory — peak ~52.5% (2026-07-14), ~26% at the
+2026-07-15 close, ~25% through the following week, ~22% as of
+~2026-07-24-25 — now reflected throughout this record in place of the
+earlier 30-33% figure; and (b) Korea Securities Depository reporting (via
+Korean local-media sources, not independently verified against a KSD
+primary statement) that 2026-07-29 is the date applications for two-way
+conversion become possible, with an important asymmetry preserved rather
+than resolved into a prediction: cancelling an ADS for an ordinary share is
+reported to carry no separate KSD limit, while the capped
+ordinary-share-to-ADS direction is unaffected by that date. At least one
+source found in this pass explicitly cautions that primary material does
+not support a definitive "the premium resolves on July 29" reading — this
+record states the event and its reported mechanics without adopting that
+prediction. The `conviction.rating` (Medium) was reassessed against this
+correction and left unchanged — see `conviction.rationale` in the YAML and
+the review-log entry for the same date for the reasoning. No other section
+of this record was changed in this pass.
+
 **Unresolved data gaps and conflicts found in research, not resolved by this
 record:**
 - Whether NVIDIA is named directly as a customer in SK hynix's own
@@ -150,17 +174,32 @@ quarter (Q1 2026) and the 2023 full-year operating loss are the two extremes
 of the same underlying cycle, separated by roughly three years. Distinct
 from the underlying operating business, holding **SKHY specifically**
 (rather than the Seoul-listed ordinary shares) carries an additional,
-structural risk: the 2.5% ADS conversion cap was fully exhausted by the
-offering itself, blocking the normal cross-listing arbitrage mechanism and
-producing a persistent valuation premium over the ordinary shares (up to
-51%, narrowing to roughly 30-33%) that this record's independent research
-found is not straightforward to resolve — reopening meaningful additional
-conversion capacity would likely require a process akin to a secondary
-offering, not routine administrative action. The stock's own post-listing
-trading history illustrates this is not a purely theoretical risk: the
-Seoul-listed shares fell more than 15% in a single session on 2026-07-13,
-described as the worst single-day performance on record, amid reported
-elevated retail and margin-financed positioning in the Korean market.
+structural risk: the 2.5% ADS conversion cap on **new** ADS creation
+(ordinary shares -> ADS) was fully exhausted by the offering itself,
+breaking the normal cross-listing arbitrage mechanism and producing a
+valuation premium over the ordinary shares that peaked near 52.5% on
+2026-07-14, narrowed sharply to roughly 26% at the 2026-07-15 close,
+persisted around 25% through the following week, and was reported at
+roughly 22% as of ~2026-07-24-25 — still material, though narrower than an
+earlier draft of this record stated, corrected in a 2026-07-26 remediation
+pass. Reopening meaningful additional *new-ADS* conversion capacity would
+likely require a process akin to a secondary offering, not routine
+administrative action. Separately, per Korea Securities Depository (KSD)
+reporting, 2026-07-29 is the date applications for two-way conversion
+become possible, coinciding with the domestic listing of the offering's
+newly issued underlying Korean shares — but the reported mechanism is
+asymmetric: cancelling an ADS to receive an ordinary share is reported to
+carry no separate KSD limit, while the capped ordinary-share-to-ADS
+direction is unaffected by this date. As of this record's 2026-07-26
+cutoff, the event had not yet occurred; whether it meaningfully compresses
+the premium is unassessed here, and at least one source found in this
+research explicitly cautions that primary material does not support a
+definitive "premium resolves" reading of that date — a caution this record
+preserves rather than resolves. The stock's own post-listing trading
+history illustrates this is not a purely theoretical risk: the Seoul-listed
+shares fell more than 15% in a single session on 2026-07-13, described as
+the worst single-day performance on record, amid reported elevated retail
+and margin-financed positioning in the Korean market.
 
 **Conditions relevant to monitoring this thesis** (qualitative, observable):
 - Continued HBM leadership (or at minimum no confirmed, material share loss)
@@ -171,8 +210,11 @@ elevated retail and margin-financed positioning in the Korean market.
 - Continued operation (even if capped) of the Wuxi/Dalian China fabs under
   the 2026 site-license system, without further license-renewal
   deterioration
-- Whether the ADR conversion-cap/premium condition begins to normalize, or
-  SK hynix takes deliberate action to expand conversion capacity
+- Whether the reported 2026-07-29 two-way-conversion opening produces any
+  observable further compression in the ADR premium (already ~22% as of
+  ~2026-07-24-25, down from a ~52.5% peak), or whether the premium persists
+  or re-expands given the capped direction (ordinary shares -> ADS) is
+  unaffected by that date
 - Q2 2026 results (2026-07-29, not yet reported as of this record) and
   whether they continue the current run-rate or show signs of deceleration
 
@@ -277,7 +319,12 @@ leverage cap or 30% buffer floor.
   from, and move independently of, the underlying Seoul-listed shares'
   fundamental value — a volatility source specific to holding the ADR
   rather than the ordinary shares, and not present in any other name in
-  this repository's Intelligence corpus researched to date.
+  this repository's Intelligence corpus researched to date. This has
+  already produced a large, rapidly-moving premium (peak ~52.5% on
+  2026-07-14, ~22% by ~2026-07-24-25) independent of the underlying
+  business's own performance; a reported 2026-07-29 partial opening of the
+  conversion mechanism (see Investment thesis above) is a further
+  observable data point for this volatility source, not a resolution of it.
 - **Simultaneous-loss / correlated-risk with MU and the rest of the semis
   cluster**: see the batch comparison artifact
   (`intelligence/BATCH2_MEMORY_COMPARISON.md`) for the cross-company
@@ -338,9 +385,13 @@ evidence above, not from SKHY's `band` tier placement.
     direction)
   - Any change to the China Wuxi/Dalian site-license status (renewal,
     tightening, or further relaxation)
-  - A material development in the ADR conversion-cap/premium condition
-    (SK hynix taking action to expand conversion capacity, or a disorderly
-    premium correction)
+  - **The reported 2026-07-29 two-way-conversion opening**: a dedicated,
+    dated trigger to reassess (1) whether it actually occurred as reported,
+    (2) whether the ADS-to-ordinary-share conversion path remains
+    operational, (3) whether the ADR premium compressed further, held
+    (~22% as of ~2026-07-24-25), persisted, or re-expanded, and (4) whether
+    the 2.5% cap or broader depositary-capacity mechanics changed — none of
+    which this record concludes in advance
   - A significant leadership change
 - **Metrics worth monitoring each review:** quarterly revenue and operating
   margin against the current run-rate, HBM/DRAM/NAND segment mix, NVIDIA
