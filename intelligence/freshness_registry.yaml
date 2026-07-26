@@ -98,3 +98,19 @@ tickers:
     filing_trigger_profile: domestic_issuer_v1
     refresh_policy: path_a_fixed_scope_v1
     monitoring_enabled: false
+  - ticker: MU
+    company_record_authority: PI-0024
+    enrollment_authority: PI-0024
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: SKHY
+    company_record_authority: PI-0024
+    enrollment_authority: PI-0024
+    enrolled_at: "2026-07-26"
+    template_version: v1
+    filing_trigger_profile: foreign_private_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false

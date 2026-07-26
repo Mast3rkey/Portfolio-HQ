@@ -676,13 +676,51 @@ workstreams:
           any future implementation session from automatically contracting this batch to MU alone
           (or expanding it) for any reason, including source-access difficulty — insufficient
           primary evidence for either company requires stopping and returning for explicit
-          principal amendment, not silent scope narrowing. This batch has not been implemented:
-          no MU or SKHY Company Intelligence record, freshness-registry row, or comparison
-          artifact exists yet. This entry authorizes no third Milestone 3 batch and no Milestone 4
-          work.
+          principal amendment, not silent scope narrowing. This entry authorizes no third
+          Milestone 3 batch and no Milestone 4 work.
+
+          **Batch 2 implementation drafted 2026-07-26 (not merged, not complete).** Post-merge
+          verification of PR #157 (PI-0024's own governance filing) was independently re-run first:
+          confirmed merged (merge commit 883c8e859616e631617adcf973fc6a6ba93eca44, merged
+          2026-07-25T23:58:32Z, merger Mast3rkey), reviewed head 2acc6651ce132cfe66d3e13ad77552098b34dd76
+          confirmed an ancestor of `origin/main` and the merge commit's direct second parent, merged
+          diff confirmed as exactly the 4 expected governance files, source branch
+          `claude/ws0005-m3-batch2-auth-ky3els` confirmed deleted, independent Fable review
+          4780465168 (APPROVED FOR READINESS AND MERGE) confirmed visible and anchored to the
+          reviewed head, exact-head CI run 30178849477 confirmed `conclusion: success`, no open PR
+          or branch found overlapping this implementation. Local `main` was found diverged from
+          `origin/main` with no common ancestor (a stale pre-history-rewrite local ref, confirmed
+          via its reflog showing only "Created from refs/remotes/origin/main" and its tip commit
+          still present on several other origin branches) and was safely reset to match
+          `origin/main` exactly (zero unique local commits existed to lose). Full pytest suite
+          (1502/1502) and both `intelligence_validator.py`/`freshness_validator.py` re-run clean on
+          that verified base. Implementation then proceeded on branch
+          `claude/ws0005-batch2-mu-skhy-impl-2`, base `origin/main`
+          `883c8e859616e631617adcf973fc6a6ba93eca44`: `intelligence/companies/MU.yaml`/`MU.md` and
+          `intelligence/companies/SKHY.yaml`/`SKHY.md` created; one hand-authored comparison
+          artifact (`intelligence/BATCH2_MEMORY_COMPARISON.md`) created; one freshness-registry and
+          one freshness-checkpoint row added per ticker (`monitoring_enabled: false`,
+          `checkpoint_status: pending`, `enrollment_authority`/`company_record_authority: PI-0024`).
+          Primary-source access (SEC EDGAR, investors.micron.com, SK hynix's own SEC registration
+          filings) was attempted and blocked at the network/proxy level for every URL tried,
+          independently re-confirmed by the implementing/synthesizing session itself (not merely
+          cited from the research passes) via fresh WebFetch attempts against the exact identified
+          URLs plus non-target control domains (both failing identically) — every fact in both
+          records is therefore WebSearch-sourced or primary-cited-but-not-inspected, explicitly
+          disclosed in each record's Source-access disclosure section, with the most load-bearing
+          or internally-conflicting figures independently cross-checked by the synthesizing session
+          via separate WebSearch queries. `intelligence_validator.py` (13 companies, all valid,
+          including MU and SKHY), `freshness_validator.py` (OK), and YAML parsing all re-run clean
+          on the implementation branch. **This batch remains unmerged and incomplete** per this
+          entry's own and `PI-0024` §I's completion criteria (no independent Fable review yet
+          exists for this implementation; not merged to `main`; no post-merge re-verification
+          performed) — a draft PR, an open branch, and a passing local validation run do not by
+          themselves constitute completion, per `OPS-0006` §16.1 and `PI-0024` §I. This entry
+          authorizes no third Milestone 3 batch and no Milestone 4 work; no tier, target, cluster,
+          allocator, or margin review has begun.
         pr: 154
         status: in_progress
-        date: "2026-07-25"
+        date: "2026-07-26"
       - gate: milestone-4-portfolio-relationship-mapping
         description: >
           Map economic systems, demand drivers, customer/supplier
@@ -772,6 +810,7 @@ workstreams:
       - "PR #154 exact-head CI: test check run, run 30171261993, conclusion success"
       - "PR #155 independent Fable review 4780123504 (model claude-fable-5, session session_01HZKBDaSPytN1EtErbsP1AT, anchored to exact PR #155 head cdcedb6732cae9b0dabd650ce065f7f0576175e1, verdict APPROVED WITH NON-BLOCKING FINDINGS — issued post-merge, not a pre-merge gate: PR #155 merged mid-review at 2026-07-25T19:59:11Z while this review was in progress, and the merged head is byte-identical to the reviewed head cdcedb6732cae9b0dabd650ce065f7f0576175e1)"
       - governance/decisions/PI-0024-ws0005-milestone3-batch2-memory.md
+      - "Milestone 3 Batch 2 implementation draft: branch claude/ws0005-batch2-mu-skhy-impl-2, base origin/main 883c8e859616e631617adcf973fc6a6ba93eca44 (verified merge commit of PR #157), draft PR opened 2026-07-26 (PR number to be recorded on the ordinary next register sync, per this repository's existing OPS-0004/OPS-0005 precedent for post-open PR-number reconciliation) — not merged, not independently reviewed, not complete"
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -803,20 +842,24 @@ workstreams:
 
       Milestone 3, Batch 2 (MU, SKHY) is now authorized, effective on
       PI-0024's merge — see the milestone-3-intelligence-completion gate
-      entry above. Next action once PI-0024 merges: open exactly one bounded
-      research implementation PR covering that batch, per PI-0024's full
-      authorization scope (§§A-J), including its explicit prohibition on
-      automatically contracting the batch to MU alone for any reason. WDC is
-      explicitly excluded from this batch (Sandisk separation, February
-      2025) and remains ungoverned by this authorization; `targets.yaml`'s
-      stale MU/WDC cluster comment is identified but not corrected. No
-      research has begun; this decision authorizes it, it does not perform
-      it. This does not authorize a third Milestone 3 batch, Milestone 4, or
-      any later milestone — each still requires its own separate, later,
-      explicit principal authorization per OPS-0006 §5. Remaining
-      candidate uncovered semis-cluster members for a possible future batch:
-      AVGO, AMD, MRVL, INTC — not yet selected, proposed, or authorized by
-      this filing.
+      entry above. **Implementation drafted 2026-07-26** on branch
+      `claude/ws0005-batch2-mu-skhy-impl-2` from verified `origin/main`
+      `883c8e859616e631617adcf973fc6a6ba93eca44`: MU and SKHY Company
+      Intelligence records, the batch comparison artifact, and freshness
+      enrollment rows for both tickers now exist on that branch; a draft PR
+      has been opened (see evidence_refs for the PR number once recorded).
+      **Next action: independent Fable review of that draft PR's exact
+      head**, per PI-0024 §I's completion gate — no such review has occurred
+      yet, so the batch is not complete regardless of the draft PR's
+      existence, per OPS-0006 §16.1. WDC is explicitly excluded from this
+      batch (Sandisk separation, February 2025) and remains ungoverned by
+      this authorization; `targets.yaml`'s stale MU/WDC cluster comment is
+      identified but not corrected. This does not authorize a third
+      Milestone 3 batch, Milestone 4, or any later milestone — each still
+      requires its own separate, later, explicit principal authorization per
+      OPS-0006 §5. Remaining candidate uncovered semis-cluster members for a
+      possible future batch: AVGO, AMD, MRVL, INTC — not yet selected,
+      proposed, or authorized by this filing.
 
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
@@ -856,18 +899,22 @@ workstreams:
       merged (merge commit 7f50020e83c6bf3fcf50c2f26a1a0533aaa245af),
       independent Fable review resolved to APPROVED WITH NON-BLOCKING
       FINDINGS, exact-head CI green, and post-merge validator/test
-      re-verification passing — Batch 1 is complete. None on Milestone 3,
-      Batch 2 authorization (MU, SKHY) — PI-0024 authorizes it; its
-      implementation has not begun and no branch/PR exists for it yet.
+      re-verification passing — Batch 1 is complete. **Milestone 3, Batch 2
+      (MU, SKHY): PI-0024 authorizes it; implementation is drafted (branch
+      `claude/ws0005-batch2-mu-skhy-impl-2`, draft PR open — see
+      evidence_refs) but not merged, not independently reviewed, and not
+      complete** — the blocker to completion is exactly one independent
+      Fable review of the draft PR's exact head plus post-merge
+      verification, per PI-0024 §I and OPS-0006 §16.1; neither has occurred.
       Milestone 3's remaining scope (any further batch beyond MU/SKHY) and
       Milestones 4 through 9 remain blocked pending their own separate,
       later, explicit principal authorization; none has been granted by
       this entry, by PI-0023, by PI-0024, or by anything else. This
       reconciliation itself grants no such authorization.
-    active_branch: null
+    active_branch: claude/ws0005-batch2-mu-skhy-impl-2
     active_pr: null
-    last_verified_main_sha: 956859935caa9375d8d16abfc25743526a7da146
-    last_verified_date: "2026-07-25"
+    last_verified_main_sha: 883c8e859616e631617adcf973fc6a6ba93eca44
+    last_verified_date: "2026-07-26"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
       roadmap; execution of Milestones 1-2 only, per its 2026-07-25
