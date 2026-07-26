@@ -925,7 +925,9 @@ workstreams:
           context in the batch's comparison artifact, but its record is explicitly prohibited from
           being edited, refreshed, or reassessed by this batch. This entry authorizes no fifth
           Milestone 3 batch, no Milestone 4 work, and no advancement of OPS-0007 §8 step I (the
-          still-gated Monday allocation-check package).
+          official-and-provisional Monday allocation-check package — eligible following step H's
+          completion, but deferred, unbegun, and subject to its own separate implementation,
+          review, and execution gates).
         pr: 161
         status: in_progress
         date: "2026-07-26"
@@ -1260,9 +1262,11 @@ workstreams:
       f16796ce02cd9a8dd36341ee30e65e1d165d9f06 — confirmed origin/main's tip
       at this filing's base.** OPS-0007 §8 step H is thereby fully closed
       (merged, post-merge verified, and that verification's own register
-      sync itself merged); step I (the official-and-provisional Monday
-      allocation-check package) remains gated, unbegun, and unauthorized by
-      that PR or by this entry.
+      sync itself merged); step H's completion makes step I (the
+      official-and-provisional Monday allocation-check package) eligible,
+      but step I remains deferred, unbegun, outside this entry's scope, and
+      still subject to its own separate implementation, review, and
+      execution gates before it may proceed.
 
       **Milestone 3, Batch 4 (ETN, VRT, PWR) governance authorization
       (PI-0026) filed 2026-07-26 — this entry.** Covers exactly the three

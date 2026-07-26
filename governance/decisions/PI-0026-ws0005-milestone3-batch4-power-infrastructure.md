@@ -20,7 +20,10 @@ KLAC, LRCX — the `semis` cluster's capital-equipment sub-segment; PR #154, mer
 merged and complete), and `PI-0025` (AVGO, AMD, MRVL, INTC — the `semis` cluster's remaining
 compute/networking/foundry sub-segment; PR #161, merged, independently confirmed PROVISIONAL per
 `OPS-0007` §3). All three batches covered members of the governed `semis` correlated-cluster cap.
-No prior batch has covered any member of the governed `power_infra` correlated-cluster cap.
+No prior WS-0005 Milestone 3 batch has covered ETN, VRT, or PWR — the three companies this batch
+covers. GEV, the `power_infra` cluster's fourth member, was covered historically under `PI-0007`
+(the NVDA + GEV batch, predating this batch-numbered discipline) and remains comparison-only
+context here, not newly authorized coverage.
 
 `targets.yaml`'s `power_infra` cluster (≤20% of book) has exactly four members: `GEV, ETN, VRT,
 PWR`. Of these, only **GEV** carries an existing Company Intelligence record — created under
@@ -64,9 +67,11 @@ base commit: Milestone 3's `status` is `in_progress` for the milestone as a whol
 complete/merged; no fourth batch recorded as authorized anywhere in the entry); `OPS-0007` §8 step
 H (creation of the preliminary architecture/target-scenario package, PR #163) is recorded merged
 and independently post-merge verified by PR #164 (merge commit
-`f16796ce02cd9a8dd36341ee30e65e1d165d9f06`, confirmed the current `origin/main` tip); `OPS-0007` §8
-step I (the official-and-provisional Monday allocation-check package, §5) remains gated, unbegun,
-and is not touched by, drawn on, or advanced by this filing in any way. **PI-0026** is confirmed as
+`f16796ce02cd9a8dd36341ee30e65e1d165d9f06`, confirmed the current `origin/main` tip); step H's
+completion makes `OPS-0007` §8 step I (the official-and-provisional Monday allocation-check
+package, §5) eligible, but step I remains deferred, unbegun, outside this filing's scope, and still
+subject to its own separate implementation, review, and execution gates before it may proceed — it
+is not touched by, drawn on, or advanced by this filing in any way. **PI-0026** is confirmed as
 the next unused decision number in the series — checked live against both
 `governance/decisions/` (highest filed: `PI-0025`, and `OPS-0007`, the highest-numbered decision of
 any prefix) and `governance/decisions.yaml` (same, 35 filed ↔ 35 indexed, no orphans) at this
@@ -527,7 +532,9 @@ AVGO, COST, GEV, INTC, ISRG, KLAC, LRCX, MRVL, MU, NVDA, SKHY, TMO, TSM, XOM, `a
 the 1.8x leverage cap and 30% buffer floor; `MARGIN-0005`'s research charter and trial ceiling;
 `docs/PORTFOLIO_INTELLIGENCE_SPEC.md`, `docs/INVESTMENT_ONTOLOGY.md`, and
 `constitution/INVESTMENT_CONSTITUTION.md`. Milestones 4 through 9 of WS-0005 remain entirely
-unauthorized, and `OPS-0007` §8 step I remains gated and unbegun. No fifth Milestone 3 batch is
+unauthorized, and `OPS-0007` §8 step I — eligible following step H's completion, but deferred,
+unbegun, outside this filing, and still subject to its own separate implementation, review, and
+execution gates — is neither begun nor advanced by this filing. No fifth Milestone 3 batch is
 authorized by this filing, and none is inferred from its acceptance.
 
 **No research has been conducted, and no research finding, ranking, score, price target, cluster
