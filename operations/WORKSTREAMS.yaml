@@ -711,11 +711,13 @@ workstreams:
           or internally-conflicting figures independently cross-checked by the synthesizing session
           via separate WebSearch queries. `intelligence_validator.py` (13 companies, all valid,
           including MU and SKHY), `freshness_validator.py` (OK), and YAML parsing all re-run clean
-          on the implementation branch. **This batch remains unmerged and incomplete** per this
-          entry's own and `PI-0024` §I's completion criteria (no independent Fable review yet
-          exists for this implementation; not merged to `main`; no post-merge re-verification
-          performed) — a draft PR, an open branch, and a passing local validation run do not by
-          themselves constitute completion, per `OPS-0006` §16.1 and `PI-0024` §I. This entry
+          on the implementation branch. Pushed and opened as draft PR **#158**
+          (`https://github.com/Mast3rkey/Portfolio-HQ/pull/158`). **This batch remains unmerged and
+          incomplete** per this entry's own and `PI-0024` §I's completion criteria (no independent
+          Fable review yet exists for this implementation; not marked ready; not merged to `main`;
+          no post-merge re-verification performed) — a draft PR, an open branch, and a passing local
+          validation run do not by themselves constitute completion, per `OPS-0006` §16.1 and
+          `PI-0024` §I. This entry
           authorizes no third Milestone 3 batch and no Milestone 4 work; no tier, target, cluster,
           allocator, or margin review has begun.
         pr: 154
@@ -810,7 +812,7 @@ workstreams:
       - "PR #154 exact-head CI: test check run, run 30171261993, conclusion success"
       - "PR #155 independent Fable review 4780123504 (model claude-fable-5, session session_01HZKBDaSPytN1EtErbsP1AT, anchored to exact PR #155 head cdcedb6732cae9b0dabd650ce065f7f0576175e1, verdict APPROVED WITH NON-BLOCKING FINDINGS — issued post-merge, not a pre-merge gate: PR #155 merged mid-review at 2026-07-25T19:59:11Z while this review was in progress, and the merged head is byte-identical to the reviewed head cdcedb6732cae9b0dabd650ce065f7f0576175e1)"
       - governance/decisions/PI-0024-ws0005-milestone3-batch2-memory.md
-      - "Milestone 3 Batch 2 implementation draft: branch claude/ws0005-batch2-mu-skhy-impl-2, base origin/main 883c8e859616e631617adcf973fc6a6ba93eca44 (verified merge commit of PR #157), draft PR opened 2026-07-26 (PR number to be recorded on the ordinary next register sync, per this repository's existing OPS-0004/OPS-0005 precedent for post-open PR-number reconciliation) — not merged, not independently reviewed, not complete"
+      - "Milestone 3 Batch 2 implementation draft: PR #158 (branch claude/ws0005-batch2-mu-skhy-impl-2), base origin/main 883c8e859616e631617adcf973fc6a6ba93eca44 (verified merge commit of PR #157), opened 2026-07-26 as a draft — not marked ready, not merged, not independently reviewed, not complete"
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -847,7 +849,7 @@ workstreams:
       `883c8e859616e631617adcf973fc6a6ba93eca44`: MU and SKHY Company
       Intelligence records, the batch comparison artifact, and freshness
       enrollment rows for both tickers now exist on that branch; a draft PR
-      has been opened (see evidence_refs for the PR number once recorded).
+      has been opened: draft PR #158.
       **Next action: independent Fable review of that draft PR's exact
       head**, per PI-0024 §I's completion gate — no such review has occurred
       yet, so the batch is not complete regardless of the draft PR's
@@ -901,8 +903,8 @@ workstreams:
       FINDINGS, exact-head CI green, and post-merge validator/test
       re-verification passing — Batch 1 is complete. **Milestone 3, Batch 2
       (MU, SKHY): PI-0024 authorizes it; implementation is drafted (branch
-      `claude/ws0005-batch2-mu-skhy-impl-2`, draft PR open — see
-      evidence_refs) but not merged, not independently reviewed, and not
+      `claude/ws0005-batch2-mu-skhy-impl-2`, draft PR #158) but not marked
+      ready, not merged, not independently reviewed, and not
       complete** — the blocker to completion is exactly one independent
       Fable review of the draft PR's exact head plus post-merge
       verification, per PI-0024 §I and OPS-0006 §16.1; neither has occurred.
@@ -912,7 +914,7 @@ workstreams:
       this entry, by PI-0023, by PI-0024, or by anything else. This
       reconciliation itself grants no such authorization.
     active_branch: claude/ws0005-batch2-mu-skhy-impl-2
-    active_pr: null
+    active_pr: 158
     last_verified_main_sha: 883c8e859616e631617adcf973fc6a6ba93eca44
     last_verified_date: "2026-07-26"
     authorized_by: >
