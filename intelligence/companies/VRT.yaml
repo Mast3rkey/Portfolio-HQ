@@ -1,0 +1,64 @@
+sector: Industrials
+industry: Electrical Equipment
+portfolio_role_ref: band
+competitive_advantages:
+  - "Data-center-pure-play thermal management and power equipment provider riding a reported AI-driven demand surge: FY2025 net sales $10,229.9M (+26% organic YoY, from FY2024's $8,011.8M); Q4 2025 organic orders +252% YoY with backlog reaching $15B (described as more than doubling YoY) and a book-to-bill ratio of approximately 2.9x; Q1 2026 net sales $2,650M (+30% YoY: 23% organic, 4% acquisitions, 3% FX), adjusted operating margin 20.8% (+430bps YoY), adjusted EPS $1.17 vs. $1.01 consensus, adjusted free cash flow $653M (+147% YoY). FY2026 guidance (as of the Q1 2026 update) of net sales $13,500-14,000M (29-31% organic growth) and adjusted diluted EPS $6.30-6.40, raised from the Q4 2025 release's initial guide of $13.25-13.75B/$5.97-6.07 -- management raised guidance twice within roughly one quarter."
+  - "Substantially de-levered balance sheet relative to Vertiv's private-equity/SPAC origin: net leverage fell from ~2.8x at end of 2020 to below 2.0x by mid-2025 and to approximately 0.8x-1.0x currently (company-stated target range 1.0x-2.0x); debt/equity ratio 0.80 as of 2025-12-31, down from 1.26 a year earlier. Credit ratings upgraded one notch by all three major agencies in February 2026 (Moody's Baa3, S&P BBB-, Fitch BBB-), all investment grade. Completed a $2.1B senior unsecured notes offering (10/20/30/40-year tranches, its debut investment-grade-rated offering) and a new $2.5B senior unsecured revolving credit facility in March 2026, proceeds used to fully repay the prior secured term loan."
+  - "Reported market-leadership position in AI-thermal-density liquid cooling: one secondary market-research source places Vertiv's 2025 liquid-cooling market share at just over 11%, with Schneider Electric/Vertiv/Rittal/STULZ/Boyd/CoolIT/Alfa Laval collectively holding roughly 35% of a still-fragmenting category (single-source market-share figures, not independently cross-verified). Active manufacturing-capacity expansion (Tognana, Italy campus to double regional chiller production capacity by end of 2026, plus a new large-scale testing lab planned for early 2027) and a continuing NVIDIA collaboration on 800 VDC reference architectures for next-generation AI data centers."
+risks:
+  - risk: "Named, specific hyperscaler disintermediation risk, distinct from generic competitive-risk boilerplate: AWS announced a custom, proprietary, rack-level liquid-cooling system (reported as 'IRHX') designed specifically for NVIDIA Blackwell GPUs -- precisely the AI-thermal-density workload central to Vertiv's own growth narrative. Secondary commentary reports Vertiv's stock declined on this announcement. Vertiv continues signing third-party partnerships (e.g., Compass Datacenters) and deepening its own NVIDIA 800 VDC collaboration, suggesting hyperscaler in-house development and continued third-party procurement are coexisting for now, not mutually exclusive -- but a hyperscaler building its own alternative to what Vertiv sells, for its most AI-relevant customer segment, is a real and specific bear-case mechanism, not a hypothetical one."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Unresolved backlog-figure discrepancy: Vertiv reported total backlog of $15 billion at Q4 2025 (Feb 2026, described as more than doubling YoY) but $12.45 billion at Q1 2026 (as of 2026-03-31, described separately as +80.8% YoY) -- a sequential decline of roughly $2.5 billion in one quarter despite orders reportedly still growing YoY. This record could not reconcile the two figures or find an explicit management explanation via WebSearch (the primary Q1 2026 release/presentation was not directly opened -- WebFetch blocked). This may reflect normal backlog-to-revenue conversion outpacing new bookings in a single quarter, or could indicate order/booking deceleration; it is presented here as an unresolved, disclosed discrepancy, not resolved in either direction."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Customer-concentration and disclosure-transparency gap: multiple secondary commentators flag high customer concentration tied to a small number of hyperscale/neocloud providers, with at least one explicitly characterizing Vertiv's decision to reduce backlog-reporting detail and vagueness regarding customer concentration as a 'less-than-bullish' signal. This record could not find Vertiv's own quantified customer-concentration disclosure (e.g., percentage of revenue from top customers) via WebSearch -- treated here as a genuine transparency gap, not confirmed non-disclosure, and not resolved by this record."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Demonstrated historical margin/cyclicality risk: in Q1 2022, Vertiv reported an operating loss of $45 million and adjusted operating profit of only $13 million, driven by inflation and supply-chain cost pressures that its own CEO (per secondary reporting) admitted the company had 'consistently underestimated... for both timing and degree.' This is a real, recent (not hypothetical) demonstrated failure mode for this specific company's cost/pricing discipline under input-cost stress, distinct from the current growth narrative."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Valuation and volatility flags from independent analysts (context, not a valuation judgment by this record): one secondary source cites VRT trading around 82x P/E versus a ~40x US Electrical Equipment industry/peer average, with a stated 5-year beta of 2.04; the stock is reported to have drawn down roughly 25% from a June 2026 high (with additional double-digit single-day moves noted in 2025-2026 coverage). This record does not evaluate valuation, but the existence of a high-beta, sentiment-sensitive trading pattern is a factual, margin-relevant characteristic distinct from the underlying business fundamentals."
+    severity: low
+    identified: "2026-07-26"
+    status: monitoring
+catalysts:
+  - catalyst: "Resolution of the Q4 2025-to-Q1 2026 backlog discrepancy ($15B to $12.45B) in a subsequent quarterly disclosure, clarifying whether it reflects normal conversion timing or an order-flow deceleration"
+    expected: "2026-10-31"
+    status: pending
+  - catalyst: "Tognana, Italy chiller-capacity expansion reaching planned completion (doubling regional chiller production capacity) by end of 2026, plus the new testing lab planned for early 2027"
+    expected: "2026-12-31"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "Vertiv shows strong, cross-checked, recent demand and margin evidence (FY2025 net sales +26% organic, Q4 2025 orders +252% YoY, Q1 2026 adjusted operating margin +430bps YoY, two guidance raises within roughly one quarter) alongside a materially de-risked balance sheet compared to its private-equity/SPAC origin (net leverage roughly 0.8-1.0x vs. 2.8x in 2020, investment-grade ratings from all three major agencies as of February 2026). Conviction is held at Medium rather than High because of specific, concrete, currently-unresolved tensions: (1) a named, not hypothetical, hyperscaler disintermediation threat (AWS's in-house Blackwell-specific liquid-cooling system, associated with a confirmed stock-price reaction) aimed directly at the AI-thermal-density workload driving Vertiv's growth; (2) an unreconciled backlog discrepancy ($15B to $12.45B across one quarter) this record could not resolve via available sources; (3) a real, recent (2022) demonstrated episode of margin compression under input-cost stress that management itself admitted underestimating; and (4) a disclosed customer-concentration/transparency gap flagged by independent commentators and not resolved by any Vertiv-specific quantification this record could locate. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-26"
+  next_due: "2026-10-24"
+  log:
+    - date: "2026-07-26"
+      note: "Record created through AI-assisted research (WebSearch only; WebFetch confirmed blocked at the tool/proxy level on SEC EDGAR, vertiv.com, and a non-target control domain) under governance/decisions/PI-0026-ws0005-milestone3-batch4-power-infrastructure.md, first-coverage discipline (no prior Vertiv Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3 Batch 4, alongside ETN and PWR, covering the three currently uncovered members of the governed power_infra correlated-cluster cap (GEV already covered under PI-0007/PI-0019/PI-0020). The $15B-to-$12.45B backlog discrepancy across Q4 2025 and Q1 2026 is disclosed as an unresolved, unreconciled figure -- not an error correction, but a real gap in what this research pass could confirm from secondary sources alone."
+sources:
+  - note: "Vertiv Holdings Co, Form 10-K for fiscal year 2025 -- cited via a WebSearch-reproduced summary of segment/geographic revenue detail (FY2025 net sales $10,229.9M vs. FY2024 $8,011.8M; Americas 62% of FY2025 sales, up from 56%; Asia Pacific 20%, down from 22%; EMEA 18%, down from 22%; Americas net sales +41.9% YoY, APAC +17.5%, EMEA +1.7%). Direct rendering blocked (HTTP 403); not opened directly by this session."
+    url: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&company=vertiv&type=10-K"
+    date: "2026-02-11"
+  - note: "Vertiv Holdings Co, Q4 2025 and full-year 2025 earnings release -- organic orders +252% YoY, backlog reaching $15B (described as more than doubling YoY), book-to-bill ratio ~2.9x, full-year adjusted operating profit $2.09B (+35%), adjusted operating margin 23.2% (+170bps), FY2026 initial guidance (net sales $13.25-13.75B, adjusted diluted EPS $5.97-6.07). Direct rendering blocked (HTTP 403); reported through secondary outlets (PRNewswire, Investing.com), not directly opened by this session."
+    url: "https://www.vertiv.com/en-us/about/news-and-insights/"
+    date: "2026-02-11"
+  - note: "Vertiv Holdings Co, Q1 2026 earnings release -- net sales $2,650M (+30% YoY: 23% organic/4% acquisitions/3% FX), adjusted operating margin 20.8% (+430bps YoY), adjusted EPS $1.17 vs $1.01 consensus, operating cash flow $767M (+153% YoY), adjusted free cash flow $653M (+147% YoY), backlog $12.45B (+80.8% YoY) -- this backlog figure is not reconciled in this record against the Q4 2025 release's $15B figure (see Risks). Raised FY2026 guidance: net sales $13,500-14,000M (29-31% organic growth), adjusted diluted EPS $6.30-6.40. Direct rendering blocked (HTTP 403); not directly opened by this session."
+    url: "https://www.vertiv.com/en-us/about/news-and-insights/"
+    date: "2026-04-22"
+  - note: "Secondary reporting on an AWS-developed proprietary rack-level liquid-cooling system (reported as 'IRHX') for NVIDIA Blackwell GPUs, and its market reaction as it relates to Vertiv -- identified via a secondary synthesis source (energycentral.com), not a primary AWS or Vertiv disclosure; the underlying AWS product announcement itself was not directly opened by this session."
+    url: "https://www.energycentral.com"
+    date: "2026-01-01"
+  - note: "Credit-rating actions on Vertiv Holdings Co -- Moody's, S&P, and Fitch each raised Vertiv's rating one notch in February 2026 (resulting ratings Baa3/BBB-/BBB-, all investment grade); net leverage trajectory (from ~2.8x at 2020 year-end to below 2.0x by mid-2025 and ~0.8x-1.0x currently, stated target range 1.0x-2.0x); debt/equity 0.80 as of 2025-12-31 (down from 1.26 a year earlier); $2.1B senior unsecured notes offering (10/20/30/40-year tranches) and new $2.5B senior unsecured revolving credit facility, both closed March 2026, proceeds used to repay the prior secured term loan. Reported through secondary outlets (PRNewswire, Investing.com); not directly opened by this session."
+    url: "https://www.vertiv.com/en-us/about/news-and-insights/"
+    date: "2026-03-01"
+  - note: "Vertiv Holdings Co, historical Q1 2022 results -- operating loss of $45 million, adjusted operating profit of only $13 million, attributed by then-CEO Rob Johnson (per secondary reporting) to inflation and supply-chain cost pressures the company had 'consistently underestimated... for both timing and degree.' 2023 recovery: net sales +21% to $6.9B, operating profit +290% to $872M, adjusted operating margin roughly doubling to 15.3%. Reported through secondary outlets (CNBC/Nasdaq-adjacent coverage); not directly opened by this session."
+    url: "https://www.cnbc.com"
+    date: "2022-04-01"
