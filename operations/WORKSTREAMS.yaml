@@ -928,7 +928,48 @@ workstreams:
           official-and-provisional Monday allocation-check package — eligible following step H's
           completion, but deferred, unbegun, and subject to its own separate implementation,
           review, and execution gates).
-        pr: 161
+
+          **Batch 4 implementation drafted 2026-07-26 (not merged, not complete).** Preflight for
+          this implementation independently re-confirmed: repository identity (`Mast3rkey/Portfolio-HQ`);
+          origin fetched and pruned; working tree clean; local `main` and `origin/main` both containing
+          `PI-0026`'s merge commit `92ea06705b1707d8b7644e311e4f086f462e9573` as an ancestor (0 ahead/0
+          behind); zero open pull requests (no overlap with ETN/VRT/PWR Batch 4); `PI-0026` read in full.
+          Implementation branch `claude/ws0005-batch4-etn-vrt-pwr-impl`, base verified `origin/main`
+          `92ea06705b1707d8b7644e311e4f086f462e9573`. WebFetch re-confirmed blocked (HTTP 403) on SEC
+          EDGAR, each company's own investor-relations domain, and a non-target control domain
+          (`example.com`) — the same tool/proxy-level block Batch 1-3 disclosed. Delivered:
+          `intelligence/companies/ETN.yaml`/`.md`, `VRT.yaml`/`.md`, `PWR.yaml`/`.md` (three Company
+          Intelligence records, all `intelligence_validator.py`-clean); one hand-authored batch
+          comparison artifact (`intelligence/BATCH4_POWER_INFRASTRUCTURE_COMPARISON.md`); one
+          freshness-registry and one freshness-checkpoint enrollment row per ticker
+          (`monitoring_enabled: false`, `checkpoint_status: pending`,
+          `enrollment_authority`/`company_record_authority: PI-0026`). All research is WebSearch-sourced
+          or primary-cited-but-not-directly-inspected, explicitly disclosed in each record's
+          Source-access disclosure section — no primary document was directly opened by this session.
+          Conviction ratings: ETN Medium; VRT Medium; PWR Medium — reasoned independently per company
+          from disclosed evidence, not inferred from existing tier placement, per `OPS-0006` §§2/3's
+          zero-based discipline. Material unresolved evidence gaps are disclosed, not silently closed:
+          two research-integrity corrections on ETN (a discarded internally-inconsistent segment-revenue
+          table; a name-collision false lead tracing an apparent Eaton tariff-litigation hit to Judge
+          Richard K. Eaton of the U.S. Court of International Trade, not the company); an unreconciled
+          VRT backlog discrepancy ($15B at Q4 2025 vs. $12.45B at Q1 2026); and, for PWR, a stale
+          (FY2023) customer-concentration figure, a stale (2023-09) confirmed S&P rating action, two
+          legacy litigation matters of unconfirmed current status, and an unresolved FY2025 adjusted-EBITDA
+          figure. GEV's existing record (`intelligence/companies/GEV.yaml`/`GEV.md`) and its freshness
+          rows are confirmed untouched via `git diff` against the pre-batch base. Independently
+          re-verified before commit: `intelligence_validator.py` (20 companies, all valid),
+          `freshness_validator.py` (OK), full pytest suite (1502/1502), `git diff --check` (clean), and
+          exactly the 9 authorized files changed — `targets.yaml`, `holdings.yaml`, `allocate.py`,
+          `margin_state.py`, every pre-existing Company/Theme Intelligence record (GEV included), and
+          every governance decision file confirmed byte-identical to the pre-batch base. Pushed and
+          opened as draft PR **#166** (`https://github.com/Mast3rkey/Portfolio-HQ/pull/166`) — the
+          structured `active_pr: 166` field below is this entry's authoritative record of the number.
+          Batch 4 is not complete until PR #166 clears exact-head independent review under `OPS-0007`
+          §1's capability-based standard, any required bounded correction and re-review, explicit
+          principal acceptance, marking ready, merge, and post-merge ancestry/scope/validator/test
+          verification. This entry authorizes no fifth Milestone 3 batch, no Milestone 4 work, and no
+          advancement of OPS-0007 §8 step I.
+        pr: 166
         status: in_progress
         date: "2026-07-26"
       - gate: milestone-4-portfolio-relationship-mapping
@@ -1281,6 +1322,27 @@ workstreams:
       fifth Milestone 3 batch, no Milestone 4 work, and no advancement of
       OPS-0007 §8 step I.
 
+      **PI-0026 merged 2026-07-26 via PR #165 — effective.** Independently
+      re-confirmed at this implementation's own preflight: `origin/main`
+      contains PI-0026's merge commit `92ea06705b1707d8b7644e311e4f086f462e9573`
+      as an ancestor; zero open pull requests existed (no overlap with
+      ETN/VRT/PWR); `governance/decisions.yaml` and `CLAUDE.md` both carry the
+      `PI-0026` entry. **PI-0026's research-implementation PR is now open:
+      draft PR #166** (`claude/ws0005-batch4-etn-vrt-pwr-impl`, base
+      `92ea06705b1707d8b7644e311e4f086f462e9573`), containing the nine
+      authorized draft deliverables (one YAML + one Markdown record per
+      company, one comparison artifact, one freshness-registry row and one
+      freshness-checkpoint row per company). **These records exist only on
+      PR #166's draft branch — they are not yet accepted, merged, final, or
+      eligible for PROVISIONAL downstream use** per `OPS-0007` §3: PR #166
+      still requires its own independent exact-head review under `OPS-0007`
+      §1's capability-based standard, any bounded correction and re-review,
+      explicit principal acceptance, marking ready, merge, and post-merge
+      ancestry/scope/validator/test verification before its records carry
+      any repository authority. No fifth Milestone 3 batch, Milestone 4-9
+      work, or advancement of `OPS-0007` §8 step I is authorized by PI-0026,
+      by PR #166's filing, or by this entry.
+
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
       crypto_shares.BTC = 0.00460473 (a verified broker-sync re-add on
@@ -1406,9 +1468,9 @@ workstreams:
       authorized to run by this entry. A fourth Milestone 3 batch and
       Milestones 4 through 9 remain unauthorized and blocked, unaffected by
       this reconciliation.
-    active_branch: claude/pr-163-reconciliation-8rqkhx
-    active_pr: 164
-    last_verified_main_sha: 603e957cf8ea4ddebf070926ef3996f827f9e7e9
+    active_branch: claude/ws0005-batch4-etn-vrt-pwr-impl
+    active_pr: 166
+    last_verified_main_sha: 92ea06705b1707d8b7644e311e4f086f462e9573
     last_verified_date: "2026-07-26"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
@@ -1457,6 +1519,16 @@ workstreams:
       Milestone 4-9 execution, and does not itself review, correct, mark
       ready, or merge PR #161. This reconciliation itself does not review,
       correct, mark ready, or merge itself, and does not begin OPS-0007 §5
-      work.
+      work. **PI-0026 (Milestone 3, Batch 4 — ETN, VRT, PWR — evidence
+      development only) has merged**, via PR #165 (merge commit
+      92ea06705b1707d8b7644e311e4f086f462e9573) — confirmed status: Accepted
+      and effective; it authorizes exactly that fourth batch's governance
+      package and its research implementation PR **#166** (draft, unmerged,
+      containing the nine authorized draft deliverables), gated on PR #166's
+      own independent exact-head review under `OPS-0007` §1, any bounded
+      correction and re-review, and explicit principal acceptance before
+      merge. Neither PI-0026 nor PR #166's filing authorizes a fifth
+      Milestone 3 batch, any Milestone 4-9 work, or advancement of `OPS-0007`
+      §8 step I.
     supersedes: null
     superseded_by: null
