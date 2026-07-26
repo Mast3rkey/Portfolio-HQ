@@ -48,6 +48,23 @@ review" guardrail:**
    evidence for that claim was found, and the apparent hits were a
    name collision.
 
+**Bounded correction, 2026-07-26 (provenance statement).** This
+Claude session remained access-blocked throughout -- it did not open
+or inspect any primary document at any point, including for this
+correction pass. Separately, **GPT-5.6 Thinking, acting as an
+independent external auditor, inspected three of Eaton's own official
+press releases** (the Q1 2026 results release, the Boyd Thermal
+completion announcement, and the Mobility Group/Dana Reverse Morris
+Trust announcement) and reported specific factual corrections back
+through a retained audit artifact. The principal explicitly authorized
+treating that retained, independently inspected audit as the bounded
+PI-0026 evidence-recovery method. Every correction below is attributed
+to that external audit, not to this Claude session having gained
+primary-source access -- this session applies the audit's findings, it
+does not independently re-verify them beyond what the audit itself
+states. See `ETN.yaml`'s `review.log` for the itemized correction
+record and `sources[]` for the exact official URLs the audit inspected.
+
 ## Business summary
 
 Eaton is an Ireland-domiciled (post-2012 corporate inversion)
@@ -75,39 +92,57 @@ aircraft OEMs (Boeing, Airbus named) plus a substantial aftermarket/MRO
 business. **Vehicle and eMobility** (~11% combined, both segments
 currently contracting -- Q4 2025 Vehicle sales -9% YoY/-13% organic,
 eMobility -15% YoY/-17% organic) supply truck/auto components and
-electrification systems; **on 2026-01-27 Eaton announced it will spin
-off the combined Vehicle + eMobility "Mobility Group" into an
-independent public company, targeted to close by end of Q1 2027** --
-after which Eaton would be a pure Electrical + Aerospace company. This
-record's current-tier-and-target statement (see "Governed policy"
-below) describes Eaton as it is structured today; the spin-off, once
+electrification systems. **Corrected 2026-07-26, per the independent
+primary-source audit:** on 2026-01-27 Eaton had announced a planned
+Vehicle + eMobility "Mobility Group" spin-off; Eaton's official
+2026-06-11 release instead describes a **definitive Reverse Morris
+Trust transaction** in which Mobility Group will combine with **Dana
+Incorporated**, valuing Mobility Group at approximately $5.1 billion,
+providing Eaton an approximately $1.1 billion cash distribution, and
+leaving Eaton shareholders owning **at least 50.1%** of the combined
+company; expected close **Q1 2027**, subject to Dana shareholder
+approval and customary regulatory clearances. This is a materially more
+complex transaction than a standalone spin -- after close, Eaton would
+be a pure Electrical + Aerospace company, but getting there now runs
+through a merger with another public company's existing business and
+shareholder base, not a simple carve-out. This record's
+current-tier-and-target statement (see "Governed policy" below)
+describes Eaton as it is structured today; the Dana combination, once
 closed, will change the company's reporting structure before this
 record's next scheduled review.
 
-**FY2025 adjusted EPS $12.07 (+12% YoY). FY2026 guidance** (as of the
-Q1 2026 update): adjusted EPS $13.05-$13.50 (+10% at midpoint); organic
-growth raised to 9-11%. **Q4 2025 total-company segment margin reached
-a reported record 24.9%; Q1 2026 segment margin contracted ~120bps to
-22.7%**, which management attributes to input costs and
-capacity-expansion ramp costs (described as temporary, partly offset by
-pricing actions effective 2026-04-01) -- **and FY2026 full-year
-segment-margin guidance was separately lowered ~50bps (to 24.1-24.5%)
-in the same update that raised EPS/organic-growth guidance**, a genuine
-mixed signal disclosed alongside the raise, not a clean beat-and-raise.
-FY2025 operating cash flow $4.5B and free cash flow $3.6B, both
-reported records.
+**FY2025 adjusted EPS $12.07 (+12% YoY). Q1 2026 (official results
+release, independently inspected by the 2026-07-26 primary-source
+audit):** sales **$7.5 billion**, adjusted EPS **$2.81**, total-company
+segment margin **22.7%** (contracted ~120bps from Q4 2025's reported
+record 24.9%), Electrical-segment backlog growth **48% YoY**. **FY2026
+guidance** (same release): adjusted EPS $13.05-$13.50 (+10% at
+midpoint); organic growth raised to 9-11%; full-year segment-margin
+guidance separately lowered ~50bps to 24.1-24.5% in the same update
+that raised EPS/organic-growth guidance -- a genuine mixed signal
+disclosed alongside the raise, not a clean beat-and-raise. FY2025
+operating cash flow $4.5B and free cash flow $3.6B, both reported
+records.
 
 ## Data-center and electrical end-market exposure
 
-**Fact, company-disclosed, repeated across secondary outlets, not
-independently re-derived here:** at Q1 2026, Electrical Americas
-data-center orders were up approximately 240% YoY and data-center
-revenue was up approximately 50% YoY. Management cited approximately
-32 GW of US data-center capacity under construction touching Eaton
-equipment (~70% AI-related), and characterized total data-center order
-backlog as "about 12 years of backlog at 2025 build rates" (228 GW
-figure cited in secondary coverage). Total Electrical backlog was up
-48% YoY at the Q1 2026 point -- a materially higher growth rate than
+**Secondary-reported at Q1 2026, downgraded 2026-07-26:** multiple
+secondary outlets reported Electrical Americas data-center orders up
+approximately 240% YoY, data-center revenue up approximately 50% YoY,
+approximately 32 GW of US data-center capacity under construction
+touching Eaton equipment (~70% AI-related), and a total data-center
+order backlog characterized as "about 12 years of backlog at 2025
+build rates" (228 GW figure cited in secondary coverage). **The
+2026-07-26 independent primary-source audit (GPT-5.6 Thinking)
+inspected Eaton's official Q1 2026 results release and could not
+locate an exact passage substantiating any of these four figures in
+that release.** They are therefore reclassified here from
+company-disclosed fact to **unconfirmed secondary commentary** --
+plausible, and not contradicted by anything the audit found, but not
+verified against an inspected primary document, and they carry no
+decision-bearing weight in this record's conviction rationale. What
+the inspected official release does confirm: total Electrical backlog
+up 48% YoY at the Q1 2026 point -- a materially higher growth rate than
 the ~29% YoY average reported across full-year 2025, consistent with
 sequential acceleration rather than a steady-state run rate.
 
@@ -164,15 +199,19 @@ total revenue in deal value**, and Eaton's largest acquisition since
 Cooper Industries ($13B, 2012). Boyd Thermal's own forecast 2026 sales
 are ~$1.7 billion, of which ~$1.5 billion is liquid cooling for
 hyperscale/AI data centers -- the deal is concentrated entirely in a
-single growth thesis (data-center liquid cooling). **The exact close
-date is disclosed inconsistently across secondary sources** (one states
-closed 2026-03-12; another states "expected Q2 2026") and is not
-resolved by this record -- what is clear is that the deal is not yet
-reflected in any full-year segment financials as of this writing. This
-combination -- large size relative to the company, single-thesis
-concentration, and unresolved timing -- is treated here as a genuine,
-current integration and thesis-concentration risk, not a settled
-positive.
+single growth thesis (data-center liquid cooling). **Close date
+resolved 2026-07-26 by the independent primary-source audit:** Eaton's
+own official completion announcement establishes the acquisition
+completed **2026-03-12** -- this record previously described the close
+date as disputed across secondary sources (one stating 2026-03-12,
+another "expected Q2 2026"); that ambiguity is now resolved in favor of
+the officially-announced date. Having closed 2026-03-12, the deal
+contributes only a partial-quarter stub within Q1 2026 results and is
+not yet reflected in a full quarter or full-year of segment financials.
+This combination -- large size relative to the company and single-thesis
+concentration -- is treated here as a genuine, current integration and
+thesis-concentration risk, not a settled positive, even though the
+close-date uncertainty itself is now resolved.
 
 ## Balance sheet and credit profile
 
@@ -199,34 +238,45 @@ and estimating incremental margin on the new data-center-driven revenue
 at only approximately 28% -- a named, specific analyst disagreement
 with management's own characterization, not generic bear commentary.
 
-**Structural separation risk:** the announced Mobility Group spin-off
-(Vehicle + eMobility, ~$3B combined FY2025 revenue, both segments
-currently shrinking) targeted for a Q1 2027 close carries ordinary
-corporate-action execution risk (dis-synergies, stranded costs,
-tax/regulatory timing) layered on top of Eaton's ordinary operating
-risk.
+**Structural separation risk, corrected 2026-07-26:** the Mobility
+Group / Dana Incorporated Reverse Morris Trust combination (~$3B
+combined FY2025 Vehicle + eMobility revenue, both segments currently
+shrinking), expected to close Q1 2027, carries ordinary corporate-action
+execution risk (dis-synergies, stranded costs, tax/regulatory timing)
+layered on top of Eaton's ordinary operating risk -- **and, because
+this is a merger with Dana rather than a standalone spin, also carries
+cross-company integration and governance risk, plus Dana
+shareholder-approval and regulatory-clearance contingency**, that a
+simple carve-out would not have had.
 
 **Boyd Thermal concentration and integration risk** -- see Capital
-allocation section above.
+allocation section above. The close-date uncertainty itself is
+resolved (2026-03-12), but size-relative-to-company and single-thesis
+concentration remain live risks.
 
-**Hyperscaler AI-capex-cycle concentration:** a meaningful share of
-Eaton's current growth/valuation narrative rests specifically on
-data-center order flow (240% YoY Electrical Americas data-center order
-growth cited for Q1 2026). A slowdown or pause in hyperscaler capital
-spending would disproportionately affect the segment currently driving
-market attention on Eaton, even though management's own qualitative
-framing (and the Alphastreet counterweight above) suggests the broader
-backlog is not purely a data-center story.
+**Hyperscaler AI-capex-cycle concentration:** secondary commentary
+attributes a meaningful share of Eaton's current growth/valuation
+narrative to data-center order flow specifically (a ~240% YoY
+Electrical Americas data-center order-growth figure was reported for
+Q1 2026, though the independent primary-source audit could not locate
+this exact figure in Eaton's official Q1 2026 release -- see the
+Data-center and electrical end-market exposure section above). A
+slowdown or pause in hyperscaler capital spending would
+disproportionately affect the segment currently driving market
+attention on Eaton, even though management's own qualitative framing
+(and the Alphastreet counterweight above) suggests the broader backlog
+is not purely a data-center story.
 
-**Evidence gaps this record could not close via WebSearch alone:** no
-current (2025/2026) customer- or project-concentration disclosure was
-found for Electrical or Aerospace (only stale 1995/1999 Vehicle-segment
-Ford/truck-OEM concentration data, and Vehicle is being spun off); no
-granular end-market revenue-share breakdown; the debt/equity figure
-noted above; the Boyd Thermal close-date inconsistency; no specific
-supplier-concentration or component/casting/semiconductor-content
-supply-chain risk disclosure was located (only general "input cost"
-commentary from the Q1 2026 earnings call).
+**Evidence gaps not closed by this record or by the 2026-07-26
+independent primary-source audit:** no current (2025/2026) customer- or
+project-concentration disclosure was found for Electrical or Aerospace
+(only stale 1995/1999 Vehicle-segment Ford/truck-OEM concentration
+data, and Vehicle is now subject to the Dana combination); no granular
+end-market revenue-share breakdown; the debt/equity figure noted above;
+no specific supplier-concentration or component/casting/semiconductor-
+content supply-chain risk disclosure was located (only general "input
+cost" commentary from the Q1 2026 earnings call); no current S&P
+credit-rating action was independently confirmed.
 
 ## Governed policy (existing, not a research conclusion)
 
@@ -272,16 +322,21 @@ in this record, and this record does not recommend any change to it.
 
 ## Thesis-break conditions (this record's own synthesis, labeled as inference)
 
-- A slowdown/pause in hyperscaler AI capex reversing the current
-  data-center order-growth trend (from +240% toward flat or negative).
+- A slowdown/pause in hyperscaler AI capex reversing the currently
+  reported Electrical backlog-growth trend (the specific 240%
+  data-center-order figure is unconfirmed secondary commentary, not a
+  verified baseline to measure a reversal against).
 - The Q1 2026 margin compression proving structural rather than
   temporary, consistent with UBS's ~28% incremental-margin estimate
   rather than management's own framing.
 - A disclosed Boyd Thermal integration failure, overpayment, or
   goodwill impairment given the deal's size and single-thesis
   concentration.
-- Material execution problems in the Mobility Group spin-off (delay,
-  dis-synergies, unexpected stranded costs).
+- Material execution problems in the Mobility Group / Dana
+  Incorporated Reverse Morris Trust combination (delay, dis-synergies,
+  unexpected stranded costs, a failed Dana shareholder vote, or a
+  regulatory-clearance setback) -- a more complex failure surface than
+  a standalone spin would have had.
 - A broader non-residential-construction/industrial-capex downturn,
   given Electrical remains dependent on utility/industrial/commercial
   spending beyond data centers specifically.
@@ -309,9 +364,10 @@ further research is authorized by naming them here.**
   - Quarterly earnings/guidance updates, specifically watching whether
     the Q1 2026 margin contraction proves temporary (as management
     claims) or structural (as UBS argues).
-  - The Boyd Thermal acquisition's close-date resolution and its first
-    full reporting period inside Eaton's financials.
-  - Material developments in the Mobility Group spin-off (regulatory
+  - Boyd Thermal's first full reporting period inside Eaton's
+    financials (the close date itself is now resolved, 2026-03-12).
+  - Material developments in the Mobility Group / Dana Incorporated
+    Reverse Morris Trust combination (Dana shareholder vote, regulatory
     filings, timeline changes, dis-synergy disclosures).
   - A material, sustained reversal in Electrical segment data-center
     order flow.
@@ -322,36 +378,64 @@ further research is authorized by naming them here.**
 
 **Rating: Medium.**
 
-**Rationale:** Eaton shows real, dated, cross-checked demand evidence
-(FY2025 revenue $27.448B, +10%; adjusted EPS $12.07, +12%; a record Q4
-2025 segment margin of 24.9%; accelerating Electrical backlog and
-data-center order growth; raised FY2026 EPS/growth guidance) alongside
-a structural moat (certification requirements, multi-year lead times
-and capacity-build times) independently corroborated by trade press,
-not just company materials. Conviction is held at Medium rather than
-High because of three concrete, current tensions disclosed alongside
-the growth: (1) a large, single, thesis-concentrated acquisition (Boyd
-Thermal, ~35% of FY2025 revenue in deal value) not yet reflected in
-reported financials; (2) a disclosed Q1 2026 margin contraction that
-management calls temporary and at least one named analyst (UBS)
-disputes as more structural, with a specific incremental-margin
-estimate (~28%) cited as evidence; and (3) an announced structural
-separation (Vehicle/eMobility spin-off, targeted Q1 2027 close) that
-changes the company's own reporting structure before this record's
-next scheduled review. This rating explicitly excludes valuation,
-entry-price, allocation, trading, and margin judgments, and does not
-treat Eaton's own guidance or backlog framing as validated fact without
-the qualifications above.
+**Rationale, reassessed 2026-07-26 following the independent
+primary-source audit (not mechanically preserved at its prior
+value):** Eaton shows real, dated, cross-checked demand evidence
+(FY2025 revenue $27.448B, +10%; adjusted EPS $12.07, +12%; official Q1
+2026 sales $7.5B and adjusted EPS $2.81; a record Q4 2025 segment
+margin of 24.9%; accelerating Electrical backlog; raised FY2026
+EPS/growth guidance) alongside a structural moat (certification
+requirements, multi-year lead times and capacity-build times)
+independently corroborated by trade press, not just company materials.
+The audit resolved one prior uncertainty (Boyd Thermal's close date,
+now confirmed 2026-03-12) and corrected a stale framing of the
+Vehicle/eMobility separation (a definitive Reverse Morris Trust
+combination with Dana Incorporated, not a standalone spin) -- but this
+does not itself lower the bar for conviction, because the Dana
+transaction is a materially more complex cross-company combination
+carrying its own execution and governance risk, and because the
+previously-cited 240%/32 GW/228 GW data-center order-growth figures
+could not be located in Eaton's official Q1 2026 release by the audit
+and are now treated as unconfirmed secondary commentary rather than
+decision-bearing evidence supporting the thesis. Conviction is held at
+Medium rather than High because of two concrete, current tensions: (1)
+a large, single, thesis-concentrated acquisition (Boyd Thermal, ~35% of
+FY2025 revenue in deal value, closed 2026-03-12 but not yet reflected
+in a full quarter or full-year of segment financials); and (2) a
+disclosed Q1 2026 margin contraction that management calls temporary
+and at least one named analyst (UBS) disputes as more structural, with
+a specific incremental-margin estimate (~28%) cited as evidence. This
+rating explicitly excludes valuation, entry-price, allocation, trading,
+and margin judgments, and does not treat Eaton's own guidance or
+backlog framing as validated fact without the qualifications above.
 
 This rating and rationale reflect human judgment, approved after
 independent review of AI-assisted research -- the research and drafting
 process does not itself constitute the human judgment this record
-requires; the approval decision does.
+requires; the approval decision does. The 2026-07-26 correction pass
+reassessed rather than mechanically preserved this rating; see
+`ETN.yaml`'s `review.log` for the itemized record of what changed and
+why Medium still holds.
 
 ## Unresolved items and access limitations
 
-- No primary document was directly opened by this session (see
-  Source-access disclosure above).
+- No primary document was directly opened by **this Claude session**
+  at any point, including during the 2026-07-26 correction pass (see
+  Source-access disclosure above). Three official Eaton press releases
+  were independently inspected by GPT-5.6 Thinking during an external
+  audit, and their findings are applied here with that provenance
+  preserved.
+- **Resolved by the 2026-07-26 audit, no longer unresolved:** the Boyd
+  Thermal close date (now 2026-03-12, per Eaton's own completion
+  announcement); the Vehicle/eMobility separation structure (now a
+  definitive Reverse Morris Trust combination with Dana Incorporated,
+  not a standalone spin).
+- **Downgraded to unconfirmed secondary commentary by the audit:** the
+  240% Electrical Americas data-center-order-growth figure, the ~32 GW
+  US data-center-capacity figure, the 228 GW data-center-backlog
+  figure, and the "12 years of backlog at 2025 build rates"
+  characterization -- none could be located in Eaton's official Q1
+  2026 results release by the audit.
 - No current (2025/2026) customer- or project-concentration disclosure
   found for Electrical or Aerospace.
 - No granular percentage breakdown of Electrical revenue by end market.
@@ -359,8 +443,6 @@ requires; the approval decision does.
 - Current S&P credit rating/outlook not independently confirmed.
 - The debt-to-equity contradiction (0.46 vs. ~1.15) as of 2025-09-30 is
   not resolved.
-- The Boyd Thermal close date is disclosed inconsistently across
-  sources and is not resolved here.
 - No supplier-concentration or component/casting/semiconductor-content
   supply-chain-risk disclosure was located.
 - The two research-integrity corrections disclosed at the top of this
@@ -370,6 +452,11 @@ requires; the approval decision does.
 
 ## Sources
 
-See `ETN.yaml`'s `sources[]` for the structured register. Every entry
-discloses that direct primary-document rendering was blocked in this
-research environment, per the disclosure above.
+See `ETN.yaml`'s `sources[]` for the structured register. Most entries
+disclose that direct primary-document rendering was blocked for this
+Claude session; three entries (the Q1 2026 results release, the Boyd
+Thermal completion announcement, and the Mobility Group/Dana
+announcement) are instead sourced to GPT-5.6 Thinking's independent
+external audit of Eaton's own official press releases, with that
+provenance stated explicitly in each entry's `note` field -- this
+Claude session did not itself open any of the three.

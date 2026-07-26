@@ -18,8 +18,26 @@ release) was directly opened and inspected by this session.** Every
 figure below is WebSearch-sourced and labeled "identified but NOT
 opened by this session," distinct from independently-opened primary
 evidence. One material, unresolved discrepancy in the sourced material
-is disclosed explicitly below (the Q4 2025 vs. Q1 2026 backlog figures)
-rather than silently reconciled or dropped.
+was originally disclosed below (the Q4 2025 vs. Q1 2026 backlog
+figures) rather than silently reconciled or dropped; see the bounded
+correction note immediately below for how that claim's status changed.
+
+**Bounded correction, 2026-07-26 (provenance statement).** This
+Claude session remained access-blocked throughout -- it did not open
+or inspect any primary document at any point, including for this
+correction pass. Separately, **GPT-5.6 Thinking, acting as an
+independent external auditor, inspected four of Vertiv's own official
+documents** (the Q1 2026 results release, the Q1 2026 Form 10-Q, the
+Q4/FY2025 results release, and the refinancing/ratings announcement)
+and reported specific factual corrections back through a retained audit
+artifact. The principal explicitly authorized treating that retained,
+independently inspected audit as the bounded PI-0026 evidence-recovery
+method. Every correction below is attributed to that external audit,
+not to this Claude session having gained primary-source access -- this
+session applies the audit's findings, it does not independently
+re-verify them beyond what the audit itself states. See `VRT.yaml`'s
+`review.log` for the itemized correction record and `sources[]` for the
+exact official URLs the audit inspected.
 
 ## Business summary
 
@@ -44,43 +62,54 @@ historical leverage was materially higher than ETN's or PWR's --
 addressed in the Balance sheet section below.
 
 **FY2025 net sales $10,229.9 million (+26% organic YoY, from FY2024's
-$8,011.8 million).** Geographic mix shifted toward the Americas (62%
+$8,011.9 million).** Geographic mix shifted toward the Americas (62%
 of FY2025 sales, up from 56% in FY2024; Asia Pacific down to 20% from
 22%; EMEA down to 18% from 22%) -- Americas net sales grew 41.9% YoY
 while EMEA grew only 1.7%, a real regional divergence in an otherwise
-strong year. **Q4 2025** (reported 2026-02-11): organic orders +252%
-YoY, backlog reaching $15 billion (described as more than doubling
-YoY), book-to-bill ratio approximately 2.9x, full-year adjusted
-operating margin 23.2% (+170bps). **Q1 2026** (reported 2026-04-22):
-net sales $2,650 million (+30% YoY: 23% organic, 4% acquisitions, 3%
-FX), adjusted operating margin 20.8% (+430bps YoY), adjusted EPS $1.17
-vs. $1.01 consensus, adjusted free cash flow $653 million (+147% YoY).
-**FY2026 guidance was raised twice within roughly one quarter**: from
-the Q4 2025 release's initial guide (net sales $13.25-13.75B, adjusted
-diluted EPS $5.97-6.07) to the Q1 2026 release's raised guide (net
-sales $13,500-14,000M / 29-31% organic growth, adjusted diluted EPS
-$6.30-6.40).
+strong year. **Q4 2025** (official results release, reported
+2026-02-11, independently inspected by the 2026-07-26 primary-source
+audit): organic orders +252% YoY, backlog reaching $15 billion
+(described as more than doubling YoY), book-to-bill ratio approximately
+2.9x, full-year adjusted operating margin 23.2% (+170bps), net leverage
+approximately 0.5x at year-end 2025 per the audit's characterization of
+this release. **Q1 2026** (official results release and Form 10-Q,
+reported 2026-04-22, independently inspected by the same audit): net
+sales $2,649.5 million (+30% YoY: 23% organic, 4% acquisitions, 3% FX),
+adjusted operating margin 20.8% (+430bps YoY), adjusted EPS $1.17 vs.
+$1.01 consensus, adjusted free cash flow $653 million (+147% YoY),
+**net leverage approximately 0.2x** at quarter-end -- corrected
+2026-07-26 from this record's prior WebSearch-derived estimate of
+~0.8x-1.0x (see Balance sheet section below). **FY2026 guidance was
+raised twice within roughly one quarter**: from the Q4 2025 release's
+initial guide (net sales $13.25-13.75B, adjusted diluted EPS
+$5.97-6.07) to the Q1 2026 release's raised guide (net sales
+$13,500-14,000M / 29-31% organic growth, adjusted diluted EPS
+$6.30-6.40, adjusted operating margin **22.8%-23.8%** -- reconciled
+2026-07-26 by the audit, replacing this record's prior unresolved
+23.3%-vs-22.0-23.0% guidance ambiguity).
 
-## The unresolved backlog discrepancy
+## The backlog claim -- corrected 2026-07-26, downgraded to non-decision-bearing
 
-**This is the single most important unresolved item in this record.**
-Vertiv reported total backlog of **$15 billion at Q4 2025** (described
-as more than doubling year-over-year) but **$12.45 billion at Q1
-2026** (as of 2026-03-31, described separately in the same release as
-+80.8% YoY) -- a sequential decline of roughly $2.5 billion in one
-quarter, despite orders reportedly still growing YoY in the same
-period. This record's research pass could not reconcile the two
-figures or locate an explicit management explanation via WebSearch, and
-could not open the primary Q1 2026 release or earnings-call materials
-directly (WebFetch blocked) to check for a restated definition,
-one-time adjustment, or a plain conversion explanation (i.e., shipments
-outpacing new bookings in that specific quarter). **This is presented
-here as a real, disclosed discrepancy in the sourced figures, not
-resolved in either direction** -- it could reflect ordinary
-backlog-to-revenue conversion, or it could be an early signal of
-order-flow deceleration behind the headline YoY growth framing. Either
-reading is speculative without a primary-source reconciliation, which
-this record does not claim to have performed.
+**This record originally treated a Q4 2025-to-Q1 2026 backlog decline
+($15 billion to $12.45 billion) as the single most important unresolved
+item, giving it moderate-severity weight in risks, a dedicated
+catalyst, and a role in the conviction rationale.** A 2026-07-26
+independent primary-source audit (GPT-5.6 Thinking) inspected Vertiv's
+official Q1 2026 results release and Form 10-Q and **could not locate a
+passage in either document substantiating the $12.45 billion figure**.
+The official Q4 2025 release supports strong orders growth and
+approximately 0.5x net leverage, but the audited materials did not
+establish the alleged Q1 backlog figure this record previously relied
+on. **This claim is therefore downgraded**: it remains recorded, for
+transparency, as an unresolved secondary-sourced figure that this
+record cannot substantiate against an official document -- but it no
+longer carries decision-bearing weight in this record's risks,
+catalysts, or conviction rationale (see `VRT.yaml`'s `risks[]`, where it
+is now recorded at low severity with explicit non-decision-bearing
+status, and the removed catalyst below). This is not a claim that the
+$12.45 billion figure is false -- only that this record cannot confirm
+it against an inspected primary source, and it should not be
+re-elevated to decision-bearing status without one.
 
 ## AI/data-center demand and the hyperscaler disintermediation risk
 
@@ -129,9 +158,13 @@ disclosure exists, and it is not resolved here.
 
 Cited moat mechanisms, drawn from secondary competitive-analysis
 sources rather than a primary Vertiv disclosure: a large installed base
-generating recurring service/maintenance revenue (one unverified
-secondary estimate places the product/service revenue split around
-81%/19%); long-term framework agreements and on-site service contracts
+generating recurring service/maintenance revenue -- **corrected
+2026-07-26 by the independent primary-source audit: Vertiv's official
+Q1 2026 Form 10-Q reports product sales of $2,091.2 million and
+services-and-spares sales of $558.3 million, approximately 78.9%/21.1%
+of net sales, replacing this record's prior unverified single-secondary-
+source estimate of an approximately 81%/19% split**; long-term framework
+agreements and on-site service contracts
 with hyperscaler/colocation customers, raising switching costs;
 design-level integration with silicon providers (the NVIDIA 800 VDC
 collaboration); and scale/certification requirements that limit the
@@ -154,9 +187,11 @@ relationship to Vertiv specifically.
 FY2025 adjusted operating margin 23.2% (+170bps), adjusted free cash
 flow $1,887 million (+66% YoY). Q1 2026 adjusted operating margin
 20.8% (+430bps YoY), adjusted free cash flow $653 million (+147% YoY),
-operating cash flow $767 million (+153% YoY). **No gross-margin figure
-was found in this research pass** -- only operating-margin figures were
-located via search.
+operating cash flow $767 million (+153% YoY). **Gross margin, added
+2026-07-26 per the independent primary-source audit's inspection of the
+official Q1 2026 Form 10-Q:** gross profit $999.7 million on net sales
+$2,649.5 million, approximately **37.7%** -- resolving this record's
+prior "no gross-margin figure found" gap.
 
 **A real, demonstrated historical margin-compression episode:** in Q1
 2022, Vertiv reported an operating loss of $45 million and adjusted
@@ -174,9 +209,15 @@ stress scenario.
 ## Balance sheet and credit profile
 
 **A materially de-risked balance sheet relative to Vertiv's
-private-equity/SPAC origin.** Net leverage fell from approximately 2.8x
-at the end of 2020 to below 2.0x by mid-2025, and to approximately
-0.8x-1.0x currently (company-stated target range 1.0x-2.0x).
+private-equity/SPAC origin -- more de-risked than this record
+originally stated.** Net leverage fell from approximately 2.8x at the
+end of 2020 to approximately 0.5x at year-end 2025 and to approximately
+**0.2x at the end of Q1 2026**, per Vertiv's own official results
+releases (both independently inspected by the 2026-07-26 primary-source
+audit) -- a materially lower figure than this record's original
+WebSearch-derived estimate of ~0.8x-1.0x "currently," now corrected.
+Vertiv's own stated target range remains 1.0x-2.0x, meaning the company
+is currently operating well below its own target leverage level.
 Debt-to-equity ratio 0.80 as of 2025-12-31, down 37.1% YoY from 1.26 a
 year earlier. Credit ratings were upgraded one notch by all three major
 agencies in February 2026 -- Moody's Baa3, S&P BBB-, Fitch BBB-, all
@@ -184,10 +225,12 @@ now investment grade (Vertiv's first investment-grade-rated debt
 offering followed in March 2026: a $2.1 billion senior unsecured notes
 offering across 10/20/30/40-year tranches, alongside a new $2.5 billion
 senior unsecured revolving credit facility, with proceeds used to fully
-repay the prior secured term loan). This deleveraging trend is
-corroborated across multiple independent secondary sources, though this
-record could not independently confirm the exact net-debt and equity
-figures against a primary balance sheet.
+repay the prior secured term loan). This deleveraging trend is now
+corroborated by both official results releases (per the audit) and
+multiple independent secondary sources; the exact net-debt and equity
+dollar figures underlying the leverage ratios were not independently
+re-derived by this correction beyond the ratios and dollar figures the
+audit itself reported.
 
 ## Supply chain and input-cost context
 
@@ -217,11 +260,13 @@ in this record, and this record does not recommend any change to it.
 
 ## Margin-relevant evidence (factual/advisory only -- no leverage recommendation)
 
-- **Leverage:** net leverage roughly 0.8x-1.0x currently, down from
-  ~2.8x in 2020; stated target range 1.0x-2.0x; investment-grade
-  ratings across all three major agencies as of February 2026 -- a
-  materially de-risked profile versus Vertiv's historical
-  private-equity/SPAC-era leverage.
+- **Leverage:** net leverage approximately 0.2x at Q1 2026 (corrected
+  2026-07-26 from this record's prior ~0.8x-1.0x estimate), down from
+  ~2.8x in 2020 and ~0.5x at year-end 2025; stated target range
+  1.0x-2.0x, so Vertiv is currently running below its own target;
+  investment-grade ratings across all three major agencies as of
+  February 2026 -- a materially de-risked profile versus Vertiv's
+  historical private-equity/SPAC-era leverage.
 - **Liquidity:** new $2.5 billion senior unsecured revolving credit
   facility closed March 2026 (undrawn capacity not confirmed in this
   research pass); strong and growing adjusted free cash flow.
@@ -260,11 +305,13 @@ in this record, and this record does not recommend any change to it.
   coexisting with continued third-party procurement.
 - A recurrence of 2022-style input-cost/supply-chain mispricing that
   compresses margins faster than pricing actions can offset.
-- The unresolved Q4 2025-to-Q1 2026 backlog discrepancy resolving into
-  a confirmed, sustained decline rather than a one-quarter conversion
-  anomaly.
 - A reversal of the 2020-2026 deleveraging trend (e.g., a large
-  debt-funded acquisition materially increasing leverage again).
+  debt-funded acquisition materially increasing leverage again from its
+  current ~0.2x level).
+- If an official document ever substantiates a genuine, sustained
+  backlog decline (the $15B-to-$12.45B claim itself remains unconfirmed
+  as of 2026-07-26 and is not treated as an active thesis-break
+  condition on its own -- see the backlog-claim correction above).
 
 ## Non-owned competitor/replacement candidates (unauthorized future research leads only)
 
@@ -285,13 +332,14 @@ here.**
 
 - **Cadence: 90 days** -- matches the cadence used for GEV, COST, and
   XOM's records; shortened review would be defensible given the
-  currently-unresolved backlog discrepancy and the fast-moving AI-capex
-  narrative, but 90 days is chosen for consistency with this
-  repository's existing pattern pending a named trigger firing sooner.
+  fast-moving AI-capex narrative, but 90 days is chosen for consistency
+  with this repository's existing pattern pending a named trigger
+  firing sooner.
 - **Named review triggers**, drawn selectively from `OPS-0006` §12's
   candidate-trigger list:
-  - Any further quarterly disclosure reconciling or extending the
-    $15B-to-$12.45B backlog discrepancy.
+  - Any official disclosure that substantiates, contradicts, or
+    clarifies the still-unconfirmed $12.45 billion Q1 2026 backlog
+    claim (see the backlog-claim correction above).
   - Any additional disclosed hyperscaler in-house
     cooling/power-development announcement beyond the AWS IRHX
     precedent.
@@ -306,55 +354,80 @@ here.**
 
 **Rating: Medium.**
 
-**Rationale:** Vertiv shows strong, cross-checked, recent demand and
-margin evidence (FY2025 net sales +26% organic, Q4 2025 orders +252%
-YoY, Q1 2026 adjusted operating margin +430bps YoY, two guidance raises
-within roughly one quarter) alongside a materially de-risked balance
-sheet compared to its private-equity/SPAC origin (net leverage roughly
-0.8-1.0x vs. 2.8x in 2020, investment-grade ratings from all three
-major agencies as of February 2026). Conviction is held at Medium
-rather than High because of specific, concrete, currently-unresolved
-tensions: (1) a named, not hypothetical, hyperscaler disintermediation
-threat (AWS's in-house Blackwell-specific liquid-cooling system,
-associated with a confirmed stock-price reaction) aimed directly at the
-AI-thermal-density workload driving Vertiv's growth; (2) an unreconciled
-backlog discrepancy ($15B to $12.45B across one quarter) this record
-could not resolve via available sources; (3) a real, recent (2022)
-demonstrated episode of margin compression under input-cost stress that
-management itself admitted underestimating; and (4) a disclosed
-customer-concentration/transparency gap flagged by independent
-commentators and not resolved by any Vertiv-specific quantification
-this record could locate. This rating explicitly excludes valuation,
-entry-price, allocation, trading, and margin judgments.
+**Rationale, reassessed 2026-07-26 following the independent
+primary-source audit (not mechanically preserved at its prior
+value):** Vertiv shows strong, cross-checked, recent demand and margin
+evidence (FY2025 net sales +26% organic, Q4 2025 orders +252% YoY, Q1
+2026 adjusted operating margin +430bps YoY, gross margin ~37.7%, two
+guidance raises within roughly one quarter) alongside a balance sheet
+now confirmed even stronger than this record previously stated -- net
+leverage approximately 0.2x at Q1 2026 (officially sourced, versus this
+record's prior ~0.8x-1.0x estimate), running below Vertiv's own
+1.0x-2.0x stated target, with investment-grade ratings from all three
+major agencies as of February 2026. The audit also found that this
+record's prior central risk/catalyst/conviction-limiting claim -- a
+$15B-to-$12.45B backlog decline -- could not be substantiated against
+Vertiv's own official Q1 2026 release or Form 10-Q, and that claim has
+been stripped of decision-bearing weight. **Removing an unsubstantiated
+risk and confirming a stronger balance sheet do not by themselves
+justify raising conviction to High**, because conviction here assesses
+business-quality and thesis durability, not balance-sheet strength
+alone, and three other concrete, still-unresolved tensions remain,
+unaddressed by the audit: (1) a named, not hypothetical, hyperscaler
+disintermediation threat (AWS's in-house Blackwell-specific
+liquid-cooling system, associated with a confirmed stock-price
+reaction) aimed directly at the AI-thermal-density workload driving
+Vertiv's growth; (2) a real, recent (2022) demonstrated episode of
+margin compression under input-cost stress that management itself
+admitted underestimating; and (3) a disclosed customer-concentration/
+transparency gap flagged by independent commentators and not resolved
+by any Vertiv-specific quantification this record or the audit could
+locate. This rating explicitly excludes valuation, entry-price,
+allocation, trading, and margin judgments.
 
 This rating and rationale reflect human judgment, approved after
 independent review of AI-assisted research -- the research and drafting
 process does not itself constitute the human judgment this record
-requires; the approval decision does.
+requires; the approval decision does. The 2026-07-26 correction pass
+reassessed rather than mechanically preserved this rating; see
+`VRT.yaml`'s `review.log` for the itemized record of what changed and
+why Medium still holds.
 
 ## Unresolved items and access limitations
 
-- No primary document was directly opened by this session (see
-  Source-access disclosure above).
-- The $15B (Q4 2025) vs. $12.45B (Q1 2026) backlog discrepancy is
-  disclosed and not reconciled.
+- No primary document was directly opened by **this Claude session** at
+  any point, including during the 2026-07-26 correction pass (see
+  Source-access disclosure above). Four official Vertiv documents were
+  independently inspected by GPT-5.6 Thinking during an external audit,
+  and their findings are applied here with that provenance preserved.
+- **Resolved by the 2026-07-26 audit, no longer unresolved:** net
+  leverage (now ~0.2x at Q1 2026, not ~0.8x-1.0x); the product/service
+  revenue mix (now 78.9%/21.1% per the official Q1 10-Q, not an
+  unverified ~81%/19% secondary estimate); gross margin (now ~37.7%,
+  resolving a prior "not found" gap); FY2026 full-year adjusted
+  operating-margin guidance (now reconciled to 22.8%-23.8%, resolving a
+  prior two-figure ambiguity).
+- **Downgraded to non-decision-bearing by the audit:** the $15 billion
+  (Q4 2025) vs. $12.45 billion (Q1 2026) backlog claim -- the audit
+  could not substantiate the $12.45 billion figure against Vertiv's
+  official Q1 2026 release or Form 10-Q. It remains disclosed as an
+  unresolved secondary claim but is no longer decision-bearing in this
+  record's risks, catalysts, or conviction.
 - No Vertiv-specific quantified customer-concentration disclosure was
-  found.
-- No gross-margin figure was found (only operating-margin figures).
+  found, and this gap was not addressed by the 2026-07-26 audit.
 - No Vertiv-specific copper/aluminum/tariff cost-exposure quantification
   was found -- only general market context.
-- The ~81%/19% product/service revenue-mix estimate is from a single
-  secondary source and is not independently corroborated.
-- Two different FY2026 full-year adjusted-operating-margin guidance
-  figures (23.3% and 22.0-23.0%) appeared across different-dated
-  secondary sources in this research pass, likely reflecting a
-  guidance raise between the Q4 2025 and Q1 2026 releases, but not
-  explicitly reconciled by anything this record located.
 - Munters' competitive relationship to Vertiv, if any, was not
-  confirmed or disconfirmed.
+  confirmed or disconfirmed, and this was outside the scope of the
+  2026-07-26 audit.
 
 ## Sources
 
-See `VRT.yaml`'s `sources[]` for the structured register. Every entry
-discloses that direct primary-document rendering was blocked in this
-research environment, per the disclosure above.
+See `VRT.yaml`'s `sources[]` for the structured register. Most entries
+disclose that direct primary-document rendering was blocked for this
+Claude session; four entries (the Q1 2026 results release, the Q1 2026
+Form 10-Q, the Q4/FY2025 results release, and the refinancing/ratings
+announcement) are instead sourced to GPT-5.6 Thinking's independent
+external audit of Vertiv's own official documents, with that
+provenance stated explicitly in each entry's `note` field -- this
+Claude session did not itself open any of the four.

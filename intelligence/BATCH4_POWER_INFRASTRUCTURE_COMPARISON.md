@@ -29,6 +29,28 @@ alternative ranking, and does not create a composite score of any
 kind** — per `PI-0026` §C's explicit instruction and the Constitution's
 standing prohibition on predictive research or opportunity maps.
 
+**Bounded correction, 2026-07-26 (provenance statement).** This
+document's original draft relied on the same WebSearch-only research
+as `ETN.yaml`/`.md`, `VRT.yaml`/`.md`, and `PWR.yaml`/`.md` before their
+2026-07-26 correction. This Claude session remained access-blocked
+throughout -- it did not open or inspect any primary document at any
+point, including for this correction pass. Separately, **GPT-5.6
+Thinking, acting as an independent external auditor, inspected official
+documents for all three companies** (see each company's own `sources[]`
+for the exact URLs) and reported specific factual corrections back
+through a retained audit artifact. The principal explicitly authorized
+treating that retained, independently inspected audit as the bounded
+PI-0026 evidence-recovery method. This document is revised to remove or
+correct every passage that relied on since-corrected premises (PWR
+having no manufacturing activity, VRT's unsupported backlog decline,
+VRT's incorrect 0.8x-1.0x current leverage, ETN's Boyd Thermal close
+date being unresolved, and Eaton's Mobility Group transaction being
+framed as a simple standalone spin) -- see §1, §2, §4, §5, §8, §12, and
+§14 below for the specific corrections. The high-level conclusion that
+the four companies occupy distinct, complementary positions is
+retained only because it survives being rebuilt on the corrected facts,
+not because it was mechanically carried forward.
+
 **GEV boundary, restated explicitly.** GEV is the `power_infra`
 cluster's fourth and only-previously-covered member (`PI-0007`,
 refreshed under `PI-0019`/`PI-0020`, `last_reviewed: 2026-07-22`,
@@ -78,27 +100,39 @@ electricity demand buildout"):**
 | GEV (existing context) | Power generation and grid equipment — gas turbines, electrification/grid products | Equipment manufacturer, broad power-generation scope beyond data centers |
 | ETN | Electrical equipment across the full power-distribution chain (circuit protection, switchgear, power distribution/quality, UPS) plus a distinct Aerospace business | Equipment manufacturer, diversified across data center/utility/industrial/commercial/residential/aerospace end markets |
 | VRT | Thermal management (liquid cooling) and power-management equipment **specifically for data centers** | Equipment manufacturer, narrowly data-center-focused — the batch's purest data-center pure-play |
-| PWR | Engineering, procurement, construction (EPC), and maintenance services for electric power, utility, and communications infrastructure | Labor-intensive contract-services provider — **does not manufacture equipment at all** |
+| PWR | Engineering, procurement, construction (EPC), and maintenance services for electric power, utility, and communications infrastructure | **Primarily** a labor-intensive contract-services provider, with a growing, still-secondary manufacturing capability (corrected 2026-07-26 — see below) |
 
-**This is the batch's single clearest structural finding**: three of
-the four (GEV, ETN, VRT) are equipment manufacturers of one kind or
-another, while PWR is a fundamentally different economic animal — a
-services business that often *installs and maintains* the kind of
-equipment GEV, ETN, and (to a lesser, more indirect extent) VRT
-manufacture. PWR's own AEP partnership (a 765 kV transmission EPC and
-domestic transformer/breaker manufacturing-capacity agreement) is, in
-fact, adjacent to exactly the kind of equipment ETN and GEV sell — PWR
-builds the infrastructure that carries and delivers the power ETN's
-switchgear/distribution equipment and GEV's turbines generate, while
-VRT's equipment sits inside the data center consuming that delivered
-power. **Read together, GEV (generation) → ETN (distribution/
-switching) → PWR (transmission/grid construction) → VRT (in-building
-thermal/power management) trace a genuinely sequential path from power
-generation to the chip actually being cooled** — a materially different
-comparison shape than any prior batch, where the shared driver
-(AI-data-center power/electricity demand) manifests as a **supply
-chain**, not merely a correlated basket of similarly-exposed equipment
-makers.
+**Corrected 2026-07-26 by an independent primary-source audit:** this
+document's original draft characterized PWR as not manufacturing
+equipment at all. Quanta's own official 2025 Form 10-K states the
+company manufactures power transformers and related electrical
+components and owns manufacturing facilities associated with those
+businesses (see `PWR.yaml`/`PWR.md` for the full correction). PWR
+remains, by primary economic function, a fundamentally different
+animal from GEV/ETN/VRT — a services business that predominantly
+*installs and maintains* infrastructure rather than one whose core
+revenue comes from equipment sales — but the contrast is now one of
+degree and primacy, not an absolute manufacturing/no-manufacturing
+split. **This is still the batch's single clearest structural
+finding**: three of the four (GEV, ETN, VRT) are primarily equipment
+manufacturers, while PWR is primarily a services business (with a
+secondary, real manufacturing capability of its own). PWR's own AEP
+partnership (a 765 kV transmission EPC and domestic transformer/breaker
+manufacturing-capacity agreement) is, in fact, adjacent to exactly the
+kind of equipment ETN and GEV sell, and — per the correction above —
+partly an extension of PWR's own secondary manufacturing capability,
+not solely third-party equipment PWR installs. PWR builds the
+infrastructure that carries and delivers the power ETN's switchgear/
+distribution equipment and GEV's turbines generate, while VRT's
+equipment sits inside the data center consuming that delivered power.
+**Read together, GEV (generation) → ETN (distribution/switching) → PWR
+(transmission/grid construction, plus some of its own transformer/
+component manufacturing) → VRT (in-building thermal/power management)
+trace a genuinely sequential path from power generation to the chip
+actually being cooled** — a materially different comparison shape than
+any prior batch, where the shared driver (AI-data-center power/
+electricity demand) manifests as a **supply chain**, not merely a
+correlated basket of similarly-exposed equipment makers.
 
 ## 2. Direct versus indirect data-center exposure
 
@@ -106,7 +140,7 @@ makers.
 |---|---|---|
 | VRT | Data center is essentially the whole business (cooling/power management sold directly into data-center builds); AI/hyperscaler-driven liquid cooling is the current primary growth narrative | **Most direct** — data center is not a segment, it is nearly the entire company |
 | GEV (existing context) | Electrification segment discloses data-center-specific order figures (>$5B combined H1 2026 orders per GEV's own record); Power segment's gas-turbine demand is driven by broader grid/generation needs, only partly data-center-specific | Direct in Electrification, more indirect/broader in Power |
-| ETN | Electrical segment discloses data center as its fastest-growing named vertical (~240% YoY order growth, Q1 2026), but non-data-center end markets (utility, industrial, institutional) are argued by at least one secondary source to still comprise the majority of Electrical backlog; Aerospace segment has no data-center exposure at all | Partial and diluted — real, but a minority of the whole company by at least one independent read |
+| ETN | Electrical segment discloses data center as its fastest-growing named vertical (Electrical backlog +48% YoY, Q1 2026, per ETN's official results release; a ~240% YoY data-center-order-growth figure is separately reported in secondary commentary but an independent primary-source audit could not locate it in Eaton's official Q1 2026 release — see `ETN.yaml`/`ETN.md`), and non-data-center end markets (utility, industrial, institutional) are argued by at least one secondary source to still comprise the majority of Electrical backlog; Aerospace segment has no data-center exposure at all | Partial and diluted — real, but a minority of the whole company by at least one independent read |
 | PWR | Data-center exposure is entirely indirect, via utility/grid-transmission work that serves data-center-driven electricity demand (the AEP 765 kV partnership is explicitly framed around "the rapidly growing data center market," but the work itself is grid infrastructure, not anything installed inside a data center) | **Most indirect** — PWR never sells anything to, or installs anything inside, a data center itself; it builds the grid that feeds it |
 
 **No company in this batch discloses a clean percentage of revenue
@@ -153,10 +187,14 @@ of the grid, the entities whose electricity demand growth is driving
 utilities like AEP to spend the capital that funds PWR's transmission
 contracts — an indirect demand-chain link, not a disclosed shared
 customer relationship. No supplier overlap was found or asserted across
-any pair in this batch; PWR does not manufacture equipment and so has
-no equipment-supplier relationship with GEV/ETN/VRT to begin with
-(though it may install their products on job sites, which none of the
-four companies' own records confirms directly).
+any pair in this batch. **Corrected 2026-07-26:** PWR does manufacture
+some equipment of its own (power transformers and related electrical
+components, per its official 2025 Form 10-K), but no record in this
+batch confirms a supplier relationship between PWR and GEV/ETN/VRT --
+PWR's manufacturing capability appears to support its own EPC/service
+work rather than to supply the other three companies, and it may
+separately install GEV's/ETN's/VRT's products on job sites, which none
+of the four companies' own records confirms directly either way.
 
 ## 5. Backlog composition and execution risk
 
@@ -164,8 +202,8 @@ four companies' own records confirms directly).
 |---|---|---|---|
 | GEV (existing context) | Equipment order backlog | $176B total (Q2 2026, per GEV's own record) | Long-cycle, fixed/competitively-bid equipment execution risk |
 | ETN | Equipment order backlog | Electrical backlog +48% YoY (Q1 2026 point; ~29% YoY full-year-2025 average) | Long lead-time equipment (transformers ~4 years, switchgear 50-80 weeks) — backlog quality tied to supply-chain/capacity-build execution |
-| VRT | Equipment order backlog | $15B (Q4 2025) vs. $12.45B (Q1 2026) — **an unreconciled sequential decline this batch's own ETN.md/VRT.md records disclose and do not resolve** | Equipment backlog, but the batch's only company with a disclosed, unresolved backlog discrepancy in the same fiscal year |
-| PWR | Mixed: firm fixed-price RPO **plus** estimated MSA-renewal orders (an explicitly disclosed methodology distinct from the other three) | Total backlog $48.47B (Q1 2026, record), RPO $26.24B (of which $15.9B convertible within 12 months) | **Project/contract-services backlog**, not equipment-order backlog — cancellation, rescheduling, and fixed-price cost-overrun risk apply in a way that does not apply to an equipment manufacturer's booked-order backlog |
+| VRT | Equipment order backlog | $15B (Q4 2025, per Vertiv's official Q4 2025 release); a $12.45B Q1 2026 figure appeared in this document's original draft but an independent primary-source audit (2026-07-26) could not substantiate it against Vertiv's official Q1 2026 release or Form 10-Q — **it is now treated as an unresolved, unsubstantiated secondary claim with no decision-bearing weight, not a confirmed sequential decline** (see `VRT.yaml`/`VRT.md`) | Equipment backlog; the previously-asserted backlog discrepancy is corrected below and no longer a confirmed batch finding |
+| PWR | Mixed: firm fixed-price RPO **plus** estimated MSA-renewal orders (an explicitly disclosed methodology distinct from the other three) | Total backlog $48.5B (Q1 2026, record, per Quanta's official results release), RPO $26.2B | **Project/contract-services backlog**, not equipment-order backlog — cancellation, rescheduling, and fixed-price cost-overrun risk apply in a way that does not apply to an equipment manufacturer's booked-order backlog |
 
 **This is a genuinely different backlog character for PWR than for the
 other three.** An equipment manufacturer's backlog (GEV, ETN, VRT) is a
@@ -173,11 +211,17 @@ booked-order count awaiting manufacture and shipment; PWR's backlog
 mixes firm contracted revenue with company-estimated recurring-MSA
 volume, and its execution risk runs through labor availability, fixed-
 price cost overruns, and project scheduling rather than component
-supply chains and capacity-build timelines. **VRT's unreconciled
-backlog discrepancy is this batch's most specific, disclosed evidence
-gap** — it is not analogous to PWR's estimation-methodology caveat;
-VRT's is an unexplained sequential decline in a metric defined the same
-way both quarters, per VRT's own record.
+supply chains and capacity-build timelines. **Corrected 2026-07-26:**
+this document's original draft described VRT's $15B-to-$12.45B backlog
+figures as "this batch's most specific, disclosed evidence gap" and an
+unreconciled sequential decline. An independent primary-source audit
+inspected Vertiv's official Q1 2026 results release and Form 10-Q and
+could not locate a passage substantiating the $12.45 billion figure in
+either document. **This claim no longer carries that weight in this
+comparison** — it is disclosed in `VRT.yaml`/`VRT.md` as an unresolved
+secondary claim, not treated here as a confirmed batch-level finding,
+and is not used to distinguish VRT's evidence quality from the other
+three companies' backlog disclosures.
 
 ## 6. Recurring versus project-based economics
 
@@ -221,14 +265,17 @@ context) have made a large, recent, thesis-concentrated acquisition:
 - **GEV** (existing context): Prolec GE, closed 2026-02-02, $5.275B,
   funded with an equal mix of cash and debt, Electrification-segment
   electrical-equipment manufacturer.
-- **ETN**: Boyd Thermal, agreed November 2025, approximately $9.5B
-  (~22.5x Boyd Thermal's estimated 2026 adjusted EBITDA) — roughly 35%
-  of ETN's own FY2025 total revenue in deal value, concentrated entirely
-  in liquid cooling for hyperscale/AI data centers. ETN's own record
-  flags this as its largest deal since Cooper Industries (2012).
-  Close-date disclosure is inconsistent across secondary sources (one
-  states 2026-03-12, another "expected Q2 2026") and is not resolved
-  in ETN's own record.
+- **ETN**: Boyd Thermal, agreed November 2025, officially completed
+  **2026-03-12** per Eaton's own completion announcement (corrected
+  2026-07-26 by an independent primary-source audit; this document's
+  original draft described the close date as disputed across secondary
+  sources), approximately $9.5B (~22.5x Boyd Thermal's estimated 2026
+  adjusted EBITDA) — roughly 35% of ETN's own FY2025 total revenue in
+  deal value, concentrated entirely in liquid cooling for hyperscale/AI
+  data centers. ETN's own record flags this as its largest deal since
+  Cooper Industries (2012). Having closed 2026-03-12, it contributes
+  only a partial-quarter stub within Q1 2026 results and is not yet
+  reflected in a full quarter or full-year of segment financials.
 - **VRT**: no single acquisition of comparable scale was found; VRT's
   M&A activity (E+I Engineering 2021, CoolTera 2023, Great Lakes Data
   Racks & Cabinets ~2025) is smaller and more capability-additive in
@@ -315,8 +362,10 @@ manufacturing) that would be lost entirely if the cluster consisted
 only of GEV/ETN/VRT. Within the equipment-manufacturer subset, ETN and
 VRT show the most business-model overlap (both are named as competitors
 to each other in some product categories), while GEV's broader
-power-generation scope and PWR's services-only model each add distinct
-exposure the other three do not replicate. **This finding is about
+power-generation scope and PWR's primarily-services model (corrected
+2026-07-26 to acknowledge PWR's own secondary, still-subordinate
+manufacturing capability -- see §1) each add distinct exposure the
+other three do not replicate. **This finding is about
 structural/economic function, not measured price correlation** — no
 correlation coefficient was computed for any pair in this batch,
 consistent with `OPS-0006` §4's explicit distinction between the two
@@ -386,16 +435,27 @@ Decisions Log.
 **Company-specific** (factual, advisory only — no leverage
 recommendation, per `PI-0026` §B.20/§G): GEV carries tariff exposure
 and Wind-segment margin softness (per its own existing record); ETN
-carries a large, single, thesis-concentrated acquisition (Boyd Thermal)
-and an announced structural separation (Mobility Group spin-off) as
-near-term corporate-action risks; VRT carries the batch's most
-concentrated single disconfirming risk (a named hyperscaler
-disintermediation threat) and an unresolved backlog discrepancy; PWR
-carries fixed-price-contract execution risk and working-capital
-dynamics (unbilled receivables growth) structurally different from the
-other three, plus a meaningfully larger set of stale/unresolved
-disclosure items (customer concentration, S&P rating currency, legacy
-litigation status) than either ETN or VRT.
+carries a large, single, thesis-concentrated acquisition (Boyd Thermal,
+officially completed 2026-03-12, per the 2026-07-26 correction) and an
+announced structural separation -- corrected 2026-07-26 from a
+standalone spin-off to a definitive Reverse Morris Trust combination
+with Dana Incorporated, a materially more complex cross-company
+transaction carrying its own integration and governance risk -- as
+near-term corporate-action risks; VRT carries a named hyperscaler
+disintermediation threat (its most concentrated single disconfirming
+risk) and a real, recent (2022) historical margin-compression episode,
+while a previously-asserted backlog discrepancy was corrected 2026-07-26
+to a non-decision-bearing unresolved secondary claim and its net
+leverage was corrected from ~0.8x-1.0x to approximately 0.2x (a
+stronger, not weaker, balance-sheet position than this document
+originally stated); PWR carries fixed-price-contract execution risk and
+working-capital dynamics (unbilled receivables growth) structurally
+different from the other three, plus a remaining set of stale/
+unresolved disclosure items (S&P rating currency, unresolved FY2025
+adjusted-EBITDA figure) -- narrower than this document originally
+stated, since the 2026-07-26 correction resolved PWR's customer-
+concentration staleness and removed decision-bearing weight from its
+two previously-cited legacy litigation matters.
 
 **Common amplifier across all four**: each company's own record
 documents a real, demonstrated historical margin-compression or

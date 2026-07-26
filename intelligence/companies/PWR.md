@@ -17,24 +17,56 @@ disclosed in Batch 1-3's records. **No primary document (10-K, 8-K,
 press release) was directly opened and inspected by this session.**
 Every figure below is WebSearch-sourced and labeled "identified but NOT
 opened by this session," distinct from independently-opened primary
-evidence. Quanta's Q2 2026 earnings release is scheduled for
+evidence, **except where a 2026-07-26 correction explicitly attributes
+a figure to GPT-5.6 Thinking's independent primary-source audit --
+those figures are still not opened by this Claude session, but were
+independently inspected by that external audit, and are labeled
+accordingly.** Quanta's Q2 2026 earnings release is scheduled for
 2026-07-30 -- after this record's drafting date -- and is not reflected
 here; the next scheduled review should incorporate it.
 
+**Bounded correction, 2026-07-26 (provenance statement).** This
+Claude session remained access-blocked throughout -- it did not open
+or inspect any primary document at any point, including for this
+correction pass. Separately, **GPT-5.6 Thinking, acting as an
+independent external auditor, inspected Quanta's official 2025 Form
+10-K and its official Q1 2026 results release** and reported specific
+factual corrections back through a retained audit artifact. The
+principal explicitly authorized treating that retained, independently
+inspected audit as the bounded PI-0026 evidence-recovery method. Every
+correction below is attributed to that external audit, not to this
+Claude session having gained primary-source access -- this session
+applies the audit's findings, it does not independently re-verify them
+beyond what the audit itself states. See `PWR.yaml`'s `review.log` for
+the itemized correction record and `sources[]` for the exact official
+URLs the audit inspected.
+
 ## Business summary
 
-Quanta is a specialty infrastructure services contractor -- **not an
-equipment manufacturer**, a structurally distinct economic model from
-this batch's other two companies (ETN and VRT both manufacture and
-sell physical equipment; Quanta sells labor, project management, and
-construction/maintenance services under contract). Founded 1997,
-headquartered in Houston, Quanta operates through a decentralized
-structure of "over 200 operating companies" (subsidiaries), relying on
-a large skilled/craft labor force (electrical linemen and related
-trades) rather than owned manufacturing assets. Employees: 51,306 as
-of year-end 2025 (+1,116, +2.2% YoY, per one secondary source; other
-estimates ranged 52,500-62,000 depending on source and date, not
-reconciled here).
+Quanta is **primarily** a specialty infrastructure services
+contractor -- corrected 2026-07-26 by an independent primary-source
+audit, which found that this record's original draft overstated the
+contrast with this batch's other two companies by describing Quanta as
+not manufacturing equipment at all. Quanta's own official 2025 Form
+10-K states the company manufactures power transformers and related
+electrical components and owns manufacturing facilities associated
+with those businesses. The corrected framing: Quanta remains
+fundamentally a labor/contract-services business (ETN and VRT both
+manufacture and sell physical equipment as their primary economic
+function; Quanta sells labor, project management, and
+construction/maintenance services under contract as its primary
+function), but it also carries a genuine, growing **secondary**
+manufacturing capability -- a distinction of degree and primacy, not
+an absolute services-only characterization. Founded 1997, headquartered
+in Houston, Quanta operates through a decentralized structure of "over
+200 operating companies" (subsidiaries), relying on a large
+skilled/craft labor force (electrical linemen and related trades).
+**Employees, corrected 2026-07-26:** approximately **69,500** at
+2025-12-31, per the official 2025 Form 10-K -- this record's original
+draft cited 51,306 (sourced to a secondary estimate the audit found
+stale or incorrect); the same filing discloses approximately **36%**
+of employees are covered by collective-bargaining agreements, resolving
+this record's prior "no union-membership percentage found" gap.
 
 **Segment structure changed starting Q1 2025**: Quanta now reports two
 segments -- **Electric Infrastructure Solutions** (which absorbed the
@@ -51,16 +83,19 @@ million ($2.08 diluted EPS); Electric segment revenue $6.43 billion at
 10.8% operating margin; Underground segment operating income $108.5
 million (7.7% margin), up from $42.6 million (3.6% margin) a year
 earlier -- a real margin-recovery trend in the smaller segment. **Q1
-2026**: revenue $7.87 billion (+26.3% YoY vs. $6.23 billion Q1 2025);
-Electric segment margin 8.7%, Underground segment margin 7.5%; adjusted
-diluted EPS $2.68 (vs. $1.78 Q1 2025); adjusted EBITDA $686 million.
-Record full-year 2025 free cash flow reported at $1.7 billion.
+2026** (official results release, independently inspected by the
+2026-07-26 primary-source audit): revenue $7.87 billion (+26.3% YoY vs.
+$6.23 billion Q1 2025); Electric segment margin 8.7%, Underground
+segment margin 7.5%; adjusted diluted EPS $2.68; adjusted EBITDA
+$686.4 million. Record full-year 2025 free cash flow reported at $1.7
+billion.
 
-**A genuine gap this record could not close:** full-year 2025 adjusted
-EBITDA / margin could not be reliably confirmed from available
-sources -- a $3.34-3.50 billion figure was attributed inconsistently
-to either FY2025 actuals or FY2026 guidance across different secondary
-sources, and this record does not resolve which is correct.
+**A genuine gap not closed by this record or by the 2026-07-26 audit:**
+full-year 2025 adjusted EBITDA / margin could not be reliably confirmed
+from available sources -- a $3.34-3.50 billion figure was attributed
+inconsistently to either FY2025 actuals or FY2026 guidance across
+different secondary sources, and neither this record's original
+research nor the audit resolves which is correct.
 
 ## Backlog
 
@@ -114,14 +149,19 @@ work now folded into the Electric segment post-reorganization.
 
 ## Customers, concentration, and competitors
 
-**A stale but real gap:** the most recent customer-concentration
-disclosure this record could locate is from the **FY2023** 10-K
-(largest customer 6% of consolidated revenue; top 10 customers 31% of
-revenue) -- this record could not find an updated FY2025 figure via
-WebSearch and does not present the 2023 figure as current. Customer
-base is primarily investor-owned and public utilities, telecom
-carriers, midstream/pipeline operators, and increasingly hyperscalers/
-data-center developers.
+**Corrected 2026-07-26 by an independent primary-source audit:** this
+record's original draft treated stale FY2023 customer-concentration
+figures (largest customer 6% of consolidated revenue; top 10 customers
+31%) as the most recent available. Quanta's official 2025 Form 10-K
+instead reports **largest customer 8%, top ten customers 30%** of
+consolidated revenue -- current figures replacing the stale ones. The
+same filing discloses a directional customer end-market mix not
+previously located in this record: **Utility and Power 70%, Energy and
+Other 17%, Technology, Manufacturing and Communications 13%** of
+revenue. Customer base is primarily investor-owned and public
+utilities, telecom carriers, midstream/pipeline operators, and
+increasingly hyperscalers/data-center developers, consistent with the
+disclosed mix.
 
 Named competitors across multiple sources: **MYR Group** (a closer
 direct competitor specifically in electric-power transmission/
@@ -146,7 +186,9 @@ vary, sometimes substantially, from original projections," which "could
 result in reduced profitability or losses on projects." **This record
 could not find a disclosed percentage of revenue that is fixed-price
 versus cost-plus/time-and-materials** -- the risk is qualitatively
-confirmed but not quantified from available sources.
+confirmed but not quantified from available sources, and this specific
+figure was outside the scope of the 2026-07-26 independent
+primary-source audit.
 
 **Labor and safety**, a real and mixed picture, disclosed here rather
 than smoothed into a single positive or negative framing: Quanta
@@ -162,8 +204,11 @@ disconfirming evidence worth preserving**: a labor-intensive
 high-voltage-electrical field-services business carries real
 fatality/severe-injury tail risk even as aggregate recordable-incident
 metrics improve, and the two metrics can diverge. No specific numeric
-Total Recordable Incident Rate (TRIR) or disclosed union-membership
-percentage was found in this research pass.
+Total Recordable Incident Rate (TRIR) was found in this research pass
+or by the 2026-07-26 audit. **Corrected 2026-07-26:** the official 2025
+Form 10-K discloses approximately 36% collective-bargaining coverage,
+resolving this record's original "no union-membership percentage
+found" gap (see Business summary above).
 
 ## Moat and barriers to entry
 
@@ -250,24 +295,38 @@ data-center-adjacent grid work) has so far been comparatively insulated
 from the wind/solar-specific cancellation wave, not as confirmation
 that it is immune.
 
-## Legacy litigation -- disclosed as unresolved status, not settled
+## Legacy litigation -- corrected 2026-07-26, decision-bearing weight removed
 
-Two older matters were identified via search but could not be confirmed
-as resolved or still pending, and are disclosed here rather than
-silently omitted: the **Maurepas Pipeline, LLC** liquidated-damages
-dispute against Quanta subsidiary QPS Engineering (originally
-approximately $59 million in 2017, reduced to approximately $48 million
-as of a 2022-era filing; Quanta counter-sued for $22 million allegedly
-wrongfully withheld), and a referenced **PRONATEL arbitration**
-(described in a 2022-era 10-Q as carrying potential for "an additional
-significant loss that could have a material adverse effect," with no
-outcome or current status located). A PlanSponsor.com headline
-referencing an ERISA lawsuit against Quanta was also identified but
-could not be dated or detailed in this research pass. **None of these
-three items is presented as a current, material, unresolved risk** --
-they are disclosed as unconfirmed-status legacy items requiring a fresh
-primary-source check before any future refresh treats them as resolved
-or as live.
+Two older matters were identified via WebSearch in this record's
+original draft but could not be confirmed as resolved or still
+pending: the **Maurepas Pipeline, LLC** liquidated-damages dispute
+against Quanta subsidiary QPS Engineering (originally approximately $59
+million in 2017, reduced to approximately $48 million as of a 2022-era
+filing; Quanta counter-sued for $22 million allegedly wrongfully
+withheld), and a referenced **PRONATEL arbitration** (described in a
+2022-era 10-Q as carrying potential for "an additional significant loss
+that could have a material adverse effect," with no outcome or current
+status located). A PlanSponsor.com headline referencing an ERISA
+lawsuit against Quanta was also identified but could not be dated or
+detailed.
+
+**A 2026-07-26 independent primary-source audit (GPT-5.6 Thinking)
+inspected Quanta's official 2025 Form 10-K and did not locate either
+the Maurepas Pipeline dispute or the PRONATEL arbitration in it.**
+Consistent with the audit's own instruction, this record does **not**
+treat that absence as proof either matter is resolved -- a filing can
+omit a matter for reasons other than resolution (immateriality
+threshold, settlement under confidential terms, or simply falling below
+current disclosure requirements). What changes is the **weight** these
+items carry: they are no longer treated as current, material,
+decision-bearing risks in this record's conviction rationale. They
+remain recorded here, for transparency, as **historical matters with
+unresolved present status** -- not confirmed closed, not confirmed
+live, and not weighted either way pending a fresh primary-source check
+that specifically addresses their status (which neither this record's
+original research nor the 2026-07-26 audit performed). The same
+treatment applies to the referenced ERISA lawsuit, which the audit also
+did not locate in the inspected filing.
 
 ## Governed policy (existing, not a research conclusion)
 
@@ -356,21 +415,23 @@ further research is authorized by naming them here.**
 ## Review framework
 
 - **Cadence: 90 days** -- matches the cadence used for GEV, COST, and
-  XOM's records; the number and nature of unresolved evidence gaps in
-  this specific record (stale customer-concentration figure, stale S&P
-  rating, unresolved legacy litigation status) argue for treating the
-  next review as an opportunity to close as many of those gaps as
-  possible, not merely to roll forward the financial figures.
+  XOM's records; the number and nature of unresolved evidence gaps
+  still remaining after the 2026-07-26 correction (stale S&P rating,
+  unresolved FY2025 adjusted-EBITDA figure, unquantified fixed-price
+  exposure, unresolved legacy-litigation present status) argue for
+  treating the next review as an opportunity to close as many of those
+  gaps as possible, not merely to roll forward the financial figures.
 - **Named review triggers**, drawn selectively from `OPS-0006` §12's
   candidate-trigger list:
   - The Q2 2026 earnings release (2026-07-30), the first opportunity to
-    resolve the FY2025/FY2026 adjusted-EBITDA figure ambiguity.
+    resolve the FY2025 adjusted-EBITDA figure ambiguity.
   - Any update on the AEP Cooperation and Commitment Agreement's
     conversion from contractual framework into recognized backlog and
     revenue.
-  - Any resolution (settlement, dismissal, or updated status) of the
-    Maurepas Pipeline dispute, PRONATEL arbitration, or the referenced
-    ERISA lawsuit.
+  - Any primary-source disclosure specifically addressing the current
+    present-day status of the Maurepas Pipeline dispute, PRONATEL
+    arbitration, or the referenced ERISA lawsuit (their absence from
+    the 2025 Form 10-K is not itself confirmation of resolution).
   - A current S&P Global Ratings action, or any Moody's rating-level
     change (not just an outlook change).
   - Any disclosed material fixed-price project loss or safety incident
@@ -380,61 +441,96 @@ further research is authorized by naming them here.**
 
 **Rating: Medium.**
 
-**Rationale:** Quanta shows strong, cross-checked, recent growth
-evidence (FY2025 revenue $28.48 billion, +20.3%; record and
-accelerating total backlog reaching $48.47 billion by Q1 2026; a
-specific named contractual relationship with AEP tied to data-center-
-driven transmission demand; improving segment margins off a weaker
-prior-year base; a Moody's outlook upgrade to positive) and a
-structurally distinct, labor-intensive business model from ETN and VRT
-that provides genuine diversification within the `power_infra` cluster
-rather than duplicated equipment-manufacturing exposure. Conviction is
-held at Medium rather than High because of a meaningfully larger set of
-unresolved evidence gaps than this batch's other two companies:
-fixed-price-contract execution risk is qualitatively real but not
-quantified; the most recent customer-concentration figure located is
-from FY2023, not current; two legacy litigation matters (Maurepas
-Pipeline, a PRONATEL arbitration) and an ERISA lawsuit headline could
-not be confirmed as resolved, current, or material; the most recent
-independently-confirmed S&P rating action is nearly three years old;
-and full-year 2025 adjusted EBITDA could not be pinned down from
-conflicting secondary sourcing. None of these gaps is itself
-disconfirming evidence of a problem -- they are gaps in what
-WebSearch-only research could establish -- but their number and nature
-(concentrated in disclosure currency and legal-matter resolution, areas
-a labor-intensive contractor is more exposed on than an equipment
-manufacturer) justify a more cautious rating than the growth evidence
-alone would suggest. This rating explicitly excludes valuation,
-entry-price, allocation, trading, and margin judgments.
+**Rationale, reassessed 2026-07-26 following the independent
+primary-source audit (not mechanically preserved at its prior
+value):** Quanta shows strong, cross-checked, recent growth evidence
+(FY2025 revenue $28.48 billion, +20.3%; record and accelerating total
+backlog reaching $48.5 billion by Q1 2026; a specific named contractual
+relationship with AEP tied to data-center-driven transmission demand;
+improving segment margins off a weaker prior-year base; a Moody's
+outlook upgrade to positive) and a business model now understood, per
+the audit's correction, as primarily labor/contract-services with a
+genuine, growing secondary manufacturing capability (power transformers
+and related electrical components) -- a more nuanced, and if anything
+structurally stronger, position than this record's original "no
+manufacturing at all" framing suggested, and still a materially
+different economic model from ETN's and VRT's primary
+equipment-manufacturing businesses. The audit also removed
+decision-bearing weight from two legacy litigation matters (Maurepas
+Pipeline, PRONATEL) that this record's original draft had counted
+toward a more cautious rating -- neither was located in the official
+2025 Form 10-K, though their absence does not itself prove resolution
+-- and corrected several disclosure figures (a larger workforce at
+approximately 69,500 employees, approximately 36% collective-bargaining
+coverage, current 8%/30% customer concentration versus the stale
+FY2023 6%/31% figures, and a new 70%/17%/13% end-market mix disclosure)
+that clarify, rather than worsen, the picture. **These corrections do
+not by themselves justify raising conviction to High:** genuine,
+unaddressed structural constraints remain -- fixed-price-contract
+execution risk that is qualitatively real but still not quantified;
+labor/safety tail risk in a business where fatal accidents are
+disclosed even as aggregate safety metrics improve; renewable-energy
+tax-policy exposure; a stale (September 2023) confirmed S&P rating
+action; and an unresolved FY2025 full-year adjusted-EBITDA figure --
+none of which the audit addressed. Conviction is therefore held at
+Medium, but for a rebalanced set of reasons than the original draft's
+rationale, which leaned more heavily on now-corrected disclosure gaps
+and litigation uncertainty -- not mechanically carried forward from
+that reasoning. This rating explicitly excludes valuation, entry-price,
+allocation, trading, and margin judgments.
 
 This rating and rationale reflect human judgment, approved after
 independent review of AI-assisted research -- the research and drafting
 process does not itself constitute the human judgment this record
-requires; the approval decision does.
+requires; the approval decision does. The 2026-07-26 correction pass
+reassessed rather than mechanically preserved this rating; see
+`PWR.yaml`'s `review.log` for the itemized record of what changed and
+why Medium still holds.
 
 ## Unresolved items and access limitations
 
-- No primary document was directly opened by this session (see
-  Source-access disclosure above).
-- Full-year 2025 adjusted EBITDA/margin not reliably confirmed
-  (conflicting secondary attributions).
-- Customer-concentration disclosure is stale (FY2023 figures only).
-- Most recent confirmed S&P rating action is dated September 2023.
-- Maurepas Pipeline dispute, PRONATEL arbitration, and a referenced
-  ERISA lawsuit all have unconfirmed current status.
+- No primary document was directly opened by **this Claude session** at
+  any point, including during the 2026-07-26 correction pass (see
+  Source-access disclosure above). Two official Quanta documents were
+  independently inspected by GPT-5.6 Thinking during an external audit,
+  and their findings are applied here with that provenance preserved.
+- **Resolved by the 2026-07-26 audit, no longer unresolved:** the
+  "does not manufacture equipment at all" characterization (corrected --
+  Quanta does manufacture power transformers and related electrical
+  components as a secondary capability); employee count (now ~69,500,
+  not 51,306); collective-bargaining coverage (now ~36%, resolving a
+  prior "not found" gap); customer concentration (now current 8%/30%
+  figures, not stale FY2023 6%/31% figures); customer end-market mix
+  (now disclosed: 70%/17%/13%, previously not found).
+- **Downgraded to non-decision-bearing by the audit:** the Maurepas
+  Pipeline dispute and PRONATEL arbitration -- not located in the
+  inspected 2025 Form 10-K, but their absence is not itself treated as
+  proof of resolution; they remain historical items with unresolved
+  present status. The referenced ERISA lawsuit receives the same
+  treatment.
+- Full-year 2025 adjusted EBITDA/margin still not reliably confirmed
+  (conflicting secondary attributions) -- this was outside the scope of
+  the 2026-07-26 audit.
+- Most recent confirmed S&P rating action is still dated September
+  2023 -- also outside the scope of the audit.
 - The "$35.3B renewable energy backlog" figure is treated as likely
   erroneous and is not used elsewhere in this record.
 - The implied Underground-segment backlog (~$7.78B) is this record's
   own arithmetic, not a directly disclosed figure.
 - No specific percentage of fixed-price vs. cost-plus/T&M revenue was
-  found.
-- No numeric TRIR or union-membership percentage was found.
+  found, and this was outside the scope of the audit.
+- No numeric TRIR was found, and this was outside the scope of the
+  audit.
 - Q2 2026 results (scheduled 2026-07-30) postdate this record's
   drafting and are not reflected here.
 - No historical stock-price drawdown statistic was found for PWR.
 
 ## Sources
 
-See `PWR.yaml`'s `sources[]` for the structured register. Every entry
-discloses that direct primary-document rendering was blocked in this
-research environment, per the disclosure above.
+See `PWR.yaml`'s `sources[]` for the structured register. Most entries
+disclose that direct primary-document rendering was blocked for this
+Claude session; two entries (the official 2025 Form 10-K and the Q1
+2026 results release) are instead sourced to GPT-5.6 Thinking's
+independent external audit of Quanta's own official documents, with
+that provenance stated explicitly in each entry's `note` field -- this
+Claude session did not itself open either of them.
