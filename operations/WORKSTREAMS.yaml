@@ -792,6 +792,45 @@ workstreams:
           `targets.yaml`'s stale MU/WDC `semis`-cluster comment remains exactly as `PI-0024` §E left
           it — identified, not corrected, a separate, unauthorized, future factual-reconciliation
           item.
+
+          **Batch 3 (AVGO, AMD, MRVL, INTC) governance authorization merged 2026-07-26 —
+          PI-0025 effective.** Governance PR #160 was independently reviewed at exact head
+          `667d54b690e8e6a20f9d018572e47626663a272c` (review `4780879033`, verdict "APPROVED FOR
+          READINESS AND MERGE"), explicitly principal-accepted, and merged (merge commit
+          `b20922bc51e1040081505f236065cb4fe5b23a33`, parents `7c11d90fc8e68670f814ac35d32de693ab166a21`
+          (base) and `667d54b690e8e6a20f9d018572e47626663a272c` (the reviewed head, confirmed the
+          merge commit's direct second parent), merged 2026-07-26T03:51:44Z by `Mast3rkey`).
+          Remote branch-deletion for `claude/portfolio-hq-batch-3-auth-9pw2hs` failed with HTTP 403
+          at the git-proxy level — non-blocking, same known gap as prior batches; the branch remains
+          present but merged/inactive. Post-merge verification independently re-confirmed: `main`
+          fast-forwarded cleanly to the merge commit; the merge diff is exactly the four reviewed
+          governance files (`governance/decisions/PI-0025-ws0005-milestone3-batch3-compute-networking.md`,
+          `governance/decisions.yaml`, this file, `CLAUDE.md`); `PI-0025` exists and is indexed
+          exactly once; `intelligence_validator.py` (13 companies, 2 themes, unchanged) and
+          `freshness_validator.py` both clean; full pytest suite 1502/1502; `git diff --check` clean;
+          WS-0005 remains the sole `priority: primary` workstream; Milestone 3 remains
+          `status: in_progress`. **PI-0025 is now effective** — the Batch 3 (AVGO, AMD, MRVL, INTC)
+          research implementation is authorized to proceed via its own separate, bounded PR, per
+          `PI-0025` §I.
+
+          **Batch 3 implementation drafted 2026-07-26 (not merged, not complete).** Implementation
+          branch `claude/ws0005-batch3-avgo-amd-mrvl-intc-impl`, base verified post-merge `origin/main`
+          `b20922bc51e1040081505f236065cb4fe5b23a33`. Delivered: `intelligence/companies/AVGO.yaml`/
+          `.md`, `AMD.yaml`/`.md`, `MRVL.yaml`/`.md`, `INTC.yaml`/`.md` (four Company Intelligence
+          records, all `intelligence_validator.py`-clean); one hand-authored batch comparison artifact
+          (`intelligence/BATCH3_SEMIS_COMPUTE_CONNECTIVITY_COMPARISON.md`); one freshness-registry and
+          one freshness-checkpoint enrollment row per ticker (`monitoring_enabled: false`,
+          `checkpoint_status: pending`, `enrollment_authority`/`company_record_authority: PI-0025`).
+          Primary-source access (SEC EDGAR, each company's own investor-relations domain, and a
+          non-target control domain) was attempted fresh this session and returned HTTP 403 on every
+          attempt, confirming the same tool/proxy-level WebFetch block Batch 1 and Batch 2 both
+          disclosed — every fact in all four records and the comparison artifact is therefore
+          WebSearch-sourced or primary-cited-but-not-directly-inspected, explicitly disclosed in each
+          record's Source-access disclosure section. Conviction ratings: AVGO High; AMD, MRVL, INTC
+          each Medium — reasoned independently per company from disclosed evidence, not inferred from
+          existing tier placement, per `OPS-0006` §§2/3's zero-based discipline. Pushed and opened as
+          draft PR (exact number and head to be recorded in a minimal factual follow-up commit to this
+          field per repository convention, matching the pattern used for PI-0025's own governance PR).
         pr: 158
         status: in_progress
         date: "2026-07-26"
@@ -891,7 +930,12 @@ workstreams:
       - "Principal explicit acceptance of the MU/SKHY Batch 2 implementation at exact head 957a223278e154a9bdd20033911cec79f0696c37, authorizing merge conditional on all pre-merge gates re-passing (all ten independently re-verified immediately before merge — see the milestone-3-intelligence-completion gate entry above for the full list)"
       - "PR #159 (WS-0005 Batch 2 post-merge synchronization, merged 2026-07-26, merge commit 7c11d90fc8e68670f814ac35d32de693ab166a21, confirmed origin/main tip at this filing's base)"
       - governance/decisions/PI-0025-ws0005-milestone3-batch3-compute-networking.md
-      - "PI-0025 (Milestone 3, Batch 3 — AVGO, AMD, MRVL, INTC — evidence development only) filed on branch claude/portfolio-hq-batch-3-auth-9pw2hs, base origin/main 7c11d90fc8e68670f814ac35d32de693ab166a21; not yet merged, not yet independently reviewed, grants no authority until merge"
+      - "PR #160 (PI-0025 governance authorization — merged 2026-07-26T03:51:44Z, merge commit b20922bc51e1040081505f236065cb4fe5b23a33, reviewed/principal-accepted head 667d54b690e8e6a20f9d018572e47626663a272c, source branch claude/portfolio-hq-batch-3-auth-9pw2hs; remote branch-deletion attempted and failed with HTTP 403 at the git-proxy level, non-blocking, branch remains present but merged/inactive)"
+      - "PR #160 independent Fable full review (anchored to intermediate head 146a757d, CHANGES REQUIRED — one Major/one Minor/two Advisory findings, all resolved by the bounded correction commit 667d54b690e8e6a20f9d018572e47626663a272c)"
+      - "PR #160 independent Fable review 4780879033 (COMMENTED-state GitHub review, verdict carried in the review body per this repository's established retained-artifact convention — anchored via its own commit_id field to the exact reviewed/merged head 667d54b690e8e6a20f9d018572e47626663a272c, verdict APPROVED FOR READINESS AND MERGE)"
+      - "PR #160 exact-head CI: test check run, run 30186568989, conclusion success, confirmed at exactly 667d54b690e8e6a20f9d018572e47626663a272c"
+      - "Principal explicit acceptance of PI-0025 at exact head 667d54b690e8e6a20f9d018572e47626663a272c, authorizing merge conditional on all pre-merge gates re-passing (all eleven independently re-verified immediately before merge)"
+      - "Batch 3 (AVGO, AMD, MRVL, INTC) research implementation drafted on branch claude/ws0005-batch3-avgo-amd-mrvl-intc-impl, base verified post-merge origin/main b20922bc51e1040081505f236065cb4fe5b23a33 — see the milestone-3-intelligence-completion gate entry above for full deliverable detail"
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -952,24 +996,26 @@ workstreams:
       possible future batch: AVGO, AMD, MRVL, INTC — not yet selected,
       proposed, or authorized by this filing.
 
-      **Batch 3 governance authorization filed 2026-07-26 (PI-0025), not yet
-      merged, not yet authorized to execute.** Covers exactly AVGO, AMD,
-      MRVL, and INTC — the semis cluster's remaining compute/
-      accelerated-computing/networking/custom-silicon/foundry sub-segment,
-      distinct from Batch 1's equipment sub-segment and Batch 2's memory
-      sub-segment. Filed on branch claude/portfolio-hq-batch-3-auth-9pw2hs,
-      base origin/main 7c11d90fc8e68670f814ac35d32de693ab166a21 (PR #159's
-      merge commit). This filing authorizes creation of the
-      governance-authorization package only — the PI-0025 decision file,
-      governance/decisions.yaml, this operations/WORKSTREAMS.yaml entry, and
-      the applicable CLAUDE.md Decisions Log entry. It does not authorize
-      drafting any AVGO/AMD/MRVL/INTC Company Intelligence record or the
-      batch comparison artifact — per PI-0025 §I, that later, separate
-      implementation PR may not open in non-draft form, and research may
-      not begin, until this governance decision is itself independently
-      reviewed, principal-accepted, and merged. No third Milestone 3 batch
-      is authorized until that merge occurs; this entry records the filing
-      only and grants no authority by itself.
+      **Batch 3 governance authorization (PI-0025) merged 2026-07-26 —
+      effective.** Covers exactly AVGO, AMD, MRVL, and INTC — the semis
+      cluster's remaining compute/accelerated-computing/networking/
+      custom-silicon/foundry sub-segment, distinct from Batch 1's equipment
+      sub-segment and Batch 2's memory sub-segment. Governance PR #160
+      independently reviewed at exact head
+      667d54b690e8e6a20f9d018572e47626663a272c (review 4780879033,
+      APPROVED FOR READINESS AND MERGE), explicitly principal-accepted, and
+      merged (merge commit b20922bc51e1040081505f236065cb4fe5b23a33,
+      base 7c11d90fc8e68670f814ac35d32de693ab166a21). Post-merge
+      verification independently re-confirmed exactly the four reviewed
+      governance files merged, PI-0025 indexed exactly once, both
+      validators clean, full pytest suite 1502/1502, git diff --check
+      clean, and WS-0005 remaining the sole priority: primary workstream.
+      **The Batch 3 research implementation is now authorized and has been
+      drafted** on branch claude/ws0005-batch3-avgo-amd-mrvl-intc-impl
+      (base origin/main b20922bc51e1040081505f236065cb4fe5b23a33) — see the
+      milestone-3-intelligence-completion gate entry above for full
+      implementation detail. Not yet merged, not yet complete; a fourth
+      Milestone 3 batch and Milestone 4 remain unauthorized.
 
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
@@ -1032,20 +1078,25 @@ workstreams:
       else. This reconciliation itself grants no such authorization.
       **PR #159 (the WS-0005 Batch 2 post-merge synchronization PR
       referenced above) independently reconfirmed merged** at merge commit
-      7c11d90fc8e68670f814ac35d32de693ab166a21, matching origin/main's tip at
-      this entry's filing. **Milestone 3, Batch 3 (AVGO, AMD, MRVL, INTC):
-      governance authorization (PI-0025) filed, not yet merged, not yet
-      authorized to execute.** Blocked on: independent Fable review of the
-      PI-0025 governance PR anchored to its exact head; principal explicit
-      acceptance of that review; and the governance PR's merge. Only after
-      that merge may a later, separate, draft-until-independently-reviewed
-      research implementation PR begin — no research, Company Intelligence
-      record, or comparison artifact for AVGO/AMD/MRVL/INTC exists or is
-      authorized to exist yet. A fourth Milestone 3 batch and Milestones 4
-      through 9 remain unauthorized and blocked, unaffected by this filing.
-    active_branch: claude/portfolio-hq-batch-3-auth-9pw2hs
-    active_pr: 160
-    last_verified_main_sha: 7c11d90fc8e68670f814ac35d32de693ab166a21
+      7c11d90fc8e68670f814ac35d32de693ab166a21. **Milestone 3, Batch 3
+      (AVGO, AMD, MRVL, INTC): governance authorization (PI-0025) merged**
+      — governance PR #160, merge commit
+      b20922bc51e1040081505f236065cb4fe5b23a33, reviewed/principal-accepted
+      head 667d54b690e8e6a20f9d018572e47626663a272c, independent Fable
+      review 4780879033 APPROVED FOR READINESS AND MERGE, post-merge
+      ancestry/scope/validator/test re-verification complete and passing.
+      **The research implementation has been drafted, not merged** — branch
+      claude/ws0005-batch3-avgo-amd-mrvl-intc-impl, base verified
+      post-merge origin/main b20922bc51e1040081505f236065cb4fe5b23a33.
+      Blocked, before that implementation PR may be considered complete,
+      on: independent Fable review anchored to its exact head; any bounded
+      correction and exact-head re-review a finding may require; principal
+      explicit acceptance; and merge. This entry does not describe Batch 3
+      as complete. A fourth Milestone 3 batch and Milestones 4 through 9
+      remain unauthorized and blocked, unaffected by this filing.
+    active_branch: claude/ws0005-batch3-avgo-amd-mrvl-intc-impl
+    active_pr: null
+    last_verified_main_sha: b20922bc51e1040081505f236065cb4fe5b23a33
     last_verified_date: "2026-07-26"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
@@ -1064,12 +1115,14 @@ workstreams:
       development only) authorizes exactly that second batch, effective on
       its own merge, excludes WDC explicitly, and prohibits any future
       contraction of the batch to MU alone. PI-0025 (Milestone 3, Batch 3 —
-      AVGO, AMD, MRVL, INTC — evidence development only) has been filed but
-      is not yet merged and grants no authority until it is; it authorizes,
-      effective only on its own merge, exactly that third batch's
-      governance package now and gates the later research implementation PR
-      on PI-0025's own independent review, principal acceptance, and merge.
-      Neither PI-0023, PI-0024, PI-0025 (pre-merge), nor this filing
-      authorizes a fourth batch or any later milestone.
+      AVGO, AMD, MRVL, INTC — evidence development only) is now merged and
+      effective (governance PR #160, merge commit
+      b20922bc51e1040081505f236065cb4fe5b23a33) — it authorizes exactly
+      that third batch's research implementation, now drafted on branch
+      claude/ws0005-batch3-avgo-amd-mrvl-intc-impl and gated, before that
+      implementation PR may be considered complete, on its own independent
+      review, any required bounded correction, and principal acceptance
+      before merge, per PI-0025 §I. Neither PI-0023, PI-0024, PI-0025, nor
+      this filing authorizes a fourth batch or any later milestone.
     supersedes: null
     superseded_by: null
