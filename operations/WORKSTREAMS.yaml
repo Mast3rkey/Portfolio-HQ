@@ -892,6 +892,8 @@ workstreams:
       - "PR #159 (WS-0005 Batch 2 post-merge synchronization, merged 2026-07-26, merge commit 7c11d90fc8e68670f814ac35d32de693ab166a21, confirmed origin/main tip at this filing's base)"
       - governance/decisions/PI-0025-ws0005-milestone3-batch3-compute-networking.md
       - "PI-0025 (Milestone 3, Batch 3 — AVGO, AMD, MRVL, INTC — evidence development only) filed on branch claude/portfolio-hq-batch-3-auth-9pw2hs, base origin/main 7c11d90fc8e68670f814ac35d32de693ab166a21; not yet merged, not yet independently reviewed, grants no authority until merge"
+      - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md
+      - "OPS-0007 (capability-based independent-review standard for WS-0005; narrow prospective supersession of PI-0025 §I's model-name-specific reviewer clause only; PROVISIONAL Intelligence category; a later, separate, bounded preliminary-portfolio-architecture authorization; a later, separate, bounded scenario-only/cash-only/zero-margin Monday allocation-check authorization) filed on branch claude/ws-0005-capability-review-rcj430, base origin/main b20922bc51e1040081505f236065cb4fe5b23a33 (PR #160's merge commit); not yet merged, not yet independently reviewed, grants no authority until merge. Authorizes no research, no Intelligence record, no comparison artifact, no target scenario, and no allocation check by itself — see governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md §§4-5 for the later, separate PRs it authorizes once merged."
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -971,6 +973,50 @@ workstreams:
       is authorized until that merge occurs; this entry records the filing
       only and grants no authority by itself.
 
+      **OPS-0007 filed 2026-07-26 (capability-based independent-review
+      standard and provisional allocation-readiness bridge), not yet merged,
+      not yet authorized to execute.** Filed on branch
+      claude/ws-0005-capability-review-rcj430, base origin/main
+      b20922bc51e1040081505f236065cb4fe5b23a33 (PR #160's own merge commit,
+      confirmed the current origin/main tip at this filing's base). Replaces,
+      for WS-0005 work from its own merge forward, a reviewer requirement
+      based solely on a named model with a twelve-point capability-based
+      standard (independence, exact-head anchoring, sufficient repository and
+      research access, primary-source-inspection attempts, evidence-type
+      separation, validator/test verification, severity classification,
+      retained attribution, disclosure, bounded correction, exact-head
+      re-review, and explicit principal acceptance) — Fable remains eligible;
+      an independent ChatGPT session or any other reviewer meeting every
+      point is equally eligible; an authoring session may not review its own
+      work. Prospectively supersedes only PI-0025 §I's model-name-specific
+      reviewer clause; every other PI-0025 §I requirement (independent
+      review, exact-head anchoring, retained attribution, bounded correction,
+      principal acceptance, post-merge verification, factual WORKSTREAMS
+      synchronization) is unchanged and remains fully in force — PI-0025's
+      own file is not edited and its status is not changed. PR #161 (the
+      PI-0025-gated AVGO/AMD/MRVL/INTC implementation, open, draft, unmerged,
+      head e37392b075e26d55f2996bcd86487c93b453623a as of this filing) may
+      therefore be reviewed by an independent ChatGPT session, or any other
+      eligible reviewer, once OPS-0007 merges — OPS-0007 does not itself
+      review, correct, mark ready, or merge PR #161. Also defines a
+      PROVISIONAL Intelligence status category (independently reviewed under
+      OPS-0007, not yet subjected to WS-0005's later deeper review) without
+      altering the frozen Company Intelligence schema, and authorizes —
+      effective only on its own merge, and only as later, separate, bounded
+      implementation PRs — (a) one preliminary portfolio-role/tier/
+      target-range-scenario architecture package explicitly labeled
+      provisional and never claiming Milestones 3-9 completion, and (b) one
+      scenario-only, cash-only, zero-margin allocation-check package
+      comparing authoritative targets.yaml against a separately named
+      scenario configuration, with no targets.yaml mutation, no holdings.yaml
+      change beyond an independently authorized live sync, and no order
+      placement. Does not authorize a fourth Milestone 3 batch or any
+      Milestone 4-9 execution; does not change any tier, target, holdings,
+      cluster, cap, or margin parameter; does not modify allocate.py or
+      margin_state.py. This entry records the filing only and grants no
+      authority until OPS-0007's own governance PR is independently reviewed,
+      principal-accepted, and merged.
+
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
       crypto_shares.BTC = 0.00460473 (a verified broker-sync re-add on
@@ -1043,9 +1089,25 @@ workstreams:
       record, or comparison artifact for AVGO/AMD/MRVL/INTC exists or is
       authorized to exist yet. A fourth Milestone 3 batch and Milestones 4
       through 9 remain unauthorized and blocked, unaffected by this filing.
-    active_branch: claude/portfolio-hq-batch-3-auth-9pw2hs
-    active_pr: 160
-    last_verified_main_sha: 7c11d90fc8e68670f814ac35d32de693ab166a21
+      **OPS-0007 (capability-based independent-review standard; narrow
+      prospective supersession of PI-0025 §I's reviewer-identity clause only;
+      PROVISIONAL Intelligence category; later, separate, bounded preliminary-
+      architecture and scenario-only allocation-check authorizations): filed,
+      not yet merged, not yet authorized to execute.** Blocked on: independent
+      review of the OPS-0007 governance PR itself, by an eligible reviewer
+      under its own §1 standard, anchored to its exact head; principal
+      explicit acceptance; and the governance PR's merge. Only after that
+      merge may an eligible independent reviewer (e.g. ChatGPT) review PR
+      #161 under PI-0025 §I as modified by OPS-0007 §2, and only after PR
+      #161's own independent review, any required correction, exact-head
+      re-review, and principal acceptance may the later preliminary-
+      architecture PR (OPS-0007 §4) or scenario-only allocation-check package
+      (OPS-0007 §5) begin. No provisional status determination, preliminary
+      architecture, or allocation scenario exists or is authorized to exist
+      yet.
+    active_branch: claude/ws-0005-capability-review-rcj430
+    active_pr: null
+    last_verified_main_sha: b20922bc51e1040081505f236065cb4fe5b23a33
     last_verified_date: "2026-07-26"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
@@ -1070,6 +1132,18 @@ workstreams:
       governance package now and gates the later research implementation PR
       on PI-0025's own independent review, principal acceptance, and merge.
       Neither PI-0023, PI-0024, PI-0025 (pre-merge), nor this filing
-      authorizes a fourth batch or any later milestone.
+      authorizes a fourth batch or any later milestone. OPS-0007
+      (capability-based independent-review standard and provisional
+      allocation-readiness bridge) has been filed but is not yet merged and
+      grants no authority until it is; effective only on its own merge, it
+      authorizes (a) a capability-based reviewer standard for WS-0005 gates,
+      narrowly and prospectively superseding only PI-0025 §I's
+      model-name-specific clause, (b) a PROVISIONAL Intelligence category,
+      and (c) two later, separate, bounded implementation PRs — a
+      preliminary portfolio-architecture package and a scenario-only,
+      cash-only, zero-margin allocation-check package — neither of which
+      this filing performs. OPS-0007 does not authorize a fourth Milestone 3
+      batch or any Milestone 4-9 execution, and does not itself review,
+      correct, or merge PR #161.
     supersedes: null
     superseded_by: null
