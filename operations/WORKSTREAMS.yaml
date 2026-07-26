@@ -1035,6 +1035,9 @@ workstreams:
       - operations/provisional/WS0005_CURRENT_POLICY_RECONCILIATION_20260726.md
       - "Preliminary portfolio-architecture and target-scenario package (OPS-0007 §4), filed on branch claude/ws0005-provisional-portfolio-architecture, base verified post-merge origin/main 270b47163bde6999dd336ff327965bbc7b5fd031: classifies the 62 company holdings (of 65 total roster entries; 3 are ETFs, a separate category) into ACCEPTED (13, per OPS-0007 §4's own 'the thirteen existing records'), PROVISIONAL (4: AVGO/AMD/MRVL/INTC), and NOT INDEPENDENTLY RE-DERIVED (45); finds, for the 17 ACCEPTED/PROVISIONAL holdings, the evidence gathered consistent with current governed tier/target placement, with zero net target-weight change (28.70pp both current and scenario); makes no change to targets.yaml, holdings.yaml, allocate.py, or margin_state.py; runs no Monday allocation check."
       - "PR #163 independent ChatGPT review 4781581139 (session chatgpt-pr163-review-20260726-01, COMMENTED-state GitHub review, anchored via its own commit_id field to exact head 605f7961cd47b3f35b5d945d546717ca7b4e1b90) — verdict CHANGES REQUIRED: Major 1 (evidence-status classification conflicted with OPS-0007 §4's own 'thirteen existing records' text), Major 2 (17-holding reconciliation lacked a per-holding decision trail), Major 3 (coverage-gap register grouped tickers and omitted required fields), plus two Minor findings (misstated roster count; ambiguous research-priority wording). One bounded correction pass resolves all five findings. A fresh exact-head independent re-review remains required before principal acceptance or merge."
+      - "PR #163 independent ChatGPT exact-head re-review 4781685302 (same review-session identifier chatgpt-pr163-review-20260726-01, COMMENTED-state GitHub review, anchored via its own commit_id field to the corrected exact head e4e533b2a4e4d24e00b5b2c2fe74c08623dfe66c) — all five prior findings (Major 1-3, Minor 1-2) independently re-verified RESOLVED against actual file content; three non-blocking wording/presentation findings noted (none changing a ticker, tier, target, range, or scenario total); exact-head CI run 30200829299 (test check run 89790355251) independently re-confirmed status: completed, conclusion: success. Verdict APPROVED WITH NON-BLOCKING FINDINGS — PR #163 stated as eligible for principal acceptance and merge at that exact head provided head and CI remained unchanged; this review did not itself mark the PR ready or merge it."
+      - "PR #163 merged 2026-07-26T12:09:50Z by Mast3rkey — merge commit 603e957cf8ea4ddebf070926ef3996f827f9e7e9, parents 270b47163bde6999dd336ff327965bbc7b5fd031 (base, PR #161's own merge commit) and e4e533b2a4e4d24e00b5b2c2fe74c08623dfe66c (the reviewed head — independently confirmed the merge commit's direct second parent and an ancestor of origin/main). Remote branch-deletion for claude/ws0005-provisional-portfolio-architecture attempted by GitHub at merge time and failed with HTTP 403 at the git-proxy level — non-blocking, same known gap as every prior batch; the branch remains present remotely at the merged head but is fully merged and inactive (independently re-confirmed via git ls-remote, this reconciliation)."
+      - "Post-merge verification (independent, this reconciliation, session distinct from the PR #163 authoring/correction session): origin/main fetched and confirmed at 603e957cf8ea4ddebf070926ef3996f827f9e7e9; merge-commit diff independently re-confirmed as exactly the 5 reviewed files (operations/WORKSTREAMS.yaml plus the four operations/provisional/ artifacts); intelligence_validator.py (17 companies, 2 themes, all valid) and freshness_validator.py (OK) both re-run clean; full pytest suite 1502/1502 passed; git diff --check clean; decision-index reconciliation 35 filed (governance/decisions/*.md less README.md) ↔ 35 indexed (governance/decisions.yaml), no orphans, PI-0025 and OPS-0007 both present in both. Independently confirmed via git diff (270b4716..603e957c): targets.yaml, holdings.yaml, allocate.py, margin_state.py, every Company/Theme Intelligence record, CLAUDE.md, governance/decisions.yaml, and every governance decision file are byte-identical across PR #163 — zero diff. No tier, target, holdings, cluster, allocator, margin, Intelligence-record, or governance-decision change occurred in PR #163. This reconciliation also found this session's local main ref stale (unrelated history, pre-dating a repository history rewrite, zero unique local commits) and safely reset it to origin/main before proceeding — recorded here for transparency, not a repository-state finding."
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -1194,23 +1197,50 @@ workstreams:
       this merge.
 
       **Preliminary portfolio-architecture and target-scenario package
-      (OPS-0007 §4/§5) filed 2026-07-26, independently reviewed by ChatGPT
-      (review 4781581139, CHANGES REQUIRED), one bounded correction pass
-      applied, not yet merged, fresh exact-head re-review still required.**
-      Branch claude/ws0005-provisional-portfolio-architecture, base verified
-      post-merge origin/main 270b47163bde6999dd336ff327965bbc7b5fd031.
-      Classifies the 62 company holdings into ACCEPTED (13, per OPS-0007
-      §4's own "the thirteen existing records": COST/XOM/NVDA/GEV/ISRG/TMO/
-      TSM/ASML/AMAT/KLAC/LRCX/MU/SKHY), PROVISIONAL (4: AVGO/AMD/MRVL/INTC),
-      and NOT INDEPENDENTLY RE-DERIVED (45); the 3 ETFs (SPY/QQQ/GLD) are a
-      separate structural category. Finds the evidence gathered for all 17
-      ACCEPTED/PROVISIONAL holdings consistent with current governed
-      tier/target placement; zero net target-weight change (28.70pp both
-      current and scenario, independently verified via allocate.py's own
-      build_roster()). No targets.yaml, holdings.yaml, allocate.py, or
-      margin_state.py change; no Monday allocation check run; this entry records the filing only and grants no
-      authority until its own PR is independently reviewed, principal-
-      accepted, and merged.
+      (OPS-0007 §4/§5): merged 2026-07-26 — implementation PR #163 merged,
+      independently post-merge verified.** Filed 2026-07-26, independently
+      reviewed by ChatGPT (review 4781581139, CHANGES REQUIRED — three Major,
+      two Minor findings), one bounded correction pass applied, then a fresh
+      exact-head independent re-review (4781685302, anchored to corrected
+      head e4e533b2a4e4d24e00b5b2c2fe74c08623dfe66c, verdict APPROVED WITH
+      NON-BLOCKING FINDINGS, exact-head CI 30200829299 confirmed success).
+      PR #163 was merged (merge commit 603e957cf8ea4ddebf070926ef3996f827f9e7e9,
+      parents 270b47163bde6999dd336ff327965bbc7b5fd031 (base) and
+      e4e533b2a4e4d24e00b5b2c2fe74c08623dfe66c (the reviewed head — confirmed
+      the merge commit's direct second parent), 2026-07-26T12:09:50Z, by
+      Mast3rkey). Classifies the 62 company holdings into ACCEPTED (13, per
+      OPS-0007 §4's own "the thirteen existing records": COST/XOM/NVDA/GEV/
+      ISRG/TMO/TSM/ASML/AMAT/KLAC/LRCX/MU/SKHY), PROVISIONAL (4: AVGO/AMD/
+      MRVL/INTC), and NOT INDEPENDENTLY RE-DERIVED (45); the 3 ETFs (SPY/QQQ/
+      GLD) are a separate structural category. Finds the evidence gathered
+      for all 17 ACCEPTED/PROVISIONAL holdings consistent with current
+      governed tier/target placement; zero net target-weight change (28.70pp
+      both current and scenario, independently verified via allocate.py's own
+      build_roster()). **This factual post-merge synchronization (this
+      reconciliation) independently re-confirmed**: merged scope exactly the
+      5 reviewed files; targets.yaml, holdings.yaml, allocate.py,
+      margin_state.py, every Company/Theme Intelligence record, and every
+      governance decision file byte-identical across the merge (zero diff);
+      intelligence_validator.py (17 companies, 2 themes, all valid) and
+      freshness_validator.py (OK) both clean; full pytest suite 1502/1502
+      passed; git diff --check clean; no Monday allocation check run, no
+      holdings or market-data refresh performed, no target/tier/role/
+      cluster/cap/holding/allocator/margin/Intelligence/governance change
+      occurred in PR #163 or in this reconciliation. **OPS-0007 §8 step H
+      (creation of this preliminary architecture/target-scenario package) is
+      therefore merged and independently post-merge verified — but per this
+      repository's own completion convention (e.g. the WS-0005 Batch 2
+      precedent above: a batch is "merged," not "fully complete," until its
+      own register-synchronization PR itself merges and is verified), step H
+      is recorded here as complete pending only this reconciliation PR's own
+      review, merge, and post-merge verification — not yet as finally and
+      fully closed.** **OPS-0007 §8 step I (the official-and-provisional
+      Monday allocation-check package, §5) remains gated and has not begun,
+      has not been authorized by this entry, and becomes eligible only after
+      this reconciliation PR itself merges and its post-merge verification
+      completes.** No Milestone 4-9 work, no fourth Milestone 3 batch, and no
+      margin/tier/target/holdings/allocator change is authorized or implied
+      by this synchronization.
 
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
@@ -1295,38 +1325,51 @@ workstreams:
       granted by this entry, by PI-0023, by PI-0024, by PI-0025, or by
       anything else.
 
-      **PR #163 (preliminary architecture package) independent ChatGPT
-      review 4781581139: CHANGES REQUIRED** (three Major findings — evidence-
-      status classification, missing per-holding decision trail, incomplete
-      coverage-gap register — plus two Minor findings). One bounded
-      correction pass applied, resolving the classification to OPS-0007
-      §4's own literal 13-ACCEPTED/4-PROVISIONAL structure, expanding the
+      **PR #163 (preliminary architecture package): merged 2026-07-26,
+      independently post-merge verified.** Independent ChatGPT review
+      4781581139 initially returned CHANGES REQUIRED (three Major findings —
+      evidence-status classification, missing per-holding decision trail,
+      incomplete coverage-gap register — plus two Minor findings). One
+      bounded correction pass resolved the classification to OPS-0007 §4's
+      own literal 13-ACCEPTED/4-PROVISIONAL structure, expanded the
       reconciliation to a full 20-field per-holding record for all 17
-      covered holdings, and giving every one of the 45 uncovered companies
-      (plus the 3 ETFs, as a separate section) its own explicit row. A
-      fresh, exact-head independent re-review remains required before
-      principal acceptance or merge.
-
-      **OPS-0007 (capability-based independent-review standard; PROVISIONAL
-      Intelligence category; preliminary-architecture and scenario-only
-      allocation-check authorizations): merged 2026-07-26 — effective.**
-      Governance PR #162, merge commit 80bccbaebca1a7fcfa8069643cdb83355426ddb2.
-      **Preliminary portfolio-architecture and target-scenario package
-      (OPS-0007 §4/§5): filed, not yet merged, not yet authorized to
-      execute.** Branch claude/ws0005-provisional-portfolio-architecture,
-      base verified post-merge origin/main
-      270b47163bde6999dd336ff327965bbc7b5fd031. Blocked on: its own
-      independent, exact-head review by an eligible reviewer under OPS-0007
-      §1; any required bounded correction and exact-head re-review;
-      explicit principal acceptance; and merge. Only after that merge may
-      the later, separate, still-unauthorized scenario-only Monday
-      allocation-check package (OPS-0007 §5) begin — no such check has run
-      or is authorized to run by this filing. A fourth Milestone 3 batch and
+      covered holdings, and gave every one of the 45 uncovered companies
+      (plus the 3 ETFs, as a separate section) its own explicit row. A fresh,
+      exact-head independent re-review (4781685302, anchored to corrected
+      head e4e533b2a4e4d24e00b5b2c2fe74c08623dfe66c) returned APPROVED WITH
+      NON-BLOCKING FINDINGS; exact-head CI run 30200829299 confirmed
+      success. PR #163 was then merged (merge commit
+      603e957cf8ea4ddebf070926ef3996f827f9e7e9, parents
+      270b47163bde6999dd336ff327965bbc7b5fd031 (base) and
+      e4e533b2a4e4d24e00b5b2c2fe74c08623dfe66c (the reviewed head — confirmed
+      the merge commit's direct second parent), 2026-07-26T12:09:50Z, by
+      Mast3rkey). Remote branch-deletion for
+      claude/ws0005-provisional-portfolio-architecture failed with HTTP 403
+      at the git-proxy level — non-blocking, same known gap as every prior
+      batch; the branch remains present remotely but is merged and inactive.
+      This reconciliation independently re-verified: reviewed head an
+      ancestor of origin/main and the merge commit's direct second parent;
+      merged scope exactly the 5 reviewed files; targets.yaml, holdings.yaml,
+      allocate.py, margin_state.py, every Company/Theme Intelligence record,
+      and every governance decision file byte-identical across the merge;
+      both validators clean; full pytest suite 1502/1502; git diff --check
+      clean; decision-index reconciliation 35 filed ↔ 35 indexed, no
+      orphans. **OPS-0007 §8 step H (creation of this package) is merged and
+      independently post-merge verified — recorded as complete pending only
+      this reconciliation PR's own review, merge, and post-merge
+      verification, per this repository's completion convention (same
+      standard applied to the WS-0005 Batch 2 register-sync precedent
+      above).** **OPS-0007 §8 step I (the official-and-provisional Monday
+      allocation-check package, §5) remains gated, has not begun, and becomes
+      eligible only after this reconciliation PR itself merges and its
+      post-merge verification completes** — no such check has run, no
+      holdings or market data has been refreshed, and no such check is
+      authorized to run by this entry. A fourth Milestone 3 batch and
       Milestones 4 through 9 remain unauthorized and blocked, unaffected by
-      this filing.
-    active_branch: claude/ws0005-provisional-portfolio-architecture
-    active_pr: 163
-    last_verified_main_sha: 270b47163bde6999dd336ff327965bbc7b5fd031
+      this reconciliation.
+    active_branch: claude/pr-163-reconciliation-8rqkhx
+    active_pr: null
+    last_verified_main_sha: 603e957cf8ea4ddebf070926ef3996f827f9e7e9
     last_verified_date: "2026-07-26"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
@@ -1364,10 +1407,17 @@ workstreams:
       INTC now independently satisfy in full (review-correction-re-review-
       acceptance-merge-post-merge-verification, all complete), and (c) two
       later, separate, bounded implementation PRs — a preliminary
-      portfolio-architecture package (now filed, this branch, not yet
-      merged) and a still-unauthorized-to-execute scenario-only, cash-only,
-      zero-margin allocation-check package. OPS-0007 does not authorize a
-      fourth Milestone 3 batch or any Milestone 4-9 execution, and does not
-      itself review, correct, mark ready, or merge PR #161.
+      portfolio-architecture package (PR #163, **now merged** — merge commit
+      603e957cf8ea4ddebf070926ef3996f827f9e7e9, independently post-merge
+      verified by this reconciliation, which itself grants no authority
+      beyond recording that completion) and a still-unauthorized-to-execute
+      scenario-only, cash-only, zero-margin allocation-check package (OPS-0007
+      §8 step I — gated on this reconciliation PR's own review, merge, and
+      post-merge verification; not begun, not authorized by this filing).
+      OPS-0007 does not authorize a fourth Milestone 3 batch or any
+      Milestone 4-9 execution, and does not itself review, correct, mark
+      ready, or merge PR #161. This reconciliation itself does not review,
+      correct, mark ready, or merge itself, and does not begin OPS-0007 §5
+      work.
     supersedes: null
     superseded_by: null
