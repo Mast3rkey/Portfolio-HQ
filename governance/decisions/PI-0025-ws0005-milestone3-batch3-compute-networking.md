@@ -12,10 +12,16 @@ supporting_artifact: null
 `PI-0023` authorized WS-0005 Milestone 3's first batch (ASML, AMAT, KLAC, LRCX — the `semis`
 cluster's capital-equipment sub-segment); its implementation (PR #154) is merged and complete.
 `PI-0024` authorized the second batch (MU, SKHY — the cluster's DRAM/NAND memory sub-segment,
-WDC explicitly excluded); its implementation (PR #158) is merged, principal-accepted, and — per
-`operations/WORKSTREAMS.yaml`'s WS-0005 entry at this filing's base commit — awaiting only its own
-post-merge synchronization PR's independent review before being described as "fully complete"
-rather than merely "merged." Neither `PI-0023` nor `PI-0024` authorized a third batch; both
+WDC explicitly excluded); its implementation (PR #158) is merged and principal-accepted. Its own
+post-merge synchronization PR (#159) has itself now been independently reviewed (Fable review
+anchored to exact head `d9a52f1f70f9571d53c9ec474fb79d0ddf74ca81`, verdict "APPROVED FOR READINESS
+AND MERGE," stating explicitly that upon merge Batch 2 "may properly be described as fully complete
+per PI-0024 §I and OPS-0006 §16.1") and merged — the merge commit,
+`7c11d90fc8e68670f814ac35d32de693ab166a21`, is this filing's own verified base. **Batch 2 is
+therefore fully complete, not merely merged.** Milestone 3 overall remains `status: in_progress` —
+completing Batch 2 did not complete Milestone 3 as a whole, and Batch 3 still requires its own
+separate authorization, which this decision provides only upon its own merge. Neither `PI-0023` nor
+`PI-0024` authorized a third batch; both
 decisions' Alternatives Considered sections name AVGO, AMD, MRVL, and INTC among the cluster's
 still-uncovered members, explicitly without selecting or authorizing any of them. WS-0005's
 `next_action` field at this filing's base commit names, without selecting or authorizing,
@@ -45,8 +51,12 @@ either prior batch's decision or audit artifact, per the same reconciliation-gat
   expected authoritative starting state stated for this filing exactly — no divergence to
   investigate.
 - **AVGO** — `holdings.yaml` `shares.AVGO` present (a governed, live-priced holding); `targets.yaml`
-  places it in the `band` tier (0.75% target, cap 1.25x, RSI-gated trim) and in the `semis`
-  correlated-cluster cap (≤25% of book). No Company Intelligence record exists
+  places it in the `T2` tier (1.65% target), subject to the T1/T2 mechanical concentration ceiling
+  (`gates.t1t2_trim_mult`, 1.5×, no RSI gate — not the `band` tier's 1.25× cap or RSI-gated trim,
+  neither of which applies to AVGO), and in the `semis` correlated-cluster cap (≤25% of book). This
+  is the current historical/governed baseline only, preserved per `OPS-0006` §2/§3 for later
+  reconciliation — it is not evidence supporting any future conviction rating, role, or capital
+  priority for AVGO. No Company Intelligence record exists
   (`intelligence/companies/` currently holds AMAT, ASML, COST, GEV, ISRG, KLAC, LRCX, MU, NVDA,
   SKHY, TMO, TSM, XOM — 13 records). No row for AVGO exists in
   `intelligence/freshness_registry.yaml` or `intelligence/freshness_checkpoints.yaml`.
@@ -234,7 +244,10 @@ must explicitly distinguish, across AVGO, AMD, MRVL, and INTC:
 
 **The comparison artifact must remain analytical and advisory only. It must not rank the four
 companies for capital deployment, and must not recommend a buy, trim, target, tier, margin use, or
-portfolio weight of any kind — matching `PI-0023` §C / `PI-0024` §C exactly.**
+portfolio weight of any kind — matching `PI-0024` §C, whose comparison-artifact section states this
+same no-ranking rule; `PI-0023` does not have a directly corresponding §C (its §C is "Zero-based
+discipline"), but carries the same no-ranking prohibition in §F ("no next-best-alternative
+*ranking*") and the same relationship-evidence requirement in §B.12.**
 
 ### D. Evidence and access discipline
 
@@ -377,9 +390,11 @@ the later, separate implementation PR authorized in §A.
   subsequent `PI-####` batch has followed; a review anchored only to an intermediate commit does not
   satisfy this gate.
 - **Any material finding from that review requires a bounded correction and an exact-head
-  re-review** before the PR may be considered ready — mirroring `PI-0023` §E and `PI-0024` §I
-  exactly (at most one bounded correction pass per round, followed by re-verification at the
-  corrected exact head).
+  re-review** before the PR may be considered ready — following `PI-0024` §I, which states this
+  exact mechanism (at most one bounded correction pass per round, followed by re-verification at
+  the corrected exact head). `PI-0023` §E does not itself state this specific correction-pass
+  mechanism; it is cited elsewhere in this decision only for its broader independent-review-and-
+  completion discipline, not for this mechanism.
 - **Principal acceptance is required before merge** — explicit, at the exact head being merged, not
   inferred from silence or from an earlier round's acceptance of a different head.
 - **Post-merge verification and factual `operations/WORKSTREAMS.yaml` synchronization are required**
