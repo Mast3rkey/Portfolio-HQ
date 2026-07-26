@@ -1924,12 +1924,30 @@ workstreams:
       The principal supplied an independent evidence-recovery audit
       performed by GPT-5.6 Thinking (2026-07-26) under `OPS-0008` §2's
       standing pre-authorization; this session independently verified the
-      audit's SHA-256 (`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`)
-      and its own cited manifest checksum before relying on it, then
-      retained the audit verbatim at
+      audit's as-delivered SHA-256
+      (`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`)
+      against both uploaded copies (confirmed byte-identical to each other)
+      and its own cited manifest checksum before relying on it, retained the
+      audit byte-for-byte at
       `governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md`
-      (byte-identical copy, checksum re-verified post-copy) per `OPS-0008`
-      §2's explicit retention convention. Implementation then proceeded on
+      per `OPS-0008` §2's explicit retention convention, then discovered
+      this exact-head CI run (`test`, run `30222778769`) failed
+      (`git diff --check` exit code 2) solely on ~80 Markdown
+      hard-line-break trailing-whitespace lines inside that retained copy —
+      present in the document as delivered, confirmed not introduced by
+      this session. Following the precedent already established for Batch
+      4's own retained audits (`governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md`,
+      `PR166_CORRECTED_HEAD_REVIEW_20260726.md`, both normalized the same
+      way per this register's own prior entry), this session normalized
+      trailing whitespace only in the retained repository copy — confirmed,
+      via a whitespace-collapsed diff against the as-delivered file, that no
+      substantive content changed — yielding a different, "as-retained"
+      SHA-256 (`1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`)
+      that now clears `git diff --check` locally; the corresponding CI run
+      at the amended head remains to be confirmed. This conflict (evidence
+      byte-identity vs. this repository's CI gate) was disclosed explicitly
+      on the PR before being resolved this way, rather than resolved
+      silently. Implementation then proceeded on
       branch `claude/ws0005-batch5-hyperscaler-impl`, base `origin/main`
       `86884377d653a3f5413d9c43b0b20142381f629a`:
       `intelligence/companies/MSFT.yaml`/`MSFT.md`,
@@ -1956,12 +1974,10 @@ workstreams:
       `priority: primary`; focused Intelligence/freshness tests — 678/678
       passed; full pytest suite — 1502/1502 passed (same count as the
       pre-batch baseline, confirming no test file was added or removed);
-      `git diff --check` — clean except expected trailing-whitespace
-      markers inside the byte-identical retained audit copy (Markdown
-      hard-line-break syntax in the original GPT-5.6 Thinking document,
-      preserved deliberately per the "do not edit or paraphrase the
-      retained audit" instruction rather than reformatted, which would
-      have broken its checksum match). **This entry does not itself
+      `git diff --check` — clean locally after the whitespace-only
+      normalization described above; the corresponding CI run at the
+      amended head remains to be confirmed by whoever reviews this PR next.
+      **This entry does not itself
       constitute independent review or principal acceptance** — the
       implementation PR remains in draft state pending exact-head
       independent review under `OPS-0007` §1's capability-based standard

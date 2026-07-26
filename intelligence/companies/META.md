@@ -18,8 +18,16 @@ paused before drafting, produced `BATCH5_SOURCE_READINESS_MANIFEST.md`, and
 the principal supplied an independent evidence-recovery audit performed by
 **GPT-5.6 Thinking** (2026-07-26), retained verbatim at
 `governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md`.
-This session independently verified the retained copy's SHA-256
-(`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`) and the
+This session independently verified the delivered file's SHA-256
+(`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`, the
+"as-delivered" hash) against the two uploaded copies, then normalized
+trailing Markdown hard-line-break whitespace only in the retained repository
+copy (no substantive content changed) to clear this repository's
+`git diff --check` CI gate -- following the same precedent already set by
+Batch 4's own retained audits -- yielding a different, "as-retained" SHA-256
+(`1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`); see
+`MSFT.md`'s own Source-access disclosure for the full verification detail,
+not repeated per company here. This session also independently verified the
 audit's own cited manifest checksum
 (`8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211`) before
 relying on it. **Every fact below was directly inspected by GPT-5.6

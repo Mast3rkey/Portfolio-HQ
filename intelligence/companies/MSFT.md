@@ -24,10 +24,21 @@ stop-before-drafting gate, this session paused before drafting, produced
 independent evidence-recovery audit performed by **GPT-5.6 Thinking**
 (2026-07-26), retained verbatim at
 `governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md`.
-This session independently verified the retained copy's SHA-256
-(`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`) matches
-the value supplied with the audit, and independently verified the audit's own
-cited checksum of `BATCH5_SOURCE_READINESS_MANIFEST.md`
+This session first independently verified the delivered file's SHA-256
+(`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`, the
+"as-delivered" hash) against the two uploaded copies, then, following the
+precedent already established for Batch 4's own retained audits
+(`governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md` and
+`PR166_CORRECTED_HEAD_REVIEW_20260726.md`), normalized trailing Markdown
+hard-line-break whitespace in the retained repository copy only (no
+substantive content changed -- confirmed by a whitespace-collapsed diff
+against the as-delivered file) to clear this repository's `git diff --check`
+CI gate, yielding the retained ("as-retained") SHA-256
+(`1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`) that the
+repository copy now carries -- intentionally different from the as-delivered
+hash because of the whitespace normalization, not a discrepancy. This session
+also independently verified the audit's own cited checksum of
+`BATCH5_SOURCE_READINESS_MANIFEST.md`
 (`8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211`) matches
 this session's own manifest file, before relying on the audit's content.
 **Every fact below not explicitly attributed to this session's own two
