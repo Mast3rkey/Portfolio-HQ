@@ -969,6 +969,49 @@ workstreams:
           principal acceptance, marking ready, merge, and post-merge ancestry/scope/validator/test
           verification. This entry authorizes no fifth Milestone 3 batch, no Milestone 4 work, and no
           advancement of OPS-0007 §8 step I.
+
+          **Bounded evidence-recovery correction applied 2026-07-26 (PR #166 still open, draft,
+          unmerged).** An independent exact-head review of PR #166's first draft head
+          (`246fa1c8f4436608640b4a3dfbac58393e209b65`) found, per `PI-0026` §D, that the implementation
+          continued to completed Company Intelligence records, conviction ratings, a comparison
+          artifact, and a draft PR after determining no primary source could be opened — the correct
+          response under §D is to try reasonable official alternatives, then stop and return for
+          explicit principal direction, not to proceed. **The original WebSearch-only implementation
+          was not itself corrected or reversed by this entry — it is the retained record of what was
+          producible without primary-source access, and the correction below is layered on top of it,
+          not a claim that the original pass never happened.** The principal explicitly authorized
+          using an independently retained **GPT-5.6 Thinking primary-source audit**
+          (`PR166_PRIMARY_SOURCE_AUDIT.md`) as the bounded PI-0026 evidence-recovery method — this is
+          a narrow, PI-0026-scoped authorization, not a change to the authorized company set (still
+          exactly ETN, VRT, PWR), not an authorization of Batch 5 or Milestone 4, and not a tier/
+          target/cluster/cap/allocation/margin/trade authorization of any kind. **Provenance, stated
+          precisely and not blurred:** the implementing Claude session remained access-blocked
+          throughout, including during this correction, and did not itself open or inspect any
+          primary document at any point; GPT-5.6 Thinking, acting as an independent external auditor,
+          separately inspected official ETN/VRT/PWR documents (Eaton's Q1 2026 results release, Boyd
+          Thermal completion announcement, and Mobility Group/Dana announcement; Vertiv's Q1 2026
+          results release, Q1 2026 Form 10-Q, Q4/FY2025 results release, and refinancing/ratings
+          announcement; Quanta's 2025 Form 10-K and Q1 2026 results release) and reported specific
+          corrections, which this session applied without independently re-verifying them beyond what
+          the audit itself states. One bounded correction commit
+          (`fb0b6886291d4b71562b658af9b068b2f54aee6d`) resolved the audit's four Major findings (M1-M4)
+          across `ETN.yaml`/`.md`, `VRT.yaml`/`.md`, `PWR.yaml`/`.md`, and the comparison artifact —
+          see `PR166_PRIMARY_SOURCE_AUDIT.md` for the full finding-by-finding detail and this session's
+          own PR #166 body update for an itemized summary of what changed per company. All three
+          conviction ratings were independently reassessed against the corrected evidence, not
+          mechanically preserved, and each remains Medium. Re-verified after the correction:
+          `intelligence_validator.py` (20 companies, all valid), `freshness_validator.py` (OK), full
+          pytest suite (1502/1502), `git diff --check` (clean), exactly 10 cumulative files changed
+          across all three commits (2242 insertions, 5 deletions), and `targets.yaml`, `holdings.yaml`,
+          `allocate.py`, `margin_state.py`, `GEV.yaml`/`.md`, GEV's freshness rows, and every governance
+          decision file confirmed byte-identical to the pre-batch base. **PR #166 remains open, draft,
+          and unmerged** — the corrected records are not yet accepted, merged, final, or eligible for
+          any PROVISIONAL downstream use per `OPS-0007` §3. A **fresh, exact-head** independent
+          GPT-5.6 Thinking (or other `OPS-0007` §1-eligible reviewer) review of this corrected state,
+          followed by explicit principal acceptance, marking ready, merge, and post-merge verification,
+          all remain required before Batch 4 can be considered complete. This entry authorizes no
+          fifth Milestone 3 batch, no Milestone 4 work, and no advancement of `OPS-0007` §8 step I —
+          unchanged from the prior entry above.
         pr: 166
         status: in_progress
         date: "2026-07-26"
@@ -1342,6 +1385,28 @@ workstreams:
       any repository authority. No fifth Milestone 3 batch, Milestone 4-9
       work, or advancement of `OPS-0007` §8 step I is authorized by PI-0026,
       by PR #166's filing, or by this entry.
+
+      **PR #166 bounded evidence-recovery correction applied 2026-07-26.**
+      An independent exact-head review of PR #166's original draft head
+      found a `PI-0026` §D stop-condition violation (research proceeded to
+      completion after determining no primary source could be opened,
+      rather than stopping for principal direction). The principal
+      explicitly authorized a retained GPT-5.6 Thinking primary-source
+      audit as the bounded PI-0026 evidence-recovery method — narrow in
+      scope: still exactly ETN/VRT/PWR, no Batch 5, no Milestone 4, no
+      tier/target/cluster/allocator/margin authority. One bounded
+      correction commit (`fb0b6886291d4b71562b658af9b068b2f54aee6d`)
+      applied the audit's findings across all three company records and
+      the comparison artifact, with correction provenance stated
+      precisely (this Claude session never opened a primary document,
+      including during the correction; GPT-5.6 Thinking's external audit
+      did). See the `milestone-3-intelligence-completion` gate entry
+      above for the full itemized correction record. PR #166 **remains
+      open, draft, and unmerged**; a fresh exact-head independent review
+      of the corrected state and explicit principal acceptance are both
+      still required before Batch 4 can be considered complete. This
+      correction authorizes no fifth Milestone 3 batch, no Milestone 4
+      work, and no advancement of `OPS-0007` §8 step I.
 
       Separately: targets.yaml carries a stale comment stating BTC was
       "fully sold 2026-07-13," contradicted by holdings.yaml's current
