@@ -2003,11 +2003,29 @@ workstreams:
       correction pass is in progress on this same branch and PR, addressing
       exactly these six findings and no other scope** — no new company, no
       new research claim outside the existing evidence envelope, no
-      tier/target/holdings/cluster/cap/allocator/margin change. The PR
-      remains **draft and unmerged**; no independent corrected-head approval
-      or principal acceptance has occurred yet. Neither this drafting, this
-      correction pass, nor this register entry authorizes a sixth Milestone
-      3 batch, any Milestone 4-9 work, or advancement of `OPS-0007` §8 step
-      I.
+      tier/target/holdings/cluster/cap/allocator/margin change.
+
+      **Bounded correction pass complete and validated.** Substantive
+      correction commit `1d00b905f6fcd2109f9084235b75cfe3450d8f38` addressed
+      I169-1 through I169-6 across the four Company Intelligence records,
+      the comparison artifact, and this register's own prior entry — exactly
+      the 10 files these findings named (the four `MSFT`/`GOOGL`/`META`/
+      `AMZN` `.yaml`/`.md` pairs, the comparison artifact, and this file);
+      no `governance/audits/` file, freshness-registry/checkpoint row, or
+      any other file was touched by this commit. Its exact-head CI
+      confirmed successful: `test`, workflow run `30227027952`, check run
+      `89858796353`, conclusion `success`. Re-run at that commit:
+      `intelligence_validator.py` 24/24 companies + 2/2 themes valid;
+      `freshness_validator.py` OK; decision filed-versus-indexed
+      reconciliation 38 filed = 38 indexed (unchanged); exactly-one-primary-
+      workstream check unchanged (WS-0005 sole `priority: primary`); focused
+      Intelligence/freshness tests 678/678 passed; full pytest suite
+      1502/1502 passed (same count as baseline); `git diff --check` clean.
+      **The PR remains draft and unmerged; no independent corrected-head
+      review, approval, or principal acceptance has occurred yet** — this
+      register entry does not itself constitute review or acceptance.
+      Neither this drafting, this correction pass, nor this register entry
+      authorizes a sixth Milestone 3 batch, any Milestone 4-9 work, or
+      advancement of `OPS-0007` §8 step I.
     supersedes: null
     superseded_by: null
