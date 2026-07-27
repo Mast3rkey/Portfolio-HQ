@@ -29,9 +29,16 @@ Code session's own direct `WebFetch` attempts on 2026-07-26 were blocked
 domain tested; two `microsoft.com/investor` pages were the one exception.
 Per `OPS-0008` Section 2's mandatory stop-before-drafting gate, drafting
 paused and an independent evidence-recovery audit performed by **GPT-5.6
-Thinking** (2026-07-26) was supplied by the principal, retained verbatim at
-`governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md`
-and independently checksum-verified by this session before use. **Every
+Thinking** (2026-07-26) was supplied by the principal. The original
+delivered predecessor audit had SHA-256
+`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`,
+independently checksum-verified by this session before use; GPT-5.6
+Thinking subsequently reissued a canonical CI-clean copy (only Markdown
+trailing whitespace differed from the predecessor artifact -- substantive
+evidence text did not change), and the repository contains that canonical
+inspector reissue at
+`governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md`,
+SHA-256 `1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`. **Every
 fact below is inherited from the four companies' own Company Intelligence
 records**, each of which discloses its own per-source attribution — this
 document adds no new primary research of its own. Consistent with `OPS-0006`
@@ -45,8 +52,15 @@ about shared economic drivers, not measured historical return correlation.
 All four companies share direct, disclosed exposure to the current AI
 capital-expenditure supercycle — each is either building AI infrastructure
 to sell to third parties (MSFT, GOOGL, AMZN) or to power its own products
-(META, and secondarily all four for internal use), and each discloses
-capital-expenditure figures materially larger than a year ago. This is the
+(META, and secondarily all four for internal use), and each has disclosed
+large infrastructure capital-expenditure commitments, though not on a
+uniformly comparable basis: GOOGL and AMZN each disclose an explicit
+quarter-over-quarter-year capex comparison showing roughly a doubling;
+MSFT discloses a FY2025-vs-FY2024 property-and-equipment-additions increase
+(a different period and definition) alongside large separate forward
+guidance; META discloses a large guided full-year 2026 range without a
+directly comparable prior-year actual in this batch's evidence base (see
+Section 3 below for the full figures and caveats). This is the
 batch's own governing rationale, matching `PI-0027`'s selection of these
 four as the companies closing the remaining Company Intelligence coverage
 gap in CLAUDE.md's documented "7-of-9 T1 AI-infrastructure names" finding
@@ -61,7 +75,7 @@ Section 8 below).
 | MSFT | Yes — Azure/Intelligent Cloud | Microsoft Cloud $54.5B (FY2026 Q3), +29% YoY; Azure +40% YoY | Intelligent Cloud FY2025 $44.589B (full-year; Q3-specific segment OI not separately extracted) |
 | GOOGL | Yes — Google Cloud | $20.028B (Q1 2026), +63% YoY | $6.598B |
 | AMZN | Yes — AWS | $37.587B (Q1 2026), +28% YoY | $14.161B |
-| META | **No public-cloud-resale business** | N/A | N/A — AI infrastructure spend is 100% internally directed |
+| META | **No public-cloud-resale business disclosed** | N/A | N/A — no public-cloud-resale business was disclosed in the inspected evidence; the currently evidenced recovery path depends primarily on Meta's own advertising, applications, devices, and platform economics |
 
 **This is the single clearest structural finding in this batch, matching
 `PI-0027`'s own framing.** MSFT, GOOGL, and AMZN can, at least in principle,
@@ -72,13 +86,19 @@ internal product, advertising, and Reality Labs improvements alone. This is
 not a matter of degree — it is a different business model, and this
 document does not flatten the four into a single "Big Tech" category.
 
-Among the three public-cloud sellers, **AWS is the most profitable in
-absolute dollar terms** ($14.161B Q1 2026 segment operating income,
-exceeding Google Cloud's $6.598B), but **Google Cloud is growing fastest**
-(+63% YoY vs. Azure's +40% YoY and AWS's +28% YoY) from a smaller base. No
-company in this batch discloses a directly comparable, apples-to-apples
-cloud segment margin percentage across all three in this record's evidence
-base.
+Among the three public-cloud sellers, **AWS reported more disclosed
+quarterly segment operating income than Google Cloud in the compared
+quarter** ($14.161B Q1 2026 AWS versus $6.598B Q1 2026 Google Cloud). **The
+retained Microsoft evidence does not provide a directly comparable
+quarterly Azure or Microsoft Cloud operating-income figure** (only a
+FY2025 full-year Intelligent Cloud segment operating-income figure and a
+Q3 revenue figure without a separately extracted Q3 segment operating
+income) — so a three-company cloud-profitability ordering cannot be
+established from this batch's evidence base. Separately, **Google Cloud is
+growing fastest** on disclosed revenue (+63% YoY vs. Azure's +40% YoY and
+AWS's +28% YoY) from a smaller base. No company in this batch discloses a
+directly comparable, apples-to-apples cloud segment margin percentage
+across all three in this record's evidence base.
 
 ## 3. AI-capital-expenditure funding source and trajectory versus revenue growth
 
@@ -95,13 +115,25 @@ MSFT's fiscal year ends in June, so "Q3" spans a different calendar window
 than the others' Q1), different definitions (META's includes finance-lease
 principal payments; AMZN's is specifically "cash" capex; MSFT's FY2025
 figure is "property and equipment additions"), and this document does not
-rank the four by capex size. What is consistent across all four: **each
-company's capex growth rate materially exceeds, or is guided to
-materially exceed, its own revenue growth rate for the AI-specific portion
-of spend** — a genuine, shared monetization-lag risk, not a company-specific
-one. GOOGL and AMZN both roughly doubled quarterly capex year over year;
-META's guided range is the widest (a $20B spread), reflecting the greatest
-disclosed planning uncertainty of the four.
+rank the four by capex size. **The retained evidence does not establish a
+uniform "AI-specific portion" capex-growth-versus-revenue-growth
+relationship for all four companies** — no company in this batch isolates
+an AI-specific capex figure or growth rate distinct from total capex, so
+this document does not claim that comparison as proven. What the evidence
+does support, stated separately per company: **GOOGL and AMZN each have an
+explicit Q1 year-over-year capex comparison in the retained evidence**, and
+both roughly doubled quarterly capex year over year; **MSFT's and META's
+year-over-year or forward-guided figures are not established in directly
+comparable form** in this batch's evidence base (MSFT's own FY2025-vs-FY2024
+comparison uses a different period/definition than a quarterly figure, and
+META's evidence gives a current-quarter actual plus a full-year guidance
+range without a comparable prior-year actual). Across all four, the
+better-supported characterization of the shared risk is: **large and
+accelerating, or guided-large, infrastructure capital commitments with
+uncertain monetization timing** — not a proven capex-growth-exceeds-
+revenue-growth relationship. META's guided range is the widest (a $20B
+spread), reflecting the greatest disclosed planning uncertainty of the
+four.
 
 ## 4. Custom-silicon strategy and dependency on external chip suppliers
 
@@ -267,10 +299,15 @@ evidence base shows the most severe currently-disclosed regulatory
 exposure (an adverse ad-tech liability finding with a possible structural
 remedy); META's shows the most concentrated business-model risk (~98%
 single revenue stream, no cloud offset for its AI capex); AMZN's shows the
-most complex AI-lab financial-commitment structure (OpenAI plus Anthropic,
-well over $150B in combined disclosed contract value/investment/financing
-capacity) alongside the most specific disclosed total-debt figure of the
-four; MSFT's evidence base is the most complete (an annual report, an
+most complex AI-lab financial-commitment structure (OpenAI plus Anthropic
+disclosed arrangements spanning a $100B expanded commercial arrangement, a
+$15B equity investment plus a conditional $35B commitment, a $5B Anthropic
+preferred-stock investment, a potential $20B financing facility, and an
+option for up to $5B more equity — listed separately rather than summed,
+since these categories overlap and are not economically interchangeable,
+and no single additive total is established) alongside the most specific
+disclosed total-debt figure of the four; MSFT's evidence base is the most
+complete (an annual report, an
 earnings release this session's own research independently corroborated,
 and a call transcript) and shows the most segment diversification, but
 carries its own concrete tension in the depth and complexity of its OpenAI

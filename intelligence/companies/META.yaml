@@ -11,7 +11,7 @@ risks:
     severity: moderate
     identified: "2026-07-26"
     status: monitoring
-  - risk: "No public-cloud-resale business to offset AI capital expenditure: unlike MSFT, GOOGL, and AMZN in this same batch, Meta discloses no customer-facing cloud business. Meta anticipated approximately $125 billion to $145 billion of 2026 capital expenditures to support AI efforts and the core business (forward-looking guidance) -- entirely a cost the company must recover through its own product, advertising, and Reality Labs improvements, with no disclosed avenue to sell excess AI infrastructure capacity to third parties the way MSFT/GOOGL/AMZN can."
+  - risk: "No public-cloud-resale business was disclosed to offset AI capital expenditure: unlike MSFT, GOOGL, and AMZN in this same batch, the inspected evidence discloses no Meta customer-facing cloud business. Meta anticipated approximately $125 billion to $145 billion of 2026 capital expenditures to support AI efforts and the core business (forward-looking guidance); the currently evidenced recovery path depends primarily on Meta's own advertising, applications, devices, and platform economics -- MSFT/GOOGL/AMZN, by contrast, disclose a customer-facing cloud business that could in principle recover capex from third-party sales."
     severity: moderate
     identified: "2026-07-26"
     status: monitoring
@@ -32,13 +32,13 @@ risks:
     identified: "2026-07-26"
     status: monitoring
 catalysts:
-  - catalyst: "FTC appeal of the November 2025 district-court judgment in Meta's favor in the personal-social-networking monopolization case"
+  - catalyst: "FTC appeal of the November 2025 district-court judgment in Meta's favor in the personal-social-networking monopolization case; no source in this record's evidence base establishes a specific appeal-resolution date, so 2027-06-30 is an internal review checkpoint, not a forecast of event timing"
     expected: "2027-06-30"
     status: pending
-  - catalyst: "FY2026 full-year capital-expenditure realization against the guided $125 billion-$145 billion range"
+  - catalyst: "FY2026 full-year capital-expenditure realization against the guided $125 billion-$145 billion range -- 2026-12-31 is an internal review checkpoint tied to calendar-year-end, not a source-established event date"
     expected: "2026-12-31"
     status: pending
-  - catalyst: "Reality Labs FY2026 operating-loss trajectory relative to management's 'similar to 2025' guidance"
+  - catalyst: "Reality Labs FY2026 operating-loss trajectory relative to management's 'similar to 2025' guidance -- 2026-12-31 is an internal review checkpoint tied to calendar-year-end, not a source-established event date"
     expected: "2026-12-31"
     status: pending
 conviction:
@@ -50,7 +50,7 @@ review:
   next_due: "2026-10-24"
   log:
     - date: "2026-07-26"
-      note: "Record created under governance/decisions/PI-0027-ws0005-milestone3-batch5-hyperscaler-ai-infrastructure.md and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline (no prior Meta Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3 Batch 5, alongside MSFT, GOOGL, and AMZN (EQIX explicitly deferred). This Claude Code session's own direct WebFetch attempts on this date were blocked (HTTP 403) on every Meta domain tested (investor.fb.com, investor.atmeta.com, about.fb.com, about.meta.com) and on SEC EDGAR -- zero primary documents were opened directly by this session for META. Per OPS-0008 Section 2's mandatory stop-before-drafting gate, this session paused, produced BATCH5_SOURCE_READINESS_MANIFEST.md (SHA-256 8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211), and the principal supplied an independent evidence-recovery audit performed by GPT-5.6 Thinking (2026-07-26), retained verbatim at governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md (SHA-256 1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7 after this session's whitespace-only CI-cleanliness normalization of the retained copy -- no substantive content changed, following the precedent set by Batch 4's own retained audits; as-delivered SHA-256 98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909, independently verified by this session against the delivered file before use). Every fact in this record is sourced to that retained audit -- this Claude session did not itself open Meta's FY2025 Form 10-K, Q1 2026 Form 10-Q, or the FTC press release."
+      note: "Record created under governance/decisions/PI-0027-ws0005-milestone3-batch5-hyperscaler-ai-infrastructure.md and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline (no prior Meta Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3 Batch 5, alongside MSFT, GOOGL, and AMZN (EQIX explicitly deferred). This Claude Code session's own direct WebFetch attempts on this date were blocked (HTTP 403) on every Meta domain tested (investor.fb.com, investor.atmeta.com, about.fb.com, about.meta.com) and on SEC EDGAR -- zero primary documents were opened directly by this session for META. Per OPS-0008 Section 2's mandatory stop-before-drafting gate, this session paused, produced BATCH5_SOURCE_READINESS_MANIFEST.md (SHA-256 8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211), and the principal supplied an independent evidence-recovery audit performed by GPT-5.6 Thinking (2026-07-26), The original delivered predecessor audit had SHA-256 98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909. GPT-5.6 Thinking subsequently reissued a canonical CI-clean copy (only Markdown trailing whitespace differed from the predecessor artifact -- substantive evidence text did not change); the repository contains that canonical inspector reissue at governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md, SHA-256 1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7, independently verified by this session against the delivered file before use. Every fact in this record is sourced to that retained audit -- this Claude session did not itself open Meta's FY2025 Form 10-K, Q1 2026 Form 10-Q, or the FTC press release."
 sources:
   - note: "Meta Platforms, Inc., Form 10-K for the year ended 2025-12-31 (accession 0001628280-26-003942, filed/accepted 2026-01-28) -- Business, Risk Factors, Properties, Legal Proceedings, MD&A, Segment profitability, Liquidity and capital resources, and Commitments and contingencies sections. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session (WebFetch confirmed blocked, HTTP 403, on SEC EDGAR). Supports FY2025 Family of Apps/Reality Labs operating income and loss, and the 30-data-center-location disclosure."
     url: "https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/meta-20251231.htm"

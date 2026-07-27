@@ -17,18 +17,19 @@ opened directly by this session for AMZN.** Per `OPS-0008` Section 2's
 mandatory stop-before-drafting gate, this session paused before drafting,
 produced `BATCH5_SOURCE_READINESS_MANIFEST.md`, and the principal supplied
 an independent evidence-recovery audit performed by **GPT-5.6 Thinking**
-(2026-07-26), retained verbatim at
-`governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md`.
-This session independently verified the delivered file's SHA-256
+(2026-07-26). The original delivered predecessor audit had SHA-256
 (`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`, the
-"as-delivered" hash) against the two uploaded copies, then normalized
-trailing Markdown hard-line-break whitespace only in the retained repository
-copy (no substantive content changed) to clear this repository's
-`git diff --check` CI gate -- following the same precedent already set by
-Batch 4's own retained audits -- yielding a different, "as-retained" SHA-256
-(`1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`); see
-`MSFT.md`'s own Source-access disclosure for the full verification detail,
-not repeated per company here. This session also independently verified the
+"as-delivered" hash); this session independently verified that hash against
+the two uploaded copies, then normalized trailing Markdown hard-line-break
+whitespace only in the retained repository copy (no substantive content
+changed) to clear this repository's `git diff --check` CI gate -- following
+the same precedent already set by Batch 4's own retained audits. GPT-5.6
+Thinking subsequently reissued this CI-clean text as the canonical retained
+audit, and the repository contains that **canonical inspector reissue**, SHA-256
+(`1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`); only
+Markdown trailing whitespace differed from the predecessor artifact, and
+substantive evidence text did not change; see `MSFT.md`'s own Source-access
+disclosure for the full verification detail, not repeated per company here. This session also independently verified the
 audit's own cited manifest checksum
 (`8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211`) before
 relying on it. **Every fact below was directly inspected by GPT-5.6
@@ -101,12 +102,22 @@ conditional commitments or unexercised options as realized investment.
 
 **These two relationships give Amazon exposure to more than one frontier
 AI developer**, a structural difference from Microsoft's single deep
-OpenAI relationship (covered in this same batch) -- but the scale and
-complexity of the combined commitments (well over $150 billion in
-disclosed contract value, investment, and financing-facility capacity
-across the two relationships) is itself a concentration of counterparty,
-financing, and delivery (AWS-chip-performance-obligation) risk that this
-record does not treat as pure upside.
+OpenAI relationship (covered in this same batch). The disclosed
+arrangements, listed separately rather than summed into one total (the
+categories overlap and are not economically interchangeable -- contract
+value, equity investments, conditional commitments, financing facilities,
+and options are each a different kind of exposure, and none is realized
+revenue or fully deployed capital): the $100B, eight-year expanded AWS/
+OpenAI commercial arrangement; the $15B OpenAI Series C preferred-stock
+investment already made, plus a conditional $35B commitment; cumulative
+Anthropic investments through Q4 2025 plus a subsequent $5B
+preferred-stock investment; a potential $20B Anthropic financing facility;
+and an option for up to $5B of further Anthropic equity investment. No
+single additive exposure total is established by this record. This
+combination of contractual, investment, and financing exposure is itself a
+concentration of counterparty, financing, and delivery
+(AWS-chip-performance-obligation) risk that this record does not treat as
+pure upside.
 
 ## Regulatory evidence
 
@@ -178,10 +189,13 @@ developers rather than a single-counterparty bet.
 placement (1.65%, half of T1's 3.35%) is itself a data point this record
 preserves as historical policy, not evidence.** AMZN competes for capital
 priority against MSFT and GOOGL, the other two public-cloud sellers in this
-batch -- AWS is the most profitable single cloud segment among the three by
-absolute operating income ($14.161B in Q1 2026, versus GOOGL's $6.598B and
-an unquantified-but-lower implied Azure/Intelligent Cloud contribution),
-but AMZN's consolidated business also carries the lowest-margin retail
+batch -- AWS reported more disclosed quarterly segment operating income
+than Google Cloud in the compared quarter ($14.161B versus GOOGL's $6.598B
+in Q1 2026); the retained Microsoft evidence does not provide a directly
+comparable quarterly Azure or Microsoft Cloud operating-income figure, so a
+three-company cloud-profitability ordering cannot be established from this
+record's evidence base. AMZN's consolidated business also carries the
+lowest-margin retail
 operations of the batch (North America and International operating margins
 of roughly 7.9% and 3.6% respectively, per the segment table above),
 diluting AWS's profitability at the consolidated level in a way MSFT's and
@@ -251,9 +265,15 @@ here.**
 
 ## Review framework
 
-- **Cadence: 90 days** -- matches the existing cadence used for GEV, COST,
-  XOM, Batch 4's ETN/VRT/PWR records, and this batch's MSFT/GOOGL/META
-  records.
+- **Cadence: 90 days** -- justified independently by Amazon's own quarterly
+  (Form 10-Q) reporting rhythm, the source of the AWS-margin, capex, and
+  debt-outstanding figures this record tracks, providing at least one
+  re-inspection point before the FTC marketplace litigation's typical
+  multi-quarter procedural pace would otherwise leave this record stale.
+  This happens to match the cadence used for GEV, COST, XOM, Batch 4's
+  ETN/VRT/PWR records, and this batch's MSFT/GOOGL/META records, but that
+  consistency is incidental to, not the basis for, this record's own
+  cadence choice.
 - **Named review triggers**, drawn selectively from `OPS-0006` Section 12's
   candidate-trigger list:
   - Quarterly earnings, specifically watching AWS margin trends and
@@ -273,8 +293,11 @@ with a disproportionately profitable cloud segment -- AWS generated more
 Q1 2026 operating income than the North America and International retail
 segments combined -- and very strong liquidity. Conviction is held at
 Medium rather than High because of concrete, current tensions: capital
-expenditures nearly doubled year over year and are increasingly funded by
-new debt issuance; Amazon's consolidated profitability is disproportionately
+expenditures nearly doubled year over year in the same period Amazon
+carried a growing balance of unsecured notes outstanding -- the evidence
+establishes both facts but not a causal funding relationship between them,
+which this record treats as an unresolved inference, not an established
+fact; Amazon's consolidated profitability is disproportionately
 concentrated in a single segment; its multiple, very large AI-lab
 commitments carry real counterparty, financing, and chip-performance-delivery
 risk and are not equivalent to realized revenue or deployed capital; and

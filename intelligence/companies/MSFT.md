@@ -22,21 +22,25 @@ reached directly by this session. Per `OPS-0008` Section 2's mandatory
 stop-before-drafting gate, this session paused before drafting, produced
 `BATCH5_SOURCE_READINESS_MANIFEST.md`, and the principal supplied an
 independent evidence-recovery audit performed by **GPT-5.6 Thinking**
-(2026-07-26), retained verbatim at
-`governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md`.
-This session first independently verified the delivered file's SHA-256
-(`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`, the
-"as-delivered" hash) against the two uploaded copies, then, following the
-precedent already established for Batch 4's own retained audits
+(2026-07-26). The original delivered predecessor audit had SHA-256
+`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909` (the
+"as-delivered" hash); this session first independently verified that hash
+against the two uploaded copies, then, following the precedent already
+established for Batch 4's own retained audits
 (`governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md` and
 `PR166_CORRECTED_HEAD_REVIEW_20260726.md`), normalized trailing Markdown
 hard-line-break whitespace in the retained repository copy only (no
 substantive content changed -- confirmed by a whitespace-collapsed diff
 against the as-delivered file) to clear this repository's `git diff --check`
-CI gate, yielding the retained ("as-retained") SHA-256
-(`1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`) that the
-repository copy now carries -- intentionally different from the as-delivered
-hash because of the whitespace normalization, not a discrepancy. This session
+CI gate. GPT-5.6 Thinking subsequently reissued this CI-clean text as the
+canonical retained audit, and the repository contains that **canonical
+inspector reissue** at
+`governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md`,
+SHA-256 (`1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`)
+-- intentionally different from the as-delivered hash because of the
+whitespace normalization, not a discrepancy; only Markdown trailing
+whitespace differed from the predecessor artifact, and substantive evidence
+text did not change. This session
 also independently verified the audit's own cited checksum of
 `BATCH5_SOURCE_READINESS_MANIFEST.md`
 (`8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211`) matches
@@ -189,12 +193,17 @@ structurally secured (if concentrated) AI-model relationship.
 
 **Capital priority is a separate question.** MSFT already carries the
 largest single-name weight of any T1 holding by tier design (3.35%, same as
-every other T1 name), and its exposure overlaps meaningfully with other
-already-covered governed holdings: NVDA/TSM/AMD (GPU/CPU supply for
-Microsoft's own AI infrastructure and third-party accelerator use),
+every other T1 name). As a structural, unconfirmed relationship
+hypothesis relevant to future portfolio mapping -- not an established
+fact -- Microsoft's own AI-infrastructure buildout is plausibly connected to
+other already-covered governed holdings: NVDA/TSM/AMD (general-industry-
+knowledge GPU/CPU supply for AI infrastructure and accelerator use),
 AVGO/MRVL (networking-adjacent infrastructure demand), and GEV (electrical
 power-generation demand growth partly driven by hyperscaler datacenter
-buildout, the same mechanism named in Microsoft's own capex disclosures).
+buildout, a mechanism also named in Microsoft's own capex disclosures). **The
+retained evidence does not quantify or confirm any specific Microsoft
+supplier share or dependence on NVDA, TSM, AMD, AVGO, MRVL, or GEV, and this
+record does not present these as verified bilateral relationships.**
 **What would be lost if MSFT were absent from the book:** the specific
 combination of enterprise-productivity-software economics (Microsoft 365,
 LinkedIn, Dynamics -- a subscription-revenue base none of GOOGL/META/AMZN
@@ -266,10 +275,16 @@ ranking, or further research is authorized by naming them here.**
 
 ## Review framework
 
-- **Cadence: 90 days** -- matches the existing cadence used for GEV, COST,
-  XOM, and Batch 4's ETN/VRT/PWR records, chosen for consistency with this
-  repository's established pattern for large-cap mega-caps under active
-  thesis development.
+- **Cadence: 90 days** -- justified independently by Microsoft's own
+  evidence-refresh triggers, not adopted solely because other records use
+  the same interval: Microsoft reports quarterly (the next FY2026 Q4 release
+  falls within this window), the EU DMA cloud-gatekeeper matter is a live
+  preliminary proceeding that can move on a comparable timeframe, and the
+  OpenAI relationship's standing non-GAAP carve-out is large enough to
+  warrant at least quarterly re-inspection. This happens to match the
+  cadence used for GEV, COST, XOM, and Batch 4's ETN/VRT/PWR records, but
+  that consistency is incidental to, not the basis for, this record's own
+  cadence choice.
 - **Named review triggers**, drawn selectively from `OPS-0006` Section 12's
   candidate-trigger list:
   - Quarterly earnings releases, specifically watching whether Azure

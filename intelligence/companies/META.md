@@ -16,18 +16,20 @@ blocked (HTTP 403) on every Meta domain tested (`investor.fb.com`,
 Per `OPS-0008` Section 2's mandatory stop-before-drafting gate, this session
 paused before drafting, produced `BATCH5_SOURCE_READINESS_MANIFEST.md`, and
 the principal supplied an independent evidence-recovery audit performed by
-**GPT-5.6 Thinking** (2026-07-26), retained verbatim at
-`governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md`.
-This session independently verified the delivered file's SHA-256
-(`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`, the
-"as-delivered" hash) against the two uploaded copies, then normalized
-trailing Markdown hard-line-break whitespace only in the retained repository
-copy (no substantive content changed) to clear this repository's
-`git diff --check` CI gate -- following the same precedent already set by
-Batch 4's own retained audits -- yielding a different, "as-retained" SHA-256
-(`1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`); see
-`MSFT.md`'s own Source-access disclosure for the full verification detail,
-not repeated per company here. This session also independently verified the
+**GPT-5.6 Thinking** (2026-07-26). The original delivered predecessor audit
+had SHA-256 (`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`,
+the "as-delivered" hash); this session independently verified that hash
+against the two uploaded copies, then normalized trailing Markdown
+hard-line-break whitespace only in the retained repository copy (no
+substantive content changed) to clear this repository's `git diff --check`
+CI gate -- following the same precedent already set by Batch 4's own
+retained audits. GPT-5.6 Thinking subsequently reissued this CI-clean text
+as the canonical retained audit, and the repository contains that
+**canonical inspector reissue**, SHA-256
+(`1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`); only
+Markdown trailing whitespace differed from the predecessor artifact, and
+substantive evidence text did not change; see `MSFT.md`'s own Source-access
+disclosure for the full verification detail, not repeated per company here. This session also independently verified the
 audit's own cited manifest checksum
 (`8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211`) before
 relying on it. **Every fact below was directly inspected by GPT-5.6
@@ -55,14 +57,16 @@ operating loss **$19.193 billion**.
 
 ## AI investment and infrastructure
 
-**Meta discloses no customer-facing public-cloud business** -- a structural
-difference from MSFT, GOOGL, and AMZN in this same batch. Meta's AI
-investment, per its own Q1 2026 filing, includes third-party cloud
-capacity, servers, data centers, network infrastructure, generative AI,
-"superintelligence," content recommendation, advertising tools, and product
-development -- entirely directed at Meta's own products and operations,
-with no disclosed avenue to resell excess AI infrastructure capacity to
-third parties.
+**No public-cloud-resale business was disclosed in the inspected
+evidence** -- a structural difference from MSFT, GOOGL, and AMZN in this
+same batch. Meta's AI investment, per its own Q1 2026 filing, includes
+third-party cloud capacity, servers, data centers, network infrastructure,
+generative AI, "superintelligence," content recommendation, advertising
+tools, and product development. The currently evidenced recovery path for
+this spending depends primarily on Meta's own advertising, applications,
+devices, and platform economics; this record does not assert that every
+possible monetization path is internal or permanently closed, only that no
+public-cloud-resale business was disclosed in the sources it relies on.
 
 Meta anticipated approximately **$125 billion to $145 billion** of 2026
 capital expenditures to support AI efforts and the core business --
@@ -166,8 +170,9 @@ META carries the same 3.35% T1 target weight as MSFT and GOOGL, but its
 risk concentration is structurally different: a single revenue stream
 (~98% advertising) with an already-realized platform-dependency impact, no
 public-cloud business to offset its very large AI capex commitment, a
-persistent nine-figure-billion-dollar Reality Labs loss with no disclosed
-profitability path, and this record's own inability to establish its
+persistent multi-billion-dollar Reality Labs operating loss with no
+disclosed profitability path, and this record's own inability to establish
+its
 custom-silicon program's economics. **What would be lost if META were
 absent:** the specific combination of the largest disclosed social/messaging
 platform reach in this batch (3.56 billion average Family daily active
@@ -230,8 +235,15 @@ further research is authorized by naming them here.**
 
 ## Review framework
 
-- **Cadence: 90 days** -- matches the existing cadence used for GEV, COST,
-  XOM, Batch 4's ETN/VRT/PWR records, and this batch's MSFT/GOOGL records.
+- **Cadence: 90 days** -- justified independently by Meta's own quarterly
+  (Form 10-Q) reporting cycle, the primary source of the advertising-growth,
+  Reality Labs-loss-trajectory, and capex-realization evidence this record
+  tracks. The FTC appeal timeline is not itself quarterly, but quarterly
+  re-inspection captures any interim appellate filings Meta discloses in
+  its own subsequent 10-Qs. This happens to match the cadence used for GEV,
+  COST, XOM, Batch 4's ETN/VRT/PWR records, and this batch's MSFT/GOOGL
+  records, but that consistency is incidental to, not the basis for, this
+  record's own cadence choice.
 - **Named review triggers**, drawn selectively from `OPS-0006` Section 12's
   candidate-trigger list:
   - Quarterly earnings, specifically watching advertising growth

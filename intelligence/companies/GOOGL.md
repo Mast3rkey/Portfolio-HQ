@@ -17,18 +17,19 @@ opened directly by this session for GOOGL.** Per `OPS-0008` Section 2's
 mandatory stop-before-drafting gate, this session paused before drafting,
 produced `BATCH5_SOURCE_READINESS_MANIFEST.md`, and the principal supplied
 an independent evidence-recovery audit performed by **GPT-5.6 Thinking**
-(2026-07-26), retained verbatim at
-`governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md`.
-This session independently verified the delivered file's SHA-256
+(2026-07-26). The original delivered predecessor audit had SHA-256
 (`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`, the
-"as-delivered" hash) against the two uploaded copies, then normalized
-trailing Markdown hard-line-break whitespace only in the retained repository
-copy (no substantive content changed) to clear this repository's
-`git diff --check` CI gate -- following the same precedent already set by
-Batch 4's own retained audits -- yielding a different, "as-retained" SHA-256
-(`1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`); see
-`MSFT.md`'s own Source-access disclosure for the full verification detail,
-not repeated per company here. This session also independently verified the
+"as-delivered" hash); this session independently verified that hash against
+the two uploaded copies, then normalized trailing Markdown hard-line-break
+whitespace only in the retained repository copy (no substantive content
+changed) to clear this repository's `git diff --check` CI gate -- following
+the same precedent already set by Batch 4's own retained audits. GPT-5.6
+Thinking subsequently reissued this CI-clean text as the canonical retained
+audit, and the repository contains that **canonical inspector reissue**, SHA-256
+(`1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`); only
+Markdown trailing whitespace differed from the predecessor artifact, and
+substantive evidence text did not change; see `MSFT.md`'s own Source-access
+disclosure for the full verification detail, not repeated per company here. This session also independently verified the
 audit's own cited manifest checksum
 (`8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211`) before
 relying on it. **Every fact below was directly inspected by GPT-5.6
@@ -126,8 +127,11 @@ the single largest, most concrete, evidence-based risk this record
 identifies for GOOGL, distinguishing it from a company whose antitrust
 history is closed or purely historical.
 
-**Debt-funded capex acceleration** -- Q1 capex more than doubled YoY and
-was accompanied by a $31.1B debt issuance in the same quarter.
+**Capex acceleration accompanied by increased debt issuance** -- Q1 capex
+more than doubled YoY in the same quarter Alphabet issued $31.1B of new
+debt; the evidence does not establish the use of debt proceeds or a causal
+funding relationship between the two, which this record treats as an
+unresolved inference, not an established fact.
 
 **TPU counterparty/financing exposure** -- credit backstops tied to
 third-party data-center and power infrastructure are a real, if
@@ -195,10 +199,10 @@ no tier, target, or allocation change.
 - **Liquidity:** $126.840 billion cash/marketable securities at
   2026-03-31 -- the largest liquidity figure disclosed for any of the four
   companies in this batch's evidence base.
-- **Capital intensity:** rapidly rising and now partly debt-funded -- Q1
-  2026 capex $35.7B (more than double Q1 2025's $17.2B), alongside a
-  $31.1B senior-notes issuance in the same quarter.
-  the same quarter.
+- **Capital intensity:** rapidly rising -- Q1 2026 capex $35.7B (more than
+  double Q1 2025's $17.2B), in the same quarter as a $31.1B senior-notes
+  issuance; this record does not assert the notes fund the capex
+  specifically, only that both increased in the same period.
 - **Debt/leverage:** the $31.1B Q1 2026 note issuance is the only debt
   figure this record establishes; Alphabet's total outstanding debt or
   net-debt position was not established by any inspected source.
@@ -235,8 +239,17 @@ naming them here.**
 
 ## Review framework
 
-- **Cadence: 90 days** -- matches the existing cadence used for GEV, COST,
-  XOM, Batch 4's ETN/VRT/PWR records, and this batch's MSFT record.
+- **Cadence: 90 days** -- justified independently by Alphabet's own
+  quarterly (Form 10-Q) reporting rhythm, the source of the Cloud-growth,
+  margin, and backlog-methodology evidence this record tracks, together
+  with two live, fast-moving antitrust matters (ad-tech remedies,
+  search-distribution appeal) that can generate material filings between
+  scheduled reporting dates. A shorter cadence is not clearly justified
+  without a specific near-term court date, and a longer cadence risks
+  missing a quarterly disclosure. This happens to match the cadence used
+  for GEV, COST, XOM, Batch 4's ETN/VRT/PWR records, and this batch's MSFT
+  record, but that consistency is incidental to, not the basis for, this
+  record's own cadence choice.
 - **Named review triggers**, drawn selectively from `OPS-0006` Section 12's
   candidate-trigger list:
   - Ad-tech case remedies proceedings and final judgment.
@@ -259,7 +272,9 @@ because of two concrete, current, unresolved tensions of a different
 character than ordinary business risk: two simultaneous, live U.S.
 antitrust matters, one of which already carries an adverse liability
 finding with a possible structural remedy still to be determined, and a
-capex acceleration that is now partly debt-funded. This rating excludes
+capex acceleration accompanied by a same-quarter increase in debt issuance,
+whose specific use of proceeds is not established by any source this record
+relies on. This rating excludes
 valuation, entry-price, allocation, trading, and margin judgments, and does
 not treat the disclosed cloud backlog as equivalent to realized revenue,
 nor treat either antitrust matter's outcome as resolved.
