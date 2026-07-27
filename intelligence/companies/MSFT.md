@@ -191,9 +191,8 @@ AI monetization signal; balance-sheet strength sufficient to fund a large
 capex buildout without acute financial strain evident in the record; and a
 structurally secured (if concentrated) AI-model relationship.
 
-**Capital priority is a separate question.** MSFT already carries the
-largest single-name weight of any T1 holding by tier design (3.35%, same as
-every other T1 name). As a structural, unconfirmed relationship
+**Capital priority is a separate question.** MSFT carries T1's standard
+3.35% per-name target, tied with the other T1 names. As a structural, unconfirmed relationship
 hypothesis relevant to future portfolio mapping -- not an established
 fact -- Microsoft's own AI-infrastructure buildout is plausibly connected to
 other already-covered governed holdings: NVDA/TSM/AMD (general-industry-

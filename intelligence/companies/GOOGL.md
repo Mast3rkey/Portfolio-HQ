@@ -95,10 +95,12 @@ than double** Q1 2025's $17.2 billion. Alphabet expects a significant
 further 2026 increase in servers, network equipment, and data centers
 (forward-looking). At 2026-03-31, cash, cash equivalents, and marketable
 securities totaled **$126.840 billion**. **Alphabet also issued senior
-unsecured notes for $31.1 billion of net proceeds in Q1 2026** -- a real
-increase in financial leverage accompanying the capex acceleration, not
-solely internally funded growth, and this record does not treat Alphabet's
-strong cash position as evidence that the capex buildout is cost-free.
+unsecured notes for $31.1 billion of net proceeds in Q1 2026** -- new debt
+issuance accompanied the capex acceleration in the same reporting period;
+this record does not establish use of proceeds, a causal funding
+relationship, or a change in total debt, net-debt position, or leverage
+ratio, and does not treat Alphabet's strong cash position as evidence that
+the capex buildout is cost-free.
 
 ## Regulatory and legal evidence
 
@@ -197,8 +199,9 @@ no tier, target, or allocation change.
 ## Margin-relevant evidence (factual/advisory only -- no leverage recommendation)
 
 - **Liquidity:** $126.840 billion cash/marketable securities at
-  2026-03-31 -- the largest liquidity figure disclosed for any of the four
-  companies in this batch's evidence base.
+  2026-03-31 (figures across this batch's four companies are reported at
+  differing dates and instrument definitions and are not presented here as
+  a cross-company ranking).
 - **Capital intensity:** rapidly rising -- Q1 2026 capex $35.7B (more than
   double Q1 2025's $17.2B), in the same quarter as a $31.1B senior-notes
   issuance; this record does not assert the notes fund the capex

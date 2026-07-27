@@ -68,7 +68,7 @@ gap in CLAUDE.md's documented "7-of-9 T1 AI-infrastructure names" finding
 batch, completing that finding's own Company Intelligence coverage — see
 Section 8 below).
 
-## 2. Public-cloud sellers versus AI-capex-only buyer — a real structural split, not a labeling exercise
+## 2. Public-cloud sellers versus no disclosed cloud-resale business — a real structural split, not a labeling exercise
 
 | Company | Public-cloud business? | Q1 2026 (or FY2026 Q3 for MSFT) cloud/relevant segment revenue | Segment operating income |
 |---|---|---|---|
@@ -78,13 +78,18 @@ Section 8 below).
 | META | **No public-cloud-resale business disclosed** | N/A | N/A — no public-cloud-resale business was disclosed in the inspected evidence; the currently evidenced recovery path depends primarily on Meta's own advertising, applications, devices, and platform economics |
 
 **This is the single clearest structural finding in this batch, matching
-`PI-0027`'s own framing.** MSFT, GOOGL, and AMZN can, at least in principle,
-recover their AI-infrastructure capital expenditure by selling compute
-capacity to third-party customers; META cannot. META's entire AI capex
-guide ($125B–$145B for 2026, per META.yaml) must be recovered through
-internal product, advertising, and Reality Labs improvements alone. This is
-not a matter of degree — it is a different business model, and this
-document does not flatten the four into a single "Big Tech" category.
+`PI-0027`'s own framing.** MSFT, GOOGL, and AMZN disclose customer-facing
+cloud businesses that can, at least in principle, recover their
+AI-infrastructure capital expenditure by selling compute capacity to
+third-party customers; no public-cloud-resale business was disclosed in
+the inspected evidence for META. The currently evidenced recovery path for
+META's entire AI capex guide ($125B–$145B for 2026, per META.yaml)
+depends primarily on Meta's own advertising, applications, devices, and
+platform economics; this document does not claim that every possible
+Meta external-monetization path is permanently closed, only that none was
+disclosed in the sources it relies on. On the facts disclosed, this is not
+a matter of degree — it is a different business model, and this document
+does not flatten the four into a single "Big Tech" category.
 
 Among the three public-cloud sellers, **AWS reported more disclosed
 quarterly segment operating income than Google Cloud in the compared
@@ -102,12 +107,16 @@ across all three in this record's evidence base.
 
 ## 3. AI-capital-expenditure funding source and trajectory versus revenue growth
 
-| Company | Most recent disclosed capex | YoY change | Guided/forward figure |
+| Company | Most recent disclosed capex | YoY change / composition note | Guided/forward figure |
 |---|---|---|---|
-| MSFT | $31.9B (FY2026 Q3) | management stated ~2/3 short-lived (GPUs/CPUs) | >$40B guided Q4 FY2026; ~$190B guided calendar 2026 |
+| MSFT | $31.9B (FY2026 Q3) | not established in comparable quarterly form (see composition note below) | >$40B guided Q4 FY2026; ~$190B guided calendar 2026 |
 | GOOGL | $35.7B (Q1 2026) | up from $17.2B (Q1 2025) — more than doubled | significant further 2026 increase expected (not quantified) |
 | META | $19.84B (Q1 2026, incl. finance-lease principal) | — | $125B–$145B guided full-year 2026 |
 | AMZN | $43.2B (Q1 2026 cash capex) | up from $24.3B (Q1 2025) — nearly doubled | technology/infrastructure spend expected to keep rising (not quantified) |
+
+*Composition note on MSFT: management stated approximately two-thirds of
+this capex is short-lived (GPUs/CPUs), per the FY2026 Q3 earnings call —
+an asset-mix disclosure, not a year-over-year change figure.*
 
 **These figures are not directly comparable without normalization** — they
 cover different periods (a fiscal quarter for MSFT/GOOGL/META/AMZN, but
@@ -204,9 +213,10 @@ magnitude of any eventual remedy for any of the four matters.**
 **Among the batch's four companies:** MSFT, GOOGL, and AMZN duplicate each
 other to a real degree as public-cloud sellers competing for the same
 enterprise AI-infrastructure spending — this is the batch's clearest
-overlap. META is the outlier, holding no public-cloud business and
-therefore not directly competing with the other three for cloud-infrastructure
-customers, even though all four compete for the same underlying AI-capex
+overlap. META is the outlier: no public-cloud-resale business was
+disclosed in the inspected evidence, so on the facts gathered it does not
+directly compete with the other three for cloud-infrastructure customers,
+even though all four compete for the same underlying AI-capex
 supercycle's benefits in different ways (selling capacity vs. using it
 internally). Within the three cloud sellers, AWS's scale/profitability, Azure's
 enterprise-software-bundled distribution (via Microsoft 365/Dynamics), and
@@ -290,15 +300,17 @@ AI-infrastructure-demand economics the other two also capture, even though
 each company's non-cloud business (MSFT's enterprise software, AMZN's
 retail/logistics, GOOGL's advertising) remains genuinely distinct. **META
 is the least redundant with the other three** on a business-model basis
-(no public cloud, no comparable retail/logistics or enterprise-software
-franchise), even though it shares the same underlying AI-capex-cycle risk.
+(no public-cloud-resale business disclosed in the inspected evidence, no
+comparable retail/logistics or enterprise-software franchise), even
+though it shares the same underlying AI-capex-cycle risk.
 
 **Why the next investment dollar might, or might not, favor one of the
 four over another or over an already-covered alternative:** GOOGL's
 evidence base shows the most severe currently-disclosed regulatory
 exposure (an adverse ad-tech liability finding with a possible structural
 remedy); META's shows the most concentrated business-model risk (~98%
-single revenue stream, no cloud offset for its AI capex); AMZN's shows the
+single revenue stream, no public-cloud-resale business disclosed to
+offset its AI capex); AMZN's shows the
 most complex AI-lab financial-commitment structure (OpenAI plus Anthropic
 disclosed arrangements spanning a $100B expanded commercial arrangement, a
 $15B equity investment plus a conditional $35B commitment, a $5B Anthropic
@@ -325,10 +337,15 @@ research for the entire remaining CLAUDE.md-documented 7-name AI-infrastructure
 concentration group (Section 8) and add the fourth major hyperscaler (AMZN)
 already cited, unverified, across three prior batches' own records. The
 batch's clearest structural finding is the public-cloud-seller /
-AI-capex-only-buyer split (Section 2): MSFT, GOOGL, and AMZN can in
-principle recover AI-infrastructure capex by selling capacity to third
-parties, while META cannot and must recover its entire, very large capex
-guide through internal product and advertising improvements alone. Each
+no-disclosed-cloud-resale split (Section 2): MSFT, GOOGL, and AMZN
+disclose customer-facing cloud businesses that can in principle recover
+AI-infrastructure capex by selling capacity to third parties; no
+public-cloud-resale business was disclosed in the inspected evidence for
+META, whose currently evidenced recovery path for its entire, very large
+capex guide depends on internal product and advertising improvements.
+This document does not claim that every possible Meta external-monetization
+path is permanently closed, only that none was disclosed in the sources it
+relies on. Each
 company carries its own, company-specific set of disclosed risks and
 evidence gaps, documented individually in `MSFT.yaml`/`.md`,
 `GOOGL.yaml`/`.md`, `META.yaml`/`.md`, and `AMZN.yaml`/`.md`. **This

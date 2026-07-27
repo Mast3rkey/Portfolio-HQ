@@ -76,10 +76,11 @@ machine-learning initiatives (**forward-looking management expectation**).
 At 2026-03-31, total cash, cash equivalents, and marketable securities
 were **$143.089 billion**. At the same date, Amazon reported **$121.8
 billion** of unsecured senior notes outstanding, including major
-U.S.-dollar and euro issuances in **March 2026** -- a real, disclosed
-increase in financial leverage accompanying the capex acceleration. **AWS
-growth is not capital-light** on this evidence, notwithstanding its high
-segment margin.
+U.S.-dollar and euro issuances in **March 2026** -- new debt issuance
+accompanying the capex acceleration in the same period; this record does
+not establish use of proceeds, a causal funding relationship, or a change
+in total debt, net-debt position, or leverage ratio. **AWS growth is not
+capital-light** on this evidence, notwithstanding its high segment margin.
 
 ## AI-lab commitments (OpenAI and Anthropic)
 
@@ -217,8 +218,9 @@ uncertainty and recommends no tier, target, or allocation change.
 ## Margin-relevant evidence (factual/advisory only -- no leverage recommendation)
 
 - **Liquidity:** $143.089 billion cash/marketable securities at
-  2026-03-31 -- the second-largest liquidity figure among this batch's
-  four companies.
+  2026-03-31 (figures across this batch's four companies are reported at
+  differing dates and instrument definitions and are not presented here as
+  a cross-company ranking).
 - **Capital intensity:** nearly doubled YoY -- Q1 2026 cash capex $43.2B
   vs. $24.3B Q1 2025, plus $29.567B of technology/infrastructure expense
   (+29% YoY).

@@ -2027,5 +2027,22 @@ workstreams:
       Neither this drafting, this correction pass, nor this register entry
       authorizes a sixth Milestone 3 batch, any Milestone 4-9 work, or
       advancement of `OPS-0007` §8 step I.
+
+      **Second independent corrected-head delta review received: CHANGES
+      REQUIRED.** GitHub review `4782958257` (state `COMMENTED`, relayed
+      from GPT-5.6 Thinking under `OPS-0007` §1's capability-based
+      standard) found the first correction pass adequately resolved
+      I169-1, I169-2, I169-3, I169-5, and I169-6, but identified three
+      narrow factual corrections still required: Meta monetization
+      wording in places still reading as categorical rather than bounded
+      to the inspected evidence (D169-1); GOOGL/AMZN debt-issuance
+      passages still asserting a financial-leverage increase beyond what
+      the retained evidence establishes (D169-2); and a factually reversed
+      GOOGL/AMZN liquidity ordering claim (D169-3), plus two non-blocking
+      wording cleanups (MSFT's T1-weight phrasing; the comparison
+      artifact's capex table). **A second bounded correction pass
+      addressing exactly these findings is in progress on this same
+      branch and PR, no other scope.** Corrected-head approval and
+      principal acceptance remain pending.
     supersedes: null
     superseded_by: null

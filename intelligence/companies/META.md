@@ -129,12 +129,16 @@ risk.
 impact (Apple) disclosed by the company itself, not merely a hypothetical
 risk.
 
-**No public-cloud offset for AI capex** -- Meta's very large guided 2026
-capex ($125B-$145B) must be recovered entirely through Meta's own product,
-advertising, and Reality Labs improvements; MSFT, GOOGL, and AMZN can, at
-least in principle, monetize excess AI infrastructure capacity through
-their public-cloud businesses, an option this record found no evidence
-Meta has.
+**No public-cloud-resale business disclosed to offset AI capex** -- no
+public-cloud-resale business was disclosed in the inspected evidence for
+Meta; the currently evidenced recovery path for its very large guided 2026
+capex ($125B-$145B) depends primarily on Meta's own advertising,
+applications, devices, and platform economics. MSFT, GOOGL, and AMZN
+disclose customer-facing cloud businesses that can, at least in principle,
+monetize excess AI infrastructure capacity through third-party sales. This
+record does not claim that every possible Meta external-monetization path
+is permanently closed, only that none was disclosed in the sources it
+relies on.
 
 **Reality Labs persistent, large, guided-to-continue loss** -- see above.
 
@@ -169,31 +173,33 @@ record.
 META carries the same 3.35% T1 target weight as MSFT and GOOGL, but its
 risk concentration is structurally different: a single revenue stream
 (~98% advertising) with an already-realized platform-dependency impact, no
-public-cloud business to offset its very large AI capex commitment, a
-persistent multi-billion-dollar Reality Labs operating loss with no
-disclosed profitability path, and this record's own inability to establish
-its
-custom-silicon program's economics. **What would be lost if META were
-absent:** the specific combination of the largest disclosed social/messaging
-platform reach in this batch (3.56 billion average Family daily active
-people) with an advertising-technology franchise that does not overlap in
-kind with MSFT's/GOOGL's/AMZN's public-cloud businesses -- this is
-genuinely distinct exposure, not duplicative of the other three. **Why the
-next dollar might not favor META specifically:** unlike MSFT, GOOGL, and
-AMZN, META has no disclosed avenue to monetize its AI infrastructure
-buildout beyond its own advertising and product improvements, meaning its
+public-cloud-resale business disclosed in the inspected evidence to offset
+its very large AI capex commitment, a persistent multi-billion-dollar
+Reality Labs operating loss with no disclosed profitability path, and this
+record's own inability to establish its custom-silicon program's
+economics. **What would be lost if META were absent:** the specific
+combination of the largest disclosed social/messaging platform reach in
+this batch (3.56 billion average Family daily active people) with an
+advertising-technology franchise that does not overlap in kind with
+MSFT's/GOOGL's/AMZN's public-cloud businesses -- this is genuinely
+distinct exposure, not duplicative of the other three. **Why the next
+dollar might not favor META specifically:** unlike MSFT, GOOGL, and AMZN,
+no public-cloud-resale business was disclosed in the inspected evidence
+for META beyond its own advertising and product improvements, meaning its
 very large capex commitment carries more concentrated execution risk with
 fewer disclosed fallback monetization paths if internal AI-driven ad
 improvements underperform expectations -- a real, evidence-based
-distinction from its three cloud-selling peers in this batch, not a
-prediction of outcome. This record preserves that uncertainty and
+distinction from its three cloud-selling peers in this batch, not a claim
+that every possible external-monetization path is permanently closed, and
+not a prediction of outcome. This record preserves that uncertainty and
 recommends no tier, target, or allocation change.
 
 ## Margin-relevant evidence (factual/advisory only -- no leverage recommendation)
 
-- **Liquidity:** $81.18 billion cash/marketable securities at 2026-03-31 --
-  the smallest liquidity figure disclosed among this batch's four
-  companies, though still very large in absolute terms.
+- **Liquidity:** $81.18 billion cash/marketable securities at 2026-03-31,
+  still very large in absolute terms (figures across this batch's four
+  companies are reported at differing dates and instrument definitions and
+  are not presented here as a cross-company ranking).
 - **Capital intensity:** Q1 2026 capex (including finance-lease principal)
   $19.84B, with a guided 2026 full-year range of $125B-$145B -- the
   broadest guided range of the four companies in this batch, reflecting
@@ -204,10 +210,11 @@ recommends no tier, target, or allocation change.
   record relies on -- a disclosed evidence gap.
 - **Correlated-loss relevance:** META's AI-capex trajectory is one of the
   shared mechanisms named in the Batch 5 comparison artifact as a common
-  risk across MSFT/GOOGL/META/AMZN; unlike the other three, META's capex
-  has no public-cloud revenue to offset it if the AI-capex cycle slows,
-  which this record treats as a materially different correlated-loss
-  exposure, not merely the same risk restated.
+  risk across MSFT/GOOGL/META/AMZN; unlike the other three, no
+  public-cloud-resale business was disclosed in the inspected evidence to
+  offset META's capex if the AI-capex cycle slows, which this record
+  treats as a materially different correlated-loss exposure, not merely
+  the same risk restated.
 
 ## Thesis-break conditions (this record's own synthesis, labeled as inference)
 
@@ -264,9 +271,12 @@ external financing evident in this record. Conviction is held at Medium,
 not High, because Meta carries the most concentrated risk profile of the
 four companies in this batch on the evidence available: advertising is
 roughly 98% of disclosed revenue with an already-realized negative impact
-from Apple's platform-policy changes; Meta has no public-cloud-resale
-business to offset its very large guided AI capex, unlike MSFT, GOOGL, and
-AMZN; Reality Labs is a large, persistent loss guided to continue at a
+from Apple's platform-policy changes; no public-cloud-resale business was
+disclosed in the inspected evidence to offset Meta's very large guided AI
+capex, while MSFT, GOOGL, and AMZN in this same batch disclose
+customer-facing cloud businesses that can in principle provide a
+third-party monetization channel; Reality Labs is a large, persistent
+loss guided to continue at a
 similar scale in 2026; and this record's evidence base could not establish
 Meta's own custom-silicon program's scale or economics. This rating
 excludes valuation, entry-price, allocation, trading, and margin
