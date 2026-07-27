@@ -1202,9 +1202,58 @@ workstreams:
           Company Intelligence record, comparison artifact, or freshness row exists for MSFT, GOOGL,
           META, or AMZN, and none is authorized for EQIX. This entry authorizes no sixth Milestone 3
           batch, no Milestone 4 work, and no advancement of `OPS-0007` §8 step I.
-        pr: 166
+
+          **Milestone 3, Batch 5 (MSFT, GOOGL, META, AMZN) complete — independently re-verified this
+          session (`PI-0028`'s own preflight, per `OPS-0008` §4(a)'s read-only post-merge
+          convention).** `OPS-0008`/`PI-0027` merged via PR #168 (merge commit
+          `86884377d653a3f5413d9c43b0b20142381f629a`); implementation PR #169 merged
+          `2026-07-27T01:30:10Z` (merge commit `d16ec07f3c003f7e0ec218773388344a22a18977`, parents
+          `86884377d653a3f5413d9c43b0b20142381f629a` (base) and
+          `a34264eeb1f3894778af03f8219c34aadd98e60c` (the exact head GitHub review `4783082859`,
+          GPT-5.6 Thinking, `APPROVED FOR READINESS AND MERGE`, reviewed and the principal merged) —
+          confirmed independently via `git log`, no unreviewed commit between reviewed head and
+          merge. Post-merge re-verification, this session: `intelligence_validator.py` — 24
+          companies, all valid; `freshness_validator.py` — OK; decision filed-vs-indexed
+          reconciliation — 38 filed = 38 indexed; exactly-one-primary-workstream check — `WS-0005`
+          sole `priority: primary`; full pytest suite — 1502/1502 passed; `git diff --check` —
+          clean; `targets.yaml`/`holdings.yaml`/`allocate.py`/`margin_state.py` confirmed
+          unmodified. **All five `OPS-0007` §3 PROVISIONAL elements are satisfied for MSFT, GOOGL,
+          META, and AMZN** (eligible review with every material finding I169-1..6/D169-1..3/
+          F169-1..3 resolved across four review rounds, principal acceptance and merge at the
+          approved head, and this session's independent post-merge verification) — **MSFT, GOOGL,
+          META, and AMZN are PROVISIONAL under `OPS-0007` §3, effective as of this reconciliation.**
+          Milestone 3 remains `in_progress` in aggregate — five of six proposed batches complete;
+          the milestone as a whole is not.
+
+          **Batch 6 authorized (`PI-0028`, this entry) — exactly V, MA, and JPM ("Financial
+          Infrastructure").** Evidence development only; this filing authorizes the
+          governance-authorization package alone (this `operations/WORKSTREAMS.yaml` update,
+          `governance/decisions/PI-0028-ws0005-milestone3-batch6-financial-infrastructure.md`,
+          `governance/decisions.yaml`, the applicable `CLAUDE.md` entry) — no company research, no
+          Company Intelligence record, no comparison artifact, and no freshness row for V, MA, or
+          JPM is created or authorized by this filing. Confirmed live at this filing's preflight:
+          `intelligence/companies/` holds no `V`/`MA`/`JPM` record (24 files, none of the three);
+          `intelligence/freshness_registry.yaml`/`freshness_checkpoints.yaml` carry no row for any
+          of the three; `targets.yaml` confirms V is T1 (3.35%), MA is T2 (1.65%), JPM is band
+          (0.75%, 1.25x cap), none a member of any `caps.clusters` cluster; zero open pull requests
+          exist and no branch or PR references Batch 6, V, MA, JPM, Milestone 4, or `OPS-0007` §8
+          step I; `governance/decisions.yaml` carried exactly 38 entries before this filing,
+          highest `PI-####` `PI-0027` — confirming `PI-0028` as the next unused number. V and MA are
+          grouped as a payment-network economics pair (per the retained
+          `operations/provisional/WS0005_COVERAGE_GAP_REGISTER_20260726.md`'s own materiality
+          language, quoted in `PI-0028`); JPM is included as a structurally distinct
+          financial-intermediation role, not a second network name — three names total, smaller
+          than `OPS-0008` §1's 5-6 default, justified in `PI-0028` on coherence grounds (no further
+          genuinely coherent financial-sector candidate remains uncovered in the roster). EQIX
+          remains deferred and unauthorized. This entry authorizes no seventh Milestone 3 batch, no
+          Milestone 4 work, and no advancement of `OPS-0007` §8 step I. `PI-0028`'s own governance
+          PR is not yet merged and not yet effective — nothing in its §A is authorized to begin
+          until it merges. **Next action: independent exact-head review of this governance PR, per
+          `OPS-0007` §1 — not implementation work, not a seventh batch, not Milestone 4, not
+          `OPS-0007` §8 step I.**
+        pr: 169
         status: in_progress
-        date: "2026-07-26"
+        date: "2026-07-27"
       - gate: milestone-4-portfolio-relationship-mapping
         description: >
           Map economic systems, demand drivers, customer/supplier
