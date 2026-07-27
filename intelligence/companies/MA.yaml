@@ -1,0 +1,58 @@
+sector: Financials
+industry: Transaction and Payment Processing Services
+portfolio_role_ref: T2
+competitive_advantages:
+  - "Global payment-network business operating the same core toll-road mechanism as Visa (covered in this same batch): Mastercard classifies its net revenue into two categories -- payment network and value-added services and solutions. Per Mastercard's Form 10-K for fiscal year ended 2025-12-31 (SEC accession 0001141391-26-000013), directly inspected by GPT-5.6 Thinking's 2026-07-27 evidence-recovery audit, not by this Claude session (see Source-access disclosure in MA.md)."
+  - "FY2025 payment-network net revenue $19.476B and value-added-services-and-solutions net revenue $13.315B -- a meaningfully larger value-added-services share of total revenue than this batch's evidence establishes for Visa (Visa's value-added-services revenue of $10.9B FY2025 sits within a larger $40.0B net-revenue base). Value-added services span security, digital/authentication solutions, consumer acquisition/engagement, business/market insights, processing and gateway services, account-based payments, real-time payments, and open finance -- a broader disclosed product set than this record independently verifies for Visa."
+  - "Q1 2026 (furnished 2026-04-30): total net revenue $8.398B, up 16% YoY; payment-network revenue +12%; value-added-services-and-solutions revenue +22% (faster-growing than the core network segment). Local-currency GDV grew 7% to $2.7 trillion; cross-border volume +13%; switched transactions +9%."
+  - "Payment-network revenue is generated primarily from fees based on gross dollar volume (GDV) and from switching and network services -- the same fundamental network-toll-road mechanism Visa uses, meaning Mastercard's competitive advantages and risks in this segment largely mirror Visa's rather than representing a structurally distinct business (see BATCH6_FINANCIAL_INFRASTRUCTURE_COMPARISON.md for the direct comparison required by PI-0028 Section B.19)."
+risks:
+  - risk: "Q1 2026 payment-network rebates and incentives rose 23% (19% currency-neutral) -- faster than payment-network revenue growth (12%), a disclosed signal that customer rebates/incentives (Mastercard's equivalent of Visa's client incentives) are growing faster than the segment revenue they are netted against, a real competitive-cost trend, not a rounding item. Per Mastercard's Q1 2026 earnings release and 10-Q, directly inspected by GPT-5.6 Thinking's audit."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Mastercard's 10-Q for the quarter ended 2026-03-31 states plainly that interchange fees and acceptance practices face regulatory and legal challenges in multiple jurisdictions and may materially affect growth and results. Current disclosed matters include U.S. interchange opt-outs, U.K. and pan-European merchant claims, Portuguese and Dutch proceedings, and other regulatory matters -- a broader, more jurisdictionally dispersed litigation/regulatory footprint than this record establishes for Visa (whose disclosed matters are concentrated in the U.S. DOJ debit-network case and U.S. interchange litigation)."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Shared network-economics risk with Visa: Mastercard's core payment-network revenue depends on the same fee-based, GDV-and-switching mechanism as Visa's service/data-processing revenue -- any regulatory, litigation, or alternative-payment-rail development that pressures network economics broadly (rather than one company specifically) is likely to affect Mastercard and Visa together, a duplicated-exposure consideration addressed directly in the comparison artifact."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Evidence-completeness gap: this record's balance-sheet, leverage, cash-flow, and capital-allocation (buybacks/dividends) detail is not established from the sources GPT-5.6 Thinking's audit directly inspected for Mastercard, matching the same disclosed gap for Visa in this batch."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+catalysts:
+  - catalyst: "Mastercard Q2 2026 earnings release -- confirmed scheduled for 2026-07-30 per Mastercard's own investor-relations notice (2026-07-08), directly inspected by GPT-5.6 Thinking's audit. As of this record's evidence cutoff, these results had not yet been furnished; this record does not present them as known and must be refreshed once they are released."
+    expected: "2026-07-30"
+    status: pending
+  - catalyst: "Further developments in Mastercard's disclosed multi-jurisdiction interchange/regulatory matters (U.S. interchange opt-outs, U.K./pan-European merchant claims, Portuguese and Dutch proceedings) -- no source inspected by this record establishes a specific next hearing or ruling date for any single matter, so 2026-10-27 is an internal review checkpoint (tied to this record's 90-day cadence), not a forecast of when the next procedural event will occur."
+    expected: "2026-10-27"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "Mastercard shows the same durable network-toll-road economics as Visa (fee-based revenue tied to GDV and switched transactions), a larger disclosed value-added-services revenue share than this record establishes for Visa, and continued double-digit revenue growth into Q1 2026, with value-added services growing faster than the core network segment. Conviction is held at Medium, one notch below Visa's High in this same batch, for two concrete, current, evidence-based reasons rather than a generic 'second name in the pair' discount: rebates and incentives are growing faster than payment-network revenue in the most recently reported quarter (a real margin-pressure signal this record can point to directly), and Mastercard's disclosed regulatory/litigation footprint is broader and more jurisdictionally dispersed (U.S., U.K., pan-European, Portuguese, Dutch matters) than this record establishes for Visa's more concentrated U.S.-centered exposure. This is a distinction this record can evidence, not an assumption that Visa is categorically superior -- see BATCH6_FINANCIAL_INFRASTRUCTURE_COMPARISON.md for the full direct comparison. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-27"
+  next_due: "2026-10-25"
+  log:
+    - date: "2026-07-27"
+      note: "Record created under governance/decisions/PI-0028-ws0005-milestone3-batch6-financial-infrastructure.md and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline (no prior Mastercard Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3 Batch 6, alongside V and JPM. This Claude Code session's own WebFetch attempts on 2026-07-27 were blocked (HTTP 403) on SEC EDGAR, Mastercard investor-relations domains, and a neutral non-target control domain (example.com) -- a session-wide network-policy denial, matching V and JPM's own disclosed blocks in this same batch. Per OPS-0008 Section 2's mandatory stop-before-drafting gate, this session paused before drafting, produced BATCH6_SOURCE_READINESS_MANIFEST.md, and the principal supplied an independent primary-source evidence-recovery audit performed by GPT-5.6 Thinking (2026-07-27), retained verbatim at governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md (SHA-256 c248f74f07708c9c61a57169e7a7b234c0d6238b484ffa92c52dcb1f295bb73a, independently verified by this session before use). Every fact in this record is sourced to that retained audit's directly-inspected primary documents (MA-1 through MA-4 in the audit's own source-access manifest), not to this Claude session's own document inspection -- see Source-access disclosure in MA.md."
+sources:
+  - note: "Mastercard Incorporated, Form 10-K for the fiscal year ended 2025-12-31 (SEC accession 0001141391-26-000013). Directly inspected by GPT-5.6 Thinking's 2026-07-27 evidence-recovery audit, not opened directly by this Claude session (WebFetch confirmed blocked, HTTP 403, on every path attempted, including a neutral control-domain test). Supports business-model description, payment-network and value-added-services revenue split, and disclosed risks/legal matters."
+    url: "https://www.sec.gov/Archives/edgar/data/1141391/000114139126000013/ma-20251231.htm"
+    date: "2025-12-31"
+  - note: "Mastercard Incorporated, Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0001141391-26-000031). Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Supports current-quarter revenue mix, rebates-and-incentives detail, and current regulatory/litigation disclosures."
+    url: "https://www.sec.gov/Archives/edgar/data/1141391/000114139126000031/ma-20260331.htm"
+    date: "2026-03-31"
+  - note: "Mastercard Incorporated, Q1 2026 earnings release, Exhibit 99.1 to Form 8-K (SEC accession 0001141391-26-000029). Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Supports Q1 2026 GDV, cross-border-volume, switched-transaction, and revenue-growth figures."
+    url: "https://www.sec.gov/Archives/edgar/data/1141391/000114139126000029/ma03312026-exx991xearnings.htm"
+    date: "2026-04-30"
+  - note: "Mastercard Incorporated, investor-relations notice confirming Q2 2026 results conference-call date. Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Establishes the 2026-07-30 scheduled release date used as this record's mandatory near-term refresh trigger."
+    url: "https://investor.mastercard.com/investor-news/investor-news-details/2026/Mastercard-Incorporated-to-Host-Conference-Call-on-Second-Quarter-2026-Financial-Results/default.aspx"
+    date: "2026-07-08"
+  - note: "GPT-5.6 Thinking, WS-0005 Milestone 3 Batch 6 Primary-Source Evidence Recovery Audit -- the retained audit synthesizing the four sources above (and the equivalent V/JPM sources) into claim-level extracts with required fact labeling (filed fact / issuer statement / regulator procedural status / drafting judgment). This session independently verified the retained repository copy's identity (size, line count, and SHA-256) against the uploaded file before relying on it."
+    url: "governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md"
+    date: "2026-07-27"

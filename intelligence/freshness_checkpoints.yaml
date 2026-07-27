@@ -109,3 +109,15 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: V
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: MA
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: JPM
+    checkpoint_status: pending
+    channels: {}
+    established_by: null

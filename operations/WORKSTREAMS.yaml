@@ -1253,6 +1253,65 @@ workstreams:
           until it merges. **Next action: independent exact-head review of this governance PR, per
           `OPS-0007` §1 — not implementation work, not a seventh batch, not Milestone 4, not
           `OPS-0007` §8 step I.**
+
+          **`PI-0028` (PR #170) confirmed merged and effective — independently post-merge verified
+          by a separate session that did not author PR #170.** Merge commit
+          `75b4cd3001c3d980a260cece0cee72602a44023b`, parents exactly
+          `d16ec07f3c003f7e0ec218773388344a22a18977` (base) and
+          `86deee8038baea3d0764b1016e4313ef745be808` (reviewed/accepted head, GitHub review
+          `4783412279`, `APPROVED FOR READINESS AND MERGE`) in that order; merge-commit tree
+          byte-identical to the reviewed head; first-parent diff exactly the four approved files
+          (591 insertions, 2 deletions); exact-head CI (workflow `30233723222`, check
+          `89877303573`) `success`; `39` filed decisions `=` `39` indexed, no duplicates; `WS-0005`
+          confirmed the sole `priority: primary` workstream; `24/24` Company Intelligence records
+          valid; freshness validator `OK`; full pytest suite `1502/1502` passed; zero protected-path
+          changes. **`PI-0028` is therefore effective authority for exactly V, MA, and JPM** — no
+          outside company, no fourth name, no seventh batch.
+
+          **Batch 6 source-readiness gate (`OPS-0008` §2) initially blocked, then resolved via
+          retained evidence recovery.** This implementing session's own `WebFetch` attempts on
+          2026-07-27 were blocked (HTTP 403) on SEC EDGAR and every V/MA/JPM investor-relations
+          domain, and on a neutral, non-target control domain (`example.com`), confirming a
+          session-wide organizational network-policy denial, not a domain-specific one. Per
+          `OPS-0008` §2's mandatory stop-before-drafting gate, drafting paused before any
+          substantive company content was written, and the principal supplied an independent
+          primary-source evidence-recovery audit performed by **GPT-5.6 Thinking** (2026-07-27),
+          independently identity-verified by this session (17,693 bytes, 225 lines, SHA-256
+          `c248f74f07708c9c61a57169e7a7b234c0d6238b484ffa92c52dcb1f295bb73a` — matching the expected
+          values exactly) and retained verbatim at
+          `governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md`. The audit's
+          own verdict: **source-readiness PASS for V, MA, and JPM**, with two disclosed mandatory
+          near-term refresh triggers (Visa fiscal Q3 2026 results, 2026-07-28; Mastercard Q2 2026
+          results, 2026-07-30) that do not invalidate the current pass. All three companies remained
+          in scope — the batch was not narrowed.
+
+          **Batch 6 implementation drafted (not merged) on branch
+          `claude/ws0005-batch6-financial-infrastructure-impl`, base verified `origin/main` at
+          `75b4cd3001c3d980a260cece0cee72602a44023b`.** Created: three Company Intelligence record
+          pairs (`intelligence/companies/{V,MA,JPM}.{yaml,md}`, all `intelligence_validator.py`-clean,
+          27/27 companies valid including the 24 pre-existing); one hand-authored batch comparison
+          artifact (`intelligence/BATCH6_FINANCIAL_INFRASTRUCTURE_COMPARISON.md`); one additive
+          freshness-registry row and one additive freshness-checkpoint row per company (`V`, `MA`,
+          `JPM` — `enrollment_authority`/`company_record_authority: PI-0028`,
+          `monitoring_enabled: false`, `checkpoint_status: pending`, `channels: {}`); the retained
+          recovery audit copied byte-for-byte into `governance/audits/`. **Live validation this
+          session, on the implementation branch**: YAML parse clean on every changed file; freshness
+          validator `OK`; `39` filed `=` `39` indexed decisions (unchanged — no new decision file in
+          this implementation PR); `WS-0005` still the sole primary workstream; full pytest suite
+          `1502/1502` passed; `git diff --check` clean; diff scope against `origin/main` confirmed as
+          exactly 8 new files + 2 modified files (`intelligence/freshness_registry.yaml`,
+          `intelligence/freshness_checkpoints.yaml`) — zero protected-path changes
+          (`targets.yaml`/`holdings.yaml`/`allocate.py`/`margin_state.py`/`constitution/`/
+          `docs/PORTFOLIO_INTELLIGENCE_SPEC.md`/`docs/INVESTMENT_ONTOLOGY.md`/every existing
+          Company or Theme Intelligence record all confirmed untouched). **This PR is not yet
+          pushed, opened, reviewed, or merged as of this entry — independent exact-head
+          implementation review, any required bounded correction, exact-head re-review, principal
+          acceptance, merge, and post-merge verification all remain pending.** This entry does not
+          describe Batch 6 as merged, complete, or `OPS-0007` §3 PROVISIONAL — none of those are
+          true yet. This entry authorizes no seventh Milestone 3 batch, no Milestone 4 work, and no
+          advancement of `OPS-0007` §8 step I. **Next action: push the branch, open one draft PR,
+          and obtain independent exact-head implementation review per `OPS-0007` §1 — not a merge,
+          not a readiness transition, not further company research.**
         pr: 169
         status: in_progress
         date: "2026-07-27"
@@ -1886,10 +1945,10 @@ workstreams:
       merge; none of that has occurred yet. This filing itself grants no such completion,
       does not begin Milestone 4, OPS-0007 §8 step I, or any allocation/margin/trade work,
       and does not review, correct, mark ready, or merge itself.
-    active_branch: claude/ws-0005-protocol-design-kti23b
-    active_pr: 168
-    last_verified_main_sha: 1aba3e74d3847aa278b774f3b0956c786b6ee480
-    last_verified_date: "2026-07-26"
+    active_branch: claude/ws0005-batch6-financial-infrastructure-impl
+    active_pr: null
+    last_verified_main_sha: 75b4cd3001c3d980a260cece0cee72602a44023b
+    last_verified_date: "2026-07-27"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
       roadmap; execution of Milestones 1-2 only, per its 2026-07-25

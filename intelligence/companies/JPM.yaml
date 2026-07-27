@@ -1,0 +1,68 @@
+sector: Financials
+industry: Diversified Banks
+portfolio_role_ref: band
+competitive_advantages:
+  - "Large, diversified, regulated balance-sheet-intermediation franchise: $4.4 trillion of assets and $362.4 billion of stockholders' equity at 2025 year-end, operating across Consumer & Community Banking, Commercial & Investment Bank, and Asset & Wealth Management, with Corporate activities reported separately. This is a structurally different economic model from V/MA's fee-based network-toll-road business (deposit-taking, lending, credit risk, trading, investment banking, custody, and asset/wealth management, rather than transaction-processing fees) -- per JPMorgan Chase's Form 10-K for fiscal year ended 2025-12-31 (SEC accession 0001628280-26-008131), directly inspected by GPT-5.6 Thinking's 2026-07-27 evidence-recovery audit, not by this Claude session (see Source-access disclosure in JPM.md)."
+  - "Strong regulatory-capital position at 2026-03-31: $291 billion of CET1 capital, standardized and advanced CET1 ratios of 14.3% and 14.1%, a 5.6% supplementary leverage ratio, and approximately $1.5 trillion of liquidity sources -- bank-appropriate capital-adequacy and liquidity measures, not comparable to V/MA's corporate-leverage metrics (this record does not attempt that comparison; see the comparison artifact's explicit metric-incomparability discussion)."
+  - "Diversified fee and net-interest revenue mix: for Q2 2026, Commercial & Investment Bank Payments revenue was $5.3 billion (+12%) and Securities Services revenue was $1.7 billion (+17%); combined Banking & Payments revenue was $11.2 billion. This includes a merchant-acquiring-adjacent Payments business, giving JPM a partial, though structurally distinct, point of overlap with V/MA's network economics (see the comparison artifact)."
+  - "Q2 2026 average deposits up 7% year over year and average loans of $1.5 trillion -- continued core deposit-and-lending franchise growth, the foundation of the bank-intermediation model this record analyzes separately from V/MA's network-fee model."
+risks:
+  - risk: "Q2 2026 reported net income of $21.2 billion included a $4.6 billion gain related to Visa shares and $1.0 billion of gains on other equity investments -- large, disclosed significant items. JPMorgan's own release separately reported net income excluding significant items of $16.9 billion. This record explicitly does not use headline Q2 2026 net income or ROE without separating these significant items, per the recovery audit's own drafting instruction, since reported results otherwise materially overstate ordinary operating profitability for the quarter."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Q2 2026 credit costs were $2.5 billion, including $2.4 billion of net charge-offs and a $149 million net reserve build -- a disclosed, current credit-cost figure that this record does not independently forecast forward; a credit-cycle deterioration would be expected to increase this figure, but no forward view is asserted here."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "The Federal Reserve's 2026 Dodd-Frank Act stress-test accessibility tables report a 2.0-percentage-point decline from starting to minimum CET1 for JPMorgan Chase under the severely adverse scenario. This is a supervisory stress scenario result, not a forecast of an actual future recession outcome, and it does not by itself establish a safe leverage level or margin-deployment conclusion -- treated strictly as regulatory-scenario evidence in this record, per the recovery audit's explicit instruction."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "JPMorgan is designated a Global Systemically Important Bank (G-SIB) per the Financial Stability Board's 2025 G-SIB list, subjecting it to higher capital buffers, total loss-absorbing capacity (TLAC) requirements, resolvability requirements, and heightened supervision. This record describes G-SIB status as a regulatory constraint and resilience framework, not a guarantee against loss."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Structural incomparability with V/MA: JPM's business combines deposit-and-lending economics with payments, custody, markets, investment banking, and asset management. This diversification may stabilize earnings but also creates regulatory, trading, and credit-cycle complexity that has no direct analog in V/MA's fee-based network model -- ordinary operating-company metrics (margins, free-cash-flow yield, net-debt ratios) are not meaningfully comparable between JPM and V/MA, and this record does not attempt that comparison (see the comparison artifact)."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+catalysts:
+  - catalyst: "JPMorgan Chase's Q2 2026 Form 10-Q filing, if it adds material information beyond the already-inspected Q2 2026 earnings release and financial supplement (both furnished 2026-07-14) -- no source inspected by this record establishes an exact 10-Q filing date, so this record treats the filing as a pending, near-term refresh trigger rather than a confirmed date."
+    expected: "2026-08-14"
+    status: pending
+  - catalyst: "Any material Federal Reserve, FSB, or other banking-regulator development affecting JPMorgan's capital, stress-test, or G-SIB status -- no source inspected by this record establishes a specific next event date, so 2026-10-27 is an internal review checkpoint (tied to this record's 90-day cadence), not a forecast of when the next event will occur."
+    expected: "2026-10-27"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "JPMorgan shows a large, diversified, well-capitalized banking franchise (CET1 ratios above regulatory minimums with a wide margin, ~$1.5 trillion of liquidity sources, continued deposit and loan growth) and a diversified fee/net-interest revenue mix spanning consumer banking, investment banking, markets, and asset/wealth management. Conviction is held at Medium -- distinct from, and not directly comparable to, V's High and MA's Medium ratings in this same batch, since JPM's evidence base and risk profile are analyzed on bank-appropriate terms (capital ratios, credit costs, stress-test results) rather than the network-toll-road terms used for V/MA. Conviction is not higher because Q2 2026's headline results require significant-items adjustment to interpret correctly (a $4.6B Visa-share gain and $1.0B of other investment gains inflate headline net income), credit costs, while currently moderate, are a disclosed and monitored line item, and the Federal Reserve's 2026 severely-adverse stress scenario shows a real, if modest (2.0 percentage point), stressed CET1 decline -- a supervisory scenario, not a forecast, but a concrete data point this record does not discount to zero. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and does not treat the stress-test result as a prediction of an actual future outcome."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-27"
+  next_due: "2026-10-25"
+  log:
+    - date: "2026-07-27"
+      note: "Record created under governance/decisions/PI-0028-ws0005-milestone3-batch6-financial-infrastructure.md and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline (no prior JPMorgan Chase Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3 Batch 6, alongside V and MA. This Claude Code session's own WebFetch attempts on 2026-07-27 were blocked (HTTP 403) on SEC EDGAR, JPMorgan Chase investor-relations domains, and a neutral non-target control domain (example.com) -- a session-wide network-policy denial, matching V and MA's own disclosed blocks in this same batch. Per OPS-0008 Section 2's mandatory stop-before-drafting gate, this session paused before drafting, produced BATCH6_SOURCE_READINESS_MANIFEST.md, and the principal supplied an independent primary-source evidence-recovery audit performed by GPT-5.6 Thinking (2026-07-27), retained verbatim at governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md (SHA-256 c248f74f07708c9c61a57169e7a7b234c0d6238b484ffa92c52dcb1f295bb73a, independently verified by this session before use). Every fact in this record is sourced to that retained audit's directly-inspected primary documents (JPM-1 through JPM-6 in the audit's own source-access manifest), not to this Claude session's own document inspection -- see Source-access disclosure in JPM.md. Analyzed throughout using bank-appropriate measures (CET1, RWA-adjacent ratios, liquidity, credit costs, reserves, deposits, NII/fee mix, stress resilience) rather than ordinary operating-company metrics, per PI-0028 Section B.20's explicit requirement."
+sources:
+  - note: "JPMorgan Chase & Co., Form 10-K for the fiscal year ended 2025-12-31 (SEC accession 0001628280-26-008131). Directly inspected by GPT-5.6 Thinking's 2026-07-27 evidence-recovery audit, not opened directly by this Claude session (WebFetch confirmed blocked, HTTP 403, on every path attempted, including a neutral control-domain test). Supports business-line description, total assets, stockholders' equity, and segment structure."
+    url: "https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm"
+    date: "2025-12-31"
+  - note: "JPMorgan Chase & Co., Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0001628280-26-029344). Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Supports Q1 2026 balance-sheet, CET1, liquidity, credit, and segment metrics."
+    url: "https://www.sec.gov/Archives/edgar/data/19617/000162828026029344/jpm-20260331.htm"
+    date: "2026-03-31"
+  - note: "JPMorgan Chase & Co., Q2 2026 earnings release narrative, Exhibit 99.1 to Form 8-K (SEC accession 0001628280-26-048078). Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Supports Q2 2026 firmwide and segment results, including the significant-items breakdown, Payments and Securities Services revenue, and capital/credit metrics."
+    url: "https://www.sec.gov/Archives/edgar/data/19617/000162828026048078/a2q26erfexhibit991narrative.htm"
+    date: "2026-07-14"
+  - note: "JPMorgan Chase & Co., Q2 2026 financial supplement, Exhibit 99.2 to the same Form 8-K (SEC accession 0001628280-26-048078). Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Supports detailed segment and regulatory-capital figures."
+    url: "https://www.sec.gov/Archives/edgar/data/19617/000162828026048078/a2q26erfex992supplement.htm"
+    date: "2026-07-14"
+  - note: "Board of Governors of the Federal Reserve System, 2026 Dodd-Frank Act stress-test results and accessibility tables. Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Supports the 2.0-percentage-point stressed CET1 decline for JPMorgan Chase under the severely adverse scenario -- a supervisory scenario, not a forecast."
+    url: "https://www.federalreserve.gov/supervisionreg/dfa-stress-tests-2026.htm"
+    date: "2026-06-24"
+  - note: "Financial Stability Board, 2025 list of Global Systemically Important Banks (G-SIBs). Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Establishes JPMorgan Chase's current G-SIB designation and the associated higher-loss-absorbency framework."
+    url: "https://www.fsb.org/2025/11/2025-list-of-global-systemically-important-banks-g-sibs/"
+    date: "2025-11-27"
+  - note: "GPT-5.6 Thinking, WS-0005 Milestone 3 Batch 6 Primary-Source Evidence Recovery Audit -- the retained audit synthesizing the six sources above (and the equivalent V/MA sources) into claim-level extracts with required fact labeling (filed fact / issuer statement / regulator supervisory-scenario result / drafting judgment). This session independently verified the retained repository copy's identity (size, line count, and SHA-256) against the uploaded file before relying on it."
+    url: "governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md"
+    date: "2026-07-27"

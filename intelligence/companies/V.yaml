@@ -1,0 +1,68 @@
+sector: Financials
+industry: Transaction and Payment Processing Services
+portfolio_role_ref: T1
+competitive_advantages:
+  - "Global payments-technology network (VisaNet) providing authorization, clearing, and settlement at large scale. Visa states it is not a financial institution, does not issue cards, does not extend credit, and does not set account-holder interest rates or fees — it operates the network layer, not the issuing/lending relationship, which keeps it structurally distinct from a bank's credit and deposit risk. Per Visa's FY2025 Form 10-K (SEC accession 0001403161-25-000089), directly inspected by GPT-5.6 Thinking's 2026-07-27 evidence-recovery audit, not by this Claude session (see Source-access disclosure in V.md)."
+  - "Diversified revenue base across four categories in FY2025 (year ended 2025-09-30): service revenue $17.539B, data-processing revenue $19.993B, international-transaction revenue $14.166B, and other revenue $4.053B, net of $15.751B of client incentives, producing net revenue of $40.0B. Service revenue scales with payments volume; data-processing revenue scales with processed transactions; international-transaction revenue is earned on cross-border processing and currency conversion — three related but distinct volume drivers, not one undifferentiated fee stream."
+  - "Value-added services (FY2025 revenue $10.9B) — a growing, non-network-toll-road revenue layer, though this record does not independently establish its margin profile or competitive durability relative to the core network business."
+  - "Fiscal Q2 2026 (quarter ended 2026-03-31, furnished 2026-04-28) showed continued double-digit growth: net revenue $11.2B (+17% YoY), constant-dollar payments volume +9%, total cross-border volume +12% (+11% excluding intra-Europe), and processed transactions +9% to 66.1 billion — recent evidence of continued volume and revenue growth, not merely a historical franchise."
+risks:
+  - risk: "Live DOJ monopolization litigation concerning debit-network services: the U.S. Department of Justice filed a complaint against Visa on 2024-09-24 (case U.S. v. Visa, Inc. [2024]); Visa's motion to dismiss was denied by court order on 2025-06-23. This is an active, unresolved allegation with a denied motion to dismiss — a procedural status, not an adjudicated finding of liability. Per DOJ case-page and order materials directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Disclosed U.S. interchange litigation, including a litigation-escrow structure, plus other merchant and ATM-related matters, per Visa's FY2025 10-K. The existence and structure of the escrow indicates Visa itself treats potential interchange-litigation liability as material enough to reserve against, though this record does not establish a specific dollar exposure estimate."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Client incentives are a large and real competitive cost, not a rounding item: FY2025 client incentives were $15.751B against $71.3B implied gross revenue-before-incentives-and-other (service + data-processing + international + other + client incentives), i.e. incentives reduced gross revenue by roughly 22 percentage points to reach $40.0B net revenue. This is the cost of sustaining and renewing issuer/acquirer network relationships, and its trend is a direct read on competitive intensity for those relationships, not a one-time deduction."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Cross-border revenue is disproportionately exposed to travel volume, macroeconomic conditions, currency movements, and cross-border-specific regulatory intervention — a distinct sensitivity from Visa's domestic transaction-processing business, and one this record cannot separately quantify as a share of total revenue from the evidence inspected."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Evidence-completeness gap: this record's balance-sheet, leverage, cash-flow, and capital-allocation (buybacks/dividends) detail is not established from the sources GPT-5.6 Thinking's audit directly inspected (the audit's recovered baseline covers business model, revenue composition, current-quarter volume growth, and litigation status, but not a balance-sheet or cash-flow figure for Visa). This is a disclosed evidence gap, not an assumption of low leverage or ample liquidity."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+catalysts:
+  - catalyst: "Visa fiscal Q3 2026 earnings release — confirmed scheduled for 2026-07-28 per Visa's own investor-relations notice (2026-07-07), directly inspected by GPT-5.6 Thinking's audit. As of this record's evidence cutoff, these results had not yet been furnished; this record does not present them as known and must be refreshed once they are released."
+    expected: "2026-07-28"
+    status: pending
+  - catalyst: "Further procedural developments in U.S. v. Visa, Inc. [2024] (the DOJ debit-network monopolization case) following the 2025-06-23 denial of Visa's motion to dismiss — no source inspected by this record establishes a specific next hearing or ruling date, so 2026-10-27 is an internal review checkpoint (tied to this record's 90-day cadence), not a forecast of when the next procedural event will occur."
+    expected: "2026-10-27"
+    status: pending
+conviction:
+  rating: High
+  rationale: "Visa shows a durable network-scale business model (VisaNet authorization/clearing/settlement) with diversified, growing revenue across service, data-processing, and international-transaction categories, and recent evidence (fiscal Q2 2026) of continued double-digit net-revenue and volume growth. Conviction is held at High rather than Very High because of two concrete, current tensions rather than a generic risk disclaimer: an active DOJ monopolization complaint concerning debit-network services with a denied motion to dismiss (an unresolved legal exposure, not yet a finding of liability, but a real and live one), and a disclosed evidence gap in this record's balance-sheet, leverage, and capital-allocation detail that a more complete evidence base would need to close before a higher-conviction rating is warranted. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments, and does not treat the pending DOJ litigation's outcome as predictable from the evidence in this record."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-27"
+  next_due: "2026-10-25"
+  log:
+    - date: "2026-07-27"
+      note: "Record created under governance/decisions/PI-0028-ws0005-milestone3-batch6-financial-infrastructure.md and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline (no prior Visa Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3 Batch 6, alongside MA and JPM (EQIX not part of this batch, remains deferred per PI-0027). This Claude Code session's own WebFetch attempts on 2026-07-27 were blocked (HTTP 403) on SEC EDGAR, Visa investor-relations domains, and a neutral non-target control domain (example.com) — a session-wide network-policy denial, not a domain-specific failure, confirmed via the local proxy README's own diagnostic guidance (\"403/407 from the proxy: the destination host is not allowed by your organization's egress policy for this session — do not retry or route around it\"). Per OPS-0008 Section 2's mandatory stop-before-drafting gate, this session paused before drafting, produced BATCH6_SOURCE_READINESS_MANIFEST.md, and the principal supplied an independent primary-source evidence-recovery audit performed by GPT-5.6 Thinking (2026-07-27), retained verbatim at governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md (SHA-256 c248f74f07708c9c61a57169e7a7b234c0d6238b484ffa92c52dcb1f295bb73a, independently verified by this session against the uploaded file before use — size 17693 bytes, 225 lines). Every fact in this record is sourced to that retained audit's directly-inspected primary documents (V-1 through V-6 in the audit's own source-access manifest), not to this Claude session's own document inspection — see Source-access disclosure in V.md."
+sources:
+  - note: "Visa Inc., Form 10-K for the fiscal year ended 2025-09-30 (SEC accession 0001403161-25-000089), filed 2025-11-06. Directly inspected by GPT-5.6 Thinking's 2026-07-27 evidence-recovery audit, not opened directly by this Claude session (WebFetch confirmed blocked, HTTP 403, on every SEC EDGAR path attempted, including a neutral control-domain test). Supports business-model description, FY2025 revenue-category breakdown, value-added-services revenue, and disclosed litigation matters (U.S. interchange litigation/escrow, DOJ debit-network litigation, other merchant/ATM matters)."
+    url: "https://www.sec.gov/Archives/edgar/data/1403161/000140316125000089/v-20250930.htm"
+    date: "2025-11-06"
+  - note: "Visa Inc., Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0001403161-26-000079). Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Supports current-quarter revenue, volume drivers, and balance-sheet/litigation updates."
+    url: "https://www.sec.gov/Archives/edgar/data/1403161/000140316126000079/v-20260331.htm"
+    date: "2026-03-31"
+  - note: "Visa Inc., fiscal Q2 2026 earnings release, Exhibit 99.1 to Form 8-K (SEC accession 0001403161-26-000077). Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Supports fiscal Q2 2026 net revenue, payments-volume, cross-border-volume, and processed-transactions growth figures."
+    url: "https://www.sec.gov/Archives/edgar/data/1403161/000140316126000077/q22026earningsrelease.htm"
+    date: "2026-04-28"
+  - note: "U.S. Department of Justice, case page for U.S. v. Visa, Inc. [2024]. Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Establishes the 2024-09-24 monopolization complaint concerning debit-network services and current procedural status."
+    url: "https://www.justice.gov/atr/case/us-v-visa-inc-2024"
+    date: "2025-07-07"
+  - note: "U.S. Department of Justice, Memorandum Opinion and Order page for U.S. v. Visa, Inc. [2024]. Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Establishes that Visa's motion to dismiss was denied on 2025-06-23 — a procedural status, not a finding of liability."
+    url: "https://www.justice.gov/atr/case-document/visa-memorandum-opinion-and-order"
+    date: "2025-06-23"
+  - note: "Visa Inc., investor-relations notice confirming fiscal Q3 2026 results release date. Directly inspected by GPT-5.6 Thinking's evidence-recovery audit, not by this Claude session. Establishes the 2026-07-28 scheduled release date used as this record's mandatory near-term refresh trigger."
+    url: "https://investor.visa.com/news/news-details/2026/Visa-to-Announce-Fiscal-Third-Quarter-2026-Financial-Results-on-July-28-2026/default.aspx"
+    date: "2026-07-07"
+  - note: "GPT-5.6 Thinking, WS-0005 Milestone 3 Batch 6 Primary-Source Evidence Recovery Audit — the retained audit synthesizing the six sources above (and the equivalent MA/JPM sources) into claim-level extracts with required fact labeling (filed fact / issuer statement / regulator procedural status / drafting judgment). This session independently verified the retained repository copy's identity (size, line count, and SHA-256) against the uploaded file before relying on it."
+    url: "governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md"
+    date: "2026-07-27"
