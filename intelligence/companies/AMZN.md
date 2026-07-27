@@ -201,11 +201,14 @@ operations of the batch (North America and International operating margins
 of roughly 7.9% and 3.6% respectively, per the segment table above),
 diluting AWS's profitability at the consolidated level in a way MSFT's and
 GOOGL's more software/services-weighted businesses do not experience to the
-same degree. **What would be lost if AMZN were absent:** the specific
-combination of the largest disclosed absolute-dollar cloud-segment
-operating income in this batch with a genuinely diversified,
-non-advertising-dependent consumer retail/marketplace/logistics business no
-other company in this batch replicates. **Why the next dollar might not
+same degree. **What would be lost if AMZN were absent:** AWS's disclosed
+Q1 2026 segment operating income exceeded Google Cloud's in the same
+quarter, and the retained Microsoft evidence does not provide a directly
+comparable quarterly Azure or Microsoft Cloud figure, so no three-company
+cloud-profitability ordering is established -- but the specific combination
+of AWS's cloud profitability with a genuinely diversified,
+non-advertising-dependent consumer retail/marketplace/logistics business is
+one no other company in this batch replicates. **Why the next dollar might not
 favor AMZN specifically:** AMZN's own tier placement already reflects half
 the per-name conviction weight of MSFT/GOOGL/META, and its combined
 AI-lab financial commitments (OpenAI plus Anthropic) are, in aggregate
@@ -296,10 +299,12 @@ Q1 2026 operating income than the North America and International retail
 segments combined -- and very strong liquidity. Conviction is held at
 Medium rather than High because of concrete, current tensions: capital
 expenditures nearly doubled year over year in the same period Amazon
-carried a growing balance of unsecured notes outstanding -- the evidence
-establishes both facts but not a causal funding relationship between them,
-which this record treats as an unresolved inference, not an established
-fact; Amazon's consolidated profitability is disproportionately
+reported $121.8B of unsecured senior notes outstanding at 2026-03-31,
+including major U.S.-dollar and euro issuances in March 2026 -- the
+evidence does not establish prior-period total debt, total-debt growth,
+net-debt change, leverage-ratio change, use of proceeds, or a causal
+capex-funding relationship, which this record treats as unresolved, not
+an established fact; Amazon's consolidated profitability is disproportionately
 concentrated in a single segment; its multiple, very large AI-lab
 commitments carry real counterparty, financing, and chip-performance-delivery
 risk and are not equivalent to realized revenue or deployed capital; and

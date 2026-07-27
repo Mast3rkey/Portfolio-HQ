@@ -2040,9 +2040,31 @@ workstreams:
       the retained evidence establishes (D169-2); and a factually reversed
       GOOGL/AMZN liquidity ordering claim (D169-3), plus two non-blocking
       wording cleanups (MSFT's T1-weight phrasing; the comparison
-      artifact's capex table). **A second bounded correction pass
-      addressing exactly these findings is in progress on this same
-      branch and PR, no other scope.** Corrected-head approval and
-      principal acceptance remain pending.
+      artifact's capex table). **Second bounded correction pass complete
+      and validated.** Correction commit
+      `b501caabe8e2a90aa0db6bb1ec7c0cee66ef921c` addressed D169-1, D169-2,
+      D169-3, and both non-blocking cleanups. Its exact-head CI confirmed
+      successful: `test`, workflow run `30228242248`, check run
+      `89862133582`, conclusion `success`.
+
+      **Third independent final corrected-head delta review received:
+      CHANGES REQUIRED.** GitHub review `4783017914` (state `COMMENTED`,
+      relayed from GPT-5.6 Thinking under `OPS-0007` §1's capability-based
+      standard, anchored to exact head
+      `b501caabe8e2a90aa0db6bb1ec7c0cee66ef921c`) found D169-1 and D169-3
+      resolved but identified three residual textual issues: the
+      comparison artifact's capital-priority section still implying a
+      causal debt-funding relationship for GOOGL/AMZN AI investment
+      (F169-1); AMZN.md's conviction rationale still asserting a "growing
+      balance" of unsecured notes without an established prior-period
+      baseline (F169-2); and AMZN.md's capital-priority section still
+      claiming the largest disclosed cloud-segment operating income in the
+      batch, reintroducing a three-company ordering the Microsoft evidence
+      cannot support (F169-3). **One final narrow textual correction pass
+      addressing exactly these three findings, limited to the comparison
+      artifact, AMZN.md, and this register entry, is being performed on
+      this same branch and PR, no other scope.** The PR remains draft and
+      unmerged; corrected-head approval and principal acceptance remain
+      pending.
     supersedes: null
     superseded_by: null

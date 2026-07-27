@@ -283,9 +283,14 @@ capital among this repository's other governed holdings — it produces no
 score, index, or ranking, consistent with Section G's prohibition.**
 
 All four companies show real business-quality strength on the evidence
-gathered: profitable, growing core franchises funding large AI investments
-largely from internally generated cash (supplemented by debt for GOOGL and
-AMZN specifically). **The four do not compete for capital priority in a
+gathered: profitable, growing core franchises and large, disclosed
+AI-infrastructure commitments. GOOGL disclosed a $31.1B senior-notes
+issuance in Q1 2026 and AMZN disclosed $121.8B of unsecured senior notes
+outstanding at 2026-03-31, including major U.S.-dollar and euro issuances
+in March 2026 -- both occurring in the same reporting period as elevated
+capex, but this record does not establish use of proceeds or a causal
+funding relationship between the debt and the AI-infrastructure spending
+for either company. **The four do not compete for capital priority in a
 uniform way** — MSFT, GOOGL, and META share the same 3.35% T1 target
 weight and so compete for T1's overall capital-priority ranking on equal
 per-name terms by tier design, while AMZN's existing T2 placement (1.65%)
