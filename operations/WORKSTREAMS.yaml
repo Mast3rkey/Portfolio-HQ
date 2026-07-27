@@ -2214,9 +2214,29 @@ workstreams:
       before it may be marked ready and merged.** UNH remains outside this batch's authorized
       scope and remains uncovered/unauthorized, alongside EQIX. No allocation, margin, or trading
       work is authorized.
-    active_branch: null
+
+      **`PI-0029` has since merged** (PR #173, merge commit
+      `3848ea695757be4ab324ea25c8aea28288d3691c`), making Batch 7's governance package effective.
+      **The authorized implementation is now drafting**, on branch
+      `claude/ws0005-batch7-biopharmaceuticals-impl`, using the principal-accepted, independently
+      corrective-validated evidence bundle `BATCH7_biopharmaceuticals_evidence_bundle_20260727_v2.yaml`
+      (SHA-256 `cff7bc37920e829cd5521128b9fa11019e65a650ce20726f9beea818c8f3a826`; research cutoff
+      2026-07-27) supplied outside the repository per `PI-0029`'s own instruction not to commit the
+      bundle. This drafting session's own `WebFetch` attempts on 2026-07-27 were tested and
+      confirmed blocked (HTTP 403) on SEC EDGAR and on a neutral non-target control domain,
+      consistent with Batch 1-6's disclosed pattern; every fact in the five new Company Intelligence
+      records is attributed to the evidence bundle's own directly-inspected primary sources, not to
+      this session's own document inspection. The bundle's F-1 finding (JNJ post-Kenvue structural
+      evidence) is resolved via JNJ-S06/JNJ-C008; F-2 (ABBV goodwill/intangibles), F-3 (LLY Wisconsin
+      production-start timing), and F-4 (JNJ litigation/accrual language) remain blocked pending
+      direct primary-source access and are handled by bounded abstention (general statements only,
+      no unverified exact figures) per the bundle's own instruction; F-5 (GILD Hepcludex U.S. scoping)
+      is a wording fix applied throughout. **This drafting does not itself authorize an eighth
+      Milestone 3 batch, Milestone 4, or advancement of `OPS-0007` §8 step I; the PR remains draft
+      pending its own eligible independent exact-head review and principal acceptance before merge.**
+    active_branch: claude/ws0005-batch7-biopharmaceuticals-impl
     active_pr: null
-    last_verified_main_sha: 2185d80d81e011b340ffdedd4ded26fd2cc9364d
+    last_verified_main_sha: 3848ea695757be4ab324ea25c8aea28288d3691c
     last_verified_date: "2026-07-27"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
