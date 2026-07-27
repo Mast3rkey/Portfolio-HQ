@@ -163,9 +163,23 @@ this filing) may:
 7. Create a retained, attributable primary-source evidence artifact under `governance/audits/` if
    `OPS-0008` §2's source-readiness gate is blocked for one or more companies and the standing
    evidence-recovery pre-authorization is exercised.
-8. Perform the minimum factual `operations/WORKSTREAMS.yaml` synchronization required once that
-   implementation PR merges, per `OPS-0008` §4's read-only-by-default post-merge convention — not
-   before, and not by this filing.
+8. `operations/WORKSTREAMS.yaml` synchronization happens in two distinct steps, neither performed
+   by this filing:
+   1. **Pre-merge, inside the implementation PR itself**: the implementation PR may update
+      `operations/WORKSTREAMS.yaml` only to record its own actual, current state — that it is
+      open/draft/in-review, which gates (source-readiness, independent review, any required
+      correction, principal acceptance, merge) remain pending, and that completion and PROVISIONAL
+      status under `OPS-0007` §3 are not yet reached. It must not describe itself as merged,
+      complete, or PROVISIONAL before that is true.
+   2. **Post-merge, read-only, per `OPS-0008` §4's default**: ancestry, byte identity, scope,
+      validator/test re-run, protected-path confirmation, completion, and PROVISIONAL status are
+      determined only *after* the implementation PR merges — a PR cannot record facts about its
+      own merge before that merge exists. This verification is folded into the Preflight/Context
+      section of the next batch's own separately authorized governance filing, or into another
+      already-authorized factual-synchronization surface if no next batch is imminent — per
+      `OPS-0008` §4(a)'s exact convention. **A dedicated correction or reconciliation PR is opened
+      only if that post-merge verification finds a material discrepancy** — this is the exception,
+      not the routine default, and is not created merely to record an already-true fact.
 
 No other repository change is authorized by this decision for that future implementation PR.
 

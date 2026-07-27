@@ -1222,11 +1222,13 @@ workstreams:
           F169-1..3 resolved across four review rounds, principal acceptance and merge at the
           approved head, and this session's independent post-merge verification) — **MSFT, GOOGL,
           META, and AMZN are PROVISIONAL under `OPS-0007` §3, effective as of this reconciliation.**
-          Milestone 3 remains `in_progress` in aggregate — five of six proposed batches complete;
-          the milestone as a whole is not.
+          Milestone 3 remains `in_progress` in aggregate: five Milestone 3 batches are complete;
+          Milestone 3 itself remains in progress, and this register does not establish a final
+          batch count.
 
-          **Batch 6 authorized (`PI-0028`, this entry) — exactly V, MA, and JPM ("Financial
-          Infrastructure").** Evidence development only; this filing authorizes the
+          **Batch 6 governance authorization filed (`PI-0028`; PR #170 draft, unmerged, and not yet
+          effective) — proposed scope exactly V, MA, and JPM ("Financial Infrastructure").**
+          Evidence development only; this filing authorizes the
           governance-authorization package alone (this `operations/WORKSTREAMS.yaml` update,
           `governance/decisions/PI-0028-ws0005-milestone3-batch6-financial-infrastructure.md`,
           `governance/decisions.yaml`, the applicable `CLAUDE.md` entry) — no company research, no
