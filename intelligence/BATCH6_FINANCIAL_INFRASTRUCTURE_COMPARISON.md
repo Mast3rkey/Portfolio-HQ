@@ -33,10 +33,19 @@ specifically to confirm the block was session-wide rather than
 domain-specific. Per `OPS-0008` Section 2's mandatory stop-before-drafting
 gate, drafting paused and the principal supplied an independent
 evidence-recovery audit performed by **GPT-5.6 Thinking** (2026-07-27),
-independently identity-verified by this session (17,693 bytes, 225 lines,
-SHA-256
-`c248f74f07708c9c61a57169e7a7b234c0d6238b484ffa92c52dcb1f295bb73a`) and
-retained verbatim at
+independently identity-verified by this session as-delivered (17,693
+bytes, 225 lines, SHA-256
+`c248f74f07708c9c61a57169e7a7b234c0d6238b484ffa92c52dcb1f295bb73a`).
+Following the same precedent already established for Batch 4's and Batch
+5's own retained audits, this session then normalized trailing Markdown
+hard-line-break whitespace (six lines in the header block only) in the
+**retained repository copy only** — no substantive content changed — to
+clear this repository's `git diff --check` CI gate; the retained copy
+therefore carries SHA-256
+`ee497ac6323e25df5e0aa5cc3473e692c8566a84f0f2150a424d25d3a95bf9d8`
+(17,681 bytes, 225 lines, unchanged), intentionally different from the
+as-delivered hash because of the whitespace normalization only. Retained
+at
 `governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md`.
 **Every fact below is inherited from the three companies' own Company
 Intelligence records**, each of which discloses its own per-source

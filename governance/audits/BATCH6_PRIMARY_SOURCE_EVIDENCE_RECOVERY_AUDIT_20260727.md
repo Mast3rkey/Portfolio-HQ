@@ -1,11 +1,11 @@
 # Batch 6 Primary-Source Evidence Recovery Audit
 
-**Repository:** `Mast3rkey/Portfolio-HQ`  
-**Workstream:** `WS-0005` Milestone 3, Batch 6  
-**Authority:** `PI-0028`, applying `OPS-0008` §2  
-**Companies:** Visa (`V`), Mastercard (`MA`), JPMorgan Chase (`JPM`)  
-**Recovery reviewer:** GPT-5.6 Thinking  
-**Audit date:** 2026-07-27  
+**Repository:** `Mast3rkey/Portfolio-HQ`
+**Workstream:** `WS-0005` Milestone 3, Batch 6
+**Authority:** `PI-0028`, applying `OPS-0008` §2
+**Companies:** Visa (`V`), Mastercard (`MA`), JPMorgan Chase (`JPM`)
+**Recovery reviewer:** GPT-5.6 Thinking
+**Audit date:** 2026-07-27
 **Purpose:** Independent primary-source recovery after the Claude implementation environment reported a session-wide HTTP 403 network-policy block.
 
 ## 1. Independence and authority boundary

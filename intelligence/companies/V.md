@@ -25,11 +25,22 @@ paused before drafting, produced `BATCH6_SOURCE_READINESS_MANIFEST.md`
 (documenting the blocked state for V, MA, and JPM), and the principal
 supplied an independent primary-source evidence-recovery audit performed
 by **GPT-5.6 Thinking** (2026-07-27). This session independently verified
-the uploaded audit's identity before relying on it: size 17,693 bytes, 225
-lines, SHA-256 `c248f74f07708c9c61a57169e7a7b234c0d6238b484ffa92c52dcb1f295bb73a`
--- matching the expected values exactly. The repository retains this audit
-verbatim at
-`governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md`.
+the as-delivered uploaded audit's identity before relying on it: size
+17,693 bytes, 225 lines, SHA-256
+`c248f74f07708c9c61a57169e7a7b234c0d6238b484ffa92c52dcb1f295bb73a` --
+matching the expected values exactly. Following the same precedent already
+established for Batch 4's and Batch 5's own retained audits, this session
+then normalized trailing Markdown hard-line-break whitespace (six lines in
+the header block only) in the **retained repository copy only** -- no
+substantive content changed, confirmed by a whitespace-only diff against
+the as-delivered file -- to clear this repository's `git diff --check` CI
+gate. The repository's retained copy at
+`governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md`
+therefore carries SHA-256
+`ee497ac6323e25df5e0aa5cc3473e692c8566a84f0f2150a424d25d3a95bf9d8`
+(17,681 bytes, 225 lines, unchanged) -- intentionally different from the
+as-delivered hash because of the whitespace normalization, not a
+discrepancy.
 **Every fact below was directly inspected by GPT-5.6 Thinking, not by this
 Claude session** -- see `V.yaml`'s `sources[]` for per-document
 attribution (source IDs V-1 through V-6 in the audit's own manifest).

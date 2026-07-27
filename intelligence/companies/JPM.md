@@ -25,11 +25,19 @@ disclosed blocks in this same batch. Per `OPS-0008` Section 2's mandatory
 stop-before-drafting gate, this session paused before drafting, and the
 principal supplied an independent primary-source evidence-recovery audit
 performed by **GPT-5.6 Thinking** (2026-07-27). This session independently
-verified the uploaded audit's identity before relying on it: size 17,693
-bytes, 225 lines, SHA-256
+verified the as-delivered uploaded audit's identity before relying on it:
+size 17,693 bytes, 225 lines, SHA-256
 `c248f74f07708c9c61a57169e7a7b234c0d6238b484ffa92c52dcb1f295bb73a` --
-matching the expected values exactly. The repository retains this audit
-verbatim at
+matching the expected values exactly. Following the same precedent already
+established for Batch 4's and Batch 5's own retained audits, this session
+then normalized trailing Markdown hard-line-break whitespace (six lines in
+the header block only) in the **retained repository copy only** -- no
+substantive content changed -- to clear this repository's `git diff
+--check` CI gate. The repository's retained copy therefore carries SHA-256
+`ee497ac6323e25df5e0aa5cc3473e692c8566a84f0f2150a424d25d3a95bf9d8`
+(17,681 bytes, 225 lines, unchanged) -- intentionally different from the
+as-delivered hash because of the whitespace normalization, not a
+discrepancy. Retained at
 `governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md`.
 **Every fact below was directly inspected by GPT-5.6 Thinking, not by this
 Claude session** -- see `JPM.yaml`'s `sources[]` for per-document
