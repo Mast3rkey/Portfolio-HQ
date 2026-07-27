@@ -18,8 +18,17 @@ Corrected: the Visa client-incentive arithmetic; the "one notch below
 Visa" Mastercard conviction framing; unquantified JPM capital-headroom and
 revenue-importance language; "JPM's equity stake in Visa" and unsupported
 management-motive wording; provenance language for the retained recovery
-audit; and premature approval wording. See each company record's
-`review.log` for full correction notes.
+audit; and premature approval wording. **A second, final bounded
+micro-correction pass** (2026-07-27) then applied GPT-5.6 Thinking's
+corrected-head delta review
+(`PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md`, retained at
+`governance/audits/PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md`): it
+removed unsupported capital-return funding-source claims for both V and
+MA, corrected JPM's over-generalized "balance-sheet-intermediation"
+framing to distinguish deposit/lending, advisory, markets, payments,
+custody, and asset-management mechanisms, and corrected "complete
+first-coverage" lifecycle wording. See each company record's `review.log`
+for full correction notes.
 
 **What this document is and is not.** This is a hand-authored, one-time
 batch comparison artifact — not a generated report, not a Company or Theme
@@ -64,7 +73,13 @@ was supplied for this pass and is retained at
 whitespace-normalized in the retained copy only — no substantive content
 changed — to clear this repository's `git diff --check` CI gate; retained
 copy SHA-256 `4922290196e273f964003537b92a64f21cdc1cc88a5bc4fb4c87ce8265db9b6e`,
-15,062 bytes, 351 lines). **Every fact below is inherited
+15,062 bytes, 351 lines). A third document, GPT-5.6 Thinking's corrected-head
+delta review (`PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md`, SHA-256
+`13f94b8991395af7cda5b8c00d2c61a296ab8dcff3eb2ce69c7653f8f21d9897`,
+14,062 bytes, 302 lines, independently verified byte-for-byte by this
+session — no trailing whitespace, retained unchanged), supplied this final
+micro-correction's V/MA mix figures and exact filing identities via its
+Appendix A. **Every fact below is inherited
 from the three companies' own Company Intelligence records**, each of
 which discloses its own per-source attribution — this document adds no
 new primary research of its own. Consistent with `OPS-0006` Section 4's
@@ -111,14 +126,21 @@ unavailable** — the two companies' incentive evidence is asymmetric
 preserves that asymmetry rather than resolving it into a comparative
 judgment.
 
-**Financial quality and capital return, now directly comparable.** Both
-companies fund large capital-return programs from operating cash flow
-without a disclosed material debt build in FY2025: Visa's $23.059B of
-operating cash flow supported $18.2B of repurchases and $4.6B of
-dividends, with $24.9B of authorization remaining; Mastercard's $17.648B
-of operating cash flow supported $11.727B of repurchases and
-approximately $2.8B of dividends. Visa's absolute figures are larger,
-consistent with its larger revenue base; this document does not compute a
+**Financial quality and capital return, now directly comparable.**
+**Correction note:** an earlier version of this paragraph asserted that
+both companies "fund large capital-return programs from operating cash
+flow without a disclosed material debt build" — a causal source-of-funds
+claim the underlying evidence does not establish (it does not trace which
+dollars funded which outlay, nor a year-over-year debt change). The facts
+are reported here in parallel instead. FY2025: Visa's operating cash flow
+was $23.059B, alongside $18.2B of repurchases, $4.6B of dividends, $24.9B
+of remaining authorization, and $25.392B of total debt; Mastercard's
+operating cash flow was $17.648B, alongside $11.727B of repurchases,
+approximately $2.8B of dividends, and $19.000B of total debt. Both
+companies' operating cash flow was large relative to their own disclosed
+capital-return figures in the same period — this document states that
+relative size, not a funding-source conclusion. Visa's absolute figures
+are larger, consistent with its larger revenue base; this document does not compute a
 per-dollar-of-revenue capital-return ratio for either company.
 
 **Demonstrated downturn behavior — a real, company-specific difference.**
@@ -210,10 +232,14 @@ conclusion, consistent with `PI-0028` Section C.4's explicit instruction.
 ## 5. JPM's distinct deposit, lending, credit, acquiring, investment-banking, markets, custody, and balance-sheet role
 
 JPMorgan Chase's economic model is **not a variant of V/MA's network
-model** — it is regulated balance-sheet intermediation: deposit-taking,
-lending with associated credit risk, trading and markets activity,
-investment banking, custody, and asset/wealth management, across $4.4
-trillion of assets.
+model** — it is a **diversified regulated financial intermediary**
+operating multiple distinct mechanisms (deposit-taking and lending with
+associated credit risk; investment-banking advisory/underwriting; markets
+client intermediation, trading, and balance-sheet usage; payments;
+securities services/custody; and asset/wealth management) across $4.4
+trillion of assets. See Section 6 for the corrected distinction between
+these mechanisms — not every one of them is balance-sheet intermediation
+in the same sense as deposit-taking and lending.
 
 **Corrected, complete Q2 2026 business-line picture.** JPM's Q2 2026
 managed firmwide net revenue of $58.022 billion breaks out across net
@@ -237,24 +263,46 @@ record relies on; the release documents a gain related to Visa shares,
 not confirmed continuing ownership. This record does not treat this
 connection as evidence that JPM and V are economically substitutable.
 
-## 6. Payment rails (V/MA) versus balance-sheet intermediation (JPM) — two structurally different mechanisms
+## 6. Payment rails (V/MA) versus a diversified regulated financial intermediary (JPM) — structurally different mechanisms
 
 **This is the batch's central structural finding, and it is not merely a
 "financial sector" label.** V and MA earn fees on transaction volume they
 do not fund with their own balance sheets — they carry network,
 regulatory, and litigation risk, not credit risk. JPM's core business is
-the opposite: it takes deposits, extends credit, and bears the resulting
-credit and interest-rate risk directly on a $4.4 trillion balance sheet,
-subject to bank-specific regulatory capital requirements (CET1, TLAC,
-G-SIB status — now precisely quantified for CET1/SLR headroom, see Section
-9) that have no analog in V/MA's disclosed evidence. **JPM's Payments and
-Securities Services segments provide a partial, real, and now precisely
-measured (~12% of managed firmwide revenue) point of overlap with V/MA's
-network economics, but they remain a minority of JPM's overall business**
-— the majority of JPM's revenue, risk, and regulatory capital structure
-(net interest income, Investment Banking, Markets, Asset & Wealth
-Management) is balance-sheet-intermediation-specific and has no V/MA
-analog.
+different in kind: it is a **diversified regulated financial
+intermediary** operating multiple distinct business mechanisms across a
+$4.4 trillion balance sheet, subject to bank-specific regulatory capital
+requirements (CET1, TLAC, G-SIB status — now precisely quantified for
+CET1/SLR headroom, see Section 9) that have no analog in V/MA's disclosed
+evidence.
+
+**Correction note:** an earlier version of this section labeled every
+JPM business line other than Payments and Securities Services as
+"balance-sheet-intermediation-specific." That collapses genuinely
+distinct mechanisms into one category. JPM's Q2 2026 revenue instead
+spans (see Section 5):
+
+- **deposit-and-lending net-interest-income economics** ($25.6B Q2 2026,
+  $23.7B excluding Markets) — the mechanism actually described as
+  balance-sheet intermediation (taking deposits, extending credit,
+  bearing credit and interest-rate risk directly);
+- **Investment Banking** ($3.9B) — principally advisory and underwriting
+  activity, fee-based and closer in kind to a professional-services
+  business than to balance-sheet risk-taking;
+- **Markets** ($12.1B) — combines client intermediation/trading activity
+  with balance-sheet usage; not purely one or the other;
+- **Payments** ($5.3B) and **Securities Services** (~$1.7B) — fee/service
+  businesses, the partial, real, precisely measured (~12% of managed
+  firmwide revenue) point of overlap with V/MA's network economics;
+- **Asset & Wealth Management** ($6.851B on $5.1 trillion AUM) —
+  predominantly asset-management and servicing economics, not balance-
+  sheet risk-taking.
+
+**The central distinction from V/MA remains valid** — JPM's business
+includes credit risk, interest-rate risk, and bank-specific regulatory
+capital requirements that V/MA's fee-based network model does not carry
+at all — but that distinction rests specifically on the deposit-and-
+lending mechanism, not on every non-Payments revenue line indiscriminately.
 
 ## 7. Sensitivity to consumption, credit conditions, interest rates, regulation, fraud, cybersecurity, and economic contraction
 
@@ -389,18 +437,21 @@ an output of this document.
 
 ## Summary (advisory, not a ranking)
 
-V, MA, and JPM complete first-coverage Company Intelligence research for
-this repository's only three uncovered financial-sector holdings,
-grouped as "Financial Infrastructure" to test — honestly, per this same
-comparison approach `PI-0026`'s own `power_infra` comparison used — whether
-that label spans one coherent theme or two related but distinct
-mechanisms. **The answer this batch's evidence supports is two distinct
-mechanisms, not one**: V and MA are directly comparable, largely
+V, MA, and JPM **form the draft first-coverage candidate** for this
+repository's only three uncovered financial-sector holdings — these
+records count as effective, completed first-coverage only after
+independent exact-head approval, principal acceptance, merge, and
+post-merge verification (none of which has occurred as of this document).
+They are grouped as "Financial Infrastructure" to test — honestly, per
+this same comparison approach `PI-0026`'s own `power_infra` comparison
+used — whether that label spans one coherent theme or two related but
+distinct mechanisms. **The answer this batch's evidence supports is two
+distinct mechanisms, not one**: V and MA are directly comparable, largely
 overlapping fee-based payment networks with now-corrected, more complete
-evidence (Sections 1-4); JPM is a structurally distinct, regulated
-balance-sheet-intermediation business whose real point of overlap with
-V/MA is a precisely measured (~12%) Payments/Securities Services segment
-and one disclosed financial connection (JPM's Q2 2026 gain related to Visa
+evidence (Sections 1-4); JPM is a structurally distinct, diversified
+regulated financial intermediary whose real point of overlap with V/MA is
+a precisely measured (~12%) Payments/Securities Services segment and one
+disclosed financial connection (JPM's Q2 2026 gain related to Visa
 shares) (Sections 5-6). Each company carries its own, company-specific
 disclosed risks and evidence gaps, documented individually in `V.yaml`/
 `.md`, `MA.yaml`/`.md`, and `JPM.yaml`/`.md`. **This document does not rank

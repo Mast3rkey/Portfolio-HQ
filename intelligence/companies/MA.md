@@ -14,7 +14,14 @@ retained at
 The correction adds several previously-missing `PI-0028`-mandatory
 research fields, removes an unsupported relative-to-Visa conviction
 rationale, corrects provenance language, and reassesses conviction
-independently. See `MA.yaml`'s `review.log` for the full correction note.
+independently. **A second, final bounded micro-correction pass**
+(2026-07-27) then applied GPT-5.6 Thinking's corrected-head delta review
+(`PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md`, retained at
+`governance/audits/PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md`): it
+completed the geographic and GDV-mix figures, corrected the fiscal-2020
+and 2025 10-K source citations to exact filing identities, and removed an
+unsupported capital-return funding-source claim. See `MA.yaml`'s
+`review.log` for both full correction notes.
 
 ## Source-access disclosure
 
@@ -93,8 +100,18 @@ billion** (FY2025).
 
 **Capital return:** FY2025 share repurchases of **$11.727 billion** and
 dividends paid of **approximately $2.8 billion**, for **total capital
-returned to stockholders of approximately $14.5 billion** -- on the
-evidence inspected, funded from operating cash flow.
+returned to stockholders of approximately $14.5 billion**. **Correction
+note:** an earlier version of this section asserted this was "funded from
+operating cash flow" -- that causal source-of-funds claim is removed here,
+since the evidence inspected does not trace which specific dollars funded
+the repurchases/dividends and does not establish a year-over-year debt
+change. The facts are reported in parallel instead: FY2025 operating cash
+flow was $17.648 billion; disclosed capex and capitalized software
+together were $1.215 billion; total debt was $19.000 billion (long-term
+debt $18.251 billion) at fiscal year-end. Operating cash flow was large
+relative to the disclosed outlays and capital-return figures in the same
+period -- this record states that relative size, not a funding-source
+conclusion.
 
 **Management:** Michael Miebach has served as President and Chief
 Executive Officer since January 2021; the filing records prior Mastercard
@@ -122,16 +139,24 @@ signal as **Mastercard-specific evidence**, not as proof that Visa's
 comparable trend is better -- absence of a comparable Visa figure is not
 evidence of a better Visa trend.
 
-## Geography, product mix, and dependencies (added in this correction)
+## Geography, product mix, and dependencies (added in this correction; figures completed in the final micro-correction)
 
-Mastercard's FY2025 Form 10-K discloses net revenue split between the
-**Americas** and **APEMEA** (Asia Pacific, Europe, Middle East, and
-Africa) regions, and GDV disclosed across **consumer credit, consumer
-debit/prepaid, and commercial** products. This record preserves that
-these disclosures exist in the 10-K without restating the exact
-percentage splits here, since the correction addendum did not itself
-extract those specific figures -- a narrower, disclosed limitation than
-the original record's blanket "not established" statement.
+Mastercard's FY2025 Form 10-K discloses net revenue by customer geography:
+**Americas $14.044 billion**; **APEMEA (Asia Pacific, Europe, Middle East
+and Africa) $18.747 billion**; **total $32.791 billion**. Reviewer
+arithmetic from these issuer-reported components (not an issuer-defined
+geographic percentage): Americas **≈42.83%**, APEMEA **≈57.17%**.
+
+Issuer-reported 2025 Mastercard-branded GDV: **consumer credit $3.878
+trillion (37% of total GDV, issuer-reported percentage)**; **consumer
+debit and prepaid $5.349 trillion (50%)**; **commercial credit and debit
+$1.405 trillion (13%)**; **total $10.632 trillion**. Unlike the geographic
+split above, these percentages are issuer-reported, not reviewer
+arithmetic. **Correction note:** an earlier version of this section
+stated only that these disclosures existed without reporting the figures;
+this was a genuinely available primary-source fact, not an unresolvable
+limitation, and has been completed here per GPT-5.6 Thinking's independent
+inspection of the FY2025 10-K.
 
 **Dependencies:** Mastercard depends on **issuers**, **acquirers**,
 **merchants**, **processors**, **settlement banks**, and other network
@@ -176,7 +201,8 @@ risk-profile shape, not a ranking.
 
 ## Demonstrated downturn behavior (added in this correction)
 
-Mastercard's fiscal-2020 Form 10-K (fiscal year ended 2020-12-31) provides
+Mastercard's fiscal-2020 Form 10-K (fiscal year ended 2020-12-31, SEC
+accession `0001141391-21-000018`, filed 2021-02-12) provides
 an observed stress case, used here as **historical evidence, not a
 forecast**: fiscal-2020 net revenue declined **approximately 9%**;
 cross-border volume declined **approximately 29%**; operating margin fell
@@ -381,23 +407,28 @@ durable.
   MA, in either the original drafting pass or this correction. All
   primary evidence was inspected by GPT-5.6 Thinking -- see Source-access
   disclosure above.
-- Exact geographic (Americas/APEMEA) and GDV-mix (consumer credit/debit/
-  commercial) percentage splits are not established in this record.
 - The dollar magnitude of Mastercard's aggregate regulatory/litigation
   exposure across its disclosed multi-jurisdiction matters is not
   established in this record.
 - Multi-year capital-allocation and acquisition-integration execution
   quality are not established in this record.
+- Which specific source (operating cash flow, existing cash, or other)
+  funded Mastercard's FY2025 capital-return program is not established in
+  this record -- a source-of-funds conclusion was removed in this
+  correction as unsupported by the evidence inspected.
 - Q2 2026 results (scheduled 2026-07-30) were not yet available at this
   record's evidence cutoff and are not reflected here.
 
 ## Sources
 
 See `MA.yaml`'s `sources[]` for the structured register. All entries are
-sourced to GPT-5.6 Thinking's independent evidence-recovery audit and
-correction addendum
-(`governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md`
+sourced to GPT-5.6 Thinking's independent evidence-recovery audit,
+correction addendum, and (for the geography/GDV-mix figures and the exact
+2025/2020 filing identities added in the final micro-correction) Appendix
+A of the corrected-head delta review
+(`governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md`,
+`governance/audits/PR171_BOUNDED_CORRECTION_PRIMARY_SOURCE_ADDENDUM_20260727.md`,
 and
-`governance/audits/PR171_BOUNDED_CORRECTION_PRIMARY_SOURCE_ADDENDUM_20260727.md`),
+`governance/audits/PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md`),
 with that provenance stated explicitly; no source in this record was
 directly opened by this Claude session.

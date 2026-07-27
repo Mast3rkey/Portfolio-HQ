@@ -17,7 +17,14 @@ REQUIRED) and its accompanying primary-source addendum
 The correction fixes a material client-incentive arithmetic error, adds
 several previously-missing `PI-0028`-mandatory research fields, corrects
 premature approval and provenance language, and reassesses conviction
-independently. See `V.yaml`'s `review.log` for the full correction note.
+independently. **A second, final bounded micro-correction pass**
+(2026-07-27) then applied GPT-5.6 Thinking's corrected-head delta review
+(`PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md`, retained at
+`governance/audits/PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md`): it
+completed the payment-volume-mix figures, corrected the fiscal-2020
+source citation to an exact filing identity, and removed an unsupported
+capital-return funding-source claim. See `V.yaml`'s `review.log` for both
+full correction notes.
 
 ## Source-access disclosure
 
@@ -133,10 +140,19 @@ this total-debt figure.
 
 **Capital return:** FY2025 common-stock repurchases of **$18.2 billion**
 and dividends declared/paid of **$4.6 billion**, with **$24.9 billion** of
-repurchase authorization remaining at fiscal year-end. On the evidence
-inspected, this capital-return program was funded from the company's own
-operating cash flow, not from a disclosed external-debt build in the same
-period.
+repurchase authorization remaining at fiscal year-end. **Correction note:**
+an earlier version of this section asserted the capital-return program was
+"funded from the company's own operating cash flow, not from a disclosed
+external-debt build" — that causal source-of-funds claim is removed here,
+since the evidence inspected does not trace which specific dollars funded
+the repurchases/dividends, does not establish that no opening cash was
+used, and does not establish a year-over-year debt change. The facts are
+reported in parallel instead: FY2025 operating cash flow was $23.059
+billion; disclosed capex was $1.482 billion; total debt was $25.392
+billion (carrying value $25.171 billion) at fiscal year-end. Operating
+cash flow was large relative to the disclosed capex and capital-return
+figures in the same period — this record states that relative size, not a
+funding-source conclusion.
 
 **Management:** Ryan McInerney signed the FY2025 Form 10-K as Chief
 Executive Officer. **This record does not infer management quality from
@@ -145,17 +161,22 @@ title or tenure alone.** Multi-year capital-allocation execution quality
 value -- remains a judgment this record does not resolve from a single
 fiscal year's disclosure.
 
-## Payment-volume mix and dependencies (added in this correction)
+## Payment-volume mix and dependencies (added in this correction; figures completed in the final micro-correction)
 
-Visa's FY2025 Form 10-K discloses payments volume broken out by **consumer
-credit, consumer debit, and commercial** categories. This record
-preserves that the disclosure exists and is table-based within the 10-K's
-volume-and-transaction-statistics presentation; it does not restate the
-exact dollar or percentage split for each category here, since the
-addendum supplying this correction did not itself extract those specific
-per-category figures -- a narrower, disclosed limitation than the original
-record's blanket "not established" statement, and one this record flags
-explicitly rather than papering over with an invented split.
+Visa's FY2025 Form 10-K discloses **nominal payments volume** (twelve
+months ended 2025-06-30) broken out by category: **consumer credit $5.604
+trillion**; **consumer debit, including prepaid/Interlink as defined in
+the filing, $6.551 trillion**; **commercial $1.739 trillion**; **total
+nominal payments volume $13.894 trillion**. Reviewer arithmetic from these
+issuer-reported components (not an issuer-defined mix metric, and subject
+to filing rounding): consumer credit **≈40.33%**, consumer debit
+**≈47.15%**, commercial **≈12.52%** of total nominal payments volume.
+**Correction note:** an earlier version of this section stated only that
+the disclosure existed without reporting the figures; this was a genuinely
+available primary-source fact, not an unresolvable limitation, and has
+been completed here per GPT-5.6 Thinking's independent inspection of the
+FY2025 10-K's volume-and-transaction-statistics table (SEC accession
+0001403161-25-000089).
 
 **Dependencies:** Visa depends on financial-institution **issuers**,
 **acquirers**, **processors**, **merchants**, and **routing**
@@ -209,7 +230,8 @@ failure.
 
 ## Demonstrated downturn behavior (added in this correction)
 
-Visa's fiscal-2020 Form 10-K (fiscal year ended 2020-09-30) provides an
+Visa's fiscal-2020 Form 10-K (fiscal year ended 2020-09-30, SEC accession
+`0001403161-20-000070`, filed 2020-11-19) provides an
 observed stress case, used here as **historical evidence, not a forecast
 of the next downturn**: fiscal-2020 net revenue declined **approximately
 5%** year over year; international-transaction revenue declined
@@ -410,8 +432,9 @@ review and acceptance steps `PI-0028` and `OPS-0007` describe.
 carried over):** Visa shows a durable, network-scale payments-technology
 business with diversified, growing revenue, continued double-digit growth
 in its most recently reported quarter, and now-established financial
-quality (large operating cash flow relative to capex, an
-own-cash-flow-funded capital-return program). Held at High rather than
+quality (large operating cash flow relative to disclosed capex, alongside
+a disclosed capital-return program and total-debt figure, reported in
+parallel without a source-of-funds conclusion). Held at High rather than
 Very High because of concrete, current tensions: an active DOJ
 monopolization complaint concerning debit-network services with a denied
 motion to dismiss; the corrected, material client-incentive cost (≈28.25%
@@ -429,10 +452,10 @@ this record.
   disclosure above.
 - A complete liquidity/current-ratio picture beyond total debt, and any
   post-FY2025 debt issuance, are not established in this record.
-- Exact percentage/dollar splits for the disclosed consumer-credit/
-  consumer-debit/commercial payment-volume mix are not established in this
-  record (the categories' existence is disclosed; the specific figures are
-  not extracted here).
+- Which specific source (operating cash flow, existing cash, or other)
+  funded Visa's FY2025 capital-return program is not established in this
+  record — a source-of-funds conclusion was removed in this correction as
+  unsupported by the evidence inspected.
 - The dollar magnitude of Visa's potential interchange-litigation and
   DOJ-litigation exposure is not established in this record.
 - Whether the FY2025 $18.2B buyback program was value-accretive (price
@@ -443,10 +466,13 @@ this record.
 ## Sources
 
 See `V.yaml`'s `sources[]` for the structured register. All entries are
-sourced to GPT-5.6 Thinking's independent evidence-recovery audit and
-correction addendum
-(`governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md`
+sourced to GPT-5.6 Thinking's independent evidence-recovery audit,
+correction addendum, and (for the payment-volume-mix figures and the
+exact fiscal-2020 filing identity added in the final micro-correction)
+Appendix A of the corrected-head delta review
+(`governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md`,
+`governance/audits/PR171_BOUNDED_CORRECTION_PRIMARY_SOURCE_ADDENDUM_20260727.md`,
 and
-`governance/audits/PR171_BOUNDED_CORRECTION_PRIMARY_SOURCE_ADDENDUM_20260727.md`),
+`governance/audits/PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md`),
 with that provenance stated explicitly; no source in this record was
 directly opened by this Claude session.

@@ -1285,8 +1285,11 @@ workstreams:
           --check` CI gate; the retained copy carries SHA-256
           `ee497ac6323e25df5e0aa5cc3473e692c8566a84f0f2150a424d25d3a95bf9d8` (17,681 bytes, 225
           lines, unchanged), intentionally different from the as-delivered hash for that reason
-          only. Retained verbatim at
-          `governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md`. The audit's
+          only. Retained as a substantively unchanged, whitespace-normalized copy at
+          `governance/audits/BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md` (correction,
+          this entry: "Retained verbatim" was self-contradictory given the two disclosed hashes
+          immediately above — corrected per PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md finding
+          F171-1). The audit's
           own verdict: **source-readiness PASS for V, MA, and JPM**, with two disclosed mandatory
           near-term refresh triggers (Visa fiscal Q3 2026 results, 2026-07-28; Mastercard Q2 2026
           results, 2026-07-30) that do not invalidate the current pass. All three companies remained
@@ -1311,7 +1314,9 @@ workstreams:
           exactly 8 new files + 3 modified files (`intelligence/freshness_registry.yaml`,
           `intelligence/freshness_checkpoints.yaml`, `operations/WORKSTREAMS.yaml` itself as the
           third — correction: an earlier version of this entry undercounted this as "2 modified
-          files") — zero protected-path changes
+          files") — this 8+3=11 figure describes the state as of the original implementation
+          commit (`0d3bf5f`) only; see the final micro-correction entry below for the actual final
+          cumulative count at the corrected exact head — zero protected-path changes
           (`targets.yaml`/`holdings.yaml`/`allocate.py`/`margin_state.py`/`constitution/`/
           `docs/PORTFOLIO_INTELLIGENCE_SPEC.md`/`docs/INVESTMENT_ONTOLOGY.md`/every existing
           Company or Theme Intelligence record all confirmed untouched). **Pushed and opened as
@@ -1325,8 +1330,11 @@ workstreams:
           implementation review of PR #171 per `OPS-0007` §1 — not a merge, not a readiness
           transition, not further company research.**
 
-          **Bounded correction pass applied to PR #171** (reviewed head `580442d`), resolving every
-          blocking finding (I171-1 through I171-5) in GPT-5.6 Thinking's independent exact-head
+          **Bounded correction pass applied to PR #171** (reviewed head `580442d`), addressing —
+          intending to resolve, not self-certifying as resolved; whether each finding was actually
+          resolved is the independent reviewer's own conclusion, per
+          `PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md` finding F171-1 — every blocking finding
+          (I171-1 through I171-5) in GPT-5.6 Thinking's independent exact-head
           implementation review (`PR171_EXACT_HEAD_IMPLEMENTATION_REVIEW_20260727.md`, verdict
           CHANGES REQUIRED), using the accompanying primary-source addendum
           (`PR171_BOUNDED_CORRECTION_PRIMARY_SOURCE_ADDENDUM_20260727.md`, both attributable to
@@ -1364,6 +1372,47 @@ workstreams:
           status.** This entry authorizes no seventh Milestone 3 batch, no Milestone 4 work, and no
           advancement of `OPS-0007` §8 step I. **Next action: independent bounded corrected-head
           delta review of PR #171 at its new exact head, per `OPS-0007` §1.**
+
+          **Final bounded micro-correction pass applied to PR #171**, addressing — intending to
+          resolve, not self-certifying as resolved — every finding in GPT-5.6 Thinking's
+          independent corrected-head delta review (`PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md`,
+          verdict CHANGES REQUIRED — ONE FINAL MICRO-CORRECTION PASS; retained byte-for-byte at
+          `governance/audits/PR171_CORRECTED_HEAD_DELTA_REVIEW_20260727.md`, SHA-256
+          `13f94b8991395af7cda5b8c00d2c61a296ab8dcff3eb2ce69c7653f8f21d9897`, 14,062 bytes, 302
+          lines, independently verified by this session). Addressed: F171-1 (fixed the
+          self-contradictory "Retained verbatim" statement above; replaced the "resolving every
+          blocking finding" self-certification with "addressing... not self-certifying as
+          resolved"; this paragraph itself now records the actual final cumulative file count
+          below); F171-2 (completed Visa's and Mastercard's payment-volume/GDV/geographic mix
+          figures with issuer-reported values and reviewer arithmetic, and replaced generic SEC
+          EDGAR company-search URLs with exact fiscal-2020 filing accessions/dates/URLs for both
+          companies, all per the review's Appendix A); F171-3 (capital-return funding claims for
+          both V and MA rewritten as neutral parallel facts — operating cash flow, capex, debt,
+          repurchases, dividends — with the prior causal source-of-funds language removed); F171-4
+          (JPM's comparison-artifact mechanism corrected from "every non-Payments line is
+          balance-sheet-intermediation-specific" to a diversified-regulated-financial-intermediary
+          framing separating deposit/lending, advisory, markets, payments, custody, and
+          asset-management mechanisms). Scope: `intelligence/companies/{V,MA}.{yaml,md}`,
+          `intelligence/BATCH6_FINANCIAL_INFRASTRUCTURE_COMPARISON.md`, `operations/WORKSTREAMS.yaml`
+          (this entry), and one new retained review artifact — **`intelligence/companies/JPM.yaml`
+          and `JPM.md` were not touched** (no broken cross-reference required it). **Actual final
+          cumulative state at this commit, derived from git, not assumed**: **13 files** changed
+          from base `75b4cd3001c3d980a260cece0cee72602a44023b` — **10 new, 3 modified**
+          (`intelligence/freshness_registry.yaml`, `intelligence/freshness_checkpoints.yaml`, and
+          `operations/WORKSTREAMS.yaml` itself remain the three modified files across the whole PR;
+          the ten new files are the six company records, the comparison artifact, and the three
+          retained `governance/audits/` review/addendum files); **5 commits** total on this branch.
+          Live validation this session, on this commit: YAML parse clean; `intelligence_validator.py`
+          27/27 companies valid; freshness validator `OK`; `39` filed `=` `39` indexed decisions
+          (unchanged); `WS-0005` still sole primary workstream; focused Intelligence/freshness tests
+          `678/678` passed; full pytest suite `1502/1502` passed; `git diff --check` clean; zero
+          protected-path changes; both prior retained audits confirmed byte-unchanged by this pass.
+          **PR #171 remains draft, unmerged, not self-reviewed, not marked ready — independent
+          review, principal acceptance, merge, and post-merge verification all remain pending; no
+          completion or `OPS-0007` §3 PROVISIONAL status is claimed by this entry.** This entry
+          authorizes no seventh Milestone 3 batch, no Milestone 4 work, and no advancement of
+          `OPS-0007` §8 step I. **Next action: one final independent exact-head delta review of PR
+          #171 at this commit's exact head, per `OPS-0007` §1.**
         pr: 171
         status: in_progress
         date: "2026-07-27"
