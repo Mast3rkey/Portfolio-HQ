@@ -2152,6 +2152,25 @@ workstreams:
       merge; none of that has occurred yet. This filing itself grants no such completion,
       does not begin Milestone 4, OPS-0007 §8 step I, or any allocation/margin/trade work,
       and does not review, correct, mark ready, or merge itself.
+
+      **(Superseded by the paragraph below — Batch 5's governance filing referenced above has
+      since merged; see the milestone-3-intelligence-completion gate entry for its own detail.)**
+
+      **Milestone 3, Batch 6 (V, MA, JPM): merged and independently post-merge verified —
+      complete. No blocker remains on Batch 6.** PR #171 merged at merge commit
+      `5f08ad3f048a2a58986da2c55bbdb5e1b1a46a56` (exact reviewed head
+      `0e13e78a4a0bc44b7cfac0429b8546bbd07fa043`); this session's independent post-merge
+      verification passed and is retained byte-for-byte at
+      `governance/audits/PR171_INDEPENDENT_POST_MERGE_VERIFICATION.md` — see the
+      milestone-3-intelligence-completion gate entry above for full detail. V, MA, and JPM are
+      effective PROVISIONAL Company Intelligence, arising from that already-completed lifecycle;
+      this register only records that established fact and creates no new policy, portfolio,
+      allocator, freshness, or lifecycle authority. Milestone 3 remains blocked in aggregate
+      pending its own separate, later, explicit principal authorization for any further batch —
+      none has been granted by this entry, by PI-0028, or by anything else. **Current next
+      action: a principal decision on whether to authorize a separate Batch 7 governance
+      design/review unit.** Batch 7, Milestone 4, and `OPS-0007` §8 step I remain unauthorized;
+      no allocation, margin, or trading work is authorized.
     active_branch: null
     active_pr: null
     last_verified_main_sha: 5f08ad3f048a2a58986da2c55bbdb5e1b1a46a56
