@@ -2159,8 +2159,8 @@ workstreams:
       **Milestone 3, Batch 6 (V, MA, JPM): merged and independently post-merge verified —
       complete. No blocker remains on Batch 6.** PR #171 merged at merge commit
       `5f08ad3f048a2a58986da2c55bbdb5e1b1a46a56` (exact reviewed head
-      `0e13e78a4a0bc44b7cfac0429b8546bbd07fa043`); this session's independent post-merge
-      verification passed and is retained byte-for-byte at
+      `0e13e78a4a0bc44b7cfac0429b8546bbd07fa043`); the separate fresh-session independent
+      post-merge verification passed and is retained byte-for-byte at
       `governance/audits/PR171_INDEPENDENT_POST_MERGE_VERIFICATION.md` — see the
       milestone-3-intelligence-completion gate entry above for full detail. V, MA, and JPM are
       effective PROVISIONAL Company Intelligence, arising from that already-completed lifecycle;
