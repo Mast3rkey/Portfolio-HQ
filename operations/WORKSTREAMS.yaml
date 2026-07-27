@@ -1300,14 +1300,18 @@ workstreams:
           artifact (`intelligence/BATCH6_FINANCIAL_INFRASTRUCTURE_COMPARISON.md`); one additive
           freshness-registry row and one additive freshness-checkpoint row per company (`V`, `MA`,
           `JPM` — `enrollment_authority`/`company_record_authority: PI-0028`,
-          `monitoring_enabled: false`, `checkpoint_status: pending`, `channels: {}`); the retained
-          recovery audit copied byte-for-byte into `governance/audits/`. **Live validation this
+          `monitoring_enabled: false`, `checkpoint_status: pending`, `channels: {}`); the recovery
+          audit retained as a substantively unchanged, whitespace-normalized copy in
+          `governance/audits/` (correction: not "byte-for-byte," which was factually imprecise —
+          see the bounded-correction entry below). **Live validation this
           session, on the implementation branch**: YAML parse clean on every changed file; freshness
           validator `OK`; `39` filed `=` `39` indexed decisions (unchanged — no new decision file in
           this implementation PR); `WS-0005` still the sole primary workstream; full pytest suite
           `1502/1502` passed; `git diff --check` clean; diff scope against `origin/main` confirmed as
-          exactly 8 new files + 2 modified files (`intelligence/freshness_registry.yaml`,
-          `intelligence/freshness_checkpoints.yaml`) — zero protected-path changes
+          exactly 8 new files + 3 modified files (`intelligence/freshness_registry.yaml`,
+          `intelligence/freshness_checkpoints.yaml`, `operations/WORKSTREAMS.yaml` itself as the
+          third — correction: an earlier version of this entry undercounted this as "2 modified
+          files") — zero protected-path changes
           (`targets.yaml`/`holdings.yaml`/`allocate.py`/`margin_state.py`/`constitution/`/
           `docs/PORTFOLIO_INTELLIGENCE_SPEC.md`/`docs/INVESTMENT_ONTOLOGY.md`/every existing
           Company or Theme Intelligence record all confirmed untouched). **Pushed and opened as
@@ -1320,6 +1324,46 @@ workstreams:
           advancement of `OPS-0007` §8 step I. **Next action: obtain independent exact-head
           implementation review of PR #171 per `OPS-0007` §1 — not a merge, not a readiness
           transition, not further company research.**
+
+          **Bounded correction pass applied to PR #171** (reviewed head `580442d`), resolving every
+          blocking finding (I171-1 through I171-5) in GPT-5.6 Thinking's independent exact-head
+          implementation review (`PR171_EXACT_HEAD_IMPLEMENTATION_REVIEW_20260727.md`, verdict
+          CHANGES REQUIRED), using the accompanying primary-source addendum
+          (`PR171_BOUNDED_CORRECTION_PRIMARY_SOURCE_ADDENDUM_20260727.md`, both attributable to
+          GPT-5.6 Thinking, retained at
+          `governance/audits/PR171_BOUNDED_CORRECTION_PRIMARY_SOURCE_ADDENDUM_20260727.md`).
+          Corrected: Visa's client-incentive arithmetic (was $71.3B/~22%, corrected to
+          $55.751B/~28.25%, reviewer arithmetic from issuer-reported components); added source-backed
+          financial-quality, capital-allocation, management, mix, dependency, competitor/substitute,
+          cyber-risk, fiscal-2020-downturn, and disconfirming-evidence sections for all three
+          companies per `PI-0028`'s mandatory research fields; removed premature "approved after
+          independent review" conviction wording (replaced with a PROPOSED-rating disclosure) and
+          independently reassessed all three companies' conviction ratings; removed Mastercard's
+          unsupported "one notch below Visa" relative rationale; corrected "retained verbatim"/
+          "copied byte-for-byte" provenance language (both the original recovery audit and this
+          correction's own addendum required trailing-whitespace normalization in their retained
+          copies to clear `git diff --check` — both as-delivered and retained hashes now disclosed
+          everywhere either file is cited); replaced "JPM's equity stake in Visa" with "gain related
+          to Visa shares" and removed the unsupported "precisely because" management-motive claim;
+          quantified JPM's CET1/SLR headroom precisely (2.8/2.6/1.3 percentage points against their
+          disclosed requirements) in place of "comfortably above"/"wide margin"; added complete Q2
+          2026 JPM business-line evidence (net interest income, Investment Banking, Markets,
+          Securities Services, Asset & Wealth Management) so the record no longer describes JPM
+          primarily from Payments data; and corrected this very entry's own file-count
+          undercounting (see above). This Claude session did not directly inspect any primary
+          document cited in this correction — every new fact is attributed to GPT-5.6 Thinking's
+          addendum. **Live validation this session, on the corrected branch head**: YAML parse
+          clean on every changed file; `intelligence_validator.py` 27/27 companies valid; freshness
+          validator `OK`; `39` filed `=` `39` indexed decisions (unchanged); `WS-0005` still the
+          sole primary workstream; full pytest suite `1502/1502` passed; `git diff --check` clean;
+          zero protected-path changes; the original recovery audit
+          (`BATCH6_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260727.md`) confirmed byte-unchanged by
+          this correction. **PR #171 remains draft, unreviewed by an eligible independent reviewer
+          at its new exact head, unaccepted, and unmerged as of this entry — this correction does
+          not itself constitute review, acceptance, completion, or `OPS-0007` §3 PROVISIONAL
+          status.** This entry authorizes no seventh Milestone 3 batch, no Milestone 4 work, and no
+          advancement of `OPS-0007` §8 step I. **Next action: independent bounded corrected-head
+          delta review of PR #171 at its new exact head, per `OPS-0007` §1.**
         pr: 171
         status: in_progress
         date: "2026-07-27"
