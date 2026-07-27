@@ -264,18 +264,20 @@ downturn (above) is this record's best available evidence of that
 sensitivity in practice.
 
 **Payment-volume mix, issuer/acquirer dependency, and substitution risk**
--- see above; a disclosed but only partially quantified risk category.
+-- payment-volume mix is now quantified exactly (above); issuer/acquirer
+concentration trends and substitution risk remain a disclosed but not
+fully quantified risk category.
 
 **Fraud/cybersecurity/network-reliability risk** -- see above; a standing
 structural risk, not evidence of an active incident.
 
 **Narrowed but not eliminated evidence-completeness gap** -- this record
-now establishes FY2025 operating cash flow, capex, total debt, and capital
-return (above), but a complete liquidity/current-ratio picture, any
-post-FY2025 debt issuance, exact payment-volume-mix percentages, and
-multi-year capital-allocation execution quality remain unestablished from
-the sources inspected. This is a disclosed evidence gap, not an assumption
-of strength or weakness.
+now establishes FY2025 operating cash flow, capex, total debt, capital
+return, and payment-volume mix (above), but a complete liquidity/current-ratio
+picture, any post-FY2025 debt issuance, issuer/acquirer concentration
+trends, and multi-year capital-allocation execution quality remain
+unestablished from the sources inspected. This is a disclosed evidence
+gap, not an assumption of strength or weakness.
 
 ## Governed policy (existing, not a research conclusion)
 
@@ -292,17 +294,19 @@ this record, and this record does not recommend any change to it.
 **Business quality**, per the evidence above, is strong: a diversified,
 growing, network-scale payments-technology business with disclosed volume
 growth continuing into the most recent reported quarter, now-demonstrated
-financial quality (large operating cash flow relative to capex, an
-own-cash-flow-funded capital-return program), and a structural distinction
-from bank-model credit/deposit risk.
+financial quality (large operating cash flow relative to capex, alongside
+a disclosed capital-return program, without the evidence establishing a
+funding-source conclusion), and a structural distinction from bank-model
+credit/deposit risk.
 
 **Capital priority is a separate question.** V carries T1's standard 3.35%
 per-name target, tied with the other T1 names. **What would be lost if V
 were absent from the book:** direct exposure to global card-network
 transaction-processing economics -- a distinct economic mechanism from
 every other currently governed holding, including MA (see the comparison
-artifact for the V-versus-MA overlap discussion) and JPM (a
-balance-sheet-intermediation model, not a network-toll-road model). **The
+artifact for the V-versus-MA overlap discussion) and JPM (a diversified
+regulated financial intermediary whose deposit-and-lending activities
+include balance-sheet intermediation, not a network-toll-road model). **The
 retained evidence does not resolve whether the next investment dollar
 favors V over MA** -- both are payment networks sharing largely the same
 core economic mechanism (see `BATCH6_FINANCIAL_INFRASTRUCTURE_COMPARISON.md`

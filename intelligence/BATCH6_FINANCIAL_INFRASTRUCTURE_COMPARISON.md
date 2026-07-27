@@ -388,9 +388,9 @@ All three companies show real business-quality strength on the evidence
 gathered, now more completely evidenced after this correction: V and MA
 both run durable, growing, fee-based network businesses with
 now-established financial quality (large operating cash flow relative to
-capex, own-cash-flow-funded capital-return programs); JPM runs a
-well-capitalized (precisely quantified CET1/SLR headroom), diversified,
-growing banking franchise. **The three do not compete for capital priority
+disclosed capex and capital returns, without the evidence establishing a
+funding-source conclusion); JPM runs a well-capitalized (precisely
+quantified CET1/SLR headroom), diversified, growing banking franchise. **The three do not compete for capital priority
 in a uniform way** — V (T1, 3.35%) and MA (T2, 1.65%) already carry
 different governed tier weights reflecting different historical conviction
 levels (existing policy, not this batch's own conclusion), while JPM's
@@ -407,7 +407,9 @@ a real degree, already exposed to the other's core economics, even where
 company-specific distinctions (value-added-services mix, specific
 litigation/regulatory matters, and now, demonstrated fiscal-2020
 cyclicality) remain genuine. **JPM is the least redundant of the three**
-with either V or MA — its balance-sheet-intermediation model, credit-cycle
+with either V or MA — its diversified regulated financial-intermediary
+model (deposit-and-lending balance-sheet intermediation, advisory,
+markets, custody, and asset-management mechanisms — Section 6), credit-cycle
 exposure, and bank-regulatory-capital structure have no analog in either
 payment network's disclosed business, notwithstanding its own ~12%
 Payments/Securities Services overlap.

@@ -1413,6 +1413,55 @@ workstreams:
           authorizes no seventh Milestone 3 batch, no Milestone 4 work, and no advancement of
           `OPS-0007` §8 step I. **Next action: one final independent exact-head delta review of PR
           #171 at this commit's exact head, per `OPS-0007` §1.**
+
+          **Residual consistency correction (this update)**: GPT-5.6 Thinking's independent final
+          bounded exact-head delta review of the prior micro-corrected head
+          (`e0977b8e5e25d551892a564ef78dbf5c84594af3`) returned verdict **CHANGES REQUIRED — ONE
+          RESIDUAL CONSISTENCY CORRECTION** (findings R171-1..3, retained at
+          `governance/audits/PR171_FINAL_MICRO_CORRECTED_HEAD_REVIEW_20260727.md`, retained
+          byte-identical to the as-delivered artifact — SHA-256
+          `be0fb742bf4f6ca94bb24e52b260a2e732f8263874ea2acb959aab41edc1e25c`, no whitespace
+          normalization required this pass). This pass removed three stale, internally
+          contradictory statements surviving in already-corrected files: (R171-1) `V.md`'s
+          risk-detail and evidence-gap text still called payment-volume mix "only partially
+          quantified"/"exact... percentages... unestablished" after the file's own Payment-volume-mix
+          section already reported the exact figures, and its capital-priority section still used
+          "own-cash-flow-funded" causal wording and reduced JPM to a bare "balance-sheet-intermediation
+          model" in the V-vs-JPM uniqueness discussion; (R171-2) `MA.md`'s evidence-gap text
+          still called exact geographic/GDV-mix percentages unestablished, and its capital-priority
+          section retained the same "own-cash-flow-funded" wording; (R171-3) the comparison
+          artifact's qualitative next-dollar section (Section 10) retained "own-cash-flow-funded
+          capital-return programs" for V/MA and called JPM's model "balance-sheet-intermediation" as
+          a standalone description, contradicting the artifact's own already-corrected Sections 5-6.
+          All three were replaced with neutral parallel-fact wording (large operating cash flow
+          relative to disclosed outlays/capital returns, without asserting a funding source) and
+          with JPM consistently described as a diversified regulated financial intermediary whose
+          deposit-and-lending activities include balance-sheet intermediation, distinct from its
+          advisory, markets, payments/custody, and asset-management mechanisms. **Scope this pass:
+          only `intelligence/companies/V.md`, `intelligence/companies/MA.md`,
+          `intelligence/BATCH6_FINANCIAL_INFRASTRUCTURE_COMPARISON.md`, `operations/WORKSTREAMS.yaml`
+          (this entry), and one new retained review artifact were touched — `V.yaml`, `MA.yaml`,
+          `JPM.yaml`, `JPM.md`, both freshness files, and both prior retained audits were not
+          modified this pass (independently confirmed via `git diff`, prior head to this commit).**
+          Post-correction sweep confirmed zero remaining active occurrences, in any of the three
+          candidate files, of: `own-cash-flow-funded`; `exact payment-volume-mix percentages`;
+          `exact geographic and GDV-mix percentages`; `only partially quantified risk category`; the
+          standalone phrase `balance-sheet-intermediation model` (two historical, quoted references
+          to the phrase inside the comparison artifact's own "Correction note" changelog prose,
+          describing what an *earlier* version said before it was fixed, were left as historical
+          quotation, per the review's own stated allowance). Live validation this session, on this
+          commit: `intelligence_validator.py` 27/27 companies valid; freshness validator `OK`; `39`
+          filed `=` `39` indexed decisions, no duplicates (unchanged); `WS-0005` still sole primary
+          workstream; focused Intelligence/freshness tests `679/679` passed; full pytest suite
+          `1502/1502` passed; `git diff --check` (base `75b4cd3001c3d980a260cece0cee72602a44023b` to
+          this commit) clean; zero protected-path changes this pass. **PR #171 remains draft,
+          unmerged, not self-reviewed, not marked ready — one final independent exact-head review,
+          principal acceptance, merge, and post-merge verification all remain pending; no completion
+          or `OPS-0007` §3 PROVISIONAL status is claimed by this entry.** This entry authorizes no
+          seventh Milestone 3 batch, no Milestone 4 work, and no advancement of `OPS-0007` §8 step I.
+          **Next action: one final independent exact-head review of PR #171 at this commit's exact
+          head, per `OPS-0007` §1, followed by explicit principal acceptance before this PR may be
+          marked ready and merged.**
         pr: 171
         status: in_progress
         date: "2026-07-27"

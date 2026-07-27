@@ -236,9 +236,9 @@ quantified market-share movement.
 **Cross-border and downturn sensitivity** -- Mastercard's own fiscal-2020
 downturn (above) was materially sharper than Visa's in the same period.
 
-**Narrowed but not eliminated evidence-completeness gap** -- exact
-geographic and GDV-mix percentages, and multi-year
-capital-allocation/acquisition-integration execution quality, remain
+**Narrowed but not eliminated evidence-completeness gap** -- geographic
+revenue mix and GDV mix are now quantified exactly (above); multi-year
+capital-allocation/acquisition-integration execution quality remains
 unestablished from the sources inspected.
 
 ## Governed policy (existing, not a research conclusion)
@@ -258,8 +258,9 @@ parallels Visa's: a durable, growing network-toll-road business with a
 larger disclosed value-added-services share than this record establishes
 for Visa, value-added services growing faster than the core network
 segment, and now-established financial quality (large operating cash flow
-relative to capex, an own-cash-flow-funded capital-return program of
-approximately $14.5 billion in FY2025).
+relative to capex, alongside a disclosed capital-return program of
+approximately $14.5 billion in FY2025, without the evidence establishing
+a funding-source conclusion).
 
 **Capital priority is a separate question.** MA carries T2's standard
 1.65% per-name target, historically half V's T1 weight -- **this record
