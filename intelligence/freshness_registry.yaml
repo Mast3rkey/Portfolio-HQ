@@ -202,3 +202,27 @@ tickers:
     filing_trigger_profile: domestic_issuer_v1
     refresh_policy: path_a_fixed_scope_v1
     monitoring_enabled: false
+  - ticker: V
+    company_record_authority: PI-0028
+    enrollment_authority: PI-0028
+    enrolled_at: "2026-07-27"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: MA
+    company_record_authority: PI-0028
+    enrollment_authority: PI-0028
+    enrolled_at: "2026-07-27"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: JPM
+    company_record_authority: PI-0028
+    enrollment_authority: PI-0028
+    enrolled_at: "2026-07-27"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
