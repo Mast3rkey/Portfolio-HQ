@@ -1519,6 +1519,35 @@ workstreams:
           whether to authorize a separate Batch 7 governance design/review unit.** Batch 7 is not
           currently authorized; Milestone 4 is not authorized; `OPS-0007` §8 step I is not authorized;
           no allocation, margin, or trading work is authorized.
+
+          **Milestone 3, Batch 7 (LLY, ABBV, MRK, JNJ, GILD — "Biopharmaceuticals") authorized,
+          governance PR opened, not yet merged.** The principal directed a seventh Milestone 3 batch,
+          under `OPS-0008`'s Research Wave Protocol v1, naming exactly LLY, ABBV, MRK, JNJ, and GILD
+          — the roster's first-covered biopharmaceutical-franchise-and-pipeline-economics wave, at
+          `OPS-0008` §1's default 5-6-company size. `governance/decisions/
+          PI-0029-ws0005-milestone3-batch7-biopharmaceuticals.md` filed, `status: Accepted` at
+          filing per this repository's convention (operative effect begins only on merge).
+          **Preflight independently re-verified this same session before filing:** `origin/main`
+          fetched, confirmed identical to local `HEAD` at `2185d80d81e011b340ffdedd4ded26fd2cc9364d`
+          (PR #172's merge commit) before branching; zero open pull requests; `intelligence_validator.py`
+          run directly against `intelligence/companies/` — 27 files, all valid; `freshness_validator.py`
+          — OK; full pytest suite — 1502/1502 passed; `git diff --check` — clean; decision
+          filed-versus-indexed reconciliation — 39 filed = 39 indexed (pre-filing), no orphans,
+          `PI-0028` present in both; exactly-one-primary-workstream check — `WS-0005` sole
+          `priority: primary`. `intelligence/companies/`, `intelligence/freshness_registry.yaml`,
+          and `intelligence/freshness_checkpoints.yaml` independently confirmed to carry no LLY,
+          ABBV, MRK, JNJ, or GILD entry. `targets.yaml` independently confirmed: LLY is T1 (3.35%
+          target); ABBV, MRK, JNJ, GILD are each band (0.75% target, 1.25x cap); none of the five is
+          a member of any `caps.clusters` correlated-cluster cap. UNH — also a band-tier
+          healthcare-adjacent holding — is explicitly **not** part of this batch's authorized scope
+          (managed-care economics, a different mechanism from branded-franchise/pipeline economics).
+          **This filing itself authorizes only the governance-authorization package** (this decision
+          file, `governance/decisions.yaml`, this register, the applicable `CLAUDE.md` entry) — not
+          drafting any LLY/ABBV/MRK/JNJ/GILD Company Intelligence record or the comparison artifact,
+          not Milestone 4 work, not an eighth Milestone 3 batch, and not any advancement of
+          `OPS-0007` §8 step I. **Governance PR not yet independently reviewed or principal-accepted
+          at this entry's own writing** — this entry does not itself constitute review or acceptance,
+          and does not mark itself, or the PR carrying it, ready for merge.
         pr: 171
         status: in_progress
         date: "2026-07-27"
@@ -2167,13 +2196,27 @@ workstreams:
       this register only records that established fact and creates no new policy, portfolio,
       allocator, freshness, or lifecycle authority. Milestone 3 remains blocked in aggregate
       pending its own separate, later, explicit principal authorization for any further batch —
-      none has been granted by this entry, by PI-0028, or by anything else. **Current next
-      action: a principal decision on whether to authorize a separate Batch 7 governance
-      design/review unit.** Batch 7, Milestone 4, and `OPS-0007` §8 step I remain unauthorized;
-      no allocation, margin, or trading work is authorized.
+      none has been granted by this entry, by PI-0028, or by anything else.
+
+      **The principal has since authorized Milestone 3, Batch 7 (LLY, ABBV, MRK, JNJ, GILD —
+      "Biopharmaceuticals") under `OPS-0008`'s Research Wave Protocol v1.** `PI-0029` filed
+      (`governance/decisions/PI-0029-ws0005-milestone3-batch7-biopharmaceuticals.md`),
+      `status: Accepted` at filing per this repository's convention (operative effect begins only
+      on merge) — **not yet merged, not yet independently reviewed, not yet effective.** This
+      filing authorizes exactly the governance-authorization package (the decision file,
+      `governance/decisions.yaml`, this register, the applicable `CLAUDE.md` entry) — it does not
+      authorize drafting any LLY/ABBV/MRK/JNJ/GILD Company Intelligence record or the comparison
+      artifact (those require this decision's own independent review, principal acceptance, and
+      merge first, per `OPS-0006` §5/`OPS-0008` §4's authorization-precedes-research separation),
+      does not authorize an eighth Milestone 3 batch, does not begin Milestone 4, and does not
+      advance `OPS-0007` §8 step I. **Current exact next action: this PI-0029 governance PR's own
+      independent exact-head review, per `OPS-0007` §1, followed by explicit principal acceptance
+      before it may be marked ready and merged.** UNH remains outside this batch's authorized
+      scope and remains uncovered/unauthorized, alongside EQIX. No allocation, margin, or trading
+      work is authorized.
     active_branch: null
     active_pr: null
-    last_verified_main_sha: 5f08ad3f048a2a58986da2c55bbdb5e1b1a46a56
+    last_verified_main_sha: 2185d80d81e011b340ffdedd4ded26fd2cc9364d
     last_verified_date: "2026-07-27"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
@@ -2402,5 +2445,36 @@ workstreams:
       this same branch and PR, no other scope.** The PR remains draft and
       unmerged; corrected-head approval and principal acceptance remain
       pending.
+
+      **(Superseded by the paragraphs below — Batch 5's implementation and Batch 6's full lifecycle
+      have since completed; see the milestone-3-intelligence-completion gate entry for full detail.
+      Batch 5 (MSFT, GOOGL, META, AMZN) merged via PR #169; Batch 6 (V, MA, JPM) authorized via
+      `PI-0028`, implemented via PR #171, merged, and independently post-merge verified as
+      PROVISIONAL — reconciled via PR #172.)**
+
+      **`PI-0029` (Milestone 3, Batch 7 — LLY, ABBV, MRK, JNJ, GILD — "Biopharmaceuticals" —
+      evidence development only) has been filed**, `status: Accepted` at filing per this
+      repository's convention (operative effect begins only on merge) — **not yet merged, not yet
+      independently reviewed, not yet effective.** It authorizes exactly that seventh batch's
+      governance package under `OPS-0008`'s Research Wave Protocol v1, at the protocol's default
+      5-6-company wave size, naming the roster's first biopharmaceutical-franchise-and-pipeline-
+      economics coverage. This filing's own preflight independently re-confirmed, this same
+      session: `origin/main` at `2185d80d81e011b340ffdedd4ded26fd2cc9364d` (PR #172's merge
+      commit); zero open pull requests; `intelligence_validator.py` — 27 companies, all valid;
+      `freshness_validator.py` — OK; full pytest suite — 1502/1502 passed; `git diff --check` —
+      clean; decision filed-versus-indexed reconciliation — 39 filed = 39 indexed (pre-filing), no
+      orphans; exactly-one-primary-workstream check — `WS-0005` sole `priority: primary`;
+      `intelligence/companies/`, `intelligence/freshness_registry.yaml`, and
+      `intelligence/freshness_checkpoints.yaml` confirmed to carry no LLY/ABBV/MRK/JNJ/GILD entry;
+      `targets.yaml` confirmed LLY as T1 (3.35%) and ABBV/MRK/JNJ/GILD as band (0.75%, 1.25x cap
+      each), none a member of any `caps.clusters` correlated-cluster cap. **Neither `PI-0029` nor
+      this reconciliation authorizes an eighth Milestone 3 batch, any Milestone 4-9 work, or
+      advancement of `OPS-0007` §8 step I.** `PI-0029`'s own governance PR must itself remain in
+      draft state, gain its own eligible independent review anchored to its exact head per
+      `OPS-0007` §1, and receive explicit principal acceptance before it may be marked ready or
+      merged — this entry does not itself constitute that review or acceptance, and does not mark
+      the PR ready. UNH is explicitly outside `PI-0029`'s authorized scope (a structurally
+      different, managed-care economic mechanism from the other five) and remains uncovered and
+      unauthorized, alongside EQIX.
     supersedes: null
     superseded_by: null
