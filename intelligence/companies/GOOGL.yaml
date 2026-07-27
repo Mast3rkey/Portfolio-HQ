@@ -1,0 +1,63 @@
+sector: Communication Services
+industry: Interactive Media and Services
+portfolio_role_ref: T1
+competitive_advantages:
+  - "Still-largest-by-revenue, still-growing core advertising business alongside a now-profitable, fast-growing cloud segment: Q1 2026 (quarter ended 2026-03-31) revenue $109.896B, +22% YoY, operating income $39.696B. Revenue by type: Google Search & other $60.399B, YouTube ads $9.883B, Google Network $6.971B (total Google advertising $77.253B), subscriptions/platforms/devices $12.384B, Google Cloud $20.028B. Search & other revenue increased $9.7B YoY, attributed by Alphabet to search-query adoption/usage, advertiser spending, and ad-format/delivery improvements. Per Alphabet's own Q1 2026 Form 10-Q, independently inspected by GPT-5.6 Thinking (2026-07-26 evidence-recovery audit; this Claude session did not itself open this document -- see Source-access disclosure in GOOGL.md)."
+  - "Google Cloud is now a genuine, profitable growth engine, not a subsidized loss leader: Q1 2026 Google Cloud revenue grew 63% YoY, and segment operating income was $6.598B (Google Services segment operating income was $40.589B; Other Bets operating loss was $(2.100)B)."
+  - "Large, disclosed forward revenue backlog: $467.6B total at 2026-03-31, of which $462.3B related to Google Cloud, just over half expected to be recognized over the next 24 months. Backlog is not realized revenue and Alphabet changed its backlog-reporting methodology in Q1 2026 to include certain contracts of one year or less (approximately $7.3B of the total reflects those) -- a genuine comparability caveat, disclosed rather than omitted."
+  - "Custom AI silicon (TPU) program with disclosed, if early, external commercialization: Alphabet disclosed a limited number of agreements to supply TPU hardware for specialized high-scale on-premises infrastructure, with revenue recognition expected to begin later in 2026 and mostly in 2027 -- a forward-looking recognition expectation, not yet realized revenue."
+  - "Strong liquidity and demonstrated capital-markets access: cash, cash equivalents, and marketable securities of $126.840B at 2026-03-31; Q1 2026 operating cash flow $45.8B; Alphabet also issued senior unsecured notes for $31.1B of net proceeds in Q1 2026, during the same quarter as the capex increase, evidencing access to debt markets; this record does not establish that the proceeds were used to fund the capex buildout specifically."
+risks:
+  - risk: "Two live, material, and currently unresolved U.S. antitrust matters, not a single settled legacy case. In the search-distribution case, a final judgment (including restrictions on distribution and requirements involving certain search data and syndication services) was entered in December 2025; Alphabet appealed in January 2026, and DOJ/states also appealed in February 2026 -- both sides are actively litigating the remedy. In the ad-tech case, an April 2025 liability decision found against Alphabet, with remedies proceedings ongoing; Alphabet's own filing states proposed structural remedies could materially affect the business, and Alphabet intends to appeal adverse rulings after final judgment. A structural remedy, if ultimately imposed, is a materially different risk category than a fine or behavioral commitment."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Capex has more than doubled year over year, in the same quarter Alphabet issued new debt: Q1 capital expenditures rose from $17.2B (Q1 2025) to $35.7B (Q1 2026), primarily technical infrastructure, with Alphabet expecting a significant further 2026 increase in servers, network equipment, and data centers (forward-looking). The same quarter saw $31.1B of new senior unsecured notes issued -- new debt issuance accompanied the capex increase in the same reporting period, but the evidence does not establish the use of debt proceeds, a causal funding relationship between the two, or a change in Alphabet's total debt, net-debt position, or leverage ratio, which this record treats as unresolved, not established facts."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "TPU customer agreements are not risk-free upside: at least some TPU agreements involve credit backstops supporting third-party data centers and power infrastructure, per Alphabet's own Q1 2026 filing -- a financing/counterparty exposure structurally different from a simple hardware sale, and one this record cannot fully size from the disclosed language alone."
+    severity: low
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Other Bets remained loss-making in Q1 2026 ($(2.100)B segment operating income) with no disclosed near-term profitability path in any source this record relies on."
+    severity: low
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Advertising remains the single largest disclosed revenue source (Google advertising $77.253B of $109.896B total Q1 2026 revenue, roughly 70%); Google Cloud's fast growth has not replaced the core advertising economics, and any material weakening in digital-advertising demand would still be Alphabet's single largest exposure by dollar revenue, notwithstanding Cloud's momentum."
+    severity: low
+    identified: "2026-07-26"
+    status: monitoring
+catalysts:
+  - catalyst: "Ad-tech case remedies proceedings and final judgment, following the April 2025 liability decision -- Alphabet has stated proposed structural remedies could materially affect the business; no source in this record's evidence base establishes a specific remedies/judgment date, so 2026-12-31 is an internal review checkpoint, not a forecast of event timing"
+    expected: "2026-12-31"
+    status: pending
+  - catalyst: "Search-distribution case appeal outcomes, following the December 2025 final judgment and the January/February 2026 cross-appeals; no source establishes a specific appeal-resolution date, so 2027-06-30 is an internal review checkpoint, not a forecast of event timing"
+    expected: "2027-06-30"
+    status: pending
+  - catalyst: "TPU hardware revenue recognition beginning, per Alphabet's own disclosed expectation of 'later in 2026, with most revenue in 2027' -- the general timeframe is company-disclosed, but the specific 2027-01-01 date is an internal review checkpoint approximating 'early 2027,' not a source-established exact date"
+    expected: "2027-01-01"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "Alphabet shows genuinely strong, diversified, and accelerating core economics: a still-largest-by-revenue advertising franchise growing double digits, a now-profitable and fast-growing cloud segment (63% YoY revenue growth, $6.598B quarterly segment operating income), a very large disclosed cloud backlog, and strong liquidity ($126.840B cash/marketable securities) with demonstrated capital-markets access. Conviction is held at Medium rather than High because of two concrete, current, unresolved tensions of a different character than ordinary business risk: two simultaneous, live U.S. antitrust matters, one of which (ad-tech) already carries an adverse liability finding with a possible structural remedy still to be determined, and a capex acceleration (more than doubled YoY) accompanied by a same-quarter new debt issuance -- new debt issuance accompanied the capex increase, but the specific use of proceeds, total-debt change, and net-leverage change are not established by any source this record relies on, so this record does not assert capex is directly debt-funded or that financial leverage increased. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments, and does not treat the disclosed cloud backlog as equivalent to realized revenue, nor treat either antitrust matter's outcome as resolved."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-26"
+  next_due: "2026-10-24"
+  log:
+    - date: "2026-07-26"
+      note: "Record created under governance/decisions/PI-0027-ws0005-milestone3-batch5-hyperscaler-ai-infrastructure.md and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline (no prior Alphabet Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3 Batch 5, alongside MSFT, META, and AMZN (EQIX explicitly deferred). This Claude Code session's own direct WebFetch attempts on this date were blocked (HTTP 403) on every Alphabet/Google domain tested (abc.xyz/investor, abc.xyz/assets/investor-relations, investor.google.com) and on SEC EDGAR -- zero primary documents were opened directly by this session for GOOGL. Per OPS-0008 Section 2's mandatory stop-before-drafting gate, this session paused, produced BATCH5_SOURCE_READINESS_MANIFEST.md (SHA-256 8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211), and the principal supplied an independent evidence-recovery audit performed by GPT-5.6 Thinking (2026-07-26), The original delivered predecessor audit had SHA-256 98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909. GPT-5.6 Thinking subsequently reissued a canonical CI-clean copy (only Markdown trailing whitespace differed from the predecessor artifact -- substantive evidence text did not change); the repository contains that canonical inspector reissue at governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md, SHA-256 1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7, independently verified by this session against the delivered file before use. Every fact in this record is sourced to that retained audit -- this Claude session did not itself open Alphabet's Q1 2026 Form 10-Q or either DOJ case page."
+sources:
+  - note: "Alphabet Inc., Form 10-Q for the quarter ended 2026-03-31 (accession 0001652044-26-000048, filed 2026-04-30/accepted 2026-04-29) -- Financial Statements, Revenue Backlog, Segment Information, MD&A (Google Cloud), Liquidity and Capital Resources, and Commitments and Contingencies/Legal Matters sections. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session (WebFetch confirmed blocked, HTTP 403, on SEC EDGAR). Supports Q1 2026 revenue/operating income, revenue-by-type and segment tables, Cloud growth rate, backlog figures and methodology change, capex, cash/liquidity, debt issuance, and legal-proceedings status."
+    url: "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000048/goog-20260331.htm"
+    date: "2026-04-29"
+  - note: "U.S. Department of Justice, Antitrust Division, case page for United States and Plaintiff States v. Google LLC (2020, search-distribution matter) -- final judgment, remedies materials, 2026 compliance status reports. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session."
+    url: "https://www.justice.gov/atr/case/us-and-plaintiff-states-v-google-llc"
+    date: "2026-07-26"
+  - note: "U.S. Department of Justice, Antitrust Division, case page for United States and Plaintiff States v. Google LLC (2023, ad-tech matter) -- April 2025 liability opinion, 2025 remedies materials. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session."
+    url: "https://www.justice.gov/atr/case/us-and-plaintiff-states-v-google-llc-2023"
+    date: "2026-07-26"
+  - note: "GPT-5.6 Thinking, WS-0005 Milestone 3 Batch 5 Primary-Source Evidence-Recovery Audit -- retained audit synthesizing the three sources above into claim-level extracts with required fact labeling. This session verified the retained repository copy's SHA-256 matches the value supplied with the audit before relying on it."
+    url: "governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md"
+    date: "2026-07-26"

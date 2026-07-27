@@ -1,0 +1,66 @@
+sector: Communication Services
+industry: Interactive Media and Services
+portfolio_role_ref: T1
+competitive_advantages:
+  - "Accelerating growth on a very large existing base: Q1 2026 (quarter ended 2026-03-31) total revenue $56.311B, +33% YoY, operating income $22.872B. Family of Apps operating income was $26.900B (Reality Labs operating loss $4.028B). Ad impressions increased 19% YoY and average price per ad increased 12% YoY -- growth from both volume and pricing, not one alone. Average Family daily active people were 3.56B in March 2026, +4% YoY. Per Meta's own Q1 2026 Form 10-Q, independently inspected by GPT-5.6 Thinking (2026-07-26 evidence-recovery audit; this Claude session did not itself open this document -- see Source-access disclosure in META.md)."
+  - "Very large, still-growing, high-margin Family of Apps segment: FY2025 Family of Apps operating income was $102.469B (per Meta's FY2025 Form 10-K), against a Q1 2026 quarterly run of $26.900B -- a scale of profitability that funds Meta's large discretionary AI and Reality Labs investment without external financing evident in this record."
+  - "Real infrastructure ownership, not purely leased capacity: Meta's FY2025 Form 10-K reports ownership of 30 data-center locations globally, alongside use of some leased data centers -- a disclosed, tangible AI/compute infrastructure footprint."
+  - "A live, favorable (though appealed) legal outcome, not an unresolved overhang alone: the district court entered judgment in Meta's favor in November 2025 in the FTC monopolization case; the FTC filed a notice of appeal on 2026-01-20. Meta currently holds the trial-level win, distinct from GOOGL's and AMZN's still-pending matters in this batch."
+risks:
+  - risk: "Extreme single-revenue-stream concentration: Q1 2026 advertising revenue was $55.024B against total revenue of $56.311B -- advertising is essentially the entire disclosed revenue base (roughly 98%). Meta's filing identifies platform and regulatory changes as able to impair ad targeting and measurement, and states Apple's platform-policy changes have already negatively affected ad targeting/measurement and may continue to affect marketer budgets -- a disclosed, already-realized impact, not a hypothetical one."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "No public-cloud-resale business was disclosed to offset AI capital expenditure: unlike MSFT, GOOGL, and AMZN in this same batch, the inspected evidence discloses no Meta customer-facing cloud business. Meta anticipated approximately $125 billion to $145 billion of 2026 capital expenditures to support AI efforts and the core business (forward-looking guidance); the currently evidenced recovery path depends primarily on Meta's own advertising, applications, devices, and platform economics -- MSFT/GOOGL/AMZN, by contrast, disclose a customer-facing cloud business that could in principle recover capex from third-party sales."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Reality Labs is a large, persistent, and guided-to-continue loss: FY2025 Reality Labs operating loss was $19.193B; Q1 2026 Reality Labs operating loss was $4.028B on revenue that declined 2% YoY (lower Quest sales partly offset by higher AI-glasses sales); Meta expects full-year 2026 Reality Labs operating losses to remain similar to 2025 -- forward-looking guidance, not a resolved trajectory toward profitability."
+    severity: moderate
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "Custom-silicon (MTIA) evidence gap: the evidence-recovery audit underlying this record explicitly could not establish equivalent primary evidence for Meta's own custom-silicon program's scale or economics, in contrast to the more specific disclosures available for MSFT (Maia/Cobalt), GOOGL (TPU), and AMZN (AWS-chip obligations in its OpenAI/Anthropic arrangements). This record does not assert MTIA deployment scale or performance."
+    severity: low
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "R&D expense growth outpacing revenue growth: Q1 2026 R&D expense was $17.699B, +46% YoY, against total revenue growth of +33% YoY, with the increase partly attributed to employee compensation and AI-related infrastructure -- an expense-growth trajectory worth monitoring relative to revenue growth, though not yet evidence of margin deterioration given operating income also grew."
+    severity: low
+    identified: "2026-07-26"
+    status: monitoring
+  - risk: "FTC monopolization allegation remains live on appeal despite the favorable district-court judgment: the FTC continues to allege Meta maintained a personal-social-networking monopoly through the Instagram and WhatsApp acquisitions, and filed a notice of appeal on 2026-01-20 -- an unresolved regulator allegation on appeal, not an adjudicated fact, and distinct from Meta's current trial-level win."
+    severity: low
+    identified: "2026-07-26"
+    status: monitoring
+catalysts:
+  - catalyst: "FTC appeal of the November 2025 district-court judgment in Meta's favor in the personal-social-networking monopolization case; no source in this record's evidence base establishes a specific appeal-resolution date, so 2027-06-30 is an internal review checkpoint, not a forecast of event timing"
+    expected: "2027-06-30"
+    status: pending
+  - catalyst: "FY2026 full-year capital-expenditure realization against the guided $125 billion-$145 billion range -- 2026-12-31 is an internal review checkpoint tied to calendar-year-end, not a source-established event date"
+    expected: "2026-12-31"
+    status: pending
+  - catalyst: "Reality Labs FY2026 operating-loss trajectory relative to management's 'similar to 2025' guidance -- 2026-12-31 is an internal review checkpoint tied to calendar-year-end, not a source-established event date"
+    expected: "2026-12-31"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "Meta shows the strongest recent growth momentum of this batch on disclosed metrics (Q1 2026 revenue +33% YoY, ad impressions +19%, price per ad +12%) and a very large, high-margin core Family of Apps segment (FY2025 operating income $102.469B) funding its own large AI/Reality Labs investment without external financing evident in this record. Conviction is held at Medium, not High, because Meta carries the most concentrated risk profile of the four companies in this batch on the evidence available: advertising is roughly 98% of disclosed revenue with an already-realized (not merely hypothetical) negative impact from Apple's platform-policy changes; no public-cloud-resale business was disclosed in the inspected evidence to offset Meta's very large guided AI capex ($125B-$145B for 2026), while MSFT, GOOGL, and AMZN in this same batch disclose customer-facing cloud businesses that can in principle provide a third-party monetization channel (this record does not claim Meta's possible external monetization paths are permanently closed); Reality Labs is a large, persistent loss guided to continue at a similar scale in 2026; and this record's evidence base could not establish Meta's own custom-silicon (MTIA) program's scale or economics, a genuine evidentiary gap relative to the other three companies' more specific chip disclosures. This rating explicitly excludes valuation, entry-price, allocation, trading, and margin judgments, and treats the FTC's continuing appeal as an unresolved allegation, not a settled matter, notwithstanding Meta's current trial-level win."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-26"
+  next_due: "2026-10-24"
+  log:
+    - date: "2026-07-26"
+      note: "Record created under governance/decisions/PI-0027-ws0005-milestone3-batch5-hyperscaler-ai-infrastructure.md and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline (no prior Meta Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3 Batch 5, alongside MSFT, GOOGL, and AMZN (EQIX explicitly deferred). This Claude Code session's own direct WebFetch attempts on this date were blocked (HTTP 403) on every Meta domain tested (investor.fb.com, investor.atmeta.com, about.fb.com, about.meta.com) and on SEC EDGAR -- zero primary documents were opened directly by this session for META. Per OPS-0008 Section 2's mandatory stop-before-drafting gate, this session paused, produced BATCH5_SOURCE_READINESS_MANIFEST.md (SHA-256 8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211), and the principal supplied an independent evidence-recovery audit performed by GPT-5.6 Thinking (2026-07-26), The original delivered predecessor audit had SHA-256 98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909. GPT-5.6 Thinking subsequently reissued a canonical CI-clean copy (only Markdown trailing whitespace differed from the predecessor artifact -- substantive evidence text did not change); the repository contains that canonical inspector reissue at governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md, SHA-256 1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7, independently verified by this session against the delivered file before use. Every fact in this record is sourced to that retained audit -- this Claude session did not itself open Meta's FY2025 Form 10-K, Q1 2026 Form 10-Q, or the FTC press release."
+sources:
+  - note: "Meta Platforms, Inc., Form 10-K for the year ended 2025-12-31 (accession 0001628280-26-003942, filed/accepted 2026-01-28) -- Business, Risk Factors, Properties, Legal Proceedings, MD&A, Segment profitability, Liquidity and capital resources, and Commitments and contingencies sections. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session (WebFetch confirmed blocked, HTTP 403, on SEC EDGAR). Supports FY2025 Family of Apps/Reality Labs operating income and loss, and the 30-data-center-location disclosure."
+    url: "https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/meta-20251231.htm"
+    date: "2026-01-28"
+  - note: "Meta Platforms, Inc., Form 10-Q for the quarter ended 2026-03-31 (accession 0001628280-26-028526, filed 2026-04-29) -- Financial Statements, Segment Information, Executive Overview, Revenue and Segment Profitability, Liquidity and Capital Resources, Commitments and Contingencies/Legal Proceedings, and Risk Factors sections. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session. Supports Q1 2026 revenue/operating income, advertising/Family of Apps revenue, segment profitability, ad-impression/price metrics, DAP metric, capex and 2026 capex guidance, R&D expense, cash position, Apple platform-policy impact, and FTC litigation status."
+    url: "https://www.sec.gov/Archives/edgar/data/1326801/000162828026028526/meta-20260331.htm"
+    date: "2026-04-29"
+  - note: "U.S. Federal Trade Commission, 'FTC Appeals Ruling in Meta Monopolization Case' -- official press release, 2026-01-20. Directly inspected by GPT-5.6 Thinking (independent evidence-recovery audit, 2026-07-26), not opened directly by this Claude session. Establishes the FTC's notice of appeal and its continuing allegation, distinct from the district court's November 2025 judgment in Meta's favor."
+    url: "https://www.ftc.gov/news-events/news/press-releases/2026/01/ftc-appeals-ruling-meta-monopolization-case"
+    date: "2026-01-20"
+  - note: "GPT-5.6 Thinking, WS-0005 Milestone 3 Batch 5 Primary-Source Evidence-Recovery Audit -- retained audit synthesizing the three sources above into claim-level extracts with required fact labeling. This session verified the retained repository copy's SHA-256 matches the value supplied with the audit before relying on it."
+    url: "governance/audits/BATCH5_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260726.md"
+    date: "2026-07-26"

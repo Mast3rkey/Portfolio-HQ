@@ -1907,10 +1907,164 @@ workstreams:
       before merge — Milestone 3, Batch 4 (ETN, VRT, PWR) is fully complete.
       **PI-0027 (Milestone 3, Batch 5 — MSFT, GOOGL, META, AMZN — evidence
       development only, EQIX explicitly deferred) and OPS-0008 (Research Wave
-      Protocol v1) are filed together in this same governance PR, both
-      effective only upon that PR's own merge.** Neither authorizes a sixth
-      Milestone 3 batch, any Milestone 4-9 work, or advancement of
-      `OPS-0007` step I. This filing itself does not review, correct, mark
-      ready, or merge itself.
+      Protocol v1) have since merged**, via PR #168 (merge commit
+      `86884377d653a3f5413d9c43b0b20142381f629a`, reviewed head
+      `e8c28d938397f6d76740094665c6cd03f5079d64`, confirmed `origin/main`'s
+      tip) — both effective. Neither authorizes a sixth Milestone 3 batch,
+      any Milestone 4-9 work, or advancement of `OPS-0007` step I.
+
+      **Milestone 3, Batch 5 (MSFT, GOOGL, META, AMZN) implementation
+      drafted 2026-07-26 (not merged, not complete).** A prior session
+      attempted this batch, found `OPS-0008` §2's mandatory source-readiness
+      gate blocked (SEC EDGAR fully blocked; GOOGL/META/AMZN
+      investor-relations domains fully blocked; MSFT partially accessible
+      via two `microsoft.com/investor` pages only), and correctly stopped
+      before drafting, producing `BATCH5_SOURCE_READINESS_MANIFEST.md`
+      (SHA-256 `8a9e943e0f189ea83d2c89fd34fdb263bd0c23ee49f9b49a2a81e08cc033a211`).
+      The principal supplied an independent evidence-recovery audit
+      performed by GPT-5.6 Thinking (2026-07-26) under `OPS-0008` §2's
+      standing pre-authorization; this session independently verified the
+      audit's as-delivered SHA-256
+      (`98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`)
+      against both uploaded copies (confirmed byte-identical to each other)
+      and its own cited manifest checksum before relying on it, then
+      discovered this exact-head CI run (`test`, run `30222778769`) failed
+      (`git diff --check` exit code 2) solely on ~80 Markdown
+      hard-line-break trailing-whitespace lines inside the as-delivered
+      document — present in the document as delivered, confirmed not
+      introduced by this session. Following the precedent already
+      established for Batch 4's own retained audits
+      (`governance/audits/PR166_PRIMARY_SOURCE_AUDIT_20260726.md`,
+      `PR166_CORRECTED_HEAD_REVIEW_20260726.md`, both normalized the same
+      way per this register's own prior entry), this session normalized
+      trailing whitespace only in the retained repository copy — confirmed,
+      via a whitespace-collapsed diff against the as-delivered file, that no
+      substantive content changed — yielding a different, "as-retained"
+      SHA-256 (`1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`)
+      that now clears `git diff --check` locally; **the corresponding CI
+      run at the amended head confirmed successful: `test`, workflow run
+      `30222978917`, check run `89848497292`, conclusion `success`.** This
+      conflict (evidence byte-identity vs. this repository's CI gate) was
+      disclosed explicitly on the PR before being resolved this way, rather
+      than resolved silently. **Corrected provenance description (per
+      `PI-0027`/`OPS-0008` review finding I169-1, below): the repository
+      copy is the canonical CI-clean inspector reissue GPT-5.6 Thinking
+      subsequently issued (SHA-256
+      `1ce03813cc3b855d8643708e56063653342476435cebafaf2f4b97ffd0f64ff7`),
+      not a "retained verbatim" or "byte-for-byte" copy of the original
+      delivered predecessor audit (SHA-256
+      `98d00c3c73805177c8301c680dee8dc06eee1b5caff5d4f250d13519051ab909`) —
+      only Markdown trailing whitespace differed between the two;
+      substantive evidence text did not change.** Implementation then
+      proceeded on
+      branch `claude/ws0005-batch5-hyperscaler-impl`, base `origin/main`
+      `86884377d653a3f5413d9c43b0b20142381f629a`:
+      `intelligence/companies/MSFT.yaml`/`MSFT.md`,
+      `intelligence/companies/GOOGL.yaml`/`GOOGL.md`,
+      `intelligence/companies/META.yaml`/`META.md`, and
+      `intelligence/companies/AMZN.yaml`/`AMZN.md` created; one
+      hand-authored comparison artifact
+      (`intelligence/BATCH5_HYPERSCALER_AI_INFRASTRUCTURE_COMPARISON.md`)
+      created; one freshness-registry and one freshness-checkpoint row
+      added per ticker (`monitoring_enabled: false`,
+      `checkpoint_status: pending`,
+      `enrollment_authority`/`company_record_authority: PI-0027`). Every
+      fact not explicitly attributed to this session's own two successful
+      `microsoft.com` fetches is sourced to the retained GPT-5.6 Thinking
+      audit, with per-claim attribution disclosed in each record. `EQIX`
+      is absent; no existing Company or Theme Intelligence record was
+      modified; no tier/target/holdings/cluster/cap/allocator/margin file
+      was touched. Post-drafting validation, run by this session:
+      `intelligence_validator.py` — 24 companies (20 pre-existing + 4 new),
+      all valid; 2 themes, both valid, unmodified; `freshness_validator.py`
+      — registry/checkpoint cross-validation OK; decision
+      filed-versus-indexed reconciliation — 38 filed = 38 indexed;
+      exactly-one-primary-workstream check — WS-0005 remains sole
+      `priority: primary`; focused Intelligence/freshness tests — 678/678
+      passed; full pytest suite — 1502/1502 passed (same count as the
+      pre-batch baseline, confirming no test file was added or removed);
+      `git diff --check` — clean locally after the whitespace-only
+      normalization described above, and confirmed in CI (run `30222978917`,
+      check `89848497292`, conclusion `success`) at head
+      `a935a0f33e4dbc54dc61ee4f5953376236c6c1be`. **This entry does not
+      itself constitute independent review or principal acceptance.**
+
+      **Independent exact-head review received: CHANGES REQUIRED.** GitHub
+      review `4782850690` (state `COMMENTED`, relayed from GPT-5.6 Thinking
+      under `OPS-0007` §1's capability-based standard) returned six findings
+      (I169-1 through I169-6) at exact head
+      `a935a0f33e4dbc54dc61ee4f5953376236c6c1be` — provenance-wording
+      accuracy (I169-1, addressed above), a cross-company capex conclusion
+      exceeding the retained evidence (I169-2), an overstated AWS-vs-Microsoft
+      cloud-profitability comparison (I169-3), company-specific inferences
+      exceeding the claim envelope for MSFT/AMZN/META (I169-4), unsourced
+      catalyst dates and convention-only cadence rationale (I169-5), and
+      stale WORKSTREAMS wording (I169-6, this entry). **One bounded
+      correction pass is in progress on this same branch and PR, addressing
+      exactly these six findings and no other scope** — no new company, no
+      new research claim outside the existing evidence envelope, no
+      tier/target/holdings/cluster/cap/allocator/margin change.
+
+      **Bounded correction pass complete and validated.** Substantive
+      correction commit `1d00b905f6fcd2109f9084235b75cfe3450d8f38` addressed
+      I169-1 through I169-6 across the four Company Intelligence records,
+      the comparison artifact, and this register's own prior entry — exactly
+      the 10 files these findings named (the four `MSFT`/`GOOGL`/`META`/
+      `AMZN` `.yaml`/`.md` pairs, the comparison artifact, and this file);
+      no `governance/audits/` file, freshness-registry/checkpoint row, or
+      any other file was touched by this commit. Its exact-head CI
+      confirmed successful: `test`, workflow run `30227027952`, check run
+      `89858796353`, conclusion `success`. Re-run at that commit:
+      `intelligence_validator.py` 24/24 companies + 2/2 themes valid;
+      `freshness_validator.py` OK; decision filed-versus-indexed
+      reconciliation 38 filed = 38 indexed (unchanged); exactly-one-primary-
+      workstream check unchanged (WS-0005 sole `priority: primary`); focused
+      Intelligence/freshness tests 678/678 passed; full pytest suite
+      1502/1502 passed (same count as baseline); `git diff --check` clean.
+      **The PR remains draft and unmerged; no independent corrected-head
+      review, approval, or principal acceptance has occurred yet** — this
+      register entry does not itself constitute review or acceptance.
+      Neither this drafting, this correction pass, nor this register entry
+      authorizes a sixth Milestone 3 batch, any Milestone 4-9 work, or
+      advancement of `OPS-0007` §8 step I.
+
+      **Second independent corrected-head delta review received: CHANGES
+      REQUIRED.** GitHub review `4782958257` (state `COMMENTED`, relayed
+      from GPT-5.6 Thinking under `OPS-0007` §1's capability-based
+      standard) found the first correction pass adequately resolved
+      I169-1, I169-2, I169-3, I169-5, and I169-6, but identified three
+      narrow factual corrections still required: Meta monetization
+      wording in places still reading as categorical rather than bounded
+      to the inspected evidence (D169-1); GOOGL/AMZN debt-issuance
+      passages still asserting a financial-leverage increase beyond what
+      the retained evidence establishes (D169-2); and a factually reversed
+      GOOGL/AMZN liquidity ordering claim (D169-3), plus two non-blocking
+      wording cleanups (MSFT's T1-weight phrasing; the comparison
+      artifact's capex table). **Second bounded correction pass complete
+      and validated.** Correction commit
+      `b501caabe8e2a90aa0db6bb1ec7c0cee66ef921c` addressed D169-1, D169-2,
+      D169-3, and both non-blocking cleanups. Its exact-head CI confirmed
+      successful: `test`, workflow run `30228242248`, check run
+      `89862133582`, conclusion `success`.
+
+      **Third independent final corrected-head delta review received:
+      CHANGES REQUIRED.** GitHub review `4783017914` (state `COMMENTED`,
+      relayed from GPT-5.6 Thinking under `OPS-0007` §1's capability-based
+      standard, anchored to exact head
+      `b501caabe8e2a90aa0db6bb1ec7c0cee66ef921c`) found D169-1 and D169-3
+      resolved but identified three residual textual issues: the
+      comparison artifact's capital-priority section still implying a
+      causal debt-funding relationship for GOOGL/AMZN AI investment
+      (F169-1); AMZN.md's conviction rationale still asserting a "growing
+      balance" of unsecured notes without an established prior-period
+      baseline (F169-2); and AMZN.md's capital-priority section still
+      claiming the largest disclosed cloud-segment operating income in the
+      batch, reintroducing a three-company ordering the Microsoft evidence
+      cannot support (F169-3). **One final narrow textual correction pass
+      addressing exactly these three findings, limited to the comparison
+      artifact, AMZN.md, and this register entry, is being performed on
+      this same branch and PR, no other scope.** The PR remains draft and
+      unmerged; corrected-head approval and principal acceptance remain
+      pending.
     supersedes: null
     superseded_by: null
