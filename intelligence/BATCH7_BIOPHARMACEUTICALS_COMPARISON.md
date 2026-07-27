@@ -237,6 +237,149 @@ structural complexity; comparing JNJ's MedTech segment directly against
 ISRG or TMO would equally overstate the similarity. This record does not
 attempt either comparison as a ranking.
 
+## Portfolio uniqueness and what exposure would be lost if each were absent
+
+- **If LLY were absent:** loss of the book's only direct exposure to
+  incretin-class commercial growth at this scale. The named competitive
+  set (Novo Nordisk and other incretin developers) is not itself a
+  governed holding, so no governed substitute for this specific exposure
+  is identified in this record's evidence base.
+- **If ABBV were absent:** loss of the batch's most advanced, already-
+  demonstrated patent-cliff-replacement outcome (Skyrizi/Rinvoq versus
+  Humira) plus its neuroscience/oncology/aesthetics diversification —
+  partially, but not fully, substitutable by MRK's or JNJ's own,
+  less-advanced replacement efforts (Section "Major replacement burden"
+  above).
+- **If MRK were absent:** loss of the batch's single largest concentrated
+  franchise (Keytruda, ~49% of Q1 2026 sales) and its active lifecycle-
+  extension execution — no other Batch 7 company carries a comparably
+  large single-product revenue share.
+- **If JNJ were absent:** loss of the book's only combined pharmaceutical-
+  plus-device (Innovative Medicine plus MedTech) exposure and its
+  disclosed balance-sheet/capital-return profile — **not substitutable**
+  by ABBV, MRK, or GILD's pure(r)-play pharmaceutical models, and not
+  substitutable by ISRG or TMO given the MedTech-boundary distinction
+  above.
+- **If GILD were absent:** loss of the batch's only antiviral/HIV-
+  concentrated franchise and its demonstrated capacity to fund capital
+  return and acquisition-driven diversification concurrently — no other
+  Batch 7 company carries comparable HIV-specific exposure.
+
+This record does not currently establish what, if anything, outside this
+batch's five companies would substitute for any of the above — that
+determination would require a portfolio-wide relationship-mapping exercise
+(Milestone 4), which remains unauthorized.
+
+## Genuine diversification versus duplicated exposure
+
+**Genuinely different exposures:** each company's named franchise
+mechanism is distinct — LLY's incretin/cardiometabolic growth, ABBV's
+post-Humira immunology transition, MRK's oncology-led concentration, JNJ's
+combined pharmaceutical-plus-device structure, and GILD's antiviral/HIV
+concentration are not, on this record's evidence, the same underlying
+product or therapeutic-area bet.
+
+**Duplicative exposure:** all five nonetheless share one structural
+mechanism — revenue concentrated in a small number of patent-protected
+franchises, subject to the same regulatory-approval, patent-cliff/
+loss-of-exclusivity, and business-development-driven-replacement cycle
+(see "Major replacement burden" and "Dependencies and shared external
+drivers" above). **In this specific sense, five separate tickers still
+represent one broad category of franchise/pipeline-policy risk** — a
+drug-pricing-policy change, a patent-litigation-doctrine shift, or a
+biosimilar-approval-pathway change could plausibly affect several or all
+five at once, independent of any one company's own execution.
+
+**JNJ's MedTech segment changes, but does not erase, this batch overlap.**
+JNJ's MedTech business is not exposed to the same pharmaceutical patent-
+cliff cycle as its own Innovative Medicine segment or as the other four
+companies' pure(r)-play pharmaceutical businesses — but JNJ's Innovative
+Medicine segment (65% of Q2 2026 sales) remains fully exposed to that
+shared mechanism, so JNJ is only partially, not fully, diversified away
+from the batch-wide risk.
+
+**Why differing therapeutic area does not automatically equal independent
+economic risk:** LLY's cardiometabolic growth, ABBV's immunology
+transition, MRK's oncology-replacement burden, and GILD's HIV
+concentration are different diseases and different products, but each is
+subject to the *same category* of regulatory, pricing, and
+exclusivity-cycle risk described above — therapeutic-area difference
+reduces company-specific (idiosyncratic) risk correlation but does not, on
+this record's evidence, eliminate the shared policy/regulatory-cycle
+correlation. This record does not create or recommend a cluster cap for
+this batch — that determination, like the semis/power_infra/oil clusters,
+would require its own separate correlation-measurement exercise outside
+this batch's authorized scope.
+
+## Qualitative next-dollar (capital-priority) considerations
+
+**This section separates business quality from capital priority for all
+five companies and compares them against each other and against the
+next-best use of capital among this repository's other governed holdings
+— it produces no score, index, or ranking, consistent with this
+document's own prohibited-output confirmation below.**
+
+All five companies show real business-quality strength on the evidence
+gathered (see each company's own record and the sections above), and **the
+five do not compete for capital priority in a uniform way**: LLY carries
+this batch's only T1 placement (3.35%), while ABBV, MRK, JNJ, and GILD
+each carry the band tier's 0.75% target (1.25x cap) — existing governed
+policy reflecting different historical conviction levels, not this
+batch's own conclusion. Per `OPS-0006` Sections 2-3, this batch's research
+does not independently re-derive whether those existing weight
+differentials are evidence-supported.
+
+- **Evidence that could favor LLY:** the batch's fastest current growth
+  (Q1 2026 revenue +56%, incretin revenue +90%) and a real regulatory
+  conversion (Foundayo) into a new product line, weighed against the
+  batch's most acute revenue concentration in a still-pricing-pressured
+  franchise (68% of Q1 2026 revenue) and simultaneous manufacturing-plus-
+  four-acquisition execution risk.
+- **Evidence that could favor ABBV:** the batch's most advanced, already-
+  executed patent-cliff replacement, weighed against unquantified-in-this-
+  record intangible/goodwill exposure (F-2) and uneven diversification
+  (Imbruvica's decline).
+- **Evidence that could favor MRK:** current Keytruda strength and active
+  lifecycle-extension execution, weighed against the batch's largest
+  single-franchise concentration with its principal exclusivity step-down
+  still ahead (not yet absorbed, unlike ABBV's) and large, unproven
+  acquisition charges.
+- **Evidence that could favor JNJ:** the batch's most complete disclosed
+  balance sheet and its unique combined pharmaceutical-plus-device
+  structure, weighed against material, not-fully-estimable litigation
+  exposure (F-4, B7-U005) and MedTech's comparatively slower growth.
+- **Evidence that could favor GILD:** durable, currently-growing HIV cash
+  generation and demonstrated capacity to fund capital return and
+  acquisitions concurrently, weighed against the batch's highest single-
+  franchise concentration (~72%) and its largest near-term earnings/
+  capital burden (~$11.5 billion anticipated IPR&D/financing costs) with
+  unestablished return.
+- **Evidence that could favor a non-Batch-7 governed holding instead:**
+  this record does not perform a comparison against specific holdings
+  outside this batch beyond the required UNH mechanism check below; any
+  such comparison would require its own separate research scope.
+- **Evidence currently insufficient for comparison:** precise patent/
+  exclusivity timing for all five companies (B7-U001) remains unresolved,
+  which limits how precisely any of the above trade-offs can be
+  sequenced or dated.
+
+**UNH redundancy/mechanism check (required by `PI-0029`):** UNH remains a
+band-tier (0.75%), currently uncovered holding whose economic mechanism is
+managed-care/payer economics — structurally different from all five Batch
+7 companies' branded-pharmaceutical-franchise-and-pipeline economics. This
+document does not create new UNH research, does not assign UNH any
+conviction, quality, tier, target, or capital-priority judgment, and does
+not claim any Batch 7 company is better or worse than UNH. A fully
+evidenced capital comparison against UNH must abstain until UNH receives
+its own governed Company Intelligence coverage.
+
+**None of the above resolves into a preferred holding.** Business quality
+and portfolio capital priority are separate judgments; this document does
+not determine any governed target — current tiers and targets for all
+five companies remain binding, this document does not change them, and
+any actual next-dollar decision requires portfolio-wide comparison and
+principal approval.
+
 ## Company-specific disconfirming evidence
 
 See each company's own `.md` record for its full disconfirming-evidence

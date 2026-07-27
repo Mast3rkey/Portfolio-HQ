@@ -136,6 +136,58 @@ governed policy, preserved as a historical comparison baseline only, per
 treated as evidence supporting any conclusion in this record, and this
 record does not recommend any change to it.
 
+## Capital priority and next-dollar considerations
+
+**Business quality**, per the evidence above, shows a still-large,
+still-growing Keytruda franchise with active lifecycle-extension execution
+(the June 2026 adjuvant renal-cell-carcinoma approval) and genuine, if
+early, diversification (Winrevair, Animal Health, and the July 2026
+Lipfendra approval).
+
+**Capital priority is a separate question, and MRK's own current band
+placement (0.75% target, 1.25x cap) -- the same tier as ABBV, JNJ, GILD,
+and the uncovered UNH -- is itself a data point this record preserves as
+historical policy, not evidence.** MRK's distinct exposure within this
+batch is an oncology-led franchise whose principal exclusivity step-down
+is **not yet reflected in current results** -- a structurally different,
+and on this record's evidence, earlier-stage position in the
+patent-cliff/replacement cycle than ABBV's already-executed transition or
+JNJ's currently-offsetting one. **What would be lost if MRK were absent:**
+the batch's largest single-product revenue share (Keytruda, ~49% of Q1
+2026 sales) and its currently active lifecycle-extension execution.
+
+**Factors that could support greater capital priority** include Keytruda's
+current commercial strength, demonstrated combination-strategy execution,
+and multiple new, real (not merely announced) diversification launches in
+the same year. **Factors favoring an alternative use of capital** include
+MRK's own disclosed concentration (~49% of Q1 2026 sales in one franchise,
+with its principal exclusivity step-down still ahead rather than already
+absorbed), underlying growth of only 3% excluding foreign exchange,
+very large one-time acquisition charges ($9.0 billion Cidara, an
+additional ~$5.8 billion expected Terns) whose eventual return on capital
+this record's evidence base does not establish, and the unresolved,
+probability-weighted replacement-timing question (B7-U004). A holding
+whose largest franchise has already absorbed its exclusivity event --
+rather than one still approaching it -- could reasonably be favored by a
+reviewer weighting forward replacement-timing risk more heavily than
+current commercial strength.
+
+**UNH redundancy/mechanism check (required by `PI-0029`):** UNH is a
+band-tier (0.75%), currently uncovered holding whose economic mechanism is
+managed-care/payer economics -- fundamentally different from MRK's
+branded-pharmaceutical-franchise-and-pipeline economics. This record does
+not create new UNH research, does not assign UNH any conviction, quality,
+tier, target, or capital-priority judgment, and does not claim MRK is
+better or worse than UNH. A fully evidenced capital comparison between
+MRK and UNH must abstain until UNH receives its own governed Company
+Intelligence coverage.
+
+Business quality and portfolio capital priority are separate judgments.
+This record does not determine the governed target: MRK's current band
+tier and 0.75% target remain binding, this Intelligence record does not
+change them, and a final next-dollar decision requires portfolio-wide
+comparison and principal approval.
+
 ## Freshness and next-review requirements
 
 Research cutoff: **2026-07-27**. Known unavailable material: Merck's Q2

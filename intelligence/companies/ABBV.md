@@ -146,6 +146,56 @@ governed policy, preserved as a historical comparison baseline only, per
 treated as evidence supporting any conclusion in this record, and this
 record does not recommend any change to it.
 
+## Capital priority and next-dollar considerations
+
+**Business quality**, per the evidence above, shows a real, already-
+executed patent-cliff replacement: Skyrizi plus Rinvoq revenue ($6.602
+billion) is several times Humira's current residual run-rate ($688
+million), alongside genuine diversification into neuroscience, oncology,
+and aesthetics, and continued pipeline conversion (the Decnupaz approval).
+
+**Capital priority is a separate question, and ABBV's own current band
+placement (0.75% target, 1.25x cap) -- the same tier as MRK, JNJ, GILD,
+and the uncovered UNH -- is itself a data point this record preserves as
+historical policy, not evidence.** ABBV's distinct exposure within this
+batch is a franchise-replacement transition that has **substantially
+already happened** in reported results, rather than one still ahead (MRK's
+Keytruda replacement) or still mid-course (JNJ's Stelara replacement).
+**What would be lost if ABBV were absent:** exposure to the batch's most
+advanced demonstrated patent-cliff-replacement outcome -- this record does
+not identify another currently governed holding with a comparably advanced,
+already-realized immunology-franchise transition.
+
+**Factors that could support greater capital priority** include the
+replacement's demonstrated completion (lower forward execution risk on
+this specific question than ABBV's same-batch peers), continued pipeline
+conversion (Decnupaz), and the disclosed decade-long U.S. investment
+pledge as a signal of continued capital commitment. **Factors favoring an
+alternative use of capital** include the substantial, currently-
+unquantified-in-this-record goodwill and intangible-asset exposure (F-2),
+Imbruvica's 24.7% decline showing the company's diversification is uneven
+rather than uniform, the dated 2028 Medicare-pricing exposure for Botox,
+and the unresolved batch-wide question of how much of ABBV's growth is
+internally generated versus acquisition-dependent (B7-U003). A holding
+with more fully quantified balance-sheet disclosure could reasonably be
+favored until F-2 is resolved through direct primary-source access.
+
+**UNH redundancy/mechanism check (required by `PI-0029`):** UNH is a
+band-tier (0.75%), currently uncovered holding whose economic mechanism is
+managed-care/payer economics -- fundamentally different from ABBV's
+branded-pharmaceutical-franchise-and-pipeline economics. This record does
+not create new UNH research, does not assign UNH any conviction, quality,
+tier, target, or capital-priority judgment, and does not claim ABBV is
+better or worse than UNH. A fully evidenced capital comparison between
+ABBV and UNH must abstain until UNH receives its own governed Company
+Intelligence coverage.
+
+Business quality and portfolio capital priority are separate judgments.
+This record does not determine the governed target: ABBV's current band
+tier and 0.75% target remain binding, this Intelligence record does not
+change them, and a final next-dollar decision requires portfolio-wide
+comparison and principal approval.
+
 ## Freshness and next-review requirements
 
 Research cutoff: **2026-07-27**. Known unavailable material: AbbVie's Q2

@@ -156,6 +156,61 @@ comparison baseline only, per `OPS-0006` Sections 2-3's zero-based-research
 discipline** -- it is not treated as evidence supporting any conclusion in
 this record, and this record does not recommend any change to it.
 
+## Capital priority and next-dollar considerations
+
+**Business quality**, per the evidence above, is genuinely strong on several
+dimensions: a fast-growing, still-expanding incretin franchise (Q1 2026
+revenue +56%, incretin revenue +90%), a real regulatory conversion into an
+approved product (Foundayo) rather than a pipeline promise, and deliberate
+pipeline diversification beyond incretins (four announced 2026
+acquisitions plus internal immunology/oncology/neuroscience programs).
+
+**Capital priority is a separate question, and LLY's own current T1
+placement (3.35%, the book's largest per-name tier weight) is itself a
+data point this record preserves as historical policy, not evidence.**
+LLY's cardiometabolic/incretin growth exposure is not duplicated by any
+other Batch 7 company (ABBV, MRK, JNJ, and GILD each concentrate in a
+different franchise -- immunology, oncology, multi-segment, and antiviral
+respectively) or by the book's other governed healthcare holdings, ISRG
+and TMO (T2, 1.65% each; device/tools economics, not branded-franchise
+pipeline economics). **What would be lost if LLY were absent:** the book's
+only direct exposure to incretin-class commercial growth at this scale --
+the named competitive set (Novo Nordisk and other incretin developers,
+see the comparison artifact) is not itself a governed holding, so this
+record does not identify a governed substitute for this specific exposure.
+
+**Factors that could support greater capital priority** include LLY's
+demonstrated growth rate relative to the rest of the batch, the Foundayo
+approval as evidence of pipeline execution, and the four 2026 acquisitions
+as evidence of deliberate diversification beyond a single franchise.
+**Factors favoring an alternative use of capital** include LLY's own
+disclosed concentration (68% of Q1 2026 revenue in a narrow key-product
+set that is simultaneously the source of both the growth and the realized-
+pricing pressure), Foundayo's boxed-warning safety burden, the simultaneous
+execution risk of large manufacturing investment alongside four separate
+acquisition integrations in one quarter, and the unresolved batch-wide
+patent/exclusivity-timeline question (B7-U001) this record has not
+independently verified. A less-concentrated holding -- within this batch
+(e.g. JNJ's two-segment structure) or elsewhere in the governed book --
+could reasonably be favored by a reviewer weighting concentration risk
+more heavily than growth momentum.
+
+**UNH redundancy/mechanism check (required by `PI-0029`):** UNH is a
+band-tier (0.75%), currently uncovered holding whose economic mechanism is
+managed-care/payer economics -- fundamentally different from LLY's
+branded-pharmaceutical-franchise-and-pipeline economics. This record does
+not create new UNH research, does not assign UNH any conviction, quality,
+tier, target, or capital-priority judgment, and does not claim LLY is
+better or worse than UNH. A fully evidenced capital comparison between LLY
+and UNH must abstain until UNH receives its own governed Company
+Intelligence coverage.
+
+Business quality and portfolio capital priority are separate judgments.
+This record does not determine the governed target: LLY's current T1
+tier and 3.35% target remain binding, this Intelligence record does not
+change them, and a final next-dollar decision requires portfolio-wide
+comparison and principal approval.
+
 ## Freshness and next-review requirements
 
 Research cutoff: **2026-07-27**. Known unavailable material: Lilly's Q2 2026

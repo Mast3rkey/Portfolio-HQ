@@ -186,6 +186,68 @@ governed policy, preserved as a historical comparison baseline only, per
 treated as evidence supporting any conclusion in this record, and this
 record does not recommend any change to it.
 
+## Capital priority and next-dollar considerations
+
+**Business quality**, per the evidence above, shows real segment
+diversification (Innovative Medicine and MedTech, both growing, with
+different drivers), a broad Innovative Medicine pipeline-replacement
+effort currently offsetting a large disclosed Stelara headwind, and a
+disclosed balance sheet with meaningful cash, free cash flow, and
+capital-return capacity.
+
+**Capital priority is a separate question, and JNJ's own current band
+placement (0.75% target, 1.25x cap) -- the same tier as ABBV, MRK, GILD,
+and the uncovered UNH -- is itself a data point this record preserves as
+historical policy, not evidence.** JNJ's distinct exposure within this
+batch is the only holding combining pharmaceutical (Innovative Medicine)
+and device/procedure (MedTech) economics in a single company -- a
+structurally different mix from ABBV's, MRK's, and GILD's pure(r)-play
+pharmaceutical models. **This record explicitly distinguishes JNJ MedTech
+from `ISRG` and `TMO`** (the book's other governed device/tools holdings,
+T2, 1.65% each, `life_sciences_tools_medtech` theme): ISRG and TMO sell
+devices and tools directly to hospitals, surgeons, labs, and biopharma
+customers as their primary business, while JNJ MedTech is one segment of
+a diversified pharmaceutical-and-device conglomerate, reported alongside
+and cross-subsidized within the same corporate structure as Innovative
+Medicine -- not an equivalent, interchangeable exposure. **What would be
+lost if JNJ were absent:** the book's only combined pharmaceutical-plus-
+device exposure and its disclosed balance-sheet/capital-return profile;
+this record does not identify another currently governed holding that
+replicates that specific combination.
+
+**Factors that could support greater capital priority** include the
+genuine two-segment diversification, pipeline replacement currently
+running ahead of (not behind) Stelara's erosion, and the most complete
+disclosed balance-sheet picture among this batch's five companies ($20.8
+billion cash, ~$8.7 billion year-to-date free cash flow, $6.4 billion
+year-to-date dividends). **Factors favoring an alternative use of capital**
+include material, not-fully-estimable product-liability litigation (F-4,
+including talc-related matters, with the financially plausible outcome
+range unresolved -- B7-U005), MedTech's slower Q2 2026 growth (3.6% versus
+Innovative Medicine's 6.8%), the structural complexity of analyzing two
+different economic models under one ticker, and the disclosed evidence
+gap from J&J's Q2 2026 Form 10-Q not yet being located as filed at this
+record's cutoff. A purer-play pharmaceutical alternative, easier to
+analyze on a single economic model, could reasonably be favored by a
+reviewer who weights analytical simplicity or wants to avoid segment-level
+complexity.
+
+**UNH redundancy/mechanism check (required by `PI-0029`):** UNH is a
+band-tier (0.75%), currently uncovered holding whose economic mechanism is
+managed-care/payer economics -- fundamentally different from JNJ's
+combined branded-pharmaceutical/MedTech economics. This record does not
+create new UNH research, does not assign UNH any conviction, quality,
+tier, target, or capital-priority judgment, and does not claim JNJ is
+better or worse than UNH. A fully evidenced capital comparison between
+JNJ and UNH must abstain until UNH receives its own governed Company
+Intelligence coverage.
+
+Business quality and portfolio capital priority are separate judgments.
+This record does not determine the governed target: JNJ's current band
+tier and 0.75% target remain binding, this Intelligence record does not
+change them, and a final next-dollar decision requires portfolio-wide
+comparison and principal approval.
+
 ## Freshness and next-review requirements
 
 Research cutoff: **2026-07-27**. Known unavailable material: J&J's Q2 2026

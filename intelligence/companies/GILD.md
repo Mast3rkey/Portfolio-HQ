@@ -142,6 +142,62 @@ governed policy, preserved as a historical comparison baseline only, per
 treated as evidence supporting any conclusion in this record, and this
 record does not recommend any change to it.
 
+## Capital priority and next-dollar considerations
+
+**Business quality**, per the evidence above, shows a large, currently
+growing HIV franchise (product sales excluding Veklury +8% in Q1 2026),
+meaningful balance-sheet strength with active concurrent capital return
+(debt repayment, dividends, and buybacks in the same quarter as large
+acquisition spending), and real 2026 regulatory conversion (Hepcludex,
+expanded Trodelvy indications).
+
+**Capital priority is a separate question, and GILD's own current band
+placement (0.75% target, 1.25x cap) -- the same tier as ABBV, MRK, JNJ,
+and the uncovered UNH -- is itself a data point this record preserves as
+historical policy, not evidence.** GILD's distinct exposure within this
+batch is the only antiviral/HIV-concentrated franchise -- a different
+mechanism from ABBV's immunology transition, MRK's oncology concentration,
+and JNJ's multi-segment structure. **What would be lost if GILD were
+absent:** exposure to the batch's most singularly concentrated (~72% of
+Q1 2026 revenue) base franchise, which on this record's evidence is also
+currently growing (+8% ex-Veklury), plus its demonstrated capacity to
+fund both capital return and acquisition-driven diversification
+concurrently.
+
+**Factors that could support greater capital priority** include the HIV
+franchise's demonstrated durability and current growth, the concurrent
+capital-return-and-acquisition-investment capacity, and real regulatory
+conversion in two separate therapeutic areas (liver disease and oncology)
+in the same year. **Factors favoring an alternative use of capital**
+include GILD's own disclosed concentration -- the highest single-franchise
+revenue share among this batch's five companies -- a real, current
+contraction in one named diversification engine (cell therapy, Yescarta
+-14%), the largest near-term earnings and capital burden of the five
+(~$9.50 EPS reduction for ~$11.5 billion of anticipated Arcellx/Ouro/
+Tubulis-related costs) whose eventual clinical and economic return this
+record's evidence base does not establish, and the unresolved question of
+whether oncology/cell therapy will become a durable second engine
+(B7-U006). A holding with a demonstrated, rather than still-emerging,
+second engine -- or with lower single-franchise concentration -- could
+reasonably be favored by a reviewer weighting diversification more heavily
+than current cash-generation strength.
+
+**UNH redundancy/mechanism check (required by `PI-0029`):** UNH is a
+band-tier (0.75%), currently uncovered holding whose economic mechanism is
+managed-care/payer economics -- fundamentally different from GILD's
+branded-pharmaceutical-franchise-and-pipeline economics. This record does
+not create new UNH research, does not assign UNH any conviction, quality,
+tier, target, or capital-priority judgment, and does not claim GILD is
+better or worse than UNH. A fully evidenced capital comparison between
+GILD and UNH must abstain until UNH receives its own governed Company
+Intelligence coverage.
+
+Business quality and portfolio capital priority are separate judgments.
+This record does not determine the governed target: GILD's current band
+tier and 0.75% target remain binding, this Intelligence record does not
+change them, and a final next-dollar decision requires portfolio-wide
+comparison and principal approval.
+
 ## Freshness and next-review requirements
 
 Research cutoff: **2026-07-27**. Known unavailable material: Gilead's Q2
