@@ -1303,16 +1303,17 @@ workstreams:
           `intelligence/freshness_checkpoints.yaml`) — zero protected-path changes
           (`targets.yaml`/`holdings.yaml`/`allocate.py`/`margin_state.py`/`constitution/`/
           `docs/PORTFOLIO_INTELLIGENCE_SPEC.md`/`docs/INVESTMENT_ONTOLOGY.md`/every existing
-          Company or Theme Intelligence record all confirmed untouched). **This PR is not yet
-          pushed, opened, reviewed, or merged as of this entry — independent exact-head
+          Company or Theme Intelligence record all confirmed untouched). **Pushed and opened as
+          draft PR #171** (`claude/ws0005-batch6-financial-infrastructure-impl` → `main`) —
+          **not marked ready, not reviewed, not merged as of this entry** — independent exact-head
           implementation review, any required bounded correction, exact-head re-review, principal
-          acceptance, merge, and post-merge verification all remain pending.** This entry does not
+          acceptance, merge, and post-merge verification all remain pending. This entry does not
           describe Batch 6 as merged, complete, or `OPS-0007` §3 PROVISIONAL — none of those are
           true yet. This entry authorizes no seventh Milestone 3 batch, no Milestone 4 work, and no
-          advancement of `OPS-0007` §8 step I. **Next action: push the branch, open one draft PR,
-          and obtain independent exact-head implementation review per `OPS-0007` §1 — not a merge,
-          not a readiness transition, not further company research.**
-        pr: 169
+          advancement of `OPS-0007` §8 step I. **Next action: obtain independent exact-head
+          implementation review of PR #171 per `OPS-0007` §1 — not a merge, not a readiness
+          transition, not further company research.**
+        pr: 171
         status: in_progress
         date: "2026-07-27"
       - gate: milestone-4-portfolio-relationship-mapping
@@ -1946,7 +1947,7 @@ workstreams:
       does not begin Milestone 4, OPS-0007 §8 step I, or any allocation/margin/trade work,
       and does not review, correct, mark ready, or merge itself.
     active_branch: claude/ws0005-batch6-financial-infrastructure-impl
-    active_pr: null
+    active_pr: 171
     last_verified_main_sha: 75b4cd3001c3d980a260cece0cee72602a44023b
     last_verified_date: "2026-07-27"
     authorized_by: >
