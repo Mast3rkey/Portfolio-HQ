@@ -1,7 +1,7 @@
 ---
 decision_id: PI-0033
 date: 2026-07-28
-status: Proposed
+status: Accepted
 category: portfolio_intelligence
 related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0011, PI-0013, PI-0014, PI-0016, PI-0027, PI-0029, PI-0031, PI-0032]
 supporting_artifact: null
@@ -370,3 +370,20 @@ automatic implementation is authorized or implied by this decision alone.** Any 
 of the seventeen names addressed here requires its own separate, later, explicit governance decision,
 naming that company specifically and stating why its reopening trigger has occurred — exactly the
 discipline `PI-0016`, `PI-0023`-`PI-0032`, `PI-0014`, and `PI-0027` already established.
+
+---
+
+_**2026-07-28 acceptance and merge record** (dated note, appended per `governance/decisions/README.md`'s
+convention for a narrow factual/lifecycle correction — no edit to this decision's substance): this
+governance filing was independently reviewed and explicitly principal-accepted at exact head
+`f1a69e33f89ef41b981ee482ed8d7dc41e3656ea`, then merged to `main` via PR #185 at merge commit
+`25af2afb10ccf947119935173468f9f13b8159e3` — independently confirmed via `git show --format="%H %P"`,
+whose two parents are `db43d8b0e71dcf8915f74d81703e5fe260ecd6ce` (base, PR #184's merge commit) and
+`f1a69e33f89ef41b981ee482ed8d7dc41e3656ea` (the reviewed, principal-accepted head). Frontmatter
+`status` is updated to `Accepted` accordingly. This note records the completed review/acceptance/merge
+lifecycle event only. It does not begin, expand, narrow, or reinterpret any disposition, trigger, or
+restatement in §§A-B above — every one of those remains controlling exactly as filed. In particular:
+no research has been performed by this note; none of the fourteen new dispositions or the three
+restated deferrals is reopened, reversed, or altered; and Milestone 3 remains `in_progress` — this note
+does not authorize Milestone 4 or declare Milestone 3 complete. See `operations/WORKSTREAMS.yaml` for
+the corresponding register synchronization._
