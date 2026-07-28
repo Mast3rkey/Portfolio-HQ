@@ -1,0 +1,100 @@
+sector: Materials
+industry: Construction Aggregates and Building Materials
+portfolio_role_ref: T2
+competitive_advantages:
+  - "Leading supplier of aggregates and other building materials with operations across 28 U.S. states, Canada, and The Bahamas -- a broad geographic footprint providing local reserve access and diversification against any single regional construction cycle. Per Martin Marietta's 2025 Form 10-K (SEC accession 0001193125-26-059193) and Q1 2026 Earnings Release (2026-04-30). [MLM-C01]"
+  - "Q1 2026 revenue increased 17% to $1.362 billion and adjusted EBITDA increased 14% to $364 million -- strong reported growth in the most recently reported quarter. Per the Q1 2026 Earnings Release, First-Quarter Highlights. [MLM-C02]"
+  - "Q1 2026 aggregates shipments increased 12% to 43.9 million tons -- real volume growth, though reported average selling price was roughly flat because of acquisition and geographic mix, meaning the pricing-power picture in this specific quarter is mix-affected rather than a clean read on organic pricing. Per the same Earnings Release, Aggregates operating results. [MLM-C03]"
+  - "The February 2026 QUIKRETE asset exchange added operations producing roughly 20 million tons annually and $450 million of cash, while transferring Martin Marietta's remaining cement and certain ready-mix assets -- a portfolio-optimization transaction shifting the company further toward pure aggregates exposure. Per the same Earnings Release, Portfolio Optimization. [MLM-C04]"
+  - "At 2026-03-31, Martin Marietta held $273 million of unrestricted cash and $1.2 billion of unused credit capacity -- disclosed liquidity providing capacity to fund the company's active acquisition program. Per the same Earnings Release, liquidity discussion. [MLM-C06]"
+risks:
+  - risk: "On 2026-06-29, Martin Marietta announced a $13.5 billion cash-and-stock transaction with Lhoist North America to expand lime and limestone exposure -- a transaction of a scale large relative to Martin Marietta's own size, announced after the 2025 Form 10-K and even after the Q1 2026 results, and therefore material and subsequent: it must be treated as a pending, unclosed transaction with attendant financing, integration, and execution risk, not a completed operating result."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Martin Marietta's acquisition program is active and rapidly expanding (QUIKRETE exchange in February 2026, a signed agreement to acquire New Frontier Materials, and the subsequently announced $13.5 billion Lhoist transaction) -- integration risk and capital-allocation risk from this pace of M&A must be weighed against the alternative of organic reinvestment, per the governing evidence's own judgment claim."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Q1 2026 aggregates average selling price was roughly flat because of acquisition and geographic mix -- the reported quarter's pricing signal is mix-affected, and the evidence bundle does not itself isolate an organic, like-for-like pricing trend."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "The governing evidence's own uncertainty claim names construction cycles, weather, energy and freight costs, permitting, reserve quality, acquisition integration, and leverage from large transactions as ongoing exposures -- aggregates demand is tied to construction activity, a cyclical end market."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Management's 2026 full-year guidance ($7.0-$7.32 billion revenue, $2.36-$2.50 billion adjusted EBITDA, $550-$600 million capital expenditures) is forward-looking guidance, not a realized result, and does not yet reflect the subsequently announced Lhoist transaction's financing or integration costs."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "Progress on the $13.5 billion Lhoist North America transaction announced 2026-06-29 -- including financing structure, expected closing timeline, and any regulatory conditions -- remains the single most material near-term development for this company, given its scale relative to Martin Marietta's existing size."
+    expected: "2026-10-01"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which Lhoist transaction progress, subsequent-quarter aggregates volume/pricing trends, and 2026 guidance tracking will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval. Martin Marietta shows real operating strength in the most recently reported quarter: 17% revenue growth, 14% adjusted EBITDA growth, 12% aggregates-shipment growth, and disclosed liquidity ($273M cash, $1.2B unused credit capacity) to fund an active acquisition program. Held at Medium rather than higher because the company's acquisition pace is rapid and the subsequently announced $13.5 billion Lhoist transaction is large relative to Martin Marietta's own scale and remains unclosed -- introducing real, currently unresolved financing, integration, and capital-allocation risk that the governing evidence's own judgment claim explicitly flags as a factor to weigh against organic reinvestment. The Q1 2026 pricing picture is also mix-affected rather than a clean organic read, and 2026 guidance is forward-looking and does not yet reflect Lhoist's financing costs. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from MLM's existing T2 portfolio-tier placement -- it was reasoned solely from the disclosed operating and transaction-risk picture described above."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0032-ws0005-milestone3-remaining-governed-holdings-and-sandisk-candidate.md,
+        governance/decisions/OPS-0008-research-wave-protocol-v1.md, and
+        governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md
+        (all Accepted at time of drafting), first-coverage discipline (no
+        prior MLM Company Intelligence record existed). Portfolio HQ's
+        WS-0005 Milestone 3 governed-holding unit -- MLM, one of five
+        independent T2 research units PI-0032 authorizes (CEG, BRK.B, WMT,
+        MLM, AAPL), each evaluated entirely on its own terms with no
+        fabricated shared-mechanism narrative among them. This record also
+        preserves, per CLAUDE.md's Decisions Log, that MLM absorbed VMC's
+        aggregates-industry exposure following VMC's 2026-07-13 full exit
+        and consolidation into MLM -- recorded here as existing portfolio
+        history, not as evidence this record independently verified. This
+        session did not attempt new primary-source web research: the
+        principal supplied a frozen, externally-authored primary-source
+        evidence bundle
+        (FIVE_COMPANY_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v1.yaml,
+        SHA-256 48cb215bfb7916ce8a8469bd4f1c2ba5b5b3d23032ad6b3047c5bbf4feb0ce6f),
+        independently re-verified by this session before use (checksum
+        recomputed and matched against both the external .sha256 manifest
+        and the value stated in the task instructions; direct programmatic
+        YAML re-parse confirmed 13 sources, 50 claims -- 10 per company --
+        64 reciprocal claim/source pairs, zero orphan claims, zero
+        unresolved source references, zero duplicate source IDs, zero
+        duplicate claim IDs, and claim-type separation into 40 source_fact,
+        5 uncertainty, and 5 judgment claims -- not merely trusted from the
+        bundle's own self-reported validation_report). Every fact in this
+        record is attributed to that bundle's own claim set (MLM-C01
+        through MLM-C10), sourced from Martin Marietta's 2025 Form 10-K, Q1
+        2026 Earnings Release, and Lhoist Transaction Announcement as
+        directly inspected by the bundle's external author -- not by this
+        Claude session. The bundle's own disclosed source-readiness
+        classification for MLM is READY_WITH_DISCLOSED_LIMITATION (one
+        cited source, MLM-S1, was inspected as an official filing page and
+        annual-report index rather than the full 10-K text; the bundle's
+        own metadata separately flags that the June 2026 Lhoist transaction
+        is material and subsequent to the 2025 Form 10-K and must be
+        treated as a pending transaction, not a completed operating
+        result -- both limitations are carried forward in this record
+        rather than silently dropped).
+sources:
+  - note: "Martin Marietta Materials, Inc. 2025 Form 10-K for the period ended 2025-12-31 (SEC accession 0001193125-26-059193), filed 2026-02-19. Inspected by the external evidence-recovery researcher as an official filing page and annual-report index (not full 10-K text), not by this Claude session. Supports geographic-footprint and general business/risk-framing content."
+    url: "https://ir.martinmarietta.com/sec-filings/sec-filing/10-k/0001193125-26-059193"
+    date: "2026-02-19"
+  - note: "Martin Marietta Materials, Inc. Q1 2026 Earnings Release, dated 2026-04-30. Directly inspected by the external evidence-recovery researcher, not by this Claude session. Supports Q1 2026 revenue/EBITDA, aggregates shipment/pricing, QUIKRETE portfolio-optimization, New Frontier Materials agreement, liquidity, and 2026 full-year guidance content."
+    url: "https://ir.martinmarietta.com/news-releases/news-release-details/martin-marietta-reports-first-quarter-2026-results"
+    date: "2026-04-30"
+  - note: "Martin Marietta Materials, Inc. Lhoist North America Transaction Announcement, dated 2026-06-29. Directly inspected by the external evidence-recovery researcher, not by this Claude session. Supports the $13.5 billion Lhoist transaction summary, strategic rationale, and expected financing/closing disclosures -- material and subsequent to the 2025 Form 10-K; treated throughout this record as a pending, unclosed transaction."
+    url: "https://ir.martinmarietta.com/news-releases/news-release-details/martin-marietta-combine-lhoist-north-america-135-billion"
+    date: "2026-06-29"
+  - note: "Portfolio-HQ WS-0005 Milestone 3, PI-0032 five-company primary-source evidence bundle (FIVE_COMPANY_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v1.yaml), SHA-256 48cb215bfb7916ce8a8469bd4f1c2ba5b5b3d23032ad6b3047c5bbf4feb0ce6f, principal-supplied implementation input under PI-0032/OPS-0008 -- not committed to this repository per the authorizing instruction. Prepared by an external research backend (disclosed in the bundle's own metadata as OpenAI GPT-5.6 Thinking) using directly inspected official primary sources; synthesizes 13 sources across five companies into 50 claim-level extracts with source-ID-level provenance and fact/uncertainty/judgment labeling; 64 reciprocal claim/source pairs, zero orphans, zero unresolved references, zero duplicate IDs -- independently reconfirmed by this session via direct programmatic YAML parsing and hash recomputation, not merely by trusting the bundle's own self-report."
+    url: null
+    date: "2026-07-28"

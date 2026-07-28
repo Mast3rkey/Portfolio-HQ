@@ -1,0 +1,81 @@
+sector: Consumer Staples
+industry: Discount and Membership Warehouse Retail
+portfolio_role_ref: T2
+competitive_advantages:
+  - "Walmart generated $713.2 billion of FY2026 revenue, including $706.4 billion of net sales -- among the largest retail revenue bases in this evidence corpus, providing scale advantages in purchasing, logistics, and pricing. Per Walmart's FY2026 Form 10-K (SEC accession 0000104169-26-000055), Item 1 and MD&A. [WMT-C01]"
+  - "Serves approximately 280 million customers weekly through more than 10,900 stores in 19 countries and its digital properties -- a scale customer-reach and physical-footprint advantage difficult for most competitors to replicate. Per the same Form 10-K, Item 1, Business. [WMT-C02]"
+  - "Everyday-low-price (EDLP) and everyday-low-cost (EDLC) model links customer price leadership to continuous cost discipline -- a self-reinforcing operating model, per the company's own strategy disclosure. Per the same Form 10-K, Item 1, strategy. [WMT-C04]"
+  - "Expanding higher-margin ecosystem businesses including digital advertising, marketplace and fulfillment, health and wellness, and financial services -- a stated diversification beyond low-margin core retail into higher-margin adjacent revenue streams. Per the same Form 10-K, strategy and competition. [WMT-C05]"
+  - "Walmart U.S. Q1 FY2027 net sales increased 4.5%, comparable sales increased 4.3%, with eCommerce contributing approximately 5.2 percentage points to comparable sales -- continued top-line growth with digital channels contributing a majority of the comparable-sales gain. Per Walmart's FY2027 Q1 Form 10-Q (SEC accession 0000104169-26-000102), Walmart U.S. results. [WMT-C06]"
+risks:
+  - risk: "Walmart operates in a structurally thin-margin retail model (EDLP/EDLC) -- the governing evidence bundle does not provide a specific gross-margin, operating-margin, or net-margin figure, but names thin retail margins directly as an ongoing risk alongside wage/healthcare inflation, capital intensity, global sourcing, regulation, litigation, and intense physical and digital competition."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Walmart International Q1 FY2027 net sales grew 18% to $35.1 billion, but $2.3 billion of that growth was attributed to favorable currency impact -- a meaningful share of headline international growth is currency-driven rather than purely organic, and currency movements can reverse."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "The evidence bundle does not provide margin, free-cash-flow, dividend, buyback, or balance-sheet-leverage figures for Walmart anywhere -- this record's financial-quality assessment is accordingly incomplete relative to companies in this corpus with fuller disclosed capital-structure and profitability detail (e.g. this repository's CVX and WDC records)."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Intense physical and digital competition is named directly in the governing evidence as an ongoing risk, alongside global sourcing and regulatory/litigation exposure inherent to operating at Walmart's scale across 19 countries."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "Walmart's next quarterly Form 10-Q and any further disclosure on U.S./International/Sam's Club comparable-sales trends, eCommerce contribution, and ecosystem-business (advertising, marketplace, health/wellness, financial services) growth."
+    expected: "2026-08-21"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which updated segment comparable-sales, eCommerce-contribution, and ecosystem-business figures will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval. Walmart shows genuine scale (280 million weekly customers, 10,900+ stores, $713.2B FY2026 revenue) and continued comparable-sales growth across all three reported segments in the most recent quarter, with eCommerce contributing a majority of Walmart U.S.'s comparable-sales gain -- evidence of real digital-monetization traction alongside the core EDLP/EDLC retail model. Held at Medium rather than higher because the evidence bundle provides no margin, free-cash-flow, dividend, buyback, or leverage figures for Walmart at all, leaving this record unable to independently assess financial-quality depth the way it can for companies in this corpus with fuller disclosed profitability/balance-sheet detail; because a meaningful share of Walmart International's headline growth was currency-driven rather than organic; and because the evidence bundle itself names thin retail margins as a structural, ongoing risk rather than a solved problem. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from WMT's existing T2 portfolio-tier placement -- it was reasoned solely from the disclosed scale, growth, and risk picture described above."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0032-ws0005-milestone3-remaining-governed-holdings-and-sandisk-candidate.md,
+        governance/decisions/OPS-0008-research-wave-protocol-v1.md, and
+        governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md
+        (all Accepted at time of drafting), first-coverage discipline (no
+        prior WMT Company Intelligence record existed). Portfolio HQ's
+        WS-0005 Milestone 3 governed-holding unit -- WMT, one of five
+        independent T2 research units PI-0032 authorizes (CEG, BRK.B, WMT,
+        MLM, AAPL), each evaluated entirely on its own terms with no
+        fabricated shared-mechanism narrative among them. This session did
+        not attempt new primary-source web research: the principal supplied
+        a frozen, externally-authored primary-source evidence bundle
+        (FIVE_COMPANY_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v1.yaml,
+        SHA-256 48cb215bfb7916ce8a8469bd4f1c2ba5b5b3d23032ad6b3047c5bbf4feb0ce6f),
+        independently re-verified by this session before use (checksum
+        recomputed and matched against both the external .sha256 manifest
+        and the value stated in the task instructions; direct programmatic
+        YAML re-parse confirmed 13 sources, 50 claims -- 10 per company --
+        64 reciprocal claim/source pairs, zero orphan claims, zero
+        unresolved source references, zero duplicate source IDs, zero
+        duplicate claim IDs, and claim-type separation into 40 source_fact,
+        5 uncertainty, and 5 judgment claims -- not merely trusted from the
+        bundle's own self-reported validation_report). Every fact in this
+        record is attributed to that bundle's own claim set (WMT-C01
+        through WMT-C10), sourced from Walmart's FY2026 Form 10-K and
+        FY2027 Q1 Form 10-Q as directly inspected by the bundle's external
+        author -- not by this Claude session. The bundle's own disclosed
+        source-readiness classification for WMT is READY (no disclosed
+        limitation).
+sources:
+  - note: "Walmart Inc. FY2026 Form 10-K for the period ended 2026-01-31 (SEC accession 0000104169-26-000055), filed 2026-03-13. Directly inspected by the external evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session. Supports revenue/scale, segment-structure, EDLP/EDLC strategy, ecosystem-business, and risk-factor content."
+    url: "https://stock.walmart.com/sec-filings/all-sec-filings/content/0000104169-26-000055/wmt-20260131.htm"
+    date: "2026-03-13"
+  - note: "Walmart Inc. FY2027 Q1 Form 10-Q for the period ended 2026-04-30 (SEC accession 0000104169-26-000102), filed 2026-05-29. Directly inspected by the external evidence-recovery researcher, not by this Claude session. Supports Walmart U.S., Walmart International, and Sam's Club U.S. quarterly results content."
+    url: "https://stock.walmart.com/sec-filings/all-sec-filings/content/0000104169-26-000102/wmt-20260430.htm"
+    date: "2026-05-29"
+  - note: "Portfolio-HQ WS-0005 Milestone 3, PI-0032 five-company primary-source evidence bundle (FIVE_COMPANY_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v1.yaml), SHA-256 48cb215bfb7916ce8a8469bd4f1c2ba5b5b3d23032ad6b3047c5bbf4feb0ce6f, principal-supplied implementation input under PI-0032/OPS-0008 -- not committed to this repository per the authorizing instruction. Prepared by an external research backend (disclosed in the bundle's own metadata as OpenAI GPT-5.6 Thinking) using directly inspected official primary sources; synthesizes 13 sources across five companies into 50 claim-level extracts with source-ID-level provenance and fact/uncertainty/judgment labeling; 64 reciprocal claim/source pairs, zero orphans, zero unresolved references, zero duplicate IDs -- independently reconfirmed by this session via direct programmatic YAML parsing and hash recomputation, not merely by trusting the bundle's own self-report."
+    url: null
+    date: "2026-07-28"
