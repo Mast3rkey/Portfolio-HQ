@@ -60,6 +60,18 @@ review:
         characteristic: the source-manifest's claims_supported reverse index is not fully
         reciprocal with claim-level source_ids; claim-level source_ids control and are what this
         record's claims are drawn from.
+    - date: "2026-07-28"
+      note: >
+        Bounded correction addressing PR #177's formal exact-head reassessment (GitHub review
+        4798513926, reviewed head e2ecda34f5c6b87946b1e422bad77fc56e3abdf4, verdict CHANGES
+        REQUIRED), MINOR finding 7 only: restates ORCL.md's thesis-break conditions as three
+        discrete, independently-triggerable bullets (RPO fails to convert to profitable revenue;
+        data-center utilization or pricing disappoints; debt service and dilution remain elevated
+        without cash conversion), matching the original v1 evidence bundle's own already-cited
+        structured company_evidence.ORCL.thesis_break_conditions list -- no new external evidence
+        required, per the supplemental v2 bundle's own minor_finding_7_disposition. No other
+        content in this record changed. This correction does not change Oracle's governed
+        tier/target and does not constitute principal acceptance.
 sources:
   - note: "Oracle Corporation Form 10-K for the fiscal year ended 2026-05-31 (SEC accession 0001193125-26-277521), filed 2026-06-26. Directly inspected by the evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports business-model, risk-factor, MD&A, debt, commitment, and equity-financing content."
     url: "https://www.sec.gov/Archives/edgar/data/1341439/000119312526277521/orcl-20260531.htm"

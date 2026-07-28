@@ -100,12 +100,20 @@ comparatively asset-light companies.
 
 ## Thesis-break conditions
 
-A thesis-break condition would include failure to convert large cloud RPO
-into profitable revenue while capital expenditures, debt service, and
-dilution remain structurally elevated. Strong utilization, pricing, and
-contract cash conversion could instead produce durable infrastructure
-returns -- this condition requires multi-year capacity, margin, and
-cash-conversion evidence, not a single quarter.
+**Correction (2026-07-28, this PR):** restated below as three discrete,
+independently-triggerable conditions, using the original v1 evidence
+bundle's own already-cited structured `thesis_break_conditions` list,
+matching MINOR finding 7's required fix. No new external evidence was
+needed for this restatement. A thesis-break condition would include any of
+the following, each requiring multi-year capacity, margin, and
+cash-conversion evidence (not a single quarter) to establish:
+
+1. RPO fails to convert to profitable revenue.
+2. Data-center utilization or pricing disappoints.
+3. Debt service and dilution remain elevated without cash conversion.
+
+Strong utilization, pricing, and contract cash conversion could instead
+produce durable infrastructure returns.
 
 ## Unresolved questions
 

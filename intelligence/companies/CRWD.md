@@ -40,12 +40,23 @@ principal-supplied, frozen supplemental evidence-recovery bundle
 lines, 6828 words, 60545 bytes), independently re-verified byte-for-byte by
 this session against the uploaded copy and its external `.sha256` manifest,
 and independently confirmed to have exact claim-level/reverse-index
-reciprocity before use. This correction is narrowly scoped to the
-profitability/cash-flow figures only -- it does not add CrowdStrike's
-cash/investments/debt balance-sheet picture or Charlotte AI monetization
-content, so **finding 1's liquidity/debt component and finding 2
-(AI-monetization strategy absent) remain open**, pending a further,
-separately authorized correction.
+reciprocity before use. That first correction was narrowly scoped to the
+profitability/cash-flow figures only.
+
+**Second bounded correction (2026-07-28, same day, this PR).** A fresh
+exact-head independent reassessment (GitHub review `4798513926`, reviewed
+head `e2ecda34f5c6b87946b1e422bad77fc56e3abdf4`, verdict CHANGES REQUIRED)
+confirmed the first correction's new facts as accurate but found finding
+1's liquidity/debt sub-component and finding 2 (AI-monetization) both still
+fully open. This session's own `WebFetch` access was re-tested this same
+day and reconfirmed blocked session-wide (SEC EDGAR and a neutral
+non-target control domain both returned HTTP 403), so this second
+correction resumes using previously unused claims from the same
+already-verified `BATCH8_supplemental_evidence_recovery_20260728_v2.yaml`
+bundle -- not fresh primary-source inspection performed by this session.
+The liquidity/debt and Charlotte AI content below (per claims CRWD-SUP-C1,
+CRWD-SUP-C3, and CRWD-SUP-C4) closes finding 1's remaining sub-component
+and finding 2.
 
 ## Business summary
 
@@ -82,6 +93,34 @@ an accumulated deficit of approximately $1.3 billion and states it may not
 sustain profitability. Free cash flow is a non-GAAP measure and should not
 be read as total cash retained after all outlays.
 
+## Liquidity and debt
+
+At April 30, 2026, CrowdStrike reported **$4.553 billion in cash and cash
+equivalents**, **$66 million in strategic investments**, and **$745.8
+million of long-term debt** -- primarily the $750 million 3.00% Senior
+Notes due February 2029. Cash materially exceeded reported debt at the
+quarter end, and management stated existing cash and operating cash flow
+were expected to cover anticipated working-capital and capital-expenditure
+needs for at least 12 months. **This liquidity strength does not make the
+company risk-free**: the assessment excludes an estimable ultimate loss for
+the July 19 incident proceedings (no reasonable range could be determined),
+acquisitions and investments remain significant uses of cash, strategic
+investments may be illiquid or volatile and are not treated as cash, and
+management's 12-month sufficiency statement is not a guarantee.
+
+## Charlotte AI -- capability and monetization limit
+
+CrowdStrike describes **Charlotte AI** as an agentic-AI capability within
+the Falcon platform, with announced **AgentWorks** and **Agentic MDR**
+initiatives, and an official **Charlotte Agentic SOAR** product page
+offering flexible, credit-based commercial packaging -- more than a
+conceptual roadmap. **However, the inspected filings and earnings materials
+do not separately disclose Charlotte AI revenue, ARR, ACV, customer count,
+margin, or contribution to Falcon platform economics.** The correct
+characterization is "commercially packaged, but standalone economics
+undisclosed" -- AI revenue should not be inferred from company-wide ARR
+growth or management's pipeline/technology-wave commentary.
+
 ## The July 19, 2024 Falcon sensor incident
 
 The July 19, 2024 Falcon sensor update caused Windows-system outages.
@@ -103,9 +142,14 @@ proceedings and that **insurance is not expected to cover all possible
 costs, claims, and liabilities**. Recorded settlement offers were described
 as immaterial and offset by insurance at fiscal year-end 2026, but broader
 exposure -- government inquiries, customer claims, litigation -- remained
-unresolved in the inspected sources. **This record does not, and cannot,
-quantify an ultimate liability** -- doing so would exceed what the filings
-themselves establish.
+unresolved in the inspected sources. For Q1 fiscal 2027 specifically,
+CrowdStrike recorded **$18.1 million of incident expenses net of insurance
+receivable** and a **$17.1 million related quarter-end balance** -- current,
+filed cost figures that are small relative to the company's cash position,
+but the company's own inability to estimate the ultimate loss range is
+unchanged, and this recorded balance should not be read as a cap on ultimate
+exposure. **This record does not, and cannot, quantify an ultimate
+liability** -- doing so would exceed what the filings themselves establish.
 
 ## Competitors, substitutes, and shared drivers
 
@@ -134,6 +178,14 @@ resolve that question for CRWD alone.
   approximately $1.3 billion, and stock-based compensation and
   acquisition-related adjustments materially affect the non-GAAP operating
   figures relative to the GAAP operating loss in the same period.
+- Liquidity strength (cash of $4.553 billion versus $745.8 million of
+  long-term debt) excludes any estimate of the July 19 incident's ultimate
+  loss range, and management's 12-month sufficiency statement is not a
+  guarantee.
+- Charlotte AI has a commercial packaging architecture (credit-based
+  pricing, AgentWorks, Agentic MDR) but no separately disclosed standalone
+  revenue, ARR, ACV, customer count, or margin -- the AI-monetization thesis
+  is not established by disclosed economics.
 
 ## Thesis-break conditions
 
@@ -150,6 +202,8 @@ monitoring, not a single data point.
 - Renewal cohorts after commitment-package expirations.
 - Government inquiry outcomes.
 - Product-level competitive win rates.
+- Charlotte AI's standalone revenue, ARR, ACV, customer count, margin, and
+  contribution to Falcon platform economics.
 
 ## Governed policy (existing, not a research conclusion)
 
@@ -209,8 +263,5 @@ outage-related proceedings beyond what was disclosed in the Q1 FY2027 Form
 10-Q was not available by the cutoff per the governing evidence bundle.
 Next review due **2026-10-26** (90-day cadence), or sooner on a material
 legal settlement or inquiry outcome, a retention or ARR definition change,
-an incident-related customer claim, or a major product-quality event.
-CrowdStrike's cash/investments/debt balance-sheet picture and Charlotte AI
-monetization economics were not added by this record's 2026-07-28
-correction and remain open items for a further, separately authorized
-correction.
+an incident-related customer claim, a major product-quality event, or
+disclosure of standalone Charlotte AI revenue/ARR/margin economics.

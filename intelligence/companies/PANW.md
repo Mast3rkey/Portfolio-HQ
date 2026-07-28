@@ -30,6 +30,29 @@ and is synthesized in `governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY
 **Every fact below was directly inspected by the bundle's author, not by
 this Claude session** -- see `PANW.yaml`'s `sources[]`.
 
+**Bounded correction (2026-07-28, same day, this PR).** This record's
+liquidity/debt, profitability, quantified acquisition/contingent-obligation,
+AI-strategy, and billings-disposition content (below) was added after a
+fresh exact-head independent reassessment of PR #177 (GitHub review
+`4798513926`, verdict CHANGES REQUIRED) found MATERIAL findings 3
+(financial-quality/margin-relevance), 4 (AI-monetization), and 5 (billings)
+all fully open -- this record had not been touched by any prior correction.
+This session's own `WebFetch` access was re-tested this same day and
+reconfirmed blocked session-wide (SEC EDGAR and a neutral non-target
+control domain both returned HTTP 403), so this correction uses previously
+unused claims from the same principal-supplied, frozen supplemental
+evidence-recovery bundle used for the first correction
+(`BATCH8_supplemental_evidence_recovery_20260728_v2.yaml`, SHA-256
+`e07020e0d0c97ec2ca8a04fed10b5b4b07900785d3457ce78c9a2057ae5fba32`; 1019
+lines, 6828 words, 60545 bytes), independently re-verified byte-for-byte by
+this session against the uploaded copy and its external `.sha256` manifest,
+and independently confirmed to have exact claim-level/reverse-index
+reciprocity -- not fresh primary-source inspection performed by this
+session. This correction also restores the thesis-break conditions to
+three discrete bullets and restores "Microsoft" as a named comparator
+(MINOR finding 7), using the original v1 bundle's own already-cited
+structured evidence.
+
 ## Business summary
 
 Palo Alto Networks' platformization strategy integrates network security,
@@ -52,6 +75,27 @@ or delivery, while subscription and support revenue is recognized over
 time. Aggregate growth figures can be distorted by product-cycle and mix
 shifts -- this is not a pure subscription SaaS company.
 
+## Liquidity, debt, and cash flow
+
+At April 30, 2026, Palo Alto Networks reported **$2.364 billion of cash**
+and **$4.628 billion of investments** ($6.992 billion combined), alongside
+a **$1.293 billion working-capital deficit** and **CyberArk convertible-note
+obligations with $1.1 billion of principal remaining** after May 2026
+settlements. A **$400 million revolving credit facility was undrawn**. The
+company generated **$3.196 billion of GAAP operating cash flow** in the
+first nine months of fiscal 2026; Q3 alone contributed **$871 million of
+operating cash flow** and **$910 million of issuer-defined adjusted free
+cash flow** (trailing-12-month adjusted free-cash-flow margin **38.5%**),
+while the same quarter also showed a **$183 million GAAP operating loss**
+against **$814 million of non-GAAP operating income**. **This liquidity and
+cash-flow strength does not eliminate the balance-sheet obligations
+alongside it**: the working-capital deficit is affected by deferred revenue
+and does not alone establish distress, but convertible-note holders may
+still require cash settlement under specified conditions, adjusted free
+cash flow adds back acquisition-related and litigation payments and should
+not be read as total cash retained, and the GAAP operating loss should not
+be omitted when citing the non-GAAP operating-income figure.
+
 ## Platformization economics and concessions
 
 This record's evidence base establishes the platformization strategy and
@@ -66,10 +110,22 @@ material.
 Palo Alto Networks' acquisition-led platform expansion creates
 contingent-consideration and integration risk. The **IBM QRadar asset
 transaction produced a material contingent-liability estimate and a
-critical audit matter** in the inspected Form 10-K. Acquisitions can
-accelerate product breadth and cross-selling, but fair value and returns
-depend on customer behavior, integration, and market assumptions not yet
-established as favorable or unfavorable by the inspected sources.
+critical audit matter** in the inspected Form 10-K. During the first nine
+months of fiscal 2026, the company **used $4.563 billion of cash for
+acquisitions**, **paid $154 million of contingent consideration**, and
+reported a **$240 million quarter-end contingent-consideration liability**
+tied to QRadar, with an **estimated undiscounted payment range of $0.3
+billion to $0.5 billion through fiscal 2028**. The contingent-liability
+estimate declined during the quarter, and the company retained substantial
+cash and investments plus an undrawn credit facility -- but **the full
+undiscounted range should not be added to current debt, and the
+quarter-end fair value should not be treated as the maximum cash
+obligation**, since future qualified transactions and valuation assumptions
+can change the actual payments materially within the disclosed range.
+Acquisitions can accelerate product breadth and cross-selling, but fair
+value and returns depend on customer behavior, integration, and market
+assumptions not yet established as favorable or unfavorable by the
+inspected sources.
 
 ## Competitors, substitutes, and shared drivers -- CrowdStrike overlap
 
@@ -84,6 +140,38 @@ direct CRWD/PANW comparison; this record does not, on its own, resolve
 whether holding both represents genuine diversification or duplicated
 cybersecurity-platform exposure.
 
+## AI product strategy -- Prisma AIRS and Cortex XSIAM
+
+Palo Alto Networks identifies **Prisma AIRS** as an AI-security platform and
+**Cortex XSIAM** as AI-powered security operations. Official product
+documentation establishes a **paid BYOL/credit-based licensing model** for
+Prisma AIRS, including **monthly token-based API consumption** (a February
+2026 update transitioned from per-API-call to token-based licensing) -- more
+than a conceptual roadmap. **However, current filings and results do not
+separately disclose Prisma AIRS or XSIAM-AI revenue, ARR, customer count,
+margin, or contribution to company-wide NGS ARR.** The correct
+characterization is "commercial licensing exists; standalone economics are
+undisclosed" -- company-wide NGS ARR includes broad products plus acquired
+CyberArk and Chronosphere contributions and cannot be attributed
+mechanically to AI products, and token-based licensing should not be
+equated with realized revenue scale.
+
+## Billings metric disposition
+
+Palo Alto Networks disclosed **billings** (revenue plus the change in
+deferred revenue, net of acquired deferred revenue) as a key metric in its
+April 2024 Form 10-Q. The directly inspected fiscal 2025 Form 10-K, April
+2026 Form 10-Q, and June 2026 earnings release **contain no billings
+metric** and instead center current growth disclosure on NGS ARR, RPO, and
+GAAP revenue -- a full-text search of each current source returned no
+match. This supports **"de-emphasized/not currently disclosed"** -- it is
+**not** an issuer statement that billings was formally discontinued, and
+bookings growth is still mentioned qualitatively in current management
+commentary; absence from these specific documents is not proof the issuer
+will never disclose billings again. NGS ARR and RPO are not substitutes for
+billings: NGS ARR's scope can change and includes acquisitions, and RPO is
+contractually committed future revenue, not current revenue or cash.
+
 ## Disconfirming evidence
 
 - Platformization can require sales concessions and complex integration
@@ -92,17 +180,36 @@ cybersecurity-platform exposure.
   periods and against other issuers' metrics.
 - Product and subscription revenue recognition timing differ, complicating
   simple aggregate-growth comparisons.
+- A $1.293 billion working-capital deficit and CyberArk convertible-note
+  obligations ($1.1 billion principal remaining) sit alongside $6.992
+  billion of combined cash and investments; the Q3 GAAP operating loss
+  ($183 million) sits alongside non-GAAP operating income ($814 million).
+- The QRadar contingent-consideration liability's $0.3-0.5 billion
+  undiscounted payment range through fiscal 2028 is an estimate, not a cap,
+  and can change with future valuation assumptions.
+- Prisma AIRS and Cortex XSIAM have a commercial licensing architecture but
+  no separately disclosed standalone revenue, ARR, customer count, or
+  margin -- the AI-monetization thesis is not established by disclosed
+  economics.
+- Billings, PANW's own historically disclosed growth metric, is absent from
+  every current inspected source; its replacement by NGS ARR/RPO is a
+  disclosed metric-comparability limitation, not confirmed discontinuation.
 
 ## Thesis-break conditions
 
-A thesis-break condition would include platformization-driven concessions
-or integration failures that weaken revenue quality, combined with loss of
-security-operations competitiveness relative to CrowdStrike and other
-vendors. Rising NGS ARR, RPO, and operating margins could instead
-demonstrate successful consolidation -- evidence on concessions, renewal
-economics, and product-level win rates remains incomplete, so this
-condition requires further disclosure, not a single data point, to
-establish.
+A thesis-break condition would include any of the following, each
+independently sufficient and each requiring extended, multi-quarter
+disclosure (not a single data point) to establish:
+
+1. Platformization-driven concessions or integration failures that weaken
+   revenue quality.
+2. Acquisition integration fails to deliver the expected returns.
+3. Security-operations competitiveness erodes relative to CrowdStrike,
+   Microsoft, and other vendors.
+
+Rising NGS ARR, RPO, and operating margins could instead demonstrate
+successful consolidation -- evidence on concessions, renewal economics, and
+product-level win rates remains incomplete.
 
 ## Unresolved questions
 
@@ -110,6 +217,10 @@ establish.
 - Customer overlap and displacement versus CrowdStrike.
 - Current acquisition integration milestones.
 - Changes to the NGS ARR definition or product scope.
+- Prisma AIRS's and Cortex XSIAM's standalone revenue, ARR, customer count,
+  margin, and contribution to company-wide NGS ARR.
+- Whether Palo Alto Networks resumes disclosing a billings-equivalent
+  metric in a future filing.
 
 ## Governed policy (existing, not a research conclusion)
 
@@ -169,5 +280,6 @@ platformization-concession economics beyond the fiscal 2025 year-end and
 fiscal Q3 2026 figures inspected, was not available by the cutoff per the
 governing evidence bundle. Next review due **2026-10-26** (90-day
 cadence), or sooner on an acquisition close or integration update, an NGS
-ARR definition change, a major cyber incident, or RPO/operating-margin
-deterioration.
+ARR definition change, a major cyber incident, RPO/operating-margin
+deterioration, disclosure of standalone Prisma AIRS/XSIAM-AI economics, or
+a resumed billings-equivalent disclosure.

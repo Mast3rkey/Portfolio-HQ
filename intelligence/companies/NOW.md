@@ -42,11 +42,25 @@ lines, 6828 words, 60545 bytes), independently re-verified byte-for-byte by
 this session against the uploaded copy and its external `.sha256` manifest,
 and independently confirmed to have exact claim-level/reverse-index
 reciprocity (unlike the original v1 bundle's disclosed partial asymmetry)
-before use. This correction is narrowly scoped to the acquisition-financing
-facts and the catalyst date only -- it does not add ServiceNow's general
-cash/securities/operating-margin picture, so **MATERIAL finding 6 is only
-partially addressed and remains open** pending a further, separately
-authorized correction.
+before use. That first correction was narrowly scoped to the
+acquisition-financing facts and the catalyst date only.
+
+**Second bounded correction (2026-07-28, same day, this PR).** A fresh
+exact-head independent reassessment (GitHub review `4798513926`, reviewed
+head `e2ecda34f5c6b87946b1e422bad77fc56e3abdf4`, verdict CHANGES REQUIRED)
+confirmed the first correction's facts as accurate but found MATERIAL
+finding 6's general cash/securities/margin picture still open, plus one new
+MINOR finding (13): the first correction's "Acquisition financing" section
+contained one uncited reassurance sentence, inconsistent with this record's
+own citation convention. This session's own `WebFetch` access was
+re-tested this same day and reconfirmed blocked session-wide (SEC EDGAR and
+a neutral non-target control domain both returned HTTP 403), so this second
+correction resumes using previously unused claims from the same
+already-verified `BATCH8_supplemental_evidence_recovery_20260728_v2.yaml`
+bundle -- not fresh primary-source inspection performed by this session.
+The general financial-position section below (per claims NOW-SUP-C1 and
+NOW-SUP-C2) closes finding 6 and supersedes the prior correction's uncited
+sentence with quantified, sourced figures.
 
 ## Business summary
 
@@ -103,11 +117,35 @@ funded the term-loan repayment or had a single proven use of proceeds** --
 the precise funding bridge, the use of the notes' proceeds, the final
 debt-component composition, and Armis purchase-accounting details are not
 established in the inspected sources. Residual funding-bridge uncertainty is
-an evidence gap, not a prediction of distress: ServiceNow continued to
-generate positive operating cash flow and held substantial cash and
-securities in the same period, and the reported full term-loan repayment
-removed the original October 2026 term-loan maturity while the notes spread
-maturities across several decades.
+an evidence gap, not a prediction of distress -- see the general financial
+position below for the quantified cash/securities/debt picture -- and the
+reported full term-loan repayment removed the original October 2026
+term-loan maturity while the notes spread maturities across several
+decades.
+
+## General financial position and margins
+
+At June 30, 2026, ServiceNow reported **$2.503 billion of cash and cash
+equivalents**, **$2.161 billion of current marketable securities**, and
+**$2.043 billion of long-term marketable securities** -- cash plus current
+and long-term marketable securities equals **$6.707 billion** by direct
+arithmetic. Balance-sheet debt totaled **$2.082 billion of short-term debt**
+and **$5.435 billion of long-term debt** ($7.517 billion by direct
+arithmetic). **The balance sheet also includes $8.057 billion of current
+deferred revenue**, so a simple current-assets/current-liabilities
+comparison does not describe the subscription model fully, and strategic
+investments are excluded from the liquid-securities total above. For Q2
+2026, ServiceNow reported **GAAP operating income of $162 million (4%
+margin)**, **net cash from operating activities of $587 million**, and
+issuer-defined **non-GAAP free cash flow of $634 million (16% margin)**;
+for the first six months it reported **$2.257 billion of operating cash
+flow** and **$2.299 billion of non-GAAP free cash flow**. **Q2 GAAP
+operating margin was materially below the 29.5% non-GAAP operating
+margin** because of stock compensation, acquired-intangible amortization,
+business-combination costs, and severance, and Q2 operating cash flow
+declined from the prior-year quarter. **Do not call ServiceNow net-cash,
+debt-free, safely levered, or fully refinanced from these figures alone**,
+and do not use them to recommend margin or borrowing.
 
 ## Competitors, substitutes, and shared drivers
 
@@ -133,6 +171,9 @@ PANW's NGS ARR).
   billion notes issuance; the precise funding bridge and use of notes
   proceeds are not established, so residual refinancing/funding-composition
   risk is disclosed but not fully resolved.
+- Q2 2026 GAAP operating margin (4%) was materially below the non-GAAP
+  operating margin (29.5%), and $8.057 billion of current deferred revenue
+  complicates any simple current-assets/current-liabilities liquidity read.
 
 ## Thesis-break conditions
 
@@ -213,4 +254,9 @@ the event-based (not dated) next-earnings trigger. Next review due
 **2026-10-26** (90-day cadence), or sooner on quarterly renewal or RPO
 deterioration, a material acquisition update, an AI pricing or packaging
 change, a large-customer growth slowdown, or resolution of the Armis
-term-loan/notes funding-bridge questions above.
+term-loan/notes funding-bridge questions above. ServiceNow's own 424B2
+notes-offering prospectus supplement was not inspected in either correction
+(outside the verified supplemental bundle's source-access manifest, and
+this session's own primary-source access remains blocked) and may narrow
+the funding-bridge uncertainty above if inspected in a future correction
+with actual primary-source access.
