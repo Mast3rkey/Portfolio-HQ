@@ -2533,9 +2533,82 @@ workstreams:
       synchronized in this register only at meaningful boundaries** (the combined six-unit-plus-Sandisk
       research implementation's own merge; a future Milestone 3 completion determination) unless an
       interim blocker or scope change would otherwise make this register materially misleading.
-    active_branch: null
+
+      **`PI-0032`/`PI-0033` implementation attempt, 2026-07-28 (this entry — factual blocker
+      synchronization only, no research performed, no Company Intelligence record created).** A
+      session opened branch `claude/pi0032-combined-intelligence-implementation` from `origin/main`
+      at `b937a3a8a38543312ef37abc88634161ce5a5d99` (confirmed matching `origin/main` at session
+      start; working tree clean) to attempt the implementation `PI-0032`/`PI-0033` authorize: six
+      governed-holding Company Intelligence records (WDC, CEG, BRK.B, WMT, MLM, AAPL) plus the bounded
+      WDC/Sandisk candidate comparison. Baseline independently re-verified unchanged before any
+      attempt: `intelligence_validator.py` — 39/39 company files valid; `freshness_validator.py` —
+      registry/checkpoints valid; `governance/decisions.yaml` — 45 decision files = 45 index entries,
+      no orphans.
+
+      Per `OPS-0008` §2's mandatory stop-before-drafting source-readiness gate, this session attempted
+      direct primary-source access (`WebFetch`) before drafting any substantive content, for every one
+      of the seven names, and additionally against neutral non-target control domains, per the same
+      methodology `CVX.md`'s own Source-access disclosure already used. **Every attempt returned HTTP
+      403 identically**: SEC EDGAR (`sec.gov/cgi-bin/browse-edgar`), `example.com`,
+      `en.wikipedia.org`, `google.com`, and `berkshirehathaway.com` — five diverse domains, zero
+      distinction between SEC/issuer targets and neutral controls, confirming a session-wide
+      network-policy denial of `WebFetch` itself (not a per-domain block) — the same class of block
+      `CVX.md`/`governance/audits/CVX_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md` already
+      documented for the immediately preceding batch. `WebSearch` (index-based, not a direct fetch)
+      remained functional and was used only to build the source-access manifest below — document
+      identity, accession number, filer, and filing date — never as the primary evidentiary
+      foundation for any economic, financial, or business-quality claim, per this task's own
+      instruction and `OPS-0008` §2's fact/inference/access-status separation discipline.
+
+      **Source-access manifest (per `OPS-0008` §2), all seven names — status: BLOCKED (WebFetch),
+      identification only via WebSearch, no content drafted:**
+      - WDC: FY2025 Form 10-K (period 2025-06-27, accession 0000106040-25-000038, filed 2025-08-14),
+        `sec.gov/Archives/edgar/data/106040/000010604025000038/wdc-20250627.htm`; investor.wdc.com.
+      - CEG: FY2025 Form 10-K (period 2025-12-31, accession 0001868275-26-000032, filed ~2026-02-24),
+        `sec.gov/Archives/edgar/data/1868275/000186827526000032/ceg-20251231.htm`;
+        constellationenergy.gcs-web.com.
+      - BRK.B: FY2025 Form 10-K (period 2025-12-31, accession 0001193125-26-083899, filed 2026-03-02),
+        `sec.gov/Archives/edgar/data/1067983/000119312526083899/brka-20251231.htm`;
+        berkshirehathaway.com.
+      - WMT: FY2026 Form 10-K (period 2026-01-31, accession 0000104169-26-000055, filed 2026-03-13),
+        `stock.walmart.com/sec-filings/all-sec-filings/content/0000104169-26-000055/wmt-20260131.htm`.
+      - MLM: FY2025 Form 10-K (accession referenced via `ir.martinmarietta.com/sec-filings/sec-filing/
+        10-k/0001193125-26-059193`); a possible material acquisition (search-surfaced only, **not
+        verified, not used**) was noted and must be checked directly, not assumed, when access is
+        restored.
+      - AAPL: FY2025 Form 10-K (period 2025-09-27, accession 0000320193-25-000079, filed 2025-10-31),
+        `sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm`; investor.apple.com.
+      - Sandisk (candidate only): FY2025 Form 10-K (period 2025-06-27, accession 0002023554-25-000034,
+        filed 2025-08-20/21); investor.sandisk.com. Identity/ticker/listing/separation-date facts
+        already corroborated in `PI-0032`'s own preflight remain the only Sandisk facts this session
+        relies on — no further Sandisk content was drafted.
+
+      **No eligible independent reviewer or principal-supplied evidence-recovery bundle (`OPS-0008`
+      §2's standing pre-authorization) was available to this session for any of the seven names** —
+      unlike `CVX.md`'s own precedent, where the principal subsequently supplied a frozen,
+      independently-authored evidence bundle after an identical block. Per `OPS-0008` §2's explicit
+      text ("this gate authorizes a recovery method — it does not authorize silently proceeding on
+      secondary evidence alone when even recovery fails"), this session stopped before drafting any
+      substantive economic, financial, business-model, risk, catalyst, or conviction content for any
+      of the seven names. **No Company Intelligence YAML/Markdown record, no WDC/Sandisk comparison
+      artifact, and no `intelligence/freshness_registry.yaml`/`freshness_checkpoints.yaml` row was
+      created for any of the seven names.** `intelligence/companies/` remains 39 files; the freshness
+      registry/checkpoints remain unchanged.
+
+      This is a Lane M (`OPS-0009`) factual/blocker synchronization only — it authorizes no research,
+      no Company Intelligence record, no comparison artifact, no eleventh Milestone 3 batch, and no
+      Milestone 4 work, and does not itself review, correct, mark ready, or merge anything. **Milestone
+      3 remains `in_progress`**; the six governed-holding gaps `PI-0032` named (WDC, CEG, BRK.B, WMT,
+      MLM, AAPL) and the bounded Sandisk comparison remain open, unresearched, and unimplemented.
+      **Next action required**: either (a) a principal-supplied, independently-authored primary-source
+      evidence-recovery bundle per company (the `CVX` precedent), (b) an eligible independent reviewer
+      session (per `OPS-0007` §1) performing the `OPS-0008` §2 evidence-recovery audit for these seven
+      names, or (c) an environment network-policy change restoring `WebFetch` access to SEC EDGAR and
+      issuer investor-relations domains — before any of the six governed-holding records or the
+      Sandisk comparison may be drafted.
+    active_branch: claude/pi0032-combined-intelligence-implementation
     active_pr: null
-    last_verified_main_sha: 25af2afb10ccf947119935173468f9f13b8159e3
+    last_verified_main_sha: b937a3a8a38543312ef37abc88634161ce5a5d99
     last_verified_date: "2026-07-28"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
