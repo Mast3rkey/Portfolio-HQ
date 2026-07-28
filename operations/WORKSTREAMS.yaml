@@ -2419,7 +2419,34 @@ workstreams:
       only: it authorizes no tenth Milestone 3 batch, no Milestone 4 work, and no `OPS-0007` §8
       step I advancement — the CVX implementation PR remains its own separately scoped, not-yet-begun
       unit of work, gated on `PI-0031`'s completed authorization recorded here.
-    active_branch: null
+
+      **CVX implementation drafted (2026-07-28, this entry — factual, pre-merge state only).**
+      This Claude session's own `WebFetch` was tested and confirmed blocked session-wide (HTTP 403
+      on SEC EDGAR, a Chevron investor-relations URL, and two neutral non-target control domains,
+      `example.com` and `google.com`) — per `OPS-0008` §2 this session stopped before drafting and
+      returned a SOURCE READINESS BLOCKED report. The principal then supplied a frozen,
+      checksum-manifested primary-source evidence bundle
+      (`CVX_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v3.yaml`, SHA-256
+      `8256231340142d35289a5336bc2162c575164fe1df3db39ee4ecb6a20fb75203`, 758 lines/3765 words/31612
+      bytes), independently re-verified byte-for-byte and structurally (7 sources, 39 claims, 53
+      reciprocal pairs, zero orphans/unresolved references, all independently recomputed by direct
+      YAML parsing, not merely trusted) before use — retained as
+      `governance/audits/CVX_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md`. On that basis this
+      session drafted `intelligence/companies/CVX.yaml`/`CVX.md` (first coverage; conviction
+      `Medium`, PROPOSED pending review), `intelligence/BATCH9_OIL_CLUSTER_COMPARISON.md` (bounded,
+      no ranking, no score, XOM's existing record read only as unmodified comparison context), one
+      new `CVX` row each in `intelligence/freshness_registry.yaml` (`enrollment_authority`/
+      `company_record_authority: PI-0031`, `monitoring_enabled: false`) and
+      `intelligence/freshness_checkpoints.yaml` (`checkpoint_status: pending`, `channels: {}`), and
+      this factual register update. **This implementation PR is open in draft state, gated on its
+      own independent exact-head review under `OPS-0007` §1, any required bounded correction,
+      principal acceptance, merge, and post-merge verification — none of which has occurred yet.**
+      It is not merged, not complete, and not `PROVISIONAL` under `OPS-0007` §3 — review and
+      drafting alone do not qualify it. No tenth Milestone 3 batch, Milestone 4 work, or `OPS-0007`
+      §8 step I advancement is begun or implied by this entry. `XOM.yaml`/`XOM.md`,
+      `targets.yaml`, `holdings.yaml`, `allocate.py`, and `margin_state.py` are confirmed unmodified
+      by this implementation.
+    active_branch: claude/cvx-company-intelligence-251wiw
     active_pr: null
     last_verified_main_sha: b3152f381847e1166327e5332cfe85b98cc819cd
     last_verified_date: "2026-07-28"
