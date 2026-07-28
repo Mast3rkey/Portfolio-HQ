@@ -1,0 +1,87 @@
+sector: Information Technology
+industry: Systems Software / Cloud Infrastructure
+portfolio_role_ref: band
+competitive_advantages:
+  - "Combines database licensing and support, enterprise applications (Fusion, NetSuite), and Oracle Cloud Infrastructure (OCI) -- a filed, current cloud-growth narrative distinct from the historical asset-light database-licensing model, with the filings distinguishing cloud, software, and application offerings. Per Oracle's Form 10-K for the fiscal year ended 2026-05-31 (SEC accession 0001193125-26-277521) and Oracle's fiscal fourth-quarter earnings filing, directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 8 evidence bundle (see Source-access disclosure in ORCL.md) -- not directly inspected by this Claude session."
+  - "Reported remaining performance obligations (RPO) of $552.6 billion at 2026-02-28, with approximately 12% expected to be recognized in the following 12 months, driven by significant cloud contracts -- an extraordinarily large disclosed backlog, though long-dated, contract-concentrated, and explicitly not equivalent to near-term revenue, profit, or cash. Per Oracle's Form 10-Q for the quarter ended 2026-02-28 (SEC accession 0001193125-26-101045), directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "First-nine-months fiscal 2026 capital expenditures reached $39.2 billion versus $12.1 billion a year earlier, primarily for data-center expansion, with management expecting the upward trend to continue -- current, filed evidence of an aggressive, capacity-driven infrastructure buildout aligned with the disclosed cloud-contract backlog. Per the same Form 10-Q and Oracle's fiscal fourth-quarter/full-year 2026 earnings filing (SEC accession 0001193125-26-265848), directly inspected by the evidence-recovery researcher, not by this Claude session."
+risks:
+  - risk: "The OCI buildout materially changes Oracle's historical asset-light software profile: infrastructure expansion requires large capital commitments and competes directly with hyperscalers, and segment disclosure and contract concentration limit precise unit-economics analysis -- SaaS applications, support, and OCI margins should not be treated as interchangeable."
+    severity: high
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "The $552.6 billion RPO balance is long-dated and concentrated in significant contracts; it is not near-term revenue, profit, or cash, and counterparty concentration, capacity timing, and cancellation terms are not fully disclosed in the inspected sources -- it should not be compared mechanically with shorter-duration RPO at other companies in this batch."
+    severity: high
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Oracle financed its expansion with substantial senior-note issuance and mandatory convertible preferred stock while continuing dividends, making leverage, dilution, and refinancing central to capital allocation; ultimate burden depends on future capex, equity issuance, and contract cash conversion, none of which is established as favorable by the inspected sources alone. Capital expenditures nearly tripled year over year (fiscal first nine months 2026: $39.2 billion vs. $12.1 billion) with management expecting the trend to continue."
+    severity: high
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked session-wide on 2026-07-28 (SEC EDGAR, multiple company investor-relations domains, and a neutral non-target control domain all returned HTTP 403) -- every fact in this record is attributed to the governed, independently verified evidence bundle's own directly-inspected sources, not to this Claude session's own document inspection. See ORCL.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "Oracle's next quarterly results and any post-fiscal-year-end debt, equity, or capital-expenditure disclosure, which would update the financing and capex trajectory beyond the figures inspected for this record -- not available as of this record's 2026-07-28 evidence cutoff."
+    expected: "2026-09-15"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which OCI capacity utilization/unit economics, customer concentration within large cloud contracts, and Cerner integration economics will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). Oracle shows an extraordinarily large disclosed cloud-contract backlog ($552.6 billion RPO, driven by significant cloud contracts) and a real, current infrastructure buildout aligned with that demand (capex nearly tripling year over year). Held at Medium, not higher, because the same evidence that supports the growth thesis also creates the batch's most acute capital-intensity and financing risk: RPO is long-dated and not near-term cash, capacity utilization and unit economics for OCI are not established in the inspected sources, and the buildout is financed with substantial new debt and mandatory convertible preferred stock whose ultimate burden depends on future contract cash conversion that has not yet been demonstrated. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0030-ws0005-milestone3-batch8-enterprise-software-cybersecurity.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior Oracle Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3
+        Batch 8, alongside IBM, NOW, CRM, CRWD, and PANW ("Enterprise Software and
+        Cybersecurity"). This session's own WebFetch attempts on 2026-07-28 were tested and
+        confirmed blocked (HTTP 403) on SEC EDGAR, multiple company investor-relations domains,
+        and a neutral non-target control domain (en.wikipedia.org), confirming a session-wide
+        network-policy denial -- per governance/decisions/OPS-0008-research-wave-protocol-v1.md
+        Section 2's stop-before-drafting gate, this session then used the principal-supplied,
+        frozen, independently-authored evidence bundle
+        BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml (SHA-256
+        4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c; 1612 lines, 8139 words,
+        78577 bytes; research cutoff 2026-07-28), independently re-verified byte-for-byte against
+        the uploaded copy and its external .sha256 manifest by this session before use, and
+        retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md.
+        Every fact in this record is attributed to that bundle's own directly-inspected primary
+        sources (ORCL-S1 through ORCL-S3), not to this Claude session's own document inspection --
+        see ORCL.md's Source-access disclosure. Known, disclosed, non-blocking bundle
+        characteristic: the source-manifest's claims_supported reverse index is not fully
+        reciprocal with claim-level source_ids; claim-level source_ids control and are what this
+        record's claims are drawn from.
+    - date: "2026-07-28"
+      note: >
+        Bounded correction addressing PR #177's formal exact-head reassessment (GitHub review
+        4798513926, reviewed head e2ecda34f5c6b87946b1e422bad77fc56e3abdf4, verdict CHANGES
+        REQUIRED), MINOR finding 7 only: restates ORCL.md's thesis-break conditions as three
+        discrete, independently-triggerable bullets (RPO fails to convert to profitable revenue;
+        data-center utilization or pricing disappoints; debt service and dilution remain elevated
+        without cash conversion), matching the original v1 evidence bundle's own already-cited
+        structured company_evidence.ORCL.thesis_break_conditions list -- no new external evidence
+        required, per the supplemental v2 bundle's own minor_finding_7_disposition. No other
+        content in this record changed. This correction does not change Oracle's governed
+        tier/target and does not constitute principal acceptance.
+sources:
+  - note: "Oracle Corporation Form 10-K for the fiscal year ended 2026-05-31 (SEC accession 0001193125-26-277521), filed 2026-06-26. Directly inspected by the evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports business-model, risk-factor, MD&A, debt, commitment, and equity-financing content."
+    url: "https://www.sec.gov/Archives/edgar/data/1341439/000119312526277521/orcl-20260531.htm"
+    date: "2026-06-26"
+  - note: "Oracle Corporation Form 10-Q for the quarter ended 2026-02-28 (SEC accession 0001193125-26-101045), filed 2026-03-11. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports remaining-performance-obligation, cash-flow, capital-expenditure, and financing/liquidity content -- the RPO balance is long dated and not equivalent to near-term revenue, profit, or cash."
+    url: "https://www.sec.gov/Archives/edgar/data/1341439/000119312526101045/orcl-20260228.htm"
+    date: "2026-03-11"
+  - note: "Oracle Form 8-K reporting fiscal fourth-quarter and full-year 2026 results (Item 2.02 and Exhibit 99.1, SEC accession 0001193125-26-265848), furnished 2026-06-10. Directly inspected by the evidence-recovery researcher, not by this Claude session. Contains non-GAAP, constant-currency, and forward-looking measures; guidance is not historical fact."
+    url: "https://www.sec.gov/Archives/edgar/data/1341439/000119312526265848/orcl-20260610.htm"
+    date: "2026-06-10"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 primary-source evidence bundle (BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml), SHA-256 4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c, principal-supplied implementation input under PI-0030/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the three sources above into claim-level extracts (ORCL-C1 through ORCL-C5) with source-ID-level provenance and fact/inference/judgment labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1612/8139/78577) against the uploaded copy and its external manifest before use; also retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md."
+    url: null
+    date: "2026-07-28"

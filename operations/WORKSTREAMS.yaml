@@ -2285,9 +2285,51 @@ workstreams:
       `OPS-0007` §1, followed by explicit principal acceptance before it may be marked ready and
       merged.** EQIX and UNH remain outside this batch's authorized scope and remain uncovered/
       unauthorized. No allocation, margin, or trading work is authorized.
-    active_branch: null
-    active_pr: null
-    last_verified_main_sha: 17ce06e254832fa02681a7220585496cdb21d164
+
+      **`PI-0030` has since merged** — PR #176's merge commit
+      `f47e68ed5be1d6051b70d8a490789d9f46ca221a` independently confirmed this session as the
+      current `origin/main` tip; `PI-0030` is `status: Accepted` and effective. **Batch 8
+      implementation is in progress in this session, not complete.** The mandatory
+      `OPS-0008` §2 stop-before-drafting source-readiness gate initially found this session's own
+      `WebFetch` access blocked session-wide (HTTP 403 on SEC EDGAR, multiple company
+      investor-relations domains, and a neutral non-target control domain,
+      `en.wikipedia.org`) — drafting was correctly stopped rather than proceeding on secondary
+      evidence. The principal then supplied a frozen, principal-supplied primary-source
+      evidence-recovery bundle
+      (`BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml`, authored by an
+      independent evidence-recovery researcher external to this session; SHA-256
+      `4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c`; 1612 lines, 8139 words,
+      78577 bytes; research cutoff 2026-07-28), independently byte-verified against its external
+      `.sha256` manifest and structurally verified (19 unique sources, 38 unique claims, all
+      claim-to-source references resolved, all locators non-empty, disconfirming evidence and
+      three thesis-break conditions per company, no forbidden score/ranking/preferred-holding
+      content — the one disclosed non-blocking characteristic, a non-reciprocal
+      `claims_supported` reverse index, does not affect claim-level `source_ids`, which control)
+      by this session before use, per `OPS-0008` §2's standing evidence-recovery
+      pre-authorization. This session retained the recovery synthesis at
+      `governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md` and drafted,
+      on the current branch (`claude/portfolio-hq-batch-8-gate-axwgd4`, based exactly at
+      `f47e68e...`): six Company Intelligence records (`IBM`/`NOW`/`CRM`/`ORCL`/`CRWD`/`PANW`
+      `.yaml`+`.md` pairs), one comparison artifact
+      (`intelligence/BATCH8_ENTERPRISE_SOFTWARE_CYBERSECURITY_COMPARISON.md`), and one
+      freshness-registry/checkpoint enrollment row per ticker (`monitoring_enabled: false`,
+      `checkpoint_status: pending`, empty `channels: {}`,
+      `enrollment_authority`/`company_record_authority: PI-0030`). This session independently
+      re-verified post-draft: `intelligence_validator.py` — 38/38 companies valid (IBM/NOW/CRM/
+      ORCL/CRWD/PANW newly present; the pre-existing 32 unchanged); `freshness_validator.py` —
+      valid, zero errors. **Not yet performed, and not claimed here: independent exact-head
+      review of the implementation PR, any required bounded correction, principal acceptance,
+      merge, and post-merge verification — Batch 8 is not complete and IBM/NOW/CRM/ORCL/CRWD/PANW
+      are not yet PROVISIONAL under `OPS-0007` §3.** No tier, target, role, cluster, cap,
+      holdings, allocator, or margin change was made; no trade, ranking, or score was produced;
+      EQIX and UNH remain untouched and unauthorized; no ninth Milestone 3 batch, Milestone 4
+      work, or `OPS-0007` §8 step I advancement occurred.
+      **Implementation PR #177 opened as a draft** on branch `claude/portfolio-hq-batch-8-gate-axwgd4`,
+      head commit to be finalized by this same synchronization commit. It remains draft, unreviewed,
+      and unmerged as of this recording.
+    active_branch: claude/portfolio-hq-batch-8-gate-axwgd4
+    active_pr: 177
+    last_verified_main_sha: f47e68ed5be1d6051b70d8a490789d9f46ca221a
     last_verified_date: "2026-07-28"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and

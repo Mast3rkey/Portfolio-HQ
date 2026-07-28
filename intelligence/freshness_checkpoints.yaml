@@ -141,3 +141,27 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: IBM
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: NOW
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: CRM
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: ORCL
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: CRWD
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: PANW
+    checkpoint_status: pending
+    channels: {}
+    established_by: null

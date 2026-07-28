@@ -1,0 +1,76 @@
+sector: Information Technology
+industry: IT Services / Diversified Technology
+portfolio_role_ref: band
+competitive_advantages:
+  - "Diversified four-segment portfolio (Software, Consulting, Infrastructure, Financing) combining hybrid-cloud and AI positioning with enterprise incumbency, mission-critical infrastructure, integration capability, and partner distribution -- the filing itself names hundreds of competitors and material dependence on innovation and client spending alongside this positioning. Per IBM's Form 10-K for the year ended 2025-12-31 (SEC accession 0000051143-26-000010), directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 8 evidence bundle (see Source-access disclosure in IBM.md) -- not directly inspected by this Claude session."
+  - "Suspended common-stock repurchase program at the 2019 Red Hat closing, with unused authorization still on the books as of the 2025 Form 10-K -- indicating dividends, debt management, and acquisitions have held capital-allocation priority over active repurchases, while preserving future optionality. Per IBM's Form 10-K for the year ended 2025-12-31, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Real, current AI and hybrid-cloud momentum disclosed alongside mixed execution: the 2026-07-14 preliminary Q2 2026 investor letter reported total revenue up 1% and Software up 5%, even as Consulting was flat and Infrastructure was down 7% -- evidence of an active, if uneven, transformation rather than either a clean acceleration or a stalled turnaround. Per Arvind Krishna's Letter to IBM Investors (Form 8-K Exhibit 99.1, furnished 2026-07-14, SEC accession 0000051143-26-000070), directly inspected by the evidence-recovery researcher, not by this Claude session."
+risks:
+  - risk: "IBM's own Form 10-K names hundreds of competitors and material dependence on innovation execution and client-budget conditions; the moat case (enterprise incumbency, mission-critical systems, integration breadth, partner reach) is constrained by open-source alternatives, hyperscalers, and global consultancies, and durability varies materially by segment and product cycle -- mainframe-style switching costs should not be generalized to Consulting or the broader Software portfolio."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Preliminary (furnished, not final) second-quarter 2026 results showed mixed segment execution -- total revenue +1%, Software +5%, Consulting flat, Infrastructure -7% -- with management's own disclaimer that final results could differ from the preliminary figures. This challenges a simple, uniform hybrid-cloud-and-AI acceleration narrative."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Current watsonx AI revenue, margin, and retention contribution; the current zSystems mainframe cycle and renewal economics; and IBM's updated debt and pension position after the second-quarter close are not established in this record's evidence base -- unresolved questions carried from the governing evidence bundle, not resolved by this record."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked session-wide on 2026-07-28 (SEC EDGAR, multiple company investor-relations domains, and a neutral non-target control domain all returned HTTP 403) -- every fact in this record is attributed to the governed, independently verified evidence bundle's own directly-inspected sources, not to this Claude session's own document inspection. See IBM.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "IBM's final second-quarter 2026 Form 10-Q, superseding the 2026-07-14 preliminary investor letter -- not available as of this record's 2026-07-28 evidence cutoff. This record requires refresh once the final Q2 filing is published."
+    expected: "2026-08-15"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which watsonx AI-book monetization, the zSystems cycle, and any acquisition or capital-return policy change will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). IBM shows a diversified, century-scale enterprise franchise with real, current AI (watsonx) and hybrid-cloud (Red Hat) positioning, and disciplined capital allocation (suspended buybacks, prioritized dividends/debt management since 2019). Held at Medium rather than higher because the evidence base itself is mixed and incomplete: preliminary Q2 2026 segment results were uneven (Infrastructure -7%), the final Q2 Form 10-Q was not yet available at this record's cutoff, and watsonx's own revenue/margin/retention contribution and the current zSystems cycle economics are not established by the inspected sources. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0030-ws0005-milestone3-batch8-enterprise-software-cybersecurity.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior IBM Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3
+        Batch 8, alongside NOW, CRM, ORCL, CRWD, and PANW ("Enterprise Software and
+        Cybersecurity"). This session's own WebFetch attempts on 2026-07-28 were tested and
+        confirmed blocked (HTTP 403) on SEC EDGAR, multiple company investor-relations domains,
+        and a neutral non-target control domain (en.wikipedia.org), confirming a session-wide
+        network-policy denial -- per governance/decisions/OPS-0008-research-wave-protocol-v1.md
+        Section 2's stop-before-drafting gate, this session then used the principal-supplied,
+        frozen, independently-authored evidence bundle
+        BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml (SHA-256
+        4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c; 1612 lines, 8139 words,
+        78577 bytes; research cutoff 2026-07-28), independently re-verified byte-for-byte against
+        the uploaded copy and its external .sha256 manifest by this session before use, and
+        retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md.
+        Every fact in this record is attributed to that bundle's own directly-inspected primary
+        sources (IBM-S1 through IBM-S3), not to this Claude session's own document inspection --
+        see IBM.md's Source-access disclosure. Known, disclosed, non-blocking bundle
+        characteristic: the source-manifest's claims_supported reverse index is not fully
+        reciprocal with claim-level source_ids (e.g. IBM-C5 cites IBM-S1 in its own source_ids,
+        but IBM-S1's claims_supported list omits IBM-C5); claim-level source_ids control and are
+        what this record's claims are drawn from.
+sources:
+  - note: "International Business Machines Corporation Form 10-K for the year ended 2025-12-31 (SEC accession 0000051143-26-000010), filed 2026-02-24. Directly inspected by the evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports business-segment, strategy, competition, risk-factor, and capital-allocation (suspended repurchase program) content."
+    url: "https://www.sec.gov/Archives/edgar/data/51143/000005114326000010/ibm-20251231.htm"
+    date: "2026-02-24"
+  - note: "International Business Machines Corporation Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0000051143-26-000038), filed 2026-04-23. Directly inspected by the evidence-recovery researcher, not by this Claude session. Latest completed Form 10-Q at the evidence cutoff; supports Q1 2026 financial-statement and MD&A content."
+    url: "https://www.sec.gov/Archives/edgar/data/51143/000005114326000038/ibm-20260331.htm"
+    date: "2026-04-23"
+  - note: "Arvind Krishna's Letter to IBM Investors -- selected preliminary second-quarter 2026 results (Form 8-K Exhibit 99.1, SEC accession 0000051143-26-000070), furnished 2026-07-14. Directly inspected by the evidence-recovery researcher, not by this Claude session. Preliminary, issuer-furnished results expressly subject to final close; supports Q2 2026 preliminary segment-trend content, labeled as preliminary throughout this record."
+    url: "https://www.sec.gov/Archives/edgar/data/51143/000005114326000070/ibm-20260714xex991.htm"
+    date: "2026-07-14"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 primary-source evidence bundle (BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml), SHA-256 4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c, principal-supplied implementation input under PI-0030/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the three sources above into claim-level extracts (IBM-C1 through IBM-C5) with source-ID-level provenance and fact/inference/judgment labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1612/8139/78577) against the uploaded copy and its external manifest before use; also retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md."
+    url: null
+    date: "2026-07-28"
