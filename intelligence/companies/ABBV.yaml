@@ -1,0 +1,86 @@
+sector: Health Care
+industry: Pharmaceuticals
+portfolio_role_ref: band
+competitive_advantages:
+  - "Demonstrated, already-executed post-Humira immunology replacement: Q1 2026 immunology revenue was $7.290 billion, with Skyrizi at $4.483 billion and Rinvoq at $2.119 billion, against Humira's own residual $688 million -- Skyrizi and Rinvoq combined are already several times larger than Humira's current run-rate, evidence of a replacement that has substantially happened, not merely a stated strategy. Total Q1 2026 net revenue was $15.002 billion, up 12.4% reported and 10.3% operational. Per AbbVie's Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0001551152-26-000017) and AbbVie's Q1 2026 earnings release, both directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 7 evidence bundle (see Source-access disclosure in ABBV.md) -- not directly inspected by this Claude session."
+  - "Diversification beyond immunology: Q1 2026 neuroscience revenue was $2.875 billion, aesthetics $1.186 billion, and oncology $1.631 billion -- real revenue outside the immunology franchise, though oncology showed a disclosed weak spot (Imbruvica down 24.7%). Per AbbVie's Q1 2026 earnings release, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Continued pipeline conversion: the FDA approved Decnupaz (pivekimab sunirine-pvzy) for blastic plasmacytoid dendritic cell neoplasm (BPDCN), an ultra-rare hematologic malignancy, in May 2026 -- evidence of business-development assets converting into approved products, not only revenue-stage products. Per the FDA's approval announcement, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Disclosed long-horizon U.S. investment commitment: AbbVie disclosed a $100 billion U.S. R&D and capital-investment pledge over a decade. This record treats this as a disclosed forward commitment, not as evidence of results already achieved. Per AbbVie's Form 10-Q for the quarter ended 2026-03-31, directly inspected by the evidence-recovery researcher, not by this Claude session."
+risks:
+  - risk: "Balance sheet carries substantial goodwill and acquired-intangible exposure consistent with AbbVie's acquisition-driven diversification strategy. This record does not reproduce a specific dollar figure for net intangible assets or goodwill -- this session's own attempt to independently re-verify the exact balance-sheet figures against the primary source (ABBV-S02) was blocked by a confirmed network-policy denial (see F-2 disposition in review.log and ABBV.md's Source-access disclosure). The general exposure is disclosed as a real, material risk category regardless of the unverified exact figures."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Q1 2026 acquired IPR&D and milestone expense was $744 million -- a real, disclosed, recurring cost of the acquisition-driven diversification strategy, separate from the goodwill/intangible balance-sheet exposure above."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Imbruvica (oncology) revenue declined 24.7% in Q1 2026 -- a disclosed, material erosion in one existing franchise even as Skyrizi/Rinvoq successfully replace Humira; oncology diversification is not uniformly successful across all products."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Botox was disclosed as selected for Medicare-set pricing beginning in 2028 -- a concrete, dated reimbursement-policy exposure affecting the aesthetics/neuroscience-adjacent franchise, not a hypothetical future policy risk."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "How much of AbbVie's long-term growth is internally generated versus dependent on acquired assets and contingent consideration is not established from a single normalized dependency measure in this record's evidence base (unresolved question B7-U003)."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "This session's own primary-source access (WebFetch) was tested and confirmed blocked on 2026-07-27 (SEC EDGAR, and a neutral non-target control domain, both returned HTTP 403) -- every fact in this record is attributed to the governed v2 evidence bundle's own directly-inspected sources, not to this Claude session's independent document inspection. See ABBV.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+catalysts:
+  - catalyst: "AbbVie's Q2 2026 financial results, scheduled for 2026-07-31 per the governing evidence bundle -- not available as of this record's 2026-07-27 evidence cutoff. This record requires refresh once those results are published, including re-verification of the F-2 goodwill/intangible figures if primary-source access is available at that time."
+    expected: "2026-07-31"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which Skyrizi/Rinvoq replacement durability, Imbruvica's decline trajectory, and acquisition/contingent-consideration dependency will next be actively re-checked."
+    expected: "2026-10-25"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). AbbVie shows real, already-executed evidence of successful post-Humira replacement (Skyrizi plus Rinvoq revenue several times Humira's current residual run-rate) and genuine diversification into neuroscience, oncology, and aesthetics, plus continued pipeline conversion (the Decnupaz approval). Held at Medium rather than High because of concrete, disclosed tensions this record does not discount: substantial goodwill and acquired-intangible exposure whose exact scale this record cannot state (F-2, blocked primary-source re-verification); a real, material Imbruvica decline (24.7%) showing diversification is uneven, not uniform; a dated, concrete Medicare-pricing exposure for Botox beginning 2028; ongoing, recurring acquired-IPR&D expense; and an unresolved, batch-wide question about how much of AbbVie's growth is internally generated versus acquisition-dependent (B7-U003). This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-27"
+  next_due: "2026-10-25"
+  log:
+    - date: "2026-07-27"
+      note: >
+        Record created under governance/decisions/PI-0029-ws0005-milestone3-batch7-biopharmaceuticals.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior AbbVie Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3
+        Batch 7, alongside LLY, MRK, JNJ, and GILD ("Biopharmaceuticals"). This implementation used
+        the principal-accepted, independently corrective-validated evidence bundle
+        BATCH7_biopharmaceuticals_evidence_bundle_20260727_v2.yaml (SHA-256
+        cff7bc37920e829cd5521128b9fa11019e65a650ce20726f9beea818c8f3a826; 1227 lines, 5659 words,
+        56667 bytes; research cutoff 2026-07-27), independently re-verified byte-for-byte against
+        both uploaded copies by this session before use. This Claude Code session's own WebFetch
+        attempts on 2026-07-27 were blocked (HTTP 403) on SEC EDGAR and on a neutral non-target
+        control domain (example.com), confirming a session-wide network-policy denial. Every fact
+        in this record is attributed to the v2 evidence bundle's own directly-inspected primary
+        sources (ABBV-S01 through ABBV-S04), not to this Claude session's own document inspection
+        -- see ABBV.md's Source-access disclosure.
+        F-2 disposition: this session's own attempt to re-verify the exact goodwill and net-
+        intangible-asset balances (ABBV-C004) against ABBV-S02 was blocked by the same
+        network-policy denial; per the bundle's own bounded-abstention instruction, this record
+        does not reproduce the bundle's specific dollar figures and instead uses only a
+        supportable general statement about substantial goodwill and acquired-intangible
+        exposure, with the verification limitation disclosed here and in ABBV.md.
+sources:
+  - note: "AbbVie Inc. 2025 Form 10-K (SEC accession 0001551152-26-000008), filed 2026-02-20. Directly inspected by the evidence-recovery researcher who authored the governed v2 evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports product/patent/debt/acquisition/risk-factor content used in this record's thesis-break conditions."
+    url: "https://www.sec.gov/Archives/edgar/data/1551152/000155115226000008/abbv-20251231.htm"
+    date: "2026-02-20"
+  - note: "AbbVie Inc. Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0001551152-26-000017). Directly inspected by the evidence-recovery researcher, not by this Claude session. This record's exact-figure claim from this source (goodwill/net-intangible balance) was not independently re-verified by this session -- see F-2 disposition above -- and is therefore not reproduced with specific figures in this record."
+    url: "https://www.sec.gov/Archives/edgar/data/1551152/000155115226000017/abbv-20260331.htm"
+    date: "2026-05-08"
+  - note: "AbbVie Reports First-Quarter 2026 Financial Results (earnings release). Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports Q1 2026 headline revenue, key-product revenue table, and expense/guidance sections."
+    url: "https://investors.abbvie.com/news-releases/news-release-details/abbvie-reports-first-quarter-2026-financial-results"
+    date: "2026-04-29"
+  - note: "FDA approves pivekimab sunirine-pvzy (Decnupaz) for blastic plasmacytoid dendritic cell neoplasm. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports the approval, indication, and efficacy evidence for Decnupaz."
+    url: "https://www.fda.gov/drugs/resources-information-approved-drugs/fda-approves-pivekimab-sunirine-pvzy-blastic-plasmacytoid-dendritic-cell-neoplasm-ultra-rare"
+    date: "2026-05-27"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 7 primary-source evidence bundle, v2 (BATCH7_biopharmaceuticals_evidence_bundle_20260727_v2.yaml), SHA-256 cff7bc37920e829cd5521128b9fa11019e65a650ce20726f9beea818c8f3a826, principal-custodied implementation input under PI-0029/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the four sources above into claim-level extracts (ABBV-C001 through ABBV-C007) with source-ID-level provenance and fact/inference labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1227/5659/56667) against both uploaded copies before use."
+    url: null
+    date: "2026-07-27"

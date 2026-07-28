@@ -1,0 +1,87 @@
+sector: Health Care
+industry: Pharmaceuticals
+portfolio_role_ref: T1
+competitive_advantages:
+  - "Dominant, currently fast-growing incretin (GLP-1) franchise: Q1 2026 revenue was $19.8 billion, up 56% year over year, primarily volume-driven; incretin revenue grew 90% in the quarter, and Lilly's defined key products (Mounjaro, Zepbound, and other recent launches) generated $13.4 billion, or 68% of quarterly revenue. Zepbound alone was $4.2 billion in Q1 2026, up 80%, with a management-reported 60.1% U.S. incretin prescription share (IQVIA data, cited as management-presented third-party data, not independently verified by this record). Per Lilly's Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0000059478-26-000045) and Lilly's Q1 2026 earnings release and earnings-call presentation, all directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 7 evidence bundle (see Source-access disclosure in LLY.md) -- not directly inspected by this Claude session."
+  - "Regulatory conversion of the pipeline into new approved products: the FDA approved Foundayo, an oral GLP-1, for chronic weight management (approved 2026-04-01, the first new molecular entity approved under the FDA's National Priority Voucher Program). The label carries material gastrointestinal, pancreatitis, kidney, gallbladder, aspiration, and thyroid C-cell tumor warnings and precautions -- a real regulatory achievement paired with a real safety/monitoring burden. Per the FDA's approval announcement, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Business-development activity extending beyond the cardiometabolic franchise: Lilly announced agreements during Q1 2026 to acquire Orna, Centessa, Kelonia, and Ajax, alongside continued internal programs in immunology, oncology, and neuroscience. This is evidence of deliberate pipeline diversification beyond incretins, not merely restated growth in the existing franchise. Per Lilly's Q1 2026 earnings release and earnings-call presentation, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Manufacturing-capacity investment disclosed as a stated strategic priority for Q1 2026, including a newly announced Pennsylvania manufacturing site. This record does not assert a specific verified Wisconsin production-start date (see F-3 disposition in review.log and the Source-access disclosure in LLY.md) -- this Claude session's own primary-source access was blocked and the underlying claim was not independently re-verified before this record's cutoff."
+risks:
+  - risk: "Extreme concentration in a small number of cardiometabolic products: 68% of Q1 2026 revenue came from Lilly's defined key products, and Q1 revenue growth (56% reported) was itself partly offset by lower realized net prices for Mounjaro and Zepbound -- meaning both the growth and the pricing pressure are concentrated in the same narrow product set. A sustained erosion of incretin share, payer access, or net pricing would have an outsized effect on total company results relative to a more diversified pharmaceutical peer."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Foundayo's FDA-approved label carries a boxed warning and multiple clinically significant precautions (gastrointestinal, pancreatitis, kidney, gallbladder, aspiration, and thyroid C-cell tumor risk) -- a real, disclosed safety and monitoring burden on a product central to the company's near-term growth narrative, not merely a routine label footnote."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Growth strategy requires large, concurrent manufacturing-capacity investment (new Pennsylvania site, continued capacity build-out) executed alongside four separate announced acquisitions (Orna, Centessa, Kelonia, Ajax) in a single quarter -- meaningful execution and integration risk across manufacturing and business development simultaneously. This record does not independently assess the probability of successful execution."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "Precise product-by-product U.S. and ex-U.S. patent and regulatory-exclusivity dates are not established in this record's evidence base (unresolved question B7-U001, batch-wide) -- the incretin franchise's multi-year exclusivity runway has not been independently verified claim-by-claim."
+    severity: moderate
+    identified: "2026-07-27"
+    status: monitoring
+  - risk: "This session's own primary-source access (WebFetch) was tested and confirmed blocked on 2026-07-27 (SEC EDGAR, and a neutral non-target control domain, both returned HTTP 403) -- every fact in this record is attributed to the governed v2 evidence bundle's own directly-inspected sources, not to this Claude session's independent document inspection. See LLY.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-27"
+    status: monitoring
+catalysts:
+  - catalyst: "Lilly's Q2 2026 financial results and any accompanying earnings-call materials -- not available as of this record's 2026-07-27 evidence cutoff per the governing evidence bundle's disclosed limitations. This record will require refresh once those results are published."
+    expected: "2026-08-31"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which incretin net-pricing durability, Foundayo commercial uptake and safety experience, and the four pending 2026 acquisitions' integration progress will next be actively re-checked."
+    expected: "2026-10-25"
+    status: pending
+conviction:
+  rating: High
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). Lilly shows exceptional current commercial momentum (56% Q1 2026 revenue growth, 90% incretin growth, a 60.1% management-reported U.S. incretin prescription share) combined with real regulatory conversion (Foundayo's approval) and deliberate pipeline diversification beyond incretins (four announced 2026 acquisitions plus internal immunology/oncology/neuroscience programs). Held at High rather than Very High because of concrete, disclosed tensions this record does not discount: extreme current revenue concentration in a narrow incretin/key-product set (68% of Q1 2026 revenue) that is simultaneously the source of both the growth and the realized-pricing pressure; a real, material safety/regulatory burden on Foundayo's label; simultaneous execution risk across large manufacturing-capacity investment and four separate acquisition integrations; and an unresolved, batch-wide patent/exclusivity-timeline question (B7-U001) that this record has not independently verified claim-by-claim. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-27"
+  next_due: "2026-10-25"
+  log:
+    - date: "2026-07-27"
+      note: >
+        Record created under governance/decisions/PI-0029-ws0005-milestone3-batch7-biopharmaceuticals.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior Eli Lilly Company Intelligence record existed). Portfolio HQ's WS-0005 Milestone 3
+        Batch 7, alongside ABBV, MRK, JNJ, and GILD ("Biopharmaceuticals"). This implementation used
+        the principal-accepted, independently corrective-validated evidence bundle
+        BATCH7_biopharmaceuticals_evidence_bundle_20260727_v2.yaml (SHA-256
+        cff7bc37920e829cd5521128b9fa11019e65a650ce20726f9beea818c8f3a826; 1227 lines, 5659 words,
+        56667 bytes; research cutoff 2026-07-27), independently re-verified byte-for-byte against
+        both uploaded copies by this session before use. This Claude Code session's own WebFetch
+        attempts on 2026-07-27 were blocked (HTTP 403) on SEC EDGAR and on a neutral non-target
+        control domain (example.com), confirming a session-wide network-policy denial consistent
+        with the pattern already disclosed in this repository's Batch 1-6 records. Every fact in
+        this record is attributed to the v2 evidence bundle's own directly-inspected primary
+        sources (LLY-S01 through LLY-S05 in the bundle's source manifest), not to this Claude
+        session's own document inspection -- see LLY.md's Source-access disclosure.
+        F-3 disposition: this session's own attempt to re-verify the Wisconsin production-start
+        clause (LLY-C005) against LLY-S04 was blocked by the same network-policy denial; per the
+        bundle's own bounded-abstention instruction, this record omits the exact Wisconsin
+        production-start date/quarter assertion and retains only the directly supportable
+        manufacturing-capacity evidence (the Pennsylvania site announcement and the general fact
+        that manufacturing capacity is a stated strategic priority), with the limitation disclosed
+        here and in LLY.md.
+sources:
+  - note: "Eli Lilly and Company 2025 Form 10-K (SEC accession 0000059478-26-000013), filed 2026-02-12. Directly inspected by the evidence-recovery researcher who authored the governed v2 evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports product revenue, patent-risk disclosure, manufacturing, and risk-factor content used in this record's thesis-break conditions."
+    url: "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm"
+    date: "2026-02-12"
+  - note: "Eli Lilly and Company Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0000059478-26-000045). Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports Q1 2026 revenue, product-level revenue, and business-development/risk updates."
+    url: "https://www.sec.gov/Archives/edgar/data/59478/000005947826000045/lly-20260331.htm"
+    date: "2026-04-30"
+  - note: "Lilly reports first-quarter 2026 financial results, raises full year guidance, and highlights momentum of new medicines (earnings release). Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports Q1 2026 headline results, regulatory/pipeline/business-development bullets, and guidance."
+    url: "https://investor.lilly.com/node/54176"
+    date: "2026-04-30"
+  - note: "Q1 2026 Lilly Earnings Call presentation. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports incretin-share and key-product revenue figures, capital-allocation and pipeline data, and the manufacturing-capacity disclosure this record treats with reduced precision per F-3 (see review.log)."
+    url: "https://investor.lilly.com/static-files/587c9bd3-6551-45c3-989d-ab60c49036bb"
+    date: "2026-04-30"
+  - note: "FDA Approves First New Molecular Entity Under National Priority Voucher Program (Foundayo). Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports the approval, indication, supporting-trial, and safety-warning content for Foundayo."
+    url: "https://www.fda.gov/news-events/press-announcements/fda-approves-first-new-molecular-entity-under-national-priority-voucher-program"
+    date: "2026-04-01"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 7 primary-source evidence bundle, v2 (BATCH7_biopharmaceuticals_evidence_bundle_20260727_v2.yaml), SHA-256 cff7bc37920e829cd5521128b9fa11019e65a650ce20726f9beea818c8f3a826, principal-custodied implementation input under PI-0029/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the five sources above into claim-level extracts (LLY-C001 through LLY-C007) with source-ID-level provenance and fact/inference labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1227/5659/56667) against both uploaded copies before use."
+    url: null
+    date: "2026-07-27"

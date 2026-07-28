@@ -121,3 +121,23 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: LLY
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: ABBV
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: MRK
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: JNJ
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: GILD
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
