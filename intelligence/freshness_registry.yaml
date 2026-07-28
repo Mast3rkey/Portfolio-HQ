@@ -266,3 +266,51 @@ tickers:
     filing_trigger_profile: domestic_issuer_v1
     refresh_policy: path_a_fixed_scope_v1
     monitoring_enabled: false
+  - ticker: IBM
+    company_record_authority: PI-0030
+    enrollment_authority: PI-0030
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: NOW
+    company_record_authority: PI-0030
+    enrollment_authority: PI-0030
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: CRM
+    company_record_authority: PI-0030
+    enrollment_authority: PI-0030
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: ORCL
+    company_record_authority: PI-0030
+    enrollment_authority: PI-0030
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: CRWD
+    company_record_authority: PI-0030
+    enrollment_authority: PI-0030
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: PANW
+    company_record_authority: PI-0030
+    enrollment_authority: PI-0030
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false

@@ -1,0 +1,76 @@
+sector: Information Technology
+industry: Application Software / Enterprise Workflow Automation
+portfolio_role_ref: band
+competitive_advantages:
+  - "Unified cloud workflow platform spanning IT service management, IT operations management, security operations, customer/employee workflows, and creator tooling, with Now Assist AI agents embedded across modules -- a stated, filed strategy of platform breadth rather than a single point solution. Per ServiceNow's Form 10-K for the year ended 2025-12-31 (SEC accession 0001373715-26-000007), directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 8 evidence bundle (see Source-access disclosure in NOW.md) -- not directly inspected by this Claude session."
+  - "Reported a 98% ACV-based renewal rate for 2023-2025 and year-end 2025 remaining performance obligations (RPO) of $28.2 billion, with 46% expected to be recognized within 12 months -- strong disclosed recurring-revenue and contract-durability evidence, though the renewal measure excludes several expansion/contraction effects and RPO varies with contract duration and currency. Per ServiceNow's Form 10-K for the year ended 2025-12-31, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "For first-quarter 2026, reported subscription revenue of $3.671 billion, cRPO of $12.64 billion, RPO of $27.7 billion, and more than 130% year-over-year growth in customers spending over $1 million ACV on Now Assist -- current, filed evidence of both continued recurring-revenue growth and an actively expanding AI-product customer cohort, though total Now Assist revenue and gross-margin economics are not separately disclosed. Per ServiceNow's Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0001373715-26-000056) and ServiceNow's Q1 2026 earnings release, directly inspected by the evidence-recovery researcher, not by this Claude session."
+risks:
+  - risk: "Product breadth across IT, operations, security, customer, employee, and creator workflows raises bundling, sales-complexity, and execution risk; product capability does not by itself establish incremental AI revenue or profitability, and customer examples in the filing are selective rather than representative."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "The headline 98% ACV-based renewal rate is definition-limited -- it excludes several expansion and contraction effects -- and cannot be directly compared with Salesforce's attrition rate, CrowdStrike's ARR-based retention, or Palo Alto Networks' NGS ARR without accounting for each issuer's own definition and exclusions."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "ServiceNow acquired Moveworks for approximately $2.4 billion, recording substantial goodwill and developed-technology value -- integration and synergy realization are material to the AI-platform thesis and were not established as achieved in the inspected sources; purchase accounting was preliminary at filing."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked session-wide on 2026-07-28 (SEC EDGAR, multiple company investor-relations domains, and a neutral non-target control domain all returned HTTP 403) -- every fact in this record is attributed to the governed, independently verified evidence bundle's own directly-inspected sources, not to this Claude session's own document inspection. See NOW.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "ServiceNow's next quarterly results, which would update renewal, RPO/cRPO, and Now Assist customer-cohort metrics beyond the Q1 2026 figures inspected for this record -- not available as of this record's 2026-07-28 evidence cutoff."
+    expected: "2026-10-22"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which direct Now Assist revenue/margin disclosure, post-Moveworks retention evidence, and seat-versus-module expansion mix will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). ServiceNow shows strong disclosed recurring-revenue economics (98% renewal, $28.2 billion year-end RPO, continued Q1 2026 subscription and RPO growth) and a real, currently expanding AI-product customer cohort (>130% YoY growth in customers spending over $1 million ACV on Now Assist). Held at Medium rather than higher because material elements of the AI-monetization and acquisition-integration thesis remain undisclosed at the claim level this record relies on: total Now Assist revenue and gross margin are not separately reported, and Moveworks' ~$2.4 billion acquisition (with substantial recorded goodwill) has not yet demonstrated integration success in the inspected sources. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0030-ws0005-milestone3-batch8-enterprise-software-cybersecurity.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior ServiceNow Company Intelligence record existed). Portfolio HQ's WS-0005
+        Milestone 3 Batch 8, alongside IBM, CRM, ORCL, CRWD, and PANW ("Enterprise Software and
+        Cybersecurity"). This session's own WebFetch attempts on 2026-07-28 were tested and
+        confirmed blocked (HTTP 403) on SEC EDGAR, multiple company investor-relations domains,
+        and a neutral non-target control domain (en.wikipedia.org), confirming a session-wide
+        network-policy denial -- per governance/decisions/OPS-0008-research-wave-protocol-v1.md
+        Section 2's stop-before-drafting gate, this session then used the principal-supplied,
+        frozen, independently-authored evidence bundle
+        BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml (SHA-256
+        4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c; 1612 lines, 8139 words,
+        78577 bytes; research cutoff 2026-07-28), independently re-verified byte-for-byte against
+        the uploaded copy and its external .sha256 manifest by this session before use, and
+        retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md.
+        Every fact in this record is attributed to that bundle's own directly-inspected primary
+        sources (NOW-S1 through NOW-S3), not to this Claude session's own document inspection --
+        see NOW.md's Source-access disclosure. Known, disclosed, non-blocking bundle
+        characteristic: the source-manifest's claims_supported reverse index is not fully
+        reciprocal with claim-level source_ids (e.g. NOW-C5 cites NOW-S3 in its own source_ids,
+        but NOW-S3's claims_supported list omits NOW-C5); claim-level source_ids control and are
+        what this record's claims are drawn from.
+sources:
+  - note: "ServiceNow, Inc. Form 10-K for the year ended 2025-12-31 (SEC accession 0001373715-26-000007), filed 2026-01-29. Directly inspected by the evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports platform-breadth, renewal-rate definition, remaining-performance-obligation, and Moveworks acquisition content."
+    url: "https://www.sec.gov/Archives/edgar/data/1373715/000137371526000007/now-20251231.htm"
+    date: "2026-01-29"
+  - note: "ServiceNow, Inc. Form 10-Q for the quarter ended 2026-03-31 (SEC accession 0001373715-26-000056), filed 2026-04-23. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports Q1 2026 financial-statement, customer, subscription, and RPO content."
+    url: "https://www.sec.gov/Archives/edgar/data/1373715/000137371526000056/now-20260331.htm"
+    date: "2026-04-23"
+  - note: "ServiceNow Reports First Quarter 2026 Financial Results (Form 8-K Exhibit 99.1, SEC accession 0001373715-26-000054), furnished 2026-04-22. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports headline subscription/cRPO/RPO metrics and the Now Assist customer-spend cohort figure; contains non-GAAP and constant-currency measures separated in this record from filed GAAP figures."
+    url: "https://www.sec.gov/Archives/edgar/data/1373715/000137371526000054/erq1fy26.htm"
+    date: "2026-04-22"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 primary-source evidence bundle (BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml), SHA-256 4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c, principal-supplied implementation input under PI-0030/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the three sources above into claim-level extracts (NOW-C1 through NOW-C5) with source-ID-level provenance and fact/inference/judgment labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1612/8139/78577) against the uploaded copy and its external manifest before use; also retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md."
+    url: null
+    date: "2026-07-28"

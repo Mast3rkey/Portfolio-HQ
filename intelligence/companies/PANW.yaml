@@ -1,0 +1,77 @@
+sector: Information Technology
+industry: Cybersecurity / Network Security and Cloud Security Platform
+portfolio_role_ref: band
+competitive_advantages:
+  - "Platformization strategy integrates network security, SASE, cloud security, and security operations (Cortex/XSIAM) to replace point products with a broader architecture -- a filed strategic thesis of consolidation rather than incremental point-product competition. Per Palo Alto Networks' Form 10-K for the fiscal year ended 2025-07-31 (SEC accession 0001327567-25-000027), directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 8 evidence bundle (see Source-access disclosure in PANW.md) -- not directly inspected by this Claude session."
+  - "At fiscal-year-end 2025 reported Next-Generation Security (NGS) ARR of $5.6 billion and remaining performance obligations (RPO) of $15.8 billion -- disclosed operating-metric scale supporting the platformization thesis, while the filing itself expressly states NGS ARR is an operating metric, not GAAP revenue, and that its scope can expand over time. Per Palo Alto Networks' Form 10-K for the fiscal year ended 2025-07-31, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Distinguishes product revenue (hardware and software licenses, recognized at shipment or delivery) from subscription and support revenue (recognized over time) -- a filed, granular revenue-recognition structure that avoids collapsing a genuinely mixed hardware/subscription business into a single recurring-revenue narrative. Per the same Form 10-K and Palo Alto Networks' Form 10-Q for the quarter ended 2026-04-30 (SEC accession 0001327567-26-000015), directly inspected by the evidence-recovery researcher, not by this Claude session."
+risks:
+  - risk: "Platformization can require sales concessions and complex integration, and lengthens sales cycles; NGS ARR is an explicitly non-GAAP operating metric whose scope can expand over time, reducing comparability across periods and against other issuers' recurring-revenue metrics."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Acquisition-led platform expansion creates contingent-consideration and integration risk; the IBM QRadar asset transaction produced a material contingent-liability estimate and a critical audit matter in the inspected Form 10-K, with fair value and returns dependent on customer behavior, integration, and market assumptions not yet established."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Direct competitive and metric-comparability overlap with CrowdStrike -- both pursue platform-consolidation strategies in cybersecurity, but with different architectures, incident histories, and metric definitions (NGS ARR versus CrowdStrike's own ARR definition); customer overlap, displacement win rates, and risk correlation between the two are not fully disclosed in the inspected sources."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked session-wide on 2026-07-28 (SEC EDGAR, multiple company investor-relations domains, and a neutral non-target control domain all returned HTTP 403) -- every fact in this record is attributed to the governed, independently verified evidence bundle's own directly-inspected sources, not to this Claude session's own document inspection. See PANW.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "Palo Alto Networks' next fiscal-year Form 10-K, which would update NGS ARR, RPO, and platformization-concession economics beyond the fiscal 2025 year-end and fiscal Q3 2026 figures inspected for this record -- not available as of this record's 2026-07-28 evidence cutoff."
+    expected: "2026-08-29"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which current platformization concession economics, customer overlap/displacement evidence versus CrowdStrike, and acquisition-integration milestones will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). Palo Alto Networks shows a filed, disclosed platformization strategy with meaningful operating-metric scale (NGS ARR $5.6 billion, RPO $15.8 billion at fiscal year-end 2025) and revenue-recognition transparency that separates product from subscription/support economics. Held at Medium rather than higher because NGS ARR is an explicitly non-GAAP metric whose scope can expand (reducing period-over-period comparability), platformization itself can require sales concessions that are not fully quantified in the inspected sources, acquisition-related contingent liabilities (the IBM QRadar asset transaction) remain a disclosed critical audit matter, and current customer overlap/displacement evidence versus CrowdStrike is not established. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0030-ws0005-milestone3-batch8-enterprise-software-cybersecurity.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior Palo Alto Networks Company Intelligence record existed). Portfolio HQ's WS-0005
+        Milestone 3 Batch 8, alongside IBM, NOW, CRM, ORCL, and CRWD ("Enterprise Software and
+        Cybersecurity"). This session's own WebFetch attempts on 2026-07-28 were tested and
+        confirmed blocked (HTTP 403) on SEC EDGAR, multiple company investor-relations domains,
+        and a neutral non-target control domain (en.wikipedia.org), confirming a session-wide
+        network-policy denial -- per governance/decisions/OPS-0008-research-wave-protocol-v1.md
+        Section 2's stop-before-drafting gate, this session then used the principal-supplied,
+        frozen, independently-authored evidence bundle
+        BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml (SHA-256
+        4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c; 1612 lines, 8139 words,
+        78577 bytes; research cutoff 2026-07-28), independently re-verified byte-for-byte against
+        the uploaded copy and its external .sha256 manifest by this session before use, and
+        retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md.
+        Every fact in this record is attributed to that bundle's own directly-inspected primary
+        sources (PANW-S1 through PANW-S3), not to this Claude session's own document inspection --
+        see PANW.md's Source-access disclosure. Known, disclosed, non-blocking bundle
+        characteristic: the source-manifest's claims_supported reverse index is not fully
+        reciprocal with claim-level source_ids (e.g. PANW-C5 cites PANW-S1/S2/S3 in its own
+        source_ids, and BATCH-C6's own CRWD/PANW overlap claim cites PANW-S2 which does not list
+        BATCH-C6 in its own claims_supported); claim-level source_ids control and are what this
+        record's claims are drawn from.
+sources:
+  - note: "Palo Alto Networks, Inc. Form 10-K for the fiscal year ended 2025-07-31 (SEC accession 0001327567-25-000027), filed 2025-08-29. Directly inspected by the evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports platformization strategy, NGS ARR/RPO definition, revenue-recognition, and IBM QRadar contingent-consideration content."
+    url: "https://www.sec.gov/Archives/edgar/data/1327567/000132756725000027/panw-20250731.htm"
+    date: "2025-08-29"
+  - note: "Palo Alto Networks, Inc. Form 10-Q for the quarter ended 2026-04-30 (SEC accession 0001327567-26-000015), filed 2026-06-03. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports current financial-statement and MD&A content; quarterly metrics remain affected by contract timing, acquisitions, and product/subscription mix."
+    url: "https://www.sec.gov/Archives/edgar/data/1327567/000132756726000015/panw-20260430.htm"
+    date: "2026-06-03"
+  - note: "Palo Alto Networks Form 8-K reporting fiscal third-quarter 2026 results (Item 2.02 and Exhibit 99.1, SEC accession 0001327567-26-000012), furnished 2026-06-02. Directly inspected by the evidence-recovery researcher, not by this Claude session. Contains management guidance and non-GAAP metrics."
+    url: "https://www.sec.gov/Archives/edgar/data/1327567/000132756726000012/panw-20260602.htm"
+    date: "2026-06-02"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 primary-source evidence bundle (BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml), SHA-256 4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c, principal-supplied implementation input under PI-0030/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the three sources above into claim-level extracts (PANW-C1 through PANW-C5) with source-ID-level provenance and fact/inference/judgment labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1612/8139/78577) against the uploaded copy and its external manifest before use; also retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md."
+    url: null
+    date: "2026-07-28"

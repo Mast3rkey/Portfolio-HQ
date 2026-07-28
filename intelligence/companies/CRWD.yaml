@@ -1,0 +1,83 @@
+sector: Information Technology
+industry: Cybersecurity / Cloud-Native Endpoint and XDR Platform
+portfolio_role_ref: band
+competitive_advantages:
+  - "Falcon platform uses a cloud-native architecture and a common sensor across endpoint, cloud, identity, SIEM, and other modules -- reported 32 modules at fiscal year-end 2026 and 33 at filing, with subscription pricing by endpoint and module. Per CrowdStrike's Form 10-K for the fiscal year ended 2026-01-31 (SEC accession 0001535527-26-000010), directly inspected by the independent evidence-recovery researcher who authored the governed WS-0005 Milestone 3 Batch 8 evidence bundle (see Source-access disclosure in CRWD.md) -- not directly inspected by this Claude session."
+  - "Reported fiscal-year-end 2026 Annual Recurring Revenue (ARR) of approximately $5.253 billion, up 24% -- current, filed evidence of continued platform growth even after the July 2024 incident, though the ARR definition assumes expiring contracts renew on existing terms and can include active post-expiration renewal negotiations, and is not GAAP revenue. Per CrowdStrike's Form 10-K for the fiscal year ended 2026-01-31, CrowdStrike's Form 10-Q for the quarter ended 2026-04-30 (SEC accession 0001535527-26-000025), and CrowdStrike's latest earnings filing, directly inspected by the evidence-recovery researcher, not by this Claude session."
+  - "Disclosed, filed evidence of continued ARR growth (+24% at fiscal year-end 2026) and high retention despite the July 19, 2024 Falcon sensor incident, alongside the company's own acknowledgment of resulting customer commitment packages, longer sales cycles, and some contraction -- a genuinely mixed but not uniformly negative post-incident picture. Per CrowdStrike's Form 10-K for the fiscal year ended 2026-01-31 and the original July 2024 incident disclosure (SEC accession 0001104659-24-081571), directly inspected by the evidence-recovery researcher, not by this Claude session."
+risks:
+  - risk: "The July 19, 2024 Falcon sensor update caused Windows-system outages; later filings state the incident harmed sales, reputation, and partner relationships, leading to customer commitment packages, longer sales cycles, and some contraction. The company also reported continued ARR growth and high retention after the incident -- both facts are filed and neither should be read to the exclusion of the other."
+    severity: high
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "CrowdStrike states it cannot estimate the loss range from outage-related proceedings and that insurance is not expected to cover all possible costs, claims, and liabilities. Recorded settlement offers were described as immaterial and offset by insurance at fiscal year-end 2026, but broader exposure (government inquiries, customer claims, litigation) remained unresolved in the inspected sources -- this record does not, and cannot, quantify an ultimate liability."
+    severity: high
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Fiscal-year-end 2026 ARR (~$5.253 billion) assumes expiring contracts renew on existing terms and can include active post-expiration renewal negotiations -- it is not GAAP revenue and may overstate durability if renewals later contract or fail; outage-related renewal effects can emerge with contract lags not yet visible in the inspected sources."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked session-wide on 2026-07-28 (SEC EDGAR, multiple company investor-relations domains, and a neutral non-target control domain all returned HTTP 403) -- every fact in this record is attributed to the governed, independently verified evidence bundle's own directly-inspected sources, not to this Claude session's own document inspection. See CRWD.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "Any material settlement, government inquiry outcome, or litigation development in the outage-related proceedings, which would update the loss-range and insurance-recovery uncertainty beyond what was disclosed at this record's 2026-07-28 evidence cutoff."
+    expected: "2026-10-26"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which post-outage renewal cohorts, government inquiry outcomes, and product-level competitive win rates will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). CrowdStrike shows a cloud-native, multi-module Falcon platform with disclosed, filed evidence of continued ARR growth (+24% at fiscal year-end 2026, ~$5.253 billion) and high retention even after the July 2024 outage. Held at Medium rather than higher because the company's own filings state it cannot estimate the ultimate loss range from outage-related proceedings, insurance is not expected to cover all possible costs and claims, and post-outage renewal cohorts, government inquiry outcomes, and product-level competitive win rates versus Palo Alto Networks remain unresolved in the inspected sources -- material, filed, unquantified tail risk sits alongside the otherwise strong recurring-revenue evidence. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0030-ws0005-milestone3-batch8-enterprise-software-cybersecurity.md
+        and governance/decisions/OPS-0008-research-wave-protocol-v1.md, first-coverage discipline
+        (no prior CrowdStrike Company Intelligence record existed). Portfolio HQ's WS-0005
+        Milestone 3 Batch 8, alongside IBM, NOW, CRM, ORCL, and PANW ("Enterprise Software and
+        Cybersecurity"). This session's own WebFetch attempts on 2026-07-28 were tested and
+        confirmed blocked (HTTP 403) on SEC EDGAR, multiple company investor-relations domains,
+        and a neutral non-target control domain (en.wikipedia.org), confirming a session-wide
+        network-policy denial -- per governance/decisions/OPS-0008-research-wave-protocol-v1.md
+        Section 2's stop-before-drafting gate, this session then used the principal-supplied,
+        frozen, independently-authored evidence bundle
+        BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml (SHA-256
+        4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c; 1612 lines, 8139 words,
+        78577 bytes; research cutoff 2026-07-28), independently re-verified byte-for-byte against
+        the uploaded copy and its external .sha256 manifest by this session before use, and
+        retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md.
+        Every fact in this record is attributed to that bundle's own directly-inspected primary
+        sources (CRWD-S1 through CRWD-S4), not to this Claude session's own document inspection --
+        see CRWD.md's Source-access disclosure. Known, disclosed, non-blocking bundle
+        characteristic: the source-manifest's claims_supported reverse index is not fully
+        reciprocal with claim-level source_ids (e.g. CRWD-C5 cites CRWD-S3 and CRWD-S4 in its own
+        source_ids, but those sources' claims_supported lists omit CRWD-C5); claim-level
+        source_ids control and are what this record's claims are drawn from. This record takes
+        particular care, per PI-0030 Section D.9, to distinguish the July 2024 outage's
+        company-disclosed financial/contractual impact from any third-party estimate or
+        allegation, and asserts no predictive claim about future incident risk, litigation
+        outcome, or reputational trajectory as established fact.
+sources:
+  - note: "CrowdStrike Holdings, Inc. Form 10-K for the fiscal year ended 2026-01-31 (SEC accession 0001535527-26-000010), filed 2026-03-05. Directly inspected by the evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports Falcon-platform, ARR/retention definition, July 2024 incident, and commitments/contingencies content."
+    url: "https://www.sec.gov/Archives/edgar/data/1535527/000153552726000010/crwd-20260131.htm"
+    date: "2026-03-05"
+  - note: "CrowdStrike Holdings, Inc. Form 10-Q for the quarter ended 2026-04-30 (SEC accession 0001535527-26-000025), filed 2026-06-04. Directly inspected by the evidence-recovery researcher, not by this Claude session. Supports current ARR, legal-proceedings, and risk-factor content; outage-related legal outcomes, loss ranges, and insurance recoveries remain uncertain."
+    url: "https://www.sec.gov/Archives/edgar/data/1535527/000153552726000025/crwd-20260430.htm"
+    date: "2026-06-04"
+  - note: "CrowdStrike Form 8-K reporting first-quarter fiscal 2027 results (Item 2.02 and Exhibit 99.1, SEC accession 0001535527-26-000022), furnished 2026-06-03. Directly inspected by the evidence-recovery researcher, not by this Claude session. Contains non-GAAP metrics and management guidance."
+    url: "https://www.sec.gov/Archives/edgar/data/1535527/000153552726000022/crwd-20260603.htm"
+    date: "2026-06-03"
+  - note: "CrowdStrike Holdings, Inc. Form 8-K concerning the July 19, 2024 Falcon sensor incident (Item 8.01, SEC accession 0001104659-24-081571), filed 2024-07-22. Directly inspected by the evidence-recovery researcher, not by this Claude session. Foundational incident disclosure describing an evolving situation at the time; later financial and legal effects are superseded by the fiscal 2026 Form 10-K and Form 10-Q above."
+    url: "https://www.sec.gov/Archives/edgar/data/1535527/000110465924081571/tm2419936d1_8k.htm"
+    date: "2024-07-22"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 primary-source evidence bundle (BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml), SHA-256 4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c, principal-supplied implementation input under PI-0030/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the four sources above into claim-level extracts (CRWD-C1 through CRWD-C5) with source-ID-level provenance and fact/inference/judgment labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1612/8139/78577) against the uploaded copy and its external manifest before use; also retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md."
+    url: null
+    date: "2026-07-28"
