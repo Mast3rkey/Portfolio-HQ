@@ -2447,7 +2447,7 @@ workstreams:
       `targets.yaml`, `holdings.yaml`, `allocate.py`, and `margin_state.py` are confirmed unmodified
       by this implementation.
     active_branch: claude/cvx-company-intelligence-251wiw
-    active_pr: null
+    active_pr: 181
     last_verified_main_sha: b3152f381847e1166327e5332cfe85b98cc819cd
     last_verified_date: "2026-07-28"
     authorized_by: >
