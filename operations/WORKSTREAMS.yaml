@@ -2481,9 +2481,33 @@ workstreams:
       `OPS-0007` §8 step I advancement, and no research beyond what `PI-0031` itself already
       authorized — Milestone 3 remains `in_progress`: WDC (`semis` cluster) and the non-deferred T2
       gaps named in `PI-0031` (CEG, BRK.B, WMT, MLM, AAPL) remain open and unresolved.
+
+      **`PI-0032`/`PI-0033` (Milestone 3 closure authorization package) filed 2026-07-28, in the same
+      draft governance PR, not yet merged, not yet independently reviewed, not yet effective.**
+      `PI-0032` authorizes six independent governed-holding research units - WDC, CEG, BRK.B, WMT,
+      MLM, AAPL - closing every remaining Milestone 3 governed-holding gap `PI-0031` §K named, plus
+      one bounded Sandisk candidate-research addition structurally paired with WDC's own research.
+      **Sandisk is explicitly classified as candidate research only** - confirmed absent from
+      `targets.yaml`, `holdings.yaml`, and `intelligence/companies/` this session - outside the
+      governed 62-company coverage denominator, not a Milestone 3 completion prerequisite, not a
+      holding, not assigned any tier/target/weight/capital priority, and not authorized for purchase
+      under any circumstance. `PI-0033` records fourteen individually-reasoned new dispositions (CAT,
+      GNRC, NFLX, SHOP, UBER, HOOD, RTX, DELL, PLTR, SPCX, RKLB, TSLA, BABA, UNH - each with its own
+      company-specific reopening trigger, no generic substitute) and restates, without altering,
+      `PI-0014`'s DHR/SYK deferrals and `PI-0027`'s EQIX deferral (three names) - seventeen names
+      total represented across the two decisions' dispositions. Neither decision authorizes any
+      research, Company Intelligence record, comparison artifact, freshness row, tier/target/
+      cluster/cap/holdings/margin/allocator change, trade, or Milestone 4 work - both are
+      governance-authorization content only (`OPS-0009` Lane G), gated on their own independent
+      exact-head review and explicit principal acceptance before merge. Milestone 3 remains
+      `in_progress`; completing this filing's authorization does not itself complete Milestone 3 -
+      `PI-0031` §K's seven-criterion completion standard still requires its own later, separate
+      completion-determination decision once the authorized research implementation PR (not opened by
+      this filing) completes its own independent-review/correction/principal-acceptance/merge/
+      post-merge-verification lifecycle.
     active_branch: null
     active_pr: null
-    last_verified_main_sha: 8768bfddd288bd493357b943d076dd12413b7b7f
+    last_verified_main_sha: db43d8b0e71dcf8915f74d81703e5fe260ecd6ce
     last_verified_date: "2026-07-28"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
