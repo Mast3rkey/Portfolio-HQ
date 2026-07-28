@@ -2563,9 +2563,73 @@ workstreams:
       `OPS-0007` §3 until all five elements complete. This entry performs no research, changes no
       tier/target/holdings/cluster/cap/allocator/margin value, and authorizes no Milestone 4 work.
       **Milestone 3 remains `in_progress`.**
-    active_branch: claude/wdc-company-intelligence-mamzn8
-    active_pr: 188
-    last_verified_main_sha: b937a3a8a38543312ef37abc88634161ce5a5d99
+
+      **WDC/Sandisk unit (PR #188) merge-status correction, and remaining CEG/BRK.B/WMT/MLM/AAPL
+      units drafted 2026-07-28 (this entry — state only, not merged, not complete).** Factual
+      correction first: PR #188 has since **merged** (merge commit
+      `1cbda24bacc803a08433ecf59a88eae68ab441fa`, confirmed `origin/main`'s tip at this session's
+      preflight, base `b937a3a8a38543312ef37abc88634161ce5a5d99`). However, this session
+      independently confirmed via the GitHub API that **PR #188 carries zero GitHub reviews**, and
+      its own merged PR body's test-plan checklist still shows independent exact-head review,
+      principal acceptance, and merge/post-merge re-verification as unperformed at time of
+      writing — the same three checklist items the prior entry above states remain outstanding.
+      **WDC Company Intelligence therefore does not yet satisfy `OPS-0007` §3's PROVISIONAL
+      definition** (which requires eligible review, no unresolved material finding, principal
+      acceptance, merge, AND post-merge re-verification, all five) — it was merged without a
+      recorded independent review. This is stated here as a factual correction to this register,
+      not a re-litigation of PR #188's merge (already done and irreversible) — no WDC content file
+      is touched by this correction, and no new authority is claimed over WDC by this entry.
+
+      Per `PI-0032`'s accepted, merged authorization, this session then drafted the remaining five
+      governed-holding units — **CEG, BRK.B, WMT, MLM, AAPL** (all T2, 1.65% target) — each an
+      independent research unit per `PI-0032` §A.2, with no fabricated shared-mechanism comparison
+      artifact spanning any subset of them: `intelligence/companies/CEG.yaml`/`CEG.md`,
+      `BRK.B.yaml`/`BRK.B.md` (first dotted-ticker filename in this repository, matching the
+      brokerage-convention ticker used throughout `targets.yaml`/`holdings.yaml`),
+      `WMT.yaml`/`WMT.md`, `MLM.yaml`/`MLM.md`, and `AAPL.yaml`/`AAPL.md`, plus one
+      `intelligence/freshness_registry.yaml` row and one `intelligence/freshness_checkpoints.yaml`
+      row per ticker (`checkpoint_status: pending`, `monitoring_enabled: false`,
+      `company_record_authority`/`enrollment_authority: PI-0032`), on branch
+      `claude/company-intelligence-five-holdings-nquudy`, base verified `origin/main`
+      `1cbda24bacc803a08433ecf59a88eae68ab441fa`, commit
+      `87a48b43f80e285928ffda9c44c6f3805104b40e`, opened as draft **PR #189**. Evidence source: a
+      principal-supplied, checksum-verified primary-source evidence bundle
+      (`FIVE_COMPANY_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v1.yaml`, SHA-256
+      `48cb215bfb7916ce8a8469bd4f1c2ba5b5b3d23032ad6b3047c5bbf4feb0ce6f`), independently
+      re-verified this session by hash recomputation (matched both the external `.sha256` manifest
+      and the task's stated expected value) and direct programmatic YAML re-parse (13 sources, 50
+      claims — 10 per company — 64 reciprocal claim/source pairs, zero orphans, zero unresolved
+      references, zero duplicate IDs, 40 `source_fact`/5 `uncertainty`/5 `judgment` claims),
+      matching the bundle's own self-reported `validation_report` exactly — not merely trusted from
+      it. This session did not perform new web research, per the governing task's explicit
+      instruction; no bundle-integrity concern arose to require it. **MLM's record explicitly
+      treats the June 2026 Lhoist North America transaction as a pending, unclosed transaction, not
+      a completed operating result**, per the evidence bundle's own disclosed limitation.
+      Post-drafting validation, run by this session: `intelligence_validator.py` —
+      `validate_directory('intelligence/companies')` 45/45 valid (40 prior + 5 new);
+      `freshness_validator.py` — registry/checkpoints valid, zero errors; full pytest suite —
+      1502/1502 passed (same count as the pre-change baseline, confirming no test file was added or
+      removed); `git diff --check` — clean; protected-path diff against `origin/main`
+      (`targets.yaml`, `holdings.yaml`, `allocate.py`, `margin_state.py`, `constitution/`,
+      `docs/PORTFOLIO_INTELLIGENCE_SPEC.md`, `docs/INVESTMENT_ONTOLOGY.md`,
+      `governance/decisions/`) — empty; `governance/decisions.yaml` reconciliation — 45 decision
+      files = 45 index entries, unchanged by this PR. **No existing Company or Theme Intelligence
+      record was modified, including WDC's or CVX's.** No `targets.yaml`/`holdings.yaml`/
+      `allocate.py`/`margin_state.py`/governance/Constitution file was touched. **All of this
+      drafted work remains pending independent exact-head review, any required bounded correction
+      and re-review, explicit principal acceptance, merge to `main`, and post-merge
+      ancestry/scope/validator/test re-verification** — none of those steps has occurred as of this
+      entry; none of CEG/BRK.B/WMT/MLM/AAPL Company Intelligence is `PROVISIONAL` under `OPS-0007`
+      §3 until all five elements complete for each. This entry performs no research, changes no
+      tier/target/holdings/cluster/cap/allocator/margin value, and authorizes no Milestone 4 work.
+      **Milestone 3 remains `in_progress`** — completing this PR's own five units, once merged and
+      post-merge verified, would leave WDC's own review/PROVISIONAL status (corrected above) as the
+      sole remaining open item among `PI-0031` §K's six named governed-holding gaps; that
+      determination is left to a future entry once WDC's own review status is separately resolved,
+      not asserted here.
+    active_branch: claude/company-intelligence-five-holdings-nquudy
+    active_pr: 189
+    last_verified_main_sha: 1cbda24bacc803a08433ecf59a88eae68ab441fa
     last_verified_date: "2026-07-28"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
