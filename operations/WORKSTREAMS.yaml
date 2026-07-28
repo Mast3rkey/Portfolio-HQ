@@ -2564,7 +2564,7 @@ workstreams:
       tier/target/holdings/cluster/cap/allocator/margin value, and authorizes no Milestone 4 work.
       **Milestone 3 remains `in_progress`.**
     active_branch: claude/wdc-company-intelligence-mamzn8
-    active_pr: null
+    active_pr: 188
     last_verified_main_sha: b937a3a8a38543312ef37abc88634161ce5a5d99
     last_verified_date: "2026-07-28"
     authorized_by: >
