@@ -29,6 +29,24 @@ and is synthesized in `governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY
 **Every fact below was directly inspected by the bundle's author, not by
 this Claude session** -- see `CRWD.yaml`'s `sources[]`.
 
+**Bounded correction (2026-07-28, same day, this PR).** This record's
+profitability and cash-flow disclosure (below) was added after PR #177's
+formal independent exact-head review (GitHub review `4797499925`, verdict
+CHANGES REQUIRED) flagged the earlier draft's absence of financial-quality/
+margin-relevance evidence (MATERIAL finding 1). The correction draws on a
+principal-supplied, frozen supplemental evidence-recovery bundle
+(`BATCH8_supplemental_evidence_recovery_20260728_v2.yaml`, SHA-256
+`e07020e0d0c97ec2ca8a04fed10b5b4b07900785d3457ce78c9a2057ae5fba32`; 1019
+lines, 6828 words, 60545 bytes), independently re-verified byte-for-byte by
+this session against the uploaded copy and its external `.sha256` manifest,
+and independently confirmed to have exact claim-level/reverse-index
+reciprocity before use. This correction is narrowly scoped to the
+profitability/cash-flow figures only -- it does not add CrowdStrike's
+cash/investments/debt balance-sheet picture or Charlotte AI monetization
+content, so **finding 1's liquidity/debt component and finding 2
+(AI-monetization strategy absent) remain open**, pending a further,
+separately authorized correction.
+
 ## Business summary
 
 CrowdStrike's Falcon platform uses a cloud-native architecture and a common
@@ -47,6 +65,22 @@ active post-expiration renewal negotiations** -- it is not GAAP revenue and
 may overstate durability if renewals later contract or fail. It is not
 directly comparable to Palo Alto Networks' NGS ARR or any other issuer's
 RPO in this batch without accounting for each definition's own scope.
+
+## Profitability and cash flow (Q1 fiscal 2027)
+
+For Q1 fiscal 2027, CrowdStrike reported **$590.9 million of GAAP operating
+cash flow** and **$468.5 million of issuer-defined free cash flow**. The
+company reported **consolidated GAAP net income of $45.966 million**, of
+which **$18.192 million was attributable to non-controlling interests**,
+leaving **GAAP net income attributable to CrowdStrike of $27.774 million**.
+In the same quarter, GAAP operating loss was approximately **$30.6 million**
+against non-GAAP operating income of approximately **$325.7 million** --
+the gap reflects stock-based compensation, acquisition-related adjustments,
+and other items excluded from the non-GAAP measure. **One profitable
+quarter does not establish durable GAAP profitability**: CrowdStrike carries
+an accumulated deficit of approximately $1.3 billion and states it may not
+sustain profitability. Free cash flow is a non-GAAP measure and should not
+be read as total cash retained after all outlays.
 
 ## The July 19, 2024 Falcon sensor incident
 
@@ -94,6 +128,12 @@ resolve that question for CRWD alone.
 - Post-outage renewal cohorts, government inquiry outcomes, and
   product-level competitive win rates remain unresolved in the inspected
   sources.
+- Q1 fiscal 2027 GAAP profitability ($45.966 million consolidated;
+  $27.774 million attributable to CrowdStrike after non-controlling
+  interests) is a single-quarter result against an accumulated deficit of
+  approximately $1.3 billion, and stock-based compensation and
+  acquisition-related adjustments materially affect the non-GAAP operating
+  figures relative to the GAAP operating loss in the same period.
 
 ## Thesis-break conditions
 
@@ -170,3 +210,7 @@ outage-related proceedings beyond what was disclosed in the Q1 FY2027 Form
 Next review due **2026-10-26** (90-day cadence), or sooner on a material
 legal settlement or inquiry outcome, a retention or ARR definition change,
 an incident-related customer claim, or a major product-quality event.
+CrowdStrike's cash/investments/debt balance-sheet picture and Charlotte AI
+monetization economics were not added by this record's 2026-07-28
+correction and remain open items for a further, separately authorized
+correction.

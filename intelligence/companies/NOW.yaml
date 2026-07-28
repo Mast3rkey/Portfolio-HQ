@@ -18,13 +18,17 @@ risks:
     severity: moderate
     identified: "2026-07-28"
     status: monitoring
+  - risk: "ServiceNow financed part of its Armis acquisition with a $4.0 billion unsecured term loan; its Q2 2026 filed cash-flow statement directly reports $3.991 billion of term-loan proceeds net of issuance costs and $4.000 billion of term-loan repayments in the same period -- the repayment itself is a directly reported fact, not unresolved. ServiceNow separately issued $4.0 billion of multi-tranche notes (2028-2056 maturities) around the same period. The precise funding bridge, the use of the notes' proceeds, the final debt-component composition, and Armis purchase-accounting details are not established in the inspected sources, and the notes should not be assumed to have necessarily funded the term-loan repayment."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
   - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked session-wide on 2026-07-28 (SEC EDGAR, multiple company investor-relations domains, and a neutral non-target control domain all returned HTTP 403) -- every fact in this record is attributed to the governed, independently verified evidence bundle's own directly-inspected sources, not to this Claude session's own document inspection. See NOW.md's Source-access disclosure."
     severity: low
     identified: "2026-07-28"
     status: monitoring
 catalysts:
-  - catalyst: "ServiceNow's next quarterly results, which would update renewal, RPO/cRPO, and Now Assist customer-cohort metrics beyond the Q1 2026 figures inspected for this record -- not available as of this record's 2026-07-28 evidence cutoff."
-    expected: "2026-10-22"
+  - catalyst: "ServiceNow's next quarterly results, which would update renewal, RPO/cRPO, and Now Assist customer-cohort metrics beyond the Q1 2026 figures inspected for those items in this record (the Q2 2026 earnings release was inspected only for the separate term-loan/notes financing facts added by this record's 2026-07-28 correction, not for renewal/RPO/cohort metrics). Correction note (2026-07-28): an earlier draft of this catalyst cited an unsupported 2026-10-22 date; independently inspected official ServiceNow sources (the July 1, 2026 earnings-date announcement and the July 22, 2026 Q2 2026 results release) establish only the already-completed Q2 2026 date and supply no official Q3 2026 date. This entry is event-based pending an official ServiceNow announcement, not a guessed date."
+    expected: "pending official announcement -- no confirmed next-earnings date established by directly inspected sources as of 2026-07-28"
     status: pending
   - catalyst: "This record's own next scheduled review checkpoint, at which direct Now Assist revenue/margin disclosure, post-Moveworks retention evidence, and seat-versus-module expansion mix will next be actively re-checked."
     expected: "2026-10-26"
@@ -61,6 +65,37 @@ review:
         reciprocal with claim-level source_ids (e.g. NOW-C5 cites NOW-S3 in its own source_ids,
         but NOW-S3's claims_supported list omits NOW-C5); claim-level source_ids control and are
         what this record's claims are drawn from.
+    - date: "2026-07-28"
+      note: >
+        Bounded correction addressing PR #177's formal independent exact-head review
+        (GitHub review 4797499925, reviewed head 56291cb79090595292e24561b812ce9dafff6dcb,
+        verdict CHANGES REQUIRED): (1) MATERIAL finding 6 (financial-quality/margin-relevance
+        evidence absent) is partially addressed with directly reported acquisition-financing
+        facts -- ServiceNow's $4.0 billion unsecured term loan for the Armis acquisition, Q2
+        2026 filed cash-flow figures of $3.991 billion of term-loan proceeds net of issuance
+        costs and $4.000 billion of term-loan repayments (the repayment is stated as a directly
+        reported fact, not unresolved), and a separate $4.0 billion multi-tranche notes issuance
+        -- while preserving uncertainty only around the precise funding bridge, use of notes
+        proceeds, final debt-component composition, and Armis purchase-accounting details; this
+        correction does not add ServiceNow's general cash/securities/margin picture (NOW-SUP-C1/
+        C2), so finding 6 is not fully closed by this correction alone. (2) MINOR finding 8
+        (unsupported 2026-10-22 catalyst date) is resolved: the exact date is removed and
+        replaced with an event-based catalyst pending an official ServiceNow announcement, per
+        independently inspected official sources establishing no confirmed Q3 2026 date existed
+        as of the cutoff. Correction authority: principal-supplied, frozen supplemental evidence
+        bundle BATCH8_supplemental_evidence_recovery_20260728_v2.yaml (SHA-256
+        e07020e0d0c97ec2ca8a04fed10b5b4b07900785d3457ce78c9a2057ae5fba32; 1019 lines, 6828 words,
+        60545 bytes; research cutoff 2026-07-28), independently re-verified byte-for-byte by this
+        session against the uploaded copy and its external .sha256 manifest, and independently
+        confirmed to have exact (not merely partial) claim-level/reverse-index reciprocity across
+        its 16 sources and 16 claims before use. Facts drawn from claims NOW-SUP-C3 and
+        NOW-SUP-C4, sourced from NOW-SUP-S1 through NOW-SUP-S4 (added below). The original v1
+        bundle and its own already-cited sources (NOW-S1 through NOW-S3) are unchanged and
+        remain controlling for every claim they support; this supplement controls only its own
+        new claims, per its own required-provenance-handling instruction. This correction does
+        not add Now Assist standalone revenue/margin disclosure, does not change ServiceNow's
+        governed tier/target, and does not constitute principal acceptance -- a fresh exact-head
+        independent review remains required before this PR may be considered ready.
 sources:
   - note: "ServiceNow, Inc. Form 10-K for the year ended 2025-12-31 (SEC accession 0001373715-26-000007), filed 2026-01-29. Directly inspected by the evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports platform-breadth, renewal-rate definition, remaining-performance-obligation, and Moveworks acquisition content."
     url: "https://www.sec.gov/Archives/edgar/data/1373715/000137371526000007/now-20251231.htm"
@@ -72,5 +107,20 @@ sources:
     url: "https://www.sec.gov/Archives/edgar/data/1373715/000137371526000054/erq1fy26.htm"
     date: "2026-04-22"
   - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 primary-source evidence bundle (BATCH8_enterprise_software_cybersecurity_evidence_bundle_20260728_v1.yaml), SHA-256 4ee63b1f5eb8cfaf64d404fde6fd8cb52f806ebe091f7b911e4b871e48b2b61c, principal-supplied implementation input under PI-0030/OPS-0008 -- not committed to this repository per the authorizing instruction. Synthesizes the three sources above into claim-level extracts (NOW-C1 through NOW-C5) with source-ID-level provenance and fact/inference/judgment labeling. This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1612/8139/78577) against the uploaded copy and its external manifest before use; also retained as governance/audits/BATCH8_PRIMARY_SOURCE_EVIDENCE_RECOVERY_AUDIT_20260728.md."
+    url: null
+    date: "2026-07-28"
+  - note: "ServiceNow Reports Second Quarter 2026 Financial Results (official investor-relations earnings release), published 2026-07-22. Directly inspected by the independent evidence-recovery researcher who authored the supplemental correction bundle, not by this Claude session. Supports the Q2 2026 term-loan proceeds ($3.991 billion net of issuance costs) and term-loan repayments ($4.000 billion) cash-flow figures added by this record's 2026-07-28 correction; not used for renewal, RPO, or Now Assist cohort metrics."
+    url: "https://newsroom.servicenow.com/press-releases/details/2026/ServiceNow-Reports-Second-Quarter-2026-Financial-Results/default.aspx"
+    date: "2026-07-22"
+  - note: "ServiceNow Form 8-K, Item 1.01 -- $4.0 billion unsecured term loan for the Armis acquisition (SEC accession 0001373715-26-000054), filed 2026-04-22. Directly inspected by the evidence-recovery researcher, not by this Claude session. Establishes the term loan's original amount, October 16, 2026 maturity, and Armis-acquisition purpose; does not by itself establish the exact balance outstanding at every later date."
+    url: "https://www.sec.gov/Archives/edgar/data/1373715/000137371526000054/now-20260417.htm"
+    date: "2026-04-22"
+  - note: "ServiceNow Form 8-K, Items 1.01 and 2.03 -- $4.0 billion multi-tranche senior notes offering (SEC accession 0001193125-26-226644), filed 2026-05-15. Directly inspected by the evidence-recovery researcher, not by this Claude session. Establishes issuance terms (five tranches, 2028-2056 maturities); does not by itself establish how proceeds were allocated among acquisition funding, term-loan repayment, or general corporate purposes."
+    url: "https://www.sec.gov/Archives/edgar/data/1373715/000119312526226644/d60522d8k.htm"
+    date: "2026-05-15"
+  - note: "ServiceNow to Announce Second Quarter 2026 Financial Results on July 22 (official earnings-date announcement), published 2026-07-01. Directly inspected by the evidence-recovery researcher, not by this Claude session. Establishes only the already-completed July 22, 2026 Q2 2026 date; supports this record's 2026-07-28 correction removing the unsupported 2026-10-22 catalyst date, since no equivalent official Q3 2026 announcement was located."
+    url: "https://newsroom.servicenow.com/press-releases/details/2026/ServiceNow-to-Announce-Second-Quarter-2026-Financial-Results-on-July-22/default.aspx"
+    date: "2026-07-01"
+  - note: "Portfolio-HQ WS-0005 Milestone 3 Batch 8 supplemental primary-source evidence-recovery bundle (BATCH8_supplemental_evidence_recovery_20260728_v2.yaml), SHA-256 e07020e0d0c97ec2ca8a04fed10b5b4b07900785d3457ce78c9a2057ae5fba32, principal-supplied correction input addressing PR #177's formal review 4797499925 -- not committed to this repository, matching the original v1 bundle's own precedent. Supplies claims NOW-SUP-C3 (acquisition-financing and refinancing-risk evidence) and NOW-SUP-C4 (next-earnings-date disposition). This session independently verified the bundle's SHA-256 and LC_ALL=C.UTF-8 wc -l -w -c measurements (1019/6828/60545) against the uploaded copy and its external manifest, and independently confirmed exact claim-level/reverse-index reciprocity across all 16 sources and 16 claims, before use."
     url: null
     date: "2026-07-28"
