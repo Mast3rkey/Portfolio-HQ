@@ -2327,9 +2327,42 @@ workstreams:
       **Implementation PR #177 opened as a draft** on branch `claude/portfolio-hq-batch-8-gate-axwgd4`,
       head commit to be finalized by this same synchronization commit. It remains draft, unreviewed,
       and unmerged as of this recording.
-    active_branch: claude/portfolio-hq-batch-8-gate-axwgd4
-    active_pr: 177
-    last_verified_main_sha: f47e68ed5be1d6051b70d8a490789d9f46ca221a
+
+      **Post-merge factual synchronization (2026-07-28, this entry).** PR #177 received three
+      independent exact-head reviews as it iterated: review `4797499925` (head `56291cb...`,
+      verdict CHANGES REQUIRED, 6 MATERIAL findings across CRWD/PANW/NOW); a reassessment,
+      review `4798513926` (head `e2ecda3...`, verdict CHANGES REQUIRED, findings 1/6 partially
+      resolved, 2/3/4/5 still fully open); and a final independent exact-head review at head
+      `1ec471c54462ffeb481a7c61cd5a576370019c29` (posted as a GitHub COMMENT review per this
+      account's own-PR self-review restriction, verdict stated explicitly as PR REVIEW APPROVED
+      — all six MATERIAL findings independently verified RESOLVED against public SEC/IR primary
+      reporting via WebSearch, zero contradictions found on any spot-checked figure; two MINOR
+      findings on CRM/IBM left open, disclosed as deliberately deferred and non-blocking). The
+      principal then explicitly accepted that exact reviewed head and authorized merge, bounded
+      to that head only. **PR #177 merged** — merge commit
+      `12c93234badca7231d02a9cf085a0d1099573474`, merged by `Mast3rkey`, confirmed on
+      `origin/main`; `1ec471c...` independently confirmed as an ancestor of that merge commit.
+      Independent post-merge verification (this session, on `origin/main` post-merge, in an
+      isolated worktree): `intelligence_validator.py` — 38/38 companies valid, 2/2 themes valid;
+      `freshness_validator.py` — valid, zero errors; full pytest suite — 1502/1502 passed;
+      `git diff --check` (against pre-Batch-8 `f47e68e...`) — clean; decision filed-vs-indexed
+      reconciliation — 41 = 41; sole-`priority: primary`-workstream check — `WS-0005` only;
+      protected-path diff (`targets.yaml`, `holdings.yaml`, `allocate.py`, `margin_state.py`,
+      `CLAUDE.md`, `governance/decisions/`, `constitution/`,
+      `docs/PORTFOLIO_INTELLIGENCE_SPEC.md`, `docs/INVESTMENT_ONTOLOGY.md`) against the
+      pre-Batch-8 baseline — empty. **All five `OPS-0007` §3 PROVISIONAL conditions are now
+      satisfied for IBM, NOW, CRM, ORCL, CRWD, and PANW**: eligible-reviewed with every MATERIAL
+      finding resolved; explicit principal acceptance at the exact final head; merged to
+      authoritative `main` at that head; and this session's own independent post-merge
+      ancestry/validator/test re-verification, all above. Two MINOR findings (CRM debt
+      quantification, IBM Financing-segment elaboration) and one NOTE (universal 90-day cadence,
+      unbroken since Batch 1) remain open, non-blocking, and unchanged by this synchronization —
+      this entry does not resolve or reassess them. This is a factual register synchronization
+      only: it authorizes no ninth Milestone 3 batch, no Milestone 4 work beyond this batch's own
+      already-authorized comparison artifact, and no `OPS-0007` §8 step I advancement.
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: 12c93234badca7231d02a9cf085a0d1099573474
     last_verified_date: "2026-07-28"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
