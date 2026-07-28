@@ -2042,6 +2042,19 @@ workstreams:
       before it may be marked ready and merged — not Batch 8 research, which remains gated on
       `PI-0030`'s own merge. No ninth batch, Milestone 4, or `OPS-0007` §8 step I is authorized or
       advanced by this entry.
+
+      **(Superseded by this paragraph — Batch 8 has since merged and completed in full; see the
+      milestone-3-intelligence-completion gate's `blocker` field above for complete detail, not
+      restated here.)** Current state: Milestone 3, Batches 1-8 are all merged and independently
+      post-merge verified complete (38 companies total, per the `blocker` field's post-merge
+      synchronization entry). **`PI-0031` (Milestone 3, Batch 9 — CVX only — evidence development
+      only, invoking `OPS-0008` §1's smaller-wave exception; also defines the Milestone 3
+      completion standard) has been filed, not yet merged, not yet independently reviewed, not yet
+      effective.** The next concrete step is this `PI-0031` governance PR's own independent
+      exact-head review per `OPS-0007` §1, followed by explicit principal acceptance, before it may
+      be marked ready and merged — not Batch 9 research, which remains gated on `PI-0031`'s own
+      merge. No tenth batch, Milestone 4, or `OPS-0007` §8 step I is authorized or advanced by this
+      entry.
     completion_criteria: >
       Per OPS-0006 §16.1's completion discipline: Milestones 1-2 reach
       status: complete only when the one bounded first audit PR merges;
@@ -2360,9 +2373,29 @@ workstreams:
       this entry does not resolve or reassess them. This is a factual register synchronization
       only: it authorizes no ninth Milestone 3 batch, no Milestone 4 work beyond this batch's own
       already-authorized comparison artifact, and no `OPS-0007` §8 step I advancement.
+
+      **`PI-0031` (Milestone 3, Batch 9 — CVX only) filed 2026-07-28**, not yet merged, not yet
+      independently reviewed, not yet effective. Single-company wave, an intentional exercise of
+      `OPS-0008` §1's smaller-wave exception (no larger coherent economic-mechanism group currently
+      exists for this specific coverage gap) — CVX is the sole remaining uncovered member of the
+      governed `oil` correlated-cluster cap (`targets.yaml`: `XOM, CVX`, ≤20% of book); XOM is
+      already covered (`PI-0005`), unmodified and not reopened here. **WDC is explicitly not
+      bundled with CVX** and remains the sole uncovered `semis`-cluster member, unchanged and
+      untouched by this filing. `PI-0031` also defines a Milestone 3 completion standard (seven
+      criteria: full T1 coverage; full non-deferred-T2 coverage; full active-cluster-member
+      coverage; every remaining company covered, deferred, or reassigned; no unresolved MATERIAL
+      finding; synchronized indexes/freshness/register; and full independent-review/merge/
+      post-merge-verification lifecycle per completed record) — this standard does not itself
+      authorize research for any other ticker and does not itself complete Milestone 3. As stated
+      by `PI-0031` itself: CEG, BRK.B, WMT, MLM, and AAPL remain uncovered non-deferred T2 gaps with
+      no deferral rationale on record; DHR, SYK, and EQIX remain uncovered but explicitly deferred
+      per `PI-0014`/`PI-0027`; WDC remains the sole uncovered `semis`-cluster gap. CRM's and IBM's
+      residual MINOR findings and the universal 90-day freshness-cadence NOTE (both recorded above,
+      unbroken since Batch 1) remain open, non-blocking, and untouched by this filing. Milestone 4
+      remains unauthorized; no tenth Milestone 3 batch is authorized or inferred by this filing.
     active_branch: null
     active_pr: null
-    last_verified_main_sha: 12c93234badca7231d02a9cf085a0d1099573474
+    last_verified_main_sha: aa55a43bec154b0c7778e5cd6c8c1eaf69cfba87
     last_verified_date: "2026-07-28"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
@@ -2630,6 +2663,11 @@ workstreams:
       filing's own independent re-derivation (not reuse) of PR #175's intended Batch 7
       `operations/WORKSTREAMS.yaml` field corrections, per `OPS-0008` §4(a). Neither PI-0030 nor
       this reconciliation authorizes a ninth Milestone 3 batch, any Milestone 4-9 work, or
-      advancement of `OPS-0007` §8 step I.
+      advancement of `OPS-0007` §8 step I. **`PI-0031` (Milestone 3, Batch 9 — CVX only —
+      evidence development only) authorizes exactly that ninth batch's governance package and
+      defines the Milestone 3 completion standard**, effective on its own merge — not yet merged,
+      not yet independently reviewed, not yet effective. Neither `PI-0031` nor this filing
+      authorizes a tenth Milestone 3 batch, any Milestone 4-9 work, or advancement of `OPS-0007`
+      §8 step I.
     supersedes: null
     superseded_by: null
