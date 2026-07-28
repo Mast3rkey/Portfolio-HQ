@@ -2055,6 +2055,18 @@ workstreams:
       be marked ready and merged — not Batch 9 research, which remains gated on `PI-0031`'s own
       merge. No tenth batch, Milestone 4, or `OPS-0007` §8 step I is authorized or advanced by this
       entry.
+
+      **(Superseded by this paragraph — PI-0031/Batch 9 (CVX) has since merged via PR #181 and
+      received a retained retrospective independent review; see the milestone-3-intelligence-completion
+      gate's `blocker` field above for complete detail, not restated here.)** Current state:
+      Milestone 3, Batches 1-9 are all merged; CVX is `PROVISIONAL` under `OPS-0007` §3 following a
+      retrospective independent review retained at
+      `governance/audits/PR181_CVX_RETROSPECTIVE_INDEPENDENT_REVIEW_20260728.md` (verdict: PR #181
+      CVX EXACT-HEAD RETROSPECTIVELY APPROVED — no BLOCKER or MATERIAL findings) and the principal's
+      explicit acceptance of that verdict. This reconciliation authorizes no tenth Milestone 3
+      batch, no Milestone 4 work, and no `OPS-0007` §8 step I advancement — Milestone 3 remains
+      `in_progress` (WDC and the non-deferred T2 gaps named in `PI-0031` — CEG, BRK.B, WMT, MLM,
+      AAPL — remain open and unresolved).
     completion_criteria: >
       Per OPS-0006 §16.1's completion discipline: Milestones 1-2 reach
       status: complete only when the one bounded first audit PR merges;
@@ -2446,9 +2458,32 @@ workstreams:
       §8 step I advancement is begun or implied by this entry. `XOM.yaml`/`XOM.md`,
       `targets.yaml`, `holdings.yaml`, `allocate.py`, and `margin_state.py` are confirmed unmodified
       by this implementation.
-    active_branch: claude/cvx-company-intelligence-251wiw
-    active_pr: 181
-    last_verified_main_sha: b3152f381847e1166327e5332cfe85b98cc819cd
+
+      **Retrospective independent review retained for PI-0031/Batch 9 (CVX), PR #181 (2026-07-28).**
+      PR #181 confirmed merged — merge commit `173fef53e73f0e9df86df4a81c38464167d2bbf4` (parents
+      `e1fa0739ad83f52686597f3b5f5e4ee577160f77` base, `a79d237cc53f7b623814e3177dfc124d36c6377a`
+      reviewed head — confirmed direct parent, tree byte-identical to the reviewed head, and the 7
+      CVX implementation files unchanged on current `origin/main`). A separate, independent Claude
+      Code session — one that did not author PR #181 — performed a retrospective exact-head review
+      of the merged implementation and returned verdict **PR #181 CVX EXACT-HEAD RETROSPECTIVELY
+      APPROVED** (no BLOCKER or MATERIAL findings; three NOTE-level items on review-provenance and
+      evidence-retention only), retained verbatim at
+      `governance/audits/PR181_CVX_RETROSPECTIVE_INDEPENDENT_REVIEW_20260728.md`. The principal
+      explicitly accepted that retrospective verdict. Per `OPS-0007` §3, CVX Company Intelligence
+      (`intelligence/companies/CVX.yaml`/`CVX.md`) now satisfies all five PROVISIONAL elements —
+      eligible review, no unresolved material finding, principal acceptance, merge to `main` at the
+      reviewed head, and post-merge ancestry/scope/validator/test re-verification (independently
+      reconfirmed this session: `intelligence_validator.py` — 39/39 valid; `freshness_validator.py`
+      — OK; full pytest suite — 1502/1502 passed; `git diff --check` — clean; protected-path diff
+      against base — empty) — and is therefore **PROVISIONAL**. No CVX content file (`CVX.yaml`,
+      `CVX.md`, the comparison artifact, evidence content, or freshness content) was edited by this
+      reconciliation. This entry authorizes no tenth Milestone 3 batch, no Milestone 4 work, no
+      `OPS-0007` §8 step I advancement, and no research beyond what `PI-0031` itself already
+      authorized — Milestone 3 remains `in_progress`: WDC (`semis` cluster) and the non-deferred T2
+      gaps named in `PI-0031` (CEG, BRK.B, WMT, MLM, AAPL) remain open and unresolved.
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: 8768bfddd288bd493357b943d076dd12413b7b7f
     last_verified_date: "2026-07-28"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
