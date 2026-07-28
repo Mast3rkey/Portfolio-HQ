@@ -165,3 +165,7 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: CVX
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
