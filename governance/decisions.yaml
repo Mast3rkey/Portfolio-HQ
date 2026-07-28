@@ -309,14 +309,14 @@ decisions:
     file: governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md
   - decision_id: PI-0032
     date: 2026-07-28
-    status: Proposed
+    status: Accepted
     category: portfolio_intelligence
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0005, PI-0011, PI-0013, PI-0014, PI-0016, PI-0023, PI-0024, PI-0025, PI-0026, PI-0027, PI-0028, PI-0029, PI-0030, PI-0031, PI-0033]
     supporting_artifact: null
     file: governance/decisions/PI-0032-ws0005-milestone3-remaining-governed-holdings-and-sandisk-candidate.md
   - decision_id: PI-0033
     date: 2026-07-28
-    status: Proposed
+    status: Accepted
     category: portfolio_intelligence
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0011, PI-0013, PI-0014, PI-0016, PI-0027, PI-0029, PI-0031, PI-0032]
     supporting_artifact: null

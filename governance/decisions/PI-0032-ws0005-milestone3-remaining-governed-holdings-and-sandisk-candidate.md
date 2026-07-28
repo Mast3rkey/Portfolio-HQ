@@ -1,7 +1,7 @@
 ---
 decision_id: PI-0032
 date: 2026-07-28
-status: Proposed
+status: Accepted
 category: portfolio_intelligence
 related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0005, PI-0011, PI-0013, PI-0014, PI-0016, PI-0023, PI-0024, PI-0025, PI-0026, PI-0027, PI-0028, PI-0029, PI-0030, PI-0031, PI-0033]
 supporting_artifact: null
@@ -535,3 +535,21 @@ only after this decision itself merges; any resulting Company Intelligence recor
 artifact, freshness-registry update, or later policy consequence — including any future decision on
 Sandisk's governed status — remains subject to that PR's own independent review, principal acceptance,
 validation, and its own separate future governance decision.
+
+---
+
+_**2026-07-28 acceptance and merge record** (dated note, appended per `governance/decisions/README.md`'s
+convention for a narrow factual/lifecycle correction — no edit to this decision's substance): this
+governance filing was independently reviewed and explicitly principal-accepted at exact head
+`f1a69e33f89ef41b981ee482ed8d7dc41e3656ea`, then merged to `main` via PR #185 at merge commit
+`25af2afb10ccf947119935173468f9f13b8159e3` — independently confirmed via `git show --format="%H %P"`,
+whose two parents are `db43d8b0e71dcf8915f74d81703e5fe260ecd6ce` (base, PR #184's merge commit) and
+`f1a69e33f89ef41b981ee482ed8d7dc41e3656ea` (the reviewed, principal-accepted head). Frontmatter
+`status` is updated to `Accepted` accordingly. This note records the completed review/acceptance/merge
+lifecycle event only. It does not begin, expand, narrow, or reinterpret any authorization, requirement,
+boundary, or prohibition stated in §§A-I above — every one of those remains controlling exactly as
+filed. In particular: no research has been performed by this note; no Company Intelligence record,
+comparison artifact, or freshness row has been created; Sandisk remains outside the governed roster
+under exactly the classification §C states; and Milestone 3 remains `in_progress` — this note does not
+authorize Milestone 4 or declare Milestone 3 complete. See `operations/WORKSTREAMS.yaml` for the
+corresponding register synchronization._
