@@ -80,9 +80,13 @@ or merge requirements (see §13).
   restatable bookkeeping.
 - **Lane M — Mechanical/factual synchronization.** A register or index update, a post-merge note, a
   decision-index regeneration, or a factual PR-number sync that **records an already-true, already-
-  verified fact and adds no new claim, authority, or interpretation.** The leanest lane: no independent
-  review is required beyond the merge coordinator's own §9 verification, provided every fact stated is
-  independently re-derived from live repository/GitHub state at filing time, not copied forward.
+  verified fact and adds no new claim, authority, or interpretation.** The narrowest lane, but narrow in
+  exactly one respect: per §2, it may omit a **separate independent-review round** of the recording
+  itself when the change is genuinely mechanical and non-authority-bearing. Every other control —
+  live-state/scope checks, protected-path inspection, applicable validation, role-bounded actions,
+  immediate post-merge verification (§9), and factual disclosure/synchronization — still applies in
+  full, and every fact stated must be independently re-derived from live repository/GitHub state at
+  filing time, not copied forward.
 - **Lane C — Bounded correction.** A correction responding to a specific finding on an already-open,
   already-reviewed PR. Governed by §6 (delta review vs. full re-review).
 
@@ -91,15 +95,40 @@ is governed by its **heaviest** applicable lane in full.
 
 ### 2. Mandatory controls vs. removable duplication
 
-**Mandatory, in every lane except a purely mechanical Lane M change:**
+**Mandatory in every lane, with no exception, including Lane M:**
 
-- independent, exact-head review by an eligible reviewer (`OPS-0007` §1, unchanged, cross-referenced);
-- a retained, attributable review (GitHub review/comment thread, or a `governance/audits/` artifact);
-- explicit principal acceptance at the exact final head, before merge;
 - protected-path / scope-diff verification — the merged diff matches the authorized file list exactly;
 - validator/test verification for the domain each changed file actually belongs to;
-- immediate post-merge verification by the merge coordinator (§9);
+- role-bounded mechanical Git actions (§8);
+- immediate post-merge verification by the merge coordinator (§9) — ancestry, scope, validator/test
+  re-confirmation, protected-path byte-identity, and confirmation that `main` is clean and matches the
+  merged head;
+- factual disclosure and synchronization of any register or index the change touches;
 - disclosure of unresolved findings, evidence-access limits, and assumptions.
+
+**Mandatory in every lane except where Lane M's narrow exemption (below) applies:**
+
+- a **separate round** of independent, exact-head review by an eligible reviewer (`OPS-0007` §1,
+  unchanged, cross-referenced);
+- a retained, attributable review artifact (GitHub review/comment thread, or a `governance/audits/`
+  artifact) documenting that round;
+- explicit principal acceptance **of that independent round's findings**, at the exact final head,
+  before merge.
+
+**Lane M's exemption is narrow and explicit, and reaches only the three items directly above — it
+reaches nothing in the no-exception list.** A Lane M change may omit the separate independent-review
+round, its retained artifact, and the principal acceptance of that round's findings **only when the
+change is genuinely mechanical and non-authority-bearing**: it records an already-true, already
+independently-verified fact and introduces no new claim, interpretation, or authority, exactly as §1
+defines Lane M. Even then, Lane M still requires, in full and without reduction: live-state and scope
+checks (§3); protected-path inspection; applicable validation for every file it touches; role-bounded
+actions (§8); immediate post-merge ancestry, main-state, and cleanliness verification (§9); and factual
+disclosure/synchronization of whatever register or index it updates. The principal must still,
+separately, accept the underlying fact being recorded before merge — Lane M omits a *second,
+independent* review round of that recording, never principal acceptance itself and never any item in
+the no-exception list above. **Any doubt about whether a change genuinely qualifies as Lane M — including
+doubt about whether it is truly non-authority-bearing — defaults to the conservative, heavier lane
+(§10); a change is never assumed mechanical merely because it looks small.**
 
 **Removable or reducible, only when the named condition holds — never by default assumption:**
 
@@ -208,13 +237,15 @@ Restated as this protocol's own standalone text, not left to cross-reference alo
 
 Merge and post-merge verification are a single lifecycle step, not two. **The verification itself —
 ancestry (the reviewed head is the merge commit's direct parent), scope (the merged diff matches the
-authorized file list exactly), validator/test re-confirmation, and protected-path byte-identity
-confirmation — must be performed immediately, by the same session that performs the merge, and must
-never be deferred to a later, unrelated session.** This narrows nothing in `OPS-0008` §4 about
-*packaging* — a dedicated reconciliation PR is still the exception, not the default, and the fact of a
-completed verification may still be *recorded* via the next filing that already touches the relevant
-register, per `OPS-0008` §4(a)/(b). What changes is *timing*: the check itself is never left for
-whoever happens to open the next PR.
+authorized file list exactly), validator/test re-confirmation, protected-path byte-identity
+confirmation, and confirmation that `main` is clean and matches the merged head — must be performed
+immediately, by the same session that performs the merge, and must never be deferred to a later,
+unrelated session.** This applies in every lane, including Lane M (§2) — Lane M's narrow exemption
+never reaches this section. This narrows nothing in `OPS-0008` §4 about *packaging* — a dedicated
+reconciliation PR is still the exception, not the default, and the fact of a completed verification may
+still be *recorded* via the next filing that already touches the relevant register, per `OPS-0008`
+§4(a)/(b). What changes is *timing*: the check itself is never left for whoever happens to open the
+next PR.
 
 ### 10. Conservative escalation
 
