@@ -1,0 +1,96 @@
+sector: Information Technology
+industry: Data Storage Hardware (Hard Disk Drives)
+portfolio_role_ref: band
+competitive_advantages:
+  - "Develops and manufactures HDD-based storage products serving Cloud, Client, and Consumer end markets, retained in full following the 2025-02-21 separation of the Flash/NAND business into the independent company Sandisk. Per Western Digital's FY2025 Form 10-K (SEC accession 0000106040-25-000038), directly inspected by the external evidence-recovery researcher who authored the governed WS-0005 Milestone 3, PI-0032 evidence bundle (WDC_SANDISK_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v2.yaml) -- not directly inspected by this Claude session (see Source-access disclosure in WDC.md). [WDC-C01, WDC-C02]"
+  - "Management states HDD cost-per-capacity and total-cost-of-ownership are central advantages for large-scale cloud storage -- this is the company's own stated belief, not an independently proven economic superiority over competing storage media, per the same Form 10-K. [WDC-C03]"
+  - "Vertically integrated in the highest-value HDD components: WDC manufactures substantially all recording heads and magnetic media used in its own HDD products, while relying on external suppliers for remaining components. Per the same Form 10-K, Manufacturing and Suppliers section. [WDC-C04]"
+  - "Demonstrated post-separation pricing and mix strength: for the quarter ended 2026-04-03, Cloud revenue grew 48% year over year (36% higher exabytes, 9% higher average selling price per exabyte), quarterly gross margin rose 10 percentage points year over year on newer-product cost structure and improved pricing, and the FY2026 Q2 release separately reported 45.7% GAAP gross margin and $653 million free cash flow. Per Western Digital's FY2026 Q3 Form 10-Q (SEC accession 0001628280-26-029054) and FY2026 Q2 earnings release, both directly inspected by the same external evidence-recovery researcher, not by this Claude session. [WDC-C07, WDC-C09, WDC-C13]"
+  - "Sustained shareholder-capital-return capacity: board-authorized aggregate $6.0 billion share-repurchase program ($3.93 billion remaining available at 2026-04-03) alongside continuing common dividends, funded from $2.05 billion of cash and $2.54 billion of operating cash flow generated in the first nine months of FY2026. Per the same FY2026 Q3 Form 10-Q. [WDC-C10, WDC-C11]"
+risks:
+  - risk: "Material and rising customer concentration in the Cloud end market: FY2025 Cloud was 88% of revenue with the top ten customers representing 68% of revenue (three customers at 17%, 12%, and 10%); by the quarter ended 2026-04-03, Cloud had grown to 89% of revenue and the top ten customers to 71% (three customers at 17%, 15%, and 11%) -- concentration increased, not decreased, even as revenue grew. A loss of, or reduced demand from, any of these few customers would be disproportionately material."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Direct and indirect competitive exposure: WDC competes directly with Seagate and Toshiba in HDDs and indirectly with NAND-flash suppliers (including its own former Flash business, now Sandisk) and other storage-system providers -- a durable, structural technology-substitution risk between HDD and flash/SSD storage for at least a portion of overlapping workloads, not merely a two-competitor HDD market."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "The evidence bundle's own explicit uncertainty judgment: WDC's current earnings strength (48% Cloud revenue growth, +10pp gross margin) remains exposed to cloud-customer concentration, product pricing, qualification cycles, supplier availability, and demand volatility -- the recent quarter's strength is not treated as a settled, durable state."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Capital intensity and cyclicality: WDC expects capital expenditures generally to equal 4% to 6% of revenue on an ongoing basis, in a historically cyclical storage-hardware industry subject to pricing and demand swings; sustained downside in Cloud demand or pricing would pressure both revenue and the capital-return program (the $6.0B repurchase authorization is discretionary, not a guaranteed distribution)."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Post-separation dependency structure: WDC's manufacturing model relies on external suppliers for HDD components it does not itself produce (recording heads and magnetic media are the exceptions, per WDC-C04); the evidence bundle does not itself detail these supplier relationships beyond that disclosure, leaving supplier-concentration risk incompletely evidenced in this record."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked session-wide on 2026-07-28 (SEC EDGAR and a neutral non-target control domain -- example.com -- both returned HTTP 403 identically to every target URL tested) -- every fact in this record is attributed to the governed, independently verified evidence bundle's own directly-inspected sources, not to this Claude session's own document inspection. See WDC.md's Source-access disclosure."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "Western Digital's FY2026 fourth-quarter and full-year results and the corresponding FY2026 Form 10-K. WDC's fiscal year ends the last Friday of June (FY2025 ended 2025-06-27); no source in the evidence bundle states an exact FY2026 fiscal-year-end date or reporting date. An inferred placeholder of 2026-08-14 (matching FY2025's own 10-K filing, 48 days after fiscal year end) is recorded here as an unconfirmed internal estimate derived from the prior year's filing cadence, not a company-issued forecast -- it must not be treated as a confirmed date."
+    expected: "2026-08-14"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which FY2026 Q4/full-year results (if published by then), updated customer-concentration figures, and any material change to the Cloud demand or pricing narrative will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). WDC shows genuine post-separation operating strength: 48% Cloud revenue growth and a 10-point gross-margin expansion in the most recently inspected quarter, a $2.05B cash position, $2.54B of nine-month operating cash flow, and a large, actively-funded $6.0B repurchase authorization. Held at Medium rather than higher because customer concentration is high and rising (top three customers now 43% of revenue combined, up from 39% a year earlier), the business is capital-intensive and structurally cyclical, and the evidence bundle's own uncertainty judgment states the recent strength remains exposed to concentration, pricing, qualification-cycle, and demand-volatility risk rather than being an established durable state. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from WDC's existing band portfolio-tier placement -- it was reasoned solely from the disclosed operating and financial picture described above."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0032-ws0005-milestone3-remaining-governed-holdings-and-sandisk-candidate.md,
+        governance/decisions/OPS-0008-research-wave-protocol-v1.md, and
+        governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md (proposed at
+        time of drafting), first-coverage discipline (no prior WDC Company Intelligence
+        record existed). Portfolio HQ's WS-0005 Milestone 3 sixth governed-holding
+        unit -- WDC, the sole remaining uncovered member of the governed semis
+        correlated-cluster cap (targets.yaml: ASML, TSM, NVDA, AVGO, AMD, MU, MRVL,
+        KLAC, LRCX, AMAT, WDC, INTC, SKHY; 25% of book), researched alongside a
+        bounded, candidate-only Sandisk comparison per PI-0032 Section C. This
+        session's own WebFetch attempts on 2026-07-28 were tested and confirmed
+        blocked (HTTP 403) on SEC EDGAR and a neutral non-target control domain
+        (example.com), confirming a session-wide network-policy denial -- per
+        governance/decisions/OPS-0008-research-wave-protocol-v1.md Section 2's
+        stop-before-drafting gate, this session then stopped before drafting
+        substantive content. The principal supplied a frozen, independently-authored
+        primary-source evidence bundle
+        (WDC_SANDISK_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v2.yaml, SHA-256
+        f4093c9b78d7260ba78ff7c64e7a98b6e26cbb4f3ae955e59feef7f729ce8ef5),
+        independently re-verified by this session before use (checksum recomputed
+        and matched against both the external .sha256 manifest and the value stated
+        in the task instructions; direct YAML re-parse confirmed 7 sources, 40
+        claims, 62 reciprocal claim/source pairs, zero orphan claims, zero
+        unresolved source references, zero duplicate source IDs, zero duplicate
+        claim IDs, and claim-type separation into 32 source_fact, 4 inference, 2
+        uncertainty, and 2 judgment claims -- not merely trusted from the bundle's
+        own self-reported validation_report). Every fact in this record is
+        attributed to that bundle's own directly-inspected primary sources
+        (WDC-S1 through WDC-S3), not to this Claude session's own document
+        inspection -- see WDC.md's Source-access disclosure. The bundle's own
+        disclosed limitation (raw source files not embedded; URLs, accessions,
+        dates, sections, and claim reciprocity retained) is carried forward, not
+        silently dropped.
+sources:
+  - note: "Western Digital Corporation FY2025 Form 10-K for the period ended 2025-06-27 (SEC accession 0000106040-25-000038), filed 2025-08-14. Directly inspected by the external evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session (WebFetch confirmed blocked, HTTP 403). Supports business-model, HDD/Flash separation, manufacturing/supplier, competition, and FY2025 customer-concentration content."
+    url: "https://www.sec.gov/Archives/edgar/data/106040/000010604025000038/wdc-20250627.htm"
+    date: "2025-08-14"
+  - note: "Western Digital Corporation FY2026 Q3 Form 10-Q for the period ended 2026-04-03 (SEC accession 0001628280-26-029054), filed 2026-05-01. Directly inspected by the external evidence-recovery researcher, not by this Claude session. Latest completed Form 10-Q at the evidence cutoff; supports current-quarter revenue-by-end-market, customer-concentration, gross-margin, liquidity, share-repurchase, dividend, and capital-expenditure-guidance content."
+    url: "https://www.sec.gov/Archives/edgar/data/106040/000162828026029054/wdc-20260403.htm"
+    date: "2026-05-01"
+  - note: "Western Digital Corporation FY2026 Q2 earnings release, dated 2026-01-29. Directly inspected by the external evidence-recovery researcher, not by this Claude session. Supports Q2FY26 headline revenue, GAAP gross margin, operating cash flow, and free-cash-flow content."
+    url: "https://investor.wdc.com/news-releases/news-release-details/western-digital-reports-fiscal-second-quarter-2026-financial"
+    date: "2026-01-29"
+  - note: "Portfolio-HQ WS-0005 Milestone 3, PI-0032 primary-source evidence bundle (WDC_SANDISK_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v2.yaml), SHA-256 f4093c9b78d7260ba78ff7c64e7a98b6e26cbb4f3ae955e59feef7f729ce8ef5, principal-supplied implementation input under PI-0032/OPS-0008 -- not committed to this repository per the authorizing instruction. Prepared by an external research backend (disclosed in the bundle's own metadata as OpenAI GPT-5.6 Thinking) using directly inspected official primary sources; synthesizes seven sources (three WDC, four Sandisk) into 40 claim-level extracts (WDC-C01 through WDC-C14, SNDK-C01 through SNDK-C19, CMP-C01 through CMP-C07) with source-ID-level provenance and fact/inference/uncertainty/judgment labeling; 62 reciprocal claim/source pairs, zero orphans, zero unresolved references, zero duplicate IDs -- independently reconfirmed by this session via direct YAML parsing and hash recomputation, not merely by trusting the bundle's own self-report."
+    url: null
+    date: "2026-07-28"

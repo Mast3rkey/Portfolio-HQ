@@ -2533,9 +2533,39 @@ workstreams:
       synchronized in this register only at meaningful boundaries** (the combined six-unit-plus-Sandisk
       research implementation's own merge; a future Milestone 3 completion determination) unless an
       interim blocker or scope change would otherwise make this register materially misleading.
-    active_branch: null
+
+      **WDC/Sandisk unit implementation drafted 2026-07-28 (this entry — state only, not merged, not
+      complete).** Per `PI-0032`'s now-`Accepted`, merged authorization, this session drafted the WDC
+      governed-holding Company Intelligence record (`intelligence/companies/WDC.yaml`,
+      `intelligence/companies/WDC.md`) and the required bounded WDC/Sandisk comparison artifact
+      (`intelligence/WDC_SANDISK_COMPARISON.md`), plus one `intelligence/freshness_registry.yaml` row
+      and one `intelligence/freshness_checkpoints.yaml` row for WDC (`checkpoint_status: pending`,
+      `monitoring_enabled: false`, `company_record_authority`/`enrollment_authority: PI-0032`), on
+      branch `claude/wdc-company-intelligence-mamzn8`, base verified `origin/main`
+      `b937a3a8a38543312ef37abc88634161ce5a5d99`. Evidence source: a principal-supplied,
+      checksum-verified primary-source evidence bundle
+      (`WDC_SANDISK_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v2.yaml`, SHA-256
+      `f4093c9b78d7260ba78ff7c64e7a98b6e26cbb4f3ae955e59feef7f729ce8ef5`, independently re-verified this
+      session by hash recomputation and direct YAML re-parse: 7 sources, 40 claims, 62 reciprocal
+      claim/source pairs, zero orphans, zero unresolved references, zero duplicate IDs), used after
+      this session's own `WebFetch` was confirmed blocked session-wide (HTTP 403 on SEC EDGAR and a
+      neutral control domain, `example.com`). **Sandisk remains candidate-only throughout** — no
+      Company Intelligence YAML/Markdown record was created for Sandisk (no accepted repository schema
+      supports a non-governed candidate record), and Sandisk remains confirmed absent from
+      `targets.yaml`, `holdings.yaml`, and `intelligence/companies/`; the comparison artifact repeats
+      Sandisk's candidate-only, non-governed, no-tier/target/weight, not-authorized-for-purchase
+      classification explicitly. CEG, BRK.B, WMT, MLM, and AAPL were **not** researched in this
+      session, per the governing task's own explicit scope limit — those five units remain open,
+      exactly as `PI-0032` left them. **All of this drafted work remains pending independent
+      exact-head review, any required bounded correction and re-review, explicit principal acceptance,
+      merge to `main`, and post-merge ancestry/scope/validator/test re-verification** — none of those
+      steps has occurred as of this entry; WDC Company Intelligence is not `PROVISIONAL` under
+      `OPS-0007` §3 until all five elements complete. This entry performs no research, changes no
+      tier/target/holdings/cluster/cap/allocator/margin value, and authorizes no Milestone 4 work.
+      **Milestone 3 remains `in_progress`.**
+    active_branch: claude/wdc-company-intelligence-mamzn8
     active_pr: null
-    last_verified_main_sha: 25af2afb10ccf947119935173468f9f13b8159e3
+    last_verified_main_sha: b937a3a8a38543312ef37abc88634161ce5a5d99
     last_verified_date: "2026-07-28"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and

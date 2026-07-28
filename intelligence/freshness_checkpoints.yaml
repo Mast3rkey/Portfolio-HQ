@@ -169,3 +169,7 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: WDC
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
