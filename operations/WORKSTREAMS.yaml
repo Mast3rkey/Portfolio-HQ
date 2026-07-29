@@ -3032,7 +3032,7 @@ workstreams:
       `holdings.yaml`, no Constitution, no frozen specification, no production code, no test, and
       no trading safeguard is touched.
     active_branch: claude/pi-0034-isrg-sync-xhalz5
-    active_pr: null
+    active_pr: 197
     last_verified_main_sha: b06dc4888fd21a92759c85c00ce99f326a248972
     last_verified_date: "2026-07-29"
     authorized_by: >
