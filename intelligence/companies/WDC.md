@@ -3,9 +3,13 @@
 Last updated: 2026-07-28 -- record created through AI-assisted research and
 drafting under `governance/decisions/PI-0032-ws0005-milestone3-remaining-governed-holdings-and-sandisk-candidate.md`,
 `governance/decisions/OPS-0008-research-wave-protocol-v1.md`, and
-`governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md` (proposed
-at time of drafting; not yet merged or independently reviewed), first-coverage
-discipline (no prior WDC Company Intelligence record existed). Portfolio HQ's
+`governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md` (all three
+already `status: Accepted` at this record's base commit
+`b937a3a8a38543312ef37abc88634161ce5a5d99` -- corrected 2026-07-29: the original
+"proposed... not yet merged or independently reviewed" wording here was
+inaccurate even at drafting time, per the PR #188 and PR #189 independent-review
+MINOR finding), first-coverage discipline (no prior WDC Company Intelligence
+record existed). Portfolio HQ's
 WS-0005 Milestone 3 sixth governed-holding unit -- **WDC only**, the sole
 remaining uncovered member of the governed `semis` correlated-cluster cap
 (`targets.yaml`: ASML, TSM, NVDA, AVGO, AMD, MU, MRVL, KLAC, LRCX, AMAT, WDC,

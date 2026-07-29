@@ -2642,10 +2642,119 @@ workstreams:
       sole remaining open item among `PI-0031` §K's six named governed-holding gaps; that
       determination is left to a future entry once WDC's own review status is separately resolved,
       not asserted here.
-    active_branch: claude/company-intelligence-five-holdings-nquudy
-    active_pr: 189
-    last_verified_main_sha: 1cbda24bacc803a08433ecf59a88eae68ab441fa
-    last_verified_date: "2026-07-28"
+
+      **Milestone 3 lifecycle and factual-state reconciliation (2026-07-29, this entry — factual
+      synchronization only, performed by a separate session that authored none of the reviewed work).**
+
+      **PR #189 merged.** Merge commit `4f024f2c97797b34b94df826fa5fb9e1e828dec8` (parents
+      `1cbda24bacc803a08433ecf59a88eae68ab441fa`, base, and `ad72b7f7bc99d2e274d89e9a0f887f9e5e7b9ad9`,
+      the corrected, reviewed head) — confirmed the current `origin/main` tip. `ad72b7f` was reached
+      after two independent exact-head reviews (`issuecomment-5109989510`, verdict CHANGES REQUIRED on
+      one MATERIAL finding — this register's own then-inaccurate claim that PR #188 "carries zero
+      GitHub reviews... was merged without a recorded independent review"; and `issuecomment-5111148711`,
+      a delta review confirming the correction, verdict "PR #189 CORRECTED EXACT-HEAD APPROVED"). This
+      session independently re-verified on current `origin/main`: `intelligence_validator.py` — 45/45
+      Company Intelligence records valid; `freshness_validator.py` — OK; full pytest suite —
+      1502/1502 passed; `governance/decisions.yaml` reconciliation — 45 decision files = 45 index
+      entries; protected-path diff (`targets.yaml`, `holdings.yaml`, `allocate.py`, `margin_state.py`,
+      `constitution/`, `docs/PORTFOLIO_INTELLIGENCE_SPEC.md`, `docs/INVESTMENT_ONTOLOGY.md`) from PR
+      #188's base (`b937a3a8a38543312ef37abc88634161ce5a5d99`) to current `origin/main` — empty. All
+      six of `PI-0032`'s governed-holding units (WDC via PR #188; CEG, BRK.B, WMT, MLM, AAPL via PR
+      #189) are now merged.
+
+      **`PI-0033` status independently re-confirmed: `Accepted`, unchanged from this register's own
+      prior 2026-07-28 synchronization entry above** — `governance/decisions/PI-0033-*.md` frontmatter
+      and `governance/decisions.yaml`'s corresponding entry both read `status: Accepted`; merge commit
+      `25af2afb10ccf947119935173468f9f13b8159e3` (PR #185, parents
+      `db43d8b0e71dcf8915f74d81703e5fe260ecd6ce` base and `f1a69e33f89ef41b981ee482ed8d7dc41e3656ea`
+      reviewed head) and the status-sync commit `6b8021a481343d5cc65236c28df7faba0eaa566d` (PR #186,
+      merge commit `b937a3a8a38543312ef37abc88634161ce5a5d99`) both independently confirmed ancestors
+      of current `origin/main` via `git merge-base --is-ancestor`. No statement anywhere in this
+      register describes `PI-0033` as proposed or unmerged. **Separately disclosed, out of this
+      entry's authorized scope to correct: `CLAUDE.md`'s own Decisions Log entries for `PI-0032` and
+      `PI-0033` still read "proposed (not yet accepted or merged)"** — stale relative to the accepted,
+      merged state confirmed here; `CLAUDE.md` is not among the files this reconciliation is authorized
+      to touch, so this is recorded as an open factual gap for a future, separately scoped correction,
+      not fixed here.
+
+      **WDC Company Intelligence lifecycle determination, per `OPS-0007` §3 (the determination both
+      prior reviews on this repository explicitly declined to make, deferring it to "a future entry or
+      dedicated decision" — this is that entry).** Mapping the evidence to each of the five elements:
+      (1) *eligible independent exact-head review* — **satisfied**: `issuecomment-5109593960`, posted
+      2026-07-28T20:57:12Z at exact head `285a91a38c41fa02f9bbce63264acb0afb6554f0`, verdict "PR #188
+      EXACT-HEAD APPROVED" (0 BLOCKER / 0 MATERIAL / 1 MINOR / 2 NOTE), independently confirmed present
+      on GitHub by this session. (2) *bounded correction and re-review for any material finding* —
+      **satisfied, none required**: zero BLOCKER/MATERIAL findings; the 1 MINOR (WDC.yaml/WDC.md
+      describing `PI-0032`/`OPS-0008`/`OPS-0009` as "proposed... not yet merged" when already `Accepted`
+      at the base commit) does not block under the task's own severity rule. (3) *explicit principal
+      acceptance at the exact final head* — **not separately, distinctly recorded**: no comment,
+      commit message, or register entry states a principal-acceptance action distinct from the merge
+      itself; the only available evidence is the merge action (`merged_by: Mast3rkey`, 2026-07-28
+      21:00:36Z, ~3 minutes after the review comment), which two independent reviews
+      (`issuecomment-5109989510`, `issuecomment-5111148711`) already flagged as "evidenced only by the
+      merge action itself... not a separate explicit acceptance comment — workable but not airtight."
+      `OPS-0007` §1.12 requires principal acceptance "never inferred from silence" — a merge action is
+      not silence, but it is also not a distinct, explicit acceptance statement, and this register does
+      not resolve that ambiguity by asserting one. (4) *merged to `main` at that exact head* —
+      **satisfied**: merge commit `1cbda24bacc803a08433ecf59a88eae68ab441fa`, parents
+      `b937a3a8a38543312ef37abc88634161ce5a5d99` (base) and `285a91a38c41fa02f9bbce63264acb0afb6554f0`
+      (the reviewed head, exact match) — independently confirmed via `git show --format="%H %P"` and
+      `git merge-base --is-ancestor` against current `origin/main`. (5) *post-merge ancestry, scope,
+      validator, and test re-verification, `operations/WORKSTREAMS.yaml` synchronized* — **now
+      satisfied by this entry**: this session independently ran `intelligence_validator.py` (45/45
+      valid, WDC included), `freshness_validator.py` (OK), the full pytest suite (1502/1502 passed),
+      and a protected-path diff (empty) directly against current `origin/main`, and is recording that
+      result in this register entry now.
+
+      **Conclusion: WDC Company Intelligence is NOT YET PROVISIONAL under `OPS-0007` §3.** Four of the
+      five required elements (1, 2, 4, 5) are satisfied; element 3 (explicit principal acceptance at
+      the exact final head, distinct from the merge action) is not conclusively evidenced in any
+      retained record. This is a factual determination applying `OPS-0007` §3's already-accepted
+      definition to already-established evidence, not a new policy or a change to `OPS-0007` itself;
+      it creates no tier/target/holdings/cluster/cap/allocator/margin authority and does not itself
+      constitute the missing principal-acceptance record.
+
+      **`WDC.yaml`/`WDC.md` provenance-language MINOR corrected** (this entry). Both files described
+      `PI-0032`, `OPS-0008`, and `OPS-0009` as "proposed... not yet merged or independently reviewed"
+      — inaccurate even at the time of drafting (all three were already `status: Accepted` at PR
+      #188's base commit `b937a3a8a38543312ef37abc88634161ce5a5d99`), as both the PR #188 and PR #189
+      independent reviews already found (non-blocking MINOR in each). This reconciliation corrects the
+      wording in both files to state their actual status as of drafting (`Accepted`), while preserving
+      every substantive claim, citation, risk, catalyst, and the `PROPOSED` conviction rating and its
+      rationale in both files exactly as written — no research content is altered.
+
+      **Milestone 3 coverage criteria (`PI-0031` §K), re-evaluated against current `origin/main`:**
+      criterion 1 (full T1 coverage) — **satisfied**, all 10 T1 tickers (ASML, COST, GEV, GOOGL, LLY,
+      META, MSFT, NVDA, TSM, V) have a Company Intelligence record. Criterion 2 (full non-deferred T2
+      coverage) — **satisfied**, all 11 non-deferred T2 tickers (AAPL, AMZN, AVGO, BRK.B, CEG, ISRG,
+      MA, MLM, PWR, TMO, WMT) are covered; DHR, EQIX, SYK remain the 3 accepted T2 deferrals
+      (`PI-0014`, `PI-0027`). Criterion 3 (full active-cluster-member coverage) — **satisfied**:
+      `semis` 13/13 (including WDC), `power_infra` 4/4, `oil` 2/2. Criterion 4 (every remaining
+      company covered, deferred, or reassigned) — **satisfied**: independently re-derived this
+      session — 45 Company Intelligence records + `PI-0033`'s 17 dispositioned names (14 new + 3
+      restated) = exactly the 62 non-ETF governed tickers in `targets.yaml` (65 total tickers minus
+      SPY/QQQ/GLD), zero unaccounted. Criterion 5 (no unresolved MATERIAL research-coverage finding)
+      — **unchanged, satisfied**: CRM's and IBM's residual findings remain MINOR, the 90-day-cadence
+      observation remains a NOTE; the one MATERIAL finding raised on PR #189 concerned this register's
+      own factual accuracy (resolved by the delta review), not any company record's research content.
+      Criterion 6 (indexes, freshness, and register synchronized) — **advanced by this entry** (PR
+      #189's merge and WDC's lifecycle determination are now recorded); the `CLAUDE.md` staleness
+      noted above remains open. **Criterion 7 (every completed record has passed the full
+      independent-review/merge/post-merge-verification lifecycle per `OPS-0007` §3) is NOT satisfied
+      roster-wide** — this session audited WDC only (per its own governing task's bounded scope) and
+      found it NOT YET PROVISIONAL; the other 44 records' criterion-7 status was not re-audited by
+      this entry and is not asserted here either way.
+
+      **Milestone 3 conclusion: remains `in_progress`, NOT complete.** Coverage (criteria 1-4) is now
+      complete for the first time as of this entry, but criterion 7 is affirmatively unsatisfied for
+      WDC and unverified for the remaining 44 records; a Milestone 3 completion determination requires
+      its own later, separate decision evaluating all seven `PI-0031` §K criteria roster-wide, exactly
+      as `PI-0031` and `PI-0033` both already state. **Milestone 4 remains unauthorized** — nothing in
+      this entry authorizes it, implies it, or narrows the roadmap gate `OPS-0006` §5 established.
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: 4f024f2c97797b34b94df826fa5fb9e1e828dec8
+    last_verified_date: "2026-07-29"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
       roadmap; execution of Milestones 1-2 only, per its 2026-07-25
