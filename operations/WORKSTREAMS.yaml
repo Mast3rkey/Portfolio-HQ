@@ -2760,22 +2760,37 @@ workstreams:
       #189's merge and WDC's corrected PROVISIONAL determination are now recorded); the `CLAUDE.md`
       staleness noted above remains open. **Criterion 7 (every completed record has passed the full
       independent-review/merge/post-merge-verification lifecycle per `OPS-0007` §3) remains
-      UNAUDITED roster-wide** — this session (and the corrected determination above) established that
-      WDC itself now satisfies all five `OPS-0007` §3 elements and is PROVISIONAL, but the other 44
-      records' criterion-7 status was not re-audited by this entry and is not asserted here either
-      way; only Batches 3-6 (AVGO/AMD/MRVL/INTC, ETN/VRT/PWR, MSFT/GOOGL/META/AMZN, V/MA/JPM) plus
-      CVX and WDC are already recorded elsewhere in this register as confirmed PROVISIONAL — the
-      earlier-batch and non-batch records (COST, XOM, NVDA, GEV, ISRG, TMO, TSM, CRM, IBM, CRWD,
-      PANW, LLY, ABBV, MRK, JNJ, GILD, CEG, BRK.B, WMT, MLM, AAPL) have not been individually
-      re-confirmed against `OPS-0007` §3's five-part test by this entry.
+      UNAUDITED for a subset of the 45 records** (corrected 2026-07-29, per the independent delta
+      review retained at `issuecomment-5111621067`, which found the immediately-prior version of this
+      paragraph misclassified 9 already-PROVISIONAL names as unconfirmed and omitted 8 records from
+      either bucket — independently re-verified against this register's own separate, unedited text
+      and against all 45 `intelligence/companies/*.yaml` filenames; the corrected partition below is
+      exhaustive and mutually exclusive across exactly 45 tickers):
+
+      **Confirmed PROVISIONAL under `OPS-0007` §3 (27 records)** — each with retained evidence of all
+      five elements recorded elsewhere in this register: AVGO, AMD, MRVL, INTC (Batch 3); ETN, VRT,
+      PWR (Batch 4); MSFT, GOOGL, META, AMZN (Batch 5); V, MA, JPM (Batch 6); CVX (retrospective
+      review); WDC (this reconciliation); LLY, ABBV, MRK, JNJ, GILD (Batch 7); IBM, NOW, CRM, ORCL,
+      CRWD, PANW (Batch 8).
+
+      **Criterion-7 unresolved / not yet confirmed against `OPS-0007` §3's five-part test (18
+      records)** — ASML, AMAT, KLAC, LRCX (Batch 1); MU, SKHY (Batch 2); COST, XOM, NVDA, GEV, ISRG,
+      TMO, TSM (pre-`OPS-0007` first-coverage pilots) — these 13 are this register's own "13 ACCEPTED"
+      category (`OPS-0007` §4: "13 ACCEPTED or 4 PROVISIONAL"), reviewed and merged before `OPS-0007`'s
+      2026-07-26 adoption under the prior review process, and have not been individually re-evaluated
+      against `OPS-0007` §3's specific five-element test by this entry or any other retained entry —
+      plus CEG, BRK.B, WMT, MLM, AAPL (`PI-0032`'s five governed-holding units, merged via PR #189
+      alongside WDC but with no PROVISIONAL determination recorded for them anywhere in this register).
+
+      27 + 18 = 45, matching exactly the current `intelligence/companies/*.yaml` count, with no
+      overlap and no omission (independently verified by set comparison this session).
 
       **Milestone 3 conclusion: remains `in_progress`, NOT complete.** Coverage (criteria 1-4) is now
       complete for the first time as of this entry, and WDC's own criterion-7 status is now resolved
       (PROVISIONAL, per the corrected determination above), but criterion 7 remains unaudited for the
-      remaining ~20+ records not yet individually confirmed PROVISIONAL in this register; a Milestone 3
-      completion determination requires its own later, separate decision evaluating all seven
-      `PI-0031` §K criteria roster-wide, exactly as `PI-0031` and `PI-0033` both already state.
-      **Milestone 4 remains unauthorized** — nothing in
+      18 records listed above; a Milestone 3 completion determination requires its own later, separate
+      decision evaluating all seven `PI-0031` §K criteria roster-wide, exactly as `PI-0031` and
+      `PI-0033` both already state. **Milestone 4 remains unauthorized** — nothing in
       this entry authorizes it, implies it, or narrows the roadmap gate `OPS-0006` §5 established.
     active_branch: null
     active_pr: null
