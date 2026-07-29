@@ -2916,9 +2916,124 @@ workstreams:
       touched by this implementation. No Company Intelligence YAML/Markdown, freshness file,
       governance decision, `governance/decisions.yaml`, `targets.yaml`, `holdings.yaml`,
       Constitution, frozen specification, production code, test, or safeguard is touched.
-    active_branch: claude/six-record-review-retention-4pjtcu
+
+      **PR #194 merged; six-record post-merge verification and PI-0034 ISRG synchronization
+      (2026-07-29, this entry — factual synchronization only, performed by a separate session
+      that authored none of the reviewed work).** The paragraph immediately above is now stale on
+      one point (PR #194's own merge/review/acceptance state) and is superseded by this entry on
+      that point only — nothing else in it is disturbed.
+
+      **PR #194 confirmed merged.** Independently re-confirmed this session via `git log
+      --format="%H %P"`: merge commit `36972737b96e99b0b8c9cdc0711fe4d605d1971a`, parents
+      `760a0d1ba568b90d745c8cd4d3427357ae26bfa3` (base, PR #193's own merge commit) and
+      `27d1868b4e52a4bf281e38977649c9269500b08b` (the reviewed, accepted head — exact match to PR
+      #194's own head SHA, no intervening commit). PR #194 received an independent exact-head
+      review (`https://github.com/Mast3rkey/Portfolio-HQ/pull/194#issuecomment-5117574274`,
+      verdict "PR #194 EXACT-HEAD APPROVED," 0 BLOCKER / 0 MATERIAL against PR #194 itself, its
+      source-fidelity, or any of the six companies' current content — including a fresh,
+      independent exact-record resolution of TSM's previously-preserved verdict-label
+      inconsistency: "TSM INCONSISTENCY RESOLVED — CURRENT RECORD APPROVED") and a separately
+      retained pre-merge `Principal acceptance:` statement
+      (`https://github.com/Mast3rkey/Portfolio-HQ/pull/194#issuecomment-5117614373`, naming the
+      same exact head `27d1868b4e52a4bf281e38977649c9269500b08b`, explicitly scoped to "the
+      six-record retrospective-review retention artifact and the corresponding conservative
+      WORKSTREAMS synchronization for COST, XOM, NVDA, GEV, TMO, and TSM"), before merging
+      unchanged at that head.
+
+      **`OPS-0007` §3 element 5 (post-merge ancestry/scope/validator/test re-verification,
+      register synchronized) now independently performed and recorded for COST, XOM, NVDA, GEV,
+      TMO, and TSM — the one remaining element PR #194's own review found NOT SATISFIED at its own
+      preflight.** This session independently re-ran, against current `origin/main`
+      (`b06dc4888fd21a92759c85c00ce99f326a248972`, this entry's own verified preflight base):
+      `intelligence_validator.validate_directory('intelligence/companies')` — **45/45 valid**;
+      `intelligence_validator.validate_themes_directory('intelligence/themes')` — **2/2 valid**;
+      `freshness_validator.py` — **OK**; full test suite (`pytest -q`) — **1502 passed, 0
+      failed**; `governance/decisions.yaml` reconciliation against `governance/decisions/*.md`
+      (excluding `README.md`) — **47 filed = 47 indexed**, no orphans (47, not 46, because
+      `PI-0034` — addressed below — has since filed and merged); and a protected-path diff
+      (`targets.yaml`, `holdings.yaml`, `allocate.py`, `margin_state.py`, `constitution/`, `docs/
+      PORTFOLIO_INTELLIGENCE_SPEC.md`, `docs/INVESTMENT_ONTOLOGY.md`, every other Company
+      Intelligence `.yaml`/`.md` file) from PR #193's base to current `origin/main` — **empty**.
+      Ancestry independently confirmed via `git merge-base --is-ancestor
+      27d1868b4e52a4bf281e38977649c9269500b08b origin/main`.
+
+      **Conclusion: COST, XOM, NVDA, GEV, TMO, and TSM Company Intelligence ARE PROVISIONAL under
+      `OPS-0007` §3**, each with all five elements now satisfied — (1) eligible independent
+      exact-head review (PR #193's fresh retrospective review, independently corroborated and, for
+      TSM, independently resolved by PR #194's own review), (2) no correction required (no
+      BLOCKER/MATERIAL content finding survived for any of the six), (3) explicit principal
+      acceptance at the exact final head (`issuecomment-5117614373`), (4) merged to `main` at that
+      exact reviewed head (confirmed direct-parent ancestry above), (5) post-merge ancestry/scope/
+      validator/test re-verification, now performed and recorded by this entry. **These six became
+      effective PROVISIONAL upon PR #194's own merge**; this entry records that already-established
+      fact and creates no new tier/target/holdings/cluster/cap/allocator/margin authority.
+
+      **PI-0034 (ISRG PR #110 authority ratification) confirmed `status: Accepted`.**
+      Independently re-confirmed this session in both `governance/decisions/PI-0034-isrg-pr110-
+      authority-ratification.md` frontmatter and `governance/decisions.yaml`. PI-0034 merged via PR
+      #195 (merge commit `d9feec9c39693406a065b294d10d502d78e4bb85`, reviewed/accepted head
+      `581c73dd540751a668269d88694b4efc7e99f467`, independently confirmed direct second parent, no
+      intervening commit); its `status: Accepted` synchronization merged via PR #196 (merge commit
+      `b06dc4888fd21a92759c85c00ce99f326a248972`, confirmed `origin/main`'s tip at this entry's own
+      preflight, direct second parent `37b051a71570f8267cab4e05650f28973a255982`, no intervening
+      commit). PI-0034 supplies a one-time, present-day retrospective ratification of the ISRG
+      Stage B refresh merged via PR #110 (merge commit
+      `19042313909266be5f92f939cfa0bbc2dbca55f9`) — it does not edit `intelligence/companies/
+      ISRG.yaml`/`ISRG.md`, does not by itself make ISRG effectively PROVISIONAL, and authorizes
+      exactly one later, separate, bounded synchronization unit (§8) updating ISRG's
+      `company_record_authority` in `intelligence/freshness_registry.yaml` and its lifecycle entry
+      in this register. **This implementation (the present entry and PR) is that later
+      synchronization unit.**
+
+      **`intelligence/freshness_registry.yaml` synchronized (this implementation's own change):**
+      ISRG's `company_record_authority` field updated from `PI-0009` (which continues to govern
+      Stage A, ISRG's original creation, unchanged) to `PI-0034` (which now supplies authority for
+      the Stage B refresh merged via PR #110), using the field's existing single-valued format —
+      no new field or schema introduced, no other ISRG row value touched (`enrollment_authority`,
+      `enrolled_at`, `template_version`, `filing_trigger_profile`, `refresh_policy`,
+      `monitoring_enabled` all unchanged), no other ticker's row touched. `intelligence/
+      companies/ISRG.yaml` and `intelligence/companies/ISRG.md` remain byte-for-byte unchanged by
+      this implementation.
+
+      **Updated criterion-7 partition — 44 effective PROVISIONAL + 1 pending (ISRG).** **Set 1 (27,
+      confirmed PROVISIONAL, unchanged)**: AVGO, AMD, MRVL, INTC (Batch 3); ETN, VRT, PWR (Batch
+      4); MSFT, GOOGL, META, AMZN (Batch 5); V, MA, JPM (Batch 6); CVX; WDC; LLY, ABBV, MRK, JNJ,
+      GILD (Batch 7); IBM, NOW, CRM, ORCL, CRWD, PANW (Batch 8). **Set 2 (11, PR #193's own
+      completed lifecycle, unchanged)**: ASML, AMAT, KLAC, LRCX, MU, SKHY, CEG, BRK.B, WMT, MLM,
+      AAPL. **Set 3 (6, PR #194's own completed lifecycle, now confirmed effective PROVISIONAL by
+      this entry's own post-merge verification above)**: COST, XOM, NVDA, GEV, TMO, TSM. **27 + 11
+      + 6 = 44 effective PROVISIONAL records.** **Set 4 (1, pending this implementation's own
+      lifecycle)**: ISRG — held back not for any content defect (none found; PR #193's retained
+      review found ISRG's current record sound) but because this synchronization implementation
+      itself has not yet completed independent review, correction if required, a separately
+      retained pre-merge `Principal acceptance:` statement per `OPS-0010` §2, merge at the
+      unchanged accepted head, and immediate post-merge verification. **44 + 1 = 45**, exact, no
+      overlap, no omission — independently re-verified this session by direct set comparison
+      against all 45 `intelligence/companies/*.yaml` filenames. The 45 Company Intelligence
+      records plus `PI-0033`'s 17 dispositioned names still total exactly 62 governed non-ETF
+      tickers, unchanged (independently re-verified this session).
+
+      **This implementation (`intelligence/freshness_registry.yaml` ISRG-row change plus this
+      register synchronization) is itself a draft pull request as of this entry.** It has not been
+      independently reviewed, has not received a `Principal acceptance:` statement meeting
+      `OPS-0010` §2's standard, has not merged, and has not undergone post-merge verification.
+      **Once this implementation completes that full lifecycle — independent review, any required
+      bounded correction and exact-head re-review, a separately retained pre-merge `Principal
+      acceptance:` statement, unchanged-head merge, and immediate post-merge verification — ISRG
+      becomes the 45th effective PROVISIONAL Company Intelligence record, and the partition becomes
+      45 effective PROVISIONAL + 0 held back.** That completion is not asserted here and does not
+      occur automatically on this entry's own text. **Milestone 3 remains `in_progress`; Milestone
+      4 remains unauthorized; this entry authorizes neither, and does not itself complete
+      Milestone 3 or evaluate `PI-0031` §K's seven-criterion completion standard.** No
+      tier/target/holdings/cluster/cap/allocator/margin/production-code file is touched by this
+      implementation. No Company Intelligence YAML/Markdown other than the single
+      `company_record_authority` field described above, no other freshness-registry row, no
+      `governance/decisions/` file, no `governance/decisions.yaml`, no `targets.yaml`, no
+      `holdings.yaml`, no Constitution, no frozen specification, no production code, no test, and
+      no trading safeguard is touched.
+    active_branch: claude/pi-0034-isrg-sync-xhalz5
     active_pr: null
-    last_verified_main_sha: 760a0d1ba568b90d745c8cd4d3427357ae26bfa3
+    last_verified_main_sha: b06dc4888fd21a92759c85c00ce99f326a248972
     last_verified_date: "2026-07-29"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
@@ -3191,6 +3306,26 @@ workstreams:
       defines the Milestone 3 completion standard**, effective on its own merge — not yet merged,
       not yet independently reviewed, not yet effective. Neither `PI-0031` nor this filing
       authorizes a tenth Milestone 3 batch, any Milestone 4-9 work, or advancement of `OPS-0007`
-      §8 step I.
+      §8 step I. **`OPS-0010` (WS-0005 lifecycle ratification and retrospective-audit
+      authorization), its implementation PR #193 (combined 13-legacy-record audit and PR #189
+      five-record lifecycle closure), and PR #194 (six-record fresh-retrospective-review
+      retention) have since merged and are fully complete** — recorded in full detail in the
+      blocker field above; neither authorizes an eleventh Milestone 3 batch, any Milestone 4-9
+      work, or advancement of `OPS-0007` §8 step I. **`PI-0034` (ISRG PR #110 authority
+      ratification) has since merged and is `status: Accepted`**, via PR #195 (merge commit
+      `d9feec9c39693406a065b294d10d502d78e4bb85`, reviewed/accepted head
+      `581c73dd540751a668269d88694b4efc7e99f467`), its own `status: Accepted` synchronization
+      merged via PR #196 (merge commit `b06dc4888fd21a92759c85c00ce99f326a248972`, confirmed
+      `origin/main`'s tip at this filing's own preflight). PI-0034 supplies a one-time,
+      present-day retrospective ratification of the ISRG Stage B refresh merged via PR #110
+      (merge commit `19042313909266be5f92f939cfa0bbc2dbca55f9`) — it does not edit
+      `intelligence/companies/ISRG.yaml`/`ISRG.md`, does not by itself make ISRG effectively
+      PROVISIONAL, and authorizes exactly one later, separate, bounded synchronization unit (§8)
+      updating ISRG's `company_record_authority` in `intelligence/freshness_registry.yaml` and its
+      lifecycle entry in this register. **This filing is that later synchronization unit** —
+      recorded in full in the blocker field above. Neither `PI-0034` nor this filing authorizes a
+      tenth Milestone 3 batch, any Milestone 4-9 work, any ISRG content edit, or any advancement of
+      `OPS-0007` §8 step I. This filing does not itself review, correct, mark ready, or merge
+      itself, and does not evaluate or complete `PI-0031` §K's Milestone 3 completion standard.
     supersedes: null
     superseded_by: null

@@ -43,7 +43,7 @@ tickers:
     refresh_policy: path_a_fixed_scope_v1
     monitoring_enabled: false
   - ticker: ISRG
-    company_record_authority: PI-0009
+    company_record_authority: PI-0034
     enrollment_authority: AUTO-0001
     enrolled_at: "2026-07-19"
     template_version: v1
