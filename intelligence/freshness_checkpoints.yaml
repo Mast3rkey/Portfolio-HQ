@@ -173,3 +173,23 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: CEG
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: BRK.B
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: WMT
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: MLM
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: AAPL
+    checkpoint_status: pending
+    channels: {}
+    established_by: null

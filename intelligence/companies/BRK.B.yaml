@@ -1,0 +1,91 @@
+sector: Financials
+industry: Multi-line Insurance and Diversified Holding Company
+portfolio_role_ref: T2
+competitive_advantages:
+  - "Decentralized conglomerate spanning insurance and reinsurance, railroad, utilities and energy, manufacturing, service, and retail businesses -- diversification across largely uncorrelated operating economics under one capital-allocation umbrella. Per Berkshire Hathaway's 2025 Form 10-K (SEC accession 0001193125-26-083899), Item 1, Business Description. [BRK-C01]"
+  - "Insurance float was approximately $176.9 billion at 2026-03-31, up about $500 million from 2025 year-end -- a large, growing pool of policyholder funds available for investment. Per Berkshire's Q1 2026 Form 10-Q (SEC accession 0001193125-26-202243), insurance float discussion. [BRK-C02]"
+  - "Combined insurance operations generated underwriting profits in both Q1 2026 and Q1 2025, producing a negative average cost of float in both periods -- Berkshire is effectively paid to hold its float, a structural funding-cost advantage over insurers that must earn a positive spread just to break even. Per the same Form 10-Q, insurance float and underwriting discussion. [BRK-C03]"
+  - "Insurance businesses held $236.8 billion of cash, cash equivalents, and U.S. Treasury bills, and approximately $285.0 billion of equity securities, at 2026-03-31 -- exceptional balance-sheet liquidity and investment capacity. Per the same Form 10-Q, cash and investments held in insurance businesses. [BRK-C04, BRK-C05]"
+  - "Without prior regulatory approval, Berkshire's principal insurance subsidiaries could declare approximately $33 billion of ordinary dividends during 2026 -- a large, disclosed capital-mobility figure underscoring the scale of capital available for redeployment within the group. Per the 2025 Form 10-K, insurance subsidiary disclosures. [BRK-C08]"
+risks:
+  - risk: "Estimated unpaid-loss and loss-adjustment-expense liabilities were $151.9 billion at 2026-03-31, and Berkshire's own filing warns that small percentage changes in these estimates can materially affect earnings -- reserve estimation risk at a scale where modest miscalibration has an outsized dollar impact."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Goodwill was $83.2 billion and indefinite-lived intangible assets were $19.0 billion at 2026-03-31; four reporting units had less than a 20% fair-value cushion in the prior annual review -- meaningful impairment risk concentrated in a subset of the portfolio's operating businesses if their performance deteriorates."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "The governing evidence bundle's own uncertainty claim names catastrophe losses, reserve estimation, regulated railroad and utility economics, acquisition discipline, equity-market movements, and succession execution as ongoing sensitivities affecting reported results."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Approximately $285.0 billion of insurance-business equity securities at 2026-03-31 means Berkshire's reported results (including GAAP net income, which includes unrealized equity gains/losses) are directly exposed to broad equity-market movements, not solely to its underlying operating-business performance."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "The evidence bundle does not provide segment-level operating-earnings detail for the railroad (BNSF), utilities/energy (BHE), or manufacturing/service/retail operating groups individually -- this record's assessment of each non-insurance segment's own financial quality and cyclicality is accordingly incomplete relative to the insurance segment's much more fully evidenced float/liquidity/reserve picture."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "Berkshire's next quarterly Form 10-Q and any further disclosure on insurance float, underwriting results, reserve development, and capital allocation (including any share-repurchase activity, which the evidence bundle does not itself quantify for the covered period)."
+    expected: "2026-08-03"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which updated float, underwriting-profit, reserve, goodwill/intangible-cushion, and capital-allocation figures will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: High
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval. Berkshire's evidence base shows an exceptionally strong financial position: ~$176.9B of insurance float carried at a negative cost (underwriting profits in both compared quarters), $236.8B of cash/Treasury-bill liquidity, ~$285.0B of equity holdings, and up to ~$33B of insurance-subsidiary dividend capacity without prior regulatory approval -- a combination of scale, liquidity, and structurally advantaged insurance economics this record's evidence base does not find comparably documented elsewhere in this corpus. Rated High notwithstanding real, disclosed risks: $151.9B of unpaid-loss reserves where Berkshire's own filing warns small percentage changes matter materially, $83.2B of goodwill with four reporting units below a 20% fair-value cushion, and the evidence bundle's own uncertainty claim naming succession execution as an ongoing sensitivity. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from BRK.B's existing T2 portfolio-tier placement -- it was reasoned solely from the disclosed float, liquidity, and balance-sheet picture described above."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0032-ws0005-milestone3-remaining-governed-holdings-and-sandisk-candidate.md,
+        governance/decisions/OPS-0008-research-wave-protocol-v1.md, and
+        governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md
+        (all Accepted at time of drafting), first-coverage discipline (no
+        prior BRK.B Company Intelligence record existed). Portfolio HQ's
+        WS-0005 Milestone 3 governed-holding unit -- BRK.B, one of five
+        independent T2 research units PI-0032 authorizes (CEG, BRK.B, WMT,
+        MLM, AAPL), each evaluated entirely on its own terms with no
+        fabricated shared-mechanism narrative among them. Filename uses the
+        exact ticker as it appears in targets.yaml/holdings.yaml (BRK.B,
+        brokerage convention) -- the first Company Intelligence filename in
+        this repository containing a dot; per spec §15, Yahoo-symbol
+        resolution (BRK-B) is reserved for external data lookups
+        (earnings.py's existing _YAHOO_SYMBOL map) and is not part of this
+        directory's own filename convention. This session did not attempt
+        new primary-source web research: the principal supplied a frozen,
+        externally-authored primary-source evidence bundle
+        (FIVE_COMPANY_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v1.yaml,
+        SHA-256 48cb215bfb7916ce8a8469bd4f1c2ba5b5b3d23032ad6b3047c5bbf4feb0ce6f),
+        independently re-verified by this session before use (checksum
+        recomputed and matched against both the external .sha256 manifest
+        and the value stated in the task instructions; direct programmatic
+        YAML re-parse confirmed 13 sources, 50 claims -- 10 per company --
+        64 reciprocal claim/source pairs, zero orphan claims, zero
+        unresolved source references, zero duplicate source IDs, zero
+        duplicate claim IDs, and claim-type separation into 40 source_fact,
+        5 uncertainty, and 5 judgment claims -- not merely trusted from the
+        bundle's own self-reported validation_report). Every fact in this
+        record is attributed to that bundle's own claim set (BRK-C01
+        through BRK-C10), sourced from Berkshire's 2025 Form 10-K and Q1
+        2026 Form 10-Q as directly inspected by the bundle's external
+        author -- not by this Claude session. The bundle's own disclosed
+        source-readiness classification for BRK.B is READY (no disclosed
+        limitation).
+sources:
+  - note: "Berkshire Hathaway Inc. 2025 Form 10-K for the period ended 2025-12-31 (SEC accession 0001193125-26-083899), filed 2026-03-02. Directly inspected by the external evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session. Supports business-description and insurance-subsidiary-dividend-capacity content."
+    url: "https://www.sec.gov/Archives/edgar/data/1067983/000119312526083899/brka-20251231.htm"
+    date: "2026-03-02"
+  - note: "Berkshire Hathaway Inc. Q1 2026 Form 10-Q for the period ended 2026-03-31 (SEC accession 0001193125-26-202243), filed 2026-05-04. Directly inspected by the external evidence-recovery researcher, not by this Claude session. Supports float, underwriting-profit, cash/investment-holdings, unpaid-loss-liability, and goodwill/intangible-asset content."
+    url: "https://www.sec.gov/Archives/edgar/data/1067983/000119312526202243/brka-20260331.htm"
+    date: "2026-05-04"
+  - note: "Portfolio-HQ WS-0005 Milestone 3, PI-0032 five-company primary-source evidence bundle (FIVE_COMPANY_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v1.yaml), SHA-256 48cb215bfb7916ce8a8469bd4f1c2ba5b5b3d23032ad6b3047c5bbf4feb0ce6f, principal-supplied implementation input under PI-0032/OPS-0008 -- not committed to this repository per the authorizing instruction. Prepared by an external research backend (disclosed in the bundle's own metadata as OpenAI GPT-5.6 Thinking) using directly inspected official primary sources; synthesizes 13 sources across five companies into 50 claim-level extracts with source-ID-level provenance and fact/uncertainty/judgment labeling; 64 reciprocal claim/source pairs, zero orphans, zero unresolved references, zero duplicate IDs -- independently reconfirmed by this session via direct programmatic YAML parsing and hash recomputation, not merely by trusting the bundle's own self-report."
+    url: null
+    date: "2026-07-28"

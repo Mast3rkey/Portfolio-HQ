@@ -330,3 +330,43 @@ tickers:
     filing_trigger_profile: domestic_issuer_v1
     refresh_policy: path_a_fixed_scope_v1
     monitoring_enabled: false
+  - ticker: CEG
+    company_record_authority: PI-0032
+    enrollment_authority: PI-0032
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: BRK.B
+    company_record_authority: PI-0032
+    enrollment_authority: PI-0032
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: WMT
+    company_record_authority: PI-0032
+    enrollment_authority: PI-0032
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: MLM
+    company_record_authority: PI-0032
+    enrollment_authority: PI-0032
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: AAPL
+    company_record_authority: PI-0032
+    enrollment_authority: PI-0032
+    enrolled_at: "2026-07-28"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false

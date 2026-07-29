@@ -1,0 +1,90 @@
+sector: Utilities
+industry: Independent Power Producers (Nuclear & Multi-Fuel Generation)
+portfolio_role_ref: T2
+competitive_advantages:
+  - "Following the January 2026 Calpine acquisition, Constellation describes itself as the largest private-sector power producer globally and the largest U.S. nuclear-energy company, with approximately 55 GW of capacity and about 2.5 million customer accounts. Company-described scale claim, treated as an issuer statement rather than an independently verified market-share figure. Per Constellation's 2025 Form 10-K (SEC accession 0001868275-26-000032), Item 1 Business, pages 7-8. [CEG-C01]"
+  - "The Calpine acquisition added approximately 23 GW across 72 generation and battery-storage assets and about 62 TWh of annual retail load, materially diversifying generation mix beyond the pre-existing nuclear-heavy fleet. Per the same Form 10-K, Item 1 Business, pages 7-8. [CEG-C02]"
+  - "Nuclear fleet capacity factor was 94.7% in 2025 (94.6% in 2024) -- a large, high-utilization baseload nuclear generation base that is difficult to replicate and provides scarce clean-firm-power exposure. Per the same Form 10-K, MD&A nuclear fleet operating data, page 69. [CEG-C04]"
+  - "A 20-year power purchase agreement with Microsoft supports the planned restart of the 835 MW Crane Clean Energy Center, subject to regulatory and execution conditions -- long-duration, investment-grade offtake demand tied specifically to data-center/AI electricity demand. Per the same Form 10-K, Item 1, nuclear facilities, page 14. [CEG-C05]"
+  - "Q1 2026 nuclear operations produced 40 TWh at a 92.3% capacity factor and completed two refueling outages averaging 23 days -- consistent operational execution in the most recently reported quarter. Per Constellation's Q1 2026 Earnings Presentation (2026-05-11), Fleet Operations. [CEG-C07]"
+risks:
+  - risk: "Q1 2026 GAAP earnings ($4.49/share) diverged materially from adjusted operating earnings ($2.74/share), and full-year adjusted operating EPS guidance ($11-$12) depends on continued execution across a business now substantially larger and more complex post-Calpine. A large GAAP-vs-adjusted gap in a single quarter is a data point requiring continued monitoring, not by itself a red flag, but it underscores that reported GAAP results can differ materially from the adjusted metric management guides to."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Calpine integration risk: the January 2026 acquisition added 23 GW across 72 assets and ~62 TWh of retail load -- a large-scale integration undertaking whose execution risk (operational, financial, cultural) is not yet resolved by a full post-acquisition track record at this evidence cutoff."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Power and fuel price sensitivity, nuclear regulatory risk, and customer-contracting risk are named directly in the governing evidence as ongoing exposures affecting reported results -- merchant and contracted generation economics are sensitive to power-market conditions outside management's control."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "The Crane Clean Energy Center restart underpinning the Microsoft PPA is explicitly disclosed as subject to regulatory and execution conditions -- it is a planned restart, not an operating asset, and its completion is not guaranteed by the evidence available."
+    severity: moderate
+    identified: "2026-07-28"
+    status: monitoring
+  - risk: "Capital intensity: growth, life-extension, and integration capital requirements are named as an ongoing exposure in the governing evidence; the evidence bundle does not itself provide a specific capital-expenditure figure, balance-sheet leverage figure, or dividend/buyback detail for CEG beyond the ~$335 million of year-to-date share repurchases and $4.7 billion remaining authorization disclosed in the Q1 2026 presentation -- this record's financial-quality picture is accordingly incomplete relative to companies in this corpus with fuller disclosed capital-structure detail."
+    severity: low
+    identified: "2026-07-28"
+    status: monitoring
+catalysts:
+  - catalyst: "Constellation's next quarterly earnings release and any further disclosure on Calpine integration progress, Crane Clean Energy Center restart status, and progress toward the affirmed $11-$12 adjusted operating EPS full-year guidance."
+    expected: "2026-08-04"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which updated nuclear fleet operating data, Calpine integration progress, Crane restart status, and any change to guidance will next be actively re-checked."
+    expected: "2026-10-26"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval. CEG holds a genuinely scarce asset base (94.7% nuclear capacity factor, ~55 GW post-Calpine scale, a 20-year Microsoft PPA tied to data-center power demand) and affirmed full-year guidance in the most recently reported quarter. Held at Medium rather than higher because the governing evidence's own judgment claim explicitly separates business quality from valuation/capital priority and names acquisition-integration and power-market sensitivity as factors that can amplify downside; the Calpine acquisition is large and recent enough that a full post-integration track record does not yet exist in this evidence base, the Q1 2026 GAAP-vs-adjusted EPS gap warrants continued monitoring rather than dismissal, and the evidence bundle does not supply balance-sheet leverage or capital-expenditure detail sufficient to fully assess financial risk. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from CEG's existing T2 portfolio-tier placement -- it was reasoned solely from the disclosed operating and risk picture described above."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-07-28"
+  next_due: "2026-10-26"
+  log:
+    - date: "2026-07-28"
+      note: >
+        Record created under governance/decisions/PI-0032-ws0005-milestone3-remaining-governed-holdings-and-sandisk-candidate.md,
+        governance/decisions/OPS-0008-research-wave-protocol-v1.md, and
+        governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md
+        (all Accepted at time of drafting), first-coverage discipline (no
+        prior CEG Company Intelligence record existed). Portfolio HQ's
+        WS-0005 Milestone 3 governed-holding unit -- CEG, one of five
+        independent T2 research units PI-0032 authorizes (CEG, BRK.B, WMT,
+        MLM, AAPL), each evaluated entirely on its own terms with no
+        fabricated shared-mechanism narrative among them. This session did
+        not attempt new primary-source web research: the principal supplied
+        a frozen, externally-authored primary-source evidence bundle
+        (FIVE_COMPANY_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v1.yaml,
+        SHA-256 48cb215bfb7916ce8a8469bd4f1c2ba5b5b3d23032ad6b3047c5bbf4feb0ce6f),
+        independently re-verified by this session before use (checksum
+        recomputed and matched against both the external .sha256 manifest
+        and the value stated in the task instructions; direct programmatic
+        YAML re-parse confirmed 13 sources, 50 claims -- 10 per company --
+        64 reciprocal claim/source pairs, zero orphan claims, zero
+        unresolved source references, zero duplicate source IDs, zero
+        duplicate claim IDs, and claim-type separation into 40 source_fact,
+        5 uncertainty, and 5 judgment claims -- not merely trusted from the
+        bundle's own self-reported validation_report). Every fact in this
+        record is attributed to that bundle's own claim set (CEG-C01 through
+        CEG-C10), sourced from Constellation's 2025 Form 10-K and Q1 2026
+        Earnings Presentation as directly inspected by the bundle's external
+        author -- not by this Claude session. The bundle's own disclosed
+        source-readiness classification for CEG is
+        READY_WITH_DISCLOSED_LIMITATION (one cited source, CEG-S3, is an
+        SEC filing-index page rather than the inspected Q1 2026 Form 10-Q
+        itself; no claim in this record relies on CEG-S3 for its
+        substantive content -- the quarterly claims it might otherwise
+        support are instead sourced to the directly-inspected Q1 2026
+        Earnings Presentation, CEG-S2).
+sources:
+  - note: "Constellation Energy Corporation 2025 Form 10-K for the period ended 2025-12-31 (SEC accession 0001868275-26-000032), filed 2026-02-24. Directly inspected by the external evidence-recovery researcher who authored the governed evidence bundle, not by this Claude session. Supports post-Calpine scale, generation-mix, nuclear-fleet-operating-data, and Crane Clean Energy Center/Microsoft PPA content."
+    url: "https://investors.constellationenergy.com/static-files/8d46f4dc-04f9-4916-aa5d-e12bd5c45aa7"
+    date: "2026-02-24"
+  - note: "Constellation Energy Corporation Q1 2026 Earnings Presentation, dated 2026-05-11. Directly inspected by the external evidence-recovery researcher, not by this Claude session. Supports Q1 2026 GAAP/adjusted-operating-EPS, guidance, fleet-operations, and capital-allocation (share-repurchase) content."
+    url: "https://investors.constellationenergy.com/static-files/e5a93793-71b7-453f-a5d3-6a8acb420282"
+    date: "2026-05-11"
+  - note: "Portfolio-HQ WS-0005 Milestone 3, PI-0032 five-company primary-source evidence bundle (FIVE_COMPANY_PRIMARY_SOURCE_EVIDENCE_RECOVERY_20260728_v1.yaml), SHA-256 48cb215bfb7916ce8a8469bd4f1c2ba5b5b3d23032ad6b3047c5bbf4feb0ce6f, principal-supplied implementation input under PI-0032/OPS-0008 -- not committed to this repository per the authorizing instruction. Prepared by an external research backend (disclosed in the bundle's own metadata as OpenAI GPT-5.6 Thinking) using directly inspected official primary sources; synthesizes 13 sources across five companies into 50 claim-level extracts with source-ID-level provenance and fact/uncertainty/judgment labeling; 64 reciprocal claim/source pairs, zero orphans, zero unresolved references, zero duplicate IDs -- independently reconfirmed by this session via direct programmatic YAML parsing and hash recomputation, not merely by trusting the bundle's own self-report."
+    url: null
+    date: "2026-07-28"
