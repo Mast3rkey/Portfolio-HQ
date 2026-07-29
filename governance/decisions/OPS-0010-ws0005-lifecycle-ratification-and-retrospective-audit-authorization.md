@@ -1,7 +1,7 @@
 ---
 decision_id: OPS-0010
 date: 2026-07-29
-status: Proposed
+status: Accepted
 category: operations_coordination
 related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0004, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0005, PI-0007, PI-0009, PI-0011, PI-0013, PI-0016, PI-0023, PI-0024, PI-0025, PI-0026, PI-0027, PI-0028, PI-0029, PI-0030, PI-0031, PI-0032, PI-0033]
 supporting_artifact: null
@@ -530,3 +530,26 @@ merges under the full review and acceptance discipline in §8/§11, and even a f
 implementation unit does not itself complete Milestone 3 or authorize Milestone 4 — a separate, later,
 explicit completion determination against `PI-0031` §K's seven criteria remains mandatory, exactly as
 §4 states.
+
+---
+
+_**2026-07-29 acceptance and merge record** (dated note, appended per `governance/decisions/README.md`'s
+convention for a narrow factual/lifecycle correction — no edit to this decision's substance): this
+governance filing was independently reviewed and explicitly principal-accepted at exact head
+`d0204285f1ed9c8b88873e721d2d59b6fdf2730a`, then merged to `main` via PR #191 at merge commit
+`0863f9dbbb861afd752d0cfeaa28369dd3b321ec` — independently confirmed via `git show --format="%H %P"`,
+whose two parents are `decaaa7738e0a54bf05892941061518497777c70` (base, PR #190's merge commit) and
+`d0204285f1ed9c8b88873e721d2d59b6fdf2730a` (the reviewed, principal-accepted head, unchanged between
+review and merge). The retained independent exact-head review
+(`https://github.com/Mast3rkey/Portfolio-HQ/pull/191#issuecomment-5116527963`, verdict "PR #191
+EXACT-HEAD APPROVED", no BLOCKER or MATERIAL finding) and the retained, separately posted
+`Principal acceptance:` statement
+(`https://github.com/Mast3rkey/Portfolio-HQ/pull/191#issuecomment-5116591426`, naming this exact head,
+posted before merge and distinct from both the review verdict and the mechanical merge action) together
+satisfy this decision's own §2 acceptance standard for its own eventual acceptance, exactly as §2's
+closing paragraph and §11 required. Frontmatter `status` is updated to `Accepted` accordingly. This note
+records the completed review/acceptance/merge lifecycle event only. It does not begin the retrospective
+implementation unit authorized in §3, does not perform any ticker audit, does not touch
+`operations/WORKSTREAMS.yaml` or `CLAUDE.md`, does not declare any additional Company Intelligence
+record PROVISIONAL, does not complete Milestone 3, and does not authorize Milestone 4 — every one of
+§§1-9's substantive terms remains controlling exactly as filed._
