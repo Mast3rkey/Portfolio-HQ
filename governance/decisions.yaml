@@ -330,7 +330,7 @@ decisions:
     file: governance/decisions/OPS-0010-ws0005-lifecycle-ratification-and-retrospective-audit-authorization.md
   - decision_id: PI-0034
     date: 2026-07-29
-    status: Proposed
+    status: Accepted
     category: portfolio_intelligence
     related_decisions: [GOV-0002, OPS-0004, OPS-0007, OPS-0008, OPS-0009, OPS-0010, PI-0009, PI-0016, PI-0031, PI-0032, PI-0033]
     supporting_artifact: null
