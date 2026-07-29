@@ -321,3 +321,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0011, PI-0013, PI-0014, PI-0016, PI-0027, PI-0029, PI-0031, PI-0032]
     supporting_artifact: null
     file: governance/decisions/PI-0033-ws0005-milestone3-residual-deferrals.md
+  - decision_id: OPS-0010
+    date: 2026-07-29
+    status: Proposed
+    category: operations_coordination
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0004, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0005, PI-0007, PI-0009, PI-0011, PI-0013, PI-0016, PI-0023, PI-0024, PI-0025, PI-0026, PI-0027, PI-0028, PI-0029, PI-0030, PI-0031, PI-0032, PI-0033]
+    supporting_artifact: null
+    file: governance/decisions/OPS-0010-ws0005-lifecycle-ratification-and-retrospective-audit-authorization.md
