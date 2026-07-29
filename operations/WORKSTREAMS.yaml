@@ -2851,9 +2851,74 @@ workstreams:
       remains `in_progress`; Milestone 4 remains unauthorized; this entry authorizes neither.** No
       tier/target/holdings/cluster/cap/allocator/margin/production-code file is touched by this
       implementation.
-    active_branch: claude/ops-0010-retrospective-lifecycle-mehnxc
+
+      **PR #193 merged (2026-07-29, this entry — factual synchronization only).** Independently
+      re-confirmed this session: `OPS-0010`-authorized implementation PR #193 received an
+      independent exact-head review (`https://github.com/Mast3rkey/Portfolio-HQ/pull/193#issuecomment-5117143327`,
+      verdict "PR #193 EXACT-HEAD APPROVED," anchored to reviewed head
+      `6eac98c742666d2ea8645427c16b49c994f7d57d`), a separately retained pre-merge `Principal
+      acceptance:` statement (`https://github.com/Mast3rkey/Portfolio-HQ/pull/193#issuecomment-5117275717`,
+      naming that same exact head, explicitly scoped to "the three reviewed files and the
+      conservative 27 PROVISIONAL + 11 eligible-pending + 7 held-back lifecycle partition" and
+      explicitly declining to treat the six unfiled fresh reviews as effective repository evidence),
+      and merged unchanged at that head via merge commit `760a0d1ba568b90d745c8cd4d3427357ae26bfa3`
+      — independently confirmed the current `origin/main` tip at this entry's preflight. **38
+      records (the pre-existing 27 confirmed PROVISIONAL plus the 11 records PR #193's own
+      completed review/acceptance/merge lifecycle newly covers — ASML, AMAT, KLAC, LRCX, MU, SKHY,
+      CEG, BRK.B, WMT, MLM, AAPL) are the current effective-PROVISIONAL count**, per this entry's own
+      stated repository boundary; this entry does not itself independently re-verify or re-derive
+      `OPS-0007` §3 element 5 (post-merge ancestry/scope/validator/test re-verification) for those
+      11 records beyond what is recorded elsewhere in this register — that remains outside this
+      six-record retention unit's own authorized scope.
+
+      **Six-record fresh-retrospective-review retention filed (this entry, same session).**
+      Following the principal's bounded authorization for exactly one six-record fresh-review
+      retention unit (COST, XOM, NVDA, GEV, TMO, TSM), this session independently re-fetched and
+      confirmed PR #193's retained independent-review comment
+      (`issuecomment-5117143327`) reported, for these six tickers, no content-level BLOCKER or
+      MATERIAL finding surviving fresh retrospective review of each ticker's *current* merged
+      record — full per-ticker detail, findings by severity, and the `OPS-0007` §3 element mapping
+      are retained verbatim at
+      `governance/audits/WS0005_M3_SIX_RECORD_FRESH_RETROSPECTIVE_REVIEW_RETENTION_20260729.md`, not
+      restated here. TSM's retained verdict carries an internally inconsistent label ("CHANGES
+      REQUIRED" despite a stated rationale of "no line of either file needs to change") — preserved,
+      not silently resolved, per that artifact's own §7; the independent reviewer of this new PR
+      must explicitly address it. ISRG is explicitly excluded from this filing — the same retained
+      comment found ISRG's PR #110 refresh has no identifiable governing `PI-####` (or other)
+      authorization anywhere in this repository, a distinct authority gap this filing does not
+      resolve, research, or act on; ISRG remains held back pending its own future, separate
+      governance decision.
+
+      **Draft partition (pending this new PR's own lifecycle) — 27 unchanged / 11 unchanged / 6
+      newly eligible-pending / 1 held back for authority.** **Set 1 (27, confirmed PROVISIONAL,
+      unchanged)**: AVGO, AMD, MRVL, INTC (Batch 3); ETN, VRT, PWR (Batch 4); MSFT, GOOGL, META,
+      AMZN (Batch 5); V, MA, JPM (Batch 6); CVX; WDC; LLY, ABBV, MRK, JNJ, GILD (Batch 7); IBM, NOW,
+      CRM, ORCL, CRWD, PANW (Batch 8). **Set 2 (11, per PR #193's own completed lifecycle, per this
+      entry's stated boundary, unchanged by this filing)**: ASML, AMAT, KLAC, LRCX, MU, SKHY, CEG,
+      BRK.B, WMT, MLM, AAPL. **Set 3 (6, eligible pending this new PR's own full `OPS-0007` §3
+      lifecycle — review, correction if required, separately retained pre-merge `Principal
+      acceptance:`, unchanged-head merge, post-merge verification)**: COST, XOM, NVDA, GEV, TMO,
+      TSM. **Set 4 (1, held back for a separate governance authority decision)**: ISRG. **27 + 11 +
+      6 + 1 = 45**, exact, no overlap, no omission — independently re-verified this session by
+      direct set comparison against all 45 `intelligence/companies/*.yaml` filenames. **No ticker in
+      Set 3 is promoted to PROVISIONAL by this entry or by the retained retention artifact itself**
+      — each of the six requires this new implementation PR's own independent review, any required
+      correction and re-review, a separately retained pre-merge `Principal acceptance:` statement
+      per `OPS-0010` §2, merge at the unchanged accepted head, and immediate post-merge verification
+      before it counts as PROVISIONAL. The 45 Company Intelligence records plus `PI-0033`'s 17
+      dispositioned names still total exactly 62 governed non-ETF tickers, unchanged.
+
+      **This implementation remains a draft pull request as of this entry.** It has not been
+      independently reviewed, has not received a `Principal acceptance:` statement meeting
+      `OPS-0010` §2's standard, has not merged, and has not undergone post-merge verification.
+      **Milestone 3 remains `in_progress`; Milestone 4 remains unauthorized; this entry authorizes
+      neither.** No tier/target/holdings/cluster/cap/allocator/margin/production-code file is
+      touched by this implementation. No Company Intelligence YAML/Markdown, freshness file,
+      governance decision, `governance/decisions.yaml`, `targets.yaml`, `holdings.yaml`,
+      Constitution, frozen specification, production code, test, or safeguard is touched.
+    active_branch: claude/six-record-review-retention-4pjtcu
     active_pr: null
-    last_verified_main_sha: 59f7ac56fdb1a4c5b3c0e45d6b545ea88a126ec4
+    last_verified_main_sha: 760a0d1ba568b90d745c8cd4d3427357ae26bfa3
     last_verified_date: "2026-07-29"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
