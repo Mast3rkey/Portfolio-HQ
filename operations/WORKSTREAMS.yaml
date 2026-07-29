@@ -2568,15 +2568,30 @@ workstreams:
       units drafted 2026-07-28 (this entry — state only, not merged, not complete).** Factual
       correction first: PR #188 has since **merged** (merge commit
       `1cbda24bacc803a08433ecf59a88eae68ab441fa`, confirmed `origin/main`'s tip at this session's
-      preflight, base `b937a3a8a38543312ef37abc88634161ce5a5d99`). However, this session
-      independently confirmed via the GitHub API that **PR #188 carries zero GitHub reviews**, and
-      its own merged PR body's test-plan checklist still shows independent exact-head review,
-      principal acceptance, and merge/post-merge re-verification as unperformed at time of
-      writing — the same three checklist items the prior entry above states remain outstanding.
-      **WDC Company Intelligence therefore does not yet satisfy `OPS-0007` §3's PROVISIONAL
-      definition** (which requires eligible review, no unresolved material finding, principal
-      acceptance, merge, AND post-merge re-verification, all five) — it was merged without a
-      recorded independent review. This is stated here as a factual correction to this register,
+      preflight, base `b937a3a8a38543312ef37abc88634161ce5a5d99`). This session's original preflight
+      found **zero formal GitHub review objects** on PR #188 and concluded from that alone that it
+      was "merged without a recorded independent review" — **that conclusion was inaccurate and is
+      corrected here.** An independent exact-head review of PR #189 (retained at issue comment
+      `5109989510`) audited PR #188 directly and found it **does** carry a retained, attributable,
+      independent exact-head review: PR comment `issuecomment-5109593960` (posted
+      2026-07-28T20:57:12Z, ~3 minutes before the 21:00:36Z merge), filed under `OPS-0007` §1's
+      capability-based standard as the explicit substitute for a formal review object blocked by
+      GitHub's own same-account restriction ("Can not approve your own pull request"). That review
+      independently re-verified the WDC/Sandisk evidence bundle hash and reciprocity, spot-verified
+      WDC's claims, confirmed `targets.yaml` tier/cluster facts, and reached verdict **PR #188
+      EXACT-HEAD APPROVED** (0 BLOCKER / 0 MATERIAL / 1 MINOR / 2 NOTE). Of `OPS-0007` §3's five
+      PROVISIONAL elements, the review step (element 1) and correction/re-review (element 2, none
+      required — no MATERIAL finding) were therefore satisfied before merge; **the sole element
+      genuinely outstanding at PR #189's original drafting time was independent post-merge
+      ancestry/scope/validator/test re-verification (element 5)** — not the review step this
+      register previously claimed was missing. **Whether WDC Company Intelligence should now be
+      treated as satisfying all five `OPS-0007` §3 elements is left for a future entry or dedicated
+      decision, not asserted here** — consistent with `PI-0031`'s own CVX-retrospective precedent,
+      which used a dedicated retained audit artifact for exactly this kind of determination rather
+      than folding it into an unrelated PR's register note. The separate, already-known WDC
+      provenance-language MINOR (`WDC.yaml`/`WDC.md` describing `PI-0032`/`OPS-0008`/`OPS-0009` as
+      "proposed... not yet merged" when already `Accepted` at the base commit) remains open and
+      unrelated to this correction. This is stated here as a factual correction to this register,
       not a re-litigation of PR #188's merge (already done and irreversible) — no WDC content file
       is touched by this correction, and no new authority is claimed over WDC by this entry.
 
