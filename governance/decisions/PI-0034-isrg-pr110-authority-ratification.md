@@ -1,7 +1,7 @@
 ---
 decision_id: PI-0034
 date: 2026-07-29
-status: Proposed
+status: Accepted
 category: portfolio_intelligence
 related_decisions: [GOV-0002, OPS-0004, OPS-0007, OPS-0008, OPS-0009, OPS-0010, PI-0009, PI-0016, PI-0031, PI-0032, PI-0033]
 supporting_artifact: null
@@ -403,3 +403,26 @@ unit authorized in §8 may begin only after this decision itself merges under th
 acceptance discipline in §6/§7/§14, and even a fully successful synchronization unit does not itself
 complete Milestone 3 or authorize Milestone 4 — a separate, later, explicit completion determination
 against `PI-0031` §K's seven criteria remains mandatory, exactly as §11 states.
+
+---
+
+_**2026-07-29 acceptance and merge record** (dated note, appended per `governance/decisions/README.md`'s
+convention for a narrow factual/lifecycle correction — no edit to this decision's substance): this
+governance filing was independently reviewed and explicitly principal-accepted at exact head
+`581c73dd540751a668269d88694b4efc7e99f467`, then merged to `main` via PR #195 at merge commit
+`d9feec9c39693406a065b294d10d502d78e4bb85` — independently confirmed via `git log --pretty=%P -n 1`,
+whose two parents are `36972737b96e99b0b8c9cdc0711fe4d605d1971a` (base, PR #194's merge commit) and
+`581c73dd540751a668269d88694b4efc7e99f467` (the reviewed, principal-accepted head, unchanged between
+review and merge). The retained independent exact-head review
+(`https://github.com/Mast3rkey/Portfolio-HQ/pull/195#issuecomment-5117970606`, verdict "PR #195
+EXACT-HEAD APPROVED", no BLOCKER or MATERIAL finding) and the retained, separately posted
+`Principal acceptance:` statement
+(`https://github.com/Mast3rkey/Portfolio-HQ/pull/195#issuecomment-5118004756`, naming this exact head,
+explicitly accepting the narrow ISRG PR #110 ratification, posted before merge and distinct from both
+the review verdict and the mechanical merge action) together satisfy this decision's own §7 acceptance
+standard for its own eventual acceptance, exactly as §7 and §12 required. Frontmatter `status` is
+updated to `Accepted` accordingly. This note records the completed review/acceptance/merge lifecycle
+event only. It does not begin the later freshness-registry and `operations/WORKSTREAMS.yaml`
+synchronization unit authorized in §8, does not touch `intelligence/companies/ISRG.yaml` or `ISRG.md`,
+does not declare ISRG PROVISIONAL, does not complete Milestone 3, and does not authorize Milestone 4 —
+every one of §§1-12's substantive terms remains controlling exactly as filed.
