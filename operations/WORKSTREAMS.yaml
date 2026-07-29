@@ -2792,9 +2792,68 @@ workstreams:
       decision evaluating all seven `PI-0031` §K criteria roster-wide, exactly as `PI-0031` and
       `PI-0033` both already state. **Milestone 4 remains unauthorized** — nothing in
       this entry authorizes it, implies it, or narrows the roadmap gate `OPS-0006` §5 established.
-    active_branch: null
+
+      **OPS-0010 accepted and effective (2026-07-29, this entry — factual synchronization only,
+      performed by the implementation session it authorizes).** `governance/decisions/OPS-0010-ws0005-lifecycle-ratification-and-retrospective-audit-authorization.md`
+      independently confirmed `status: Accepted` in both its own frontmatter and
+      `governance/decisions.yaml`, merged via PR #191 (merge commit
+      `0863f9dbbb861afd752d0cfeaa28369dd3b321ec`, reviewed head `d0204285f1ed9c8b88873e721d2d59b6fdf2730a`),
+      its own `status: Accepted` synchronization merged via PR #192 (merge commit
+      `59f7ac56fdb1a4c5b3c0e45d6b545ea88a126ec4`, confirmed `origin/main`'s tip at this session's
+      preflight). `OPS-0010` §1 ratifies, one time, that an eligible independent exact-head review
+      followed by a same-account merge with no intervening commit satisfies `OPS-0007` §3 element 3 for
+      WS-0005 lifecycle work merged at or before its cutoff; §3 authorizes exactly one later
+      implementation unit performing a combined retrospective audit of the 13 legacy records above, a
+      lifecycle-only closure of the five PR #189 records (CEG, BRK.B, WMT, MLM, AAPL), factual
+      synchronization of this register, and three narrow `CLAUDE.md` corrections. **This entry is that
+      implementation unit's own factual synchronization** — the audit and closure work itself is
+      retained at `governance/audits/WS0005_M3_CRITERION7_RETROSPECTIVE_LIFECYCLE_AUDIT_20260729.md`,
+      not restated here.
+
+      **Criterion-7 partition advanced (draft, pending this implementation PR's own lifecycle) — 27
+      unchanged / 11 newly mapped eligible / 7 held back.** The retained audit independently mapped each
+      of the 18 previously-unaudited records against `OPS-0007` §3's five elements, per record, using
+      only already-retained evidence (GitHub reviews/comments, dedicated post-merge reconciliation PRs,
+      merge-ancestry checks) — no new company research was performed. **11 records — ASML, AMAT, KLAC,
+      LRCX (Batch 1, PI-0023); MU, SKHY (Batch 2, PI-0024); CEG, BRK.B, WMT, MLM, AAPL (PI-0032, via PR
+      #189) — are now mapped ELIGIBLE FOR PROVISIONAL AFTER THIS PR COMPLETES ITS OWN LIFECYCLE**: each
+      has a retained, exact-head-anchored independent review, a completed correction-and-re-review cycle
+      where a finding required one, confirmed direct-parent merge ancestry, and a retained, independently
+      performed post-merge validator/test/scope re-verification — `OPS-0010` §1's ratification supplies
+      element 3 for all eleven. **7 records — COST, XOM, NVDA, GEV, ISRG, TMO, TSM — remain HELD BACK,
+      fresh CVX-style independent retrospective review required**: none carries a retained independent
+      review of any kind (zero GitHub reviews/comments on every implementation PR examined; no
+      substituting `governance/audits/` artifact); the audit's MATERIAL findings and each ticker's exact
+      missing action are recorded in full in the retained artifact. ISRG carries an additional, distinct
+      MATERIAL finding — its PR #110 refresh has no identifiable governing `PI-####` authorization —
+      disclosed, not resolved, by the audit. **No ticker is promoted to PROVISIONAL by this entry or by
+      the retained audit artifact itself** — the 11 newly-mapped-eligible records require this
+      implementation PR's own independent review, any required correction and re-review, a separately
+      retained pre-merge `Principal acceptance:` statement per `OPS-0010` §2, merge at the unchanged
+      accepted head, and immediate post-merge verification before they count as PROVISIONAL. **The 27
+      records already confirmed PROVISIONAL (§ above) are unchanged, unreopened, and undowngraded.**
+      Updated partition, superseding the "18 records" bucket above once this implementation PR's own
+      lifecycle completes: **27 PROVISIONAL (unchanged) + 11 eligible-pending-this-PR's-lifecycle + 7
+      held back = 45**, exact, no overlap, no omission — independently re-verified this session by direct
+      set comparison against all 45 `intelligence/companies/*.yaml` filenames. The 45 Company Intelligence
+      records plus `PI-0033`'s 17 dispositioned names still total exactly 62 governed non-ETF tickers,
+      unchanged.
+
+      **Three narrow `CLAUDE.md` corrections made (this entry, per `OPS-0010` §3.D)**: `OPS-0009`,
+      `PI-0032`, and `PI-0033`'s Decisions Log entries — each previously described as "proposed (not yet
+      accepted or merged)" or "draft PR" — corrected to state their actual `status: Accepted`, merged
+      status, with a pointer to the controlling decision file and this register for current detail. No
+      other `CLAUDE.md` content changed; no ticker-level lifecycle detail was added to `CLAUDE.md`.
+
+      **This implementation remains a draft pull request as of this entry.** It has not been
+      independently reviewed, has not received a `Principal acceptance:` statement meeting `OPS-0010`
+      §2's standard, has not merged, and has not undergone post-merge verification. **Milestone 3
+      remains `in_progress`; Milestone 4 remains unauthorized; this entry authorizes neither.** No
+      tier/target/holdings/cluster/cap/allocator/margin/production-code file is touched by this
+      implementation.
+    active_branch: claude/ops-0010-retrospective-lifecycle-mehnxc
     active_pr: null
-    last_verified_main_sha: 4f024f2c97797b34b94df826fa5fb9e1e828dec8
+    last_verified_main_sha: 59f7ac56fdb1a4c5b3c0e45d6b545ea88a126ec4
     last_verified_date: "2026-07-29"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
