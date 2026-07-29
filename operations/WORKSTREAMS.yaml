@@ -2687,15 +2687,30 @@ workstreams:
       **satisfied, none required**: zero BLOCKER/MATERIAL findings; the 1 MINOR (WDC.yaml/WDC.md
       describing `PI-0032`/`OPS-0008`/`OPS-0009` as "proposed... not yet merged" when already `Accepted`
       at the base commit) does not block under the task's own severity rule. (3) *explicit principal
-      acceptance at the exact final head* — **not separately, distinctly recorded**: no comment,
-      commit message, or register entry states a principal-acceptance action distinct from the merge
-      itself; the only available evidence is the merge action (`merged_by: Mast3rkey`, 2026-07-28
-      21:00:36Z, ~3 minutes after the review comment), which two independent reviews
-      (`issuecomment-5109989510`, `issuecomment-5111148711`) already flagged as "evidenced only by the
-      merge action itself... not a separate explicit acceptance comment — workable but not airtight."
-      `OPS-0007` §1.12 requires principal acceptance "never inferred from silence" — a merge action is
-      not silence, but it is also not a distinct, explicit acceptance statement, and this register does
-      not resolve that ambiguity by asserting one. (4) *merged to `main` at that exact head* —
+      acceptance at the exact final head* — **satisfied, under this repository's own established,
+      repeatedly-applied convention** (corrected 2026-07-29, per the independent exact-head review
+      retained at `issuecomment-5111502961`, which identified this register's own prior entries for
+      Batch 3 (AVGO/AMD/MRVL/INTC — "explicit principal acceptance at the exact final head
+      `c6fe6b0b3725c4fdba50c8b787123f09faf90805`"), Batch 4 (ETN/VRT/PWR — "the principal's merge
+      action at the exact final head `921e1b6f98987eac6d5713024c87e12a504837dc`"), Batch 5
+      (MSFT/GOOGL/META/AMZN — reviewed head merged with "no unreviewed commit between reviewed head
+      and merge"), and Batch 6 (V/MA/JPM — "the exact-head merge, performed by `merged_by: Mast3rkey`
+      with no intervening commits, is the retained repository evidence of principal acceptance under
+      this repository's established convention — merge metadata by itself does not independently
+      preserve a separate verbatim acceptance statement, and none is claimed here beyond that
+      convention") as the controlling, already-established, identical fact pattern this register has
+      repeatedly and explicitly treated as satisfying element 3. WDC fits that same pattern exactly:
+      the reviewed head (`285a91a38c41fa02f9bbce63264acb0afb6554f0`, `issuecomment-5109593960`,
+      posted 2026-07-28T20:57:12Z) is the merge commit's direct second parent with **no intervening
+      commit** — the merge (`merged_by: Mast3rkey`, 2026-07-28T21:00:36Z, ~3 minutes after the review)
+      is the same-account, no-intervening-commit merge action this register's own retained convention,
+      applied identically four times over, already treats as the retained evidence of principal
+      acceptance. This entry supersedes this register's own earlier 2026-07-29 conclusion that element
+      3 was "not conclusively evidenced" — that conclusion applied a stricter standard to WDC than the
+      one this register has consistently, explicitly applied to every other Milestone 3 batch, and is
+      corrected here for consistency, not because new evidence of a distinct acceptance comment was
+      found (none exists, and none is claimed here beyond the established convention). (4) *merged to
+      `main` at that exact head* —
       **satisfied**: merge commit `1cbda24bacc803a08433ecf59a88eae68ab441fa`, parents
       `b937a3a8a38543312ef37abc88634161ce5a5d99` (base) and `285a91a38c41fa02f9bbce63264acb0afb6554f0`
       (the reviewed head, exact match) — independently confirmed via `git show --format="%H %P"` and
@@ -2706,13 +2721,17 @@ workstreams:
       and a protected-path diff (empty) directly against current `origin/main`, and is recording that
       result in this register entry now.
 
-      **Conclusion: WDC Company Intelligence is NOT YET PROVISIONAL under `OPS-0007` §3.** Four of the
-      five required elements (1, 2, 4, 5) are satisfied; element 3 (explicit principal acceptance at
-      the exact final head, distinct from the merge action) is not conclusively evidenced in any
-      retained record. This is a factual determination applying `OPS-0007` §3's already-accepted
-      definition to already-established evidence, not a new policy or a change to `OPS-0007` itself;
-      it creates no tier/target/holdings/cluster/cap/allocator/margin authority and does not itself
-      constitute the missing principal-acceptance record.
+      **Conclusion (corrected 2026-07-29): WDC Company Intelligence IS PROVISIONAL under `OPS-0007`
+      §3.** All five required elements are satisfied — (1) eligible review, (2) no correction
+      required, (3) principal acceptance under this register's own established, repeatedly-applied
+      merge-action convention (Batches 3/4/5/6 precedent, detailed above), (4) merged to `main` at
+      the exact reviewed head, (5) post-merge ancestry/scope/validator/test re-verification, performed
+      independently in this same reconciliation. **WDC Company Intelligence became effective
+      PROVISIONAL upon PR #188's merge** (`1cbda24bacc803a08433ecf59a88eae68ab441fa`), consistent with
+      how this register has already treated Batches 3-6; this entry records that already-established
+      fact and creates no new tier/target/holdings/cluster/cap/allocator/margin authority. The
+      separate, pre-existing `WDC.yaml`/`WDC.md` provenance-language wording issue (below) remains a
+      nonblocking MINOR, unrelated to and not resolved by this PROVISIONAL determination.
 
       **`WDC.yaml`/`WDC.md` provenance-language MINOR corrected** (this entry). Both files described
       `PI-0032`, `OPS-0008`, and `OPS-0009` as "proposed... not yet merged or independently reviewed"
@@ -2738,18 +2757,25 @@ workstreams:
       observation remains a NOTE; the one MATERIAL finding raised on PR #189 concerned this register's
       own factual accuracy (resolved by the delta review), not any company record's research content.
       Criterion 6 (indexes, freshness, and register synchronized) — **advanced by this entry** (PR
-      #189's merge and WDC's lifecycle determination are now recorded); the `CLAUDE.md` staleness
-      noted above remains open. **Criterion 7 (every completed record has passed the full
-      independent-review/merge/post-merge-verification lifecycle per `OPS-0007` §3) is NOT satisfied
-      roster-wide** — this session audited WDC only (per its own governing task's bounded scope) and
-      found it NOT YET PROVISIONAL; the other 44 records' criterion-7 status was not re-audited by
-      this entry and is not asserted here either way.
+      #189's merge and WDC's corrected PROVISIONAL determination are now recorded); the `CLAUDE.md`
+      staleness noted above remains open. **Criterion 7 (every completed record has passed the full
+      independent-review/merge/post-merge-verification lifecycle per `OPS-0007` §3) remains
+      UNAUDITED roster-wide** — this session (and the corrected determination above) established that
+      WDC itself now satisfies all five `OPS-0007` §3 elements and is PROVISIONAL, but the other 44
+      records' criterion-7 status was not re-audited by this entry and is not asserted here either
+      way; only Batches 3-6 (AVGO/AMD/MRVL/INTC, ETN/VRT/PWR, MSFT/GOOGL/META/AMZN, V/MA/JPM) plus
+      CVX and WDC are already recorded elsewhere in this register as confirmed PROVISIONAL — the
+      earlier-batch and non-batch records (COST, XOM, NVDA, GEV, ISRG, TMO, TSM, CRM, IBM, CRWD,
+      PANW, LLY, ABBV, MRK, JNJ, GILD, CEG, BRK.B, WMT, MLM, AAPL) have not been individually
+      re-confirmed against `OPS-0007` §3's five-part test by this entry.
 
       **Milestone 3 conclusion: remains `in_progress`, NOT complete.** Coverage (criteria 1-4) is now
-      complete for the first time as of this entry, but criterion 7 is affirmatively unsatisfied for
-      WDC and unverified for the remaining 44 records; a Milestone 3 completion determination requires
-      its own later, separate decision evaluating all seven `PI-0031` §K criteria roster-wide, exactly
-      as `PI-0031` and `PI-0033` both already state. **Milestone 4 remains unauthorized** — nothing in
+      complete for the first time as of this entry, and WDC's own criterion-7 status is now resolved
+      (PROVISIONAL, per the corrected determination above), but criterion 7 remains unaudited for the
+      remaining ~20+ records not yet individually confirmed PROVISIONAL in this register; a Milestone 3
+      completion determination requires its own later, separate decision evaluating all seven
+      `PI-0031` §K criteria roster-wide, exactly as `PI-0031` and `PI-0033` both already state.
+      **Milestone 4 remains unauthorized** — nothing in
       this entry authorizes it, implies it, or narrows the roadmap gate `OPS-0006` §5 established.
     active_branch: null
     active_pr: null
