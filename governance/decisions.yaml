@@ -349,3 +349,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0002, OPS-0005, OPS-0006, OPS-0007, OPS-0009, PI-0011, PHQ-2026-01]
     supporting_artifact: null
     file: governance/decisions/OPS-0011-repository-native-dashboard-capability-authorization.md
+  - decision_id: PHQ-2026-02
+    date: 2026-07-31
+    status: Accepted
+    category: portfolio_construction_governance
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, PHQ-2026-01]
+    supporting_artifact: governance/evidence/PHQ-2026-02/reconciliation_check.json
+    file: governance/decisions/PHQ-2026-02-holdings-reconciliation-and-actionable-allocation-policy.md
