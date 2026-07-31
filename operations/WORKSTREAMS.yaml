@@ -3828,6 +3828,7 @@ workstreams:
           as a draft PR; not merged, not independently reviewed, not
           principal-accepted in this session. holdings.yaml, targets.yaml,
           and gates.yaml confirmed byte-identical to origin/main.
+        pr: 204
         status: drafted
         date: "2026-07-31"
     evidence_refs:
@@ -3858,16 +3859,17 @@ workstreams:
       execution and verified post-trade evidence, neither of which exists
       yet — disclosed, not fabricated.
     active_branch: claude/skhy-spcx-disposition-governance
-    active_pr: null
+    active_pr: 204
     last_verified_main_sha: 54b0b5b330af1ebbbd6ec51509512d6589dff03a
     last_verified_date: "2026-07-31"
     authorized_by: >
       governance/decisions/PHQ-2026-03-skhy-spcx-zero-based-disposition-manual-exit-authorization.md
-      (principal approval quoted verbatim there) — not yet merged. Per
-      OPS-0001's rule that a session may not self-authorize a workstream to
-      authorized status while its governing decision remains unmerged, this
-      entry is filed at status: proposed, matching this repository's own
-      WS-0007 precedent (OPS-0011), to be synchronized to its actual status
-      only after independent review, principal acceptance, and merge.
+      (principal approval quoted verbatim there) — not yet merged (draft PR
+      #204). Per OPS-0001's rule that a session may not self-authorize a
+      workstream to authorized status while its governing decision remains
+      unmerged, this entry is filed at status: proposed, matching this
+      repository's own WS-0007 precedent (OPS-0011), to be synchronized to
+      its actual status only after independent review, principal
+      acceptance, and merge.
     supersedes: null
     superseded_by: null
