@@ -63,22 +63,27 @@ def tmp_repo(tmp_path: Path) -> Path:
         "crypto_shares:\n"
         "  ETH: 0.09\n"
     ))
+    # Canonical v1.30 destination-architecture shape (PHQ-2026-02) — matches
+    # current main's real targets.yaml: a flat `destination:` list, no
+    # `tiers:`/`crypto:` blocks (both retired; BTC/ETH/SOL each get their own
+    # destination row instead of an aggregate crypto sleeve).
     _write(repo / "targets.yaml", (
-        "tiers:\n"
-        "  T1:\n"
-        "    weight_pct: 3.35\n"
-        "    tickers: [NVDA]\n"
-        "  band:\n"
-        "    weight_pct: 0.75\n"
-        "    cap_multiple: 1.25\n"
-        "    tickers: [AAPL, SKHY]\n"
-        "  spec:\n"
-        "    weight_pct: 1.0\n"
-        "    fixed: true\n"
-        "    tickers: [SPCX]\n"
-        "crypto:\n"
-        "  sleeve_pct: 10.0\n"
-        "  coins: [ETH]\n"
+        "destination:\n"
+        "  - ticker: NVDA\n"
+        "    target_pct: 3.35\n"
+        "    asset_class: equity\n"
+        "  - ticker: AAPL\n"
+        "    target_pct: 0.75\n"
+        "    asset_class: equity\n"
+        "  - ticker: SKHY\n"
+        "    target_pct: 0.75\n"
+        "    asset_class: equity\n"
+        "  - ticker: SPCX\n"
+        "    target_pct: 1.0\n"
+        "    asset_class: equity\n"
+        "  - ticker: ETH\n"
+        "    target_pct: 1.5\n"
+        "    asset_class: crypto\n"
         "caps:\n"
         "  clusters:\n"
         "    - name: semis\n"
@@ -138,10 +143,16 @@ def test_source_loading_reads_repository_state(tmp_repo: Path):
     assert {"AAPL", "SKHY", "NVDA", "ETH"} <= tickers
     assert m.margin.debt == 1590.4
     assert m.margin.buffer_pct == 63.12
-    assert m.crypto_sleeve_pct == 10.0
-    # roster tier resolved from targets.yaml
+    # Aggregate crypto sleeve retired by PHQ-2026-02 — canonical destination
+    # architecture gives BTC/ETH/SOL their own destination row instead, so
+    # targets.yaml carries no `crypto:` block and this stays None.
+    assert m.crypto_sleeve_pct is None
+    # Per-name tier retired by PHQ-2026-02 — the canonical destination schema
+    # has no tier concept (allocate.build_roster() returns only target_pct/
+    # asset_class per row), so this proves the dashboard reflects that
+    # absence rather than resolving a stale or fabricated tier label.
     nvda = next(h for h in m.holdings if h.ticker == "NVDA")
-    assert nvda.tier == "T1"
+    assert nvda.tier is None
 
 
 def test_missing_yaml_degrades_with_warning(tmp_repo: Path):
