@@ -3785,3 +3785,91 @@ workstreams:
       authority; it does not originate it.
     supersedes: null
     superseded_by: null
+  - id: WS-0009
+    title: SKHY/SPCX zero-based disposition — manual exit authorization and pending factual sync
+    objective: >
+      Record the principal-approved SKHY/SPCX disposition policy
+      (PHQ-2026-03: no canonical target, manual exit authorized by the
+      principal, proceeds to cash pending a live allocation check, SPCX
+      remains a research candidate only under its existing hold_no_add gate,
+      SKHY remains a watchlist name only) and track the separate, future
+      factual-synchronization unit that must follow once the principal
+      supplies verified post-trade evidence. This workstream does not itself
+      perform any execution or repository mutation of holdings.yaml,
+      targets.yaml, or gates.yaml.
+    governing_authority:
+      - governance/decisions/PHQ-2026-03-skhy-spcx-zero-based-disposition-manual-exit-authorization.md
+      - governance/decisions/PHQ-2026-01-canonical-architecture-and-transition-policy-approval.md
+      - governance/decisions/PHQ-2026-02-holdings-reconciliation-and-actionable-allocation-policy.md
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
+      - governance/decisions/GOV-0001-governance-architecture-adopted.md
+      - governance/decisions/GOV-0002-operational-precedence-hierarchy.md
+    status: proposed
+    priority: secondary
+    dependencies: []
+    authorized_scope: >
+      Exactly what governance/decisions/PHQ-2026-03-skhy-spcx-zero-based-disposition-manual-exit-authorization.md
+      authorizes: filing that decision record itself, this register entry,
+      the governance/decisions.yaml index row, and the CLAUDE.md Decisions
+      Log pointer. No holdings.yaml, targets.yaml, or gates.yaml mutation is
+      authorized by this entry.
+    prohibited_scope: >
+      Any holdings.yaml, targets.yaml, or gates.yaml mutation before
+      verified post-trade evidence exists; any order placement, staging,
+      submission, or brokerage-account mutation of any kind; any brokerage
+      account, position, or order endpoint access; any margin use; any
+      unrelated target/tier/cluster/cap change; any change to PR #199 or its
+      branch; any WS-0005 work.
+    milestones:
+      - gate: governance-pr-drafted
+        description: >
+          PHQ-2026-03 filed, governance/decisions.yaml and the CLAUDE.md
+          Decisions Log pointer updated, this register entry added. Opened
+          as a draft PR; not merged, not independently reviewed, not
+          principal-accepted in this session. holdings.yaml, targets.yaml,
+          and gates.yaml confirmed byte-identical to origin/main.
+        pr: 204
+        status: drafted
+        date: "2026-07-31"
+    evidence_refs:
+      - governance/decisions/PHQ-2026-03-skhy-spcx-zero-based-disposition-manual-exit-authorization.md
+    next_action: >
+      Await principal manual execution of any SKHY/SPCX exit in Robinhood
+      and supply of verified post-trade evidence (execution date, final
+      quantities, transaction confirmation or equivalent, resulting cash
+      balance, explicit confirmation no margin was used). Once supplied, a
+      separate future factual-synchronization decision and PR updates
+      holdings.yaml to the verified post-trade state, retires the SPCX
+      gates.yaml/targets.yaml entries only if the position is actually gone,
+      and preserves any proceeds as cash pending a live, credentialed
+      python allocate.py --review run. Until then, this workstream's own
+      completion criterion is limited to the governance PR itself reaching
+      independent exact-head review, correction if needed, principal
+      acceptance, merge, and post-merge verification.
+    completion_criteria: >
+      This workstream entry's own scope is complete once the governance PR
+      merges after independent review, correction if needed, exact-head
+      re-review, principal acceptance, and post-merge verification. The
+      pending factual-synchronization unit is separate, future work, gated
+      on external principal execution and evidence this repository does not
+      control, and is not required for this workstream's own completion.
+    blocker: >
+      None for this workstream's own scope. The future
+      factual-synchronization unit is blocked on external principal manual
+      execution and verified post-trade evidence, neither of which exists
+      yet — disclosed, not fabricated.
+    active_branch: claude/skhy-spcx-disposition-governance
+    active_pr: 204
+    last_verified_main_sha: 54b0b5b330af1ebbbd6ec51509512d6589dff03a
+    last_verified_date: "2026-07-31"
+    authorized_by: >
+      governance/decisions/PHQ-2026-03-skhy-spcx-zero-based-disposition-manual-exit-authorization.md
+      (principal approval quoted verbatim there) — not yet merged (draft PR
+      #204). Per OPS-0001's rule that a session may not self-authorize a
+      workstream to authorized status while its governing decision remains
+      unmerged, this entry is filed at status: proposed, matching this
+      repository's own WS-0007 precedent (OPS-0011), to be synchronized to
+      its actual status only after independent review, principal
+      acceptance, and merge.
+    supersedes: null
+    superseded_by: null
