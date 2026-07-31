@@ -61,7 +61,6 @@ destination:
   - {ticker: PWR,   target_pct: 1.25, asset_class: equity}
   - {ticker: RTX,   target_pct: 0.75, asset_class: equity}
   - {ticker: RKLB,  target_pct: 0.50, asset_class: equity}   # gated — see gates.yaml
-  - {ticker: SPCX,  target_pct: 0.75, asset_class: equity}   # gated hold/no-add — see gates.yaml
   - {ticker: TSLA,  target_pct: 0.50, asset_class: equity}   # gated — see gates.yaml
   - {ticker: SPY,   target_pct: 15.00, asset_class: fund}
   - {ticker: VEA,   target_pct: 7.00, asset_class: fund}
@@ -72,12 +71,19 @@ destination:
   - {ticker: BTC,   target_pct: 2.00, asset_class: crypto}
   - {ticker: ETH,   target_pct: 1.50, asset_class: crypto}
   - {ticker: SOL,   target_pct: 0.50, asset_class: crypto}
-  # Sums to exactly 100.00% (verified: governance/evidence/PHQ-2026-02/).
+  # Summed to exactly 100.00% at PHQ-2026-02 (verified:
+  # governance/evidence/PHQ-2026-02/). PHQ-2026-04 (2026-07-31) removed
+  # SPCX's row (0.75%) after its verified manual exit, per PHQ-2026-03's
+  # explicit no-renormalization instruction — sum is now 99.25%, not
+  # renormalized or redistributed to any other row; the 0.75% gap is
+  # unallocated (ordinary cash), not reassigned.
 
-# SKHY (0.278473 sh, live holding per holdings.yaml) deliberately has no row
-# here — PHQ-2026-01/PHQ-2026-02 leave it unresolved (see gates.yaml,
-# CLAUDE.md Open Items). It is never a buy/trim/exit candidate and is
-# reported UNRESOLVED, not silently assigned a target.
+# SKHY deliberately has no row here — PHQ-2026-01/PHQ-2026-02 left it
+# unresolved (see gates.yaml, CLAUDE.md Open Items), and PHQ-2026-03/
+# PHQ-2026-04 (2026-07-31) assigned it no canonical target upon its verified
+# manual exit (SKHY no longer a holding per holdings.yaml). Per PHQ-2026-03,
+# SKHY remains a watchlist name only — reopening requires new research and a
+# separately approved role and target, not silent reassignment here.
 
 caps:
   # Correlated-cluster concentration caps carried forward unchanged from the

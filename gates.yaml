@@ -5,11 +5,13 @@
 # is NEVER bought while gated and is NEVER renormalized into any other name's
 # target — allocate.py's plan() simply excludes it from buy candidates, so
 # its dollars remain represented as ordinary account cash. Existing shares of
-# a gated name are held, not force-exited — SPCX is the only gated name with
-# an existing position (0.502727 sh) and this file does not authorize selling
-# it. Activating a gated name (moving it out of this file) requires its own
-# separate principal approval per name — this filing does not activate any of
-# the seven.
+# a gated name are held, not force-exited. Activating a gated name (moving it
+# out of this file) requires its own separate principal approval per name —
+# this filing does not activate any of the six below.
+#
+# SPCX was the only gated name with an existing position (0.502727 sh) at
+# PHQ-2026-02 — its gate entry was retired by PHQ-2026-04 (2026-07-31) after
+# a verified manual exit, not activated. See the note below the six entries.
 #
 # Membership, status, authority, and next_gate text below are transcribed
 # verbatim from
@@ -54,12 +56,14 @@ gates:
     allow_add: false
     holds_existing_shares: false
     next_gate: "Activate only under the accepted milestone framework and a fresh valuation review."
-  - ticker: SPCX
-    status: hold_no_add
-    authority: PHQ-2026-01
-    allow_add: false
-    holds_existing_shares: true    # 0.502727 sh per holdings.yaml — hold, not an exit
-    next_gate: "Require an accessible investable vehicle, reviewed terms, verified financial evidence, liquidity analysis, and principal approval."
+
+# SPCX's hold_no_add gate entry was retired by PHQ-2026-04 (2026-07-31) after
+# the principal's verified manual exit (0 sh remaining per holdings.yaml) —
+# per PHQ-2026-03, the governed position is fully gone, so this repository's
+# own "existing shares held, not force-exited" gate rationale no longer
+# applies. Per PHQ-2026-03, SPCX remains a research candidate only —
+# re-entry requires new investable-vehicle research, valuation, liquidity
+# analysis, and a separate principal approval, not silent reassignment here.
 
 # SKHY is deliberately NOT listed here. Its policy remains UNRESOLVED per
 # PHQ-2026-01/PHQ-2026-02 (CLAUDE.md Open Items) — this is a distinct
