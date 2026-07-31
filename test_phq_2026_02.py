@@ -77,13 +77,14 @@ def test_no_market_value_forced_reconciliation():
     (which does NOT equal qty * a round price, proving no value was invented
     to force reconciliation). The frozen v1.35 evidence CSV's own SPCX row is
     checked directly (unaffected by SPCX's later PHQ-2026-04 exit); the live
-    holdings.yaml spot-check uses AMZN instead of SPCX since SPCX is no
-    longer a holding post-exit."""
+    holdings.yaml spot-check uses ASML instead of AMZN/SPCX since AMZN's
+    quantity changed under PHQ-2026-05's later post-buy reconciliation and
+    SPCX is no longer a holding post-exit — ASML is untouched by either."""
     csv_text = (HERE / "governance/evidence/PHQ-2026-02/v1_35/"
                 "Portfolio_HQ_Post_Execution_Holdings_v1_35.csv").read_text()
     assert "SPCX,private/other,0.502727" in csv_text
     holdings = yaml.safe_load((HERE / "holdings.yaml").read_text())
-    assert holdings["shares"]["AMZN"] == 0.423377
+    assert holdings["shares"]["ASML"] == 0.083505
 
 
 # ── 2. canonical targets unaffected by gates; no renormalization ───────────

@@ -370,3 +370,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0009, PHQ-2026-01, PHQ-2026-02, PHQ-2026-03]
     supporting_artifact: governance/evidence/PHQ-2026-04/execution_facts.json
     file: governance/decisions/PHQ-2026-04-skhy-spcx-post-execution-factual-synchronization.md
+  - decision_id: PHQ-2026-05
+    date: 2026-07-31
+    status: Proposed
+    category: portfolio_construction_governance
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0009, PHQ-2026-01, PHQ-2026-02, PHQ-2026-04]
+    supporting_artifact: governance/evidence/PHQ-2026-05/v1_37/Portfolio_HQ_Final_Confirmed_Account_State_v1_37.json
+    file: governance/decisions/PHQ-2026-05-post-buy-quantity-reconciliation-v1-37.md

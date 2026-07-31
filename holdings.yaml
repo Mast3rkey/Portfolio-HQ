@@ -30,6 +30,26 @@
 # convention as above, not zeroed. Sale proceeds remain cash (resulting
 # cash $2,675.05 per evidence, not persisted in this schema); margin debt
 # confirmed $0.00 (unchanged from the existing 0.0 below).
+#
+# PHQ-2026-05 (2026-07-31): seven post-buy quantity updates reconciled from
+# the principal-supplied v1.37 "Final Confirmed Account State" package
+# (governance/evidence/PHQ-2026-05/v1_37/, SHA-256
+# 782f68284b92377ed396584a63c112f7835900ac18a2d117d85f62239da85ebd for the
+# JSON export) — AMZN/NVDA/TMO/SPY quantities updated, PWR/VEA/VWO added as
+# new share-tracked positions (all three already carried canonical
+# `targets.yaml` destination rows with zero prior shares). No new ticker,
+# target, cap, or gate is introduced — every changed/added symbol already
+# has an existing canonical row. SKHY/SPCX are deliberately NOT restored:
+# v1.37's SKHY/SPCX rows carry the exact pre-exit quantities and are treated
+# as stale relative to PHQ-2026-04's independently-evidenced 15:10-15:11
+# ET sale fills, per explicit principal direction reconciling the conflict
+# between the two evidence packages. v1.37's reported cash ($845.84) does
+# not reconcile against PHQ-2026-04's post-sale-only cash ($2,675.05) even
+# accounting for these buys — flagged as an open item for principal
+# re-verification, not resolved by this filing (see PHQ-2026-05's decision
+# record). Crypto (BTC/ETH/SOL) and all other equity/fund quantities are
+# unchanged and independently confirmed against v1.37 — dust
+# (BONK/PEPE/WIF/ZORA) remains permanently excluded, unchanged convention.
 margin:
   debt: 0.0
   # No displayed buffer % was captured in the v1.35 evidence (only
@@ -42,7 +62,7 @@ margin:
 holdings:
   {}
 shares:
-  AMZN: 0.423377
+  AMZN: 1.146551
   ASML: 0.083505
   AVGO: 0.375702
   CEG: 0.425616
@@ -57,13 +77,16 @@ shares:
   LLY: 0.179485
   META: 0.332674
   MSFT: 0.742767
-  NVDA: 0.986492
+  NVDA: 1.858992
   PANW: 0.137346
+  PWR: 0.116807
   RTX: 0.240403
-  SPY: 0.25105
-  TMO: 0.2038
+  SPY: 1.250856
+  TMO: 0.325606
   TSM: 0.520584
   V: 0.343424
+  VEA: 6.186296
+  VWO: 0.476555
 crypto_shares:
   BTC: 0.00180473
   ETH: 0.04574
