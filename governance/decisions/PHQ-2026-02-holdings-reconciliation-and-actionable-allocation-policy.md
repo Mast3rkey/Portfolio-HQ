@@ -139,16 +139,26 @@ under `governance/evidence/PHQ-2026-01/`.
 
 - `targets.yaml`, `holdings.yaml`, `allocate.py`, `levels.py` changed; two
   new config files (`gates.yaml`, `issuer_lookthrough.yaml`) added.
-- Pre-existing tests and standalone backtest scripts written against the
-  retired tiered/cluster/crypto-sleeve schema (`test_allocate_integration.py`,
-  `test_target_variants.py`, `test_plan_gates.py`, `test_margin.py`,
-  `test_margin_simulation.py`, `test_intelligence_report.py`, and
-  `backtest_regime.py`/`backtest_rungs.py`/`backtest_trims.py`/
-  `backtest_t1t2_trim.py`/`backtest_weights.py`) were **not** migrated in
-  this PR — out of scope for the smallest coherent implementation surface
-  this decision authorizes. This is a known, disclosed gap requiring its own
-  follow-up PR, not silently left unmentioned — see the implementing PR's
-  validation section for the exact current pass/fail count.
+- **Test migration status (corrected after the initial filing).** The three
+  pytest files whose fixtures constructed the retired tiered/cluster/
+  crypto-sleeve/T1T2 schema and whose tests actually failed in CI
+  (`test_allocate_integration.py`, `test_margin.py`, `test_plan_gates.py`)
+  have been migrated to the canonical `destination:` schema in this PR.
+  Still-governed behavior (gap ordering, trend/earnings gates, cluster-cap
+  clip/trim) was migrated in place; tests that exercised retired policy
+  (the aggregate crypto sleeve, T1/T2 proximity reporting, the T1/T2 1.5x
+  ceiling trim, the band/spec RSI-hot opportunistic trim) were replaced with
+  explicit tests proving that policy no longer fires, not carried forward as
+  passing tests of dead code paths. The full pytest suite passes with zero
+  failures at this PR's final head — see the implementing PR's validation
+  section for the exact count. The standalone backtest scripts
+  (`backtest_regime.py`/`backtest_rungs.py`/`backtest_trims.py`/
+  `backtest_t1t2_trim.py`/`backtest_weights.py`) are not part of the pytest
+  suite or CI and remain genuinely out of this PR's scope — they are
+  one-time historical-study tools (per CLAUDE.md's Decisions Log, each
+  already closed "no re-runs without a new regime in the data") that would
+  need their own separate schema-migration effort only if someone chose to
+  re-run one, which is not anticipated.
 - No trade or order is authorized. No margin increase is authorized. Manual
   Robinhood execution remains controlling.
 - Effective only on merge; this draft PR is not itself approval, merge, or
@@ -173,4 +183,6 @@ confirmation.
   Verified instead via synthetic-price focused tests and the existing full
   suite; a live run with real credentials is required before treating any
   specific dollar recommendation as current.
-- The test-suite migration gap noted under Consequences remains open.
+- The pytest-suite migration is complete as of this PR's final head (see
+  Consequences). The standalone backtest scripts noted there remain
+  unmigrated, disclosed, and genuinely out of scope.

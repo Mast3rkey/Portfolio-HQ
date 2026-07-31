@@ -3620,7 +3620,22 @@ workstreams:
           issuer_lookthrough.yaml/allocate.py/levels.py implemented, focused
           tests added and passing. Opened as a draft PR; not merged, not
           independently reviewed, not principal-accepted in this session.
-        pr: null
+        pr: 202
+        status: drafted
+        date: "2026-07-31"
+      - gate: bounded-author-correction-full-suite-passing
+        description: >
+          Follow-up correction pass on the same draft PR: migrated
+          test_allocate_integration.py/test_margin.py/test_plan_gates.py
+          (the three files GitHub CI run 30644347757 found failing, 51
+          failures) from the retired tiered/cluster/crypto-sleeve/T1T2
+          schema to the canonical destination schema. Still-governed
+          behavior migrated in place; tests of retired policy replaced with
+          explicit proof that policy no longer fires. Full pytest suite
+          passes with zero failures at this correction's head. Not merged,
+          not independently reviewed, not principal-accepted in this
+          session.
+        pr: 202
         status: drafted
         date: "2026-07-31"
     evidence_refs:
@@ -3629,11 +3644,13 @@ workstreams:
       - governance/evidence/PHQ-2026-02/reconciliation_check.json
     next_action: >
       Independent exact-head review of this draft PR by a reviewer who did
-      not author it, then explicit principal acceptance, then merge. A
-      known gap this workstream discloses rather than silently leaves
-      unmentioned: pre-existing tests and backtest scripts written against
-      the retired tiered/cluster/crypto-sleeve targets.yaml schema were not
-      migrated in this PR and require their own follow-up work.
+      not author it, then explicit principal acceptance, then merge. The
+      pytest suite (test_allocate_integration.py/test_margin.py/
+      test_plan_gates.py, the three files with actual CI failures) has been
+      migrated to the canonical destination schema in a bounded author
+      correction pass — full suite passes with zero failures at this PR's
+      final head. The standalone backtest scripts remain unmigrated,
+      disclosed, and out of scope (not part of the pytest suite or CI).
     completion_criteria: >
       Complete once this PR merges after independent review, correction if
       needed, exact-head re-review, principal acceptance, and post-merge
@@ -3646,7 +3663,7 @@ workstreams:
       authoritative allocation check could not be run against live current
       prices in this session — disclosed in the PR, not fabricated.
     active_branch: claude/phq-2026-02-holdings-allocation-implementation
-    active_pr: null
+    active_pr: 202
     last_verified_main_sha: 959916c4ab0410b37d72fd33d12621fad0e61ad4
     last_verified_date: "2026-07-31"
     authorized_by: >

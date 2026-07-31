@@ -20,12 +20,11 @@ from allocate import build_roster, margin_capacity, plan
 
 def _minimal_targets(margin_cfg):
     return {
-        "tiers": {"T1": {"weight_pct": 10.0, "tickers": ["ZZZ"]}},
+        "destination": [{"ticker": "ZZZ", "target_pct": 10.0, "asset_class": "equity"}],
         "caps": {"clusters": []},
         "gates": {"min_lot_dollars": 1, "trend_rsi_override": 30,
-                 "earnings_blackout_days": 7, "trim_rsi": 60, "t1t2_trim_mult": 100.0},
+                 "earnings_blackout_days": 7},
         "margin": margin_cfg,
-        "crypto": {},
     }
 
 
@@ -161,27 +160,26 @@ def test_already_over_cap_allows_nothing_more():
 
 
 # ── cluster caps mechanical trim (plan()) ───────────────────────────────────
+# PHQ-2026-02 migrated this fixture from the retired tiered schema to the
+# canonical `destination:` list — DDD/AAA/CCC/BBB carry the same target
+# weights the old T1/T2/T3/band tiers gave them (20/5/2/3%), now as plain
+# equity destination rows with no tier concept at all. The cluster-cap
+# mechanism itself is unchanged and remains fully governed.
 
-def _base_targets(semis_cluster_pct=10.0, extra_clusters=None, t1t2_trim_mult=100.0):
+def _base_targets(semis_cluster_pct=10.0, extra_clusters=None):
     return {
-        "tiers": {
-            "T1": {"weight_pct": 20.0, "tickers": ["DDD"]},
-            "T2": {"weight_pct": 5.0, "tickers": ["AAA"]},
-            "T3": {"weight_pct": 2.0, "tickers": ["CCC"]},
-            "band": {"weight_pct": 3.0, "cap_multiple": 1.25, "tickers": ["BBB"]},
-        },
+        "destination": [
+            {"ticker": "DDD", "target_pct": 20.0, "asset_class": "equity"},
+            {"ticker": "AAA", "target_pct": 5.0, "asset_class": "equity"},
+            {"ticker": "CCC", "target_pct": 2.0, "asset_class": "equity"},
+            {"ticker": "BBB", "target_pct": 3.0, "asset_class": "equity"},
+        ],
         "caps": {"clusters": [{"name": "semis", "pct": semis_cluster_pct,
                               "tickers": ["AAA", "BBB", "CCC"]}]
                              + (extra_clusters or [])},
-        # t1t2_trim_mult defaults high enough to stay out of the cluster-cap
-        # tests below (which use T1/T2 fixtures for unrelated reasons) — see
-        # the dedicated T1/T2 concentration-ceiling tests further down for
-        # coverage of that mechanism specifically.
         "gates": {"min_lot_dollars": 1, "trend_rsi_override": 30,
-                 "earnings_blackout_days": 7, "trim_rsi": 60,
-                 "t1t2_trim_mult": t1t2_trim_mult},
+                 "earnings_blackout_days": 7},
         "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
-        "crypto": {},
     }
 
 
@@ -196,14 +194,15 @@ def _flat_metrics(tickers, rsi=50):
 def test_semis_cluster_trim_largest_overweight_first_floored_at_own_target():
     targets = _base_targets(semis_cluster_pct=10.0)
     # T1 DDD isn't a semis ticker: at its own target, untouched.
-    # T2 AAA: target 5, current 30 -> overweight 25, no per-tier trim mechanism.
-    # band BBB: target 3, cap_multiple 1.25 -> overweight_limit 3.75; current 25
-    #   with RSI 70 fires the regular trim down to target (3), dollars=22.
-    # T3 CCC: target 2, current 25 -> overweight 23, no per-tier trim mechanism.
+    # AAA: target 5, current 30 -> overweight 25.
+    # BBB: target 3, current 25 -> overweight 22. PHQ-2026-02 retired the old
+    #   band tier's own opportunistic RSI trim (see test_plan_gates.py section
+    #   D) -- BBB's only path to being trimmed now is the cluster-cap
+    #   mechanism itself, same as AAA/CCC, regardless of RSI.
+    # CCC: target 2, current 25 -> overweight 23.
     holdings = {"AAA": 30.0, "BBB": 25.0, "CCC": 25.0, "DDD": 20.0}
     roster = build_roster(targets)
     metrics = _flat_metrics(["AAA", "BBB", "CCC", "DDD"])
-    metrics["BBB"]["rsi14"] = 70  # hot enough to fire the regular band trim
 
     result = plan(targets, holdings, roster, metrics, regime_ok=True,
                  regime_known=True, cash=0.0)
@@ -212,15 +211,15 @@ def test_semis_cluster_trim_largest_overweight_first_floored_at_own_target():
     trims_by_ticker = {t["ticker"]: t for t in result["trims"]}
     assert set(trims_by_ticker) == {"AAA", "BBB", "CCC"}
 
-    assert trims_by_ticker["BBB"]["dollars"] == 22.0
-    assert "RSI" in trims_by_ticker["BBB"]["reason"]
-
-    # AAA (overweight 25) ranked ahead of CCC (overweight 23) -> AAA fully
-    # trimmed to its own target first, cluster settles exactly at the 10 cap.
+    # AAA (overweight 25) ranked ahead of CCC (23) ranked ahead of BBB (22) —
+    # all three trimmed largest-overweight-first via the cluster cap alone,
+    # each floored at its own target, cluster settles exactly at the 10 cap.
     assert trims_by_ticker["AAA"]["dollars"] == 25.0
     assert trims_by_ticker["CCC"]["dollars"] == 23.0
+    assert trims_by_ticker["BBB"]["dollars"] == 22.0
     assert "semis cluster cap" in trims_by_ticker["AAA"]["reason"]
     assert "semis cluster cap" in trims_by_ticker["CCC"]["reason"]
+    assert "semis cluster cap" in trims_by_ticker["BBB"]["reason"]
 
     assert _cluster_value(result, "semis") == 10.0  # exactly at cap, nothing left over
 
@@ -299,21 +298,24 @@ def test_ticker_in_two_clusters_blocked_by_either():
     assert buys_by_ticker["AAA"]["dollars"] == 4.0   # clipped by the tighter "power" cap, not semis
 
 
-# ── T1/T2 concentration ceiling (2026-07-15 doctrine decision) ──────────────
-# Mechanical, no RSI gate, floored at target — same treatment as the cluster
-# caps, but per-name rather than per-cluster. Not a return-timing call: see
-# reports/t1t2_trim_backtest.md (NVDA decomposition) and the Decisions Log.
+# ── T1/T2 concentration ceiling — retired 2026-07-31 (PHQ-2026-02) ─────────
+# Formerly: any T1/T2 destination row above 1.5x its own tier target trimmed
+# mechanically to target, no RSI gate (`gates.t1t2_trim_mult`). Defined
+# entirely in terms of the T1/T2 tiers the canonical destination architecture
+# removed; the ceiling itself and its `t1t2_proximity` reporting are both
+# gone, and PHQ-2026-02 does not invent an equivalent per-name concentration
+# rule in their place (see the governance filing's "Retired by this
+# migration" section). These tests now prove the retirement: a destination
+# row at any multiple of its own target, in no correlated cluster, is never
+# mechanically trimmed by anything other than the (unrelated, still-governed)
+# cluster-cap mechanism covered above.
 
-# book = cash + sum(holdings); target_dollars = book * weight_pct/100 -- NOT
-# normalized against a fixed "book=100" unless the numbers are set up for it.
-# AAA/BBB/CCC held at 0 in these fixtures (cash makes up the rest of book) so
-# DDD (T1, weight 20%) is the only thing moving the T1/T2 ceiling logic.
-
-def test_t1_name_over_ceiling_trims_to_target_no_rsi_gate():
-    targets = _base_targets(t1t2_trim_mult=1.5)
-    # book=100 (cash 65 + DDD 35) -> DDD target=20, current=35 -> 1.75x, over
-    # the 1.5x ceiling. RSI deliberately low (30) to prove this trim ignores
-    # RSI entirely, unlike the band/spec opportunistic trim.
+def test_massively_over_target_name_outside_any_cluster_is_never_trimmed():
+    targets = _base_targets()
+    # book=100 (cash 65 + DDD 35) -> DDD target=20, current=35 -> 1.75x its
+    # own target. DDD is in no cluster in this fixture. Under the retired
+    # T1/T2 ceiling this would have trimmed at >1.5x; under the canonical
+    # architecture nothing trims it.
     holdings = {"AAA": 0.0, "BBB": 0.0, "CCC": 0.0, "DDD": 35.0}
     roster = build_roster(targets)
     metrics = _flat_metrics(["AAA", "BBB", "CCC", "DDD"], rsi=30)
@@ -321,35 +323,16 @@ def test_t1_name_over_ceiling_trims_to_target_no_rsi_gate():
     result = plan(targets, holdings, roster, metrics, regime_ok=True,
                  regime_known=True, cash=65.0)
 
-    trims_by_ticker = {t["ticker"]: t for t in result["trims"]}
-    assert set(trims_by_ticker) == {"DDD"}
-    assert trims_by_ticker["DDD"]["dollars"] == 15.0     # trimmed to target (20), not to 1.5x (30)
-    assert "T1/T2 concentration ceiling" in trims_by_ticker["DDD"]["reason"]
+    assert not any(t["ticker"] == "DDD" for t in result["trims"])
 
 
-def test_t2_name_under_ceiling_generates_no_trim():
-    targets = _base_targets(t1t2_trim_mult=1.5)
-    # book=100 (cash 72 + DDD 28) -> DDD target=20, current=28 -> 1.4x, under
-    # the 1.5x ceiling.
-    holdings = {"AAA": 0.0, "BBB": 0.0, "CCC": 0.0, "DDD": 28.0}
+def test_result_carries_no_t1t2_proximity_key():
+    targets = _base_targets()
+    holdings = {"AAA": 0.0, "BBB": 0.0, "CCC": 0.0, "DDD": 35.0}
     roster = build_roster(targets)
     metrics = _flat_metrics(["AAA", "BBB", "CCC", "DDD"])
 
     result = plan(targets, holdings, roster, metrics, regime_ok=True,
-                 regime_known=True, cash=72.0)
+                 regime_known=True, cash=65.0)
 
-    assert result["trims"] == []
-
-
-def test_t1t2_ceiling_exactly_at_threshold_not_trimmed():
-    targets = _base_targets(t1t2_trim_mult=1.5)
-    # book=100 (cash 70 + DDD 30) -> DDD target=20, current=30 -> exactly
-    # 1.5x -- boundary, not "over".
-    holdings = {"AAA": 0.0, "BBB": 0.0, "CCC": 0.0, "DDD": 30.0}
-    roster = build_roster(targets)
-    metrics = _flat_metrics(["AAA", "BBB", "CCC", "DDD"])
-
-    result = plan(targets, holdings, roster, metrics, regime_ok=True,
-                 regime_known=True, cash=70.0)
-
-    assert result["trims"] == []
+    assert "t1t2_proximity" not in result
