@@ -3455,8 +3455,12 @@ workstreams:
       repository-native read-only dashboard capability; one canonical
       generator and one supported master HTML interface; static standalone
       HTML generated from structured repository sources plus local git
-      metadata; an optional local-only server bound to 127.0.0.1 by
-      default; commit/branch/dirty-worktree/effective-date/input-file
+      metadata; an optional local server authorized only when bound to the
+      loopback interface 127.0.0.1, with binding to 0.0.0.0, a LAN address,
+      or any other externally reachable interface not authorized as a
+      default, an option, or a configurable setting (an authorization
+      boundary, not a default preference, per OPS-0011 sections 2.4 and 5);
+      commit/branch/dirty-worktree/effective-date/input-file
       provenance display; prominent stale/missing/incomplete-state
       warnings; disclosure or abstention when current allocation truth is
       unavailable; historical HTML treated as archive evidence only, never
