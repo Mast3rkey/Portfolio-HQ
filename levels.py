@@ -113,12 +113,14 @@ def run_levels(targets: dict, client, only_ticker: str | None = None) -> str:
 
     cfg = targets.get("levels", {}) or {}
     gates = targets.get("gates", {}) or {}
-    crypto_cfg = targets.get("crypto", {}) or {}
-    cg_ids = crypto_cfg.get("coingecko_ids", {}) or {}
+    cg_ids = {}   # no live coingecko-id config in the canonical v1.30 schema
 
     roster = build_roster(targets)
-    equities = sorted(roster)
-    cryptos = [c.upper() for c in crypto_cfg.get("coins", [])]
+    # RESERVE/CASH are non-market synthetic sleeves (PHQ-2026-02) — never
+    # fetch bars for them.
+    equities = sorted(tk for tk, meta in roster.items()
+                      if meta["asset_class"] not in ("crypto", "reserve", "cash"))
+    cryptos = sorted(tk for tk, meta in roster.items() if meta["asset_class"] == "crypto")
     if only_ticker:
         t = only_ticker.upper()
         equities = [x for x in equities if x == t]
