@@ -377,3 +377,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0009, PHQ-2026-01, PHQ-2026-02, PHQ-2026-04]
     supporting_artifact: governance/evidence/PHQ-2026-05/v1_37/Portfolio_HQ_Final_Confirmed_Account_State_v1_37.json
     file: governance/decisions/PHQ-2026-05-post-buy-quantity-reconciliation-v1-37.md
+  - decision_id: PI-0035
+    date: 2026-07-31
+    status: Proposed
+    category: portfolio_intelligence
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0005, PI-0011, PI-0013, PI-0014, PI-0016, PI-0027, PI-0031, PI-0032, PI-0033, PHQ-2026-01, PHQ-2026-02]
+    supporting_artifact: null
+    file: governance/decisions/PI-0035-ws0005-milestone3-roster-reconciliation-and-gated-name-disposition.md
