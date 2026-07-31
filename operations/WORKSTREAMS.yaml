@@ -3700,9 +3700,10 @@ workstreams:
           3de8330cdb1266faff745feb1d3d2710ee2bd8e3 (merged_by Mast3rkey,
           2026-07-31T17:16:25Z) — the merge commit's tree is byte-identical
           to reviewed head 05ddfbbd. Under this repository's established
-          convention (the PR #171/Batch 6 CLAUDE.md precedent), an
-          exact-head merge performed by the PR-owning principal account
-          with no intervening commits after the exact-head re-review is the
+          convention (this register's own WS-0005 entry, Batch 6/PR #171
+          precedent), an exact-head merge performed by the PR-owning
+          principal account with no intervening commits after the
+          exact-head re-review is the
           retained repository evidence of principal acceptance; no separate
           verbatim acceptance comment exists on this PR beyond that
           convention, and none is claimed here. Post-merge verification
@@ -3777,10 +3778,10 @@ workstreams:
       PRINCIPAL ACCEPTANCE AND MERGE GATING AT EXACT HEAD) and the
       exact-head merge performed by merged_by Mast3rkey with no intervening
       commits — this repository's retained evidence of principal acceptance
-      under its established convention (the PR #171/Batch 6 CLAUDE.md
-      precedent); merge metadata by itself does not independently preserve
-      a separate verbatim acceptance statement, and none is claimed here
-      beyond that convention. This entry cites that authority; it does not
-      originate it.
+      under its established convention (this register's own WS-0005 entry,
+      Batch 6/PR #171 precedent); merge metadata by itself does not
+      independently preserve a separate verbatim acceptance statement, and
+      none is claimed here beyond that convention. This entry cites that
+      authority; it does not originate it.
     supersedes: null
     superseded_by: null
