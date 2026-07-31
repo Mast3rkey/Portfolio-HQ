@@ -13,3 +13,8 @@ results/
 !docs/results/
 !docs/results/**
 logs/
+
+# Generated dashboard HTML — regenerated on every run from repository state via
+# `python -m portfolio_hq.dashboard build`; never a source of truth, never
+# committed (portfolio_hq/ generator + assets ARE committed source).
+reports/generated/
