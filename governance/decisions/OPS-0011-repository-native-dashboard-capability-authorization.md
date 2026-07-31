@@ -9,11 +9,15 @@ supporting_artifact: null
 
 ## Context
 
-An independent review of draft PR #199 ("feat: repository-native Portfolio-HQ
-dashboard (read-only)") found the implementation technically sound but
-**lacking prior repository authority**. That finding is the reason this
-decision exists. The implementation is not the problem; the missing
-authorization is.
+Reported to this filing session by the principal, and **not seen, verified,
+reproduced, or retained here**, an independent review of draft PR #199 ("feat:
+repository-native Portfolio-HQ dashboard (read-only)") is said to have
+identified a **missing repository authorization** for the dashboard
+capability. **This filing takes no position on that implementation's technical
+quality** — it neither endorses nor disputes it, and nothing in this decision
+may be cited as a finding about PR #199's code. The gap this decision closes is
+the missing capability authorization, not any judgment about PR #199's
+implementation.
 
 ### Preflight (independently verified this session, not assumed)
 
@@ -142,9 +146,12 @@ exactly these properties:
 3. **Static standalone HTML generation from structured repository sources** —
    YAML, JSON, CSV, and committed Markdown already in the repository, plus
    local `git` metadata. Structured sources only.
-4. **An optional local-only server, bound to `127.0.0.1` by default**, serving
-   the same render. Never bound to `0.0.0.0` or any externally reachable
-   interface by default; GET-only; mutating HTTP methods rejected.
+4. **An optional local server, authorized only when bound to the loopback
+   interface, `127.0.0.1`**, serving the same render. **Binding to `0.0.0.0`,
+   a LAN address, or any other externally reachable interface is not
+   authorized** — not as a default, not as an option, and not as a
+   configurable setting. Loopback is the boundary of the grant, not a
+   preference within it. GET-only; mutating HTTP methods rejected.
 5. **Read-only presentation of repository truth.** The capability derives no
    new portfolio fact, reuses existing production functions through their
    public API rather than duplicating governed calculations, and writes no
@@ -231,6 +238,10 @@ The authorized capability, and the implementation PR delivering it, must not:
   trim, buffer, or leverage logic) in the generator, template, or JavaScript;
 - depend on external analytics or any required CDN, remote font, remote
   stylesheet, remote script, or network call of any kind;
+- bind its optional server to anything other than the loopback interface
+  `127.0.0.1` — `0.0.0.0`, a LAN address, and every other externally reachable
+  interface are outside this grant entirely, whether offered as a default, an
+  option, a flag, or a configurable setting (§2.4);
 - treat generated HTML as repository authority;
 - parse historical HTML as current state;
 - fabricate a missing measurement;
@@ -280,8 +291,16 @@ Because this governance PR is **unmerged at filing time**, and because
 `authorized` status, the entry is filed at **`status: proposed`**,
 `priority: secondary` (WS-0005 retains the sole `priority: primary` slot, per
 `OPS-0001`'s at-most-one-primary rule), with `authorized_scope` stated as
-*conditional on this decision's merge* and `active_pr` recording **PR #199 as
-the candidate implementation PR, explicitly not approved.**
+*conditional on this decision's merge*.
+
+**The filed `WS-0007` entry records PR #200 — this governance PR — as the
+active governance PR (`active_pr: 200`), for as long as this authorization
+filing is live. Draft PR #199 is recorded separately, in the dedicated
+candidate-implementation milestone, and remains explicitly unapproved.** The
+register therefore does not treat PR #199 as the active authorized PR, and
+`active_pr` is not to be repointed at it: `OPS-0001` reserves `active_branch`/
+`active_pr` for currently-live work under this entry's own authority, which
+until merge is this governance filing itself.
 
 **Post-merge synchronization required** (one continuous step, performed
 immediately by the merging session per `OPS-0009` §9): flip `WS-0007` to
