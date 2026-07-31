@@ -56,10 +56,14 @@ def test_v135_quantities_reconciled_exactly():
     assert len(matched) == 27   # 24 equity/fund + SPCX + BTC/ETH/SOL
 
 
-def test_spcx_and_skhy_exact_quantities():
+def test_spcx_and_skhy_pre_exit_quantities_retained_as_evidence():
+    """SPCX/SKHY's PHQ-2026-02 reconciled quantities (0.502727 / 0.278473)
+    are frozen historical evidence, not live holdings.yaml facts, following
+    PHQ-2026-04's factual sync of the principal's verified manual exit of
+    both names (see governance/decisions/PHQ-2026-04-skhy-spcx-post-execution-factual-synchronization.md)."""
     holdings = yaml.safe_load((HERE / "holdings.yaml").read_text())
-    assert holdings["shares"]["SPCX"] == 0.502727
-    assert holdings["shares"]["SKHY"] == 0.278473
+    assert "SPCX" not in holdings["shares"]
+    assert "SKHY" not in holdings["shares"]
 
 
 def test_cash_and_zero_margin_state():
@@ -71,12 +75,15 @@ def test_no_market_value_forced_reconciliation():
     """Quantities, not screenshot market values, are what was written into
     holdings.yaml — spot-check one row against its own reference market value
     (which does NOT equal qty * a round price, proving no value was invented
-    to force reconciliation)."""
+    to force reconciliation). The frozen v1.35 evidence CSV's own SPCX row is
+    checked directly (unaffected by SPCX's later PHQ-2026-04 exit); the live
+    holdings.yaml spot-check uses AMZN instead of SPCX since SPCX is no
+    longer a holding post-exit."""
     csv_text = (HERE / "governance/evidence/PHQ-2026-02/v1_35/"
                 "Portfolio_HQ_Post_Execution_Holdings_v1_35.csv").read_text()
     assert "SPCX,private/other,0.502727" in csv_text
     holdings = yaml.safe_load((HERE / "holdings.yaml").read_text())
-    assert holdings["shares"]["SPCX"] == 0.502727
+    assert holdings["shares"]["AMZN"] == 0.423377
 
 
 # ── 2. canonical targets unaffected by gates; no renormalization ───────────
@@ -115,7 +122,8 @@ def test_gated_capital_remains_cash(targets, roster, gates_cfg, lookthrough):
                  gates_cfg=gates_cfg, lookthrough=lookthrough)
     gated_tickers = {r["ticker"] for r in result["no_add_gated"]}
     assert gated_tickers == set(gates_cfg)
-    # none of the 7 gated names ever appears as a BUY
+    # none of the gated names ever appears as a BUY (6 post PHQ-2026-04's
+    # retirement of SPCX's gate after its verified exit -- originally 7)
     assert not ({b["ticker"] for b in result["buys"]} & gated_tickers)
     # deployable cash is unaffected by gating (no phantom spend on gated names)
     assert result["cash"] == 1000.0
@@ -251,15 +259,14 @@ def test_current_measurement_disclosed_alongside_retained(targets, roster, lookt
 
 # ── 5. SPCX and SKHY ─────────────────────────────────────────────────────────
 
-def test_spcx_hold_no_add(targets, roster, gates_cfg, lookthrough):
-    metrics = _flat_metrics(roster)
-    holdings = {"SPCX": 56.0}   # existing position, per reconciled holdings.yaml
-    result = plan(targets, holdings, roster, metrics, True, True, cash=1000.0,
-                 gates_cfg=gates_cfg, lookthrough=lookthrough)
-    spcx_gate = next(r for r in result["no_add_gated"] if r["ticker"] == "SPCX")
-    assert spcx_gate["holds_existing_shares"] is True
-    assert not any(b["ticker"] == "SPCX" for b in result["buys"])
-    assert not any(t["ticker"] == "SPCX" for t in result["trims"])   # not an automatic exit
+def test_spcx_fully_exited_no_target_no_gate(targets, roster, gates_cfg):
+    """Replaces the historical test_spcx_hold_no_add, which tested SPCX's
+    pre-exit held/gated state. PHQ-2026-04 retired SPCX's targets.yaml row
+    and gates.yaml hold_no_add entry after the principal's verified manual
+    exit (0 sh remaining) — SPCX is no longer a canonical target or a gated
+    name."""
+    assert "SPCX" not in roster
+    assert "SPCX" not in gates_cfg
 
 
 def test_skhy_unresolved(targets, roster, gates_cfg, lookthrough):
@@ -463,20 +470,23 @@ def test_gated_ticker_in_cluster_is_never_trimmed():
     assert any(t["ticker"] == "NORM" for t in result["trims"])
 
 
-def test_spcx_specifically_cannot_be_mechanically_trimmed_via_cluster(targets, gates_cfg, lookthrough):
-    """Uses the real, production targets.yaml/gates.yaml: SPCX is not
-    currently a member of any cluster, but this proves the guard holds even
-    if a future edit mistakenly adds it to one."""
+def test_gated_production_ticker_cannot_be_mechanically_trimmed_via_cluster(targets, gates_cfg, lookthrough):
+    """Uses the real, production targets.yaml/gates.yaml. SNPS (still gated,
+    still carries a real destination row) is not currently a member of any
+    cluster, but this proves the guard holds even if a future edit
+    mistakenly adds a gated name to one. Formerly used SPCX for this —
+    PHQ-2026-04 removed SPCX's own destination row after its verified exit,
+    so SPCX can no longer serve as this test's subject."""
     mutated = json.loads(json.dumps(targets))   # deep copy, safe to mutate
     mutated["caps"]["clusters"].append(
-        {"name": "misconfigured_test_cluster", "pct": 0.01, "tickers": ["SPCX"]})
+        {"name": "misconfigured_test_cluster", "pct": 0.01, "tickers": ["SNPS"]})
     roster = build_roster(mutated)
-    holdings = {"SPCX": 5000.0}   # wildly overweight vs. any real target
-    metrics = _flat_metrics(["SPCX"])
+    holdings = {"SNPS": 5000.0}   # wildly overweight vs. any real target
+    metrics = _flat_metrics(["SNPS"])
     result = plan(mutated, holdings, roster, metrics, True, True, cash=0.0,
                  gates_cfg=gates_cfg, lookthrough=lookthrough)
 
-    assert not any(t["ticker"] == "SPCX" for t in result["trims"])
+    assert not any(t["ticker"] == "SNPS" for t in result["trims"])
 
 
 def test_cash_in_cluster_is_never_trimmed():
@@ -686,8 +696,9 @@ def test_invalid_row_error_identifies_the_offending_row():
 
 
 def test_real_targets_yaml_passes_all_validation(targets):
-    # The accepted 37-row canonical v1.30 config itself must validate
+    # The canonical v1.30 config (36 rows post PHQ-2026-04's removal of
+    # SPCX's row after its verified exit -- originally 37) must validate
     # cleanly -- proves the new validation doesn't reject legitimate,
     # already-approved destination rows.
     roster = build_roster(targets)
-    assert len(roster) == 37
+    assert len(roster) == 36

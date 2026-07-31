@@ -20,12 +20,16 @@
 # equity/crypto list — the 41 tickers previously tracked here and absent from
 # that evidence were fully exited by the manual transition trades and are
 # removed rather than zeroed, per this repository's existing zero-position
-# convention (see CLAUDE.md's BTC 2026-07-13 precedent). SKHY (0.278473) is
-# retained as a factual holding — it carries no canonical target under
-# PHQ-2026-02 and its policy disposition remains UNRESOLVED (see targets.yaml,
-# gates.yaml). SPCX (0.502727) is retained — gated hold/no-add, not an exit.
+# convention (see CLAUDE.md's BTC 2026-07-13 precedent).
 # Dust crypto (BONK/PEPE/WIF/ZORA, $0.00 mark) is excluded from
 # crypto_shares, unchanged from the existing permanent-ignore convention.
+#
+# PHQ-2026-04 (2026-07-31): SKHY and SPCX manually exited by the principal
+# (PHQ-2026-03 authorization) and removed here per verified post-trade
+# evidence (governance/evidence/PHQ-2026-04/) — same zero-position removal
+# convention as above, not zeroed. Sale proceeds remain cash (resulting
+# cash $2,675.05 per evidence, not persisted in this schema); margin debt
+# confirmed $0.00 (unchanged from the existing 0.0 below).
 margin:
   debt: 0.0
   # No displayed buffer % was captured in the v1.35 evidence (only
@@ -56,8 +60,6 @@ shares:
   NVDA: 0.986492
   PANW: 0.137346
   RTX: 0.240403
-  SKHY: 0.278473
-  SPCX: 0.502727
   SPY: 0.25105
   TMO: 0.2038
   TSM: 0.520584
