@@ -1,0 +1,38 @@
+{
+  "decision": "PHQ-2026-04",
+  "provenance": "Principal-supplied Robinhood screenshots reviewed during the factual-sync session; screenshots not retained in the repository.",
+  "screenshots_retained": false,
+  "trades": [
+    {
+      "symbol": "SKHY",
+      "status": "Filled",
+      "side": "Sell",
+      "order_type": "Market",
+      "quantity": 0.278473,
+      "qty_filled": 0.278473,
+      "avg_fill_price_usd": 147.02,
+      "filled_notional_usd": 40.94,
+      "submitted_at": "2026-07-31T15:11:27",
+      "post_trade_quantity": 0,
+      "post_trade_quantity_basis": "absent from Positions screenshot's Equities list"
+    },
+    {
+      "symbol": "SPCX",
+      "status": "Filled",
+      "side": "Sell",
+      "order_type": "Market",
+      "quantity": 0.502727,
+      "qty_filled": 0.502727,
+      "avg_fill_price_usd": 107.94,
+      "filled_notional_usd": 54.27,
+      "submitted_at": "2026-07-31T15:10:57",
+      "post_trade_quantity": 0,
+      "post_trade_quantity_basis": "absent from Positions screenshot's Equities list"
+    }
+  ],
+  "post_trade_account": {
+    "cash_usd": 2675.05,
+    "margin_used_usd": 0.0
+  },
+  "connected_data_reconciliation": "not performed this session; pending as a follow-up, not a blocker"
+}

@@ -1,0 +1,72 @@
+# gates.yaml — actionable gates, represented separately from targets.yaml
+# per PHQ-2026-02 (governance/decisions/PHQ-2026-02-holdings-reconciliation-and-actionable-allocation-policy.md).
+#
+# A gated ticker's target capital (its row in targets.yaml's `destination:`)
+# is NEVER bought while gated and is NEVER renormalized into any other name's
+# target — allocate.py's plan() simply excludes it from buy candidates, so
+# its dollars remain represented as ordinary account cash. Existing shares of
+# a gated name are held, not force-exited. Activating a gated name (moving it
+# out of this file) requires its own separate principal approval per name —
+# this filing does not activate any of the six below.
+#
+# SPCX was the only gated name with an existing position (0.502727 sh) at
+# PHQ-2026-02 — its gate entry was retired by PHQ-2026-04 (2026-07-31) after
+# a verified manual exit, not activated. See the note below the six entries.
+#
+# Membership, status, authority, and next_gate text below are transcribed
+# verbatim from
+# governance/evidence/PHQ-2026-01/final_due_diligence/Portfolio_HQ_Gated_Name_Disposition_v1_32.csv
+# (retained under governance/evidence/PHQ-2026-01/) — no gate criterion here
+# was invented.
+
+gates:
+  - ticker: SNPS
+    status: cash_pending_clearance
+    authority: PHQ-2026-01
+    allow_add: false
+    holds_existing_shares: false
+    next_gate: "Review after September 30, 2026 Investor Day and a fresh normalized valuation model."
+  - ticker: ICE
+    status: cash_pending_clearance
+    authority: PHQ-2026-01
+    allow_add: false
+    holds_existing_shares: false
+    next_gate: "Review official Q2 package and transaction financing/integration assumptions before initiation."
+  - ticker: SPGI
+    status: cash_pending_clearance
+    authority: PHQ-2026-01
+    allow_add: false
+    holds_existing_shares: false
+    next_gate: "Review one clean post-spin quarter and normalized SPGI-versus-MSCI valuation, leverage, and growth comparison."
+  - ticker: WM
+    status: cash_pending_clearance
+    authority: PHQ-2026-01
+    allow_add: false
+    holds_existing_shares: false
+    next_gate: "Retrieve and model the complete Q2 2026 earnings package and update valuation."
+  - ticker: RKLB
+    status: cash_pending_clearance
+    authority: PHQ-2026-01
+    allow_add: false
+    holds_existing_shares: false
+    next_gate: "Require Q2 results plus a defined Neutron technical milestone before activation."
+  - ticker: TSLA
+    status: cash_pending_clearance
+    authority: PHQ-2026-01
+    allow_add: false
+    holds_existing_shares: false
+    next_gate: "Activate only under the accepted milestone framework and a fresh valuation review."
+
+# SPCX's hold_no_add gate entry was retired by PHQ-2026-04 (2026-07-31) after
+# the principal's verified manual exit (0 sh remaining per holdings.yaml) —
+# per PHQ-2026-03, the governed position is fully gone, so this repository's
+# own "existing shares held, not force-exited" gate rationale no longer
+# applies. Per PHQ-2026-03, SPCX remains a research candidate only —
+# re-entry requires new investable-vehicle research, valuation, liquidity
+# analysis, and a separate principal approval, not silent reassignment here.
+
+# SKHY is deliberately NOT listed here. Its policy remains UNRESOLVED per
+# PHQ-2026-01/PHQ-2026-02 (CLAUDE.md Open Items) — this is a distinct
+# disposition from "gated" (a gated name has an approved destination weight
+# and a defined activation path; SKHY has neither). Do not add SKHY to this
+# file without a separate principal policy decision.

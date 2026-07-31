@@ -26,18 +26,16 @@ from margin_state import (
 )
 
 
-def _base_targets(t1t2_trim_mult=100.0):
+def _base_targets():
     return {
-        "tiers": {
-            "T1": {"weight_pct": 20.0, "tickers": ["DDD"]},
-            "T2": {"weight_pct": 5.0, "tickers": ["AAA"]},
-        },
+        "destination": [
+            {"ticker": "DDD", "target_pct": 20.0, "asset_class": "equity"},
+            {"ticker": "AAA", "target_pct": 5.0, "asset_class": "equity"},
+        ],
         "caps": {"clusters": [{"name": "semis", "pct": 10.0, "tickers": ["AAA"]}]},
         "gates": {"min_lot_dollars": 1, "trend_rsi_override": 30,
-                 "earnings_blackout_days": 7, "trim_rsi": 60,
-                 "t1t2_trim_mult": t1t2_trim_mult},
+                 "earnings_blackout_days": 7},
         "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
-        "crypto": {},
     }
 
 
@@ -221,15 +219,13 @@ def test_margin_state_computed_strictly_after_plan_cannot_influence_buys():
 
 # ── Health View V1: plan() cluster contract (current_pct / ratio_to_cap) ───
 
-def _padded_cluster_targets(cap_pct, t1t2_trim_mult=100.0, weight_pct=10.0):
+def _padded_cluster_targets(cap_pct, target_pct=10.0):
     return {
-        "tiers": {"T1": {"weight_pct": weight_pct, "tickers": ["CLU"]}},
+        "destination": [{"ticker": "CLU", "target_pct": target_pct, "asset_class": "equity"}],
         "caps": {"clusters": [{"name": "testcluster", "pct": cap_pct, "tickers": ["CLU"]}]},
         "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
-                 "earnings_blackout_days": 7, "trim_rsi": 60,
-                 "t1t2_trim_mult": t1t2_trim_mult},
+                 "earnings_blackout_days": 7},
         "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
-        "crypto": {},
     }
 
 
@@ -263,19 +259,19 @@ def test_cluster_exactly_at_cap():
 
 
 def test_cluster_over_cap_ratio_persists_when_name_already_trimmed_to_own_target():
-    # Cluster cap (5%) tighter than the name's own T1 tier weight (10%): even
-    # after the T1/T2 ceiling trims CLU down to its own target, that target
-    # alone still exceeds the cluster cap, and the cluster-cap mechanism
-    # cannot trim a name below its own target -- so the cluster stays
-    # genuinely over cap in plan()'s output. Real, reachable config shape,
-    # not a fabricated edge case.
-    targets = _padded_cluster_targets(cap_pct=5.0, t1t2_trim_mult=1.5, weight_pct=10.0)
+    # Cluster cap (5%) tighter than the name's own destination target (10%):
+    # the cluster-cap mechanism trims CLU down to its own target and no
+    # further -- it never trims a name below its own target -- so once CLU
+    # is at target the cluster still exceeds the (very tight) 5% cap, and
+    # that persists in plan()'s output rather than being silently resolved.
+    # Real, reachable config shape, not a fabricated edge case.
+    targets = _padded_cluster_targets(cap_pct=5.0, target_pct=10.0)
     roster = build_roster(targets)
-    holdings = {"CLU": 200.0, "PAD": 800.0}   # book=1000, CLU target=100, ceiling=150
+    holdings = {"CLU": 200.0, "PAD": 800.0}   # book=1000, CLU target=100, cap_dollars=50
     metrics = _flat_metrics(["CLU"])
     result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
 
-    assert any(t["ticker"] == "CLU" for t in result["trims"])   # T1/T2 ceiling fired
+    assert any(t["ticker"] == "CLU" for t in result["trims"])   # cluster cap fired
     c = result["clusters"][0]
     assert c["value"] == 100.0          # trimmed down to CLU's own target, not below
     assert c["current_pct"] == 10.0
@@ -321,161 +317,108 @@ def test_main_cluster_proximities_reads_ratio_to_cap_not_recomputed():
     assert result["margin_state"].risk_metrics.get("concentration_score") == expected_ratio
 
 
-# ── Health View V1: plan() crypto_sleeve contract ──────────────────────────
+# ── PHQ-2026-02: crypto destination rows (retired the aggregate sleeve) ────
+# The prior aggregate 10% crypto sleeve (one shared target_pct across all
+# configured coins, competing in plan()'s ranking as a single synthetic
+# "CRYPTO" candidate) is retired. Canonical v1.30 gives BTC/ETH/SOL each
+# their own independent destination row and target_pct, like any other
+# ticker -- no `crypto_sleeve`/`crypto_sleeve_pct` result key exists anymore,
+# and no aggregate mechanism can reappear through a compatibility path. Each
+# coin still skips the trend/RSI/earnings timing gates (Decisions Log, July
+# 2026: "conviction-sizing, not a timing call" -- unchanged by this
+# migration, still governed).
 
-def _crypto_targets(sleeve_pct=10.0):
+def _crypto_targets():
     return {
-        "tiers": {},
+        "destination": [
+            {"ticker": "BTC", "target_pct": 6.0, "asset_class": "crypto"},
+            {"ticker": "ETH", "target_pct": 3.0, "asset_class": "crypto"},
+            {"ticker": "SOL", "target_pct": 1.0, "asset_class": "crypto"},
+        ],
         "caps": {"clusters": []},
         "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
-                 "earnings_blackout_days": 7, "trim_rsi": 60, "t1t2_trim_mult": 1.5},
+                 "earnings_blackout_days": 7},
         "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
-        "crypto": {"coins": ["ETH", "SOL"], "sleeve_pct": sleeve_pct},
     }
 
 
-def test_crypto_sleeve_below_target_gap_at_least_min_lot():
+def test_no_aggregate_crypto_sleeve_key_in_result():
     targets = _crypto_targets()
     roster = build_roster(targets)
-    holdings = {"ETH": 30.0, "SOL": 20.0, "PAD": 950.0}   # sleeve=50, book=1000, target=100
+    holdings = {"BTC": 30.0, "ETH": 20.0, "SOL": 5.0, "PAD": 945.0}
     result = plan(targets, holdings, roster, {}, True, True, cash=0.0)
 
-    cs = result["crypto_sleeve"]
-    assert cs == {"current": 50.0, "current_pct": 5.0, "target_pct": 10.0, "drift": 50.0}
-    assert any(u["ticker"] == "CRYPTO" for u in result["underweight"])  # gap 50 >= min_lot 25
+    assert "crypto_sleeve" not in result
+    assert "crypto_sleeve_pct" not in result
 
 
-def test_crypto_sleeve_below_target_gap_below_min_lot():
+def test_btc_eth_sol_are_independent_destination_rows_with_own_targets():
     targets = _crypto_targets()
     roster = build_roster(targets)
-    holdings = {"ETH": 50.0, "SOL": 35.0, "PAD": 915.0}   # sleeve=85, book=1000, target=100
-    result = plan(targets, holdings, roster, {}, True, True, cash=0.0)
-
-    cs = result["crypto_sleeve"]
-    assert cs["current"] == 85.0
-    assert cs["drift"] == 15.0    # under target, but gap (15) < min_lot (25)
-    assert not any(u["ticker"] == "CRYPTO" for u in result["underweight"])
-
-
-def test_crypto_sleeve_exactly_at_target():
-    targets = _crypto_targets()
-    roster = build_roster(targets)
-    holdings = {"ETH": 60.0, "SOL": 40.0, "PAD": 900.0}   # sleeve=100, book=1000, target=100
-    result = plan(targets, holdings, roster, {}, True, True, cash=0.0)
-
-    cs = result["crypto_sleeve"]
-    assert cs["drift"] == 0.0
-    assert not any(u["ticker"] == "CRYPTO" for u in result["underweight"])
-
-
-def test_crypto_sleeve_above_target():
-    targets = _crypto_targets()
-    roster = build_roster(targets)
-    holdings = {"ETH": 90.0, "SOL": 60.0, "PAD": 850.0}   # sleeve=150, book=1000, target=100
-    result = plan(targets, holdings, roster, {}, True, True, cash=0.0)
-
-    cs = result["crypto_sleeve"]
-    assert cs["current"] == 150.0
-    assert cs["current_pct"] == 15.0
-    assert cs["drift"] == -50.0   # signed negative = over target
-    assert not any(u["ticker"] == "CRYPTO" for u in result["underweight"])
-
-
-def test_crypto_sleeve_accurate_independent_of_underweight_recommendation():
-    # Same sleeve state, two different min_lot thresholds -> the recommendation
-    # list (underweight) differs, but crypto_sleeve's own numbers must not.
-    holdings = {"ETH": 50.0, "SOL": 35.0, "PAD": 915.0}   # sleeve=85, book=1000, gap=15
-    targets_a = _crypto_targets()
-    targets_a["gates"]["min_lot_dollars"] = 25    # gap (15) < min_lot -> no CRYPTO row
-    targets_b = _crypto_targets()
-    targets_b["gates"]["min_lot_dollars"] = 10    # gap (15) >= min_lot -> CRYPTO row appears
-
-    roster = build_roster(targets_a)
-    result_a = plan(targets_a, holdings, roster, {}, True, True, cash=0.0)
-    result_b = plan(targets_b, holdings, roster, {}, True, True, cash=0.0)
-
-    assert result_a["crypto_sleeve"] == result_b["crypto_sleeve"]
-    assert not any(u["ticker"] == "CRYPTO" for u in result_a["underweight"])
-    assert any(u["ticker"] == "CRYPTO" for u in result_b["underweight"])
-
-
-def test_crypto_sleeve_none_when_not_configured():
-    targets = _base_targets()   # crypto: {} -- no coins/sleeve_pct configured
-    roster = build_roster(targets)
-    holdings = {"DDD": 2000.0, "AAA": 500.0}
-    metrics = _flat_metrics(["DDD", "AAA"])
+    # book=1000 (BTC30+ETH20+SOL5+PAD945, no cash/margin). BTC target=60
+    # (gap 30, buy candidate once cash is available); ETH target=30 (gap 10,
+    # below the 25 min_lot -- not a candidate); SOL target=10 (gap 5, below
+    # min_lot -- not a candidate). Each gap is independent of the others'
+    # holdings/targets.
+    holdings = {"BTC": 30.0, "ETH": 20.0, "SOL": 5.0, "PAD": 945.0}
+    metrics = {}
     result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
 
-    assert result["crypto_sleeve"] is None
-    assert result["crypto_sleeve_pct"] is None
+    underweight_by_ticker = {u["ticker"]: u for u in result["underweight"]}
+    assert underweight_by_ticker["BTC"]["target"] == 60.0
+    assert underweight_by_ticker["BTC"]["gap"] == 30.0
+    assert "ETH" not in underweight_by_ticker     # gap (10) < min_lot (25)
+    assert "SOL" not in underweight_by_ticker     # gap (5) < min_lot (25)
+
+    # With a deposit sized to fund exactly BTC's own gap, BTC (and only BTC)
+    # actually gets bought.
+    result_funded = plan(targets, holdings, roster, metrics, True, True, cash=30.0)
+    buys_by_ticker = {b["ticker"]: b for b in result_funded["buys"]}
+    assert buys_by_ticker["BTC"]["dollars"] == 30.0
+    assert "ETH" not in buys_by_ticker
+    assert "SOL" not in buys_by_ticker
 
 
-# ── NUM-0001 P1-3: single canonical crypto.sleeve_pct resolution ───────────
-# plan() previously defaulted a missing sleeve_pct to 0 while main()'s result/
-# Health-View metadata defaulted the identical key to 10 -- two independent
-# fallbacks for one config value. Now there is exactly one resolution
-# (`_resolve_crypto_sleeve_pct`), surfaced in the result as
-# `crypto_sleeve_pct`, which both plan()'s own gap math and main()'s rendered
-# `result["crypto"]["sleeve_pct"]` field read from. The tests directly below
-# exercise only plan() and the resolver in isolation; the direct main()
-# production-path proof (including `result["crypto"]["sleeve_pct"]` itself)
-# lives further down, alongside the equivalent P1-4 coverage.
-
-def test_crypto_sleeve_pct_custom_value_used_consistently():
-    targets = _crypto_targets(sleeve_pct=17.5)   # deliberately not 10.0 or 0
-    roster = build_roster(targets)
-    holdings = {"ETH": 60.0, "SOL": 40.0, "PAD": 900.0}   # sleeve=100, book=1000
-    result = plan(targets, holdings, roster, {}, True, True, cash=0.0)
-
-    assert result["crypto_sleeve_pct"] == 17.5
-    assert result["crypto_sleeve"]["target_pct"] == 17.5   # same resolved value
-
-
-def test_crypto_sleeve_pct_missing_with_coins_configured_fails_clearly():
+def test_changing_one_coins_holding_does_not_move_another_coins_target():
     targets = _crypto_targets()
-    del targets["crypto"]["sleeve_pct"]
     roster = build_roster(targets)
-    holdings = {"ETH": 30.0, "SOL": 20.0}
+    metrics = {}
 
-    with pytest.raises(ValueError, match="sleeve_pct"):
-        plan(targets, holdings, roster, {}, True, True, cash=0.0)
+    holdings_a = {"BTC": 30.0, "ETH": 20.0, "SOL": 5.0, "PAD": 945.0}
+    holdings_b = {"BTC": 30.0, "ETH": 500.0, "SOL": 5.0, "PAD": 465.0}  # ETH way overweight
+    result_a = plan(targets, holdings_a, roster, metrics, True, True, cash=0.0)
+    result_b = plan(targets, holdings_b, roster, metrics, True, True, cash=0.0)
+
+    a_by_ticker = {u["ticker"]: u for u in result_a["underweight"]}
+    b_by_ticker = {u["ticker"]: u for u in result_b["underweight"]}
+    # BTC's own target is unaffected by ETH's holding size in either run.
+    assert a_by_ticker["BTC"]["target"] == b_by_ticker["BTC"]["target"] == 60.0
 
 
-def test_crypto_sleeve_pct_non_numeric_fails_clearly():
-    targets = _crypto_targets(sleeve_pct="lots")
+def test_crypto_asset_class_skips_trend_and_earnings_gates():
+    targets = _crypto_targets()
     roster = build_roster(targets)
-    holdings = {"ETH": 30.0, "SOL": 20.0}
+    # BTC priced below its 200-SMA with a hot RSI (would block an equity row)
+    # and metrics carries no earnings-safe defaults either -- crypto must
+    # still be a plain buy candidate, no BLOCKED row.
+    holdings = {"BTC": 0.0, "ETH": 0.0, "SOL": 0.0}
+    metrics = {"BTC": {"price": 50.0, "rsi14": 80.0, "sma200": 100.0}}
+    result = plan(targets, holdings, roster, metrics, True, True, cash=1000.0)
 
-    with pytest.raises(ValueError, match="not numeric"):
-        plan(targets, holdings, roster, {}, True, True, cash=0.0)
+    assert not any(r["ticker"] == "BTC" for r in result["blocked"])
+    assert any(b["ticker"] == "BTC" for b in result["buys"])
 
+# ── main() production-path coverage: concentration_min_fraction wiring ────
+# concentration_min_fraction is a still-governed margin_state.py knob,
+# unrelated to the retired crypto sleeve -- this drives the actual CLI path
+# (argparse -> --health -> plan() -> classify_margin_state() -> render_health())
+# with every network/live-data boundary faked out, the same technique
+# test_health_flag_cli_path_is_read_only uses above, so it observes
+# allocate.py's real composition, not a paraphrase of it. A revert of
+# main()'s real wiring (concentration_min_fraction back to `... or 0.5`
+# computed elsewhere) could not pass this test unnoticed.
 
-def test_crypto_sleeve_disabled_no_coins_configured_no_error():
-    targets = _base_targets()   # crypto: {} -- sleeve genuinely absent/disabled
-    roster = build_roster(targets)
-    holdings = {"DDD": 2000.0, "AAA": 500.0}
-    metrics = _flat_metrics(["DDD", "AAA"])
-
-    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
-
-    assert result["crypto_sleeve"] is None
-    assert result["crypto_sleeve_pct"] is None
-
-
-# ── NUM-0001 P1-3 + P1-4: direct main() production-path coverage ───────────
-# The plan()-level tests above (P1-3) and _attach_margin_state()-based tests
-# formerly here (P1-4) proved the resolvers and the test file's own mirror of
-# main()'s post-plan() block, but neither executed allocate.main() itself --
-# a revert of main()'s real wiring (result["crypto"]["sleeve_pct"] back to
-# its old independent `crypto_cfg.get("sleeve_pct", 10)` fallback, or
-# concentration_min_fraction back to `... or 0.5`) could pass both sets of
-# tests above unchanged. These two tests instead drive the actual CLI path
-# (argparse -> --health -> plan() -> classify_margin_state() -> crypto dict
-# construction -> render_health()) with every network/live-data boundary
-# faked out, the same technique test_health_flag_cli_path_is_read_only uses
-# above, so they observe allocate.py's real composition, not a paraphrase.
-
-def _crypto_health_targets_and_holdings(tmp_path, min_fraction):
+def _min_fraction_targets_and_holdings(tmp_path, min_fraction):
     """min_fraction=None omits margin.concentration_adjustment entirely
     (the "absent" case); any other value sets concentration_adjustment.
     min_fraction explicitly (the "explicit, including 0.0" case)."""
@@ -486,22 +429,15 @@ def _crypto_health_targets_and_holdings(tmp_path, min_fraction):
         margin_cfg["concentration_adjustment"] = {"min_fraction": min_fraction}
     with targets_file.open("w") as f:
         yaml.safe_dump({
-            "tiers": {"T1": {"weight_pct": 50.0, "tickers": ["AAA"]}},
+            "destination": [{"ticker": "AAA", "target_pct": 50.0, "asset_class": "equity"}],
             "caps": {"clusters": []},
             "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
-                     "earnings_blackout_days": 7, "trim_rsi": 60,
-                     "t1t2_trim_mult": 1.5},
+                     "earnings_blackout_days": 7},
             "margin": margin_cfg,
-            # sleeve_pct deliberately not 10.0 (main()'s old fallback) or 0
-            # (plan()'s old fallback) -- a value distinct from both former
-            # independent defaults, so this only passes if a single resolved
-            # value threads through every consumer.
-            "crypto": {"coins": ["ETH", "SOL"], "sleeve_pct": 17.5},
         }, f)
     with holdings_file.open("w") as f:
         yaml.safe_dump({
-            "holdings": {}, "shares": {"AAA": 1.0},
-            "crypto_shares": {"ETH": 1.0, "SOL": 1.0},
+            "holdings": {}, "shares": {"AAA": 1.0}, "crypto_shares": {},
             # debt=0/buffer=50 keeps margin_capacity()/classify_margin_state()
             # in an unremarkable NORMAL state -- irrelevant to what these
             # tests check, so kept deliberately boring.
@@ -510,7 +446,7 @@ def _crypto_health_targets_and_holdings(tmp_path, min_fraction):
     return targets_file, holdings_file
 
 
-def _patch_crypto_health_cli(monkeypatch, targets_file, holdings_file):
+def _patch_min_fraction_cli(monkeypatch, targets_file, holdings_file):
     monkeypatch.setattr(allocate, "TARGETS_FILE", targets_file)
     monkeypatch.setattr(allocate, "HOLDINGS_FILE", holdings_file)
     monkeypatch.setattr(allocate, "AlpacaPaperClient", lambda: object())
@@ -518,20 +454,12 @@ def _patch_crypto_health_cli(monkeypatch, targets_file, holdings_file):
         allocate, "fetch_market",
         lambda client, tickers, regime_ticker: (
             {"AAA": {"price": 100.0, "rsi14": 50.0, "sma200": 90.0}}, True, True))
-    monkeypatch.setattr(
-        allocate, "fetch_crypto",
-        lambda client, coins, coingecko_ids: {
-            "ETH": {"price": 100.0, "source": "test"},
-            "SOL": {"price": 100.0, "source": "test"},
-        })
-    # AAA=50 + ETH=30 + SOL=20 -> book=100, AAA exactly at its 50% target
-    # (no trim/buy noise), crypto sleeve=50 vs the 17.5% target (no gap
-    # candidate either) -- a boring, fully-resolved book so the only things
-    # under test are the sleeve_pct/min_fraction resolutions themselves.
+    # AAA=50, book=50, exactly at its 50% target -- no trim/buy noise, a
+    # boring, fully-resolved book so the only thing under test is the
+    # min_fraction resolution itself.
     monkeypatch.setattr(
         allocate, "resolve_holdings",
-        lambda client, metrics=None, crypto_prices=None: {
-            "AAA": 50.0, "ETH": 30.0, "SOL": 20.0})
+        lambda client, metrics=None, crypto_prices=None: {"AAA": 50.0})
 
 
 def _spy_classify_margin_state(monkeypatch):
@@ -546,11 +474,10 @@ def _spy_classify_margin_state(monkeypatch):
     return captured
 
 
-def test_main_production_path_explicit_zero_min_fraction_and_custom_sleeve_pct(
-        tmp_path, monkeypatch):
-    targets_file, holdings_file = _crypto_health_targets_and_holdings(
+def test_main_production_path_explicit_zero_min_fraction(tmp_path, monkeypatch):
+    targets_file, holdings_file = _min_fraction_targets_and_holdings(
         tmp_path, min_fraction=0.0)
-    _patch_crypto_health_cli(monkeypatch, targets_file, holdings_file)
+    _patch_min_fraction_cli(monkeypatch, targets_file, holdings_file)
     captured_kwargs = _spy_classify_margin_state(monkeypatch)
 
     render_health_calls = []
@@ -562,19 +489,14 @@ def test_main_production_path_explicit_zero_min_fraction_and_custom_sleeve_pct(
     allocate.main()   # the real production path, not a test-side mirror
 
     assert captured_kwargs["concentration_min_fraction"] == 0.0
-
     assert len(render_health_calls) == 1
-    result = render_health_calls[0]
-    assert result["crypto_sleeve_pct"] == 17.5
-    assert result["crypto_sleeve"]["target_pct"] == 17.5
-    assert result["crypto"]["sleeve_pct"] == 17.5
 
 
 def test_main_production_path_absent_min_fraction_defaults_to_half(
         tmp_path, monkeypatch):
-    targets_file, holdings_file = _crypto_health_targets_and_holdings(
+    targets_file, holdings_file = _min_fraction_targets_and_holdings(
         tmp_path, min_fraction=None)
-    _patch_crypto_health_cli(monkeypatch, targets_file, holdings_file)
+    _patch_min_fraction_cli(monkeypatch, targets_file, holdings_file)
     captured_kwargs = _spy_classify_margin_state(monkeypatch)
     monkeypatch.setattr(allocate, "render_health", lambda result: "SENTINEL")
 
@@ -583,103 +505,59 @@ def test_main_production_path_absent_min_fraction_defaults_to_half(
 
     assert captured_kwargs["concentration_min_fraction"] == 0.5
 
+# ── PHQ-2026-02: no T1/T2 proximity reporting or ceiling survives ─────────
+# The prior `t1t2_proximity` result key and its 1.5x concentration-ceiling
+# trim were both defined in terms of the T1/T2 tiers the canonical
+# destination architecture removed (see the governance filing's "Retired by
+# this migration" section) -- neither exists anymore, and no equivalent
+# mechanism was invented in their place.
 
-# ── Health View V1: plan() t1t2_proximity contract ─────────────────────────
-
-def _t1t2_proximity_targets(t1t2_trim_mult=1.5):
+def _proximity_style_targets():
     return {
-        "tiers": {"T1": {"weight_pct": 10.0, "tickers": ["NEUT", "OVER", "UNDER"]}},
+        "destination": [
+            {"ticker": "NEUT", "target_pct": 10.0, "asset_class": "equity"},
+            {"ticker": "OVER", "target_pct": 10.0, "asset_class": "equity"},
+            {"ticker": "UNDER", "target_pct": 10.0, "asset_class": "equity"},
+        ],
         "caps": {"clusters": []},
         "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
-                 "earnings_blackout_days": 7, "trim_rsi": 60,
-                 "t1t2_trim_mult": t1t2_trim_mult},
+                 "earnings_blackout_days": 7},
         "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
-        "crypto": {},
     }
 
 
-def test_t1t2_neutral_zone_name_retained_though_invisible_elsewhere():
-    targets = _t1t2_proximity_targets()
+def test_no_t1t2_proximity_key_in_result():
+    targets = _proximity_style_targets()
     roster = build_roster(targets)
-    # book=1000 (100+200+50+650 PAD); NEUT target=100, current=130 -> 1.3x,
-    # under the 1.5x ceiling (not trimmed) and gap=-30 (not a buy candidate) --
-    # previously fell through plan() entirely.
     holdings = {"NEUT": 130.0, "OVER": 200.0, "UNDER": 50.0, "PAD": 620.0}
     metrics = _flat_metrics(["NEUT", "OVER", "UNDER"])
     result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
 
+    assert "t1t2_proximity" not in result
+
+
+def test_over_double_target_name_outside_any_cluster_is_never_trimmed():
+    # OVER at 200 vs. its own target of 100 is 2.0x -- well past the retired
+    # 1.5x T1/T2 ceiling. OVER is in no cluster in this fixture, so nothing
+    # in the canonical architecture mechanically trims it.
+    targets = _proximity_style_targets()
+    roster = build_roster(targets)
+    holdings = {"NEUT": 130.0, "OVER": 200.0, "UNDER": 50.0, "PAD": 620.0}
+    metrics = _flat_metrics(["NEUT", "OVER", "UNDER"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
+
+    assert not any(t["ticker"] == "OVER" for t in result["trims"])
     assert not any(t["ticker"] == "NEUT" for t in result["trims"])
-    assert not any(u["ticker"] == "NEUT" for u in result["underweight"])
-    assert not any(b["ticker"] == "NEUT" for b in result["blocked"])
-    neut = next(p for p in result["t1t2_proximity"] if p["ticker"] == "NEUT")
-    assert neut["current"] == 130.0
-    assert neut["target"] == 100.0
-    assert neut["ratio_to_target"] == pytest.approx(1.3)
-    assert neut["ceiling_mult"] == 1.5
-    assert neut["ratio_to_ceiling"] == pytest.approx(130.0 / 150.0)
 
 
-def test_t1t2_over_ceiling_name_also_retained():
-    targets = _t1t2_proximity_targets()
-    roster = build_roster(targets)
-    holdings = {"NEUT": 130.0, "OVER": 200.0, "UNDER": 50.0, "PAD": 620.0}
-    metrics = _flat_metrics(["NEUT", "OVER", "UNDER"])
-    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
-
-    trimmed = next(t for t in result["trims"] if t["ticker"] == "OVER")
-    assert trimmed["dollars"] == 100.0   # 200 - target(100)
-    over = next(p for p in result["t1t2_proximity"] if p["ticker"] == "OVER")
-    assert over["ratio_to_target"] == pytest.approx(2.0)
-    assert over["ratio_to_ceiling"] == pytest.approx(200.0 / 150.0)
-
-
-def test_every_t1t2_ticker_appears_exactly_once_regardless_of_outcome():
-    targets = _t1t2_proximity_targets()
-    roster = build_roster(targets)
-    holdings = {"NEUT": 130.0, "OVER": 200.0, "UNDER": 50.0, "PAD": 620.0}
-    # UNDER has no metrics entry -> price is None -> BLOCKED "no-data", which
-    # happens strictly before the earnings-gate lookup (no network call).
-    metrics = _flat_metrics(["NEUT", "OVER"])
-    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0)
-
-    tickers = [p["ticker"] for p in result["t1t2_proximity"]]
-    assert sorted(tickers) == ["NEUT", "OVER", "UNDER"]
-    assert len(tickers) == len(set(tickers))
-    assert any(b["ticker"] == "UNDER" and "no-data" in b["reason"] for b in result["blocked"])
-    assert any(t["ticker"] == "OVER" for t in result["trims"])
-    assert not any(t["ticker"] == "NEUT" for t in result["trims"] + result["blocked"])
-
-
-def test_t1t2_zero_target_retains_record_with_none_ratios():
-    # book == 0 (empty holdings, no cash/margin) -> every target is 0. A real,
-    # reachable state (a wiped/new book), not invented -- see build_roster()'s
-    # weight_pct default and margin_capacity()'s own "if net_equity > 0 else
-    # None" guard for the repo's established convention on this exact shape
-    # of divide-by-zero.
-    targets = {
-        "tiers": {"T1": {"weight_pct": 10.0, "tickers": ["ZT"]}},
-        "caps": {"clusters": []},
-        "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
-                 "earnings_blackout_days": 7, "trim_rsi": 60, "t1t2_trim_mult": 1.5},
-        "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
-        "crypto": {},
-    }
-    roster = build_roster(targets)
-    result = plan(targets, {}, roster, {}, True, True, cash=0.0)
-
-    assert result["book"] == 0.0
-    zt = next(p for p in result["t1t2_proximity"] if p["ticker"] == "ZT")
-    assert zt["current"] == 0.0
-    assert zt["target"] == 0.0
-    assert zt["ratio_to_target"] is None
-    assert zt["ratio_to_ceiling"] is None
-
-
+# ── Health View V1: render_health() ────────────────────────────────────────
 # ── Health View V1: render_health() ────────────────────────────────────────
 
 def _health_fixture_result(margin_state_obj="omit"):
     """A hand-built result dict -- no plan()/live client/YAML involved -- to
-    prove render_health() is a pure function of `result` alone."""
+    prove render_health() is a pure function of `result` alone. PHQ-2026-02:
+    no `crypto_sleeve`/`t1t2_proximity` keys (both retired); carries the
+    8%/40% no-add ceiling fields plan() now actually returns instead."""
     result = {
         "book": 1000.0,
         "margin": {
@@ -693,12 +571,15 @@ def _health_fixture_result(margin_state_obj="omit"):
             {"name": "semis", "value": 180.0, "pct": 20.0,
              "current_pct": 18.0, "ratio_to_cap": 0.9},
         ],
-        "crypto_sleeve": {"current": 85.0, "current_pct": 8.5,
-                          "target_pct": 10.0, "drift": 15.0},
-        "t1t2_proximity": [
-            {"ticker": "NEUT", "tier": "T1", "current": 130.0, "target": 100.0,
-             "ratio_to_target": 1.3, "ceiling_mult": 1.5, "ratio_to_ceiling": 130 / 150},
-        ],
+        "issuer_exposure": {"NVDA": {"direct_pct": 5.0, "embedded_pct": 1.0,
+                                     "effective_pct": 6.0}},
+        "issuer_ceiling_pct": 8.0,
+        "common_driver_current_pct": 25.0,
+        "common_driver_ceiling_pct": 40.0,
+        "retained_common_driver_measurement": {
+            "value_pct": 40.0284, "measured_at": "2026-07-30",
+            "methodology": "canonical v1.30 target-weight-basis look-through, PHQ-2026-01 due diligence",
+        },
     }
     if margin_state_obj != "omit":
         result["margin_state"] = margin_state_obj
@@ -725,21 +606,22 @@ def test_render_health_all_required_sections_and_values_present():
     holdings = {"DDD": 2000.0, "AAA": 500.0}
     metrics = _flat_metrics(["DDD", "AAA"])
     result = plan(targets, holdings, roster, metrics, True, True, cash=0.0,
-                  margin_debt=100.0, margin_buffer_pct=50.0)
+                  margin_debt=100.0, margin_buffer_pct=50.0,
+                  lookthrough=allocate.load_issuer_lookthrough())
     result = _attach_margin_state(result, targets)
     out = render_health(result)
 
     assert "## Margin" in out
     assert "## Margin risk state" in out
     assert "## Clusters" in out
-    assert "## Crypto sleeve" in out
-    assert "## T1/T2 proximity" in out
+    assert "## 8%/40% no-add ceilings" in out
+    # the old section headers (not just a retirement mention) are gone
+    assert "## Crypto sleeve" not in out
+    assert "## T1/T2 proximity" not in out
     assert f"{result['margin']['leverage_cap']:.2f}x cap" in out
     assert f"{result['margin']['buffer_floor_pct']:.0f}% floor" in out
     for c in result["clusters"]:
         assert c["name"] in out
-    for t in result["t1t2_proximity"]:
-        assert t["ticker"] in out
 
 
 def test_render_health_does_not_mutate_result():
@@ -781,13 +663,11 @@ def _cli_targets_and_holdings(tmp_path):
     holdings_file = tmp_path / "holdings.yaml"
     with targets_file.open("w") as f:
         yaml.safe_dump({
-            "tiers": {"T1": {"weight_pct": 10.0, "tickers": ["AAA"]}},
+            "destination": [{"ticker": "AAA", "target_pct": 10.0, "asset_class": "equity"}],
             "caps": {"clusters": []},
             "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
-                     "earnings_blackout_days": 7, "trim_rsi": 60,
-                     "t1t2_trim_mult": 1.5},
+                     "earnings_blackout_days": 7},
             "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
-            "crypto": {},
         }, f)
     with holdings_file.open("w") as f:
         yaml.safe_dump({
@@ -865,8 +745,8 @@ def test_health_flag_cli_path_is_read_only(tmp_path, monkeypatch, capsys):
     # render_health() received plan()'s own output, already carried through
     # main()'s post-processing (margin_state attached) -- not a stub.
     assert "margin_state" in result
-    assert "t1t2_proximity" in result
-    assert "crypto_sleeve" in result
+    assert "common_driver_current_pct" in result
+    assert "issuer_exposure" in result
 
 
 # ── read-only-check-margin-truthfulness correction ─────────────────────────
@@ -890,13 +770,11 @@ def _review_cli_targets_and_holdings(tmp_path, synced_at="2026-07-18",
     holdings_file = tmp_path / "holdings.yaml"
     with targets_file.open("w") as f:
         yaml.safe_dump({
-            "tiers": {"T1": {"weight_pct": 10.0, "tickers": ["AAA"]}},
+            "destination": [{"ticker": "AAA", "target_pct": 10.0, "asset_class": "equity"}],
             "caps": {"clusters": []},
             "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
-                     "earnings_blackout_days": 7, "trim_rsi": 60,
-                     "t1t2_trim_mult": 1.5},
+                     "earnings_blackout_days": 7},
             "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
-            "crypto": {},
         }, f)
     with holdings_file.open("w") as f:
         yaml.safe_dump({

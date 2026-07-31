@@ -12,79 +12,97 @@
 # it from (portfolio value - maint req) / portfolio value. Checked twice
 # against real screens and it doesn't reconcile (off by several points);
 # Robinhood's actual formula weights something this simple subtraction misses.
+#
+# Reconciled 2026-07-31 from PHQ-2026-02 verified post-execution evidence
+# (governance/evidence/PHQ-2026-02/v1_35/, SHA-256
+# fb8eb811df29eb560bfaed16e8d0e89c6cbcf44bc42e1f1ae2ccfca4cddd889e). The
+# principal confirmed the v1.35 screenshots are the complete post-transition
+# equity/crypto list — the 41 tickers previously tracked here and absent from
+# that evidence were fully exited by the manual transition trades and are
+# removed rather than zeroed, per this repository's existing zero-position
+# convention (see CLAUDE.md's BTC 2026-07-13 precedent).
+# Dust crypto (BONK/PEPE/WIF/ZORA, $0.00 mark) is excluded from
+# crypto_shares, unchanged from the existing permanent-ignore convention.
+#
+# PHQ-2026-04 (2026-07-31): SKHY and SPCX manually exited by the principal
+# (PHQ-2026-03 authorization) and removed here per verified post-trade
+# evidence (governance/evidence/PHQ-2026-04/) — same zero-position removal
+# convention as above, not zeroed. Sale proceeds remain cash (resulting
+# cash $2,675.05 per evidence, not persisted in this schema); margin debt
+# confirmed $0.00 (unchanged from the existing 0.0 below).
+#
+# PHQ-2026-05 (2026-07-31): seven post-buy quantity updates reconciled from
+# the principal-supplied v1.37 "Final Confirmed Account State" package
+# (governance/evidence/PHQ-2026-05/v1_37/, SHA-256
+# 782f68284b92377ed396584a63c112f7835900ac18a2d117d85f62239da85ebd for the
+# JSON export) — AMZN/NVDA/TMO/SPY quantities updated, PWR/VEA/VWO added as
+# new share-tracked positions (all three already carried canonical
+# `targets.yaml` destination rows with zero prior shares). No new ticker,
+# target, cap, or gate is introduced — every changed/added symbol already
+# has an existing canonical row. SKHY/SPCX are deliberately NOT restored:
+# v1.37's SKHY/SPCX rows carry the exact pre-exit quantities and are treated
+# as stale relative to PHQ-2026-04's independently-evidenced 15:10-15:11
+# ET sale fills, per explicit principal direction reconciling the conflict
+# between the two evidence packages. Crypto (BTC/ETH/SOL) and all other
+# equity/fund quantities are unchanged and independently confirmed against
+# v1.37 — dust (BONK/PEPE/WIF/ZORA) remains permanently excluded, unchanged
+# convention.
+#
+# PHQ-2026-05 bounded correction (2026-07-31, same PR, before merge): v1.37's
+# reported cash ($845.84) was initially flagged as not reconciling against
+# PHQ-2026-04's post-sale cash ($2,675.05). The principal supplied a further
+# v1.38 "Final Account Summary Correction" package
+# (governance/evidence/PHQ-2026-05/v1_38/, SHA-256
+# 506f8b8d33b4dd247fd2ebff4583032065bf85f919c638380aa1b50d8bf84012 for the
+# JSON export) that RESOLVES this: post-sale cash $2,675.05 minus the seven
+# confirmed buy fills' $1,734.00 = $941.05, matching Robinhood's own
+# displayed final cash of $941.05 exactly (difference $0.00). v1.37's $845.84
+# is superseded for final-account-state purposes and is no longer described
+# as an unresolved current-state discrepancy. This does not change any
+# `shares:` quantity above — v1.38 corrects account-summary fields only
+# (cash, buying power, margin-available, maintenance requirement), not
+# holdings. `holdings.yaml` still has no persisted cash field (unchanged
+# since PHQ-2026-02) — the resolved $941.05 figure is recorded as evidence
+# only, to be supplied through `allocate.py`'s existing `--cash` runtime
+# input at whatever future session runs a live cash-funded allocation.
 margin:
-  debt: 1590.4
-  buffer_pct: 63.12
-  synced_at: 2026-07-22
+  debt: 0.0
+  # No displayed buffer % was captured in the v1.35 evidence (only
+  # margin_used: $0.00 and margin_available/maintenance_requirement were
+  # shown). 100.0 here reflects zero margin drawn, not a Robinhood-displayed
+  # screen — re-sync a real displayed buffer % before any future
+  # margin-funded decision.
+  buffer_pct: 100.0
+  synced_at: 2026-07-31
 holdings:
   {}
 shares:
-  AAPL: 0.31741
-  ABBV: 0.1841
-  AMAT: 0.207485
-  AMD: 0.183645
-  AMZN: 0.423377
-  ASML: 0.116177
+  AMZN: 1.146551
+  ASML: 0.083505
   AVGO: 0.375702
-  BABA: 0.40538
-  BRK.B: 0.220004
-  CAT: 0.112512
   CEG: 0.425616
-  COST: 0.227127
-  CRM: 0.468416
-  CRWD: 0.250108
-  CVX: 0.24395
-  DELL: 0.105858
-  DHR: 0.579883
-  EQIX: 0.100046
+  COST: 0.081544
   ETN: 0.262049
   GEV: 0.208382
-  GILD: 0.351911
   GLD: 0.61757
   GNRC: 0.320007
   GOOGL: 0.602817
-  HOOD: 0.444144
-  IBM: 0.365786
-  INTC: 1.324933
   ISRG: 0.300031
-  JNJ: 0.183537
-  JPM: 0.134696
   KLAC: 0.304258
   LLY: 0.179485
-  LRCX: 0.220697
-  MA: 0.243947
   META: 0.332674
-  MLM: 0.219284
-  MRK: 0.365049
-  MRVL: 0.219699
   MSFT: 0.742767
-  MU: 0.048267
-  NFLX: 1.049643
-  NOW: 0.483951
-  NVDA: 0.986492
-  ORCL: 0.546724
+  NVDA: 1.858992
   PANW: 0.137346
-  PLTR: 0.800379
-  PWR: 0.160774
-  QQQ: 0.208877
-  RKLB: 1.827858
+  PWR: 0.116807
   RTX: 0.240403
-  SHOP: 0.398801
-  SKHY: 0.278473
-  SPCX: 0.502727
-  SPY: 0.25105
-  SYK: 0.331131
-  TMO: 0.2038
-  TSLA: 0.252735
+  SPY: 1.250856
+  TMO: 0.325606
   TSM: 0.520584
-  UBER: 1.40443
-  UNH: 0.108022
-  V: 0.589274
-  VRT: 0.332404
-  WDC: 0.15222
-  WMT: 0.946015
-  XOM: 0.309994
+  V: 0.343424
+  VEA: 6.186296
+  VWO: 0.476555
 crypto_shares:
-  BTC: 0.00460473
-  ETH: 0.09626669542680465
-  SOL: 1.59236
+  BTC: 0.00180473
+  ETH: 0.04574
+  SOL: 1.59509
