@@ -84,8 +84,9 @@ caps:
   # prior tiered structure (semis/power_infra/oil membership and pct
   # unchanged) — most prior members exited with the PHQ-2026-02 transition
   # and are no longer in `destination:` above, so each cluster now binds on
-  # only its surviving canonical members (semis: KLAC; power_infra: ETN, GEV,
-  # PWR; oil: none remaining). Not re-scoped or re-derived by this filing —
+  # only its surviving canonical members (semis: ASML, TSM, NVDA, AVGO, KLAC;
+  # power_infra: ETN, GEV, PWR; oil: none remaining). Not re-scoped or
+  # re-derived by this filing —
   # doing so would be a new correlation-cluster decision, out of PHQ-2026-02's
   # scope.
   clusters:
@@ -110,10 +111,10 @@ gates:
   min_lot_dollars: 25          # do not recommend buys smaller than this
   trend_rsi_override: 30       # allow add below 200-SMA only if RSI < this
   earnings_blackout_days: 7    # skip adds within this many calendar days of earnings
-  trim_rsi: 60                 # (currently unused — no per-name trim rule is defined
-                                # for the canonical destination architecture; retained
-                                # as a parameter in case a future tolerance-band trim
-                                # rule is authorized)
+  # trim_rsi removed (independent review, PR #202): no code path read it --
+  # the canonical destination architecture has no per-name RSI-gated trim
+  # rule, and none is authorized. If a future tolerance-band trim rule is
+  # ever authorized, add its parameter then, not speculatively now.
 
 margin:
   # Doctrine (July 2026): fixed structural cap, not a timing lever. Book is

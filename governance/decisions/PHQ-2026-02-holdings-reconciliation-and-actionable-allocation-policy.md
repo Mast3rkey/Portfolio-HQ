@@ -65,22 +65,28 @@ This resolves design-note §10 as follows:
 ## Holdings reconciliation
 
 The v1.35 package's later screenshot is the complete post-transition
-equity/fund list (24 rows + SPCX) and the earlier screenshot the complete
-crypto list (7 rows, including permanently-ignored dust) — confirmed by two
-internal cross-checks (sum of listed equity rows vs. the screenshot's own
-displayed equities total, within $0.02; margin used $0.00 vs. a previously
-synced $1,590.40 debt, consistent with sale proceeds repaying inherited
-debit per `PHQ-2026-01` point 7) **and explicitly confirmed by the principal**
-before any file was changed — not inferred from the arithmetic alone. The 41
+equity/fund list — 24 total rows, SPCX and SKHY included within that 24, not
+additional to it — and the earlier screenshot the complete crypto list (7
+rows, including permanently-ignored dust) — confirmed by two internal
+cross-checks (sum of listed equity rows vs. the screenshot's own displayed
+equities total, within $0.02; margin used $0.00 vs. a previously synced
+$1,590.40 debt, consistent with sale proceeds repaying inherited debit per
+`PHQ-2026-01` point 7) **and explicitly confirmed by the principal** before
+any file was changed — not inferred from the arithmetic alone. The 41
 previously-tracked tickers absent from the v1.35 evidence were removed from
 `holdings.yaml`'s `shares:` block entirely (not zeroed), consistent with this
 repository's existing zero-position convention (BTC, 2026-07-13). Full
 detail, the machine-readable reconciliation check, and every retained
 evidence file: `governance/evidence/PHQ-2026-02/`.
 
-`holdings.yaml` now reflects: 24 equity/fund positions, SPCX (gated
-hold/no-add), SKHY (unresolved), BTC/ETH/SOL; cash `$2,579.84`; margin debt
-`$0.00`.
+`holdings.yaml`'s `shares:` block now holds 24 total equity/fund positions
+(including SPCX, gated hold/no-add, and SKHY, unresolved) plus BTC/ETH/SOL in
+`crypto_shares:`, margin debt `$0.00`. **`holdings.yaml` has no `cash` field
+in its current schema** — the verified post-execution cash figure,
+`$2,579.84`, is retained as evidence and recorded here and in
+`governance/evidence/PHQ-2026-02/`, and is supplied to the allocator through
+its existing runtime input (`allocate.py --cash`), not persisted in
+`holdings.yaml` itself.
 
 ## Implemented policy
 

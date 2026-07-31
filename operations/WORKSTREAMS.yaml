@@ -3638,19 +3638,56 @@ workstreams:
         pr: 202
         status: drafted
         date: "2026-07-31"
+      - gate: independent-review-and-post-review-correction
+        description: >
+          Independent exact-head review (GitHub review 4830452924,
+          reviewed head 01c5bd139bb2c9f40265290c7f4f31e5d532fda2, reviewer
+          session f80b7b83-a89f-472c-aab7-810ba9717bc0) returned "APPROVED
+          FOR PRINCIPAL ACCEPTANCE AND MERGE GATING" with 3 MAJOR / 5 MINOR
+          / 3 ADVISORY findings, 0 BLOCKING. This session corrected all
+          three MAJOR findings in the same PR: load_gates() now fails
+          loudly (raises, naming gates.yaml) instead of silently returning
+          an empty gate set on missing/unreadable/malformed/structurally
+          invalid config; the cluster mechanical-trim path now excludes
+          gated/reserve/cash tickers at the source (cluster_info
+          population), so a gate can never be defeated by cluster
+          membership even if a future config mistakenly adds one;
+          build_roster() now validates every destination row (ticker,
+          target_pct, and an exact case-sensitive asset_class enum) at
+          parse time instead of silently falling through. Also corrected:
+          MINOR findings on cash-field wording, position-count phrasing,
+          v1.35 zip provenance disclosure, and the stale semis-cluster
+          comment; removed the two dead code/config items MINOR finding 8
+          flagged (_resolve_crypto_sleeve_pct(), gates.trim_rsi). Floating-
+          point epsilon (ADVISORY 9) and repeated 8.0/40.0 literal fallbacks
+          (ADVISORY 10) deliberately deferred, no behavior-preserving
+          correction attempted in this pass. 36 new focused tests added.
+          Full suite: 1549 passed, 0 failed. No policy, holdings quantity,
+          target weight, or gate activation changed. Not merged, not yet
+          re-reviewed, not principal-accepted.
+        pr: 202
+        status: drafted
+        date: "2026-07-31"
     evidence_refs:
       - governance/decisions/PHQ-2026-02-holdings-reconciliation-and-actionable-allocation-policy.md
       - governance/evidence/PHQ-2026-02/README.md
       - governance/evidence/PHQ-2026-02/reconciliation_check.json
     next_action: >
-      Independent exact-head review of this draft PR by a reviewer who did
-      not author it, then explicit principal acceptance, then merge. The
+      A focused independent delta review of this correction pass (by
+      reviewer session f80b7b83-a89f-472c-aab7-810ba9717bc0 or another
+      eligible reviewer who did not author it), confirming the three MAJOR
+      findings from review 4830452924 are actually resolved at the new
+      exact head, then explicit principal acceptance, then merge. The
       pytest suite (test_allocate_integration.py/test_margin.py/
-      test_plan_gates.py, the three files with actual CI failures) has been
-      migrated to the canonical destination schema in a bounded author
-      correction pass — full suite passes with zero failures at this PR's
-      final head. The standalone backtest scripts remain unmigrated,
+      test_plan_gates.py, the three files with actual CI failures from the
+      first review round) was migrated to the canonical destination schema
+      in an earlier bounded author correction pass; this second pass
+      corrected the three MAJOR robustness findings plus the disclosed
+      MINOR/dead-code items — full suite passes with zero failures at this
+      PR's final head. The standalone backtest scripts remain unmigrated,
       disclosed, and out of scope (not part of the pytest suite or CI).
+      Floating-point epsilon and repeated ceiling-literal ADVISORY items
+      remain deliberately deferred.
     completion_criteria: >
       Complete once this PR merges after independent review, correction if
       needed, exact-head re-review, principal acceptance, and post-merge

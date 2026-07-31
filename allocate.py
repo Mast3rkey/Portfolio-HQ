@@ -89,18 +89,61 @@ def load_yaml(path: Path) -> dict:
         return yaml.safe_load(f) or {}
 
 
+# Independent review, PR #202, MAJOR finding 3: the exact, case-sensitive
+# vocabulary the canonical v1.30 destination schema supports (targets.yaml's
+# own header comment). No other value, and no case variant of these, is
+# valid -- an unrecognized or miscased asset_class must fail loudly, never
+# silently fall through as tradable ("equity") or non-tradable.
+VALID_ASSET_CLASSES = frozenset({"equity", "fund", "crypto", "reserve", "cash"})
+
+
 def build_roster(targets: dict) -> dict:
     """Return {ticker: {target_pct, asset_class}} from targets.yaml's
     `destination:` list — the canonical v1.30 architecture (PHQ-2026-02).
     Every row (including RESERVE/CASH synthetic sleeves) is included; callers
-    that need only market-tradable tickers should filter on asset_class."""
+    that need only market-tradable tickers should filter on asset_class.
+
+    Every row is validated at parse time (independent review, PR #202,
+    MAJOR finding 3 + destination-row validation): a missing/blank/
+    duplicate ticker, a missing/non-numeric/negative target_pct, or a
+    missing/blank/unknown/miscased asset_class each raise loudly, naming
+    the offending row, rather than silently defaulting or surfacing as an
+    unlabeled KeyError/ValueError deeper in plan()."""
     roster: dict[str, dict] = {}
-    for row in targets.get("destination", []) or []:
-        tk = str(row["ticker"]).upper()
-        roster[tk] = {
-            "target_pct": float(row["target_pct"]),
-            "asset_class": row.get("asset_class", "equity"),
-        }
+    for i, row in enumerate(targets.get("destination", []) or []):
+        label = f"destination row #{i}"
+        if not isinstance(row, dict):
+            raise ValueError(f"targets.yaml {label} is not a mapping: {row!r}")
+
+        raw_ticker = row.get("ticker")
+        if not isinstance(raw_ticker, str) or not raw_ticker.strip():
+            raise ValueError(f"targets.yaml {label} has a missing or blank 'ticker'")
+        tk = raw_ticker.strip().upper()
+        label = f"targets.yaml destination row #{i} ({tk})"
+        if tk in roster:
+            raise ValueError(f"{label} is a duplicate ticker")
+
+        if "target_pct" not in row or row["target_pct"] is None:
+            raise ValueError(f"{label} is missing 'target_pct'")
+        try:
+            target_pct = float(row["target_pct"])
+        except (TypeError, ValueError):
+            raise ValueError(f"{label} has a non-numeric 'target_pct': {row['target_pct']!r}")
+        if target_pct < 0:
+            raise ValueError(f"{label} has a negative 'target_pct': {target_pct}")
+
+        asset_class = row.get("asset_class")
+        if not isinstance(asset_class, str) or not asset_class.strip():
+            raise ValueError(f"{label} has a missing or blank 'asset_class'")
+        if asset_class != asset_class.strip():
+            raise ValueError(f"{label} has a whitespace-padded 'asset_class': {asset_class!r}")
+        if asset_class not in VALID_ASSET_CLASSES:
+            raise ValueError(
+                f"{label} has an unrecognized 'asset_class' {asset_class!r} — "
+                f"must be exactly one of {sorted(VALID_ASSET_CLASSES)} "
+                "(case-sensitive; no unknown value is silently accepted)")
+
+        roster[tk] = {"target_pct": target_pct, "asset_class": asset_class}
     return roster
 
 
@@ -108,14 +151,50 @@ def load_gates() -> dict[str, dict]:
     """Actionable gates, represented separately from targets.yaml per
     PHQ-2026-02 — {ticker: {status, authority, allow_add, next_gate, ...}}.
     A gated ticker's target capital is never bought and never renormalized
-    into any other name (see gates.yaml, plan()). Missing/empty file returns
-    no gates rather than raising — absence is a valid (if surprising) state,
-    not an error, consistent with this repository's existing missing-config
-    conventions; plan() still runs, it just has no gate exclusions to apply."""
+    into any other name (see gates.yaml, plan()).
+
+    gates.yaml is MANDATORY under the canonical PHQ-2026-02 architecture —
+    a gated ticker (e.g. SPCX) becoming an ordinary, unflagged buy candidate
+    because its gate config failed to load would be a silent policy breach,
+    not a benign absence. Missing, unreadable, malformed, or structurally
+    invalid configuration must never be interpreted as an empty gate set;
+    this fails loudly instead, mirroring _resolve_margin_config()'s existing
+    fail-loud convention (NUM-0001 P1-1) for the same reason: both are
+    safety-critical parameters where a wrong default is worse than a crash.
+    Independent review, PR #202, MAJOR finding 1."""
     if not GATES_FILE.exists():
-        return {}
-    data = load_yaml(GATES_FILE) or {}
-    return {str(g["ticker"]).upper(): g for g in (data.get("gates", []) or [])}
+        raise ValueError(
+            f"gates.yaml is missing ({GATES_FILE}) — required under the "
+            "canonical PHQ-2026-02 architecture; cannot safely treat this "
+            "as 'no gates', which would let a gated ticker appear as an "
+            "ordinary buy candidate")
+    try:
+        raw = GATES_FILE.read_text()
+    except OSError as e:
+        raise ValueError(f"gates.yaml could not be read ({GATES_FILE}): {e}")
+    try:
+        data = yaml.safe_load(raw)
+    except yaml.YAMLError as e:
+        raise ValueError(f"gates.yaml is not valid YAML ({GATES_FILE}): {e}")
+    if not isinstance(data, dict):
+        raise ValueError(
+            f"gates.yaml ({GATES_FILE}) must parse to a mapping with a "
+            f"top-level 'gates' key, got {type(data).__name__}")
+    gate_list = data.get("gates")
+    if gate_list is None:
+        raise ValueError(f"gates.yaml ({GATES_FILE}) is missing its top-level 'gates' key")
+    if not isinstance(gate_list, list):
+        raise ValueError(
+            f"gates.yaml ({GATES_FILE}) 'gates' key must be a list, "
+            f"got {type(gate_list).__name__}")
+    result: dict[str, dict] = {}
+    for i, g in enumerate(gate_list):
+        if not isinstance(g, dict) or not g.get("ticker"):
+            raise ValueError(
+                f"gates.yaml ({GATES_FILE}) entry #{i} is missing a required "
+                "'ticker' field")
+        result[str(g["ticker"]).upper()] = g
+    return result
 
 
 def load_issuer_lookthrough() -> dict:
@@ -226,25 +305,6 @@ def _resolve_margin_config(targets: dict) -> tuple[float, float]:
     return leverage_cap, buffer_floor_pct
 
 
-def _resolve_crypto_sleeve_pct(crypto_cfg: dict, coins: list[str]) -> float | None:
-    """Single canonical resolution of crypto.sleeve_pct, used identically by
-    plan()'s sleeve-gap math and main()'s Health View/result metadata
-    (NUM-0001 P1-3: these previously defaulted independently to 0 and 10).
-    Returns None when the sleeve is genuinely disabled (no coins configured).
-    Coins configured with a missing or non-numeric sleeve_pct fails loudly
-    instead of silently inventing a target."""
-    if not coins:
-        return None
-    if "sleeve_pct" not in crypto_cfg:
-        raise ValueError(
-            "targets.yaml 'crypto' block has coins configured but no "
-            "'sleeve_pct' key")
-    try:
-        return float(crypto_cfg["sleeve_pct"])
-    except (TypeError, ValueError):
-        raise ValueError("targets.yaml 'crypto.sleeve_pct' is not numeric")
-
-
 def margin_capacity(gross, margin_debt, cash, leverage_cap, buffer_pct, buffer_floor_pct,
                     margin_requested):
     """Structural leverage-cap + buffer-floor check (July 2026 margin doctrine).
@@ -348,16 +408,24 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
                 "vs200": vs200, "target": target_dollars, "current": current,
                 "gap": gap}
         tk_clusters = [c["name"] for c in clusters if tk in c["tickers"]]
-        for cname in tk_clusters:
-            cluster_info[cname][tk] = {"current": current, "target": target_dollars,
-                                       "price": price, "rsi": rsi, "asset_class": asset_class}
+        gate = gates_cfg.get(tk)
+        # Independent review, PR #202, MAJOR finding 2: a gated or synthetic
+        # non-tradable (reserve/cash) row must never become a mechanical
+        # cluster-trim candidate, even if a future config mistakenly lists
+        # one as a cluster member — a gate blocks adds, it must never create
+        # or permit an automatic sale. Guarded here, at the single source
+        # cluster_info feeds, rather than by filtering candidates later.
+        trim_eligible = asset_class not in ("reserve", "cash") and gate is None
+        if trim_eligible:
+            for cname in tk_clusters:
+                cluster_info[cname][tk] = {"current": current, "target": target_dollars,
+                                           "price": price, "rsi": rsi, "asset_class": asset_class}
 
         # ---- RESERVE/CASH: never a buy candidate, definitionally satisfied ----
         if asset_class in ("reserve", "cash"):
             continue
 
         # ---- GATED (PHQ-2026-02): target capital held as cash, no renormalize --
-        gate = gates_cfg.get(tk)
         if gate is not None:
             no_add_gated.append({**base, "action": "NO ADD — GATED",
                                  "status": gate.get("status"),

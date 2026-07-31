@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+import allocate
 from allocate import build_roster, load_gates, load_issuer_lookthrough, plan
 
 HERE = Path(__file__).resolve().parent
@@ -314,3 +315,379 @@ def test_all_required_classification_labels_reachable(targets, roster, gates_cfg
     assert result["no_add_gated"]             # NO ADD — GATED reachable
     assert result["no_add_common_driver"]     # NO ADD — COMMON-DRIVER CEILING reachable
     assert result["unresolved"]               # UNRESOLVED reachable
+
+
+# ── 8. MAJOR 1 (independent review, PR #202): gates.yaml fails loudly ──────
+# load_gates() must never silently return {} for missing/unreadable/
+# malformed/structurally-invalid gates.yaml -- an empty fallback would let a
+# normally-gated ticker (e.g. SPCX) become an ordinary, unflagged BUY
+# candidate with no warning anywhere in output.
+
+def test_gates_missing_file_raises_and_names_gates_yaml(tmp_path, monkeypatch):
+    monkeypatch.setattr(allocate, "GATES_FILE", tmp_path / "does_not_exist.yaml")
+    with pytest.raises(ValueError, match="gates.yaml"):
+        allocate.load_gates()
+
+
+def test_gates_unreadable_path_raises(tmp_path, monkeypatch):
+    # A directory where a file is expected reliably raises OSError on
+    # read_text() without needing unsafe chmod/permission changes.
+    bad_path = tmp_path / "gates.yaml"
+    bad_path.mkdir()
+    monkeypatch.setattr(allocate, "GATES_FILE", bad_path)
+    with pytest.raises(ValueError, match="gates.yaml"):
+        allocate.load_gates()
+
+
+def test_gates_malformed_yaml_raises(tmp_path, monkeypatch):
+    bad_path = tmp_path / "gates.yaml"
+    bad_path.write_text("gates: [ticker: SPCX\n  status: broken indentation :::")
+    monkeypatch.setattr(allocate, "GATES_FILE", bad_path)
+    with pytest.raises(ValueError, match="gates.yaml"):
+        allocate.load_gates()
+
+
+def test_gates_wrong_top_level_type_raises(tmp_path, monkeypatch):
+    bad_path = tmp_path / "gates.yaml"
+    bad_path.write_text("- just\n- a\n- list\n")   # not a mapping at all
+    monkeypatch.setattr(allocate, "GATES_FILE", bad_path)
+    with pytest.raises(ValueError, match="gates.yaml"):
+        allocate.load_gates()
+
+
+def test_gates_missing_gates_key_raises(tmp_path, monkeypatch):
+    bad_path = tmp_path / "gates.yaml"
+    bad_path.write_text("not_gates: []\n")   # valid YAML, wrong top-level key
+    monkeypatch.setattr(allocate, "GATES_FILE", bad_path)
+    with pytest.raises(ValueError, match="gates.yaml"):
+        allocate.load_gates()
+
+
+def test_gates_entries_not_a_list_raises(tmp_path, monkeypatch):
+    bad_path = tmp_path / "gates.yaml"
+    bad_path.write_text("gates: {ticker: SPCX}\n")   # a mapping, not a list
+    monkeypatch.setattr(allocate, "GATES_FILE", bad_path)
+    with pytest.raises(ValueError, match="gates.yaml"):
+        allocate.load_gates()
+
+
+def test_gates_entry_missing_ticker_raises(tmp_path, monkeypatch):
+    bad_path = tmp_path / "gates.yaml"
+    bad_path.write_text("gates:\n  - status: cash_pending_clearance\n")   # no ticker field
+    monkeypatch.setattr(allocate, "GATES_FILE", bad_path)
+    with pytest.raises(ValueError, match="gates.yaml"):
+        allocate.load_gates()
+
+
+def test_gates_valid_configuration_loads_correctly(tmp_path, monkeypatch):
+    good_path = tmp_path / "gates.yaml"
+    good_path.write_text(
+        "gates:\n"
+        "  - ticker: SPCX\n"
+        "    status: hold_no_add\n"
+        "    authority: PHQ-2026-01\n"
+        "    allow_add: false\n"
+        "    next_gate: test\n")
+    monkeypatch.setattr(allocate, "GATES_FILE", good_path)
+    loaded = allocate.load_gates()
+    assert loaded == {"SPCX": {"ticker": "SPCX", "status": "hold_no_add",
+                               "authority": "PHQ-2026-01", "allow_add": False,
+                               "next_gate": "test"}}
+
+
+def test_spcx_never_a_buy_candidate_when_gate_loading_fails(tmp_path, monkeypatch):
+    """Proves the fail-loud behavior actually protects the allocator: with a
+    broken gates.yaml, main()'s production path raises before plan() ever
+    runs, so no recommendation -- gated or otherwise -- is ever produced
+    using an unverified empty gate set."""
+    import sys
+    import yaml as _yaml
+
+    targets_file = tmp_path / "targets.yaml"
+    holdings_file = tmp_path / "holdings.yaml"
+    broken_gates_file = tmp_path / "gates.yaml"
+    with targets_file.open("w") as f:
+        _yaml.safe_dump({
+            "destination": [{"ticker": "SPCX", "target_pct": 5.0, "asset_class": "equity"}],
+            "caps": {"clusters": []},
+            "gates": {"min_lot_dollars": 25, "trend_rsi_override": 30,
+                     "earnings_blackout_days": 7},
+            "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
+        }, f)
+    with holdings_file.open("w") as f:
+        _yaml.safe_dump({
+            "holdings": {}, "shares": {"SPCX": 1.0}, "crypto_shares": {},
+            "margin": {"debt": 0.0, "buffer_pct": 100.0, "synced_at": "2026-07-31"},
+        }, f)
+    # gates.yaml simply absent -> load_gates() must raise before any output.
+
+    monkeypatch.setattr(allocate, "TARGETS_FILE", targets_file)
+    monkeypatch.setattr(allocate, "HOLDINGS_FILE", holdings_file)
+    monkeypatch.setattr(allocate, "GATES_FILE", broken_gates_file)
+    monkeypatch.setattr(sys, "argv", ["allocate.py", "--review", "--no-log"])
+
+    with pytest.raises(ValueError, match="gates.yaml"):
+        allocate.main()
+
+
+# ── 9. MAJOR 2 (independent review, PR #202): gated/non-tradable rows can
+# never enter a mechanical cluster trim, even if misconfigured into one ──
+
+def _cluster_membership_targets(members, cap_pct=5.0):
+    return {
+        "destination": [
+            {"ticker": tk, "target_pct": 5.0, "asset_class": asset_class}
+            for tk, asset_class in members
+        ],
+        "caps": {"clusters": [{"name": "testcluster", "pct": cap_pct,
+                              "tickers": [tk for tk, _ in members]}]},
+        "gates": {"min_lot_dollars": 1, "trend_rsi_override": 30,
+                 "earnings_blackout_days": 7},
+        "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
+    }
+
+
+def test_gated_ticker_in_cluster_is_never_trimmed():
+    targets = _cluster_membership_targets([("SPCX", "equity"), ("NORM", "equity")])
+    roster = build_roster(targets)
+    gates_cfg = {"SPCX": {"status": "hold_no_add", "authority": "PHQ-2026-01",
+                          "next_gate": "test"}}
+    # Both way overweight vs. a tight 5% cap -- SPCX (gated) must never be a
+    # trim candidate; NORM (ungated) legitimately fires the cluster trim.
+    holdings = {"SPCX": 500.0, "NORM": 500.0}
+    metrics = _flat_metrics(["SPCX", "NORM"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0,
+                 gates_cfg=gates_cfg, lookthrough={})
+
+    assert not any(t["ticker"] == "SPCX" for t in result["trims"])
+    assert any(t["ticker"] == "NORM" for t in result["trims"])
+
+
+def test_spcx_specifically_cannot_be_mechanically_trimmed_via_cluster(targets, gates_cfg, lookthrough):
+    """Uses the real, production targets.yaml/gates.yaml: SPCX is not
+    currently a member of any cluster, but this proves the guard holds even
+    if a future edit mistakenly adds it to one."""
+    mutated = json.loads(json.dumps(targets))   # deep copy, safe to mutate
+    mutated["caps"]["clusters"].append(
+        {"name": "misconfigured_test_cluster", "pct": 0.01, "tickers": ["SPCX"]})
+    roster = build_roster(mutated)
+    holdings = {"SPCX": 5000.0}   # wildly overweight vs. any real target
+    metrics = _flat_metrics(["SPCX"])
+    result = plan(mutated, holdings, roster, metrics, True, True, cash=0.0,
+                 gates_cfg=gates_cfg, lookthrough=lookthrough)
+
+    assert not any(t["ticker"] == "SPCX" for t in result["trims"])
+
+
+def test_cash_in_cluster_is_never_trimmed():
+    targets = _cluster_membership_targets([("CASH", "cash"), ("NORM", "equity")])
+    roster = build_roster(targets)
+    holdings = {"CASH": 500.0, "NORM": 500.0}
+    metrics = _flat_metrics(["NORM"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0,
+                 gates_cfg={}, lookthrough={})
+
+    assert not any(t["ticker"] == "CASH" for t in result["trims"])
+
+
+def test_reserve_in_cluster_is_never_trimmed():
+    targets = _cluster_membership_targets([("RESERVE", "reserve"), ("NORM", "equity")])
+    roster = build_roster(targets)
+    holdings = {"RESERVE": 500.0, "NORM": 500.0}
+    metrics = _flat_metrics(["NORM"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0,
+                 gates_cfg={}, lookthrough={})
+
+    assert not any(t["ticker"] == "RESERVE" for t in result["trims"])
+
+
+def test_normal_tradable_cluster_member_still_trims_as_governed():
+    targets = _cluster_membership_targets([("NORM", "equity")], cap_pct=1.0)
+    roster = build_roster(targets)
+    holdings = {"NORM": 100.0}   # target=5 (5% of book 100), cap_dollars=1
+    metrics = _flat_metrics(["NORM"])
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0,
+                 gates_cfg={}, lookthrough={})
+
+    trimmed = next((t for t in result["trims"] if t["ticker"] == "NORM"), None)
+    assert trimmed is not None
+    assert trimmed["dollars"] == 95.0   # trimmed to its own target (5), floored there
+
+
+def test_multi_cluster_membership_remains_deterministic_with_gated_member():
+    # NORM is in two clusters; SPCX (gated) shares one of them. Repeated runs
+    # must produce identical output, and SPCX must never appear in trims in
+    # either.
+    targets = {
+        "destination": [
+            {"ticker": "NORM", "target_pct": 5.0, "asset_class": "equity"},
+            {"ticker": "SPCX", "target_pct": 5.0, "asset_class": "equity"},
+        ],
+        "caps": {"clusters": [
+            {"name": "clusterA", "pct": 1.0, "tickers": ["NORM", "SPCX"]},
+            {"name": "clusterB", "pct": 1.0, "tickers": ["NORM"]},
+        ]},
+        "gates": {"min_lot_dollars": 1, "trend_rsi_override": 30,
+                 "earnings_blackout_days": 7},
+        "margin": {"leverage_cap": 1.8, "buffer_floor_pct": 30.0},
+    }
+    roster = build_roster(targets)
+    gates_cfg = {"SPCX": {"status": "hold_no_add", "authority": "PHQ-2026-01",
+                          "next_gate": "test"}}
+    holdings = {"NORM": 100.0, "SPCX": 100.0}
+    metrics = _flat_metrics(["NORM", "SPCX"])
+
+    result_a = plan(targets, holdings, roster, metrics, True, True, cash=0.0,
+                    gates_cfg=gates_cfg, lookthrough={})
+    result_b = plan(targets, holdings, roster, metrics, True, True, cash=0.0,
+                    gates_cfg=gates_cfg, lookthrough={})
+
+    assert result_a["trims"] == result_b["trims"]   # deterministic
+    assert not any(t["ticker"] == "SPCX" for t in result_a["trims"])
+    assert any(t["ticker"] == "NORM" for t in result_a["trims"])
+
+
+def test_no_gated_or_nontradable_row_ever_in_trims_real_config(targets, gates_cfg, lookthrough):
+    """Stress the real production config/gates with every gated ticker and
+    every reserve/cash row heavily overweight -- none may ever appear as a
+    trim recommendation."""
+    roster = build_roster(targets)
+    non_tradable = {tk for tk, meta in roster.items()
+                    if meta["asset_class"] in ("reserve", "cash")} | set(gates_cfg)
+    holdings = {tk: 100000.0 for tk in roster}   # everything wildly overweight
+    metrics = _flat_metrics(roster)
+    result = plan(targets, holdings, roster, metrics, True, True, cash=0.0,
+                 gates_cfg=gates_cfg, lookthrough=lookthrough)
+
+    trimmed_tickers = {t["ticker"] for t in result["trims"]}
+    assert not (trimmed_tickers & non_tradable)
+
+
+# ── 10. MAJOR 3 + destination-row validation (independent review, PR #202) ──
+# build_roster() must validate every destination row at parse time: exact,
+# case-sensitive asset_class vocabulary, and well-formed ticker/target_pct.
+
+def _row(ticker="AAA", target_pct=5.0, asset_class="equity"):
+    row = {}
+    if ticker is not _MISSING:
+        row["ticker"] = ticker
+    if target_pct is not _MISSING:
+        row["target_pct"] = target_pct
+    if asset_class is not _MISSING:
+        row["asset_class"] = asset_class
+    return row
+
+
+_MISSING = object()
+
+
+def _targets_with_rows(*rows):
+    return {"destination": list(rows), "caps": {"clusters": []},
+            "gates": {"min_lot_dollars": 1}, "margin": {"leverage_cap": 1.8,
+            "buffer_floor_pct": 30.0}}
+
+
+@pytest.mark.parametrize("asset_class", ["equity", "fund", "crypto", "reserve", "cash"])
+def test_every_currently_valid_asset_class_accepted(asset_class):
+    targets = _targets_with_rows(_row(asset_class=asset_class))
+    roster = build_roster(targets)
+    assert roster["AAA"]["asset_class"] == asset_class
+
+
+def test_missing_asset_class_rejected():
+    targets = _targets_with_rows(_row(asset_class=_MISSING))
+    with pytest.raises(ValueError, match="asset_class"):
+        build_roster(targets)
+
+
+def test_null_asset_class_rejected():
+    targets = _targets_with_rows(_row(asset_class=None))
+    with pytest.raises(ValueError, match="asset_class"):
+        build_roster(targets)
+
+
+def test_blank_asset_class_rejected():
+    targets = _targets_with_rows(_row(asset_class=""))
+    with pytest.raises(ValueError, match="asset_class"):
+        build_roster(targets)
+
+
+def test_whitespace_only_asset_class_rejected():
+    targets = _targets_with_rows(_row(asset_class="   "))
+    with pytest.raises(ValueError, match="asset_class"):
+        build_roster(targets)
+
+
+def test_unknown_asset_class_rejected():
+    targets = _targets_with_rows(_row(asset_class="bond"))
+    with pytest.raises(ValueError, match="asset_class"):
+        build_roster(targets)
+
+
+def test_wrong_case_reserve_rejected_not_normalized():
+    targets = _targets_with_rows(_row(asset_class="Reserve"))
+    with pytest.raises(ValueError, match="asset_class"):
+        build_roster(targets)
+
+
+def test_cash_and_reserve_remain_non_tradable():
+    targets = _targets_with_rows(
+        _row(ticker="CASHROW", asset_class="cash"),
+        _row(ticker="RESERVEROW", asset_class="reserve"))
+    roster = build_roster(targets)
+    holdings = {}
+    metrics = {}
+    result = plan(targets, holdings, roster, metrics, True, True, cash=1000.0,
+                 gates_cfg={}, lookthrough={})
+    assert not any(b["ticker"] in ("CASHROW", "RESERVEROW") for b in result["buys"])
+    assert not any(u["ticker"] in ("CASHROW", "RESERVEROW") for u in result["underweight"])
+
+
+def test_missing_ticker_rejected():
+    targets = _targets_with_rows(_row(ticker=_MISSING))
+    with pytest.raises(ValueError, match="ticker"):
+        build_roster(targets)
+
+
+def test_blank_ticker_rejected():
+    targets = _targets_with_rows(_row(ticker="   "))
+    with pytest.raises(ValueError, match="ticker"):
+        build_roster(targets)
+
+
+def test_duplicate_ticker_rejected():
+    targets = _targets_with_rows(_row(ticker="DUP"), _row(ticker="DUP"))
+    with pytest.raises(ValueError, match="duplicate"):
+        build_roster(targets)
+
+
+def test_missing_target_pct_rejected():
+    targets = _targets_with_rows(_row(target_pct=_MISSING))
+    with pytest.raises(ValueError, match="target_pct"):
+        build_roster(targets)
+
+
+def test_non_numeric_target_pct_rejected():
+    targets = _targets_with_rows(_row(target_pct="a lot"))
+    with pytest.raises(ValueError, match="target_pct"):
+        build_roster(targets)
+
+
+def test_negative_target_pct_rejected():
+    targets = _targets_with_rows(_row(target_pct=-1.0))
+    with pytest.raises(ValueError, match="target_pct"):
+        build_roster(targets)
+
+
+def test_invalid_row_error_identifies_the_offending_row():
+    targets = _targets_with_rows(_row(ticker="GOOD"), _row(ticker="BAD", asset_class="bogus"))
+    with pytest.raises(ValueError, match=r"row #1.*BAD|BAD.*row #1"):
+        build_roster(targets)
+
+
+def test_real_targets_yaml_passes_all_validation(targets):
+    # The accepted 37-row canonical v1.30 config itself must validate
+    # cleanly -- proves the new validation doesn't reject legitimate,
+    # already-approved destination rows.
+    roster = build_roster(targets)
+    assert len(roster) == 37
