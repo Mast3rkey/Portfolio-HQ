@@ -94,10 +94,14 @@ unresolved, the principal supplied a further "Final Account Summary
 Correction v1.38" package (`MANIFEST.json`, a JSON account-summary export,
 `README.md`, and three Robinhood screenshots — `account_home_1613.png`,
 `buying_power_cash_1613.png`, `margin_state_1613.png`, all timestamped
-~16:13 ET 2026-07-31). The overall package SHA-256 and every internal file's
-SHA-256 were independently recomputed and matched exactly (package:
-`d423827f470576feb382772b8abdd66b27caea28b78a8a867c02b5e504c57a60`;
-internal-file hashes below under Evidence).
+~16:13 ET 2026-07-31). The original v1.38 transfer ZIP was verified before
+extraction with SHA-256
+`d423827f470576feb382772b8abdd66b27caea28b78a8a867c02b5e504c57a60`. The ZIP
+itself is not retained in this repository, so that transfer-package hash is
+recorded provenance rather than a repository-recomputable aggregate.
+Integrity of the retained extracted evidence is controlled by the
+manifest's per-file hashes, all of which were independently recomputed and
+matched (internal-file hashes below under Evidence).
 
 **The correction resolves the cash discrepancy exactly, not approximately:**
 
@@ -250,10 +254,13 @@ filing time:
 (`MANIFEST.json`, `Portfolio_HQ_Final_Account_Summary_Correction_v1_38.json`,
 `README.md`, `evidence/account_home_1613.png`,
 `evidence/buying_power_cash_1613.png`, `evidence/margin_state_1613.png`).
-Overall package SHA-256
-(`d423827f470576feb382772b8abdd66b27caea28b78a8a867c02b5e504c57a60`) and
-every internal file's SHA-256 independently recomputed and matched against
-`MANIFEST.json` exactly at filing time:
+The original v1.38 transfer ZIP was verified before extraction with SHA-256
+`d423827f470576feb382772b8abdd66b27caea28b78a8a867c02b5e504c57a60`. The ZIP
+itself is not retained in this repository, so that transfer-package hash is
+recorded provenance rather than a repository-recomputable aggregate.
+Integrity of the retained extracted evidence is controlled by the
+manifest's per-file hashes, all of which were independently recomputed and
+matched against `MANIFEST.json` exactly at filing time:
 
 - `Portfolio_HQ_Final_Account_Summary_Correction_v1_38.json`:
   `506f8b8d33b4dd247fd2ebff4583032065bf85f919c638380aa1b50d8bf84012`
