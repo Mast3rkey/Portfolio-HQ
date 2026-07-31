@@ -3420,3 +3420,157 @@ workstreams:
       governance/decisions/PHQ-2026-01-canonical-architecture-and-transition-policy-approval.md).
     supersedes: null
     superseded_by: null
+
+  - id: WS-0007
+    title: Repository-native Portfolio-HQ dashboard
+    objective: >
+      Provide one repository-native, read-only, local-only dashboard that
+      renders this repository's own committed state — portfolio, targets,
+      concentration and risk context, governance and provenance — from
+      structured repository sources plus local git metadata, with prominent
+      stale/missing/incomplete-state disclosure and explicit abstention
+      wherever current allocation truth is unavailable. Presentation only:
+      it derives no new portfolio fact, duplicates no governed calculation,
+      and is never a source of truth. Distinct from WS-0002 Phase Two
+      (OPS-0005), which is a stdout-only status layer expressly barred from
+      producing a generated report file, and distinct from WS-0003, whose
+      broader daily allocation-check user-experience planning intent
+      remains deferred and unauthorized — this dashboard deliberately does
+      not produce an allocation conclusion.
+    governing_authority:
+      - governance/decisions/OPS-0011-repository-native-dashboard-capability-authorization.md
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
+      - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md (review standard)
+      - governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md (lifecycle)
+      - governance/decisions/GOV-0001-governance-architecture-adopted.md
+      - governance/decisions/GOV-0002-operational-precedence-hierarchy.md
+    status: proposed
+    priority: secondary
+    dependencies: []
+    authorized_scope: >
+      None yet — OPS-0011 is filed but unmerged as of this entry, and
+      OPS-0001 forbids a session from self-authorizing a workstream to
+      authorized status. Conditional on OPS-0011 merging to main, the
+      authorized scope becomes exactly OPS-0011 sections 2 through 4: one
+      repository-native read-only dashboard capability; one canonical
+      generator and one supported master HTML interface; static standalone
+      HTML generated from structured repository sources plus local git
+      metadata; an optional local server authorized only when bound to the
+      loopback interface 127.0.0.1, with binding to 0.0.0.0, a LAN address,
+      or any other externally reachable interface not authorized as a
+      default, an option, or a configurable setting (an authorization
+      boundary, not a default preference, per OPS-0011 sections 2.4 and 5);
+      commit/branch/dirty-worktree/effective-date/input-file
+      provenance display; prominent stale/missing/incomplete-state
+      warnings; disclosure or abstention when current allocation truth is
+      unavailable; historical HTML treated as archive evidence only, never
+      operational input; reproducible, non-authoritative generated output;
+      focused tests for safety, provenance, stale-state behavior,
+      accessibility, offline operation, and historical-HTML isolation —
+      delivered through exactly one bounded implementation PR containing
+      only OPS-0011 section 3's enumerated file list.
+    prohibited_scope: >
+      Any brokerage connection; any Robinhood or Alpaca execution; any
+      order creation or submission or order path of any kind; mutation of
+      holdings.yaml, targets.yaml, any gate, any accepted decision, or
+      operations/WORKSTREAMS.yaml from the user interface; browser-side
+      portfolio authority; a second allocator; duplication of any governed
+      portfolio calculation; external analytics or any required CDN,
+      remote font, remote stylesheet, remote script, or network call;
+      treating generated HTML as repository authority; parsing historical
+      HTML as current state; fabricating a missing measurement; silently
+      hiding stale or incomplete repository truth; automatically changing
+      investment policy; committing generated HTML; any reverse import of
+      the dashboard package into allocate.py, margin_state.py, or any
+      Intelligence/freshness production code; integration into
+      run_portfolio_check.sh or the default daily workflow; any
+      PHQ-2026-02 implementation; any holdings reconciliation; any gated-
+      name activation; any target/tier/role/cluster/cap/margin/allocator
+      change; and merging the implementation PR solely because OPS-0011 is
+      filed.
+    milestones:
+      - gate: capability-authorization-filed
+        description: >
+          OPS-0011 drafted and filed together with this register entry on a
+          single draft, unmerged governance pull request, from
+          origin/main at 9bf2c61ab085bc55448f3cef4cae40f92798bc73. Closes
+          the authority gap an independent review of draft PR #199
+          identified: WS-0003 authorizes nothing and prohibits
+          presentation/UX/reporting implementation within itself; OPS-0005
+          section 3 expressly declined a generated report artifact for
+          WS-0002 Phase Two while leaving a future decision free to
+          authorize one; OPS-0001 rejected a generated dashboard for the
+          register on the same terms; and a docs/ design note cannot
+          self-authorize its own implementation. Not merged, not
+          independently reviewed, and not principal-accepted in the filing
+          session. Filed as PR #200.
+        pr: 200
+        status: drafted
+        date: "2026-07-31"
+      - gate: candidate-implementation-pr-identified
+        description: >
+          PR #199 ("feat: repository-native Portfolio-HQ dashboard
+          (read-only)") is identified as the candidate implementation PR
+          for this capability — open, draft, unmerged, head
+          4f9f6d0633d1be3107a6a6922abc25518b6ece26, base main at
+          9bf2c61ab085bc55448f3cef4cae40f92798bc73, exact-head CI check
+          "test" completed successfully, zero GitHub reviews and no
+          retained artifact under governance/audits/ anchored to its head
+          (all independently verified 2026-07-31). It is NOT approved: it
+          was authored before any authorization existed, four
+          implementation findings reported by an independent reviewer
+          remain unresolved and were not evaluated by the filing session,
+          and OPS-0011 authorizes a capability class and bounded scope, not
+          this or any exact diff. It remains gated on independent exact-head
+          review under OPS-0007 section 1, a bounded correction pass, an
+          exact-head re-review, explicit principal acceptance, and
+          immediate post-merge verification. Untouched by the filing
+          session.
+        pr: 199
+        status: drafted
+        date: "2026-07-31"
+    evidence_refs:
+      - governance/decisions/OPS-0011-repository-native-dashboard-capability-authorization.md
+      - governance/decisions/OPS-0005-ws0002-phase-two-reactivation-authorization.md
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md
+    next_action: >
+      Independent exact-head review of this governance pull request by an
+      eligible reviewer under OPS-0007 section 1, then explicit principal
+      acceptance, then merge. Immediately on merge, the merging session
+      performs post-merge verification (OPS-0009 section 9) and
+      synchronizes this entry: status proposed to authorized,
+      authorized_scope restated as effective, the merge commit recorded,
+      and last_verified_main_sha/last_verified_date updated — a factual
+      recording of an accomplished merge, not a new authorization. Only
+      after that merge may the single bounded implementation PR proceed
+      through its own separate review, correction, acceptance, and merge
+      gates. No implementation work, no PR #199 change, and no PR #199
+      merge is authorized before then.
+    completion_criteria: >
+      This workstream is complete when the single bounded implementation PR
+      authorized by OPS-0011 section 3 merges after its own independent
+      exact-head review, resolution of every material finding, exact-head
+      re-review, explicit principal acceptance, and immediate post-merge
+      ancestry/scope/validator/test verification — with this register
+      entry factually synchronized. Completion authorizes no second
+      interface, no further phase, and no default-daily-workflow
+      integration; each would require its own separate future governance
+      decision.
+    blocker: >
+      OPS-0011 is unmerged. No implementation authority exists yet. PR #199
+      may not be marked ready or merged, and its four reported findings
+      remain unresolved and unevaluated by the filing session.
+    active_branch: claude/ops-0011-dashboard-capability-authorization
+    active_pr: 200
+    last_verified_main_sha: 9bf2c61ab085bc55448f3cef4cae40f92798bc73
+    last_verified_date: "2026-07-31"
+    authorized_by: >
+      None yet — OPS-0011 is filed but unmerged. Drafting and filing of
+      OPS-0011, this register entry, the governance/decisions.yaml index
+      row, the CLAUDE.md Decisions Log pointer, and one draft pull request
+      were explicitly authorized by the principal for the filing session
+      (session 2860f20e-34c9-4397-a2e3-f8cffd82d158), which was equally
+      explicitly barred from modifying or merging PR #199, implementing
+      dashboard code, or merging anything.
+    supersedes: null
+    superseded_by: null
