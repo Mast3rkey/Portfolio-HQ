@@ -1,0 +1,8 @@
+id,decision,status,authority,consequence
+DD-001,Approve canonical v1.30 architecture as the long-term destination framework.,APPROVED,"Principal conditional approval, satisfied by architecture-level diligence closure.",The 37 target rows and weights become the approved destination baseline; execution remains separately gated.
+DD-002,Approve the actionable core as the current transition architecture.,APPROVED,Principal approval plus completed unlevered comparison.,Seven uncleared allocations remain cash; total modeled cash/reserve is 12.5% until gates clear.
+DD-003,Quarterly review with tolerance bands; no monthly forced rebalancing.,APPROVED,Completed eight-case unlevered matrix.,"Review quarterly; only trade when drift, valuation, tax, and thesis gates justify action."
+DD-004,No new margin; deposits and approved sale proceeds repay inherited debit first.,APPROVED,"Completed repayment-band, activation, and constraint-dominance studies.",Margin capacity is not investment capital and does not authorize purchases.
+DD-005,Adopt look-through concentration controls.,APPROVED,ETF constituent overlap audit.,Effective single-issuer ceiling 8%; AI/platform common-driver ceiling 40%; no automatic buy that would breach either.
+DD-006,Do not activate the seven gated allocations.,APPROVED,Current primary-source freshness review.,"SNPS, ICE, SPGI, WM, RKLB, TSLA, and SPCX remain cash placeholders until their stated gates clear."
+DD-007,Execution authorization remains withheld.,BLOCKED,"Tax-lot, valuation, and wash-sale evidence incomplete.",No sale or purchase quantities are approved; a lot-aware transition packet is still required.

@@ -335,3 +335,10 @@ decisions:
     related_decisions: [GOV-0002, OPS-0004, OPS-0007, OPS-0008, OPS-0009, OPS-0010, PI-0009, PI-0016, PI-0031, PI-0032, PI-0033]
     supporting_artifact: null
     file: governance/decisions/PI-0034-isrg-pr110-authority-ratification.md
+  - decision_id: PHQ-2026-01
+    date: 2026-07-30
+    status: Accepted
+    category: portfolio_construction_governance
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, TGT-0001, TGT-0002, MARGIN-0004, MARGIN-0005]
+    supporting_artifact: governance/evidence/PHQ-2026-01/final_due_diligence/Portfolio_HQ_Final_Due_Diligence_and_Approval_v1_32.json
+    file: governance/decisions/PHQ-2026-01-canonical-architecture-and-transition-policy-approval.md

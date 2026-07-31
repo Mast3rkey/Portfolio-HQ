@@ -3329,3 +3329,94 @@ workstreams:
       itself, and does not evaluate or complete `PI-0031` §K's Milestone 3 completion standard.
     supersedes: null
     superseded_by: null
+
+  - id: WS-0006
+    title: PHQ-2026-01 canonical architecture and transition policy
+    objective: >
+      Make GitHub the authoritative repository record for the PHQ committee
+      process's completed architecture research and the principal-approved
+      PHQ-2026-01 policy (canonical v1.30 destination architecture, actionable
+      core transition architecture, seven gated names held as cash, quarterly
+      review with tolerance bands, no new margin, 8% effective-issuer and 40%
+      AI/platform common-driver ceilings). This is a synchronization and
+      documentation workstream, not a research workstream — the research
+      itself was performed outside this repository by a separate, standalone
+      backtest application, and is retained here only as verified evidence.
+      Independent of, and not a component of, WS-0005 (OPS-0006's
+      zero-based Portfolio Intelligence / tier-architecture review) — the two
+      tracks ran in parallel using different tooling and evidence and neither
+      supersedes the other.
+    governing_authority:
+      - governance/decisions/PHQ-2026-01-canonical-architecture-and-transition-policy-approval.md
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
+      - governance/decisions/GOV-0001-governance-architecture-adopted.md
+      - governance/decisions/GOV-0002-operational-precedence-hierarchy.md
+    status: in_progress
+    priority: secondary
+    dependencies: []
+    authorized_scope: >
+      Exactly what governance/decisions/PHQ-2026-01-canonical-architecture-and-transition-policy-approval.md
+      authorizes: retention of verified architecture/unlevered-validation
+      evidence under governance/evidence/PHQ-2026-01/, filing of the
+      PHQ-2026-01 decision record itself, this factual WORKSTREAMS.yaml
+      entry, and one design-only note
+      (docs/PHQ-2026-01_TARGET_ALLOCATOR_IMPLEMENTATION_DESIGN_NOTE.md)
+      scoping — not performing — the future target/allocator implementation.
+      No target/allocator implementation is authorized by this entry.
+    prohibited_scope: >
+      Any change to holdings.yaml, targets.yaml, allocate.py,
+      margin_state.py, or any test; any order; any claim of current
+      Robinhood/account state; treating the frozen v1.31 snapshot,
+      provisional transition map, or simplified v1.34/v1.34a outputs as
+      current truth; classifying SPCX as sell-all; silently governing SKHY;
+      advancing gated-name (SNPS, ICE, SPGI, WM, RKLB, TSLA, SPCX) activation
+      without separate accepted evidence and principal approval per name;
+      beginning the target/allocator implementation design note describes
+      without its own separate future principal approval (see that note's
+      §10).
+    milestones:
+      - gate: evidence-and-decision-synchronization
+        description: >
+          Verify the transferred evidence package
+          (Portfolio_HQ_PHQ_2026_01_Repository_Sync_Package_v1_0.zip,
+          SHA-256 9595bf1af0013770e89fc691bf226d42520b6e134cee7d90a144b1f330216e55)
+          against its own internal manifest, retain the smallest sufficient
+          authoritative evidence set under governance/evidence/PHQ-2026-01/,
+          file the PHQ-2026-01 decision record, synchronize this register
+          entry, and author the target/allocator implementation design note.
+          Opened as a draft PR; not merged in this session.
+        pr: null
+        status: drafted
+        date: "2026-07-31"
+    evidence_refs:
+      - governance/decisions/PHQ-2026-01-canonical-architecture-and-transition-policy-approval.md
+      - governance/evidence/PHQ-2026-01/README.md
+      - docs/PHQ-2026-01_TARGET_ALLOCATOR_IMPLEMENTATION_DESIGN_NOTE.md
+    next_action: >
+      Principal review and merge of this draft PR. After merge: (1) principal
+      supplies post-execution Robinhood evidence so holdings.yaml can be
+      reconciled independently of this workstream; (2) principal separately
+      approves the design-note's open questions (representation shape,
+      8%/40% ceiling monitoring approach, the measured ~40.03% AI/platform
+      figure, and holdings reconciliation) before any target/allocator
+      implementation PR may begin.
+    completion_criteria: >
+      This workstream's own scope (evidence retention, decision record,
+      register sync, design note) is complete once this PR merges. It does
+      not define completion for the target/allocator implementation itself
+      — that is future, separately authorized work with its own criteria.
+    blocker: >
+      None for this workstream's own scope. The future target/allocator
+      implementation is blocked on: (a) principal decisions on the four
+      open items in the design note's §10, and (b) holdings.yaml
+      reconciliation from principal-supplied post-execution evidence.
+    active_branch: claude/sync-phq-2026-01-evidence-i9y4dn
+    active_pr: 198
+    last_verified_main_sha: 4c0cc3fac30dd5ba5a6353fee7c0af6b1d09a5bb
+    last_verified_date: "2026-07-31"
+    authorized_by: >
+      Principal approval of Principal Resolution PHQ-2026-01, Portfolio-HQ
+      committee session, 2026-07-30 (recorded in full in
+      governance/decisions/PHQ-2026-01-canonical-architecture-and-transition-policy-approval.md).
+    supersedes: null
+    superseded_by: null
