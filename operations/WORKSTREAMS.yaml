@@ -3499,8 +3499,8 @@ workstreams:
           register on the same terms; and a docs/ design note cannot
           self-authorize its own implementation. Not merged, not
           independently reviewed, and not principal-accepted in the filing
-          session.
-        pr: null
+          session. Filed as PR #200.
+        pr: 200
         status: drafted
         date: "2026-07-31"
       - gate: candidate-implementation-pr-identified
@@ -3557,7 +3557,7 @@ workstreams:
       may not be marked ready or merged, and its four reported findings
       remain unresolved and unevaluated by the filing session.
     active_branch: claude/ops-0011-dashboard-capability-authorization
-    active_pr: null
+    active_pr: 200
     last_verified_main_sha: 9bf2c61ab085bc55448f3cef4cae40f92798bc73
     last_verified_date: "2026-07-31"
     authorized_by: >
