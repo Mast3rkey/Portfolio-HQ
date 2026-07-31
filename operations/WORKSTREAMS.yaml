@@ -3850,7 +3850,7 @@ workstreams:
           Log pointer, this register entry. Opened as a draft PR; not
           merged, not independently reviewed, not principal-accepted in
           this session.
-        pr: null
+        pr: 205
         status: drafted
         date: "2026-07-31"
     evidence_refs:
@@ -3882,7 +3882,7 @@ workstreams:
       supplied and recorded) or missing execution (already performed by the
       principal).
     active_branch: claude/skhy-spcx-post-execution-factual-sync
-    active_pr: null
+    active_pr: 205
     last_verified_main_sha: 7d9477b2a30180b6025452957eb3c866fed50387
     last_verified_date: "2026-07-31"
     authorized_by: >
