@@ -1,0 +1,65 @@
+# issuer_lookthrough.yaml — 8% effective-issuer and 40% AI/platform
+# common-driver no-add controls, per PHQ-2026-02
+# (governance/decisions/PHQ-2026-02-holdings-reconciliation-and-actionable-allocation-policy.md).
+#
+# Membership and fund_holding_weight below are transcribed verbatim from
+# governance/evidence/PHQ-2026-01/final_due_diligence/Portfolio_HQ_Look_Through_Exposure_v1_32.csv
+# (retained under governance/evidence/PHQ-2026-01/) — a point-in-time,
+# hand-maintained ETF-constituent snapshot, NOT a live fetch (this
+# repository's Alpaca client has no ETF-constituent-lookthrough capability;
+# design note PHQ-2026-01_TARGET_ALLOCATOR_IMPLEMENTATION_DESIGN_NOTE.md §5/§6
+# explicitly warns against inventing a new estimate). Must be refreshed at
+# each quarterly review, per PHQ-2026-01's own Limitations section — stale
+# beyond one quarter should be treated as a disclosed data-freshness warning,
+# not silently trusted.
+#
+# effective_weight = direct_weight + (fund_weight_of_book x fund_holding_weight),
+# computed at runtime from CURRENT reconciled holdings/prices — this file
+# supplies only the constituent weights (fund_holding_weight), never the
+# effective weight itself, which is never point-in-time-frozen except for
+# the one retained historical figure below.
+
+issuer_ceiling_pct: 8.0
+common_driver_ceiling_pct: 40.0
+
+# Retained point-in-time measurement from the PHQ-2026-01 due-diligence
+# look-through audit (Portfolio_HQ_Final_Due_Diligence_and_Approval_v1_32.json
+# `lookthrough_summary.effective_ai_platform_common_driver_estimate`,
+# computed from canonical v1.30 TARGET weights, i.e. full deployment, not
+# current holdings). Above the 40% ceiling as measured — not rounded into
+# compliance, and may not be increased without separate principal approval
+# (PHQ-2026-01 point 9, PHQ-2026-02 principal approval text).
+retained_common_driver_measurement:
+  value_pct: 40.0284
+  measured_at: 2026-07-30
+  methodology: "canonical v1.30 target-weight-basis look-through, PHQ-2026-01 due diligence"
+  source: governance/evidence/PHQ-2026-01/final_due_diligence/Portfolio_HQ_Final_Due_Diligence_and_Approval_v1_32.json
+
+# AI/platform common-driver membership — the same 11 issuers the retained
+# 40.0284% figure was computed over. NOT the same as targets.yaml's `semis`
+# cluster or any other correlated-cluster cap (design note §6 explicitly
+# warns against silently reusing that membership) — this is its own
+# explicit list, sourced from the retained look-through evidence.
+issuers:
+  - ticker: NVDA
+    funds: [{fund: SPY, fund_holding_weight: 0.0766}]
+  - ticker: MSFT
+    funds: [{fund: SPY, fund_holding_weight: 0.0456}]
+  - ticker: AMZN
+    funds: [{fund: SPY, fund_holding_weight: 0.0377}]
+  - ticker: GOOGL
+    funds: [{fund: SPY, fund_holding_weight: 0.0572}]  # "Alphabet (GOOGL+GOOG)" in source; this account holds GOOGL only
+  - ticker: AVGO
+    funds: [{fund: SPY, fund_holding_weight: 0.0274}]
+  - ticker: META
+    funds: [{fund: SPY, fund_holding_weight: 0.0221}]
+  - ticker: LLY
+    funds: [{fund: SPY, fund_holding_weight: 0.0147}]
+  - ticker: TSLA
+    funds: [{fund: SPY, fund_holding_weight: 0.0167}]
+  - ticker: AAPL
+    funds: [{fund: SPY, fund_holding_weight: 0.0764}]   # no direct target/holding; embedded-only via SPY
+  - ticker: TSM
+    funds: [{fund: VWO, fund_holding_weight: 0.1464}]
+  - ticker: ASML
+    funds: [{fund: VEA, fund_holding_weight: 0.0190}]

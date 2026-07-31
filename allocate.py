@@ -3,9 +3,11 @@
 allocate.py — manual-allocation ADVISOR. Recommendations only.
 
 This tool NEVER places, modifies, or cancels an order anywhere. It reads your
-holdings + target tiers, pulls market data from Alpaca (read-only), applies your
-gates, and prints/logs a BUY / TRIM / BLOCKED table plus a short summary. You
-execute manually on Robinhood.
+holdings + canonical destination targets (targets.yaml, PHQ-2026-02), pulls
+market data from Alpaca (read-only), applies your gates (targets.yaml,
+gates.yaml, issuer_lookthrough.yaml), and prints/logs a
+BUY / TRIM / NO ADD / BLOCKED table plus a short summary. You execute
+manually on Robinhood.
 
 Usage:
     python allocate.py --cash 2000       # deploy new cash
@@ -35,6 +37,8 @@ from margin_state import classify_margin_state, concentration_risk_score
 HERE = Path(__file__).resolve().parent
 TARGETS_FILE = HERE / "targets.yaml"
 HOLDINGS_FILE = HERE / "holdings.yaml"
+GATES_FILE = HERE / "gates.yaml"
+LOOKTHROUGH_FILE = HERE / "issuer_lookthrough.yaml"
 LOGS_DIR = HERE / "logs"
 PERF_LOG_FILE = HERE / "performance_log.csv"
 PERF_FIELDS = ["date", "net_equity", "gross", "margin_debt", "qqq_price", "voo_price", "note"]
@@ -85,19 +89,122 @@ def load_yaml(path: Path) -> dict:
         return yaml.safe_load(f) or {}
 
 
+# Independent review, PR #202, MAJOR finding 3: the exact, case-sensitive
+# vocabulary the canonical v1.30 destination schema supports (targets.yaml's
+# own header comment). No other value, and no case variant of these, is
+# valid -- an unrecognized or miscased asset_class must fail loudly, never
+# silently fall through as tradable ("equity") or non-tradable.
+VALID_ASSET_CLASSES = frozenset({"equity", "fund", "crypto", "reserve", "cash"})
+
+
 def build_roster(targets: dict) -> dict:
-    """Return {ticker: {tier, weight_pct, fixed, cap_multiple}} across all tiers."""
+    """Return {ticker: {target_pct, asset_class}} from targets.yaml's
+    `destination:` list — the canonical v1.30 architecture (PHQ-2026-02).
+    Every row (including RESERVE/CASH synthetic sleeves) is included; callers
+    that need only market-tradable tickers should filter on asset_class.
+
+    Every row is validated at parse time (independent review, PR #202,
+    MAJOR finding 3 + destination-row validation): a missing/blank/
+    duplicate ticker, a missing/non-numeric/negative target_pct, or a
+    missing/blank/unknown/miscased asset_class each raise loudly, naming
+    the offending row, rather than silently defaulting or surfacing as an
+    unlabeled KeyError/ValueError deeper in plan()."""
     roster: dict[str, dict] = {}
-    for tier_name, tier in targets.get("tiers", {}).items():
-        w = float(tier.get("weight_pct", 0))
-        fixed = bool(tier.get("fixed", False))
-        cap_mult = float(tier.get("cap_multiple", 1.0))
-        for t in tier.get("tickers", []) or []:
-            roster[t.upper()] = {
-                "tier": tier_name, "weight_pct": w,
-                "fixed": fixed, "cap_multiple": cap_mult,
-            }
+    for i, row in enumerate(targets.get("destination", []) or []):
+        label = f"destination row #{i}"
+        if not isinstance(row, dict):
+            raise ValueError(f"targets.yaml {label} is not a mapping: {row!r}")
+
+        raw_ticker = row.get("ticker")
+        if not isinstance(raw_ticker, str) or not raw_ticker.strip():
+            raise ValueError(f"targets.yaml {label} has a missing or blank 'ticker'")
+        tk = raw_ticker.strip().upper()
+        label = f"targets.yaml destination row #{i} ({tk})"
+        if tk in roster:
+            raise ValueError(f"{label} is a duplicate ticker")
+
+        if "target_pct" not in row or row["target_pct"] is None:
+            raise ValueError(f"{label} is missing 'target_pct'")
+        try:
+            target_pct = float(row["target_pct"])
+        except (TypeError, ValueError):
+            raise ValueError(f"{label} has a non-numeric 'target_pct': {row['target_pct']!r}")
+        if target_pct < 0:
+            raise ValueError(f"{label} has a negative 'target_pct': {target_pct}")
+
+        asset_class = row.get("asset_class")
+        if not isinstance(asset_class, str) or not asset_class.strip():
+            raise ValueError(f"{label} has a missing or blank 'asset_class'")
+        if asset_class != asset_class.strip():
+            raise ValueError(f"{label} has a whitespace-padded 'asset_class': {asset_class!r}")
+        if asset_class not in VALID_ASSET_CLASSES:
+            raise ValueError(
+                f"{label} has an unrecognized 'asset_class' {asset_class!r} — "
+                f"must be exactly one of {sorted(VALID_ASSET_CLASSES)} "
+                "(case-sensitive; no unknown value is silently accepted)")
+
+        roster[tk] = {"target_pct": target_pct, "asset_class": asset_class}
     return roster
+
+
+def load_gates() -> dict[str, dict]:
+    """Actionable gates, represented separately from targets.yaml per
+    PHQ-2026-02 — {ticker: {status, authority, allow_add, next_gate, ...}}.
+    A gated ticker's target capital is never bought and never renormalized
+    into any other name (see gates.yaml, plan()).
+
+    gates.yaml is MANDATORY under the canonical PHQ-2026-02 architecture —
+    a gated ticker (e.g. SPCX) becoming an ordinary, unflagged buy candidate
+    because its gate config failed to load would be a silent policy breach,
+    not a benign absence. Missing, unreadable, malformed, or structurally
+    invalid configuration must never be interpreted as an empty gate set;
+    this fails loudly instead, mirroring _resolve_margin_config()'s existing
+    fail-loud convention (NUM-0001 P1-1) for the same reason: both are
+    safety-critical parameters where a wrong default is worse than a crash.
+    Independent review, PR #202, MAJOR finding 1."""
+    if not GATES_FILE.exists():
+        raise ValueError(
+            f"gates.yaml is missing ({GATES_FILE}) — required under the "
+            "canonical PHQ-2026-02 architecture; cannot safely treat this "
+            "as 'no gates', which would let a gated ticker appear as an "
+            "ordinary buy candidate")
+    try:
+        raw = GATES_FILE.read_text()
+    except OSError as e:
+        raise ValueError(f"gates.yaml could not be read ({GATES_FILE}): {e}")
+    try:
+        data = yaml.safe_load(raw)
+    except yaml.YAMLError as e:
+        raise ValueError(f"gates.yaml is not valid YAML ({GATES_FILE}): {e}")
+    if not isinstance(data, dict):
+        raise ValueError(
+            f"gates.yaml ({GATES_FILE}) must parse to a mapping with a "
+            f"top-level 'gates' key, got {type(data).__name__}")
+    gate_list = data.get("gates")
+    if gate_list is None:
+        raise ValueError(f"gates.yaml ({GATES_FILE}) is missing its top-level 'gates' key")
+    if not isinstance(gate_list, list):
+        raise ValueError(
+            f"gates.yaml ({GATES_FILE}) 'gates' key must be a list, "
+            f"got {type(gate_list).__name__}")
+    result: dict[str, dict] = {}
+    for i, g in enumerate(gate_list):
+        if not isinstance(g, dict) or not g.get("ticker"):
+            raise ValueError(
+                f"gates.yaml ({GATES_FILE}) entry #{i} is missing a required "
+                "'ticker' field")
+        result[str(g["ticker"]).upper()] = g
+    return result
+
+
+def load_issuer_lookthrough() -> dict:
+    """8%/40% no-add control configuration (PHQ-2026-02) — issuer
+    ceiling/common-driver ceiling, the retained point-in-time 40.0284%
+    measurement, and the hand-maintained ETF look-through constituent
+    weights (never live-fetched — see issuer_lookthrough.yaml header)."""
+    if not LOOKTHROUGH_FILE.exists():
+        return {}
+    return load_yaml(LOOKTHROUGH_FILE) or {}
 
 
 # ── data acquisition ───────────────────────────────────────────────────────────
@@ -198,25 +305,6 @@ def _resolve_margin_config(targets: dict) -> tuple[float, float]:
     return leverage_cap, buffer_floor_pct
 
 
-def _resolve_crypto_sleeve_pct(crypto_cfg: dict, coins: list[str]) -> float | None:
-    """Single canonical resolution of crypto.sleeve_pct, used identically by
-    plan()'s sleeve-gap math and main()'s Health View/result metadata
-    (NUM-0001 P1-3: these previously defaulted independently to 0 and 10).
-    Returns None when the sleeve is genuinely disabled (no coins configured).
-    Coins configured with a missing or non-numeric sleeve_pct fails loudly
-    instead of silently inventing a target."""
-    if not coins:
-        return None
-    if "sleeve_pct" not in crypto_cfg:
-        raise ValueError(
-            "targets.yaml 'crypto' block has coins configured but no "
-            "'sleeve_pct' key")
-    try:
-        return float(crypto_cfg["sleeve_pct"])
-    except (TypeError, ValueError):
-        raise ValueError("targets.yaml 'crypto.sleeve_pct' is not numeric")
-
-
 def margin_capacity(gross, margin_debt, cash, leverage_cap, buffer_pct, buffer_floor_pct,
                     margin_requested):
     """Structural leverage-cap + buffer-floor check (July 2026 margin doctrine).
@@ -233,15 +321,50 @@ def margin_capacity(gross, margin_debt, cash, leverage_cap, buffer_pct, buffer_f
     return net_equity, allowed, False, reason
 
 
+def _issuer_exposure(holdings: dict, book: float, lookthrough: dict) -> dict:
+    """Current effective issuer/common-driver exposure computed from LIVE
+    reconciled holdings + current prices (never the frozen retained
+    measurement) — PHQ-2026-02 Phase 7/8. effective_pct = direct + embedded
+    (via the hand-maintained, point-in-time fund_holding_weight constituent
+    table in issuer_lookthrough.yaml — never a live ETF-constituent fetch)."""
+    issuers = {}
+    common_driver_pct = 0.0
+    for iss in lookthrough.get("issuers", []) or []:
+        tk = iss["ticker"].upper()
+        direct_pct = (float(holdings.get(tk, 0.0)) / book * 100.0) if book > 0 else 0.0
+        embedded_pct = 0.0
+        for f in iss.get("funds", []) or []:
+            fund_pct_of_book = (float(holdings.get(f["fund"].upper(), 0.0)) / book * 100.0) if book > 0 else 0.0
+            embedded_pct += fund_pct_of_book * float(f["fund_holding_weight"])
+        effective_pct = direct_pct + embedded_pct
+        issuers[tk] = {"direct_pct": direct_pct, "embedded_pct": embedded_pct,
+                       "effective_pct": effective_pct}
+        common_driver_pct += effective_pct
+    return {"issuers": issuers, "common_driver_current_pct": common_driver_pct}
+
+
 def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
-         margin_debt=0.0, margin_buffer_pct=None, margin_requested=0.0):
+         margin_debt=0.0, margin_buffer_pct=None, margin_requested=0.0,
+         gates_cfg=None, lookthrough=None):
+    """PHQ-2026-02 canonical-destination allocator. `roster` is
+    build_roster()'s per-ticker {target_pct, asset_class} (canonical v1.30 —
+    see targets.yaml). `gates_cfg` is load_gates()'s output (actionable
+    gates, represented separately — a gated ticker is never a buy candidate
+    and its target capital is never renormalized into another name, it
+    simply never enters buy_candidates). `lookthrough` is
+    load_issuer_lookthrough()'s output (8%/40% no-add controls)."""
     gates = targets.get("gates", {})
     caps = targets.get("caps", {})
+    gates_cfg = gates_cfg or {}
+    lookthrough = lookthrough or {}
     min_lot = float(gates.get("min_lot_dollars", 25))
     trend_rsi_override = float(gates.get("trend_rsi_override", 30))
     blackout_days = int(gates.get("earnings_blackout_days", 7))
-    trim_rsi = float(gates.get("trim_rsi", 60))
-    t1t2_trim_mult = float(gates.get("t1t2_trim_mult", 1.5))
+    issuer_ceiling = float(lookthrough.get("issuer_ceiling_pct", 8.0))
+    common_driver_ceiling = float(lookthrough.get("common_driver_ceiling_pct", 40.0))
+    lookthrough_issuer_tickers = {i["ticker"].upper() for i in lookthrough.get("issuers", []) or []}
+    lookthrough_fund_tickers = {f["fund"].upper() for i in lookthrough.get("issuers", []) or []
+                                for f in i.get("funds", []) or []}
     # Correlated-cluster concentration caps (semis, power/infra, ...) — each measured
     # against book (net equity), mechanically trimmed on breach, no RSI gate. A ticker
     # may belong to more than one cluster; every cluster it's in must have room for a buy.
@@ -261,19 +384,19 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
                      for c in clusters}
     cluster_info: dict[str, dict[str, dict]] = {c["name"]: {} for c in clusters}
 
+    exposure = _issuer_exposure(holdings, book, lookthrough)
+    common_driver_running_pct = exposure["common_driver_current_pct"]
+    issuer_running_pct = {tk: v["effective_pct"] for tk, v in exposure["issuers"].items()}
+
     rows: list[dict] = []          # BLOCKED / info rows
     buy_candidates: list[dict] = []
     trims: list[dict] = []
-    # Health View support: one record per T1/T2 ticker, retained regardless of
-    # trim/buy/blocked outcome (see the "T1/T2 proximity ratios aren't retained"
-    # gap this closes) — populated below using the same pre-decision
-    # target_dollars/current every trim/buy branch already computes, never a
-    # second derivation.
-    t1t2_proximity: list[dict] = []
+    no_add_gated: list[dict] = []   # PHQ-2026-02: gated destination capital, held as cash
 
     for tk, meta in roster.items():
-        m = metrics.get(tk, {})
-        target_dollars = book * meta["weight_pct"] / 100.0
+        asset_class = meta["asset_class"]
+        m = metrics.get(tk, {}) if asset_class != "crypto" else {}
+        target_dollars = book * meta["target_pct"] / 100.0
         current = float(holdings.get(tk, 0.0))
         gap = target_dollars - current
         price = m.get("price")
@@ -281,84 +404,66 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
         sma200 = m.get("sma200")
         vs200 = ((price / sma200 - 1) * 100) if (price and sma200) else None
 
-        base = {"ticker": tk, "tier": meta["tier"], "price": price, "rsi": rsi,
+        base = {"ticker": tk, "asset_class": asset_class, "price": price, "rsi": rsi,
                 "vs200": vs200, "target": target_dollars, "current": current,
                 "gap": gap}
         tk_clusters = [c["name"] for c in clusters if tk in c["tickers"]]
+        gate = gates_cfg.get(tk)
+        # Independent review, PR #202, MAJOR finding 2: a gated or synthetic
+        # non-tradable (reserve/cash) row must never become a mechanical
+        # cluster-trim candidate, even if a future config mistakenly lists
+        # one as a cluster member — a gate blocks adds, it must never create
+        # or permit an automatic sale. Guarded here, at the single source
+        # cluster_info feeds, rather than by filtering candidates later.
+        trim_eligible = asset_class not in ("reserve", "cash") and gate is None
+        if trim_eligible:
+            for cname in tk_clusters:
+                cluster_info[cname][tk] = {"current": current, "target": target_dollars,
+                                           "price": price, "rsi": rsi, "asset_class": asset_class}
 
-        if meta["tier"] in ("T1", "T2"):
-            target_positive = target_dollars > 0
-            t1t2_proximity.append({
-                "ticker": tk, "tier": meta["tier"],
-                "current": current, "target": target_dollars,
-                "ratio_to_target": (current / target_dollars) if target_positive else None,
-                "ceiling_mult": t1t2_trim_mult,
-                "ratio_to_ceiling": (current / (target_dollars * t1t2_trim_mult))
-                                    if target_positive else None,
-            })
-        for cname in tk_clusters:
-            cluster_info[cname][tk] = {"current": current, "target": target_dollars,
-                                       "price": price, "rsi": rsi, "tier": meta["tier"]}
+        # ---- RESERVE/CASH: never a buy candidate, definitionally satisfied ----
+        if asset_class in ("reserve", "cash"):
+            continue
 
-        # ---- TRIM check (band/spec overweight + hot RSI) ------------------
-        cap_mult = meta["cap_multiple"] if meta["tier"] == "band" else (
-            1.0 if meta["fixed"] else meta["cap_multiple"])
-        if meta["tier"] in ("band", "spec"):
-            overweight_limit = target_dollars * cap_mult
-            if current > overweight_limit and rsi is not None and rsi > trim_rsi:
-                trims.append({**base, "action": "TRIM",
-                              "dollars": current - target_dollars,
-                              "reason": f"> {cap_mult:.2f}x target, RSI {rsi:.1f}>{trim_rsi:.0f}"})
-                continue
-
-        # ---- T1/T2 concentration ceiling: mechanical, no RSI gate ---------
-        # Doctrine decision (2026-07-15), not a backtest verdict — same category
-        # as the 1.8x leverage cap and 30% buffer floor: a single core-conviction
-        # name at 2x+ target under leverage is a tail/forced-liquidation risk a
-        # TWR backtest can't price (see t1t2_trim_backtest.md's NVDA decomposition
-        # — 2.14x target, -66.4% own drawdown, levered math breaking down at
-        # 1.44x). Floored at the name's own target, same as the cluster caps.
-        if meta["tier"] in ("T1", "T2"):
-            overweight_limit = target_dollars * t1t2_trim_mult
-            if current > overweight_limit:
-                trims.append({**base, "action": "TRIM",
-                              "dollars": current - target_dollars,
-                              "reason": f"> {t1t2_trim_mult:.1f}x target (T1/T2 concentration ceiling), mechanical"})
-                continue
+        # ---- GATED (PHQ-2026-02): target capital held as cash, no renormalize --
+        if gate is not None:
+            no_add_gated.append({**base, "action": "NO ADD — GATED",
+                                 "status": gate.get("status"),
+                                 "authority": gate.get("authority"),
+                                 "next_gate": gate.get("next_gate"),
+                                 "holds_existing_shares": bool(current > 0)})
+            continue
 
         # ---- only underweight names are buy candidates -------------------
         if gap < min_lot:
             continue
-        if m.get("error") or price is None:
+        if asset_class != "crypto" and (m.get("error") or price is None):
             rows.append({**base, "action": "BLOCKED", "dollars": 0,
                          "reason": f"no-data ({m.get('error','insufficient bars')})"})
             continue
 
-        # ---- TREND gate ---------------------------------------------------
-        if sma200 is not None and price < sma200:
-            if rsi is None or rsi >= trend_rsi_override:
+        # No trend/RSI/earnings timing gate for crypto (Decisions Log, July
+        # 2026: conviction-sizing, not a timing call — unchanged by this
+        # migration).
+        if asset_class != "crypto":
+            # ---- TREND gate -------------------------------------------------
+            if sma200 is not None and price < sma200:
+                if rsi is None or rsi >= trend_rsi_override:
+                    rows.append({**base, "action": "BLOCKED", "dollars": 0,
+                                 "reason": f"downtrend (px {vs200:+.1f}% vs 200SMA, RSI "
+                                           f"{'n/a' if rsi is None else f'{rsi:.0f}'})"})
+                    continue
+
+            # ---- EARNINGS gate ------------------------------------------------
+            de = days_until_earnings(tk)
+            if de is None:
+                base["earn_flag"] = "earnings:unavailable"
+            elif 0 <= de <= blackout_days:
                 rows.append({**base, "action": "BLOCKED", "dollars": 0,
-                             "reason": f"downtrend (px {vs200:+.1f}% vs 200SMA, RSI "
-                                       f"{'n/a' if rsi is None else f'{rsi:.0f}'})"})
+                             "reason": f"earnings in {de}d"})
                 continue
 
-        # ---- EARNINGS gate ------------------------------------------------
-        de = days_until_earnings(tk)
-        if de is None:
-            base["earn_flag"] = "earnings:unavailable"
-        elif 0 <= de <= blackout_days:
-            rows.append({**base, "action": "BLOCKED", "dollars": 0,
-                         "reason": f"earnings in {de}d"})
-            continue
-
-        # ---- CAPS: per-name buy ceiling ----------------------------------
-        if meta["tier"] == "spec":          # fixed, never above target
-            name_ceiling = target_dollars
-        elif meta["tier"] == "band":
-            name_ceiling = target_dollars * meta["cap_multiple"]
-        else:
-            name_ceiling = target_dollars
-        max_by_name = max(0.0, name_ceiling - current)
+        max_by_name = max(0.0, target_dollars - current)  # canonical destination is the ceiling
 
         buy_candidates.append({**base, "clusters": tk_clusters,
                                "max_by_name": max_by_name,
@@ -366,16 +471,13 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
                                "earn_flag": base.get("earn_flag", "")})
 
     # ---- CLUSTER CAPS: mechanical trim, no RSI gate --------------------------
-    # Correlation/concentration risk limit, not a return-timing call — unlike
-    # the opportunistic band/spec RSI-gated trims above, a cap breach trims
-    # regardless of momentum. Names already trimmed above (or by an earlier
-    # cluster in this loop) are skipped; trims largest-overweight-first,
-    # floored at each name's own tier target (never trimmed below it).
+    # Correlation/concentration risk limit, not a return-timing call. Names
+    # already trimmed (or by an earlier cluster in this loop) are skipped;
+    # trims largest-overweight-first, floored at each name's own target.
     already_trimmed = {t["ticker"] for t in trims}
     for c in clusters:
         cname, cap_pct = c["name"], c["pct"]
         info = cluster_info[cname]
-        cluster_value[cname] -= sum(t["dollars"] for t in trims if t["ticker"] in c["tickers"])
         cap_dollars = book * cap_pct / 100.0
         excess = cluster_value[cname] - cap_dollars
         if excess < min_lot:
@@ -392,58 +494,33 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
             if amt < min_lot:
                 continue
             trims.append({
-                "ticker": cand["ticker"], "tier": cand["tier"], "price": cand["price"],
-                "rsi": cand["rsi"], "vs200": None, "target": cand["target"],
-                "current": cand["current"], "gap": cand["target"] - cand["current"],
+                "ticker": cand["ticker"], "asset_class": cand["asset_class"],
+                "price": cand["price"], "rsi": cand["rsi"], "vs200": None,
+                "target": cand["target"], "current": cand["current"],
+                "gap": cand["target"] - cand["current"],
                 "action": "TRIM", "dollars": amt,
                 "reason": f"{cname} cluster cap {cap_pct:.0f}% "
                           f"(${cand['overweight']:,.0f} over own target)"})
             cluster_value[cname] -= amt
             excess -= amt
             already_trimmed.add(cand["ticker"])
-            # A ticker trimmed here may also sit in a later cluster in this
-            # loop — keep that cluster's view of it consistent.
             for c2 in clusters:
                 if cand["ticker"] in cluster_info[c2["name"]]:
                     cluster_info[c2["name"]][cand["ticker"]]["current"] = cand["current"] - amt
 
-    # ---- CRYPTO sleeve competes on gap --------------------------------------
-    # Decisions Log (July 2026): conviction-sizing, not a timing call — the
-    # sleeve enters the ranking like any underweight, with NO timing gates
-    # (no trend/RSI/earnings). Coin split within the sleeve is manual.
-    crypto_cfg = targets.get("crypto", {}) or {}
-    sleeve_coins = [c.upper() for c in crypto_cfg.get("coins", [])]
-    sleeve_pct = _resolve_crypto_sleeve_pct(crypto_cfg, sleeve_coins)
-    # Health View support: an always-present state record (current/target/drift)
-    # independent of the buy_candidates entry below, which only ever appears
-    # when the sleeve is meaningfully underweight — not a state interface.
-    crypto_sleeve: dict | None = None
-    if sleeve_coins and sleeve_pct and sleeve_pct > 0:
-        sleeve_val = sum(float(holdings.get(c, 0.0)) for c in sleeve_coins)
-        sleeve_target = book * sleeve_pct / 100.0
-        sleeve_gap = sleeve_target - sleeve_val
-        crypto_sleeve = {
-            "current": sleeve_val,
-            "current_pct": (sleeve_val / book * 100.0) if book > 0 else None,
-            "target_pct": sleeve_pct,
-            "drift": sleeve_gap,   # signed: positive = under target, negative = over
-        }
-        if sleeve_gap >= min_lot:
-            buy_candidates.append({
-                "ticker": "CRYPTO", "tier": "crypto", "price": None, "rsi": None,
-                "vs200": None, "target": sleeve_target, "current": sleeve_val,
-                "gap": sleeve_gap, "clusters": [], "max_by_name": sleeve_gap,
-                "want": sleeve_gap,
-                "earn_flag": f"sleeve {'/'.join(sleeve_coins)}, no timing gates"})
-
     # ---- greedy allocation to largest passing gaps -----------------------
+    # PHQ-2026-02 Phase 7/8: 8% effective-issuer and 40% common-driver
+    # ceilings are NO-ADD controls (never a trim/sell), applied here as a
+    # clip-or-block on the buy amount, same mechanism as a cluster cap.
     cluster_pct = {c["name"]: c["pct"] for c in clusters}
     buy_candidates.sort(key=lambda r: r["gap"], reverse=True)
     cash_left = deployable
     buys: list[dict] = []
+    no_add_issuer: list[dict] = []
+    no_add_common_driver: list[dict] = []
     for c in buy_candidates:
+        tk = c["ticker"]
         want = min(c["gap"], c["max_by_name"])
-        # every cluster this ticker belongs to must have room
         blocked_by = None
         for cname in c["clusters"]:
             room = book * cluster_pct[cname] / 100.0 - cluster_value[cname]
@@ -455,6 +532,65 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
             rows.append({**c, "action": "BLOCKED", "dollars": 0,
                          "reason": f"{blocked_by} cluster cap {cluster_pct[blocked_by]:.0f}%"})
             continue
+
+        # ---- 8% effective-issuer no-add ceiling --------------------------
+        issuer_blocked = False
+        if tk in lookthrough_issuer_tickers and book > 0:
+            cur_pct = issuer_running_pct.get(tk, 0.0)
+            if cur_pct >= issuer_ceiling:
+                no_add_issuer.append({**c, "action": "NO ADD — ISSUER CEILING",
+                                      "current_effective_pct": cur_pct,
+                                      "ceiling_pct": issuer_ceiling})
+                issuer_blocked = True
+            else:
+                room_pct = issuer_ceiling - cur_pct
+                room_dollars = room_pct / 100.0 * book
+                want = min(want, room_dollars)
+        if issuer_blocked:
+            continue
+        # A fund purchase (SPY/VEA/VWO) embeds proportionally into every
+        # issuer it backs — clip to the tightest room among all of them too.
+        if tk in lookthrough_fund_tickers and book > 0:
+            for iss in lookthrough.get("issuers", []) or []:
+                for f in iss.get("funds", []) or []:
+                    if f["fund"].upper() != tk:
+                        continue
+                    iss_tk = iss["ticker"].upper()
+                    cur_pct = issuer_running_pct.get(iss_tk, 0.0)
+                    fhw = float(f["fund_holding_weight"])
+                    if fhw <= 0:
+                        continue
+                    if cur_pct >= issuer_ceiling:
+                        want = 0.0
+                        continue
+                    room_pct = issuer_ceiling - cur_pct
+                    room_dollars = (room_pct / fhw) / 100.0 * book
+                    want = min(want, room_dollars)
+
+        # ---- 40% AI/platform common-driver no-add ceiling ----------------
+        is_common_driver_member = tk in lookthrough_issuer_tickers or tk in lookthrough_fund_tickers
+        if is_common_driver_member and book > 0:
+            if common_driver_running_pct >= common_driver_ceiling:
+                no_add_common_driver.append({**c, "action": "NO ADD — COMMON-DRIVER CEILING",
+                                             "current_common_driver_pct": common_driver_running_pct,
+                                             "ceiling_pct": common_driver_ceiling})
+                continue
+            else:
+                room_pct = common_driver_ceiling - common_driver_running_pct
+                # marginal common-driver contribution per dollar of this buy:
+                # direct issuer = 1:1; fund = sum of its backed issuers' fund_holding_weight
+                if tk in lookthrough_issuer_tickers:
+                    marginal_frac = 1.0
+                else:
+                    marginal_frac = sum(
+                        float(f["fund_holding_weight"])
+                        for iss in lookthrough.get("issuers", []) or []
+                        for f in iss.get("funds", []) or []
+                        if f["fund"].upper() == tk)
+                if marginal_frac > 0:
+                    room_dollars = (room_pct / marginal_frac) / 100.0 * book
+                    want = min(want, room_dollars)
+
         alloc = min(want, cash_left)
         if alloc < min_lot:
             if cash_left < min_lot and deployable > 0:
@@ -466,19 +602,40 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
         cash_left -= alloc
         for cname in c["clusters"]:
             cluster_value[cname] += alloc
+        alloc_pct_of_book = (alloc / book * 100.0) if book > 0 else 0.0
+        if tk in lookthrough_issuer_tickers:
+            issuer_running_pct[tk] = issuer_running_pct.get(tk, 0.0) + alloc_pct_of_book
+            common_driver_running_pct += alloc_pct_of_book
+        elif tk in lookthrough_fund_tickers:
+            for iss in lookthrough.get("issuers", []) or []:
+                for f in iss.get("funds", []) or []:
+                    if f["fund"].upper() != tk:
+                        continue
+                    iss_tk = iss["ticker"].upper()
+                    delta = alloc_pct_of_book * float(f["fund_holding_weight"])
+                    issuer_running_pct[iss_tk] = issuer_running_pct.get(iss_tk, 0.0) + delta
+                    common_driver_running_pct += delta
 
     deployed_total = sum(b["dollars"] for b in buys)
     margin_used = min(margin_allowed, max(0.0, deployed_total - float(cash)))
 
     buy_candidates.sort(key=lambda r: r["gap"], reverse=True)
-    crypto_coins = {c.upper() for c in targets.get("crypto", {}).get("coins", [])}
-    orphans = {t: float(v) for t, v in holdings.items()
-               if t.upper() not in roster and t.upper() not in crypto_coins}
+    unresolved = {t: float(v) for t, v in holdings.items() if t.upper() not in roster}
     leverage_current = (gross / net_equity) if net_equity > 0 else None
     return {
         "book": book, "cash": float(cash), "cash_left": cash_left,
         "buys": buys, "trims": trims, "blocked": rows,
-        "underweight": buy_candidates, "orphans": orphans,
+        "underweight": buy_candidates,
+        "no_add_gated": no_add_gated,
+        "no_add_issuer": no_add_issuer,
+        "no_add_common_driver": no_add_common_driver,
+        "unresolved": unresolved,
+        "orphans": unresolved,   # retained alias — see render()
+        "issuer_exposure": exposure["issuers"],
+        "common_driver_current_pct": exposure["common_driver_current_pct"],
+        "common_driver_ceiling_pct": common_driver_ceiling,
+        "issuer_ceiling_pct": issuer_ceiling,
+        "retained_common_driver_measurement": lookthrough.get("retained_common_driver_measurement"),
         "regime_ok": regime_ok, "regime_known": regime_known,
         "clusters": [
             {
@@ -489,9 +646,6 @@ def plan(targets, holdings, roster, metrics, regime_ok, regime_known, cash,
             }
             for c in clusters
         ],
-        "crypto_sleeve": crypto_sleeve,
-        "crypto_sleeve_pct": sleeve_pct,
-        "t1t2_proximity": t1t2_proximity,
         "margin": {
             "gross": gross, "net_equity": net_equity, "debt": margin_debt,
             "buffer_pct": margin_buffer_pct, "buffer_floor_pct": buffer_floor_pct,
@@ -575,37 +729,60 @@ def render(result, review: bool) -> str:
     L.append(f"- **{len(result['trims'])} trim(s)**, "
              f"**{len(result['blocked'])} blocked**"
              + (f"; {cluster_bits}." if cluster_bits else "."))
-    cr = result.get("crypto")
-    if cr and cr["coins"]:
-        book = result["book"]
-        sleeve = cr["sleeve_total"]
-        actual_pct = (sleeve / book * 100) if book else 0
-        target_pct = cr["sleeve_pct"]
-        gap_pct = actual_pct - target_pct
-        status = ("ON TARGET" if abs(gap_pct) < 0.5
-                  else f"OVER by {gap_pct:.1f}pp" if gap_pct > 0
-                  else f"UNDER by {-gap_pct:.1f}pp")
+    # ---- PHQ-2026-02: NO ADD tables (gated / issuer ceiling / common-driver) --
+    gated = result.get("no_add_gated") or []
+    if gated:
         L.append("")
-        L.append("## Crypto sleeve")
-        L.append("| Coin | Value | Last price | Source |")
-        L.append("|------|------:|-----------:|--------|")
-        for c in cr["coins"]:
-            val = cr["holdings"].get(c, 0.0)
-            pd_ = cr["prices"].get(c, {})
-            px = pd_.get("price")
-            px_s = f"${px:,.2f}" if px else f"n/a ({pd_.get('error','?')})"
-            L.append(f"| {c:<4} | ${val:,.0f} | {px_s:>18} | {pd_.get('source','?')} |")
-        L.append(f"\n- **Sleeve ${sleeve:,.0f} = {actual_pct:.1f}% of book** vs "
-                 f"{target_pct:.0f}% target → **{status}**.")
-        target_dollars = book * target_pct / 100
-        L.append(f"- Target dollars at {target_pct:.0f}%: ${target_dollars:,.0f} "
-                 f"({'add' if gap_pct < 0 else 'trim'} "
-                 f"${abs(target_dollars - sleeve):,.0f} to reach target).")
+        L.append("## NO ADD — GATED (target capital held as cash, no renormalization)")
+        L.append("| Ticker | Target | Current | Status | Authority | Next gate |")
+        L.append("|--------|-------:|--------:|--------|-----------|-----------|")
+        for r in sorted(gated, key=lambda x: x["ticker"]):
+            held = "holds existing shares" if r["holds_existing_shares"] else "no position"
+            L.append(f"| {r['ticker']:<6} | ${r['target']:,.0f} | ${r['current']:,.0f} "
+                     f"({held}) | {r['status']} | {r['authority']} | {r['next_gate']} |")
 
-    orphans = result.get("orphans") or {}
-    if orphans:
-        listing = ", ".join(f"{t} ${v:,.0f}" for t, v in sorted(orphans.items()))
-        L.append(f"- ⚠️ **Held, not in roster** (counts toward book, no target): {listing}.")
+    issuer_no_add = result.get("no_add_issuer") or []
+    if issuer_no_add:
+        L.append("")
+        L.append("## NO ADD — ISSUER CEILING (8% effective-issuer, PHQ-2026-01/02)")
+        L.append("| Ticker | Current effective | Ceiling |")
+        L.append("|--------|-------------------:|--------:|")
+        for r in issuer_no_add:
+            L.append(f"| {r['ticker']:<6} | {r['current_effective_pct']:.2f}% | "
+                     f"{r['ceiling_pct']:.1f}% |")
+
+    cd_no_add = result.get("no_add_common_driver") or []
+    if cd_no_add:
+        L.append("")
+        L.append("## NO ADD — COMMON-DRIVER CEILING (40% AI/platform, PHQ-2026-01/02)")
+        L.append("| Ticker | Current aggregate | Ceiling |")
+        L.append("|--------|-------------------:|--------:|")
+        for r in cd_no_add:
+            L.append(f"| {r['ticker']:<6} | {r['current_common_driver_pct']:.2f}% | "
+                     f"{r['ceiling_pct']:.1f}% |")
+
+    cd_pct = result.get("common_driver_current_pct")
+    if cd_pct is not None:
+        retained = result.get("retained_common_driver_measurement") or {}
+        L.append("")
+        L.append("## 40% AI/platform common-driver exposure")
+        L.append(f"- **Current calculated: {cd_pct:.4f}%** (live, from reconciled holdings "
+                 f"+ current prices, {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}) vs "
+                 f"**{result.get('common_driver_ceiling_pct', 40.0):.1f}% ceiling**.")
+        if retained:
+            L.append(f"- **Retained policy measurement: {retained.get('value_pct')}%** "
+                     f"(point-in-time, measured {retained.get('measured_at')}, "
+                     f"{retained.get('methodology')}) — **above ceiling, not rounded into "
+                     f"compliance, may not be increased without separate principal "
+                     f"approval** (PHQ-2026-01 point 9, PHQ-2026-02).")
+
+    unresolved = result.get("unresolved") or {}
+    if unresolved:
+        L.append("")
+        L.append("## UNRESOLVED — PRINCIPAL POLICY DECISION REQUIRED")
+        for t, v in sorted(unresolved.items()):
+            L.append(f"- **{t}** (${v:,.0f}, counts toward book, no canonical target, "
+                     "no buy/trim/exit instruction).")
 
     mg = result["margin"]
     if mg["debt"] > 0 or mg["requested"] > 0:
@@ -675,7 +852,7 @@ def render_health(result) -> str:
     (plan()'s output, plus whatever main() has already attached to it, e.g.
     `margin_state`); never reads YAML, never fetches, never recomputes a
     portfolio ratio plan() didn't already compute. V1 scope: leverage, buffer,
-    margin risk state, cluster caps, crypto sleeve drift, T1/T2 proximity — a
+    margin risk state, cluster caps, and 8%/40% no-add ceilings — a
     point-in-time snapshot only, no historical trend, no repayment
     recommendation, no new buy/trim/block decision of any kind."""
     L = []
@@ -726,32 +903,26 @@ def render_health(result) -> str:
         L.append("_No clusters configured._")
 
     L.append("")
-    L.append("## Crypto sleeve")
-    cs = result.get("crypto_sleeve")
-    if cs is None:
-        L.append("_No crypto sleeve configured._")
-    else:
-        cur_pct_s = f"{cs['current_pct']:.1f}%" if cs.get("current_pct") is not None else "n/a"
-        drift_word = ("under target" if cs["drift"] > 0
-                     else "over target" if cs["drift"] < 0 else "at target")
-        L.append("| | |")
-        L.append("|---|---:|")
-        L.append(f"| Current | ${cs['current']:,.0f} ({cur_pct_s}) |")
-        L.append(f"| Target | {cs['target_pct']:.1f}% |")
-        L.append(f"| Drift | ${cs['drift']:,.0f} ({drift_word}) |")
+    L.append("## 8%/40% no-add ceilings (PHQ-2026-02)")
+    L.append(f"- Common-driver current: {result.get('common_driver_current_pct', 0.0):.2f}% "
+             f"vs {result.get('common_driver_ceiling_pct', 40.0):.1f}% ceiling.")
+    retained = result.get("retained_common_driver_measurement") or {}
+    if retained:
+        L.append(f"- Retained policy measurement: {retained.get('value_pct')}% "
+                 f"(point-in-time, {retained.get('measured_at')}) — above ceiling.")
+    issuer_exp = result.get("issuer_exposure") or {}
+    if issuer_exp:
+        L.append("| Issuer | Effective | Ceiling |")
+        L.append("|--------|----------:|--------:|")
+        for tk, v in sorted(issuer_exp.items(), key=lambda kv: -kv[1]["effective_pct"]):
+            L.append(f"| {tk:<6} | {v['effective_pct']:.2f}% | "
+                     f"{result.get('issuer_ceiling_pct', 8.0):.1f}% |")
 
     L.append("")
-    L.append("## T1/T2 proximity")
-    t1t2 = result.get("t1t2_proximity") or []
-    if t1t2:
-        L.append("| Ticker | Tier | Current-to-target | Current-to-ceiling |")
-        L.append("|---|---|---:|---:|")
-        for t in sorted(t1t2, key=lambda r: r["ticker"]):
-            rt_s = f"{t['ratio_to_target']:.2f}x" if t["ratio_to_target"] is not None else "n/a"
-            rc_s = f"{t['ratio_to_ceiling']:.2f}x" if t["ratio_to_ceiling"] is not None else "n/a"
-            L.append(f"| {t['ticker']:<6} | {t['tier']} | {rt_s} | {rc_s} |")
-    else:
-        L.append("_No T1/T2 names in roster._")
+    L.append("_Crypto sleeve and T1/T2 proximity views retired by PHQ-2026-02's migration "
+              "to the canonical v1.30 flat per-ticker destination architecture — BTC/ETH/SOL "
+              "and every former T1/T2 name now report through the ordinary buy/hold/gated "
+              "tables above like any other destination ticker._")
 
     L.append("")
     L.append("_Snapshot only — no historical trend, no repayment recommendation. "
@@ -1070,8 +1241,8 @@ def main():
     ap.add_argument("--performance", action="store_true",
                     help="show net-equity-vs-QQQ/VOO log (see log-performance to add a snapshot)")
     ap.add_argument("--health", action="store_true",
-                    help="snapshot risk/health view (leverage, buffer, clusters, crypto "
-                         "sleeve, T1/T2 proximity) — observational, no new cash")
+                    help="snapshot risk/health view (leverage, buffer, clusters, "
+                         "8%%/40%% no-add ceilings) — observational, no new cash")
     ap.add_argument("--no-log", action="store_true",
                     help="suppress the timestamped allocation-log file and the "
                          "performance_log.csv snapshot this run would otherwise write, "
@@ -1113,37 +1284,40 @@ def main():
     margin_buffer_pct = float(margin_buffer_pct) if margin_buffer_pct is not None else None
     roster = build_roster(targets)
     if not roster:
-        print("No tickers in targets.yaml — paste your roster into the tier lists.",
-              file=sys.stderr)
+        print("No tickers in targets.yaml — paste your roster into the "
+              "destination list.", file=sys.stderr)
         sys.exit(1)
+    gates_cfg = load_gates()
+    lookthrough = load_issuer_lookthrough()
 
     client = AlpacaPaperClient()
+    # RESERVE/CASH aren't market tickers — never fetch bars for them.
+    market_tickers = [tk for tk, meta in roster.items()
+                      if meta["asset_class"] not in ("crypto", "reserve", "cash")]
     metrics, regime_ok, regime_known = fetch_market(
-        client, list(roster), targets.get("regime_ticker", "QQQ"))
+        client, market_tickers, targets.get("regime_ticker", "QQQ"))
 
-    # Crypto prices fetched BEFORE resolve_holdings so plan()'s sleeve-gap math
-    # (which reads crypto values straight out of 'holdings') uses live qty x
-    # price too, not just the display table below.
-    crypto_cfg = targets.get("crypto", {})
-    coins = crypto_cfg.get("coins", []) or []
-    prices = (fetch_crypto(client, coins, crypto_cfg.get("coingecko_ids", {}) or {})
-              if coins else {})
+    # Crypto prices fetched BEFORE resolve_holdings so plan()'s gap math (which
+    # reads crypto values straight out of 'holdings') uses live qty x price
+    # too, not just the display table below. Coin list now comes from
+    # targets.yaml's `destination:` (asset_class: crypto), per PHQ-2026-02 —
+    # each coin carries its own target_pct there, replacing the prior
+    # aggregate crypto.sleeve_pct sleeve.
+    coins = [tk for tk, meta in roster.items() if meta["asset_class"] == "crypto"]
+    prices = fetch_crypto(client, coins, {}) if coins else {}
     crypto_price_map = {c: d["price"] for c, d in prices.items() if d["price"] is not None}
 
     holdings = resolve_holdings(client, metrics, crypto_price_map)  # live qty x price
 
     result = plan(targets, holdings, roster, metrics, regime_ok, regime_known, args.cash,
                   margin_debt=margin_debt, margin_buffer_pct=margin_buffer_pct,
-                  margin_requested=args.margin)
+                  margin_requested=args.margin, gates_cfg=gates_cfg, lookthrough=lookthrough)
     result["margin"]["synced_at"] = margin_state.get("synced_at")
 
     # ---- margin risk-state classification (Phase 2D) -----------------------
     # Pure post-hoc read of plan()'s own output — computed AFTER plan() has
     # already decided every buy/trim/block; cannot influence allocation.
-    # Concentration scope: cluster-cap proximities only (T1/T2 proximity is
-    # now retained in result["t1t2_proximity"] for the Health View, but is not
-    # folded into concentration scoring here — that would change concentration
-    # behavior, which is explicitly out of scope for the Health View addition).
+    # Concentration scope: cluster-cap proximities only.
     # ratio_to_cap is computed once in plan() (same guard: pct>0 and book>0) —
     # read here, never recomputed, so this formula has exactly one owner.
     cluster_proximities = {
@@ -1179,16 +1353,6 @@ def main():
         concentration_min_fraction=(0.5 if concentration_cfg.get("min_fraction") is None
                                      else concentration_cfg["min_fraction"]),
     )
-
-    # Crypto sleeve — priced live via 'crypto_shares' (ETH/SOL) or manual 'holdings'
-    # (BTC, until rebuilt), never gated/traded.
-    if coins:
-        crypto_holdings = {c: float(holdings.get(c, 0.0)) for c in coins}
-        result["crypto"] = {
-            "coins": coins, "prices": prices, "holdings": crypto_holdings,
-            "sleeve_total": sum(crypto_holdings.values()),
-            "sleeve_pct": result["crypto_sleeve_pct"],
-        }
 
     if args.health:
         print(render_health(result))

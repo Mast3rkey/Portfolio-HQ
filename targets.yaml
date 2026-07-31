@@ -1,104 +1,104 @@
-# targets.yaml — tier structure and allocation policy.
-# Every percentage here is CONFIG-EDITABLE. Weights are % of total book
-# (current holdings market value + new cash) unless noted.
+# targets.yaml — canonical destination architecture and allocation policy.
 #
-# Paste your final roster into the `tickers:` lists below. ETF and spec lists
-# are pre-filled per spec; edit freely.
+# PHQ-2026-02 (governance/decisions/PHQ-2026-02-holdings-reconciliation-and-actionable-allocation-policy.md):
+# `destination:` replaces the prior tiered (T1/T2/ETF/band/spec) structure
+# with the principal-approved canonical v1.30 architecture (PHQ-2026-01 point
+# 1), 37 rows, weights sourced verbatim from
+# governance/evidence/PHQ-2026-01/final_due_diligence/Portfolio_HQ_Final_Due_Diligence_and_Approval_v1_32.json
+# (`architecture_rows`, SHA-256 09c7d45f2a6fe0820177dde3eb05c22798f5c62443f7df39f42ae479ce7e07d1
+# for the source CSV) — no weight here was invented or estimated.
+# `target_pct` is this repository's sole config-editable canonical destination
+# weight per name (% of book). Actionable gates (7 names currently
+# HOLD-TARGET-IN-CASH / no-add) are represented SEPARATELY in gates.yaml, per
+# PHQ-2026-02 — a gated name's row here still carries its full destination
+# weight; nothing here is zeroed or renormalized for a gate.
+#
+# Retired by this migration: the T1/T2/ETF/band/spec tier structure, the
+# semis/power_infra/oil correlated-cluster tickers no longer in the canonical
+# roster (KLAC/ETN/GEV/PWR remain and stay capped below; the rest of each
+# cluster's prior membership exited with the transition — see PHQ-2026-02),
+# and the T1/T2 1.5x concentration-ceiling trim rule (`gates.t1t2_trim_mult`)
+# — that rule was defined in terms of the T1/T2 tiers this migration removes;
+# no equivalent per-name trim rule is invented in its place (PHQ-2026-02 does
+# not authorize a new trim rule — only quarterly review with tolerance bands,
+# not numerically specified in any retained evidence).
 
 regime_ticker: QQQ          # ticker whose 200-EMA regime status is shown; informational
                             # only since the regime-gate backtest verdict (see CLAUDE.md
                             # Decisions Log) — it no longer gates any buy
 
-tiers:
-  T1:
-    weight_pct: 3.35        # per-ticker target, each name in the list
-    tickers: [ASML, TSM, MSFT, GOOGL, META, NVDA, GEV, LLY, V, COST]
-  T2:
-    weight_pct: 1.65
-    # AAPL added 2026-07-14 — promoted from band (see Decisions Log).
-    tickers: [AVGO, AMZN, CEG, PWR, ISRG, TMO, DHR, SYK, MA, BRK.B, WMT, EQIX, MLM, AAPL]
-  ETF:
-    weight_pct: 2.30
-    tickers: [SPY, QQQ, GLD]
-  band:
-    weight_pct: 0.75
-    cap_multiple: 1.25      # band positions may run up to 1.25x target
-    # SKHY: live-priced via 'shares' since 2026-07-14 (Alpaca picked up coverage a
-    # few days after its 2026-07-10 listing — not a permanent gap after all). RSI
-    # needs 15 daily bars, trend needs 200; both still building history, so those
-    # gates can't fire yet — that's insufficient history now, not a data-feed issue.
-    # VMC removed 2026-07-13 — consolidated into MLM (see Decisions Log).
-    # TM removed 2026-07-13 — stray typo, never held, no corresponding target.
-    # AAPL removed 2026-07-14 — promoted to T2 (see Decisions Log).
-    tickers: [KLAC, LRCX, AMAT, AMD, MU, MRVL, WDC, VRT, ETN, CAT, GNRC, IBM, NOW,
-              CRM, ORCL, NFLX, SHOP, CRWD, PANW, UBER, JPM, HOOD, XOM, CVX,
-              RTX, ABBV, MRK, JNJ, GILD, UNH, BABA, SKHY, DELL]
-  spec:
-    weight_pct: 1.00
-    fixed: true             # spec names sized at exactly target, NEVER above
-    tickers: [INTC, SPCX, RKLB, TSLA, PLTR]
+destination:
+  # asset_class: equity | fund | crypto | reserve | cash
+  # reserve/cash rows are never buy candidates — their target weight is
+  # definitionally satisfied by the account's own cash balance, same
+  # treatment as a gated name's target capital (see gates.yaml, allocate.py
+  # plan()). No trend/RSI/earnings timing gate applies to crypto rows,
+  # unchanged from the prior sleeve's doctrine (Decisions Log, July 2026:
+  # "conviction-sizing, not a timing call").
+  - {ticker: NVDA,  target_pct: 6.00, asset_class: equity}
+  - {ticker: TSM,   target_pct: 3.50, asset_class: equity}
+  - {ticker: ASML,  target_pct: 2.25, asset_class: equity}
+  - {ticker: AVGO,  target_pct: 3.00, asset_class: equity}
+  - {ticker: SNPS,  target_pct: 2.50, asset_class: equity}   # gated — see gates.yaml
+  - {ticker: KLAC,  target_pct: 1.00, asset_class: equity}
+  - {ticker: MSFT,  target_pct: 5.50, asset_class: equity}
+  - {ticker: GOOGL, target_pct: 4.00, asset_class: equity}
+  - {ticker: AMZN,  target_pct: 5.00, asset_class: equity}
+  - {ticker: META,  target_pct: 2.50, asset_class: equity}
+  - {ticker: PANW,  target_pct: 0.50, asset_class: equity}
+  - {ticker: LLY,   target_pct: 3.50, asset_class: equity}
+  - {ticker: ISRG,  target_pct: 3.50, asset_class: equity}
+  - {ticker: TMO,   target_pct: 3.00, asset_class: equity}
+  - {ticker: ICE,   target_pct: 1.25, asset_class: equity}   # gated — see gates.yaml
+  - {ticker: SPGI,  target_pct: 1.25, asset_class: equity}   # gated — see gates.yaml
+  - {ticker: V,     target_pct: 2.00, asset_class: equity}
+  - {ticker: COST,  target_pct: 1.25, asset_class: equity}
+  - {ticker: WM,    target_pct: 0.75, asset_class: equity}   # gated — see gates.yaml
+  - {ticker: CEG,   target_pct: 1.50, asset_class: equity}
+  - {ticker: ETN,   target_pct: 2.25, asset_class: equity}
+  - {ticker: GEV,   target_pct: 3.00, asset_class: equity}
+  - {ticker: GNRC,  target_pct: 1.25, asset_class: equity}
+  - {ticker: PWR,   target_pct: 1.25, asset_class: equity}
+  - {ticker: RTX,   target_pct: 0.75, asset_class: equity}
+  - {ticker: RKLB,  target_pct: 0.50, asset_class: equity}   # gated — see gates.yaml
+  - {ticker: SPCX,  target_pct: 0.75, asset_class: equity}   # gated hold/no-add — see gates.yaml
+  - {ticker: TSLA,  target_pct: 0.50, asset_class: equity}   # gated — see gates.yaml
+  - {ticker: SPY,   target_pct: 15.00, asset_class: fund}
+  - {ticker: VEA,   target_pct: 7.00, asset_class: fund}
+  - {ticker: VWO,   target_pct: 1.00, asset_class: fund}
+  - {ticker: RESERVE, target_pct: 4.00, asset_class: reserve}
+  - {ticker: CASH,  target_pct: 1.00, asset_class: cash}
+  - {ticker: GLD,   target_pct: 4.00, asset_class: fund}
+  - {ticker: BTC,   target_pct: 2.00, asset_class: crypto}
+  - {ticker: ETH,   target_pct: 1.50, asset_class: crypto}
+  - {ticker: SOL,   target_pct: 0.50, asset_class: crypto}
+  # Sums to exactly 100.00% (verified: governance/evidence/PHQ-2026-02/).
 
-crypto:
-  sleeve_pct: 10.0          # sleeve target as % of book; tracked, never traded here
-  # HYPE removed July 2026 — the remnant in holdings is untracked inventory
-  # awaiting consolidation, not a sleeve target.
-  coins: [BTC, ETH, SOL]
-  # Coins listed here are priced via Alpaca crypto data ('COIN/USD');
-  # value = market_value from holdings.yaml.
-  # BTC has no entry in holdings.yaml's crypto_shares — fully sold 2026-07-13
-  # to trim the sleeve back toward target. Not a data gap: rebuild is via
-  # the gap machine only (future crypto-sleeve buys route to BTC until it's
-  # back to ~25% of the sleeve — see CLAUDE.md Standing Queue).
-  coingecko_ids: {}
+# SKHY (0.278473 sh, live holding per holdings.yaml) deliberately has no row
+# here — PHQ-2026-01/PHQ-2026-02 leave it unresolved (see gates.yaml,
+# CLAUDE.md Open Items). It is never a buy/trim/exit candidate and is
+# reported UNRESOLVED, not silently assigned a target.
 
 caps:
-  # Correlated clusters that must each stay <= their own % of book — blocks new
-  # buys AND mechanically trims a breach, no RSI gate (concentration/correlation
-  # risk limit, not a return-timing call, so it doesn't wait for a "good" price
-  # like the band/spec RSI-gated trims do). Denominator is book (net equity), not
-  # gross — under leverage this means a broad market decline can nudge a cap over
-  # with zero real cluster-specific dispersion (fixed margin debt shrinks book
-  # faster than assets), and a broad rally quietly loosens it. Identified and left
-  # as-is 2026-07-13 for semis (see CLAUDE.md Decisions Log) — switching to gross
-  # would remove that but understate real leverage-adjusted risk. Same property
-  # applies to every cluster below.
+  # Correlated-cluster concentration caps carried forward unchanged from the
+  # prior tiered structure (semis/power_infra/oil membership and pct
+  # unchanged) — most prior members exited with the PHQ-2026-02 transition
+  # and are no longer in `destination:` above, so each cluster now binds on
+  # only its surviving canonical members (semis: ASML, TSM, NVDA, AVGO, KLAC;
+  # power_infra: ETN, GEV, PWR; oil: none remaining). Not re-scoped or
+  # re-derived by this filing —
+  # doing so would be a new correlation-cluster decision, out of PHQ-2026-02's
+  # scope.
   clusters:
     - name: semis
       pct: 25.0
-      # Correlation-defined, NOT market-cap: these names crash together, and the
-      # equipment (KLAC/LRCX/AMAT) and memory (MU/WDC) names crash hardest.
-      # Measured honestly so the cap actually binds. SKHY counts (trades
-      # regular-way as of 2026-07-13).
-      tickers: [ASML, TSM, NVDA, AVGO, AMD, MU, MRVL, KLAC, LRCX, AMAT, WDC, INTC, SKHY]
+      tickers: [ASML, TSM, NVDA, AVGO, KLAC]
     - name: power_infra
       pct: 20.0
-      # Added 2026-07-14 after a one-time correlation scan (trailing ~1yr daily
-      # returns, one mostly-rising-market sample): GEV/ETN/VRT/PWR showed 0.560
-      # avg pairwise correlation, comparable to the semis baseline (0.542) — real
-      # shared driver is AI data-center power/electricity demand buildout, not
-      # just market beta. CAT and TSLA also correlated with this group in the
-      # same scan but were deliberately EXCLUDED from the cap: weaker fundamental
-      # fit (general industrials / EV+storage), more likely riding bull-market
-      # beta than the specific power-buildout mechanism — see CLAUDE.md Decisions
-      # Log. Cap set at 20% (below semis' 25%, reflecting a shorter track record
-      # and narrower evidence base) with room above the 10.5% level it was at
-      # when added, so it doesn't fire immediately off a diagnostic finding.
-      tickers: [GEV, ETN, VRT, PWR]
+      tickers: [ETN, GEV, PWR]
     - name: oil
       pct: 20.0
-      # Added 2026-07-14: strongest correlation found of any group scanned this
-      # session — XOM/CVX at 0.819 avg pairwise (vs semis' 0.542, power_infra's
-      # 0.560), mechanism as direct as it gets (same commodity, crude oil price,
-      # drives both almost entirely). Only 3.46% of book at the time — far below
-      # where a cap would ever bind on its own, so the level was derived instead
-      # of picked: stress-tested against this dataset's own actual historical max
-      # drawdown (~30% for both names, 2020-2025 cached window) so a plausible
-      # severe crash produces ~6% of book max impact — same risk budget as
-      # power_infra. Landed at the same 20% as power_infra despite opposite pulls:
-      # higher/longer-established correlation argues looser, but only 2 names
-      # (vs power_infra's 4) means less internal diversification against a
-      # company-specific shock, argues tighter — the two roughly offset.
-      tickers: [XOM, CVX]
+      tickers: []
 
 levels:
   # Buy-level rungs: 50SMA minus (multiplier x ATR14). L3 is floored at the
@@ -111,14 +111,14 @@ gates:
   min_lot_dollars: 25          # do not recommend buys smaller than this
   trend_rsi_override: 30       # allow add below 200-SMA only if RSI < this
   earnings_blackout_days: 7    # skip adds within this many calendar days of earnings
-  trim_rsi: 60                 # trim band/spec overweights only when RSI > this
-  t1t2_trim_mult: 1.5          # T1/T2 concentration ceiling (2026-07-15 doctrine decision,
-                                # not a backtest verdict): mechanical, no RSI gate, floored
-                                # at target -- same treatment as the cluster caps. See
-                                # reports/t1t2_trim_backtest.md and CLAUDE.md Decisions Log.
+  # trim_rsi removed (independent review, PR #202): no code path read it --
+  # the canonical destination architecture has no per-name RSI-gated trim
+  # rule, and none is authorized. If a future tolerance-band trim rule is
+  # ever authorized, add its parameter then, not speculatively now.
 
 margin:
   # Doctrine (July 2026): fixed structural cap, not a timing lever. Book is
   # net equity (gross holdings minus margin debt); this cap bounds gross/equity.
+  # Unchanged by PHQ-2026-02 — no new margin is authorized.
   leverage_cap: 1.8            # hard ceiling on gross-position-value / net-equity
   buffer_floor_pct: 30.0       # hard cutoff: block margin buys if buffer would drop below this
