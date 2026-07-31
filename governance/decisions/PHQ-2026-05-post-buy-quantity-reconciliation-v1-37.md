@@ -76,16 +76,67 @@ data points specifically.**
    `issuer_lookthrough.yaml` — every changed/added ticker already has an
    existing canonical row; no target, cap, or gate is added, removed, or
    resized.
-4. Discloses, but does not resolve, the cash discrepancy between v1.37
-   ($845.84) and `PHQ-2026-04`'s post-sale cash ($2,675.05) — `holdings.yaml`
-   has no persisted cash field (unchanged since `PHQ-2026-02`), so this
-   filing has nothing to mutate on that point. Flagged as an open item
-   requiring principal re-verification before the confirmed cash balance is
-   relied on for any future cash-funded `allocate.py --cash` run.
+4. **Resolves** the cash discrepancy between v1.37 ($845.84) and
+   `PHQ-2026-04`'s post-sale cash ($2,675.05) — see "Bounded correction"
+   below. `holdings.yaml` has no persisted cash field (unchanged since
+   `PHQ-2026-02`), so this filing still has nothing to mutate in
+   `holdings.yaml`'s data; the resolved figure is recorded as evidence and
+   in `holdings.yaml`'s own comment block only.
 5. Retains the full v1.37 evidence package verbatim under
    `governance/evidence/PHQ-2026-05/v1_37/` (`MANIFEST.json`, the JSON
    account-state export, the CSV holdings export, `README.md`) — SHA-256
    independently reconfirmed against the manifest at filing time.
+
+## Bounded correction (same day, this PR)
+
+After this decision was first filed with the cash discrepancy disclosed as
+unresolved, the principal supplied a further "Final Account Summary
+Correction v1.38" package (`MANIFEST.json`, a JSON account-summary export,
+`README.md`, and three Robinhood screenshots — `account_home_1613.png`,
+`buying_power_cash_1613.png`, `margin_state_1613.png`, all timestamped
+~16:13 ET 2026-07-31). The overall package SHA-256 and every internal file's
+SHA-256 were independently recomputed and matched exactly (package:
+`d423827f470576feb382772b8abdd66b27caea28b78a8a867c02b5e504c57a60`;
+internal-file hashes below under Evidence).
+
+**The correction resolves the cash discrepancy exactly, not approximately:**
+
+| | Amount |
+|---|---:|
+| Post-sale cash recorded by `PHQ-2026-04` evidence | $2,675.05 |
+| Confirmed buy total (the seven `PHQ-2026-05` fills) | $1,734.00 |
+| Calculated final cash | $941.05 |
+| Robinhood-displayed final cash (v1.38 evidence) | $941.05 |
+| Difference | $0.00 |
+
+v1.37's $845.84 cash figure is superseded for final-account-state purposes
+by this reconciliation and must no longer be described as an unresolved
+current-state discrepancy. v1.38 supersedes v1.37 **only** for
+account-summary fields (cash $941.05, buying power $7,243.93, margin used
+$0.00, margin available $6,302.88, maintenance requirement $1,558.09) — it
+does **not** supersede v1.37's post-buy position quantities (the seven-ticker
+table above), and it does **not** reopen, restore, or otherwise touch
+SKHY/SPCX, which remain governed entirely by `PHQ-2026-04`. Portfolio value
+is reported at two slightly different point-in-time figures across the three
+screenshots ($6,226.90 home screen vs. $6,227.11 margin screen, taken moments
+apart) — treated as ordinary live-market price movement between screenshots,
+not a reconciliation target; no artificial account-value balancing entry is
+introduced. `holdings.yaml` has no persisted cash field (unchanged since
+`PHQ-2026-02`); this correction updates `holdings.yaml`'s comment block and
+this decision's own text to state the resolved figure, and retains the full
+v1.38 evidence package (including the three screenshots) verbatim under
+`governance/evidence/PHQ-2026-05/v1_38/`, matching the existing
+screenshot-retention convention `PHQ-2026-02`'s v1_35 evidence already used.
+
+The authoritative allocation check (`python3 allocate.py --review --no-log`)
+was re-run against the repository state as corrected by this bounded
+correction. Because `--review` mode uses no new cash input, the resolved
+$941.05 figure does not change the review's own inputs — the check was
+re-run anyway, as a live re-verification rather than an assumption that nothing
+changed, and produced the same result as before this correction: 0
+underweight, 0 trim, 1 blocked (ISRG, downtrend), 6 gated no-add, no cluster
+cap breached, 40% common-driver ceiling live-calculated at 47.08% (unchanged;
+review mode buys/trims nothing, so the live book composition did not move).
 
 ## Rationale
 
@@ -108,12 +159,15 @@ independently-evidenced, timestamped sale-fill record controls over v1.37's
 apparently-stale SKHY/SPCX rows. This filing implements that principal
 judgment; it does not make the call itself.
 
-**UNCERTAINTY** — the root cause of v1.37's stale SKHY/SPCX rows and
-non-reconciling cash figure is not established by this filing (e.g., whether
-v1.37's screenshots were captured before the `PHQ-2026-04` sale despite a
-later-stamped `effective_time`, or some other explanation). This filing does
-not speculate further and treats the principal's direction as controlling
-without asserting a mechanism for the discrepancy.
+**UNCERTAINTY** — the root cause of v1.37's stale SKHY/SPCX rows is not
+established by this filing (e.g., whether v1.37's screenshots were captured
+before the `PHQ-2026-04` sale despite a later-stamped `effective_time`, or
+some other explanation). This filing does not speculate further and treats
+the principal's direction as controlling without asserting a mechanism for
+that specific discrepancy. The cash figure itself is no longer uncertain as
+of the bounded correction above — v1.38's arithmetic reconciles exactly
+($0.00 difference) — though the mechanism behind v1.37's own $845.84 figure
+being wrong is likewise not established.
 
 ## Alternatives Considered
 
@@ -127,25 +181,38 @@ without asserting a mechanism for the discrepancy.
   base) rather than duplicated or re-derived, so this filing's diff against
   `main` is self-consistent and correctly sequenced; no conflicting branch
   was created. This filing does not alter, and is not itself, `PHQ-2026-04`.
-- **Resolve the cash discrepancy by picking one of the two reported figures
-  as authoritative.** Rejected — `holdings.yaml` has no persisted cash
-  field to update, and picking a number without principal-supplied
-  reconciling evidence would fabricate a fact this session cannot verify.
-  Disclosed as an open item instead.
+- **Resolve the cash discrepancy by picking one of the two originally
+  reported figures ($845.84 or $2,675.05) as authoritative, without further
+  evidence.** Rejected at the time this decision was first filed —
+  `holdings.yaml` has no persisted cash field to update, and picking a
+  number without principal-supplied reconciling evidence would have
+  fabricated a fact this session could not verify. Superseded by the
+  bounded correction above once the principal supplied v1.38's reconciling
+  evidence, which resolves the figure with an exact ($0.00) arithmetic
+  match rather than a guess between the two candidates.
 - **Add new `targets.yaml` rows for PWR/VEA/VWO.** Rejected — unnecessary;
   all three already have canonical destination rows from `PHQ-2026-02`'s
   migration. This is a quantity update only.
+- **Treat the $0.21 portfolio-value difference between the two v1.38
+  screenshots as a reconciliation gap requiring an artificial balancing
+  entry.** Rejected — both screenshots are timestamped moments apart at
+  live market prices; a sub-dollar difference across live snapshots is
+  ordinary price movement, not an accounting error, and forcing a balancing
+  entry would fabricate a fact not in evidence.
 
 ## Consequences
 
-- `holdings.yaml` changed exactly as described (seven `shares:` quantities);
+- `holdings.yaml` changed exactly as described (seven `shares:` quantities,
+  plus its own comment block updated by the bounded correction to record
+  the resolved cash figure — no data field added);
   `governance/decisions/PHQ-2026-05-post-buy-quantity-reconciliation-v1-37.md`
   (this file), `governance/decisions.yaml` (one new entry),
-  `governance/evidence/PHQ-2026-05/v1_37/` (new, retained verbatim), and
-  `CLAUDE.md` (one concise Decisions Log pointer) are the only other files
-  this decision changes. No `targets.yaml`, `gates.yaml`,
-  `issuer_lookthrough.yaml`, `allocate.py`, `margin_state.py`, or
-  `operations/WORKSTREAMS.yaml` change.
+  `governance/evidence/PHQ-2026-05/v1_37/` and
+  `governance/evidence/PHQ-2026-05/v1_38/` (both new, retained verbatim),
+  and `CLAUDE.md` (Decisions Log pointer, updated by the bounded correction)
+  are the only other files this decision changes. No `targets.yaml`,
+  `gates.yaml`, `issuer_lookthrough.yaml`, `allocate.py`, `margin_state.py`,
+  or `operations/WORKSTREAMS.yaml` change.
 - No trade, order, margin draw, or brokerage mutation of any kind is
   authorized or performed by this decision — it records buy fills the
   principal already executed manually.
@@ -178,15 +245,38 @@ filing time:
   `c091ef39994829a2ebfd71baa419983a820cd43fbcd23d13ba18e845a6a4636b`
 - `README.md`: `ab17dfe6314c549d74bd8edf4a2b4ad2a9d43f104e1940115038106d4b1bf38c`
 
+`governance/evidence/PHQ-2026-05/v1_38/` — the principal-supplied v1.38
+"Final Account Summary Correction" package retained verbatim
+(`MANIFEST.json`, `Portfolio_HQ_Final_Account_Summary_Correction_v1_38.json`,
+`README.md`, `evidence/account_home_1613.png`,
+`evidence/buying_power_cash_1613.png`, `evidence/margin_state_1613.png`).
+Overall package SHA-256
+(`d423827f470576feb382772b8abdd66b27caea28b78a8a867c02b5e504c57a60`) and
+every internal file's SHA-256 independently recomputed and matched against
+`MANIFEST.json` exactly at filing time:
+
+- `Portfolio_HQ_Final_Account_Summary_Correction_v1_38.json`:
+  `506f8b8d33b4dd247fd2ebff4583032065bf85f919c638380aa1b50d8bf84012`
+- `README.md`: `4718aa8bd38d269d7daadbfbce0be34b3579850f37ceaeaa2cb3fe346fccdfb6`
+- `evidence/account_home_1613.png`:
+  `afa879ecf996b49a53962f8c50213e2736a1d0ddd2b6ec42adf7688f1ab8447a`
+- `evidence/buying_power_cash_1613.png`:
+  `f843ae852aa268b12860843635fb43d413e2dd0bf6edcd3ff0e94a8eac1be4a1`
+- `evidence/margin_state_1613.png`:
+  `14647c2b2b69af1df079fd440f4118b0c0ee9e4be840d6982ed13a066893f928`
+
 ## Limitations
 
-- The cash discrepancy between v1.37 ($845.84) and `PHQ-2026-04`'s post-sale
-  cash ($2,675.05) is disclosed, not resolved. It should be re-verified
-  against a fresh Robinhood screen before being relied on for any future
-  `allocate.py --cash`-funded run; this filing's own allocation check (see
-  the implementing PR) uses `--review` (no new cash) specifically to avoid
-  depending on either disputed figure.
 - The root cause of v1.37's stale SKHY/SPCX rows is not established (see
-  Rationale, Uncertainty).
+  Rationale, Uncertainty) — resolving the cash figure via v1.38 does not by
+  itself explain why v1.37's SKHY/SPCX rows or its $845.84 cash figure were
+  wrong.
+- `holdings.yaml`'s `margin.buffer_pct` (currently `100.0`, representing
+  zero margin drawn rather than a Robinhood-displayed screen) is unchanged
+  by this correction — v1.38 supplies margin-available ($6,302.88) and
+  maintenance-requirement ($1,558.09) figures, but not a Robinhood-displayed
+  buffer percentage, and this repository's standing rule is to use only
+  Robinhood's own displayed buffer %, never a derived one. A real displayed
+  buffer % should still be synced before any future margin-funded decision.
 - This filing does not evaluate, re-open, or resolve SPCX's or SKHY's
   reopening conditions (`PHQ-2026-03` §7) — unchanged.

@@ -1,0 +1,40 @@
+{
+  "version": "1.38",
+  "effective_time": "2026-07-31 approximately 16:13 ET",
+  "purpose": "Correct final post-buy account-summary fields; does not replace quantity reconciliation.",
+  "account_summary": {
+    "portfolio_value_home_screen": 6226.9,
+    "portfolio_value_margin_screen": 6227.11,
+    "cash": 941.05,
+    "buying_power": 7243.93,
+    "margin_total_or_available": 6302.88,
+    "margin_used": 0.0,
+    "maintenance_requirement": 1558.09
+  },
+  "cash_reconciliation": {
+    "post_sale_cash_from_PHQ_2026_04_evidence": 2675.05,
+    "confirmed_buy_total": 1734.0,
+    "calculated_final_cash": 941.05,
+    "displayed_final_cash": 941.05,
+    "difference": 0.0,
+    "status": "confirmed"
+  },
+  "supersession": {
+    "supersedes_v1_37_fields": [
+      "cash",
+      "buying_power",
+      "portfolio value point-in-time summary"
+    ],
+    "does_not_supersede": [
+      "v1.37 post-buy position quantities, except SKHY and SPCX exits controlled by PHQ-2026-04/PR #205 evidence"
+    ],
+    "note": "Portfolio value differs by $0.21 across screenshots taken moments apart. That is normal live-market movement; quantities and cash are the controlling reconciliation fields."
+  },
+  "boundaries": [
+    "Do not query Robinhood.",
+    "Do not infer tax lots.",
+    "Do not place or submit orders.",
+    "Do not restore SKHY or SPCX if PHQ-2026-04 exit evidence controls.",
+    "Use only through a controlled repository reconciliation PR."
+  ]
+}

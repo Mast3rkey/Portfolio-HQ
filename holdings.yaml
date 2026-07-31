@@ -43,13 +43,28 @@
 # v1.37's SKHY/SPCX rows carry the exact pre-exit quantities and are treated
 # as stale relative to PHQ-2026-04's independently-evidenced 15:10-15:11
 # ET sale fills, per explicit principal direction reconciling the conflict
-# between the two evidence packages. v1.37's reported cash ($845.84) does
-# not reconcile against PHQ-2026-04's post-sale-only cash ($2,675.05) even
-# accounting for these buys — flagged as an open item for principal
-# re-verification, not resolved by this filing (see PHQ-2026-05's decision
-# record). Crypto (BTC/ETH/SOL) and all other equity/fund quantities are
-# unchanged and independently confirmed against v1.37 — dust
-# (BONK/PEPE/WIF/ZORA) remains permanently excluded, unchanged convention.
+# between the two evidence packages. Crypto (BTC/ETH/SOL) and all other
+# equity/fund quantities are unchanged and independently confirmed against
+# v1.37 — dust (BONK/PEPE/WIF/ZORA) remains permanently excluded, unchanged
+# convention.
+#
+# PHQ-2026-05 bounded correction (2026-07-31, same PR, before merge): v1.37's
+# reported cash ($845.84) was initially flagged as not reconciling against
+# PHQ-2026-04's post-sale cash ($2,675.05). The principal supplied a further
+# v1.38 "Final Account Summary Correction" package
+# (governance/evidence/PHQ-2026-05/v1_38/, SHA-256
+# 506f8b8d33b4dd247fd2ebff4583032065bf85f919c638380aa1b50d8bf84012 for the
+# JSON export) that RESOLVES this: post-sale cash $2,675.05 minus the seven
+# confirmed buy fills' $1,734.00 = $941.05, matching Robinhood's own
+# displayed final cash of $941.05 exactly (difference $0.00). v1.37's $845.84
+# is superseded for final-account-state purposes and is no longer described
+# as an unresolved current-state discrepancy. This does not change any
+# `shares:` quantity above — v1.38 corrects account-summary fields only
+# (cash, buying power, margin-available, maintenance requirement), not
+# holdings. `holdings.yaml` still has no persisted cash field (unchanged
+# since PHQ-2026-02) — the resolved $941.05 figure is recorded as evidence
+# only, to be supplied through `allocate.py`'s existing `--cash` runtime
+# input at whatever future session runs a live cash-funded allocation.
 margin:
   debt: 0.0
   # No displayed buffer % was captured in the v1.35 evidence (only
