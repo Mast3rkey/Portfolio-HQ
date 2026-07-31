@@ -1,0 +1,41 @@
+{
+  "version": "1.32",
+  "created_at": "2026-07-30T22:27:33.832446Z",
+  "files": [
+    {
+      "file": "Portfolio_HQ_Final_Due_Diligence_and_Approval_v1_32.html",
+      "bytes": 17390,
+      "sha256": "fbcd6b07b61efd38b89ab81920a8e411f8cb8247f32a3d7262628efdbce9952d"
+    },
+    {
+      "file": "Portfolio_HQ_Final_Due_Diligence_and_Approval_v1_32.json",
+      "bytes": 29732,
+      "sha256": "2748892c2c1c93397d049fe9888ec39ed149d7debe79136ec91fa194a2bc074d"
+    },
+    {
+      "file": "Portfolio_HQ_Look_Through_Exposure_v1_32.csv",
+      "bytes": 651,
+      "sha256": "7aa617cdd6628cab667909945760a9bd96d5341e0ddf3fa4a59e608701829bb3"
+    },
+    {
+      "file": "Portfolio_HQ_Gated_Name_Disposition_v1_32.csv",
+      "bytes": 2688,
+      "sha256": "03990e4d6d904a37c28b20617f46b1299616421c87e59adec747c9f15698a41d"
+    },
+    {
+      "file": "Portfolio_HQ_Final_Decision_Register_v1_32.csv",
+      "bytes": 1654,
+      "sha256": "5797fda14b2cfceeb10a721957caee96a5b85050f9755e9433997c81e762d013"
+    },
+    {
+      "file": "Portfolio_HQ_Master_Research_Log_v1_31_4a_20260730_175519.html",
+      "bytes": 48638,
+      "sha256": "57fb37da834741172e743d9c5f986314477e5dd249a0d20da89c123517a13757"
+    },
+    {
+      "file": "master_research_report.json",
+      "bytes": 132623,
+      "sha256": "fadc2636e178af3fe49faf5df5af1f8b10e3c796b0706fb3c1ba59b0f3d41d96"
+    }
+  ]
+}

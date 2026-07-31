@@ -1,0 +1,24 @@
+{
+  "status": 200,
+  "payload": {
+    "status": "ok",
+    "market_data_only": true,
+    "orders_supported": false,
+    "version": "1.10.8",
+    "features": [
+      "portfolio_backtest",
+      "margin_strategy_backtest",
+      "margin_transition_backtest",
+      "objective_margin_backtest",
+      "csv_mode",
+      "alpaca_market_data",
+      "superset_cache_reuse",
+      "cache_without_credentials",
+      "mixed_stock_crypto_history",
+      "detailed_market_data_errors",
+      "mixed_daily_calendar_alignment",
+      "repayment_band_backtest"
+    ]
+  },
+  "error": null
+}
