@@ -3609,7 +3609,7 @@ workstreams:
       - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
       - governance/decisions/GOV-0001-governance-architecture-adopted.md
       - governance/decisions/GOV-0002-operational-precedence-hierarchy.md
-    status: in_progress
+    status: complete
     priority: secondary
     dependencies: []
     authorized_scope: >
@@ -3681,31 +3681,71 @@ workstreams:
           (ADVISORY 10) deliberately deferred, no behavior-preserving
           correction attempted in this pass. 36 new focused tests added.
           Full suite: 1549 passed, 0 failed. No policy, holdings quantity,
-          target weight, or gate activation changed. Not merged, not yet
-          re-reviewed, not principal-accepted.
+          target weight, or gate activation changed. A focused independent
+          delta review at the corrected exact head (GitHub review
+          4830690416, same reviewer session
+          f80b7b83-a89f-472c-aab7-810ba9717bc0, reviewed head
+          05ddfbbd36972250d1e4e538db6d09fe115c662d) independently re-ran the
+          full suite (1549 passed, 0 failed, matching this PR's own claim
+          exactly) and confirmed all three MAJOR findings RESOLVED with no
+          new BLOCKING/MAJOR/MINOR/ADVISORY finding, verdict "APPROVED FOR
+          PRINCIPAL ACCEPTANCE AND MERGE GATING AT EXACT HEAD
+          05ddfbbd36972250d1e4e538db6d09fe115c662d." Both reviews were filed
+          as GitHub COMMENT state, not APPROVE, due to the disclosed
+          self-approval platform restriction on the PR-owning account (gh
+          authenticated as Mast3rkey, the same account that authored this
+          PR) — the same restriction already observed on PR #200 (see
+          WS-0007). Merged at that same exact head with no intervening
+          commits as merge commit
+          3de8330cdb1266faff745feb1d3d2710ee2bd8e3 (merged_by Mast3rkey,
+          2026-07-31T17:16:25Z) — the merge commit's tree is byte-identical
+          to reviewed head 05ddfbbd. Under this repository's established
+          convention (this register's own WS-0005 entry, Batch 6/PR #171
+          precedent), an exact-head merge performed by the PR-owning
+          principal account with no intervening commits after the
+          exact-head re-review is the
+          retained repository evidence of principal acceptance; no separate
+          verbatim acceptance comment exists on this PR beyond that
+          convention, and none is claimed here. Post-merge verification
+          performed by this synchronization session (OPS-0009 section 9):
+          merge commit 3de8330 confirmed an ancestor of current main
+          (278b74f0fb0e2e15eba02a18e795da6753693470); merge commit tree
+          confirmed byte-identical to reviewed head 05ddfbbd (zero diff, no
+          intervening commits); merged scope confirmed as exactly the 23
+          files GitHub reports changed for this PR; full pytest suite
+          independently re-run on current main: 1549 passed, 0 failed;
+          intelligence_validator.py and freshness_validator.py both re-run
+          clean; decision-index reconciliation 50 filed = 50 indexed
+          decisions, no orphans, PHQ-2026-02 present in both; git diff
+          --check clean; working tree clean and matching origin/main;
+          GitHub CI green at both the merge commit (run 30650519504) and
+          current main (run 30652435272), conclusion success at both.
         pr: 202
-        status: drafted
+        status: merged
         date: "2026-07-31"
     evidence_refs:
       - governance/decisions/PHQ-2026-02-holdings-reconciliation-and-actionable-allocation-policy.md
       - governance/evidence/PHQ-2026-02/README.md
       - governance/evidence/PHQ-2026-02/reconciliation_check.json
     next_action: >
-      A focused independent delta review of this correction pass (by
-      reviewer session f80b7b83-a89f-472c-aab7-810ba9717bc0 or another
-      eligible reviewer who did not author it), confirming the three MAJOR
-      findings from review 4830452924 are actually resolved at the new
-      exact head, then explicit principal acceptance, then merge. The
-      pytest suite (test_allocate_integration.py/test_margin.py/
-      test_plan_gates.py, the three files with actual CI failures from the
-      first review round) was migrated to the canonical destination schema
-      in an earlier bounded author correction pass; this second pass
-      corrected the three MAJOR robustness findings plus the disclosed
-      MINOR/dead-code items — full suite passes with zero failures at this
-      PR's final head. The standalone backtest scripts remain unmigrated,
-      disclosed, and out of scope (not part of the pytest suite or CI).
-      Floating-point epsilon and repeated ceiling-literal ADVISORY items
-      remain deliberately deferred.
+      None outstanding for this workstream's own completion criteria — PR
+      #202 merged (merge commit 3de8330cdb1266faff745feb1d3d2710ee2bd8e3,
+      2026-07-31T17:16:25Z) after independent exact-head review, bounded
+      correction, exact-head delta re-review, and principal acceptance via
+      this repository's established exact-head-merge convention; post-merge
+      ancestry, scope, validator, and full-suite verification performed by
+      this synchronization session (see the final milestone above). Items
+      outside this workstream's completion criteria remain open as
+      disclosed operational obligations: issuer_lookthrough.yaml's
+      point-in-time 8%/40% look-through config must be refreshed at each
+      quarterly review per PHQ-2026-01's own Limitations section (unchanged
+      by this PR, ongoing); a live allocation check (python allocate.py
+      --review) against real current prices requires Alpaca credentials
+      that have not been available in any session to date; the standalone
+      backtest scripts remain unmigrated, disclosed, and out of scope (not
+      part of the pytest suite or CI); two ADVISORY items (the bare `>=`
+      ceiling-boundary check with no epsilon, and the repeated 8.0/40.0
+      literal fallbacks) remain deliberately deferred, non-blocking.
     completion_criteria: >
       Complete once this PR merges after independent review, correction if
       needed, exact-head re-review, principal acceptance, and post-merge
@@ -3717,14 +3757,31 @@ workstreams:
       available in the implementing session's environment, so the
       authoritative allocation check could not be run against live current
       prices in this session — disclosed in the PR, not fabricated.
-    active_branch: claude/phq-2026-02-holdings-allocation-implementation
-    active_pr: 202
-    last_verified_main_sha: 959916c4ab0410b37d72fd33d12621fad0e61ad4
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: 278b74f0fb0e2e15eba02a18e795da6753693470
     last_verified_date: "2026-07-31"
     authorized_by: >
-      Principal approval of PHQ-2026-02, quoted verbatim in
-      governance/decisions/PHQ-2026-02-holdings-reconciliation-and-actionable-allocation-policy.md,
-      and the attached handoff/evidence authorizing this bounded
-      implementation session.
+      governance/decisions/PHQ-2026-02-holdings-reconciliation-and-actionable-allocation-policy.md
+      (principal approval quoted verbatim there), accepted and merged to
+      main on 2026-07-31 (merge commit
+      3de8330cdb1266faff745feb1d3d2710ee2bd8e3, reviewed and
+      principal-accepted head 05ddfbbd36972250d1e4e538db6d09fe115c662d — the
+      merge commit's tree is byte-identical to this head, no intervening
+      commits), following independent exact-head review by Claude Code
+      session f80b7b83-a89f-472c-aab7-810ba9717bc0 (initial review
+      4830452924 at head 01c5bd139bb2c9f40265290c7f4f31e5d532fda2:
+      APPROVED FOR PRINCIPAL ACCEPTANCE AND MERGE GATING, 3 MAJOR/5
+      MINOR/3 ADVISORY findings, 0 BLOCKING; focused delta re-review
+      4830690416 at the exact final head: all three MAJOR findings
+      independently confirmed RESOLVED with no new defect, APPROVED FOR
+      PRINCIPAL ACCEPTANCE AND MERGE GATING AT EXACT HEAD) and the
+      exact-head merge performed by merged_by Mast3rkey with no intervening
+      commits — this repository's retained evidence of principal acceptance
+      under its established convention (this register's own WS-0005 entry,
+      Batch 6/PR #171 precedent); merge metadata by itself does not
+      independently preserve a separate verbatim acceptance statement, and
+      none is claimed here beyond that convention. This entry cites that
+      authority; it does not originate it.
     supersedes: null
     superseded_by: null
