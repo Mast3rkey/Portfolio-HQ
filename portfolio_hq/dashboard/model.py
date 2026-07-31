@@ -39,6 +39,13 @@ GATED_DISPOSITION_REL = (
     "governance/evidence/PHQ-2026-01/final_due_diligence/"
     "Portfolio_HQ_Gated_Name_Disposition_v1_32.csv"
 )
+# Structured source for the 8%/40% ceilings and the measured AI/platform figure
+# (see `_lookthrough_summary` below) — point-in-time governance evidence, same
+# disclosure treatment as GATED_DISPOSITION_REL.
+DUE_DILIGENCE_JSON_REL = (
+    "governance/evidence/PHQ-2026-01/final_due_diligence/"
+    "Portfolio_HQ_Final_Due_Diligence_and_Approval_v1_32.json"
+)
 PHQ_2026_01_DECISION_REL = (
     "governance/decisions/PHQ-2026-01-canonical-architecture-and-transition-policy-approval.md"
 )
@@ -50,6 +57,7 @@ INPUT_FILES = [
     WORKSTREAMS_REL,
     FRESHNESS_REGISTRY_REL,
     GATED_DISPOSITION_REL,
+    DUE_DILIGENCE_JSON_REL,
     PHQ_2026_01_DECISION_REL,
 ]
 
@@ -465,22 +473,22 @@ def _pct_from_fraction(value: object) -> float | None:
     return v * 100 if v <= 1.0 else v
 
 
-def _lookthrough_summary(repo_root: Path) -> tuple[float | None, float | None, float | None]:
+def _lookthrough_summary(
+    repo_root: Path,
+) -> tuple[float | None, float | None, float | None, str | None]:
     """Read the PHQ-2026-01 concentration ceilings and the measured AI/platform
     figure from the accepted decision's own structured evidence JSON
     (`lookthrough_summary`), the single authoritative structured source. Returns
-    (single_issuer_ceiling_pct, ai_ceiling_pct, ai_measured_pct). Point-in-time,
-    never live-computed. Falls back to the decision's stated policy constants
-    (8% / 40%) only if the structured summary is unreadable; never fabricates
-    the measured figure (None if absent)."""
+    (single_issuer_ceiling_pct, ai_ceiling_pct, ai_measured_pct, load_error).
+    Point-in-time, never live-computed. Falls back to the decision's stated
+    policy constants (8% / 40%) if the structured summary is unreadable or
+    missing its expected key — `load_error` is non-None in that case so the
+    caller can surface a visible notice instead of silently substituting the
+    fallback; never fabricates the measured figure (None if absent)."""
     single_issuer: float | None = 8.0   # PHQ-2026-01 point 8 (policy constant fallback)
     ai_ceiling: float | None = 40.0     # PHQ-2026-01 point 9 (policy constant fallback)
     ai_measured: float | None = None
-    lookthrough_json = (
-        repo_root
-        / "governance/evidence/PHQ-2026-01/final_due_diligence"
-        / "Portfolio_HQ_Final_Due_Diligence_and_Approval_v1_32.json"
-    )
+    lookthrough_json = repo_root / DUE_DILIGENCE_JSON_REL
     data, err = _safe_load_yaml(lookthrough_json)  # JSON is valid YAML
     if not err and isinstance(data, dict):
         summary = data.get("lookthrough_summary")
@@ -494,7 +502,11 @@ def _lookthrough_summary(repo_root: Path) -> tuple[float | None, float | None, f
             ai_measured = _pct_from_fraction(
                 summary.get("effective_ai_platform_common_driver_estimate")
             )
-    return single_issuer, ai_ceiling, ai_measured
+        else:
+            err = f"{DUE_DILIGENCE_JSON_REL}: missing 'lookthrough_summary' key"
+    elif not err:
+        err = f"{DUE_DILIGENCE_JSON_REL}: not a mapping"
+    return single_issuer, ai_ceiling, ai_measured, err
 
 
 # ── notice computation ───────────────────────────────────────────────────────
@@ -508,6 +520,7 @@ def _compute_notices(
     gated_names: list[GatedName],
     ai_measured: float | None,
     ai_ceiling: float | None,
+    lookthrough_err: str | None,
     intelligence: IntelligenceSummary,
 ) -> list[Notice]:
     notices: list[Notice] = []
@@ -602,6 +615,21 @@ def _compute_notices(
             )
         )
 
+    # Structured PHQ-2026-01 look-through evidence unreadable — the displayed
+    # ceilings are the hardcoded policy-constant fallback (8% / 40%), not read
+    # from evidence, and no measured figure could be read at all.
+    if lookthrough_err:
+        notices.append(
+            Notice(
+                SEVERITY_WARNING,
+                "PHQ-2026-01 look-through evidence unreadable",
+                f"{lookthrough_err}. Single-issuer/AI-platform ceilings shown "
+                "are the hardcoded PHQ-2026-01 policy-constant fallback "
+                "(8% / 40%), not read from structured evidence, and no "
+                "measured AI/platform figure could be read.",
+            )
+        )
+
     # AI/platform ceiling near/over.
     if ai_measured is not None and ai_ceiling is not None and ai_measured >= ai_ceiling:
         notices.append(
@@ -687,7 +715,7 @@ def build_model(repo_root: Path | str, *, now: datetime | None = None) -> Dashbo
 
     intelligence = _load_intelligence(repo_root)
 
-    single_issuer, ai_ceiling, ai_measured = _lookthrough_summary(repo_root)
+    single_issuer, ai_ceiling, ai_measured, lookthrough_err = _lookthrough_summary(repo_root)
 
     phq_2026_02_filed = (repo_root / DECISIONS_REL).exists() and any(
         d.decision_id.upper().startswith("PHQ-2026-02") for d in decisions
@@ -725,6 +753,7 @@ def build_model(repo_root: Path | str, *, now: datetime | None = None) -> Dashbo
         gated_names=gated_names,
         ai_measured=ai_measured,
         ai_ceiling=ai_ceiling,
+        lookthrough_err=lookthrough_err,
         intelligence=intelligence,
     )
 

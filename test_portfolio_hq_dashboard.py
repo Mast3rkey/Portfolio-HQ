@@ -194,6 +194,52 @@ def test_phq_2026_02_present_suppresses_warning(tmp_repo: Path):
     assert not any("PHQ-2026-02" in n.title for n in m.notices)
 
 
+def test_lookthrough_json_missing_from_disk_warns_visibly(tmp_repo: Path):
+    # tmp_repo deliberately never creates the due-diligence JSON — the
+    # fallback ceilings (8%/40%) are in effect and must not be silent.
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.ai_platform_measured_pct is None
+    assert any("look-through evidence unreadable" in n.title.lower()
+               for n in m.warnings)
+    assert any("8% / 40%" in n.detail for n in m.warnings)
+
+
+def _write_due_diligence_json(repo: Path, body: str) -> Path:
+    path = (repo / "governance/evidence/PHQ-2026-01/final_due_diligence"
+            / "Portfolio_HQ_Final_Due_Diligence_and_Approval_v1_32.json")
+    _write(path, body)
+    return path
+
+
+def test_lookthrough_json_present_and_valid_suppresses_warning(tmp_repo: Path):
+    _write_due_diligence_json(tmp_repo, (
+        "{\"lookthrough_summary\": {"
+        "\"approved_single_issuer_ceiling\": 0.08, "
+        "\"approved_ai_platform_common_driver_ceiling\": 0.40, "
+        "\"effective_ai_platform_common_driver_estimate\": 0.4003}}"
+    ))
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.ai_platform_measured_pct == pytest.approx(40.03)
+    assert not any("look-through evidence unreadable" in n.title.lower()
+                   for n in m.warnings)
+
+
+def test_lookthrough_json_malformed_warns_visibly(tmp_repo: Path):
+    _write_due_diligence_json(tmp_repo, "{not: valid json or yaml::")
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.ai_platform_measured_pct is None
+    assert any("look-through evidence unreadable" in n.title.lower()
+               for n in m.warnings)
+
+
+def test_lookthrough_json_present_but_missing_summary_key_warns(tmp_repo: Path):
+    _write_due_diligence_json(tmp_repo, "{\"some_other_key\": true}")
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.ai_platform_measured_pct is None
+    assert any("look-through evidence unreadable" in n.title.lower()
+               for n in m.warnings)
+
+
 def test_buffer_below_floor_is_blocker(tmp_repo: Path):
     txt = (tmp_repo / "holdings.yaml").read_text().replace("63.12", "22.0")
     (tmp_repo / "holdings.yaml").write_text(txt)
@@ -339,6 +385,55 @@ def test_structural_html_assertions(tmp_repo: Path):
     assert html.count("<main") == 1
 
 
+# ── measured AI/platform figure: point-in-time qualification ─────────────────
+
+def test_measured_ai_platform_figure_qualified_as_point_in_time(tmp_repo: Path):
+    _write_due_diligence_json(tmp_repo, (
+        "{\"lookthrough_summary\": {"
+        "\"approved_ai_platform_common_driver_ceiling\": 0.40, "
+        "\"effective_ai_platform_common_driver_estimate\": 0.4003}}"
+    ))
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert "measured ~40.03%" in html
+    # The qualifier must sit with the measured figure itself, not only appear
+    # in the (unrelated) fallback branch shown when no figure is available.
+    idx = html.index("measured ~40.03%")
+    nearby = html[idx:idx + 120]
+    assert "point-in-time" in nearby
+    assert "PHQ-2026-01" in nearby
+
+
+def test_measured_ai_platform_figure_absent_still_qualified(tmp_repo: Path):
+    # No due-diligence JSON at all (tmp_repo's default) — the "no figure"
+    # branch must still say point-in-time / point to the evidence.
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert "measured figure unavailable" in html
+    assert "point-in-time" in html
+
+
+# ── sortable table headers: real <button> + aria-sort, not role="button" ─────
+
+def test_sortable_headers_use_button_not_role_attribute(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert 'role="button"' not in html
+    assert html.count('<button type="button" class="th-sort">') == 5
+    assert "aria-sort" in _JS_BLOCK(html)
+
+
+def _JS_BLOCK(html: str) -> str:
+    start = html.index("<script>")
+    end = html.index("</script>", start)
+    return html[start:end]
+
+
+def test_sortable_js_manages_aria_sort_not_manual_keyboard_handling(tmp_repo: Path):
+    js = _JS_BLOCK(render_html(build_model(tmp_repo, now=FIXED_NOW)))
+    assert "setAttribute('aria-sort'" in js
+    assert "button.th-sort" in js
+    # No hand-rolled keyboard activation — a real <button> gets that for free.
+    assert "keydown" not in js
+
+
 # ── source-of-truth integrity: no historical HTML as operational input ───────
 
 def test_no_html_files_in_declared_inputs():
@@ -348,6 +443,23 @@ def test_no_html_files_in_declared_inputs():
 def test_declared_inputs_are_structured_sources_only():
     allowed = (".yaml", ".yml", ".csv", ".json", ".md")
     assert all(str(p).lower().endswith(allowed) for p in model_mod.INPUT_FILES)
+
+
+def test_due_diligence_json_is_a_declared_input():
+    # The structured evidence backing the 8%/40% ceilings and the measured
+    # AI/platform figure must itself be provenance-hashed and disclosed, not
+    # read invisibly out-of-band.
+    assert model_mod.DUE_DILIGENCE_JSON_REL in model_mod.INPUT_FILES
+
+
+def test_due_diligence_json_hashed_in_provenance(tmp_repo: Path):
+    _write_due_diligence_json(tmp_repo, "{\"lookthrough_summary\": {}}")
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    matching = [i for i in m.provenance.inputs
+                if i.path == model_mod.DUE_DILIGENCE_JSON_REL]
+    assert len(matching) == 1
+    assert matching[0].exists is True
+    assert matching[0].sha256 is not None
 
 
 def test_historical_html_not_parsed_or_embedded(tmp_repo: Path):
@@ -440,6 +552,27 @@ def test_default_server_host_is_loopback():
     from portfolio_hq.dashboard.cli import build_parser
     ns = build_parser().parse_args(["serve"])
     assert ns.host == "127.0.0.1"  # never 0.0.0.0 by default
+
+
+@pytest.mark.parametrize("host", ["127.0.0.1", "::1", "localhost", "127.4.5.6"])
+def test_cli_accepts_loopback_host_variants(host):
+    # OPS-0011 authorizes loopback only, not one specific literal — 127.0.0.1
+    # is the default, but any loopback address/hostname must still work.
+    from portfolio_hq.dashboard.cli import build_parser
+    ns = build_parser().parse_args(["serve", "--host", host])
+    assert ns.host == host
+
+
+@pytest.mark.parametrize("host", ["0.0.0.0", "192.168.1.5", "10.0.0.1", "::", "example.com"])
+def test_cli_rejects_non_loopback_host(host, capsys):
+    # OPS-0011: binding to 0.0.0.0, a LAN address, or any other externally
+    # reachable interface must not be configurable — enforced at parse time
+    # so `serve()` is never reached with such a value.
+    from portfolio_hq.dashboard.cli import build_parser
+    parser = build_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(["serve", "--host", host])
+    assert "OPS-0011" in capsys.readouterr().err
 
 
 # ── integration against the real repository ──────────────────────────────────

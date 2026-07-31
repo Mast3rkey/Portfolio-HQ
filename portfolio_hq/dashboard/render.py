@@ -17,32 +17,33 @@ from .model import DashboardModel, GatedName, HoldingRow, MarginInfo
 _ASSETS = Path(__file__).resolve().parent / "assets"
 
 # Optional, progressive-enhancement only. The page is fully usable with JS
-# disabled: <details> handles collapsing natively; sorting is a nicety.
+# disabled: <details> handles collapsing natively; a sortable header's text is
+# still plain, readable column-header text without it. Each sortable header's
+# markup is a real <button> inside the <th> (native keyboard/focus/click
+# semantics, no manual role/tabindex reimplementation); this script only wires
+# up the click handler and maintains aria-sort on the <th> itself.
 _JS = """
 (function () {
   document.querySelectorAll('table[data-sortable] thead th').forEach(function (th, idx) {
-    th.setAttribute('role', 'button');
-    th.setAttribute('tabindex', '0');
-    th.title = 'Sort by ' + th.textContent.trim();
+    var btn = th.querySelector('button.th-sort');
+    if (!btn) { return; }
     function sort() {
       var table = th.closest('table');
       var tbody = table.tBodies[0];
       var rows = Array.prototype.slice.call(tbody.rows);
-      var dir = th.getAttribute('data-dir') === 'asc' ? -1 : 1;
-      th.setAttribute('data-dir', dir === 1 ? 'asc' : 'desc');
+      var ascending = th.getAttribute('aria-sort') !== 'ascending';
       rows.sort(function (a, b) {
         var x = a.cells[idx] ? a.cells[idx].getAttribute('data-sort') || a.cells[idx].textContent : '';
         var y = b.cells[idx] ? b.cells[idx].getAttribute('data-sort') || b.cells[idx].textContent : '';
         var nx = parseFloat(x), ny = parseFloat(y);
-        if (!isNaN(nx) && !isNaN(ny)) { return (nx - ny) * dir; }
-        return x.localeCompare(y) * dir;
+        var cmp = (!isNaN(nx) && !isNaN(ny)) ? (nx - ny) : x.localeCompare(y);
+        return ascending ? cmp : -cmp;
       });
       rows.forEach(function (r) { tbody.appendChild(r); });
+      table.querySelectorAll('thead th').forEach(function (h) { h.removeAttribute('aria-sort'); });
+      th.setAttribute('aria-sort', ascending ? 'ascending' : 'descending');
     }
-    th.addEventListener('click', sort);
-    th.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sort(); }
-    });
+    btn.addEventListener('click', sort);
   });
 })();
 """
@@ -143,9 +144,13 @@ def _portfolio(model: DashboardModel) -> str:
       <div class="table-scroll">
       <table data-sortable>
         <caption>Positions — quantities are authoritative; dollar values require a networked allocator run.</caption>
-        <thead><tr><th scope="col">Ticker</th><th scope="col">Kind</th>
-          <th scope="col">Tier</th><th scope="col" class="num">Quantity</th>
-          <th scope="col" class="num">Market value</th></tr></thead>
+        <thead><tr>{"".join(
+            f'<th scope="col"{cls}><button type="button" class="th-sort">{label}</button></th>'
+            for label, cls in (
+                ("Ticker", ""), ("Kind", ""), ("Tier", ""),
+                ("Quantity", ' class="num"'), ("Market value", ' class="num"'),
+            )
+        )}</tr></thead>
         <tbody>{''.join(rows) or '<tr><td colspan="5" class="unavailable">No positions found.</td></tr>'}</tbody>
       </table>
       </div>
@@ -248,7 +253,12 @@ def _concentration(model: DashboardModel) -> str:
           <div class="sub">PHQ-2026-01 effective-issuer limit</div></div>
         <div class="card"><div class="label">AI/platform ceiling</div>
           <div class="value">{_fmt_pct(model.ai_platform_ceiling_pct, 0)}</div>
-          <div class="sub">measured {('~' + format(model.ai_platform_measured_pct, '.2f') + '%') if model.ai_platform_measured_pct is not None else 'point-in-time, see evidence'}</div></div>
+          <div class="sub">{
+            ('measured ~' + format(model.ai_platform_measured_pct, '.2f')
+             + '% (point-in-time, PHQ-2026-01-derived)')
+            if model.ai_platform_measured_pct is not None
+            else 'measured figure unavailable — point-in-time, see PHQ-2026-01 evidence'
+          }</div></div>
       </div>
       <p class="lede">Leverage ratio and live cluster proximity are not shown:
         they require a live gross valuation this offline dashboard does not compute.</p>

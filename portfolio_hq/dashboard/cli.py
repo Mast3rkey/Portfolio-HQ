@@ -10,6 +10,7 @@ path you give (a gitignored location by convention). `serve` writes nothing.
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import sys
 from pathlib import Path
 
@@ -20,6 +21,27 @@ from .server import serve
 # The repository root is the parent of the `portfolio_hq` package directory.
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT = "reports/generated/portfolio_hq_dashboard.html"
+
+_HOST_ERROR = (
+    "--host must be a loopback address ('127.0.0.1', '::1', or 'localhost') "
+    "— got {value!r}. Binding to 0.0.0.0, a LAN address, or any other "
+    "externally reachable interface is not authorized for this dashboard "
+    "(OPS-0011 sections 2.4 and 5: not a default, an option, or a "
+    "configurable setting)."
+)
+
+
+def _loopback_host(value: str) -> str:
+    """argparse `type=` validator: reject any --host that isn't loopback-only."""
+    if value == "localhost":
+        return value
+    try:
+        addr = ipaddress.ip_address(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(_HOST_ERROR.format(value=value)) from None
+    if not addr.is_loopback:
+        raise argparse.ArgumentTypeError(_HOST_ERROR.format(value=value))
+    return value
 
 
 def cmd_build(args: argparse.Namespace) -> int:
@@ -80,7 +102,13 @@ def build_parser() -> argparse.ArgumentParser:
     b.set_defaults(func=cmd_build)
 
     s = sub.add_parser("serve", help="Serve the dashboard on localhost.")
-    s.add_argument("--host", default="127.0.0.1", help="Bind host (default: 127.0.0.1).")
+    s.add_argument(
+        "--host",
+        default="127.0.0.1",
+        type=_loopback_host,
+        help="Bind host — loopback only (default: 127.0.0.1). 0.0.0.0/LAN/"
+        "external addresses are rejected (OPS-0011).",
+    )
     s.add_argument("--port", type=int, default=8000, help="Bind port (default: 8000).")
     s.set_defaults(func=cmd_serve)
 
