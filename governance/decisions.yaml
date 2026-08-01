@@ -391,3 +391,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0005, OPS-0006, OPS-0007, OPS-0009, OPS-0011, PHQ-2026-01]
     supporting_artifact: null
     file: governance/decisions/OPS-0012-dashboard-2-modern-responsive-experience-authorization.md
+  - decision_id: LADDER-0001
+    date: 2026-08-01
+    status: Accepted
+    category: research_charter
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0008, OPS-0009, NUM-0001, MARGIN-0005, PHQ-2026-01, PHQ-2026-02]
+    supporting_artifact: research/buy_ladder_backtest/PROTOCOL_V1.md
+    file: governance/decisions/LADDER-0001-canonical-buy-ladder-backtest-authorization.md

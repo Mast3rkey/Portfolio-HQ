@@ -4198,3 +4198,94 @@ workstreams:
       entries in governance/decisions.yaml, are now status: Accepted.
     supersedes: null
     superseded_by: null
+
+  - id: WS-0010
+    title: Canonical buy-ladder and trim-level backtest research (LADDER-0001)
+    objective: >
+      Track LADDER-0001's bounded, pre-registered, hash-pinned research
+      charter re-testing the current ATR-based buy-ladder methodology
+      (levels.py) against the current canonical destination roster
+      (targets.yaml, PHQ-2026-02) — the existing rung_backtest.md
+      (2026-07-12) tested the retired 65-ticker tier universe and has
+      never been re-run against canonical truth. This workstream records
+      that the study is authorized, not yet run; implementation has not
+      begun; no current policy change or trade recommendation exists;
+      independent review and principal acceptance of the governance PR
+      are required before this authorization is effective.
+    governing_authority:
+      - governance/decisions/LADDER-0001-canonical-buy-ladder-backtest-authorization.md
+      - research/buy_ladder_backtest/PROTOCOL_V1.md (pinned SHA-256, LADDER-0001 §3)
+      - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md (review standard)
+      - governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md (Lane G)
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
+    status: proposed
+    priority: secondary
+    dependencies: []
+    authorized_scope: >
+      None yet — effective only upon LADDER-0001's governance PR merging.
+      Even then, exactly LADDER-0001 §1/§4's bounded charter grant:
+      execution of research/buy_ladder_backtest/PROTOCOL_V1.md's frozen
+      three-arm study (current ATR ladder; fixed-percentage pullback
+      ladder; immediate/scheduled deployment) against the current
+      canonical non-gated equity/fund/GLD roster, plus one later,
+      separate implementation PR limited to LADDER-0001 §4's approved
+      files (research/buy_ladder_backtest/**, one output report, focused
+      tests only if needed). No production file may be created or
+      modified under this workstream.
+    prohibited_scope: >
+      Any allocate.py/levels.py/margin_state.py change; any
+      targets.yaml/holdings.yaml/gates.yaml/issuer_lookthrough.yaml
+      change; any dashboard integration; any trim rule; any buy list or
+      current ticker recommendation; any purchase of a gated name (SNPS,
+      ICE, SPGI, WM, RKLB, TSLA); any crypto (BTC/ETH/SOL) ladder finding
+      or extrapolation (excluded from this study's scope entirely per
+      the protocol's §19); any cash or margin deployment; any
+      Constitution change; any Intelligence-to-allocator coupling; any
+      automated scoring or ranking; any consumption of MARGIN-0005's
+      trial budget or any change to its charter; any touch to PR #212 or
+      PR #213; any simulation run before LADDER-0001's governance PR
+      merges and its pinned protocol hash verifies.
+    milestones:
+      - gate: governance-pr-drafted
+        description: >
+          LADDER-0001 filed (governance decision file plus
+          research/buy_ladder_backtest/PROTOCOL_V1.md, hash-pinned),
+          governance/decisions.yaml and the CLAUDE.md Decisions Log
+          pointer updated, this register entry added. holdings.yaml,
+          targets.yaml, gates.yaml, allocate.py, and levels.py confirmed
+          byte-identical to origin/main at filing time (this filing does
+          not touch any of them).
+        pr: null
+        status: drafted
+        date: "2026-08-01"
+    evidence_refs:
+      - governance/decisions/LADDER-0001-canonical-buy-ladder-backtest-authorization.md
+      - research/buy_ladder_backtest/PROTOCOL_V1.md
+      - reports/rung_backtest.md (superseded-scope precedent — retired tier universe, not reopened)
+    next_action: >
+      Independent, exact-head review of LADDER-0001's governance PR under
+      OPS-0007 §1's capability-based standard (OPS-0009 Lane G — full
+      weight, no reduction), followed by any required bounded correction,
+      exact-head re-review, and explicit principal acceptance before the
+      PR may be marked ready and merged. No implementation work, no data
+      acquisition, and no simulation may begin before that merge and the
+      pinned protocol hash's post-merge verification.
+    completion_criteria: >
+      Not met. Requires, at minimum: LADDER-0001 merged with its pinned
+      hash verified; a later, separate implementation PR executing
+      PROTOCOL_V1.md exactly, itself independently reviewed and
+      principal-accepted; and, only if a threshold-meeting result is
+      found, its own separate future governance decision before any
+      production file changes (LADDER-0001 §5/§17 — no result
+      automatically changes policy).
+    blocker: >
+      LADDER-0001's governance PR has not yet been independently reviewed
+      or principal-accepted. No implementation PR may open until it
+      merges.
+    active_branch: claude/buy-ladder-backtest-governance-74svzu
+    active_pr: null
+    last_verified_main_sha: 6db533338d3958233a23a09c375b91a5df9b00a9
+    last_verified_date: "2026-08-01"
+    authorized_by: null
+    supersedes: null
+    superseded_by: null
