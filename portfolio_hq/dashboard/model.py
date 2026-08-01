@@ -22,6 +22,7 @@ from pathlib import Path
 
 import yaml
 
+from . import decisions as decisions_mod
 from .provenance import Provenance, collect_provenance
 
 # ── authoritative inputs (repo-relative) ────────────────────────────────────
@@ -188,6 +189,7 @@ class DashboardModel:
     allocation_unavailable_reasons: tuple[str, ...]
     decisions: tuple[DecisionRow, ...]
     controlling_decisions: tuple[str, ...]
+    decision_catalog: decisions_mod.DecisionCatalog
     workstreams: tuple[WorkstreamRow, ...]
     intelligence: IntelligenceSummary
     input_files: tuple[str, ...]
@@ -709,6 +711,24 @@ def build_model(repo_root: Path | str, *, now: datetime | None = None) -> Dashbo
     if d_err:
         load_errors.append(d_err)
 
+    try:
+        decision_catalog = decisions_mod.build_catalog(repo_root)
+    except Exception as exc:  # pragma: no cover - defensive
+        decision_catalog = decisions_mod.DecisionCatalog(
+            decisions=(),
+            legacy=(),
+            valid_ids=frozenset(),
+            legacy_ids=frozenset(),
+            issues=(
+                decisions_mod.LoadIssue(
+                    decisions_mod.SEVERITY_ERROR,
+                    "catalog-build-failed",
+                    "Governance Decision Explorer catalog failed to build: "
+                    f"{type(exc).__name__}: {exc}",
+                ),
+            ),
+        )
+
     workstreams, w_err = _load_workstreams(repo_root / WORKSTREAMS_REL)
     if w_err:
         load_errors.append(w_err)
@@ -782,6 +802,7 @@ def build_model(repo_root: Path | str, *, now: datetime | None = None) -> Dashbo
         allocation_unavailable_reasons=allocation_reasons,
         decisions=tuple(decisions),
         controlling_decisions=controlling,
+        decision_catalog=decision_catalog,
         workstreams=tuple(workstreams),
         intelligence=intelligence,
         input_files=tuple(INPUT_FILES),

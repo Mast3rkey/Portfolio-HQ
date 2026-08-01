@@ -3918,6 +3918,81 @@ workstreams:
         pr: 213
         status: drafted
         date: "2026-08-01"
+      - gate: dashboard-2-implementation-merged
+        description: >
+          PR #212 ("Dashboard 2.0: modern responsive visual redesign
+          (OPS-0012 first pass)") confirmed merged to main as merge commit
+          f999db11dac9ee4597094879eedfa9e2b169a70d (merged_by Mast3rkey,
+          merged_at 2026-08-01T15:15:36Z; base
+          c5f6c2ad02edef9531cbc8b6e2e65c6e3a450c01, head
+          9289fa90dd2bd021d7ea61b35aa01b783258d4b9) — independently
+          re-verified this session via the GitHub API and via `git log
+          --first-parent origin/main`. **PR #212 carries zero retained
+          GitHub reviews and zero PR comments** — same disclosed-gap
+          category as OPS-0004 Finding FA-1 and the
+          dashboard-2-governance-authorization-merged milestone above; this
+          session did not perform that independent review and does not
+          claim OPS-0012 section 11's rendered-preview/principal-visual-
+          acceptance steps are retained as artifacts, only that the merge
+          itself is confirmed fact. This synchronization was overdue —
+          performed here, by the next session to touch this entry, per this
+          repository's established convention (OPS-0008 section 4(a)) of
+          folding a missed prior post-merge sync into the next session's
+          own factual register update.
+        pr: 212
+        status: merged
+        date: "2026-08-01"
+      - gate: governance-decision-explorer-authorization-merged
+        description: >
+          PR #213 ("OPS-0013: authorize Governance Decision Explorer
+          (design/authorization only)") confirmed merged to main as merge
+          commit c5f6c2ad02edef9531cbc8b6e2e65c6e3a450c01 (merged_by
+          Mast3rkey, merged_at 2026-08-01T14:49:06Z; base
+          6db533338d3958233a23a09c375b91a5df9b00a9, head
+          287c57083bc79d4e5bfb7e6f2edf4e5772761de6) — independently
+          re-verified this session via the GitHub API and via `git log
+          --first-parent origin/main`. **PR #213 carries zero retained
+          GitHub reviews and zero PR comments** (same disclosed-gap
+          category as above) — this session did not perform that
+          independent review and makes no claim beyond the merge itself.
+          Per OPS-0013 section 16, this merge is the sole event that makes
+          the Governance Decision Explorer capability effective and
+          authorizes the one future implementation PR named below.
+        pr: 213
+        status: merged
+        date: "2026-08-01"
+      - gate: governance-decision-explorer-implementation-pr-drafted
+        description: >
+          The one implementation PR OPS-0013 section 2 authorizes is being
+          prepared on branch claude/portfolio-hq-governance-explorer-zdrvkf,
+          base main at acb24c134d10d586230539337d0f4cba23c0fa0f (merge
+          commit of PR #216) — independently confirmed clean/current at
+          branch start via `git fetch --prune` and an open-PR/overlapping-
+          branch scan (zero open PRs; no existing Governance Decision
+          Explorer implementation found on any branch). Adds
+          portfolio_hq/dashboard/decisions.py (a dedicated loader, two-ledger
+          resolver, and constrained Markdown-to-HTML renderer treating every
+          decision .md file as untrusted display input), one additive
+          DashboardModel field (decision_catalog), an in-document
+          #/decision/ID-routed detail view inside the existing Governance
+          section (no sixth top-level view), a local substring search box,
+          dedicated focused tests (test_portfolio_hq_dashboard_decisions.py)
+          plus one narrowed pre-existing assertion in
+          test_no_order_or_mutation_controls (no <input> other than the new
+          read-only search box), and documentation updates
+          (docs/PORTFOLIO_HQ_DASHBOARD.md,
+          docs/PORTFOLIO_HQ_DASHBOARD_DESIGN.md section 10.10). Full local
+          validation performed by the implementing session — see this PR's
+          own description for exact results. It is NOT approved: it remains
+          gated on independent exact-head review under OPS-0007 section 1
+          (per OPS-0013 section 15, in addition to everything OPS-0011
+          section 8 already requires), any required bounded correction and
+          exact-head re-review, explicit principal acceptance, and immediate
+          post-merge verification. Opened as a draft PR; not merged, not
+          independently reviewed, not principal-accepted in this session.
+        pr: null
+        status: drafted
+        date: "2026-08-01"
     evidence_refs:
       - governance/decisions/OPS-0011-repository-native-dashboard-capability-authorization.md
       - governance/decisions/OPS-0012-dashboard-2-modern-responsive-experience-authorization.md
@@ -3927,38 +4002,42 @@ workstreams:
       - governance/audits/WS0007_PR199_INDEPENDENT_EXACT_HEAD_REVIEW_20260731.md
       - governance/audits/WS0007_PR199_POST_MERGE_VERIFICATION_20260731.md
     next_action: >
-      Phase 1: none — complete, unedited. Phase 2 (Dashboard 2.0): the
-      governance authorization (OPS-0012) is merged and effective. The one
-      authorized implementation PR (branch
-      claude/dashboard-2-visual-redesign-xd0pip) is now open and requires:
-      independent exact-head review under OPS-0007 section 1; any required
-      bounded correction and exact-head re-review; rendered desktop/mobile
-      preview artifacts; explicit principal visual acceptance; merge; and
-      immediate post-merge ancestry/scope/validator/test verification
-      (OPS-0012 section 11). Completion authorizes no second interface, no
-      further phase beyond Dashboard 2.0, and no default-daily-workflow
+      Phase 1: none — complete, unedited. Phase 2 (Dashboard 2.0): complete
+      — PR #212 merged (see the dashboard-2-implementation-merged milestone
+      above); no retained independent-review artifact exists for it
+      (disclosed, not resolved). Phase 3 (Governance Decision Explorer,
+      OPS-0013): the governance authorization (PR #213) is merged and
+      effective. The one authorized implementation PR (branch
+      claude/portfolio-hq-governance-explorer-zdrvkf) is now open and
+      requires: independent exact-head review under OPS-0007 section 1 (per
+      OPS-0013 section 15); any required bounded correction and exact-head
+      re-review; explicit principal acceptance; merge; and immediate
+      post-merge ancestry/scope/validator/test verification (OPS-0009
+      section 9). Completion authorizes no second explorer phase (OPS-0013
+      section 12), no second interface, and no default-daily-workflow
       integration; each would require its own separate future governance
       decision.
     completion_criteria: >
       Phase 1 is complete (unchanged). Phase 2 (Dashboard 2.0) is complete
-      when the one authorized implementation PR merges after its own
-      independent exact-head review, resolution of every material finding,
-      exact-head re-review, rendered desktop/mobile preview artifacts,
-      explicit principal visual acceptance, and immediate post-merge
-      ancestry/scope/validator/test verification — with this register
-      entry factually synchronized at that step. Completion authorizes no
-      second interface, no further phase, and no default-daily-workflow
+      (unchanged by this entry; see the merge milestone above). Phase 3
+      (Governance Decision Explorer) is complete when the one authorized
+      implementation PR merges after its own independent exact-head review,
+      resolution of every material finding, exact-head re-review, explicit
+      principal acceptance, and immediate post-merge ancestry/scope/
+      validator/test verification — with this register entry factually
+      synchronized at that step. Completion authorizes no second explorer
+      phase, no second interface, and no default-daily-workflow
       integration; each would require its own separate future governance
       decision.
     blocker: >
-      Phase 1: none — complete. Phase 2 (Dashboard 2.0): the implementation
-      PR is blocked on its own independent exact-head review, any required
-      bounded correction and exact-head re-review, rendered preview
-      artifacts, and explicit principal visual acceptance before it may
-      merge (OPS-0012 section 11).
-    active_branch: claude/dashboard-2-visual-redesign-xd0pip
-    active_pr: 212
-    last_verified_main_sha: 6db533338d3958233a23a09c375b91a5df9b00a9
+      Phase 1: none — complete. Phase 2 (Dashboard 2.0): none — merged.
+      Phase 3 (Governance Decision Explorer): the implementation PR is
+      blocked on its own independent exact-head review, any required
+      bounded correction and exact-head re-review, and explicit principal
+      acceptance before it may merge (OPS-0013 section 15).
+    active_branch: claude/portfolio-hq-governance-explorer-zdrvkf
+    active_pr: null
+    last_verified_main_sha: acb24c134d10d586230539337d0f4cba23c0fa0f
     last_verified_date: "2026-08-01"
     authorized_by: >
       Phase 1: governance/decisions/OPS-0011-repository-native-dashboard-capability-authorization.md,
@@ -3973,10 +4052,17 @@ workstreams:
       governance/decisions/OPS-0012-dashboard-2-modern-responsive-experience-authorization.md,
       merged to main on 2026-08-01 as merge commit
       6db533338d3958233a23a09c375b91a5df9b00a9 (PR #211, merged_by
-      Mast3rkey) — effective per OPS-0012 section 14. No retained GitHub
-      review or comment artifact exists for PR #211 (disclosed, not
-      resolved, by the merge milestone above). This entry cites that
-      authority; it does not originate it.
+      Mast3rkey) — effective per OPS-0012 section 14; its own implementation
+      (PR #212) merged as merge commit
+      f999db11dac9ee4597094879eedfa9e2b169a70d. No retained GitHub review or
+      comment artifact exists for PR #211 or PR #212 (disclosed, not
+      resolved, by the merge milestones above). Phase 3:
+      governance/decisions/OPS-0013-governance-decision-explorer-authorization.md,
+      merged to main on 2026-08-01 as merge commit
+      c5f6c2ad02edef9531cbc8b6e2e65c6e3a450c01 (PR #213, merged_by
+      Mast3rkey) — effective per OPS-0013 section 16. No retained GitHub
+      review or comment artifact exists for PR #213 (disclosed, not
+      resolved). This entry cites that authority; it does not originate it.
     supersedes: null
     superseded_by: null
   - id: WS-0008

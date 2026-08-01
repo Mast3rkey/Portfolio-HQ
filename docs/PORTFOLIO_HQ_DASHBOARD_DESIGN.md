@@ -289,8 +289,9 @@ above remain the controlling design direction.
 
 ## 10. Governance Decision Explorer — approved first drill-down slice (`OPS-0013`)
 
-**Status: authorized capability for one future, separate, bounded
-implementation PR** — not yet implemented, not yet begun. This section
+**Status: authorized capability, one implementation PR drafted** — not yet
+independently reviewed, not yet principal-accepted, not yet merged; see
+§10.10 for the as-built record. This section
 records what `governance/decisions/OPS-0013-governance-decision-explorer-authorization.md`
 authorizes. §§1–9 above are **unedited** and remain the foundation this
 drill-down slice builds on — one canonical generator, one master HTML
@@ -395,3 +396,76 @@ everything `OPS-0011` §8 already requires, plus scope verification against
 `OPS-0013` §§3–5 and §§9–11 specifically. Filed and reviewed independently
 of `OPS-0012`'s Dashboard 2.0 visual-redesign PR (PR #212) — the two may
 land in either order.
+
+### 10.10 First implementation pass — as-built record
+
+**Not yet independently reviewed, not yet principal-accepted, not yet
+merged.** Recorded here for review purposes, matching §9.7's convention for
+Dashboard 2.0.
+
+- **New module**: `portfolio_hq/dashboard/decisions.py` — a dedicated
+  loader, two-ledger resolver, and constrained Markdown-to-HTML renderer.
+  Zero import coupling with `allocate.py`/`margin_state.py`. Pure read;
+  never writes anything.
+- **Model**: `DashboardModel` gains one additive field,
+  `decision_catalog: decisions.DecisionCatalog`, built defensively (a
+  catalog-build failure degrades to an empty catalog with a recorded issue,
+  never a crash). The existing `decisions: tuple[DecisionRow, ...]` field
+  and the flat Governance index table are unchanged.
+- **Two-ledger resolution**: `related_decisions` entries are resolved
+  against the union of `governance/decisions/*.md` (full record link) and
+  `decision_log.yaml` (historical fact card, original vocabulary preserved
+  verbatim). An ID in neither renders inert with a disclosed warning. A
+  decision listing itself is suppressed with a warning, never silently
+  duplicated or silently dropped without disclosure.
+- **Index/file reconciliation**: `governance/decisions.yaml` is read for
+  discovery; each substantive `.md` file's frontmatter is compared against
+  it field-by-field; on any mismatch, frontmatter (the substantive source)
+  controls and the mismatch is displayed. A malformed or missing index
+  degrades to pure filesystem discovery with a prominent catalog-level
+  warning — no file is silently dropped. An indexed ID with no backing file
+  renders as an explicit "source missing" stub. A file with no index entry
+  renders as an explicit "not indexed" orphan. Malformed frontmatter,
+  invalid encoding, or an unreadable file each degrade to a filename-
+  identified stub (with a separated raw body where one could safely be
+  found) rather than omitting the decision or crashing the build.
+- **Renderer**: a small, dependency-free Markdown-to-HTML converter
+  supporting exactly the allow-list `OPS-0013` §5 requires — paragraphs,
+  ATX headings (re-leveled under the decision's own heading, per-decision-
+  prefixed IDs to avoid collisions), lists (two levels of nesting),
+  single-level blockquotes, horizontal rules, `**`/`__` bold, `*`-only
+  italic (never `_snake_case_`), inline code, fenced code (with a literal
+  fallback for an unmatched fence), tables (escaped-pipe and code-span-pipe
+  aware, with a literal fallback for an ambiguous table), and decision-ID
+  auto-linking against a fixed, build-time-enumerated ID set — plus a
+  legacy-ID variant that renders an inert historical-reference span instead
+  of a link. Everything else (raw HTML, general Markdown links/images,
+  autolinked bare URLs, footnotes, task lists) is escaped and shown as
+  literal text, never silently dropped.
+- **Navigation**: `#/decision/<ID>` hash routes. Each decision's detail
+  `<section>` carries `id="/decision/<ID>"` (matching the hash literally,
+  so a plain anchor jump works with JavaScript disabled) plus a
+  `data-decision-id` attribute JavaScript uses for routing. Visibility is
+  toggled by the same `js-views` class-gated CSS mechanism the five
+  top-level views already use — never the `hidden` attribute — so every
+  decision stays in plain, anchor-reachable document flow without
+  JavaScript. Top-level nav clicks keep their existing `replaceState`
+  behavior unchanged; decision links use ordinary native hash navigation
+  (the browser pushes its own history entry), observed via a `hashchange`
+  listener. An unknown but well-formed ID falls back to the Governance
+  index with a disclosed "not found" message; a malformed route falls
+  through to the pre-existing safe default.
+- **Search**: one local, case-insensitive substring filter over each
+  catalog row's ID/title/date/status/category/related-IDs, extended to the
+  corresponding (already pre-rendered, not fetched) detail section's own
+  text as a second pass.
+- **Measured on the current 58-decision corpus**: catalog build completes
+  in a fraction of a second; generated HTML is a few megabytes (see the
+  implementation PR for the exact measured figure) — one static document,
+  no pagination, no virtual scrolling.
+- **Tests**: `test_portfolio_hq_dashboard_decisions.py`, additive to the
+  existing `test_portfolio_hq_dashboard.py` (unedited except one assertion
+  in `test_no_order_or_mutation_controls` narrowed from "no `<input>` of any
+  kind" to "no `<input>` other than the read-only search box," since the
+  search box is new, authorized, non-mutating capability the original
+  assertion predates).

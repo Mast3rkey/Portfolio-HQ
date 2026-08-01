@@ -41,42 +41,109 @@ _JS = """
   var links = Array.prototype.slice.call(
     document.querySelectorAll('#primary-nav a[data-target]'));
 
+  // Governance Decision Explorer (OPS-0013): pre-rendered detail sections,
+  // hash-routed (#/decision/ID), toggled the same way top-level views are —
+  // a CSS class gated on `js-views`, never the `hidden` attribute, so every
+  // decision stays visible and anchor-reachable with JS disabled.
+  var decisionSections = Array.prototype.slice.call(
+    document.querySelectorAll('[data-decision-detail]'));
+  var decisionMap = {};
+  decisionSections.forEach(function (s) {
+    decisionMap[s.getAttribute('data-decision-id')] = s;
+  });
+  var catalogPanel = document.getElementById('decision-catalog-panel');
+  var notFoundBox = document.getElementById('decision-not-found');
+
+  function activate(id, opts) {
+    opts = opts || {};
+    var found = false;
+    sections.forEach(function (s) {
+      var on = s.id === id;
+      if (on) { found = true; }
+      s.classList.toggle('active', on);
+    });
+    if (!found && sections.length) { sections[0].classList.add('active'); id = sections[0].id; }
+    links.forEach(function (a) {
+      if (a.getAttribute('data-target') === id) {
+        a.setAttribute('aria-current', 'page');
+      } else {
+        a.removeAttribute('aria-current');
+      }
+    });
+    if (!opts.skipHash && history.replaceState) {
+      history.replaceState(null, '', '#' + id);
+    }
+    if (!opts.skipScroll) { window.scrollTo(0, 0); }
+  }
+
+  function closeDecisionDetail() {
+    decisionSections.forEach(function (s) { s.classList.remove('active'); });
+    if (catalogPanel) { catalogPanel.classList.remove('detail-open'); }
+  }
+
+  function openDecisionDetail(id, opts) {
+    opts = opts || {};
+    var sec = decisionMap[id];
+    if (!sec) { return false; }
+    decisionSections.forEach(function (s) { s.classList.toggle('active', s === sec); });
+    if (catalogPanel) { catalogPanel.classList.add('detail-open'); }
+    if (notFoundBox) { notFoundBox.hidden = true; }
+    if (!opts.skipFocus) {
+      var heading = sec.querySelector('.decision-detail-title');
+      if (heading) { heading.focus(); }
+    }
+    return true;
+  }
+
+  // Returns true iff `hash` is a well-formed decision route (whether or not
+  // that ID resolves) — callers use the return value to decide whether to
+  // fall through to the pre-existing top-level-hash handling.
+  function routeHash(hash, opts) {
+    var m = /^#\\/decision\\/([A-Za-z0-9-]+)$/.exec(hash || '');
+    if (!m) { return false; }
+    if (sections.length) { activate('governance', {skipHash: true, skipScroll: true}); }
+    var found = openDecisionDetail(m[1].toUpperCase(), opts);
+    if (!found) {
+      closeDecisionDetail();
+      if (notFoundBox) { notFoundBox.hidden = false; }
+    }
+    return true;
+  }
+
   if (sections.length && links.length) {
     doc.classList.add('js-views');
-
-    function activate(id, opts) {
-      opts = opts || {};
-      var found = false;
-      sections.forEach(function (s) {
-        var on = s.id === id;
-        if (on) { found = true; }
-        s.classList.toggle('active', on);
-      });
-      if (!found) { sections[0].classList.add('active'); id = sections[0].id; }
-      links.forEach(function (a) {
-        if (a.getAttribute('data-target') === id) {
-          a.setAttribute('aria-current', 'page');
-        } else {
-          a.removeAttribute('aria-current');
-        }
-      });
-      if (!opts.skipHash && history.replaceState) {
-        history.replaceState(null, '', '#' + id);
-      }
-      if (!opts.skipScroll) { window.scrollTo(0, 0); }
-    }
 
     links.forEach(function (a) {
       a.addEventListener('click', function (e) {
         var id = a.getAttribute('data-target');
         if (!id) { return; }
         e.preventDefault();
+        closeDecisionDetail();
+        if (notFoundBox) { notFoundBox.hidden = true; }
         activate(id);
       });
     });
 
-    var initial = (window.location.hash || '').slice(1);
-    activate(initial || sections[0].id, {skipHash: true, skipScroll: true});
+    var initialHash = window.location.hash || '';
+    if (!routeHash(initialHash)) {
+      var initial = initialHash.slice(1);
+      activate(initial || sections[0].id, {skipHash: true, skipScroll: true});
+    }
+
+    window.addEventListener('hashchange', function () {
+      var h = window.location.hash || '';
+      if (routeHash(h)) { return; }
+      closeDecisionDetail();
+      if (notFoundBox) { notFoundBox.hidden = true; }
+      var target = h.slice(1);
+      if (target === 'governance') {
+        var heading = document.getElementById('governance-h');
+        if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); }
+      }
+      if (target && document.getElementById(target)) {
+        activate(target);
+      }
+    });
   }
 
   document.querySelectorAll('table[data-sortable] thead th').forEach(function (th, idx) {
@@ -100,6 +167,38 @@ _JS = """
     }
     btn.addEventListener('click', sort);
   });
+
+  // Decision Explorer local substring search — filters the catalog list by
+  // pre-rendered metadata (data-search) and, as a second pass, by the
+  // already-pre-rendered detail section's own text content. No fetch, no
+  // semantic search, no ranking.
+  var searchInput = document.getElementById('decision-search');
+  var searchCount = document.getElementById('decision-search-count');
+  var listItems = Array.prototype.slice.call(
+    document.querySelectorAll('[data-decision-list-item]'));
+  if (searchInput && listItems.length) {
+    searchInput.addEventListener('input', function () {
+      var term = searchInput.value.trim().toLowerCase();
+      var shown = 0;
+      listItems.forEach(function (li) {
+        var meta = li.getAttribute('data-search') || '';
+        var match = !term || meta.indexOf(term) !== -1;
+        if (!match) {
+          var link = li.querySelector('a');
+          var id = link ? link.getAttribute('href').replace('#/decision/', '') : '';
+          var detail = decisionMap[id];
+          if (detail && detail.textContent.toLowerCase().indexOf(term) !== -1) {
+            match = true;
+          }
+        }
+        li.hidden = !match;
+        if (match) { shown += 1; }
+      });
+      if (searchCount) {
+        searchCount.textContent = shown + ' of ' + listItems.length + ' decision(s) shown.';
+      }
+    });
+  }
 })();
 """
 
@@ -529,6 +628,269 @@ def _intelligence(model: DashboardModel) -> str:
 
 # ── Governance ───────────────────────────────────────────────────────────
 
+_STATUS_BADGE_CLASS = {
+    "Accepted": "ok",
+    "Proposed": "info",
+    "Superseded": "warning",
+    "Archived": "muted",
+}
+
+_TITLE_SOURCE_LABEL = {
+    "frontmatter": "title from frontmatter",
+    "h1": "title from the decision's first heading",
+    "filename": "title mechanically derived from the filename — not authored prose",
+    "id": "no title available — decision ID shown",
+}
+
+
+def _decision_status_badge(status: str | None) -> str:
+    if not status:
+        return '<span class="badge muted">unknown</span>'
+    cls = _STATUS_BADGE_CLASS.get(status, "muted")
+    return f'<span class="badge {cls}">{_esc(status)}</span>'
+
+
+def _decision_catalog_item(d) -> str:
+    search_bits = " ".join(
+        [
+            d.decision_id,
+            d.title,
+            d.date or "",
+            d.status or "",
+            d.category or "",
+            " ".join(r.decision_id for r in d.related),
+        ]
+    ).lower()
+    flags = []
+    if d.source_missing:
+        flags.append('<span class="badge blocker">source missing</span>')
+    if d.duplicate_id:
+        flags.append('<span class="badge warning">duplicate ID</span>')
+    if d.orphan and not d.source_missing:
+        flags.append('<span class="badge warning">not indexed</span>')
+    return f"""
+    <li data-decision-list-item data-search="{_esc(search_bits)}">
+      <a href="#/decision/{_esc(d.decision_id)}" class="decision-link decision-list-link">
+        <span class="d-id">{_esc(d.decision_id)}</span>
+        <span class="d-title">{_esc(d.title)}</span>
+        <span class="d-meta">{_esc(d.date or '—')} &middot; {_decision_status_badge(d.status)}
+          &middot; {_esc(d.category or '—')} {''.join(flags)}</span>
+      </a>
+    </li>"""
+
+
+def _legacy_fact_card(decision_id: str, legacy) -> str:
+    if legacy is None:
+        return (
+            f'<li class="unresolved-ref"><span class="badge muted">unresolved</span> '
+            f"{_esc(decision_id)} — not found in governance/decisions or "
+            "decision_log.yaml</li>"
+        )
+
+    def _snip(text: str | None) -> str:
+        if not text:
+            return "—"
+        return _esc(text[:500]) + ("…" if len(text) > 500 else "")
+
+    return f"""
+    <li class="legacy-ref-card">
+      <span class="badge info" title="Historical ledger entry — decision_log.yaml,
+        not a governance/decisions/ record">Historical ledger</span>
+      <strong>{_esc(decision_id)}</strong>
+      <div class="legacy-fields">
+        <span>status (decision_log.yaml vocabulary): <code>{_esc(legacy.status or '—')}</code></span>
+        <span>category: <code>{_esc(legacy.category or '—')}</code></span>
+        <span>date: {_esc(legacy.date or '—')}</span>
+      </div>
+      <details><summary>decision_log.yaml text</summary>
+        <p>{_snip(legacy.decision_text)}</p>
+        <p class="lede">{_snip(legacy.rationale)}</p>
+      </details>
+    </li>"""
+
+
+def _related_item_html(ref, catalog) -> str:
+    if ref.kind == "governance":
+        target = next((d for d in catalog.decisions if d.decision_id == ref.decision_id), None)
+        title = f" — {_esc(target.title)}" if target else ""
+        return (
+            f'<li><a href="#/decision/{_esc(ref.decision_id)}" class="decision-link">'
+            f"{_esc(ref.decision_id)}</a>{title}</li>"
+        )
+    if ref.kind == "legacy":
+        legacy = next((entry for entry in catalog.legacy if entry.decision_id == ref.decision_id), None)
+        return _legacy_fact_card(ref.decision_id, legacy)
+    return (
+        f'<li class="unresolved-ref"><span class="badge muted">unresolved</span> '
+        f"{_esc(ref.decision_id)} — not found in governance/decisions or "
+        "decision_log.yaml</li>"
+    )
+
+
+def _reverse_ref_item(ref_id: str, catalog) -> str:
+    target = next((d for d in catalog.decisions if d.decision_id == ref_id), None)
+    title = f" — {_esc(target.title)}" if target else ""
+    return (
+        f'<li><a href="#/decision/{_esc(ref_id)}" class="decision-link">{_esc(ref_id)}</a>'
+        f"{title} — References this decision.</li>"
+    )
+
+
+def _artifact_html(a) -> str:
+    if a is None:
+        return '<p class="unavailable">No supporting artifact declared.</p>'
+    if a.safe:
+        return (
+            f'<p><span class="fname">{_esc(a.declared_path)}</span> '
+            f'<span class="fhash">sha256:{_esc(a.sha256)} &middot; {a.size_bytes} B</span> '
+            '<span class="badge muted">evidence, not policy</span></p>'
+        )
+    return (
+        f'<p><span class="fname">{_esc(a.declared_path)}</span> '
+        f'<span class="badge warning">{_esc(a.warning or "unavailable")}</span></p>'
+    )
+
+
+def _decision_issues_html(issues) -> str:
+    if not issues:
+        return ""
+    items = "".join(f"<li>{_esc(i.message)}</li>" for i in issues)
+    return (
+        '<div class="notice warning" role="note">'
+        '<span class="n-icon" aria-hidden="true">⚠</span>'
+        '<div class="n-body"><div class="n-title">Load notes</div>'
+        f"<ul>{items}</ul></div></div>"
+    )
+
+
+def _decision_detail_html(d, catalog) -> str:
+    related_html = "".join(_related_item_html(r, catalog) for r in d.related) or (
+        '<li class="unavailable">None declared.</li>'
+    )
+    reverse_html = "".join(_reverse_ref_item(r, catalog) for r in d.reverse_references) or (
+        '<li class="unavailable">No other decision references this one via '
+        "related_decisions.</li>"
+    )
+    mismatch_html = ""
+    if d.index_mismatches:
+        items = "".join(f"<li>{_esc(m)}</li>" for m in d.index_mismatches)
+        mismatch_html = (
+            '<div class="notice warning" role="note">'
+            '<span class="n-icon" aria-hidden="true">⚠</span>'
+            '<div class="n-body"><div class="n-title">Index / frontmatter mismatch '
+            "(frontmatter controls)</div>"
+            f"<ul>{items}</ul></div></div>"
+        )
+    orphan_html = ""
+    if d.orphan and not d.source_missing:
+        orphan_html = (
+            '<div class="notice warning" role="note">'
+            '<span class="n-icon" aria-hidden="true">⚠</span>'
+            '<div class="n-body"><div class="n-title">Not indexed</div>'
+            '<div class="n-detail">This decision file exists on disk but has no '
+            "governance/decisions.yaml entry.</div></div></div>"
+        )
+    source_html = (
+        f'<li><span class="fname">{_esc(d.source.path)}</span> '
+        + (
+            f'<span class="fhash">sha256:{_esc(d.source.sha256)} &middot; '
+            f"{d.source.size_bytes} B</span>"
+            if d.source.exists and d.source.sha256
+            else '<span class="badge blocker">source missing</span>'
+            if not d.source.exists
+            else '<span class="badge warning">hash unavailable</span>'
+        )
+        + "</li>"
+    )
+    title_note = _TITLE_SOURCE_LABEL.get(d.title_source, "")
+    return f"""
+    <section class="decision-detail" id="/decision/{_esc(d.decision_id)}"
+      data-decision-detail data-decision-id="{_esc(d.decision_id)}"
+      aria-labelledby="decision-{_esc(d.decision_id)}-h">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="#governance">Governance</a><span aria-hidden="true"> / </span>
+        <span aria-current="page">{_esc(d.decision_id)}</span>
+      </nav>
+      <h3 class="decision-detail-title" id="decision-{_esc(d.decision_id)}-h" tabindex="-1">
+        {_esc(d.decision_id)} — {_esc(d.title)}
+        <span class="badge muted" title="{_esc(title_note)}">derived title</span>
+      </h3>
+      <div class="cards decision-meta">
+        <div class="card"><div class="label">Date</div><div class="value">{_esc(d.date or '—')}</div></div>
+        <div class="card"><div class="label">Status</div><div class="value">{_decision_status_badge(d.status)}</div></div>
+        <div class="card"><div class="label">Category</div><div class="value">{_esc(d.category or '—')}</div></div>
+      </div>
+      {_decision_issues_html(d.issues)}
+      {mismatch_html}
+      {orphan_html}
+      <details open>
+        <summary>Authority disclosures</summary>
+        <ul>
+          <li>This <code>.md</code> file is the substantive decision record.</li>
+          <li><code>governance/decisions.yaml</code> is a generated index —
+            never the primary record.</li>
+          <li>A supporting artifact, if any, is evidence, not policy.</li>
+          <li><code>related_decisions</code> carries no recorded relationship
+            type — a link means "references," never implements / narrows /
+            accepts / supersedes / validates.</li>
+          <li>Accepted status does not prove that no later decision narrowed
+            part of this decision — read related decisions and CLAUDE.md's
+            Decisions Log for the fullest picture.</li>
+        </ul>
+      </details>
+      <h4>Related decisions</h4>
+      <ul class="related-list">{related_html}</ul>
+      <h4>Referenced by</h4>
+      <ul class="reverse-list">{reverse_html}</ul>
+      <h4>Supporting artifact</h4>
+      {_artifact_html(d.supporting_artifact)}
+      <h4>Source</h4>
+      <ul class="provenance-list">{source_html}</ul>
+      <h4>Decision body</h4>
+      <div class="decision-body">{d.body_html}</div>
+      <p><a href="#governance" class="back-link">&larr; Back to Governance</a></p>
+    </section>"""
+
+
+def _decision_explorer_html(model: DashboardModel) -> str:
+    catalog = model.decision_catalog
+    catalog_issue_html = ""
+    if catalog.issues:
+        items = "".join(f"<li>{_esc(i.message)}</li>" for i in catalog.issues)
+        catalog_issue_html = (
+            '<div class="notice warning" role="note">'
+            '<span class="n-icon" aria-hidden="true">⚠</span>'
+            '<div class="n-body"><div class="n-title">Decision catalog load notes</div>'
+            f"<ul>{items}</ul></div></div>"
+        )
+    items_html = "".join(_decision_catalog_item(d) for d in catalog.decisions)
+    details_html = "".join(_decision_detail_html(d, catalog) for d in catalog.decisions)
+    return f"""
+    <h3>Decision Explorer</h3>
+    <p class="lede">Browse, search, and open the complete committed text of
+      every governance decision. Presentation and navigation only — no
+      ranking, no relationship type beyond "references," and no
+      supersession inferred from a date or an ID.</p>
+    {catalog_issue_html}
+    <div id="decision-not-found" class="notice warning" hidden role="note">
+      <span class="n-icon" aria-hidden="true">⚠</span>
+      <div class="n-body"><div class="n-title">Decision not found</div>
+        <div class="n-detail">That decision ID was not found in this catalog.
+          Showing the governance index instead. <a href="#governance">Return
+          to Governance</a>.</div></div>
+    </div>
+    <div id="decision-catalog-panel">
+      <div class="search-field">
+        <label for="decision-search">Search decisions</label>
+        <input type="search" id="decision-search" autocomplete="off"
+          placeholder="Search by ID, title, date, status, category, related ID, or body text&hellip;">
+      </div>
+      <p id="decision-search-count" class="lede">{len(catalog.decisions)} decision(s).</p>
+      <ul class="decision-catalog-list">{items_html or '<li class="unavailable">No decisions found.</li>'}</ul>
+    </div>
+    <div class="decision-detail-container">{details_html}</div>"""
+
+
 def _governance(model: DashboardModel) -> str:
     p = model.provenance
     ws_rows = "".join(
@@ -582,6 +944,7 @@ def _governance(model: DashboardModel) -> str:
           <tbody>{dec_rows or '<tr><td colspan="4" class="unavailable">No decisions parsed.</td></tr>'}</tbody>
         </table></div>
       </div>
+      <div class="panel">{_decision_explorer_html(model)}</div>
     </section>"""
 
 

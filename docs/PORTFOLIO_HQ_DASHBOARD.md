@@ -115,6 +115,56 @@ markup is still a real `<table>` for anything that reads it as one.
 The page respects `prefers-reduced-motion`: with that OS/browser setting on,
 transitions and the section-switch animation are effectively instant.
 
+## Governance Decision Explorer
+
+Inside the **Governance** area, below the existing flat decision-index
+table, a searchable catalog lets you open any accepted governance decision's
+complete committed text in place — no second page, no network fetch,
+everything pre-rendered into this one file.
+
+- **Browse or search**: the catalog list is filterable by decision ID,
+  title, date, status, category, related decision ID, or a keyword from the
+  decision's own body text. Search is local substring matching only — no
+  semantic search, no ranking, no AI summary.
+- **Open a decision**: click an ID to see its metadata, related decisions,
+  who references it back, its supporting artifact (if any), its source file
+  path and content hash, and its full text, safely rendered from the
+  committed Markdown.
+- **Deep link**: every decision has a stable address,
+  `#/decision/<DECISION_ID>` (e.g. `#/decision/OPS-0013`) — paste it,
+  bookmark it, or share it; opening the dashboard at that address jumps
+  straight to that decision.
+- **Two ledgers, resolved honestly**: a related decision that lives in
+  `governance/decisions/` opens as a full record. A related decision that
+  only exists in the older `decision_log.yaml` historical ledger (the
+  `MARGIN-0001`–`MARGIN-0003` and `PI-0001`–`PI-0009` series) shows as a
+  compact historical fact card instead, using that ledger's own
+  `pending_evidence` / `active` / `accepted` vocabulary verbatim — it is
+  never remapped onto the newer `Proposed` / `Accepted` / `Superseded` /
+  `Archived` vocabulary, and never given a fake full-record link.
+- **No inferred relationships**: `related_decisions` carries no relationship
+  type in this repository's own data. The explorer never labels a link
+  "implements," "narrows," "supersedes," or similar — only the neutral
+  "References this decision," including for the automatically-computed
+  reverse-reference list ("decisions that reference this one"). A later
+  date or a higher decision number is never treated as supersession.
+- **Untrusted-input treatment**: every decision `.md` file is rendered
+  through a small, dependency-free Markdown renderer built for this
+  purpose — HTML-escaped by default, with only an explicit allow-list of
+  structural/inline transforms (headings, lists, tables, bold/italic,
+  inline code, fenced code, decision-ID auto-linking) applied on top. No
+  raw HTML, script, event handler, `javascript:` link, `<iframe>`, or
+  remote resource from decision content is ever live in the page.
+- **No JavaScript required**: every decision's full text is present in the
+  static HTML and reachable by anchor even with scripting disabled;
+  JavaScript only adds single-decision focusing, hash routing, and the
+  search box.
+
+This is presentation and navigation only — see
+`docs/PORTFOLIO_HQ_DASHBOARD_DESIGN.md` §10 for the full authority model,
+and `governance/decisions/OPS-0013-governance-decision-explorer-authorization.md`
+for what was actually authorized.
+
 ## Diagnosing common errors
 
 | Symptom | Cause / fix |

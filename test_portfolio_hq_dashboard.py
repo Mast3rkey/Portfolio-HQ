@@ -372,7 +372,13 @@ def test_no_external_asset_references(tmp_repo: Path):
 def test_no_order_or_mutation_controls(tmp_repo: Path):
     html = render_html(build_model(tmp_repo, now=FIXED_NOW)).lower()
     assert "<form" not in html
-    assert "<input" not in html
+    # The only <input> this dashboard may ever contain is the Governance
+    # Decision Explorer's local, read-only search box (OPS-0013 section 9):
+    # type="search", never inside a <form>, so it can never submit or mutate
+    # anything. Any other <input> type (text/submit/button/checkbox/etc.)
+    # would be a regression toward an order or mutation control.
+    for m in re.finditer(r"<input\b[^>]*>", html):
+        assert 'type="search"' in m.group(0), m.group(0)
     for word in (">buy<", ">sell<", ">submit<", "onclick=\"buy", "place order"):
         assert word not in html
 
