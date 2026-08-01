@@ -2067,6 +2067,24 @@ workstreams:
       batch, no Milestone 4 work, and no `OPS-0007` §8 step I advancement — Milestone 3 remains
       `in_progress` (WDC and the non-deferred T2 gaps named in `PI-0031` — CEG, BRK.B, WMT, MLM,
       AAPL — remain open and unresolved).
+
+      **(Superseded in part by this paragraph — `PI-0032`/`PI-0033` have since merged, closing the
+      WDC/CEG/BRK.B/WMT/MLM/AAPL gaps named above; see the milestone-3-intelligence-completion
+      gate's `blocker` field for complete detail, not restated here.)** **`PI-0035` (WS-0005
+      Milestone 3 Roster Reconciliation and Gated-Name Disposition) has been filed, not yet merged,
+      not yet independently reviewed, not yet effective.** `PHQ-2026-02` (merged 2026-07-31, after
+      `PI-0031`/`PI-0032`/`PI-0033`) retired the T1/T2/ETF/band/spec tier structure `PI-0031` §K's
+      completion criteria 1-3 were written against, replacing it with `targets.yaml`'s flat 27-name
+      canonical `destination:` equity list. `PI-0035` narrowly supersedes only §K criteria 1-3,
+      restating them against that 27-name list (19 covered; 4 newly dispositioned — SNPS, ICE,
+      SPGI, WM, each deferred to its own `gates.yaml` `next_gate` reopening condition; 4 reaffirmed
+      unedited from `PI-0033` — GNRC, RTX, RKLB, TSLA), and classifies the 26 Company Intelligence
+      records for tickers no longer in the canonical roster as retained/historical-advisory/
+      non-current for Milestone 3 accounting, without editing any of them. **The next concrete step
+      is this `PI-0035` governance PR's own independent exact-head review per `OPS-0007` §1,
+      followed by explicit principal acceptance, before it may be marked ready and merged.** No
+      gate is activated, no research is authorized, no eleventh Milestone 3 batch or Milestone 4
+      work is authorized or advanced, and Milestone 3 is not declared complete by this filing.
     completion_criteria: >
       Per OPS-0006 §16.1's completion discipline: Milestones 1-2 reach
       status: complete only when the one bounded first audit PR merges;
@@ -3327,6 +3345,37 @@ workstreams:
       tenth Milestone 3 batch, any Milestone 4-9 work, any ISRG content edit, or any advancement of
       `OPS-0007` §8 step I. This filing does not itself review, correct, mark ready, or merge
       itself, and does not evaluate or complete `PI-0031` §K's Milestone 3 completion standard.
+
+      **`PI-0035` (WS-0005 Milestone 3 Roster Reconciliation and Gated-Name Disposition) filed
+      2026-07-31, in the same governance package as this register entry — not yet merged, not yet
+      independently reviewed, not yet effective.** Independently re-verified this session:
+      `targets.yaml`'s canonical `destination:` list carries exactly 27 `asset_class: equity` rows
+      (NVDA, TSM, ASML, AVGO, SNPS, KLAC, MSFT, GOOGL, AMZN, META, PANW, LLY, ISRG, TMO, ICE, SPGI,
+      V, COST, WM, CEG, ETN, GEV, GNRC, PWR, RTX, RKLB, TSLA) — the roster `PHQ-2026-02` (merged
+      2026-07-31, three days after `PI-0031`/`PI-0032`/`PI-0033`) substituted for the retired
+      T1/T2/ETF/band/spec tier structure those three decisions' completion accounting was written
+      against. Of the 27: 19 already carry a Company Intelligence record (NVDA, TSM, ASML, AVGO,
+      KLAC, MSFT, GOOGL, AMZN, META, PANW, LLY, ISRG, TMO, V, COST, CEG, ETN, GEV, PWR); 4 are
+      actionable-gated (`gates.yaml`, authority `PHQ-2026-01`) with no prior Company Intelligence
+      disposition of any kind — SNPS, ICE, SPGI, WM, each newly dispositioned by `PI-0035`,
+      individually deferred to its own `gates.yaml` `next_gate` text as the reopening condition; 4
+      are non-gated and already dispositioned by `PI-0033` §A — GNRC (§A.2), RTX (§A.7), RKLB
+      (§A.11), TSLA (§A.12) — reaffirmed unedited by `PI-0035`, not reopened. `caps.clusters`
+      independently re-parsed: `semis` (ASML, TSM, NVDA, AVGO, KLAC) fully covered — WDC is no
+      longer a member and its own, separately merged Company Intelligence record (`PI-0032`) is
+      unaffected; `power_infra` (ETN, GEV, PWR) fully covered; `oil` now carries `tickers: []`, no
+      current members. **`PI-0035` narrowly supersedes only `PI-0031` §K criteria 1 and 2 (merged
+      into one restated criterion, since the T1/T2 distinction no longer exists) and the
+      roster-membership clause of criterion 3** — criteria 4-7 are restated for completeness but
+      explicitly not independently re-verified by this filing. The 26 Company Intelligence records
+      for tickers no longer in the canonical roster (AAPL, ABBV, AMAT, AMD, BRK.B, CRM, CRWD, CVX,
+      GILD, IBM, INTC, JNJ, JPM, LRCX, MA, MLM, MRK, MRVL, MU, NOW, ORCL, SKHY, VRT, WDC, WMT, XOM)
+      are classified retained/historical-advisory/non-current for Milestone 3 accounting — none is
+      edited, deleted, or relabeled. **`PI-0035` does not declare Milestone 3 complete** — criteria
+      5-7 remain unverified by this filing, and a future, separate completion-determination decision
+      must evaluate all seven together. It authorizes no research, no gate change, no eleventh
+      Milestone 3 batch, and no Milestone 4-9 work. This entry does not itself review, correct, mark
+      ready, or merge `PI-0035`'s governance PR.
     supersedes: null
     superseded_by: null
 
