@@ -204,9 +204,11 @@ stricter than `PHQ-2026-06`'s own retained brokerage screenshot (§ Context abov
 - Any redaction, cropping, or transformation applied must be recorded in the package's manifest —
   what was changed, and why — following the same disclosure discipline `PHQ-2026-06`'s manifest
   already applies to its own provenance chain.
-- **Named, bounded exception, stated by the principal in this authorizing session**: the visible
-  TradingView username "nichmasters," if it appears in a chart screenshot, is acceptable and does
-  not by itself require redaction. This is a narrow, single-fact exception — it does not waive any
+- **Named, bounded exception, stated by the principal in this authorizing session**: a visible
+  platform username that the principal has explicitly approved for the specific retained image,
+  if it appears in a chart screenshot, is acceptable and does not by itself require redaction —
+  the actual identifier is recorded only in that image's own pilot package manifest, not restated
+  in general governance prose. This is a narrow, single-fact exception — it does not waive any
   other privacy requirement above, and it does not extend to any other personal or financial
   information that might also be visible (email, real name, brokerage account details, watchlist
   contents revealing other unrelated positions, private notes, or any other identifying data), all
