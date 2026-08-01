@@ -243,3 +243,114 @@ rendered desktop/mobile preview artifacts and explicit principal *visual*
 acceptance — new steps specific to a visual redesign. Later visual
 corrections proceed only as bounded delta passes, never as a silent second
 full redesign under the same authorization.
+
+---
+
+## 10. Governance Decision Explorer — approved first drill-down slice (`OPS-0013`)
+
+**Status: authorized capability for one future, separate, bounded
+implementation PR** — not yet implemented, not yet begun. This section
+records what `governance/decisions/OPS-0013-governance-decision-explorer-authorization.md`
+authorizes. §§1–9 above are **unedited** and remain the foundation this
+drill-down slice builds on — one canonical generator, one master HTML
+interface, the existing module organization and source-of-truth map, and
+(once implemented) Dashboard 2.0's visual system. This is a **data/
+navigation** capability increment, distinct from Dashboard 2.0's visual
+redesign, and is filed and implemented independently of it — it does not
+touch, and is not touched by, PR #212.
+
+### 10.1 What it adds
+
+A read-only way to browse this repository's governance decision corpus
+(`governance/decisions.yaml` + `governance/decisions/*.md`) from inside the
+one generated dashboard document: click a decision ID, open an in-document
+detail view with the decision's safely rendered Markdown content, metadata,
+related-decision cross-links, authority/lifecycle labeling, and a path back
+to the index (breadcrumb, back link, or hash history). No new investment
+fact, portfolio calculation, or Intelligence conclusion is added — this is
+presentation of governance text that already exists.
+
+### 10.2 Navigation
+
+Hash-based in-document routes (e.g. `#/decision/OPS-0011`,
+`#/decision/PI-0035`), pre-rendered decision detail sections, minimal
+vanilla JavaScript for view switching and hash sync, native links and
+browser back/forward, breadcrumbs, and native `<details>`/`<summary>`
+disclosure. **No client-side framework, database, network fetch, second
+generated site, multiple HTML pages, external router, or hosted service.**
+Still one static/offline HTML artifact — `OPS-0011` §2.2's "one canonical
+generator, one master interface" is unchanged.
+
+### 10.3 Model and loader scope
+
+New read-only model support for `governance/decisions.yaml`'s existing
+`related_decisions`/`supporting_artifact` fields, `governance/decisions/
+*.md` frontmatter and body content, decision source paths, and provenance/
+hashes. May add a small dedicated decision loader module, new immutable
+view-model structures, safe Markdown-to-HTML rendering (escaping or a
+deliberately constrained renderer — no bundled third-party Markdown
+library, per `OPS-0011` §5's no-external-dependency boundary), build-time
+cross-link indexes, and graceful unavailable/malformed states matching the
+existing defensive-loader discipline already in `model.py`. **Supersession
+is never inferred from dates or IDs** — where narrowing or supersession is
+only expressed in prose, the implementation displays the literal decision
+content and related decisions without asserting a structured relationship
+the text doesn't state.
+
+### 10.4 Security — untrusted Markdown
+
+Every decision `.md` file is treated as untrusted display input. Required:
+HTML escaping or a tightly constrained safe renderer; no raw HTML or script
+execution; no event-handler attributes; no `javascript:` links; no
+`<iframe>`; no remote image/CSS/script loading; no network requests; no
+mutation controls. Every existing `OPS-0011` boundary (read-only,
+recommendation-only, loopback-only, GET-only, no brokerage, no orders, no
+secrets, no repository mutation, no second allocator, one generator, one
+master file) remains fully binding, unweakened.
+
+### 10.5 Progressive disclosure
+
+Four levels: **(1)** decision summary in the existing Governance index
+table; **(2)** concise detail — metadata, status, short context, related
+decisions, authority warning; **(3)** full safely rendered decision body;
+**(4)** original source file and supporting evidence/provenance links.
+
+### 10.6 Authority and lifecycle labeling
+
+Every decision detail view must distinguish accepted authority, proposed/
+unmerged material, historical context, narrowed/partially superseded
+clauses, supporting evidence, audits/review artifacts, and non-authoritative
+generated indexes — and must never imply that `operations/WORKSTREAMS.yaml`
+or `governance/decisions.yaml` themselves originate authority, or that a
+supporting artifact is policy, or that a narrowed historical decision
+remains fully controlling.
+
+### 10.7 Search and accessibility
+
+Local substring filtering by decision ID, title, category, status, related
+decision ID, or body/metadata keyword — no semantic search, embeddings,
+external indexing, AI-generated summaries, or automatic ranking. Accessible:
+keyboard-operable hash navigation, semantic links/headings, one logical
+page `<h1>`, correct heading hierarchy in detail views, visible focus,
+`aria-current`, meaningful link text, accessible disclosure controls,
+responsive mobile layout with no page-level horizontal scroll, reduced-
+motion support, and readable long IDs/paths/hashes/titles.
+
+### 10.8 Scope limit and sealed-data boundary
+
+Limited to the Governance Decision Explorer only for this first
+implementation — no Company Intelligence, Theme, backtest, workstream-
+detail, or evidence-package explorer; each is a named, unauthorized future
+phase. `research/margin_target_study/data/untouched_sealed/` must never be
+read, indexed, listed, hashed, summarized, or exposed by any dashboard
+path — restated here though this slice has no reason to approach it.
+
+### 10.9 Lifecycle
+
+`OPS-0013`'s own governance PR requires independent exact-head review,
+explicit principal acceptance, merge, and post-merge verification before
+the one future implementation PR may open. That implementation PR requires
+everything `OPS-0011` §8 already requires, plus scope verification against
+`OPS-0013` §§3–5 and §§9–11 specifically. Filed and reviewed independently
+of `OPS-0012`'s Dashboard 2.0 visual-redesign PR (PR #212) — the two may
+land in either order.
