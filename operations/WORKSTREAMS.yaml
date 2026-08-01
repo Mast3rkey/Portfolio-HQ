@@ -3784,9 +3784,40 @@ workstreams:
         pr: 211
         status: drafted
         date: "2026-08-01"
+      - gate: governance-decision-explorer-authorization-filed
+        description: >
+          OPS-0013 drafted and filed on a single draft, unmerged governance
+          pull request, from origin/main at
+          6db533338d3958233a23a09c375b91a5df9b00a9 (merge commit of PR
+          #211, OPS-0012). Authorizes, conditional on its own merge, one
+          later, separate, bounded implementation PR adding a Governance
+          Decision Explorer to the existing single generated dashboard
+          HTML: browse/click/open an in-document decision detail view with
+          safely rendered Markdown content, metadata, related-decision
+          cross-links, authority/lifecycle labeling, hash-based navigation
+          (#/decision/ID), breadcrumb/back-link return paths, and local
+          substring search/filter over pre-rendered decision metadata.
+          Limited to Governance Decision Explorer only — no Company
+          Intelligence, Theme, backtest, workstream-detail, or evidence-
+          package explorer is authorized; each is identified as a separate
+          future phase requiring its own separate authorization. Every
+          OPS-0011 mandatory boundary is restated in full, unweakened, plus
+          new untrusted-Markdown security requirements (no raw HTML/script
+          execution, no event-handler attributes, no javascript: links, no
+          iframe, no remote resources) and a restatement of the
+          research/margin_target_study/data/untouched_sealed/ exclusion.
+          This filing is separate from, and does not touch, PR #212
+          (Dashboard 2.0 visual-redesign implementation) or any dashboard
+          production code — confirmed untouched at filing time. Filed as
+          PR #213. Not yet independently reviewed and not yet
+          principal-accepted. Implementation has not started.
+        pr: 213
+        status: drafted
+        date: "2026-08-01"
     evidence_refs:
       - governance/decisions/OPS-0011-repository-native-dashboard-capability-authorization.md
       - governance/decisions/OPS-0012-dashboard-2-modern-responsive-experience-authorization.md
+      - governance/decisions/OPS-0013-governance-decision-explorer-authorization.md
       - governance/decisions/OPS-0005-ws0002-phase-two-reactivation-authorization.md
       - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md
       - governance/audits/WS0007_PR199_INDEPENDENT_EXACT_HEAD_REVIEW_20260731.md
