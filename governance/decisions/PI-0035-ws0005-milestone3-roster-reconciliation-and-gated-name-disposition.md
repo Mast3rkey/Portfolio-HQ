@@ -1,7 +1,7 @@
 ---
 decision_id: PI-0035
 date: 2026-07-31
-status: Proposed
+status: Accepted
 category: portfolio_intelligence
 related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0005, PI-0011, PI-0013, PI-0014, PI-0016, PI-0027, PI-0031, PI-0032, PI-0033, PHQ-2026-01, PHQ-2026-02]
 supporting_artifact: null
@@ -434,3 +434,29 @@ naming that company specifically.
 its merge.** `allocate.py`'s buy/trim/gap logic, every gate parameter, every cap, every target weight, and
 every margin parameter remain exactly as `targets.yaml`/`gates.yaml`/`holdings.yaml` currently state them,
 unaffected by this filing under any circumstance.
+
+---
+
+_**2026-08-01 Lane M factual synchronization** (dated note, appended per `governance/decisions/README.md`'s
+convention for a narrow factual/lifecycle correction — no edit to this decision's substance): this
+governance filing was merged to `main` via PR #208 at merge commit
+`b91a17efb87d3a5a511aacaf6cc7ffc7b6025a4d` (a squash merge with a single parent,
+`d5400e998d71fa45ff8235b46d6d473f4d0640d8` — PR #207's own merge commit — independently confirmed this
+session via `git log --pretty=%P -n1 b91a17e...`; `b91a17e...` is `origin/main`'s tip as of this
+synchronization pass). PR #208's own description records this session's pre-merge validation (full pytest
+suite 1601/1601, `intelligence_validator`/`freshness_validator` both OK, decision-index reconciliation
+54 filed = 54 indexed, `git diff --check` clean) and states the required review/acceptance gate
+(`OPS-0007` §1 independent exact-head review, any bounded correction, explicit principal acceptance,
+all before merge). **This synchronization session independently queried the GitHub API for PR #208 and
+found no retained review or issue-comment record** (`get_reviews` / `get_comments` both returned empty) —
+unlike the parallel `PHQ-2026-05`/PR #206 correction, which does carry a retained independent-review
+comment. This note does not assert that no review occurred; it records only what this session was able to
+independently verify via the GitHub API at synchronization time, and does not manufacture review
+provenance that isn't retained. The completed merge to `main` (`merged_by: Mast3rkey`, this repository's
+own principal/owner identity) is independently confirmed via the GitHub API and via `git` ancestry.
+Frontmatter `status` is updated to `Accepted` accordingly. This note records only the completed
+merge-lifecycle event confirmed by this session's own independent verification; it does not perform,
+imply, or substitute for an independent content review this session did not conduct, does not evaluate
+WS-0005 Milestone 3 completion, and does not authorize any research, gate activation, tier, target,
+cluster, cap, allocator, or margin change. Every substantive term of §§A-I above remains controlling
+exactly as filed._

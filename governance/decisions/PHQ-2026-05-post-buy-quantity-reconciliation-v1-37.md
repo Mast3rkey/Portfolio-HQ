@@ -1,7 +1,7 @@
 ---
 decision_id: PHQ-2026-05
 date: 2026-07-31
-status: Proposed
+status: Accepted
 category: portfolio_construction_governance
 related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0009, PHQ-2026-01, PHQ-2026-02, PHQ-2026-04]
 supporting_artifact: governance/evidence/PHQ-2026-05/v1_37/Portfolio_HQ_Final_Confirmed_Account_State_v1_37.json
@@ -287,3 +287,38 @@ matched against `MANIFEST.json` exactly at filing time:
   buffer % should still be synced before any future margin-funded decision.
 - This filing does not evaluate, re-open, or resolve SPCX's or SKHY's
   reopening conditions (`PHQ-2026-03` §7) — unchanged.
+
+---
+
+_**2026-08-01 Lane M factual synchronization** (dated note, appended per
+`governance/decisions/README.md`'s convention for a narrow factual/lifecycle
+correction — no edit to this decision's substance): this decision (commits
+`f56f7db`, `6a3afe7`, `0757a6a`) was merged to `main` via PR #206 at merge
+commit `f700fca0abeb321196e015550d1439dfedb9d7b0` (two parents:
+`7d9477b2a30180b6025452957eb3c866fed50387`, the shared `PHQ-2026-03`/PR #204
+base, and `0757a6a604bd83876a4f21ca5cbfddce55a54f31`, this decision's own
+reviewed head), independently confirmed this session via `git log
+--pretty=%P -n1 f700fca...` and via `git merge-base --is-ancestor` showing
+head `0757a6a...` is an ancestor of `origin/main`. **An independent review
+is retained and was independently verified this session**: GitHub PR #206
+review id `4832265448` (`state: COMMENTED` — GitHub's own
+"Can not approve your own pull request" self-approval restriction on the
+authenticated account is disclosed in the review text itself, per
+`OPS-0007` §1's platform-identity caveat; the review states it was performed
+by "a new, independent Claude Code session that did not author PR #206, PR
+#205, commit `6a3afe7`, or correction commit `0757a6a`"), anchored to this
+exact merged head (`0757a6a604bd83876a4f21ca5cbfddce55a54f31`), verdict
+"APPROVE" with "No remaining findings." The GitHub API independently
+confirms the PR itself as `merged: true` (`merged_by: Mast3rkey`, this
+repository's own principal/owner identity). No separate, distinctly-labeled
+"Principal acceptance:" comment was found retained on the PR via the GitHub
+API as of this synchronization session; the merge action itself, taken by
+the principal/owner identity after the retained review's APPROVE verdict, is
+the lifecycle evidence this note relies on for that element — this note does
+not assert a separate acceptance statement exists beyond what is shown
+above. Frontmatter `status` is updated to `Accepted` accordingly. This note
+records only the completed merge-lifecycle event confirmed by this session's
+own independent verification; it does not alter, re-open, or re-evaluate any
+substantive term of this decision, does not touch SKHY/SPCX's disposition
+(governed entirely by `PHQ-2026-04`), and does not authorize any further
+research, trade, target, gate, or margin change.
