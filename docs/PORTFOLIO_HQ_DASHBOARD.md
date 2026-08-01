@@ -98,6 +98,23 @@ When any of these is missing, the honest behavior is disclosure or abstention,
 not a fabricated number. Run `python allocate.py --review` in a networked
 session for a current, advisory-only recommendation.
 
+## Dashboard 2.0 — navigating the page
+
+The page is organized into five areas, reachable from the left sidebar on a
+wide screen or the top tab strip on a narrow one: **Overview**, **Portfolio**,
+**Intelligence**, **Governance**, and **System / Provenance**. Clicking a
+nav item shows that area and hides the rest — this is a JavaScript
+enhancement only. With JavaScript disabled, all five areas render as one
+long, anchor-linkable page and nothing is hidden; every fact on the page
+is still reachable either way.
+
+Tables narrower than about 700px reflow into a stack of label/value cards
+instead of a cramped horizontal table — this is CSS only, the underlying
+markup is still a real `<table>` for anything that reads it as one.
+
+The page respects `prefers-reduced-motion`: with that OS/browser setting on,
+transitions and the section-switch animation are effectively instant.
+
 ## Diagnosing common errors
 
 | Symptom | Cause / fix |

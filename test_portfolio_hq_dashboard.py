@@ -389,11 +389,275 @@ def test_structural_html_assertions(tmp_repo: Path):
     assert html.startswith("<!DOCTYPE html>")
     assert html.count("<html") == 1 and html.count("</html>") == 1
     assert '<html lang="en">' in html
-    for sid in ("overview", "portfolio", "targets", "allocation",
-                "concentration", "gates", "research", "governance"):
+    # Dashboard 2.0: five-area information architecture (OPS-0012 section 3).
+    for sid in ("overview", "portfolio", "intelligence", "governance", "system"):
         assert f'id="{sid}"' in html
+        assert f'<section id="{sid}" data-view' in html
     assert "skip-link" in html  # accessibility skip link
     assert html.count("<main") == 1
+
+
+# ── Dashboard 2.0: information architecture, navigation, accessibility ──────
+
+def test_five_navigation_areas_exist(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    for sid in ("overview", "portfolio", "intelligence", "governance", "system"):
+        assert f'data-target="{sid}"' in html
+    assert html.count('data-target="') == 5
+
+
+def test_active_navigation_semantics(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    nav_start = html.index('<nav class="primary-nav"')
+    nav_end = html.index("</nav>")
+    nav_html = html[nav_start:nav_end]
+    # Exactly one nav link is aria-current="page" at render time (Overview,
+    # the first/default view); JS updates this at runtime on click. (The CSS
+    # `a[aria-current="page"]` selector legitimately contains the same
+    # substring, so this is scoped to the <nav> markup, not the whole page.)
+    assert nav_html.count('aria-current="page"') == 1
+    idx = nav_html.index('aria-current="page"')
+    assert 'data-target="overview"' in nav_html[max(0, idx - 200):idx + 40]
+
+
+def test_semantic_landmarks_present(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert 'role="banner"' in html
+    assert "<nav " in html
+    assert '<main class="content" id="main">' in html
+    assert "<footer" in html
+    assert html.count("<h1") == 1
+
+
+def test_heading_hierarchy_no_skipped_levels(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    # One h1; each of the five sections has exactly one h2; h3/h4 only appear
+    # nested under a section (never before the first h2 or h1).
+    assert html.count("<h1") == 1
+    assert html.count("<h2 ") == 5
+    first_h1 = html.index("<h1")
+    first_h2 = html.index("<h2 ")
+    first_h3 = html.index("<h3")
+    assert first_h1 < first_h2 < first_h3
+
+
+def test_responsive_viewport_meta_present(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert '<meta name="viewport" content="width=device-width, initial-scale=1">' in html
+
+
+def test_reduced_motion_css_present(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert "prefers-reduced-motion: reduce" in html
+
+
+def test_visible_focus_styles_present(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert "focus-visible" in html
+    assert "outline: 3px solid var(--accent)" in html or "outline: 2px solid var(--accent)" in html
+
+
+def test_narrow_viewport_css_avoids_page_horizontal_scroll(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert "overflow-x: hidden" in html  # html, body
+    assert "max-width: 700px" in html  # responsive table stacking breakpoint
+    assert "max-width: 900px" in html  # sidebar -> top tab strip breakpoint
+
+
+def test_desktop_and_mobile_nav_structures_present(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    # Desktop: sticky sidebar. Mobile: same <nav>, reflowed to a horizontal
+    # tab strip under the 900px breakpoint — one nav, two CSS presentations.
+    assert 'class="primary-nav" id="primary-nav"' in html
+    assert ".primary-nav ul {" in html  # desktop column layout rule
+    assert "flex-direction: row;" in html  # mobile: reflows to a row
+
+
+def test_js_enhanced_nav_has_static_fallback(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    # The rendered <html ...> opening tag never ships with the JS-added class
+    # baked in — every section is plain, visible document flow unless the
+    # script runs and adds `js-views` itself. The CSS only hides a section
+    # when that class is present on <html> (progressive enhancement, not a
+    # default-hidden state).
+    assert html.startswith('<!DOCTYPE html>\n<html lang="en">')
+    assert 'class="js-views"' not in html  # never server-rendered; JS-only
+    assert html.count('<section id=') == 5
+    assert "html.js-views main.content section" in html  # CSS gate, JS-only
+
+
+def test_generated_html_states_non_authoritative(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert "non-authoritative" in html.lower()
+    assert "not a source of truth" in html.lower() or "never a source of truth" in html.lower()
+
+
+def test_mobile_table_stacking_uses_data_label(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert 'data-label="Ticker"' in html
+    assert "content: attr(data-label)" in html
+
+
+# ── Dashboard 2.0 bounded correction: long-value wrap safety ────────────────
+#
+# Regression coverage for the two MATERIAL findings from the independent
+# exact-head review of PR #212: (1) long, unbroken repository-backed values
+# (file paths, hashes, branch names) forced real page-level horizontal
+# overflow on the System / Provenance view at mobile widths, because the
+# flex items holding them refused to shrink below their content's intrinsic
+# width; (2) three mandatory safety-disclosure text areas rendered below
+# WCAG AA contrast in both themes. Both were verified fixed via a local
+# rendered-browser check (headless Chromium, 1440px/390px, dark/light, all
+# five views, including a synthetic ~190-character unbroken value injected
+# into both the provenance list and the dirty-worktree notice) — that
+# verification isn't part of the committed suite because this repository's
+# CI (`requirements.txt`, `.github/workflows/ci.yml`) has no browser
+# tooling installed and none is added here. The tests below are the
+# strongest deterministic (no-browser) equivalent: they check the actual
+# CSS wrap-capability rules and recompute real WCAG contrast ratios from
+# the stylesheet's own token values, so both would fail if either fix were
+# silently reverted or weakened later.
+
+def _css_text() -> str:
+    return (Path(__file__).resolve().parent / "portfolio_hq" / "dashboard"
+            / "assets" / "dashboard.css").read_text()
+
+
+def _css_rule_block(css: str, selector_prefix: str) -> str:
+    """Return the `{ ... }` body of the first rule whose selector text
+    starts with `selector_prefix` (e.g. '.provenance-list .fname {')."""
+    idx = css.index(selector_prefix)
+    end = css.index("}", idx)
+    return css[idx:end]
+
+
+def test_long_value_css_rules_allow_shrinking_and_wrapping():
+    css = _css_text()
+
+    fname_rule = _css_rule_block(css, ".provenance-list .fname {")
+    assert "min-width: 0" in fname_rule
+    assert "overflow-wrap: anywhere" in fname_rule
+    assert "max-width: 100%" in fname_rule
+
+    fhash_rule = _css_rule_block(css, ".provenance-list .fhash {")
+    assert "min-width: 0" in fhash_rule
+    assert "overflow-wrap: anywhere" in fhash_rule
+    assert "max-width: 100%" in fhash_rule
+
+    # code/.mono carries the dirty-worktree path list and other inline
+    # repository-backed values outside the provenance list specifically.
+    code_rule = _css_rule_block(css, "code, .mono {")
+    assert "overflow-wrap: anywhere" in code_rule
+    assert "max-width: 100%" in code_rule
+
+    # Mobile card-stacked table cells (below the 700px breakpoint) are
+    # themselves flex containers and share the same shrink/overflow risk
+    # for an unusually long cell value.
+    mobile_cell_rule = _css_rule_block(css, ".table-scroll td, .table-scroll th {")
+    assert "overflow-wrap: anywhere" in mobile_cell_rule
+
+
+def test_long_unbroken_dirty_path_is_rendered_fully_not_truncated(tmp_repo: Path):
+    """A pathologically long, unbroken (no spaces) untracked filename — the
+    same shape of value that broke the mobile System/Provenance view before
+    this correction — must appear in the rendered HTML complete and
+    unmodified. The fix relies on CSS wrapping, not truncation: asserting
+    the full value survives byte-for-byte guards against a future 'fix'
+    that silently truncates or elides provenance data instead of wrapping
+    it (explicitly prohibited by the correction's own instructions).
+    """
+    long_name = ("Extraordinarily_Long_Unbroken_RepositoryBackedValue_"
+                 + ("X" * 120) + "_end.txt")
+    (tmp_repo / long_name).write_text("scratch")
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.provenance.dirty is True
+    # dirty_paths holds raw `git status --porcelain` lines (e.g. "?? name"),
+    # not bare filenames.
+    assert any(long_name in p for p in (m.provenance.dirty_paths or [])), (
+        m.provenance.dirty_paths)
+    html = render_html(m)
+    assert long_name in html  # present in full — not truncated, not elided
+
+
+def _hex_to_rgb(h: str) -> tuple[int, int, int]:
+    h = h.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))  # type: ignore[return-value]
+
+
+def _relative_luminance(rgb: tuple[int, int, int]) -> float:
+    def chan(c: int) -> float:
+        c_norm = c / 255
+        return c_norm / 12.92 if c_norm <= 0.03928 else ((c_norm + 0.055) / 1.055) ** 2.4
+    r, g, b = rgb
+    return 0.2126 * chan(r) + 0.7152 * chan(g) + 0.0722 * chan(b)
+
+
+def _contrast_ratio(hex1: str, hex2: str) -> float:
+    l1 = _relative_luminance(_hex_to_rgb(hex1))
+    l2 = _relative_luminance(_hex_to_rgb(hex2))
+    l1, l2 = max(l1, l2), min(l1, l2)
+    return (l1 + 0.05) / (l2 + 0.05)
+
+
+def _parse_root_color_vars(css: str, *, light: bool) -> dict[str, str]:
+    """Extract `--name: #hex;` custom-property values from the dashboard
+    stylesheet's default (dark) `:root` block, or from its
+    `@media (prefers-color-scheme: light) { :root { ... } }` override."""
+    if light:
+        media_start = css.index("@media (prefers-color-scheme: light)")
+        block_start = css.index(":root", media_start)
+    else:
+        block_start = css.index(":root")
+    open_brace = css.index("{", block_start)
+    depth, i = 0, open_brace
+    while True:
+        if css[i] == "{":
+            depth += 1
+        elif css[i] == "}":
+            depth -= 1
+            if depth == 0:
+                break
+        i += 1
+    block = css[open_brace:i]
+    return dict(re.findall(r"(--[\w-]+):\s*(#[0-9a-fA-F]{6})", block))
+
+
+def test_safety_disclosure_text_meets_wcag_aa_contrast_both_themes():
+    """The mandatory read-only / recommendation-only / local-only / no-
+    brokerage-connection / no-order-path disclosure — rendered in
+    `.readonly-banner`, `.primary-nav .nav-foot`, and `footer.page-footer`
+    — must meet WCAG AA (>= 4.5:1) for normal-size text against its actual
+    background, in both the dark (default) and light
+    (`prefers-color-scheme: light`) themes. This recomputes the real ratio
+    from the stylesheet's own current token values rather than only
+    checking which token name is referenced, so it fails if the *color
+    values* regress even without a token rename.
+    """
+    css = _css_text()
+    dark_vars = _parse_root_color_vars(css, light=False)
+    light_vars = _parse_root_color_vars(css, light=True)
+
+    # (selector prefix, the CSS variable supplying this rule's real
+    # background — verified by direct inspection of the stylesheet).
+    checks = [
+        (".readonly-banner {", "--surface"),
+        (".primary-nav .nav-foot {", "--surface"),
+        ("footer.page-footer {", "--bg"),  # no own background; inherits body's
+    ]
+    for selector, bg_var in checks:
+        block = _css_rule_block(css, selector)
+        match = re.search(r"color:\s*var\((--[\w-]+)\)", block)
+        assert match, f"no `color: var(--...)` found in {selector!r}"
+        fg_var = match.group(1)
+        for theme_name, theme_vars in (("dark", dark_vars), ("light", light_vars)):
+            fg_hex = theme_vars[fg_var]
+            bg_hex = theme_vars[bg_var]
+            ratio = _contrast_ratio(fg_hex, bg_hex)
+            assert ratio >= 4.5, (
+                f"{selector!r} in the {theme_name} theme: {fg_var}={fg_hex} "
+                f"on {bg_var}={bg_hex} is only {ratio:.2f}:1, below the "
+                f"WCAG AA 4.5:1 minimum for normal-size text"
+            )
 
 
 # ── measured AI/platform figure: point-in-time qualification ─────────────────
@@ -520,17 +784,26 @@ def test_server_binds_localhost_and_serves(tmp_repo: Path):
         except urllib.error.HTTPError as e:
             raised = e.code == 404
         assert raised
-        # Read-only: POST is rejected.
-        req = urllib.request.Request(f"http://127.0.0.1:{port}/", data=b"x", method="POST")
-        try:
-            urllib.request.urlopen(req, timeout=5)
-            post_blocked = False
-        except urllib.error.HTTPError as e:
-            post_blocked = e.code == 405
-        assert post_blocked
+        # Read-only: every mutating method is rejected, not just POST.
+        for method in ("POST", "PUT", "PATCH", "DELETE"):
+            req = urllib.request.Request(
+                f"http://127.0.0.1:{port}/", data=b"x", method=method)
+            try:
+                urllib.request.urlopen(req, timeout=5)
+                blocked = False
+            except urllib.error.HTTPError as e:
+                blocked = e.code == 405
+            assert blocked, f"{method} was not rejected with 405"
     finally:
         httpd.shutdown()
         httpd.server_close()
+
+
+def test_overview_shows_notice_counts_and_provenance_stays_visible(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert "blocker(s)" in html and "warning(s)" in html
+    assert "Authoritative inputs" in html
+    assert "sha256:" in html
 
 
 # ── CLI smoke tests ──────────────────────────────────────────────────────────
