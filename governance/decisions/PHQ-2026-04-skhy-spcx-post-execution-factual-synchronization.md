@@ -1,7 +1,7 @@
 ---
 decision_id: PHQ-2026-04
 date: 2026-07-31
-status: Proposed
+status: Accepted
 category: portfolio_construction_governance
 related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0009, PHQ-2026-01, PHQ-2026-02, PHQ-2026-03]
 supporting_artifact: governance/evidence/PHQ-2026-04/execution_facts.json
@@ -209,3 +209,31 @@ screenshots is included.
 - This filing does not evaluate, re-open, or resolve SPCX's or SKHY's
   reopening conditions (`PHQ-2026-03` §7) — both remain exactly as
   restrictive as `PHQ-2026-03` left them.
+
+---
+
+_**2026-08-01 Lane M factual synchronization** (dated note, appended per
+`governance/decisions/README.md`'s convention for a narrow factual/lifecycle
+correction — no edit to this decision's substance): this decision's own
+commit (`c251de3`) reached `main` stacked underneath `PHQ-2026-05`/PR #206,
+which was merged as the consolidated superset of both PRs (PR #206's own
+description recommended exactly this sequencing). The merge commit is
+`f700fca0abeb321196e015550d1439dfedb9d7b0` (two parents:
+`7d9477b2a30180b6025452957eb3c866fed50387`, the shared `PHQ-2026-03`/PR #204
+base, and `0757a6a604bd83876a4f21ca5cbfddce55a54f31`, PR #206's reviewed
+head), independently confirmed this session via `git log --pretty=%P -n1
+f700fca...` and via `git merge-base --is-ancestor` showing this decision's
+own head commit (`aaeac62678cf3855f31ce08e73f50a402032c4fb`) is an ancestor
+of `origin/main`. The GitHub API independently confirms PR #205 itself as
+`merged: true` (`merged_by: Mast3rkey`, this repository's own
+principal/owner identity). **This synchronization session independently
+queried the GitHub API for PR #205 and found no retained review or
+issue-comment record** (`get_reviews` / `get_comments` both returned empty)
+— this note does not assert that no review occurred, only that none is
+retained and independently verifiable via the GitHub API at synchronization
+time; no review provenance is manufactured here. Frontmatter `status` is
+updated to `Accepted` accordingly. This note records only the completed
+merge-lifecycle event confirmed by this session's own independent
+verification; it does not alter, re-open, or re-evaluate any substantive
+term of this decision, does not touch SKHY/SPCX's disposition, and does not
+authorize any further research, trade, target, gate, or margin change.

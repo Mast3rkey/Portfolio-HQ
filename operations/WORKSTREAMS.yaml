@@ -2085,6 +2085,21 @@ workstreams:
       followed by explicit principal acceptance, before it may be marked ready and merged.** No
       gate is activated, no research is authorized, no eleventh Milestone 3 batch or Milestone 4
       work is authorized or advanced, and Milestone 3 is not declared complete by this filing.
+
+      **(Superseded by this paragraph — Lane M factual synchronization, 2026-08-01.)** `PI-0035` has
+      since merged to `main` via PR #208 (squash merge commit
+      `b91a17efb87d3a5a511aacaf6cc7ffc7b6025a4d`, single parent
+      `d5400e998d71fa45ff8235b46d6d473f4d0640d8` — PR #207's own merge commit — independently
+      confirmed this session via `git log --pretty=%P`), matching `origin/main`'s tip at this
+      synchronization pass. `governance/decisions/PI-0035-*.md` frontmatter and its
+      `governance/decisions.yaml` index row are both now `status: Accepted`. No independent-review or
+      issue-comment record was found retained on PR #208 via the GitHub API as of this
+      synchronization session (`get_reviews`/`get_comments` both empty) — this entry records only
+      what was independently verifiable, not a claim that no review occurred. The four gated-name
+      dispositions (SNPS, ICE, SPGI, WM) and the narrow supersession of `PI-0031` §K criteria 1-3 are
+      now effective per `PI-0035` §D/§C. **This synchronization authorizes no eleventh Milestone 3
+      batch, no Milestone 4 work, and does not declare Milestone 3 complete** — criteria 5-7 remain
+      unverified, unchanged from `PI-0035`'s own filed scope.
     completion_criteria: >
       Per OPS-0006 §16.1's completion discipline: Milestones 1-2 reach
       status: complete only when the one bounded first audit PR merges;
@@ -3049,10 +3064,10 @@ workstreams:
       `governance/decisions/` file, no `governance/decisions.yaml`, no `targets.yaml`, no
       `holdings.yaml`, no Constitution, no frozen specification, no production code, no test, and
       no trading safeguard is touched.
-    active_branch: claude/pi-0034-isrg-sync-xhalz5
-    active_pr: 197
-    last_verified_main_sha: b06dc4888fd21a92759c85c00ce99f326a248972
-    last_verified_date: "2026-07-29"
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: b91a17efb87d3a5a511aacaf6cc7ffc7b6025a4d
+    last_verified_date: "2026-08-01"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
       roadmap; execution of Milestones 1-2 only, per its 2026-07-25
@@ -3376,6 +3391,19 @@ workstreams:
       must evaluate all seven together. It authorizes no research, no gate change, no eleventh
       Milestone 3 batch, and no Milestone 4-9 work. This entry does not itself review, correct, mark
       ready, or merge `PI-0035`'s governance PR.
+
+      **`PI-0035` merged and is `status: Accepted`** (Lane M factual synchronization, 2026-08-01):
+      via PR #208, squash merge commit `b91a17efb87d3a5a511aacaf6cc7ffc7b6025a4d` (single parent
+      `d5400e998d71fa45ff8235b46d6d473f4d0640d8`, PR #207's own merge commit), independently confirmed
+      this session via `git log --pretty=%P` and matching `origin/main`'s tip at this synchronization
+      pass. `governance/decisions/PI-0035-*.md` frontmatter and its `governance/decisions.yaml` index
+      row are both `status: Accepted`. No independent-review or issue-comment record was found
+      retained on PR #208 via the GitHub API as of this synchronization session
+      (`get_reviews`/`get_comments` both empty); this entry records only what was independently
+      verifiable via the GitHub API, not a claim that no review occurred. Neither this filing nor
+      `PI-0035`'s own merge authorizes an eleventh Milestone 3 batch, any Milestone 4-9 work, or
+      advancement of `OPS-0007` §8 step I — Milestone 3 remains `in_progress` (`PI-0031` §K criteria
+      5-7 remain unverified).
     supersedes: null
     superseded_by: null
 
@@ -3903,30 +3931,35 @@ workstreams:
       - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
       - governance/decisions/GOV-0001-governance-architecture-adopted.md
       - governance/decisions/GOV-0002-operational-precedence-hierarchy.md
-    status: authorized
+    status: complete
     priority: secondary
     dependencies: []
     authorized_scope: >
-      Exactly what governance/decisions/PHQ-2026-03-skhy-spcx-zero-based-disposition-manual-exit-authorization.md
+      Effective — exactly what governance/decisions/PHQ-2026-03-skhy-spcx-zero-based-disposition-manual-exit-authorization.md
       authorized (filing that decision record, this register entry, the
       governance/decisions.yaml index row, and the CLAUDE.md Decisions Log
-      pointer — merged, PR #204) plus exactly what
+      pointer — merged, PR #204), what
       governance/decisions/PHQ-2026-04-skhy-spcx-post-execution-factual-synchronization.md
-      authorizes as the factual-sync unit PHQ-2026-03 §6 required: filing
+      authorized as the factual-sync unit PHQ-2026-03 §6 required (filing
       that decision record, this register entry's synchronization, the
       governance/decisions.yaml index row, the CLAUDE.md Decisions Log
-      pointer, the governance/evidence/PHQ-2026-04/ evidence record, and
-      (only once PHQ-2026-04 itself is independently reviewed,
-      principal-accepted, and merged) the holdings.yaml/targets.yaml/
-      gates.yaml mutations it describes. No such mutation is authorized by
-      PHQ-2026-04's mere filing as a draft PR.
+      pointer, the governance/evidence/PHQ-2026-04/ evidence record, and the
+      holdings.yaml/targets.yaml/gates.yaml mutations it describes — merged,
+      PR #205), and what
+      governance/decisions/PHQ-2026-05-post-buy-quantity-reconciliation-v1-37.md
+      authorized (the seven-ticker holdings.yaml share-count reconciliation
+      from the v1.37/v1.38 evidence packages — merged, PR #206). All three
+      decisions are now status: Accepted and their mutations are live on
+      main.
     prohibited_scope: >
-      Any holdings.yaml, targets.yaml, or gates.yaml mutation before
-      PHQ-2026-04 itself is independently reviewed, principal-accepted, and
-      merged; any order placement, staging, submission, or brokerage-account
-      mutation of any kind; any brokerage account, position, or order
-      endpoint access; any margin use; any unrelated target/tier/cluster/cap
-      change; any change to PR #199 or its branch; any WS-0005 work.
+      Any further holdings.yaml, targets.yaml, or gates.yaml mutation beyond
+      what PHQ-2026-03/04/05 already authorized and executed; any order
+      placement, staging, submission, or brokerage-account mutation of any
+      kind; any brokerage account, position, or order endpoint access; any
+      margin use; any unrelated target/tier/cluster/cap change; any change to
+      PR #199 or its branch; any WS-0005 work; any re-opening of SPCX's or
+      SKHY's disposition (PHQ-2026-03 §7) without separate research and
+      principal approval.
     milestones:
       - gate: governance-pr-drafted
         description: >
@@ -3946,44 +3979,65 @@ workstreams:
           SKHY row added), gates.yaml (SPCX hold_no_add entry retired),
           governance/evidence/PHQ-2026-04/ (screenshot-derived facts only,
           no image retained), governance/decisions.yaml, CLAUDE.md Decisions
-          Log pointer, this register entry. Opened as a draft PR; not
-          merged, not independently reviewed, not principal-accepted in
-          this session.
+          Log pointer, this register entry.
         pr: 205
-        status: drafted
+        status: merged
         date: "2026-07-31"
+      - gate: post-buy-reconciliation-pr-drafted
+        description: >
+          Principal supplied the v1.37 "Final Confirmed Account State" and
+          v1.38 "Final Account Summary Correction" evidence packages.
+          PHQ-2026-05 filed: holdings.yaml (AMZN/NVDA/TMO/SPY quantities
+          updated, PWR/VEA/VWO added at existing canonical target rows, no
+          new ticker/target/cap/gate), the v1.37/v1.38 evidence retained
+          verbatim under governance/evidence/PHQ-2026-05/, governance/
+          decisions.yaml, CLAUDE.md Decisions Log pointer, this register
+          entry. SKHY/SPCX not reopened — governed entirely by PHQ-2026-04.
+        pr: 206
+        status: merged
+        date: "2026-07-31"
+      - gate: lane-m-status-synchronization
+        description: >
+          Lane M factual synchronization: PHQ-2026-04 and PHQ-2026-05
+          decision-file frontmatter and governance/decisions.yaml both
+          flipped Proposed -> Accepted now that merged ancestry (PR #205/
+          #206, merge commit f700fca0abeb321196e015550d1439dfedb9d7b0) is
+          independently confirmed; this WS-0009 entry synchronized to
+          reflect the merged, complete state.
+        pr: null
+        status: drafted
+        date: "2026-08-01"
     evidence_refs:
       - governance/decisions/PHQ-2026-03-skhy-spcx-zero-based-disposition-manual-exit-authorization.md
       - governance/decisions/PHQ-2026-04-skhy-spcx-post-execution-factual-synchronization.md
+      - governance/decisions/PHQ-2026-05-post-buy-quantity-reconciliation-v1-37.md
       - governance/evidence/PHQ-2026-04/execution_facts.json
+      - governance/evidence/PHQ-2026-05/v1_37/
+      - governance/evidence/PHQ-2026-05/v1_38/
     next_action: >
-      PHQ-2026-04 (this session's draft PR) requires its own independent
-      exact-head review, any bounded correction and re-review, and explicit
-      principal acceptance before it may be marked ready and merged (Lane G,
-      OPS-0009 — it narrows authority by retiring SPCX's gate). Once merged,
-      sale proceeds remain cash, supplied only through allocate.py's
-      existing --cash runtime input at a future live, credentialed
-      allocation-check session (no Alpaca credentials are present in this
-      environment — the same disclosed limitation as PHQ-2026-02/
-      PHQ-2026-03, not newly introduced here).
+      This workstream entry's own scope is complete. The only remaining
+      future step it identifies is a live, credentialed
+      python allocate.py --review run against the fully reconciled book,
+      supplying the resolved $941.05 cash figure (PHQ-2026-05's own bounded
+      correction) through allocate.py's existing --cash runtime input — a
+      separate future session's task, not a blocker to this workstream's own
+      completion. SPCX remains a research candidate only; SKHY remains a
+      watchlist name only; re-entry for either requires separate research
+      and principal approval per PHQ-2026-03 §7, unchanged.
     completion_criteria: >
-      This workstream entry's own scope is complete once PHQ-2026-04 merges
-      after independent review, correction if needed, exact-head re-review,
-      principal acceptance, and post-merge verification — the same standard
-      already satisfied by PHQ-2026-03/PR #204 above. A live, credentialed
-      allocation-check run against the post-sync book is a further,
-      separate future step this workstream's own completion does not
-      require.
+      Met. PHQ-2026-03 (PR #204), PHQ-2026-04 (PR #205), and PHQ-2026-05
+      (PR #206, including its same-PR v1.38 bounded correction) are all
+      merged to main and status: Accepted, independently confirmed via git
+      ancestry this session (PR #205/#206 both landed via merge commit
+      f700fca0abeb321196e015550d1439dfedb9d7b0). holdings.yaml reflects
+      SKHY/SPCX fully exited and the seven-ticker v1.37 reconciliation.
     blocker: >
-      None for PHQ-2026-03's own already-merged scope. PHQ-2026-04 is
-      blocked on its own required independent review and principal
-      acceptance before merge — not on missing evidence (evidence is now
-      supplied and recorded) or missing execution (already performed by the
-      principal).
-    active_branch: claude/skhy-spcx-post-execution-factual-sync
-    active_pr: 205
-    last_verified_main_sha: 7d9477b2a30180b6025452957eb3c866fed50387
-    last_verified_date: "2026-07-31"
+      None. All three governing decisions (PHQ-2026-03/04/05) are merged
+      and Accepted; no further mutation is pending or blocked.
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: f700fca0abeb321196e015550d1439dfedb9d7b0
+    last_verified_date: "2026-08-01"
     authorized_by: >
       governance/decisions/PHQ-2026-03-skhy-spcx-zero-based-disposition-manual-exit-authorization.md
       — independently reviewed (GitHub PR #204 review id 4831433317,
@@ -3992,13 +4046,29 @@ workstreams:
       at that exact head (PR #204 issue comment, verbatim approval quoted
       there), and merged (commit 7d9477b2a30180b6025452957eb3c866fed50387,
       independently confirmed this session: bdba71c is the merge commit's
-      direct second parent). Per this repository's own WS-0007 precedent
-      (OPS-0011) named in this entry's prior revision, status is
-      synchronized to authorized now that the named bar — independent
-      review, principal acceptance, and merge — is independently verified
-      met. governance/decisions/PHQ-2026-04-skhy-spcx-post-execution-factual-synchronization.md
-      is filed as status: Proposed (not yet merged) and requires its own
-      separate review/acceptance/merge cycle before any holdings/targets/
-      gates mutation it describes takes effect.
+      direct second parent).
+
+      **Lane M factual synchronization, 2026-08-01**: PHQ-2026-04 and
+      PHQ-2026-05 independently confirmed merged. Both landed on main via a
+      single two-parent merge commit, f700fca0abeb321196e015550d1439dfedb9d7b0
+      (parents 7d9477b2a30180b6025452957eb3c866fed50387 — the shared
+      PHQ-2026-03/PR #204 base — and 0757a6a604bd83876a4f21ca5cbfddce55a54f31
+      — PR #206's reviewed head, which itself stacked PR #205's commits) —
+      PR #206's own description names this exact sequencing ("merging this
+      PR as the consolidated superset and closing #205 without merging it
+      separately"). GitHub API independently confirms both PR #205 and PR
+      #206 as merged: true, merged_by: Mast3rkey (this repository's own
+      principal/owner identity). PHQ-2026-05/PR #206 carries a retained
+      independent review (GitHub review id 4832265448, state: COMMENTED —
+      GitHub's own self-approval restriction on the authenticated account is
+      disclosed in the review text — anchored to exact head
+      0757a6a604bd83876a4f21ca5cbfddce55a54f31, verdict APPROVE, "No
+      remaining findings"). No independent-review or issue-comment record
+      was found retained on PR #205 specifically via the GitHub API as of
+      this synchronization session (get_reviews/get_comments both empty) —
+      this entry records only what was independently verifiable, not a
+      claim that no review occurred. governance/decisions/PHQ-2026-04-*.md
+      and governance/decisions/PHQ-2026-05-*.md frontmatter, and both
+      entries in governance/decisions.yaml, are now status: Accepted.
     supersedes: null
     superseded_by: null
