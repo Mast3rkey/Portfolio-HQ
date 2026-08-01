@@ -128,3 +128,118 @@ Semantic landmarks (`header`/`main`/`section`/`nav`/`footer`), a skip link,
 visible focus states, sufficient contrast in light and dark (system-preference)
 themes, and a responsive card/table layout for desktop and tablet. No large UI
 framework is added for theming.
+
+---
+
+## 9. Dashboard 2.0 — approved first-pass visual redesign (`OPS-0012`)
+
+**Status: authorized design direction for one future, separate,
+bounded implementation PR** — not yet implemented, not yet begun. This
+section records what `governance/decisions/OPS-0012-dashboard-2-modern-responsive-experience-authorization.md`
+authorizes; §§1–8 above describe the merged Dashboard 1.0 architecture and
+remain unedited and fully in force — the canonical generator, module
+organization, and source-of-truth map are the foundation this redesign
+builds on, not something it replaces.
+
+### 9.1 Design direction
+
+A restrained modern financial-application aesthetic, inspired by the
+qualities of premium contemporary software without copying any specific
+existing product:
+
+- dark charcoal background (not pure black) as the default theme;
+- layered surfaces with restrained translucency where supported, degrading
+  gracefully where not;
+- clean cards — consistent radii, borders, shadows, spacing;
+- large, legible summary values; clear section hierarchy;
+- system-safe font stacks only — no hosted or bundled font files;
+- subtle hover/focus/disclosure/page-entry transitions; calm, not novel —
+  no flashing, excessive parallax, gamification, or decoration that
+  reduces comprehension;
+- a responsive sidebar or compact mobile navigation pattern;
+- smooth table/card interactions across desktop, tablet, and phone;
+- accessible contrast and visible keyboard focus in both themes.
+
+Exact palette, spacing scale, radii, shadow depth, and animation timing are
+left to implementation-time designer discretion within these qualities and
+within §1's unchanged authority boundary — `OPS-0012` authorizes a
+direction, not fixed design tokens.
+
+### 9.2 Information architecture
+
+Five areas, built only from information the existing `model.py` view-model
+and §5's source-of-truth map already expose:
+
+1. **Overview** — repository/portfolio status, high-priority notices,
+   portfolio snapshot, governance/workstream summary, Intelligence/
+   freshness summary, provenance/generated-at information.
+2. **Portfolio** — governed assets and targets: readable desktop table,
+   mobile-friendly stacked presentation, existing sorting, clear empty/
+   unavailable/warning states.
+3. **Intelligence** — current coverage/freshness only; no new research
+   conclusions; no automatic scoring or ranking.
+4. **Governance** — accepted decisions, workstream state, items requiring
+   attention where already represented by repository truth.
+5. **System / Provenance** — source files, hashes, branch/commit/dirty
+   state, warnings and limitations, and an explicit statement that
+   generated HTML is non-authoritative.
+
+No new investment calculation may be added to fill a design card; an
+unsupported metric is omitted or labeled unavailable, per §6's existing
+disclosure discipline.
+
+### 9.3 Implementation scope (one future PR, within this same package)
+
+Restructured generated HTML; redesigned `assets/dashboard.css`; minimal
+local JavaScript for navigation/presentation only (no new data-fetching or
+calculation); responsive navigation; semantic sections/client-side views
+within the one generated document; redesigned cards/badges/notices/tables/
+disclosure panels/provenance sections for the five areas above; accessible
+sorting/navigation; subtle animation with `prefers-reduced-motion` support;
+responsive desktop/tablet/mobile layouts; dark-mode polish; static-friendly
+empty/error/loading states; CSS custom properties for visual consistency;
+documentation updates (this file and `docs/PORTFOLIO_HQ_DASHBOARD.md`); and
+focused accessibility/rendering tests additive to the existing 52. All
+`OPS-0011` mandatory boundaries and prohibitions (§1 above) remain fully
+binding, unweakened — no order path, no brokerage call, no repository
+mutation, no second allocator, no duplicated governed calculation, no
+external asset/CDN/font/script, loopback-only optional server.
+
+### 9.4 Performance and accessibility requirements
+
+**Performance:** one static file, no network dependency; responsive with
+the full current repository dataset; no large animation framework; no
+unnecessary JavaScript; no layout shifts; fully usable with JavaScript
+disabled; reasonably sized generated artifact; fast local build/test.
+
+**Accessibility:** semantic landmarks and correct heading hierarchy;
+keyboard-accessible navigation/controls with visible focus; accurate
+`aria-current`/`aria-sort`; sufficient contrast with no color-only status
+communication; `prefers-reduced-motion` support; usable touch targets;
+responsive text with no horizontal page scroll; tables that stay
+comprehensible on narrow screens.
+
+### 9.5 Visual acceptance standard
+
+The first Dashboard 2.0 pass succeeds when: a first-time user understands
+the major sections without instructions; primary navigation is obvious;
+the most important notices and repository status are immediately visible;
+desktop and mobile layouts both feel intentionally designed; visual
+hierarchy is materially improved over the Dashboard 1.0 foundation;
+interaction feels smooth but restrained; no placeholder metric appears as
+factual portfolio information; all provenance/safety disclosures remain
+accessible; and the principal can run the dashboard locally and give
+concrete visual feedback for a later, bounded correction pass.
+
+### 9.6 Lifecycle
+
+`OPS-0012`'s own governance PR requires independent exact-head review,
+explicit principal acceptance, merge, and post-merge verification before
+the one future implementation PR may open. That implementation PR requires
+everything `OPS-0011` §8 already requires (independent review, bounded
+correction, scope/dependency-direction verification, dedicated tests,
+exact-head CI, principal acceptance, post-merge verification) **plus**
+rendered desktop/mobile preview artifacts and explicit principal *visual*
+acceptance — new steps specific to a visual redesign. Later visual
+corrections proceed only as bounded delta passes, never as a silent second
+full redesign under the same authorization.
