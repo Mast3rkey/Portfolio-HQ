@@ -64,7 +64,8 @@ supporting_artifact: null
 - **No overlapping dashboard work found.** No open PR, no unmerged branch
   under active development, and no other governance filing currently
   proposes a second dashboard interface, generator, or visual layer. This
-  filing is the first proposal of a Dashboard 2.0 visual pass.
+  filing is the first proposal of a Dashboard 2.0 visual pass, filed as
+  **PR #211**.
 
 ### Why a new decision, not an edit to `OPS-0011`
 

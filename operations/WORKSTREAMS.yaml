@@ -3769,18 +3769,19 @@ workstreams:
           OPS-0012 drafted and filed on a single draft, unmerged governance
           pull request, from origin/main at
           f86fd98f38067ad53ab52c982356058ffefbbb38 (merge commit of PR
-          #210). Authorizes, conditional on its own merge, a bounded
-          Dashboard 2.0 comprehensive visual/navigational redesign of the
-          already-complete Phase 1 dashboard capability: a restrained
-          modern dark-first design direction, a five-area information
-          architecture (Overview, Portfolio, Intelligence, Governance,
-          System/Provenance), performance and accessibility requirements,
-          and a visual acceptance standard — delivered through exactly one
-          future, separate, bounded implementation PR, all within the
-          existing portfolio_hq/dashboard package. Every OPS-0011 mandatory
-          boundary and prohibition is restated in full, unweakened. Not yet
-          independently reviewed and not yet principal-accepted.
-        pr: null
+          #210). Filed as PR #211. Authorizes, conditional on its own
+          merge, a bounded Dashboard 2.0 comprehensive visual/navigational
+          redesign of the already-complete Phase 1 dashboard capability: a
+          restrained modern dark-first design direction, a five-area
+          information architecture (Overview, Portfolio, Intelligence,
+          Governance, System/Provenance), performance and accessibility
+          requirements, and a visual acceptance standard — delivered
+          through exactly one future, separate, bounded implementation PR,
+          all within the existing portfolio_hq/dashboard package. Every
+          OPS-0011 mandatory boundary and prohibition is restated in full,
+          unweakened. Not yet independently reviewed and not yet
+          principal-accepted.
+        pr: 211
         status: drafted
         date: "2026-08-01"
     evidence_refs:
