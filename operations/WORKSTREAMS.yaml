@@ -4278,12 +4278,21 @@ workstreams:
       This workstream entry's own scope is complete. The only remaining
       future step it identifies is a live, credentialed
       python allocate.py --review run against the fully reconciled book,
-      supplying the resolved $941.05 cash figure (PHQ-2026-05's own bounded
-      correction) through allocate.py's existing --cash runtime input — a
-      separate future session's task, not a blocker to this workstream's own
-      completion. SPCX remains a research candidate only; SKHY remains a
-      watchlist name only; re-entry for either requires separate research
-      and principal approval per PHQ-2026-03 §7, unchanged.
+      supplying the current cash figure through allocate.py's existing
+      --cash runtime input — a separate future session's task, not a
+      blocker to this workstream's own completion. NOTE (2026-08-01,
+      factual reference update only, SKHY/SPCX disposition unaffected):
+      the $941.05 figure this action previously named is superseded by
+      PHQ-2026-06, a cash-only factual synchronization recording a reported
+      $100 deposit and a new screenshot-supported cash figure of $1,041.23
+      (governance/evidence/PHQ-2026-06/); PHQ-2026-06 also discloses an
+      unresolved $0.18 difference between the prior $941.05 and an earlier
+      connected-account snapshot of $941.23. Whichever cash figure is
+      current at the time of that future live allocation-check session
+      should be used as its --cash input, not this or any other
+      point-in-time figure hardcoded here. SPCX remains a research candidate
+      only; SKHY remains a watchlist name only; re-entry for either requires
+      separate research and principal approval per PHQ-2026-03 §7, unchanged.
     completion_criteria: >
       Met. PHQ-2026-03 (PR #204), PHQ-2026-04 (PR #205), and PHQ-2026-05
       (PR #206, including its same-PR v1.38 bounded correction) are all

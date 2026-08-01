@@ -65,6 +65,27 @@
 # since PHQ-2026-02) — the resolved $941.05 figure is recorded as evidence
 # only, to be supplied through `allocate.py`'s existing `--cash` runtime
 # input at whatever future session runs a live cash-funded allocation.
+#
+# PHQ-2026-06 (2026-08-01): cash-only factual synchronization following a
+# reported $100 deposit. New screenshot-supported cash: $1,041.23 (evidence
+# governance/evidence/PHQ-2026-06/, SHA-256
+# d602da67bee33644da8600691974ddd3098549c78c73292904320a16c0e2ffca). This
+# reconciles exactly from an earlier connected-account snapshot cash of
+# $941.23 plus the $100.00 deposit ($941.23 + $100.00 = $1,041.23) — NOT
+# from this repository's own PHQ-2026-05-resolved $941.05, which is $0.18
+# lower than that connected snapshot for reasons not established by either
+# filing; that $0.18 difference is disclosed, unresolved, and is not
+# evidence of a trade. No `shares:`, `crypto_shares:`, or `margin:` value
+# below is changed by this entry — no full holdings reconciliation is
+# evidenced by the underlying screenshot (only category-level Equities/
+# Crypto market values and account-level figures, no per-ticker list).
+# Buying power ($7,444.11) and margin available ($6,403.06) are recorded in
+# governance/evidence/PHQ-2026-06/ as context only — neither is cash and
+# neither authorizes any deployment; margin used is confirmed $0.00,
+# consistent with margin.debt below. $1,041.23 is not persisted as a schema
+# field here (unchanged since PHQ-2026-02) — to be supplied through
+# `allocate.py`'s existing `--cash` runtime input at a future live,
+# credentialed allocation-check session.
 margin:
   debt: 0.0
   # No displayed buffer % was captured in the v1.35 evidence (only
