@@ -83,6 +83,23 @@ only difference from Arm A). Equal-dollar per rung. No ATR, no 200SMA floor, no 
 These three percentages are the entire parameterization — fixed before any simulation runs, not
 swept, not tuned after seeing a result (§20).
 
+**NUM-0001 provenance (`governance/decisions/NUM-0001-numeric-parameter-provenance-standards.md`):**
+these three percentages are a **research assumption** — one of NUM-0001 §2's contextual classes,
+kept separate from and never conflated with its six binding-value provenance classes (§1). They do
+not govern any live allocation, margin, or trim outcome; they are pre-registered design inputs to
+this bounded comparison arm only. They are explicitly **not** empirically calibrated (NUM-0001 §8 —
+no evidence directly and uniquely favors −5/−10/−15% over any other simple percentage set) and
+**not** an evidence-bounded governance selection (NUM-0001 §7 — no prior evidence establishes a
+defensible range for a fixed-percentage pullback ladder on this roster; that is exactly the open
+question this study exists to inform, not a premise it already rests on). They are a governance
+judgment, selected only to instantiate one clearly-defined, simple, non-ATR alternative worth
+testing against Arm A — not current portfolio policy, not a production ladder setting, and not a
+ticker-specific recommendation. **This classification does not imply, and must not be read to
+imply, that −5%/−10%/−15% are optimal, superior, or better-sized than any other fixed-percentage
+set** — per §4's own "No Arm D" discussion above, a percentage-grid sweep to find a "better" Arm B
+is explicitly declined as parameter-fishing, precisely because this arm's role is a bounded,
+one-shot comparison point, not an optimization target.
+
 **Arm C — immediate/scheduled deployment baseline.** The cycle's full ticker-allocated deposit is
 deployed at the deposit-day close, no waiting for any level. This is the same "market-buy" baseline
 concept as the original study's Arm C, applied to the canonical roster's gap-ranked ticker
@@ -117,9 +134,10 @@ assumed:
 | Crypto | BTC, ETH, SOL | **Excluded from this study entirely** — see §19 |
 | Reserve / cash | RESERVE, CASH | **Excluded** — `asset_class: reserve`/`cash` rows are never buy candidates in production (`targets.yaml` comment, `allocate.py plan()`); no price series exists for them and none is modeled |
 
-30 equity/fund tickers total in scope for simulation (21 non-gated equities + 6 gated, excluded per
-§6, + SPY/VEA/VWO + GLD); 27 tickers actually simulated across the three segments once gated names
-are excluded.
+31 equity/fund/GLD rows named in this study's scope discussion (21 non-gated equities + 6 gated,
+excluded per §6, + 3 broad ETFs [SPY, VEA, VWO] + 1 GLD row: 21 + 6 + 3 + 1 = 31); **25 rows are
+actually simulated** across the three segments once the 6 gated names are excluded (21 non-gated
+equities + 3 broad ETFs + 1 GLD row: 21 + 3 + 1 = 25).
 
 **Minimum-history rule:** a ticker with fewer than 210 trading sessions of split-adjusted history
 at the earlier of (its first date in the data window) or (the point it would first become
@@ -277,6 +295,10 @@ presented as empirically derived.
 a TWR win bought with a materially deeper MaxDD does not count as a clean win. Same NUM-0001
 provenance class.
 
+(Arm B's fixed −5%/−10%/−15% pullback percentages carry their own, separate NUM-0001
+classification — **research assumption**, a §2 contextual class, not a §1 binding-value class —
+recorded in §4 above, not repeated here.)
+
 **Adoption rule:** No result produced under this study — however strong, on any segment —
 automatically changes `levels.py`, `targets.yaml`'s `levels:` block, or any production behavior.
 A result meeting or exceeding the threshold on a per-segment basis (§15), with the MaxDD tolerance
@@ -346,6 +368,21 @@ This protocol's SHA-256 is computed and pinned in
 and the pinned hash verifies against the committed blob** (`git show <merge>:<path> | sha256sum`).
 Any later change to this file is a charter amendment: its own governance decision, with a newly
 pinned hash.
+
+**Bounded correction (same day, this PR, pre-merge, pre-principal-acceptance):** an independent
+exact-head review of PR #214 (reviewed head `0f8c8d795687409cec866ac6b8a77a41a247e76f`) returned
+APPROVE with two MINOR findings, both corrected in this pass before any further review: (1) §5's
+descriptive universe totals were arithmetically wrong given the already-frozen named lists — fixed
+to state 31 total named equity/fund/GLD rows (21 non-gated equities + 6 gated + 3 broad ETFs + 1
+GLD row) and 25 rows actually simulated (21 + 3 + 1), with no ticker added, removed, or
+reclassified; (2) Arm B's fixed −5%/−10%/−15% pullback percentages (§4) had no NUM-0001 provenance
+classification — added, classified as a **research assumption** (NUM-0001 §2 contextual class, not
+one of §1's six binding-value classes), explicitly not empirically calibrated and not an
+evidence-bounded governance selection, with no implication that these percentages are optimal.
+Neither correction changes the frozen universe, arms, materiality standard, or adoption rules (§20
+still governs any further change as a charter amendment). This edit changes the file's SHA-256 —
+see the corrected hash in `LADDER-0001` §3, superseding the value originally pinned at PR #214's
+first commit (`96f686e2dbdb10459e34a8c031d6071add59940c`).
 
 ## 23. What this protocol does not authorize
 

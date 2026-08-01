@@ -135,12 +135,31 @@ exact hash inserted here — both this decision and the protocol are filed toget
 governance PR:
 
 - `research/buy_ladder_backtest/PROTOCOL_V1.md`
-  SHA-256: `a61f55e600e6f334de7fd0c00d8a78f181dbabd4f7e8997f7f6db5a3208f59d8`
+  SHA-256: `4568fbfcff21b353f61e8f60cf34f3c0834d4717846bba65ca36e8348831ea52`
 
 After merge, the hash is verified from the committed blob (`git show <merge>:research/
 buy_ladder_backtest/PROTOCOL_V1.md | sha256sum`). **No simulation may run before this PR is merged
 and the pinned hash verifies.** Any later change to the pinned protocol is a charter amendment: its
 own governance decision with a newly pinned hash, per the protocol's own §20/§22.
+
+**Bounded correction (same day, this PR, pre-merge, pre-principal-acceptance):** an independent
+exact-head review of this PR at head `0f8c8d795687409cec866ac6b8a77a41a247e76f` returned APPROVE
+with two MINOR findings, both corrected in this pass: (1) `PROTOCOL_V1.md` §5's descriptive
+universe totals were arithmetically wrong against the already-frozen named lists (miscounted as 30
+total / 27 simulated; correctly 21 + 6 + 3 + 1 = 31 total named, 21 + 3 + 1 = 25 simulated) — fixed,
+no ticker added, removed, or reclassified; (2) Arm B's fixed −5%/−10%/−15% pullback percentages
+(`PROTOCOL_V1.md` §4) carried no NUM-0001 provenance classification — added, classified as a
+**research assumption** (NUM-0001 §2 contextual class), explicitly not empirically calibrated and
+not an evidence-bounded governance selection, with no implication of optimality. Both corrections
+are prose/documentation-only: the frozen universe, the three study arms, the materiality
+threshold, and the adoption/non-adoption rules are all unchanged. The protocol's hash chain from
+this correction: original (PR #214's first commit, `96f686e2dbdb10459e34a8c031d6071add59940c`)
+`a61f55e600e6f334de7fd0c00d8a78f181dbabd4f7e8997f7f6db5a3208f59d8` → **corrected (this commit) and
+now the sole pinned value** `4568fbfcff21b353f61e8f60cf34f3c0834d4717846bba65ca36e8348831ea52`.
+No simulation has run under either hash — the original hash was never relied upon for any
+simulation, so no result is invalidated by this correction; it simply supersedes the pinned value
+before any research execution begins. This governance PR remains draft, unmerged, and requires its
+own exact-head delta re-review and explicit principal acceptance before it may be marked ready.
 
 ### 4. Approved files for future implementation
 
