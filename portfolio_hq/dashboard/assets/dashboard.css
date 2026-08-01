@@ -545,6 +545,99 @@ footer.page-footer {
   margin-top: var(--space-6);
 }
 
+/* ── Governance Decision Explorer (OPS-0013) ─────────────────────────── */
+
+/* Every decision detail is plain, visible, anchor-reachable document flow
+   without JS. With JS, the same `js-views` gate that single-views the five
+   top-level sections also single-views decision details — a class toggle,
+   never the `hidden` attribute, so nothing here depends on script success. */
+.decision-detail { display: block; margin: var(--space-5) 0 0; padding-top: var(--space-4); border-top: 1px solid var(--border); }
+.decision-detail:first-child { border-top: none; padding-top: 0; }
+html.js-views .decision-detail { display: none; }
+html.js-views .decision-detail.active {
+  display: block;
+  border-top: none;
+  padding-top: 0;
+  animation: view-in var(--dur) var(--ease);
+}
+html.js-views #decision-catalog-panel.detail-open { display: none; }
+
+.breadcrumb { font-size: 12.5px; color: var(--muted); margin-bottom: var(--space-3); }
+.breadcrumb a { font-weight: 600; }
+.breadcrumb [aria-current="page"] { color: var(--text); font-weight: 650; }
+
+.decision-detail-title { overflow-wrap: anywhere; }
+.decision-detail-title:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+
+.search-field { display: flex; flex-direction: column; gap: 4px; max-width: 480px; margin: 0 0 var(--space-3); }
+.search-field label { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.search-field input[type="search"] {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  min-height: 40px;
+  width: 100%;
+}
+.search-field input[type="search"]:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+
+.decision-catalog-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); max-height: 480px; overflow-y: auto; }
+.decision-catalog-list li { border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.decision-catalog-list a {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-sm);
+}
+.decision-catalog-list a:hover { background: var(--accent-weak); }
+.decision-catalog-list .d-id { font-family: var(--font-mono); font-size: 12px; color: var(--accent-strong); margin-right: var(--space-2); }
+.decision-catalog-list .d-title { font-weight: 600; }
+.decision-catalog-list .d-meta { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.decision-meta.cards { margin-bottom: var(--space-3); }
+
+.related-list, .reverse-list { list-style: none; margin: 0 0 var(--space-3); padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.related-list li, .reverse-list li { overflow-wrap: anywhere; }
+.legacy-ref-card { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); background: var(--surface-2); }
+.legacy-fields { display: flex; flex-wrap: wrap; gap: var(--space-3); font-size: 12.5px; color: var(--muted); margin: 4px 0; }
+.unresolved-ref { color: var(--muted); }
+
+/* Rendered decision body: allow-listed structural HTML only, from a
+   dedicated constrained renderer (portfolio_hq/dashboard/decisions.py) —
+   escaped/sanitized before this stylesheet ever sees it. */
+.decision-body { max-width: 74ch; overflow-wrap: anywhere; }
+.decision-body h4, .decision-body h5, .decision-body h6 { scroll-margin-top: calc(var(--topbar-h) + var(--space-3)); }
+.decision-body p, .decision-body ul, .decision-body ol, .decision-body blockquote,
+.decision-body table { margin: 0 0 var(--space-3); }
+.decision-body ul, .decision-body ol { padding-left: 1.4em; }
+.decision-body li > ul, .decision-body li > ol { margin-top: var(--space-2); }
+.decision-body blockquote {
+  margin-left: 0;
+  padding: var(--space-2) var(--space-4);
+  border-left: 3px solid var(--border-strong);
+  color: var(--muted);
+  background: var(--surface-2);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.decision-body pre {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  overflow-x: auto;
+  max-width: 100%;
+}
+.decision-body pre code { background: none; border: none; padding: 0; }
+.decision-body code { background: var(--surface-2); border-radius: 4px; padding: 1px 5px; }
+.decision-body pre.literal-fallback { white-space: pre-wrap; overflow-wrap: anywhere; }
+.decision-body table { width: 100%; }
+.decision-link { font-weight: 600; }
+.legacy-ref { border-bottom: 1px dashed var(--muted-2); cursor: help; }
+.back-link { display: inline-block; margin-top: var(--space-2); }
+
 /* ── mobile: sidebar becomes a sticky top tab strip ──────────────────── */
 
 @media (max-width: 900px) {
