@@ -3845,7 +3845,7 @@ workstreams:
           Chromium render of the built HTML), explicit principal **visual**
           acceptance, and immediate post-merge verification (OPS-0012
           section 11).
-        pr: null
+        pr: 212
         status: drafted
         date: "2026-08-01"
     evidence_refs:
@@ -3886,7 +3886,7 @@ workstreams:
       artifacts, and explicit principal visual acceptance before it may
       merge (OPS-0012 section 11).
     active_branch: claude/dashboard-2-visual-redesign-xd0pip
-    active_pr: null
+    active_pr: 212
     last_verified_main_sha: 6db533338d3958233a23a09c375b91a5df9b00a9
     last_verified_date: "2026-08-01"
     authorized_by: >
