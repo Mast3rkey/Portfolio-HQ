@@ -3144,7 +3144,7 @@ workstreams:
       `CLAUDE.md`, no `targets.yaml`, no `holdings.yaml`, no Constitution, no frozen specification,
       no production code, no test, and no trading safeguard is touched by this entry.
     active_branch: claude/isrg-post-merge-verification-l7kdfm
-    active_pr: null
+    active_pr: 210
     last_verified_main_sha: 51166b0b6833e5f49e90167dbfc3eaae680a713f
     last_verified_date: "2026-08-01"
     authorized_by: >
