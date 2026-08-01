@@ -157,6 +157,11 @@ input:focus-visible {
 code, .mono {
   font-family: var(--font-mono);
   font-size: 12.5px;
+  /* code/mono text routinely carries repository-backed values (paths,
+     hashes, branch names) that can be long and unbroken — let them wrap
+     rather than push their container wider than the viewport. */
+  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 
 /* ── app shell: sidebar (desktop) + content ──────────────────────────── */
@@ -199,7 +204,9 @@ code, .mono {
 .readonly-banner {
   text-align: center;
   font-size: 12px;
-  color: var(--muted-2);
+  /* Mandatory safety disclosure — needs full WCAG AA text contrast (4.5:1),
+     not the decorative --muted-2 tone, which falls short at this size. */
+  color: var(--muted);
   padding: var(--space-2) var(--space-4);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
@@ -249,7 +256,9 @@ code, .mono {
   padding-top: var(--space-4);
   border-top: 1px solid var(--border);
   font-size: 11.5px;
-  color: var(--muted-2);
+  /* Mandatory safety disclosure — needs full WCAG AA text contrast (4.5:1),
+     not the decorative --muted-2 tone, which falls short at this size. */
+  color: var(--muted);
   line-height: 1.6;
 }
 
@@ -445,6 +454,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
     text-align: right;
     border-bottom: 1px dashed var(--border);
     padding: 7px 2px;
+    max-width: 100%;
+    overflow-wrap: anywhere;
   }
   .table-scroll td:last-child, .table-scroll th:last-child { border-bottom: none; }
   .table-scroll td::before, .table-scroll th::before {
@@ -488,7 +499,7 @@ details > summary::before {
 details[open] > summary::before { transform: rotate(90deg); }
 details[open] > summary { margin-bottom: var(--space-2); }
 
-.provenance-list { list-style: none; padding: 0; margin: var(--space-2) 0; }
+.provenance-list { list-style: none; padding: 0; margin: var(--space-2) 0; max-width: 100%; }
 .provenance-list li {
   padding: var(--space-2) 0;
   border-bottom: 1px solid var(--border);
@@ -496,15 +507,37 @@ details[open] > summary { margin-bottom: var(--space-2); }
   flex-wrap: wrap;
   gap: 4px var(--space-3);
   align-items: baseline;
+  max-width: 100%;
 }
 .provenance-list li:last-child { border-bottom: none; }
-.provenance-list .fname { font-family: var(--font-mono); font-size: 12.5px; }
-.provenance-list .fhash { color: var(--muted); font-size: 12px; }
+/* Repository-backed values (paths, hashes, IDs) can be arbitrarily long,
+   unbroken strings. As flex items these would otherwise refuse to shrink
+   below their content's intrinsic width (the default `min-width: auto`)
+   and blow out the page horizontally on narrow viewports — min-width: 0
+   lets them shrink, overflow-wrap: anywhere lets the text itself wrap at
+   any point once it no longer fits, and max-width: 100% caps them to the
+   available row width as a last-resort backstop. */
+.provenance-list .fname {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.provenance-list .fhash {
+  color: var(--muted);
+  font-size: 12px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
 
 /* ── footer ───────────────────────────────────────────────────────────── */
 
 footer.page-footer {
-  color: var(--muted-2);
+  /* Mandatory safety disclosure — needs full WCAG AA text contrast (4.5:1),
+     not the decorative --muted-2 tone, which falls short at this size. */
+  color: var(--muted);
   font-size: 12px;
   text-align: center;
   padding: var(--space-6) var(--space-4) var(--space-8);

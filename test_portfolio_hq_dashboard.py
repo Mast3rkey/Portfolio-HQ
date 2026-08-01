@@ -498,6 +498,168 @@ def test_mobile_table_stacking_uses_data_label(tmp_repo: Path):
     assert "content: attr(data-label)" in html
 
 
+# ── Dashboard 2.0 bounded correction: long-value wrap safety ────────────────
+#
+# Regression coverage for the two MATERIAL findings from the independent
+# exact-head review of PR #212: (1) long, unbroken repository-backed values
+# (file paths, hashes, branch names) forced real page-level horizontal
+# overflow on the System / Provenance view at mobile widths, because the
+# flex items holding them refused to shrink below their content's intrinsic
+# width; (2) three mandatory safety-disclosure text areas rendered below
+# WCAG AA contrast in both themes. Both were verified fixed via a local
+# rendered-browser check (headless Chromium, 1440px/390px, dark/light, all
+# five views, including a synthetic ~190-character unbroken value injected
+# into both the provenance list and the dirty-worktree notice) — that
+# verification isn't part of the committed suite because this repository's
+# CI (`requirements.txt`, `.github/workflows/ci.yml`) has no browser
+# tooling installed and none is added here. The tests below are the
+# strongest deterministic (no-browser) equivalent: they check the actual
+# CSS wrap-capability rules and recompute real WCAG contrast ratios from
+# the stylesheet's own token values, so both would fail if either fix were
+# silently reverted or weakened later.
+
+def _css_text() -> str:
+    return (Path(__file__).resolve().parent / "portfolio_hq" / "dashboard"
+            / "assets" / "dashboard.css").read_text()
+
+
+def _css_rule_block(css: str, selector_prefix: str) -> str:
+    """Return the `{ ... }` body of the first rule whose selector text
+    starts with `selector_prefix` (e.g. '.provenance-list .fname {')."""
+    idx = css.index(selector_prefix)
+    end = css.index("}", idx)
+    return css[idx:end]
+
+
+def test_long_value_css_rules_allow_shrinking_and_wrapping():
+    css = _css_text()
+
+    fname_rule = _css_rule_block(css, ".provenance-list .fname {")
+    assert "min-width: 0" in fname_rule
+    assert "overflow-wrap: anywhere" in fname_rule
+    assert "max-width: 100%" in fname_rule
+
+    fhash_rule = _css_rule_block(css, ".provenance-list .fhash {")
+    assert "min-width: 0" in fhash_rule
+    assert "overflow-wrap: anywhere" in fhash_rule
+    assert "max-width: 100%" in fhash_rule
+
+    # code/.mono carries the dirty-worktree path list and other inline
+    # repository-backed values outside the provenance list specifically.
+    code_rule = _css_rule_block(css, "code, .mono {")
+    assert "overflow-wrap: anywhere" in code_rule
+    assert "max-width: 100%" in code_rule
+
+    # Mobile card-stacked table cells (below the 700px breakpoint) are
+    # themselves flex containers and share the same shrink/overflow risk
+    # for an unusually long cell value.
+    mobile_cell_rule = _css_rule_block(css, ".table-scroll td, .table-scroll th {")
+    assert "overflow-wrap: anywhere" in mobile_cell_rule
+
+
+def test_long_unbroken_dirty_path_is_rendered_fully_not_truncated(tmp_repo: Path):
+    """A pathologically long, unbroken (no spaces) untracked filename — the
+    same shape of value that broke the mobile System/Provenance view before
+    this correction — must appear in the rendered HTML complete and
+    unmodified. The fix relies on CSS wrapping, not truncation: asserting
+    the full value survives byte-for-byte guards against a future 'fix'
+    that silently truncates or elides provenance data instead of wrapping
+    it (explicitly prohibited by the correction's own instructions).
+    """
+    long_name = ("Extraordinarily_Long_Unbroken_RepositoryBackedValue_"
+                 + ("X" * 120) + "_end.txt")
+    (tmp_repo / long_name).write_text("scratch")
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.provenance.dirty is True
+    # dirty_paths holds raw `git status --porcelain` lines (e.g. "?? name"),
+    # not bare filenames.
+    assert any(long_name in p for p in (m.provenance.dirty_paths or [])), (
+        m.provenance.dirty_paths)
+    html = render_html(m)
+    assert long_name in html  # present in full — not truncated, not elided
+
+
+def _hex_to_rgb(h: str) -> tuple[int, int, int]:
+    h = h.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))  # type: ignore[return-value]
+
+
+def _relative_luminance(rgb: tuple[int, int, int]) -> float:
+    def chan(c: int) -> float:
+        c_norm = c / 255
+        return c_norm / 12.92 if c_norm <= 0.03928 else ((c_norm + 0.055) / 1.055) ** 2.4
+    r, g, b = rgb
+    return 0.2126 * chan(r) + 0.7152 * chan(g) + 0.0722 * chan(b)
+
+
+def _contrast_ratio(hex1: str, hex2: str) -> float:
+    l1 = _relative_luminance(_hex_to_rgb(hex1))
+    l2 = _relative_luminance(_hex_to_rgb(hex2))
+    l1, l2 = max(l1, l2), min(l1, l2)
+    return (l1 + 0.05) / (l2 + 0.05)
+
+
+def _parse_root_color_vars(css: str, *, light: bool) -> dict[str, str]:
+    """Extract `--name: #hex;` custom-property values from the dashboard
+    stylesheet's default (dark) `:root` block, or from its
+    `@media (prefers-color-scheme: light) { :root { ... } }` override."""
+    if light:
+        media_start = css.index("@media (prefers-color-scheme: light)")
+        block_start = css.index(":root", media_start)
+    else:
+        block_start = css.index(":root")
+    open_brace = css.index("{", block_start)
+    depth, i = 0, open_brace
+    while True:
+        if css[i] == "{":
+            depth += 1
+        elif css[i] == "}":
+            depth -= 1
+            if depth == 0:
+                break
+        i += 1
+    block = css[open_brace:i]
+    return dict(re.findall(r"(--[\w-]+):\s*(#[0-9a-fA-F]{6})", block))
+
+
+def test_safety_disclosure_text_meets_wcag_aa_contrast_both_themes():
+    """The mandatory read-only / recommendation-only / local-only / no-
+    brokerage-connection / no-order-path disclosure — rendered in
+    `.readonly-banner`, `.primary-nav .nav-foot`, and `footer.page-footer`
+    — must meet WCAG AA (>= 4.5:1) for normal-size text against its actual
+    background, in both the dark (default) and light
+    (`prefers-color-scheme: light`) themes. This recomputes the real ratio
+    from the stylesheet's own current token values rather than only
+    checking which token name is referenced, so it fails if the *color
+    values* regress even without a token rename.
+    """
+    css = _css_text()
+    dark_vars = _parse_root_color_vars(css, light=False)
+    light_vars = _parse_root_color_vars(css, light=True)
+
+    # (selector prefix, the CSS variable supplying this rule's real
+    # background — verified by direct inspection of the stylesheet).
+    checks = [
+        (".readonly-banner {", "--surface"),
+        (".primary-nav .nav-foot {", "--surface"),
+        ("footer.page-footer {", "--bg"),  # no own background; inherits body's
+    ]
+    for selector, bg_var in checks:
+        block = _css_rule_block(css, selector)
+        match = re.search(r"color:\s*var\((--[\w-]+)\)", block)
+        assert match, f"no `color: var(--...)` found in {selector!r}"
+        fg_var = match.group(1)
+        for theme_name, theme_vars in (("dark", dark_vars), ("light", light_vars)):
+            fg_hex = theme_vars[fg_var]
+            bg_hex = theme_vars[bg_var]
+            ratio = _contrast_ratio(fg_hex, bg_hex)
+            assert ratio >= 4.5, (
+                f"{selector!r} in the {theme_name} theme: {fg_var}={fg_hex} "
+                f"on {bg_var}={bg_hex} is only {ratio:.2f}:1, below the "
+                f"WCAG AA 4.5:1 minimum for normal-size text"
+            )
+
+
 # ── measured AI/platform figure: point-in-time qualification ─────────────────
 
 def test_measured_ai_platform_figure_qualified_as_point_in_time(tmp_repo: Path):
