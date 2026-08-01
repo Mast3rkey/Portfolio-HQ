@@ -509,7 +509,13 @@ def _slugify(text: str) -> str:
 
 
 def _heading_id(decision_id: str, text: str, used: set[str]) -> str:
-    base = f"{decision_id.lower()}-{_slugify(text)}"
+    # `decision_id` is untrusted (frontmatter-declared, not format-validated
+    # at the point this is called) — route it through `_slugify` exactly
+    # like `text` so the result can only ever contain `[a-z0-9-]`. Never
+    # interpolate it into the `id="..."` attribute raw: an unslugified value
+    # containing `"` breaks out of the attribute and can inject a live
+    # event-handler attribute (independent-review finding, PR #217).
+    base = f"{_slugify(decision_id)}-{_slugify(text)}"
     slug, n = base, 2
     while slug in used:
         slug = f"{base}-{n}"

@@ -686,6 +686,39 @@ def test_glob_pattern_in_code_does_not_trigger_bold_parsing():
     assert "<strong>" not in html
 
 
+def test_malicious_decision_id_cannot_break_out_of_heading_id_attribute():
+    # Independent-review finding (PR #217, reviewed head 1a246e0):
+    # decision_id was interpolated into a heading id="..." attribute without
+    # sanitization, so a decision_id containing a quote could break out of
+    # the attribute and inject a live event-handler attribute.
+    from html.parser import HTMLParser
+
+    html = _render("## Context\n\nSome text.\n",
+                    decision_id='OPS-0013" onmouseover="alert(1)')
+
+    class _Check(HTMLParser):
+        def handle_starttag(self, tag, attrs):
+            names = [a[0] for a in attrs]
+            assert "onmouseover" not in names, f"live event-handler attribute injected: {attrs}"
+            if tag == "h4":
+                # Exactly one attribute (id) — no second attribute was
+                # created by an unescaped quote in decision_id.
+                assert names == ["id"], attrs
+
+    _Check().feed(html)
+    assert ' onmouseover="' not in html
+
+
+def test_heading_id_sanitizes_decision_id_same_as_heading_text():
+    html = _render("## Context\n\n", decision_id="<script>evil</script>")
+    assert "<script>evil" not in html.split("id=")[0]  # never live before the id attr
+    assert "onerror" not in html
+    # id value itself contains only slug-safe characters.
+    import re
+    m = re.search(r'id="([^"]*)"', html)
+    assert m and re.fullmatch(r"[a-z0-9-]+", m.group(1))
+
+
 def test_image_syntax_produces_no_img_element():
     html = _render("![alt text](x.png)\n")
     assert "<img" not in html
