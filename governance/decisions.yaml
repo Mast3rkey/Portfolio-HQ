@@ -407,7 +407,7 @@ decisions:
     file: governance/decisions/LADDER-0001-canonical-buy-ladder-backtest-authorization.md
   - decision_id: PHQ-2026-06
     date: 2026-08-01
-    status: Proposed
+    status: Accepted
     category: portfolio_construction_governance
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0009, PHQ-2026-01, PHQ-2026-02, PHQ-2026-04, PHQ-2026-05]
     supporting_artifact: governance/evidence/PHQ-2026-06/MANIFEST.json

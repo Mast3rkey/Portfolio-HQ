@@ -1,7 +1,7 @@
 ---
 decision_id: PHQ-2026-06
 date: 2026-08-01
-status: Proposed
+status: Accepted
 category: portfolio_construction_governance
 related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0009, PHQ-2026-01, PHQ-2026-02, PHQ-2026-04, PHQ-2026-05]
 supporting_artifact: governance/evidence/PHQ-2026-06/MANIFEST.json
@@ -312,3 +312,41 @@ broadened or narrowed by this correction — it clarifies wording only. This
 correction requires its own exact-head re-review before this decision may
 be considered ready, per this repository's standing review discipline for
 bounded corrections on an open, unmerged PR.
+
+---
+
+_**2026-08-01 Lane M lifecycle synchronization** (dated note, appended per
+`governance/decisions/README.md`'s convention for a narrow factual/lifecycle
+correction — no edit to this decision's substance): this decision was
+merged to `main` via **PR #215** at exact reviewed head
+`a53c6288206a4351df927dda4659ec434bdb6dfb` (the bounded-correction commit
+above), merge commit `d5c04b3e1ca0c4754f4c110996f0fa223cca47b8` (two
+parents: `2456f1bb5febbbb15fd8b9d1b191dffacd8286bb`, the pre-merge `main`
+base, and `a53c6288206a4351df927dda4659ec434bdb6dfb`, this decision's own
+reviewed head), independently confirmed this session via `git rev-parse
+origin/main`, `git show --no-patch --format=%H·%P`, and `git diff
+a53c6288...·d5c04b3e...`, the last returning an empty diff — the merge
+commit's tree is byte-equivalent to the exact reviewed head, a clean
+fast-forward-equivalent merge with no re-editing at merge time. The
+retained evidence screenshot's SHA-256
+(`d602da67bee33644da8600691974ddd3098549c78c73292904320a16c0e2ffca`) was
+independently recomputed this session against the file on disk at the
+merged head and matches exactly. This session also independently
+re-verified `governance/decisions.yaml`'s decision-index reconciliation
+(58 filed decision files, 58 indexed entries, 1:1, no duplicates) and
+confirmed no protected production path (`allocate.py`, `levels.py`,
+`margin_state.py`, `targets.yaml`, `gates.yaml`, `issuer_lookthrough.yaml`,
+dashboard code, Intelligence/freshness content, the Constitution) differs
+from `origin/main` as a result of this synchronization. Per `OPS-0009` §1,
+this synchronization is itself classified **Lane M** — it records an
+already-true, already-verified fact (the completed merge and its
+post-merge verification, as reported by the merge coordinator and
+independently re-confirmed above) and introduces no new claim, authority,
+or interpretation; no separate independent-review round of this recording
+is required. Frontmatter `status` is updated to `Accepted` accordingly.
+This note records only the completed merge-lifecycle event; it does not
+alter, re-open, or re-evaluate any substantive term of this decision —
+the cash figure ($1,041.23), the disclosed $0.18 discrepancy, the
+evidence-provenance correction above, and every other fact in this filing
+are unchanged — and it authorizes no further research, trade, target,
+gate, margin, dashboard, or Intelligence change.
