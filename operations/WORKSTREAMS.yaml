@@ -3848,6 +3848,46 @@ workstreams:
         pr: 212
         status: drafted
         date: "2026-08-01"
+      - gate: dashboard-2-bounded-correction-independent-review-findings
+        description: >
+          The independent exact-head review of the implementation PR (head
+          925d09bb22fdbc2b9e717bab1c224752d2c35d38, per the milestone
+          above) returned REQUEST CHANGES with exactly two MATERIAL
+          findings and no BLOCKER: (1) long, unbroken repository-backed
+          values (file paths, hashes) in the System/Provenance view's
+          .provenance-list .fname/.fhash rules caused real page-level
+          horizontal overflow at mobile widths (measured
+          document.body.scrollWidth 653px against a 390px viewport),
+          violating OPS-0012 section 7's "responsive text without
+          horizontal page scrolling" requirement; (2) .readonly-banner,
+          .primary-nav .nav-foot, and footer.page-footer used the
+          --muted-2 token, which measured 3.51-4.43:1 contrast against
+          their actual backgrounds in both themes — below the WCAG AA
+          4.5:1 minimum for normal-size text — on the mandatory
+          read-only/recommendation-only/no-brokerage/no-order safety
+          disclosure, violating OPS-0012 section 7's "sufficient contrast"
+          requirement. Every other reviewed area (scope, architecture,
+          security/read-only boundaries, governance sync, tests) was found
+          correct and is unchanged by this correction. A bounded
+          correction pass (commit 09c7dc3, this branch) fixed both:
+          min-width: 0 + overflow-wrap: anywhere + max-width: 100% on the
+          affected provenance/table-cell/code rules (verified via local
+          headless-Chromium render, all 5 views, 1440px/390px,
+          dark/light, plus a synthetic ~190-character stress value — zero
+          overflow, full legible wrapping, no truncation); the three
+          affected rules moved from --muted-2 to --muted (recomputed
+          contrast 5.86-7.35:1 against their real backgrounds in both
+          themes). No render.py, model.py, provenance.py, server.py, or
+          cli.py change; no architecture, information-IA, or unrelated
+          palette change. 3 new focused regression tests added (68/68
+          focused, 1617/1617 full suite, both validators clean, git diff
+          --check clean). This correction commit is NOT yet independently
+          re-reviewed or principal-accepted — it remains gated on exact-head
+          re-review under OPS-0007 section 1 before any further step in
+          OPS-0012 section 11's lifecycle.
+        pr: 212
+        status: drafted
+        date: "2026-08-01"
     evidence_refs:
       - governance/decisions/OPS-0011-repository-native-dashboard-capability-authorization.md
       - governance/decisions/OPS-0012-dashboard-2-modern-responsive-experience-authorization.md
