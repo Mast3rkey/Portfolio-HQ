@@ -3988,9 +3988,9 @@ workstreams:
           (per OPS-0013 section 15, in addition to everything OPS-0011
           section 8 already requires), any required bounded correction and
           exact-head re-review, explicit principal acceptance, and immediate
-          post-merge verification. Opened as a draft PR; not merged, not
-          independently reviewed, not principal-accepted in this session.
-        pr: null
+          post-merge verification. Opened as a draft PR (#217); not merged,
+          not independently reviewed, not principal-accepted in this session.
+        pr: 217
         status: drafted
         date: "2026-08-01"
     evidence_refs:
@@ -4007,7 +4007,7 @@ workstreams:
       above); no retained independent-review artifact exists for it
       (disclosed, not resolved). Phase 3 (Governance Decision Explorer,
       OPS-0013): the governance authorization (PR #213) is merged and
-      effective. The one authorized implementation PR (branch
+      effective. The one authorized implementation PR (PR #217, branch
       claude/portfolio-hq-governance-explorer-zdrvkf) is now open and
       requires: independent exact-head review under OPS-0007 section 1 (per
       OPS-0013 section 15); any required bounded correction and exact-head
@@ -4036,7 +4036,7 @@ workstreams:
       bounded correction and exact-head re-review, and explicit principal
       acceptance before it may merge (OPS-0013 section 15).
     active_branch: claude/portfolio-hq-governance-explorer-zdrvkf
-    active_pr: null
+    active_pr: 217
     last_verified_main_sha: acb24c134d10d586230539337d0f4cba23c0fa0f
     last_verified_date: "2026-08-01"
     authorized_by: >
