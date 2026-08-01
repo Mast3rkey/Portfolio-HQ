@@ -236,3 +236,79 @@ point-in-time reads of a continuously-moving market value.
   this decision — this screenshot does not display a maintenance-buffer
   percentage. A real Robinhood-displayed buffer % should still be synced
   before any future margin-funded decision, unchanged standing guidance.
+
+## Bounded correction (same day, this PR) — evidence-provenance precision
+
+An independent review of this PR accepted file scope, the cash
+reconciliation, the retained hash, the manifest, the decision text, tests,
+validators, and protected-path review, with exactly one MATERIAL finding
+remaining: **an independent reviewer cannot prove that the retained WebP is
+the exact original principal screenshot, because only the authoring session
+had access to the original inline chat bytes.**
+
+**This is not a repository defect — it is an inherent limitation of
+independent review of any chat-mediated screenshot evidence, present
+identically in every prior `PHQ-####` decision that relies on a
+principal-supplied screenshot** (`PHQ-2026-02`'s v1.35 package,
+`PHQ-2026-04`'s unretained screenshots, `PHQ-2026-05`'s v1.37/v1.38
+packages). No decision in this repository has ever had a mechanism for a
+third party to cryptographically prove that a retained artifact is
+bit-for-bit identical to what a principal's own device originally rendered
+and sent — that link has always rested on principal representation and,
+where retained, on principal acceptance of the retained artifact as a
+faithful copy. `PHQ-2026-06` does not weaken that standard; if anything it
+exceeds `PHQ-2026-04`'s (which retained no image at all) by giving any
+reviewer, including the principal, a hash-verifiable artifact to check
+against their own original screenshot directly.
+
+To resolve the finding as precisely as possible without altering the
+evidence itself, this correction makes the provenance chain's verifiability
+boundary explicit — distinguishing exactly which layer each claim belongs
+to (also reflected in the same day's corresponding update to
+`governance/evidence/PHQ-2026-06/MANIFEST.json` and `README.md`):
+
+1. **Principal-supplied inline image** — what the principal's Robinhood
+   client rendered and attached in this Claude Code chat session. This
+   layer exists only as what the principal saw and sent; it is not
+   independently reconstructable by anyone outside that original exchange,
+   including this correction.
+2. **Authoring-session extraction** — the authoring session decoded the
+   base64 `image/webp` content stored in its own conversation transcript
+   (the same bytes the model received as the inline image content block)
+   and wrote them to disk. This action required access to that session's
+   own transcript state, which a third-party reviewer does not have and
+   cannot independently re-execute.
+3. **Retained repository artifact** —
+   `governance/evidence/PHQ-2026-06/robinhood_account_summary_20260801.webp`
+   as committed. This is the one artifact every downstream party, including
+   any independent reviewer and the principal, actually has direct access
+   to.
+4. **Independently verifiable, by anyone with repository access, without
+   trusting the authoring session's narrative**: the retained file's
+   SHA-256 (`d602da67bee33644da8600691974ddd3098549c78c73292904320a16c0e2ffca`)
+   recomputes and matches `MANIFEST.json` exactly; its byte size (49254)
+   and media type (`image/webp`) are directly inspectable; and every
+   displayed figure this decision relies on (cash $1,041.23, buying power
+   $7,444.11, margin available $6,403.06, margin used $0.00, equities
+   $4,958.55, crypto $315.12, total $6,315.28) is directly legible by
+   opening the retained file and reading it — exactly as the authoring
+   session did, and independently reproducible by anyone else who opens it.
+5. **Necessarily reliant on principal acceptance, not independently
+   provable by any reviewer, including this correction**: that the retained
+   artifact (layer 3) is bit-for-bit identical to what the principal's
+   client actually rendered and transmitted (layer 1) — i.e., that nothing
+   was substituted, corrupted, or altered between the principal's screen
+   and the authoring session's extraction — and that the underlying
+   Robinhood screen itself was authentic and current when captured. Every
+   prior `PHQ-####` screenshot-evidenced decision in this repository carries
+   this identical, unavoidable trust boundary; it is resolved the same way
+   here as there — by the principal's own review and acceptance of the
+   retained artifact as a faithful copy of what they sent, not by any
+   technical mechanism this filing could add.
+
+**No change is made to the retained screenshot, its SHA-256, its byte size,
+its media type, or any displayed figure.** No governance authority is
+broadened or narrowed by this correction — it clarifies wording only. This
+correction requires its own exact-head re-review before this decision may
+be considered ready, per this repository's standing review discipline for
+bounded corrections on an open, unmerged PR.

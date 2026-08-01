@@ -3,6 +3,17 @@
   "evidence_date": "2026-08-01",
   "source": "Robinhood Account Summary screenshot, supplied directly in the Claude Code session as an inline chat image attachment (not a filesystem upload)",
   "provenance_note": "The session was first told the file existed at a client-side path ('/mnt/data/image(256).png'); that path does not exist in this execution container and was never found. The retained evidence below was instead extracted from this session's own conversation transcript, where the image the user attached is stored as base64-encoded content (media_type image/webp) exactly as received by the model. The extracted bytes were independently hashed and visually re-inspected before being copied into this evidence directory, and were confirmed identical to what was rendered inline in the chat.",
+  "provenance_chain": {
+    "1_principal_supplied_inline_image": "What the principal's Robinhood client rendered and attached in the Claude Code chat session. Exists only as what the principal saw and sent; not independently reconstructable by anyone outside that original exchange.",
+    "2_authoring_session_extraction": "The authoring session decoded the base64 image/webp content stored in its own conversation transcript (the same bytes the model received as the inline image content block) and wrote them to disk. Required access to that session's own transcript state, which a third party cannot independently re-execute.",
+    "3_retained_repository_artifact": "governance/evidence/PHQ-2026-06/robinhood_account_summary_20260801.webp as committed — the one artifact every downstream party (any independent reviewer, the principal) actually has direct access to.",
+    "4_independently_verifiable_by_any_reviewer": [
+      "SHA-256 of the retained file recomputes to d602da67bee33644da8600691974ddd3098549c78c73292904320a16c0e2ffca, matching this manifest",
+      "byte size (49254) and media type (image/webp) are directly inspectable",
+      "every displayed figure recorded below is directly legible by opening the retained file and reading it"
+    ],
+    "5_necessarily_relies_on_principal_acceptance": "That the retained artifact (layer 3) is bit-for-bit identical to what the principal's client actually rendered and transmitted (layer 1) -- i.e. nothing was substituted, corrupted, or altered between the principal's screen and the authoring session's extraction -- and that the underlying Robinhood screen itself was authentic and current when captured. No independent reviewer, including a later audit of this manifest, can prove this layer cryptographically; it is resolved by principal review and acceptance of the retained artifact as a faithful copy, identical in kind to every prior PHQ-#### screenshot-evidenced decision in this repository (PHQ-2026-02, PHQ-2026-04, PHQ-2026-05)."
+  },
   "original_filename": "not supplied by the client — received as an inline image attachment with no associated filename; the claimed path '/mnt/data/image(256).png' was checked and does not exist on this container",
   "retained_filename": "robinhood_account_summary_20260801.webp",
   "screenshot_media_type": "image/webp",

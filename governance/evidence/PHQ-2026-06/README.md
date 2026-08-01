@@ -25,6 +25,18 @@ visually re-inspected side-by-side against what had been rendered inline in
 chat before being copied into this directory. See `MANIFEST.json`'s
 `provenance_note` for the full disclosure.
 
+**Verifiability boundary** (see `MANIFEST.json`'s `provenance_chain` for the
+full breakdown): anyone with repository access can independently verify the
+retained file's SHA-256, byte size, media type, and every displayed figure
+by opening `robinhood_account_summary_20260801.webp` directly — no trust in
+the authoring session is required for those checks. What cannot be
+independently proven by any third-party reviewer is that this retained file
+is bit-for-bit identical to what the principal's own Robinhood client
+originally rendered and sent — that link rests on principal review and
+acceptance of this artifact as a faithful copy, the same unavoidable trust
+boundary every prior screenshot-evidenced `PHQ-####` decision in this
+repository carries (`PHQ-2026-02`, `PHQ-2026-04`, `PHQ-2026-05`).
+
 ## Scope
 
 This evidence package supports a **cash-only** factual synchronization. It
