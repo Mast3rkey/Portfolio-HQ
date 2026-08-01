@@ -244,6 +244,47 @@ acceptance — new steps specific to a visual redesign. Later visual
 corrections proceed only as bounded delta passes, never as a silent second
 full redesign under the same authorization.
 
+### 9.7 First implementation pass — as-built record
+
+**Status: implementation PR opened, not yet independently reviewed, not yet
+principal-accepted, not yet merged** — this subsection records what the
+candidate implementation actually contains, not a new authorization; §§9.1–9.6
+above remain the controlling design direction.
+
+- **Same single generator, same package.** `render.py` still consumes only
+  the existing `DashboardModel` (`model.py` unchanged); no new investment
+  calculation, portfolio fact, or Intelligence conclusion was added anywhere.
+  The prior 8-section layout (Overview / Portfolio / Targets / Allocation /
+  Concentration / Gates / Research / Governance) is reorganized, with no data
+  dropped, into the 5 areas §9.2 authorizes — Targets, Allocation,
+  Concentration, and Gates content now live inside **Portfolio**; the former
+  Research section is **Intelligence**; Governance keeps decisions and
+  workstreams; a new **System / Provenance** area holds input hashes, commit
+  metadata, and the historical-evidence links that previously sat at the
+  bottom of the single-page Governance section.
+- **One `<nav>`, two CSS presentations.** The same sidebar markup renders as
+  a sticky left rail ≥900px wide and reflows to a horizontal, scrollable tab
+  strip below that — no second nav, no JS-only hamburger drawer (so it never
+  needs a JS fallback path of its own).
+  Section switching (one view visible at a time, `aria-current` tracking,
+  URL-hash sync) is a small, optional script; every section is plain, visible
+  document flow when JavaScript is disabled, and the CSS gate that hides
+  inactive sections only activates once the script adds a `js-views` class to
+  `<html>` at runtime — never server-rendered into the page.
+- **Tables stay real `<table>` markup at every width.** Below 700px, each
+  `<thead>` is visually hidden (not `display: none`, so it stays in the
+  accessibility tree) and each row becomes a bordered card; every `<td>`/row
+  `<th>` carries a `data-label` attribute that CSS surfaces via
+  `content: attr(data-label)` as the visible label in that stacked view.
+- **Dark-first tokens**, overridden under `prefers-color-scheme: light`;
+  `prefers-reduced-motion: reduce` collapses all transition/animation
+  durations to effectively zero. No hosted font, external stylesheet, script,
+  image, or network call was added — verified by the existing
+  `test_no_external_asset_references` test, unchanged.
+- **No `model.py`/`provenance.py`/`server.py`/`cli.py` change** was needed —
+  the existing view-model already exposed everything the five-area layout
+  needed.
+
 ---
 
 ## 10. Governance Decision Explorer — approved first drill-down slice (`OPS-0013`)
