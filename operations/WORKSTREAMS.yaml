@@ -3824,7 +3824,7 @@ workstreams:
       merge and its own full review/acceptance lifecycle (OPS-0012 section
       11). No implementation PR exists yet for Phase 2.
     active_branch: claude/dashboard-2-governance-auth-5a8n9h
-    active_pr: null
+    active_pr: 211
     last_verified_main_sha: f86fd98f38067ad53ab52c982356058ffefbbb38
     last_verified_date: "2026-08-01"
     authorized_by: >
