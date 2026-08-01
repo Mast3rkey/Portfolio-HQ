@@ -3808,10 +3808,10 @@ workstreams:
           research/margin_target_study/data/untouched_sealed/ exclusion.
           This filing is separate from, and does not touch, PR #212
           (Dashboard 2.0 visual-redesign implementation) or any dashboard
-          production code — confirmed untouched at filing time. Not yet
-          independently reviewed and not yet principal-accepted.
-          Implementation has not started.
-        pr: null
+          production code — confirmed untouched at filing time. Filed as
+          PR #213. Not yet independently reviewed and not yet
+          principal-accepted. Implementation has not started.
+        pr: 213
         status: drafted
         date: "2026-08-01"
     evidence_refs:
