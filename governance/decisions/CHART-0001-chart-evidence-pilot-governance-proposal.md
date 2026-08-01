@@ -1,7 +1,7 @@
 ---
 decision_id: CHART-0001
 date: 2026-08-01
-status: Proposed
+status: Accepted
 category: chart_evidence_governance
 related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0011, PI-0001, PI-0011, LADDER-0001, PHQ-2026-06]
 supporting_artifact: null
@@ -591,13 +591,17 @@ state as originally filed and merged via PR #218. The note above describes what 
 mean; it does not, by itself, make acceptance effective — that requires the distinct, later steps
 below, mirroring `PI-0034`'s actual (not merely labeled) commit sequence.
 
-**Corrected effectiveness sequence, restated precisely:** (1) this correction commit, reverting
-`status` to `Proposed` and recording this finding; (2) a separate, distinct PR issue comment on
-PR #219, titled "Principal acceptance retained for CHART-0001 lifecycle," quoting the principal's
-authorization verbatim and naming this PR's exact head — never inferred from this note's prose,
-from authorship, from timing, or from merge metadata; (3) only after that comment exists, a further,
-separate, later commit that sets `status: Accepted` in this file and in `governance/decisions.yaml`,
-referencing review `4835983890`, this correction commit's SHA, and the retained comment's ID; (4)
-independent exact-head re-review of the resulting delta; (5) explicit principal mark-ready and merge.
-No step in this sequence is skipped or assumed. Until step (3) actually occurs, `status: Proposed`
-above is this decision's accurate, controlling status.
+**Corrected effectiveness sequence, restated precisely:** (1) a correction commit,
+`0db5bc80cd75ce08bca3b160c2e8a747e07a9bfc`, reverting `status` to `Proposed` and recording this
+finding; (2) a separate, distinct PR issue comment on PR #219
+(`issuecomment-5153866676`, "Principal acceptance retained for CHART-0001 lifecycle," posted
+2026-08-01), quoting the principal's authorization verbatim and naming this PR's then-exact head
+`0db5bc80cd75ce08bca3b160c2e8a747e07a9bfc` — never inferred from this note's prose, from authorship,
+from timing, or from merge metadata; (3) only after that comment existed, this further, separate,
+later commit, setting `status: Accepted` in this file and in `governance/decisions.yaml`,
+referencing review `4835983890`, correction commit `0db5bc80cd75ce08bca3b160c2e8a747e07a9bfc`, and
+retained comment `issuecomment-5153866676`; (4) independent exact-head re-review of the resulting
+delta, still required, not yet performed as of this commit; (5) explicit principal mark-ready and
+merge, still required, not yet performed as of this commit. No step in this sequence was skipped or
+assumed. **`status: Accepted` above becomes effective, per §14 and this note, only when steps (4)
+and (5) are also complete — this commit alone does not mark PR #219 ready or merge it.**
