@@ -414,7 +414,7 @@ decisions:
     file: governance/decisions/PHQ-2026-06-cash-synchronization-100-deposit.md
   - decision_id: CHART-0001
     date: 2026-08-01
-    status: Accepted
+    status: Proposed
     category: chart_evidence_governance
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0011, PI-0001, PI-0011, LADDER-0001, PHQ-2026-06]
     supporting_artifact: null

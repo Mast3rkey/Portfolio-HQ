@@ -1,7 +1,7 @@
 ---
 decision_id: CHART-0001
 date: 2026-08-01
-status: Accepted
+status: Proposed
 category: chart_evidence_governance
 related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0011, PI-0001, PI-0011, LADDER-0001, PHQ-2026-06]
 supporting_artifact: null
@@ -564,7 +564,40 @@ default named in §8 remains a name only, carried over unedited from the origina
 sits behind it in this repository.
 
 **Effectiveness of this note.** Identical discipline to the original filing's own §14: this note,
-the frontmatter `status: Accepted` change above, and every downstream file this session touches take
+the frontmatter `status` change above, and every downstream file this session touches take
 effect only when this recording pull request is itself independently reviewed under `OPS-0007` §1,
 any required bounded correction is made and re-reviewed, and it is merged to `main`. This note does
 not mark its own PR ready and does not merge it.
+
+---
+
+## Bounded correction — premature status transition reverted (2026-08-01, same PR)
+
+An independent, exact-head review of this PR (PR #219, review ID `4835983890`, reviewed head
+`c7bdc2bbd7ec0fb0671a21955f532fb3bf11e656`) returned **CHANGES REQUIRED**, finding (MATERIAL) that
+the note above set frontmatter `status: Accepted` in its own first commit — before any independent
+review had occurred and without a separately retained, PR-specific `Principal acceptance:` comment
+distinct from both the review verdict and the merge action — contradicting §14's own three-gate
+standard (independent review, explicit principal acceptance, merge) restated by this very note's
+last paragraph, and inconsistent with `operations/WORKSTREAMS.yaml`'s `WS-0011` entry in the same
+diff, which correctly treated acceptance as not yet effective.
+
+**This correction does not edit or retract the note above.** The note's quoted principal
+authorization, its description of what §§1-13 mean once accepted, and its description of what §8
+would authorize once properly sequenced are accurate and are left exactly as filed — the review
+found the prose "otherwise sound." What is corrected: frontmatter `status` (in this file and in
+`governance/decisions.yaml`) is reverted from `Accepted` back to `Proposed`, matching this decision's
+state as originally filed and merged via PR #218. The note above describes what acceptance *would*
+mean; it does not, by itself, make acceptance effective — that requires the distinct, later steps
+below, mirroring `PI-0034`'s actual (not merely labeled) commit sequence.
+
+**Corrected effectiveness sequence, restated precisely:** (1) this correction commit, reverting
+`status` to `Proposed` and recording this finding; (2) a separate, distinct PR issue comment on
+PR #219, titled "Principal acceptance retained for CHART-0001 lifecycle," quoting the principal's
+authorization verbatim and naming this PR's exact head — never inferred from this note's prose,
+from authorship, from timing, or from merge metadata; (3) only after that comment exists, a further,
+separate, later commit that sets `status: Accepted` in this file and in `governance/decisions.yaml`,
+referencing review `4835983890`, this correction commit's SHA, and the retained comment's ID; (4)
+independent exact-head re-review of the resulting delta; (5) explicit principal mark-ready and merge.
+No step in this sequence is skipped or assumed. Until step (3) actually occurs, `status: Proposed`
+above is this decision's accurate, controlling status.
