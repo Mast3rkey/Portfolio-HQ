@@ -389,11 +389,113 @@ def test_structural_html_assertions(tmp_repo: Path):
     assert html.startswith("<!DOCTYPE html>")
     assert html.count("<html") == 1 and html.count("</html>") == 1
     assert '<html lang="en">' in html
-    for sid in ("overview", "portfolio", "targets", "allocation",
-                "concentration", "gates", "research", "governance"):
+    # Dashboard 2.0: five-area information architecture (OPS-0012 section 3).
+    for sid in ("overview", "portfolio", "intelligence", "governance", "system"):
         assert f'id="{sid}"' in html
+        assert f'<section id="{sid}" data-view' in html
     assert "skip-link" in html  # accessibility skip link
     assert html.count("<main") == 1
+
+
+# ── Dashboard 2.0: information architecture, navigation, accessibility ──────
+
+def test_five_navigation_areas_exist(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    for sid in ("overview", "portfolio", "intelligence", "governance", "system"):
+        assert f'data-target="{sid}"' in html
+    assert html.count('data-target="') == 5
+
+
+def test_active_navigation_semantics(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    nav_start = html.index('<nav class="primary-nav"')
+    nav_end = html.index("</nav>")
+    nav_html = html[nav_start:nav_end]
+    # Exactly one nav link is aria-current="page" at render time (Overview,
+    # the first/default view); JS updates this at runtime on click. (The CSS
+    # `a[aria-current="page"]` selector legitimately contains the same
+    # substring, so this is scoped to the <nav> markup, not the whole page.)
+    assert nav_html.count('aria-current="page"') == 1
+    idx = nav_html.index('aria-current="page"')
+    assert 'data-target="overview"' in nav_html[max(0, idx - 200):idx + 40]
+
+
+def test_semantic_landmarks_present(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert 'role="banner"' in html
+    assert "<nav " in html
+    assert '<main class="content" id="main">' in html
+    assert "<footer" in html
+    assert html.count("<h1") == 1
+
+
+def test_heading_hierarchy_no_skipped_levels(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    # One h1; each of the five sections has exactly one h2; h3/h4 only appear
+    # nested under a section (never before the first h2 or h1).
+    assert html.count("<h1") == 1
+    assert html.count("<h2 ") == 5
+    first_h1 = html.index("<h1")
+    first_h2 = html.index("<h2 ")
+    first_h3 = html.index("<h3")
+    assert first_h1 < first_h2 < first_h3
+
+
+def test_responsive_viewport_meta_present(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert '<meta name="viewport" content="width=device-width, initial-scale=1">' in html
+
+
+def test_reduced_motion_css_present(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert "prefers-reduced-motion: reduce" in html
+
+
+def test_visible_focus_styles_present(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert "focus-visible" in html
+    assert "outline: 3px solid var(--accent)" in html or "outline: 2px solid var(--accent)" in html
+
+
+def test_narrow_viewport_css_avoids_page_horizontal_scroll(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert "overflow-x: hidden" in html  # html, body
+    assert "max-width: 700px" in html  # responsive table stacking breakpoint
+    assert "max-width: 900px" in html  # sidebar -> top tab strip breakpoint
+
+
+def test_desktop_and_mobile_nav_structures_present(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    # Desktop: sticky sidebar. Mobile: same <nav>, reflowed to a horizontal
+    # tab strip under the 900px breakpoint — one nav, two CSS presentations.
+    assert 'class="primary-nav" id="primary-nav"' in html
+    assert ".primary-nav ul {" in html  # desktop column layout rule
+    assert "flex-direction: row;" in html  # mobile: reflows to a row
+
+
+def test_js_enhanced_nav_has_static_fallback(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    # The rendered <html ...> opening tag never ships with the JS-added class
+    # baked in — every section is plain, visible document flow unless the
+    # script runs and adds `js-views` itself. The CSS only hides a section
+    # when that class is present on <html> (progressive enhancement, not a
+    # default-hidden state).
+    assert html.startswith('<!DOCTYPE html>\n<html lang="en">')
+    assert 'class="js-views"' not in html  # never server-rendered; JS-only
+    assert html.count('<section id=') == 5
+    assert "html.js-views main.content section" in html  # CSS gate, JS-only
+
+
+def test_generated_html_states_non_authoritative(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert "non-authoritative" in html.lower()
+    assert "not a source of truth" in html.lower() or "never a source of truth" in html.lower()
+
+
+def test_mobile_table_stacking_uses_data_label(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert 'data-label="Ticker"' in html
+    assert "content: attr(data-label)" in html
 
 
 # ── measured AI/platform figure: point-in-time qualification ─────────────────
@@ -520,17 +622,26 @@ def test_server_binds_localhost_and_serves(tmp_repo: Path):
         except urllib.error.HTTPError as e:
             raised = e.code == 404
         assert raised
-        # Read-only: POST is rejected.
-        req = urllib.request.Request(f"http://127.0.0.1:{port}/", data=b"x", method="POST")
-        try:
-            urllib.request.urlopen(req, timeout=5)
-            post_blocked = False
-        except urllib.error.HTTPError as e:
-            post_blocked = e.code == 405
-        assert post_blocked
+        # Read-only: every mutating method is rejected, not just POST.
+        for method in ("POST", "PUT", "PATCH", "DELETE"):
+            req = urllib.request.Request(
+                f"http://127.0.0.1:{port}/", data=b"x", method=method)
+            try:
+                urllib.request.urlopen(req, timeout=5)
+                blocked = False
+            except urllib.error.HTTPError as e:
+                blocked = e.code == 405
+            assert blocked, f"{method} was not rejected with 405"
     finally:
         httpd.shutdown()
         httpd.server_close()
+
+
+def test_overview_shows_notice_counts_and_provenance_stays_visible(tmp_repo: Path):
+    html = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    assert "blocker(s)" in html and "warning(s)" in html
+    assert "Authoritative inputs" in html
+    assert "sha256:" in html
 
 
 # ── CLI smoke tests ──────────────────────────────────────────────────────────
