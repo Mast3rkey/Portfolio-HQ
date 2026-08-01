@@ -4518,3 +4518,90 @@ workstreams:
     authorized_by: null
     supersedes: null
     superseded_by: null
+
+  - id: WS-0011
+    title: Chart-evidence pilot governance (CHART-0001)
+    objective: >
+      Track CHART-0001's proposed, narrowly bounded Lane G governance
+      proposal for one advisory chart-evidence record type, its privacy
+      and provenance requirements, and one future one-asset/one-screenshot
+      pilot (default proposed asset: NVDA, daily timeframe). This
+      workstream records that the proposal is filed and drafted, not
+      accepted; no chart evidence has been committed; no pilot
+      implementation has begun; independent review and explicit principal
+      acceptance of CHART-0001's own content — a distinct, later step from
+      the principal's authorization to prepare this proposal — are
+      required before this authorization is effective, and even then a
+      further, separate implementation PR is required before any pilot
+      record exists.
+    governing_authority:
+      - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
+      - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md (review standard)
+      - governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md (Lane G)
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
+    status: proposed
+    priority: secondary
+    dependencies: []
+    authorized_scope: >
+      None yet. CHART-0001 has not itself been accepted by the principal
+      — only its preparation was authorized. Even upon a future
+      acceptance and merge, exactly CHART-0001 §8's bounded
+      one-asset/one-screenshot pilot grant, itself gated on its own
+      further, separate implementation PR and full independent-review/
+      principal-acceptance cycle.
+    prohibited_scope: >
+      Any chart screenshot, chart analysis, or chart-derived fact
+      committed to the repository under this workstream before CHART-0001
+      is accepted; any chart_evidence directory, file, schema, or
+      validator; any Company/Theme Intelligence record edit or schema
+      extension; any dashboard integration; any scoring, ranking, or
+      trading-signal generation; any tier/target/holdings/margin/
+      allocator/brokerage change; any use as LADDER-0001 or any other
+      research/backtest input; any bulk or recurring ingestion; any
+      second pilot asset or record; any implementation PR opened before
+      CHART-0001 itself merges.
+    milestones:
+      - gate: governance-pr-drafted
+        description: >
+          CHART-0001 filed (governance decision file), governance/
+          decisions.yaml and operations/WORKSTREAMS.yaml updated, one
+          CLAUDE.md Decisions Log pointer added, this register entry
+          added. holdings.yaml, targets.yaml, gates.yaml, allocate.py,
+          margin_state.py, levels.py, docs/PORTFOLIO_INTELLIGENCE_SPEC.md,
+          and every existing Company/Theme Intelligence record confirmed
+          byte-identical to origin/main at filing time (this filing does
+          not touch any of them).
+        pr: null
+        status: drafted
+        date: "2026-08-01"
+    evidence_refs:
+      - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
+    next_action: >
+      Independent, exact-head review of CHART-0001's governance PR under
+      OPS-0007 §1's capability-based standard (OPS-0009 Lane G — full
+      weight, no reduction), followed by any required bounded correction
+      and exact-head re-review, and then explicit principal acceptance of
+      CHART-0001's own content (distinct from, and later than, the
+      principal's authorization to prepare this proposal) before the PR
+      may be marked ready and merged. No chart evidence may be committed
+      and no pilot implementation PR may open before that merge.
+    completion_criteria: >
+      Not met. Requires, at minimum: CHART-0001 independently reviewed,
+      any required correction re-reviewed, explicitly accepted by the
+      principal, and merged; and, only then, a later, separate pilot
+      implementation PR (§8) executing exactly the bounded
+      one-asset/one-screenshot grant, itself independently reviewed and
+      principal-accepted before merge.
+    blocker: >
+      CHART-0001's governance PR has not yet been independently reviewed
+      or principal-accepted — and, distinctly, its content itself has not
+      yet been accepted by the principal (only its preparation was
+      authorized). No pilot implementation PR may open until CHART-0001
+      merges.
+    active_branch: claude/lane-g-chart-0001-proposal-qbg54r
+    active_pr: null
+    last_verified_main_sha: 44c74473e8affed3e8aa6b1a2e5a684d65a2c1e9
+    last_verified_date: "2026-08-01"
+    authorized_by: null
+    supersedes: null
+    superseded_by: null
