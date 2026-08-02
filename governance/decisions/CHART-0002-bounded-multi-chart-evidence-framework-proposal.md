@@ -765,3 +765,649 @@ This decision — including its own acceptance, not only its merge — requires 
 principal step this filing does not take. This decision becomes effective, to the bounded extent stated
 above, only when its implementing pull request is independently reviewed, explicitly accepted by the
 principal, and merged to `main`.
+
+
+---
+
+## Scale-and-throughput amendment (2026-08-02, same governance layer, new PR)
+
+_This is an amendment to the still-`Proposed` filing above, prepared under its own new, narrower
+principal authorization, on its own branch and PR. CHART-0002 never reached `status: Accepted` —
+PR #222 merged the original proposal text to `main` at `status: Proposed`; a subsequent
+acceptance-recording PR (#223) was closed **unmerged** before any independent review, readiness
+marking, or principal acceptance occurred (see §Q below). `governance/decisions/README.md`'s
+never-edit-after-`Accepted` convention therefore does not bar direct revision of this file's
+operative sections — nothing here has ever been `Accepted` — but, following this repository's own
+practice of preserving prior reasoning rather than silently rewriting it (the same discipline
+CHART-0001's own dated notes applied even though that document's earlier sections had already been
+merged), the original Context/Decision/§§1-31/Rationale/Alternatives/Consequences text above is
+left completely intact as the historical record of the original five-image proposal and its own
+web-upload-influenced capacity assumption. This section supersedes specific operative provisions of
+that text, precisely enumerated in §K below — it does not delete, silently contradict, or leave
+ambiguous which version of any given provision now controls._
+
+### A. Controlling new principal authorization (verbatim, this session)
+
+"I pause the previously authorized CHART-0002 acceptance-recording PR before it begins. I clarify
+that the five-image first-batch limit in the merged Proposed CHART-0002 framework was influenced by
+the earlier web-interface upload constraint and should not be treated as my desired operational
+ceiling now that Claude Code can directly inspect the governed chart library through Terminal. I
+authorize one narrowly bounded Lane G CHART-0002 scale-and-throughput amendment proposal while
+CHART-0002 remains Proposed. The amendment must determine the largest safe coherent processing unit
+supported by the actual Terminal-based workflow, with the goal of materially reducing the number of
+batches required for the 220-chart governed library without compromising privacy, factual accuracy,
+fact/observation/inference/uncertainty separation, provenance, source and retained-file hashes,
+failure isolation, independent exact-head review, repository health, or rollback. The proposal must
+evaluate a two-layer design in which all 220 charts may undergo one deterministic mechanical
+preflight and inventory pass, while interpretive Chart Evidence Records are produced in larger but
+bounded human/model-reviewed batches. It must evaluate at least 20-chart, 25-chart, and full-55-chart
+single-timeframe batch options, and may recommend another ceiling if supported by evidence. It must
+also evaluate whether image pixels should remain in the primary Portfolio-HQ repository, use Git
+LFS, use a separately governed evidence repository or artifact store, or follow another durable
+hash-verifiable storage model. This authorization permits read-only capacity testing, governance
+design, and one amendment draft PR only. It does not authorize chart interpretation, chart-derived
+conclusions, image retention, Stage 1 or Stage 2 records, processing a live batch, automatic batch
+continuation, dashboard or Intelligence coupling, allocation changes, trading signals, or execution.
+The amendment PR must remain Proposed and draft, receive independent exact-head review, and require
+my explicit acceptance before any acceptance-recording or implementation PR proceeds."
+
+This authorization is narrow in the same way both prior authorizations in this lineage were: it
+authorizes *evaluating and drafting* a scale/throughput/storage amendment, not *accepting* it, not
+*implementing* it, and not chart interpretation of any kind. Nothing in this amendment constitutes
+principal acceptance of its own recommendations — `status: Proposed` above is unchanged by this
+filing, and this amendment's own effectiveness requires its own later, separate independent review
+and explicit principal acceptance, identical in kind to §29's original gating, restated for this
+amendment specifically in §Q below.
+
+### B. Preflight reconciliation (this session, independently verified, not assumed)
+
+Repository confirmed `Mast3rkey/Portfolio-HQ`; branch `claude/chart-0002-scale-throughput-amendment`;
+working tree clean at session start; `origin` fetched and pruned; local `HEAD` and `origin/main`
+both confirmed identical at `6b503b835cb9db71b958e700113614a1c49bc8c8` (PR #222's merge commit),
+zero divergence in either direction. **Zero open pull requests** (`gh pr list --state open` returns
+`[]`). A full remote branch enumeration found no branch naming or concerning chart scale, throughput,
+storage, acceptance-recording, or implementation for this decision. **PR #222** independently
+reconfirmed: `state: MERGED`, `headRefOid: 1594fd6d6f19b54631336b9f5181781da0edd915`,
+`mergeCommit: 6b503b835cb9db71b958e700113614a1c49bc8c8`; both retained reviews (`4837275237`,
+`state: COMMENTED`, anchored `279c0783e43ca17597d89cb8de70503386927521`; `4837356725`,
+`state: COMMENTED`, anchored `1594fd6d6f19b54631336b9f5181781da0edd915`) and the retained principal
+acceptance comment (`issuecomment-5155704682`) independently refetched and confirmed present,
+unedited. **PR #223** independently reconfirmed: `state: CLOSED`, `merged: false`,
+`isDraft: true` at closure, `headRefOid: 11000da46081788c74fa3fee08ed32942721bb29`; its remote
+branch confirmed deleted (`git ls-remote --heads origin` returns no match); the controlling
+supersession comment (`issuecomment-5158074244`) independently refetched and confirmed present,
+stating the PR was "superseded and paused before any independent review, readiness marking,
+principal acceptance, or merge." `governance/decisions/CHART-0002-...md` frontmatter and
+`governance/decisions.yaml`'s `CHART-0002` entry both independently confirmed `status: Proposed`.
+`operations/WORKSTREAMS.yaml`'s `WS-0012` entry independently confirmed `status: proposed`,
+`authorized_by: null`. No image, evidence package, Stage 1 record, or Stage 2 record exists anywhere
+under `governance/evidence/CHART-0002/` (directory absent). No other acceptance-recording or
+implementation PR is open. All eighteen Phase-1 preflight facts the authorizing task specified are
+therefore confirmed exactly as stated, with no material difference found — this amendment proceeds.
+
+### C. Methodology: read-only capacity testing performed this session
+
+All testing below was performed against `~/Projects/Chart-Automation` (confirmed, independently
+reconfirmed this session, **not a git repository**) in strictly read-only mode — no file under that
+path or under `~/Downloads` was created, renamed, moved, deleted, cropped, redacted, converted, or
+re-encoded. A single temporary Python script and its JSON output lived in a scratch directory outside
+both repositories for the duration of this session and were removed before this filing (§ Phase 4/17
+below); no copied image byte, extracted chart fact, or chart interpretation was written to that
+scratch directory or to this repository. Where sampled images were viewed to evaluate the privacy-
+review *workflow*, no price, date, indicator value, trend, or other chart-derived fact was recorded —
+only structural privacy-relevant categories (watermark/username presence; presence/absence of
+account, balance, or brokerage data; legibility) were logged, matching this authorization's explicit
+prohibition on chart interpretation or chart-derived conclusions.
+
+### D. External governed-library inventory (reconfirmed live, this session)
+
+`~/Projects/Chart-Automation/library/governed/2026-08-01/` independently reconfirmed: **220 PNG
+files**, **55 ticker subdirectories**, each holding **exactly 4 files** (`1D`/`1W`/`4H`/`1H`) — a
+complete, gap-free 55×4 matrix (`find ... | wc -l` → 220; per-directory histogram → every directory
+has exactly 4, zero directories with any other count). `output/governed_copy_manifest_2026-08-01.json`
+independently reconfirmed: `run_status: "COMPLETED — 220 files copied, all post-copy checks passed"`,
+`entry_count: 220`, `canonical_tickers` count 55, `excluded_duplicates` 6, `excluded_legacy_files` 14,
+`excluded_manual_review_items` 10. `output/manual_review_queue.md`'s ten items independently
+reconfirmed: none flags a content-level privacy or quality defect against any of the 220 governed
+images; one (already-excluded, non-governed) item independently confirms the broader source material
+this library was curated from **does** contain a brokerage positions/balances screenshot, correctly
+excluded before it ever reached the governed 220 — direct evidence that the curation boundary between
+"chart" and "brokerage-sensitive" material is being enforced upstream of this repository, though it
+does not substitute for this repository's own required per-image privacy review of anything actually
+retained. **Total governed-library bytes, independently recomputed this session**: **411,781,509
+bytes (392.71 MB, `du -sh` independently confirms 393M)** across all 220 images — refining, not
+contradicting, the original filing's rounded 393 MB figure. **Size distribution** (n=220, bytes):
+min 1,312,883; p25 1,754,413; median 1,838,558; mean 1,871,734; p75 1,979,560; p90 2,234,904; max
+2,436,875 — a narrow, well-behaved range (max is 1.86x min), no outliers. **By timeframe**: `1D`
+total 93,552,664 bytes (mean 1,700,957/image); `1W` total 98,415,477 (mean 1,789,372); `4H` total
+120,963,239 (mean 2,199,332, the largest — a wider intraday candle count per capture); `1H` total
+98,850,129 (mean 1,797,275). **Image properties**: all 220 confirmed `format: PNG`; exactly three
+distinct pixel-dimension pairs observed across the set — `(2750, 2252)`, `(3414, 2252)`, `(3624,
+2336)` — consistent with ordinary window/display-size variance across capture sessions, not a defect.
+
+### E. All-220 mechanical preflight: methodology and result
+
+A deterministic, read-only Python script walked every file under `library/governed/2026-08-01/`
+and, per file, without opening any image for visual/investment interpretation: resolved ticker and
+timeframe from the directory/filename structure against the regex
+`^([A-Z0-9\.\-]+)__(\d{4}-\d{2}-\d{2})__(1D|1W|4H|1H)\.png$`; confirmed the file is a regular file,
+not a symlink; recorded byte size; confirmed the PNG magic-byte header; decoded the image via Pillow
+(`Image.verify()` plus a second full open for dimensions/format, catching any truncation or
+corruption); computed SHA-256; cross-referenced that hash and filename against the governed-copy
+manifest's own `destination_filename`/`destination_sha256`/`source_sha256` fields; and flagged
+duplicate hashes, missing manifest entries, and extra on-disk files not in the manifest.
+
+**Result, this session, live**: **220/220 passed, 0 failed, 0 ambiguous flags, 0 duplicate-hash
+groups, 0 files missing from disk vs. the manifest, 0 extra files on disk vs. the manifest, 220/220
+manifest entries reconciled 1:1**. Elapsed wall-clock time: **2.18 seconds**; throughput **101.04
+files/second**. All 220 filenames matched the naming convention exactly (0 mismatches); all 220
+carried a valid PNG magic header; all 220 decoded cleanly via Pillow with no exception; all 220
+`source_sha256`/`destination_sha256` pairs in the manifest were internally reconciled (not merely the
+one `AAPL`/`1W` sample the original filing spot-checked). A follow-up filesystem-timestamp check
+(`find ... -newer <script>`) confirmed **zero files were modified** after the preflight script was
+written — the pass was genuinely read-only, not merely intended to be.
+
+**Conclusion: one deterministic all-220 mechanical preflight is technically coherent, cheap (low
+single-digit seconds), and safe to run repeatedly (idempotent, no repository-side effect of any
+kind — it reads an external, non-version-controlled library and produces no committed artifact).**
+This directly answers this amendment's requirement 1 (Objective) and confirms Layer A of the §G
+architecture below. **Failure-isolation design a future implementation would require**, precisely
+because this pass is so cheap it is expected to be re-run on demand rather than once: per-file
+results are independent (one file's decode failure or hash mismatch does not block evaluation of the
+other 219); the pass produces a structured summary plus a full per-file result list, so a future
+implementation can diff two runs (e.g., before/after a library refresh) to detect exactly which files
+changed, appeared, or disappeared; a retry of a single ambiguous file never needs to re-run the whole
+220-file pass. No mechanical-preflight result is retained anywhere in this repository by this filing
+— it is capacity evidence only, not a committed inventory artifact, matching this amendment's own
+prohibition on creating any Stage 1/Stage 2 content or committed chart-derived data.
+
+### F. Privacy-process capacity dry run: methodology and result
+
+**Sample-selection rule (deterministic, neutral, disclosed)**: of the 55 alphabetically-sorted
+ticker directories, the **first, middle, and last** (`AAPL`, `JNJ`, `XOM` — indices 0, 27, 54 of 55)
+were selected, each contributing all 4 governed timeframes, for **12 sampled images total**. This
+rule is purely positional — it references no conviction rating, tier weight, portfolio priority, or
+chart appearance — and by construction spans the alphabet (early/mid/late), all four timeframes
+evenly (3 images per timeframe), and a representative slice of the file-size distribution (sampled
+bytes ranged 1,339,201–2,144,342, covering roughly the 5th–85th percentile of the full 220-image
+range without deliberately targeting either extreme). None of the three sampled tickers appears in
+the manual-review queue's content-flagged items (only `MU`'s already-superseded original capture and
+`CEG`'s administrative folder-naming note appear there, and CEG was not in this sample) — this sample
+therefore specifically tests the **ordinary, unflagged-file** case the authorization requires. **12
+was deliberately chosen smaller than the 20-image default**: each governed image is a real,
+uncompressed 1.3–2.4 MB high-resolution capture, and this is a capacity *estimate* to inform a batch-
+size decision, not a completeness census — the future actual implementation batch will still review
+every one of its own images individually regardless of what this dry run measures, per §G/§I below.
+
+**Result**: all 12 images retrieved and rendered successfully (0 decode failures, 0 unreadable
+files). Structural privacy-relevant observation, aggregated and disclosed at the category level
+only, per this authorization's explicit prohibition on recording chart-derived facts: **12 of 12
+sampled images show a small, consistently-positioned platform watermark/username string in the
+image's top-left corner** (the same category of element CHART-0001 §5 already named and bounded with
+its one narrow, principal-approved exception) **and 0 of 12 show any account balance, position list,
+order history, buying-power/margin figure, or other brokerage-account identifier** — each of the 12
+is, structurally, an ordinary price-chart capture with no brokerage-sensitive content requiring
+escalation. **0 of 12 required escalation; 0 of 12 were ambiguous or illegible; 0 of 12 became
+privacy-approved by this dry run** — this section is capacity-workflow evidence only; per CHART-0001
+§5 and CHART-0002 §6, unchanged, every image actually proposed for retention in a future batch still
+requires its own independent, per-image privacy review recorded in that image's own package
+manifest, with no batch-wide shortcut. The 12-image retrieval-and-render pass completed within
+roughly 22 seconds of aggregate tool round-trip time for the full parallel batch; because rendering
+was parallelized, this figure is not a reliable per-image serial-review time and is reported only as
+an aggregate retrieval-cost data point, not a throughput estimate for the analytical (fact/
+observation/inference/uncertainty-separating) review step itself, which is a human/model judgment
+task this dry run does not attempt to time in isolation.
+
+**Whether privacy review can be safely sharded**: yes, structurally — each image's privacy
+determination is fully independent of every other image's (no cross-image state), so per-image
+review work can be distributed across parallel authoring/review shards (§I) without coordination
+overhead beyond the final completeness check. **What remains necessarily human/model-reviewed**: the
+actual privacy determination itself (is a watermark present; is anything account-identifying visible;
+is the image otherwise safe to retain) is exactly the kind of visual judgment this authorization
+reserves for human/model review, never mechanical automation — §E's mechanical preflight (hash,
+decode, filename, dimensions) is a categorically different, safely automatable layer, and this
+session's results do not blur that boundary. **Why bulk mechanical validation cannot substitute for
+per-image privacy review**: §E's 220/220 mechanical pass proves every file is a structurally valid,
+uncorrupted, correctly-named, hash-reconciled PNG — it says nothing about what is visually depicted in
+any of them. A corrupted-file check and a "does this image contain a visible account balance" check
+are unrelated questions; passing one implies nothing about the other, which is exactly why this
+amendment defines two structurally separate layers (§G) rather than one.
+
+### G. Two-layer architecture (Layer A / Layer B / Layer C), as authorized and evaluated
+
+**Layer A — mechanical preflight.** Deterministic, read-only, safely automatable per §F's own
+boundary discussion and CHART-0002 §12's existing "safe factual automation" boundary, unmodified.
+**Recommended: authorized to run against all 220 governed images**, per §E's clean result. Produces
+no committed artifact, no privacy approval, no interpretation, no Stage 1/Stage 2 content, and no
+automatic retention of anything — it is inventory/integrity evidence only, re-runnable on demand, and
+this amendment's own governance package (§L) does not itself commit any preflight output.
+
+**Layer B — interpretive Stage 1 batch(es).** Human/model-reviewed, privacy-reviewed per image,
+individually authored and reviewed. **Recommended maximum for a single implementation PR: 25 images,
+single timeframe** — reasoned in full in §H. This is a general architectural ceiling for *future*
+batches; the specific first batch recommended by this amendment (§H) uses exactly 19 images, the
+entire currently-eligible universe under CHART-0002 §13's own unmodified selection rule, which fits
+comfortably under the 25-image ceiling with headroom rather than requiring the ceiling to be reached.
+
+**Layer C — future Stage 2 (cross-timeframe synthesis).** Unchanged from the original filing:
+**remains entirely unauthorized by this amendment.** Nothing in this amendment evaluates,
+recommends, or moves toward Stage 2 — it only re-scopes Layer A/B throughput and storage. A future
+batch that includes more than one timeframe per ticker, or any Stage 2 record, requires its own
+further, separate, later governance decision, exactly as CHART-0002 §3/§14/§25/§28/§31 already
+require, unamended.
+
+### H. Batch-size comparison and recommendation
+
+**Comparison matrix** (Layer B, single-timeframe, Stage 1 only; "universe" rows use the 19-name
+currently-eligible set per CHART-0002 §13, unmodified; "future full-library" rows are a hypothetical
+upper bound if Company Intelligence coverage eventually reached all 55 governed-library tickers,
+provided for context only — not authorized or assumed by this amendment):
+
+| | 5 (original) | 20 | 25 (recommended) | 55 |
+|---|---|---|---|---|
+| Implementation PRs to cover current 19-name universe | 4 | 1 | 1 | 1 (oversized) |
+| Implementation PRs to cover a hypothetical future 55-name universe | 11 | 3 | 3 | 1 |
+| Retained binary files (current-universe batch) | 5×4=20 across 4 PRs | 19 in 1 PR | 19 in 1 PR | 19 in 1 PR (36 slots unused) |
+| Stage 1 records | 1 per image | 1 per image | 1 per image | 1 per image |
+| Package dirs / manifests / READMEs | 5/5/5 ×4 batches | 19/19/19 | 19/19/19 | 19/19/19 |
+| Est. retained bytes (unredacted, current universe) | ~8.5 MB ×4 batches | ~32.2 MB | ~32.2 MB (≤40.5 MB at full 25-ceiling) | ~32.2 MB |
+| Diff file count per PR | 20 | 76 | 76 | 76 |
+| Privacy-review units per PR | 5 | 19 | 19 | 19 |
+| Independent-review diffs to inspect | 4 bounded diffs | 1 diff, ~76 files | 1 diff, ~76 files, headroom to 100 | 1 diff, ~76 files |
+| Correction blast radius on 1 bad image | 1/5 of one PR | 1/19 of one PR | 1/19–25 of one PR | 1/19 of one PR |
+| Rollback granularity | per-package (unchanged across all options) | per-package | per-package | per-package |
+| Governance lifecycles (Lane G filings) to reach current universe | 4 | 1 | 1 | 1 |
+| Silent-omission/duplication risk | low (small batches) | needs shard discipline (§I) | needs shard discipline (§I) | needs shard discipline (§I), largest surface |
+| CI/package-shape test burden | smallest, ×4 | moderate, once | moderate, once | moderate, once, most headroom unused |
+
+**Why not 5 (status quo)**: quadruples the number of governance-and-implementation lifecycles needed
+to cover even the small, already-known 19-name eligible universe (4 batches instead of 1) — directly
+contrary to this amendment's own stated goal of materially reducing batch count, and the goal exists
+specifically because the constraint that justified 5 (a web-upload interface limit) no longer applies
+to this Terminal-based workflow, per §A.
+
+**Why not 20**: technically sufficient for the current 19-name universe (barely — one spare slot),
+but offers no headroom for near-term eligible-universe growth (e.g., the next WS-0005 Milestone-3
+batch adding one or two more names whose tickers already have chart-library coverage), which would
+immediately force a second batch at the same size this amendment was written to avoid. 25 costs
+nothing extra in review/storage terms that 20 does not already cost (§H matrix — both fit the current
+batch in one PR, one diff, one governance lifecycle) while providing that headroom.
+
+**Why 25 (recommended)**: the smallest ceiling above 20 that (a) fits the entire current 19-name
+eligible universe in one PR with real headroom, not by a single slot; (b) keeps a single
+implementation PR's diff to roughly 100 files and ~40 MB at the ceiling — proportionate to, not
+qualitatively different from, CHART-0001's own one-image precedent scaled up, and still small enough
+for one eligible independent reviewer to complete an `OPS-0007` §1 exact-head review of the whole PR
+in a single pass, or via the bounded shard model in §I; (c) keeps per-batch repository growth (§J) in
+the tens-of-MB range rather than the ~89 MB a 55-image ceiling would add even before any second batch;
+and (d) leaves meaningful margin before the batch size starts to resemble the "conflate two new
+architectural axes at once" failure mode the original filing's own §14 already reasoned about for the
+tickers-vs-timeframes case, applied here to tickers-per-PR instead.
+
+**Why not 55**: the current eligible universe is 19, not 55 — a 55-image ceiling would retain 36
+package slots' worth of unused headroom for a universe that does not exist under any currently
+accepted selection rule (CHART-0002 §13, unmodified by this amendment — see §Phase 9/§K below), and
+would, if the universe did eventually grow to 55, add ~89 MB in one PR (§J) — nearly 5x the recommended
+25-ceiling's footprint, in one governance/implementation lifecycle, with a correspondingly larger
+single-PR diff (220 files) for one independent reviewer's exact-head pass, worse failure isolation (a
+systemic defect surfaces after more work is exposed to it), and no evidence yet — from either this
+session's 12-image privacy dry run or CHART-0001's own single-image precedent — that the review
+process has actually been exercised at anywhere near that scale. 55 is not rejected as unsafe in
+principle; it is rejected as **unsupported by current evidence and unmatched to the current eligible
+universe**, and nothing here forecloses raising the ceiling again later if a future batch's own
+results justify it (§P).
+
+**Recommended maximum: 25 images, single timeframe, per Layer-B implementation PR** — this is a
+general architectural ceiling for future batches, not itself a batch authorization. See §Q for what
+remains unauthorized.
+
+### I. Review-shard and failure-isolation architecture
+
+For a Layer-B batch up to the 25-image ceiling, a future implementation PR — not opened, drafted, or
+begun by this amendment — is authorized, if this amendment is later separately accepted, to structure
+its own required review as follows:
+
+- **One immutable cohort manifest**, fixed before any authoring begins, listing every ticker in the
+  batch by name, frozen and never silently altered mid-implementation.
+- **Deterministic shard assignment**: the cohort is split into shards of exactly 5 tickers each
+  (matching the original filing's own proven per-batch unit — CHART-0002 §14's five-image batch —
+  reused here as an internal authoring/review chunk rather than a separate governance lifecycle), e.g.
+  a 19-ticker cohort yields 4 shards of 5/5/5/4.
+- **No duplicate ticker across shards; no missing ticker** — mechanically verified: the union of every
+  shard's ticker list must equal the cohort manifest exactly, with zero overlap and zero omission,
+  matching `test_chart_evidence_pilot.py`'s existing package-shape-test pattern extended to
+  cohort-level completeness.
+- **One package per image**, unchanged from CHART-0001/CHART-0002.
+- **Per-shard authoring-session and privacy-review provenance**, recorded per image (already required
+  by CHART-0001 §5/§6, unchanged), with a shard-level rollup for reviewer legibility only — the
+  per-image record remains authoritative.
+- **Per-shard content review**: an eligible independent reviewer (`OPS-0007` §1) may review one
+  shard's bounded diff explicitly, rather than only ever facing one undifferentiated 25-image diff —
+  this is an optional convenience for the reviewer, not a substitute for the final gate below.
+- **One final, exact-head integration review** covering the complete PR — every shard, every package,
+  completeness (cohort manifest count == retained package count, no extra, no missing), and any
+  unresolved shard-level findings — is mandatory before merge, satisfying `OPS-0007` §1.2's "review
+  the exact commit head that will be relied upon" requirement; a shard-level review is never by itself
+  sufficient to satisfy the merge gate.
+- **Correction ownership**: a MATERIAL finding in one shard triggers a bounded correction to that
+  shard's affected package(s) only (matching CHART-0002 §23's existing rollback convention), followed
+  by re-review of the corrected shard **and** a fresh final integration review at the PR's new exact
+  head — never a merge based on a stale final-review head.
+- **No partial silent acceptance**: unchanged from CHART-0002 §21 — a batch that cannot complete at
+  least a majority of its cohort must stop and return for principal amendment rather than merge a
+  materially shrunken batch silently; a batch that completes all but a small, individually-disclosed
+  minority (one or two images failing §6 privacy review, say) may proceed with those specific tickers
+  abstained per §22, disclosed by name and reason, never silently dropped.
+- **Proof of full, not sampled, review**: satisfied structurally, not by assertion — the mechanical
+  completeness test above (cohort-manifest count == retained-package count, exact ticker-set match)
+  proves every cohort member has exactly one package, and every package's own manifest carries its own
+  privacy-review and content-review attestation fields (already required by CHART-0001 §6/§7,
+  unchanged) — a reviewer or later auditor can mechanically confirm full coverage without relying on a
+  reviewer's unverified claim to have "covered everything."
+- **Final principal acceptance** names the exact whole-PR head, unchanged discipline from CHART-0001
+  §14/CHART-0002 §20, applied to the larger batch — never inferred from a shard-level approval alone.
+
+This design directly satisfies this amendment's own requirement that "every image and record can
+still receive attributable review" at the recommended 25-image ceiling, without requiring a return to
+5-image batches to preserve that property.
+
+### Phase 9 resolution — universe scope (addressed explicitly, not assumed)
+
+This amendment is authorized to evaluate throughput, batch size, and storage — **it is not authorized
+to, and does not, change CHART-0002 §13's selection-rule substance** (which names, expands, or
+restricts *which* tickers are eligible is a different kind of governance question than *how many at
+once* and *where the pixels live*). Re-run live this session (§ preflight above): the eligible set
+under §13's unmodified rule — canonical `targets.yaml` destination entry **and** existing Company
+Intelligence record **and** governed chart-library coverage **and** not actionable-gated — is
+independently reconfirmed **identical to the original filing's own result, 19 names, zero drift**:
+`AMZN, ASML, AVGO, CEG, COST, ETN, GEV, GOOGL, ISRG, KLAC, LLY, META, MSFT, NVDA, PANW, PWR, TMO, TSM,
+V`. The governed 55-ticker library therefore contains 36 tickers with no current interpretive
+eligibility under the unmodified rule — most lack a canonical destination entry or a Company
+Intelligence record (§18 of the original filing already enumerates the gap categories in full,
+unedited by this amendment). **This amendment does not authorize interpretive coverage of any of
+those 36**, and does not recommend broadening §13's criteria — that would be a substantive eligibility
+change, outside this amendment's own scope (§A), requiring its own separate future governance
+decision if ever proposed. Layer A's all-220 mechanical preflight is unaffected by this scoping — it
+is inventory/integrity evidence only, carries no eligibility judgment, and may run against the full
+governed library regardless of which tickers are interpretively eligible.
+
+### J. Storage architecture evaluation
+
+**Current repository size, measured live this session**: local `.git` common directory **19 MB**
+(`git count-objects -vH`: 2.18 MiB loose + 15.12 MiB packed across 3,351 objects); GitHub's own
+server-reported size **16,321 KB (≈15.9 MB)**. **Git LFS is not installed in this local execution
+environment** (`git-lfs not found`; `git lfs` is not a recognized git subcommand) — a directly
+observed platform fact, not an assumption. No `.gitattributes` file exists in this repository — no
+LFS tracking is configured anywhere, confirming this repository has never used LFS for anything,
+including CHART-0001's own retained image.
+
+**Projected repository growth, using live-measured, unredacted governed-library byte counts** (actual
+retained sizes may be smaller after any privacy redaction/recompression a future implementation
+applies, per CHART-0001 §5's disclosure-of-transformation requirement — these are conservative,
+upper-bound estimates):
+
+| Scope | Images | Projected bytes (unredacted) | Approx. repo growth vs. current ~19 MB |
+|---|---|---|---|
+| Current 19-name eligible universe, `1D` only | 19 | 33,729,566 (32.17 MB) | ~2.7x |
+| Recommended 25-image ceiling, `1D` only | 25 | ~40.55 MB | ~3.1x |
+| Hypothetical full 55-ticker library, `1D` only | 55 | ~89.22 MB | ~5.7x |
+| Full 220-image library, all 4 timeframes | 220 | 411,781,509 (392.71 MB) | ~21.7x |
+
+The last row is why this amendment does **not** recommend pixel-retention of the full 220-image
+library under any storage model, ever, as a single unit — it is presented only to make the Layer-A
+(mechanical-only, no retention) versus Layer-B (interpretive, bounded retention) distinction concrete
+in size terms, reinforcing why the two layers must stay architecturally separate.
+
+**Options evaluated**:
+
+- **A. Raw image pixels committed directly to Portfolio-HQ Git history.** This is this repository's
+  existing, already-used model — CHART-0001's own retained NVDA image is committed exactly this way,
+  no LFS, no external reference. Confirmed compatible with `gh`/`git` tooling actually available in
+  this environment; confirmed zero new tooling, zero new configuration, and zero new authorization
+  (beyond what CHART-0001 §4/§9 already established) required to continue it. Cost: the projected
+  growth above lands in the repository's own history permanently (PNG is already compressed, so git's
+  own delta/zlib compression on top yields little further reduction — most of the projected bytes
+  really do land in the repo). At the recommended 25-image ceiling (~40 MB), this triples the current
+  repository size in one PR; that is a real, disclosed cost, not a hidden one. **Recommended: primary
+  storage model**, unchanged from CHART-0001 §4/§9's own reasoning, now explicitly re-verified against
+  live size data rather than assumed.
+- **B. Git LFS within Portfolio-HQ.** Would reduce main-repository clone size by moving large binaries
+  to LFS storage, but: **the LFS client is not installed in this environment** (directly confirmed,
+  not inferred) — enabling it would require installing tooling and writing a new `.gitattributes` file,
+  neither of which this session is authorized to do (explicitly prohibited: "Do not... enable Git
+  LFS"); **GitHub LFS storage/bandwidth quota and billing behavior for this specific repository were
+  not confirmed this session** (no live authenticated LFS-quota API call was made, and none is
+  authorized) — a genuine, disclosed platform uncertainty, not a claimed fact; LFS also weakens
+  in-diff exact-head reviewability (a reviewer viewing a GitHub PR diff sees an LFS pointer file, not
+  the image inline, unless they separately pull LFS objects) which cuts against `OPS-0007` §1.3's
+  "sufficient repository access to inspect the complete diff" requirement without extra reviewer
+  tooling. **Not recommended as primary; not ruled out permanently** — flagged as the first
+  reconsideration candidate if cumulative chart-evidence footprint grows large enough that Option A's
+  repository-size cost becomes a genuine constraint (see stopping condition, §M).
+- **C. A separate governed evidence repository.** Would keep Portfolio-HQ's own history smaller, but
+  introduces cross-repository atomicity and governance complexity this repository's own doctrine
+  already leans against — the filesystem-as-index principle (`PI-0001`, reaffirmed for Theme
+  Intelligence by `PI-0006`, reused by CHART-0001 §4/§8) treats *this* repository as the authoritative,
+  auditable evidence index; splitting evidence into a second repository would mean a governance
+  decision's cited evidence lives outside the repository that governs it, undermining exact-head
+  reviewability (`OPS-0007` §1.2/§1.3) unless that second repository is itself brought under the same
+  review discipline — effectively duplicating this repository's own governance machinery. No such
+  repository exists, none is authorized by this filing (explicitly prohibited: "Do not... create
+  another repository"), and creating one is a materially larger structural decision than this
+  amendment's own scope. **Not recommended**, primary or fallback, absent a much stronger future case.
+- **D. GitHub release assets or another durable artifact store, with manifests/hashes retained in
+  Portfolio-HQ.** Reduces repository history growth similarly to LFS, and this repository already has
+  `gh` CLI access confirmed working in this session (used throughout for PR/review verification) —
+  but release-asset lifecycle and retention are not naturally tied to a specific commit or PR the way
+  a repo-tracked file is (an asset can be edited or removed independently of any commit), weakening the
+  hash-verifiable, exact-head-anchored evidentiary guarantee this repository's entire evidence-package
+  convention (`PHQ-2026-01` through `PHQ-2026-06`, CHART-0001) is built on, unless a future
+  implementation separately re-verifies asset hashes against the manifest at every access — added
+  complexity with no demonstrated benefit at the current, modest (tens-of-MB) batch scale. No release
+  or artifact-store action of any kind is taken or authorized by this filing (explicitly prohibited:
+  "Do not... upload release assets"). **Recommended: documented fallback only**, to be reconsidered,
+  with its own future platform-capability confirmation (`gh release` permissions, retention behavior,
+  quota), if repository-size growth crosses the stopping-condition threshold in §M and Option B (LFS)
+  is also found insufficient or unavailable at that time.
+- **E. Another durable, hash-verifiable model.** No alternative meeting this bar was identified this
+  session beyond A-D above; none is recommended.
+
+**Recommendation: primary storage model = Option A** (continue the existing CHART-0001 repository-
+native, LFS-free, hash-manifested evidence-package pattern, unchanged), **fallback = Option D**
+(GitHub release assets with in-repo manifests/hashes), reconsidered only if the stopping condition in
+§M is reached. Option B (LFS) is the next candidate after D if this repository ever adopts LFS for
+other reasons independent of this decision; it is not preferred over D today given the disclosed
+tooling and reviewability gaps above.
+
+### K. Supersession table — exactly what this amendment changes in the original filing
+
+Nothing above (Context through Consequences, §§1-31) is deleted or silently contradicted; the
+following operative provisions are **prospectively superseded for future operative purposes** by this
+amendment, effective only on this amendment's own separate future acceptance and merge (§Q) — the
+original text remains as historical record of what the original proposal said and why:
+
+| Original provision | Original operative content | Superseded by |
+|---|---|---|
+| §8 (storage size bound) | "at most five images, an estimated ~5-9 MB" | §J above: primary model unchanged (Option A), but the bound is now the 25-image ceiling (§H), ~40.5 MB projected |
+| §13 (selection rule) | Unchanged in substance | Reaffirmed unmodified — this amendment does not alter eligibility criteria (Phase-9 resolution above) |
+| §14 (first batch: exact tickers/scope) | Five tickers (`AMZN, ASML, AVGO, CEG, COST`), five images | §H/§Q: the first batch, if separately authorized later, is the full current 19-name eligible set, `1D` only, Stage 1 only — still zero Stage 2, still one timeframe |
+| §16 (tests) | Package-shape tests for a five-package batch | §I: extended to cohort-level completeness tests (union-of-shards == cohort manifest) for up to a 19-25-package batch |
+| §21 (failure isolation) | "does not by itself invalidate the other four" (of five) | §I: same principle, restated for a 19-25-ticker cohort with shard-level correction scoping |
+| §26/`WS-0012` register text | References a five-image batch and `governance-pr-drafted` milestone only | §L below: `WS-0012` gains one additional milestone recording this amendment; batch-size language updated to match §H |
+| §27 (governance package scope, this filing) | Five files including `governance/decisions.yaml` and a test-count bump | §L below: this amendment's own scope is three files — `decisions.yaml` and the test file are unaffected (reasoned in §L) |
+
+Unchanged, in full, by this amendment: §1 (purpose/status), §2 (explicit non-authority — restated,
+not loosened, in §N below), §3-§7 (two-stage architecture, fact/observation/inference/uncertainty
+separation, cross-timeframe conflict handling, privacy, provenance), §9 (pixels-retained-not-
+referenced rationale — reaffirmed by §J's Option A recommendation), §10-§12 (Intelligence
+non-coupling, freshness/supersession, human-review/automation boundary — §12's boundary is exactly
+what §E/§F's own layer separation relies on), §15/§17/§19/§20/§22-§25/§28-§31 (acceptance criteria
+extended only in scale per §H/§I, review weight, separate-implementation-PR requirement, principal-
+acceptance/merge/post-merge-verification discipline, abstention, rollback, completion criteria,
+stopping conditions extended per §M, prohibited scope restated per §N, effectiveness gates restated
+per §Q, no-chart-analyzed disclosure — this amendment performed none either, per §C, and the
+first-batch-only authorization scope of §31 is restated, resized, in §Q).
+
+### L. This amendment's own governance package scope
+
+This amendment touches exactly three repository files, narrower than the original filing's five-file
+§27 scope:
+
+1. `governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md` (this file —
+   this appended section).
+2. `operations/WORKSTREAMS.yaml` (`WS-0012` entry only: one additional milestone recording this
+   amendment's filing; `authorized_scope`/`next_action`/batch-size language updated to match §H/§Q;
+   `status` remains `proposed`, `priority` remains `secondary`, `authorized_by` remains `null`).
+3. `CLAUDE.md` (the single existing `CHART-0002` Decisions Log pointer, updated in place — no
+   duplicate competing pointer added).
+
+**`governance/decisions.yaml` is deliberately not touched**: it already carries the correct
+`CHART-0002` entry at `status: Proposed` (independently reconfirmed, §B above) — this amendment does
+not add a new decision, it amends the existing `Proposed` one, so no new index row and no status
+change are needed. **No test file is touched**: the original filing's §27 item 5 bumped a hardcoded
+decision-*count* assertion from 59→60 because it *added* the 60th decision entry; this amendment adds
+no new entry to `governance/decisions.yaml` (the count stays 60, independently reconfirmed unchanged,
+§Q below), so no count assertion needs to move. No chart image, Chart Evidence Record, Stage 1/Stage 2
+content, or any file under `~/Projects/Chart-Automation` or `~/Downloads` is touched, matching the
+original filing's own boundary, unweakened.
+
+### M. Revised acceptance, completion, and stopping conditions
+
+**Batch acceptance criteria (§15's original list, extended to a 19-25-image cohort)**: every original
+bullet applies unchanged, with "the five" read as "every ticker in the frozen cohort manifest" and
+"the five named tickers, one `1D` image each, and zero Stage 2 records" read as "every cohort-manifest
+ticker named in the authorizing decision, one `1D` image each, and zero Stage 2 records" — any
+deviation still requires stopping and returning for principal amendment, not silent substitution,
+unchanged from §21-22.
+
+**Stopping conditions (§25's original list, restated, plus one new condition specific to scale)**:
+every original bullet applies unchanged (unidentifiable source image; metadata that can't be
+established without invention; unredactable sensitive content; inability to separate fact from
+interpretation; any attempt to introduce scoring/prediction/allocator coupling; any attempt to add a
+sixth-plus ticker beyond the cohort manifest, a second timeframe, or Stage 2; any weakening of an
+existing safeguard; inability to implement as a small, reversible unit; utility not justifying
+resulting size/review/maintenance cost) — **plus, new**: **a future batch must stop and reconsider its
+storage model (§J) before proceeding if implementing it would push this repository's own measured
+`.git` size, or GitHub's own reported repository size, past roughly 250 MB** (a level chosen as
+meaningfully below the ~393 MB the full 220-image library would add if ever retained in full — itself
+already rejected, §J — while leaving headroom above the ~40 MB the recommended 25-image ceiling adds
+per batch for several such batches before the threshold is reached); crossing that threshold requires
+re-evaluating Option A vs. the Option D fallback (or a future Option B if LFS becomes available and
+authorized) **before**, not after, the next batch's pixels are committed.
+
+**Completion criteria for this amendment itself** (distinct from any future batch's own completion,
+per §24's original distinction, unchanged in kind): met when independently reviewed under `OPS-0007`
+§1, any required bounded correction made and re-reviewed, explicitly principal-accepted at the exact
+final head, and merged to `main`. **This alone does not authorize any first batch** — see §Q.
+
+### N. Explicit non-authority, restated for this amendment specifically
+
+This amendment authorizes **none** of the following, now or as an implied consequence of anything
+above, without its own separate, later, explicitly accepted governance decision — every item in the
+original filing's §2/§28 remains in force, unweakened, and this amendment adds:
+
+- any chart interpretation, chart-derived conclusion, trend/support/resistance/pattern/momentum/
+  indicator/price/date/market observation of any kind, from any of the 220 governed images, sampled or
+  not — §F's dry run recorded structural privacy categories only, never chart content;
+- creation of any Stage 1 or Stage 2 record;
+- copying, cropping, transforming, redacting, retaining, committing, uploading, or versioning any
+  image — this amendment retained none;
+- marking any image privacy-approved — §F explicitly disclaims this for all 12 sampled images;
+- processing an implementation batch of any size;
+- beginning an implementation branch or PR;
+- enabling Git LFS, creating another repository, uploading release assets, or creating/altering any
+  GitHub Actions artifact — §J evaluates these as options, none is activated;
+- any modification to `~/Projects/Chart-Automation` or access to `~/Downloads`;
+- changing `CHART-0002`'s `status` from `Proposed` to `Accepted`, or changing its decision-index
+  status in `governance/decisions.yaml`;
+- automatic batch continuation of any kind — every future batch, at any size up to the 25-image
+  ceiling, requires its own separate implementation PR, review, and principal acceptance (§Q);
+- any Intelligence, tier, target, holdings, gate, allocation, margin, allocator, dashboard, brokerage,
+  signal, or trading-behavior change.
+
+### O. Alternatives considered (amendment-specific)
+
+- **Leave the five-image ceiling in place and simply run four sequential batches.** Rejected — this
+  is exactly the outcome the principal's own authorization (§A) directs away from ("materially
+  reducing the number of batches"), and §H's comparison shows no evidence-based reason the ceiling
+  needs to stay that low once the web-upload constraint that originally motivated it no longer applies
+  to a Terminal-based workflow.
+- **Recommend 20 images as the ceiling**, matching the authorization's own "reasonable default."
+  Considered and set aside in favor of 25 — §H reasons that 25 costs nothing extra in review/storage
+  terms over 20 for the current 19-name universe (both fit in one PR) while providing real headroom
+  for near-term eligible-universe growth that 20 would not.
+- **Recommend the full 55-ticker library as the general ceiling**, since the authorization explicitly
+  required evaluating it. Considered in full (§H, §J) and rejected — unsupported by current evidence
+  (only 12 of 220 images have ever been inspected by any privacy-review-workflow test, and no image
+  has received CHART-0001/CHART-0002 §6's full per-image review) and unmatched to the current 19-name
+  eligible universe under the unmodified §13 selection rule; not foreclosed permanently (§P).
+- **Broaden CHART-0002 §13's selection rule to include all 55 library tickers**, so a 55-image ceiling
+  would have a matching universe. Rejected — explicitly out of this amendment's own authorized scope
+  (§A: throughput/storage, not eligibility criteria), addressed directly in the Phase-9 resolution
+  above; a future eligibility-broadening proposal, if ever made, is its own separate governance
+  decision.
+- **Adopt Git LFS or a separate evidence repository as primary storage now**, to pre-empt future
+  repository-size growth. Rejected for now (§J) — both are explicitly prohibited to this session,
+  neither has a demonstrated need at the recommended 25-image batch's ~40 MB footprint, and both carry
+  real reviewability/tooling costs not yet justified by current scale; documented as reconsideration
+  candidates instead (§J, §M's stopping condition).
+- **Set no general ceiling at all, and let each future batch's own governance filing pick a size ad
+  hoc.** Rejected — inconsistent with this repository's own preference for reusable, evidence-derived
+  general standards over one-off numbers (matching `NUM-0001`'s provenance-classification discipline
+  and this repository's own repeated "backtest once, cite the result, don't re-litigate" pattern); a
+  standing 25-image ceiling gives every future batch proposal a pre-reasoned default it can cite or
+  explicitly deviate from with its own justification.
+
+### P. Consequences
+
+**Authorized, effective only on this amendment's own separate future merge, and only to the extent
+stated**: the two-layer Layer A/Layer B/Layer C architecture (§G); Layer A's all-220 mechanical-
+preflight authorization (re-runnable, no retained artifact); the 25-image single-timeframe general
+ceiling for future Layer-B batches (§H); the review-shard and failure-isolation architecture for a
+19-25-image batch (§I); the Phase-9 universe-scope resolution (unmodified §13 eligibility, 19 names
+currently); the storage recommendation (§J: primary Option A, fallback Option D, with the §M
+repository-size stopping condition); the supersession table (§K); this amendment's own three-file
+governance package scope (§L); the extended acceptance/stopping conditions (§M); and the restated,
+unweakened non-authority list (§N). **`WS-0012` remains `proposed`, `priority: secondary`, with no
+implementation authority** — this amendment being accepted, by itself, still authorizes no batch;
+see §Q.
+
+**Not authorized by this amendment, now or ever without a further separate decision**: any first or
+later batch actually processing any image (§Q names the exact gate); any Stage 2 record, ever, under
+any batch size; any broadening of §13's selection-rule eligibility criteria; any change to the
+25-image ceiling itself (raising or lowering it) without its own future evidence-based proposal; any
+Git LFS activation, second repository, or release-asset upload; any Company/Theme Intelligence,
+dashboard, allocator, margin, tier, target, holdings, or brokerage change of any kind.
+
+**Unchanged by this amendment**: everything the original filing's own Consequences section already
+listed as unchanged (the Investment Constitution, every other accepted governance decision, `docs/
+PORTFOLIO_INTELLIGENCE_SPEC.md` and every Company/Theme Intelligence record, `targets.yaml`/
+`holdings.yaml`/`gates.yaml`/`issuer_lookthrough.yaml`, `allocate.py`/`margin_state.py`/`levels.py`,
+`LADDER-0001`, `OPS-0011`/`OPS-0012`/`OPS-0013`, the 1.8x leverage cap and 30% buffer floor, every
+`PHQ-####` decision, `~/Projects/Chart-Automation` itself) — plus, newly confirmed unchanged by this
+amendment specifically: `CHART-0001`'s own file and its `WS-0011` register entry (neither read nor
+touched this session beyond the read-only reconciliation in §B); `governance/decisions.yaml`'s
+`CHART-0002` entry and overall 60-decision count (§L); every test file in this repository.
+
+### Q. Effectiveness, review, and merge gates for this amendment
+
+Identical in kind to the original filing's own §29, restated for this amendment specifically. This
+governance PR must remain in **draft** state. Before it may even be considered for independent review
+as a candidate for merge, it requires, in this order: (a) independent, exact-head review by an
+eligible reviewer per `OPS-0007` §1; (b) any required bounded correction and exact-head re-review; and
+(c) **explicit principal acceptance of this amendment's own content** — a distinct, later step from
+the principal's authorization to *prepare* it (§A), which this filing does not claim to have
+received. **This amendment does not mark itself ready, does not authorize its own merge, and does not
+authorize beginning any batch of any size.** Nothing in §§A-P above becomes effective until this PR
+merges to `main`, and even then: (1) Layer A's mechanical-preflight description becomes usable
+capacity-testing methodology, but running it again produces no committed artifact and requires no
+further authorization, since it was already run, live, this session, with no repository-side effect;
+(2) Layer B's 25-image ceiling and the 19-name first-batch scope become the **governing architecture
+for a future batch proposal** — they do not themselves retain any image, create any record, or begin
+any implementation; **a first Layer-B batch still requires its own further, separate, later
+implementation PR, under its own full `OPS-0007` §1 review cycle and explicit principal acceptance at
+its own exact final head, before it may merge** — identical in kind to every gate the original filing
+already imposed on its own five-image batch, simply resized. This amendment authorizes no chart
+interpretation, no image retention, no Stage 1 or Stage 2 record, no live batch processing, no
+automatic batch continuation, and no dashboard/Intelligence/allocation coupling, now or as a
+consequence of its own future acceptance alone.
