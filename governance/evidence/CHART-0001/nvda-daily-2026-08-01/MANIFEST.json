@@ -1,0 +1,60 @@
+{
+  "package_id": "CHART-0001-PILOT-NVDA-1D-20260801",
+  "decision_id": "CHART-0001",
+  "governing_authority": "governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md",
+  "ticker": "NVDA",
+  "timeframe": "1D",
+  "capture_date": "2026-08-01",
+  "source_project_relative_reference": "Chart-Automation/library/governed/2026-08-01/NVDA/NVDA__2026-08-01__1D.png",
+  "source_reference_note": "Project-relative reference into a read-only external project (~/Projects/Chart-Automation, not part of this repository, not committed). No local-machine absolute filesystem path appears in this file or anywhere else in this package.",
+  "governed_source_sha256": "0ddc0eb0aded012618c368343f657f983d5bb9db7d130f58965f4bb542c4055f",
+  "governed_source_sha256_note": "Independently recomputed by this session directly against the governed library file (shasum -a 256), and cross-checked against two independent records inside the governed Chart-Automation project itself: output/governed_copy_manifest_2026-08-01.json's NVDA/1D entry (source_sha256 == destination_sha256 == this value) and output/chart_inventory.json's NVDA/1D/governed_2026-08-01 record (duplicate_group: null, i.e. confirmed unique -- no competing canonical NVDA daily image exists). All three values match exactly.",
+  "retained_filename": "NVDA__2026-08-01__1D.png",
+  "retained_sha256": "7afb06217c762a3d31f20e9cf92339dfa4bc0ea73870fd2f3817f3e5452c220b",
+  "retained_byte_size": 656463,
+  "media_type": "image/png",
+  "dimensions": "3624x2336",
+  "transformation_history": [
+    {
+      "transformation": "privacy redaction",
+      "region": "pixel rectangle x=[0,169), y=[0,49) of the 3624x2336 image (169x49 pixels, 8281 total) -- independently recomputed this session via a full-image NumPy pixel-diff between the governed source and the retained image, superseding an earlier, one-pixel-narrower/shorter x=[0,168), y=[0,48) figure. The diff region is exactly rectangular (every pixel within the bounding box changed, zero changed pixels outside it) and the retained image's pixels within that region are solid black (0,0,0) throughout.",
+      "method": "solid black (RGB 0,0,0) rectangle drawn with Pillow (PIL) ImageDraw, applied to a local copy of the governed source; the governed source file at ~/Projects/Chart-Automation was never modified",
+      "reason": "The governed source's top-left capture watermark read '<username> created with TradingView.com, Aug 01, 2026 14:16 UTC-4', where <username> was a visible TradingView platform username. CHART-0001 Section 5 permits a narrow, principal-approved, per-image username exception, but the principal authorization governing this specific pilot implementation states explicitly that no username exception is authorized for this exact image. The username was therefore redacted rather than retained.",
+      "what_survives_unredacted": "'created with TradingView.com, Aug 01, 2026 14:16 UTC-4' remains fully legible immediately to the right of the redaction box; no other pixel region of the image was touched.",
+      "verification": "Visually re-inspected after redaction (full image and a magnified crop of the redaction boundary) to confirm the username is fully covered, no adjacent legible text was clipped, and no other part of the chart was altered. Independently re-verified in this bounded-correction session via a direct NumPy pixel-diff recomputation against the governed source (see region field above)."
+    },
+    {
+      "transformation": "color-mode conversion",
+      "detail": "The governed source PNG is RGBA (mode 'RGBA', 4 channels). The retained PNG is RGB (mode 'RGB', 3 channels) -- the alpha channel was dropped during the redaction working-copy save.",
+      "alpha_channel_finding": "Independently confirmed this session: the governed source's alpha channel is uniformly 255 (fully opaque) across every pixel of the image -- no pixel anywhere carries any transparency.",
+      "visible_content_effect": "Because the source alpha channel was uniformly opaque, dropping it during the RGB conversion causes no visible-content change anywhere in the image -- independently confirmed via direct RGB pixel-value comparison between the source (converted to RGB) and the retained image outside the redaction region: zero differing pixels.",
+      "net_effect": "The privacy redaction (the region above) is the only substantive pixel-content change between the governed source and the retained image. The RGBA-to-RGB mode change is a lossless, visually-inert format change given the source's uniform opacity, not a second content transformation.",
+      "verification": "Independently confirmed this bounded-correction session via direct PIL/NumPy inspection: source mode == 'RGBA', retained mode == 'RGB', source alpha array min == max == 255, and an RGB-channel-only pixel-diff between source and retained showing zero changed pixels outside the declared redaction rectangle."
+    }
+  ],
+  "privacy_result": "redacted",
+  "privacy_result_detail": "Full image visually inspected for account balances, account numbers, brokerage-account identifiers, position lists, order history, buying-power/margin figures, email address, real name, private notes, unrelated watchlist content, and usernames. Exactly one item was found (the platform username described above) and redacted. No account-level or brokerage-identifying information of any kind is present in the retained image -- its content is a price chart, volume panel, and two sub-indicator panels only.",
+  "username_exception_applied": false,
+  "source_provenance_chain": {
+    "1_original_capture": "A TradingView.com chart screenshot captured by the principal's own TradingView session on 2026-08-01 at 14:16:09 local time (UTC-4, as labeled in the image itself), originally saved to the principal's local Downloads folder as 'Batch 01 - AI Infrastructure/NVDA_2026-08-01_14-16-09.png' (per the governed Chart-Automation project's own retained governed_copy_manifest_2026-08-01.json entry -- this session did not access ~/Downloads directly, per its own scope boundary).",
+    "2_chart_automation_governance": "A separate, read-only external project (~/Projects/Chart-Automation, not part of this repository) organized that capture, alongside 219 other screenshots across 55 tickers x 4 timeframes, into a governed canonical library at library/governed/2026-08-01/, verifying source-to-destination SHA-256 identity for every file during that copy and recording the result in governed_copy_manifest_2026-08-01.json and chart_inventory.json. This session read those two governed manifest files and the governed library file itself, and did not modify, rename, reorganize, or regenerate anything in that project.",
+    "3_authoring_session_selection_and_verification": "This session located the file at library/governed/2026-08-01/NVDA/NVDA__2026-08-01__1D.png, confirmed it is the sole NVDA 1D entry in the governed library (duplicate_group: null in chart_inventory.json), independently recomputed its SHA-256 with shasum, and confirmed that value matches both governed manifest records and the file on disk (three-way match, not merely one manifest's own internal claim).",
+    "4_privacy_redaction_and_retention": "This session directly inspected the image's pixels (not filename or metadata alone), identified the single privacy issue described above, applied the described redaction to a local working copy only, computed the retained copy's SHA-256, and committed only that retained copy to this repository at governance/evidence/CHART-0001/nvda-daily-2026-08-01/NVDA__2026-08-01__1D.png.",
+    "5_independently_verifiable_by_any_reviewer": [
+      "The retained file's SHA-256 recomputes to 7afb06217c762a3d31f20e9cf92339dfa4bc0ea73870fd2f3817f3e5452c220b, matching this manifest and record.yaml.",
+      "Byte size (656463) and media type (image/png) are directly inspectable.",
+      "Every visible_facts entry in record.yaml is directly legible by opening the retained file.",
+      "The redaction boundary (x=[0,169), y=[0,49)) is directly inspectable in the retained file; 'created with TradingView.com, Aug 01, 2026 14:16 UTC-4' is legible immediately to its right."
+    ],
+    "6_necessarily_relies_on_principal_acceptance": "That the governed library file (layer 2) is itself a faithful, unaltered copy of what the principal's own TradingView session actually rendered and the principal's own screenshot tool actually captured (layer 1) cannot be cryptographically proven by this session or any later reviewer -- it rests on the same class of trust boundary every prior PHQ-#### and now CHART-0001 evidence package in this repository already discloses (see PHQ-2026-06's own MANIFEST.json provenance_chain for the closest precedent). This session independently verified every link it has access to (layers 2 through 5 above); layer 1 is outside this session's ability to independently verify and is not claimed to be."
+  },
+  "inspection_method": "Direct pixel-level visual inspection of the full-resolution governed source image (3624x2336) via this session's image-viewing capability, followed by direct pixel-level visual inspection of the retained redacted copy (full image and magnified crops of the redaction boundary and several chart sub-regions) to verify both content and redaction correctness. No OCR, automated chart-reading, or third-party analysis tool was used at any point.",
+  "verifiability_boundary": "Any reviewer with access to this repository can independently verify: the retained file's SHA-256, byte size, and media type; that every visible_facts entry in record.yaml is actually legible in the retained image; that the redaction fully covers the original username and does not clip any other visible text; and, given separate access to the read-only external Chart-Automation project, that the governed_source_sha256 above matches that project's own governed library file and both of its own manifest records. What no reviewer -- including this session -- can independently verify from repository or governed-library evidence alone is that the governed library file is a faithful, unaltered copy of the principal's original TradingView capture (source_provenance_chain layer 1 above); that link rests on principal review and acceptance, identical in kind to every prior screenshot-evidenced decision in this repository.",
+  "secondary_evidence_statement": "This screenshot and every fact derived from it are secondary observational evidence only -- a dated, point-in-time chart capture, not inspected issuer or regulatory primary evidence, and not live market data. No production code in this repository reads this package as a price, quantity, or market datum for any purpose.",
+  "no_live_market_data_authority_statement": "This package creates no live market-data authority of any kind. holdings.yaml, targets.yaml, gates.yaml, issuer_lookthrough.yaml, allocate.py, margin_state.py, and levels.py are all unmodified and unread by anything in this package; nothing here changes any allocator computation, any current price source, or any live-priced holding value.",
+  "governed_consequence": "none",
+  "generated_file_hashes": {
+    "record.yaml": "47e5e9a5b2e402a87948ca01bb9effe29a733a3892f09a401f626d001cb1fab7",
+    "README.md": "6c7d4543fec0b1b563fa84b4a212947500bf265b92e89091801259092c238e98"
+  }
+}

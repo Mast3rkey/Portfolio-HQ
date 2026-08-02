@@ -4522,57 +4522,56 @@ workstreams:
   - id: WS-0011
     title: Chart-evidence pilot governance (CHART-0001)
     objective: >
-      Track CHART-0001 (status: Accepted in this file's frontmatter and
-      in governance/decisions.yaml as of the corrected sequence below,
-      but not yet EFFECTIVE — effectiveness per §14 still requires this
-      acceptance-recording PR's own independent exact-head re-review and
-      merge, neither of which has occurred yet) for one advisory
-      chart-evidence record type, its privacy and provenance
-      requirements, and one future one-asset/one-screenshot pilot
-      (default proposed asset: NVDA, daily timeframe). Independent review
-      4835983890 (2026-08-01) found this PR's own first commit had set
-      status: Accepted prematurely, before independent review and before
-      a separately retained Principal acceptance: PR comment; corrected
-      via commit 0db5bc80cd75ce08bca3b160c2e8a747e07a9bfc (revert to
-      Proposed), then a Principal acceptance: PR comment
-      (issuecomment-5153866676) was retained, then status: Accepted was
-      re-set in this later, distinct commit — mirroring CHART-0001's own
-      §14 self-gating discipline and PI-0034's actual commit sequence.
-      No chart evidence has been committed; no pilot implementation has
-      begun; no pilot implementation PR has been opened. Only after this
-      PR is independently re-reviewed at its final head and merged, and
-      still only as a further, separate, independently-reviewed and
-      principal-accepted implementation PR, may any pilot record exist.
+      Track CHART-0001 (status: Accepted, confirmed live in both this file's
+      frontmatter and governance/decisions.yaml as merged to main) for one
+      advisory chart-evidence record type, its privacy and provenance
+      requirements, and one one-asset/one-screenshot pilot (asset: NVDA,
+      daily timeframe). PR #219 (claude/chart-0001-acceptance-pilot-prep-622655)
+      is confirmed merged to main at merge commit
+      5b41e7d4a0a9a6ddb101b22e3f5e9317abeb9249 (independently verified via
+      `git log`/`gh pr view` this session, not assumed) — CHART-0001 §§1-13
+      are therefore the accepted, controlling definition for chart-evidence
+      work in this repository, and §8's bounded pilot description is the
+      accepted basis for pilot *preparation*. A further, separate
+      implementation session then prepared exactly the §8 pilot — one NVDA
+      daily evidence package under governance/evidence/CHART-0001/
+      nvda-daily-2026-08-01/ — per the further principal authorization
+      quoted in full in that implementation's own PR description. No second
+      asset, second image, or scaling of any kind is authorized or attempted.
+      The pilot implementation itself remains draft, unmerged, and not yet
+      independently reviewed or principal-accepted — see blocker below.
     governing_authority:
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
       - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md (review standard)
       - governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md (Lane G)
       - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
-    status: proposed
+    status: in_progress
     priority: secondary
     dependencies: []
     authorized_scope: >
-      Effective only once this acceptance-recording pull request is
-      itself independently reviewed and merged: exactly CHART-0001 §8's
-      bounded one-asset/one-screenshot pilot description becomes the
-      accepted basis on which a future, separate implementation PR may be
-      PREPARED and OPENED — preparation only, not implementation, not
-      execution, not merge. That future PR remains independently gated on
-      its own full OPS-0007 §1 review, any required bounded correction and
-      exact-head re-review, and explicit principal approval before it may
-      be marked ready or merged, plus post-merge verification per
-      OPS-0009 §4(a) once merged. No implementation PR may be opened
-      before this acceptance-recording PR itself merges.
+      CHART-0001 §8's bounded one-asset/one-screenshot pilot description is
+      the accepted basis on which this one implementation PR was prepared
+      and opened: exactly one NVDA daily evidence package (one retained,
+      privacy-reviewed image; one record.yaml; one MANIFEST.json; one
+      README.md), one focused package-integrity test
+      (test_chart_evidence_pilot.py), and this WS-0011 factual
+      synchronization. This implementation PR remains independently gated on
+      its own full OPS-0007 §1 review (CHART-0001 §8 states the
+      implementation is Lane G in full, never reduced), any required bounded
+      correction and exact-head re-review, and explicit principal approval
+      before it may be marked ready or merged, plus post-merge verification
+      per OPS-0009 §4(a) once merged. No second asset, second image, or
+      scaling is authorized by this filing or by opening this PR.
     prohibited_scope: >
-      Any chart screenshot, chart analysis, or chart-derived fact
-      committed to the repository; any chart_evidence directory, file,
-      schema, or validator; any Company/Theme Intelligence record edit or
-      schema extension; any dashboard integration; any scoring, ranking,
+      A second chart screenshot, chart analysis, or chart-derived fact of
+      any kind; any chart_evidence directory, schema, or validator beyond
+      this one focused test file; any Company/Theme Intelligence record edit
+      or schema extension; any dashboard integration; any scoring, ranking,
       or trading-signal generation; any tier/target/holdings/margin/
       allocator/brokerage change; any use as LADDER-0001 or any other
-      research/backtest input; any bulk or recurring ingestion; any
-      second pilot asset or record; any implementation PR opened before
-      this acceptance-recording PR itself merges.
+      research/backtest input; any bulk or recurring ingestion; any second
+      pilot asset or record; marking this implementation PR ready or merging
+      it in this session.
     milestones:
       - gate: governance-pr-drafted
         description: >
@@ -4589,62 +4588,145 @@ workstreams:
         date: "2026-08-01"
       - gate: principal-acceptance-recorded
         description: >
-          Principal explicitly accepted CHART-0001's own content in
-          principle and authorized preparation (not implementation) of
-          the §8 one-asset/one-screenshot pilot. Recorded via a dated note
-          appended to the CHART-0001 decision file describing what
-          acceptance would mean; this register entry and a CLAUDE.md
-          Decisions Log pointer updated. Independent review 4835983890
-          (2026-08-01) found the same commit had also flipped status to
-          Accepted prematurely, before review and before a separately
-          retained Principal acceptance: PR comment — corrected via
-          commit 0db5bc80cd75ce08bca3b160c2e8a747e07a9bfc (revert to
-          Proposed). A Principal acceptance: PR comment was then retained
-          (issuecomment-5153866676, 2026-08-01), and this later, distinct
-          commit re-sets status: Accepted in the decision file and
-          governance/decisions.yaml. Independent exact-head re-review of
-          this delta and principal mark-ready/merge remain outstanding —
-          this gate's own PR is not yet merged. No chart image,
-          chart-derived fact, or implementation code touched by this
-          filing; no pilot implementation branch or PR opened.
+          Principal explicitly accepted CHART-0001's own content and
+          authorized §8 pilot preparation. Independent review 4835983890
+          (2026-08-01) found an earlier commit on this PR had set status:
+          Accepted prematurely; corrected via commit
+          0db5bc80cd75ce08bca3b160c2e8a747e07a9bfc (revert to Proposed). A
+          Principal acceptance: PR comment was then retained
+          (issuecomment-5153866676, 2026-08-01), and a later, distinct
+          commit re-set status: Accepted in the decision file and
+          governance/decisions.yaml. **Confirmed this session**: PR #219
+          is merged to main at merge commit
+          5b41e7d4a0a9a6ddb101b22e3f5e9317abeb9249, and both the decision
+          file's frontmatter and governance/decisions.yaml show status:
+          Accepted on main. No chart image, chart-derived fact, or pilot
+          implementation was introduced by PR #218 or #219 themselves.
         pr: 219
+        status: merged
+        date: "2026-08-01"
+      - gate: nvda-daily-pilot-implementation-prepared
+        description: >
+          One-asset/one-screenshot pilot implementation prepared per
+          CHART-0001 §8 and the further principal authorization quoted in
+          this PR's own description: located and independently verified
+          (three-way SHA-256 reconciliation against the read-only external
+          Chart-Automation governed library's own manifest and inventory
+          records) the sole canonical NVDA daily screenshot
+          (NVDA__2026-08-01__1D.png, captured 2026-08-01T14:16:09-04:00);
+          directly inspected the image's pixels; applied the CHART-0001 §5
+          privacy gate (found and redacted one visible TradingView platform
+          username in the capture watermark — no username exception applies
+          to this image per the principal authorization); retained exactly
+          one redacted copy plus record.yaml, MANIFEST.json, and README.md
+          under governance/evidence/CHART-0001/nvda-daily-2026-08-01/; added
+          one focused test file (test_chart_evidence_pilot.py, 19 tests, all
+          passing) verifying package integrity, hash reconciliation, the
+          fact/observation/inference/uncertainty separation, and the
+          draft-stage governance invariants (reviewer/reviewed_head/
+          principal_acceptance null, lifecycle_status: drafted). No
+          Company/Theme Intelligence, holdings, targets, gates,
+          issuer_lookthrough, allocator, margin, levels.py, or dashboard
+          file touched.
+        pr: 220
         status: drafted
         date: "2026-08-01"
+      - gate: independent-review-changes-required-bounded-correction
+        description: >
+          Independent exact-head review 4836345012 (state: COMMENTED, verdict
+          CHANGES REQUIRED), anchored to reviewed head
+          fb01f8dc12b83c3681c99cc3100f631b94ad917d, found two MAJOR findings
+          (Finding 1: the E/D event-marker count was stated as three, actually
+          four; Finding 2: a "row of purple/magenta square markers" was
+          recorded as a distinct feature confined to the most recent ~15-20
+          candles, but is the same object as the already-documented full-width
+          magenta/pink dashed 200.75/+38.89% line, mischaracterized and then
+          given a speculative "pivot-point-style or price-alert-style marker
+          series" interpretation) and two MINOR findings (Finding 3: the
+          RGBA-to-RGB color-mode change between the governed source and the
+          retained image was not disclosed in MANIFEST.json's
+          transformation_history; Finding 4: the declared redaction rectangle
+          x=[0,168), y=[0,48) was one pixel narrower/shorter per dimension
+          than the actual altered region). No BLOCKING finding. A separate,
+          later, bounded author-correction session independently re-confirmed
+          all four findings via direct pixel inspection (four E/D pairs
+          visually counted; the purple markers confirmed to be the dashed
+          line's own rendering, spanning the full chart width; the exact
+          pixel-diff bounding box independently recomputed as x=[0,169),
+          y=[0,49), 169x49 pixels; source confirmed RGBA with a uniformly
+          opaque alpha channel, retained confirmed RGB) and corrected
+          record.yaml, MANIFEST.json, and this PR's body accordingly, adding
+          six focused regression tests to test_chart_evidence_pilot.py
+          (25/25 passing). Exact-head delta re-review under OPS-0007 §1 and
+          explicit principal acceptance both remain required before this PR
+          may be marked ready or merged.
+        pr: 220
+        status: in_progress
+        date: "2026-08-02"
+      - gate: cross-model-peak-timing-correction
+        description: >
+          A narrow, second correction, separate from and after review
+          4836345012 above: independent ChatGPT cross-model inspection of the
+          same NVDA daily chart and the corrected record.yaml identified that
+          content.observations' bottom-panel-trend entry mischaracterized the
+          panel's highest visible level as occurring "around October-November
+          of the prior year." A separate, later, bounded author-correction
+          session independently re-confirmed this via direct pixel inspection
+          of both the governed source and retained images (per-column red-line
+          top-position detection, cross-checked against x-axis month-label
+          pixel positions): a local high does occur around November 2025
+          (peak near late Nov/early Dec 2025), but a visibly higher peak
+          occurs later, around June 2026 (~10 pixels higher on-screen than
+          the November 2025 high, reproduced identically under two
+          independent color-detection thresholds and confirmed by direct
+          visual inspection of both peak regions). The affected observation
+          was corrected to describe both the earlier November 2025 local high
+          and the later, higher, late-May-to-June-2026 peak, without
+          asserting an exact date or exact value for either. No other content
+          entry, file, or claim was touched. record.yaml's hash changed and
+          was resynchronized in MANIFEST.json; the retained image, README.md,
+          and governed-source hashes are all unchanged. Exact-head delta
+          re-review under OPS-0007 §1 and explicit principal acceptance both
+          remain required before this PR may be marked ready or merged.
+        pr: 220
+        status: in_progress
+        date: "2026-08-02"
     evidence_refs:
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
+      - governance/evidence/CHART-0001/nvda-daily-2026-08-01/record.yaml
+      - governance/evidence/CHART-0001/nvda-daily-2026-08-01/MANIFEST.json
+      - governance/evidence/CHART-0001/nvda-daily-2026-08-01/README.md
+      - test_chart_evidence_pilot.py
     next_action: >
-      Independent review 4835983890 (2026-08-01) returned CHANGES
-      REQUIRED and was resolved by correction commit
-      0db5bc80cd75ce08bca3b160c2e8a747e07a9bfc (revert to Proposed). A
-      Principal acceptance: PR comment (issuecomment-5153866676) was
-      then retained, and a later, distinct commit re-set status:
-      Accepted in the decision file and governance/decisions.yaml.
-      Remaining, not yet performed: independent, exact-head re-review of
-      this final delta under OPS-0007 §1 (OPS-0009 Lane G — full weight,
-      no reduction), any further required correction and re-review, then
-      explicit principal mark-ready and merge. Only after that merge may
-      a future, separate session open the §8 pilot implementation PR —
-      itself requiring its own full independent-review and
-      principal-acceptance cycle before it may merge. No chart evidence
-      may be committed and no pilot implementation PR may open before
-      this PR merges.
+      PR #220's bounded correction (this filing) must now receive its own
+      exact-head delta re-review under OPS-0007 §1 (OPS-0009 Lane G — full
+      weight, per CHART-0001 §8, never reduced) against the new head produced
+      by this correction, followed by explicit principal acceptance, before
+      it may be marked ready or merged. This correcting session does not mark
+      this PR ready, does not merge it, does not post a new review, and does
+      not resolve or dismiss review 4836345012. Once merged, post-merge
+      verification per OPS-0009 §4(a) is required.
     completion_criteria: >
-      Not met. Requires, at minimum: this acceptance-recording PR's
-      correction re-reviewed and the PR independently reviewed at its
-      final head and merged; and, only then, a later, separate pilot
-      implementation PR (§8) executing exactly the bounded
-      one-asset/one-screenshot grant, itself independently reviewed and
-      principal-accepted before merge.
+      Not met. CHART-0001 itself is accepted and effective (confirmed
+      merged to main). The NVDA daily pilot implementation additionally
+      requires: exact-head delta re-review of this bounded correction under
+      OPS-0007 §1; explicit principal acceptance at the exact final head;
+      merge to main; and post-merge verification per OPS-0009 §4(a).
+      Workstream is not complete until all of the above are done.
     blocker: >
-      status: Accepted has been re-set (2026-08-01) following review
-      4835983890's correction and a retained Principal acceptance: PR
-      comment (issuecomment-5153866676), but this acceptance-recording
-      governance PR has not yet been independently re-reviewed at its
-      final head or merged, so acceptance is not yet EFFECTIVE per §14.
-      No pilot implementation PR may open until this PR merges.
-    active_branch: claude/chart-0001-acceptance-pilot-prep-622655
-    active_pr: 219
-    last_verified_main_sha: 9b85ee163ae978d2d8f4aa68c9b9b23dc66892cd
+      The NVDA daily pilot implementation PR remains open as a draft.
+      Independent exact-head review 4836345012 returned verdict CHANGES
+      REQUIRED (two MAJOR, two MINOR findings; no BLOCKING finding) against
+      reviewed head fb01f8dc12b83c3681c99cc3100f631b94ad917d. A bounded
+      author-correction pass addressing all four findings has been applied
+      (see the independent-review-changes-required-bounded-correction
+      milestone above). Still required before this PR may be marked ready or
+      merged: exact-head delta re-review of the corrected head under
+      OPS-0007 §1, and explicit principal acceptance. No second asset or
+      scaling of any kind is authorized regardless of this PR's outcome.
+    active_branch: claude/chart-0001-nvda-daily-pilot
+    active_pr: 220
+    last_verified_main_sha: 5b41e7d4a0a9a6ddb101b22e3f5e9317abeb9249
     last_verified_date: "2026-08-01"
     authorized_by: null
     supersedes: null
