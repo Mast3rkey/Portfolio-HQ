@@ -1,7 +1,7 @@
 ---
 decision_id: CHART-0001
 date: 2026-08-01
-status: Proposed
+status: Accepted
 category: chart_evidence_governance
 related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0011, PI-0001, PI-0011, LADDER-0001, PHQ-2026-06]
 supporting_artifact: null
@@ -486,3 +486,122 @@ This decision — including its own acceptance, not only its merge — requires 
 later principal step this filing does not take. This decision becomes effective, to the bounded
 extent stated above, only when its implementing pull request is independently reviewed, explicitly
 accepted by the principal, and merged to `main`.
+
+---
+
+## Principal acceptance and pilot-preparation authorization (2026-08-01)
+
+_Dated note appended per `governance/decisions/README.md`'s convention for a narrow, additive
+lifecycle correction — §§1-14, Rationale, Alternatives Considered, and Consequences above are
+unedited and remain exactly as originally filed and merged. Frontmatter `status` is updated to
+`Accepted` above, alongside this note, mirroring `PI-0034`'s own status-transition precedent._
+
+**Live state, independently reverified before this note, not assumed.** PR #218
+(`claude/lane-g-chart-0001-proposal-qbg54r`) is confirmed merged to `main` at merge commit
+`9b85ee163ae978d2d8f4aa68c9b9b23dc66892cd`, carrying this file to parent head
+`4f7c1f60e46c6b4f49a65dbb86be245250202b9c` — the exact head an independent delta review verdicted
+**"DELTA APPROVED — APPROVED FOR PRINCIPAL ACCEPTANCE,"** finding zero surviving MATERIAL or MINOR
+findings and naming "explicit principal acceptance of CHART-0001's own content" as the one remaining
+gate before merge. That review did not itself accept the content, mark the PR ready, or merge it.
+This note is that separate, later, explicit principal-acceptance step — distinct from, and later
+than, both the original preparation authorization and PR #218's merge.
+
+**Principal authorization (verbatim, this session):** "I accept the CHART-0001 chart-evidence
+framework in principle and authorize a narrowly bounded governance update to record that acceptance
+and authorize preparation of one isolated, read-only one-image pilot. The pilot may test ingestion,
+provenance, structured observation, uncertainty disclosure, and report formatting only. It must not
+create automatic scoring, rankings, trading signals, buy/sell recommendations, tier or target
+changes, holdings changes, allocation changes, margin changes, allocator coupling, bulk chart
+analysis, or brokerage actions. Implementation must occur in a separate future draft PR, receive
+independent exact-head review, and return to me for approval before merge."
+
+**Effect.** This activates exactly what §§1-13 above already, and only, defined — this note creates
+no authority beyond what was already conditionally stated, pending acceptance:
+
+- §§1-7 (purpose/status, explicit non-authority, the logical advisory-record schema, the storage
+  model, the privacy standard including its named username exception, the provenance/claim-boundary
+  standard, and the freshness/supersession rule) are now the accepted, controlling definition for any
+  future chart-evidence work in this repository.
+- §8's bounded one-asset/one-screenshot pilot description is now the accepted basis on which a
+  future, separate implementation PR **may be prepared and opened** — preparation only. §8's own
+  gating is unchanged and unweakened: that future PR must itself remain draft, be independently
+  reviewed at its exact head per `OPS-0007` §1 (including that standard's disclosure of
+  author/reviewer/session/model overlap), receive any required bounded correction and exact-head
+  re-review, and receive explicit principal approval before it may be marked ready or merged — and,
+  following this repository's standing Lane G post-merge convention (`OPS-0009` §4(a)), post-merge
+  verification once it does merge. **This note does not open, draft, or begin that implementation
+  PR** — no branch for it exists as of this note, and none is created by this filing.
+- §9 (pilot acceptance criteria) and §10 (stopping/rejection conditions) remain the controlling
+  standard that future implementation PR must satisfy or must stop against, unedited.
+- §11's future-phase exclusions, §2's full non-authority list, and §5's privacy standard (including
+  its named, bounded username exception) are unweakened. Restated here only as a cross-reference to
+  already-controlling text, not as new authority:
+  - **Permitted for the future pilot to test, per §§3-4/§6-7/§9-10 as already written**: (1)
+    ingestion of exactly one explicitly selected image; (2) file and source provenance; (3)
+    deterministic metadata capture; (4) structured visual observation, kept separate from
+    interpretation; (5) separation of observation from inference; (6) uncertainty and
+    unreadability disclosure; (7) the advisory record's schema and report formatting; (8) abstention
+    when evidence is unclear or cannot be safely captured.
+  - **Prohibited for the future pilot, per §2/§11 as already written, none of it loosened by this
+    note**: (1) any technical signal; (2) any score or ranking of any security; (3) any transaction
+    recommendation; (4) any change to investment policy; (5) any tier or target change; (6) any
+    holdings or allocation change; (7) any margin eligibility or parameter change; (8) any coupling
+    of chart observations to allocator output; (9) any bulk ingestion or bulk chart analysis; (10)
+    any access to, or action through, a brokerage.
+
+**Not authorized by this note:** opening the §8 implementation branch or PR; drafting, committing,
+or retaining any chart image, extracted chart fact, or chart-derived observation; any Company/Theme
+Intelligence edit; any dashboard change; any `holdings.yaml`/`targets.yaml`/`gates.yaml`/
+`issuer_lookthrough.yaml`/`allocate.py`/`margin_state.py`/`levels.py` change; any margin action; any
+brokerage action; any second pilot asset. This note performs no repository mutation beyond this
+file, `governance/decisions.yaml`'s status field, `operations/WORKSTREAMS.yaml`'s `WS-0011` entry,
+and one `CLAUDE.md` Decisions Log pointer entry — the same four-file scope §13 already bounded this
+filing to.
+
+**This session did not access, view, inspect, or analyze any chart image or file outside this
+repository** — no path under `~/Downloads` or `~/Projects/Chart-Automation` was read. The NVDA
+default named in §8 remains a name only, carried over unedited from the original filing; no image
+sits behind it in this repository.
+
+**Effectiveness of this note.** Identical discipline to the original filing's own §14: this note,
+the frontmatter `status` change above, and every downstream file this session touches take
+effect only when this recording pull request is itself independently reviewed under `OPS-0007` §1,
+any required bounded correction is made and re-reviewed, and it is merged to `main`. This note does
+not mark its own PR ready and does not merge it.
+
+---
+
+## Bounded correction — premature status transition reverted (2026-08-01, same PR)
+
+An independent, exact-head review of this PR (PR #219, review ID `4835983890`, reviewed head
+`c7bdc2bbd7ec0fb0671a21955f532fb3bf11e656`) returned **CHANGES REQUIRED**, finding (MATERIAL) that
+the note above set frontmatter `status: Accepted` in its own first commit — before any independent
+review had occurred and without a separately retained, PR-specific `Principal acceptance:` comment
+distinct from both the review verdict and the merge action — contradicting §14's own three-gate
+standard (independent review, explicit principal acceptance, merge) restated by this very note's
+last paragraph, and inconsistent with `operations/WORKSTREAMS.yaml`'s `WS-0011` entry in the same
+diff, which correctly treated acceptance as not yet effective.
+
+**This correction does not edit or retract the note above.** The note's quoted principal
+authorization, its description of what §§1-13 mean once accepted, and its description of what §8
+would authorize once properly sequenced are accurate and are left exactly as filed — the review
+found the prose "otherwise sound." What is corrected: frontmatter `status` (in this file and in
+`governance/decisions.yaml`) is reverted from `Accepted` back to `Proposed`, matching this decision's
+state as originally filed and merged via PR #218. The note above describes what acceptance *would*
+mean; it does not, by itself, make acceptance effective — that requires the distinct, later steps
+below, mirroring `PI-0034`'s actual (not merely labeled) commit sequence.
+
+**Corrected effectiveness sequence, restated precisely:** (1) a correction commit,
+`0db5bc80cd75ce08bca3b160c2e8a747e07a9bfc`, reverting `status` to `Proposed` and recording this
+finding; (2) a separate, distinct PR issue comment on PR #219
+(`issuecomment-5153866676`, "Principal acceptance retained for CHART-0001 lifecycle," posted
+2026-08-01), quoting the principal's authorization verbatim and naming this PR's then-exact head
+`0db5bc80cd75ce08bca3b160c2e8a747e07a9bfc` — never inferred from this note's prose, from authorship,
+from timing, or from merge metadata; (3) only after that comment existed, this further, separate,
+later commit, setting `status: Accepted` in this file and in `governance/decisions.yaml`,
+referencing review `4835983890`, correction commit `0db5bc80cd75ce08bca3b160c2e8a747e07a9bfc`, and
+retained comment `issuecomment-5153866676`; (4) independent exact-head re-review of the resulting
+delta, still required, not yet performed as of this commit; (5) explicit principal mark-ready and
+merge, still required, not yet performed as of this commit. No step in this sequence was skipped or
+assumed. **`status: Accepted` above becomes effective, per §14 and this note, only when steps (4)
+and (5) are also complete — this commit alone does not mark PR #219 ready or merge it.**
