@@ -1,7 +1,7 @@
 ---
 decision_id: CHART-0002
 date: 2026-08-02
-status: Proposed
+status: Accepted
 category: chart_evidence_governance
 related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, CHART-0001, PI-0001, PI-0011, LADDER-0001]
 supporting_artifact: null
@@ -1411,3 +1411,109 @@ already imposed on its own five-image batch, simply resized. This amendment auth
 interpretation, no image retention, no Stage 1 or Stage 2 record, no live batch processing, no
 automatic batch continuation, and no dashboard/Intelligence/allocation coupling, now or as a
 consequence of its own future acceptance alone.
+
+---
+
+## Acceptance recording (2026-08-02, same governance layer, new PR)
+
+**Principal authorization (verbatim, this session):** "I authorize one narrowly bounded CHART-0002
+acceptance-recording PR based on the amendment now merged through PR #224 at merge commit
+`3d8ad7896236148e57e9bef3dd8fc003ef55b07a` and my retained principal-acceptance comment `5158527253`.
+The PR may record CHART-0002 as Accepted and synchronize only the controlling decision file,
+`governance/decisions.yaml`, `WS-0012`, `CLAUDE.md`, and directly necessary tests or validators. It
+must contain no chart image, chart interpretation, Chart Evidence Record, Stage 1 or Stage 2
+implementation, live mechanical preflight, target or tier change, dashboard or Intelligence coupling,
+margin or allocator change, trading signal, brokerage access, or execution. The PR must remain draft,
+receive independent exact-head review, require my explicit exact-head approval before merge, and
+undergo complete post-merge verification. This authorization does not yet authorize the 19-chart
+implementation batch."
+
+**Provenance chain, independently reconfirmed this session, not assumed.** `PR #224` ("CHART-0002:
+amend chart scale and throughput design") independently reconfirmed `state: MERGED`,
+`mergeCommit.oid: 3d8ad7896236148e57e9bef3dd8fc003ef55b07a`, `headRefOid`
+(the amendment's own exact accepted head) `ab9fb6b49b55f8cf575c2e8d4267e8e15bce52d3`. Independent
+exact-head review `4838752317`, anchored to that head, independently refetched this session and
+confirmed verdict **APPROVED FOR PRINCIPAL ACCEPTANCE**, zero BLOCKING/MAJOR/MINOR findings (two
+NOTEs only — a trivial local loose-object-size variance, and disclosed model/account overlap with the
+authoring session — neither requiring correction). Retained principal-acceptance comment
+`issuecomment-5158527253`, independently refetched this session and confirmed posted on `PR #224`,
+explicitly naming exact head `ab9fb6b49b55f8cf575c2e8d4267e8e15bce52d3` and bounding its own scope to
+exactly: deterministic mechanical-preflight capacity for the full 220-image governed library; a
+25-image, single-timeframe Stage 1 implementation-PR ceiling; the recommended 19-name first cohort;
+five-ticker review shards with one final exact-head integration review; and repository-native,
+LFS-free evidence storage with the disclosed ~250 MB stopping condition and GitHub release-asset
+fallback — while explicitly not authorizing a live preflight, image retention, chart interpretation,
+Stage 1, Stage 2, processing of the cohort, automatic continuation, portfolio-policy changes, trading,
+or execution. This session independently re-verified `origin/main` and local `HEAD` both at
+`3d8ad7896236148e57e9bef3dd8fc003ef55b07a` before drafting this section, zero open pull requests, and
+`CHART-0002`'s frontmatter and `governance/decisions.yaml` entry both still reading `status: Proposed`
+immediately prior to this commit.
+
+**Why this sequencing is not the same defect `CHART-0001`'s own review (`4835983890`) found, and does
+not require the same corrected multi-commit sequence.** `CHART-0001`'s premature-status finding turned
+on a specific fact: at the moment that filing's own first commit set `status: Accepted`, no
+separately retained, PR-specific principal-acceptance comment existed anywhere for that content — the
+acceptance-recording note itself was the only thing asserting acceptance, which is exactly the
+self-certifying pattern that finding rejected. Here, the content being recorded (the scale-and-
+throughput amendment, §§A-Q above) was independently reviewed, explicitly principal-accepted at its
+exact head, and merged to `main` **entirely within a prior, separate, already-closed pull request
+(`PR #224`)** before this acceptance-recording PR was even branched. `issuecomment-5158527253` is not
+this filing's own assertion of acceptance — it is a pre-existing, independently verifiable historical
+artifact this filing merely cites and reconfirms. Setting `status: Accepted` in this commit therefore
+transcribes an acceptance that already, separately, fully closed; it does not assert a new one. This
+distinction does not exempt this filing's own pull request from its own independent exact-head review
+and explicit principal approval before merge (required immediately below) — it means the *content*
+change is not premature the way `CHART-0001`'s was, while this *PR's own lifecycle gate* remains fully
+intact and unweakened.
+
+**Effect — exactly what becomes Accepted, and what does not.** This activates exactly what the
+amendment's own §§A-Q already, conditionally, defined — no authority beyond what was already stated,
+pending acceptance:
+
+- The two-layer Layer A/Layer B/Layer C architecture (§G) is now the accepted, controlling
+  architecture for any future chart-evidence work under `CHART-0002`.
+- Layer A's all-220 deterministic mechanical-preflight methodology (§E) is confirmed capacity-testing
+  methodology; re-running it produces no committed artifact and requires no further authorization —
+  it was already run, live, read-only, with no repository-side effect, in the amendment's own session.
+- The 25-image, single-timeframe general ceiling for future Layer-B implementation PRs (§H), and the
+  five-ticker review-shard/failure-isolation architecture for a batch up to that ceiling (§I), are now
+  the accepted, controlling architecture for a future batch proposal.
+- The recommended first cohort — the full current 19-name eligible universe under §13's unmodified
+  selection rule (`AMZN, ASML, AVGO, CEG, COST, ETN, GEV, GOOGL, ISRG, KLAC, LLY, META, MSFT, NVDA,
+  PANW, PWR, TMO, TSM, V`) — is now the accepted basis a future implementation PR may propose to
+  process, at `1D` only, Stage 1 only, zero Stage 2 records.
+- The storage recommendation (§J: primary Option A — repository-native, LFS-free, hash-manifested
+  evidence packages, unchanged from `CHART-0001`; fallback Option D — GitHub release assets with
+  in-repo manifests/hashes; Git LFS confirmed not installed and not adopted) and its ~250 MB
+  repository-size stopping condition (§M) are now the accepted, controlling storage architecture.
+- The supersession table (§K) is now controlling: the original five-image §8/§14/§16/§21/§26 terms are
+  superseded for future operative purposes exactly as that table states: the original text remains
+  intact as historical record of the superseded five-image proposal.
+
+**Not authorized by this note, now or as a consequence of it alone:** a live Layer A run against any
+image; retention, copying, cropping, or redaction of any image; any chart interpretation or
+chart-derived fact; any Stage 1 or Stage 2 record; processing of the 19-name cohort or any subset of
+it; automatic continuation to an implementation PR; any second acceptance-recording action; any
+tier/target/holdings/gate/cluster/cap change; any dashboard or Company/Theme Intelligence coupling;
+any margin or allocator change; any trading signal, brokerage access, or execution; enabling Git LFS,
+creating another repository, or uploading release assets; opening the future 19-chart implementation
+branch or PR (none exists as of this note, and none is created by this filing). A first Layer-B batch
+still requires its own further, separate, later, explicit principal authorization and implementation
+PR, under its own full `OPS-0007` §1 review cycle and explicit principal acceptance at its own exact
+final head, before it may merge — unchanged from §Q, resized by nothing in this note.
+
+**This session performed no chart analysis and retained no chart image.** No path under
+`~/Projects/Chart-Automation` or `~/Downloads` was read, written, or modified. This note performs no
+repository mutation beyond this file, `governance/decisions.yaml`'s status field,
+`operations/WORKSTREAMS.yaml`'s `WS-0012` entry, and one `CLAUDE.md` Decisions Log pointer — the same
+four-file core scope the controlling authorization above bounds this filing to.
+
+**Effectiveness of this note and this PR.** Per `governance/decisions/README.md`'s convention and
+identical in kind to §Q's own three-gate discipline: this note, the frontmatter `status` change above,
+and every downstream file this session touches take effect only when this recording pull request is
+itself independently reviewed under `OPS-0007` §1, any required bounded correction is made and
+re-reviewed, and the principal explicitly approves it at its own exact final head before merge,
+followed by complete post-merge verification per `OPS-0009` §4(a). This note does not mark its own PR
+ready and does not merge it. This authorization does not yet authorize the 19-chart implementation
+batch — that remains gated on its own further, separate, later, explicit principal authorization and
+implementation PR, exactly as stated above and in §Q.

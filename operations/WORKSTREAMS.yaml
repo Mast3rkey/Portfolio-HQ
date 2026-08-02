@@ -4892,11 +4892,36 @@ workstreams:
       interface constraint, not a desired ceiling, now that Claude Code can
       inspect the governed chart library directly through Terminal, and
       authorized a narrowly bounded scale-and-throughput amendment. That
-      amendment is now the sole active governance lane for CHART-0002 —
-      acceptance-recording under the original five-image terms remains
-      paused and superseded pending the amendment's own independent review
-      and principal acceptance. No image has been retained or analyzed; no
-      batch is authorized; CHART-0002's status remains Proposed throughout.
+      amendment, filed and drafted in PR #224, was
+      independently reviewed (review 4838752317, APPROVED FOR PRINCIPAL
+      ACCEPTANCE, zero BLOCKING/MAJOR/MINOR findings), explicitly
+      principal-accepted at its exact head ab9fb6b49b55f8cf575c2e8d4267e8e15bce52d3
+      (retained comment issuecomment-5158527253), and merged to main at
+      merge commit 3d8ad7896236148e57e9bef3dd8fc003ef55b07a.
+
+      Lifecycle update (2026-08-02, second): following that merge, a new,
+      separate acceptance-recording PR sets CHART-0002's frontmatter and
+      governance/decisions.yaml status from Proposed to Accepted, citing
+      the already-closed PR #224 review/acceptance/merge chain above (this
+      is not the same premature-status pattern review 4835983890 found in
+      CHART-0001's own acceptance-recording PR — see the decision file's
+      own "Acceptance recording" section for the full distinction). This
+      acceptance-recording PR itself is not yet independently reviewed,
+      principal-approved, or merged — CHART-0002's Accepted status is not
+      yet EFFECTIVE in this repository until it is. Even once effective,
+      this authorizes only the governance architecture in CHART-0002
+      §§1-31/A-Q as amended: the all-220 Layer A mechanical-preflight
+      methodology, the 25-image/single-timeframe Layer B general ceiling,
+      the recommended 19-name first cohort, the five-ticker review-shard
+      architecture, and the repository-native LFS-free storage model with
+      its disclosed stopping condition. It does NOT authorize the 19-chart
+      implementation batch itself, any chart interpretation, any image
+      retention, any Stage 1 or Stage 2 record, or any live preflight run
+      against a retained artifact — a separate, later, explicit principal
+      authorization and its own implementation PR (full OPS-0007 §1 review
+      cycle) remain required before any first-batch record may exist. No
+      image has been retained or analyzed by any filing in this lineage to
+      date.
     governing_authority:
       - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md (baseline, untouched)
@@ -4907,20 +4932,29 @@ workstreams:
     priority: secondary
     dependencies: []
     authorized_scope: >
-      None yet — effective only upon the scale-and-throughput amendment's
-      own governance PR merging. Even then, exactly the amendment's §Q
-      grant: one later, separate implementation PR retaining up to 25
-      single-timeframe Chart Evidence Records per batch (general ceiling),
-      with the first batch scoped to the full current 19-name eligible
-      universe (AMZN, ASML, AVGO, CEG, COST, ETN, GEV, GOOGL, ISRG, KLAC,
-      LLY, META, MSFT, NVDA, PANW, PWR, TMO, TSM, V — deterministically
-      selected per CHART-0002 §13, unmodified, reconfirmed live this
-      session against targets.yaml, intelligence/companies/, gates.yaml,
-      and the read-only external Chart-Automation governed library), one
+      Governance architecture only, and not yet EFFECTIVE — CHART-0002's
+      amended §§1-31/A-Q content is Accepted in this file's frontmatter and
+      governance/decisions.yaml, sourced from PR #224's already-closed
+      review/acceptance/merge chain (review 4838752317; comment
+      issuecomment-5158527253; merge 3d8ad7896236148e57e9bef3dd8fc003ef55b07a),
+      but this acceptance-recording PR itself has not yet been
+      independently reviewed, principal-approved at its own exact head, or
+      merged — no downstream authority is effective until it is. Even once
+      effective, this authorizes no batch by itself: exactly the
+      amendment's §Q grant is that a future, separate, explicitly
+      principal-authorized implementation PR MAY be prepared, retaining up
+      to 25 single-timeframe Chart Evidence Records per batch (general
+      ceiling), with the recommended first batch scoped to the full
+      current 19-name eligible universe (AMZN, ASML, AVGO, CEG, COST, ETN,
+      GEV, GOOGL, ISRG, KLAC, LLY, META, MSFT, NVDA, PANW, PWR, TMO, TSM,
+      V — deterministically selected per CHART-0002 §13, unmodified), one
       daily (1D) timeframe each, zero Stage 2 synthesis records, under
       governance/evidence/CHART-0002/<batch-slug>/, plus focused
       package-integrity tests mirroring test_chart_evidence_pilot.py's
-      existing shape, extended to cohort-level completeness. No production
+      existing shape, extended to cohort-level completeness. That future
+      implementation PR requires its own separate, explicit principal
+      authorization before it may even be drafted — this workstream's own
+      acceptance does not itself supply that authorization. No production
       file may be created or modified under this workstream.
     prohibited_scope: >
       Processing any of the 220 governed chart images beyond the current
@@ -4990,37 +5024,91 @@ workstreams:
         pr: null
         status: drafted
         date: "2026-08-02"
+      - gate: scale-throughput-amendment-accepted-and-merged
+        description: >
+          The scale-and-throughput amendment's governance PR (#224) was
+          independently reviewed (review 4838752317, APPROVED FOR
+          PRINCIPAL ACCEPTANCE, zero BLOCKING/MAJOR/MINOR findings),
+          explicitly principal-accepted at its exact head
+          ab9fb6b49b55f8cf575c2e8d4267e8e15bce52d3 (retained comment
+          issuecomment-5158527253, bounding acceptance to exactly: all-220
+          mechanical-preflight capacity; the 25-image single-timeframe
+          Stage 1 ceiling; the recommended 19-name first cohort;
+          five-ticker review shards with one final integration review;
+          repository-native LFS-free storage with its disclosed stopping
+          condition and fallback — while not authorizing a live preflight,
+          image retention, chart interpretation, Stage 1, Stage 2,
+          processing of the cohort, automatic continuation, or any
+          policy/trading/execution change), and merged to main at merge
+          commit 3d8ad7896236148e57e9bef3dd8fc003ef55b07a.
+        pr: 224
+        status: merged
+        date: "2026-08-02"
+      - gate: acceptance-recorded
+        description: >
+          A new, separate acceptance-recording PR sets CHART-0002's
+          frontmatter and governance/decisions.yaml status from Proposed
+          to Accepted, citing PR #224's already-closed review/acceptance/
+          merge chain above, and appends a dated "Acceptance recording"
+          section to the decision file distinguishing this sequencing from
+          CHART-0001's own premature-status finding (review 4835983890):
+          here the accepted content was independently reviewed,
+          principal-accepted, and merged entirely within a prior, separate,
+          already-closed PR (#224) before this recording PR was branched,
+          so the status change transcribes an already-closed acceptance
+          rather than asserting a new one. This register entry and one
+          CLAUDE.md Decisions Log pointer were updated in the same PR. This
+          gate's own PR is not yet independently reviewed, principal
+          mark-ready-approved at its exact head, or merged — CHART-0002's
+          Accepted status is not yet EFFECTIVE per the decision file's own
+          gating language until it is. No chart image, chart-derived fact,
+          or implementation code is touched by this filing; no
+          implementation branch or PR is opened; the 19-chart batch remains
+          unauthorized.
+        pr: null
+        status: drafted
+        date: "2026-08-02"
     evidence_refs:
       - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
     next_action: >
-      Independent, exact-head review of the scale-and-throughput
-      amendment's governance PR under OPS-0007 §1's capability-based
-      standard (OPS-0009 Lane G — full weight, no reduction), followed by
-      any required bounded correction, exact-head re-review, and explicit
-      principal acceptance before the PR may be marked ready and merged.
-      Acceptance-recording under the superseded original five-image terms
-      remains paused. No first-batch implementation work, no image
-      retention, and no Chart Evidence Record may begin before the
-      amendment merges and a further, separate implementation PR is itself
-      independently reviewed and principal-accepted.
+      Independent, exact-head review of this acceptance-recording PR under
+      OPS-0007 §1's capability-based standard (OPS-0009 Lane G — full
+      weight, no reduction), followed by any required bounded correction
+      and exact-head re-review, then explicit principal mark-ready approval
+      at its own exact final head before merge, then complete post-merge
+      verification per OPS-0009 §4(a). Only after that merge does
+      CHART-0002's Accepted status become EFFECTIVE. Even then, no
+      first-batch implementation work, no image retention, and no Chart
+      Evidence Record may begin — a separate, later, explicit principal
+      authorization is required before a future 19-chart implementation PR
+      may even be drafted, and that future PR requires its own full
+      OPS-0007 §1 review cycle and principal acceptance before it may
+      merge.
     completion_criteria: >
-      Not met. Requires, at minimum: the scale-and-throughput amendment
-      independently reviewed and principal-accepted at its exact final
-      head, then merged; a later, separate implementation PR retaining
-      exactly the first-batch cohort per the amendment's §H/§Q, itself
-      independently reviewed and principal-accepted; and post-merge
-      verification per OPS-0009 §4(a). Any batch beyond the first requires
+      Not met for this workstream as a whole. This acceptance-recording
+      gate requires, at minimum: independent exact-head review, any
+      required bounded correction and re-review, explicit principal
+      mark-ready approval at the exact final head, merge to main, and
+      post-merge verification per OPS-0009 §4(a) — none of which has
+      occurred yet. Even once met, workstream completion additionally
+      requires a later, separate, explicitly principal-authorized
+      implementation PR retaining exactly the first-batch cohort per the
+      amendment's §H/§Q, itself independently reviewed and
+      principal-accepted before merge. Any batch beyond the first requires
       its own separate future governance decision — this workstream's
       completion does not itself authorize one.
     blocker: >
-      The scale-and-throughput amendment's governance PR has not yet been
-      independently reviewed or principal-accepted. No implementation PR
-      may open until it merges. Acceptance-recording under the original
-      five-image terms remains paused per the principal's own instruction.
-    active_branch: claude/chart-0002-scale-throughput-amendment
+      This acceptance-recording PR has not yet been independently reviewed
+      or principal-approved at its exact final head, so CHART-0002's
+      Accepted status (set in this PR's own content) is not yet EFFECTIVE.
+      No implementation PR may open until this PR merges, and even then,
+      only under its own separate, explicit, future principal
+      authorization — this acceptance alone does not authorize the
+      19-chart batch.
+    active_branch: claude/chart-0002-amended-acceptance-recording
     active_pr: null
-    last_verified_main_sha: 6b503b835cb9db71b958e700113614a1c49bc8c8
+    last_verified_main_sha: 3d8ad7896236148e57e9bef3dd8fc003ef55b07a
     last_verified_date: "2026-08-02"
     authorized_by: null
     supersedes: null
