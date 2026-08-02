@@ -314,3 +314,57 @@ def test_readme_retains_no_scaling_and_advisory_boundaries():
     assert "no scaling authority" in text
     assert "secondary observational evidence" in text
     assert "ladder-0001" in text
+
+
+# ── acceptance-provenance disclosure (bounded correction) ──────────────
+
+def _normalized(text: str) -> str:
+    """Collapse whitespace/newlines so YAML folded-scalar line wrapping
+    doesn't make substring assertions fragile."""
+    return " ".join(text.split()).lower()
+
+
+def test_principal_acceptance_discloses_no_retained_pr220_comment(record):
+    acceptance = _normalized(record["provenance"]["principal_acceptance"])
+    assert "contemporaneous pr #220" in acceptance
+    assert "issue comment, review comment, or commit message" in acceptance
+
+
+def test_principal_acceptance_discloses_same_account_merge_metadata_limit(record):
+    acceptance = _normalized(record["provenance"]["principal_acceptance"])
+    assert "same-account" in acceptance
+    assert "ready-for-review event" in acceptance
+    assert "eighteen seconds apart" in acceptance
+    assert "must not itself be treated as independent proof of" in acceptance
+
+
+def test_principal_acceptance_discloses_retrospective_reaffirmation(record):
+    acceptance = _normalized(record["provenance"]["principal_acceptance"])
+    assert "retrospectively reaffirmed" in acceptance
+    assert "pr #221" in acceptance
+
+
+def test_principal_acceptance_disclosure_does_not_retract_acceptance(record):
+    acceptance = _normalized(record["provenance"]["principal_acceptance"])
+    assert "does not retract" in acceptance
+    assert "9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550" in record["provenance"]["principal_acceptance"]
+
+
+def test_principal_acceptance_disclosure_does_not_claim_pr221_accepted(record):
+    acceptance = _normalized(record["provenance"]["principal_acceptance"])
+    assert "does not assert that pr #221's own review/acceptance/merge lifecycle is in any way complete" in acceptance
+
+
+def test_ws0011_discloses_acceptance_provenance_gap():
+    text = _normalized((Path(__file__).parent / "operations" / "WORKSTREAMS.yaml").read_text())
+    assert "acceptance-provenance disclosure" in text
+    assert "eighteen seconds apart" in text
+    assert "does not reopen or unmeet this completion criterion" in text
+
+
+def test_readme_discloses_acceptance_provenance_gap():
+    text = _normalized((PACKAGE_DIR / "README.md").read_text())
+    assert "acceptance-provenance disclosure" in text
+    assert "eighteen seconds apart" in text
+    assert "this synchronization pr (#221) has its own separate, still-open review/acceptance/ merge gate" in text \
+        or "this synchronization pr (#221) has its own separate, still-open review/acceptance/merge gate" in text

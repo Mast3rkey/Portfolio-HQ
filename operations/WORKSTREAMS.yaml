@@ -4740,6 +4740,29 @@ workstreams:
           (2026-08-01 22:21:42 local, UTC-4). GitHub Actions CI run
           30728722064 on the merge commit completed with conclusion
           success.
+
+          Acceptance-provenance disclosure (added by a later synchronization
+          session, correcting a MAJOR finding in independent review
+          4836841500 anchored to that synchronization PR's prior head
+          f1b773f1ce145f0d9c88b5e2f81fb52e9ef5d8d4): this acceptance was not
+          retained as a separate, contemporaneous PR #220 GitHub issue
+          comment, review comment, or commit message. PR #220's only
+          GitHub-visible lifecycle evidence is the same-account (Mast3rkey)
+          ready-for-review event at 2026-08-02T02:21:24Z and the merge event
+          at 2026-08-02T02:21:42Z above, eighteen seconds apart — that
+          same-account timing/merge metadata is not, by itself, independent
+          proof of principal acceptance, per the standard CHART-0001 itself
+          established for the structurally identical situation the same day
+          (its own "Bounded correction -- premature status transition
+          reverted" section: acceptance must never be inferred "from
+          authorship, from timing, or from merge metadata"). The underlying
+          acceptance was recorded in the principal/ChatGPT workflow, outside
+          this repository's retained GitHub history, and is retrospectively
+          reaffirmed by the principal's own explicit authorization quoted
+          verbatim in PR #221's description. This disclosure records that
+          retention limitation only -- it does not retract the acceptance
+          statement above and does not assert that PR #221's own
+          review/acceptance/merge lifecycle is itself complete.
         pr: 220
         status: merged
         date: "2026-08-01"
@@ -4801,7 +4824,15 @@ workstreams:
       post-merge verified (hashes, focused tests, dashboard/full suite
       modulo the one disclosed pre-existing checkout-directory-naming
       artifact, and merge-commit CI run 30728722064 success). This register
-      entry is factually synchronized to that state.
+      entry is factually synchronized to that state. The principal-
+      acceptance-and-merge milestone above additionally carries an
+      acceptance-provenance disclosure (added correcting a MAJOR finding in
+      independent review 4836841500): that acceptance has no separately
+      retained, contemporaneous PR #220 GitHub comment, only same-account
+      ready/merge lifecycle events, and is retrospectively reaffirmed via
+      PR #221's own quoted authorization. That disclosure narrows what the
+      acceptance evidence consists of; it does not reopen or unmeet this
+      completion criterion.
     blocker: >
       None. The NVDA daily pilot implementation (PR #220) merged and closed
       this workstream's bounded scope. No second asset or scaling of any

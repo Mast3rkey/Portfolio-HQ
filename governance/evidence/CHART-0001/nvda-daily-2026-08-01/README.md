@@ -165,8 +165,32 @@ complete:
    passing, and merge-commit CI run `30728722064` completed with conclusion
    `success`.
 
+**Acceptance-provenance disclosure**, added by this synchronization session,
+correcting a MAJOR finding in independent review `4836841500` (anchored to
+this PR's prior head `f1b773f1ce145f0d9c88b5e2f81fb52e9ef5d8d4`): step 3's
+principal acceptance was not retained as a separate, contemporaneous PR #220
+GitHub issue comment, review comment, or commit message. PR #220's only
+GitHub-visible lifecycle evidence is a same-account (`Mast3rkey`)
+ready-for-review event at `2026-08-02T02:21:24Z` followed immediately by a
+merge event at `2026-08-02T02:21:42Z`, eighteen seconds apart — that
+same-account timing/merge metadata is not, by itself, independent proof of
+principal acceptance, per the standard `CHART-0001` itself established for
+the structurally identical situation the same day (its own "Bounded
+correction — premature status transition reverted" section: acceptance must
+never be inferred "from authorship, from timing, or from merge metadata").
+The underlying acceptance was recorded in the principal/ChatGPT workflow,
+outside this repository's retained GitHub history, and is retrospectively
+reaffirmed by the principal's own explicit authorization quoted verbatim in
+PR #221's description (the pull request performing this synchronization).
+This disclosure records that retention limitation only — it does not retract
+step 3 above, and it does not assert that PR #221's own review, acceptance,
+or merge lifecycle is itself complete (see the separate, still-open gate
+described in this package's governing WS-0011 entry).
+
 No further review, correction, acceptance, or merge action remains open for
-this one-image pilot.
+this one-image pilot's own already-merged content (PR #220). This
+synchronization PR (#221) has its own separate, still-open review/acceptance/
+merge gate, unaffected by the statement above.
 
 ## No scaling authority
 
