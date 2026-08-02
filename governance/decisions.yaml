@@ -419,3 +419,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0011, PI-0001, PI-0011, LADDER-0001, PHQ-2026-06]
     supporting_artifact: null
     file: governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
+  - decision_id: CHART-0002
+    date: 2026-08-02
+    status: Proposed
+    category: chart_evidence_governance
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, CHART-0001, PI-0001, PI-0011, LADDER-0001]
+    supporting_artifact: null
+    file: governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
