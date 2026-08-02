@@ -4856,3 +4856,112 @@ workstreams:
       screenshot or broader chart-evidence processing.
     supersedes: null
     superseded_by: null
+
+  - id: WS-0012
+    title: Bounded multi-chart evidence framework (CHART-0002)
+    objective: >
+      Track CHART-0002's proposed, bounded expansion from CHART-0001's closed
+      single-image pilot (WS-0011, status: complete, untouched by this entry)
+      to a governed multi-chart analysis framework: a two-stage evidence
+      architecture (Stage 1 image-level Chart Evidence Records; Stage 2
+      ticker-level cross-timeframe synthesis records, referencing Stage 1
+      records only), reusing CHART-0001's accepted fact/observation/
+      inference/uncertainty separation, privacy standard, provenance/hash
+      controls, advisory-only status, freshness treatment, and
+      evidence-package pattern. This workstream records that CHART-0002 is
+      proposed, not accepted; no chart evidence has been committed; no batch
+      implementation has begun; independent review and explicit principal
+      acceptance of CHART-0002's own content are required before this
+      authorization is effective, and — even then — a further, separate,
+      bounded implementation PR (CHART-0002 §14, §19) is required before any
+      first-batch record exists. Filed as a new workstream rather than a
+      WS-0011 phase because WS-0011's own status: complete/blocker:
+      None/next_action fields explicitly disclaim authorizing any scaling of
+      that closed pilot — see CHART-0002 §26 and its Alternatives Considered
+      section for the full reasoning, directly precedented by WS-0010
+      (LADDER-0001), a comparably new, bounded charter given its own
+      workstream rather than folded into an existing one.
+    governing_authority:
+      - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
+      - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md (baseline, untouched)
+      - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md (review standard)
+      - governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md (Lane G)
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
+    status: proposed
+    priority: secondary
+    dependencies: []
+    authorized_scope: >
+      None yet — effective only upon CHART-0002's governance PR merging.
+      Even then, exactly CHART-0002 §14's bounded first-batch grant: one
+      later, separate implementation PR retaining exactly five images
+      (AMZN, ASML, AVGO, CEG, COST — deterministically selected per
+      CHART-0002 §13, verified live against targets.yaml, intelligence/
+      companies/, gates.yaml, and the read-only external Chart-Automation
+      governed library), one daily (1D) timeframe each, five Stage 1 Chart
+      Evidence Records, zero Stage 2 synthesis records, under
+      governance/evidence/CHART-0002/<batch-slug>/, plus focused
+      package-integrity tests mirroring test_chart_evidence_pilot.py's
+      existing shape. No production file may be created or modified under
+      this workstream.
+    prohibited_scope: >
+      Processing any of the 220 governed chart images beyond the five named
+      above; any sixth ticker or second timeframe per ticker in the first
+      batch; any Stage 2 cross-timeframe synthesis record; any second batch
+      of any kind; bulk or recurring ingestion; automated chart
+      interpretation or OCR-derived market-data authority; chart-pattern
+      systems, technical scoring, ranking, or capital-priority aggregation;
+      price targets or trading signals; any tier/target/holdings/margin/
+      allocator/brokerage change; any use as LADDER-0001 or any other
+      research/backtest input; any Company/Theme Intelligence record edit or
+      frozen-schema extension; any dashboard integration; any write into
+      ~/Projects/Chart-Automation or ~/Downloads; marking any future
+      implementation PR ready or merging it without independent review and
+      explicit principal acceptance at its exact final head.
+    milestones:
+      - gate: governance-pr-drafted
+        description: >
+          CHART-0002 filed (governance decision file), governance/
+          decisions.yaml and CLAUDE.md's Decisions Log pointer updated, this
+          register entry added. holdings.yaml, targets.yaml, gates.yaml,
+          issuer_lookthrough.yaml, allocate.py, margin_state.py, levels.py,
+          docs/PORTFOLIO_INTELLIGENCE_SPEC.md, every existing Company/Theme
+          Intelligence record, CHART-0001's own decision file, and the
+          WS-0011 register entry confirmed byte-identical to origin/main at
+          filing time (this filing does not touch any of them). No file
+          under ~/Projects/Chart-Automation or ~/Downloads was written to —
+          that project's inventory/manifest/filesystem facts were read
+          only, to independently verify the 220-image/55-ticker/4-timeframe
+          governed library and the deterministic first-batch selection
+          rule's live result.
+        pr: null
+        status: drafted
+        date: "2026-08-02"
+    evidence_refs:
+      - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
+      - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
+    next_action: >
+      Independent, exact-head review of CHART-0002's governance PR under
+      OPS-0007 §1's capability-based standard (OPS-0009 Lane G — full
+      weight, no reduction), followed by any required bounded correction,
+      exact-head re-review, and explicit principal acceptance before the PR
+      may be marked ready and merged. No first-batch implementation work,
+      no image retention, and no Chart Evidence Record may begin before
+      that merge.
+    completion_criteria: >
+      Not met. Requires, at minimum: CHART-0002 merged; a later, separate
+      implementation PR retaining exactly the five named images/records per
+      §14, itself independently reviewed and principal-accepted; and post-
+      merge verification per OPS-0009 §4(a). Any further batch beyond the
+      first five tickers requires its own separate future governance
+      decision — this workstream's completion does not itself authorize one
+      (CHART-0002 §25, §31).
+    blocker: >
+      CHART-0002's governance PR has not yet been independently reviewed or
+      principal-accepted. No implementation PR may open until it merges.
+    active_branch: claude/chart-0002-scale-governance-proposal
+    active_pr: null
+    last_verified_main_sha: 9d5d4766a1861e94ddc3aa515578adfd58de5e2e
+    last_verified_date: "2026-08-02"
+    authorized_by: null
+    supersedes: null
+    superseded_by: null
