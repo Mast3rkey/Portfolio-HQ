@@ -10,11 +10,15 @@ one-asset/one-screenshot pilot: **NVDA, daily timeframe, captured
 defines an advisory Chart Evidence Record type and, once accepted, authorizes
 exactly one future implementation PR for a bounded one-asset/one-screenshot
 pilot. The principal's dated acceptance note and the further principal
-authorization quoted in this PR's description activate that pilot's
-*preparation* — this package is that preparation. It is not itself accepted,
-merged, or effective as chart-evidence policy until its own independent
-`OPS-0007` §1 review and explicit principal acceptance, per CHART-0001 §§8-9
-and §14.
+authorization quoted in PR #220's description activated that pilot's
+preparation — this package was that preparation. Final independent delta
+review `4836601466` (state COMMENTED, verdict **APPROVED FOR PRINCIPAL
+ACCEPTANCE**) found no surviving BLOCKING, MAJOR, or MINOR finding at exact
+head `9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550`; the principal then explicitly
+accepted that exact head, and PR #220 merged to `main` at merge commit
+`5fbd529a736df4fbb46b72fed1351414aa07db1b`. This package is now the
+**accepted and merged** one-image CHART-0001 §8 pilot evidence package, per
+CHART-0001 §§8-9 and §14.
 
 ## Exact scope: one image, one asset, one timeframe
 
@@ -139,22 +143,54 @@ does not use or extend. Staleness past that date requires disclosure or
 analyst abstention from relying on this record, never an automatic policy
 change of any kind.
 
-## Outstanding review and acceptance gates
+## Review, acceptance, and merge — closed
 
-This package, and the PR that introduces it, are **not** effective chart-
-evidence policy on their own. Per CHART-0001 §§8-9 and §14, still required
-before this pilot may be considered complete:
+Per CHART-0001 §§8-9 and §14, this pilot's required lifecycle gates are now
+complete:
 
-1. Independent, exact-head review under `OPS-0007` §1 (this is `OPS-0009`
-   Lane G in full, per CHART-0001 §8 — never reduced weight).
-2. Any bounded correction such review finds necessary, plus exact-head
-   re-review.
-3. Explicit principal acceptance at the exact final head.
-4. Merge to `main`, followed by post-merge verification per `OPS-0009` §4(a).
+1. Independent, exact-head review under `OPS-0007` §1 (`OPS-0009` Lane G in
+   full, per CHART-0001 §8 — never reduced weight): review `4836345012`
+   (verdict CHANGES REQUIRED) found two MAJOR and two MINOR findings; a
+   bounded correction pass resolved all four; a separate, later cross-model
+   check surfaced one further narrow correction (bottom-panel peak timing),
+   also resolved by a bounded correction pass.
+2. Exact-head delta re-review: `4836601466`, anchored to final head
+   `9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550`, verdict **APPROVED FOR
+   PRINCIPAL ACCEPTANCE** — no surviving BLOCKING, MAJOR, or MINOR finding.
+3. Explicit principal acceptance at that exact final head, on 2026-08-01.
+4. Merge to `main`: PR #220, merge commit
+   `5fbd529a736df4fbb46b72fed1351414aa07db1b`. Post-merge verification per
+   `OPS-0009` §4(a) confirmed the retained image, `record.yaml`, and
+   `README.md` hashes unchanged from the accepted head, focused tests 25/25
+   passing, and merge-commit CI run `30728722064` completed with conclusion
+   `success`.
 
-This PR is opened as a **draft** and stays draft through this session. No
-merge, no "ready for review" transition, and no independent review are
-performed by this authoring session.
+**Acceptance-provenance disclosure**, added by this synchronization session,
+correcting a MAJOR finding in independent review `4836841500` (anchored to
+this PR's prior head `f1b773f1ce145f0d9c88b5e2f81fb52e9ef5d8d4`): step 3's
+principal acceptance was not retained as a separate, contemporaneous PR #220
+GitHub issue comment, review comment, or commit message. PR #220's only
+GitHub-visible lifecycle evidence is a same-account (`Mast3rkey`)
+ready-for-review event at `2026-08-02T02:21:24Z` followed immediately by a
+merge event at `2026-08-02T02:21:42Z`, eighteen seconds apart — that
+same-account timing/merge metadata is not, by itself, independent proof of
+principal acceptance, per the standard `CHART-0001` itself established for
+the structurally identical situation the same day (its own "Bounded
+correction — premature status transition reverted" section: acceptance must
+never be inferred "from authorship, from timing, or from merge metadata").
+The underlying acceptance was recorded in the principal/ChatGPT workflow,
+outside this repository's retained GitHub history, and is retrospectively
+reaffirmed by the principal's own explicit authorization quoted verbatim in
+PR #221's description (the pull request performing this synchronization).
+This disclosure records that retention limitation only — it does not retract
+step 3 above, and it does not assert that PR #221's own review, acceptance,
+or merge lifecycle is itself complete (see the separate, still-open gate
+described in this package's governing WS-0011 entry).
+
+No further review, correction, acceptance, or merge action remains open for
+this one-image pilot's own already-merged content (PR #220). This
+synchronization PR (#221) has its own separate, still-open review/acceptance/
+merge gate, unaffected by the statement above.
 
 ## No scaling authority
 
