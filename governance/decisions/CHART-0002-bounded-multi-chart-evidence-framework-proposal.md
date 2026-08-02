@@ -1,7 +1,7 @@
 ---
 decision_id: CHART-0002
 date: 2026-08-02
-status: Proposed
+status: Accepted
 category: chart_evidence_governance
 related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, CHART-0001, PI-0001, PI-0011, LADDER-0001]
 supporting_artifact: null
@@ -765,3 +765,121 @@ This decision — including its own acceptance, not only its merge — requires 
 principal step this filing does not take. This decision becomes effective, to the bounded extent stated
 above, only when its implementing pull request is independently reviewed, explicitly accepted by the
 principal, and merged to `main`.
+
+## Principal acceptance recorded; status transition (2026-08-02)
+
+_Dated note appended per `governance/decisions/README.md`'s convention for a narrow, additive
+lifecycle correction — §§1-31, Rationale, Alternatives Considered, and Consequences above are unedited
+and remain exactly as originally filed and merged via PR #222. Frontmatter `status` is updated to
+`Accepted` above, alongside this note._
+
+**This note records an already-retained principal decision — it does not itself generate a new
+acceptance.** The principal's explicit content-acceptance of CHART-0002 was given, and separately
+retained, on the content proposal's own pull request (PR #222, issue comment
+[`5155704682`](https://github.com/Mast3rkey/Portfolio-HQ/pull/222#issuecomment-5155704682)) **before**
+this acceptance-recording pull request was opened. Unlike `CHART-0001`'s own PR #219 sequence — where
+an early commit set `status: Accepted` without a separately retained, PR-specific acceptance comment
+naming that PR's own exact head, and was found MATERIAL-defective and reverted for that reason — this
+filing sets `status: Accepted` in its own first commit precisely because the qualifying principal
+acceptance already exists, predates this PR, and expressly authorizes this PR to make exactly this
+change. No inference from authorship, timing, or prose is used in place of that retained comment.
+
+**Lifecycle steps, distinguished (none conflated with another):**
+
+1. **Preparation authorization** — the principal's separate, earlier authorization (recorded in
+   CHART-0002 §27 / Context) to prepare this Lane G proposal. This did not accept its content.
+2. **Content acceptance** — comment `5155704682` on PR #222, quoted verbatim below. This accepted
+   CHART-0002's content at exact proposal head `1594fd6d6f19b54631336b9f5181781da0edd915`; it did not
+   itself merge PR #222 or record the status transition.
+3. **Proposal merge** — PR #222 merged to `main` at merge commit
+   `6b503b835cb9db71b958e700113614a1c49bc8c8` (parents
+   `9d5d4766a1861e94ddc3aa515578adfd58de5e2e` and `1594fd6d6f19b54631336b9f5181781da0edd915`),
+   independently reverified this session; its exact-head CI run
+   ([`30734539905`](https://github.com/Mast3rkey/Portfolio-HQ/actions/runs/30734539905)) completed
+   `success`. Merging PR #222 recorded the reviewed proposal on `main` but — per the principal's own
+   comment below — did not by itself change `status` from `Proposed` to `Accepted` or authorize any
+   chart implementation.
+4. **Acceptance recording** — this filing. It changes `status` from `Proposed` to `Accepted` in this
+   file and in `governance/decisions.yaml`, factually synchronizes `WS-0012`, and updates the
+   `CLAUDE.md` Decisions Log pointer — the same four-file scope the principal's authorization names.
+5. **Implementation authority** — not granted by this filing. A further, separate, later implementation
+   PR (§14/§19) is required before any Chart Evidence Record, image retention, or chart analysis of any
+   kind may occur.
+
+**Review provenance re-verified this session, not assumed:**
+
+- Full review [`4837275237`](https://github.com/Mast3rkey/Portfolio-HQ/pull/222#pullrequestreview-4837275237)
+  — state `COMMENTED`, anchored to commit `279c0783e43ca17597d89cb8de70503386927521`, verdict
+  **`CHANGES REQUIRED`**, zero BLOCKING, zero MAJOR, exactly one MINOR (a CEG administrative
+  source-folder-naming grep-precision defect in the decision text). That sole MINOR finding was
+  corrected in the proposal's next commit.
+- Exact-head delta re-review
+  [`4837356725`](https://github.com/Mast3rkey/Portfolio-HQ/pull/222#pullrequestreview-4837356725) —
+  state `COMMENTED`, anchored to accepted proposal head `1594fd6d6f19b54631336b9f5181781da0edd915`,
+  verdict **`APPROVED FOR PRINCIPAL ACCEPTANCE`**, zero surviving BLOCKING, MAJOR, or MINOR findings.
+
+**Principal content acceptance (verbatim, PR #222 issue comment `5155704682`):**
+
+> I explicitly accept the content of the CHART-0002 bounded multi-chart evidence framework proposed in
+> PR #222 at exact head 1594fd6d6f19b54631336b9f5181781da0edd915, based on retained independent delta
+> review 4837356725, whose verdict is APPROVED FOR PRINCIPAL ACCEPTANCE with zero surviving BLOCKING,
+> MAJOR, or MINOR findings.
+>
+> I authorize PR #222 to be marked ready and merged unchanged at that exact head, subject to immediate
+> re-verification that the base and head SHAs, exact-head CI, reviews, comments, threads, mergeability,
+> current-main compatibility, five-file scope, and Proposed status remain unchanged, followed by
+> complete post-merge verification.
+>
+> I understand and direct that merging PR #222 unchanged records the reviewed CHART-0002 proposal on
+> main but does not, by itself, change status from Proposed to Accepted or authorize chart
+> implementation.
+>
+> After PR #222 is merged and post-merge verified, I authorize preparation only of a separate,
+> narrowly bounded acceptance-recording pull request following the worked CHART-0001 lifecycle
+> precedent. That later pull request may retain this exact principal acceptance, add the required
+> dated acceptance record, change CHART-0002 from Proposed to Accepted in the controlling decision
+> file and decision index, factually synchronize WS-0012 and the applicable decision pointer, and
+> undergo its own exact-head review, principal confirmation, merge, and post-merge verification.
+>
+> Until that separate acceptance-recording pull request is merged and verified, no CHART-0002
+> implementation is authorized.
+>
+> This acceptance creates no authority for chart analysis in PR #222, image retention, Stage 1 or
+> Stage 2 records, a sixth ticker, a second timeframe, processing the remaining chart library, bulk or
+> recurring ingestion, automated chart interpretation, OCR-derived market-data authority, scoring,
+> ranking, price targets, trading signals, dashboard integration, Company or Theme Intelligence
+> mutation, LADDER-0001 use, or any tier, target, holdings, allocation, margin, allocator, brokerage,
+> or trading change.
+
+**Effect, bounded to exactly what §§1-31 above already, conditionally, defined.** This note and the
+frontmatter `status` change activate CHART-0002's governance text as the accepted, controlling
+definition for future chart-evidence work in this repository, to the extent §§1-31 already stated it —
+no new authority is created beyond what was already conditionally described pending acceptance. In
+particular, §14's five-ticker (AMZN, ASML, AVGO, CEG, COST), daily-only, Stage-1-only first batch
+becomes the accepted basis on which a future, separate implementation PR **may be prepared and
+opened** — preparation only. §19's separate-implementation-PR requirement and §20's three-gate
+discipline (independent exact-head review under `OPS-0007` §1, any required bounded correction and
+re-review, explicit principal acceptance at the exact final head before merge, and post-merge
+verification per `OPS-0009` §4(a) once merged) are unweakened. §31's scope limit is unweakened: this
+acceptance authorizes exactly the first batch, nothing more — no sixth ticker, no second timeframe, no
+Stage 2 record, no second batch, no processing of the other 14 eligible tickers or any §18 gap-category
+ticker.
+
+**Not authorized by this note:** opening the §14 implementation branch or PR; drafting, committing, or
+retaining any chart image, extracted chart fact, or chart-derived observation; any Company/Theme
+Intelligence edit; any dashboard change; any `holdings.yaml`/`targets.yaml`/`gates.yaml`/
+`issuer_lookthrough.yaml`/`allocate.py`/`margin_state.py`/`levels.py` change; any margin action; any
+brokerage action; a second batch. **This note performs no chart analysis and retains no chart image or
+extracted chart fact** — this session did not access, view, inspect, or analyze any file under
+`~/Projects/Chart-Automation` or `~/Downloads`. This note performs no repository mutation beyond this
+file, `governance/decisions.yaml`'s status field, `operations/WORKSTREAMS.yaml`'s `WS-0012` entry, and
+one `CLAUDE.md` Decisions Log pointer entry — the same four-file scope §27 already bounded this filing
+to.
+
+**Effectiveness of this note.** Identical discipline to `CHART-0001` §14/§29's own precedent, and to
+the original filing's own §29: this note, the frontmatter `status` change above, and every downstream
+file this acceptance-recording pull request touches take effect only when this pull request is itself
+independently reviewed under `OPS-0007` §1, any required bounded correction is made and re-reviewed,
+and it is explicitly principal-confirmed at its exact final head and merged to `main` — followed by
+post-merge verification per `OPS-0009` §4(a). This note does not mark its own pull request ready and
+does not merge it.

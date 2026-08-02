@@ -4860,7 +4860,7 @@ workstreams:
   - id: WS-0012
     title: Bounded multi-chart evidence framework (CHART-0002)
     objective: >
-      Track CHART-0002's proposed, bounded expansion from CHART-0001's closed
+      Track CHART-0002's bounded expansion from CHART-0001's closed
       single-image pilot (WS-0011, status: complete, untouched by this entry)
       to a governed multi-chart analysis framework: a two-stage evidence
       architecture (Stage 1 image-level Chart Evidence Records; Stage 2
@@ -4868,19 +4868,37 @@ workstreams:
       records only), reusing CHART-0001's accepted fact/observation/
       inference/uncertainty separation, privacy standard, provenance/hash
       controls, advisory-only status, freshness treatment, and
-      evidence-package pattern. This workstream records that CHART-0002 is
-      proposed, not accepted; no chart evidence has been committed; no batch
-      implementation has begun; independent review and explicit principal
-      acceptance of CHART-0002's own content are required before this
-      authorization is effective, and — even then — a further, separate,
-      bounded implementation PR (CHART-0002 §14, §19) is required before any
-      first-batch record exists. Filed as a new workstream rather than a
-      WS-0011 phase because WS-0011's own status: complete/blocker:
-      None/next_action fields explicitly disclaim authorizing any scaling of
-      that closed pilot — see CHART-0002 §26 and its Alternatives Considered
-      section for the full reasoning, directly precedented by WS-0010
-      (LADDER-0001), a comparably new, bounded charter given its own
-      workstream rather than folded into an existing one.
+      evidence-package pattern. CHART-0002's governance proposal PR (#222)
+      is confirmed merged to main at merge commit
+      6b503b835cb9db71b958e700113614a1c49bc8c8 (independently re-verified
+      this session via `git log`/`gh pr view`, not assumed) — this recorded
+      the reviewed proposal on main but, per the principal's own retained
+      acceptance comment, did not by itself change status from Proposed to
+      Accepted or authorize any implementation. The principal separately,
+      explicitly accepted CHART-0002's content on PR #222 itself (issue
+      comment 5155704682, anchored to exact proposal head
+      1594fd6d6f19b54631336b9f5181781da0edd915, citing independent delta
+      review 4837356725's verdict APPROVED FOR PRINCIPAL ACCEPTANCE with
+      zero surviving BLOCKING/MAJOR/MINOR findings) and authorized
+      preparation only of a further, separate, narrowly bounded
+      acceptance-recording pull request to record that already-retained
+      decision. This entry tracks that acceptance-recording pull request:
+      it is drafted but not yet merged, so CHART-0002's status: Accepted
+      (set in this same pull request's decision-file and decisions.yaml
+      edits) is **not yet effective** — no chart evidence has been
+      committed; no batch implementation has begun; independent review and
+      explicit principal confirmation of this specific acceptance-recording
+      pull request at its exact head, followed by merge and post-merge
+      verification, are required before CHART-0002 is effective, and —
+      even then — a further, separate, bounded implementation PR
+      (CHART-0002 §14, §19) is required before any first-batch record
+      exists. Filed as a new workstream rather than a WS-0011 phase because
+      WS-0011's own status: complete/blocker: None/next_action fields
+      explicitly disclaim authorizing any scaling of that closed pilot —
+      see CHART-0002 §26 and its Alternatives Considered section for the
+      full reasoning, directly precedented by WS-0010 (LADDER-0001), a
+      comparably new, bounded charter given its own workstream rather than
+      folded into an existing one.
     governing_authority:
       - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md (baseline, untouched)
@@ -4891,18 +4909,21 @@ workstreams:
     priority: secondary
     dependencies: []
     authorized_scope: >
-      None yet — effective only upon CHART-0002's governance PR merging.
-      Even then, exactly CHART-0002 §14's bounded first-batch grant: one
-      later, separate implementation PR retaining exactly five images
-      (AMZN, ASML, AVGO, CEG, COST — deterministically selected per
-      CHART-0002 §13, verified live against targets.yaml, intelligence/
-      companies/, gates.yaml, and the read-only external Chart-Automation
-      governed library), one daily (1D) timeframe each, five Stage 1 Chart
-      Evidence Records, zero Stage 2 synthesis records, under
+      None yet — effective only upon this separate acceptance-recording
+      pull request merging (distinct from, and later than, CHART-0002's own
+      governance proposal PR #222, which has already merged). Even then,
+      exactly CHART-0002 §14's bounded first-batch grant: one later,
+      separate implementation PR retaining exactly five images (AMZN,
+      ASML, AVGO, CEG, COST — deterministically selected per CHART-0002
+      §13, verified live against targets.yaml, intelligence/companies/,
+      gates.yaml, and the read-only external Chart-Automation governed
+      library), one daily (1D) timeframe each, five Stage 1 Chart Evidence
+      Records, zero Stage 2 synthesis records, under
       governance/evidence/CHART-0002/<batch-slug>/, plus focused
       package-integrity tests mirroring test_chart_evidence_pilot.py's
       existing shape. No production file may be created or modified under
-      this workstream.
+      this workstream. No image has been privacy-approved or retained, and
+      no implementation branch or PR has been opened, as of this entry.
     prohibited_scope: >
       Processing any of the 220 governed chart images beyond the five named
       above; any sixth ticker or second timeframe per ticker in the first
@@ -4916,7 +4937,9 @@ workstreams:
       frozen-schema extension; any dashboard integration; any write into
       ~/Projects/Chart-Automation or ~/Downloads; marking any future
       implementation PR ready or merging it without independent review and
-      explicit principal acceptance at its exact final head.
+      explicit principal acceptance at its exact final head; marking this
+      acceptance-recording pull request ready or merging it in this
+      session.
     milestones:
       - gate: governance-pr-drafted
         description: >
@@ -4932,7 +4955,42 @@ workstreams:
           that project's inventory/manifest/filesystem facts were read
           only, to independently verify the 220-image/55-ticker/4-timeframe
           governed library and the deterministic first-batch selection
-          rule's live result.
+          rule's live result. Independently re-verified this session:
+          merged to main at merge commit
+          6b503b835cb9db71b958e700113614a1c49bc8c8 (parents
+          9d5d4766a1861e94ddc3aa515578adfd58de5e2e and
+          1594fd6d6f19b54631336b9f5181781da0edd915), exact-head CI run
+          30734539905 completed with conclusion success.
+        pr: 222
+        status: merged
+        date: "2026-08-02"
+      - gate: principal-acceptance-recorded
+        description: >
+          Principal explicitly accepted CHART-0002's content at exact
+          proposal head 1594fd6d6f19b54631336b9f5181781da0edd915 via PR
+          #222 issue comment 5155704682, citing independent delta review
+          4837356725 (verdict APPROVED FOR PRINCIPAL ACCEPTANCE, zero
+          surviving BLOCKING/MAJOR/MINOR findings, itself a delta
+          re-review of full review 4837275237's sole MINOR CEG
+          administrative-wording finding, corrected in the same PR). That
+          same comment authorized PR #222 to be merged unchanged (done —
+          see governance-pr-drafted above) and separately authorized
+          preparation only of this narrowly bounded acceptance-recording
+          pull request, following the worked CHART-0001/PR-219 lifecycle
+          precedent, to retain that acceptance, add a dated acceptance
+          record, and change CHART-0002 from Proposed to Accepted in the
+          controlling decision file and decision index. This pull request
+          sets that status transition in its own first commit — unlike
+          CHART-0001/PR-219's initial commit, this does not risk a
+          premature-status defect, because the qualifying principal
+          acceptance comment already existed, on a different, already-
+          merged pull request, before this pull request was opened. This
+          milestone, and the status: Accepted transition it describes,
+          become repository truth only once this pull request is itself
+          independently reviewed under OPS-0007 §1, any required bounded
+          correction is made and re-reviewed, and it is explicitly
+          principal-confirmed at its exact final head and merged to main,
+          followed by post-merge verification per OPS-0009 §4(a).
         pr: null
         status: drafted
         date: "2026-08-02"
@@ -4940,27 +4998,34 @@ workstreams:
       - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
     next_action: >
-      Independent, exact-head review of CHART-0002's governance PR under
-      OPS-0007 §1's capability-based standard (OPS-0009 Lane G — full
-      weight, no reduction), followed by any required bounded correction,
-      exact-head re-review, and explicit principal acceptance before the PR
-      may be marked ready and merged. No first-batch implementation work,
-      no image retention, and no Chart Evidence Record may begin before
-      that merge.
+      Independent, exact-head review of this acceptance-recording pull
+      request under OPS-0007 §1's capability-based standard (OPS-0009
+      Lane G — full weight, no reduction), followed by any required
+      bounded correction, exact-head re-review, and explicit principal
+      confirmation before the PR may be marked ready and merged, followed
+      by post-merge verification. Only after that may the separately
+      gated first-batch implementation PR (CHART-0002 §14, §19) be
+      prepared. No first-batch implementation work, no image retention,
+      and no Chart Evidence Record may begin before that future PR's own
+      merge.
     completion_criteria: >
-      Not met. Requires, at minimum: CHART-0002 merged; a later, separate
-      implementation PR retaining exactly the five named images/records per
-      §14, itself independently reviewed and principal-accepted; and post-
-      merge verification per OPS-0009 §4(a). Any further batch beyond the
-      first five tickers requires its own separate future governance
-      decision — this workstream's completion does not itself authorize one
-      (CHART-0002 §25, §31).
+      Not met. Requires, at minimum: this acceptance-recording PR
+      independently reviewed, principal-confirmed at its exact head,
+      merged, and post-merge verified; a later, separate implementation PR
+      retaining exactly the five named images/records per §14, itself
+      independently reviewed and principal-accepted; and that
+      implementation PR's own post-merge verification per OPS-0009 §4(a).
+      Any further batch beyond the first five tickers requires its own
+      separate future governance decision — this workstream's completion
+      does not itself authorize one (CHART-0002 §25, §31).
     blocker: >
-      CHART-0002's governance PR has not yet been independently reviewed or
-      principal-accepted. No implementation PR may open until it merges.
-    active_branch: claude/chart-0002-scale-governance-proposal
+      This acceptance-recording pull request has not yet been
+      independently reviewed or principal-confirmed at its exact head. No
+      implementation PR may open until it merges and passes post-merge
+      verification.
+    active_branch: claude/chart-0002-acceptance-recording
     active_pr: null
-    last_verified_main_sha: 9d5d4766a1861e94ddc3aa515578adfd58de5e2e
+    last_verified_main_sha: 6b503b835cb9db71b958e700113614a1c49bc8c8
     last_verified_date: "2026-08-02"
     authorized_by: null
     supersedes: null
