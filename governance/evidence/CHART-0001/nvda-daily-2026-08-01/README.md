@@ -10,11 +10,15 @@ one-asset/one-screenshot pilot: **NVDA, daily timeframe, captured
 defines an advisory Chart Evidence Record type and, once accepted, authorizes
 exactly one future implementation PR for a bounded one-asset/one-screenshot
 pilot. The principal's dated acceptance note and the further principal
-authorization quoted in this PR's description activate that pilot's
-*preparation* — this package is that preparation. It is not itself accepted,
-merged, or effective as chart-evidence policy until its own independent
-`OPS-0007` §1 review and explicit principal acceptance, per CHART-0001 §§8-9
-and §14.
+authorization quoted in PR #220's description activated that pilot's
+preparation — this package was that preparation. Final independent delta
+review `4836601466` (state COMMENTED, verdict **APPROVED FOR PRINCIPAL
+ACCEPTANCE**) found no surviving BLOCKING, MAJOR, or MINOR finding at exact
+head `9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550`; the principal then explicitly
+accepted that exact head, and PR #220 merged to `main` at merge commit
+`5fbd529a736df4fbb46b72fed1351414aa07db1b`. This package is now the
+**accepted and merged** one-image CHART-0001 §8 pilot evidence package, per
+CHART-0001 §§8-9 and §14.
 
 ## Exact scope: one image, one asset, one timeframe
 
@@ -139,22 +143,30 @@ does not use or extend. Staleness past that date requires disclosure or
 analyst abstention from relying on this record, never an automatic policy
 change of any kind.
 
-## Outstanding review and acceptance gates
+## Review, acceptance, and merge — closed
 
-This package, and the PR that introduces it, are **not** effective chart-
-evidence policy on their own. Per CHART-0001 §§8-9 and §14, still required
-before this pilot may be considered complete:
+Per CHART-0001 §§8-9 and §14, this pilot's required lifecycle gates are now
+complete:
 
-1. Independent, exact-head review under `OPS-0007` §1 (this is `OPS-0009`
-   Lane G in full, per CHART-0001 §8 — never reduced weight).
-2. Any bounded correction such review finds necessary, plus exact-head
-   re-review.
-3. Explicit principal acceptance at the exact final head.
-4. Merge to `main`, followed by post-merge verification per `OPS-0009` §4(a).
+1. Independent, exact-head review under `OPS-0007` §1 (`OPS-0009` Lane G in
+   full, per CHART-0001 §8 — never reduced weight): review `4836345012`
+   (verdict CHANGES REQUIRED) found two MAJOR and two MINOR findings; a
+   bounded correction pass resolved all four; a separate, later cross-model
+   check surfaced one further narrow correction (bottom-panel peak timing),
+   also resolved by a bounded correction pass.
+2. Exact-head delta re-review: `4836601466`, anchored to final head
+   `9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550`, verdict **APPROVED FOR
+   PRINCIPAL ACCEPTANCE** — no surviving BLOCKING, MAJOR, or MINOR finding.
+3. Explicit principal acceptance at that exact final head, on 2026-08-01.
+4. Merge to `main`: PR #220, merge commit
+   `5fbd529a736df4fbb46b72fed1351414aa07db1b`. Post-merge verification per
+   `OPS-0009` §4(a) confirmed the retained image, `record.yaml`, and
+   `README.md` hashes unchanged from the accepted head, focused tests 25/25
+   passing, and merge-commit CI run `30728722064` completed with conclusion
+   `success`.
 
-This PR is opened as a **draft** and stays draft through this session. No
-merge, no "ready for review" transition, and no independent review are
-performed by this authoring session.
+No further review, correction, acceptance, or merge action remains open for
+this one-image pilot.
 
 ## No scaling authority
 

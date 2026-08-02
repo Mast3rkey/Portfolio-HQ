@@ -4538,14 +4538,18 @@ workstreams:
       nvda-daily-2026-08-01/ — per the further principal authorization
       quoted in full in that implementation's own PR description. No second
       asset, second image, or scaling of any kind is authorized or attempted.
-      The pilot implementation itself remains draft, unmerged, and not yet
-      independently reviewed or principal-accepted — see blocker below.
+      The pilot implementation (PR #220) was independently reviewed to
+      completion (final delta review 4836601466, verdict APPROVED FOR
+      PRINCIPAL ACCEPTANCE), explicitly principal-accepted at exact head
+      9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550, and merged to main as merge
+      commit 5fbd529a736df4fbb46b72fed1351414aa07db1b. This one-image pilot
+      is closed — see completion_criteria below.
     governing_authority:
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
       - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md (review standard)
       - governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md (Lane G)
       - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
-    status: in_progress
+    status: complete
     priority: secondary
     dependencies: []
     authorized_scope: >
@@ -4658,10 +4662,11 @@ workstreams:
           record.yaml, MANIFEST.json, and this PR's body accordingly, adding
           six focused regression tests to test_chart_evidence_pilot.py
           (25/25 passing). Exact-head delta re-review under OPS-0007 §1 and
-          explicit principal acceptance both remain required before this PR
-          may be marked ready or merged.
+          explicit principal acceptance were both subsequently completed —
+          see the final-independent-review-approved-for-principal-acceptance
+          and principal-acceptance-and-merge milestones below.
         pr: 220
-        status: in_progress
+        status: merged
         date: "2026-08-02"
       - gate: cross-model-peak-timing-correction
         description: >
@@ -4686,11 +4691,90 @@ workstreams:
           entry, file, or claim was touched. record.yaml's hash changed and
           was resynchronized in MANIFEST.json; the retained image, README.md,
           and governed-source hashes are all unchanged. Exact-head delta
-          re-review under OPS-0007 §1 and explicit principal acceptance both
-          remain required before this PR may be marked ready or merged.
+          re-review under OPS-0007 §1 and explicit principal acceptance were
+          both subsequently completed at this correction's resulting exact
+          head — see the two milestones below.
         pr: 220
-        status: in_progress
+        status: merged
         date: "2026-08-02"
+      - gate: final-independent-review-approved-for-principal-acceptance
+        description: >
+          Final independent exact-head delta re-review, GitHub review
+          4836601466 (state: COMMENTED — same-account procedural/session-
+          based independence only, disclosed identically to review
+          4836345012 and PR #219's reviews; not a cross-account GitHub
+          APPROVE), anchored to final reviewed head
+          9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550. Independently
+          reverified: the E/D marker count (four), the purple-marker/dashed-
+          line correction, the redaction-geometry recomputation
+          (x=[0,169), y=[0,49)), the RGBA/RGB/opaque-alpha color-mode
+          disclosure, and the cross-model bottom-panel peak-timing
+          correction — all four original findings and the separate peak
+          correction confirmed accurately resolved, no new defect
+          introduced. All four package hashes independently recomputed and
+          matched (governed source, retained image, record.yaml, README.md).
+          test_chart_evidence_pilot.py 25/25 independently re-run;
+          test_portfolio_hq_dashboard.py 67/68 (one pre-existing, disclosed
+          checkout-directory-naming artifact, same as PR #219's reviews);
+          full suite 1736/1737 (same single disclosed artifact). Protected-
+          path diff against base confirmed empty; decision-index
+          reconciliation (59 filed = 59 indexed) confirmed; no BLOCKING,
+          MAJOR, or MINOR finding survived — one non-blocking NOTE only (a
+          citation-style consistency observation on this very WS-0011
+          entry, not a defect). Verdict: **APPROVED FOR PRINCIPAL
+          ACCEPTANCE.**
+        pr: 220
+        status: merged
+        date: "2026-08-01"
+      - gate: principal-acceptance-and-merge
+        description: >
+          The principal explicitly accepted exact head
+          9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550 following review
+          4836601466's verdict. PR #220 was marked ready for review and
+          merged with no intervening commits after that reviewed head —
+          merge commit 5fbd529a736df4fbb46b72fed1351414aa07db1b, parents
+          5b41e7d4a0a9a6ddb101b22e3f5e9317abeb9249 (base, prior main tip)
+          and 9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550 (the exact accepted
+          and reviewed head) — confirming a clean, unmodified merge of
+          exactly the accepted head, mergedAt 2026-08-02T02:21:42Z
+          (2026-08-01 22:21:42 local, UTC-4). GitHub Actions CI run
+          30728722064 on the merge commit completed with conclusion
+          success.
+        pr: 220
+        status: merged
+        date: "2026-08-01"
+      - gate: post-merge-hash-and-register-verification
+        description: >
+          A later, separate factual lifecycle-synchronization session
+          independently re-verified, against current main at merge commit
+          5fbd529a736df4fbb46b72fed1351414aa07db1b: the retained image
+          SHA-256 unchanged (7afb06217c...220b); the record.yaml and
+          README.md hashes at the merged head matched their
+          pre-synchronization values exactly before this session changed
+          either file; test_chart_evidence_pilot.py 25/25 passing at the
+          merged head; test_portfolio_hq_dashboard.py 67/68 and the full
+          repository suite 1736/1737 (both the same single pre-existing,
+          disclosed checkout-directory-naming artifact, zero other
+          failures); merge-commit CI run 30728722064 conclusion success;
+          protected-path diff against base empty; exactly five files in
+          scope (record.yaml, README.md, MANIFEST.json,
+          test_chart_evidence_pilot.py, this WORKSTREAMS.yaml entry). This
+          session then synchronized record.yaml's provenance/lifecycle
+          fields (reviewer, reviewed_head, principal_acceptance,
+          lifecycle_status: accepted, merge/CI/post-merge-verification
+          fields), README.md's stale draft-stage language, MANIFEST.json's
+          two generated file hashes, added focused accepted-state
+          assertions to test_chart_evidence_pilot.py, and this WS-0011
+          entry — opened as its own separate draft PR, gated on its own
+          independent exact-head review and explicit principal acceptance
+          before it may be marked ready or merged. This milestone, and the
+          status: complete set below, describe the proposed final state
+          carried by that synchronization PR — they become repository
+          truth only once that PR itself is reviewed, accepted, and
+          merged.
+        pr: null
+        status: drafted
+        date: "2026-08-01"
     evidence_refs:
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
       - governance/evidence/CHART-0001/nvda-daily-2026-08-01/record.yaml
@@ -4698,36 +4782,46 @@ workstreams:
       - governance/evidence/CHART-0001/nvda-daily-2026-08-01/README.md
       - test_chart_evidence_pilot.py
     next_action: >
-      PR #220's bounded correction (this filing) must now receive its own
-      exact-head delta re-review under OPS-0007 §1 (OPS-0009 Lane G — full
-      weight, per CHART-0001 §8, never reduced) against the new head produced
-      by this correction, followed by explicit principal acceptance, before
-      it may be marked ready or merged. This correcting session does not mark
-      this PR ready, does not merge it, does not post a new review, and does
-      not resolve or dismiss review 4836345012. Once merged, post-merge
-      verification per OPS-0009 §4(a) is required.
+      None outstanding inside WS-0011 after this synchronization merges. The
+      one-image NVDA daily pilot is closed: independently reviewed (review
+      4836601466, verdict APPROVED FOR PRINCIPAL ACCEPTANCE), explicitly
+      principal-accepted at exact head
+      9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550, merged to main (merge commit
+      5fbd529a736df4fbb46b72fed1351414aa07db1b), and post-merge verified.
+      Any second screenshot, multi-timeframe validation, batch processing,
+      ingestion system, or other scaling of this pilot requires its own
+      separate future authorization and governance/design cycle — none is
+      authorized by this closure.
     completion_criteria: >
-      Not met. CHART-0001 itself is accepted and effective (confirmed
-      merged to main). The NVDA daily pilot implementation additionally
-      requires: exact-head delta re-review of this bounded correction under
-      OPS-0007 §1; explicit principal acceptance at the exact final head;
-      merge to main; and post-merge verification per OPS-0009 §4(a).
-      Workstream is not complete until all of the above are done.
+      Met. CHART-0001 is accepted and effective (merged to main). The NVDA
+      daily pilot implementation (PR #220) was independently reviewed to
+      completion (review 4836601466, APPROVED FOR PRINCIPAL ACCEPTANCE),
+      explicitly principal-accepted at its exact final head, merged to main
+      (merge commit 5fbd529a736df4fbb46b72fed1351414aa07db1b), and
+      post-merge verified (hashes, focused tests, dashboard/full suite
+      modulo the one disclosed pre-existing checkout-directory-naming
+      artifact, and merge-commit CI run 30728722064 success). This register
+      entry is factually synchronized to that state.
     blocker: >
-      The NVDA daily pilot implementation PR remains open as a draft.
-      Independent exact-head review 4836345012 returned verdict CHANGES
-      REQUIRED (two MAJOR, two MINOR findings; no BLOCKING finding) against
-      reviewed head fb01f8dc12b83c3681c99cc3100f631b94ad917d. A bounded
-      author-correction pass addressing all four findings has been applied
-      (see the independent-review-changes-required-bounded-correction
-      milestone above). Still required before this PR may be marked ready or
-      merged: exact-head delta re-review of the corrected head under
-      OPS-0007 §1, and explicit principal acceptance. No second asset or
-      scaling of any kind is authorized regardless of this PR's outcome.
-    active_branch: claude/chart-0001-nvda-daily-pilot
-    active_pr: 220
-    last_verified_main_sha: 5b41e7d4a0a9a6ddb101b22e3f5e9317abeb9249
+      None. The NVDA daily pilot implementation (PR #220) merged and closed
+      this workstream's bounded scope. No second asset or scaling of any
+      kind is authorized by this closure.
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: 5fbd529a736df4fbb46b72fed1351414aa07db1b
     last_verified_date: "2026-08-01"
-    authorized_by: null
+    authorized_by: >
+      CHART-0001 (accepted governance decision, including its dated
+      §8 pilot-preparation-acceptance note); the further principal
+      authorization quoted in PR #220's own description, authorizing the
+      one-asset/one-screenshot pilot implementation; explicit principal
+      acceptance of PR #220's exact final head
+      9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550 following review
+      4836601466; and the separate, further principal lifecycle-
+      synchronization authorization (quoted verbatim in this synchronizing
+      PR's own description) permitting exactly this register update,
+      record.yaml/README.md/MANIFEST.json synchronization, and the focused
+      test additions. Neither CHART-0001 nor PR #220 authorizes any second
+      screenshot or broader chart-evidence processing.
     supersedes: null
     superseded_by: null

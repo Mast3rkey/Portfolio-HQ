@@ -164,17 +164,48 @@ def test_username_exception_not_applied(record, manifest):
     assert manifest["username_exception_applied"] is False
 
 
-# ── draft-stage governance invariants ───────────────────────────────────
+# ── accepted-stage governance invariants ────────────────────────────────
 
-def test_provenance_review_fields_are_null_at_draft_stage(record):
+def test_provenance_reviewer_identifies_final_review(record):
+    reviewer = record["provenance"]["reviewer"]
+    assert reviewer is not None
+    assert "4836601466" in reviewer
+    assert "COMMENTED" in reviewer
+    assert "APPROVED FOR PRINCIPAL ACCEPTANCE" in reviewer
+
+
+def test_provenance_reviewed_head_is_exact_final_head(record):
+    assert record["provenance"]["reviewed_head"] == "9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550"
+
+
+def test_provenance_principal_acceptance_is_recorded(record):
+    acceptance = record["provenance"]["principal_acceptance"]
+    assert acceptance is not None
+    assert "9c3dcc0d912c9af4a8c69670ee6d3bb1c9054550" in acceptance
+
+
+def test_principal_acceptance_preserves_one_image_no_scaling_boundary(record):
+    acceptance = record["provenance"]["principal_acceptance"].lower()
+    assert "one-image" in acceptance or "one image" in acceptance
+    assert "no scaling" in acceptance or "scaling" in acceptance
+
+
+def test_lifecycle_status_is_accepted(record):
+    assert record["lifecycle"]["lifecycle_status"] == "accepted"
+
+
+def test_provenance_records_merge(record):
     prov = record["provenance"]
-    assert prov["reviewer"] is None
-    assert prov["reviewed_head"] is None
-    assert prov["principal_acceptance"] is None
+    assert prov["merged_pr"] == 220
+    assert prov["merge_commit"] == "5fbd529a736df4fbb46b72fed1351414aa07db1b"
 
 
-def test_lifecycle_status_is_drafted(record):
-    assert record["lifecycle"]["lifecycle_status"] == "drafted"
+def test_provenance_records_post_merge_verification(record):
+    assert record["provenance"]["post_merge_verification"] == "passed"
+
+
+def test_provenance_records_merge_commit_ci_run(record):
+    assert record["provenance"]["merge_commit_ci_run"] == 30728722064
 
 
 # ── no leaked local paths ───────────────────────────────────────────────
@@ -253,3 +284,33 @@ def test_manifest_discloses_color_mode_conversion(manifest):
     assert "rgba" in disclosure
     assert "rgb" in disclosure
     assert "opaque" in disclosure
+
+
+# ── lifecycle-closure synchronization (accepted, merged state) ─────────
+
+def test_manifest_generated_hashes_match_actual_record_and_readme_bytes(manifest):
+    for name in ("record.yaml", "README.md"):
+        actual = _sha256(PACKAGE_DIR / name)
+        assert manifest["generated_file_hashes"][name] == actual, f"MANIFEST.json hash for {name} is stale"
+
+
+def test_readme_no_longer_claims_unaccepted_or_unmerged():
+    text = (PACKAGE_DIR / "README.md").read_text().lower()
+    for phrase in (
+        "not accepted",
+        "not merged",
+        "awaiting review",
+        "awaiting principal",
+        "must still be reviewed",
+        "must still be accepted",
+        "before this pr may merge",
+        "preparation only",
+    ):
+        assert phrase not in text, f"README.md still contains stale draft-stage language: {phrase!r}"
+
+
+def test_readme_retains_no_scaling_and_advisory_boundaries():
+    text = (PACKAGE_DIR / "README.md").read_text().lower()
+    assert "no scaling authority" in text
+    assert "secondary observational evidence" in text
+    assert "ladder-0001" in text
