@@ -4663,6 +4663,34 @@ workstreams:
         pr: 220
         status: in_progress
         date: "2026-08-02"
+      - gate: cross-model-peak-timing-correction
+        description: >
+          A narrow, second correction, separate from and after review
+          4836345012 above: independent ChatGPT cross-model inspection of the
+          same NVDA daily chart and the corrected record.yaml identified that
+          content.observations' bottom-panel-trend entry mischaracterized the
+          panel's highest visible level as occurring "around October-November
+          of the prior year." A separate, later, bounded author-correction
+          session independently re-confirmed this via direct pixel inspection
+          of both the governed source and retained images (per-column red-line
+          top-position detection, cross-checked against x-axis month-label
+          pixel positions): a local high does occur around November 2025
+          (peak near late Nov/early Dec 2025), but a visibly higher peak
+          occurs later, around June 2026 (~10 pixels higher on-screen than
+          the November 2025 high, reproduced identically under two
+          independent color-detection thresholds and confirmed by direct
+          visual inspection of both peak regions). The affected observation
+          was corrected to describe both the earlier November 2025 local high
+          and the later, higher, late-May-to-June-2026 peak, without
+          asserting an exact date or exact value for either. No other content
+          entry, file, or claim was touched. record.yaml's hash changed and
+          was resynchronized in MANIFEST.json; the retained image, README.md,
+          and governed-source hashes are all unchanged. Exact-head delta
+          re-review under OPS-0007 §1 and explicit principal acceptance both
+          remain required before this PR may be marked ready or merged.
+        pr: 220
+        status: in_progress
+        date: "2026-08-02"
     evidence_refs:
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
       - governance/evidence/CHART-0001/nvda-daily-2026-08-01/record.yaml

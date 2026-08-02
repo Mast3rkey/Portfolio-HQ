@@ -95,7 +95,7 @@ content:
     - "The orange dotted line stays below the candlestick range for the entire visible history and rises in an unbroken, gradual path from roughly 130 to its current 193.17."
     - "The most recent visible close (200.75, per the teal value tag) sits between the yellow line (202.95) and the orange dotted line (193.17)."
     - "The oscillator panel's yellow line (49.53) sits just below the midline (50.00) at the right edge, following a decline from a level above 60 earlier in the visible window."
-    - "The bottom single-line panel (current value 8.20) trends generally upward across the visible history, with its highest visible level (roughly 10-11) around October-November of the prior year, and its current level below that peak but above the visible window's early low (roughly 3-4, near July of the prior year)."
+    - "The bottom single-line panel (current value 8.20) trends generally upward across the visible history. It shows an earlier local high around November 2025 and a higher visible peak around late May-June 2026; the current level is below that later peak but above the early visible low around July 2025 (roughly 3-4)."
     - "The four E/D marker pairs are spaced at roughly even intervals across the visible ~13-month history, consistent with a recurring quarterly cadence."
 
   inferences:
