@@ -5326,7 +5326,7 @@ workstreams:
           requires its own full independent exact-head review, principal
           approval, merge, and post-merge verification before it may be
           considered complete.
-        pr: null
+        pr: 227
         status: drafted
         date: "2026-08-02"
     evidence_refs:
@@ -5377,7 +5377,7 @@ workstreams:
       completes, and this correction does not itself retroactively
       satisfy the gate PR #226 skipped.
     active_branch: claude/chart-0002-batch1-postmerge-correction
-    active_pr: null
+    active_pr: 227
     last_verified_main_sha: bc3dc540a23aac6939ccc5bc37c73508e4a411f9
     last_verified_date: "2026-08-02"
     authorized_by: >
