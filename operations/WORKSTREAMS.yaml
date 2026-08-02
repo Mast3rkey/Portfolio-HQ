@@ -5211,7 +5211,7 @@ workstreams:
       Stage 2 work, second batch, or portfolio-policy change may occur
       until that full lifecycle completes.
     active_branch: claude/chart-0002-stage1-first-19-daily
-    active_pr: null
+    active_pr: 226
     last_verified_main_sha: 2fcb12c17de385ec7391945d2f22bd421ce66a95
     last_verified_date: "2026-08-02"
     authorized_by: >
