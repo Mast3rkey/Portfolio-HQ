@@ -186,3 +186,70 @@ def test_no_absolute_user_path_committed(package_files):
         text = path.read_text(errors="ignore")
         assert "/Users/nickmasters" not in text, f"{path.name} contains an absolute user path"
         assert "/Users/" not in text, f"{path.name} contains an absolute path under /Users/"
+
+
+# ── review 4836345012 bounded-correction regressions ────────────────────
+
+def _content_text(record: dict) -> str:
+    content = record["content"]
+    parts = []
+    for key in ("visible_facts", "observations", "inferences", "uncertainties"):
+        parts.extend(str(x) for x in content[key])
+    return "\n".join(parts)
+
+
+def test_no_entry_claims_three_ed_marker_pairs(record):
+    text = _content_text(record)
+    assert "three" not in text.lower() or "E/D" not in text, (
+        "a content entry still claims three E/D marker pairs (independently "
+        "reconfirmed as four, per review 4836345012 Finding 1)"
+    )
+    for entry in record["content"]["visible_facts"] + record["content"]["observations"]:
+        if "E/D" in entry or ("marker pair" in entry.lower()):
+            assert "three" not in entry.lower(), f"stale 'three' E/D claim: {entry!r}"
+
+
+def test_one_entry_records_four_ed_marker_pairs(record):
+    text = _content_text(record)
+    assert "four" in text and ("E/D" in text or "marker pair" in text.lower()), (
+        "no content entry records the independently reconfirmed four E/D marker pairs"
+    )
+
+
+def test_no_distinct_recent_candle_purple_marker_feature(record):
+    text = _content_text(record).lower()
+    assert "15-20 candles" not in text and "15–20 candles" not in text, (
+        "a stale 'row of markers confined to the most recent candles' claim remains "
+        "(review 4836345012 Finding 2: this is the same object as the full-width dashed line)"
+    )
+
+
+def test_no_pivot_or_price_alert_marker_interpretation(record):
+    text = _content_text(record).lower()
+    assert "pivot-point-style" not in text
+    assert "price-alert-style" not in text
+    assert "marker series" not in text
+
+
+def test_record_and_manifest_redaction_geometry_agree(record, manifest):
+    geometry = "x=[0,169), y=[0,49)"
+    record_text = record["privacy_and_redaction"]["redactions_applied"][0]
+    manifest_text = json.dumps(manifest["transformation_history"])
+    assert geometry in record_text, f"record.yaml redaction entry missing {geometry!r}"
+    assert geometry in manifest_text, f"MANIFEST.json transformation_history missing {geometry!r}"
+    # the superseded, one-pixel-narrower/shorter figure must not appear as the
+    # declared (non-historical) geometry anywhere in the manifest's verifiability_boundary
+    assert "x=[0,168), y=[0,48)" not in json.dumps(manifest["source_provenance_chain"])
+
+
+def test_manifest_discloses_color_mode_conversion(manifest):
+    color_entries = [
+        t for t in manifest["transformation_history"]
+        if "rgba" in json.dumps(t).lower() or "color-mode" in str(t.get("transformation", "")).lower()
+    ]
+    assert color_entries, "MANIFEST.json transformation_history does not disclose the RGBA-to-RGB conversion"
+    entry = color_entries[0]
+    disclosure = json.dumps(entry).lower()
+    assert "rgba" in disclosure
+    assert "rgb" in disclosure
+    assert "opaque" in disclosure

@@ -46,10 +46,13 @@ privacy_and_redaction:
       The top-left TradingView capture watermark originally read "<username>
       created with TradingView.com, Aug 01, 2026 14:16 UTC-4", where <username>
       was a visible platform username. The username was covered with a solid
-      black rectangle (pixel region x=[0,168), y=[0,48) of the 3624x2336 source
-      image) before the file was ever written to this repository. "created with
-      TradingView.com, Aug 01, 2026 14:16 UTC-4" remains fully legible and
-      unmodified. No other pixel region of the image was altered.
+      black rectangle (pixel region x=[0,169), y=[0,49) of the 3624x2336 source
+      image -- independently recomputed via pixel-diff against the governed
+      source, 169x49 pixels, superseding an earlier, one-pixel-narrower/shorter
+      x=[0,168), y=[0,48) figure) before the file was ever written to this
+      repository. "created with TradingView.com, Aug 01, 2026 14:16 UTC-4"
+      remains fully legible and unmodified. No other pixel region of the image
+      was altered.
   privacy_review_notes: >
     The full image was visually inspected for account balances, account numbers,
     brokerage-account identifiers, position lists, order history, buying-power or
@@ -76,12 +79,11 @@ content:
     - "A dashed white/gray horizontal line is labeled \"High 236.54\"; a second, lower one is labeled \"Low 142.03\"."
     - "Two overlay lines run through the candles: a yellow line with a right-edge value tag of 202.95, and a red/pink line with a right-edge value tag of 206.32; both slope downward across the right portion of the visible chart."
     - "An orange dotted line begins near roughly the 130 price level at the chart's left edge (~July 2025) and rises in an unbroken, gradual path to a right-edge value tag of 193.17, remaining below the candles for the entire visible history."
-    - "A row of small purple/magenta square markers sits just below the most recent roughly 15-20 candles, near the 195-205 price band."
-    - "A magenta/pink dashed horizontal line spans the full visible chart width at price 200.75, carrying an adjacent \"+38.89%\" label."
+    - "A magenta/pink dashed horizontal line spans the full visible chart width at price 200.75, carrying an adjacent \"+38.89%\" label; its dash rendering appears as a row of small, regularly spaced magenta/purple segments (square-like at this resolution) running the entire chart width, not a separate marker feature."
     - "A teal-colored value tag on the right axis reads \"200.75\" / \"+38.89%\", positioned at the current price level."
     - "A small number of thin vertical dashed gray/teal lines cross the full chart height at a few points, aligned with columns in the volume panel below."
     - "A volume panel sits beneath the price panel: teal/red vertical bars (colored to match up/down candles) with an overlaid yellow line; right-axis value tags read \"139.9M\" (teal) and \"127.72M\" (yellow)."
-    - "Along the volume panel's horizontal axis, a green pentagon/house-shaped icon containing the letter \"E\" and a blue circular icon containing the letter \"D\" appear together at three points along the visible timeline."
+    - "Along the volume panel's horizontal axis, a green pentagon/house-shaped icon containing the letter \"E\" and a blue circular icon containing the letter \"D\" appear together at four points along the visible timeline."
     - "Below the volume panel, an oscillator panel has a 0-100 right-axis scale (gridlines at 20.00, 40.00, 60.00, 80.00, 100.00); a purple/violet line reads 45.13 and a yellow line reads 49.53 at the right edge; a red dashed horizontal reference line sits between the 60.00 and 80.00 gridlines; a green dashed horizontal reference line sits between the 20.00 and 40.00 gridlines; a gray dashed horizontal line marks the current yellow-line value."
     - "The bottom-most panel contains a single red line, right-axis scale from roughly 2.00 to 12.00, with a value tag reading 8.20. No name or title label for this panel/indicator is visible anywhere in the image."
     - "X-axis date labels, left to right, read: Jul, Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug -- the visible price history spans roughly July 2025 through August 1, 2026."
@@ -94,14 +96,13 @@ content:
     - "The most recent visible close (200.75, per the teal value tag) sits between the yellow line (202.95) and the orange dotted line (193.17)."
     - "The oscillator panel's yellow line (49.53) sits just below the midline (50.00) at the right edge, following a decline from a level above 60 earlier in the visible window."
     - "The bottom single-line panel (current value 8.20) trends generally upward across the visible history, with its highest visible level (roughly 10-11) around October-November of the prior year, and its current level below that peak but above the visible window's early low (roughly 3-4, near July of the prior year)."
-    - "The three E/D marker pairs are spaced at roughly even intervals across the visible ~13-month history, consistent with a recurring quarterly cadence."
+    - "The four E/D marker pairs are spaced at roughly even intervals across the visible ~13-month history, consistent with a recurring quarterly cadence."
 
   inferences:
     - "The yellow and red/pink overlay lines are most likely short/medium-period moving averages, and the orange dotted line is most likely a longer-period moving average or a drawn long-term trendline -- an inference from typical TradingView charting conventions, not a confirmed fact, since no period parameter is shown anywhere in the image."
     - "The oscillator panel (0-100 scale, red/green dashed reference lines positioned near the traditional 70/30 levels) is consistent with a Relative Strength Index (RSI) paired with a moving-average/signal line, a common TradingView default -- but this is an inference; no indicator name or label in the image confirms it is RSI specifically."
     - "The unlabeled bottom single-line panel (values roughly 2-12) is consistent in shape and scale with a volatility-style measure (e.g., an Average True Range-type indicator), which would also be thematically consistent with this repository's own use of ATR-based buy-ladder logic elsewhere (levels.py) -- but this is a cautious inference only. The panel carries no visible name or title, cannot be confirmed as ATR or any other specific indicator from the image alone, and this record does not treat it as one."
     - "The horizontal magenta line at 200.75 labeled \"+38.89%\" is consistent with a manually drawn percentage-change measurement tool anchored somewhere earlier in the visible chart history, but its exact anchor point cannot be determined from the image."
-    - "The purple/magenta square markers near the recent candles are consistent with a pivot-point-style or price-alert-style marker series, but their specific function cannot be confirmed from the image alone."
     - "The green \"E\" and blue \"D\" markers are consistent with TradingView's standard built-in earnings and dividend event markers respectively, though this cannot be independently confirmed against any earnings calendar from the image alone."
     - "Described strictly as a visual reading, not a prediction, score, or recommendation of any kind: price sits below its nearer-term overlay lines while those lines slope downward, within a longer-term uptrend defined by the slower-rising orange line. This sentence is offered only as a description of what the lines show, and carries no advisory weight -- see advisory_recommendation and governed_consequence below."
 
@@ -109,7 +110,6 @@ content:
     - "Exact indicator names, types, and parameter settings (moving-average periods, oscillator length, the unlabeled bottom panel's identity) are not legible or labeled anywhere in the image and are not confirmed."
     - "The precise numeric levels of the oscillator panel's red and green dashed reference lines are not numerically labeled in the image; their approximate position (near 70 and 30 respectively) is a visual estimate only."
     - "The anchor point and exact construction basis of the \"+38.89%\" horizontal price-line annotation cannot be determined from the image."
-    - "The exact function of the purple/magenta square markers below the recent candles cannot be confirmed from the image."
     - "Whether the \"E\"/\"D\" markers correspond to actual, verified NVDA earnings/dividend dates is not confirmed from this image alone; no external earnings calendar or live market data was consulted for this record, per CHART-0001's prohibition on using external sources to fill image gaps."
     - "The capture timezone is labeled literally \"UTC-4\" in the image; whether this corresponds to US Eastern Daylight Time or another UTC-4 convention is an inference from general knowledge of UTC-4 in August, not an additional label present in the image."
     - "The original (pre-redaction) governed source image contained a visible TradingView platform username in the top-left capture watermark; per privacy review, this was redacted with a solid black rectangle before retention. The retained image is therefore a modified, not byte-for-byte identical, copy of the governed source -- see privacy_and_redaction above."

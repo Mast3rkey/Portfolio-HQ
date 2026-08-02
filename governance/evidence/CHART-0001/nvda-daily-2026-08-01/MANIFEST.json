@@ -17,11 +17,19 @@
   "transformation_history": [
     {
       "transformation": "privacy redaction",
-      "region": "pixel rectangle x=[0,168), y=[0,48) of the 3624x2336 image",
+      "region": "pixel rectangle x=[0,169), y=[0,49) of the 3624x2336 image (169x49 pixels, 8281 total) -- independently recomputed this session via a full-image NumPy pixel-diff between the governed source and the retained image, superseding an earlier, one-pixel-narrower/shorter x=[0,168), y=[0,48) figure. The diff region is exactly rectangular (every pixel within the bounding box changed, zero changed pixels outside it) and the retained image's pixels within that region are solid black (0,0,0) throughout.",
       "method": "solid black (RGB 0,0,0) rectangle drawn with Pillow (PIL) ImageDraw, applied to a local copy of the governed source; the governed source file at ~/Projects/Chart-Automation was never modified",
       "reason": "The governed source's top-left capture watermark read '<username> created with TradingView.com, Aug 01, 2026 14:16 UTC-4', where <username> was a visible TradingView platform username. CHART-0001 Section 5 permits a narrow, principal-approved, per-image username exception, but the principal authorization governing this specific pilot implementation states explicitly that no username exception is authorized for this exact image. The username was therefore redacted rather than retained.",
       "what_survives_unredacted": "'created with TradingView.com, Aug 01, 2026 14:16 UTC-4' remains fully legible immediately to the right of the redaction box; no other pixel region of the image was touched.",
-      "verification": "Visually re-inspected after redaction (full image and a magnified crop of the redaction boundary) to confirm the username is fully covered, no adjacent legible text was clipped, and no other part of the chart was altered."
+      "verification": "Visually re-inspected after redaction (full image and a magnified crop of the redaction boundary) to confirm the username is fully covered, no adjacent legible text was clipped, and no other part of the chart was altered. Independently re-verified in this bounded-correction session via a direct NumPy pixel-diff recomputation against the governed source (see region field above)."
+    },
+    {
+      "transformation": "color-mode conversion",
+      "detail": "The governed source PNG is RGBA (mode 'RGBA', 4 channels). The retained PNG is RGB (mode 'RGB', 3 channels) -- the alpha channel was dropped during the redaction working-copy save.",
+      "alpha_channel_finding": "Independently confirmed this session: the governed source's alpha channel is uniformly 255 (fully opaque) across every pixel of the image -- no pixel anywhere carries any transparency.",
+      "visible_content_effect": "Because the source alpha channel was uniformly opaque, dropping it during the RGB conversion causes no visible-content change anywhere in the image -- independently confirmed via direct RGB pixel-value comparison between the source (converted to RGB) and the retained image outside the redaction region: zero differing pixels.",
+      "net_effect": "The privacy redaction (the region above) is the only substantive pixel-content change between the governed source and the retained image. The RGBA-to-RGB mode change is a lossless, visually-inert format change given the source's uniform opacity, not a second content transformation.",
+      "verification": "Independently confirmed this bounded-correction session via direct PIL/NumPy inspection: source mode == 'RGBA', retained mode == 'RGB', source alpha array min == max == 255, and an RGB-channel-only pixel-diff between source and retained showing zero changed pixels outside the declared redaction rectangle."
     }
   ],
   "privacy_result": "redacted",
@@ -36,7 +44,7 @@
       "The retained file's SHA-256 recomputes to 7afb06217c762a3d31f20e9cf92339dfa4bc0ea73870fd2f3817f3e5452c220b, matching this manifest and record.yaml.",
       "Byte size (656463) and media type (image/png) are directly inspectable.",
       "Every visible_facts entry in record.yaml is directly legible by opening the retained file.",
-      "The redaction boundary (x=[0,168), y=[0,48)) is directly inspectable in the retained file; 'created with TradingView.com, Aug 01, 2026 14:16 UTC-4' is legible immediately to its right."
+      "The redaction boundary (x=[0,169), y=[0,49)) is directly inspectable in the retained file; 'created with TradingView.com, Aug 01, 2026 14:16 UTC-4' is legible immediately to its right."
     ],
     "6_necessarily_relies_on_principal_acceptance": "That the governed library file (layer 2) is itself a faithful, unaltered copy of what the principal's own TradingView session actually rendered and the principal's own screenshot tool actually captured (layer 1) cannot be cryptographically proven by this session or any later reviewer -- it rests on the same class of trust boundary every prior PHQ-#### and now CHART-0001 evidence package in this repository already discloses (see PHQ-2026-06's own MANIFEST.json provenance_chain for the closest precedent). This session independently verified every link it has access to (layers 2 through 5 above); layer 1 is outside this session's ability to independently verify and is not claimed to be."
   },
@@ -46,7 +54,7 @@
   "no_live_market_data_authority_statement": "This package creates no live market-data authority of any kind. holdings.yaml, targets.yaml, gates.yaml, issuer_lookthrough.yaml, allocate.py, margin_state.py, and levels.py are all unmodified and unread by anything in this package; nothing here changes any allocator computation, any current price source, or any live-priced holding value.",
   "governed_consequence": "none",
   "generated_file_hashes": {
-    "record.yaml": "ed4587281518616da0f9cf6e2f4fba260a1accbfe2d168cf228258a400da60e3",
+    "record.yaml": "86127e2e5c800827829e259b04b4e1620cdc999fa08b6523a6f096c91067e754",
     "README.md": "6c7d4543fec0b1b563fa84b4a212947500bf265b92e89091801259092c238e98"
   }
 }
