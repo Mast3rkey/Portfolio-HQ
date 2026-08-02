@@ -4628,7 +4628,7 @@ workstreams:
           Company/Theme Intelligence, holdings, targets, gates,
           issuer_lookthrough, allocator, margin, levels.py, or dashboard
           file touched.
-        pr: pending
+        pr: 220
         status: drafted
         date: "2026-08-01"
     evidence_refs:
@@ -4638,17 +4638,14 @@ workstreams:
       - governance/evidence/CHART-0001/nvda-daily-2026-08-01/README.md
       - test_chart_evidence_pilot.py
     next_action: >
-      The NVDA daily pilot implementation PR (this filing) must be
-      independently, exact-head reviewed under OPS-0007 §1 (OPS-0009 Lane G
-      — full weight, per CHART-0001 §8, never reduced), receive any required
-      bounded correction and exact-head re-review, and receive explicit
-      principal acceptance before it may be marked ready or merged. The
-      authoring session does not mark this PR ready, does not merge it, and
-      does not begin independent review of its own work. Once merged,
-      post-merge verification per OPS-0009 §4(a) is required, and this
-      register's active_pr/pr fields need one narrow mechanical follow-up
-      sync once the PR number is known (if not already recorded in this same
-      session).
+      PR #220 (this filing) must be independently, exact-head reviewed
+      under OPS-0007 §1 (OPS-0009 Lane G — full weight, per CHART-0001 §8,
+      never reduced), receive any required bounded correction and
+      exact-head re-review, and receive explicit principal acceptance
+      before it may be marked ready or merged. The authoring session does
+      not mark this PR ready, does not merge it, and does not begin
+      independent review of its own work. Once merged, post-merge
+      verification per OPS-0009 §4(a) is required.
     completion_criteria: >
       Not met. CHART-0001 itself is accepted and effective (confirmed
       merged to main). The NVDA daily pilot implementation additionally
@@ -4663,7 +4660,7 @@ workstreams:
       before it may be marked ready or merged. No second asset or scaling of
       any kind is authorized regardless of this PR's outcome.
     active_branch: claude/chart-0001-nvda-daily-pilot
-    active_pr: pending
+    active_pr: 220
     last_verified_main_sha: 5b41e7d4a0a9a6ddb101b22e3f5e9317abeb9249
     last_verified_date: "2026-08-01"
     authorized_by: null
