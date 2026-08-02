@@ -1,0 +1,177 @@
+record_id: CHART-0002-BATCH1-GOOGL-1D-20260801
+identity_and_capture:
+  ticker: GOOGL
+  asset_type: equity
+  timeframe: daily (1D)
+  source_platform: TradingView.com (per the image's own visible capture watermark text)
+  capture_timestamp: '2026-08-01T14:33:32-04:00'
+  capture_timestamp_note: Full-precision timestamp (14:33:32) is taken from the governed Chart-Automation
+    library's own chart_inventory.json record (original filename GOOGL_2026-08-01_14-33-32.png), matched
+    to this retained file by exact SHA-256 equality, and consistent with the image's own visible capture
+    watermark text ("Aug 01, 2026 14:33 UTC-4", seconds not shown in-image).
+  capture_timezone: UTC-4
+  capture_timezone_note: Labeled literally as "UTC-4" in the image's own capture watermark. Not independently
+    labeled "ET"/"EDT" anywhere in the image; UTC-4 is consistent with US Eastern Daylight Time in August,
+    but that identification is an inference, not a fact printed in the image.
+  source_image_reference: Chart-Automation/library/governed/2026-08-01/GOOGL/GOOGL__2026-08-01__1D.png
+  source_image_reference_note: Project-relative reference into the read-only external governed library
+    at ~/Projects/Chart-Automation (not committed to this repository). No local-machine absolute filesystem
+    path is recorded here or anywhere in this package.
+  governed_source_sha256: b54f7fc6d95a7545d55b941a60868acc7fec2f8d30719672aab89dcca2378aab
+  retained_image_path: governance/evidence/CHART-0002/googl-daily-2026-08-01/GOOGL__2026-08-01__1D.png
+  retained_image_sha256: b54f7fc6d95a7545d55b941a60868acc7fec2f8d30719672aab89dcca2378aab
+  retained_image_note: The retained copy IS byte-for-byte identical to the governed source (governed_source_sha256
+    == retained_image_sha256) -- unlike CHART-0001's NVDA package. No redaction was applied; the principal
+    formally, explicitly, and individually approved retention of the visible username for this specific
+    image (and 18 others in the same batch) under the CHART-0001 Section 5 / CHART-0002 Section 6 exception
+    -- see privacy_and_redaction below.
+  image_dimensions: 3624x2336
+  image_media_type: image/png
+  indicator_settings: unknown
+  indicator_settings_note: No moving-average period, oscillator length, or other indicator parameter is
+    numerically legible or labeled anywhere in the image. Not guessed; recorded as unknown throughout
+    content.uncertainties below.
+privacy_and_redaction:
+  status: passed
+  redactions_applied: []
+  privacy_review_notes: 'The full image was visually inspected (bounded, read-only shard-review subagent,
+    ''shard_2'', integrated and independently verified by the primary implementation session) for account
+    balances, account numbers, brokerage-account identifiers, position lists, order history, buying-power
+    or margin figures, email address, real name, private notes, unrelated watchlist content, and usernames.
+    Exactly one item was found: the TradingView platform username "nichmasters" in the capture watermark
+    ("nichmasters created with TradingView.com, Aug 01, 2026 14:33 UTC-4"). No account balance, position,
+    order, or margin information of any kind appears anywhere in this chart -- its content is a price
+    chart, volume panel, and two sub-indicator panels only.'
+  username_exception_applied: true
+  username_exception_note: 'CHART-0001 Section 5 defines a narrow, principal-approved, per-image username
+    exception, reused by reference in CHART-0002 Section 6 (which explicitly did not extend the prior
+    CHART-0001 NVDA-specific grant to any other image, requiring a fresh, explicit, per-image approval
+    for each new image). FORMAL PER-IMAGE PRIVACY APPROVAL (received live in this authorizing implementation
+    session, 2026-08-02): "I explicitly invoke the accepted CHART-0001 Section 5 / CHART-0002 Section
+    6 narrow platform-watermark/username exception separately for each of the following 19 authorized
+    retained 1D images: AMZN, ASML, AVGO, CEG, COST, ETN, GEV, GOOGL, ISRG, KLAC, LLY, META, MSFT, NVDA,
+    PANW, PWR, TMO, TSM, V. For each named image individually, I approve retention of the visible ''nichmasters
+    created with TradingView.com, ...'' watermark/username exactly as captured. This is 19 separate per-image
+    approvals recorded together for efficiency. It is not a general username waiver, does not apply to
+    any other chart, ticker, timeframe, image, or future batch, and does not authorize redaction or pixel
+    modification." This approval supersedes an earlier, less formal in-session remark (''i dont mind name
+    showing...'') that the principal explicitly clarified should not be treated as a governance waiver
+    by itself -- this formal, itemized, per-image statement is the operative authorization relied upon
+    here.'
+content:
+  visible_facts:
+  - Title overlay reads "GOOGL, 1D" with subtitle "Alphabet Inc (Google) Class A"
+  - Right-side price axis labeled 520.00 down through roughly 162.00, increments of $20
+  - Dotted line labeled "High 408.61"
+  - Dotted line labeled "Low 162.00"
+  - Dotted magenta line with value box "356.13 +109.37%"
+  - 'Right-edge value boxes: "358.44" (red), "347.78" (yellow), "325.97" (orange)'
+  - Yellow and red overlay lines on candles
+  - Dotted orange line rising steadily from roughly the 180 level (left edge) to about 326 (right edge)
+  - Teal/red daily candlesticks
+  - Volume subpanel with teal/red bars and yellow smoothed line, axis labeled 40.00 up to 140.00
+  - 'Volume value boxes: "46.5M" (teal), "35.16M" (yellow)'
+  - Green hexagon "E" markers and blue circle "D" markers along the volume-panel bottom at multiple x-axis
+    points
+  - 'Oscillator subpanel: yellow and purple lines, axis 0-120 labeled in 20-unit steps, dashed line near
+    80 and near 20'
+  - 'Oscillator value boxes: "51.07" (purple), "42.54" (yellow)'
+  - 'Bottom subpanel: single red line, axis 0.00-16.00, current value box "14.40" (red)'
+  - 'X-axis labels: Jul, Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug -- this chart''s
+    leftmost label is "Jul" (one month earlier than the "Aug" start seen on some other tickers in this
+    batch)'
+  - Several vertical dashed teal/green reference lines at a few x-axis points
+  - '"TradingView" logo/wordmark bottom-left'
+  observations:
+  - Price shows a strong overall uptrend from around 180 (left edge) up to a high of 408.61 (reached around
+    the May area), followed by a pullback to the current ~356 level
+  - A sharp decline is visible in the final several candles, followed by one green recovery candle at
+    the very right edge
+  - The yellow/red overlay lines sit above current price near the right edge, both trending down slightly
+  - The orange dotted line rises smoothly and continuously across the whole chart, staying well below
+    price
+  - The oscillator is currently near its horizontal midline (~42-51), below earlier higher readings visible
+    around September and May
+  - The bottom red-line panel shows a peak around December (~15) with a mid-chart dip (Feb-Apr) before
+    rising back toward its current 14.40 reading
+  inferences:
+  - Overlay lines likely short/medium moving averages, orange dotted line likely a long moving average,
+    oscillator likely RSI, bottom panel likely a volatility-type indicator -- all by convention, none
+    confirmed by an in-image label
+  - The E/D markers likely denote earnings/dividend events by convention, not textually confirmed
+  - The one-month-earlier x-axis start (Jul vs. Aug on other tickers) is likely just a different pan/zoom
+    level chosen when the screenshot was taken, not a data-availability difference -- inferred, not confirmed
+  uncertainties:
+  - No parameter/period labels for any overlay or subpanel indicator
+  - Reason for the different x-axis start date versus other tickers not stated
+  - Exact meaning/mapping of E/D markers not textually confirmed
+  - Precise numeric values of the overlay lines at points other than the current right-edge boxes not
+    labeled
+  - Whether the oscillator's dashed reference lines are fixed default levels (e.g., 70/30) or custom values
+    is not numerically confirmed at exact placement
+thesis_relationship:
+  related_holding: GOOGL
+  related_intelligence_record: intelligence/companies/GOOGL.yaml
+  fundamental_cross_check_required: true
+  fundamental_cross_check_note: 'GOOGL carries a current Company Intelligence record (portfolio_role_ref:
+    T1 [historical/descriptive label, unchanged by targets.yaml''s later canonical destination-architecture
+    migration per PHQ-2026-02], conviction.rating: Medium, canonical destination target_pct 4.0 per targets.yaml).
+    This chart-evidence record does not itself perform that cross-check, add fundamental content, or modify
+    intelligence/companies/GOOGL.yaml in any way -- it only records that a cross-check is recommended
+    before this chart evidence is given any advisory weight, per CHART-0001 Section 3.'
+  portfolio_relevance: GOOGL is a current governed holding (targets.yaml canonical destination weight
+    4.0%; not a gated name per gates.yaml). This record is a single, dated, point-in-time daily-chart
+    snapshot and carries no ranking, score, or capital-priority judgment of any kind.
+  thesis_break_relevance: None asserted. This single daily-chart snapshot does not identify or evidence
+    any thesis-break condition for GOOGL; that determination, if ever made, belongs to the Company Intelligence
+    record's own review process, not to chart evidence.
+  advisory_recommendation: None. This record makes no buy, sell, trim, hold, or execution recommendation
+    of any kind, and none should be inferred from content.observations or content.inferences above.
+  governed_consequence: none
+prohibited_uses:
+- allocator input
+- LADDER-0001 study input
+- Company or Theme Intelligence mutation
+- technical score or ranking
+- automatic signal
+- execution instruction
+- tier, target, holdings, or margin, or portfolio-policy change
+provenance:
+  analyst_session: Claude Code implementation session, title "CHART-0002 Stage 1 -- First 19 Daily Charts",
+    role PRIMARY IMPLEMENTATION SESSION, branch claude/chart-0002-stage1-first-19-daily
+  model: Claude Sonnet 5 (claude-sonnet-5)
+  image_inspection_agent: Bounded, read-only shard-review subagent (general-purpose Claude Code agent,
+    'shard_2', no repository write access) performed the initial direct pixel-level inspection and returned
+    raw findings; the primary implementation session independently verified hashes, dimensions, and privacy
+    findings before authoring this record and did not accept any agent claim about a numeric value, date,
+    or indicator name that is not directly legible in the retained image.
+  reviewer: null
+  reviewer_note: Draft stage -- independent exact-head shard review has not yet occurred.
+  reviewed_head: null
+  principal_acceptance: null
+  principal_acceptance_note: Full-package principal acceptance is pending this PR's review/merge lifecycle.
+    A distinct, narrower principal approval -- the per-image username-exception invocation quoted in privacy_and_redaction.username_exception_note
+    above -- has already been explicitly given for this specific image and is recorded there; it does
+    not by itself constitute full-package or full-PR acceptance.
+  merged_pr: null
+  merge_commit: null
+  merge_commit_ci_run: null
+  post_merge_verification: null
+  evidence_classification: secondary observational evidence
+lifecycle:
+  lifecycle_status: draft
+  created_at: '2026-08-02'
+  accepted_date: null
+  evidence_freshness: Point-in-time capture, 2026-08-01T14:33:32-04:00, daily timeframe. Per CHART-0001
+    Section 7, a daily-timeframe chart goes stale faster than a weekly one; this record should not be
+    relied upon for any purpose once materially later price action exists that it does not reflect.
+  review_or_expiration_date: '2026-08-08'
+  review_or_expiration_date_note: Advisory heuristic only (roughly five trading sessions after the 2026-08-01
+    capture, matching the CHART-0001 NVDA pilot's own heuristic) -- not a governed cadence, not a system-computed
+    value, and not equivalent to Company Intelligence's review.cadence_days/next_due fields (docs/PORTFOLIO_INTELLIGENCE_SPEC.md),
+    which this record does not use, extend, or reference as authority. Per CHART-0001 Section 7, staleness
+    past this date requires disclosure or analyst abstention from relying on the record -- never an automatic
+    demotion, sale, target change, or policy change of any kind.
+  supersedes: null
+  superseded_by: null
+  abstention_reason: null

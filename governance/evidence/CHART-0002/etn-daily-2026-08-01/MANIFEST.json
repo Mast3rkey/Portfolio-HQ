@@ -1,0 +1,47 @@
+{
+  "package_id": "CHART-0002-BATCH1-ETN-1D-20260801",
+  "decision_id": "CHART-0002",
+  "governing_authority": "governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md",
+  "cohort": "batch1_19_daily_2026-08-01",
+  "shard": "shard_2",
+  "ticker": "ETN",
+  "timeframe": "1D",
+  "capture_date": "2026-08-01",
+  "source_project_relative_reference": "Chart-Automation/library/governed/2026-08-01/ETN/ETN__2026-08-01__1D.png",
+  "source_reference_note": "Project-relative reference into a read-only external project (~/Projects/Chart-Automation, not part of this repository, not committed). No local-machine absolute filesystem path appears in this file or anywhere else in this package.",
+  "governed_source_sha256": "c46175d7b2078d3584e6ab933f0f94d78138066ce15e244bf03a9903786aeebc",
+  "governed_source_sha256_note": "Independently recomputed by this session directly against the governed library file (SHA-256), and independently re-verified against a deterministic Layer A mechanical preflight run this session across all 220 governed files (zero errors, zero duplicate hashes, 55/55 complete tickers).",
+  "retained_filename": "ETN__2026-08-01__1D.png",
+  "retained_sha256": "c46175d7b2078d3584e6ab933f0f94d78138066ce15e244bf03a9903786aeebc",
+  "retained_byte_size": 1851213,
+  "media_type": "image/png",
+  "dimensions": "3624x2336",
+  "transformation_history": [],
+  "transformation_history_note": "No transformation applied. The retained file is byte-for-byte identical to the governed source (governed_source_sha256 == retained_sha256) -- unlike CHART-0001's NVDA package, which was redacted. This batch instead relies on the principal's formal, explicit, per-image invocation of the CHART-0001 Section 5 / CHART-0002 Section 6 narrow username exception, recorded in full in privacy_result_detail below.",
+  "privacy_result": "passed_with_disclosed_username_exception",
+  "privacy_result_detail": "Full image visually inspected (bounded, read-only shard-review subagent, 'shard_2', integrated and verified by the primary implementation session) for account balances, account numbers, brokerage-account identifiers, position lists, order history, buying-power/margin figures, email address, real name, private notes, unrelated watchlist content, and usernames. Exactly one item was found: the visible TradingView platform username 'nichmasters' in the top-left capture watermark (full watermark text: 'nichmasters created with TradingView.com, Aug 01, 2026 14:46 UTC-4'). No account-level or brokerage-identifying information of any kind is present anywhere in the image -- its content is a price chart, volume panel, and two sub-indicator panels only. FORMAL PER-IMAGE PRIVACY APPROVAL (received live in this authorizing implementation session, 2026-08-02): \"I explicitly invoke the accepted CHART-0001 Section 5 / CHART-0002 Section 6 narrow platform-watermark/username exception separately for each of the following 19 authorized retained 1D images: AMZN, ASML, AVGO, CEG, COST, ETN, GEV, GOOGL, ISRG, KLAC, LLY, META, MSFT, NVDA, PANW, PWR, TMO, TSM, V. For each named image individually, I approve retention of the visible 'nichmasters created with TradingView.com, ...' watermark/username exactly as captured. This is 19 separate per-image approvals recorded together for efficiency. It is not a general username waiver, does not apply to any other chart, ticker, timeframe, image, or future batch, and does not authorize redaction or pixel modification.\" This approval supersedes an earlier, less formal in-session remark ('i dont mind name showing...') that the principal explicitly clarified should not be treated as a governance waiver by itself -- this formal, itemized, per-image statement is the operative authorization relied upon here.",
+  "username_exception_applied": true,
+  "username_exception_authority": "CHART-0001 Section 5, reused by reference in CHART-0002 Section 6",
+  "source_provenance_chain": {
+    "1_original_capture": "A TradingView.com chart screenshot captured by the principal's own TradingView session on 2026-08-01 at 14:46: local time (UTC-4, as labeled in the image itself), per the governed Chart-Automation project's own retained chart_inventory.json record (this session did not access ~/Downloads directly, per its own scope boundary).",
+    "2_chart_automation_governance": "A separate, read-only external project (~/Projects/Chart-Automation, not part of this repository) organized that capture, alongside 219 other screenshots across 55 tickers x 4 timeframes, into a governed canonical library at library/governed/2026-08-01/, verifying source-to-destination SHA-256 identity for every file during that copy (governed_copy_manifest_2026-08-01.json / governed_copy_validation_2026-08-01.md, ALL CHECKS PASSED). This session read those manifest files and the governed library file itself, and did not modify, rename, reorganize, or regenerate anything in that project.",
+    "3_authoring_session_selection_and_verification": "This session located library/governed/2026-08-01/ETN/ETN__2026-08-01__1D.png, independently recomputed its SHA-256, and confirmed the value matches the same file's entry in chart_inventory.json. A separate deterministic Layer A mechanical preflight (filename convention, PNG magic header, decode, dimensions, duplicate-hash check) was run across the complete 220-file governed library this session, passing with zero errors and zero duplicate hashes within the governed set.",
+    "4_privacy_review_and_retention": "A bounded, read-only shard-review subagent ('shard_2') directly inspected this image's pixels (not filename or metadata alone), identified the single privacy item described above (the watermark username), and reported findings to this session, which independently verified the source hash and retained the file byte-for-byte unmodified at governance/evidence/CHART-0002/etn-daily-2026-08-01/ETN__2026-08-01__1D.png, per the principal's formal, explicit, per-image username-exception approval recorded above.",
+    "5_independently_verifiable_by_any_reviewer": [
+      "The retained file's SHA-256 recomputes to c46175d7b2078d3584e6ab933f0f94d78138066ce15e244bf03a9903786aeebc, matching this manifest and record.yaml.",
+      "Byte size (1851213) and media type (image/png) are directly inspectable.",
+      "Every visible_facts entry in record.yaml is directly legible by opening the retained file.",
+      "governed_source_sha256 == retained_sha256 (c46175d7b2078d3584e6ab933f0f94d78138066ce15e244bf03a9903786aeebc), confirming no pixel modification of any kind."
+    ],
+    "6_necessarily_relies_on_principal_acceptance": "That the governed library file (layer 2) is itself a faithful, unaltered copy of what the principal's own TradingView session actually rendered and the principal's own screenshot tool actually captured (layer 1) cannot be cryptographically proven by this session or any later reviewer -- this session independently verified every link it has access to (layers 2 through 5 above); layer 1 is outside this session's ability to independently verify and is not claimed to be, identical in kind to CHART-0001's own disclosed trust boundary."
+  },
+  "inspection_method": "Direct pixel-level visual inspection of the full-resolution governed source image via a bounded, read-only shard-review subagent (Read-tool image viewing, no OCR, no automated chart-reading, no third-party analysis tool), with results independently integrated and verified by the primary implementation session before any repository file was written.",
+  "verifiability_boundary": "Any reviewer with access to this repository can independently verify: the retained file's SHA-256, byte size, and media type; that every visible_facts entry in record.yaml is actually legible in the retained image; and, given separate access to the read-only external Chart-Automation project, that governed_source_sha256 above matches that project's own governed library file. What no reviewer -- including this session -- can independently verify from repository or governed-library evidence alone is that the governed library file is a faithful, unaltered copy of the principal's original TradingView capture (source_provenance_chain layer 1 above); that link rests on principal review and acceptance, identical in kind to every prior screenshot-evidenced decision in this repository.",
+  "secondary_evidence_statement": "This screenshot and every fact derived from it are secondary observational evidence only -- a dated, point-in-time chart capture, not inspected issuer or regulatory primary evidence, and not live market data. No production code in this repository reads this package as a price, quantity, or market datum for any purpose.",
+  "no_live_market_data_authority_statement": "This package creates no live market-data authority of any kind. holdings.yaml, targets.yaml, gates.yaml, issuer_lookthrough.yaml, allocate.py, margin_state.py, and levels.py are all unmodified and unread by anything in this package; nothing here changes any allocator computation, any current price source, or any live-priced holding value. No LADDER-0001 study input either -- LADDER-0001's own protocol independently excludes chart/screenshot input.",
+  "governed_consequence": "none",
+  "generated_file_hashes": {
+    "record.yaml": "121cf166260f7179a622f4d5aed0f2b2936f47d66efe275883c88ae6d1517b69",
+    "README.md": "7615e821b9101c1069d6321b544d038d2fe8651edbed51086e835f873c122e65"
+  }
+}

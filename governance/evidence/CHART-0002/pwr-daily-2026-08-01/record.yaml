@@ -1,0 +1,196 @@
+record_id: CHART-0002-BATCH1-PWR-1D-20260801
+identity_and_capture:
+  ticker: PWR
+  asset_type: equity
+  timeframe: daily (1D)
+  source_platform: TradingView.com (per the image's own visible capture watermark text)
+  capture_timestamp: '2026-08-01T14:46:07-04:00'
+  capture_timestamp_note: Full-precision timestamp (14:46:07) is taken from the governed Chart-Automation
+    library's own chart_inventory.json record (original filename PWR_2026-08-01_14-46-07.png), matched
+    to this retained file by exact SHA-256 equality, and consistent with the image's own visible capture
+    watermark text ("Aug 01, 2026 14:46 UTC-4", seconds not shown in-image).
+  capture_timezone: UTC-4
+  capture_timezone_note: Labeled literally as "UTC-4" in the image's own capture watermark. Not independently
+    labeled "ET"/"EDT" anywhere in the image; UTC-4 is consistent with US Eastern Daylight Time in August,
+    but that identification is an inference, not a fact printed in the image.
+  source_image_reference: Chart-Automation/library/governed/2026-08-01/PWR/PWR__2026-08-01__1D.png
+  source_image_reference_note: Project-relative reference into the read-only external governed library
+    at ~/Projects/Chart-Automation (not committed to this repository). No local-machine absolute filesystem
+    path is recorded here or anywhere in this package.
+  governed_source_sha256: 6bcdee4c6a822d386c2274f253d819749dfd061f09b06a7572ae8c16ee21fac8
+  retained_image_path: governance/evidence/CHART-0002/pwr-daily-2026-08-01/PWR__2026-08-01__1D.png
+  retained_image_sha256: 6bcdee4c6a822d386c2274f253d819749dfd061f09b06a7572ae8c16ee21fac8
+  retained_image_note: The retained copy IS byte-for-byte identical to the governed source (governed_source_sha256
+    == retained_image_sha256) -- unlike CHART-0001's NVDA package. No redaction was applied; the principal
+    formally, explicitly, and individually approved retention of the visible username for this specific
+    image (and 18 others in the same batch) under the CHART-0001 Section 5 / CHART-0002 Section 6 exception
+    -- see privacy_and_redaction below.
+  image_dimensions: 3624x2336
+  image_media_type: image/png
+  indicator_settings: unknown
+  indicator_settings_note: No moving-average period, oscillator length, or other indicator parameter is
+    numerically legible or labeled anywhere in the image. Not guessed; recorded as unknown throughout
+    content.uncertainties below.
+privacy_and_redaction:
+  status: passed
+  redactions_applied: []
+  privacy_review_notes: 'The full image was visually inspected (bounded, read-only shard-review subagent,
+    ''shard_4'', integrated and independently verified by the primary implementation session) for account
+    balances, account numbers, brokerage-account identifiers, position lists, order history, buying-power
+    or margin figures, email address, real name, private notes, unrelated watchlist content, and usernames.
+    Exactly one item was found: the TradingView platform username "nichmasters" in the capture watermark
+    ("nichmasters created with TradingView.com, Aug 01, 2026 14:46 UTC-4"). No account balance, position,
+    order, or margin information of any kind appears anywhere in this chart -- its content is a price
+    chart, volume panel, and two sub-indicator panels only.'
+  username_exception_applied: true
+  username_exception_note: 'CHART-0001 Section 5 defines a narrow, principal-approved, per-image username
+    exception, reused by reference in CHART-0002 Section 6 (which explicitly did not extend the prior
+    CHART-0001 NVDA-specific grant to any other image, requiring a fresh, explicit, per-image approval
+    for each new image). FORMAL PER-IMAGE PRIVACY APPROVAL (received live in this authorizing implementation
+    session, 2026-08-02): "I explicitly invoke the accepted CHART-0001 Section 5 / CHART-0002 Section
+    6 narrow platform-watermark/username exception separately for each of the following 19 authorized
+    retained 1D images: AMZN, ASML, AVGO, CEG, COST, ETN, GEV, GOOGL, ISRG, KLAC, LLY, META, MSFT, NVDA,
+    PANW, PWR, TMO, TSM, V. For each named image individually, I approve retention of the visible ''nichmasters
+    created with TradingView.com, ...'' watermark/username exactly as captured. This is 19 separate per-image
+    approvals recorded together for efficiency. It is not a general username waiver, does not apply to
+    any other chart, ticker, timeframe, image, or future batch, and does not authorize redaction or pixel
+    modification." This approval supersedes an earlier, less formal in-session remark (''i dont mind name
+    showing...'') that the principal explicitly clarified should not be treated as a governance waiver
+    by itself -- this formal, itemized, per-image statement is the operative authorization relied upon
+    here.'
+content:
+  visible_facts:
+  - Center chart watermark text reads "PWR, 1D" with "Quanta Services, Inc." beneath it
+  - Right-side price axis (main panel) is numerically labeled from 1,000.00 at top down through gridlines
+    to 280.00
+  - A gray dotted horizontal line is labeled "High" with value "788.75" on the right-axis tag
+  - A gray dotted horizontal line near the bottom of the price range is labeled "Low" with value "363.01"
+    on the right-axis tag
+  - A magenta/pink dotted horizontal line carries a right-axis tag "667.36" with accompanying text "+72.25%"
+    in a teal box above it
+  - 'Additional right-axis value tags visible: red box "682.06", yellow box "643.05", orange box "561.12"'
+  - 'Three overlay lines run through the candlesticks: a yellow line, a red/maroon line, and an orange
+    dotted line (visibly smoother/lower and lags the other two)'
+  - Candlesticks are colored teal/green (up) and red (down)
+  - A volume histogram panel beneath the price panel shows teal and red vertical bars with a yellow overlay
+    line; right-axis tags read "1.96 M" (teal box) and "1.3 M" (yellow box)
+  - Small circular markers labeled "E" (green) and "D" (blue) appear periodically along the bottom of
+    the volume panel
+  - A third panel below volume contains a purple line and a yellow line, with right-axis value tags "54.38"
+    (purple) and "39.33" (yellow); the panel's numeric axis is labeled 0.00 to 120.00 in increments of
+    20
+  - Dashed horizontal reference lines are drawn in this third panel at approximately the 80 and 60 gridline
+    levels
+  - A fourth, bottom-most panel shows a single red line with a right-axis tag "39.88"; its numeric axis
+    is labeled 0.00 to 50.00
+  - 'Bottom date axis is labeled: Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep'
+  - '"TradingView" wordmark/logo appears in the bottom-left corner of the image'
+  - Vertical dashed teal lines cross the full chart height at several points along the timeline
+  - A tall isolated red volume spike bar is visible in the volume panel roughly between the "Jul" and
+    "Aug"(2026) date labels, taller than surrounding bars
+  observations:
+  - The candlestick series rises from roughly the 400 level near the left (Aug) edge of the chart to a
+    peak in the mid-700s to high-780s range around the April-May period, then declines toward the current
+    right-edge price in the low-to-mid 600s
+  - The yellow and red/maroon overlay lines track close to the candles and cross each other at multiple
+    points, while the orange dotted line stays persistently below both and rises more gradually across
+    the whole date range
+  - The rightmost candle(s) show a green/teal candle following a preceding decline, positioned near the
+    magenta "667.36" reference line
+  - Volume bars appear generally low and even through most of the timeline, punctuated by isolated taller
+    spikes
+  - In the purple/yellow oscillator panel, the yellow line's value (39.33) sits below the purple line's
+    value (54.38) at the chart's right edge, and the panel shows a shaded green region around the April-May
+    period where the purple line exceeds the upper dashed reference band
+  - The bottom red-line panel trends generally upward across the full date range, with a visible step
+    increase around the June-July period followed by continued gradual rise to its rightmost value
+  inferences:
+  - The yellow and red overlay lines are most likely short/medium-period moving averages, an inference
+    from typical charting convention, not confirmed since no period parameter is printed on the chart
+  - The orange dotted line, given its smoothness and greater lag, is likely a longer-period moving average;
+    this is an interpretive guess, not a labeled fact
+  - The purple/yellow panel with a 0-120-ish scale and a shaded overbought-style region is likely a momentum
+    oscillator such as RSI, but no indicator name or period is printed anywhere in the image
+  - The bottom red-line panel, given its distinct small numeric scale (0-50) and steady/gradual movement,
+    could plausibly be a volatility-style indicator (e.g., ATR), but this is unconfirmed since no label
+    is shown
+  - The green "E" and blue "D" markers plausibly denote scheduled events (e.g., "E" for earnings, "D"
+    for dividend), a common TradingView convention, but no legend or tooltip confirming this is visible
+  uncertainties:
+  - No indicator names or parameter settings are printed anywhere on the chart for any of the overlay
+    lines or the two lower panels
+  - The exact numeric values of the moving-average lines at the current (rightmost) candle are not printed/labeled
+    anywhere
+  - The precise date of the rightmost candle is not individually labeled (only month tick marks are shown)
+  - The time zone convention for the date axis is not separately stated beyond the capture-timestamp watermark
+    itself
+  - The exact meaning/trigger of the "E" and "D" markers is not confirmed anywhere in the image (no legend
+    visible)
+  - The specific numeric value(s) the tall isolated volume spike bar(s) represent are not printed/labeled
+  - Whether any panel uses a logarithmic vs. linear price scale is not indicated on the image
+thesis_relationship:
+  related_holding: PWR
+  related_intelligence_record: intelligence/companies/PWR.yaml
+  fundamental_cross_check_required: true
+  fundamental_cross_check_note: 'PWR carries a current Company Intelligence record (portfolio_role_ref:
+    T2 [historical/descriptive label, unchanged by targets.yaml''s later canonical destination-architecture
+    migration per PHQ-2026-02], conviction.rating: Medium, canonical destination target_pct 1.25 per targets.yaml).
+    This chart-evidence record does not itself perform that cross-check, add fundamental content, or modify
+    intelligence/companies/PWR.yaml in any way -- it only records that a cross-check is recommended before
+    this chart evidence is given any advisory weight, per CHART-0001 Section 3.'
+  portfolio_relevance: PWR is a current governed holding (targets.yaml canonical destination weight 1.25%;
+    not a gated name per gates.yaml). This record is a single, dated, point-in-time daily-chart snapshot
+    and carries no ranking, score, or capital-priority judgment of any kind.
+  thesis_break_relevance: None asserted. This single daily-chart snapshot does not identify or evidence
+    any thesis-break condition for PWR; that determination, if ever made, belongs to the Company Intelligence
+    record's own review process, not to chart evidence.
+  advisory_recommendation: None. This record makes no buy, sell, trim, hold, or execution recommendation
+    of any kind, and none should be inferred from content.observations or content.inferences above.
+  governed_consequence: none
+prohibited_uses:
+- allocator input
+- LADDER-0001 study input
+- Company or Theme Intelligence mutation
+- technical score or ranking
+- automatic signal
+- execution instruction
+- tier, target, holdings, or margin, or portfolio-policy change
+provenance:
+  analyst_session: Claude Code implementation session, title "CHART-0002 Stage 1 -- First 19 Daily Charts",
+    role PRIMARY IMPLEMENTATION SESSION, branch claude/chart-0002-stage1-first-19-daily
+  model: Claude Sonnet 5 (claude-sonnet-5)
+  image_inspection_agent: Bounded, read-only shard-review subagent (general-purpose Claude Code agent,
+    'shard_4', no repository write access) performed the initial direct pixel-level inspection and returned
+    raw findings; the primary implementation session independently verified hashes, dimensions, and privacy
+    findings before authoring this record and did not accept any agent claim about a numeric value, date,
+    or indicator name that is not directly legible in the retained image.
+  reviewer: null
+  reviewer_note: Draft stage -- independent exact-head shard review has not yet occurred.
+  reviewed_head: null
+  principal_acceptance: null
+  principal_acceptance_note: Full-package principal acceptance is pending this PR's review/merge lifecycle.
+    A distinct, narrower principal approval -- the per-image username-exception invocation quoted in privacy_and_redaction.username_exception_note
+    above -- has already been explicitly given for this specific image and is recorded there; it does
+    not by itself constitute full-package or full-PR acceptance.
+  merged_pr: null
+  merge_commit: null
+  merge_commit_ci_run: null
+  post_merge_verification: null
+  evidence_classification: secondary observational evidence
+lifecycle:
+  lifecycle_status: draft
+  created_at: '2026-08-02'
+  accepted_date: null
+  evidence_freshness: Point-in-time capture, 2026-08-01T14:46:07-04:00, daily timeframe. Per CHART-0001
+    Section 7, a daily-timeframe chart goes stale faster than a weekly one; this record should not be
+    relied upon for any purpose once materially later price action exists that it does not reflect.
+  review_or_expiration_date: '2026-08-08'
+  review_or_expiration_date_note: Advisory heuristic only (roughly five trading sessions after the 2026-08-01
+    capture, matching the CHART-0001 NVDA pilot's own heuristic) -- not a governed cadence, not a system-computed
+    value, and not equivalent to Company Intelligence's review.cadence_days/next_due fields (docs/PORTFOLIO_INTELLIGENCE_SPEC.md),
+    which this record does not use, extend, or reference as authority. Per CHART-0001 Section 7, staleness
+    past this date requires disclosure or analyst abstention from relying on the record -- never an automatic
+    demotion, sale, target change, or policy change of any kind.
+  supersedes: null
+  superseded_by: null
+  abstention_reason: null

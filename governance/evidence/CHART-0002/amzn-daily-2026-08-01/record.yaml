@@ -1,0 +1,194 @@
+record_id: CHART-0002-BATCH1-AMZN-1D-20260801
+identity_and_capture:
+  ticker: AMZN
+  asset_type: equity
+  timeframe: daily (1D)
+  source_platform: TradingView.com (per the image's own visible capture watermark text)
+  capture_timestamp: '2026-08-01T14:33:26-04:00'
+  capture_timestamp_note: Full-precision timestamp (14:33:26) is taken from the governed Chart-Automation
+    library's own chart_inventory.json record (original filename AMZN_2026-08-01_14-33-26.png), matched
+    to this retained file by exact SHA-256 equality, and consistent with the image's own visible capture
+    watermark text ("Aug 01, 2026 14:33 UTC-4", seconds not shown in-image).
+  capture_timezone: UTC-4
+  capture_timezone_note: Labeled literally as "UTC-4" in the image's own capture watermark. Not independently
+    labeled "ET"/"EDT" anywhere in the image; UTC-4 is consistent with US Eastern Daylight Time in August,
+    but that identification is an inference, not a fact printed in the image.
+  source_image_reference: Chart-Automation/library/governed/2026-08-01/AMZN/AMZN__2026-08-01__1D.png
+  source_image_reference_note: Project-relative reference into the read-only external governed library
+    at ~/Projects/Chart-Automation (not committed to this repository). No local-machine absolute filesystem
+    path is recorded here or anywhere in this package.
+  governed_source_sha256: e593d332ea6702fc735e41543d078156e0d25e98e8de34362b5f8f69e266b6df
+  retained_image_path: governance/evidence/CHART-0002/amzn-daily-2026-08-01/AMZN__2026-08-01__1D.png
+  retained_image_sha256: e593d332ea6702fc735e41543d078156e0d25e98e8de34362b5f8f69e266b6df
+  retained_image_note: The retained copy IS byte-for-byte identical to the governed source (governed_source_sha256
+    == retained_image_sha256) -- unlike CHART-0001's NVDA package. No redaction was applied; the principal
+    formally, explicitly, and individually approved retention of the visible username for this specific
+    image (and 18 others in the same batch) under the CHART-0001 Section 5 / CHART-0002 Section 6 exception
+    -- see privacy_and_redaction below.
+  image_dimensions: 3624x2336
+  image_media_type: image/png
+  indicator_settings: unknown
+  indicator_settings_note: No moving-average period, oscillator length, or other indicator parameter is
+    numerically legible or labeled anywhere in the image. Not guessed; recorded as unknown throughout
+    content.uncertainties below.
+privacy_and_redaction:
+  status: passed
+  redactions_applied: []
+  privacy_review_notes: 'The full image was visually inspected (bounded, read-only shard-review subagent,
+    ''shard_1'', integrated and independently verified by the primary implementation session) for account
+    balances, account numbers, brokerage-account identifiers, position lists, order history, buying-power
+    or margin figures, email address, real name, private notes, unrelated watchlist content, and usernames.
+    Exactly one item was found: the TradingView platform username "nichmasters" in the capture watermark
+    ("nichmasters created with TradingView.com, Aug 01, 2026 14:33 UTC-4"). No account balance, position,
+    order, or margin information of any kind appears anywhere in this chart -- its content is a price
+    chart, volume panel, and two sub-indicator panels only.'
+  username_exception_applied: true
+  username_exception_note: 'CHART-0001 Section 5 defines a narrow, principal-approved, per-image username
+    exception, reused by reference in CHART-0002 Section 6 (which explicitly did not extend the prior
+    CHART-0001 NVDA-specific grant to any other image, requiring a fresh, explicit, per-image approval
+    for each new image). FORMAL PER-IMAGE PRIVACY APPROVAL (received live in this authorizing implementation
+    session, 2026-08-02): "I explicitly invoke the accepted CHART-0001 Section 5 / CHART-0002 Section
+    6 narrow platform-watermark/username exception separately for each of the following 19 authorized
+    retained 1D images: AMZN, ASML, AVGO, CEG, COST, ETN, GEV, GOOGL, ISRG, KLAC, LLY, META, MSFT, NVDA,
+    PANW, PWR, TMO, TSM, V. For each named image individually, I approve retention of the visible ''nichmasters
+    created with TradingView.com, ...'' watermark/username exactly as captured. This is 19 separate per-image
+    approvals recorded together for efficiency. It is not a general username waiver, does not apply to
+    any other chart, ticker, timeframe, image, or future batch, and does not authorize redaction or pixel
+    modification." This approval supersedes an earlier, less formal in-session remark (''i dont mind name
+    showing...'') that the principal explicitly clarified should not be treated as a governance waiver
+    by itself -- this formal, itemized, per-image statement is the operative authorization relied upon
+    here.'
+content:
+  visible_facts:
+  - Top-left watermark text reads "nichmasters created with TradingView.com, Aug 01, 2026 14:33 UTC-4"
+  - Large semi-transparent ticker label overlaid mid-chart reads "AMZN, 1D"
+  - Company-name watermark beneath the ticker label reads "Amazon.com, Inc" (partially obscured by candles)
+  - Right-side price axis is labeled in $10 increments from 200.00 to 310.00
+  - A dotted line is labeled "High 278.56"
+  - A dotted line is labeled "Low 196.00"
+  - A magenta/pink dotted horizontal line carries a green tag reading "271.58" with "+28.17%" beneath
+    it
+  - A red price tag reads "246.88"
+  - A yellow price tag reads "243.86"
+  - An orange dotted line carries a tag reading "235.05"
+  - Volume sub-panel shows a yellow line labeled "51.75M" and a teal value tag reading "129.05M"
+  - Small dark hexagon icons labeled "E" appear at multiple points along the bottom of the volume panel
+  - A third (oscillator) sub-panel has a 0-100 axis, a purple tag reading "67.70", and a yellow tag reading
+    "47.81"
+  - A dashed pink horizontal reference line sits in the oscillator panel near the 67.70 level; a dashed
+    green line sits lower in the same panel
+  - A fourth (bottom) sub-panel has an axis labeled from 2.00 to 12.00, with a red line and a red tag
+    reading "10.68"
+  - 'Bottom date axis is labeled: Jul, Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug'
+  - '"TradingView" wordmark/logo appears bottom-left of the image'
+  - Several thin dashed vertical lines cross the full chart height at irregular intervals, one of which
+    is red/pink-colored (the rest teal/gray)
+  observations:
+  - The candlestick price path rises from roughly the 200-210 area near the chart's left edge (Jul) to
+    a peak reaching the labeled High of 278.56 around the May region, then declines into the Jun-Jul area
+    before a sharp green candle at the rightmost edge lifts the close back up near the 271.58-tagged line
+  - A pronounced sharp downward move occurs in the region labeled "Feb", with the candlestick body dropping
+    toward the labeled Low of 196.00, accompanied by a visibly taller red volume bar at the same horizontal
+    position
+  - The rightmost candle on the chart is a large green (up) candle that is visually taller than most preceding
+    candles
+  - The yellow and red overlay lines on the price panel move together with the candles at a similar pace,
+    while the orange dotted line moves more slowly and stays below price for most of the chart's visible
+    history
+  - Volume bars are tallest at the points aligned with the "E" hexagon markers
+  - The oscillator-panel purple line ends near its own labeled reading of 67.70, close to the dashed pink
+    reference line, at the chart's right edge
+  inferences:
+  - The yellow and red lines overlaid on the candlesticks are most likely short/medium-period moving averages
+    -- an inference from typical charting convention, not a confirmed fact, since no period parameter
+    is printed anywhere on the chart
+  - The orange dotted line is most likely a longer-period moving average, inferred from its smoother,
+    slower-reacting shape relative to price -- not confirmed by any visible label
+  - The third (0-100 scale) sub-panel is likely a bounded momentum oscillator such as RSI or Stochastic,
+    inferred from its scale and dashed reference lines -- the image contains no text naming this indicator
+  - The green "E" hexagon icons are likely earnings-date markers, an inference from a common TradingView
+    icon convention -- no on-image text confirms this
+  - The bottom sub-panel (small numeric range, single red line) is possibly a volatility-related indicator
+    such as ATR, inferred from its scale and smooth shape -- not confirmed by a label
+  - The green "271.58 / +28.17%" tag most likely represents the latest price and a percent change measured
+    from some reference point on the chart -- the anchor point for that percentage is not stated anywhere
+    in the image
+  uncertainties:
+  - No indicator name or numeric parameter (period length, etc.) is legible anywhere for either of the
+    two overlay lines or the orange dotted line
+  - No indicator name is legible for the oscillator panel or the bottom red-line panel
+  - The reference/anchor point used to compute "+28.17%" is not stated
+  - Whether the displayed "UTC-4" timestamp reflects exchange time, capture-device local time, or another
+    convention is not stated
+  - The exact calendar date of the chart's leftmost visible candle is not numerically labeled (only the
+    month tick "Jul" is shown)
+  - The precise meaning of each individual dashed vertical line (why some are teal/gray and one is red/pink)
+    is not labeled
+  - Whether any candle beyond the visible right edge exists (i.e., whether Aug 01, 2026 is itself the
+    last completed candle or an in-progress one) is not stated
+thesis_relationship:
+  related_holding: AMZN
+  related_intelligence_record: intelligence/companies/AMZN.yaml
+  fundamental_cross_check_required: true
+  fundamental_cross_check_note: 'AMZN carries a current Company Intelligence record (portfolio_role_ref:
+    T2 [historical/descriptive label, unchanged by targets.yaml''s later canonical destination-architecture
+    migration per PHQ-2026-02], conviction.rating: Medium, canonical destination target_pct 5.0 per targets.yaml).
+    This chart-evidence record does not itself perform that cross-check, add fundamental content, or modify
+    intelligence/companies/AMZN.yaml in any way -- it only records that a cross-check is recommended before
+    this chart evidence is given any advisory weight, per CHART-0001 Section 3.'
+  portfolio_relevance: AMZN is a current governed holding (targets.yaml canonical destination weight 5.0%;
+    not a gated name per gates.yaml). This record is a single, dated, point-in-time daily-chart snapshot
+    and carries no ranking, score, or capital-priority judgment of any kind.
+  thesis_break_relevance: None asserted. This single daily-chart snapshot does not identify or evidence
+    any thesis-break condition for AMZN; that determination, if ever made, belongs to the Company Intelligence
+    record's own review process, not to chart evidence.
+  advisory_recommendation: None. This record makes no buy, sell, trim, hold, or execution recommendation
+    of any kind, and none should be inferred from content.observations or content.inferences above.
+  governed_consequence: none
+prohibited_uses:
+- allocator input
+- LADDER-0001 study input
+- Company or Theme Intelligence mutation
+- technical score or ranking
+- automatic signal
+- execution instruction
+- tier, target, holdings, or margin, or portfolio-policy change
+provenance:
+  analyst_session: Claude Code implementation session, title "CHART-0002 Stage 1 -- First 19 Daily Charts",
+    role PRIMARY IMPLEMENTATION SESSION, branch claude/chart-0002-stage1-first-19-daily
+  model: Claude Sonnet 5 (claude-sonnet-5)
+  image_inspection_agent: Bounded, read-only shard-review subagent (general-purpose Claude Code agent,
+    'shard_1', no repository write access) performed the initial direct pixel-level inspection and returned
+    raw findings; the primary implementation session independently verified hashes, dimensions, and privacy
+    findings before authoring this record and did not accept any agent claim about a numeric value, date,
+    or indicator name that is not directly legible in the retained image.
+  reviewer: null
+  reviewer_note: Draft stage -- independent exact-head shard review has not yet occurred.
+  reviewed_head: null
+  principal_acceptance: null
+  principal_acceptance_note: Full-package principal acceptance is pending this PR's review/merge lifecycle.
+    A distinct, narrower principal approval -- the per-image username-exception invocation quoted in privacy_and_redaction.username_exception_note
+    above -- has already been explicitly given for this specific image and is recorded there; it does
+    not by itself constitute full-package or full-PR acceptance.
+  merged_pr: null
+  merge_commit: null
+  merge_commit_ci_run: null
+  post_merge_verification: null
+  evidence_classification: secondary observational evidence
+lifecycle:
+  lifecycle_status: draft
+  created_at: '2026-08-02'
+  accepted_date: null
+  evidence_freshness: Point-in-time capture, 2026-08-01T14:33:26-04:00, daily timeframe. Per CHART-0001
+    Section 7, a daily-timeframe chart goes stale faster than a weekly one; this record should not be
+    relied upon for any purpose once materially later price action exists that it does not reflect.
+  review_or_expiration_date: '2026-08-08'
+  review_or_expiration_date_note: Advisory heuristic only (roughly five trading sessions after the 2026-08-01
+    capture, matching the CHART-0001 NVDA pilot's own heuristic) -- not a governed cadence, not a system-computed
+    value, and not equivalent to Company Intelligence's review.cadence_days/next_due fields (docs/PORTFOLIO_INTELLIGENCE_SPEC.md),
+    which this record does not use, extend, or reference as authority. Per CHART-0001 Section 7, staleness
+    past this date requires disclosure or analyst abstention from relying on the record -- never an automatic
+    demotion, sale, target change, or policy change of any kind.
+  supersedes: null
+  superseded_by: null
+  abstention_reason: null

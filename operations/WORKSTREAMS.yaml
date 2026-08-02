@@ -4922,40 +4922,88 @@ workstreams:
       cycle) remain required before any first-batch record may exist. No
       image has been retained or analyzed by any filing in this lineage to
       date.
+
+      Lifecycle update (2026-08-02, third): the acceptance-recording PR
+      (#225) was merged to main at merge commit
+      2fcb12c17de385ec7391945d2f22bd421ce66a95, making CHART-0002's Accepted
+      status EFFECTIVE. A separate implementation session then received an
+      explicit, bounded controlling principal authorization to prepare
+      exactly one draft implementation PR retaining the recommended 19-name
+      first cohort (AMZN, ASML, AVGO, CEG, COST, ETN, GEV, GOOGL, ISRG,
+      KLAC, LLY, META, MSFT, NVDA, PANW, PWR, TMO, TSM, V), daily (1D)
+      timeframe only, Stage 1 only, four review shards (5/5/5/4). That
+      session ran a live-preflight reconciliation of a discrepancy the
+      principal separately flagged (the governed Chart-Automation library's
+      root contains 261 PNGs total, not 220) — resolved by direct
+      inspection: 220 files live under the authoritative
+      library/governed/2026-08-01/ namespace (55 tickers x 4 timeframes,
+      matching governed_copy_manifest_2026-08-01.json's own
+      manifest_has_220_entries gate and governed_copy_validation_2026-08-01.md's
+      ALL CHECKS PASSED result); the other 41 live entirely under a
+      structurally separate quarantine/Downloads-Cleanup-2026-08-01/ tree
+      (an already-executed, unrelated ~/Downloads cleanup), with zero
+      SHA-256 hash overlap against the 220 governed files and that
+      quarantine manifest's own gate
+      '8_no_governed_source_selected_without_rule: PASS'. The Layer A
+      mechanical preflight was then re-run this session against the
+      authoritative 220-file governed set only (not the unrestricted 261),
+      passing clean (0 errors, 0 warnings, 55/55 complete tickers, 0
+      duplicate hashes, all 19 authorized tickers resolving to exactly one
+      1D file each). A privacy question then arose: all 19 images share an
+      identical visible TradingView username watermark ("nichmasters"),
+      and CHART-0002 §6 explicitly states the CHART-0001 NVDA exception
+      grant does not extend to any other image, requiring a fresh,
+      explicit, per-image approval. After one informal in-session remark
+      that the principal explicitly clarified should not be treated as a
+      governance waiver, the principal supplied a formal, itemized,
+      per-image written approval individually naming and invoking the
+      CHART-0001 §5 / CHART-0002 §6 exception for each of the 19 images —
+      recorded verbatim in every package's own MANIFEST.json and
+      record.yaml, per §6's per-image disclosure requirement. All 19
+      images were retained byte-for-byte identical to their governed
+      source (no redaction; governed_source_sha256 == retained_sha256 for
+      all 19), and all 19 Stage 1 records were authored via four parallel,
+      bounded, read-only shard-review subagents (one per review shard),
+      each independently inspecting its assigned images and returning raw
+      findings that the primary implementation session integrated,
+      hash-verified, and used to author the final fact/observation/
+      inference/uncertainty-separated records — no agent had repository
+      write access.
     governing_authority:
       - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md (baseline, untouched)
       - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md (review standard)
       - governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md (Lane G)
       - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
-    status: proposed
+    status: in_progress
     priority: secondary
     dependencies: []
     authorized_scope: >
-      Governance architecture only, and not yet EFFECTIVE — CHART-0002's
-      amended §§1-31/A-Q content is Accepted in this file's frontmatter and
-      governance/decisions.yaml, sourced from PR #224's already-closed
-      review/acceptance/merge chain (review 4838752317; comment
-      issuecomment-5158527253; merge 3d8ad7896236148e57e9bef3dd8fc003ef55b07a),
-      but this acceptance-recording PR itself has not yet been
-      independently reviewed, principal-approved at its own exact head, or
-      merged — no downstream authority is effective until it is. Even once
-      effective, this authorizes no batch by itself: exactly the
-      amendment's §Q grant is that a future, separate, explicitly
-      principal-authorized implementation PR MAY be prepared, retaining up
-      to 25 single-timeframe Chart Evidence Records per batch (general
-      ceiling), with the recommended first batch scoped to the full
-      current 19-name eligible universe (AMZN, ASML, AVGO, CEG, COST, ETN,
+      CHART-0002's amended §§1-31/A-Q content is Accepted and EFFECTIVE
+      (acceptance-recording PR #225 merged to main at commit
+      2fcb12c17de385ec7391945d2f22bd421ce66a95). A separate implementation
+      session then received an explicit, bounded controlling principal
+      authorization to prepare exactly one draft implementation PR: the
+      recommended 19-name first cohort (AMZN, ASML, AVGO, CEG, COST, ETN,
       GEV, GOOGL, ISRG, KLAC, LLY, META, MSFT, NVDA, PANW, PWR, TMO, TSM,
       V — deterministically selected per CHART-0002 §13, unmodified), one
-      daily (1D) timeframe each, zero Stage 2 synthesis records, under
-      governance/evidence/CHART-0002/<batch-slug>/, plus focused
-      package-integrity tests mirroring test_chart_evidence_pilot.py's
-      existing shape, extended to cohort-level completeness. That future
-      implementation PR requires its own separate, explicit principal
-      authorization before it may even be drafted — this workstream's own
-      acceptance does not itself supply that authorization. No production
-      file may be created or modified under this workstream.
+      daily (1D) timeframe each, four deterministic review shards (5/5/5/4:
+      shard_1 AMZN/ASML/AVGO/CEG/COST; shard_2 ETN/GEV/GOOGL/ISRG/KLAC;
+      shard_3 LLY/META/MSFT/NVDA/PANW; shard_4 PWR/TMO/TSM/V), zero Stage 2
+      synthesis records, under governance/evidence/CHART-0002/<ticker>-daily-
+      2026-08-01/ (one package per ticker: retained image, MANIFEST.json,
+      record.yaml, README.md) plus one immutable cohort manifest
+      (COHORT_BATCH1_19_DAILY.yaml), plus focused package-integrity tests
+      mirroring test_chart_evidence_pilot.py's existing shape, extended to
+      cohort-level completeness. This implementation is now underway on
+      branch claude/chart-0002-stage1-first-19-daily as a draft PR; it
+      requires its own full OPS-0007 §1 independent review cycle, any
+      required bounded correction and re-review, explicit principal
+      approval at its exact final head, and post-merge verification before
+      it may merge or be treated as accepted evidence. No production file
+      (allocate.py, margin_state.py, levels.py, targets.yaml, holdings.yaml,
+      gates.yaml, issuer_lookthrough.yaml, Company/Theme Intelligence, or
+      dashboard code) is created or modified under this workstream.
     prohibited_scope: >
       Processing any of the 220 governed chart images beyond the current
       19-name eligible universe named above; any ticker outside that
@@ -5068,48 +5116,112 @@ workstreams:
         pr: null
         status: drafted
         date: "2026-08-02"
+      - gate: acceptance-recorded-merged-chart-0002-effective
+        description: >
+          The acceptance-recording PR (#225) merged to main at merge commit
+          2fcb12c17de385ec7391945d2f22bd421ce66a95, making CHART-0002's
+          Accepted status EFFECTIVE (frontmatter and
+          governance/decisions.yaml both status: Accepted at that head).
+        pr: 225
+        status: merged
+        date: "2026-08-02"
+      - gate: batch1-19-daily-preflight-and-library-reconciliation
+        description: >
+          A separate implementation session received an explicit, bounded
+          controlling principal authorization for the 19-name first cohort,
+          daily (1D) only. Live preflight confirmed repository/branch/HEAD/
+          origin-main state, PR #225 merged, WS-0012 proposed/secondary
+          status. The principal separately flagged a live discrepancy: the
+          Chart-Automation library root holds 261 PNGs, not 220. Resolved
+          by direct inspection: 220 files live under the authoritative
+          library/governed/2026-08-01/ namespace (verified against
+          governed_copy_manifest_2026-08-01.json and
+          governed_copy_validation_2026-08-01.md, ALL CHECKS PASSED); the
+          other 41 live entirely under a structurally separate
+          quarantine/Downloads-Cleanup-2026-08-01/ tree (an unrelated,
+          already-executed ~/Downloads cleanup), zero SHA-256 hash overlap
+          against the 220 governed files, distinct filename convention,
+          and that manifest's own gate
+          '8_no_governed_source_selected_without_rule: PASS'. A Layer A
+          mechanical preflight (filename convention, PNG magic header,
+          decode, dimensions, duplicate-hash check) then ran against the
+          authoritative 220-file governed set only, passing clean (0
+          errors, 0 warnings, 55/55 complete tickers, 0 duplicate hashes,
+          all 19 authorized tickers resolving to exactly one 1D file
+          each). The cohort/shard freeze was mechanically verified
+          (union(shards) == cohort, 19 tickers, zero duplicates/missing/
+          extra).
+        pr: null
+        status: completed_pre_pr
+        date: "2026-08-02"
+      - gate: batch1-19-daily-privacy-review-and-package-authoring
+        description: >
+          Four parallel, bounded, read-only shard-review subagents (one per
+          review shard, no repository write access) directly inspected
+          their assigned images and returned raw privacy findings plus
+          draft fact/observation/inference/uncertainty content, integrated
+          and independently hash-verified by the primary session. All 19
+          images share the identical TradingView username watermark
+          ("nichmasters"); CHART-0002 §6 requires a fresh, per-image
+          principal approval since the CHART-0001 NVDA grant does not
+          extend to other images. After an informal remark the principal
+          explicitly declined to treat as a governance waiver, the
+          principal supplied a formal, itemized, per-image written
+          approval individually invoking the CHART-0001 §5 / CHART-0002 §6
+          exception for each of the 19 images — recorded verbatim in every
+          package's own MANIFEST.json/record.yaml. All 19 images were
+          retained byte-for-byte identical to their governed source (no
+          redaction; governed_source_sha256 == retained_sha256 for all
+          19). 19 packages (image + MANIFEST.json + record.yaml +
+          README.md) plus one immutable cohort manifest
+          (COHORT_BATCH1_19_DAILY.yaml) were written under
+          governance/evidence/CHART-0002/.
+        pr: null
+        status: completed_pre_pr
+        date: "2026-08-02"
     evidence_refs:
       - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
+      - governance/evidence/CHART-0002/COHORT_BATCH1_19_DAILY.yaml
     next_action: >
-      Independent, exact-head review of this acceptance-recording PR under
-      OPS-0007 §1's capability-based standard (OPS-0009 Lane G — full
-      weight, no reduction), followed by any required bounded correction
-      and exact-head re-review, then explicit principal mark-ready approval
-      at its own exact final head before merge, then complete post-merge
-      verification per OPS-0009 §4(a). Only after that merge does
-      CHART-0002's Accepted status become EFFECTIVE. Even then, no
-      first-batch implementation work, no image retention, and no Chart
-      Evidence Record may begin — a separate, later, explicit principal
-      authorization is required before a future 19-chart implementation PR
-      may even be drafted, and that future PR requires its own full
-      OPS-0007 §1 review cycle and principal acceptance before it may
-      merge.
+      Push the branch, open the draft implementation PR, run the full test
+      suite and mechanical scope/protected-path/binary-count/secrets/
+      absolute-path checks, then perform the smallest mechanical follow-up
+      commit to synchronize active_pr once the PR number is known. The PR
+      must stay draft and requires independent, exact-head shard review
+      under OPS-0007 §1 (OPS-0009 Lane G — full weight, no reduction),
+      followed by any required bounded correction and exact-head
+      re-review, then explicit principal mark-ready approval at its own
+      exact final head before merge, then complete post-merge verification
+      per OPS-0009 §4(a). No Stage 2 record, second batch, second
+      timeframe, or portfolio-policy change may begin under this
+      workstream.
     completion_criteria: >
-      Not met for this workstream as a whole. This acceptance-recording
-      gate requires, at minimum: independent exact-head review, any
-      required bounded correction and re-review, explicit principal
-      mark-ready approval at the exact final head, merge to main, and
-      post-merge verification per OPS-0009 §4(a) — none of which has
-      occurred yet. Even once met, workstream completion additionally
-      requires a later, separate, explicitly principal-authorized
-      implementation PR retaining exactly the first-batch cohort per the
-      amendment's §H/§Q, itself independently reviewed and
-      principal-accepted before merge. Any batch beyond the first requires
-      its own separate future governance decision — this workstream's
+      Not met. Requires, at minimum: the draft implementation PR opened and
+      pushed; independent exact-head review; any required bounded
+      correction and re-review; explicit principal mark-ready approval at
+      the exact final head; merge to main; and post-merge verification per
+      OPS-0009 §4(a) — none of which has occurred yet. Any batch beyond
+      this first 19-name/1D cohort, or any Stage 2 record, requires its
+      own separate future governance decision — this workstream's
       completion does not itself authorize one.
     blocker: >
-      This acceptance-recording PR has not yet been independently reviewed
-      or principal-approved at its exact final head, so CHART-0002's
-      Accepted status (set in this PR's own content) is not yet EFFECTIVE.
-      No implementation PR may open until this PR merges, and even then,
-      only under its own separate, explicit, future principal
-      authorization — this acceptance alone does not authorize the
-      19-chart batch.
-    active_branch: claude/chart-0002-amended-acceptance-recording
-    active_pr: null
-    last_verified_main_sha: 3d8ad7896236148e57e9bef3dd8fc003ef55b07a
+      The draft implementation PR has not yet been opened, independently
+      reviewed, or principal-approved at its exact final head. No merge,
+      Stage 2 work, second batch, or portfolio-policy change may occur
+      until that full lifecycle completes.
+    active_branch: claude/chart-0002-stage1-first-19-daily
+    active_pr: 226
+    last_verified_main_sha: 2fcb12c17de385ec7391945d2f22bd421ce66a95
     last_verified_date: "2026-08-02"
-    authorized_by: null
+    authorized_by: >
+      Controlling principal directive, this authorizing implementation
+      session (CHART PILOT — CHART-0002 Stage 1 First 19 Daily Charts),
+      2026-08-02: "I authorize preparation of one narrowly bounded draft
+      CHART-0002 Stage 1 implementation PR for the current 19-name eligible
+      cohort, daily (1D) timeframe only... [full text retained in the
+      session's PR description]." Plus the formal, itemized, per-image
+      privacy-exception approval covering all 19 images, retained verbatim
+      in each package's own MANIFEST.json and record.yaml.
     supersedes: null
     superseded_by: null
