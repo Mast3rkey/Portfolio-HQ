@@ -94,8 +94,18 @@ entry, a `source_sha256`/`destination_sha256` pair — the sampled entry inspect
 entry; the manifest's own `run_status` states this held for all 220. The same manifest records **6
 excluded duplicates**, **14 excluded legacy files**, and **10 excluded manual-review items** —
 `output/manual_review_queue.md` lists all 10 by name; none is marked as blocking the 220-file
-coverage result, and none concerns any of the five tickers this filing's deterministic rule selects
-below (verified by direct grep). Two of the ten manual-review items are independently notable for
+coverage result. A direct grep of the ten items against this filing's five selected tickers (`AMZN,
+ASML, AVGO, CEG, COST`) returns zero hits for `AMZN`, `ASML`, `AVGO`, and `COST`, and exactly one hit
+for `CEG` — the "Batch 03 - Financial Infrastructure" item, an administrative note that a *source
+intake folder* was mislabeled ("Folder name says 'Financial Infrastructure' but contains CEG, ETN,
+GEV, PWR, VRT"). That note concerns source-folder naming and organization during curation, not any
+privacy, quality, hash, corruption, or chart-content defect in CEG's own canonical governed images —
+CEG's four retained `1D`/`1W`/`4H`/`1H` files are independently confirmed present in
+`library/governed/2026-08-01/CEG/` and absent from both the manifest's 6 excluded duplicates and 14
+excluded legacy files. Accordingly, none of the five selected canonical image sets currently carries
+an individual-image manual-review flag — this is disclosure, not privacy approval, and each of the
+five images still requires the independent, repository-grade privacy review defined below during a
+future, separately authorized implementation PR. Two of the ten manual-review items are independently notable for
 this filing's privacy discussion: one flags an already-excluded non-chart screenshot showing "a
 Robinhood brokerage positions/balances view containing account-level financial data," confirming the
 broader source material this governed library was curated from does contain brokerage-sensitive
@@ -350,8 +360,11 @@ GOOGL, ISRG, KLAC, LLY, META, MSFT, NVDA, PANW, PWR, TMO, TSM, V` (19 names).
 
 **Proposed first batch (first 5 of 19 in alphabetical order): `AMZN, ASML, AVGO, CEG, COST`.** All
 five independently confirmed this session to have exactly 4 governed chart images each (`1D`, `1W`,
-`4H`, `1H`, captured `2026-08-01`) in `~/Projects/Chart-Automation`, with no manual-review-queue flag
-against any of the five. `NVDA` — already carrying a CHART-0001 record — falls later alphabetically
+`4H`, `1H`, captured `2026-08-01`) in `~/Projects/Chart-Automation`, with no individual-image
+manual-review flag against any of the five (`CEG` appears once in the manual-review queue, but only
+in the "Batch 03 - Financial Infrastructure" administrative source-folder naming note discussed in
+the governed-library inventory section above — not a flag on CEG's own canonical images). `NVDA` —
+already carrying a CHART-0001 record — falls later alphabetically
 (6th of 19) and is not reached by this batch; no special-casing was needed to exclude it.
 
 **Timeframe scope: `1D` (daily) only — one image per ticker, five images total, Stage 1 only.** Both
