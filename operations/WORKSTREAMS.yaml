@@ -5457,8 +5457,8 @@ workstreams:
       cures. No Stage 2 work, second batch, second timeframe, or
       portfolio-policy change may occur under this workstream absent its
       own separate future principal authorization.
-    active_branch: null
-    active_pr: null
+    active_branch: claude/ws0012-postmerge-factual-sync-pr227
+    active_pr: 228
     last_verified_main_sha: 423c99a1e52af8e3062f6bd5f08d1bcc0ff8dc8c
     last_verified_date: "2026-08-02"
     authorized_by: >
