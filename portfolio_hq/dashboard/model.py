@@ -28,6 +28,12 @@ from .provenance import Provenance, collect_provenance
 # ── authoritative inputs (repo-relative) ────────────────────────────────────
 HOLDINGS_REL = "holdings.yaml"
 TARGETS_REL = "targets.yaml"
+# Live actionable-gate state (PHQ-2026-02) — distinct from GATED_DISPOSITION_REL
+# below, which is frozen PHQ-2026-01 point-in-time evidence. gates.yaml is the
+# CURRENT authority for "is this ticker gated right now" (e.g. a name whose
+# gate was later retired, like SPCX per PHQ-2026-04, is absent here even
+# though it still appears in the frozen evidence CSV).
+GATES_REL = "gates.yaml"
 DECISIONS_REL = "governance/decisions.yaml"
 WORKSTREAMS_REL = "operations/WORKSTREAMS.yaml"
 FRESHNESS_REGISTRY_REL = "intelligence/freshness_registry.yaml"
@@ -54,6 +60,7 @@ PHQ_2026_01_DECISION_REL = (
 INPUT_FILES = [
     HOLDINGS_REL,
     TARGETS_REL,
+    GATES_REL,
     DECISIONS_REL,
     WORKSTREAMS_REL,
     FRESHNESS_REGISTRY_REL,
@@ -108,12 +115,41 @@ class MarginInfo:
 
 
 @dataclass(frozen=True)
-class TierInfo:
-    name: str
-    weight_pct: float | None
-    fixed: bool
-    cap_multiple: float | None
-    tickers: tuple[str, ...]
+class DestinationTarget:
+    """One row of targets.yaml's canonical `destination:` list (PHQ-2026-02)
+    — the flat, per-name architecture that replaced the retired T1/T2/ETF/
+    band/spec tier structure. No tier/grouping concept exists in this
+    schema; each name carries only its own target weight and asset class."""
+
+    ticker: str
+    target_pct: float | None
+    asset_class: str | None
+
+
+@dataclass(frozen=True)
+class LiveGate:
+    """One row of the CURRENT gates.yaml (PHQ-2026-02) — a ticker's live
+    actionable-gate state. Distinct from GatedName below, which is frozen
+    PHQ-2026-01 point-in-time evidence and may list a name (e.g. SPCX) whose
+    gate has since been retired."""
+
+    ticker: str
+    status: str | None
+    authority: str | None
+    allow_add: bool | None
+    holds_existing_shares: bool | None
+    next_gate: str | None
+
+
+@dataclass(frozen=True)
+class TickerCurrentState:
+    """Current, file-derived state for one ticker — used to decide what (if
+    anything) to say about it, instead of a hardcoded, always-shown claim."""
+
+    ticker: str
+    live_gate: LiveGate | None
+    currently_held: bool
+    has_destination_target: bool
 
 
 @dataclass(frozen=True)
@@ -176,11 +212,13 @@ class DashboardModel:
     holdings: tuple[HoldingRow, ...]
     crypto_sleeve_pct: float | None
     margin: MarginInfo
-    tiers: tuple[TierInfo, ...]
+    destination_targets: tuple[DestinationTarget, ...]
     clusters: tuple[ClusterCap, ...]
     gates: dict
+    live_gates: tuple[LiveGate, ...]
     gated_names: tuple[GatedName, ...]
     gated_names_source: str
+    spcx_state: TickerCurrentState
     single_issuer_ceiling_pct: float | None
     ai_platform_ceiling_pct: float | None
     ai_platform_measured_pct: float | None
@@ -231,15 +269,25 @@ def _as_float(value: object) -> float | None:
 
 def _load_roster(targets: dict) -> dict[str, dict]:
     """Reuse allocate.build_roster; fall back to a local build if allocate can't
-    be imported (keeps the dashboard renderable in a stripped environment)."""
+    be imported (keeps the dashboard renderable in a stripped environment).
+    The fallback mirrors allocate.build_roster's canonical `destination:`
+    schema (PHQ-2026-02) — the retired `tiers:` schema is not read here or
+    anywhere else in this module."""
     try:
         import allocate  # local production module
         return allocate.build_roster(targets)
     except Exception:  # pragma: no cover - defensive fallback
         roster: dict[str, dict] = {}
-        for tier_name, tier in (targets.get("tiers") or {}).items():
-            for t in tier.get("tickers", []) or []:
-                roster[str(t).upper()] = {"tier": tier_name}
+        for row in targets.get("destination", []) or []:
+            if not isinstance(row, dict):
+                continue
+            tk = row.get("ticker")
+            if not isinstance(tk, str) or not tk.strip():
+                continue
+            roster[tk.strip().upper()] = {
+                "target_pct": _as_float(row.get("target_pct")),
+                "asset_class": row.get("asset_class"),
+            }
         return roster
 
 
@@ -295,21 +343,96 @@ def _build_margin(holdings_data: dict, targets: dict) -> MarginInfo:
     )
 
 
-def _build_tiers(targets: dict) -> list[TierInfo]:
-    tiers: list[TierInfo] = []
-    for name, body in (targets.get("tiers") or {}).items():
-        if not isinstance(body, dict):
-            continue
-        tiers.append(
-            TierInfo(
-                name=name,
-                weight_pct=_as_float(body.get("weight_pct")),
-                fixed=bool(body.get("fixed", False)),
-                cap_multiple=_as_float(body.get("cap_multiple")),
-                tickers=tuple(str(t) for t in (body.get("tickers") or [])),
-            )
+def _build_destination_targets(roster: dict[str, dict]) -> list[DestinationTarget]:
+    """One row per canonical `destination:` ticker (PHQ-2026-02), built from
+    the already-loaded, already-validated roster — no separate parse of
+    targets.yaml and no invented grouping. Sorted by asset class, then by
+    target weight descending, then ticker, for a stable and legible table."""
+    rows = [
+        DestinationTarget(
+            ticker=tk,
+            target_pct=_as_float(info.get("target_pct")),
+            asset_class=(str(info["asset_class"]) if info.get("asset_class") else None),
         )
-    return tiers
+        for tk, info in roster.items()
+    ]
+    return sorted(
+        rows,
+        key=lambda r: (r.asset_class or "", -(r.target_pct or 0.0), r.ticker),
+    )
+
+
+def _crypto_sleeve_pct(roster: dict[str, dict]) -> float | None:
+    """Sum of the crypto-asset-class destination rows (BTC/ETH/SOL each carry
+    their own weight since PHQ-2026-02 retired the prior aggregate `crypto:`
+    sleeve config) — a straight sum of already-authoritative source values,
+    not a new calculation. None (not 0) when no crypto row exists at all."""
+    crypto_pcts = [
+        _as_float(info.get("target_pct"))
+        for info in roster.values()
+        if info.get("asset_class") == "crypto"
+    ]
+    if not crypto_pcts:
+        return None
+    return sum(p for p in crypto_pcts if p is not None)
+
+
+def _load_live_gates(path: Path) -> tuple[dict[str, LiveGate], str | None]:
+    """Parse the CURRENT gates.yaml (PHQ-2026-02) — the live authority for
+    "is this ticker gated right now." Returns ({ticker: LiveGate}, error).
+    Unlike allocate.py's fail-loud convention for the live allocator (a
+    missing gates.yaml there would let a gated ticker silently become an
+    ordinary buy candidate — unacceptable for a system that places orders),
+    this read-only dashboard never raises: a missing/unreadable file is
+    surfaced as a visible warning (same defensive convention as every other
+    loader in this module) and every ticker is then treated as having no
+    live gate, so the dashboard still renders."""
+    data, err = _safe_load_yaml(path)
+    if err:
+        return {}, err
+    entries = (data or {}).get("gates") or []
+    out: dict[str, LiveGate] = {}
+    for e in entries:
+        if not isinstance(e, dict):
+            continue
+        raw_ticker = e.get("ticker")
+        if not isinstance(raw_ticker, str) or not raw_ticker.strip():
+            continue
+        tk = raw_ticker.strip().upper()
+        out[tk] = LiveGate(
+            ticker=tk,
+            status=e.get("status"),
+            authority=e.get("authority"),
+            allow_add=e.get("allow_add") if isinstance(e.get("allow_add"), bool) else None,
+            holds_existing_shares=(
+                e.get("holds_existing_shares")
+                if isinstance(e.get("holds_existing_shares"), bool)
+                else None
+            ),
+            next_gate=e.get("next_gate"),
+        )
+    return out, None
+
+
+def _ticker_current_state(
+    ticker: str,
+    *,
+    live_gates: dict[str, LiveGate],
+    holdings: list[HoldingRow],
+    destination_tickers: set[str],
+) -> TickerCurrentState:
+    """General, ticker-agnostic current-state derivation — reused for any
+    ticker whose dashboard display must reflect live repository truth rather
+    than a hardcoded assumption (PHQ-2026-04 correction: SPCX's gate was
+    retired after a verified exit, so a name present in frozen PHQ-2026-01
+    evidence is not necessarily gated today)."""
+    tk = ticker.strip().upper()
+    return TickerCurrentState(
+        ticker=tk,
+        live_gate=live_gates.get(tk),
+        currently_held=any(h.ticker.upper() == tk for h in holdings),
+        has_destination_target=tk in destination_tickers,
+    )
 
 
 def _build_clusters(targets: dict) -> list[ClusterCap]:
@@ -519,7 +642,7 @@ def _compute_notices(
     margin: MarginInfo,
     load_errors: list[str],
     phq_2026_02_filed: bool,
-    gated_names: list[GatedName],
+    live_gates: dict[str, LiveGate],
     ai_measured: float | None,
     ai_ceiling: float | None,
     lookthrough_err: str | None,
@@ -605,15 +728,16 @@ def _compute_notices(
         )
     )
 
-    # PHQ-2026-01 architecture approved-but-not-implemented.
-    if gated_names:
+    # Gated names hold target capital in cash — current fact from the live
+    # gates.yaml (PHQ-2026-02), not a claim about implementation status.
+    if live_gates:
         notices.append(
             Notice(
                 SEVERITY_INFO,
-                "PHQ-2026-01 architecture is approved policy, not yet implemented",
-                "targets.yaml still reflects the current operating configuration. "
-                f"{len(gated_names)} gated name(s) hold target capital in cash and "
-                "must not be renormalized into other positions.",
+                f"{len(live_gates)} gated name(s) hold target capital in cash",
+                "Per gates.yaml (current), each gated name's destination-target "
+                "capital is held as ordinary cash and is never renormalized into "
+                "other positions. See the Gates panel for current status per name.",
             )
         )
 
@@ -698,10 +822,14 @@ def build_model(repo_root: Path | str, *, now: datetime | None = None) -> Dashbo
     roster = _load_roster(targets)
     holdings = _build_holdings(holdings_data, roster)
     margin = _build_margin(holdings_data, targets)
-    tiers = _build_tiers(targets)
+    destination_targets = _build_destination_targets(roster)
     clusters = _build_clusters(targets)
     gates = dict((targets.get("gates") or {}))
-    crypto_sleeve = _as_float((targets.get("crypto") or {}).get("sleeve_pct"))
+    crypto_sleeve = _crypto_sleeve_pct(roster)
+
+    live_gates, lg_err = _load_live_gates(repo_root / GATES_REL)
+    if lg_err:
+        load_errors.append(lg_err)
 
     gated_names, g_err = _load_gated_names(repo_root / GATED_DISPOSITION_REL)
     if g_err:
@@ -761,8 +889,9 @@ def build_model(repo_root: Path | str, *, now: datetime | None = None) -> Dashbo
         "this offline dashboard).",
         "Current holdings may not be reconciled after recent manual Robinhood "
         "execution.",
-        "PHQ-2026-01 architecture is approved policy but not implemented in "
-        "targets.yaml; gated-name / reserve handling has no live allocator support yet.",
+        "This read-only dashboard displays gates.yaml/targets.yaml configuration "
+        "only; it does not run or duplicate allocate.py's buy/trim recommendation "
+        "logic.",
     )
 
     notices = _compute_notices(
@@ -770,11 +899,18 @@ def build_model(repo_root: Path | str, *, now: datetime | None = None) -> Dashbo
         margin=margin,
         load_errors=load_errors,
         phq_2026_02_filed=phq_2026_02_filed,
-        gated_names=gated_names,
+        live_gates=live_gates,
         ai_measured=ai_measured,
         ai_ceiling=ai_ceiling,
         lookthrough_err=lookthrough_err,
         intelligence=intelligence,
+    )
+
+    spcx_state = _ticker_current_state(
+        "SPCX",
+        live_gates=live_gates,
+        holdings=holdings,
+        destination_tickers=set(roster.keys()),
     )
 
     return DashboardModel(
@@ -786,14 +922,16 @@ def build_model(repo_root: Path | str, *, now: datetime | None = None) -> Dashbo
         holdings=tuple(holdings),
         crypto_sleeve_pct=crypto_sleeve,
         margin=margin,
-        tiers=tuple(tiers),
+        destination_targets=tuple(destination_targets),
         clusters=tuple(clusters),
         gates=gates,
+        live_gates=tuple(live_gates.values()),
         gated_names=tuple(gated_names),
         gated_names_source=(
             "PHQ-2026-01 gated-name disposition evidence (approved gating policy, "
             "point-in-time; not live holdings)"
         ),
+        spcx_state=spcx_state,
         single_issuer_ceiling_pct=single_issuer,
         ai_platform_ceiling_pct=ai_ceiling,
         ai_platform_measured_pct=ai_measured,

@@ -66,7 +66,9 @@ def tmp_repo(tmp_path: Path) -> Path:
     # Canonical v1.30 destination-architecture shape (PHQ-2026-02) — matches
     # current main's real targets.yaml: a flat `destination:` list, no
     # `tiers:`/`crypto:` blocks (both retired; BTC/ETH/SOL each get their own
-    # destination row instead of an aggregate crypto sleeve).
+    # destination row instead of an aggregate crypto sleeve). SPCX has NO
+    # destination row here — mirrors real current state (PHQ-2026-04: SPCX's
+    # row was removed after its verified manual exit, no renormalization).
     _write(repo / "targets.yaml", (
         "destination:\n"
         "  - ticker: NVDA\n"
@@ -78,9 +80,9 @@ def tmp_repo(tmp_path: Path) -> Path:
         "  - ticker: SKHY\n"
         "    target_pct: 0.75\n"
         "    asset_class: equity\n"
-        "  - ticker: SPCX\n"
-        "    target_pct: 1.0\n"
-        "    asset_class: equity\n"
+        "  - ticker: BTC\n"
+        "    target_pct: 2.0\n"
+        "    asset_class: crypto\n"
         "  - ticker: ETH\n"
         "    target_pct: 1.5\n"
         "    asset_class: crypto\n"
@@ -94,6 +96,20 @@ def tmp_repo(tmp_path: Path) -> Path:
         "margin:\n"
         "  leverage_cap: 1.8\n"
         "  buffer_floor_pct: 30.0\n"
+    ))
+    # Live gates.yaml (PHQ-2026-02) — the CURRENT gate authority. SPCX is
+    # deliberately absent (mirrors PHQ-2026-04's retirement of its gate
+    # after a verified manual exit); RKLB remains a live gate, matching the
+    # frozen PHQ-2026-01 evidence CSV below so that source stays internally
+    # consistent for the still-gated names.
+    _write(repo / "gates.yaml", (
+        "gates:\n"
+        "  - ticker: RKLB\n"
+        "    status: cash_pending_clearance\n"
+        "    authority: PHQ-2026-01\n"
+        "    allow_add: false\n"
+        "    holds_existing_shares: false\n"
+        "    next_gate: \"Require Q2 results plus a defined Neutron technical milestone before activation.\"\n"
     ))
     _write(repo / "governance/decisions.yaml", (
         "decisions:\n"
@@ -144,15 +160,88 @@ def test_source_loading_reads_repository_state(tmp_repo: Path):
     assert m.margin.debt == 1590.4
     assert m.margin.buffer_pct == 63.12
     # Aggregate crypto sleeve retired by PHQ-2026-02 — canonical destination
-    # architecture gives BTC/ETH/SOL their own destination row instead, so
-    # targets.yaml carries no `crypto:` block and this stays None.
-    assert m.crypto_sleeve_pct is None
+    # architecture gives BTC/ETH/SOL their own destination row instead. The
+    # fixture's BTC (2.0) + ETH (1.5) destination rows sum to 3.5 — a direct,
+    # dynamic sum of the fixture's own source values, not an invented number.
+    assert m.crypto_sleeve_pct == pytest.approx(3.5)
     # Per-name tier retired by PHQ-2026-02 — the canonical destination schema
     # has no tier concept (allocate.build_roster() returns only target_pct/
     # asset_class per row), so this proves the dashboard reflects that
     # absence rather than resolving a stale or fabricated tier label.
     nvda = next(h for h in m.holdings if h.ticker == "NVDA")
     assert nvda.tier is None
+
+
+def test_crypto_sleeve_pct_none_when_no_crypto_destination_rows(tmp_repo: Path):
+    txt = (tmp_repo / "targets.yaml").read_text()
+    txt = txt.replace(
+        "  - ticker: BTC\n    target_pct: 2.0\n    asset_class: crypto\n"
+        "  - ticker: ETH\n    target_pct: 1.5\n    asset_class: crypto\n",
+        "",
+    )
+    (tmp_repo / "targets.yaml").write_text(txt)
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert not any(d.asset_class == "crypto" for d in m.destination_targets)
+    assert m.crypto_sleeve_pct is None  # unavailable, not fabricated as 0
+
+
+# ── Targets view: canonical destination architecture (PHQ-2026-02) ──────────
+
+def test_destination_targets_reflect_current_schema_dynamically(tmp_repo: Path):
+    """The Targets view must be built from the current `destination:` list —
+    never the retired `tiers:` schema — with the row count and per-ticker
+    representation derived from the fixture itself, not hardcoded."""
+    import yaml as _yaml
+
+    raw = _yaml.safe_load((tmp_repo / "targets.yaml").read_text())
+    expected_tickers = {row["ticker"] for row in raw["destination"]}
+
+    m = build_model(tmp_repo, now=FIXED_NOW)
+
+    # Every current destination ticker is represented exactly once.
+    got_tickers = [d.ticker for d in m.destination_targets]
+    assert set(got_tickers) == expected_tickers
+    assert len(got_tickers) == len(set(got_tickers)) == len(raw["destination"])
+
+    # Weight/asset-class are faithful to source — no invented values.
+    by_ticker = {d.ticker: d for d in m.destination_targets}
+    for row in raw["destination"]:
+        d = by_ticker[row["ticker"]]
+        assert d.target_pct == pytest.approx(float(row["target_pct"]))
+        assert d.asset_class == row["asset_class"]
+
+    html = render_html(m)
+    assert "No destination targets found" not in html
+    for row in raw["destination"]:
+        assert row["ticker"] in html
+
+
+def test_destination_targets_do_not_require_tiers_schema(tmp_repo: Path):
+    """A targets.yaml with no `tiers:` key at all (current real shape) still
+    produces a populated, truthful Targets view."""
+    assert "tiers:" not in (tmp_repo / "targets.yaml").read_text()
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert len(m.destination_targets) > 0
+    html = render_html(m)
+    assert "No destination targets found" not in html
+
+
+def test_targets_table_no_hardcoded_row_count(tmp_repo: Path):
+    """Adding a destination row changes the rendered count — proves the
+    dashboard derives the count from the file, not a fixed literal."""
+    before = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    before_count = before.count('data-label="Ticker"')
+
+    txt = (tmp_repo / "targets.yaml").read_text().replace(
+        "destination:\n",
+        "destination:\n  - ticker: ZZZZ\n    target_pct: 0.10\n    asset_class: equity\n",
+    )
+    (tmp_repo / "targets.yaml").write_text(txt)
+    after = render_html(build_model(tmp_repo, now=FIXED_NOW))
+    after_count = after.count('data-label="Ticker"')
+
+    assert after_count == before_count + 1
+    assert "ZZZZ" in after
 
 
 def test_missing_yaml_degrades_with_warning(tmp_repo: Path):
@@ -290,7 +379,7 @@ def test_git_unavailable_degrades(tmp_path: Path):
     plain = tmp_path / "plain"
     plain.mkdir()
     _write(plain / "holdings.yaml", "margin: {debt: 0, buffer_pct: 99, synced_at: 2026-07-22}\n")
-    _write(plain / "targets.yaml", "tiers: {}\nmargin: {leverage_cap: 1.8, buffer_floor_pct: 30}\n")
+    _write(plain / "targets.yaml", "destination: []\nmargin: {leverage_cap: 1.8, buffer_floor_pct: 30}\n")
     m = build_model(plain, now=FIXED_NOW)
     assert m.provenance.git_available is False
     assert any("git metadata unavailable" in n.title.lower() for n in m.warnings)
@@ -330,6 +419,112 @@ def test_gated_evidence_never_merged_into_holdings(tmp_repo: Path):
     # SPCX/RKLB are gated-policy rows; they are NOT injected as holdings.
     assert "RKLB" not in holding_tickers  # not in the fixture's shares
     assert m.gated_names_source.lower().startswith("phq-2026-01")
+
+
+# ── SPCX: state-derived notice, not a hardcoded constant ─────────────────────
+#
+# Prior behavior: render.py unconditionally emitted an "SPCX — HOLD TARGET IN
+# CASH" notice regardless of any live state. SPCX's gate was actually retired
+# by PHQ-2026-04 after a verified manual exit (0 shares, no destination row,
+# no gates.yaml entry) — the notice was simply wrong on current main. The
+# fixture's live gates.yaml has no SPCX entry (matching real current state);
+# a dedicated test below adds one to prove the notice is genuinely state-
+# derived, not silently disabled.
+
+def test_spcx_notice_absent_when_not_currently_gated(tmp_repo: Path):
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.spcx_state.live_gate is None
+    assert m.spcx_state.currently_held is False
+    assert m.spcx_state.has_destination_target is False
+    html = render_html(m)
+    # The old unconditional notice title/claim must not appear.
+    assert "SPCX — HOLD TARGET IN CASH" not in html
+    assert "SPCX is gated: its target capital is held in cash" not in html
+    # No sell directive of any kind is produced.
+    assert ">sell<" not in html.lower()
+    assert "sell spcx" not in html.lower()
+
+
+def test_spcx_notice_reflects_live_gate_when_currently_gated(tmp_repo: Path):
+    gates_path = tmp_repo / "gates.yaml"
+    gates_path.write_text(gates_path.read_text() + (
+        "  - ticker: SPCX\n"
+        "    status: cash_pending_clearance\n"
+        "    authority: PHQ-2026-01\n"
+        "    allow_add: false\n"
+        "    holds_existing_shares: false\n"
+        "    next_gate: \"Require an accessible investable vehicle.\"\n"
+    ))
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.spcx_state.live_gate is not None
+    assert m.spcx_state.live_gate.status == "cash_pending_clearance"
+    html = render_html(m)
+    assert "SPCX" in html
+    assert "cash_pending_clearance" in html
+    assert "not a directive to" in html.lower()
+    assert ">sell<" not in html.lower()
+    assert "sell spcx" not in html.lower()
+
+
+def test_spcx_notice_omitted_when_held_without_live_gate(tmp_repo: Path):
+    # A held-but-ungated SPCX (e.g. a future re-entry before any new gate is
+    # filed) must not resurrect the old "gated" claim.
+    holdings_path = tmp_repo / "holdings.yaml"
+    holdings_path.write_text(
+        holdings_path.read_text().replace("shares:\n", "shares:\n  SPCX: 1.0\n")
+    )
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.spcx_state.live_gate is None
+    assert m.spcx_state.currently_held is True
+    html = render_html(m)
+    assert "SPCX — HOLD TARGET IN CASH" not in html
+    assert ">sell<" not in html.lower()
+
+
+# ── PHQ-2026-01 "not yet implemented" — stale claim removed ──────────────────
+#
+# Prior behavior: the dashboard unconditionally asserted "PHQ-2026-01
+# architecture is approved policy, not yet implemented" (whenever any gated
+# name existed) and repeated "not implemented in targets.yaml" in the
+# allocation-unavailable reasons — false on current main, where PHQ-2026-02
+# already implemented the canonical destination architecture into
+# targets.yaml/gates.yaml/issuer_lookthrough.yaml.
+
+def test_no_stale_phq_2026_01_not_implemented_notice(tmp_repo: Path):
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert not any(
+        "not yet implemented" in n.title.lower() or "not yet implemented" in n.detail.lower()
+        for n in m.notices
+    )
+    assert not any("approved policy" in n.title.lower() for n in m.notices)
+    assert not any(
+        "not implemented" in r.lower() for r in m.allocation_unavailable_reasons
+    )
+
+
+def test_gated_capital_notice_is_live_gate_derived(tmp_repo: Path):
+    # The replacement notice counts from the LIVE gates.yaml (1 entry: RKLB
+    # in the base fixture), not the frozen PHQ-2026-01 evidence CSV (which
+    # has 2: SPCX + RKLB) — proving it reflects current state, not history.
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert len(m.live_gates) == 1
+    assert m.live_gates[0].ticker == "RKLB"
+    assert any(
+        n.severity == model_mod.SEVERITY_INFO
+        and n.title == "1 gated name(s) hold target capital in cash"
+        for n in m.notices
+    )
+
+
+def test_valid_allocation_unavailable_reasons_remain(tmp_repo: Path):
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    reasons_text = " ".join(m.allocation_unavailable_reasons).lower()
+    assert "live market data" in reasons_text
+    assert "reconciled" in reasons_text
+    assert "does not run or duplicate" in reasons_text
+    html = render_html(m)
+    assert "Recommendation unavailable" in html
+    assert "does not run the allocator" in html.lower()
 
 
 # ── allocation check ─────────────────────────────────────────────────────────
@@ -697,7 +892,9 @@ def test_measured_ai_platform_figure_absent_still_qualified(tmp_repo: Path):
 def test_sortable_headers_use_button_not_role_attribute(tmp_repo: Path):
     html = render_html(build_model(tmp_repo, now=FIXED_NOW))
     assert 'role="button"' not in html
-    assert html.count('<button type="button" class="th-sort">') == 5
+    # Positions (5 cols) + Targets (3 cols, now sortable per-name destination
+    # rows instead of the retired, unsortable tier table) = 8.
+    assert html.count('<button type="button" class="th-sort">') == 8
     assert "aria-sort" in _JS_BLOCK(html)
 
 
