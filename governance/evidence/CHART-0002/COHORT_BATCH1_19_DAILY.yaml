@@ -1,0 +1,257 @@
+cohort_id: CHART-0002-BATCH1-19-DAILY-20260801
+decision_id: CHART-0002
+governing_authority: governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
+immutable: true
+immutability_note: This cohort definition is frozen for this implementation PR. No ticker substitution,
+  addition, or removal is authorized without a new, separate, principal-approved governance filing. Union
+  of the four shards below equals the cohort exactly, mechanically verified this session (19 tickers,
+  zero duplicates, zero missing, zero extra).
+timeframe: 1D
+timeframe_note: Daily only. No other timeframe is included in this batch.
+capture_date: '2026-08-01'
+ticker_count: 19
+tickers:
+- AMZN
+- ASML
+- AVGO
+- CEG
+- COST
+- ETN
+- GEV
+- GOOGL
+- ISRG
+- KLAC
+- LLY
+- META
+- MSFT
+- NVDA
+- PANW
+- PWR
+- TMO
+- TSM
+- V
+shards:
+  shard_1:
+  - AMZN
+  - ASML
+  - AVGO
+  - CEG
+  - COST
+  shard_2:
+  - ETN
+  - GEV
+  - GOOGL
+  - ISRG
+  - KLAC
+  shard_3:
+  - LLY
+  - META
+  - MSFT
+  - NVDA
+  - PANW
+  shard_4:
+  - PWR
+  - TMO
+  - TSM
+  - V
+shard_sizes:
+  shard_1: 5
+  shard_2: 5
+  shard_3: 5
+  shard_4: 4
+mechanical_verification:
+  union_of_shards_equals_cohort: true
+  duplicate_tickers: 0
+  missing_tickers: 0
+  extra_tickers: 0
+source_library:
+  root: ~/Projects/Chart-Automation (read-only, external, not part of this repository)
+  governed_snapshot: library/governed/2026-08-01
+  governed_total_files: 220
+  governed_total_tickers: 55
+layer_a_preflight:
+  scope: all 220 governed PNGs (55 tickers x 4 timeframes)
+  checks:
+  - filename convention (TICKER__2026-08-01__TIMEFRAME.png)
+  - manifest/disk reconciliation
+  - exact file count (220)
+  - PNG magic header
+  - successful decode
+  - dimensions/integrity
+  - duplicate hashes within the governed set
+  - authorized-19 1D unique resolution
+  result: clean
+  errors: 0
+  warnings: 0
+  disk_file_count: 220
+  ticker_count: 55
+  duplicate_hash_groups_within_governed: 0
+  external_library_writes: 0
+  note: 'Performed against the authoritative manifest-defined governed set only (library/governed/2026-08-01/,
+    verified against output/governed_copy_manifest_2026-08-01.json and output/governed_copy_validation_2026-08-01.md,
+    ALL CHECKS PASSED), not an unrestricted recursive filesystem scan. A separate 41-file set under quarantine/Downloads-Cleanup-2026-08-01/
+    was independently confirmed out of namespace: zero SHA-256 hash overlap with the 220 governed files,
+    structurally distinct filename convention, and the quarantine manifest''s own gate ''8_no_governed_source_selected_without_rule:
+    PASS'' confirms no governed file was ever quarantined.'
+retention:
+  storage_model: repository-native, LFS-free, byte-for-byte image retention
+  package_count: 19
+  total_retained_bytes: 33729566
+  total_retained_mb: 32.17
+  git_lfs_present: false
+  git_lfs_required: false
+privacy:
+  reviewed_images: 19
+  clean_images: 0
+  username_exception_images: 19
+  other_privacy_issue_images: 0
+  redacted_images: 0
+  note: All 19 images share the identical TradingView capture watermark pattern ('nichmasters created
+    with TradingView.com, [date] [time] UTC-4'). No account balance, account number, position list, order
+    history, buying-power/margin figure, email, real name, or unrelated watchlist content was found in
+    any of the 19 images. The principal formally, explicitly, and individually invoked the CHART-0001
+    Section 5 / CHART-0002 Section 6 narrow username exception for each of the 19 named images in this
+    authorizing session (full verbatim text retained in each package's own MANIFEST.json and record.yaml,
+    per Section 6's per-image, not-batch-wide disclosure requirement) -- no image was redacted; every
+    retained image is byte-for-byte identical to its governed source (governed_source_sha256 == retained_sha256
+    for all 19).
+packages:
+- ticker: AMZN
+  shard: shard_1
+  package_dir: governance/evidence/CHART-0002/amzn-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/amzn-daily-2026-08-01/AMZN__2026-08-01__1D.png
+  sha256: e593d332ea6702fc735e41543d078156e0d25e98e8de34362b5f8f69e266b6df
+  bytes: 1804249
+  dimensions: 3624x2336
+- ticker: ASML
+  shard: shard_1
+  package_dir: governance/evidence/CHART-0002/asml-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/asml-daily-2026-08-01/ASML__2026-08-01__1D.png
+  sha256: c79d0c1ae0a38156e186c249cb89c5ab45685da36d4ca93161f808da6783cdbb
+  bytes: 1769257
+  dimensions: 3624x2336
+- ticker: AVGO
+  shard: shard_1
+  package_dir: governance/evidence/CHART-0002/avgo-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/avgo-daily-2026-08-01/AVGO__2026-08-01__1D.png
+  sha256: 4a2d70834fbb31dfe7f6b570936508a82e46dd7dc352aa5b7b769d2c797f8608
+  bytes: 1769450
+  dimensions: 3624x2336
+- ticker: CEG
+  shard: shard_1
+  package_dir: governance/evidence/CHART-0002/ceg-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/ceg-daily-2026-08-01/CEG__2026-08-01__1D.png
+  sha256: 0ceea1cd8e2434512129ccd71ab01e4aa23b52af34f422a5c5bb1da1ef28e884
+  bytes: 1802059
+  dimensions: 3624x2336
+- ticker: COST
+  shard: shard_1
+  package_dir: governance/evidence/CHART-0002/cost-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/cost-daily-2026-08-01/COST__2026-08-01__1D.png
+  sha256: 9c5ccfdc71033e67475d369f5635210a717b85427fd9d3d5f3262743537e0be9
+  bytes: 1784040
+  dimensions: 3624x2336
+- ticker: ETN
+  shard: shard_2
+  package_dir: governance/evidence/CHART-0002/etn-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/etn-daily-2026-08-01/ETN__2026-08-01__1D.png
+  sha256: c46175d7b2078d3584e6ab933f0f94d78138066ce15e244bf03a9903786aeebc
+  bytes: 1851213
+  dimensions: 3624x2336
+- ticker: GEV
+  shard: shard_2
+  package_dir: governance/evidence/CHART-0002/gev-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/gev-daily-2026-08-01/GEV__2026-08-01__1D.png
+  sha256: 979664a076f23c7c663a53fbefda4a60d832daede3d58f902ad402b9289f5b20
+  bytes: 1802578
+  dimensions: 3624x2336
+- ticker: GOOGL
+  shard: shard_2
+  package_dir: governance/evidence/CHART-0002/googl-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/googl-daily-2026-08-01/GOOGL__2026-08-01__1D.png
+  sha256: b54f7fc6d95a7545d55b941a60868acc7fec2f8d30719672aab89dcca2378aab
+  bytes: 1814352
+  dimensions: 3624x2336
+- ticker: ISRG
+  shard: shard_2
+  package_dir: governance/evidence/CHART-0002/isrg-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/isrg-daily-2026-08-01/ISRG__2026-08-01__1D.png
+  sha256: 528fc4c77b27776fb231f30a6592443679ea36538be9f54b57eaad0f1c5f68b4
+  bytes: 1753268
+  dimensions: 3624x2336
+- ticker: KLAC
+  shard: shard_2
+  package_dir: governance/evidence/CHART-0002/klac-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/klac-daily-2026-08-01/KLAC__2026-08-01__1D.png
+  sha256: 55b6a010d91837e51aa8fc3a9fa28c1633a6a38d42d8b9a226c4f226f20e3f72
+  bytes: 1771405
+  dimensions: 3624x2336
+- ticker: LLY
+  shard: shard_3
+  package_dir: governance/evidence/CHART-0002/lly-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/lly-daily-2026-08-01/LLY__2026-08-01__1D.png
+  sha256: f4caa388a95ca2338996378e6b20d333b71acac4a6214a6e4dc0c25bd2770c66
+  bytes: 1626453
+  dimensions: 3414x2252
+- ticker: META
+  shard: shard_3
+  package_dir: governance/evidence/CHART-0002/meta-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/meta-daily-2026-08-01/META__2026-08-01__1D.png
+  sha256: 21357ea481e48dd031f2b833716d5ec9a681406812f2d847f4b17c801d1c8f95
+  bytes: 1784290
+  dimensions: 3624x2336
+- ticker: MSFT
+  shard: shard_3
+  package_dir: governance/evidence/CHART-0002/msft-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/msft-daily-2026-08-01/MSFT__2026-08-01__1D.png
+  sha256: 17ec0465eec0ef67d9989b8308ed5750b1c0b3894d9773a192c3327cf001bbe4
+  bytes: 1754413
+  dimensions: 3624x2336
+- ticker: NVDA
+  shard: shard_3
+  package_dir: governance/evidence/CHART-0002/nvda-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/nvda-daily-2026-08-01/NVDA__2026-08-01__1D.png
+  sha256: 0ddc0eb0aded012618c368343f657f983d5bb9db7d130f58965f4bb542c4055f
+  bytes: 1877385
+  dimensions: 3624x2336
+- ticker: PANW
+  shard: shard_3
+  package_dir: governance/evidence/CHART-0002/panw-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/panw-daily-2026-08-01/PANW__2026-08-01__1D.png
+  sha256: 8fddf2c43e637515511005bbf6c3fb1ac06d1c341890eae05f772385e3af4c78
+  bytes: 1589419
+  dimensions: 3414x2252
+- ticker: PWR
+  shard: shard_4
+  package_dir: governance/evidence/CHART-0002/pwr-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/pwr-daily-2026-08-01/PWR__2026-08-01__1D.png
+  sha256: 6bcdee4c6a822d386c2274f253d819749dfd061f09b06a7572ae8c16ee21fac8
+  bytes: 1750704
+  dimensions: 3624x2336
+- ticker: TMO
+  shard: shard_4
+  package_dir: governance/evidence/CHART-0002/tmo-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/tmo-daily-2026-08-01/TMO__2026-08-01__1D.png
+  sha256: d5b106b887e53cbfdf8c3c4464fca5276a12033b704d8610739ff124f8f65d69
+  bytes: 1775575
+  dimensions: 3624x2336
+- ticker: TSM
+  shard: shard_4
+  package_dir: governance/evidence/CHART-0002/tsm-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/tsm-daily-2026-08-01/TSM__2026-08-01__1D.png
+  sha256: 35c885283335e298eb9331eae0464a729bddc29cf36a4b63cc19479834b099b2
+  bytes: 1833071
+  dimensions: 3624x2336
+- ticker: V
+  shard: shard_4
+  package_dir: governance/evidence/CHART-0002/v-daily-2026-08-01
+  retained_image: governance/evidence/CHART-0002/v-daily-2026-08-01/V__2026-08-01__1D.png
+  sha256: 378844f781507e246cebcdb6c153c9b9ab4e6b8118c6cc9f8fe2d58a9b399ea8
+  bytes: 1816385
+  dimensions: 3624x2336
+stage: Stage 1 only
+stage_2_status: not authorized, not created, not present in this batch
+portfolio_policy_effect: none
+governed_consequence: none
+lifecycle_status: draft
+created_at: '2026-08-02'
