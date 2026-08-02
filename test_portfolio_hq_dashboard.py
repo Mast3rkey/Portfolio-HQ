@@ -259,6 +259,41 @@ def test_malformed_yaml_degrades_without_raising(tmp_repo: Path):
     assert render_html(m)  # renders something
 
 
+def test_missing_gates_yaml_degrades_with_warning(tmp_repo: Path):
+    (tmp_repo / "gates.yaml").unlink()
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.live_gates == ()
+    assert any("could not be read" in n.title.lower() or "not found" in n.detail.lower()
+               for n in m.warnings)
+    assert "<html" in render_html(m).lower()  # still renders
+
+
+def test_malformed_gates_yaml_degrades_without_raising(tmp_repo: Path):
+    (tmp_repo / "gates.yaml").write_text("gates: [unclosed\n  bad: :::\n")
+    m = build_model(tmp_repo, now=FIXED_NOW)  # must not raise
+    assert m.live_gates == ()
+    assert render_html(m)  # renders something
+
+
+def test_gates_yaml_non_list_gates_key_degrades_without_raising(tmp_repo: Path):
+    (tmp_repo / "gates.yaml").write_text("gates: not_a_list\n")
+    m = build_model(tmp_repo, now=FIXED_NOW)  # must not raise
+    assert m.live_gates == ()
+    assert render_html(m)
+
+
+def test_gates_yaml_entry_missing_ticker_is_skipped_not_raised(tmp_repo: Path):
+    (tmp_repo / "gates.yaml").write_text(
+        "gates:\n"
+        "  - status: cash_pending_clearance\n"  # no 'ticker' field
+        "  - ticker: RKLB\n"
+        "    status: cash_pending_clearance\n"
+    )
+    m = build_model(tmp_repo, now=FIXED_NOW)  # must not raise
+    assert {g.ticker for g in m.live_gates} == {"RKLB"}
+    assert render_html(m)
+
+
 def test_stale_holdings_warning(tmp_repo: Path):
     m = build_model(tmp_repo, now=FIXED_NOW)
     assert m.margin.stale is True
@@ -478,6 +513,28 @@ def test_spcx_notice_omitted_when_held_without_live_gate(tmp_repo: Path):
     assert m.spcx_state.currently_held is True
     html = render_html(m)
     assert "SPCX — HOLD TARGET IN CASH" not in html
+    assert ">sell<" not in html.lower()
+
+
+def test_spcx_notice_omitted_when_targeted_without_live_gate_or_holding(tmp_repo: Path):
+    # A destination-targeted-but-not-yet-bought, not-currently-gated SPCX
+    # (e.g. a future re-entry with a target row filed before any shares are
+    # actually purchased) is the fifth state in the ticker-state space and
+    # must not resurrect the old unconditional "gated" claim either.
+    targets_path = tmp_repo / "targets.yaml"
+    targets_path.write_text(
+        targets_path.read_text().replace(
+            "destination:\n",
+            "destination:\n  - ticker: SPCX\n    target_pct: 1.0\n    asset_class: equity\n",
+        )
+    )
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.spcx_state.live_gate is None
+    assert m.spcx_state.currently_held is False
+    assert m.spcx_state.has_destination_target is True
+    html = render_html(m)
+    assert "SPCX — HOLD TARGET IN CASH" not in html
+    assert "SPCX is gated: its target capital is held in cash" not in html
     assert ">sell<" not in html.lower()
 
 
