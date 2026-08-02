@@ -43,21 +43,40 @@ privacy_and_redaction:
     order, or margin information of any kind appears anywhere in this chart -- its content is a price
     chart, volume panel, and two sub-indicator panels only.'
   username_exception_applied: true
-  username_exception_note: 'CHART-0001 Section 5 defines a narrow, principal-approved, per-image username
-    exception, reused by reference in CHART-0002 Section 6 (which explicitly did not extend the prior
-    CHART-0001 NVDA-specific grant to any other image, requiring a fresh, explicit, per-image approval
-    for each new image). FORMAL PER-IMAGE PRIVACY APPROVAL (received live in this authorizing implementation
-    session, 2026-08-02): "I explicitly invoke the accepted CHART-0001 Section 5 / CHART-0002 Section
-    6 narrow platform-watermark/username exception separately for each of the following 19 authorized
-    retained 1D images: AMZN, ASML, AVGO, CEG, COST, ETN, GEV, GOOGL, ISRG, KLAC, LLY, META, MSFT, NVDA,
-    PANW, PWR, TMO, TSM, V. For each named image individually, I approve retention of the visible ''nichmasters
-    created with TradingView.com, ...'' watermark/username exactly as captured. This is 19 separate per-image
-    approvals recorded together for efficiency. It is not a general username waiver, does not apply to
-    any other chart, ticker, timeframe, image, or future batch, and does not authorize redaction or pixel
-    modification." This approval supersedes an earlier, less formal in-session remark (''i dont mind name
-    showing...'') that the principal explicitly clarified should not be treated as a governance waiver
-    by itself -- this formal, itemized, per-image statement is the operative authorization relied upon
-    here.'
+  username_exception_note: |-
+    CHART-0001 §5 defines a narrow, principal-approved, per-image username exception, reused by reference in CHART-0002 §6 (which explicitly did not extend the prior CHART-0001 NVDA-specific grant to any other image, requiring a fresh, explicit, per-image approval for each new image).
+
+    FORMAL PER-IMAGE PRIVACY APPROVAL -- retained verbatim from PR #226 issue comment 5159177312 (posted 2026-08-02T16:19:58Z by GitHub user Mast3rkey; canonical URL: https://github.com/Mast3rkey/Portfolio-HQ/pull/226#issuecomment-5159177312), reproduced here exactly, without paraphrase, omission, or alteration:
+
+    "Per-image privacy approval:
+
+    I explicitly invoke the accepted CHART-0001 §5 / CHART-0002 §6 narrow platform-watermark/username exception separately for each of the following 19 retained `1D` images in PR #226 at exact head `1201104ccfc5853ebf708ca7c92853fe39ffc599`:
+
+    AMZN, ASML, AVGO, CEG, COST, ETN, GEV, GOOGL, ISRG, KLAC, LLY, META, MSFT, NVDA, PANW, PWR, TMO, TSM, V.
+
+    For each named image individually, I approve retention of the visible `nichmasters created with TradingView.com, ...` watermark/username exactly as captured.
+
+    This constitutes 19 distinct per-image approvals recorded together for efficiency. It is not a general username waiver, does not apply to another chart, ticker, timeframe, image, or future batch, and does not authorize redaction, cropping, blurring, or any pixel modification.
+
+    Each image must otherwise pass its individual privacy review, contain no other privacy-sensitive information, preserve its original pixels byte-for-byte, and maintain source/destination SHA-256 equality.
+
+    This privacy approval does not constitute final approval of PR #226, does not authorize readiness or merge, and creates no Stage 2, portfolio-policy, trading, brokerage, or execution authority."
+
+    This approval supersedes an earlier, less formal in-session remark ('i dont mind name showing...') that the principal explicitly clarified should not be treated as a governance waiver by itself -- this formal, itemized, per-image, verbatim-retained statement is the operative authorization relied upon here. See privacy_approval_source below for mechanically verifiable source citation (comment ID, URL, PR number, exact implementation head, and this citation's own explicit non-final-approval disclosure).
+  privacy_approval_source:
+    type: github_pull_request_comment
+    pr_number: 226
+    comment_id: 5159177312
+    comment_url: https://github.com/Mast3rkey/Portfolio-HQ/pull/226#issuecomment-5159177312
+    posted_at: '2026-08-02T16:19:58Z'
+    posted_by: Mast3rkey
+    anchored_implementation_head: 1201104ccfc5853ebf708ca7c92853fe39ffc599
+    approval_scope: >-
+      This citation supports the per-image username-exception approval for this package's own ticker (TMO) and its retained 1D image (TMO__2026-08-01__1D.png) specifically -- one of 19 images the cited comment approves individually and separately, not a batch-wide approval by itself.
+    not_final_approval_disclosure: >-
+      The cited comment's own retained text states explicitly: "This privacy approval does not constitute final approval of PR #226, does not authorize readiness or merge, and creates no Stage 2, portfolio-policy, trading, brokerage, or execution authority." This citation records privacy-approval provenance only; it does not itself assert, constitute, or substitute for independent review or principal acceptance of this package, PR #226, or any later corrective PR.
+    correction_provenance: >-
+      This structured citation and the verbatim quotation above were added in a bounded corrective PR following a retrospective post-merge audit (PR #226 issue comment 5159313447, https://github.com/Mast3rkey/Portfolio-HQ/pull/226#issuecomment-5159313447) that found the original text presented a paraphrase of comment 5159177312 as a verbatim quotation, omitting the exact-head anchor and two full disclaimer sentences. This correction does not alter the underlying privacy determination (independently re-confirmed unchanged) or any image pixel/hash.
 content:
   visible_facts:
   - Center chart watermark text reads "TMO, 1D" with "Thermo Fisher Scientific Inc." beneath it

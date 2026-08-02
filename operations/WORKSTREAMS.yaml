@@ -4969,6 +4969,67 @@ workstreams:
       hash-verified, and used to author the final fact/observation/
       inference/uncertainty-separated records — no agent had repository
       write access.
+
+      Lifecycle update (2026-08-02, fourth — premature merge and
+      retrospective audit): PR #226 was merged to main at merge commit
+      bc3dc540a23aac6939ccc5bc37c73508e4a411f9 (2026-08-02T16:21:47Z, base
+      2fcb12c17de385ec7391945d2f22bd421ce66a95, head
+      1201104ccfc5853ebf708ca7c92853fe39ffc599), approximately eight
+      minutes after the PR was opened and roughly two minutes after the
+      per-image privacy-approval comment (issuecomment-5159177312) was
+      posted. At merge time PR #226 carried zero GitHub reviews and zero
+      review-thread comments; the only principal comment on the PR was the
+      privacy-approval comment, which states in its own retained text
+      that it "does not constitute final approval of PR #226, does not
+      authorize readiness or merge." No independent exact-head review, no
+      bounded-correction cycle, and no valid final-head principal
+      acceptance distinct from that privacy-scoped comment preceded the
+      merge — a direct violation of CHART-0002 §20 and OPS-0007 §1's
+      required pre-merge gate. A separate, later Claude Code (Sonnet 5)
+      session with no authorship role in PR #226 retrospectively audited
+      the merged state at the exact merge commit/tree and retained its
+      findings at issue comment issuecomment-5159313447, beginning
+      "RETROSPECTIVE POST-MERGE AUDIT — PRE-MERGE GATE WAS NOT SATISFIED."
+      That audit independently re-verified hash/pixel integrity, image
+      legibility, fact/observation/inference/uncertainty separation,
+      cohort/shard completeness, protected-path isolation, and full
+      test-suite results (357/357 batch tests, 2110/2110 full suite) as
+      clean, but found one systemic MAJOR content defect: all 19
+      MANIFEST.json and all 19 record.yaml files presented a paraphrase
+      of the privacy-approval comment as a verbatim quotation — omitting
+      the exact-head anchor, two full disclaimer sentences (including the
+      sentence most relevant to this audit's own subject: that the
+      approval does not authorize readiness or merge), and shortening one
+      other clause — with zero citation of the source comment's ID or URL
+      anywhere in any package. The audit also found one MINOR defect:
+      this WS-0012 entry and CLAUDE.md's own CHART-0002 pointer described
+      PR #226 as an unreviewed, unmerged draft requiring review "before
+      it may merge" — language that was already false at the moment it
+      merged into `main`, since the merge commit's tree is byte-identical
+      to the PR head's tree (nothing was corrected post-merge). The audit
+      performed no repository mutation and explicitly does not
+      retroactively satisfy the missed pre-merge gate. A separate, later
+      corrective session then prepared one bounded corrective PR, under
+      its own separate, explicit controlling principal authorization, to
+      (a) correct the systemic privacy-approval-citation defect across
+      all 19 packages by adding a structured, mechanically verifiable
+      `privacy_approval_source` citation (PR number, comment ID,
+      canonical URL, exact implementation head, per-ticker approval
+      scope, explicit non-final-approval disclosure) and replacing the
+      paraphrased quoted block with the retained comment's exact verbatim
+      text (independently re-verified byte-for-byte against the live
+      GitHub comment); and (b) synchronize this entry and CLAUDE.md's
+      pointer to the chronology actually described above. This correction
+      changes no PNG, no Stage 1 fact/observation/inference/uncertainty/
+      thesis_relationship content, and no lifecycle/reviewer/merge-status
+      field (every package's `lifecycle_status: draft` / `reviewer: null`
+      / `principal_acceptance: null` remains accurate, per the audit's
+      own explicit NOTE, since no independent review or principal
+      acceptance of the batch's *content* has in fact occurred). **This
+      corrective PR does not retroactively satisfy the missed pre-merge
+      gate on PR #226** — it is itself subject to the full, unreduced
+      independent-review/principal-acceptance/merge/post-merge-
+      verification lifecycle before WS-0012 may be considered complete.
     governing_authority:
       - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md (baseline, untouched)
@@ -4995,15 +5056,35 @@ workstreams:
       record.yaml, README.md) plus one immutable cohort manifest
       (COHORT_BATCH1_19_DAILY.yaml), plus focused package-integrity tests
       mirroring test_chart_evidence_pilot.py's existing shape, extended to
-      cohort-level completeness. This implementation is now underway on
-      branch claude/chart-0002-stage1-first-19-daily as a draft PR; it
-      requires its own full OPS-0007 §1 independent review cycle, any
-      required bounded correction and re-review, explicit principal
-      approval at its exact final head, and post-merge verification before
-      it may merge or be treated as accepted evidence. No production file
-      (allocate.py, margin_state.py, levels.py, targets.yaml, holdings.yaml,
-      gates.yaml, issuer_lookthrough.yaml, Company/Theme Intelligence, or
-      dashboard code) is created or modified under this workstream.
+      cohort-level completeness. **That PR (#226) was merged to main at
+      merge commit bc3dc540a23aac6939ccc5bc37c73508e4a411f9
+      (2026-08-02T16:21:47Z) prematurely, without the independent
+      exact-head review, bounded correction, or valid final-head principal
+      acceptance CHART-0002 §20 / OPS-0007 §1 require — a lifecycle
+      violation documented in full by retrospective post-merge audit
+      issue comment issuecomment-5159313447, which found the pre-merge
+      gate was not satisfied.** That same audit found one systemic MAJOR
+      content defect (all 19 evidence packages presented a paraphrase of
+      the per-image privacy-approval comment, issuecomment-5159177312, as
+      a verbatim quotation) and one MINOR lifecycle-desynchronization
+      defect (this entry and CLAUDE.md's pointer describing PR #226 as an
+      unreviewed, unmerged draft after it had already merged). A separate,
+      later corrective session then prepared one bounded corrective PR,
+      under its own separate, explicit controlling principal
+      authorization, correcting exactly: the privacy-approval-citation
+      defect across all 19 MANIFEST.json/record.yaml packages (structured,
+      mechanically verifiable source citation plus the exact verbatim
+      comment text, independently re-verified byte-for-byte against the
+      live GitHub comment), and this entry's and CLAUDE.md's lifecycle
+      text. **This corrective PR does not retroactively satisfy the
+      missed pre-merge gate on PR #226's original content** — it is
+      itself subject to the full, unreduced independent-review/
+      principal-acceptance/merge/post-merge-verification lifecycle before
+      WS-0012 may be considered complete. No production file (allocate.py,
+      margin_state.py, levels.py, targets.yaml, holdings.yaml, gates.yaml,
+      issuer_lookthrough.yaml, Company/Theme Intelligence, or dashboard
+      code) is created or modified under this workstream or its
+      corrective PR.
     prohibited_scope: >
       Processing any of the 220 governed chart images beyond the current
       19-name eligible universe named above; any ticker outside that
@@ -5179,40 +5260,125 @@ workstreams:
         pr: null
         status: completed_pre_pr
         date: "2026-08-02"
+      - gate: batch1-19-daily-merged-without-required-review
+        description: >
+          PR #226 was merged to main at merge commit
+          bc3dc540a23aac6939ccc5bc37c73508e4a411f9 (2026-08-02T16:21:47Z),
+          base 2fcb12c17de385ec7391945d2f22bd421ce66a95, head
+          1201104ccfc5853ebf708ca7c92853fe39ffc599 — approximately eight
+          minutes after the PR was opened. At merge time PR #226 carried
+          zero GitHub reviews and zero review-thread comments; the only
+          principal comment was the per-image privacy-approval comment
+          (issuecomment-5159177312), which explicitly states it "does not
+          constitute final approval of PR #226, does not authorize
+          readiness or merge." No independent exact-head review, bounded
+          correction, or valid final-head principal acceptance distinct
+          from that privacy-scoped comment preceded the merge — a direct
+          violation of CHART-0002 §20 and OPS-0007 §1's required pre-merge
+          gate.
+        pr: 226
+        status: merged_without_required_review
+        date: "2026-08-02"
+      - gate: batch1-19-daily-retrospective-post-merge-audit
+        description: >
+          A separate, later Claude Code (Sonnet 5) session with no
+          authorship role in PR #226 retrospectively audited the merged
+          state at the exact merge commit/tree and retained its findings
+          at issue comment issuecomment-5159313447, beginning
+          "RETROSPECTIVE POST-MERGE AUDIT — PRE-MERGE GATE WAS NOT
+          SATISFIED." Independently re-verified clean: hash/pixel
+          integrity, image legibility, fact/observation/inference/
+          uncertainty separation, cohort/shard completeness,
+          protected-path isolation, and full test-suite results (357/357
+          batch tests, 2110/2110 full suite). Found one systemic MAJOR
+          content defect (all 19 MANIFEST.json/record.yaml packages
+          presented a paraphrase of issuecomment-5159177312 as a verbatim
+          quotation, omitting the exact-head anchor and two full
+          disclaimer sentences, with zero source-comment ID/URL citation
+          anywhere) and one MINOR lifecycle-desynchronization defect (this
+          WS-0012 entry and CLAUDE.md's pointer described PR #226 as an
+          unreviewed, unmerged draft after it had already merged). This
+          audit performed no repository mutation and does not itself
+          retroactively satisfy the missed pre-merge gate.
+        pr: null
+        status: completed
+        date: "2026-08-02"
+      - gate: batch1-postmerge-correction-drafted
+        description: >
+          Following the retrospective audit's recommended remediation
+          (Outcome A), one bounded corrective PR was prepared under a
+          separate, explicit controlling principal authorization limited
+          to: correcting the privacy-approval-citation defect in all 19
+          MANIFEST.json and 19 record.yaml files (adding a structured,
+          mechanically verifiable privacy_approval_source citation —
+          PR number, comment ID, canonical URL, exact implementation head,
+          per-ticker approval scope, explicit non-final-approval
+          disclosure — and replacing the paraphrased quoted block with
+          the retained comment's exact verbatim text, independently
+          re-verified byte-for-byte against the live GitHub comment this
+          session); synchronizing this WS-0012 entry and the CLAUDE.md
+          CHART-0002 pointer to the true chronology; and directly
+          necessary regression tests. Zero PNGs, zero Stage 1 facts/
+          observations/inferences/uncertainties/thesis_relationship
+          fields, zero lifecycle/reviewer/merge-status fields, and zero
+          README.md files were touched. This corrective PR does not
+          retroactively satisfy the missed pre-merge gate on PR #226 and
+          requires its own full independent exact-head review, principal
+          approval, merge, and post-merge verification before it may be
+          considered complete.
+        pr: 227
+        status: drafted
+        date: "2026-08-02"
     evidence_refs:
       - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
       - governance/evidence/CHART-0002/COHORT_BATCH1_19_DAILY.yaml
+      - PR #226 issue comment issuecomment-5159177312 (per-image privacy approval)
+      - PR #226 issue comment issuecomment-5159313447 (retrospective post-merge audit)
     next_action: >
-      Push the branch, open the draft implementation PR, run the full test
-      suite and mechanical scope/protected-path/binary-count/secrets/
-      absolute-path checks, then perform the smallest mechanical follow-up
-      commit to synchronize active_pr once the PR number is known. The PR
-      must stay draft and requires independent, exact-head shard review
-      under OPS-0007 §1 (OPS-0009 Lane G — full weight, no reduction),
-      followed by any required bounded correction and exact-head
-      re-review, then explicit principal mark-ready approval at its own
-      exact final head before merge, then complete post-merge verification
-      per OPS-0009 §4(a). No Stage 2 record, second batch, second
+      The bounded corrective PR (privacy-approval-citation correction
+      across all 19 packages, plus this entry's and CLAUDE.md's lifecycle
+      synchronization) requires independent, exact-head review under
+      OPS-0007 §1, followed by any required bounded correction and
+      exact-head re-review, then explicit principal mark-ready approval at
+      its own exact final head before merge, then complete post-merge
+      verification per OPS-0009 §9. Per OPS-0009 §10's conservative
+      escalation, this correction is treated at full review weight (not
+      Lane M's narrow review-omission exemption) because PR #226's
+      original content was never independently reviewed at all before it
+      merged. This correction does not retroactively satisfy the missed
+      pre-merge gate on PR #226. No Stage 2 record, second batch, second
       timeframe, or portfolio-policy change may begin under this
       workstream.
     completion_criteria: >
-      Not met. Requires, at minimum: the draft implementation PR opened and
-      pushed; independent exact-head review; any required bounded
+      Not met. PR #226 merged (2026-08-02, merge commit
+      bc3dc540a23aac6939ccc5bc37c73508e4a411f9) without the independent
+      exact-head review, bounded correction, or valid final-head principal
+      acceptance CHART-0002 §20 / OPS-0007 §1 require — a lifecycle
+      violation documented by retrospective audit issue comment
+      issuecomment-5159313447, not cured by that audit itself. WS-0012
+      completion now additionally requires: the bounded corrective PR
+      independently reviewed at its exact head; any required bounded
       correction and re-review; explicit principal mark-ready approval at
-      the exact final head; merge to main; and post-merge verification per
-      OPS-0009 §4(a) — none of which has occurred yet. Any batch beyond
-      this first 19-name/1D cohort, or any Stage 2 record, requires its
-      own separate future governance decision — this workstream's
-      completion does not itself authorize one.
+      its exact final head; merge to main; and post-merge verification per
+      OPS-0009 §9 — none of which has occurred yet. Any batch beyond this
+      first 19-name/1D cohort, or any Stage 2 record, requires its own
+      separate future governance decision — this workstream's completion
+      does not itself authorize one.
     blocker: >
-      The draft implementation PR has not yet been opened, independently
-      reviewed, or principal-approved at its exact final head. No merge,
-      Stage 2 work, second batch, or portfolio-policy change may occur
-      until that full lifecycle completes.
-    active_branch: claude/chart-0002-stage1-first-19-daily
-    active_pr: 226
-    last_verified_main_sha: 2fcb12c17de385ec7391945d2f22bd421ce66a95
+      PR #226 already merged (bc3dc540a23aac6939ccc5bc37c73508e4a411f9),
+      but did so prematurely: zero independent review and no valid
+      final-head principal acceptance preceded that merge (retrospective
+      audit issuecomment-5159313447). The blocker is now the bounded
+      corrective PR's own lifecycle — it has not yet been independently
+      reviewed, bounded-corrected if required, principal-approved at its
+      exact final head, or merged. No Stage 2 work, second batch, or
+      portfolio-policy change may occur until that full lifecycle
+      completes, and this correction does not itself retroactively
+      satisfy the gate PR #226 skipped.
+    active_branch: claude/chart-0002-batch1-postmerge-correction
+    active_pr: 227
+    last_verified_main_sha: bc3dc540a23aac6939ccc5bc37c73508e4a411f9
     last_verified_date: "2026-08-02"
     authorized_by: >
       Controlling principal directive, this authorizing implementation
