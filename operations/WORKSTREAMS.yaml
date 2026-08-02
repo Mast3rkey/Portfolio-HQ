@@ -5030,6 +5030,45 @@ workstreams:
       gate on PR #226** — it is itself subject to the full, unreduced
       independent-review/principal-acceptance/merge/post-merge-
       verification lifecycle before WS-0012 may be considered complete.
+
+      Lifecycle update (2026-08-02, fifth — corrective PR #227 reviewed,
+      approved, merged, and post-merge verified): PR #227 was
+      independently reviewed at its exact head
+      ecdee26b8ca5a8c309db45475149f0bfea37bbcc (review 4839328758,
+      verdict APPROVED FOR PRINCIPAL EXACT-HEAD APPROVAL, zero
+      BLOCKING/MAJOR/MINOR findings — all 19 privacy-source quotations
+      independently confirmed to match the retained GitHub comment
+      exactly, all structured provenance fields reconciled, all 19 PNGs
+      confirmed byte-identical, all Stage 1 analytical content confirmed
+      unchanged, full suite 2421/2421 passing). The principal then posted
+      explicit exact-head approval (issue comment 5159540001), the PR was
+      marked ready, and — after a further, immediate live-state
+      re-verification found zero drift — merged using a merge commit
+      (method: merge, no squash/rebase) at
+      423c99a1e52af8e3062f6bd5f08d1bcc0ff8dc8c (parents
+      bc3dc540a23aac6939ccc5bc37c73508e4a411f9 and
+      ecdee26b8ca5a8c309db45475149f0bfea37bbcc; merge-commit tree
+      confirmed byte-identical to the reviewed head's tree — zero drift
+      introduced at merge). Post-merge CI run 30759211611 completed
+      successfully on the merge commit. Complete post-merge verification
+      (merge ancestry and tree-identity re-confirmed; all 19 PNGs
+      re-hashed byte-identical to prior-main; all 19 privacy-provenance
+      objects re-verified; the full repository suite re-run at 2421/2421;
+      protected-path, LFS, absolute-path, and secrets scans all clean) was
+      retained in issue comment 5159572306. **This completes the
+      corrective PR's own required independent-review/principal-
+      acceptance/merge/post-merge-verification lifecycle in full — it
+      does not retroactively satisfy or erase PR #226's own missed
+      pre-merge gate, which remains permanent historical fact, not cured
+      by this or any later PR.** No image, MANIFEST.json, record.yaml,
+      README, cohort manifest, governance decision file, or
+      governance/decisions.yaml was touched by PR #227 or by this merge.
+      Whether the composite of PR #226's own retrospective audit plus PR
+      #227's fully completed corrective-PR lifecycle is sufficient for
+      WS-0012 as a whole to be considered `complete` is a policy question
+      this factual lifecycle update does not resolve — see
+      `completion_criteria` below, which this same synchronization pass
+      also updates factually without deciding that question.
     governing_authority:
       - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md (baseline, untouched)
@@ -5077,14 +5116,21 @@ workstreams:
       comment text, independently re-verified byte-for-byte against the
       live GitHub comment), and this entry's and CLAUDE.md's lifecycle
       text. **This corrective PR does not retroactively satisfy the
-      missed pre-merge gate on PR #226's original content** — it is
-      itself subject to the full, unreduced independent-review/
-      principal-acceptance/merge/post-merge-verification lifecycle before
-      WS-0012 may be considered complete. No production file (allocate.py,
-      margin_state.py, levels.py, targets.yaml, holdings.yaml, gates.yaml,
-      issuer_lookthrough.yaml, Company/Theme Intelligence, or dashboard
-      code) is created or modified under this workstream or its
-      corrective PR.
+      missed pre-merge gate on PR #226's original content** — that gate
+      was skipped and stays skipped as permanent historical fact. **The
+      corrective PR (#227)'s own required independent-review/principal-
+      acceptance/merge/post-merge-verification lifecycle is now
+      complete**: independently reviewed at exact head
+      ecdee26b8ca5a8c309db45475149f0bfea37bbcc (review 4839328758,
+      APPROVED FOR PRINCIPAL EXACT-HEAD APPROVAL, zero BLOCKING/MAJOR/
+      MINOR findings), principal-approved (issue comment 5159540001),
+      merged via merge commit 423c99a1e52af8e3062f6bd5f08d1bcc0ff8dc8c,
+      and post-merge verified (issue comment 5159572306, full suite
+      2421/2421, all 19 PNGs and Stage 1 content confirmed unchanged). No
+      production file (allocate.py, margin_state.py, levels.py,
+      targets.yaml, holdings.yaml, gates.yaml, issuer_lookthrough.yaml,
+      Company/Theme Intelligence, or dashboard code) was created or
+      modified under this workstream or its corrective PR.
     prohibited_scope: >
       Processing any of the 220 governed chart images beyond the current
       19-name eligible universe named above; any ticker outside that
@@ -5329,56 +5375,91 @@ workstreams:
         pr: 227
         status: drafted
         date: "2026-08-02"
+      - gate: batch1-postmerge-correction-reviewed-approved-merged
+        description: >
+          PR #227 was independently reviewed at its exact head
+          ecdee26b8ca5a8c309db45475149f0bfea37bbcc (review 4839328758,
+          verdict APPROVED FOR PRINCIPAL EXACT-HEAD APPROVAL, zero
+          BLOCKING/MAJOR/MINOR findings across all four package shards,
+          the full diff, and the new 311-test suite). The principal
+          posted explicit exact-head approval (issue comment 5159540001,
+          scoped to exactly the 41-file corrective diff). The PR was
+          marked ready, a final live-state re-verification found zero
+          drift, and it was merged using a merge commit (no squash/
+          rebase, expected-head SHA guard) at
+          423c99a1e52af8e3062f6bd5f08d1bcc0ff8dc8c (parents
+          bc3dc540a23aac6939ccc5bc37c73508e4a411f9 and
+          ecdee26b8ca5a8c309db45475149f0bfea37bbcc; merge-commit tree
+          confirmed byte-identical to the reviewed head's tree). Post-merge
+          CI run 30759211611 completed successfully on the merge commit.
+          Complete post-merge verification (ancestry, exact 41-file scope,
+          all 19 PNG hashes, all 19 privacy-provenance objects, Stage 1
+          content, full suite 2421/2421, protected-path/LFS/absolute-path/
+          secrets scans) was retained in issue comment 5159572306. This
+          closes the corrective PR's own required independent-review/
+          principal-acceptance/merge/post-merge-verification lifecycle.
+          It does not retroactively satisfy or erase PR #226's own missed
+          pre-merge gate, which remains permanent historical fact.
+        pr: 227
+        status: merged
+        date: "2026-08-02"
     evidence_refs:
       - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
       - governance/evidence/CHART-0002/COHORT_BATCH1_19_DAILY.yaml
       - PR #226 issue comment issuecomment-5159177312 (per-image privacy approval)
       - PR #226 issue comment issuecomment-5159313447 (retrospective post-merge audit)
+      - PR #227 independent review 4839328758 (APPROVED FOR PRINCIPAL EXACT-HEAD APPROVAL)
+      - PR #227 issue comment issuecomment-5159540001 (principal exact-head approval)
+      - PR #227 merge commit 423c99a1e52af8e3062f6bd5f08d1bcc0ff8dc8c
+      - PR #227 issue comment issuecomment-5159572306 (post-merge verification)
     next_action: >
-      The bounded corrective PR (privacy-approval-citation correction
-      across all 19 packages, plus this entry's and CLAUDE.md's lifecycle
-      synchronization) requires independent, exact-head review under
-      OPS-0007 §1, followed by any required bounded correction and
-      exact-head re-review, then explicit principal mark-ready approval at
-      its own exact final head before merge, then complete post-merge
-      verification per OPS-0009 §9. Per OPS-0009 §10's conservative
-      escalation, this correction is treated at full review weight (not
-      Lane M's narrow review-omission exemption) because PR #226's
-      original content was never independently reviewed at all before it
-      merged. This correction does not retroactively satisfy the missed
-      pre-merge gate on PR #226. No Stage 2 record, second batch, second
+      None authorized under this workstream at this time. The corrective
+      PR (#227) has completed its own full independent-review/principal-
+      acceptance/merge/post-merge-verification lifecycle. PR #226's
+      missed pre-merge gate remains accurately disclosed as permanent
+      historical fact and is not retroactively cured by PR #227 or by
+      this synchronization. No Stage 2 record, second batch, second
       timeframe, or portfolio-policy change may begin under this
-      workstream.
+      workstream without its own separate, future, explicit principal
+      authorization — this factual synchronization does not create or
+      imply any such authorization.
     completion_criteria: >
-      Not met. PR #226 merged (2026-08-02, merge commit
-      bc3dc540a23aac6939ccc5bc37c73508e4a411f9) without the independent
-      exact-head review, bounded correction, or valid final-head principal
-      acceptance CHART-0002 §20 / OPS-0007 §1 require — a lifecycle
-      violation documented by retrospective audit issue comment
-      issuecomment-5159313447, not cured by that audit itself. WS-0012
-      completion now additionally requires: the bounded corrective PR
-      independently reviewed at its exact head; any required bounded
-      correction and re-review; explicit principal mark-ready approval at
-      its exact final head; merge to main; and post-merge verification per
-      OPS-0009 §9 — none of which has occurred yet. Any batch beyond this
-      first 19-name/1D cohort, or any Stage 2 record, requires its own
-      separate future governance decision — this workstream's completion
-      does not itself authorize one.
+      Partially met, factually updated (not a policy determination of
+      overall WS-0012 completion). Met: the corrective PR (#227)'s own
+      required lifecycle — independent exact-head review (4839328758,
+      APPROVED FOR PRINCIPAL EXACT-HEAD APPROVAL), explicit principal
+      approval at the exact final head (issue comment 5159540001), merge
+      via merge commit (423c99a1e52af8e3062f6bd5f08d1bcc0ff8dc8c), and
+      complete post-merge verification (issue comment 5159572306) — is
+      fully complete. Not cured, and not claimed to be: PR #226's own
+      original merge (2026-08-02, merge commit
+      bc3dc540a23aac6939ccc5bc37c73508e4a411f9) still occurred without the
+      independent exact-head review or valid final-head principal
+      acceptance CHART-0002 §20 / OPS-0007 §1 require of implementation
+      content itself — a lifecycle violation documented by retrospective
+      audit issue comment issuecomment-5159313447 and permanent historical
+      fact, not retroactively curable by any later PR. Whether that
+      composite state (uncured original-content gate + fully completed
+      downstream correction) is sufficient for WS-0012 to be marked
+      `complete` as a workstream is a policy question this factual
+      synchronization does not decide — `status` below is left
+      unchanged (`in_progress`) pending a future, separate,
+      explicit determination. Any batch beyond this first 19-name/1D
+      cohort, or any Stage 2 record, requires its own separate future
+      governance decision regardless of how that determination resolves.
     blocker: >
-      PR #226 already merged (bc3dc540a23aac6939ccc5bc37c73508e4a411f9),
-      but did so prematurely: zero independent review and no valid
-      final-head principal acceptance preceded that merge (retrospective
-      audit issuecomment-5159313447). The blocker is now the bounded
-      corrective PR's own lifecycle — it has not yet been independently
-      reviewed, bounded-corrected if required, principal-approved at its
-      exact final head, or merged. No Stage 2 work, second batch, or
-      portfolio-policy change may occur until that full lifecycle
-      completes, and this correction does not itself retroactively
-      satisfy the gate PR #226 skipped.
-    active_branch: claude/chart-0002-batch1-postmerge-correction
-    active_pr: 227
-    last_verified_main_sha: bc3dc540a23aac6939ccc5bc37c73508e4a411f9
+      None for the corrective PR (#227)'s own scope — its required
+      independent-review/principal-acceptance/merge/post-merge-
+      verification lifecycle is complete. PR #226's missed pre-merge gate
+      is not a live blocker requiring further action; it is permanent,
+      accurately disclosed historical fact that no later PR retroactively
+      cures. No Stage 2 work, second batch, second timeframe, or
+      portfolio-policy change may occur under this workstream absent its
+      own separate future principal authorization.
+    active_branch: claude/ws0012-postmerge-factual-sync-pr227
+    active_pr: 228
+    last_verified_main_sha: 423c99a1e52af8e3062f6bd5f08d1bcc0ff8dc8c
     last_verified_date: "2026-08-02"
     authorized_by: >
       Controlling principal directive, this authorizing implementation

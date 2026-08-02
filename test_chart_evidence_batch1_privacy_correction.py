@@ -374,11 +374,27 @@ def test_workstreams_no_longer_claims_pr226_unmerged_draft(workstreams_text):
     assert str(AUDIT_COMMENT_ID) in ws0012_text
 
 
-def test_workstreams_active_branch_is_correction_branch(workstreams_text):
+def test_workstreams_active_branch_self_references_live_pr228(workstreams_text):
+    """Per OPS-0001's workstream-register schema (`governance/decisions/
+    OPS-0001-portfolio-hq-workstream-register.md`): 'active_branch and
+    active_pr hold only currently-live work -- a branch or PR that still
+    exists and is unmerged. A merged historical PR belongs under
+    milestones or evidence_refs, never in these two fields.' PR #227 is
+    merged, so it belongs in milestones/evidence_refs (and does, per the
+    tests above) -- not in active_branch/active_pr. This synchronization
+    PR (#228, branch claude/ws0012-postmerge-factual-sync-pr227) is
+    itself the currently-live, unmerged work touching WS-0012, so these
+    fields must self-reference it while it remains open -- the same
+    pattern PR #227's own commit ecdee26 used for itself one commit
+    prior ('active_branch: claude/chart-0002-batch1-postmerge-correction'
+    / 'active_pr: 227', set while PR #227 was itself still open)."""
     ws0012_start = workstreams_text.index("- id: WS-0012")
     next_id = workstreams_text.find("\n  - id: WS-", ws0012_start + 1)
     ws0012_text = workstreams_text[ws0012_start: next_id if next_id != -1 else None]
-    assert "active_branch: claude/chart-0002-batch1-postmerge-correction" in ws0012_text
+    assert "active_branch: claude/ws0012-postmerge-factual-sync-pr227" in ws0012_text
+    assert "active_pr: 228" in ws0012_text
+    assert "active_branch: null" not in ws0012_text
+    assert "active_pr: null" not in ws0012_text
 
 
 def test_claude_md_no_longer_claims_pr226_not_yet_reviewed_merged(claude_md_text):
