@@ -21,7 +21,7 @@ from __future__ import annotations
 from html import escape
 from pathlib import Path
 
-from .model import DashboardModel, GatedName, HoldingRow, MarginInfo
+from .model import DashboardModel, DestinationTarget, GatedName, HoldingRow, MarginInfo
 
 _ASSETS = Path(__file__).resolve().parent / "assets"
 
@@ -304,8 +304,8 @@ def _overview(model: DashboardModel) -> str:
         <div class="value">{n_positions}</div>
         <div class="sub">tracked in holdings.yaml</div></div>
       <div class="card stat-lg"><div class="label">Governed targets</div>
-        <div class="value">{len(model.tiers)}</div>
-        <div class="sub">tier/destination groups</div></div>
+        <div class="value">{len(model.destination_targets)}</div>
+        <div class="sub">destination rows (targets.yaml)</div></div>
       <div class="card stat-lg"><div class="label">Workstreams</div>
         <div class="value">{n_ws}</div>
         <div class="sub">{n_ws_primary} primary</div></div>
@@ -391,37 +391,37 @@ def _positions_table(model: DashboardModel) -> str:
 
 
 def _targets_table(model: DashboardModel) -> str:
-    tier_rows = []
-    for t in model.tiers:
-        cap = f"{t.cap_multiple:g}×" if t.cap_multiple and t.cap_multiple != 1.0 else "—"
-        flags = "fixed" if t.fixed else "—"
-        tier_rows.append(
+    dest_rows = []
+    for d in model.destination_targets:
+        dest_rows.append(
             "<tr>"
-            + _cell("Tier", _esc(t.name), header=True)
-            + _cell("Weight", _fmt_pct(t.weight_pct), num=True)
-            + _cell("Cap", _esc(cap))
-            + _cell("Sizing", _esc(flags))
-            + _cell("# names", str(len(t.tickers)), num=True)
-            + _cell("Tickers", _esc(", ".join(t.tickers)))
+            + _cell("Ticker", _esc(d.ticker), header=True)
+            + _cell("Target weight", _fmt_pct(d.target_pct), num=True, sort=d.target_pct or 0)
+            + _cell("Asset class", _esc(d.asset_class or "—"))
             + "</tr>"
         )
     sleeve = _fmt_pct(model.crypto_sleeve_pct)
+    headers = _sort_headers((
+        ("Ticker", ""), ("Target weight", ' class="num"'), ("Asset class", ""),
+    ))
     return f"""
     <h3>Targets</h3>
-    <p class="lede">Canonical tier structure from <code>targets.yaml</code> —
-      the sole authoritative target file. Current-vs-target dollar comparison
+    <p class="lede">Canonical destination architecture from
+      <code>targets.yaml</code> (PHQ-2026-02) — the sole authoritative target
+      file. Each row carries its own target weight and asset class directly;
+      the prior T1/T2/ETF/band/spec tier structure was retired and no
+      grouping is invented in its place. Current-vs-target dollar comparison
       is intentionally omitted: it needs live prices and reconciled holdings
       this dashboard does not have.</p>
     <div class="table-scroll">
-    <table>
-      <caption>Tier targets (per-name weight of book).</caption>
-      <thead><tr><th scope="col">Tier</th><th scope="col" class="num">Weight</th>
-        <th scope="col">Cap</th><th scope="col">Sizing</th>
-        <th scope="col" class="num"># names</th><th scope="col">Tickers</th></tr></thead>
-      <tbody>{''.join(tier_rows) or '<tr><td colspan="6" class="unavailable">No tiers found.</td></tr>'}</tbody>
+    <table data-sortable>
+      <caption>Destination targets — per-name target weight of book ({len(model.destination_targets)} row(s)).</caption>
+      <thead><tr>{headers}</tr></thead>
+      <tbody>{''.join(dest_rows) or '<tr><td colspan="3" class="unavailable">No destination targets found.</td></tr>'}</tbody>
     </table>
     </div>
-    <p>Crypto sleeve target: <strong>{sleeve}</strong> of book (tracked, not traded by the allocator).</p>"""
+    <p>Crypto sleeve target: <strong>{sleeve}</strong> of book — sum of the
+      BTC/ETH/SOL destination rows above (tracked, not traded by the allocator).</p>"""
 
 
 def _concentration_block(model: DashboardModel) -> str:
@@ -488,6 +488,61 @@ def _concentration_block(model: DashboardModel) -> str:
     </div>"""
 
 
+def _ticker_gate_notice_html(state) -> str:
+    """State-derived notice for one ticker's current gate status — replaces
+    a prior hardcoded, unconditional "SPCX — HOLD TARGET IN CASH" notice that
+    displayed regardless of whether SPCX was still actually gated (it no
+    longer is: PHQ-2026-04 retired its gate after a verified manual exit).
+    Reusable for any ticker's TickerCurrentState, not SPCX-specific logic."""
+    if state.gates_unavailable:
+        # gates.yaml itself failed to load — live_gate is structurally None
+        # either way, so it cannot be told apart from "confirmed ungated."
+        # Never assert a not-gated claim (or stay silent, which would hide
+        # an unconfirmable gate the same way) while citing a file that was
+        # never actually read — a page-level warning already discloses the
+        # load failure; this is the ticker-specific consequence of it.
+        return (
+            '<div class="notice warning" role="note">'
+            '<span class="n-icon" aria-hidden="true">⚠</span>'
+            f'<div class="n-body"><div class="n-title">{_esc(state.ticker)} gate '
+            'status could not be determined</div>'
+            f'<div class="n-detail">gates.yaml was unavailable or unreadable '
+            "when this page was generated (see the warnings above) — this "
+            f"dashboard cannot confirm whether {_esc(state.ticker)} is "
+            "currently gated. This is not a claim that it is, or is not, "
+            "gated.</div></div></div>"
+        )
+    lg = state.live_gate
+    if lg is not None:
+        # Currently gated per the live gates.yaml — advisory only, never a
+        # sell directive.
+        next_gate = f" Next gate: {_esc(lg.next_gate)}." if lg.next_gate else ""
+        return (
+            '<div class="notice info" role="note">'
+            '<span class="n-icon" aria-hidden="true">ℹ</span>'
+            f'<div class="n-body"><div class="n-title">{_esc(state.ticker)} — '
+            f'{_esc(lg.status or "gated")}</div>'
+            f'<div class="n-detail">{_esc(state.ticker)} is currently gated per '
+            "gates.yaml: its target capital is held in cash (no currently "
+            "approved investable vehicle or activation not yet cleared). This "
+            "is not a directive to sell any existing position."
+            f"{next_gate} Advisory / governance status only. Gated cash is "
+            "never renormalized into other positions.</div></div></div>"
+        )
+    if state.currently_held or state.has_destination_target:
+        # Held and/or carries a destination target, but not currently gated
+        # — nothing to disclose here.
+        return ""
+    # Not gated, not held, no destination target: fully resolved/exited per
+    # current repository state (gates.yaml / holdings.yaml / targets.yaml).
+    return (
+        f'<p class="unavailable">{_esc(state.ticker)} is not currently gated, '
+        "held, or targeted (see gates.yaml, holdings.yaml, and targets.yaml). "
+        "Prior gating policy for this name is historical — see the Gates "
+        "evidence table above and CLAUDE.md's Decisions Log.</p>"
+    )
+
+
 def _gates_block(model: DashboardModel) -> str:
     gated_rows = "".join(
         "<tr>"
@@ -512,15 +567,7 @@ def _gates_block(model: DashboardModel) -> str:
         if model.skhy_unresolved
         else '<p class="unavailable">SKHY not present in current holdings.</p>'
     )
-    spcx = (
-        '<div class="notice info" role="note">'
-        '<span class="n-icon" aria-hidden="true">ℹ</span>'
-        '<div class="n-body"><div class="n-title">SPCX — HOLD TARGET IN CASH</div>'
-        '<div class="n-detail">SPCX is gated: its target capital is held in cash '
-        '(no currently approved investable vehicle). This is not a directive to '
-        'sell any existing SPCX position. Advisory / governance status only. '
-        'Gated cash is never renormalized into other positions.</div></div></div>'
-    )
+    spcx = _ticker_gate_notice_html(model.spcx_state)
     return f"""
     <h3>Gates &amp; open decisions</h3>
     <p class="lede">{_esc(model.gated_names_source)}. Displayed as governance
