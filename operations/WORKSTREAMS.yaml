@@ -3228,7 +3228,7 @@ workstreams:
       gap is authorized or begun by this filing — each remains its own separate, future,
       explicit authorization.
     active_branch: claude/ops0014-routine-sync-and-completion-roadmap
-    active_pr: null
+    active_pr: 231
     last_verified_main_sha: 2816cc1dde49ec089fd316cd412b1261d8468d3d
     last_verified_date: "2026-08-03"
     authorized_by: >
@@ -5687,7 +5687,7 @@ workstreams:
       exact-head review and explicit principal acceptance are pending, same as any other
       governance filing.
     active_branch: claude/ops0014-routine-sync-and-completion-roadmap
-    active_pr: null
+    active_pr: 231
     last_verified_main_sha: 2816cc1dde49ec089fd316cd412b1261d8468d3d
     last_verified_date: "2026-08-03"
     authorized_by: >
@@ -5803,7 +5803,7 @@ workstreams:
       begin by this entry. No blocker exists on recording this roadmap
       itself.
     active_branch: claude/ops0014-routine-sync-and-completion-roadmap
-    active_pr: null
+    active_pr: 231
     last_verified_main_sha: 2816cc1dde49ec089fd316cd412b1261d8468d3d
     last_verified_date: "2026-08-03"
     authorized_by: >
