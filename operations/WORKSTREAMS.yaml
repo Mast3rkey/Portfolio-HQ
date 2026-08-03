@@ -4373,7 +4373,14 @@ workstreams:
       $100 deposit and a new screenshot-supported cash figure of $1,041.23
       (governance/evidence/PHQ-2026-06/); PHQ-2026-06 also discloses an
       unresolved $0.18 difference between the prior $941.05 and an earlier
-      connected-account snapshot of $941.23. Whichever cash figure is
+      connected-account snapshot of $941.23. NOTE (2026-08-03, factual
+      reference update only, SKHY/SPCX disposition unaffected): further
+      superseded by PHQ-2026-07, a cash-only factual synchronization
+      recording a reported $238 deposit and a new screenshot-supported cash
+      figure of $1,279.23 (governance/evidence/PHQ-2026-07/); PHQ-2026-07
+      also confirms, via explicit principal answer, that the AVGO/ETN buys
+      recommended by this same session's --cash 1041.23 allocation check
+      did not execute. Whichever cash figure is
       current at the time of that future live allocation-check session
       should be used as its --cash input, not this or any other
       point-in-time figure hardcoded here. SPCX remains a research candidate

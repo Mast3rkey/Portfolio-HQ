@@ -1,0 +1,57 @@
+{
+  "decision_id": "PHQ-2026-07",
+  "evidence_date": "2026-08-03",
+  "source": "Two Robinhood screenshots supplied directly as filesystem-accessible uploads in the Claude Code session (Investing home tab; Buying power detail screen) — unlike PHQ-2026-06, both images were directly readable at a real path in this execution container, no transcript-extraction workaround was needed.",
+  "images": [
+    {
+      "retained_filename": "robinhood_investing_home_20260803.png",
+      "screen": "Investing tab home screen",
+      "media_type": "image/png",
+      "bytes": 741690,
+      "sha256": "3724e4d2b3d1a20047dca3837cf78535667b911801c4d173de1b0b5263737d84",
+      "displayed_figures": {
+        "investing_total_value": 6589.99,
+        "today_change_dollars": 21.79,
+        "today_change_pct": 0.33,
+        "buying_power": 7920.11
+      }
+    },
+    {
+      "retained_filename": "robinhood_buying_power_detail_20260803.png",
+      "screen": "Buying power detail screen",
+      "media_type": "image/png",
+      "bytes": 358939,
+      "sha256": "8f5f264f979bea803686505be80239fafb21cec8d4cc5c3e2fb7540563a4bc0f",
+      "displayed_figures": {
+        "cash": 1279.23,
+        "margin_total_available": 6641.06,
+        "pending_orders": -0.18,
+        "buying_power_total": 7920.11,
+        "futures_other_buying_power": 3960.06,
+        "event_contracts_other_buying_power": 3960.06,
+        "margin_buffer_status_qualitative": "Ready to use"
+      },
+      "note": "This screen shows margin buffer only as a qualitative status ('Ready to use'), not a numeric percentage — different presentation from the numeric buffer % this repository's margin-sync convention (holdings.yaml's own comment, allocate.py's write_state()) is built around. No numeric buffer % is recorded from this evidence; holdings.yaml's existing margin.buffer_pct (100.0, a zero-margin-drawn placeholder, not a Robinhood-displayed screen) is left unchanged."
+    }
+  ],
+  "prior_repository_cash": 1041.23,
+  "prior_repository_cash_source": "PHQ-2026-06, evidence date 2026-08-01",
+  "new_cash": 1279.23,
+  "deposit_amount": 238.00,
+  "deposit_reconciliation": "1041.23 + 238.00 = 1279.23 (exact match against the retained screenshot's displayed cash)",
+  "prior_allocation_check_disposition": {
+    "source": "python allocate.py --cash 1041.23 run earlier in this session (2026-08-03), logged to logs/allocation-2026-08-03T122005.md",
+    "recommended_buys": [
+      {"ticker": "AVGO", "dollars": 40},
+      {"ticker": "ETN", "dollars": 34}
+    ],
+    "principal_confirmation": "Explicitly confirmed via AskUserQuestion this session: neither recommended buy executed; the cash increase is a new deposit only, not a mix of buy-fills and a deposit. No shares:/crypto_shares: quantity in holdings.yaml is changed by this decision."
+  },
+  "margin_state": {
+    "principal_confirmation": "Explicitly confirmed via AskUserQuestion this session: margin debt is still $0.00, unchanged since the 2026-07-31 sync recorded in holdings.yaml.",
+    "holdings_yaml_margin_debt_unchanged": 0.0,
+    "holdings_yaml_buffer_pct_unchanged": 100.0,
+    "note": "margin_total_available ($6,641.06) and buying_power ($7,920.11) are Robinhood's own margin-capacity/buying-power figures, not margin debt and not cash — they do not by themselves confirm or contradict a $0.00 debt figure (available capacity is consistent with any actual usage level below that capacity). This decision relies on the principal's explicit confirmation of $0.00 debt, not on an inference from these two figures."
+  },
+  "authority_note": "buying_power ($7,920.11) and margin_total_available ($6,641.06) are recorded as evidence-only context, not cash and not deployment authority of any kind. This evidence package and its governing decision authorize a factual cash synchronization only."
+}

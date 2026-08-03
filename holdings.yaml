@@ -86,6 +86,28 @@
 # field here (unchanged since PHQ-2026-02) — to be supplied through
 # `allocate.py`'s existing `--cash` runtime input at a future live,
 # credentialed allocation-check session.
+#
+# PHQ-2026-07 (2026-08-03): cash-only factual synchronization following a
+# reported $238 deposit. New screenshot-supported cash: $1,279.23 (evidence
+# governance/evidence/PHQ-2026-07/, SHA-256
+# 3724e4d2b3d1a20047dca3837cf78535667b911801c4d173de1b0b5263737d84 and
+# 8f5f264f979bea803686505be80239fafb21cec8d4cc5c3e2fb7540563a4bc0f). This
+# reconciles exactly from this repository's own PHQ-2026-06 cash ($1,041.23)
+# plus the $238.00 deposit ($1,041.23 + $238.00 = $1,279.23). The principal
+# explicitly confirmed, in-session, that the AVGO/ETN buys recommended by
+# the same-day `--cash 1041.23` allocation check did NOT execute (the cash
+# change is a deposit only, not buy-fills plus a deposit) and that margin
+# debt is still $0.00, unchanged since 2026-07-31 — so no `shares:`,
+# `crypto_shares:`, or `margin:` value below is changed by this entry. The
+# buying-power screen showed margin buffer only as a qualitative "Ready to
+# use" status, not a numeric percentage — buffer_pct below is therefore
+# also left unchanged (still a zero-margin placeholder, not a real
+# Robinhood-displayed buffer screen). Buying power ($7,920.11) and margin
+# available ($6,641.06) are recorded in governance/evidence/PHQ-2026-07/ as
+# context only — neither is cash and neither authorizes any deployment.
+# $1,279.23 is not persisted as a schema field here (unchanged since
+# PHQ-2026-02) — supplied through `allocate.py`'s existing `--cash` runtime
+# input for this session's next allocation-check run.
 margin:
   debt: 0.0
   # No displayed buffer % was captured in the v1.35 evidence (only
