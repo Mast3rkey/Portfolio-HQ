@@ -3993,6 +3993,102 @@ workstreams:
         pr: 217
         status: drafted
         date: "2026-08-01"
+      - gate: governance-decision-explorer-implementation-merged
+        description: >
+          PR #217 ("Dashboard: add bounded Governance Decision Explorer"),
+          branch claude/portfolio-hq-governance-explorer-zdrvkf, base main at
+          acb24c134d10d586230539337d0f4cba23c0fa0f, independently reviewed at
+          exact head 1a246e064378d92aca07e3824e875ab4bac64e5c (review
+          4835335878, submitted as GitHub review state COMMENTED — this
+          repository's shared Mast3rkey App/token identity cannot itself
+          hold the REQUEST_CHANGES state on a PR it also authored/merges, a
+          disclosed platform limitation stated verbatim in the review's own
+          text — carrying CHANGES REQUIRED force) with one MATERIAL finding:
+          portfolio_hq/dashboard/decisions.py's `_heading_id()` inserted an
+          unescaped `decision_id` into an HTML `id="..."` attribute,
+          permitting event-handler-attribute injection. A bounded correction
+          (commit 3443440, disclosed verbatim in PR comment 5152748504)
+          fixed the finding and added two regression tests, touching only
+          the already-reviewed files. An independent delta re-review at the
+          corrected exact head 34434409d7e20b180db26676a710729a604cdcf2
+          (review 4835389577, COMMENTED state,
+          DELTA APPROVED force) confirmed the defect fully neutralized, no
+          regression, and no new material defect — zero unresolved review
+          threads. CI ("test") completed successfully at exact head
+          34434409d7e20b180db26676a710729a604cdcf2 (2026-08-01T18:17:18Z).
+          **No separately retained principal-exact-head-acceptance comment
+          or post-merge-verification comment exists on GitHub for PR #217,
+          distinct from the DELTA APPROVED review itself** — independently
+          confirmed absent this session via the GitHub API; disclosed, not
+          resolved, same category as the PR #211/#212/#213 review-retention
+          gaps already disclosed above. Merged via merge commit
+          44c74473e8affed3e8aa6b1a2e5a684d65a2c1e9 (merged_by Mast3rkey,
+          merged_at 2026-08-01T18:39:04Z; base
+          acb24c134d10d586230539337d0f4cba23c0fa0f, head
+          34434409d7e20b180db26676a710729a604cdcf2) — independently
+          re-verified this session via the GitHub API. Nine files changed,
+          matching OPS-0013's authorized scope: docs/PORTFOLIO_HQ_DASHBOARD.md,
+          docs/PORTFOLIO_HQ_DASHBOARD_DESIGN.md, operations/WORKSTREAMS.yaml,
+          portfolio_hq/dashboard/assets/dashboard.css,
+          portfolio_hq/dashboard/decisions.py (new),
+          portfolio_hq/dashboard/model.py, portfolio_hq/dashboard/render.py,
+          test_portfolio_hq_dashboard.py,
+          test_portfolio_hq_dashboard_decisions.py (new).
+        pr: 217
+        status: merged
+        date: "2026-08-01"
+      - gate: dashboard-truth-correction-reviewed-accepted-merged
+        description: >
+          PR #229 ("WS-0007: Dashboard truth correction — Targets schema,
+          SPCX notice, stale PHQ-2026-01 claim"), branch
+          claude/ws0007-dashboard-truth-correction-yt73tz, base main at
+          de50f9096bb1ce5fc0ad7ba3767b5de6f9a9cb51 (PR #228's merge commit),
+          corrected three stale dashboard behaviors this register entry had
+          not previously recorded: the hardcoded, unconditional "SPCX — HOLD
+          TARGET IN CASH" notice (replaced with a state-derived
+          TickerCurrentState notice reflecting live gates.yaml/holdings.yaml/
+          targets.yaml presence, and explicit disclosure — never a silent
+          "confirmed ungated" claim — whenever gates.yaml itself is
+          unavailable); a targets-schema handling gap; and dashboard-authored
+          "not yet implemented" text. Independently reviewed across five
+          rounds at progressively corrected heads: review 4839991996
+          (CHANGES REQUIRED); a test-only bounded correction (commit
+          ef64d4b) resolving two MINOR findings; lightweight delta review
+          4840055245; review 4840155873 (CHANGES REQUIRED re-review, after a
+          production-code fix in commit 24ccb56 threading a
+          `gates_unavailable` flag through model.py/render.py); a further
+          bounded correction (commit d1af2b4) resolving two MAJOR findings
+          in `_load_live_gates()` shape validation; focused delta re-review
+          4840199389 (zero BLOCKING/MAJOR); and final body-only verification
+          review 4840216701 confirming all five reviews resolved with zero
+          outstanding BLOCKING/MAJOR/MINOR findings at exact head
+          d1af2b4a1cfac563abe7a488a760846cdc7dbf05. The principal explicitly
+          accepted at that exact head, retained verbatim as PR comment
+          5161372483, citing final review 4840216701 and pre-merge CI run
+          30775556675 (completed/success). Merged via a standard two-parent
+          merge commit (not squashed, not rebased) at
+          1e36b57e235f584cd88131c1bcd2587751b44452 (merged_by Mast3rkey,
+          merged_at 2026-08-03T01:26:01Z) — first parent
+          de50f9096bb1ce5fc0ad7ba3767b5de6f9a9cb51 (approved base), second
+          parent d1af2b4a1cfac563abe7a488a760846cdc7dbf05 (approved head),
+          merge-commit tree byte-identical to the approved head. Post-merge
+          verification (issue comment 5161399230, independently re-confirmed
+          this session via the GitHub API): exact three-file scope
+          (portfolio_hq/dashboard/model.py, portfolio_hq/dashboard/render.py,
+          test_portfolio_hq_dashboard.py, +623/-78), no protected file
+          touched, dashboard suite 183/183, full repository suite 2441/2441,
+          intelligence_validator.py and freshness_validator.py clean,
+          Governance Decision Explorer 60 decisions indexed with
+          `issues == ()`, git diff --check clean, post-merge CI run
+          30776857092 completed/success on the merge commit (this merge is
+          current origin/main's tip). This merge did not itself touch
+          operations/WORKSTREAMS.yaml — this WS-0007 entry was left
+          factually stale (still describing PR #217's Phase 3 as open and
+          under independent review, with no mention of PR #229) until this
+          Lane M factual-synchronization unit.
+        pr: 229
+        status: merged
+        date: "2026-08-03"
     evidence_refs:
       - governance/decisions/OPS-0011-repository-native-dashboard-capability-authorization.md
       - governance/decisions/OPS-0012-dashboard-2-modern-responsive-experience-authorization.md
@@ -4001,22 +4097,39 @@ workstreams:
       - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md
       - governance/audits/WS0007_PR199_INDEPENDENT_EXACT_HEAD_REVIEW_20260731.md
       - governance/audits/WS0007_PR199_POST_MERGE_VERIFICATION_20260731.md
+      - PR #217 review 4835335878 (CHANGES REQUIRED) and delta review 4835389577 (DELTA APPROVED)
+      - PR #217 merge commit 44c74473e8affed3e8aa6b1a2e5a684d65a2c1e9
+      - PR #229 issue comment 5161372483 (principal exact-head acceptance)
+      - PR #229 issue comment 5161399230 (post-merge verification)
+      - PR #229 merge commit 1e36b57e235f584cd88131c1bcd2587751b44452
     next_action: >
       Phase 1: none — complete, unedited. Phase 2 (Dashboard 2.0): complete
       — PR #212 merged (see the dashboard-2-implementation-merged milestone
       above); no retained independent-review artifact exists for it
       (disclosed, not resolved). Phase 3 (Governance Decision Explorer,
-      OPS-0013): the governance authorization (PR #213) is merged and
-      effective. The one authorized implementation PR (PR #217, branch
-      claude/portfolio-hq-governance-explorer-zdrvkf) is now open and
-      requires: independent exact-head review under OPS-0007 section 1 (per
-      OPS-0013 section 15); any required bounded correction and exact-head
-      re-review; explicit principal acceptance; merge; and immediate
-      post-merge ancestry/scope/validator/test verification (OPS-0009
-      section 9). Completion authorizes no second explorer phase (OPS-0013
-      section 12), no second interface, and no default-daily-workflow
-      integration; each would require its own separate future governance
-      decision.
+      OPS-0013): the one authorized implementation PR, PR #217, is merged —
+      independently reviewed, bounded-corrected, delta-reviewed (DELTA
+      APPROVED), and merged (see the
+      governance-decision-explorer-implementation-merged milestone above);
+      no separately retained principal-exact-head-acceptance or
+      post-merge-verification comment exists for it on GitHub, disclosed not
+      resolved. A subsequent factual-truth correction, PR #229, was
+      independently reviewed across five rounds, explicitly principal-
+      accepted at its exact final head, merged, and post-merge verified (see
+      the dashboard-truth-correction-reviewed-accepted-merged milestone
+      above) — it corrected three stale dashboard behaviors (the hardcoded
+      SPCX notice, a targets-schema gap, and stale "not yet implemented"
+      text) this register entry had not previously recorded. This entry is
+      itself updated by a separate, narrow Lane M factual-synchronization
+      unit (branch claude/lane-m-ws0007-ws0012-dashboard-factual-sync,
+      OPS-0001's live-work self-reference semantics per the PR #228
+      precedent) that adds no new dashboard, investment, allocation, margin,
+      Intelligence, chart, brokerage, or trading authority and does not
+      itself declare WS-0007 complete. No further work is authorized under
+      Phase 3 beyond what PR #217/#229 already delivered: no second explorer
+      phase (OPS-0013 section 12), no second interface, and no
+      default-daily-workflow integration; each would require its own
+      separate future governance decision.
     completion_criteria: >
       Phase 1 is complete (unchanged). Phase 2 (Dashboard 2.0) is complete
       (unchanged by this entry; see the merge milestone above). Phase 3
@@ -4031,14 +4144,19 @@ workstreams:
       decision.
     blocker: >
       Phase 1: none — complete. Phase 2 (Dashboard 2.0): none — merged.
-      Phase 3 (Governance Decision Explorer): the implementation PR is
-      blocked on its own independent exact-head review, any required
-      bounded correction and exact-head re-review, and explicit principal
-      acceptance before it may merge (OPS-0013 section 15).
-    active_branch: claude/portfolio-hq-governance-explorer-zdrvkf
-    active_pr: 217
-    last_verified_main_sha: acb24c134d10d586230539337d0f4cba23c0fa0f
-    last_verified_date: "2026-08-01"
+      Phase 3 (Governance Decision Explorer): none remaining for
+      implementation — PR #217 is merged (independently reviewed, bounded-
+      corrected, delta-reviewed with DELTA APPROVED force; no separately
+      retained principal-acceptance or post-merge-verification comment on
+      GitHub, disclosed above) and PR #229's factual-truth correction is
+      merged and post-merge verified. No blocker exists for the present Lane
+      M factual-synchronization unit itself beyond its own validation and
+      independent review; it creates no new authority and does not resolve
+      the PR #217 evidence-retention gap disclosed above.
+    active_branch: claude/lane-m-ws0007-ws0012-dashboard-factual-sync
+    active_pr: 230
+    last_verified_main_sha: 1e36b57e235f584cd88131c1bcd2587751b44452
+    last_verified_date: "2026-08-02"
     authorized_by: >
       Phase 1: governance/decisions/OPS-0011-repository-native-dashboard-capability-authorization.md,
       accepted and merged to main on 2026-07-31 (merge commit
@@ -5457,9 +5575,9 @@ workstreams:
       cures. No Stage 2 work, second batch, second timeframe, or
       portfolio-policy change may occur under this workstream absent its
       own separate future principal authorization.
-    active_branch: claude/ws0012-postmerge-factual-sync-pr227
-    active_pr: 228
-    last_verified_main_sha: 423c99a1e52af8e3062f6bd5f08d1bcc0ff8dc8c
+    active_branch: claude/lane-m-ws0007-ws0012-dashboard-factual-sync
+    active_pr: 230
+    last_verified_main_sha: 1e36b57e235f584cd88131c1bcd2587751b44452
     last_verified_date: "2026-08-02"
     authorized_by: >
       Controlling principal directive, this authorizing implementation

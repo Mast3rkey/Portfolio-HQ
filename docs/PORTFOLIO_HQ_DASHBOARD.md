@@ -88,9 +88,11 @@ this read-only layer, and that is by design. A current recommendation requires:
 2. **Reconciled holdings** — after manual Robinhood execution, `holdings.yaml`
    may be stale, and running gating logic against a stale book manufactures
    false signals;
-3. **Implemented policy** — PHQ-2026-01's architecture is approved but not yet
-   implemented in `targets.yaml`, so gated-name/reserve handling has no live
-   allocator support;
+3. **A live, credentialed allocator run** — `targets.yaml` and `gates.yaml`
+   already implement PHQ-2026-01's canonical destination architecture and
+   actionable-gate list (migrated by PHQ-2026-02); this dashboard displays
+   that configuration but deliberately does not run or duplicate
+   `allocate.py`'s recommendation logic itself;
 4. A **clean worktree** — a page generated from uncommitted changes is not an
    authoritative snapshot.
 
