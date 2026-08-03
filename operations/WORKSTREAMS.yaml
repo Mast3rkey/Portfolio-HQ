@@ -3366,7 +3366,7 @@ workstreams:
       separately authorized unit, not addressed by this filing beyond disclosure and this entry's
       own necessary update.
     active_branch: claude/ws0005-m3-completion-determination
-    active_pr: null
+    active_pr: 235
     last_verified_main_sha: 926d7a4fdb740e9efc066f1563e2f45397024357
     last_verified_date: "2026-08-03"
     authorized_by: >
