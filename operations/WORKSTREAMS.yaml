@@ -287,6 +287,19 @@ workstreams:
         pr: 149
         status: merged
         date: "2026-07-25"
+      - gate: ops0015-unified-app-cross-reference-recorded
+        description: >
+          OPS-0015 filed, recording the personal-first unified-application
+          mission and phased roadmap (Phases A-G). This entry's Phase Two
+          status/report layer is identified as a prerequisite and data
+          surface for that future application's Phase B (unified read-only
+          command center). Additive only — no change to status, priority,
+          authorized_scope, prohibited_scope, or completion_criteria; no
+          code, dashboard, or implementation authority is granted or
+          expanded by this milestone.
+        pr: null
+        status: recorded
+        date: "2026-08-03"
     evidence_refs:
       - docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md
       - governance/decisions/OPS-0002-unified-core-planning-and-audit-gate.md
@@ -295,6 +308,7 @@ workstreams:
       - governance/audits/WS0002_PHASE_ONE_FABLE_AUDIT_20260724.md
       - governance/decisions/OPS-0005-ws0002-phase-two-reactivation-authorization.md
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
+      - governance/decisions/OPS-0015-personal-first-unified-app-roadmap.md
     next_action: >
       Open the single bounded Phase Two implementation PR authorized by
       OPS-0005 §3 (one status/report module, its tests, minimal doc pointer
@@ -368,8 +382,21 @@ workstreams:
         pr: null
         status: defined
         date: "2026-07-24"
+      - gate: ops0015-conversational-operator-cross-reference-recorded
+        description: >
+          OPS-0015 filed, recording the personal-first unified-application
+          mission and phased roadmap. This workstream's eventual daily
+          allocation-check UX is identified as overlapping the roadmap's
+          Phase G (conversational operator), stated there as a separately
+          authorized downstream phase requiring its own future authority.
+          OPS-0015 does not activate this workstream and does not change
+          its proposed, unauthorized state.
+        pr: null
+        status: recorded
+        date: "2026-08-03"
     evidence_refs:
       - docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md
+      - governance/decisions/OPS-0015-personal-first-unified-app-roadmap.md
     next_action: >
       None authorized. Detailed design work is deferred until WS-0002
       reaches a conclusion on which information is economically
@@ -4241,12 +4268,25 @@ workstreams:
         pr: 229
         status: merged
         date: "2026-08-03"
+      - gate: ops0015-unified-app-roadmap-framing-recorded
+        description: >
+          OPS-0015 filed, recording the personal-first unified-application
+          mission and Phases A-D as future roadmap framing over this
+          workstream's existing repository-native dashboard foundation
+          (Phase A partly delivered by OPS-0011's provenance panel, Phase C
+          partly delivered by OPS-0013's Governance Decision Explorer).
+          Additive only — no code or dashboard expansion is authorized by
+          this milestone, and existing prohibited_scope is unmodified.
+        pr: null
+        status: recorded
+        date: "2026-08-03"
     evidence_refs:
       - governance/decisions/OPS-0011-repository-native-dashboard-capability-authorization.md
       - governance/decisions/OPS-0012-dashboard-2-modern-responsive-experience-authorization.md
       - governance/decisions/OPS-0013-governance-decision-explorer-authorization.md
       - governance/decisions/OPS-0005-ws0002-phase-two-reactivation-authorization.md
       - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md
+      - governance/decisions/OPS-0015-personal-first-unified-app-roadmap.md
       - governance/audits/WS0007_PR199_INDEPENDENT_EXACT_HEAD_REVIEW_20260731.md
       - governance/audits/WS0007_PR199_POST_MERGE_VERIFICATION_20260731.md
       - PR #217 review 4835335878 (CHANGES REQUIRED) and delta review 4835389577 (DELTA APPROVED)
@@ -5807,10 +5847,26 @@ workstreams:
         pr: null
         status: recorded
         date: "2026-08-03"
+      - gate: ops0015-final-allocation-application-cross-reference-recorded
+        description: >
+          OPS-0015 filed, recording the personal-first unified-application
+          mission and roadmap. This workstream's final allocation-readiness
+          sequence (roadmap steps 1-15 above) is identified as the roadmap's
+          own §G convergence point, connecting repository provenance
+          (Phase A), research and evidence visibility (Phase C), relationship
+          mapping (Phase D), the guarded advisory allocate.py launcher
+          (Phase E), manual execution, and post-check factual reconciliation
+          (OPS-0014 Class 2). Additive only — no change to status, no
+          implementation authority, no acceleration of any of the fifteen
+          roadmap steps above.
+        pr: null
+        status: recorded
+        date: "2026-08-03"
     evidence_refs:
       - governance/decisions/OPS-0014-routine-operational-sync.md
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md
+      - governance/decisions/OPS-0015-personal-first-unified-app-roadmap.md
     next_action: >
       None authorized. The next concrete step toward this workstream's
       eventual purpose is whatever WS-0005's own next authorized unit is
