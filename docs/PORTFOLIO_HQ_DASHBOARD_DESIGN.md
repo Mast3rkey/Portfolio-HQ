@@ -88,7 +88,7 @@ it surfaces a labelled "unavailable" explanation instead.
 | Concentration & Risk | cluster caps | `targets.yaml` `caps.clusters` | |
 | Concentration & Risk | 8% / 40% ceilings, measured ≈40.03% | PHQ-2026-01 **structured JSON** `lookthrough_summary` | point-in-time; policy constants as fallback |
 | Gates & Decisions | gated names, status, next gate | PHQ-2026-01 gated-disposition **CSV** | governance policy; never merged into holdings |
-| Gates & Decisions | SPCX hold-in-cash, SKHY unresolved | accepted decision text + `holdings.yaml` presence | advisory/governance status only |
+| Gates & Decisions | state-derived per-ticker gate notice (e.g. SPCX), SKHY unresolved | live `gates.yaml` + `holdings.yaml` + `targets.yaml` presence (`TickerCurrentState`), never a hardcoded claim | advisory/governance status only; discloses "gate status could not be determined" rather than asserting not-gated when `gates.yaml` itself is unavailable |
 | Research & Freshness | coverage, staleness, role drift, freshness rows | `intelligence_report.*` API + `intelligence/freshness_registry.yaml` | read-only reporting API |
 | Governance & Provenance | decisions, workstreams, input hashes, commit | `governance/decisions.yaml`, `operations/WORKSTREAMS.yaml`, git | historical HTML linked, not parsed |
 
@@ -108,8 +108,10 @@ incomplete, and discloses it prominently rather than hiding it:
 - dirty worktree or unavailable git metadata → warning + "not authoritative";
 - buffer below floor → blocker banner (forced de-lever), from repository truth only;
 - PHQ-2026-02 absent → info banner;
-- allocation always labelled "unavailable" with reasons;
-- PHQ-2026-01 approved-but-not-implemented → info banner.
+- allocation always labelled "unavailable" with reasons (live market data and
+  reconciled holdings, not a missing `targets.yaml`/`gates.yaml`
+  implementation — PHQ-2026-02 already implements PHQ-2026-01's architecture
+  in both files).
 
 ## 7. Testing strategy
 
