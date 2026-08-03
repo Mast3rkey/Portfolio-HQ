@@ -395,7 +395,22 @@ def _load_live_gates(path: Path) -> tuple[dict[str, LiveGate], str | None]:
     data, err = _safe_load_yaml(path)
     if err:
         return {}, err
-    entries = (data or {}).get("gates") or []
+    if data is not None and not isinstance(data, dict):
+        # A parsed-but-wrong-shaped top-level document (e.g. a bare YAML
+        # list) — must be a load error, not a silent "zero gates," and must
+        # never reach `.get()` on a non-dict below (crash). Independent
+        # review of PR #229 (delta ef64d4b -> 24ccb56) found this path both
+        # silently resurrected the exact defect this correction targeted and
+        # crashed build_model() outright.
+        return {}, f"{path.name}: not a mapping"
+    raw_entries = (data or {}).get("gates")
+    if raw_entries is not None and not isinstance(raw_entries, list):
+        # A present-but-wrong-shaped 'gates:' value (string/dict/etc.) — same
+        # reasoning: this is a structurally invalid file, not legitimately
+        # empty. An absent 'gates:' key (raw_entries is None) stays a
+        # legitimate empty gate set, unchanged.
+        return {}, f"{path.name}: 'gates' key is not a list"
+    entries = raw_entries or []
     out: dict[str, LiveGate] = {}
     for e in entries:
         if not isinstance(e, dict):

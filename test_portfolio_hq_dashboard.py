@@ -316,6 +316,52 @@ def test_gates_yaml_non_list_gates_key_degrades_without_raising(tmp_repo: Path):
     assert render_html(m)
 
 
+def test_gates_yaml_non_list_gates_key_is_load_error_not_silent_zero(tmp_repo: Path):
+    # Independent re-review of PR #229 (delta ef64d4b -> 24ccb56) found a
+    # structurally invalid (non-list) 'gates:' value was silently treated as
+    # "successfully loaded, zero gates" — identical to a legitimately empty
+    # gates.yaml — letting the SPCX notice resurrect the exact "not currently
+    # gated... (see gates.yaml...)" false claim this correction targeted,
+    # with no warning anywhere on the page.
+    (tmp_repo / "gates.yaml").write_text("gates: not_a_list\n")
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.spcx_state.gates_unavailable is True
+    assert any("gates.yaml" in n.detail.lower() or "gates.yaml" in n.title.lower()
+               for n in m.warnings)
+    html = render_html(m)
+    assert "gate status could not be determined" in html.lower()
+    assert "SPCX is not currently gated, held, or targeted" not in html
+
+
+def test_gates_yaml_dict_shaped_gates_key_is_load_error(tmp_repo: Path):
+    # Same class of defect via a different malformed shape — a mapping where
+    # a list is expected.
+    (tmp_repo / "gates.yaml").write_text("gates:\n  ticker: RKLB\n  status: x\n")
+    m = build_model(tmp_repo, now=FIXED_NOW)  # must not raise
+    assert m.live_gates == ()
+    assert m.spcx_state.gates_unavailable is True
+    html = render_html(m)
+    assert "gate status could not be determined" in html.lower()
+    assert "SPCX is not currently gated, held, or targeted" not in html
+
+
+def test_gates_yaml_non_mapping_top_level_does_not_crash(tmp_repo: Path):
+    # A bare YAML list as the whole document (no top-level 'gates:' mapping
+    # at all) previously raised an uncaught AttributeError inside
+    # _load_live_gates() ('list' object has no attribute 'get'), crashing
+    # build_model() and the entire dashboard — contradicting this module's
+    # own "never raises" design. Confirmed pre-existing (not introduced by
+    # ef64d4b or 24ccb56) by the independent re-review; fixed alongside the
+    # non-list/'gates:' finding above, in the same shape-validation guard.
+    (tmp_repo / "gates.yaml").write_text("- just\n- a\n- list\n")
+    m = build_model(tmp_repo, now=FIXED_NOW)  # must not raise
+    assert m.live_gates == ()
+    assert m.spcx_state.gates_unavailable is True
+    html = render_html(m)
+    assert "gate status could not be determined" in html.lower()
+    assert "SPCX is not currently gated, held, or targeted" not in html
+
+
 def test_gates_yaml_entry_missing_ticker_is_skipped_not_raised(tmp_repo: Path):
     (tmp_repo / "gates.yaml").write_text(
         "gates:\n"
