@@ -494,6 +494,24 @@ def _ticker_gate_notice_html(state) -> str:
     displayed regardless of whether SPCX was still actually gated (it no
     longer is: PHQ-2026-04 retired its gate after a verified manual exit).
     Reusable for any ticker's TickerCurrentState, not SPCX-specific logic."""
+    if state.gates_unavailable:
+        # gates.yaml itself failed to load — live_gate is structurally None
+        # either way, so it cannot be told apart from "confirmed ungated."
+        # Never assert a not-gated claim (or stay silent, which would hide
+        # an unconfirmable gate the same way) while citing a file that was
+        # never actually read — a page-level warning already discloses the
+        # load failure; this is the ticker-specific consequence of it.
+        return (
+            '<div class="notice warning" role="note">'
+            '<span class="n-icon" aria-hidden="true">⚠</span>'
+            f'<div class="n-body"><div class="n-title">{_esc(state.ticker)} gate '
+            'status could not be determined</div>'
+            f'<div class="n-detail">gates.yaml was unavailable or unreadable '
+            "when this page was generated (see the warnings above) — this "
+            f"dashboard cannot confirm whether {_esc(state.ticker)} is "
+            "currently gated. This is not a claim that it is, or is not, "
+            "gated.</div></div></div>"
+        )
     lg = state.live_gate
     if lg is not None:
         # Currently gated per the live gates.yaml — advisory only, never a

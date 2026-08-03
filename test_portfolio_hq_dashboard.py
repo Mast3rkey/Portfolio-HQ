@@ -268,6 +268,40 @@ def test_missing_gates_yaml_degrades_with_warning(tmp_repo: Path):
     assert "<html" in render_html(m).lower()  # still renders
 
 
+def test_spcx_notice_reflects_unknown_state_when_gates_yaml_unavailable(tmp_repo: Path):
+    # Truthfulness gap found in delta review of PR #229: when gates.yaml
+    # fails to load, live_gate=None is structurally identical to "confirmed
+    # ungated" unless gates_unavailable is threaded through and checked —
+    # the notice must never assert SPCX is "not currently gated" (nor stay
+    # silent, which would hide an unconfirmable gate the same way) while
+    # citing a gates.yaml that was never actually read.
+    (tmp_repo / "gates.yaml").unlink()
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.spcx_state.gates_unavailable is True
+    assert m.spcx_state.live_gate is None
+    html = render_html(m)
+    assert "gate status could not be determined" in html.lower()
+    assert "SPCX is not currently gated, held, or targeted" not in html
+    assert "SPCX — HOLD TARGET IN CASH" not in html
+    assert ">sell<" not in html.lower()
+
+
+def test_spcx_notice_unknown_state_even_when_held_or_targeted(tmp_repo: Path):
+    # The same unknown-state disclosure must fire even in the held/targeted
+    # branches, which would otherwise render nothing at all — silence would
+    # hide an unconfirmable gate exactly as badly as a false negative claim.
+    (tmp_repo / "gates.yaml").unlink()
+    holdings_path = tmp_repo / "holdings.yaml"
+    holdings_path.write_text(
+        holdings_path.read_text().replace("shares:\n", "shares:\n  SPCX: 1.0\n")
+    )
+    m = build_model(tmp_repo, now=FIXED_NOW)
+    assert m.spcx_state.gates_unavailable is True
+    assert m.spcx_state.currently_held is True
+    html = render_html(m)
+    assert "gate status could not be determined" in html.lower()
+
+
 def test_malformed_gates_yaml_degrades_without_raising(tmp_repo: Path):
     (tmp_repo / "gates.yaml").write_text("gates: [unclosed\n  bad: :::\n")
     m = build_model(tmp_repo, now=FIXED_NOW)  # must not raise

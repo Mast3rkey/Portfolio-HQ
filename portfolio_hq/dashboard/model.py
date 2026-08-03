@@ -150,6 +150,11 @@ class TickerCurrentState:
     live_gate: LiveGate | None
     currently_held: bool
     has_destination_target: bool
+    gates_unavailable: bool  # gates.yaml failed to load — live_gate=None then
+    # means "unknown," not "confirmed ungated"; a renderer must not assert
+    # the ticker is currently ungated when this is True (PR #229 delta
+    # review finding: citing gates.yaml as support for a claim it was never
+    # actually read for).
 
 
 @dataclass(frozen=True)
@@ -420,18 +425,23 @@ def _ticker_current_state(
     live_gates: dict[str, LiveGate],
     holdings: list[HoldingRow],
     destination_tickers: set[str],
+    gates_unavailable: bool,
 ) -> TickerCurrentState:
     """General, ticker-agnostic current-state derivation — reused for any
     ticker whose dashboard display must reflect live repository truth rather
     than a hardcoded assumption (PHQ-2026-04 correction: SPCX's gate was
     retired after a verified exit, so a name present in frozen PHQ-2026-01
-    evidence is not necessarily gated today)."""
+    evidence is not necessarily gated today). When gates_unavailable is True,
+    live_gates is empty by construction, so live_gate=None here means "gate
+    status unknown," not "confirmed ungated" — callers must not render an
+    unqualified not-gated claim in that case."""
     tk = ticker.strip().upper()
     return TickerCurrentState(
         ticker=tk,
         live_gate=live_gates.get(tk),
         currently_held=any(h.ticker.upper() == tk for h in holdings),
         has_destination_target=tk in destination_tickers,
+        gates_unavailable=gates_unavailable,
     )
 
 
@@ -911,6 +921,7 @@ def build_model(repo_root: Path | str, *, now: datetime | None = None) -> Dashbo
         live_gates=live_gates,
         holdings=holdings,
         destination_tickers=set(roster.keys()),
+        gates_unavailable=lg_err is not None,
     )
 
     return DashboardModel(
