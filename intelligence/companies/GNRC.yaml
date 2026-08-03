@@ -76,7 +76,7 @@ sources:
     url: null
     date: "2026-02-11"
   - note: "Generac Holdings Inc. second-quarter 2026 earnings release, dated 2026-07-29. Directly fetched and read in full by this session via its GlobeNewswire wire-service distribution (company's own written text). Supports Q2 2026 segment revenue/margin, gross-margin and tariff-refund detail, cash flow, buyback pause, leverage, data-center backlog and hyperscale supply-agreement detail, and FY2026 guidance."
-    url: "https://www.globenewswire.com/news-release/2026/07/29/"
+    url: "https://www.globenewswire.com/news-release/2026/07/29/3335020/0/en/Generac-Reports-Second-Quarter-2026-Results.html"
     date: "2026-07-29"
   - note: "Generac Holdings Inc. Form 10-Q for the quarterly period ended 2025-09-30 (Q3 2025), identified via WebSearch snippet for leverage-ratio and debt-covenant detail (total leverage ratio, interest-coverage ratio, net secured leverage, Term Loan B pricing). Not directly opened this session."
     url: null
