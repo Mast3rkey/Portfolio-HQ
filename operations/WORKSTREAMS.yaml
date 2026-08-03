@@ -3267,7 +3267,7 @@ workstreams:
       gap is authorized or begun by this filing — each remains its own separate, future,
       explicit authorization.
     active_branch: claude/gnrc-rtx-intelligence-wave
-    active_pr: null
+    active_pr: 232
     last_verified_main_sha: 71ac5d759b4f7adc5b8f2237f00e6d6a407f5d00
     last_verified_date: "2026-08-03"
     authorized_by: >
