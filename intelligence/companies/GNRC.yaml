@@ -1,0 +1,86 @@
+sector: Industrials
+industry: Power Generation Equipment and Energy Technology
+portfolio_role_ref: band
+competitive_advantages:
+  - "Estimated dominant share (roughly three-quarters or more, per third-party market-research estimates, not company-disclosed) of the North American residential standby-generator market, built over decades under the Generac brand, sold through an independent dealer/installer distribution network rather than direct sales -- avoids heavy direct-sales overhead but ties growth to partner installation capacity. [GNRC-C01]"
+  - "Vertically expanded product line beyond generators into an 'energy technology' ecosystem via acquisition -- PWRcell battery storage (Pika Energy, 2019), solar microinverters (Chilicon), smart thermostats (ecobee, Dec 2021, ~$650M+ consideration), EV-charging/energy management (Wallbox minority stake, Dec 2023) -- plus remote-monitoring (Mobile Link) and utility Virtual Power Plant program participation. The company remains predominantly a hardware/equipment-revenue business; no primary source found this session quantifies recurring/subscription/VPP revenue as a percentage of total. [GNRC-C02]"
+  - "2025-2026 pivot into commercial & industrial (C&I) data-center backup power: two disclosed multi-year hyperscale supply agreements (first approximately $700 million of committed 2027 volume; second, signed late June 2026, disclosed as expected to be at least as large) and a Q2 2026-disclosed data-center order backlog of $1.6 billion, up from $600 million previously. The Enercon Engineering acquisition (announced 2025/early 2026, still closing as of Q2 2026) adds switchgear and generator-enclosure manufacturing explicitly to support this data-center push, alongside Belvidere and Sussex/Oshkosh large-generator manufacturing-capacity expansion. [GNRC-C03]"
+  - "Conservative balance sheet relative to the growth capital program: total leverage ratio approximately 1.4x as of the most recently available quarter (covenant ceiling 3.75x), interest coverage well above its covenant floor, and improving free cash flow ($62.9 million in Q2 2026 alone, versus $14.5 million in the prior-year quarter) -- meaningful covenant and liquidity headroom to fund the disclosed data-center capacity buildout without near-term financial stress. [GNRC-C04]"
+risks:
+  - risk: "Demonstrated, severe boom-bust demand cyclicality tied to power-outage/storm activity, not merely a theoretical risk-factor disclosure: net sales grew over 50% in 2021 (pandemic- and storm-driven demand) then contracted roughly 12% in 2023; diluted EPS fell from $8.51 (2021) to $3.31 (2023); operating margin nearly halved from 19.9% to 9.6% over the same period; a roughly $300 million dealer/field channel-inventory overhang was cited by management in 2023; free cash flow was negative in FY2022. FY2025 Residential-segment sales themselves declined, which the company explicitly attributed to weak power-outage activity that year."
+    severity: moderate
+    identified: "2026-08-03"
+    status: monitoring
+  - risk: "FY2025 net income nearly halved (to $160 million from $316 million in FY2024) and Q4 2025 alone posted a net loss ($24 million), driven by a $104.5 million pre-tax litigation-settlement provision tied to a 2023 explosion of a Generac portable generator at a Pennsylvania construction site that catastrophically injured six workers -- a realized product-liability/safety event with material P&L impact, with roughly $102 million of insurance recovery separately expected."
+    severity: moderate
+    identified: "2026-08-03"
+    status: monitoring
+  - risk: "A meaningful share of the most recently reported gross-margin improvement is non-recurring: the Q2 2026 gross margin of 44.5% (versus 39.3% in the prior-year quarter) includes an approximately $71 million pre-tax tariff-refund benefit, roughly six points of the year-over-year improvement, which the company itself characterizes as a refund rather than durable operating leverage. Full-year 2026 guidance separately builds in an approximately 1.5-point tariff-refund benefit."
+    severity: low
+    identified: "2026-08-03"
+    status: monitoring
+  - risk: "Tariff and import-sourcing exposure: meaningful reliance on imports from China, Vietnam, and India, subject to Section 301 and related tariff regimes reported at elevated 2025 levels (secondary-source estimates cite an average effective China tariff rate above 19%, with many product categories above 25%) -- an ongoing cost and supply-chain-structuring risk independent of the one-time refund noted above."
+    severity: low
+    identified: "2026-08-03"
+    status: monitoring
+  - risk: "The disclosed data-center/hyperscale growth leg -- now a load-bearing input to the company's 2028 revenue and EBITDA targets ($6.2-6.6 billion revenue and $1.25-1.45 billion EBITDA, versus FY2025's $4.21 billion revenue and $716 million EBITDA) -- depends on continued hyperscaler AI-infrastructure capital spending, a broader industry-wide demand-durability question this record does not resolve, and on Generac successfully executing as a relative newcomer to hyperscale-grade backup power against incumbents (Caterpillar, Cummins, Kohler/Rehlko) with deeper existing data-center service networks, per third-party analyst commentary (secondary source, not company-disclosed)."
+    severity: moderate
+    identified: "2026-08-03"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked (HTTP 403) on SEC EDGAR across every attempt this session, including a text-proxy workaround; investors.generac.com's own news-release and filed-document pages consistently timed out. One clean primary-source-content fetch was achieved (Generac's own Q2 2026 earnings press release, distributed via GlobeNewswire). Every other SEC-filing-sourced fact in this record traces to a WebSearch-returned snippet or paraphrase of the underlying filing, not to this session's own direct reading of the filing text -- see GNRC.md's Source-access disclosure."
+    severity: low
+    identified: "2026-08-03"
+    status: monitoring
+catalysts:
+  - catalyst: "Generac's FY2026 third-quarter and fourth-quarter/full-year earnings releases and the corresponding FY2026 Form 10-K, which will show whether the data-center backlog ($1.6 billion at Q2 2026) is converting to recognized C&I revenue at the pace implied by FY2026 guidance (C&I growth guided to the low-30s percent) and whether the tariff-refund-inflated Q2 2026 gross margin normalizes as guided."
+    expected: "2026-11-01"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which updated storm/outage-driven Residential demand data, data-center backlog conversion, buyback resumption (paused entirely in H1 2026), and Enercon acquisition closing/integration status will next be actively re-checked."
+    expected: "2026-11-01"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). GNRC shows a genuine, evidenced, and currently accelerating second growth leg in data-center/hyperscale C&I backup power (disclosed multi-year supply agreements, a $1.6 billion backlog, and capacity investment via Enercon/Belvidere/Sussex) layered on top of its long-dominant, but historically boom-bust, residential standby-generator franchise. Held at Medium rather than higher because: the company's own five-year history (2021-2023) demonstrates severe demand-cycle reversal risk that is structural to the business, not merely a disclosed possibility; FY2025 included a material realized product-liability charge that produced a quarterly net loss; a meaningful share of the most recent margin improvement is a non-recurring tariff refund rather than durable operating leverage; and the data-center growth leg -- now load-bearing for 2028 targets -- carries its own execution and hyperscaler-capex-durability uncertainty that this record does not resolve. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from GNRC's existing band portfolio-tier placement or its 1.25% canonical target -- it was reasoned solely from the disclosed operating and financial picture described above."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-03"
+  next_due: "2026-11-01"
+  log:
+    - date: "2026-08-03"
+      note: >
+        Record created under governance/decisions/PI-0036-gnrc-rtx-company-intelligence-wave.md
+        (status: Accepted at this record's base commit 71ac5d759b4f7adc5b8f2237f00e6d6a407f5d00),
+        narrowly superseding governance/decisions/PI-0033-ws0005-milestone3-residual-deferrals.md
+        solely for research-authorization purposes as to GNRC specifically -- PI-0033's own
+        seventeen-name disposition text is otherwise unedited and remains fully controlling. First
+        Company Intelligence coverage for GNRC (no prior record existed). Filed as an administrative
+        pairing with RTX (identical portfolio-governance status -- held, targeted, ungated,
+        uncovered -- and execution efficiency only; the two companies share no genuine economic
+        mechanism and this record makes no such claim -- see PI-0036 and GNRC.md Section 13). This
+        session's own WebFetch attempts against SEC EDGAR were tested and confirmed blocked (HTTP
+        403) throughout, and investors.generac.com timed out on every attempt; research therefore
+        rests primarily on WebSearch-returned snippets/paraphrases of the underlying SEC filings and
+        company press releases, plus one directly-fetched primary-source-content document (Generac's
+        own Q2 2026 earnings press release via GlobeNewswire) -- see Source-access disclosure in
+        GNRC.md. This is a materially weaker access posture than a directly-opened-filing session
+        (contrast RTX.md, researched the same day with full direct SEC EDGAR access) and is disclosed
+        throughout this record, not smoothed over.
+sources:
+  - note: "Generac Holdings Inc. FY2025 Form 10-K for the period ended 2025-12-31 (SEC accession referenced in WebSearch-returned snippets as 0001437749-26-004568), filed on or about 2026-02-11. Identified via WebSearch; SEC EDGAR direct access (WebFetch) confirmed blocked (HTTP 403) throughout this session -- not directly opened. Supports business-description, segment-reorganization, customer-concentration, and general risk-factor content."
+    url: "https://www.sec.gov/Archives/edgar/data/1474735/000143774926004568/gnrc20251231_10k.htm"
+    date: "2026-02-11"
+  - note: "Generac Holdings Inc. Form 8-K, filed on or about 2026-03-25, disclosing the March 31, 2026 reportable-segment reorganization from Domestic/International to Residential and Commercial & Industrial (C&I), and covering the March 25, 2026 Investor Day. Identified via WebSearch/secondary (MarketBeat) summary of the filing; not directly opened this session."
+    url: "https://www.sec.gov/Archives/edgar/data/1474735/000143774926009685/gnrc20260325_8k.htm"
+    date: "2026-03-25"
+  - note: "Generac Holdings Inc. fourth-quarter and full-year 2025 earnings release, dated 2026-02-11 (company's own text, distributed via wire service). Identified via WebSearch snippet/secondary aggregation (including stockanalysis.com); not directly opened this session in its original form. Supports FY2025 segment revenue, net income, adjusted EBITDA, and the Q4 2025 litigation-charge/net-loss content."
+    url: null
+    date: "2026-02-11"
+  - note: "Generac Holdings Inc. second-quarter 2026 earnings release, dated 2026-07-29. Directly fetched and read in full by this session via its GlobeNewswire wire-service distribution (company's own written text). Supports Q2 2026 segment revenue/margin, gross-margin and tariff-refund detail, cash flow, buyback pause, leverage, data-center backlog and hyperscale supply-agreement detail, and FY2026 guidance."
+    url: "https://www.globenewswire.com/news-release/2026/07/29/3335020/0/en/Generac-Reports-Second-Quarter-2026-Results.html"
+    date: "2026-07-29"
+  - note: "Generac Holdings Inc. Form 10-Q for the quarterly period ended 2025-09-30 (Q3 2025), identified via WebSearch snippet for leverage-ratio and debt-covenant detail (total leverage ratio, interest-coverage ratio, net secured leverage, Term Loan B pricing). Not directly opened this session."
+    url: null
+    date: "2025-11-01"
+  - note: "Third-party market-research and secondary-source estimates (GMInsights market-share estimates; umbrex.com business-model summary; MarketBeat analyst commentary, June 5, 2026; koalagains.com financial-history aggregation) used only for market-share context, competitive-positioning framing, and the 2021-2023 boom-bust financial-history illustration, and explicitly labeled as secondary throughout GNRC.md -- never treated as a primary-source fact."
+    url: null
+    date: "2026-08-03"

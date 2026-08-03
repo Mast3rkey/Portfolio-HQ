@@ -2174,6 +2174,45 @@ workstreams:
       step for this filing itself is its own independent exact-head review (per `OPS-0007` §1,
       Lane G weight per `OPS-0009`, since it accompanies a new governance decision) and explicit
       principal acceptance before it may be marked ready and merged.
+
+      PI-0036 (Milestone 3, GNRC/RTX Company Intelligence wave) authorized and filed
+      2026-08-03, on branch claude/gnrc-rtx-intelligence-wave, acting on the OPS-0014 audit's
+      own recorded sequencing recommendation immediately above ("GNRC and RTX first, as the
+      smallest coherent batch"). The principal determined GNRC and RTX are the only two
+      canonical equity destinations simultaneously held, targeted, ungated, and missing Company
+      Intelligence coverage - independently re-verified this session against live holdings.yaml
+      (GNRC 0.320007 sh, RTX 0.240403 sh), targets.yaml (GNRC 1.25% target, RTX 0.75% target,
+      neither row gated-commented), and gates.yaml (six gated tickers - SNPS, ICE, SPGI, WM,
+      RKLB, TSLA - neither GNRC nor RTX among them). PI-0036 narrowly supersedes
+      PI-0033 solely for research-authorization purposes as to GNRC and RTX specifically -
+      neither ticker's literal PI-0033 reopening trigger (tier promotion, materially increased
+      position size, a company-specific disclosure event, or an independently coherent
+      economic-mechanism wave) has occurred; PI-0033's text is otherwise entirely unedited and
+      remains fully controlling for the other sixteen names it addresses, including RKLB and TSLA,
+      which stay excluded from this wave on the independent, sufficient ground that both remain
+      gated. This is an explicit administrative wave, not an economic-mechanism batch under
+      OPS-0008 §1 - GNRC (backup power/energy technology) and RTX (aerospace/defense) share no
+      genuine business mechanism; their bundling into one filing follows PI-0032's own
+      six-independent-unit precedent (identical portfolio-governance status and execution
+      efficiency only, stated explicitly, never a claimed shared thesis). Per the principal's own
+      explicit bounded authorization for this unit, research, drafting, freshness enrollment, and
+      validation were performed within this same implementation session (narrower than
+      OPS-0008 §4's default two-PR lifecycle, which this filing's own text explains) -
+      deliverables: intelligence/companies/GNRC.yaml/GNRC.md and RTX.yaml/RTX.md (first coverage
+      for both, drawing on current-cycle primary sources - RTX researched via direct SEC EDGAR
+      access to its FY2025 Form 10-K, Q2 2026 Form 10-Q, and Q2 2026 earnings release; GNRC
+      researched primarily via WebSearch-derived snippets after SEC EDGAR access was blocked
+      session-wide, disclosed in full in GNRC.md's own Source-access disclosure); one
+      freshness-registry and one freshness-checkpoint row each (monitoring_enabled: false,
+      checkpoint_status: pending, enrollment_authority/company_record_authority: PI-0036);
+      this decision file; and this additive synchronization entry. This filing authorizes no
+      third ticker, no research on any gated or otherwise-excluded name, no Milestone 4
+      relationship mapping, and no tier/target/gate/cluster/cap/holdings/margin/allocator change of
+      any kind - Milestone 3 remains in_progress; completing this wave does not itself satisfy
+      PI-0031 §K's seven-criterion completion standard or authorize Milestone 4. Governance PR
+      not yet independently reviewed or principal-accepted at this entry's own writing - this
+      entry does not itself constitute review or acceptance, and does not mark itself, or the PR
+      carrying it, ready for merge.
     completion_criteria: >
       Per OPS-0006 §16.1's completion discipline: Milestones 1-2 reach
       status: complete only when the one bounded first audit PR merges;
@@ -3227,9 +3266,9 @@ workstreams:
       3 batch, no Milestone 4 work, and no schema-design milestone for the non-company research
       gap is authorized or begun by this filing — each remains its own separate, future,
       explicit authorization.
-    active_branch: claude/ops0014-routine-sync-and-completion-roadmap
-    active_pr: 231
-    last_verified_main_sha: 2816cc1dde49ec089fd316cd412b1261d8468d3d
+    active_branch: claude/gnrc-rtx-intelligence-wave
+    active_pr: 232
+    last_verified_main_sha: 71ac5d759b4f7adc5b8f2237f00e6d6a407f5d00
     last_verified_date: "2026-08-03"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and

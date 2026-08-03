@@ -185,6 +185,14 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: GNRC
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: RTX
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
   - ticker: MLM
     checkpoint_status: pending
     channels: {}

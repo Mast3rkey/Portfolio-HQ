@@ -433,3 +433,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0009, OPS-0011, OPS-0012, OPS-0013, PHQ-2026-01, PHQ-2026-02, PHQ-2026-04, PHQ-2026-05, PHQ-2026-06]
     supporting_artifact: null
     file: governance/decisions/OPS-0014-routine-operational-sync.md
+  - decision_id: PI-0036
+    date: 2026-08-03
+    status: Accepted
+    category: portfolio_intelligence
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, OPS-0014, PI-0011, PI-0016, PI-0031, PI-0032, PI-0033, PI-0035]
+    supporting_artifact: null
+    file: governance/decisions/PI-0036-gnrc-rtx-company-intelligence-wave.md
