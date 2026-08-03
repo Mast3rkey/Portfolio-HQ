@@ -2213,6 +2213,29 @@ workstreams:
       not yet independently reviewed or principal-accepted at this entry's own writing - this
       entry does not itself constitute review or acceptance, and does not mark itself, or the PR
       carrying it, ready for merge.
+
+      **PR #232 merged; GNRC/RTX Company Intelligence post-merge verification recorded
+      (2026-08-03, this entry — Lane M factual synchronization per `OPS-0009` §1, performed by a
+      separate session that authored none of the reviewed work).** The paragraph immediately
+      above is now stale on one point (PR #232's own review/acceptance/merge state) and is
+      superseded by this entry on that point only — nothing else in it is disturbed.
+
+      **PR #232 confirmed merged and closed.** Independently re-verified this session via the
+      GitHub API: state `MERGED`, head SHA `d2b71ea96dd414c57c22b3aed7f1b0b4a665e1fe`, merge
+      commit `36952f84dc322738be2a3fb6700c7853c9b596be` (confirmed `origin/main`'s tip at this
+      entry's own preflight). PR #232 received independent review (original review
+      `4846532441`, delta/follow-up review `4846664152`) and a separately retained principal
+      exact-head acceptance comment (`issuecomment-5169463732`, naming accepted head
+      `d2b71ea96dd414c57c22b3aed7f1b0b4a665e1fe`) followed by a closure comment
+      (`issuecomment-5169526343`), before merging unchanged at that head. Post-merge CI run
+      `30835647736` completed `success` at the exact merge SHA.
+
+      **Conclusion: this entry records PR #232's already-established merge and post-merge
+      state; it creates no new tier/target/holdings/cluster/cap/allocator/margin authority, does
+      not itself evaluate `PI-0031` §K's seven-criterion Milestone 3 completion standard, and
+      does not authorize Milestone 4.** Milestone 3 remains `in_progress`. This synchronization
+      unit is itself a draft pull request as of this writing — it has not been independently
+      reviewed, has not received a `Principal acceptance:` statement, and has not merged.
     completion_criteria: >
       Per OPS-0006 §16.1's completion discipline: Milestones 1-2 reach
       status: complete only when the one bounded first audit PR merges;
@@ -3266,9 +3289,9 @@ workstreams:
       3 batch, no Milestone 4 work, and no schema-design milestone for the non-company research
       gap is authorized or begun by this filing — each remains its own separate, future,
       explicit authorization.
-    active_branch: claude/gnrc-rtx-intelligence-wave
-    active_pr: 232
-    last_verified_main_sha: 71ac5d759b4f7adc5b8f2237f00e6d6a407f5d00
+    active_branch: claude/ws0005-post-pr232-factual-sync
+    active_pr: null
+    last_verified_main_sha: 36952f84dc322738be2a3fb6700c7853c9b596be
     last_verified_date: "2026-08-03"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
