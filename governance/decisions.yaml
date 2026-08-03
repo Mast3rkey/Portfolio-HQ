@@ -426,3 +426,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, CHART-0001, PI-0001, PI-0011, LADDER-0001]
     supporting_artifact: null
     file: governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
+  - decision_id: OPS-0014
+    date: 2026-08-03
+    status: Accepted
+    category: operations_coordination
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0009, OPS-0011, OPS-0012, OPS-0013, PHQ-2026-01, PHQ-2026-02, PHQ-2026-04, PHQ-2026-05, PHQ-2026-06]
+    supporting_artifact: null
+    file: governance/decisions/OPS-0014-routine-operational-sync.md
