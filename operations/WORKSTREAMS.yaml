@@ -335,8 +335,8 @@ workstreams:
       The Fable Audit Gate #2 + principal-acceptance requirement is a
       completion/merge gate on that future PR, not a current blocker to
       opening it.
-    active_branch: null
-    active_pr: null
+    active_branch: claude/ops0015-personal-app-roadmap
+    active_pr: 234
     last_verified_main_sha: 536e71f58857f2e55d98169b2e829e392c27a016
     last_verified_date: "2026-07-25"
     authorized_by: >
@@ -407,8 +407,8 @@ workstreams:
     blocker: >
       Depends on WS-0002 reaching a conclusion; WS-0002 itself is not yet
       authorized to begin implementation.
-    active_branch: null
-    active_pr: null
+    active_branch: claude/ops0015-personal-app-roadmap
+    active_pr: 234
     last_verified_main_sha: 3c31c2e9d36d55defc95d89c90ab041f31abf251
     last_verified_date: "2026-07-24"
     authorized_by: null
@@ -4345,8 +4345,8 @@ workstreams:
       M factual-synchronization unit itself beyond its own validation and
       independent review; it creates no new authority and does not resolve
       the PR #217 evidence-retention gap disclosed above.
-    active_branch: claude/lane-m-ws0007-ws0012-dashboard-factual-sync
-    active_pr: 230
+    active_branch: claude/ops0015-personal-app-roadmap
+    active_pr: 234
     last_verified_main_sha: 1e36b57e235f584cd88131c1bcd2587751b44452
     last_verified_date: "2026-08-02"
     authorized_by: >
@@ -5920,8 +5920,8 @@ workstreams:
       separate, explicit principal authorization — none is authorized to
       begin by this entry. No blocker exists on recording this roadmap
       itself.
-    active_branch: claude/ops0014-routine-sync-and-completion-roadmap
-    active_pr: 231
+    active_branch: claude/ops0015-personal-app-roadmap
+    active_pr: 234
     last_verified_main_sha: 2816cc1dde49ec089fd316cd412b1261d8468d3d
     last_verified_date: "2026-08-03"
     authorized_by: >
