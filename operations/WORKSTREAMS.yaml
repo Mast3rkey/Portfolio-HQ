@@ -1575,9 +1575,46 @@ workstreams:
           `OPS-0007` §8 step I. **Governance PR not yet independently reviewed or principal-accepted
           at this entry's own writing** — this entry does not itself constitute review or acceptance,
           and does not mark itself, or the PR carrying it, ready for merge.
-        pr: 171
-        status: in_progress
-        date: "2026-07-27"
+
+          **`PI-0037` (WS-0005 Milestone 3 Completion Determination) filed 2026-08-03 — not yet
+          merged, not yet independently reviewed, not yet effective.** A bounded Lane G
+          (`OPS-0009` §1) completion-determination unit, evaluating `PI-0031` §K's seven completion
+          criteria as narrowly restated by `PI-0035` §C, together with `PI-0036`'s subsequent
+          completion of GNRC/RTX Company Intelligence coverage (2026-08-03, PR #232, independently
+          confirmed this session as fully PROVISIONAL under `OPS-0007` §3: review `4846532441`,
+          correction `d2b71ea`, delta review `4846664152`, principal acceptance
+          `issuecomment-5169463732`, merge `36952f84...`, post-merge verification via PR #233).
+          This session independently re-derived, against live `origin/main` at
+          `926d7a4fdb740e9efc066f1563e2f45397024357`: the 27-name canonical equity roster
+          (unchanged); updated roster accounting of 21 covered + 4 gated-and-`PI-0035`-dispositioned
+          (SNPS, ICE, SPGI, WM) + 2 gated-and-`PI-0033`-dispositioned (RKLB, TSLA) = 27; all 47
+          currently-existing Company Intelligence records independently re-confirmed schema-valid
+          (`intelligence_validator.py`, 47/47) and, per the retained `WS0005_M3_CRITERION7_
+          RETROSPECTIVE_LIFECYCLE_AUDIT_20260729.md`/`WS0005_M3_SIX_RECORD_FRESH_RETROSPECTIVE_
+          REVIEW_RETENTION_20260729.md` audits plus this session's own independent GNRC/RTX
+          verification, confirmed PROVISIONAL under `OPS-0007` §3; `freshness_validator.py` OK;
+          full pytest suite 2441/2441 passed; `decision_catalog.issues == ()` (63 decisions); exactly
+          one `priority: primary` workstream; `git diff --check` clean. **Verdict: all seven `PI-0031`
+          §K criteria (as restated) satisfied — MILESTONE 3 COMPLETE, effective only on `PI-0037`'s
+          own merge.** `PI-0037` authorizes no research, no Company Intelligence edit, no gate
+          reopening, no tier/target/role/cluster/cap/holdings/margin/allocator change, and explicitly,
+          repeatedly does not authorize, begin, or imply Milestone 4 or any later WS-0005 milestone.
+          It discloses, without correcting (outside its own authorized scope): this gate's own stale
+          `pr`/`status`/`date` fields below (corrected by this same filing, since recording this
+          determination's own factual outcome is squarely this filing's purpose); WS-0005's separate
+          `active_branch`/`active_pr`/`last_verified_main_sha` self-reference fields below, stale
+          since PR #233/#234, left uncorrected per this unit's own explicit prohibition on clearing
+          an unrelated stale self-reference; and `PI-0035`'s own governance PR #208, which carries no
+          GitHub-API-retrievable independent review, a governance-decision-level provenance gap
+          distinct from any Company-Intelligence-record criterion this filing evaluates. **This
+          governance PR itself must remain draft, gain its own eligible independent exact-head review,
+          complete any required bounded correction and re-review, and receive explicit principal
+          acceptance before it may be marked ready or merged — this entry does not itself constitute
+          that review or acceptance, and the `status: complete` transition below takes effect only on
+          this PR's own merge to `main`.**
+        pr: null
+        status: complete
+        date: "2026-08-03"
       - gate: milestone-4-portfolio-relationship-mapping
         description: >
           Map economic systems, demand drivers, customer/supplier
@@ -3316,9 +3353,21 @@ workstreams:
       3 batch, no Milestone 4 work, and no schema-design milestone for the non-company research
       gap is authorized or begun by this filing — each remains its own separate, future,
       explicit authorization.
-    active_branch: claude/ws0005-post-pr232-factual-sync
-    active_pr: 233
-    last_verified_main_sha: 36952f84dc322738be2a3fb6700c7853c9b596be
+
+      **`PI-0037` (WS-0005 Milestone 3 Completion Determination) is this entry's own live work.**
+      The `active_branch`/`active_pr` fields below are updated to this filing's own branch; the
+      prior branch's/PR's own already-merged history (PR #232, PR #233) remains recorded above and
+      is unedited. `active_pr` is `null` until this filing's own PR number exists, per `OPS-0001`'s
+      "could not be known before opening" convention already used for every prior WS-0005 filing in
+      this log — a bounded follow-up commit sets it once the PR is opened. This filing discloses,
+      without correcting (outside its own bounded authorization), that these self-reference fields
+      were themselves stale at this filing's own preflight (still reading PR #232/`36952f84...`
+      after PR #233 and PR #234 had each already merged) — a Lane M hygiene item for a future,
+      separately authorized unit, not addressed by this filing beyond disclosure and this entry's
+      own necessary update.
+    active_branch: claude/ws0005-m3-completion-determination
+    active_pr: 235
+    last_verified_main_sha: 926d7a4fdb740e9efc066f1563e2f45397024357
     last_verified_date: "2026-08-03"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
