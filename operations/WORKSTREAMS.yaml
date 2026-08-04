@@ -1840,6 +1840,46 @@ workstreams:
         pr: 238
         status: in_progress
         date: "2026-08-04"
+      - gate: rel0002-first-relationship-content-batch-ceg-msft
+        description: >
+          `REL-0002` filed, authorizing and — in the same combined
+          governance-and-implementation pull request, per explicit
+          principal packaging instruction — implementing WS-0005 Milestone
+          4's first relationship-content record:
+          `intelligence/relationships/CEG_MSFT.yaml`/`.md`, a single
+          `customer_dependency` primitive record (CEG depends on MSFT via
+          the disclosed 20-year Microsoft PPA supporting the Crane Clean
+          Energy Center restart), per the `rel0001-inventory-only-unit-active`
+          gate's own §9 advisory recommendation above. Follows the
+          `REL-0001` §I stopping condition exactly:
+          `evidence_classification: inferred`, not `observed` — the
+          relationship is disclosed from CEG's own Company Intelligence
+          record only; `MSFT.yaml`/`MSFT.md` were directly grepped this
+          session and confirmed to contain zero independent corroboration.
+          No external research was performed. No Company or Theme
+          Intelligence record was modified. No price correlation was
+          computed. No `duplicate_economic_exposure`/
+          `correlated_loss_mechanism`/`missing_exposure` conclusion was
+          asserted. No holdings/targets/tiers/caps/gates/clusters/ladders/
+          trims/sells/margin/allocator/brokerage/order/chart-evidence/
+          "Eureka" file was touched. Two pre-existing tests
+          (`test_relationship_validator.py`'s
+          `test_universe_loaders_never_touch_intelligence_relationships`
+          and `test_validating_the_real_repository_relationships_dir_does_not_mutate_it`)
+          and two hardcoded decision-count assertions
+          (`test_portfolio_hq_dashboard_decisions.py`, 66 to 67) were
+          corrected in the same filing, since this batch's own addition of
+          the repository's first real `intelligence/relationships/` record
+          and the new `governance/decisions.yaml` row made their prior
+          literal assertions false. The
+          `milestone-4-portfolio-relationship-mapping` gate's own
+          `status: proposed` above is unchanged by this entry — one
+          additive record is a first step, not Milestone 4 completion.
+          Opened as a draft PR; not merged, not independently reviewed, not
+          principal-accepted in this session.
+        pr: null
+        status: in_progress
+        date: "2026-08-04"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md
@@ -1898,6 +1938,9 @@ workstreams:
       - "Bounded correction, same PR #168, same session: an independent GPT-5.6 Thinking exact-head review of head 274d43000eb6c049faa7e9e9bad5ef9d02b9c11d returned CHANGES REQUIRED on two findings — OPS-0008's automatic-scoring/allocator-coupling/next-wave-authority boundaries stated only by cross-reference, and PI-0027's business-quality-versus-capital-priority/next-best-use-of-capital requirement being ambiguous in the original §B/§C text. Resolved by adding OPS-0008 new §12 (Hard boundaries, standalone and explicit) and PI-0027 new §B.23/§C.10 (capital-priority comparison, per-company and batch-level, advisory and score-free). No scope, file count, Batch 5 company list, EQIX-deferred status, or effectiveness-on-merge condition changed by this correction. Still not yet merged, not yet independently re-reviewed at the corrected head, not yet effective."
       - governance/decisions/OPS-0016-eureka-identity-mobile-cloud-architecture-roadmap.md
       - governance/decisions/REL-0001-ws0005-milestone4-relationship-schema-taxonomy-evidence-standard-and-inventory-authorization.md
+      - governance/decisions/REL-0002-ws0005-milestone4-first-relationship-content-batch-ceg-msft.md
+      - intelligence/relationships/CEG_MSFT.yaml
+      - intelligence/relationships/CEG_MSFT.md
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -3575,9 +3618,9 @@ workstreams:
       history (PR #237) remains recorded above and is unedited. `active_pr` is `null` until this
       filing's own PR number exists, per `OPS-0001`'s convention already used for every prior
       WS-0005 filing in this log — a bounded follow-up commit sets it once the PR is opened.
-    active_branch: claude/ws0005-post-pr238-factual-sync
-    active_pr: 239
-    last_verified_main_sha: 393a4d2743d0090a3ec4f4956111dc48f91c5a27
+    active_branch: claude/rel0002-ceg-msft-relationship-batch
+    active_pr: 240
+    last_verified_main_sha: 7cb22f0fba6a6078ef6b8e45b8c9a3aff4628403
     last_verified_date: "2026-08-04"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and

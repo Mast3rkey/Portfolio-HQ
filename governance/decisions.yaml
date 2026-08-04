@@ -468,3 +468,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0031, PI-0035, PI-0036, PI-0037, LADDER-0001, CHART-0001, CHART-0002, OPS-0016]
     supporting_artifact: null
     file: governance/decisions/REL-0001-ws0005-milestone4-relationship-schema-taxonomy-evidence-standard-and-inventory-authorization.md
+  - decision_id: REL-0002
+    date: 2026-08-04
+    status: Proposed
+    category: relationship_mapping_governance
+    related_decisions: [REL-0001, GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0031, PI-0035, PI-0036, PI-0037, LADDER-0001, CHART-0001, CHART-0002, OPS-0016]
+    supporting_artifact: governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md
+    file: governance/decisions/REL-0002-ws0005-milestone4-first-relationship-content-batch-ceg-msft.md
