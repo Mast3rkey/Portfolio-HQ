@@ -1,12 +1,16 @@
-"""Tests for relationship_validator.py (REL-0001 §I bounded inventory-only
-implementation unit scope).
+"""Tests for relationship_validator.py (REL-0001 §I schema/taxonomy scope,
+extended by REL-0002's first real relationship-content batch).
 
-All fixtures are synthetic. No real portfolio ticker, real company thesis,
-or real investment judgment appears anywhere in this file — same authorized-
+Every schema/taxonomy/behavior test below constructs its own synthetic
+fixture — no real portfolio ticker, real company thesis, or real investment
+judgment appears in any synthetic fixture in this file, same authorized-
 scope discipline test_intelligence_validator.py already follows, per its own
-"only a fictional placeholder ticker" convention. This unit creates zero
-`intelligence/relationships/*.yaml` records; every test below constructs its
-own synthetic fixtures.
+"only a fictional placeholder ticker" convention. The two tests reading the
+real repository's intelligence/relationships/ directory (below, under
+"validating the real repository never mutates it" and "universe loaders
+never touch intelligence/relationships") are the sole exception: they
+validate REL-0002's real CEG_MSFT record, added under its own separate
+governance authorization, not a synthetic fixture.
 """
 
 import ast
@@ -612,24 +616,35 @@ def test_load_retained_universe_reads_real_company_intelligence_directory():
 
 
 def test_universe_loaders_never_touch_intelligence_relationships():
+    """REL-0001 §I's inventory-only unit created zero relationship records;
+    REL-0002 (WS-0005 Milestone 4's first authorized relationship-content
+    batch) later added intelligence/relationships/CEG_MSFT.yaml/.md — the
+    directory now legitimately exists. The guarantee this test locks in is
+    unchanged either way: the universe loaders themselves never create,
+    remove, or otherwise touch that directory — before/after existence must
+    match, not be unconditionally False."""
     before = Path("intelligence/relationships").exists()
     rv.load_canonical_universe(".")
     rv.load_retained_universe(".")
     after = Path("intelligence/relationships").exists()
-    assert before == after == False  # noqa: E712  (explicit — this unit creates zero records)
+    assert before == after
 
 
 # ── validating the real repository never mutates it ─────────────────────────
 
 def test_validating_the_real_repository_relationships_dir_does_not_mutate_it():
-    """This unit's own authorized scope creates zero intelligence/relationships
-    records, so the real directory must not exist — validating it must be a
-    clean, valid, zero-coverage pass, and must never create the directory."""
-    assert not Path("intelligence/relationships").exists()
+    """REL-0002 authorized the first real intelligence/relationships record
+    (CEG_MSFT). Validating the real directory must be a clean, valid pass
+    over that one record, and must never mutate the directory or its
+    contents."""
+    assert Path("intelligence/relationships").exists()
+    before_yaml = Path("intelligence/relationships/CEG_MSFT.yaml").read_text()
+    before_md = Path("intelligence/relationships/CEG_MSFT.md").read_text()
     result = rv.validate_relationships_directory("intelligence/relationships")
-    assert result.valid is True
-    assert result.results == []
-    assert not Path("intelligence/relationships").exists()
+    assert result.valid is True, [e for r in result.results for e in r.errors]
+    assert result.record_count == 1
+    assert Path("intelligence/relationships/CEG_MSFT.yaml").read_text() == before_yaml
+    assert Path("intelligence/relationships/CEG_MSFT.md").read_text() == before_md
 
 
 def test_validate_directory_does_not_mutate_source_files(tmp_path):
