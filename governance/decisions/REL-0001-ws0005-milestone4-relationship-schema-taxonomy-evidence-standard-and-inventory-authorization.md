@@ -76,9 +76,10 @@ process, and rejected `MARGIN-####` as domain-specific to margin/target-sizing) 
 (chart evidence — rejected extending `PI-####`'s frozen Company Intelligence schema). Applying the
 same test here: `PI-####` is Company/Theme *Intelligence* — a single-company or single-theme
 evidence record, one-way authority (company/theme → nothing else), explicitly never a
-cross-record graph (`PI-0006`: "the graph is a reporting view, not a stored data model"). Milestone
-4's subject is structurally different — a **pairwise, cross-company, portfolio-level** record whose
-two endpoints are each already-existing Company Intelligence records, with its own directionality,
+cross-record graph (`decision_log.yaml`'s `PI-0006` entry: "the graph is a reporting view, not a
+stored model"). Milestone 4's subject is structurally different — a **pairwise, cross-company,
+portfolio-level** record whose two endpoints are each already-existing Company Intelligence records,
+with its own directionality,
 evidence, and taxonomy rules that do not fit any existing Company/Theme Intelligence field.
 Extending `PI-####` to cover it would silently graft a graph-shaped record type onto a schema
 `PI-0006`/`PI-0009`/`PI-0011` repeatedly froze as one-way and non-relational. `OPS-####` is
@@ -142,9 +143,12 @@ intelligence/relationships/<TICKER-A>_<TICKER-B>.md
 - One pair must not exist in both `A_B` and `B_A` form — the alphabetical-filename rule makes this
   mechanically checkable by a future validator, not merely a style convention.
 - The filesystem remains the index, matching this repository's existing Company/Theme Intelligence
-  discipline (`PI-0001`/`PI-0006`: "the graph is a reporting view, not a stored data model," "no
-  hidden relationship store," "no separate policy ledger") — no graph database, no
-  `intelligence/relationships/index.yaml`, no hidden store.
+  discipline — `decision_log.yaml`'s `PI-0001` entry established "the filesystem directory listing
+  is the index, permanently"; its `PI-0006` entry extended that discipline to Theme Intelligence,
+  rejecting a stored sibling/company index because "the graph is a reporting view, not a stored
+  model." This filing applies the same discipline to relationship records as its own bounded design
+  rule: no graph database, no `intelligence/relationships/index.yaml`, no hidden relationship store,
+  no separate policy ledger.
 - The graph — any future rendering of relationship records as a network/graph view — is a **derived
   reporting view only**, never the authoritative stored model. Building that view is not authorized
   by this filing.
@@ -453,9 +457,10 @@ than beginning content research against an unfrozen taxonomy — exactly this re
 ## Alternatives Considered
 
 - **Reuse `PI-####` for relationship records, treating them as an extension of Company Intelligence.**
-  Rejected — `PI-0006` froze Company/Theme Intelligence as explicitly one-way and non-relational
-  ("the graph is a reporting view, not a stored data model"); silently reinterpreting that frozen
-  doctrine to admit a two-endpoint record type would violate `governance/decisions/README.md`'s own
+  Rejected — `decision_log.yaml`'s `PI-0006` entry froze Company/Theme Intelligence as explicitly
+  one-way and non-relational ("the graph is a reporting view, not a stored model"); silently
+  reinterpreting that frozen doctrine to admit a two-endpoint record type would violate
+  `governance/decisions/README.md`'s own
   rule against silently rewriting original reasoning, and would require its own separate supersession
   decision this filing is not authorized to make.
 - **File this as an `OPS-####` workstream-mechanics decision.** Rejected — this is domain-content
