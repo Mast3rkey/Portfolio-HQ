@@ -1758,6 +1758,47 @@ workstreams:
         pr: null
         status: recorded
         date: "2026-08-04"
+      - gate: rel0001-inventory-only-unit-active
+        description: >
+          `REL-0001` §I's exactly-one authorized future, separate, bounded
+          inventory-only implementation unit is active (branch
+          `claude/ws0005-m4-relationship-evidence-inventory`, draft PR — see
+          `active_branch`/`active_pr` below). Exact scope, matching §I's own
+          "may"/"may not" lists precisely: creates `relationship_validator.py`
+          (schema/taxonomy/evidence-standard validation only, zero import
+          relationship with `allocate.py`/`margin_state.py`/brokerage code,
+          passes cleanly against the still-absent `intelligence/relationships/`
+          directory) and `test_relationship_validator.py`; produces exactly
+          one retained audit artifact,
+          `governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md`,
+          inventorying relationship evidence already present in the ten
+          existing `intelligence/*COMPARISON*.md` artifacts, both Theme
+          Intelligence records, and `issuer_lookthrough.yaml`, classified
+          against §C's twelve frozen primitive relationship types, for the
+          current 27-name canonical roster (21 covered + 6 gated/deferred)
+          only. Creates zero `intelligence/relationships/*.yaml` or `.md`
+          records; conducts no external company research of any kind;
+          computes no price correlation; creates no score, ranking, or
+          composite/aggregate metric; alters no existing Company or Theme
+          Intelligence record; touches no target/tier/cap/cluster/gate/
+          ladder/trim/sell/holdings/margin/allocator/brokerage/order file;
+          implements no part of "Eureka" (`OPS-0016`); does not begin
+          Milestone 5 or any later WS-0005 milestone; creates no new
+          workstream. **Relationship-content research remains unauthorized.
+          Milestone 4 remains incomplete** — the
+          `milestone-4-portfolio-relationship-mapping` gate's own
+          `status: proposed` above is unchanged by this entry, and this unit
+          does not itself flip it. The next step after this unit completes is
+          a separately authorized first relationship-content batch (this
+          audit's own advisory batch recommendation, per `REL-0001` §I/§L,
+          is advisory only) — never automatic progression from this unit's
+          own completion. Opened as a draft PR; not merged, not independently
+          reviewed, not principal-accepted in this session — this gate
+          records the unit's activity, not its completion or any Milestone 4
+          authorization.
+        pr: 238
+        status: in_progress
+        date: "2026-08-04"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md
@@ -3464,9 +3505,38 @@ workstreams:
       cluster/cap/gate/ladder/trim/sell/margin/allocator/brokerage/order change. Milestone 4
       remains `status: proposed`, not begun; Milestone 3 remains `complete` (`PI-0037`), unedited
       and not reopened by this filing.
-    active_branch: claude/ws0005-m4-relationship-schema-freeze
-    active_pr: 237
-    last_verified_main_sha: 8f59041a22631a95d7cbfcd6445499faa89b2a5e
+
+      **`REL-0001` §I's bounded inventory-only implementation unit is this entry's own live work.**
+      Independently re-verified this session: `origin/main` fetched and pruned, confirmed at
+      `cd95a8fd21793f5d2a2383f69d6907ea6788d251` (PR #237's own merge commit, `REL-0001` effective);
+      PR #237 confirmed merged with its post-merge `test` check `completed`/`success`; zero open
+      pull requests; `governance/decisions/`/`governance/decisions.yaml` confirmed at 66 entries,
+      1:1, `decision_catalog.issues == ()`; the 27-name canonical roster confirmed unchanged (21
+      covered + 4 gated/`PI-0035`-dispositioned + 2 gated/`PI-0033`-dispositioned); the ten
+      `intelligence/*COMPARISON*.md` artifacts, both Theme Intelligence records, and
+      `issuer_lookthrough.yaml` all confirmed present and unmodified; `intelligence/relationships/`
+      confirmed absent, both before and after this unit's own work. This unit creates exactly
+      `relationship_validator.py` (schema/taxonomy/evidence-standard validation only, per §I item 1
+      — zero import relationship with `allocate.py`/`margin_state.py`/brokerage code, passes
+      cleanly against the absent `intelligence/relationships/` directory per §B's own filesystem-
+      as-index model), `test_relationship_validator.py` (§I item 2), and exactly one retained audit
+      artifact, `governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md` (§I
+      item 3), inventorying relationship evidence already present in the existing comparison
+      artifacts/Theme Intelligence/issuer look-through for the current 27-name canonical roster
+      only (§I items 4-8, §J). **This unit creates zero `intelligence/relationships/*.yaml` or
+      `.md` records, performs no external company research, computes no price correlation, creates
+      no score/ranking/composite metric, and does not begin Milestone 4, Milestone 5, or "Eureka"
+      (`OPS-0016`) — Milestone 4 remains incomplete and relationship-content research remains
+      unauthorized; the next step after this unit is a separately authorized first
+      relationship-content batch, never automatic progression.** The `active_branch`/`active_pr`
+      fields below are updated to this filing's own branch,
+      `claude/ws0005-m4-relationship-evidence-inventory`; `REL-0001`'s own already-merged branch/PR
+      history (PR #237) remains recorded above and is unedited. `active_pr` is `null` until this
+      filing's own PR number exists, per `OPS-0001`'s convention already used for every prior
+      WS-0005 filing in this log — a bounded follow-up commit sets it once the PR is opened.
+    active_branch: claude/ws0005-m4-relationship-evidence-inventory
+    active_pr: 238
+    last_verified_main_sha: cd95a8fd21793f5d2a2383f69d6907ea6788d251
     last_verified_date: "2026-08-04"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
