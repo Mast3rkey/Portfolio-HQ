@@ -28,10 +28,32 @@ pairwise records) as an evidence-ready second-batch candidate.
 synthesis, not on either company's own named risk disclosure.** This
 session directly grepped `intelligence/companies/AMZN.yaml` and
 `intelligence/companies/GOOGL.yaml` for cross-references to each other and
-found no independent, separately-stated competitive-overlap claim in
-either company's own words. Per the inventory's own §4.6 classification of
-this exact finding, this record's evidence entry is classified `inferred`,
-not `observed`.
+found no corroboration in either company's own `.yaml` data.
+
+**Correction (independent review 4856585060, PR #241):** this section's
+original text additionally claimed to have found "no independent,
+separately-stated competitive-overlap claim in either company's own
+words" — that broader claim was inaccurate, because it was drawn only
+from the `.yaml` grep above and did not check the `.md` companion files.
+`intelligence/companies/AMZN.md`'s own "Capital-priority discipline"
+section states "AMZN competes for capital priority against MSFT and
+GOOGL, the other two public-cloud sellers in this batch";
+`intelligence/companies/GOOGL.md`'s own equivalent section states GOOGL
+"compete[s] for T1's overall capital-priority ranking against MSFT... and
+against AMZN." Both are genuine, independently-stated cross-references
+from each company's own record — but they describe **capital-priority
+competition** (a portfolio-capital-allocation concept: which name should
+receive the next investment dollar), not the **customer-demand
+competitive overlap** REL-0001 §C.10 defines the `competitor` primitive
+around ("compete for the same customer demand in a materially overlapping
+product or service category"). This record does not treat that
+capital-priority language as corroborating the customer-demand
+`competitor` claim asserted here — the two are analytically distinct
+concepts, and conflating them would overstate this record's evidentiary
+basis.
+
+Per the inventory's own §4.6 classification of this exact finding, this
+record's evidence entry remains classified `inferred`, not `observed`.
 
 Separately, per REL-0001 §H's existing-evidence-reuse discipline, this
 record discloses (without asserting as evidence of the competitor claim

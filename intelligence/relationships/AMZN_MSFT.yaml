@@ -48,19 +48,40 @@ evidence:
       risk-disclosure statement from either company's own record — this
       unit directly grepped intelligence/companies/AMZN.yaml and
       intelligence/companies/MSFT.yaml this session for cross-references
-      to each other and found no independent, separately-stated
-      competitive-overlap claim in either company's own words beyond the
-      shared EU DMA proceeding URL, which is a distinct regulatory matter,
-      not itself evidence of this competitor claim — this is a lower
-      evidentiary tier than a company's own named risk disclosure, per the
-      inventory audit's own §4.6 classification of this exact finding.
-      BATCH5 §7 itself also discloses an unresolved, separate question this
-      record does not extend to: whether holding the demand-side
-      hyperscalers alongside already-covered supply-side semis-cluster
-      names (NVDA, TSM, AVGO, and others) constitutes genuine
-      diversification or a duplicated bet on the same AI-capex cycle from
-      two value-chain positions — explicitly named as "squarely a
-      Milestone 4... question, which remains unauthorized" beyond this
+      to each other and found no corroboration in either company's own
+      .yaml data. **Correction (independent review 4856585060, PR #241):**
+      this record's original disclosure additionally claimed to have found
+      "no independent, separately-stated competitive-overlap claim in
+      either company's own words" without having checked the .md
+      companion files — that broader claim was inaccurate. AMZN.md's own
+      "Capital-priority discipline" section states "AMZN competes for
+      capital priority against MSFT and GOOGL, the other two public-cloud
+      sellers in this batch"; MSFT.md's own equivalent section states "the
+      next investment dollar favors MSFT over GOOGL or AMZN... is not
+      resolved by this record." Both are genuine, independently-stated
+      cross-references from each company's own record. But they describe
+      capital-priority competition — a portfolio-capital-allocation
+      concept, which name should receive the next investment dollar — not
+      the customer-demand competitive overlap REL-0001 §C.10 defines the
+      `competitor` primitive around ("compete for the same customer demand
+      in a materially overlapping product or service category"). This
+      record does not treat that capital-priority language as
+      corroborating the customer-demand `competitor` claim asserted here —
+      the two are analytically distinct, and conflating them would
+      overstate this record's evidentiary basis. The customer-demand
+      competitive-overlap claim itself remains sourced only to BATCH5's
+      own comparative synthesis (§7) beyond the shared EU DMA proceeding
+      URL, which is a distinct regulatory matter, not itself evidence of
+      this competitor claim — a lower evidentiary tier than a company's
+      own named risk disclosure of direct competition, per the inventory
+      audit's own §4.6 classification of this exact finding. BATCH5 §7
+      itself also discloses an unresolved, separate question this record
+      does not extend to: whether holding the demand-side hyperscalers
+      alongside already-covered supply-side semis-cluster names (NVDA,
+      TSM, AVGO, and others) constitutes genuine diversification or a
+      duplicated bet on the same AI-capex cycle from two value-chain
+      positions — explicitly named as "squarely a Milestone 4... question,
+      which remains unauthorized" beyond this
       record's own narrow competitor claim. No price correlation of any
       kind was computed between AMZN and MSFT.
     disconfirming_evidence: null

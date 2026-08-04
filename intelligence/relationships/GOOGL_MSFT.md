@@ -28,15 +28,38 @@ pairwise records) as an evidence-ready second-batch candidate.
 synthesis, not on either company's own named risk disclosure.** This
 session directly grepped `intelligence/companies/GOOGL.yaml` and
 `intelligence/companies/MSFT.yaml` for cross-references to each other and
-found no independent, separately-stated competitive-overlap claim in
-either company's own words beyond the shared EU DMA cloud-gatekeeper
-proceeding (a distinct regulatory matter, not itself evidence of this
-competitor claim). Per the inventory's own §4.6 classification of this
-exact finding, this record's evidence entry is classified `inferred`, not
-`observed` — a lower evidentiary tier than, for example, the batch's own
-PANW/CRWD competitor evidence (out of scope here, as CRWD is non-canonical),
-which the inventory found directly stated in each company's own risk
-disclosures.
+found no corroboration in either company's own `.yaml` data.
+
+**Correction (independent review 4856585060, PR #241):** this section's
+original text additionally claimed to have found "no independent,
+separately-stated competitive-overlap claim in either company's own
+words" — that broader claim was inaccurate, because it was drawn only
+from the `.yaml` grep above and did not check the `.md` companion files.
+`intelligence/companies/GOOGL.md`'s own "Capital-priority discipline"
+section states GOOGL "compete[s] for T1's overall capital-priority
+ranking against MSFT"; `intelligence/companies/MSFT.md`'s own equivalent
+section states "the next investment dollar favors MSFT over GOOGL or
+AMZN... is not resolved by this record." Both are genuine,
+independently-stated cross-references from each company's own record —
+but they describe **capital-priority competition** (a
+portfolio-capital-allocation concept: which name should receive the next
+investment dollar), not the **customer-demand competitive overlap**
+REL-0001 §C.10 defines the `competitor` primitive around ("compete for
+the same customer demand in a materially overlapping product or service
+category"). This record does not treat that capital-priority language as
+corroborating the customer-demand `competitor` claim asserted here — the
+two are analytically distinct concepts, and conflating them would
+overstate this record's evidentiary basis.
+
+The customer-demand competitive-overlap claim itself remains sourced only
+to BATCH5's own comparative synthesis (§7), beyond the shared EU DMA
+cloud-gatekeeper proceeding (a distinct regulatory matter, not itself
+evidence of this competitor claim). Per the inventory's own §4.6
+classification of this exact finding, this record's evidence entry
+remains classified `inferred`, not `observed` — a lower evidentiary tier
+than, for example, the batch's own PANW/CRWD competitor evidence (out of
+scope here, as CRWD is non-canonical), which the inventory found directly
+stated in each company's own risk disclosures.
 
 Neither `intelligence/companies/GOOGL.yaml`/`GOOGL.md` nor
 `intelligence/companies/MSFT.yaml`/`MSFT.md` was read for the purpose of

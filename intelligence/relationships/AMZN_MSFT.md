@@ -30,14 +30,37 @@ pairwise records) as an evidence-ready second-batch candidate.
 synthesis, not on either company's own named risk disclosure.** This
 session directly grepped `intelligence/companies/AMZN.yaml` and
 `intelligence/companies/MSFT.yaml` for cross-references to each other and
-found no independent, separately-stated competitive-overlap claim in
-either company's own words — the only cross-reference located is a shared
-EU DMA cloud-gatekeeper preliminary regulatory-proceeding URL naming both
-Azure and AWS (GOOGL/META do not appear in this specific proceeding), which
-is a distinct `regulatory_or_reimbursement_dependency`-shaped matter, not
-itself evidence of this competitor claim. Per the inventory's own §4.4/§4.6
-classifications, this record's evidence entry is classified `inferred`,
-not `observed`.
+found no corroboration in either company's own `.yaml` data — the only
+cross-reference located there is a shared EU DMA cloud-gatekeeper
+preliminary regulatory-proceeding URL naming both Azure and AWS (GOOGL/META
+do not appear in this specific proceeding), which is a distinct
+`regulatory_or_reimbursement_dependency`-shaped matter, not itself evidence
+of this competitor claim.
+
+**Correction (independent review 4856585060, PR #241):** this section's
+original text additionally claimed to have found "no independent,
+separately-stated competitive-overlap claim in either company's own
+words" — that broader claim was inaccurate, because it was drawn only
+from the `.yaml` grep above and did not check the `.md` companion files.
+`intelligence/companies/AMZN.md`'s own "Capital-priority discipline"
+section states "AMZN competes for capital priority against MSFT and
+GOOGL, the other two public-cloud sellers in this batch";
+`intelligence/companies/MSFT.md`'s own equivalent section states "the
+next investment dollar favors MSFT over GOOGL or AMZN... is not resolved
+by this record." Both are genuine, independently-stated cross-references
+from each company's own record — but they describe **capital-priority
+competition** (a portfolio-capital-allocation concept: which name should
+receive the next investment dollar), not the **customer-demand
+competitive overlap** REL-0001 §C.10 defines the `competitor` primitive
+around ("compete for the same customer demand in a materially overlapping
+product or service category"). This record does not treat that
+capital-priority language as corroborating the customer-demand
+`competitor` claim asserted here — the two are analytically distinct
+concepts, and conflating them would overstate this record's evidentiary
+basis.
+
+Per the inventory's own §4.4/§4.6 classifications, this record's evidence
+entry remains classified `inferred`, not `observed`.
 
 Neither `intelligence/companies/AMZN.yaml`/`AMZN.md` nor
 `intelligence/companies/MSFT.yaml`/`MSFT.md` was read for the purpose of

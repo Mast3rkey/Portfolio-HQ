@@ -89,6 +89,25 @@ for "GNRC"/"Generac"; and `AMZN.yaml`/`GOOGL.yaml`/`MSFT.yaml` cross-references 
 `competitor` records) and found **zero independent corroboration in every case** — confirming, not
 merely trusting, the one-sided/single-source-synthesis sourcing disclosed in every record below.
 
+**Bounded correction (same PR, independent review 4856585060):** the paragraph immediately above,
+as originally filed, was inaccurate for the `competitor` triad specifically. Its grep for that
+triad checked only `AMZN.yaml`/`GOOGL.yaml`/`MSFT.yaml` — unlike the AVGO/GNRC clauses in the same
+sentence, which named both `.yaml` **and** `.md` files for every counterparty — and the "zero
+independent corroboration in every case" claim did not hold once each company's own `.md` record is
+included: `AMZN.md`, `GOOGL.md`, and `MSFT.md` each contain a "capital-priority discipline" section
+in which that company explicitly names the other two as competing for capital-priority ranking
+(e.g. `AMZN.md`: "AMZN competes for capital priority against MSFT and GOOGL"; `GOOGL.md`: GOOGL
+"compete[s] for T1's overall capital-priority ranking against MSFT... and against AMZN"; `MSFT.md`:
+"the next investment dollar favors MSFT over GOOGL or AMZN... is not resolved by this record"). That
+capital-priority language is a portfolio-capital-allocation concept — which name should receive the
+next investment dollar — analytically distinct from the customer-demand competitive overlap
+REL-0001 §C.10 defines the `competitor` primitive around, and the three `competitor` records'
+`evidence[0].uncertainty` fields and `.md` "Source-access disclosure" sections now state this
+distinction explicitly rather than asserting an unqualified "zero corroboration." This finding is
+disclosure-accuracy only — it does not change any pair's `relationship_type`, does not upgrade any
+`evidence_classification` from `inferred`, and does not affect the AVGO/GNRC triads' own accurate
+"zero corroboration" findings, which the review independently re-confirmed as sound.
+
 ### Alphabetical filename correction (mechanical, §B compliance)
 
 `REL-0001` §B requires every relationship record's filename and `tickers:` field to use strict
@@ -153,13 +172,20 @@ own risk-disclosure statement.
   analytical synthesis, not a confirmed named joint contract linking GNRC to any one of the three by
   name; GNRC.md §13 states directly that no correlation scan against `power_infra` has ever been
   performed by any prior repository decision.
-- **`GOOGL_MSFT`/`AMZN_MSFT`/`AMZN_GOOGL`**: disclosed from a single batch-level comparative source
-  only (`BATCH5` §7), not from any individual company's own risk disclosure. This session directly
-  grepped each pair's two company records for cross-references to each other and found no independent,
-  separately-stated competitive-overlap claim in any of the three companies' own words (the only
-  cross-reference located — a shared EU DMA regulatory-proceeding URL naming AMZN and MSFT — is a
-  distinct regulatory matter, disclosed as context in `AMZN_MSFT.md`, not folded into the competitor
-  claim itself).
+- **`GOOGL_MSFT`/`AMZN_MSFT`/`AMZN_GOOGL`**: the customer-demand competitive-overlap claim (REL-0001
+  §C.10's own definition of the `competitor` primitive) is disclosed from a single batch-level
+  comparative source only (`BATCH5` §7), not from any individual company's own risk disclosure — this
+  session directly grepped each pair's two `.yaml` files for cross-references to each other and found
+  no corroboration there (the only cross-reference located — a shared EU DMA regulatory-proceeding URL
+  naming AMZN and MSFT — is a distinct regulatory matter, disclosed as context in `AMZN_MSFT.md`, not
+  folded into the competitor claim itself). **Bounded correction (independent review 4856585060):**
+  each company's own `.md` record does independently name the other two, but for **capital-priority
+  competition** (which name should receive the next investment dollar), not customer-demand
+  competitive overlap — `AMZN.md`, `GOOGL.md`, and `MSFT.md` each contain a "capital-priority
+  discipline" section naming the other two batch members as capital-priority competitors. This
+  distinct concept does not corroborate the customer-demand `competitor` claim these three records
+  assert, and is not treated as if it did — see each record's own `evidence[0].uncertainty` and `.md`
+  Source-access disclosure for the full, corrected statement.
 
 ### C. Materiality caveats carried forward, not smoothed over
 
