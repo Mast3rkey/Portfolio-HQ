@@ -349,7 +349,7 @@ workstreams:
       completion/merge gate on that future PR, not a current blocker to
       opening it.
     active_branch: claude/eureka-architecture-reconciliation-93det0
-    active_pr: null
+    active_pr: 236
     last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
     last_verified_date: "2026-08-04"
     authorized_by: >
@@ -435,7 +435,7 @@ workstreams:
       Depends on WS-0002 reaching a conclusion; WS-0002 itself is not yet
       authorized to begin implementation.
     active_branch: claude/eureka-architecture-reconciliation-93det0
-    active_pr: null
+    active_pr: 236
     last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
     last_verified_date: "2026-08-04"
     authorized_by: null
@@ -3409,7 +3409,7 @@ workstreams:
       separately authorized unit, not addressed by this filing beyond disclosure and this entry's
       own necessary update.
     active_branch: claude/eureka-architecture-reconciliation-93det0
-    active_pr: null
+    active_pr: 236
     last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
     last_verified_date: "2026-08-04"
     authorized_by: >
@@ -4452,7 +4452,7 @@ workstreams:
       independent review; it creates no new authority and does not resolve
       the PR #217 evidence-retention gap disclosed above.
     active_branch: claude/eureka-architecture-reconciliation-93det0
-    active_pr: null
+    active_pr: 236
     last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
     last_verified_date: "2026-08-04"
     authorized_by: >
@@ -5911,7 +5911,7 @@ workstreams:
       exact-head review and explicit principal acceptance are pending, same as any other
       governance filing.
     active_branch: claude/eureka-architecture-reconciliation-93det0
-    active_pr: null
+    active_pr: 236
     last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
     last_verified_date: "2026-08-04"
     authorized_by: >
@@ -6058,7 +6058,7 @@ workstreams:
       begin by this entry. No blocker exists on recording this roadmap
       itself.
     active_branch: claude/eureka-architecture-reconciliation-93det0
-    active_pr: null
+    active_pr: 236
     last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
     last_verified_date: "2026-08-04"
     authorized_by: >
