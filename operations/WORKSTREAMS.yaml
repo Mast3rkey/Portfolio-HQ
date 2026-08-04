@@ -1796,7 +1796,7 @@ workstreams:
           reviewed, not principal-accepted in this session — this gate
           records the unit's activity, not its completion or any Milestone 4
           authorization.
-        pr: null
+        pr: 238
         status: in_progress
         date: "2026-08-04"
     evidence_refs:
@@ -3535,7 +3535,7 @@ workstreams:
       filing's own PR number exists, per `OPS-0001`'s convention already used for every prior
       WS-0005 filing in this log — a bounded follow-up commit sets it once the PR is opened.
     active_branch: claude/ws0005-m4-relationship-evidence-inventory
-    active_pr: null
+    active_pr: 238
     last_verified_main_sha: cd95a8fd21793f5d2a2383f69d6907ea6788d251
     last_verified_date: "2026-08-04"
     authorized_by: >
