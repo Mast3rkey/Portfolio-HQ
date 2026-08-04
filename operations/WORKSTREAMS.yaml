@@ -3745,7 +3745,7 @@ workstreams:
       filing's own PR number exists, per `OPS-0001`'s convention already used for every prior
       WS-0005 filing in this log — a bounded follow-up commit sets it once the PR is opened.
     active_branch: claude/rel0003-remaining-eight-relationships
-    active_pr: null
+    active_pr: 241
     last_verified_main_sha: 7305dc21bf6e7f30e62d75e70b82275ef3530d09
     last_verified_date: "2026-08-04"
     authorized_by: >
