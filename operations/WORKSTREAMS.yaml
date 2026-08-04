@@ -3465,7 +3465,7 @@ workstreams:
       remains `status: proposed`, not begun; Milestone 3 remains `complete` (`PI-0037`), unedited
       and not reopened by this filing.
     active_branch: claude/ws0005-m4-relationship-schema-freeze
-    active_pr: null
+    active_pr: 237
     last_verified_main_sha: 8f59041a22631a95d7cbfcd6445499faa89b2a5e
     last_verified_date: "2026-08-04"
     authorized_by: >
