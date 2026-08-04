@@ -1,0 +1,109 @@
+tickers: [AMZN, MSFT]
+relationship_type: competitor
+symmetric: true
+relationship_status: current
+decision_served:
+  - duplicate_exposure_detection
+  - stress_testing
+evidence:
+  - claim: >
+      Amazon Web Services (AMZN) and Microsoft Azure (MSFT) are two of the
+      three companies this repository's own WS-0005 Milestone 3 Batch 5
+      comparison artifact identifies as "duplicat[ing] each other to a real
+      degree as public-cloud sellers competing for the same enterprise
+      AI-infrastructure spending — this is the batch's clearest overlap"
+      (the third being GOOGL, recorded separately per REL-0001 §D's
+      one-pairwise-record-per-pair rule). Within that overlap, the batch's
+      own comparative synthesis distinguishes each company's competitive
+      approach as genuinely different rather than three identical
+      businesses measured three ways — AWS's differentiator is
+      scale/profitability; Azure's is enterprise-software-bundled
+      distribution (via Microsoft 365/Dynamics). Separately, AMZN and MSFT
+      are also both named in the same specific EU DMA cloud-gatekeeper
+      preliminary regulatory matter (Azure and AWS both named; GOOGL/META
+      do not appear in this specific proceeding) — a distinct
+      regulatory_or_reimbursement_dependency finding, not itself part of
+      this competitor claim, but disclosed here as related context per
+      REL-0001 §H's existing-evidence-reuse discipline.
+    source: >
+      intelligence/BATCH5_HYPERSCALER_AI_INFRASTRUCTURE_COMPARISON.md §7
+      ("Genuine diversification versus duplicated exposure"): "MSFT, GOOGL,
+      and AMZN duplicate each other to a real degree as public-cloud
+      sellers competing for the same enterprise AI-infrastructure
+      spending... Within the three cloud sellers, AWS's scale/profitability,
+      Azure's enterprise-software-bundled distribution (via Microsoft
+      365/Dynamics), and Google Cloud's TPU-based differentiation each
+      represent a genuinely different competitive approach..."; §6
+      ("Antitrust and regulatory exposure — correlated or company-specific?")
+      for the separately-noted shared EU DMA proceeding.
+    inspected_source_type: secondary
+    source_date: "2026-07-26"
+    effective_date: "2026-08-04"
+    evidence_classification: inferred
+    confidence: moderate
+    materiality: high
+    uncertainty: >
+      This claim rests on BATCH5's own comparative synthesis of each
+      company's already-vetted individual evidence, not on a single named
+      risk-disclosure statement from either company's own record — this
+      unit directly grepped intelligence/companies/AMZN.yaml and
+      intelligence/companies/MSFT.yaml this session for cross-references
+      to each other and found no corroboration in either company's own
+      .yaml data. **Correction (independent review 4856585060, PR #241):**
+      this record's original disclosure additionally claimed to have found
+      "no independent, separately-stated competitive-overlap claim in
+      either company's own words" without having checked the .md
+      companion files — that broader claim was inaccurate. AMZN.md's own
+      "Capital-priority discipline" section states "AMZN competes for
+      capital priority against MSFT and GOOGL, the other two public-cloud
+      sellers in this batch"; MSFT.md's own equivalent section states "the
+      next investment dollar favors MSFT over GOOGL or AMZN... is not
+      resolved by this record." Both are genuine, independently-stated
+      cross-references from each company's own record. But they describe
+      capital-priority competition — a portfolio-capital-allocation
+      concept, which name should receive the next investment dollar — not
+      the customer-demand competitive overlap REL-0001 §C.10 defines the
+      `competitor` primitive around ("compete for the same customer demand
+      in a materially overlapping product or service category"). This
+      record does not treat that capital-priority language as
+      corroborating the customer-demand `competitor` claim asserted here —
+      the two are analytically distinct, and conflating them would
+      overstate this record's evidentiary basis. The customer-demand
+      competitive-overlap claim itself remains sourced only to BATCH5's
+      own comparative synthesis (§7) beyond the shared EU DMA proceeding
+      URL, which is a distinct regulatory matter, not itself evidence of
+      this competitor claim — a lower evidentiary tier than a company's
+      own named risk disclosure of direct competition, per the inventory
+      audit's own §4.6 classification of this exact finding. BATCH5 §7
+      itself also discloses an unresolved, separate question this record
+      does not extend to: whether holding the demand-side hyperscalers
+      alongside already-covered supply-side semis-cluster names (NVDA,
+      TSM, AVGO, and others) constitutes genuine diversification or a
+      duplicated bet on the same AI-capex cycle from two value-chain
+      positions — explicitly named as "squarely a Milestone 4... question,
+      which remains unauthorized" beyond this
+      record's own narrow competitor claim. No price correlation of any
+      kind was computed between AMZN and MSFT.
+    disconfirming_evidence: null
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-04"
+  next_due: "2026-11-02"
+  log:
+    - date: "2026-08-04"
+      note: >
+        Record created under governance/decisions/REL-0001-ws0005-milestone4-relationship-schema-taxonomy-evidence-standard-and-inventory-authorization.md
+        (frozen schema/taxonomy/evidence standard) and
+        governance/decisions/REL-0003-ws0005-milestone4-second-relationship-content-batch-remaining-eight-pairs.md
+        (this batch's own authorization), following the first-batch
+        candidate recommendation in
+        governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md
+        §9. Uses only evidence already identified in that inventory and in
+        intelligence/BATCH5_HYPERSCALER_AI_INFRASTRUCTURE_COMPARISON.md — no
+        external research was performed. This is one of three separate
+        pairwise competitor records recording the same batch-level
+        three-way overlap finding (GOOGL_MSFT, AMZN_MSFT, AMZN_GOOGL), per
+        REL-0001 §D's rule that a symmetric type is recorded once per pair,
+        never once per group. No correlation of any kind was computed.
+        Neither AMZN.yaml/AMZN.md nor MSFT.yaml/MSFT.md was modified by
+        this unit.
