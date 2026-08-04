@@ -51,7 +51,7 @@ evidence:
       confirmed TSM's own record does not name AVGO or Broadcom) — all
       independently re-inspected this session.
     inspected_source_type: secondary
-    source_date: "2026-07-28"
+    source_date: "2026-07-26"
     effective_date: "2026-08-04"
     evidence_classification: inferred
     confidence: moderate
