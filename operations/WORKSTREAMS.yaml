@@ -4044,7 +4044,7 @@ workstreams:
       convention already used for every prior WS-0005 filing in this log — a bounded follow-up
       commit sets it once the PR is opened.
     active_branch: claude/ws0005-m4-completion-s91zpx
-    active_pr: null
+    active_pr: 244
     last_verified_main_sha: 7562c49fe0a2a52db42c7f40e5609c452d78af0e
     last_verified_date: "2026-08-04"
     authorized_by: >
