@@ -300,6 +300,18 @@ workstreams:
         pr: null
         status: recorded
         date: "2026-08-03"
+      - gate: ops0016-eureka-read-lane-cross-reference-recorded
+        description: >
+          OPS-0016 filed, naming the future unified application "Eureka" and
+          recording its four conceptual operating lanes. This entry's Phase
+          Two status/report layer is identified as data surface for Eureka's
+          §B read lane. Additive only — no change to status, priority,
+          authorized_scope, prohibited_scope, or completion_criteria; no
+          code, dashboard, or implementation authority is granted or
+          expanded by this milestone.
+        pr: null
+        status: recorded
+        date: "2026-08-04"
     evidence_refs:
       - docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md
       - governance/decisions/OPS-0002-unified-core-planning-and-audit-gate.md
@@ -309,6 +321,7 @@ workstreams:
       - governance/decisions/OPS-0005-ws0002-phase-two-reactivation-authorization.md
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/decisions/OPS-0015-personal-first-unified-app-roadmap.md
+      - governance/decisions/OPS-0016-eureka-identity-mobile-cloud-architecture-roadmap.md
     next_action: >
       Open the single bounded Phase Two implementation PR authorized by
       OPS-0005 §3 (one status/report module, its tests, minimal doc pointer
@@ -335,16 +348,17 @@ workstreams:
       The Fable Audit Gate #2 + principal-acceptance requirement is a
       completion/merge gate on that future PR, not a current blocker to
       opening it.
-    active_branch: claude/ops0015-personal-app-roadmap
-    active_pr: 234
-    last_verified_main_sha: 536e71f58857f2e55d98169b2e829e392c27a016
-    last_verified_date: "2026-07-25"
+    active_branch: claude/eureka-architecture-reconciliation-93det0
+    active_pr: 236
+    last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
+    last_verified_date: "2026-08-04"
     authorized_by: >
       Principal authorization (session_01RwQaRKJASFVViAP2nbVA73, explicit,
       bounded to the Phase Two read-only status/report layer); OPS-0005;
       planning-and-audit completion recorded by OPS-0003, provenance
       reconciled by OPS-0004; PR #149 merge and register sync (F-2/F-3
-      reconciliation) recorded by OPS-0006
+      reconciliation) recorded by OPS-0006; OPS-0016 additive cross-reference
+      recorded by a separate, later principal authorization
     supersedes: null
     superseded_by: null
 
@@ -394,9 +408,22 @@ workstreams:
         pr: null
         status: recorded
         date: "2026-08-03"
+      - gate: ops0016-eureka-lane2-cross-reference-recorded
+        description: >
+          OPS-0016 filed, naming the future unified application "Eureka."
+          This workstream's eventual daily allocation-check UX is identified
+          as overlapping Eureka's §B advisory-allocation lane (lane 2) and
+          Phase G conversational operator, both still separately unauthorized.
+          Additive only — no change to status, priority, authorized_scope,
+          prohibited_scope, or completion_criteria; does not activate this
+          workstream.
+        pr: null
+        status: recorded
+        date: "2026-08-04"
     evidence_refs:
       - docs/PORTFOLIO_HQ_UNIFIED_CORE_BLUEPRINT_V1.md
       - governance/decisions/OPS-0015-personal-first-unified-app-roadmap.md
+      - governance/decisions/OPS-0016-eureka-identity-mobile-cloud-architecture-roadmap.md
     next_action: >
       None authorized. Detailed design work is deferred until WS-0002
       reaches a conclusion on which information is economically
@@ -407,10 +434,10 @@ workstreams:
     blocker: >
       Depends on WS-0002 reaching a conclusion; WS-0002 itself is not yet
       authorized to begin implementation.
-    active_branch: claude/ops0015-personal-app-roadmap
-    active_pr: 234
-    last_verified_main_sha: 3c31c2e9d36d55defc95d89c90ab041f31abf251
-    last_verified_date: "2026-07-24"
+    active_branch: claude/eureka-architecture-reconciliation-93det0
+    active_pr: 236
+    last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
+    last_verified_date: "2026-08-04"
     authorized_by: null
     supersedes: null
     superseded_by: null
@@ -1691,6 +1718,21 @@ workstreams:
         pr: null
         status: proposed
         date: "2026-07-25"
+      - gate: ops0016-eureka-roadmap-cross-reference-recorded
+        description: >
+          OPS-0016 filed, naming the future unified application "Eureka" and
+          recording its architecture, evidence-ingestion boundaries, and a
+          seventeen-step future sequencing order. This workstream's
+          Milestone 4 (relationship mapping) is identified as sequencing
+          step 3-4 and its eventual policy-recommendation output (Milestones
+          8-9) as the future opportunity-cost comparison function OPS-0016
+          §H records as advisory-only. Additive only — no change to status,
+          priority, authorized_scope, prohibited_scope, or
+          completion_criteria; does not authorize Milestone 4 or advance
+          Milestone 3's own already-complete determination (PI-0037).
+        pr: null
+        status: recorded
+        date: "2026-08-04"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md
@@ -1747,6 +1789,7 @@ workstreams:
       - "A separate, explicitly bounded proposal-only session (Research Wave Protocol design and zero-based Batch 5 scope review) independently re-verified, at its own preflight: origin/main fetched and pruned, identical to local HEAD at 1aba3e74d3847aa278b774f3b0956c786b6ee480 (PR #167's merge commit); zero open pull requests; intelligence_validator.py run directly against intelligence/companies/ confirming 20 files, all valid; governance/decisions.yaml carrying exactly 36 entries, confirming OPS-0008 and PI-0027 as the next unused numbers in their respective series. That session's proposal recommended a Research Wave Protocol v1 and a five-candidate Batch 5 comparison (major pharmaceuticals; the three uncovered T1 AI-infra names alone; those three plus AMZN and EQIX; enterprise software; a three-name safety fallback); the principal approved the protocol and a fourth variant of the batch scope — MSFT, GOOGL, META, and AMZN, deferring EQIX — with amendments from an independent GPT-5.6 Thinking review, recorded in OPS-0008 and PI-0027 respectively."
       - "OPS-0008 and PI-0027 filed together in one governance PR on branch claude/ws-0005-protocol-design-kti23b, base origin/main at 1aba3e74d3847aa278b774f3b0956c786b6ee480 — not yet merged, not yet independently reviewed, not yet effective."
       - "Bounded correction, same PR #168, same session: an independent GPT-5.6 Thinking exact-head review of head 274d43000eb6c049faa7e9e9bad5ef9d02b9c11d returned CHANGES REQUIRED on two findings — OPS-0008's automatic-scoring/allocator-coupling/next-wave-authority boundaries stated only by cross-reference, and PI-0027's business-quality-versus-capital-priority/next-best-use-of-capital requirement being ambiguous in the original §B/§C text. Resolved by adding OPS-0008 new §12 (Hard boundaries, standalone and explicit) and PI-0027 new §B.23/§C.10 (capital-priority comparison, per-company and batch-level, advisory and score-free). No scope, file count, Batch 5 company list, EQIX-deferred status, or effectiveness-on-merge condition changed by this correction. Still not yet merged, not yet independently re-reviewed at the corrected head, not yet effective."
+      - governance/decisions/OPS-0016-eureka-identity-mobile-cloud-architecture-roadmap.md
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -3365,10 +3408,10 @@ workstreams:
       after PR #233 and PR #234 had each already merged) — a Lane M hygiene item for a future,
       separately authorized unit, not addressed by this filing beyond disclosure and this entry's
       own necessary update.
-    active_branch: claude/ws0005-m3-completion-determination
-    active_pr: 235
-    last_verified_main_sha: 926d7a4fdb740e9efc066f1563e2f45397024357
-    last_verified_date: "2026-08-03"
+    active_branch: claude/eureka-architecture-reconciliation-93det0
+    active_pr: 236
+    last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
+    last_verified_date: "2026-08-04"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
       roadmap; execution of Milestones 1-2 only, per its 2026-07-25
@@ -4329,6 +4372,20 @@ workstreams:
         pr: null
         status: recorded
         date: "2026-08-03"
+      - gate: ops0016-eureka-mobile-cloud-cross-reference-recorded
+        description: >
+          OPS-0016 filed, naming the future unified application "Eureka" and
+          recording its mobile/cloud-execution architecture (§B) — GitHub as
+          source of truth, cloud execution from a clean checkout of an exact
+          SHA, the phone as eventual ordinary control surface, and the
+          disclosure discipline (repository, branch, exact SHA, run ID,
+          time, input freshness, validation state, abstention reasons) this
+          workstream's dashboard already applies. Additive only — no code or
+          dashboard expansion is authorized by this milestone, and existing
+          prohibited_scope is unmodified.
+        pr: null
+        status: recorded
+        date: "2026-08-04"
     evidence_refs:
       - governance/decisions/OPS-0011-repository-native-dashboard-capability-authorization.md
       - governance/decisions/OPS-0012-dashboard-2-modern-responsive-experience-authorization.md
@@ -4394,10 +4451,10 @@ workstreams:
       M factual-synchronization unit itself beyond its own validation and
       independent review; it creates no new authority and does not resolve
       the PR #217 evidence-retention gap disclosed above.
-    active_branch: claude/ops0015-personal-app-roadmap
-    active_pr: 234
-    last_verified_main_sha: 1e36b57e235f584cd88131c1bcd2587751b44452
-    last_verified_date: "2026-08-02"
+    active_branch: claude/eureka-architecture-reconciliation-93det0
+    active_pr: 236
+    last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
+    last_verified_date: "2026-08-04"
     authorized_by: >
       Phase 1: governance/decisions/OPS-0011-repository-native-dashboard-capability-authorization.md,
       accepted and merged to main on 2026-07-31 (merge commit
@@ -5762,6 +5819,22 @@ workstreams:
         pr: 227
         status: merged
         date: "2026-08-02"
+      - gate: ops0016-eureka-chart-framework-cross-reference-recorded
+        description: >
+          OPS-0016 filed, naming the future unified application "Eureka" and
+          situating this workstream's CHART-0001/CHART-0002-governed chart
+          evidence framework within it without re-authorizing or duplicating
+          either — recorded as Eureka's chart-evidence surface (§D) — plus a
+          future, broader chart-package design candidate (§E: fundamentals,
+          valuation, price/risk, portfolio fit) and the four governed visual
+          zones concept (§G), both design candidates only, not authorized by
+          recording them. Additive only — no change to status, priority,
+          authorized_scope, prohibited_scope, or completion_criteria; no
+          image, Stage 1, or Stage 2 record is created or implied by this
+          milestone.
+        pr: null
+        status: recorded
+        date: "2026-08-04"
     evidence_refs:
       - governance/decisions/CHART-0002-bounded-multi-chart-evidence-framework-proposal.md
       - governance/decisions/CHART-0001-chart-evidence-pilot-governance-proposal.md
@@ -5837,10 +5910,10 @@ workstreams:
       **On this filing's own `OPS-0014`/self-reference scope**: none — its own independent
       exact-head review and explicit principal acceptance are pending, same as any other
       governance filing.
-    active_branch: claude/ops0014-routine-sync-and-completion-roadmap
-    active_pr: 231
-    last_verified_main_sha: 2816cc1dde49ec089fd316cd412b1261d8468d3d
-    last_verified_date: "2026-08-03"
+    active_branch: claude/eureka-architecture-reconciliation-93det0
+    active_pr: 236
+    last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
+    last_verified_date: "2026-08-04"
     authorized_by: >
       Controlling principal directive, this authorizing implementation
       session (CHART PILOT — CHART-0002 Stage 1 First 19 Daily Charts),
@@ -5911,11 +5984,26 @@ workstreams:
         pr: null
         status: recorded
         date: "2026-08-03"
+      - gate: ops0016-eureka-sequencing-cross-reference-recorded
+        description: >
+          OPS-0016 filed, naming the future unified application "Eureka" and
+          recording a seventeen-step future sequencing order (§K) that
+          restates, without altering, this workstream's own fifteen-step
+          roadmap and abstention criteria as steps 12-15 of that broader
+          order (steps 1-11 precede this workstream's scope; steps 16-17
+          cover margin research and commercialization, both separately
+          gated). Additive only — no change to status, no implementation
+          authority, no acceleration of any of the fifteen roadmap steps
+          above.
+        pr: null
+        status: recorded
+        date: "2026-08-04"
     evidence_refs:
       - governance/decisions/OPS-0014-routine-operational-sync.md
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md
       - governance/decisions/OPS-0015-personal-first-unified-app-roadmap.md
+      - governance/decisions/OPS-0016-eureka-identity-mobile-cloud-architecture-roadmap.md
     next_action: >
       None authorized. The next concrete step toward this workstream's
       eventual purpose is whatever WS-0005's own next authorized unit is
@@ -5969,10 +6057,10 @@ workstreams:
       separate, explicit principal authorization — none is authorized to
       begin by this entry. No blocker exists on recording this roadmap
       itself.
-    active_branch: claude/ops0015-personal-app-roadmap
-    active_pr: 234
-    last_verified_main_sha: 2816cc1dde49ec089fd316cd412b1261d8468d3d
-    last_verified_date: "2026-08-03"
+    active_branch: claude/eureka-architecture-reconciliation-93det0
+    active_pr: 236
+    last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
+    last_verified_date: "2026-08-04"
     authorized_by: >
       OPS-0014 (this same governance filing) — recording authority only,
       per the controlling principal's explicit authorization to record a
