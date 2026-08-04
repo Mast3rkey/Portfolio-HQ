@@ -1770,7 +1770,7 @@ workstreams:
           milestone-5-zero-based-classification-and-tier-architecture-review
           gate's own status: proposed above, which remains accurate for the
           milestone as a whole.**
-        pr: null
+        pr: 245
         status: complete
         date: "2026-08-04"
       - gate: milestone-6-blind-classification
@@ -4103,7 +4103,7 @@ workstreams:
       convention already used for every prior WS-0005 filing in this log — a bounded follow-up
       commit sets it once the PR is opened.
     active_branch: claude/m5-classification-question-inventory-vt3mdo
-    active_pr: null
+    active_pr: 245
     last_verified_main_sha: 09fc72b4671fb18d9b3a4c2f1f1141657660ad35
     last_verified_date: "2026-08-04"
     authorized_by: >
