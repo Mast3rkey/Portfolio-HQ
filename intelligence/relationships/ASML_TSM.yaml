@@ -1,0 +1,104 @@
+tickers: [ASML, TSM]
+relationship_type: capital_spending_dependency
+symmetric: false
+subject: ASML
+object: TSM
+direction: >
+  ASML (subject) is capital-spending-dependent on TSM (object): ASML's own
+  Company Intelligence record discloses TSMC at roughly 24% of ASML's net
+  sales (secondary-sourced, not yet independently traced to ASML's own 20-F
+  disclosure) — ASML's revenue is materially dependent on TSM's (and the
+  wider foundry/IDM class's) capital-expenditure cycle for lithography
+  equipment purchases. No TSM-side dependency on ASML is asserted as a
+  distinct claim by this record (TSM's own disclosed capital-intensity and
+  equipment-supply risk factors are cited only as corroborating context for
+  the shared mechanism, not as a reverse-direction dependency claim).
+relationship_status: current
+decision_served:
+  - duplicate_exposure_detection
+  - thesis_monitoring
+evidence:
+  - claim: >
+      ASML's own Company Intelligence record discloses "extreme customer and
+      geographic concentration," naming TSMC at approximately 24% of net
+      sales, the top two customers combined at approximately 38%, and the
+      top ten customers at over 80% of revenue — explicitly flagged in that
+      record as "secondary sources (not independently traced to ASML's own
+      20-F disclosure this pass)" and noted as requiring primary-source
+      verification. Separately, this repository's own comparison-artifact
+      research (Batch 1, semis equipment; Batch 3, semis compute/
+      connectivity §16) independently found that ASML's revenue is exposed
+      to the same semiconductor fabrication-capacity capital-expenditure
+      ("WFE") cycle that drives TSM's own capex, and that "AVGO/AMD/MRVL
+      fabless growth indirectly drives TSMC's... capacity expansion, which
+      in turn drives foundry purchases of ASML/AMAT/KLAC/LRCX equipment."
+      TSM's own record independently corroborates the scale and reality of
+      that capex cycle (though not ASML specifically as a named recipient):
+      Q2 2026 capital expenditure represented approximately 39% of that
+      quarter's revenue, amid a full-year 2026 guidance range of $60-64
+      billion, and TSM's own record discloses "raw-material and
+      equipment-supply constraints" as a disclosed risk-factor category
+      without naming ASML specifically.
+    source: >
+      intelligence/companies/ASML.yaml (risk entry, "Extreme customer and
+      geographic concentration"); intelligence/BATCH1_SEMIS_EQUIPMENT_COMPARISON.md
+      §5 ("Shared semiconductor-capex drivers"); intelligence/BATCH3_SEMIS_COMPUTE_CONNECTIVITY_COMPARISON.md
+      §16 ("Cross-batch structural and correlated-risk overlap with Batch
+      1"); intelligence/companies/TSM.yaml (capital-expenditure risk entry)
+      and TSM.md ("Extreme capital intensity," "Raw-material and
+      equipment-supply constraints") — all independently re-inspected this
+      session.
+    inspected_source_type: secondary
+    source_date: "2026-07-25"
+    effective_date: "2026-08-04"
+    evidence_classification: inferred
+    confidence: moderate
+    materiality: high
+    uncertainty: >
+      ASML's own record explicitly flags its TSMC-concentration figure
+      (~24% of net sales) as secondary-sourced and not yet independently
+      traced to ASML's own 20-F disclosure — this record inherits that same
+      unresolved verification gap rather than upgrading it. TSM's own record
+      does not name ASML specifically anywhere as an equipment supplier —
+      independently confirmed by this session's direct grep of TSM.yaml and
+      TSM.md for "ASML," which returned zero matches; its "raw-material and
+      equipment-supply constraints" risk category is disclosed generically.
+      The underlying mechanism (foundry/IDM capex driving equipment demand)
+      is also shared with AMAT/KLAC/LRCX (Batch 1) and is not exclusive to
+      ASML — this record does not claim ASML is TSM's only equipment
+      dependency, only that TSM is a named, disclosed, and (per ASML's own
+      figure) apparently large member of the capex-driver class ASML's
+      revenue depends on. No new external research was performed to verify
+      the ~24% figure against ASML's own 20-F; this record relies
+      exclusively on evidence already present in the repository.
+    disconfirming_evidence: >
+      ASML's own record discloses that TSMC is one of several named
+      concentrated customers (top two combined ~38%, implying a second
+      customer, most likely Samsung per industry-wide context not
+      independently confirmed in the current evidence base, of comparable
+      scale) — this is not an exclusive TSM dependency, and this record's
+      claim is scoped to "a named, disclosed member of the capex-driver
+      class," not "ASML's sole customer."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-04"
+  next_due: "2026-11-02"
+  log:
+    - date: "2026-08-04"
+      note: >
+        Record created under governance/decisions/REL-0001-ws0005-milestone4-relationship-schema-taxonomy-evidence-standard-and-inventory-authorization.md
+        (frozen schema/taxonomy/evidence standard) and
+        governance/decisions/REL-0005-ws0005-milestone4-third-relationship-content-batch-semis-tsm.md
+        (this batch's own authorization), following the capital-spending-
+        dependency classification in
+        governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md
+        §4.2. Uses only evidence already identified in that inventory and in
+        intelligence/companies/ASML.yaml, intelligence/companies/TSM.yaml/.md,
+        intelligence/BATCH1_SEMIS_EQUIPMENT_COMPARISON.md, and
+        intelligence/BATCH3_SEMIS_COMPUTE_CONNECTIVITY_COMPARISON.md — no
+        external research was performed. One-sided sourcing (TSM's own
+        record does not name ASML) and the secondary-sourced,
+        not-yet-primary-verified nature of ASML's own ~24% figure are
+        disclosed explicitly in this entry's own evidence[0].uncertainty and
+        in ASML_TSM.md. No correlation of any kind was computed. Neither
+        ASML.yaml/ASML.md nor TSM.yaml/TSM.md was modified by this unit.
