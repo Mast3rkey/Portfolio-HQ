@@ -103,9 +103,9 @@ def synth_repo(tmp_path: Path) -> Path:
 
 # ── real-repository catalog / reconciliation ────────────────────────────────
 
-def test_real_repository_catalog_builds_all_65_with_no_issues():
+def test_real_repository_catalog_builds_all_66_with_no_issues():
     cat = decisions.build_catalog(REPO_ROOT)
-    assert len(cat.decisions) == 65
+    assert len(cat.decisions) == 66
     assert len(cat.legacy) == 12
     assert cat.issues == ()
     assert sum(len(d.issues) for d in cat.decisions) == 0
@@ -922,7 +922,7 @@ def test_real_repository_model_and_render_succeed_end_to_end():
     m = build_model(REPO_ROOT)
     html = render_html(m)
     assert html.startswith("<!DOCTYPE html>")
-    assert len(m.decision_catalog.decisions) == 65
+    assert len(m.decision_catalog.decisions) == 66
 
 
 def test_generated_html_size_within_regression_ceiling():
