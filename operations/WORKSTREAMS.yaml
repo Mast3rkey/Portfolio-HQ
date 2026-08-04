@@ -3619,7 +3619,7 @@ workstreams:
       filing's own PR number exists, per `OPS-0001`'s convention already used for every prior
       WS-0005 filing in this log — a bounded follow-up commit sets it once the PR is opened.
     active_branch: claude/rel0002-ceg-msft-relationship-batch
-    active_pr: null
+    active_pr: 240
     last_verified_main_sha: 7cb22f0fba6a6078ef6b8e45b8c9a3aff4628403
     last_verified_date: "2026-08-04"
     authorized_by: >
