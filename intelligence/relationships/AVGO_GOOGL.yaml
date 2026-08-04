@@ -1,0 +1,98 @@
+tickers: [AVGO, GOOGL]
+relationship_type: customer_dependency
+symmetric: false
+subject: AVGO
+object: GOOGL
+direction: >
+  AVGO (subject) is customer-dependent on GOOGL (object): Google is
+  disclosed, in AVGO's own Company Intelligence record, as a named member of
+  Broadcom's small, concentrated XPU/custom-AI-accelerator and
+  AI-networking customer roster, and as the counterparty to a disclosed
+  Google TPU supply agreement running through 2031 cited in support of
+  Broadcom's own FY2027 AI-semiconductor revenue target. This is a source
+  of AI-segment customer demand for AVGO, not the reverse — no GOOGL-side
+  dependency on AVGO is asserted by this record.
+relationship_status: current
+decision_served:
+  - duplicate_exposure_detection
+  - thesis_monitoring
+evidence:
+  - claim: >
+      Broadcom Inc. (AVGO)'s custom AI accelerator (XPU) design-services and
+      AI-networking business reports a small, named hyperscaler/frontier-lab
+      customer roster — Google, Meta, OpenAI, Anthropic, and Apple — with at
+      least one source characterizing the roster as "six major customers"
+      without naming a sixth (a sixth name is not adopted as confirmed by
+      this record). Google is separately named as the counterparty to a
+      disclosed Google TPU supply agreement cited as supporting Broadcom's
+      management's own reaffirmed FY2027 AI-semiconductor revenue target of
+      >$100B, backed by a ~$73B committed customer backlog. This is
+      distinct from, and not to be conflated with, AVGO's separately
+      disclosed FY2025 10-K company-wide figure that approximately 40% of
+      net revenue derives from the top five end customers — that broader
+      figure is not AI-segment-specific and does not itself name Google.
+    source: >
+      intelligence/companies/AVGO.yaml, competitive_advantages[1] ("Custom
+      AI accelerator (XPU) design-services position reported as
+      market-leading... Reported customer roster for XPU/networking
+      programs: Google, Meta, OpenAI, Anthropic, and Apple...") and
+      risks[0] ("AI-revenue customer concentration..."), itself citing
+      AVGO.yaml's sources[2] entry ("SECONDARY (aggregated
+      custom-AI-accelerator industry coverage, multiple partially-overlapping
+      outlets)... Broadcom's confirmed XPU/custom-silicon customer roster
+      reported as including Google, Meta, OpenAI, Anthropic, and Apple...
+      Google TPU supply agreement through 2031 cited in support of
+      management's FY2027 >$100B AI-semiconductor revenue target").
+    inspected_source_type: secondary
+    source_date: "2026-07-26"
+    effective_date: "2026-08-04"
+    evidence_classification: inferred
+    confidence: moderate
+    materiality: high
+    uncertainty: >
+      This unit did not itself open any Broadcom or Alphabet primary source
+      — it cites AVGO.yaml's own already-vetted claim only, per this unit's
+      explicit no-external-research boundary. AVGO.yaml's own sourcing for
+      this specific claim is itself labeled "SECONDARY (aggregated...
+      industry coverage, multiple partially-overlapping outlets)," not a
+      primary filing either side opened — AVGO.yaml separately discloses
+      that Broadcom's FY2025 Form 10-K and Q2 FY2026 earnings release were
+      each "identified but NOT opened" by that record's own research
+      session (WebFetch blocked). The relationship is disclosed from AVGO's
+      side only: intelligence/companies/GOOGL.yaml and GOOGL.md were
+      directly grepped this session for "AVGO"/"Broadcom" and returned zero
+      matches — Alphabet's own Company Intelligence record does not
+      independently name Broadcom, a supplier relationship, or the TPU
+      supply agreement anywhere. No AVGO-specific, Google-specific dollar
+      figure or percent-of-AVGO-AI-segment-revenue was located — the
+      disclosed ~40%-of-net-revenue-from-top-five-customers figure is
+      company-wide, not AI-segment-specific, and does not itself name
+      Google. The $73B backlog and Google-through-2031 figures are
+      themselves flagged by AVGO.yaml as "secondary-sourced, not
+      independently verified against a primary filing this session opened."
+      Per REL-0001 §E, this evidence_classification is deliberately kept at
+      `inferred` rather than upgraded to `observed`, matching the same
+      one-sided-sourcing discipline REL-0002's CEG_MSFT record applied and
+      the inventory audit's own §9 stopping condition for this exact
+      candidate.
+    disconfirming_evidence: null
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-04"
+  next_due: "2026-11-02"
+  log:
+    - date: "2026-08-04"
+      note: >
+        Record created under governance/decisions/REL-0001-ws0005-milestone4-relationship-schema-taxonomy-evidence-standard-and-inventory-authorization.md
+        (frozen schema/taxonomy/evidence standard) and
+        governance/decisions/REL-0003-ws0005-milestone4-second-relationship-content-batch-remaining-eight-pairs.md
+        (this batch's own authorization), following the first-batch
+        candidate recommendation in
+        governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md
+        §9. Uses only evidence already identified in that inventory and in
+        intelligence/companies/AVGO.yaml — no external research was
+        performed. One-sided sourcing (AVGO's side only; GOOGL's own record
+        does not independently corroborate) is disclosed explicitly in this
+        entry's own evidence[0].uncertainty and in AVGO_GOOGL.md. No
+        correlation of any kind was computed. Neither AVGO.yaml/AVGO.md nor
+        GOOGL.yaml/GOOGL.md was modified by this unit.

@@ -632,19 +632,40 @@ def test_universe_loaders_never_touch_intelligence_relationships():
 
 # ── validating the real repository never mutates it ─────────────────────────
 
+_REAL_RELATIONSHIP_STEMS = [
+    "CEG_MSFT",
+    "AVGO_GOOGL",
+    "AVGO_META",
+    "ETN_GNRC",
+    "GEV_GNRC",
+    "GNRC_PWR",
+    "GOOGL_MSFT",
+    "AMZN_MSFT",
+    "AMZN_GOOGL",
+]
+
+
 def test_validating_the_real_repository_relationships_dir_does_not_mutate_it():
     """REL-0002 authorized the first real intelligence/relationships record
-    (CEG_MSFT). Validating the real directory must be a clean, valid pass
-    over that one record, and must never mutate the directory or its
-    contents."""
+    (CEG_MSFT). REL-0003 added eight further records in the same batch
+    (AVGO_GOOGL, AVGO_META, ETN_GNRC, GEV_GNRC, GNRC_PWR, GOOGL_MSFT,
+    AMZN_MSFT, AMZN_GOOGL). Validating the real directory must be a clean,
+    valid pass over all nine records, and must never mutate the directory or
+    any of its contents."""
     assert Path("intelligence/relationships").exists()
-    before_yaml = Path("intelligence/relationships/CEG_MSFT.yaml").read_text()
-    before_md = Path("intelligence/relationships/CEG_MSFT.md").read_text()
+    before = {
+        stem: {
+            "yaml": Path(f"intelligence/relationships/{stem}.yaml").read_text(),
+            "md": Path(f"intelligence/relationships/{stem}.md").read_text(),
+        }
+        for stem in _REAL_RELATIONSHIP_STEMS
+    }
     result = rv.validate_relationships_directory("intelligence/relationships")
     assert result.valid is True, [e for r in result.results for e in r.errors]
-    assert result.record_count == 1
-    assert Path("intelligence/relationships/CEG_MSFT.yaml").read_text() == before_yaml
-    assert Path("intelligence/relationships/CEG_MSFT.md").read_text() == before_md
+    assert result.record_count == len(_REAL_RELATIONSHIP_STEMS)
+    for stem in _REAL_RELATIONSHIP_STEMS:
+        assert Path(f"intelligence/relationships/{stem}.yaml").read_text() == before[stem]["yaml"]
+        assert Path(f"intelligence/relationships/{stem}.md").read_text() == before[stem]["md"]
 
 
 def test_validate_directory_does_not_mutate_source_files(tmp_path):

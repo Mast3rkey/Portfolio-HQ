@@ -1,0 +1,101 @@
+tickers: [GEV, GNRC]
+relationship_type: complement
+symmetric: true
+relationship_status: current
+decision_served:
+  - duplicate_exposure_detection
+  - missing_exposure_review
+evidence:
+  - claim: >
+      Generac Holdings (GNRC)'s 2025-2026 pivot into commercial & industrial
+      (C&I) data-center backup power — two disclosed multi-year hyperscale
+      supply agreements (~$700 million of committed 2027 volume; a second,
+      disclosed as expected to be at least as large) and a Q2 2026-disclosed
+      $1.6 billion data-center order backlog — is, per GNRC's own Company
+      Intelligence record's analytical assessment, "a literal complementary
+      line item in the same data-center power stack" alongside GE Vernova
+      (GEV)'s turbines/grid equipment, both serving the same AI-data-center
+      power buildout that this repository's governed `power_infra`
+      correlated-cluster cap (targets.yaml) already groups GEV into.
+      On-site backup generation (GNRC) and turbine/grid generation-and-
+      transmission equipment (GEV) are functionally distinct,
+      non-substitutable equipment categories within the same overall
+      data-center electrical buildout, not a supplier/customer or
+      competitive relationship.
+    source: >
+      intelligence/companies/GNRC.yaml, claim GNRC-C03 ("2025-2026 pivot
+      into commercial & industrial (C&I) data-center backup power... two
+      disclosed multi-year hyperscale supply agreements... $1.6 billion...
+      backlog..."), itself citing Generac's own Q2 2026 earnings release
+      (directly fetched and read by that record's own research session, per
+      GNRC.yaml's sources[0]); and intelligence/companies/GNRC.md §13
+      ("Overlap and diversification versus power_infra (ETN/GEV/PWR) and
+      versus CAT/TSLA"), the analytical section drawing the complement
+      framing itself — GNRC.yaml's claim GNRC-C03 names no specific
+      hyperscaler or industry counterparty by name; the GEV-specific
+      framing is GNRC.md §13's own synthesized comparison.
+    inspected_source_type: secondary
+    source_date: "2026-08-03"
+    effective_date: "2026-08-04"
+    evidence_classification: inferred
+    confidence: moderate
+    materiality: moderate
+    uncertainty: >
+      This unit did not itself open Generac's Q2 2026 earnings release or
+      any GE Vernova primary source — it cites GNRC.yaml/GNRC.md's own
+      already-vetted claims only, per this unit's explicit
+      no-external-research boundary. The relationship is disclosed from
+      GNRC's side only: intelligence/companies/GEV.yaml and GEV.md were
+      directly grepped this session for "GNRC"/"Generac" and returned zero
+      matches — GE Vernova's own Company Intelligence record does not
+      independently name Generac, a shared customer, or a shared project
+      anywhere. GNRC.md §13 itself explicitly discloses this is "a blended,
+      actively evolving exposure," not a clean cluster-member case: GNRC's
+      C&I segment was only ~35% of FY2025 total revenue, and even within
+      C&I, data centers are described as the "core driver" but not the
+      entirety — residential demand, genuinely unrelated to the
+      AI-buildout mechanism, remains the majority of GNRC's revenue
+      (~54%). No named joint contract, shared hyperscaler customer, or
+      shared project links GNRC and GEV specifically — the complement
+      classification is GNRC.md's own judgmental synthesis of two
+      companies serving the same broader theme via different equipment
+      categories, not a confirmed bilateral relationship. No price
+      correlation of any kind has been computed between GNRC and GEV or
+      any `power_infra` member — GNRC.md §13 states explicitly that "no
+      correlation scan of GNRC against power_infra member returns has been
+      performed... by this record or by any prior repository decision."
+      This record does not recommend, and is not evidence for, any change
+      to GNRC's or GEV's cluster membership, cap treatment, tier, or
+      target.
+    disconfirming_evidence: >
+      GNRC.md §13 itself states that, historically (pre-2025), GNRC's core
+      demand mechanism was "fundamentally different" from the power_infra
+      cluster's shared AI-buildout mechanism — closer in character to the
+      broad, non-thesis-specific macro exposure that led CAT and TSLA to be
+      scanned and explicitly excluded from the power_infra cluster cap on
+      weak-fundamental-fit grounds. GNRC.md's own "net judgment" section
+      states this is not a clean cluster-member case, because the majority
+      of GNRC's revenue and its historical company identity remain in a
+      genuinely different, weather/housing-driven mechanism.
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-04"
+  next_due: "2026-11-02"
+  log:
+    - date: "2026-08-04"
+      note: >
+        Record created under governance/decisions/REL-0001-ws0005-milestone4-relationship-schema-taxonomy-evidence-standard-and-inventory-authorization.md
+        (frozen schema/taxonomy/evidence standard) and
+        governance/decisions/REL-0003-ws0005-milestone4-second-relationship-content-batch-remaining-eight-pairs.md
+        (this batch's own authorization), following the first-batch
+        candidate recommendation in
+        governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md
+        §9. Uses only evidence already identified in that inventory and in
+        intelligence/companies/GNRC.yaml/GNRC.md — no external research was
+        performed. One-sided sourcing (GNRC's side only; GEV's own record
+        does not independently corroborate) and the explicit materiality
+        caveat (data-center exposure remains a minority of GNRC's total
+        revenue) are disclosed explicitly in this entry's own
+        evidence[0].uncertainty/disconfirming_evidence and in GEV_GNRC.md.
+        No correlation of any kind was computed. Neither GNRC.yaml/GNRC.md
+        nor GEV.yaml/GEV.md was modified by this unit.

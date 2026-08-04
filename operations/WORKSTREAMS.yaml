@@ -1880,6 +1880,90 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-04"
+      - gate: rel0002-post-merge-verification
+        description: >
+          Lane M factual synchronization (OPS-0009 §1), folded into this
+          batch's own governance filing per OPS-0008 §4(a)'s read-only
+          post-merge convention rather than a dedicated reconciliation PR.
+          REL-0002 (PR #240) independently re-confirmed this session:
+          MERGED, merge commit 7305dc21bf6e7f30e62d75e70b82275ef3530d09,
+          merged 2026-08-04T15:10:17Z; independent exact-head review
+          4856012228 (anchored to head
+          8403a4f8d57d97367bc2243ee64c2048f89259df) returned "APPROVED FOR
+          PRINCIPAL EXACT-HEAD ACCEPTANCE," zero BLOCKING/MAJOR/MINOR
+          findings; a retained Principal acceptance: comment is present at
+          that exact head; exact-head CI (test check run 30920447608)
+          completed/success. REL-0002's own decision-file and
+          governance/decisions.yaml frontmatter still read status: Proposed
+          — a known, disclosed, pre-existing state matching the
+          CHART-0001/CHART-0002 two-step acceptance-recording pattern, not a
+          defect this entry corrects. The acceptance-recording flip to
+          status: Accepted for REL-0002 remains its own separate, future,
+          out-of-scope filing. This entry grants no new authority and does
+          not itself flip REL-0002's status.
+        pr: 240
+        status: complete
+        date: "2026-08-04"
+      - gate: rel0003-second-relationship-content-batch-remaining-eight-pairs
+        description: >
+          REL-0003 filed, authorizing and — in the same combined
+          governance-and-implementation pull request, following REL-0002's
+          own packaging precedent — implementing WS-0005 Milestone 4's
+          second relationship-content batch: eight
+          intelligence/relationships/ records reusing only evidence already
+          present in the repository at this unit's own preflight, per the
+          rel0001-inventory-only-unit-active gate's own §9 advisory
+          recommendation above. Three customer_dependency records (AVGO
+          depends on GOOGL; AVGO depends on META, both from AVGO's own
+          disclosed AI-segment customer roster); three complement records
+          (ETN_GNRC, GEV_GNRC, GNRC_PWR, from GNRC's own disclosed
+          data-center-power-stack analysis, GNRC.md §13); and three
+          competitor records (GOOGL_MSFT, AMZN_MSFT, AMZN_GOOGL, recording
+          the MSFT/GOOGL/AMZN public-cloud-seller overlap BATCH5 §7
+          identifies, one pairwise record per pair per REL-0001 §D). Every
+          record's filename uses REL-0001 §B's mandatory alphabetical
+          ticker ordering — three of the eight pairs required correcting
+          from the non-alphabetical reference labels supplied in the
+          authorizing task (GNRC_GEV to GEV_GNRC; GNRC_ETN to ETN_GNRC;
+          MSFT_GOOGL/MSFT_AMZN/GOOGL_AMZN to GOOGL_MSFT/AMZN_MSFT/AMZN_GOOGL)
+          — a mechanical filename correction only, no pair's identity or
+          evidence changed. Every evidence entry is classified inferred, not
+          observed, per the same conservative one-sided-sourcing discipline
+          REL-0002 applied to CEG_MSFT — this session directly grepped every
+          counterparty's own Company Intelligence record for each pair and
+          found zero independent corroboration in every case. The three
+          complement records carry GNRC's own record's explicit materiality
+          caveat (data-center exposure remains a minority of GNRC's total
+          revenue; no correlation scan against power_infra has ever been
+          performed). No pair was abstained — all eight candidate pairs were
+          independently re-inspected this session and found to clear
+          REL-0001 §E's evidence standard. No Company or Theme Intelligence
+          record was modified, including CEG_MSFT (the authorizing task's
+          own contemplated compatibility correction was evaluated and found
+          unnecessary). No price correlation was computed. No
+          duplicate_economic_exposure/correlated_loss_mechanism/
+          missing_exposure conclusion was asserted. No
+          holdings/targets/tiers/caps/gates/clusters/ladders/trims/sells/
+          margin/allocator/brokerage/order/chart-evidence/"Eureka" file was
+          touched. One pre-existing test
+          (test_relationship_validator.py's
+          test_validating_the_real_repository_relationships_dir_does_not_mutate_it)
+          and two hardcoded decision-count assertions
+          (test_portfolio_hq_dashboard_decisions.py, 67 to 68) were
+          corrected in the same filing, since this batch's own addition of
+          eight further real intelligence/relationships/ records and the
+          new governance/decisions.yaml row made their prior literal
+          assertions false. The
+          milestone-4-portfolio-relationship-mapping gate's own
+          status: proposed above is unchanged by this entry — nine total
+          additive records (CEG_MSFT plus this batch's eight) are a second
+          step, not Milestone 4 completion. This entry creates no standing
+          authorization for a third relationship-content batch. Opened as a
+          draft PR; not merged, not independently reviewed, not
+          principal-accepted in this session.
+        pr: null
+        status: in_progress
+        date: "2026-08-04"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md
@@ -1941,6 +2025,24 @@ workstreams:
       - governance/decisions/REL-0002-ws0005-milestone4-first-relationship-content-batch-ceg-msft.md
       - intelligence/relationships/CEG_MSFT.yaml
       - intelligence/relationships/CEG_MSFT.md
+      - "PR #240 (REL-0002 implementation, merged 2026-08-04T15:10:17Z, merge commit 7305dc21bf6e7f30e62d75e70b82275ef3530d09); independent exact-head review 4856012228 (anchored to 8403a4f8d57d97367bc2243ee64c2048f89259df, APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE); retained Principal acceptance: PR comment at that exact head; exact-head CI run 30920447608 completed/success"
+      - governance/decisions/REL-0003-ws0005-milestone4-second-relationship-content-batch-remaining-eight-pairs.md
+      - intelligence/relationships/AVGO_GOOGL.yaml
+      - intelligence/relationships/AVGO_GOOGL.md
+      - intelligence/relationships/AVGO_META.yaml
+      - intelligence/relationships/AVGO_META.md
+      - intelligence/relationships/ETN_GNRC.yaml
+      - intelligence/relationships/ETN_GNRC.md
+      - intelligence/relationships/GEV_GNRC.yaml
+      - intelligence/relationships/GEV_GNRC.md
+      - intelligence/relationships/GNRC_PWR.yaml
+      - intelligence/relationships/GNRC_PWR.md
+      - intelligence/relationships/GOOGL_MSFT.yaml
+      - intelligence/relationships/GOOGL_MSFT.md
+      - intelligence/relationships/AMZN_MSFT.yaml
+      - intelligence/relationships/AMZN_MSFT.md
+      - intelligence/relationships/AMZN_GOOGL.yaml
+      - intelligence/relationships/AMZN_GOOGL.md
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -2494,6 +2596,30 @@ workstreams:
       does not authorize Milestone 4.** Milestone 3 remains `in_progress`. This synchronization
       unit is itself a draft pull request as of this writing — it has not been independently
       reviewed, has not received a `Principal acceptance:` statement, and has not merged.
+
+      **WS-0005 Milestone 4, second relationship-content batch (`REL-0003`) filed 2026-08-04, this
+      entry.** `REL-0002` (`CEG_MSFT`, PR #240) independently re-confirmed merged
+      (`7305dc21bf6e7f30e62d75e70b82275ef3530d09`), independently reviewed (`4856012228`, APPROVED
+      FOR PRINCIPAL EXACT-HEAD ACCEPTANCE), and principal-accepted at its exact head — recorded in
+      full in the `rel0002-post-merge-verification` gate entry above; this is a Lane M factual
+      synchronization, folded into this filing per `OPS-0008` §4(a), not a new authorization.
+      `REL-0003` authorizes and — in the same combined governance-and-implementation PR, following
+      `REL-0002`'s own packaging precedent — implements eight further `intelligence/relationships/`
+      records: `AVGO_GOOGL`, `AVGO_META` (customer_dependency, AVGO's own disclosed AI-segment
+      customer roster); `ETN_GNRC`, `GEV_GNRC`, `GNRC_PWR` (complement, GNRC's own disclosed
+      data-center-power-stack analysis, GNRC.md §13); and `GOOGL_MSFT`, `AMZN_MSFT`, `AMZN_GOOGL`
+      (competitor, the MSFT/GOOGL/AMZN public-cloud-seller overlap `BATCH5` §7 identifies, one
+      pairwise record per pair). Every evidence entry is classified `inferred`; every pair's
+      counterparty record was independently grepped this session and found to carry zero
+      corroboration; the three `complement` records carry GNRC's own explicit materiality caveat.
+      Full detail, including the mechanical alphabetical-filename correction applied to three of the
+      eight pairs, is recorded in the `rel0003-second-relationship-content-batch-remaining-eight-pairs`
+      gate entry above. **This entry creates no third-batch authorization, does not flip the
+      `milestone-4-portfolio-relationship-mapping` gate's own `status: proposed`, and does not
+      authorize Milestone 5.** `REL-0003`'s own governance PR must remain in draft state, gain its
+      own independent exact-head review per `OPS-0007` §1, and receive explicit principal acceptance
+      before it may be marked ready or merged — this entry does not itself constitute that review or
+      acceptance, and does not mark the PR ready.
     completion_criteria: >
       Per OPS-0006 §16.1's completion discipline: Milestones 1-2 reach
       status: complete only when the one bounded first audit PR merges;
@@ -3618,9 +3744,9 @@ workstreams:
       history (PR #237) remains recorded above and is unedited. `active_pr` is `null` until this
       filing's own PR number exists, per `OPS-0001`'s convention already used for every prior
       WS-0005 filing in this log — a bounded follow-up commit sets it once the PR is opened.
-    active_branch: claude/rel0002-ceg-msft-relationship-batch
-    active_pr: 240
-    last_verified_main_sha: 7cb22f0fba6a6078ef6b8e45b8c9a3aff4628403
+    active_branch: claude/rel0003-remaining-eight-relationships
+    active_pr: null
+    last_verified_main_sha: 7305dc21bf6e7f30e62d75e70b82275ef3530d09
     last_verified_date: "2026-08-04"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
@@ -3964,6 +4090,20 @@ workstreams:
       `active_branch`/`active_pr` self-reference above and its recorded coverage-audit findings**
       — no research, Intelligence, tier, target, gate, cluster, cap, or allocator authority is
       granted by `OPS-0014` or by this entry.
+
+      **`REL-0002` (`CEG_MSFT`, PR #240) merged and independently post-merge verified** (Lane M
+      factual synchronization, 2026-08-04, this filing) — recorded in full in the
+      `rel0002-post-merge-verification` gate entry above; grants no new authority. **`REL-0003`
+      (this filing) authorizes and — in the same combined governance-and-implementation PR — implements
+      the second WS-0005 Milestone 4 relationship-content batch: `AVGO_GOOGL`, `AVGO_META`,
+      `ETN_GNRC`, `GEV_GNRC`, `GNRC_PWR`, `GOOGL_MSFT`, `AMZN_MSFT`, and `AMZN_GOOGL`** — recorded in
+      full in the `rel0003-second-relationship-content-batch-remaining-eight-pairs` gate entry above.
+      This filing's own `active_branch`/`active_pr` self-reference above records its own branch;
+      `active_pr` is `null` until this filing's own PR number exists, per `OPS-0001`'s convention
+      already used for every prior WS-0005 filing in this log — a bounded follow-up commit sets it
+      once the PR is opened. Neither `REL-0003` nor this entry authorizes a third relationship-content
+      batch, Milestone 5, or any Company/Theme Intelligence, tier, target, gate, cluster, cap, margin,
+      or allocator change.
     supersedes: null
     superseded_by: null
 
