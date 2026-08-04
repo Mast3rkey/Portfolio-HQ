@@ -54,7 +54,10 @@ Scope, exactly what REL-0001 authorizes this module to validate:
   data check at validation time, not a stored index, same discipline
   `intelligence_validator.py`'s own theme-reference check already uses.
 - Markdown companion existence (§B): a `.yaml` record with no matching
-  `.md` companion (or vice versa) is invalid.
+  `.md` companion is invalid. This check is one-directional — it scans
+  `.yaml` records and requires each to have a matching `.md` companion; it
+  does not separately scan for an orphan `.md` file with no matching
+  `.yaml` record.
 
 This module is a validator, not a data producer. It never opens a file in
 write/append/update mode, never creates a directory, and has zero import
@@ -238,11 +241,14 @@ def _validate_evidence_entry(entry: object, index: int, errors: list[str]) -> No
         if val is None or (isinstance(val, str) and not val.strip()):
             errors.append(f"{field_name}.{key} must be present and non-empty")
 
-    if not entry.get("confidence") and entry.get("confidence") != 0:
-        errors.append(f"{field_name}.confidence must be stated explicitly (REL-0001 §E)")
-
-    if not entry.get("materiality") and entry.get("materiality") != 0:
-        errors.append(f"{field_name}.materiality must be stated explicitly (REL-0001 §E)")
+    for key in ("confidence", "materiality"):
+        val = entry.get(key)
+        # bool is a subclass of int in Python (False == 0, True == 1), so a
+        # literal True/False must be rejected explicitly — it is never a
+        # genuine stated confidence/materiality value, only an accidental
+        # pass-through. 0 itself remains a valid explicit value.
+        if val is None or isinstance(val, bool) or (isinstance(val, str) and not val.strip()):
+            errors.append(f"{field_name}.{key} must be stated explicitly (REL-0001 §E)")
 
     uncertainty = entry.get("uncertainty")
     if not isinstance(uncertainty, str) or not uncertainty.strip():

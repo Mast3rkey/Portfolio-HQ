@@ -426,6 +426,176 @@ def test_one_invalid_file_does_not_stop_the_scan(tmp_path):
     assert any("ZZZC_ZZZD" in s for s in sources)
 
 
+# ── REL-0001 closed-vocabulary independent pinning (§C/§E/§F) ───────────────
+# Hardcoded directly from REL-0001's literal text, not derived from
+# relationship_validator.py's own constants — a silent drift in the module's
+# constants would not be caught by parametrizing against rv.* itself (as the
+# tests above do); these compare the module's constants against an
+# independent transcription of the governing document.
+
+REL0001_PRIMITIVE_RELATIONSHIP_TYPES = frozenset({
+    "supplier_dependency",
+    "customer_dependency",
+    "manufacturing_dependency",
+    "technology_platform_dependency",
+    "capital_spending_dependency",
+    "regulatory_or_reimbursement_dependency",
+    "commodity_or_energy_dependency",
+    "financing_or_interest_rate_dependency",
+    "geographic_or_geopolitical_dependency",
+    "competitor",
+    "substitute",
+    "complement",
+})
+
+REL0001_EVIDENCE_CLASSIFICATIONS = frozenset({"observed", "inferred", "modeled", "judgmental"})
+
+REL0001_RELATIONSHIP_STATUSES = frozenset({"current", "historical", "potential", "hypothetical"})
+
+REL0001_DECISION_SERVED_VALUES = frozenset({
+    "duplicate_exposure_detection",
+    "thesis_monitoring",
+    "stress_testing",
+    "next_dollar_or_opportunity_cost",
+    "missing_exposure_review",
+    "zero_based_portfolio_review",
+})
+
+
+def test_primitive_relationship_types_match_rel0001_literal_text():
+    assert rv.PRIMITIVE_RELATIONSHIP_TYPES == REL0001_PRIMITIVE_RELATIONSHIP_TYPES
+
+
+def test_evidence_classifications_match_rel0001_literal_text():
+    assert rv.EVIDENCE_CLASSIFICATIONS == REL0001_EVIDENCE_CLASSIFICATIONS
+
+
+def test_relationship_statuses_match_rel0001_literal_text():
+    assert rv.RELATIONSHIP_STATUSES == REL0001_RELATIONSHIP_STATUSES
+
+
+def test_decision_served_values_match_rel0001_literal_text():
+    assert rv.DECISION_SERVED_VALUES == REL0001_DECISION_SERVED_VALUES
+
+
+@pytest.mark.parametrize("good_type", sorted(REL0001_PRIMITIVE_RELATIONSHIP_TYPES))
+def test_validator_accepts_every_rel0001_hardcoded_primitive_type(good_type):
+    if good_type in rv._DIRECTIONAL_TYPES:
+        data = _directional_record(relationship_type=good_type)
+    else:
+        data = _symmetric_record(relationship_type=good_type, symmetric=True)
+    result = rv.validate_relationship_data(data)
+    assert result.valid is True, result.errors
+
+
+@pytest.mark.parametrize("bad_type", ["supplier_dependenc", "Competitor", "vendor_relationship"])
+def test_validator_rejects_representative_invalid_primitive_types(bad_type):
+    data = _directional_record(relationship_type=bad_type)
+    result = rv.validate_relationship_data(data)
+    assert result.valid is False
+
+
+@pytest.mark.parametrize("good_classification", sorted(REL0001_EVIDENCE_CLASSIFICATIONS))
+def test_validator_accepts_every_rel0001_hardcoded_evidence_classification(good_classification):
+    data = _directional_record(evidence=[_evidence_entry(evidence_classification=good_classification)])
+    result = rv.validate_relationship_data(data)
+    assert result.valid is True, result.errors
+
+
+@pytest.mark.parametrize("bad_classification", ["confirmed", "Observed", "estimated"])
+def test_validator_rejects_representative_invalid_evidence_classifications(bad_classification):
+    data = _directional_record(evidence=[_evidence_entry(evidence_classification=bad_classification)])
+    result = rv.validate_relationship_data(data)
+    assert result.valid is False
+
+
+@pytest.mark.parametrize("good_status", sorted(REL0001_RELATIONSHIP_STATUSES))
+def test_validator_accepts_every_rel0001_hardcoded_relationship_status(good_status):
+    data = _directional_record(relationship_status=good_status)
+    result = rv.validate_relationship_data(data)
+    assert result.valid is True, result.errors
+
+
+@pytest.mark.parametrize("bad_status", ["active", "Current", "expired"])
+def test_validator_rejects_representative_invalid_relationship_statuses(bad_status):
+    data = _directional_record(relationship_status=bad_status)
+    result = rv.validate_relationship_data(data)
+    assert result.valid is False
+
+
+@pytest.mark.parametrize("good_value", sorted(REL0001_DECISION_SERVED_VALUES))
+def test_validator_accepts_every_rel0001_hardcoded_decision_served_value(good_value):
+    data = _directional_record(decision_served=[good_value])
+    result = rv.validate_relationship_data(data)
+    assert result.valid is True, result.errors
+
+
+@pytest.mark.parametrize("bad_value", ["portfolio_optimization", "alpha_generation", "risk_scoring"])
+def test_validator_rejects_representative_invalid_decision_served_values(bad_value):
+    data = _directional_record(decision_served=[bad_value])
+    result = rv.validate_relationship_data(data)
+    assert result.valid is False
+
+
+# ── boolean confidence/materiality edge case (bounded correction) ───────────
+
+def test_confidence_false_is_rejected():
+    data = _directional_record(evidence=[_evidence_entry(confidence=False)])
+    result = rv.validate_relationship_data(data)
+    assert result.valid is False
+    assert any("confidence" in e for e in result.errors)
+
+
+def test_confidence_true_is_rejected():
+    data = _directional_record(evidence=[_evidence_entry(confidence=True)])
+    result = rv.validate_relationship_data(data)
+    assert result.valid is False
+    assert any("confidence" in e for e in result.errors)
+
+
+def test_materiality_false_is_rejected():
+    data = _directional_record(evidence=[_evidence_entry(materiality=False)])
+    result = rv.validate_relationship_data(data)
+    assert result.valid is False
+    assert any("materiality" in e for e in result.errors)
+
+
+def test_materiality_true_is_rejected():
+    data = _directional_record(evidence=[_evidence_entry(materiality=True)])
+    result = rv.validate_relationship_data(data)
+    assert result.valid is False
+    assert any("materiality" in e for e in result.errors)
+
+
+def test_confidence_zero_remains_a_valid_explicit_value():
+    """0 is a legitimate explicit confidence value, distinct from the
+    boolean False the correction above rejects — bool is a subclass of int
+    in Python, but a literal int 0 must not be caught by the bool check."""
+    data = _directional_record(evidence=[_evidence_entry(confidence=0)])
+    result = rv.validate_relationship_data(data)
+    assert result.valid is True, result.errors
+
+
+def test_materiality_zero_remains_a_valid_explicit_value():
+    data = _directional_record(evidence=[_evidence_entry(materiality=0)])
+    result = rv.validate_relationship_data(data)
+    assert result.valid is True, result.errors
+
+
+# ── corrected Markdown-companion documentation (bounded correction) ─────────
+
+def test_orphan_markdown_file_without_yaml_is_not_scanned_or_flagged(tmp_path):
+    """relationship_validator.py's Markdown-companion check is one-directional
+    (.yaml -> .md only) — an orphan .md file with no matching .yaml record is
+    not itself scanned or reported as invalid, since
+    validate_relationships_directory globs *.yaml only. Locks in the actual
+    behavior the corrected module docstring now accurately describes."""
+    _write_pair(tmp_path, "ZZZA_ZZZB", _directional_record())
+    (tmp_path / "ORPHAN_ZZZQ_ZZZR.md").write_text("# orphan, no matching yaml\n")
+    result = rv.validate_relationships_directory(tmp_path)
+    assert result.valid is True, [e for r in result.results for e in r.errors]
+
+
 # ── universe loaders against the real repository (read-only) ────────────────
 
 def test_load_canonical_universe_reads_27_names_from_real_targets_yaml():
