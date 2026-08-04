@@ -1733,6 +1733,31 @@ workstreams:
         pr: null
         status: recorded
         date: "2026-08-04"
+      - gate: rel0001-relationship-schema-taxonomy-evidence-standard-freeze
+        description: >
+          REL-0001 filed, freezing Milestone 4's future pairwise
+          relationship-record convention (intelligence/relationships/
+          <A>_<B>.yaml/.md), a closed twelve-item primitive relationship
+          taxonomy, directionality rules, an evidence/abstention standard, a
+          closed decision_served vocabulary, and the structural-versus-
+          measured-price-correlation separation. Authorizes exactly one
+          future, separate, bounded inventory-only implementation unit
+          (classify already-existing Company/Theme Intelligence and
+          comparison-artifact evidence against the frozen taxonomy for the
+          current 27-name canonical roster only — no new research, no
+          relationship record, no correlation study) — effective only after
+          REL-0001's own independent review, principal acceptance, merge,
+          and post-merge verification. Creates no relationship_validator.py,
+          no intelligence/relationships/ record, no governance/audits/
+          artifact, and performs no Milestone 4 content research of any
+          kind. Additive only — no change to status, priority,
+          authorized_scope, prohibited_scope, or completion_criteria; does
+          not begin Milestone 4 execution and does not advance the
+          milestone-4-portfolio-relationship-mapping gate's own status:
+          proposed above.
+        pr: null
+        status: recorded
+        date: "2026-08-04"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md
@@ -1790,6 +1815,7 @@ workstreams:
       - "OPS-0008 and PI-0027 filed together in one governance PR on branch claude/ws-0005-protocol-design-kti23b, base origin/main at 1aba3e74d3847aa278b774f3b0956c786b6ee480 — not yet merged, not yet independently reviewed, not yet effective."
       - "Bounded correction, same PR #168, same session: an independent GPT-5.6 Thinking exact-head review of head 274d43000eb6c049faa7e9e9bad5ef9d02b9c11d returned CHANGES REQUIRED on two findings — OPS-0008's automatic-scoring/allocator-coupling/next-wave-authority boundaries stated only by cross-reference, and PI-0027's business-quality-versus-capital-priority/next-best-use-of-capital requirement being ambiguous in the original §B/§C text. Resolved by adding OPS-0008 new §12 (Hard boundaries, standalone and explicit) and PI-0027 new §B.23/§C.10 (capital-priority comparison, per-company and batch-level, advisory and score-free). No scope, file count, Batch 5 company list, EQIX-deferred status, or effectiveness-on-merge condition changed by this correction. Still not yet merged, not yet independently re-reviewed at the corrected head, not yet effective."
       - governance/decisions/OPS-0016-eureka-identity-mobile-cloud-architecture-roadmap.md
+      - governance/decisions/REL-0001-ws0005-milestone4-relationship-schema-taxonomy-evidence-standard-and-inventory-authorization.md
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -3408,9 +3434,39 @@ workstreams:
       after PR #233 and PR #234 had each already merged) — a Lane M hygiene item for a future,
       separately authorized unit, not addressed by this filing beyond disclosure and this entry's
       own necessary update.
-    active_branch: claude/eureka-architecture-reconciliation-93det0
-    active_pr: 236
-    last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
+
+      **`REL-0001` (WS-0005 Milestone 4 relationship-mapping schema, taxonomy, evidence-standard
+      freeze, and bounded inventory authorization) is this entry's own live work.** Filed under
+      `OPS-0009` Lane G (governance authorization), per the human principal's explicit bounded
+      authorization for exactly this schema-freeze-and-inventory-authorization unit — no
+      relationship research, no `relationship_validator.py`, no `intelligence/relationships/`
+      record, and no Milestone 4 content work of any kind performed or authorized by this filing.
+      The next unused decision-ID prefix is `REL-####` (`REL-0001`) — a genuinely new,
+      cross-company/portfolio-level decision domain, distinct from `PI-####`'s frozen one-way,
+      non-relational Company/Theme Intelligence series and from every other existing prefix, per
+      `governance/decisions/README.md`'s own "chosen only when a genuinely new domain needs one"
+      rule and the `LADDER-0001`/`CHART-0001` precedent for minting a new prefix without any
+      schema, catalog, validator, or test change (`portfolio_hq/dashboard/decisions.py`'s
+      decision-ID pattern is fully generic). Independently re-verified this session: `origin/main`
+      fetched, confirmed identical to local `HEAD` at `8f59041a22631a95d7cbfcd6445499faa89b2a5e`
+      (PR #236's own merge commit); zero open pull requests; `governance/decisions/` and
+      `governance/decisions.yaml` both confirmed at 65 entries pre-filing (`decision_catalog.issues
+      == ()`); the 27-name canonical roster confirmed unchanged (21 covered + 4 gated/
+      `PI-0035`-dispositioned + 2 gated/`PI-0033`-dispositioned). The `active_branch`/`active_pr`
+      fields below are updated to this filing's own branch; the prior branch's/PR's own
+      already-merged history (PR #236) remains recorded above and is unedited. `active_pr` is
+      `null` until this filing's own PR number exists, per `OPS-0001`'s convention already used for
+      every prior WS-0005 filing in this log — a bounded follow-up commit sets it once the PR is
+      opened. This filing authorizes exactly one future, separate, bounded inventory-only
+      implementation unit (per `REL-0001` §I) — not begun by this filing — and does not itself
+      authorize any relationship-content research, `relationship_validator.py`,
+      `intelligence/relationships/` record, correlation study, or any tier/target/holdings/
+      cluster/cap/gate/ladder/trim/sell/margin/allocator/brokerage/order change. Milestone 4
+      remains `status: proposed`, not begun; Milestone 3 remains `complete` (`PI-0037`), unedited
+      and not reopened by this filing.
+    active_branch: claude/ws0005-m4-relationship-schema-freeze
+    active_pr: 237
+    last_verified_main_sha: 8f59041a22631a95d7cbfcd6445499faa89b2a5e
     last_verified_date: "2026-08-04"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
