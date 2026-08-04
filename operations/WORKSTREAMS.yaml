@@ -1714,6 +1714,65 @@ workstreams:
         pr: null
         status: proposed
         date: "2026-07-25"
+      - gate: tier0001-classification-question-inventory-bounded-unit
+        description: >
+          TIER-0001 filed 2026-08-04 — the first explicit, separate principal
+          authorization to begin Milestone 5 (matching the PI-0023/REL-0001
+          per-unit-authorization pattern used for Milestones 3 and 4),
+          bounded to exactly one combined governance-and-inventory PR. Live
+          preflight independently re-verified this session against
+          `origin/main` at `09fc72b4671fb18d9b3a4c2f1f1141657660ad35`
+          (PR #244/REL-0006 merge commit, with PR #236/OPS-0016 confirmed
+          already folded into that tip via direct ancestry check): zero open
+          pull requests, no active mutation lane, `TIER-0001` confirmed
+          unused (zero matches in governance/decisions.yaml and via GitHub
+          code search), 71 decision files reconciled 1:1 against 71
+          governance/decisions.yaml rows. Delivers, in the same filing:
+          `governance/decisions/TIER-0001-ws0005-milestone5-classification-
+          question-inventory.md` and one retained bounded inventory artifact,
+          `governance/audits/WS0005_M5_CLASSIFICATION_QUESTION_INVENTORY_
+          20260804.md`, mapping nine candidate classification questions
+          (economic/portfolio role, research conviction, capital-allocation
+          priority, risk concentration and overlap, dependency/relationship
+          exposure, monitoring intensity, review cadence, implementation
+          readiness, uncertainty/evidence quality) against already-existing
+          repository evidence only — no new company/theme/relationship
+          research performed. Key findings: `target_pct` in `targets.yaml`
+          remains the sole allocator-visible field by deliberate design;
+          `intelligence/freshness_registry.yaml`'s `monitoring_enabled` and
+          Company Intelligence `risks[].status` are both 100% uniform across
+          all 47 records (`false` / `monitoring` respectively, independently
+          re-confirmed live this session) and therefore decorative rather
+          than load-bearing today; `portfolio_role_ref` carries a stale
+          pre-`PHQ-2026-02` tier vocabulary (`T1`/`T2`/`band`/`spec`) that
+          `targets.yaml` itself no longer defines anywhere; and
+          `docs/INVESTMENT_ONTOLOGY.md` (`ONTO-0001`) already freezes a
+          conceptual role/quality/priority/tier hierarchy and a preserved-
+          distinctions list covering most of the nine axes, with zero
+          applied instances found anywhere in the 47-record corpus. The
+          artifact recommends, as advisory text only (not an authorization),
+          that at most four axes — economic role, capital priority (already
+          the load-bearing anchor, unchanged), risk concentration, and a
+          merged uncertainty/evidence-quality axis — warrant a future
+          Milestone-5 framework-design pass, and names six unresolved
+          questions requiring their own future principal judgment.
+          **Classifies no ticker, proposes no candidate final framework,
+          performs no blind classification, reconciles no baseline, and
+          computes no mechanical score.** Does not authorize Milestone 6
+          (blind classification), Milestone 7 (baseline reconciliation),
+          Milestone 8 (policy recommendation package), or Milestone 9
+          (independent review and adoption). **This governance PR must
+          remain draft, gain its own eligible independent exact-head review
+          under OPS-0007 §1, complete any required bounded correction and
+          re-review, and receive explicit principal acceptance before it may
+          be marked ready or merged — this entry does not itself constitute
+          that review or acceptance, and does not itself advance the
+          milestone-5-zero-based-classification-and-tier-architecture-review
+          gate's own status: proposed above, which remains accurate for the
+          milestone as a whole.**
+        pr: null
+        status: complete
+        date: "2026-08-04"
       - gate: milestone-6-blind-classification
         description: >
           Apply the candidate framework(s) without using current tiers or
@@ -4043,9 +4102,9 @@ workstreams:
       unedited. `active_pr` is `null` until this filing's own PR number exists, per `OPS-0001`'s
       convention already used for every prior WS-0005 filing in this log — a bounded follow-up
       commit sets it once the PR is opened.
-    active_branch: claude/ws0005-m4-completion-s91zpx
-    active_pr: 244
-    last_verified_main_sha: 7562c49fe0a2a52db42c7f40e5609c452d78af0e
+    active_branch: claude/m5-classification-question-inventory-vt3mdo
+    active_pr: null
+    last_verified_main_sha: 09fc72b4671fb18d9b3a4c2f1f1141657660ad35
     last_verified_date: "2026-08-04"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
