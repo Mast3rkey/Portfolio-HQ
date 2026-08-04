@@ -3936,7 +3936,7 @@ workstreams:
       convention already used for every prior WS-0005 filing in this log — a bounded follow-up
       commit sets it once the PR is opened.
     active_branch: claude/rel0004-milestone4-semis-relationship-batch
-    active_pr: null
+    active_pr: 243
     last_verified_main_sha: 29761b6a12bb81e3fff7c199f5ea4de57f3d32a5
     last_verified_date: "2026-08-04"
     authorized_by: >
