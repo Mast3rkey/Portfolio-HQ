@@ -1796,6 +1796,47 @@ workstreams:
           reviewed, not principal-accepted in this session — this gate
           records the unit's activity, not its completion or any Milestone 4
           authorization.
+
+          **PR #238 merged; independent review and delta-review verdicts
+          recorded (2026-08-04, this entry — `OPS-0009` Lane M factual
+          synchronization, performed by a separate session that authored
+          none of the reviewed work).** The paragraph immediately above is
+          now stale on one point (PR #238's own review/acceptance/merge
+          state) and is superseded by this entry on that point only —
+          nothing else in it is disturbed.
+
+          **PR #238 confirmed merged and closed.** Independently re-verified
+          this session via the GitHub API: state `MERGED`, base `main`, head
+          branch `claude/ws0005-m4-relationship-evidence-inventory`, final
+          head `31e0413a3aced09e83539bb644e7271299f51926`, merge commit
+          `393a4d2743d0090a3ec4f4956111dc48f91c5a27` (confirmed `origin/main`'s
+          tip at this entry's own preflight), merged 2026-08-04T13:34:22Z.
+          PR #238 received an independent full review (verdict CORRECTION
+          REQUIRED — one MAJOR and three MINOR findings, all confined to the
+          audit artifact and validator content, none against a controlling-
+          authority citation or scope boundary) and, after a bounded
+          correction commit, an independent delta review confirming all four
+          findings resolved (verdict DELTA APPROVED FOR HUMAN PRINCIPAL
+          EXACT-HEAD ACCEPTANCE at the corrected head `31e0413a`) — both
+          retained as GitHub PR review comments, each anchored via its own
+          `commit_id` field, both visible on the merged PR. Exact-head CI
+          (`test` check run, run `30911707002`) confirmed `completed`/
+          `success` at the corrected/merged head. Zero open pull requests
+          exist (`gh pr list --state open` returns empty).
+
+          **Conclusion: this entry records PR #238's already-established
+          merge and post-merge state; it creates no new tier/target/holdings/
+          cluster/cap/allocator/margin authority, does not itself flip the
+          `milestone-4-portfolio-relationship-mapping` gate's own
+          `status: proposed`, and does not authorize any relationship-content
+          batch, further inventory unit, or Milestone 4 execution.**
+          `REL-0001` §I's exactly-one authorized inventory unit is now fully
+          executed and merged; no further unit is authorized without its own
+          separate, future, explicit principal decision. Milestone 4 remains
+          incomplete. This synchronization unit is itself a draft pull
+          request as of this writing — it has not been independently
+          reviewed, has not received a `Principal acceptance:` statement,
+          and has not merged.
         pr: 238
         status: in_progress
         date: "2026-08-04"
@@ -3534,9 +3575,9 @@ workstreams:
       history (PR #237) remains recorded above and is unedited. `active_pr` is `null` until this
       filing's own PR number exists, per `OPS-0001`'s convention already used for every prior
       WS-0005 filing in this log — a bounded follow-up commit sets it once the PR is opened.
-    active_branch: claude/ws0005-m4-relationship-evidence-inventory
-    active_pr: 238
-    last_verified_main_sha: cd95a8fd21793f5d2a2383f69d6907ea6788d251
+    active_branch: claude/ws0005-post-pr238-factual-sync
+    active_pr: null
+    last_verified_main_sha: 393a4d2743d0090a3ec4f4956111dc48f91c5a27
     last_verified_date: "2026-08-04"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
