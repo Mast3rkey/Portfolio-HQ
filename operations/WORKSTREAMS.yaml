@@ -1964,6 +1964,73 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-04"
+      - gate: rel0003-post-merge-verification
+        description: >
+          Lane M factual synchronization (OPS-0009 §1), folded into this
+          filing's own governance PR per OPS-0008 §4(a)'s read-only
+          post-merge convention rather than a dedicated reconciliation PR.
+          REL-0003 (PR #241) independently re-confirmed this session:
+          MERGED, merge commit 607832d07e2849051c74f4f83cf05627fce2fc8c,
+          merged 2026-08-04T16:31:28Z; independent exact-head review
+          4856585060 (anchored to head
+          23b3b16c49a10bd4f5415e82a5e4e2a8a0fbc8db) returned "CHANGES
+          REQUIRED" with one MINOR finding on the competitor-triad sourcing
+          disclosure, resolved by bounded correction commit fe81561; exact-
+          head delta review 4856745242 (anchored to the corrected head)
+          returned "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE," zero
+          remaining BLOCKING/MAJOR/MINOR findings; a retained Principal
+          acceptance: comment (issuecomment-5181876227) is present, naming
+          exact head fe815617488c6223a472920c57cfe759095c1507; exact-head CI
+          (test check run 30929553777) completed/success. relationship_
+          validator.py independently re-run: OK (9 record(s)). Full pytest
+          suite independently re-run against this exact merge commit:
+          2581 passed, 0 failed. REL-0003's own decision-file and
+          governance/decisions.yaml frontmatter still read status: Proposed
+          — a known, disclosed, pre-existing state matching the REL-0002/
+          CHART-0001/CHART-0002 two-step acceptance-recording pattern, not a
+          defect this entry corrects. The acceptance-recording flip to
+          status: Accepted for REL-0003 (and REL-0002) remains its own
+          separate, future, out-of-scope filing. This entry grants no new
+          authority and does not itself flip REL-0003's status or the
+          milestone-4-portfolio-relationship-mapping gate's own status:
+          proposed.
+        pr: 241
+        status: complete
+        date: "2026-08-04"
+      - gate: rel0004-milestone4-completion-standard
+        description: >
+          REL-0004 filed, defining the WS-0005 Milestone 4 completion
+          standard this repository's own governance had not yet established:
+          eight numbered, evidence-based, finite, auditable criteria
+          (coverage-inventory currency, candidate-set exhaustion, per-name
+          disposition, per-record PROVISIONAL status, freedom from
+          unresolved MATERIAL findings, disclosed-not-required new-research
+          gaps, register/validator synchronization, and a separate future
+          independently reviewed completion-determination filing); a bounded
+          reopening-trigger model for coverage discovered after a future
+          completion determination (new canonical roster names, cleared
+          gates, refreshed Company Intelligence evidence, or a post-
+          completion MATERIAL finding — each a disclosed, bounded, separately
+          authorized future filing, never an automatic reopening); and an
+          explicit restatement of Milestone 4's boundaries against target/
+          tier/allocator policy, measured price correlation, chart evidence,
+          Milestone 5, and "Eureka." Filed following the REL-0001 §I
+          inventory audit's own §9 advisory candidate table becoming fully
+          actioned (all four candidate groupings, nine pairwise records,
+          filed via REL-0002/REL-0003) — this filing states explicitly that
+          candidate-set exhaustion is a necessary but not sufficient
+          completion signal under the standard it defines, and performs no
+          Milestone 4 completion determination of any kind. Creates no
+          relationship-content authorization, no external research, no
+          correlation study, and no tier/target/holdings/cluster/cap/gate/
+          ladder/trim/sell/margin/allocator/brokerage/order/chart-evidence/
+          "Eureka" change. The milestone-4-portfolio-relationship-mapping
+          gate's own status: proposed above is unchanged by this entry.
+          Opened as a draft PR; not merged, not independently reviewed, not
+          principal-accepted in this session.
+        pr: null
+        status: in_progress
+        date: "2026-08-04"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md
@@ -3744,9 +3811,9 @@ workstreams:
       history (PR #237) remains recorded above and is unedited. `active_pr` is `null` until this
       filing's own PR number exists, per `OPS-0001`'s convention already used for every prior
       WS-0005 filing in this log — a bounded follow-up commit sets it once the PR is opened.
-    active_branch: claude/rel0003-remaining-eight-relationships
-    active_pr: 241
-    last_verified_main_sha: 7305dc21bf6e7f30e62d75e70b82275ef3530d09
+    active_branch: claude/rel0004-milestone4-completion-standard
+    active_pr: 242
+    last_verified_main_sha: 607832d07e2849051c74f4f83cf05627fce2fc8c
     last_verified_date: "2026-08-04"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
