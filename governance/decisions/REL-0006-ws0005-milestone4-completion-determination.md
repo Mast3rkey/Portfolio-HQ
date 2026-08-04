@@ -137,9 +137,9 @@ directory listing. **Fully satisfied now.**
 relationship record, or explicitly determined, in a retained artifact, to carry no canonical-pair
 relationship evidence meeting `REL-0001` §E's materiality bar.
 **PASS.** Cross-referencing the 21 non-gated canonical names against the 13 filed records' own
-`subject`/`object` tickers: **17 of 21** appear in at least one filed record (AMZN, ASML, AVGO, CEG,
-ETN, GEV, GNRC, GOOGL, KLAC, META, MSFT, NVDA, PWR, TSM — plus GOOGL/MSFT/AMZN counted once each).
-The remaining **4 of 21** (COST, ISRG/TMO as a pair, LLY, PANW, RTX, V) carry an explicit,
+`subject`/`object` tickers: **14 of 21** appear in at least one filed record (AMZN, ASML, AVGO, CEG,
+ETN, GEV, GNRC, GOOGL, KLAC, META, MSFT, NVDA, PWR, TSM).
+The remaining **7 of 21** (COST, ISRG, LLY, PANW, RTX, TMO, V) carry an explicit,
 disclosed, no-canonical-pair-evidence disposition in the inventory's §6 table and §7 (RTX/GNRC
 explicit mutual disclaimer) — a valid, complete disposition under `REL-0004` §C.3's own text ("a name
 with zero evidenced canonical-pair relationships is a valid, complete disposition... provided the

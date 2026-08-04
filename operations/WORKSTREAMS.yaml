@@ -1677,9 +1677,9 @@ workstreams:
           the GitHub API — zero unresolved BLOCKING/MAJOR findings across all three; the governing
           inventory's own §9 recommendation table fully actioned (nine records) with no further
           §9-comparable table produced since; every one of the 21 non-gated canonical names carrying
-          an explicit disposition (17 covered by a filed record, 4 — COST, ISRG/TMO, LLY, PANW, RTX,
-          V — explicitly disclosed as carrying no canonical-pair evidence in the governing inventory's
-          own §6/§7); the §5.1 hyperscaler-to-semis evidence gap independently re-confirmed still
+          an explicit disposition (14 covered by a filed record, 7 — COST, ISRG, LLY, PANW, RTX,
+          TMO, V — explicitly disclosed as carrying no canonical-pair evidence in the governing
+          inventory's own §6/§7); the §5.1 hyperscaler-to-semis evidence gap independently re-confirmed still
           unresolved on both sides (fresh grep of MSFT/GOOGL/AMZN's own Company Intelligence records)
           and disclosed, not required; `intelligence_validator.py` 47/47 valid; `freshness_validator.py`
           OK; full pytest suite 2581/2581 passed; `decision_catalog.issues == ()` (70 decisions, 12
@@ -2194,8 +2194,8 @@ workstreams:
           inventory's own 2026-08-04 authoring commit); the governing
           inventory's own §9 recommendation table fully actioned, no
           further §9-comparable table produced since; explicit disposition
-          for all 21 non-gated canonical names (17 covered, 4 — COST,
-          ISRG/TMO, LLY, PANW, RTX, V — explicitly disclosed no-evidence);
+          for all 21 non-gated canonical names (14 covered, 7 — COST,
+          ISRG, LLY, PANW, RTX, TMO, V — explicitly disclosed no-evidence);
           all 13 intelligence/relationships/ records independently
           re-confirmed PROVISIONAL per record via direct re-reading of all
           three originating PRs' (#240, #241, #243) own independent-review/
