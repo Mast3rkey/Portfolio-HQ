@@ -482,3 +482,10 @@ decisions:
     related_decisions: [REL-0001, REL-0002, GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0031, PI-0033, PI-0035, PI-0036, PI-0037, LADDER-0001, CHART-0001, CHART-0002, OPS-0016]
     supporting_artifact: governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md
     file: governance/decisions/REL-0003-ws0005-milestone4-second-relationship-content-batch-remaining-eight-pairs.md
+  - decision_id: REL-0004
+    date: 2026-08-04
+    status: Proposed
+    category: relationship_mapping_governance
+    related_decisions: [REL-0001, REL-0002, REL-0003, GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0031, PI-0035, PI-0036, PI-0037, LADDER-0001, CHART-0001, CHART-0002, OPS-0016]
+    supporting_artifact: governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md
+    file: governance/decisions/REL-0004-ws0005-milestone4-completion-standard.md
