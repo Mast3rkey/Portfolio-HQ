@@ -2031,6 +2031,94 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-04"
+      - gate: rel0004-post-merge-verification
+        description: >
+          Lane M factual synchronization (OPS-0009 §1), folded into this
+          batch's own governance filing per OPS-0008 §4(a)'s read-only
+          post-merge convention rather than a dedicated reconciliation PR.
+          REL-0004 (PR #242) independently re-confirmed this session:
+          MERGED, merge commit 29761b6a12bb81e3fff7c199f5ea4de57f3d32a5,
+          merged 2026-08-04T17:46:30Z. This session's own isolated worktree
+          (established before PR #242 merged, to stay separated from that
+          concurrent session's own active mutation lane) was fast-forwarded
+          cleanly from 607832d07e2849051c74f4f83cf05627fce2fc8c to
+          29761b6a12bb81e3fff7c199f5ea4de57f3d32a5 once the merge was
+          confirmed via the GitHub API — no conflict, no file from PR #242's
+          branch/worktree read or touched by this session at any point.
+          REL-0004's own decision-file and governance/decisions.yaml
+          frontmatter still read status: Proposed — a known, disclosed,
+          pre-existing state matching the REL-0002/REL-0003/CHART-0001/
+          CHART-0002 two-step acceptance-recording pattern, not a defect
+          this entry corrects. The acceptance-recording flip to status:
+          Accepted for REL-0004 (and REL-0002/REL-0003) remains its own
+          separate, future, out-of-scope filing. This entry grants no new
+          authority and does not itself flip REL-0004's status.
+        pr: 242
+        status: complete
+        date: "2026-08-04"
+      - gate: rel0005-third-relationship-content-batch-semis-tsm
+        description: >
+          REL-0005 filed, authorizing and — in the same combined
+          governance-and-implementation pull request, following REL-0002's
+          and REL-0003's own packaging precedent — implementing WS-0005
+          Milestone 4's third relationship-content batch: four
+          intelligence/relationships/ records, all sharing TSM as the
+          common counterparty, reusing only evidence already present in the
+          repository at this unit's own preflight, per the
+          rel0001-inventory-only-unit-active gate's own §4.1/§4.2
+          classification tables above. Two manufacturing_dependency
+          records (NVDA depends on TSM; AVGO depends on TSM, the latter
+          added on a separate, explicit principal authorization mid-session
+          and independently re-verified against REL-0001 §E before
+          acceptance, on the strength of AVGO's own dedicated,
+          TSMC-naming "Foundry and advanced-packaging dependency" risk
+          entry); two capital_spending_dependency records (ASML depends on
+          TSM, at confidence: moderate, per ASML's own disclosed ~24%-of-
+          net-sales TSMC concentration figure; KLAC depends on TSM, at
+          confidence: low, per KLAC's own weaker, single-data-point FY2023
+          figure — the two records deliberately carry different confidence
+          ratings rather than a uniform one). Every evidence entry is
+          classified inferred, not observed, per the same conservative
+          one-sided-sourcing discipline REL-0002/REL-0003 applied — this
+          session directly grepped TSM's own record for each counterparty's
+          name/company and found zero independent corroboration in every
+          case. No pair was abstained — all four candidate pairs were
+          independently re-inspected this session and found to clear
+          REL-0001 §E's evidence standard; the inventory's own §5.1
+          hyperscaler-to-semis gap (MSFT/GOOGL/AMZN/META to NVDA/AVGO) was
+          independently re-inspected and confirmed to remain an explicit,
+          disclosed, unresolved evidence gap on both sides, not converted
+          into a fifth record. This session's own three original draft
+          records (NVDA_TSM, ASML_TSM, KLAC_TSM), first drafted while
+          REL-0004 was still the next-available identifier, had their
+          internal self-references mechanically corrected from REL-0004 to
+          REL-0005 once PR #242 merged and claimed that identifier — no
+          pair's identity, evidence, or scope changed by that correction.
+          No Company or Theme Intelligence record was modified. No price
+          correlation was computed. No duplicate_economic_exposure/
+          correlated_loss_mechanism/missing_exposure conclusion was
+          asserted. No holdings/targets/tiers/caps/gates/clusters/ladders/
+          trims/sells/margin/allocator/brokerage/order/chart-evidence/
+          "Eureka" file was touched. One pre-existing test
+          (test_relationship_validator.py's
+          test_validating_the_real_repository_relationships_dir_does_not_mutate_it)
+          and two hardcoded decision-count assertions
+          (test_portfolio_hq_dashboard_decisions.py, 69 to 70) were
+          corrected in the same filing, since this batch's own addition of
+          four further real intelligence/relationships/ records and the
+          new governance/decisions.yaml row made their prior literal
+          assertions false. The
+          milestone-4-portfolio-relationship-mapping gate's own
+          status: proposed above is unchanged by this entry — thirteen
+          total additive records (the nine from REL-0002/REL-0003 plus this
+          batch's four) are a third step, not Milestone 4 completion. This
+          entry creates no standing authorization for a fourth
+          relationship-content batch or a fifth pair within this one.
+          Opened as a draft PR; not merged, not independently reviewed, not
+          principal-accepted in this session.
+        pr: null
+        status: in_progress
+        date: "2026-08-04"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md
@@ -2110,6 +2198,16 @@ workstreams:
       - intelligence/relationships/AMZN_MSFT.md
       - intelligence/relationships/AMZN_GOOGL.yaml
       - intelligence/relationships/AMZN_GOOGL.md
+      - "PR #242 (REL-0004, WS-0005 Milestone 4 completion standard, merged 2026-08-04T17:46:30Z, merge commit 29761b6a12bb81e3fff7c199f5ea4de57f3d32a5)"
+      - governance/decisions/REL-0005-ws0005-milestone4-third-relationship-content-batch-semis-tsm.md
+      - intelligence/relationships/NVDA_TSM.yaml
+      - intelligence/relationships/NVDA_TSM.md
+      - intelligence/relationships/ASML_TSM.yaml
+      - intelligence/relationships/ASML_TSM.md
+      - intelligence/relationships/KLAC_TSM.yaml
+      - intelligence/relationships/KLAC_TSM.md
+      - intelligence/relationships/AVGO_TSM.yaml
+      - intelligence/relationships/AVGO_TSM.md
     next_action: >
       Milestones 1-2 are complete (see milestone entries above) — PR #151
       merged, both independent Fable reviews completed and remain visible
@@ -3811,9 +3909,35 @@ workstreams:
       history (PR #237) remains recorded above and is unedited. `active_pr` is `null` until this
       filing's own PR number exists, per `OPS-0001`'s convention already used for every prior
       WS-0005 filing in this log — a bounded follow-up commit sets it once the PR is opened.
-    active_branch: claude/rel0004-milestone4-completion-standard
-    active_pr: 242
-    last_verified_main_sha: 607832d07e2849051c74f4f83cf05627fce2fc8c
+
+      **`REL-0005` (this filing) is this entry's own live work — a third relationship-content
+      batch, filed in an isolated git worktree/branch deliberately kept separate from a
+      concurrent session's own active mutation lane (`claude/rel0004-milestone4-completion-standard`,
+      PR #242) throughout.** This session paused all mutation work while PR #242 remained open,
+      independently re-confirmed via the GitHub API that it had merged (merge commit
+      `29761b6a12bb81e3fff7c199f5ea4de57f3d32a5`, 2026-08-04T17:46:30Z) before resuming, and
+      fast-forwarded its own branch cleanly from `607832d` to that commit with zero conflict and
+      zero file from PR #242's own branch/worktree read or touched at any point. `REL-0005`
+      authorizes and — in the same combined governance-and-implementation pull request, following
+      `REL-0002`'s and `REL-0003`'s own packaging precedent — implements four
+      `intelligence/relationships/` records sharing TSM as the common counterparty: `NVDA_TSM` and
+      `AVGO_TSM` (`manufacturing_dependency`), `ASML_TSM` and `KLAC_TSM` (`capital_spending_
+      dependency`) — recorded in full in the `rel0005-third-relationship-content-batch-semis-tsm`
+      gate entry above. `AVGO_TSM` was added mid-session on a separate, explicit principal
+      authorization beyond the batch's original three-pair scope, conditioned on independent
+      re-verification against `REL-0001` §E, which this session performed before accepting it. This
+      session's three original draft records (`NVDA_TSM`, `ASML_TSM`, `KLAC_TSM`), drafted while
+      `REL-0004` was still the next-available identifier, had their internal self-references
+      mechanically corrected to `REL-0005` once PR #242 claimed that identifier — no pair's
+      identity, evidence, or scope changed. The `active_branch`/`active_pr` fields below are
+      updated to this filing's own branch, `claude/rel0004-milestone4-semis-relationship-batch`;
+      `REL-0004`'s own already-merged branch/PR history (PR #242) remains recorded above and is
+      unedited. `active_pr` is `null` until this filing's own PR number exists, per `OPS-0001`'s
+      convention already used for every prior WS-0005 filing in this log — a bounded follow-up
+      commit sets it once the PR is opened.
+    active_branch: claude/rel0004-milestone4-semis-relationship-batch
+    active_pr: 243
+    last_verified_main_sha: 29761b6a12bb81e3fff7c199f5ea4de57f3d32a5
     last_verified_date: "2026-08-04"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and

@@ -1,0 +1,109 @@
+tickers: [KLAC, TSM]
+relationship_type: capital_spending_dependency
+symmetric: false
+subject: KLAC
+object: TSM
+direction: >
+  KLAC (subject) is capital-spending-dependent on TSM (object): KLAC's own
+  Company Intelligence record discloses TSMC at approximately 23% of FY2023
+  revenue (secondary, single data point) and foundry/logic customers
+  (TSMC, Intel, Samsung) at roughly 65-75% of FY2025 revenue combined —
+  KLAC's revenue is materially dependent on TSM's (and the wider
+  foundry/IDM class's) capital-expenditure cycle for process-control
+  equipment purchases. No TSM-side dependency on KLAC is asserted as a
+  distinct claim by this record.
+relationship_status: current
+decision_served:
+  - duplicate_exposure_detection
+  - thesis_monitoring
+evidence:
+  - claim: >
+      KLAC's own Company Intelligence record discloses, in its margin-
+      relevance evidence section, that "foundry/logic customers (TSMC,
+      Intel, Samsung) reportedly represent roughly 65-75% of FY2025
+      revenue" and, separately, that "TSMC reportedly approximately 23% of
+      FY2023 revenue" — both explicitly labeled "secondary, unverified,
+      directional only" and "secondary, single data point, not tracked
+      across other years in this research pass," respectively. This
+      repository's own comparison-artifact research
+      (`BATCH1_SEMIS_EQUIPMENT_COMPARISON.md` §5) independently found that
+      KLAC (alongside ASML/AMAT/LRCX) is exposed to the same semiconductor
+      fabrication-capacity capital-expenditure ("WFE") cycle that
+      `targets.yaml`'s own `semis` cluster-cap comment already identifies
+      generally; `BATCH3_SEMIS_COMPUTE_CONNECTIVITY_COMPARISON.md` §16
+      independently found the same TSMC-capacity-expansion-drives-
+      equipment-purchases mechanism applies to KLAC specifically, alongside
+      ASML/AMAT/LRCX. TSM's own record corroborates the scale of the
+      underlying capex cycle: Q2 2026 capital expenditure represented
+      approximately 39% of that quarter's revenue amid full-year 2026
+      guidance of $60-64 billion, with "raw-material and equipment-supply
+      constraints" disclosed as its own generic risk-factor category.
+    source: >
+      intelligence/companies/KLAC.md (margin-relevance evidence section,
+      "Semiconductor-capex sensitivity" and "Customer concentration"
+      subsections); intelligence/BATCH1_SEMIS_EQUIPMENT_COMPARISON.md §5
+      ("Shared semiconductor-capex drivers"); intelligence/BATCH3_SEMIS_COMPUTE_CONNECTIVITY_COMPARISON.md
+      §16 ("Cross-batch structural and correlated-risk overlap with Batch
+      1"); intelligence/companies/TSM.yaml (capital-expenditure risk entry)
+      and TSM.md ("Extreme capital intensity," "Raw-material and
+      equipment-supply constraints") — all independently re-inspected this
+      session.
+    inspected_source_type: secondary
+    source_date: "2026-07-25"
+    effective_date: "2026-08-04"
+    evidence_classification: inferred
+    confidence: low
+    materiality: moderate
+    uncertainty: >
+      KLAC's own record explicitly labels its TSMC-specific figure (~23% of
+      FY2023 revenue) as "secondary, single data point, not tracked across
+      other years" — the weakest-evidenced of the three records in this
+      batch, and this record inherits that weakness rather than upgrading
+      it; confidence is therefore rated `low`, not `moderate`. TSM's own
+      record does not name KLAC (or KLA) specifically anywhere as an
+      equipment customer — independently confirmed by this session's direct
+      grep of TSM.yaml and TSM.md for "KLAC" and "KLA," which returned zero
+      matches; its "raw-material and equipment-supply constraints" risk
+      category is disclosed generically. KLAC's own record also discloses
+      that memory customers (SK Hynix, Micron) represent a separate
+      roughly 15-25% of FY2025 revenue, and that the combined foundry/logic
+      figure (65-75%) spans TSMC, Intel, and Samsung together, not TSMC
+      alone — TSM is one member of a named multi-company class, not KLAC's
+      sole or even separately-quantified customer beyond the single FY2023
+      data point. No new external research was performed to verify either
+      figure; this record relies exclusively on evidence already present
+      in the repository.
+    disconfirming_evidence: >
+      KLAC's own record's combined foundry/logic concentration figure
+      (65-75% of FY2025 revenue) spans TSMC, Intel, and Samsung together —
+      this is not an exclusive TSM dependency, and unlike ASML's own
+      TSMC-specific ~24%-of-net-sales figure, KLAC's only TSMC-specific
+      number is a single, lower-confidence FY2023 data point not
+      independently re-confirmed in any subsequent year. This record's
+      claim is scoped accordingly: TSM is a named, disclosed member of the
+      capex-driver class KLAC's revenue depends on, at a materially weaker
+      evidentiary tier than the ASML_TSM record filed in this same batch.
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-04"
+  next_due: "2026-11-02"
+  log:
+    - date: "2026-08-04"
+      note: >
+        Record created under governance/decisions/REL-0001-ws0005-milestone4-relationship-schema-taxonomy-evidence-standard-and-inventory-authorization.md
+        (frozen schema/taxonomy/evidence standard) and
+        governance/decisions/REL-0005-ws0005-milestone4-third-relationship-content-batch-semis-tsm.md
+        (this batch's own authorization), following the capital-spending-
+        dependency classification in
+        governance/audits/WS0005_M4_RELATIONSHIP_EVIDENCE_INVENTORY_2026-08-04.md
+        §4.2. Uses only evidence already identified in that inventory and in
+        intelligence/companies/KLAC.md, intelligence/companies/TSM.yaml/.md,
+        intelligence/BATCH1_SEMIS_EQUIPMENT_COMPARISON.md, and
+        intelligence/BATCH3_SEMIS_COMPUTE_CONNECTIVITY_COMPARISON.md — no
+        external research was performed. One-sided sourcing (TSM's own
+        record does not name KLAC) and this pair's materially weaker,
+        single-data-point evidentiary tier relative to ASML_TSM are
+        disclosed explicitly in this entry's own evidence[0].uncertainty/
+        disconfirming_evidence and in KLAC_TSM.md. No correlation of any
+        kind was computed. Neither KLAC.yaml/KLAC.md nor TSM.yaml/TSM.md
+        was modified by this unit.

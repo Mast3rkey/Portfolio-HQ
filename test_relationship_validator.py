@@ -642,6 +642,10 @@ _REAL_RELATIONSHIP_STEMS = [
     "GOOGL_MSFT",
     "AMZN_MSFT",
     "AMZN_GOOGL",
+    "ASML_TSM",
+    "AVGO_TSM",
+    "KLAC_TSM",
+    "NVDA_TSM",
 ]
 
 
@@ -649,9 +653,11 @@ def test_validating_the_real_repository_relationships_dir_does_not_mutate_it():
     """REL-0002 authorized the first real intelligence/relationships record
     (CEG_MSFT). REL-0003 added eight further records in the same batch
     (AVGO_GOOGL, AVGO_META, ETN_GNRC, GEV_GNRC, GNRC_PWR, GOOGL_MSFT,
-    AMZN_MSFT, AMZN_GOOGL). Validating the real directory must be a clean,
-    valid pass over all nine records, and must never mutate the directory or
-    any of its contents."""
+    AMZN_MSFT, AMZN_GOOGL). REL-0005 added four further records, all sharing
+    TSM as the common counterparty (ASML_TSM, AVGO_TSM, KLAC_TSM, NVDA_TSM).
+    Validating the real directory must be a clean, valid pass over all
+    thirteen records, and must never mutate the directory or any of its
+    contents."""
     assert Path("intelligence/relationships").exists()
     before = {
         stem: {
