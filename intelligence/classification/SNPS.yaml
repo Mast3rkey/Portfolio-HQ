@@ -1,0 +1,47 @@
+schema_version: '1.0'
+ticker: SNPS
+economic_role:
+  economic_system_ref: Digital Platforms & Enterprise Software
+  company_role: Oligopolist EDA software provider enabling semiconductor and device design workflows
+  role_basis: Evidence shows Synopsys as one of three firms controlling ~78%+ of the global EDA market,
+    and post-Ansys markets itself as offering an integrated device-to-system design software stack spanning
+    chip-level EDA and multiphysics simulation, reinforced by a Nvidia partnership pivoting compute-intensive
+    design workloads to AI-accelerated infrastructure.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - CDNS
+  - ANSS
+  - PTC
+  - ADSK
+  rationale: Synopsys underwent a severe, company-specific credibility event in September 2025 (a single-day
+    ~35-36% stock decline tied to Design IP guidance cuts and internally acknowledged roadmap missteps)
+    whose effects remain unresolved nearly a year later, including ongoing securities class-action litigation
+    and a newly disclosed multi-billion-dollar activist stake (Elliott) publicly pushing for changes to
+    the company's monetization strategy. The company is also still integrating its large, recently closed
+    Ansys acquisition, carrying leverage still above its own stated target even after paydown progress.
+    These are concrete, unresolved developments distinct from ordinary disclosed risk, not merely the
+    routine competitive or regulatory disclosures common to any operating business, and together warrant
+    a reviewer's explicit reconsideration of posture ahead of the September 2026 Investor Day and pending
+    litigation outcomes.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: limited
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a further deterioration in the disclosed GAAP-versus-non-GAAP earnings gap or a securities-litigation
+    outcome adverse to the company following its disclosed guidance-cut event.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-E
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#SNPS
+content_sha256: 7e8fcb7a221afaca20e8fc43db123bbd626912282084747f77c04927ed62ce1d

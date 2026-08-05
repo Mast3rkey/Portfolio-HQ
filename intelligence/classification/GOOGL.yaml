@@ -1,0 +1,48 @@
+schema_version: '1.0'
+ticker: GOOGL
+economic_role:
+  economic_system_ref: Digital Platforms & Enterprise Software
+  company_role: digital-advertising platform and cloud computing platform
+  role_basis: Google Search & other remained the largest single revenue line ($60.399B of $109.896B Q1
+    2026 revenue) while Google Cloud reached genuine segment profitability ($6.598B operating income)
+    on 63% YoY revenue growth and a $462.3B disclosed Cloud backlog, spanning enterprise AI infrastructure,
+    Vertex AI, and Gemini Enterprise.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - Microsoft (MSFT)
+  - Meta Platforms (META)
+  - Amazon (AMZN)
+  rationale: A final judgment was entered in the search-distribution antitrust case in December 2025,
+    with both Alphabet and the DOJ/states now appealing, while the separate ad-tech case's April 2025
+    liability finding is proceeding toward remedies that Alphabet's own filing says could include structural
+    remedies materially affecting the business -- a materially different risk category than a fine or
+    behavioral commitment. This concrete legal escalation coincides with capital expenditure more than
+    doubling year-over-year in the same quarter Alphabet issued $31.1B of new senior notes, with FY2026
+    capex guidance reportedly raised further (secondary-sourced, unverified) to $205B. Together these
+    represent a specific, evidence-based departure from Alphabet's ordinary disclosed profile warranting
+    explicit reviewer reconsideration rather than routine monitoring.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: true
+  relationship_record_coverage:
+  - AMZN_GOOGL
+  - AVGO_GOOGL
+  - GOOGL_MSFT
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    an adverse structural remedy in either of the two live, unresolved U.S. antitrust matters, one of
+    which Alphabet's own filing states could materially affect the business.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-B
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#GOOGL
+content_sha256: 34a9f1ef4f3aef6485aa09313dfdd2d04ce107631cbc91d442ae45b3218b6d82

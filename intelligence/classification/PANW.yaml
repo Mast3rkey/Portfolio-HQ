@@ -1,0 +1,44 @@
+schema_version: '1.0'
+ticker: PANW
+economic_role:
+  economic_system_ref: Digital Platforms & Enterprise Software
+  company_role: cybersecurity platform (network security, SASE, cloud security, and security operations)
+  role_basis: Palo Alto Networks pursues a platformization strategy consolidating network security, SASE,
+    cloud security, and Cortex/XSIAM security operations, reporting fiscal-year-end 2025 Next-Generation
+    Security ARR of $5.6 billion and remaining performance obligations of $15.8 billion.
+capital_priority:
+  status: maintain_current_weight
+  comparator_set:
+  - CRWD
+  - FTNT
+  - ZS
+  - CSCO
+  rationale: 'PANW''s evidence shows a company operating within its own established platformization strategy
+    and risk profile: NGS ARR and RPO continue to scale, cash flow generation remains strong ($3.196B
+    nine-month operating cash flow), and the disclosed risks (a working-capital deficit affected by deferred
+    revenue, the QRadar contingent-consideration liability, undisclosed AI-product-level economics, and
+    CrowdStrike competitive overlap) are all characterized in the evidence itself as ordinary, monitored,
+    and not newly realized or unusually severe. No single fact in this record -- such as an acquisition
+    close, leadership change, or a marked swing in profitability -- represents a distinctive departure
+    from PANW''s disclosed baseline profile sufficient to warrant reconsideration beyond routine monitoring.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a material slowdown in platformization conversion (which already requires sales concessions and lengthens
+    cycles), given NGS ARR is an explicitly non-GAAP metric whose scope can expand and reduce comparability.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-D
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#PANW
+content_sha256: f09a98727b0ced85084d2306b1a360eaccb3af5458f5ed1b26855dc9f9d2b303

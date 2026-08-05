@@ -1,0 +1,49 @@
+schema_version: '1.0'
+ticker: PWR
+economic_role:
+  economic_system_ref: Energy & Electrification
+  company_role: Specialty EPC contractor building and maintaining electric-grid transmission/distribution
+    infrastructure and in-facility data-center electrical systems
+  role_basis: 'Corrected evidence shows two distinct data-center-relevant channels: (A) direct in-facility
+    electrical design/installation/manufacturing through Cupertino Electric, serving hyperscaler and technology
+    customers, and (B) indirect utility/grid exposure via the AEP 765kV transmission partnership tied
+    explicitly to AEP''s $72B capital plan and data-center-driven demand growth, with revenue skewed 70%
+    Utility and Power per the corrected FY2025 10-K end-market mix.'
+capital_priority:
+  status: maintain_current_weight
+  comparator_set:
+  - MYRG
+  - MTZ
+  - EME
+  - DY
+  rationale: Corrected evidence confirms Quanta as a growing, still-primarily-services grid/data-center
+    infrastructure contractor with record and accelerating backlog (to $53.4B by Q2 2026), raised FY2026
+    guidance, four in-quarter acquisitions, and a positive Moody's outlook -- all continuations of an
+    already-established growth trajectory rather than a break from it. Disclosed risks (fixed-price execution
+    risk, craft-labor safety/fatality exposure, renewable-policy exposure, a stale S&P rating) are ordinary
+    for a scaling contractor and remain at moderate-or-lower severity with no unresolved acute development.
+    Nothing in the corrected evidence rises above Quanta's own established operating profile.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership:
+  - power_infra
+  issuer_lookthrough_membership: false
+  relationship_record_coverage:
+  - GNRC_PWR
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a fixed-price contract materially exceeding its assumed cost, which the company's own risk-factor
+    language states can happen substantially and is a structurally distinct risk from equipment-manufacturer
+    peers.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-C
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#PWR
+content_sha256: 8336d0a24d87504eb3dd2eff2b002bfc0172ce11bd5ccdae5b26e035df94540e

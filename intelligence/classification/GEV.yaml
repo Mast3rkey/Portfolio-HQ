@@ -1,0 +1,46 @@
+schema_version: '1.0'
+ticker: GEV
+economic_role:
+  economic_system_ref: Energy & Electrification
+  company_role: power generation and grid/electrification equipment manufacturer
+  role_basis: GEV's backlog spans gas power, electrification, and grid equipment, growing to $176 billion
+    by Q2 2026 with gas-equipment backlog/slot-reservation agreements at 116 GW, and the Electrification
+    segment recorded over $5 billion of first-half-2026 data-center-specific equipment orders, evidencing
+    a core role supplying physical power and grid infrastructure.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - Siemens Energy
+  - Eaton Corporation
+  - Vertiv Holdings
+  - Schneider Electric
+  rationale: 'GE Vernova''s Q2 2026 results show a marked, recently-realized strengthening of the business:
+    FY2026 free-cash-flow guidance was raised from $6.5-7.5B to $11.5-12.5B and revenue guidance was raised,
+    adjusted EBITDA margin nearly doubled year-over-year to 11.3%, orders grew 88% organically, and the
+    roughly $200B total-backlog target was accelerated a full year to year-end 2027. This magnitude of
+    guidance revision and margin improvement across two consecutive quarters is materially different in
+    degree from GE Vernova''s ordinary disclosed catalyst/risk profile and merits explicit reviewer reconsideration
+    rather than routine monitoring.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership:
+  - power_infra
+  issuer_lookthrough_membership: false
+  relationship_record_coverage:
+  - GEV_GNRC
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    execution failure on one or more large, long-cycle, fixed- or competitively-bid contracts, or a further
+    widening of the Wind segment's disclosed EBITDA losses beyond the maintained ~$400M full-year guidance.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-B
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#GEV
+content_sha256: 4c8de31c31373b00d2549cdba3d59dda81a0f0a26962ae70445db1077fa5fc67

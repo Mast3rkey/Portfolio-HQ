@@ -1,0 +1,48 @@
+schema_version: '1.0'
+ticker: ASML
+economic_role:
+  economic_system_ref: AI & Compute Infrastructure
+  company_role: semiconductor manufacturing equipment (lithography, EUV/DUV)
+  role_basis: The file describes ASML as the sole commercial supplier of EUV lithography systems worldwide
+    within a ~94% share of all lithography equipment (DUV+EUV), with FY2026 net-sales guidance raised
+    twice during 2026 on 'extremely strong' AI-driven order intake -- positioning it as an upstream equipment
+    chokepoint for the compute/chip supply chain rather than a compute or software operator itself.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - AMAT
+  - KLAC
+  - LRCX
+  - TOELY
+  rationale: ASML holds a sole-supplier EUV lithography monopoly with a structurally difficult-to-replicate
+    supplier moat and twice-raised FY2026 guidance, but China's share of net system shipments more than
+    halved within two 2026 quarters (36% Q4 2025 -> 19% Q1 2026 -> 14% Q2 2026), and a pending US bill
+    (the MATCH Act) could extend restrictions to DUV, ASML's currently-still-sellable China product line.
+    A separate, unresolved allegation of possible export-control circumvention (publicly disputed by ASML,
+    no independent resolution) compounds a concentrated, currently-moving geopolitical risk category the
+    evidence itself frames as the most acute of any company in its comparison batch. This combination
+    of an actively escalating, unresolved risk that would materially change the investment case if enacted
+    warrants explicit reviewer reconsideration rather than routine monitoring.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership:
+  - semis
+  issuer_lookthrough_membership: true
+  relationship_record_coverage:
+  - ASML_TSM
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    further escalation of China export restrictions to cover ASML's remaining sellable DUV product line,
+    given China's share of net system sales already fell from 36% to 14% across two quarters.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-C
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#ASML
+content_sha256: 735ccaddf3f8c3183625816a48cab1136b29fb05dcf5b8f56eac252c2a0829a4

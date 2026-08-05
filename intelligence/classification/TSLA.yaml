@@ -1,0 +1,50 @@
+schema_version: '1.0'
+ticker: TSLA
+economic_role:
+  economic_system_ref: Energy & Electrification
+  company_role: Vertically integrated electric-vehicle and energy-storage manufacturer with autonomy/robotics
+    optionality
+  role_basis: Evidence shows Tesla operating Automotive and Energy Generation & Storage segments at record
+    scale (480,126 Q2 2026 deliveries, 13.5 GWh storage deployments) alongside the largest North American
+    fast-charging network and expanding Megafactory capacity, plus emerging robotaxi/FSD and Optimus robotics
+    programs layered on the core electrification business.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - GM
+  - F
+  - RIVN
+  - BYDDY
+  rationale: 'Tesla''s evidence shows several concrete, unresolved developments materially different from
+    ordinary disclosed risk: a live NHTSA engineering analysis (EA26002) covering approximately 3.2 million
+    vehicles that is the step preceding a potential recall, a structural collapse in regulatory-credit
+    revenue (down 67% YoY) following expiration of federal EV incentives, and a swing to negative free
+    cash flow alongside sharp margin compression in the most recent quarter. Additional distinctive factors
+    include a confirmed structural limitation permanently freezing roughly 4 million HW3 vehicles at Level-2
+    capability, and Optimus production remaining near zero against repeated reveal delays and management''s
+    own admission that the 2026 production rate is ''impossible to predict.'' Together these represent
+    a company whose forward narrative rests heavily on unproven autonomy and robotics milestones amid
+    a currently deteriorating core-business margin and regulatory picture, warranting explicit reviewer
+    reconsideration rather than routine monitoring.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: true
+  relationship_record_coverage: []
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: limited
+  highest_disclosed_risk_severity: high
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    an adverse outcome in NHTSA's open engineering analysis EA26002, covering approximately 3.2 million
+    vehicles across model years 2016-2026 and examining whether camera-only FSD fails to warn drivers
+    appropriately.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-E
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#TSLA
+content_sha256: 038bd48dfc60bd80bb7fd1ed3a2f846c92522c0b5e7c8eb2db703f23b5fd58e2

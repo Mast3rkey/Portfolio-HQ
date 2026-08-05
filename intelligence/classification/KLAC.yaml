@@ -1,0 +1,47 @@
+schema_version: '1.0'
+ticker: KLAC
+economic_role:
+  economic_system_ref: AI & Compute Infrastructure
+  company_role: semiconductor process-control / inspection and metrology equipment
+  role_basis: KLA makes process control, defect inspection, and metrology equipment used across wafer
+    fabrication (distinct from lithography/deposition/etch peers), with Semiconductor Process Control
+    representing 90.3% of Q3 FY2026 revenue and record FY2025 revenue of $12.16B supporting the broader
+    semiconductor-capex buildout that underlies AI/compute hardware production.
+capital_priority:
+  status: maintain_current_weight
+  comparator_set:
+  - AMAT
+  - LRCX
+  - ASML
+  - ONTO
+  rationale: KLA's evidence shows a well-established, highly profitable process-control business with
+    a normal cyclicality profile (a confirmed FY2024 down year followed by a strong FY2025 rebound), a
+    China revenue trend and export-control exposure that has been evolving for several years as a recurring,
+    disclosed industry feature rather than a new shock, and a recent post-earnings share-price decline
+    attributed to gross-margin mix concerns despite beating estimates. None of these developments represents
+    a structural change in kind or degree from KLA's own established profile -- there is no acquisition,
+    litigation, or leadership change in evidence. This falls within KLA's ordinary, disclosed risk/opportunity
+    baseline.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership:
+  - semis
+  issuer_lookthrough_membership: false
+  relationship_record_coverage:
+  - KLAC_TSM
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a further, larger China-revenue decline beyond the already-observed drop from 43% (FY2024) to 33%
+    (FY2025) tied to export-control tightening.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-E
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#KLAC
+content_sha256: 1e527567b040ff56966edce75a6559cbe3032eb40d9acf67c859e3672f0c1999

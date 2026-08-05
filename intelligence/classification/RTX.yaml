@@ -1,0 +1,47 @@
+schema_version: '1.0'
+ticker: RTX
+economic_role:
+  economic_system_ref: 'other: Aerospace & Defense'
+  company_role: aerospace/defense
+  role_basis: RTX operates through three segments -- Collins Aerospace (avionics/aircraft systems), Pratt
+    & Whitney (commercial and military engines, including the sole-source F135 for the F-35), and Raytheon
+    (defense/missile systems) -- with FY2025 consolidated net sales of $88,603 million and roughly 52%
+    government-related revenue, a role distinct from any of the five listed economic-system categories.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - LMT
+  - NOC
+  - GD
+  - LHX
+  - BA
+  rationale: RTX's own FY2025 Form 10-K discloses a newly enacted (January 7, 2026) Executive Order empowering
+    the 'Secretary of War' to potentially restrict RTX's ability to pay dividends or repurchase stock
+    based on a government determination that RTX has underperformed on U.S. government contract execution
+    -- an unusual, recently-disclosed political risk directly targeting capital-return capacity, not generic
+    risk-factor boilerplate. This sits alongside the still-open, multi-year Pratt & Whitney GTF powder-metal
+    matter (an ongoing SEC investigation and appealed securities litigation) and a buyback pace that has
+    collapsed to near zero even as cash generation and the balance sheet improved. This combination of
+    a novel, capital-return-specific regulatory risk and an unresolved multi-year liability is distinctive
+    enough to warrant a reviewer's fresh look.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a materially adverse development in the still-open Pratt & Whitney GTF powder-metal matter, more than
+    three years after its 2023 discovery and an already-disclosed $2.9 billion pre-tax charge.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-A
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#RTX
+content_sha256: c9b2497ee4bb1476fa18fcbb48e214c2c9bf58cc029156eaf8059e2191d3ba77

@@ -1,0 +1,45 @@
+schema_version: '1.0'
+ticker: COST
+economic_role:
+  economic_system_ref: 'other: Consumer Retail & Membership Commerce'
+  company_role: membership-fee-funded warehouse club retail
+  role_basis: Costco operates 933 warehouses funded structurally by recurring membership fees ($5.323B
+    FY2025 membership-fee revenue, +10.0% YoY) with renewal rates near 90% worldwide (92.2% U.S./Canada,
+    89.7% worldwide at Q3 FY2026), a low-margin bulk-goods model none of the five listed economic-system
+    categories directly describes.
+capital_priority:
+  status: maintain_current_weight
+  comparator_set:
+  - WMT
+  - TGT
+  - BJ
+  rationale: 'The evidence shows COST operating within its ordinary, well-established profile: renewal
+    rates remain stable near 90% worldwide (a -0.1pp move at Q3 FY2026 that the record itself notes does
+    not establish sustained deterioration), membership-fee and digitally-enabled sales growth continue,
+    and warehouse expansion proceeds on guidance. The labor-relations history was resolved via a ratified
+    2025-2028 national agreement, the narrower Local 174 wage-theft complaint and the Stockov tariff-refund
+    litigation are both low-severity, early-stage, unresolved matters rather than realized material events,
+    and competitive/tariff/e-commerce risks are the kind of ordinary disclosed risk every large retailer
+    carries. Nothing in the evidence rises above this baseline to a distinctive, recently-realized change
+    in COST''s investment case.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a material share loss to Amazon, Walmart/Sam's Club, Target, or BJ's in a general-merchandise/e-commerce
+    environment the record already characterizes as vigorously competitive.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T21:00:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-D
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#COST
+content_sha256: cb59d6f648deb9f37e895b27f3d6076bdd5dfd8d3e2b04e2523763d01e3907df
