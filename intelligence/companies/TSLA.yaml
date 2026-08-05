@@ -51,7 +51,7 @@ conviction:
 review:
   cadence_days: 90
   last_reviewed: "2026-08-05"
-  next_due: "2026-11-05"
+  next_due: "2026-11-03"
   log:
     - date: "2026-08-05"
       note: >
@@ -75,6 +75,26 @@ review:
         next_gate phrase; the closest identified analog is the CEO
         compensation package's own operational-milestone structure, offered
         as an inference, not a confirmed match to the gate's original intent.
+    - date: "2026-08-05"
+      note: >
+        WS-0005 Milestone-6-prerequisite-2 focused freshness check (governance
+        decision PI-0039), same day as record creation. Corrected TSLA.md's
+        robotaxi-geography claim, which was already stale at authoring time:
+        Orlando and Tampa reportedly launched driverless robotaxi service on
+        2026-07-21, 18 days before this record's own creation, contradicting
+        the "softened from firm H1 2026 timelines" framing -- live footprint
+        is reportedly 5 markets, not 3. Also retested (not merely re-flagged)
+        this record's own disclosed [UNVERIFIED-CONFLICT] on US EV market
+        share: found one further corroborating data point (Q2 2026 50.5%,
+        CleanTechnica) filling in the quarterly trend line, but the original
+        41%-to-59% Q3/Q4 2025 claim remains unreconciled -- gap confirmed
+        still open, not resolved. Also corrected this record's own next_due
+        arithmetic (was 2026-11-05, inconsistent with cadence_days: 90 from
+        last_reviewed: 2026-08-05; corrected to 2026-11-03). conviction.rating
+        preserved at Medium; no tier/target/holdings/allocator/margin change
+        made. WebFetch not attempted this session (persistent prior disclosed
+        network-policy blocks); all new content is WebSearch-snippet-derived
+        and labeled SECONDARY, not primary-source-verified.
 sources:
   - note: "Tesla, Inc. Q2 2026 shareholder deck/earnings release (reported 2026-07-22), covering segment revenue, deliveries (480,126), energy storage deployments (13.5 GWh), margins, operating income, net income, capex, and cash position. Identified via WebSearch snippets citing Tesla's own IR press release, 8-K, and multiple outlets (Electrek, CNBC, InsideEVs, StockTitan, TradingView); not directly fetched/opened this session (WebFetch blocked)."
     url: null

@@ -87,10 +87,22 @@ point release.
 
 **Robotaxi commercial status**: operating in Austin and California, and
 as of **2026-07-03** expanded to Miami -- the first driverless-service
-market outside Texas/California. Stated company ambition: unsupervised
-FSD/Robotaxi in roughly a dozen U.S. states by end of 2026 (some planned
-Orlando/Tampa/Phoenix/Las Vegas launches softened from firm H1 2026
-timelines to "preparations underway" per secondary reporting). Safety
+market outside Texas/California. **Update, 2026-08-05 (SECONDARY only,
+no primary source opened -- WFLA, FOX13 Tampa, Not a Tesla App, Tesla
+Oracle):** Tesla reportedly launched unsupervised/driverless robotaxi
+service in both **Orlando and Tampa on 2026-07-21**, 18 days after
+Miami -- correcting this record's prior "softened from firm H1 2026
+timelines to preparations underway" framing for those two markets,
+which is now stale; the live footprint is reportedly 5 markets (Austin,
+Bay Area/California, Miami, Orlando, Tampa), not 3. Separately, one
+secondary source (Electrek, 2026-07-22) reports Tesla's own Q2 chart
+shows paid robotaxi miles roughly flat quarter-over-quarter (~900K Q1
+and Q2 alike) despite the geographic expansion -- a relevant nuance on
+service scale versus geographic reach that this record does not
+resolve either way. Stated company ambition: unsupervised
+FSD/Robotaxi in roughly a dozen U.S. states by end of 2026 (Phoenix and
+Las Vegas launches remain "preparations underway" per secondary
+reporting as of this update). Safety
 data (Austin, July 2025-March 2026, NHTSA data via secondary synthesis):
 17 total reported incidents (13 property-damage-only, 2 no-injury, 1
 minor injury without hospitalization, 1 minor injury with
@@ -230,7 +242,17 @@ gradually declining (49%→46%) rather than straightforwardly rising --
 should be treated as this session's own inference from partial,
 unreconciled secondary data, not a verified fact. Rivian's R2 SUV (2026
 launch) is flagged in secondary commentary as "the biggest near-term
-threat to Model Y."
+threat to Model Y." **Update, 2026-08-05 (WS-0005 Milestone-6-prerequisite-2
+freshness check, SECONDARY only, no primary source opened):** one
+further data point was found and added to the trend line -- Tesla's
+**Q2 2026 US EV share reportedly 50.5%** (CleanTechnica, 2026-07-22),
+sitting between the FY2025 figure (46%) and the Q1 2026 figure (54.2%)
+above. This fills in the quarterly trend (FY2025 46% -> Q1 2026 54.2%
+-> Q2 2026 50.5%) but does **not** reconcile against the original,
+still-uncorroborated 41%-to-59% Q3/Q4 2025 claim, whose sourcing/
+methodology remains unidentified -- this conflict is confirmed still
+open, not resolved, after this session's own re-check (no primary
+source, e.g. Cox Automotive or EIA, was reachable).
 
 **Global/China**: global EV-leadership figures were inconsistent across
 sources and could not be reconciled from search snippets alone (unit
