@@ -38,6 +38,61 @@ package (redacted `.yaml` content plus redacted `.md` content), the *entire*
 assembled package is re-scanned for the full forbidden-field/marker set
 before it may be released to a shard. Any surviving match blocks release.
 
+VERSION 1.1 bounded correction (post-PR-#253-review-4867365726): an
+independent exact-head review of the v1.0 sanitizer found a BLOCKING
+defect -- the bare policy noun "gate" (as opposed to the adjective
+"gated", which v1.0 did catch) was never matched, so every one of the six
+formerly-gated Company Intelligence records (SNPS, ICE, SPGI, WM, RKLB,
+TSLA), each of which discusses its own `gates.yaml` entry extensively
+using constructions like "this record's gate", "the gate's own X", "the
+gate names Y", reached its drafting shard with that policy-status
+language intact -- in YAML `risks[]`/`catalysts[]` items (never
+paragraph-scanned before this version) and in `.md` prose outside any
+whole-section-stripped block. A second, related defect: a dangling
+cross-reference paragraph (ETN.md) that named a stripped section by title
+("see 'Governed policy' below") without itself containing any v1.0
+marker, survived. Root cause common to both: `complete_package_scan()`
+re-applied the *same* pattern list the strip pass had already applied to
+the *already-redacted* text, so by construction nothing the strip pass
+missed could ever be caught by the "independent" rescan -- the two layers
+were not actually independent.
+
+This version fixes both defects and, per the review's own recommendation,
+makes strip and verify genuinely different mechanisms rather than one
+list reused twice:
+  - `_GATE_POLICY_PATTERNS` (new): catches the bare-noun "gate" specifically
+    in Portfolio-HQ policy-status constructions ("this gate", "the gate's",
+    "gate names", "gate describes", "for gate purposes", `next_gate`,
+    `allow_add`, `cash_pending_clearance`, `hold_no_add`, "pending
+    clearance", "buying clearance", "buy eligib-", "admission condition",
+    "conditional admission", "current governed status", "reopening
+    trigger/condition"), while `_GATE_LEGITIMATE_USE_PATTERNS` exempts real,
+    observed non-policy usage in this corpus -- "technological gate"
+    (ASML), "gate-all-around" transistor structures (KLAC), "qualification
+    gate" (PWR), and process/methodology gates ("stop-before-drafting
+    gate", "CI gate", "git diff --check ... gate") that describe a prior
+    research session's own compliance process, not this ticker's own
+    buy-eligibility status.
+  - `_MD_FORBIDDEN_SECTION_HEADER_PATTERNS` (the whole-section-strip title
+    list) is now *also* applied at paragraph level (not just as section
+    headers), so a paragraph anywhere in the document that merely *refers*
+    to a stripped section by name (the ETN pattern) is caught generically,
+    not via a one-off special case.
+  - `independent_policy_scan()` (new): the actual second-stage verifier,
+    built from materially different, broader concept checks than the
+    strip patterns -- bare `conviction` (not phrase-qualified, stricter
+    than strip's phrase-specific patterns), the gate-policy family above,
+    the structural `gates.yaml` config-key names, `target_pct`/percent-of-
+    book numeric patterns, and the chart-domain family -- rather than
+    re-running `_MD_STRIP_PATTERNS` against its own output. Used by both
+    `verify_markdown_redaction()` (post-strip .md check) and
+    `complete_package_scan()` (final assembled-package check).
+  - Item-level YAML redaction (`_redact_retained_text_fields()`) now also
+    scans `catalysts[].catalyst` (previously unscanned entirely -- the
+    SNPS `catalysts[]` gate leak reached its shard through this exact
+    gap) in addition to `risks[].risk`, `competitive_advantages[]`, and
+    `sources[].note`.
+
 This module is a sanitizer, not a data producer or a validator of sealed
 classification records (see `classification_validator.py` for that). It
 never writes into `intelligence/companies/`, never mutates a Company
@@ -89,6 +144,109 @@ _MD_FORBIDDEN_SECTION_HEADER_PATTERNS = [
     )
 ]
 _MD_HEADER_LINE = re.compile(r"^##\s+.*$", re.MULTILINE)
+
+_WHITESPACE_RUN = re.compile(r"\s+")
+
+
+def _normalize_ws(text: str) -> str:
+    """v1.1: `yaml.safe_dump` line-wraps long strings at ~80 chars,
+    inserting a newline mid-phrase (e.g. "customer-qualification\n    gate"
+    for what was originally "customer-qualification gate" in the source
+    `.md`/`.yaml`) -- a literal-space multi-word pattern like "qualification
+    gate" then fails to match across the inserted newline, silently
+    defeating both the strip layer's multi-word patterns and the
+    legitimate-use whitelist (discovered live: PWR's own "customer-
+    qualification gate" phrase, which should have been whitelist-exempted,
+    instead fell through to the bare-gate catch-all because the whitelist
+    match itself failed on the wrapped text). Every forbidden/whitelist
+    check in this module runs against a whitespace-collapsed working copy
+    -- never against the stored/returned text, which keeps its original
+    formatting."""
+    return _WHITESPACE_RUN.sub(" ", text)
+
+# ── v1.1: bare-noun "gate" policy-status leakage (review 4867365726) ───────
+#
+# Real, observed non-policy uses of the bare word "gate" in this corpus that
+# must NOT be stripped -- checked first; a paragraph/item matching one of
+# these is exempted from the gate-policy check below for that occurrence.
+_GATE_LEGITIMATE_USE_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in (
+        r"technological gate",
+        r"qualification gate",
+        r"gate[\s-]*-?\s*all\s*-\s*around",  # "gate-all-around" transistor structures (KLAC)
+        r"gate oxide",
+        r"gate length",
+        r"gate electrode",
+        r"gate dielectric",
+        r"logic gate",
+        r"high-k gate",
+        r"stop-before-drafting gate",
+        r"source-readiness gate",
+        r"\bCI gate\b",
+        r"git diff --check[^.]*gate",
+    )
+]
+
+# Portfolio-HQ policy-status "gate" constructions -- the bare noun used to
+# refer to this ticker's own gates.yaml entry, its buy-eligibility status,
+# or the reopening/clearance condition attached to it.
+_GATE_POLICY_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in (
+        r"\bthis (?:record'?s )?gate\b",
+        r"\bthe gate'?s\b",
+        r"\bthis gate'?s\b",
+        r"\bgate'?s own\b",
+        r"\bgate names\b",
+        r"\bgate describes\b",
+        r"\bfor gate purposes\b",
+        r"\bgate'?s (?:reopening|cited|original|comparison|concern)\b",
+        r"\bunderlying the gate\b",
+        r"\brelationship to the gate\b",
+        r"\bnext_gate\b",
+        r"\ballow_add\b",
+        r"\bcash_pending_clearance\b",
+        r"\bhold_no_add\b",
+        r"\bpending clearance\b",
+        r"\bbuying clearance\b",
+        r"\bbuy eligib\w*\b",
+        r"\badmission condition\b",
+        r"\bconditional admission\b",
+        r"\bcurrent governed status\b",
+        r"\breopening (?:trigger|condition)\b",
+        r"\bactionable[- ]gated?\b",
+    )
+]
+
+
+def _strip_legitimate_gate_uses(text: str) -> str:
+    """Returns a whitespace-normalized working copy of text with every
+    legitimate-use phrase replaced by a neutral placeholder, so a
+    subsequent bare-gate check cannot false-positive on real
+    business/technical content (or on a YAML-line-wrap-split phrase --
+    see `_normalize_ws`)."""
+    out = _normalize_ws(text)
+    for p in _GATE_LEGITIMATE_USE_PATTERNS:
+        out = p.sub("GATE_LEGITIMATE_USE", out)
+    return out
+
+
+def _contains_gate_policy_leak(text: str) -> bool:
+    """True if `text` references this ticker's own Portfolio-HQ gate/
+    buy-eligibility policy status -- checked against a whitespace-
+    normalized working copy with every known-legitimate non-policy "gate"
+    usage neutralized first, so "technological gate", "gate-all-around",
+    "qualification gate", and process/CI gates never trigger this check
+    even when `yaml.safe_dump` has line-wrapped the phrase across a
+    newline."""
+    working = _strip_legitimate_gate_uses(text)
+    if any(p.search(working) for p in _GATE_POLICY_PATTERNS):
+        return True
+    # Bare noun "gate"/"gates" with no legitimate-use exemption and no
+    # specific policy phrase match is still, in this corpus, overwhelmingly
+    # a gates.yaml reference (every remaining occurrence found live traced
+    # to one) -- catch it directly rather than trust an exhaustive phrase
+    # enumeration.
+    return bool(re.search(r"\bgates?\b", working, re.IGNORECASE))
 
 
 def _strip_forbidden_sections(text: str) -> tuple[str, int]:
@@ -202,7 +360,7 @@ class SanitizationRecord:
     shard_destination: str = ""
 
 
-SANITIZER_VERSION = "1.0"
+SANITIZER_VERSION = "1.1"
 
 
 _ITEM_REDACTION_PLACEHOLDER = (
@@ -211,36 +369,58 @@ _ITEM_REDACTION_PLACEHOLDER = (
 )
 
 
+def _item_text_is_forbidden(text: str) -> bool:
+    """Item-level forbidden check: the standard strip/chart markers, the
+    gate-policy family, AND (v1.1) the independent verifier's own broader
+    concept checks (e.g. bare `conviction`, not just strip's phrase-
+    qualified patterns) -- applied here too so an item-level leak is
+    actually stripped in place rather than merely detected-and-blocked
+    later by `complete_package_scan()`. Used for every retained free-text
+    field inside the YAML -- risks[], catalysts[], competitive_advantages[],
+    sources[]."""
+    if _paragraph_matches_any(text, _MD_STRIP_PATTERNS + _CHART_PATTERNS):
+        return True
+    if _contains_gate_policy_leak(text):
+        return True
+    return bool(independent_policy_scan(text))
+
+
 def _redact_retained_text_fields(out: dict, removed: list[str]) -> None:
     """Live inspection (this implementation) found that a marker can leak
     into a *retained* field's own free text -- e.g. a risks[] entry
-    discussing "its conviction rating's own exclusions", or a sources[]
-    citation note that happens to name a marker-matched outlet. Top-level
-    key stripping (portfolio_role_ref/conviction/review.log) does not catch
+    discussing "its conviction rating's own exclusions", a sources[]
+    citation note that happens to name a marker-matched outlet, or (v1.1,
+    review 4867365726) a risks[]/catalysts[] entry discussing this ticker's
+    own gates.yaml status using the bare noun "gate". Top-level key
+    stripping (portfolio_role_ref/conviction/review.log) does not catch
     this. Applies the same strip discipline at item granularity: any
-    risks[].risk, competitive_advantages[] entry, or sources[].note whose
-    text matches a marker is replaced with a placeholder -- the rest of the
-    entry's structural fields (severity, identified, status, url, date) are
-    retained since none of those are forbidden. Scanned against both the
-    answer-key marker list and the defensive chart-domain marker list --
-    a source citation naming a chart/quote aggregator by name (e.g.
-    "tradingview.com" cited only as a WebSearch-snippet outlet) is excluded
-    at the item level just as a true answer-key leak would be, matching
-    this module's fail-closed-over-permissive discipline."""
-    item_patterns = _MD_STRIP_PATTERNS + _CHART_PATTERNS
-
+    risks[].risk, catalysts[].catalyst, competitive_advantages[] entry, or
+    sources[].note whose text matches a marker is replaced with a
+    placeholder -- the rest of the entry's structural fields (severity,
+    identified, status, expected, url, date) are retained since none of
+    those are forbidden. `catalysts[].catalyst` (v1.1: previously
+    unscanned entirely -- the SNPS gate leak reached its shard through
+    exactly this gap) is now scanned identically to risks[].risk."""
     risks = out.get("risks")
     if isinstance(risks, list):
         for i, r in enumerate(risks):
             if isinstance(r, dict) and isinstance(r.get("risk"), str):
-                if _paragraph_matches_any(r["risk"], item_patterns):
+                if _item_text_is_forbidden(r["risk"]):
                     r["risk"] = _ITEM_REDACTION_PLACEHOLDER
                     removed.append(f"risks[{i}].risk")
+
+    catalysts = out.get("catalysts")
+    if isinstance(catalysts, list):
+        for i, c in enumerate(catalysts):
+            if isinstance(c, dict) and isinstance(c.get("catalyst"), str):
+                if _item_text_is_forbidden(c["catalyst"]):
+                    c["catalyst"] = _ITEM_REDACTION_PLACEHOLDER
+                    removed.append(f"catalysts[{i}].catalyst")
 
     advantages = out.get("competitive_advantages")
     if isinstance(advantages, list):
         for i, a in enumerate(advantages):
-            if isinstance(a, str) and _paragraph_matches_any(a, item_patterns):
+            if isinstance(a, str) and _item_text_is_forbidden(a):
                 advantages[i] = _ITEM_REDACTION_PLACEHOLDER
                 removed.append(f"competitive_advantages[{i}]")
 
@@ -248,7 +428,7 @@ def _redact_retained_text_fields(out: dict, removed: list[str]) -> None:
     if isinstance(sources, list):
         for i, s in enumerate(sources):
             if isinstance(s, dict) and isinstance(s.get("note"), str):
-                if _paragraph_matches_any(s["note"], item_patterns):
+                if _item_text_is_forbidden(s["note"]):
                     s["note"] = _ITEM_REDACTION_PLACEHOLDER
                     removed.append(f"sources[{i}].note")
 
@@ -292,38 +472,110 @@ def _split_paragraphs(text: str) -> list[str]:
 
 
 def _paragraph_matches_any(paragraph: str, patterns: list[re.Pattern]) -> bool:
-    return any(p.search(paragraph) for p in patterns)
+    normalized = _normalize_ws(paragraph)
+    return any(p.search(normalized) for p in patterns)
+
+
+def _paragraph_is_forbidden(paragraph: str) -> bool:
+    """v1.1: a paragraph is stripped if it matches a strip marker, OR
+    *names* a stripped section by its own title (review 4867365726's
+    "dangling reference" finding -- e.g. ETN.md's "see 'Governed policy'
+    below", which contains no other marker but literally quotes a
+    section-header phrase) -- so the same header-title list doubles as a
+    cross-reference detector, not just a section-boundary detector -- OR
+    references this ticker's own gate/buy-eligibility policy status."""
+    if _paragraph_matches_any(paragraph, _MD_STRIP_PATTERNS):
+        return True
+    normalized = _normalize_ws(paragraph)
+    if any(p.search(normalized) for p in _MD_FORBIDDEN_SECTION_HEADER_PATTERNS):
+        return True
+    if _contains_gate_policy_leak(paragraph):
+        return True
+    return bool(independent_policy_scan(paragraph))
 
 
 def redact_markdown(text: str) -> tuple[str, int]:
     """Sec7.2 step 4, extended: first drop whole forbidden sections (a
     marker word need not appear in the section's own body -- e.g. a
     "## Conviction" section reading only "**Rating: High**"), then strip
-    any remaining paragraph matching a marker. Returns (redacted_text,
-    removed_count) where removed_count is sections-plus-paragraphs."""
+    any remaining paragraph matching a marker, a section-title
+    cross-reference, or (v1.1) a gate-policy reference. Returns
+    (redacted_text, removed_count) where removed_count is
+    sections-plus-paragraphs."""
     text, sections_removed = _strip_forbidden_sections(text)
 
     paragraphs = _split_paragraphs(text)
     kept = []
     removed_count = sections_removed
     for para in paragraphs:
-        if _paragraph_matches_any(para, _MD_STRIP_PATTERNS):
+        if _paragraph_is_forbidden(para):
             removed_count += 1
             continue
         kept.append(para)
     return "\n\n".join(kept), removed_count
 
 
-def verify_markdown_redaction(redacted_text: str) -> list[str]:
-    """Sec7.2 step 5: mandatory re-scan. Returns a list of surviving marker
-    descriptions (empty list == clean). Never mutates, never trusts the
-    strip pass alone."""
-    findings = []
-    for p in _MD_STRIP_PATTERNS:
-        m = p.search(redacted_text)
+# ── v1.1 independent second-stage verifier (review 4867365726) ─────────────
+#
+# Deliberately NOT the same construction as _MD_STRIP_PATTERNS -- v1.0's
+# defect was that the "fail-closed rescan" reapplied the identical pattern
+# list the strip pass had already run, so it was tautological (nothing that
+# survives pass 1 can ever be caught by an identical pass 2). This verifier
+# uses broader, differently-constructed concept checks instead: bare
+# `conviction` (not phrase-qualified -- stricter than strip's phrase-
+# specific patterns, so it catches phrasings strip's own list doesn't
+# enumerate), the gate-policy family (which has its own legitimate-use
+# exemption logic, not present in the strip layer's patterns), the literal
+# gates.yaml config-key names, a target/percent-of-book numeric pattern,
+# and the chart-domain family. Sharing the *concept* (forbidden fields)
+# with the strip layer is expected and fine per the review's own framing
+# ("It may share a centrally defined forbidden-concept taxonomy, but it
+# must not merely rerun the exact transformation regexes and declare
+# success") -- the mechanism is what must differ, and does.
+_INDEPENDENT_VERIFY_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in (
+        r"\bconviction\b",                     # bare -- broader than strip's phrase-qualified checks
+        r"\bRating:\s*(?:Low|Medium|High|Very High)\b",
+        r"\bportfolio_role_ref\b",
+        r"\btarget_pct\b",
+        r"\d+(?:\.\d+)?\s*%\s*(?:of\s+book|target|weight|allocation)",
+        r"\bT1\b",
+        r"\bT2\b",
+        r"\bkeep current policy\b",
+        r"\bpromoted (?:to|from)\b",
+        r"\bgates?\.yaml\b",
+        r"\ballow_add\b",
+        r"\bcash_pending_clearance\b",
+        r"\bhold_no_add\b",
+        r"\bnext_gate\b",
+    )
+]
+
+
+def independent_policy_scan(text: str) -> list[str]:
+    """The actual second-stage verifier -- structurally independent from
+    the strip layer (see module docstring / comment above). Matches
+    against a whitespace-normalized copy (see `_normalize_ws`) so a
+    `yaml.safe_dump`-wrapped multi-word pattern (e.g. "keep current
+    policy" split across a line wrap) is still caught. Returns
+    surviving-finding descriptions; empty list == clean."""
+    findings: list[str] = []
+    normalized = _normalize_ws(text)
+    for p in _INDEPENDENT_VERIFY_PATTERNS:
+        m = p.search(normalized)
         if m:
-            findings.append(f"surviving marker {p.pattern!r} at {m.start()}")
+            findings.append(f"independent-verify marker {p.pattern!r} at {m.start()}")
+    if _contains_gate_policy_leak(text):
+        findings.append("independent-verify: gate-policy reference detected")
     return findings
+
+
+def verify_markdown_redaction(redacted_text: str) -> list[str]:
+    """Sec7.2 step 5: mandatory re-scan, using the independent verifier
+    (v1.1) -- not the same pattern list the strip pass already applied.
+    Returns a list of surviving marker descriptions (empty list == clean).
+    Never mutates, never trusts the strip pass alone."""
+    return independent_policy_scan(redacted_text)
 
 
 def scan_chart_domain(text: str) -> list[str]:
@@ -346,7 +598,12 @@ def complete_package_scan(pkg: SanitizedPackage) -> list[str]:
     """TIER-0005 fail-closed requirement: scan the *complete assembled*
     package (yaml + markdown together) for every forbidden marker plus a
     structural check that no forbidden YAML key survived. Any finding means
-    the package must not be released to a shard."""
+    the package must not be released to a shard.
+
+    v1.1: runs the ORIGINAL strip-pattern scan (still useful -- catches
+    anything a future strip-layer regression might miss) AND the
+    independently-constructed `independent_policy_scan()` (review
+    4867365726's actual fix -- the two are no longer the same check)."""
     findings: list[str] = []
 
     for key in _PACKAGE_FORBIDDEN_YAML_KEYS:
@@ -354,10 +611,13 @@ def complete_package_scan(pkg: SanitizedPackage) -> list[str]:
             findings.append(f"forbidden YAML key survived: {key!r}")
 
     text = _canonical_package_text(pkg)
+
     for p in _PACKAGE_FORBIDDEN_PATTERNS:
         m = p.search(text)
         if m:
             findings.append(f"forbidden marker survived in package text: {p.pattern!r} at {m.start()}")
+
+    findings.extend(f"complete-package {f}" for f in independent_policy_scan(text))
 
     return findings
 

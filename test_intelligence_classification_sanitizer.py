@@ -300,3 +300,188 @@ def test_module_never_imports_allocator_or_margin():
     source = Path("intelligence_classification_sanitizer.py").read_text()
     assert "import allocate" not in source
     assert "import margin_state" not in source
+
+
+# ── v1.1 regression coverage (review 4867365726, bounded correction) ─────
+#
+# The original v1.0 sanitizer caught the adjective "gated" but not the bare
+# policy noun "gate" -- every formerly-gated Company Intelligence record
+# discusses its own gates.yaml entry using constructions like "this
+# record's gate" / "the gate's own X" / "the gate names Y", none of which
+# contained the word "gated". These fixtures exercise that class of leak
+# directly, plus the ETN dangling-section-reference defect, a policy
+# synonym absent from the v1.0 strip list, and the legitimate non-policy
+# "gate" uses that must NOT be stripped.
+
+def test_bare_gate_noun_leak_is_detected_and_stripped():
+    text = "This is discussed further given this record's gate names the specific condition."
+    assert sanitizer._contains_gate_policy_leak(text)
+    redacted, removed_count = sanitizer.redact_markdown("Intro.\n\n" + text + "\n\nConclusion.")
+    assert "gate names" not in redacted
+    assert removed_count >= 1
+
+
+def test_bare_gate_possessive_leak_is_detected():
+    for text in (
+        "The gate's own next_gate condition remains unresolved.",
+        "This directly matches the gate's own stated reopening trigger.",
+        "Confirming and refining the gate's cited figures from last quarter.",
+        "Matching this record's gate's own next_gate language exactly.",
+    ):
+        assert sanitizer._contains_gate_policy_leak(text), text
+
+
+@pytest.mark.parametrize("ticker", ["SNPS", "ICE", "SPGI", "WM", "RKLB", "TSLA"])
+def test_all_six_formerly_gated_records_pass_fail_closed_scan(ticker):
+    """The exact six tickers review 4867365726 reproduced leakage for --
+    each must now sanitize cleanly with zero forbidden survivors."""
+    repo_root = Path(__file__).resolve().parent
+    pkg, rec = sanitizer.sanitize_company_files(repo_root, ticker)
+    assert pkg is not None, (ticker, rec.complete_package_scan_findings)
+    assert rec.complete_package_scan_passed
+
+
+@pytest.mark.parametrize("ticker", ["SNPS", "ICE", "SPGI", "WM", "RKLB", "TSLA"])
+def test_all_six_formerly_gated_records_carry_no_bare_gate_reference(ticker):
+    repo_root = Path(__file__).resolve().parent
+    pkg, rec = sanitizer.sanitize_company_files(repo_root, ticker)
+    assert pkg is not None
+    package_text = sanitizer.package_to_drafting_text(pkg)
+    assert not sanitizer._contains_gate_policy_leak(package_text)
+
+
+def test_etn_dangling_section_cross_reference_regression():
+    """ETN.md's own live text: 'This record's current-tier-and-target
+    statement (see "Governed policy" below) describes Eaton as it is
+    structured today' -- contains no v1.0-recognized marker itself, only a
+    cross-reference to a section that IS stripped. Must not survive."""
+    repo_root = Path(__file__).resolve().parent
+    pkg, rec = sanitizer.sanitize_company_files(repo_root, "ETN")
+    assert pkg is not None, rec.complete_package_scan_findings
+    assert "governed policy" not in pkg.markdown_text.lower()
+    assert "current-tier-and-target" not in pkg.markdown_text.lower()
+
+
+def test_dangling_cross_reference_to_stripped_section_stripped_generically(tmp_path=None):
+    """Synthetic analog of the ETN defect -- a paragraph that names a
+    stripped section by title without containing any other marker."""
+    md = (
+        "# ZZZZ\n\n"
+        "## Business summary\n\n"
+        "Ordinary factual content, retained.\n\n"
+        "This record's placement statement (see \"Governed policy\" below) "
+        "describes the company as structured today.\n\n"
+        "## Governed policy (existing, not a research conclusion)\n\n"
+        "Per targets.yaml, ZZZZ currently sits in a tier.\n\n"
+        "## Risks\n\n"
+        "An ordinary disclosed risk, retained.\n"
+    )
+    redacted, _ = sanitizer.redact_markdown(md)
+    assert "Governed policy" not in redacted
+    assert "Ordinary factual content, retained." in redacted
+    assert "An ordinary disclosed risk, retained." in redacted
+
+
+def test_policy_synonym_absent_from_primary_strip_list_still_caught():
+    """'buying clearance' / 'pending clearance' / 'admission condition' are
+    gate-policy synonyms never enumerated in _MD_STRIP_PATTERNS -- must be
+    caught by the gate-policy checker, not silently pass through."""
+    for text in (
+        "This name remains in a buying clearance state per current review.",
+        "The position is pending clearance before any further evaluation.",
+        "Resolution of the admission condition is expected next quarter.",
+        "Its conditional admission status has not changed this cycle.",
+    ):
+        assert sanitizer._contains_gate_policy_leak(text), text
+
+
+def test_legitimate_non_policy_gate_uses_are_not_stripped():
+    """Real, observed non-policy 'gate' usage in this corpus (ASML's
+    'technological gate', KLAC's 'gate-all-around' transistor structures,
+    PWR's 'customer-qualification gate', and OPS-0008's process/CI
+    gates) must survive redaction -- over-redacting ordinary factual
+    evidence unrelated to Portfolio-HQ placement is itself a defect."""
+    legitimate = (
+        "the exposure lost would be specifically to the technological gate that determines whether leading-edge nodes can be manufactured",
+        "process-control spending tied to node/architecture transition complexity (new materials, gate-all-around, advanced packaging)",
+        "Safety record and bonding/insurability function as a customer-qualification gate: large utilities vet contractors",
+        "Per OPS-0008 Section 2's mandatory stop-before-drafting gate, this session paused before drafting",
+        "changed) to clear this repository's git diff --check CI gate -- following the same precedent",
+    )
+    for text in legitimate:
+        assert not sanitizer._contains_gate_policy_leak(text), text
+
+
+def test_gate_whitelist_survives_yaml_line_wrap():
+    """Regression for the exact PWR defect found during this correction:
+    yaml.safe_dump wraps long strings at ~80 chars, so 'customer-
+    qualification gate' can be split across a newline as 'customer-
+    qualification\\n    gate' -- the whitelist match must still exempt it
+    (whitespace-normalized comparison), not fall through to the bare-gate
+    catch-all."""
+    wrapped = "a customer-qualification\n    gate for large utility contracts"
+    assert not sanitizer._contains_gate_policy_leak(wrapped)
+
+
+def test_catalysts_item_level_redaction():
+    """SNPS's own catalysts[] entry leaked gate-policy language through an
+    entirely unscanned field in v1.0 -- catalysts[].catalyst must now be
+    scanned identically to risks[].risk."""
+    data = _synthetic_company_yaml()
+    data["catalysts"] = [{
+        "catalyst": "Investor Day, confirmed scheduled -- this record's gate's own explicitly named reopening trigger.",
+        "expected": "2026-09-30",
+        "status": "pending",
+    }]
+    sanitized, removed = sanitizer.sanitize_yaml_data(data)
+    assert sanitized["catalysts"][0]["catalyst"] == sanitizer._ITEM_REDACTION_PLACEHOLDER
+    assert "catalysts[0].catalyst" in removed
+
+
+def test_bare_conviction_caught_by_independent_verifier_even_when_strip_misses_it():
+    """Strip layer's own patterns are phrase-qualified (e.g. 'conviction
+    rating') and do not catch every construction (e.g. 'conviction
+    rationale', 'weighted in ... conviction'); the independent verifier's
+    bare `conviction` check must still catch it -- this is the actual
+    proof the two layers use different mechanisms, not the same list
+    twice."""
+    text = "was not weighted in this record's conviction rationale above"
+    assert not sanitizer._paragraph_matches_any(text, sanitizer._MD_STRIP_PATTERNS), (
+        "test invalid if the strip layer's own phrase-qualified patterns already catch this -- "
+        "the point is that they do NOT, and the independent verifier does"
+    )
+    assert sanitizer.independent_policy_scan(text)
+
+
+def test_independent_verifier_pattern_set_differs_from_strip_pattern_set():
+    """Structural proof the two layers are not the same check reused
+    twice -- their pattern sources must differ."""
+    strip_patterns = {p.pattern for p in sanitizer._MD_STRIP_PATTERNS}
+    verify_patterns = {p.pattern for p in sanitizer._INDEPENDENT_VERIFY_PATTERNS}
+    assert strip_patterns != verify_patterns
+    # the independent verifier's bare `conviction` check is strictly
+    # broader than anything in the strip list (which never uses a bare,
+    # unqualified `conviction` pattern).
+    assert r"\bconviction\b" in verify_patterns
+    assert r"\bconviction\b" not in strip_patterns
+
+
+def test_complete_package_scan_is_not_tautological():
+    """Direct regression for the review's stated root cause: a leak that
+    survives the strip pass must still be catchable by
+    complete_package_scan() because it uses a different mechanism -- not
+    provable in general, but demonstrated concretely via the bare-
+    conviction case, which strip's own patterns do not enumerate."""
+    data = _synthetic_company_yaml()
+    del data["portfolio_role_ref"]
+    del data["conviction"]
+    data["risks"] = [{
+        "risk": "A fact not weighted in this record's conviction rationale.",
+        "severity": "low", "identified": "2026-01-01", "status": "monitoring",
+    }]
+    pkg, findings = sanitizer.build_sanitized_package("ZZZZ", data, "Clean markdown, no markers.")
+    # the item-level pass (which now also runs independent_policy_scan)
+    # strips this in place -- proving the fix reaches item-level content,
+    # not merely the final gate.
+    assert pkg.yaml_data["risks"][0]["risk"] == sanitizer._ITEM_REDACTION_PLACEHOLDER
+    assert findings == []
