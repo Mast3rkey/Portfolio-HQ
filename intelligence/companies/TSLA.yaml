@@ -88,3 +88,6 @@ sources:
   - note: "Secondary/aggregator and trade-press sources (Electrek, Teslarati, InsideEVs, TradingView, Not a Tesla App, and European/Chinese-market registration-data aggregators) used for autonomy/robotaxi status, Optimus production status, regional competitive-landscape (Europe registration declines, China wholesale-versus-delivery data), and Supercharger-network figures -- explicitly labeled secondary throughout TSLA.md, several figures (China trend data, exact capex/cash-flow reconciliation, Optimus production-count claim) flagged as internally inconsistent or single-sourced and unreconciled pending direct primary-source verification."
     url: null
     date: "2026-08-05"
+  - note: "Added 2026-08-05 following independent review: targeted re-check of the US EV market-share claim (41% Q3 2025 to 59% Q4 2025/early 2026), which found additional secondary figures (CleanTechnica: ~46% full-year 2025, down from ~49% in 2024; another source: ~54.2% Q1 2026) not reconciled into one consistent trend line this session -- flagged as [UNVERIFIED-CONFLICT] in TSLA.md rather than presented as a single clean upward swing. Not directly verified against a primary Tesla/industry-association source (WebFetch blocked on all attempted domains on a fresh attempt)."
+    url: null
+    date: "2026-08-05"

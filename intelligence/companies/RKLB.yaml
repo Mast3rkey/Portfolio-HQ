@@ -31,8 +31,8 @@ risks:
     severity: low
     identified: "2026-08-05"
     status: monitoring
-  - risk: "This Claude Code session's own primary-source access (WebFetch) was completely blocked at the network-policy layer (confirmed via proxy diagnostic showing a policy-denial CONNECT rejection) for every domain attempted, including sec.gov and Rocket Lab's own investor-relations site. No primary document was directly opened this session. Several figures were internally inconsistent across sources and are flagged in RKLB.md rather than silently resolved (total Electron mission count cited as both 84 and 91; current shares outstanding cited across four conflicting figures/dates; Stericycle-unrelated accumulated-deficit figures from a third-party aggregator that appeared internally inconsistent; an unresolved and likely-erroneous single-source reference to a possible additional 2025 Electron launch failure)."
-    severity: low
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was completely blocked at the network-policy layer (confirmed via proxy diagnostic showing a policy-denial CONNECT rejection) for every domain attempted, including sec.gov and Rocket Lab's own investor-relations site, reconfirmed on a fresh 2026-08-05 attempt. No primary document was directly opened this session. Several figures were internally inconsistent across sources and are flagged in RKLB.md rather than silently resolved (total Electron mission count cited as both 84 and 91; current shares outstanding cited across four conflicting figures/dates; Stericycle-unrelated accumulated-deficit figures from a third-party aggregator that appeared internally inconsistent; an unresolved and likely-erroneous single-source reference to a possible additional 2025 Electron launch failure). Severity raised from low to moderate on 2026-08-05 following independent review, given this record's own sources block originally carried url: null throughout (now partly corrected, see sources below) and given the ~$8B Iridium acquisition -- this record's single largest disclosed fact -- rests entirely on this same unverified-against-primary sourcing posture."
+    severity: moderate
     identified: "2026-08-05"
     status: monitoring
 catalysts:
@@ -83,6 +83,15 @@ sources:
     date: "2026-02-26"
   - note: "Iridium Communications Inc. definitive merger agreement announcement (2026-06-29) -- deal terms, financing structure (Deutsche Bank/Wells Fargo bridge-loan commitment), expected close, and market reaction. Identified via WebSearch snippets citing CNBC, SpaceNews, GovConWire, Yahoo Finance, and Motley Fool coverage; not directly fetched/opened this session (WebFetch blocked)."
     url: null
+    date: "2026-06-29"
+  - note: "Added 2026-08-05 following independent review, which noted this record's sources block carried url: null throughout, weaker than the immediately preceding GNRC.yaml precedent, and that the Iridium deal's existence was treated as settled fact without noting its corroboration was multi-outlet-secondary rather than primary. Targeted re-check found the deal independently corroborated via both parties' own official investor-relations press releases and a specific SEC EDGAR exhibit URL under Rocket Lab's own CIK (1819994) -- URLs recorded below. None was directly opened this session (WebFetch confirmed blocked on sec.gov and iridium.com on a fresh attempt); this remains WebSearch-synthesis-derived corroboration of the deal's existence and headline terms, not a primary-source-document read."
+    url: "https://investor.iridium.com/2026-06-29-Rocket-Lab-to-Acquire-Iridium-in-Historic-Deal,-Creating-A-Fully-Vertically-Integrated-Space-Powerhouse-Primed-for-Growth"
+    date: "2026-06-29"
+  - note: "Rocket Lab Corporation's own investor-relations press release announcing the Iridium acquisition, corroborating the same deal terms as the Iridium-side release above."
+    url: "https://investors.rocketlabcorp.com/news-releases/news-release-details/rocket-lab-acquire-iridium-historic-deal-creating-fully"
+    date: "2026-06-29"
+  - note: "SEC EDGAR exhibit identified by search under Rocket Lab USA, Inc.'s own CIK (1819994), associated with the Iridium acquisition announcement -- identified via WebSearch, not directly fetched/opened this session (WebFetch blocked on sec.gov)."
+    url: "https://www.sec.gov/Archives/edgar/data/1819994/000175392626001085/g085783_ex99-1.htm"
     date: "2026-06-29"
   - note: "Neutron program status updates -- the 2026-01-21 Stage 1 tank rupture, subsequent progress described on the May 2026 earnings call, Launch Complex 3 (Wallops Island) operational status, and the FAA launch-permit filing window. Identified via WebSearch snippets citing SpaceNews, Spaceflight Now, The Register, and Space.com; not directly fetched/opened this session."
     url: null

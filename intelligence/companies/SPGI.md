@@ -38,11 +38,26 @@ with no 2026 confirmation found), and Mobility (spun off, see below).
 FY2025 segment revenue mix (secondary aggregation, not independently
 verified against the ARS/10-K directly): Market Intelligence ~$4.92B
 (~37%), Ratings ~$4.72B (~36%), Indices ~$1.85B (~14%), Mobility ~$1.75B
-(~13%, now spun off) -- percentages do not cleanly sum to 100% across
-different reporting cuts found, an unreconciled minor inconsistency.
-FY2025 total revenue: **$15.336 billion**, +8% YoY; GAAP net income
-$4.471B (+16%); GAAP diluted EPS $14.66 (+19%); adjusted net income
-$5.441B (+11%).
+(~13%, now spun off). **Corrected 2026-08-05 following independent
+review**: an earlier draft of this record omitted the fifth segment,
+**Commodity Insights** (renamed "S&P Global Energy" effective
+2025-11-14, see below), from this list entirely -- the four segments
+above summed to only ~$13.24B against the stated $15.336B FY2025 total,
+a ~$2.1B (~13.7%) gap the reviewer correctly identified as an
+unreconciled, incomplete reconciliation rather than a mere
+rounding/percentage-labeling artifact. Targeted re-verification this
+session found Commodity Insights FY2025 revenue of **~$1.95 billion
+(~15.6% of total)**, cited by one secondary source (ycharts.com,
+itself presumably derived from the 10-K, not directly opened this
+session). Adding this figure closes the reconciliation to
+~$15.19B against the $15.336B stated total (~99% accounted for, the
+small residual most likely corporate/other/eliminations, not further
+resolved this session) -- a materially better reconciliation than the
+original four-segment list, though still not verified against the
+primary 10-K text directly (WebFetch remained blocked on sec.gov on a
+fresh attempt). FY2025 total revenue: **$15.336 billion**, +8% YoY;
+GAAP net income $4.471B (+16%); GAAP diluted EPS $14.66 (+19%); adjusted
+net income $5.441B (+11%).
 
 Recast 2025 operating margins (post-Mobility-removal, per a 2026-07-06
 pro forma release): Indices 68% GAAP / 70% adjusted; Ratings 64% GAAP /
@@ -63,6 +78,39 @@ through 2026-06-30; distribution effective 2026-07-01, 1-for-1 ratio,
 fractional shares sold for cash. Resulting entity: **Mobility Global
 Inc.** (NYSE: MBGL), began regular-way trading 2026-07-01; SPGI retains
 no ownership interest. [SPGI-R01]
+
+**Spinoff scope -- corrected/clarified 2026-08-05 following independent
+review, which flagged this record's original framing as a possible
+factual error.** An earlier draft of this record implicitly assumed a
+Mobility-only separation without directly addressing whether other
+segments (Commodity Insights, or a since-divested "Engineering
+Solutions" business) were also part of it. Targeted re-verification this
+session (WebSearch only -- WebFetch remained blocked on sec.gov and
+ftc.gov on fresh attempts) found: (a) multiple independent secondary
+sources (Yahoo Finance, The Motley Fool, StockTitan, CollisionWeek,
+Repairer Driven News, Auto Remarketing) consistently describe Mobility
+Global's portfolio as CARFAX, automotiveMastermind, Polk Automotive
+Solutions, and Market Scan only; (b) one source states explicitly that
+S&P Global continues as a provider of credit ratings, benchmarks,
+analytics, and workflow solutions through four core remaining
+businesses -- Market Intelligence, Ratings, **Commodity Insights**, and
+S&P Dow Jones Indices -- indicating Commodity Insights was **not** part
+of the Mobility separation; (c) "Engineering Solutions" was a
+**distinct, unrelated, and much earlier transaction** -- S&P Global sold
+its Engineering Solutions business (from the 2022 IHS Markit merger) to
+KKR, completing 2023-05-02 for ~$750M after-tax proceeds; the business
+now operates independently as Accuris, and this session found no
+evidence connecting it to the 2026 Mobility separation in any way. **On
+the specific, narrower evidence this session was able to recover, the
+record's original Mobility-only framing appears better supported than a
+broader Commodity-Insights-plus-Engineering-Solutions framing would be**
+-- but this is still a WebSearch-synthesis conclusion, not a
+primary-source-document read (the actual spinoff Form 10/8-K exhibit
+was identified by search but not directly opened), and is presented here
+as this session's own evidence-recovery finding, not as a settled fact
+beyond dispute. A future session with working SEC access should confirm
+directly against the Form 10/8-K text before this point is treated as
+fully resolved either way.
 
 **Accounting treatment -- the load-bearing fact for the gate's
 comparability concern**: Mobility's results are included in SPGI's
@@ -245,8 +293,13 @@ data providers; a material TSA-related stranded-cost surprise.
 
 1. No primary source was directly opened this session -- all facts are
    WebSearch-snippet-derived.
-2. Segment revenue percentages do not cleanly sum to 100% across
-   different reporting cuts found.
+2. Segment revenue reconciliation (corrected 2026-08-05, see above) --
+   the originally-omitted Commodity Insights figure (~$1.95B) closes the
+   gap to ~99% of the stated total; the small residual is not further
+   resolved. The Mobility-spinoff-scope claim (also corrected 2026-08-05,
+   see "Spinoff scope" above) rests on WebSearch synthesis, not a direct
+   primary-source read, and should be treated as this session's own
+   evidence-recovery finding rather than a fully settled fact.
 3. Q2 2026 adjusted-EPS beat-versus-miss framing conflicted across
    sources ($4.08 actual vs. $4.75 or $4.97 consensus figures cited
    inconsistently).

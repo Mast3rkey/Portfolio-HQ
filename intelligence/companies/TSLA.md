@@ -212,8 +212,25 @@ found.
 to 59% (Q4 2025/early 2026), attributed to the federal tax credit's
 expiration disproportionately hurting smaller/less-scaled competitors
 rather than necessarily reflecting Tesla-specific demand strength.
-Rivian's R2 SUV (2026 launch) is flagged in secondary commentary as "the
-biggest near-term threat to Model Y."
+**[UNVERIFIED-CONFLICT, flagged 2026-08-05 following independent
+review]**: this quarter-over-quarter swing was originally stated with
+more confidence than the underlying single-aggregator sourcing supports,
+unlike comparably-sourced claims elsewhere in this record (China,
+Optimus) which are already flagged. A targeted re-check this session
+found additional, seemingly conflicting figures from other secondary
+sources: Tesla held **~46% of the full-year 2025** US EV market (down
+from ~49% in 2024, per one source), and **~54.2%** in Q1 2026 (per
+another) -- readings that, taken together with the 41%/59% quarterly
+swing, are not necessarily contradictory (full-year averages smooth over
+quarter-specific spikes/troughs) but were not reconciled into one
+consistent trend line this session. The directional takeaway -- a real
+Q4 2025 spike plausibly tied to the tax-credit-expiration timing effect,
+sitting within a longer-run full-year share that appears to be
+gradually declining (49%→46%) rather than straightforwardly rising --
+should be treated as this session's own inference from partial,
+unreconciled secondary data, not a verified fact. Rivian's R2 SUV (2026
+launch) is flagged in secondary commentary as "the biggest near-term
+threat to Model Y."
 
 **Global/China**: global EV-leadership figures were inconsistent across
 sources and could not be reconciled from search snippets alone (unit

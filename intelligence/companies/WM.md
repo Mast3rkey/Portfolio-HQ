@@ -43,7 +43,25 @@ Bullfincher, not WM's formal reportable-segment structure) shows:
 Commercial $6.52B (26.05%), Landfill $5.35B (21.36%), Industrial $3.99B
 (15.93%), Residential $3.60B (14.37%), Healthcare Solutions $2.95B
 (11.79%), WM Renewable Energy $318M (1.44%) -- this cut is directionally
-indicative only, not confirmed against the 10-K directly.
+indicative only, not confirmed against the 10-K directly. **Disclosed
+explicitly, per independent review (2026-08-05):** these six line items
+sum to only ~$22.73B, roughly 90% of the stated $25.2B FY2025 total --
+a ~$2.5B gap this record's original draft did not flag. A targeted
+WebSearch re-check this session found additional figures from the same
+aggregator source for two lines not in the original six -- Transfer
+~$2.63B and Recycling Processing and Sales ~$1.26B for FY2025 -- but
+adding these to the original six *overshoots* the stated $25.2B total
+by roughly $1.4B rather than closing the gap, consistent with these
+being two different, non-additive classification views (a
+customer-facing Commercial/Industrial/Residential/Landfill/Healthcare/
+Renewable line-of-business cut versus a service-type Collection/
+Landfill/Transfer/Recycling/Other cut that likely embeds Transfer and
+Recycling revenue inside the customer-facing lines already) rather than
+components of one single complete breakdown. This session could not
+reconcile WM's FY2025 revenue to a single, complete, non-overlapping
+segment/line-of-business breakdown from the secondary sources
+available -- treat every revenue-mix figure in this record as
+partial and directionally indicative only, not a complete accounting.
 
 ## The Stericycle acquisition
 
@@ -252,7 +270,7 @@ guidance trim.
    3.16x figure explicitly labeled "for the quarter ended March 2026,"
    i.e., Q1 not Q2) and a separate, undated debt-to-equity figure (2.29)
    -- not reconciled to a consistent Q2 2026 leverage picture.
-2. Republic Services' landfill count cited as both 190 and 209 across
+4. Republic Services' landfill count cited as both 190 and 209 across
    sources.
 5. Landfill closure/post-closure liability reserve figures -- not found.
 6. WM-specific PFAS litigation/reserve exposure -- not found (disclosed
@@ -262,6 +280,9 @@ guidance trim.
 8. Exact 8-K/10-Q accession numbers for Q2 2026 were not confirmed
    (only inferred from search snippets, one of which appeared to
    actually reference the Q1 2026 filing).
+9. FY2025 revenue could not be reconciled to a single, complete,
+   non-overlapping segment/line-of-business breakdown -- see Business
+   summary, corrected 2026-08-05 following independent review.
 
 ## Review framework
 

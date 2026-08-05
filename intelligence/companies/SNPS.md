@@ -42,8 +42,30 @@ since mid-2026, "agentic"/autonomous AI chip-design workflows.
 
 **Announced 2024-01-16; completed 2025-07-17** (China's final regulatory
 approval came 2025-07-14; Ansys delisted from Nasdaq at market open
-2025-07-17). [SNPS-R01] **Deal terms**: enterprise value ~$35 billion;
-each Ansys share converted to 0.3399 Synopsys shares plus $199.91 cash.
+2025-07-17). [SNPS-R01] **Deal terms -- two distinct figures, not a single
+number, corrected in this record (2026-08-05) following independent
+review**: the **originally announced** merger agreement (2024-01-16) set
+consideration at **0.3450 Synopsys shares plus $197.00 cash** per Ansys
+share. Per the agreement's own anti-dilution/exchange-cap provision (if
+stock consideration would have exceeded 19.9999% of Synopsys shares
+outstanding pre-merger, the exchange ratio was reduced to the minimum
+extent necessary with cash correspondingly increased to offset), the
+**final consideration actually paid at closing** (2025-07-17) was
+**0.3399 Synopsys shares plus $199.91 cash** per Ansys share -- a
+provision this record's research indicates was triggered during the
+transaction's progress toward closing. Enterprise value ~$35 billion at
+announcement. This distinction (announced-vs-final terms) was not
+previously stated in this record; an earlier draft cited only the final
+figures without noting they differ from the originally announced terms,
+which an independent reviewer flagged as a likely factual error. Both
+figures are corroborated across multiple secondary sources (Yahoo
+Finance, CNBC) and an SEC S-4/A filing and Ansys investor-relations FAQ
+page were identified by search as the underlying primary documents, but
+**neither was directly opened this session** (WebFetch remained blocked
+on sec.gov on a fresh attempt) -- this correction rests on WebSearch's
+own synthesis of those sources, not a direct primary-source read, and
+should still be treated as unverified-against-primary pending a future
+session with working SEC access.
 **Financing**: ~$19 billion cash consideration funded via cash-on-hand
 plus debt; Synopsys secured $16 billion in fully committed debt
 financing (an $11.7B bridge commitment plus a $4.3B term-loan facility)
@@ -69,13 +91,19 @@ Divestitures tied to antitrust clearance included Synopsys's Optical
 Solutions Group and Ansys's PowerArtist business (buyer/terms not found
 this session).
 
-**Nvidia partnership/investment** (2025-12-01): Nvidia invested $2
-billion in Synopsys common stock at $414.79/share (~2.6% of shares
+**Nvidia partnership/investment** (2025-12-01, figures stated with more
+confidence than the underlying single-source-type sourcing supports --
+hedged here per independent review, matching this record's treatment of
+comparably-sourced items elsewhere): Nvidia is reported to have invested
+$2 billion in Synopsys common stock at $414.79/share (~2.6% of shares
 outstanding), becoming Synopsys's 7th-largest shareholder per LSEG data
-cited by Reuters/CNBC. The multi-year partnership pivots compute-
-intensive Synopsys applications to Nvidia CUDA-X/AI-physics/Omniverse,
-with joint go-to-market -- framed by secondary commentary as tied to
-Ansys's compute-intensive simulation workloads.
+cited by Reuters/CNBC -- these specific mechanics (price, share count,
+ranking) trace to that one data-provider/press pairing and were not
+independently cross-corroborated against a second, differently-sourced
+outlet this session. The multi-year partnership pivots compute-intensive
+Synopsys applications to Nvidia CUDA-X/AI-physics/Omniverse, with joint
+go-to-market -- framed by secondary commentary as tied to Ansys's
+compute-intensive simulation workloads.
 
 ## Recent financial results
 

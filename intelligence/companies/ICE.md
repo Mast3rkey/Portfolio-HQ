@@ -124,6 +124,38 @@ to acquisition-related debt-service and amortization costs. Black Knight
 synergy-target figures were cited inconsistently across sources this
 session ($230M vs. "$275M+"), unreconciled.
 
+### Black Knight's own antitrust and divestiture history (added 2026-08-05,
+following independent review -- material context this record's original
+draft omitted, addressed here separately from the current MarketAxess
+discussion above, not merged into it)
+
+ICE's 2023 acquisition of Black Knight was not a clean close: the FTC
+challenged the deal on antitrust grounds specific to mortgage-origination
+software, reaching a consent settlement that required divestiture of
+Black Knight's **Empower** (loan origination system) and **Optimal
+Blue** (product-and-pricing engine) businesses. Both were sold to
+**Constellation Software Inc.** (via its Constellation Web Solutions
+subsidiary) -- Optimal Blue specifically for $700 million ($200 million
+cash plus a $500 million promissory note per one source). The FTC
+approved the final consent order on 2023-11-03. As a direct consequence
+of the required divestitures, the **completed deal value fell to
+approximately $11.9 billion from the originally proposed $13.1 billion**
+-- i.e., ICE has direct, recent, company-specific experience with an
+antitrust-driven mortgage-technology divestiture that materially reduced
+a deal's realized value, a directly relevant precedent for evaluating
+the MarketAxess transaction's own antitrust risk (see Material risks
+below), independent of whatever product-overlap arguments apply to
+MarketAxess specifically. Well-corroborated across primary regulatory
+sources identified by search (FTC press releases and the FTC's own
+final-order PDF, plus the Federal Register notice) and secondary
+coverage (HousingWire); as with the rest of this record, **no primary
+regulatory document was directly opened this session** (WebFetch
+remained blocked on ftc.gov on a fresh attempt) -- this paragraph rests
+on WebSearch's own synthesis of those sources, which is unusually
+well-corroborated (multiple independent FTC.gov URLs plus the Federal
+Register plus trade press converge on the same figures) but is still not
+a direct primary-source read.
+
 ## Competitive position
 
 Exchanges/data competitors: CME Group (largest futures exchange globally
@@ -167,7 +199,12 @@ costs.
    market-infrastructure/data businesses; HSR and other approvals
    required for MarketAxess; one secondary analyst source (relayed, not
    adopted) suggested regulators have historically focused such reviews
-   on data-licensing/market-access/pricing-power questions.
+   on data-licensing/market-access/pricing-power questions. ICE has
+   direct, recent precedent for this risk materializing: the 2023 Black
+   Knight acquisition required an FTC-mandated divestiture (Empower and
+   Optimal Blue, sold to Constellation Software) that cut the completed
+   deal value to ~$11.9B from the originally proposed ~$13.1B -- see
+   "Black Knight's own antitrust and divestiture history" above.
 5. **Mortgage Technology competitive/cyclical exposure** -- actively
    competitive vendor landscape and sensitivity to still-below-normalized
    U.S. mortgage-origination volumes per company commentary.

@@ -83,3 +83,6 @@ sources:
   - note: "Secondary/aggregator and trade-press sources (Waste360, Waste Dive, industry PFAS-litigation and EPA-rulemaking coverage, GuruFocus 'GF Value' snapshots, Simply Wall St community fair-value estimates, sell-side analyst-target aggregation, Republic Services comparative figures) used for competitive-landscape, PFAS-exposure, and valuation-multiple context -- explicitly labeled secondary throughout WM.md, several figures flagged as internally inconsistent and unreconciled pending direct primary-source verification."
     url: null
     date: "2026-08-05"
+  - note: "Added 2026-08-05 following independent review: targeted re-check of WM's FY2025 revenue-mix reconciliation, which found the original six-line breakdown summed to only ~90% of the stated $25.2B total. Additional Bullfincher-sourced figures found via WebSearch (Transfer ~$2.63B, Recycling Processing and Sales ~$1.26B for FY2025) do not cleanly close the gap when added to the original six lines -- combined, they overshoot the stated total by ~$1.4B, consistent with two non-additive classification views rather than one complete breakdown. Not directly verified against the 10-K (WebFetch blocked on sec.gov on a fresh attempt); this record's revenue-mix figures remain partial and directionally indicative only."
+    url: null
+    date: "2026-08-05"

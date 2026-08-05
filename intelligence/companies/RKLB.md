@@ -128,6 +128,23 @@ actual 10-K.
 
 ## The Iridium acquisition -- by far the largest current integration question
 
+**Deal existence and headline terms -- sourcing note added 2026-08-05
+following independent review**: this record's original draft treated the
+deal's existence as settled fact from general news-outlet coverage
+alone. A targeted re-check this session found the deal independently
+corroborated via both parties' own official investor-relations channels
+identified by search -- `investor.iridium.com` and
+`investors.rocketlabcorp.com`/`rocketlabcorp.com` press releases dated
+2026-06-29, plus a specific SEC EDGAR exhibit URL under Rocket Lab's own
+CIK (1819994) -- a meaningfully stronger corroboration pattern than
+general trade-press coverage alone, though **none of these pages was
+directly opened this session** (WebFetch remained blocked on all
+attempted domains, including `sec.gov` and `iridium.com`, on a fresh
+attempt). Treat the deal's existence and headline terms ($54.00/share,
+~$8.0B enterprise value) as multi-outlet-corroborated, including by both
+companies' own official channels, but **not primary-source-confirmed**
+by this session's own direct reading.
+
 Announced **2026-06-29**, likely after (or concurrent with) this gate's
 original drafting and materially larger than any prior RKLB acquisition
 combined: [RKLB-R01]
