@@ -221,7 +221,7 @@ def test_target_pct_shaped_rationale_fails():
     cp = _capital_priority(rationale="This ticker deserves 5.0% of book as its new target.")
     result = cv.validate_classification_data(_record(capital_priority=cp))
     assert not result.valid
-    assert any("rationale must not contain" in e for e in result.errors)
+    assert any("forbidden content" in e for e in result.errors)
 
 
 def test_portfolio_role_ref_leakage_in_economic_role_fails():
@@ -266,15 +266,227 @@ def test_chart_domain_top_level_axis_field_rejected():
     # Chart-domain content could only ever appear as a stray fifth
     # top-level axis (e.g. a "chart_evidence" block) -- caught by the same
     # no-fifth-axis structural check as any other unauthorized top-level
-    # field. Mid-record chart *prose* leakage is the sanitizer's job
-    # (intelligence_classification_sanitizer.py's defensive chart-domain
-    # scan), not this validator's -- this validator checks sealed-record
-    # shape, not free-text provenance.
+    # field. Chart-domain *prose* inside a permitted free-text field is
+    # additionally caught by _scan_free_text() below (v1.1) -- the
+    # sanitizer's own defensive chart-domain scan remains the primary
+    # control for the drafting pipeline; this is a second, independent
+    # backstop on the sealed record itself.
     data = _record()
     data["chart_evidence"] = {"support_level": 123.45}
     result = cv.validate_classification_data(data)
     assert not result.valid
     assert any("unexpected top-level field" in e and "chart_evidence" in e for e in result.errors)
+
+
+# ── v1.1 bounded correction (review 4868016198): closed axis schemas +
+# free-text content scan on every axis, not just capital_priority.rationale.
+# Each test below directly reproduces one of the reviewer's own live
+# demonstrated bypasses and proves it closed.
+
+def test_unknown_key_in_economic_role_rejected():
+    role = _economic_role()
+    role["conviction_hint"] = "High"
+    result = cv.validate_classification_data(_record(economic_role=role))
+    assert not result.valid
+    assert any(
+        "economic_role" in e and "unexpected key" in e and "conviction_hint" in e
+        for e in result.errors
+    )
+
+
+def test_unknown_key_in_capital_priority_rejected():
+    # Direct reproduction of the reviewer's own demonstrated bypass:
+    # rec["capital_priority"]["score"] = 8.7 -- previously validated
+    # cleanly (a fixed 8-name denylist, not a closed schema).
+    cp = _capital_priority()
+    cp["score"] = 8.7
+    cp["weight"] = 0.0335
+    cp["recommendation"] = "increase allocation to this name"
+    result = cv.validate_classification_data(_record(capital_priority=cp))
+    assert not result.valid
+    unexpected_errors = [e for e in result.errors if "capital_priority" in e and "unexpected key" in e]
+    assert unexpected_errors, result.errors
+    assert "score" in unexpected_errors[0]
+    assert "weight" in unexpected_errors[0]
+    assert "recommendation" in unexpected_errors[0]
+
+
+def test_unknown_key_in_risk_concentration_rejected():
+    rc = _risk_concentration()
+    rc["computed_score"] = 0.42
+    result = cv.validate_classification_data(_record(risk_concentration=rc))
+    assert not result.valid
+    assert any(
+        "risk_concentration" in e and "unexpected key" in e and "computed_score" in e
+        for e in result.errors
+    )
+
+
+def test_unknown_key_in_evidence_quality_rejected():
+    eq = _evidence_quality()
+    eq["confidence_score"] = 0.9
+    result = cv.validate_classification_data(_record(evidence_quality=eq))
+    assert not result.valid
+    assert any(
+        "evidence_quality" in e and "unexpected key" in e and "confidence_score" in e
+        for e in result.errors
+    )
+
+
+def test_unexpected_top_level_record_key_rejected():
+    # Already enforced by the pre-existing _validate_no_stray_top_level_
+    # fields (test_chart_domain_top_level_axis_field_rejected /
+    # test_invalid_numeric_score_top_level_field_fails cover this too) --
+    # named here explicitly as the "unexpected top-level record key" case
+    # this correction's own checklist calls for.
+    data = _record()
+    data["priority_score"] = 7.2
+    result = cv.validate_classification_data(data)
+    assert not result.valid
+    assert any("unexpected top-level field" in e and "priority_score" in e for e in result.errors)
+
+
+def test_unexpected_seal_metadata_key_rejected():
+    # Seal metadata lives at the top level (not a nested dict) -- an extra
+    # seal-shaped key is caught by the same closed top-level check.
+    data = _record(sealed=True)
+    data["reviewer_notes"] = "looks fine to me"
+    result = cv.validate_classification_data(data)
+    assert not result.valid
+    assert any("unexpected top-level field" in e and "reviewer_notes" in e for e in result.errors)
+
+
+def test_unexpected_manifest_entry_key_rejected():
+    record = _record(sealed=True, ticker="ZZZZ")
+    row = {
+        "ticker": "ZZZZ", "shard_id": "shard-test", "sealed_at": "2026-08-05T00:00:00Z",
+        "content_sha256": record["content_sha256"], "schema_version": "1.0",
+        "governing_decision": "TIER-0005",
+        "record_path": "intelligence/classification/ZZZZ.yaml",
+        "reviewer_confidence": "high",
+    }
+    manifest = {"schema_version": "1.0", "governing_decision": "TIER-0005", "cohort": [row]}
+    result = cv.validate_cohort_manifest(manifest, {"ZZZZ": record})
+    assert not result.valid
+    assert any("unexpected key" in e and "reviewer_confidence" in e for e in result.errors)
+
+
+def test_unexpected_manifest_top_level_key_rejected():
+    record = _record(sealed=True, ticker="ZZZZ")
+    row = {
+        "ticker": "ZZZZ", "shard_id": "shard-test", "sealed_at": "2026-08-05T00:00:00Z",
+        "content_sha256": record["content_sha256"], "schema_version": "1.0",
+        "governing_decision": "TIER-0005",
+        "record_path": "intelligence/classification/ZZZZ.yaml",
+    }
+    manifest = {
+        "schema_version": "1.0", "governing_decision": "TIER-0005", "cohort": [row],
+        "generated_by": "some script",
+    }
+    result = cv.validate_cohort_manifest(manifest, {"ZZZZ": record})
+    assert not result.valid
+    assert any("unexpected top-level key" in e and "generated_by" in e for e in result.errors)
+
+
+def test_forbidden_content_in_risk_concentration_notes_rejected():
+    # Direct reproduction: rec["risk_concentration"]["notes"] =
+    # "See chart-evidence support/resistance levels; recommend increasing
+    # to 5% of book target immediately." -- previously validated cleanly
+    # (notes carried no content scan at all).
+    rc = _risk_concentration(
+        notes="See chart-evidence support/resistance levels; recommend increasing to 5% of book target immediately."
+    )
+    result = cv.validate_classification_data(_record(risk_concentration=rc))
+    assert not result.valid
+    assert any("risk_concentration.notes" in e and "forbidden content" in e for e in result.errors)
+
+
+def test_forbidden_content_in_economic_role_role_basis_rejected():
+    # Direct reproduction: rec["economic_role"]["role_basis"] = "Given its
+    # currently gated status and High conviction rating per committee
+    # review, this name warrants continued weight." -- previously
+    # validated cleanly (role_basis carried no content scan at all).
+    role = _economic_role(
+        role_basis="Given its currently gated status and High conviction rating per committee "
+        "review, this name warrants continued weight."
+    )
+    result = cv.validate_classification_data(_record(economic_role=role))
+    assert not result.valid
+    assert any("economic_role.role_basis" in e and "forbidden content" in e for e in result.errors)
+
+
+def test_forbidden_content_in_thesis_uncertainty_statement_rejected():
+    # Direct reproduction: rec["evidence_quality"]["thesis_uncertainty_
+    # statement"] = "Chart-evidence technical support around recent lows
+    # partially offsets conviction concerns." -- previously validated
+    # cleanly (thesis_uncertainty_statement carried no content scan).
+    eq = _evidence_quality(
+        thesis_uncertainty_statement=(
+            "Chart-evidence technical support around recent lows partially offsets conviction concerns."
+        )
+    )
+    result = cv.validate_classification_data(_record(evidence_quality=eq))
+    assert not result.valid
+    assert any(
+        "evidence_quality.thesis_uncertainty_statement" in e and "forbidden content" in e
+        for e in result.errors
+    )
+
+
+def test_forbidden_content_in_company_role_rejected():
+    role = _economic_role(company_role="a gated name pending committee review")
+    result = cv.validate_classification_data(_record(economic_role=role))
+    assert not result.valid
+    assert any("economic_role.company_role" in e and "forbidden content" in e for e in result.errors)
+
+
+def test_ordinary_business_percentage_in_free_text_still_passes():
+    # A real-world figure ("68% of revenue") must not false-positive --
+    # only the book/target/weight/allocation-shaped percentage pattern is
+    # forbidden, matching the pre-existing capital_priority.rationale
+    # scan's own scoping and verified empirically against all 27 real
+    # records (none of which trip this scan).
+    role = _economic_role(
+        role_basis="Revenue concentrates 68% of total in a small set of flagship products."
+    )
+    result = cv.validate_classification_data(_record(economic_role=role))
+    assert result.valid, result.errors
+
+
+def test_valid_record_with_all_optional_fields_present_still_passes():
+    # Every real record carries assessed_date/assessing_record/notes/
+    # review_trigger_notes regardless of status -- closed schema must
+    # permit, not require, them.
+    result = cv.validate_classification_data(_record())
+    assert result.valid, result.errors
+
+
+def test_valid_record_with_optional_fields_absent_still_passes():
+    # Closed schema means "no unknown key," not "these keys are required"
+    # -- a record that omits the always-optional fields must still pass.
+    cp = _capital_priority()
+    del cp["assessed_date"]
+    del cp["assessing_record"]
+    rc = _risk_concentration()
+    del rc["notes"]
+    eq = _evidence_quality()
+    del eq["review_trigger_notes"]
+    result = cv.validate_classification_data(
+        _record(capital_priority=cp, risk_concentration=rc, evidence_quality=eq)
+    )
+    assert result.valid, result.errors
+
+
+def test_valid_abstention_record_with_closed_schema_still_passes():
+    # Regression guard: the closed-schema correction must not
+    # inadvertently break the pre-existing abstention path.
+    role = _economic_role(
+        economic_system_ref=cv.ECONOMIC_SYSTEM_ABSTENTION_VALUE,
+        abstention_reason="Evidence base too thin to determine a role.",
+        evidence_gap_statement="Primary sources were blocked at drafting time.",
+    )
+    result = cv.validate_classification_data(_record(economic_role=role))
+    assert result.valid, result.errors
 
 
 # ── invalid lifecycle state ──────────────────────────────────────────────

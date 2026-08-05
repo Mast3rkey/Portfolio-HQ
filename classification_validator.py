@@ -56,6 +56,41 @@ Scope, exactly what is validated:
   corresponding sealed record, and the manifest carries exactly the
   authorized 27-name population, no more, no fewer.
 
+VERSION 1.1 bounded correction (post-PR-#253-review-4868016198): a fresh
+independent exact-head review found the four per-axis validators were a
+denylist (a fixed 8-name `_FORBIDDEN_ANSWER_KEY_FIELDS` set), not a closed
+schema -- confirmed live by the reviewer's own direct execution: an
+arbitrary `score`/`weight`/`recommendation`-shaped key nested inside
+`capital_priority`, or forbidden free text (a chart/policy/allocation
+reference) inside `risk_concentration.notes`, `economic_role.role_basis`,
+or `evidence_quality.thesis_uncertainty_statement`, all validated cleanly.
+`_validate_risk_concentration`/`_validate_evidence_quality` ran no
+forbidden-key or forbidden-content check of any kind. Mitigating fact
+independently reconfirmed by this correction: none of the real 27 sealed
+records contains this class of content -- a latent validator gap, not a
+demonstrated defect in the delivered batch.
+
+Fixed by making every axis genuinely closed-schema (an explicit permitted-
+key set per axis, derived from `TIER-0002`/`TIER-0004`'s controlling text
+plus a live scan of all 27 real records' actually-used keys -- never
+invented), rejecting any key outside that set, and extending the existing
+`capital_priority.rationale`-only content scan (`_RATIONALE_FORBIDDEN_
+PATTERNS`) into a single shared, broader `_FORBIDDEN_CONTENT_PATTERNS`
+check applied uniformly to every free-text field across all four axes
+(`economic_role.company_role`/`role_basis`, `capital_priority.rationale`,
+`risk_concentration.notes`, `evidence_quality.thesis_uncertainty_
+statement`) -- closing the key-level and content-level bypass together,
+since the reviewer's own reproduction demonstrated both classes (a
+forbidden field name, and forbidden content inside an otherwise-permitted
+field). Top-level record keys were already closed (`_validate_no_stray_
+top_level_fields`, pre-existing) -- this correction extends the same
+discipline to axis dicts and to the cohort-manifest's own row/top-level
+shape, which had the identical required-only (not closed) gap.
+
+Empirically verified against all 27 live `intelligence/classification/`
+records and the manifest: zero false positives from the broadened
+content scan, zero new validation failures.
+
 This module is a validator, not a data producer. It never opens a file in
 write/append/update mode, never creates a directory, and has zero import
 relationship with `allocate.py` or `margin_state.py` in either direction.
@@ -90,6 +125,12 @@ ECONOMIC_SYSTEM_ABSTENTION_VALUE = "unable_to_determine"
 
 _ECONOMIC_ROLE_REQUIRED_KEYS = {"economic_system_ref", "company_role", "role_basis"}
 _ECONOMIC_ROLE_ABSTENTION_ONLY_KEYS = {"abstention_reason", "evidence_gap_statement"}
+# v1.1: closed schema -- the only keys ever permitted on economic_role,
+# derived from TIER-0002 Sec3.3/TIER-0004 Sec12 plus a live scan of all 27
+# real records (which use exactly the three required keys; no record is
+# currently abstaining, but the abstention-only pair remains permitted per
+# TIER-0004 Sec12.2).
+_ECONOMIC_ROLE_ALLOWED_KEYS = frozenset(_ECONOMIC_ROLE_REQUIRED_KEYS | _ECONOMIC_ROLE_ABSTENTION_ONLY_KEYS)
 
 # ── capital_priority (TIER-0002 Sec3.4) ─────────────────────────────────────
 
@@ -98,15 +139,45 @@ CAPITAL_PRIORITY_STATUSES = frozenset({
 })
 _CAPITAL_PRIORITY_REQUIRED_KEYS = {"status"}
 _COMPARATOR_SET_MIN, _COMPARATOR_SET_MAX = 2, 5
+# v1.1: closed schema. `assessed_date`/`assessing_record` are not required
+# by TIER-0002's own text but are present on every one of the 27 real
+# records regardless of `status` (including `no_assessment`) -- permitted,
+# per this correction's own "derive from the merged decisions and all 27
+# live records" instruction, not invented.
+_CAPITAL_PRIORITY_ALLOWED_KEYS = frozenset({
+    "status", "rationale", "comparator_set", "assessed_date", "assessing_record",
+})
 
-# A rationale must never itself carry a numeric target/allocation figure or
-# a direct trade instruction -- capital_priority is explicitly never a
-# target_pct/buy-sell channel (TIER-0002 Sec3.4).
-_RATIONALE_FORBIDDEN_PATTERNS = [
+# A free-text field must never itself carry a numeric target/allocation
+# figure, a direct trade instruction, or (v1.1) any policy/committee/gate/
+# chart-domain concept -- capital_priority is explicitly never a
+# target_pct/buy-sell channel (TIER-0002 Sec3.4), and no free-text field on
+# any axis may carry the answer-key content TIER-0004 Sec11 forbids merely
+# because it isn't shaped like one of the eight forbidden *field names*.
+# v1.1: broadened from a `capital_priority.rationale`-only check (the
+# reviewer's own live reproduction found `risk_concentration.notes`,
+# `economic_role.role_basis`, and `evidence_quality.thesis_uncertainty_
+# statement` all validated cleanly with chart/policy/conviction content
+# inside them) into one shared list applied to every free-text field on
+# every axis by `_scan_free_text()` below. Empirically verified: zero false
+# positives against all 27 real records' actual free-text content.
+_FORBIDDEN_CONTENT_PATTERNS = [
     re.compile(p, re.IGNORECASE) for p in (
         r"\btarget_pct\b",
         r"\d+(?:\.\d+)?\s*%\s*(?:of\s+book|target|weight|allocation)",
-        r"\b(?:buy|sell|trim|add to|reduce)\s+(?:it|this|the position)\b",
+        r"\b(?:buy|sell|trim|add to|reduce|increase)\s+(?:it|this|the position|to\b)",
+        r"\brecommend(?:ed|ing)?\s+(?:increasing|decreasing|reducing|adding)\b",
+        r"\bportfolio_role_ref\b",
+        r"\bconviction\b",
+        r"\bcommittee review\b",
+        r"\bgated\b",
+        r"\bgates\.yaml\b",
+        r"\bchart[- ]?evidence\b",
+        r"\bsupport[/ -]resistance\b",
+        r"\btechnical indicator",
+        r"\bprice[- ]action\b",
+        r"\btradingview\b",
+        r"\bCHART-000[12]\b",
     )
 ]
 
@@ -116,6 +187,9 @@ _RISK_CONCENTRATION_REQUIRED_KEYS = {
     "cluster_cap_membership", "issuer_lookthrough_membership",
     "relationship_record_coverage", "unmeasured_flag",
 }
+# v1.1: closed schema -- `notes` is present (typically empty-string) on
+# every one of the 27 real records; permitted but not required.
+_RISK_CONCENTRATION_ALLOWED_KEYS = frozenset(_RISK_CONCENTRATION_REQUIRED_KEYS | {"notes"})
 
 # ── evidence_quality (TIER-0002 Sec3.6) ─────────────────────────────────────
 
@@ -127,6 +201,10 @@ _EVIDENCE_QUALITY_REQUIRED_KEYS = {
     "primary_source_coverage", "highest_disclosed_risk_severity",
     "thesis_uncertainty_statement",
 }
+# v1.1: closed schema -- `review_trigger_notes` is present (typically
+# empty-string) on every one of the 27 real records; permitted but not
+# required.
+_EVIDENCE_QUALITY_ALLOWED_KEYS = frozenset(_EVIDENCE_QUALITY_REQUIRED_KEYS | {"review_trigger_notes"})
 
 # ── TIER-0004 Sec11 forbidden answer-key fields, checked inside
 #    economic_role/capital_priority specifically ───────────────────────────
@@ -201,6 +279,41 @@ def _non_empty_str(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
+def _reject_unknown_keys(
+    value: dict, field_name: str, allowed: frozenset[str], errors: list[str],
+) -> None:
+    """v1.1: closed-schema enforcement -- any key on `value` outside
+    `allowed` is an error naming the axis and the exact unexpected key(s)
+    (the record's own file path is already carried by the enclosing
+    `ValidationResult.source`, per this module's existing error-message
+    convention -- see the forbidden-answer-key-field errors above, which
+    follow the same pattern)."""
+    unknown = set(value.keys()) - allowed
+    if unknown:
+        errors.append(
+            f"{field_name} contains unexpected key(s) {sorted(unknown)} -- this axis's schema "
+            f"is closed; only {sorted(allowed)} are permitted (TIER-0002/TIER-0004)"
+        )
+
+
+def _scan_free_text(value: object, field_name: str, errors: list[str]) -> None:
+    """v1.1: content-level check applied to every free-text field on every
+    axis (not merely `capital_priority.rationale`) -- a field can carry
+    forbidden answer-key/policy/chart content while still being a
+    perfectly permitted *key* under the closed schema above; this closes
+    that half of the reviewer's demonstrated bypass."""
+    if not isinstance(value, str) or not value:
+        return
+    for p in _FORBIDDEN_CONTENT_PATTERNS:
+        if p.search(value):
+            errors.append(
+                f"{field_name} contains forbidden content matching {p.pattern!r} -- no free-text "
+                f"field may carry a policy/committee/gate/chart-domain/allocation-instruction "
+                f"reference (TIER-0004 Sec11)"
+            )
+            break
+
+
 def _validate_economic_role(value: object, errors: list[str]) -> None:
     if not _require_keys(value, "economic_role", _ECONOMIC_ROLE_REQUIRED_KEYS, errors):
         return
@@ -212,6 +325,10 @@ def _validate_economic_role(value: object, errors: list[str]) -> None:
                 f"economic_role.{key} is a forbidden answer-key field (TIER-0004 Sec11) -- "
                 f"must never appear inside a judgment axis"
             )
+
+    _reject_unknown_keys(value, "economic_role", _ECONOMIC_ROLE_ALLOWED_KEYS, errors)
+    _scan_free_text(value.get("company_role"), "economic_role.company_role", errors)
+    _scan_free_text(value.get("role_basis"), "economic_role.role_basis", errors)
 
     ref = value.get("economic_system_ref")
     is_abstention = ref == ECONOMIC_SYSTEM_ABSTENTION_VALUE
@@ -275,6 +392,8 @@ def _validate_capital_priority(value: object, errors: list[str]) -> None:
                 f"must never appear inside a judgment axis"
             )
 
+    _reject_unknown_keys(value, "capital_priority", _CAPITAL_PRIORITY_ALLOWED_KEYS, errors)
+
     status = value.get("status")
     if status not in CAPITAL_PRIORITY_STATUSES:
         errors.append(
@@ -292,12 +411,8 @@ def _validate_capital_priority(value: object, errors: list[str]) -> None:
             "capital_priority.rationale is required and must be a non-empty string when "
             "status != no_assessment (TIER-0002 Sec3.4)"
         )
-    elif any(p.search(rationale) for p in _RATIONALE_FORBIDDEN_PATTERNS):
-        errors.append(
-            "capital_priority.rationale must not contain a numeric target/target_pct-shaped "
-            "figure or a direct buy/sell/trim instruction -- capital_priority is never a "
-            "target_pct or trade-instruction channel (TIER-0002 Sec3.4)"
-        )
+    else:
+        _scan_free_text(rationale, "capital_priority.rationale", errors)
 
     comparator_set = value.get("comparator_set")
     if not isinstance(comparator_set, list) or not (
@@ -316,6 +431,17 @@ def _validate_risk_concentration(value: object, errors: list[str]) -> None:
     if not _require_keys(value, "risk_concentration", _RISK_CONCENTRATION_REQUIRED_KEYS, errors):
         return
     value = value  # type: dict
+
+    # No _FORBIDDEN_ANSWER_KEY_FIELDS loop here, deliberately: this
+    # module's own docstring states that a cluster/issuer-lookthrough
+    # *reference* inside risk_concentration is expected and required,
+    # never flagged, since this axis is computed only after both judgment
+    # axes seal. The closed-schema check below is the correct mechanism --
+    # it rejects any key outside this axis's own four required fields plus
+    # `notes`, which already excludes the literal forbidden-field names
+    # (`caps`/`clusters`/`issuer_lookthrough`/etc.) without special-casing.
+    _reject_unknown_keys(value, "risk_concentration", _RISK_CONCENTRATION_ALLOWED_KEYS, errors)
+    _scan_free_text(value.get("notes"), "risk_concentration.notes", errors)
 
     cluster = value.get("cluster_cap_membership")
     if not isinstance(cluster, list) or not all(isinstance(c, str) for c in cluster):
@@ -356,6 +482,15 @@ def _validate_evidence_quality(value: object, errors: list[str]) -> None:
         return
     value = value  # type: dict
 
+    for key in _FORBIDDEN_ANSWER_KEY_FIELDS:
+        if key in value:
+            errors.append(
+                f"evidence_quality.{key} is a forbidden answer-key field (TIER-0004 Sec11) -- "
+                f"must never appear inside this axis"
+            )
+
+    _reject_unknown_keys(value, "evidence_quality", _EVIDENCE_QUALITY_ALLOWED_KEYS, errors)
+
     coverage = value.get("primary_source_coverage")
     if coverage not in PRIMARY_SOURCE_COVERAGE_VALUES:
         errors.append(
@@ -370,11 +505,14 @@ def _validate_evidence_quality(value: object, errors: list[str]) -> None:
             f"{sorted(RISK_SEVERITY_VALUES)} (reuses risks[].severity vocabulary) -- got {severity!r}"
         )
 
-    if not _non_empty_str(value.get("thesis_uncertainty_statement")):
+    statement = value.get("thesis_uncertainty_statement")
+    if not _non_empty_str(statement):
         errors.append(
             "evidence_quality.thesis_uncertainty_statement is required and must be a "
             "non-empty string (TIER-0002 Sec3.6)"
         )
+    else:
+        _scan_free_text(statement, "evidence_quality.thesis_uncertainty_statement", errors)
 
 
 def _validate_no_stray_top_level_fields(data: dict, errors: list[str]) -> None:
@@ -521,6 +659,13 @@ _MANIFEST_REQUIRED_ROW_KEYS = {
     "ticker", "shard_id", "sealed_at", "content_sha256", "schema_version", "governing_decision",
     "record_path",
 }
+# v1.1: closed schema -- every real manifest row uses exactly these seven
+# keys, no more (live-scanned across all 27 rows); required == allowed here.
+_MANIFEST_ROW_ALLOWED_KEYS = frozenset(_MANIFEST_REQUIRED_ROW_KEYS)
+# v1.1: closed schema for the manifest document itself -- `schema_version`,
+# `governing_decision`, `cohort` (live-scanned; matches the manifest's own
+# integration-script authoring shape).
+_MANIFEST_TOP_LEVEL_ALLOWED_KEYS = frozenset({"schema_version", "governing_decision", "cohort"})
 
 
 def validate_cohort_manifest(
@@ -536,6 +681,13 @@ def validate_cohort_manifest(
         errors.append("cohort manifest must be a mapping with a 'cohort' list")
         return ValidationResult(valid=False, errors=errors, source=_MANIFEST_FILENAME)
 
+    unknown_top = set(manifest_data.keys()) - _MANIFEST_TOP_LEVEL_ALLOWED_KEYS
+    if unknown_top:
+        errors.append(
+            f"cohort manifest contains unexpected top-level key(s) {sorted(unknown_top)} -- "
+            f"only {sorted(_MANIFEST_TOP_LEVEL_ALLOWED_KEYS)} are permitted"
+        )
+
     rows = manifest_data["cohort"]
     seen_tickers: set[str] = set()
     for i, row in enumerate(rows):
@@ -543,6 +695,12 @@ def validate_cohort_manifest(
             missing = _MANIFEST_REQUIRED_ROW_KEYS - (row.keys() if isinstance(row, dict) else set())
             errors.append(f"cohort[{i}] missing required key(s): {sorted(missing)}")
             continue
+        unknown_row = row.keys() - _MANIFEST_ROW_ALLOWED_KEYS
+        if unknown_row:
+            errors.append(
+                f"cohort[{i}] contains unexpected key(s) {sorted(unknown_row)} -- manifest row "
+                f"schema is closed, only {sorted(_MANIFEST_ROW_ALLOWED_KEYS)} are permitted"
+            )
         ticker = row["ticker"]
         if ticker in seen_tickers:
             errors.append(f"cohort manifest lists {ticker!r} more than once")
