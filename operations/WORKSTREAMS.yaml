@@ -2002,8 +2002,43 @@ workstreams:
           `classification_validator.py` and its tests unchanged this
           round. See CLAUDE.md for full detail. Requires its own fresh
           narrow independent exact-head delta review.
-        pr: null
-        status: in_progress
+
+          **PR #253 merged and post-merge verified.** Final exact-head
+          delta review `4868793516` (anchored `e167834...` -> `15da3585
+          a48e4fc698efdae527eab24c2998ff18`): DELTA APPROVED — APPROVED
+          FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0
+          MINOR / 1 non-actionable NOTE. Principal acceptance
+          `issuecomment-5197444291` at that exact head. Merged via merge
+          commit `7f2ffed80472057472ca17e39ed88ae0a0a2b77e` (parents
+          `228b2dd0c6e68b205d99f1e6a4a0fc483df64a0e` and
+          `15da3585a48e4fc698efdae527eab24c2998ff18`). Post-merge
+          verification `issuecomment-5197514201`: merge-tree identity
+          confirmed byte-identical to the accepted head's tree, exact
+          34-file scope, 27/27 population, four-axis/17-9-1 capital-
+          priority/zero-abstention/11-name-unmeasured/20-1-6-evidence-
+          quality results all confirmed exact, 175/175 sanitizer+
+          validator tests, 542/542 freshness, 95/95 decision-catalog,
+          2756/2756 full suite, protected-path isolation, merge-commit CI
+          run `31047918222` `completed`/`success`. **This merge did not
+          itself mark Milestone 6 formally complete** — a separate Lane G
+          completion-determination filing (`TIER-0006`) was required and
+          performed the determination.
+
+          **`TIER-0006` accepted: MILESTONE 6 COMPLETE.** Independently
+          re-derived all eleven completion criteria (population;
+          classification completeness/schema closure; blindness
+          integrity; judgment integrity/sequencing; structural
+          risk_concentration computation; evidence-quality integrity;
+          sealing/reproducibility; validator/test coverage; review
+          lifecycle; scope isolation; repository/register
+          synchronization) fresh against live repository and GitHub state
+          — all eleven PASS. Verdict: **MILESTONE 6 COMPLETE.** Does not
+          authorize, begin, schedule, or imply Milestone 7 (baseline
+          reconciliation) or any later WS-0005 milestone. See CLAUDE.md
+          and `governance/decisions/TIER-0006-ws0005-milestone6-
+          completion-determination.md` for full detail.
+        pr: 253
+        status: complete
         date: "2026-08-05"
       - gate: milestone-7-baseline-reconciliation
         description: >
@@ -4742,9 +4777,9 @@ workstreams:
       ticker classification, any sanitized evidence package, or any validator implementation — Step 6
       (`milestone6-prereq6-fresh-authorization-required`) remains its own separate, later, explicit
       authorization requirement, left exactly as merged (`status: blocked`, unedited) by this filing.
-    active_branch: claude/milestone-6-blind-classification-ap2uyh
-    active_pr: 253
-    last_verified_main_sha: 228b2dd0c6e68b205d99f1e6a4a0fc483df64a0e
+    active_branch: claude/milestone-6-completion-8bu7w0
+    active_pr: 254
+    last_verified_main_sha: 7f2ffed80472057472ca17e39ed88ae0a0a2b77e
     last_verified_date: "2026-08-05"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
