@@ -355,33 +355,6 @@ This correction changes no population entry, no gate status transition, no regis
 was already specified, and no non-authorization boundary. It requires its own exact-head re-review
 before this filing may be considered ready.
 
-## Delta Correction (same day, this PR, second round)
-
-An independent exact-head delta review of the Bounded Correction above (anchored to head
-`a9bef37f2fce5354418fc8a5a943edea9f8937a4`) confirmed the BLOCKING finding fully and correctly
-resolved — independently re-verifying the `.md` marker list against all 8 previously-flagged files'
-actual text and confirming fail-closed re-scan behavior is correctly specified — but found the
-Bounded Correction's own claim to have "resolved by rephrasing both references" was **not accurate as
-filed**: only the supporting artifact's §6.1 occurrence was corrected; §8's own opening sentence — the
-actual sequencing specification, not a summary reference — still quoted "computed after" and framed
-the rule as `TIER-0002` §3.5's "own existing design," the identical defect the original MINOR finding
-described.
-
-Independently re-verified before fixing: `grep`-confirmed the supporting artifact's §8 opening
-sentence (governing the actual sequencing rule stated in the section that follows it) was unchanged
-from its originally filed text, and re-confirmed `TIER-0002` §3.5 contains no ordering language of any
-kind (same check as the first correction pass, re-run against current `main` at this filing's base).
-**Resolved** by applying the identical rephrasing already used in §6.1 to §8's opening sentence:
-removed the quoted "computed after" fragment and the "own existing design" framing, restated as this
-filing's own new sequencing rule, consistent with (not quoting) `TIER-0002` §3.5's cross-reference-
-rollup description. The one remaining "computed after" occurrence in the supporting artifact (§11,
-"computed after sealing per §8") was independently checked and confirmed correctly attributes ordering
-to this filing's own §8, not to `TIER-0002` — left unedited, not a defect.
-
-This delta correction changes no population entry, no gate status transition, no redaction mechanics,
-no register field, and no non-authorization boundary — confined to one sentence in the supporting
-artifact's §8. It requires its own exact-head re-review before this filing may be considered ready.
-
 ## Consequences
 
 **Authorized, effective only on this decision's merge:** the reconciled 27-name Milestone 6
