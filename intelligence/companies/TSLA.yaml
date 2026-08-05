@@ -1,0 +1,93 @@
+sector: Consumer Discretionary
+industry: Electric Vehicles, Energy Storage, and Autonomy/Robotics
+portfolio_role_ref: gated
+competitive_advantages:
+  - "Largest and most established Supercharger fast-charging network in North America: roughly 3,059-3,088 US stations / 37,428 ports as of mid-May 2026 (~52% of US DC fast-charging ports), >80,000 Superchargers globally. The NACS connector standard is now adopted by nearly every significant North American automaker (Stellantis, Faraday Future, BMW Group, and others cited by name in secondary reporting) -- a genuine, evidenced network moat, though non-Tesla NACS stall installations reportedly outpaced Tesla's own new-stall additions in Q1 2026 (~2,300 vs. ~1,200), suggesting the network's relative dominance may be eroding even as its absolute size and third-party adoption grow. [TSLA-C01]"
+  - "Record Q2 2026 operating scale: 480,126 vehicle deliveries (quarterly record) and 13.5 GWh of energy storage deployments (up 53% sequentially, described as a trailing-twelve-month record), total revenue $28.24B (+26% YoY), against an analyst delivery estimate of ~406,600 -- a meaningful beat. [TSLA-C02]"
+  - "Energy Generation & Storage segment growing faster than Automotive on a percentage basis in recent periods (+13% YoY in Q2 2026 versus Automotive's +23%, though Automotive's growth was flattered by a low prior-year base) with new capacity under construction: a Brookshire, Texas Megafactory targeting Megapack 3/Megablock production starting late 2026 and 50 GWh/year capacity once fully ramped, alongside an existing Shanghai Megafactory running at an annualized 40 GWh rate. [TSLA-C03]"
+  - "Robotaxi commercial service now operating (with safety driver/monitoring, driverless in some markets) across Austin, California, and, as of 2026-07-03, Miami -- the first driverless-service expansion outside Texas/California -- with a stated company ambition of operating unsupervised FSD/Robotaxi in roughly a dozen U.S. states by end of 2026. [TSLA-C04]"
+risks:
+  - risk: "Regulatory-credit revenue, previously a material profit contributor, has collapsed: Q2 2026 regulatory-credit revenue was $146M, down 67% YoY from $439M and down 62% sequentially from $380M in Q1 2026 -- the lowest quarterly credit revenue since 2020 and just 0.6% of total revenue. This decline is explicitly linked in secondary commentary to the 2025-09-30 expiration of the federal EV tax credit and relaxed federal fuel-economy penalty enforcement reducing other automakers' need to purchase Tesla's credits. Full-year credit revenue fell from a 2024 peak of $2.76B to $1.99B in 2025 (-28%), and the Q2 2026 figure continues and steepens that multi-year decline."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Margin compression across both major segments in the most recent quarter: automotive gross margin ex-credits fell to 16.3% in Q2 2026 from 19.2% in Q1 2026; energy segment gross margin fell sharply to 20.4% from 39.5% in Q1 2026, attributed in secondary commentary to a vendor cell warranty issue, non-recurring tariff benefits rolling off, and lower industrial-storage pricing. Operating income was $398M (down 57% YoY, 1.4% operating margin) and net income was $1.114B, with GAAP/non-GAAP EPS figures of roughly $0.32-$0.33 versus a ~$0.53 consensus estimate (a miss). Free cash flow was negative (~-$1.09B deficit) in Q2 2026 versus a +$1.44B surplus in Q1 2026, as quarterly capex rose to $5.79B (+142% YoY) against a raised full-year 2026 capex guidance of over $25 billion (versus $8.5B in 2025)."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Live, material, currently unresolved federal safety-regulatory exposure on autonomy: NHTSA opened engineering analysis EA26002 on 2026-03-18, covering approximately 3.2 million Tesla vehicles across model years 2016-2026, examining whether camera-only FSD fails to detect or warn the driver appropriately under degraded-visibility conditions (glare, airborne obscurants) -- the step preceding a potential recall. Secondary reporting references 'three simultaneous federal investigations into FSD' as of mid-2026, though this session could only independently identify and detail EA26002 by name. Separately, hardware-3 (HW3) vehicles -- reportedly around 4 million units -- are confirmed structurally unable to run unsupervised FSD due to memory-bandwidth hardware constraints, meaning they will remain Level-2-only permanently regardless of future software updates."
+    severity: high
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Optimus (humanoid robot) execution risk: one secondary source (TechTimes, dated 2026-07-20, not independently corroborated by a second source) reported disclosed unit production remained essentially zero as the Q2 2026 earnings call approached. The Fremont factory line conversion (former Model S/X production) was targeted for completion in late July/August 2026 after a roughly four-month production gap. Musk himself is quoted (secondary source) describing 2026 Optimus production as 'literally impossible to predict' and warning production 'will be extremely slow at first.' The Optimus V3/Gen 3 reveal has been pushed back multiple times through 2026 per contemporaneous reporting. This program carries real weight in the forward narrative and is an explicit operational milestone (1 million units produced) in the CEO's own compensation package."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Regional demand signals are mixed to negative outside the US. Europe: 13-plus consecutive months of year-over-year registration declines through January 2026 (-17% YoY that month alone), full-year 2025 EU+EFTA+UK registrations down 27% to 238,656 units, occurring while the broader European BEV market grew (+13.9% YoY in January 2026) -- i.e., Tesla-specific share loss, not a market-wide slowdown; secondary commentary attributes this to Chinese rival competition, lack of new affordable models, and public perception of Musk. China: some wholesale/export figures were reported up (e.g., +38% YoY in July 2026) while a separate figure describes a fifth consecutive quarterly decline in China deliveries (-2.05% YoY in Q2), pulling China's share of Tesla's global volume below 30% for the first time since Q4 2020 -- these two figures could not be reconciled from sources available this session and likely reflect different measurement bases (wholesale/export versus domestic delivery), but both point to intensifying local competition (BYD, Leapmotor, Geely) in Tesla's largest ex-US market."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Extreme valuation dependence on unproven businesses, made explicit by the company's own governance structure: shareholders approved a roughly $1 trillion, 10-year CEO compensation package for Elon Musk (vote dated 2025-11-06 per the most reliably dated source found), structured across 12 tranches gated on both market-capitalization milestones (up to $8.5 trillion) and operational milestones -- 20 million cumulative vehicles delivered, 10 million paid FSD subscriptions, 1 million Optimus robots produced, 1 million commercial robotaxis operating for 3+ consecutive months, and a cumulative adjusted-EBITDA target scaling to $400 billion annually. The package could raise Musk's ownership stake to as much as 29% if fully vested. Norway's Norges Bank and proxy advisors Glass Lewis/ISS opposed the package citing dilution, size, and insufficient mitigation of key-person risk; a shareholder derivative suit alleging breach of fiduciary duty (diversion of AI talent/resources to Musk's other ventures) is reported as pending, with this session unable to confirm its current status."
+    severity: high
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked (HTTP 403) on nine domains attempted, including sec.gov, ir.tesla.com, and a Wikipedia control page used to confirm a wholesale tool failure rather than domain-specific blocking. No primary document was directly read this session. Several figures were internally inconsistent across sources and are flagged in TSLA.md rather than silently resolved (Q2-only versus H1-cumulative capex/operating-cash-flow figures; conflicting China wholesale-versus-delivery trend data; the exact CEO pay-package vote date)."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+catalysts:
+  - catalyst: "Q3 2026 earnings release -- exact date not officially confirmed by Tesla as of this research; secondary estimates range from 2026-10-21 to 2026-10-28, most commonly ~October 28 after market close."
+    expected: "2026-10-28"
+    status: pending
+  - catalyst: "NHTSA engineering analysis EA26002 (camera-only FSD degraded-visibility investigation, ~3.2M vehicles) progress or resolution -- no confirmed timeline found, but the single largest disclosed near-term regulatory overhang."
+    expected: "2026-12-31"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which Optimus Fremont-line production ramp status, further robotaxi state-by-state expansion, and any NHTSA/FSD regulatory development will next be actively re-checked."
+    expected: "2026-11-05"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not itself constitute approval (see review.log below). Tesla's current-quarter operating scale is genuinely large and, on deliveries and storage deployments, record-setting (confirming and refining the gate's own cited Q2 2026 figures), with a real, evidenced charging-network moat and an actually-operating (if still safety-driver/geographically limited) robotaxi service. Held at Medium rather than higher because this record's research independently confirms the gate's own framing -- that the current small target depends on autonomy/energy/robotics/capital-allocation/valuation milestones rather than current deliveries alone -- is well supported: regulatory-credit revenue (a real historical profit cushion) has collapsed; both major segments showed material sequential margin compression in the most recent quarter with a swing to negative free cash flow against sharply rising capex; Optimus shows minimal-to-zero current production with management's own 'impossible to predict' framing; autonomy carries a live, material, unresolved NHTSA safety investigation covering roughly 3.2 million vehicles; and the CEO's own board-approved pay package makes explicit, via its own operational-milestone structure, how much of the forward valuation case rests on businesses (robotaxi, Optimus) with currently limited-to-near-zero commercial scale. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from TSLA's existing gated/cash-pending-clearance status or its 0.50% canonical target -- it was reasoned solely from the disclosed operating and financial picture, which independently supports the same 'substantial current scale, but forward value concentrated in unproven milestones' conclusion the gate itself already recorded."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-05"
+  next_due: "2026-11-05"
+  log:
+    - date: "2026-08-05"
+      note: >
+        Record created under governance/decisions/PI-0038-ws0005-gated-six-company-intelligence-completion.md
+        (status: Proposed at authoring time -- not yet independently reviewed or
+        principal-accepted). First Company Intelligence coverage for TSLA (no
+        prior record existed). Filed as one of a six-company administrative
+        batch (SNPS, ICE, SPGI, WM, RKLB, TSLA) sharing identical
+        portfolio-governance status -- all six gated under PHQ-2026-01,
+        cash_pending_clearance, no prior Intelligence coverage -- and execution
+        efficiency only; the six companies share no genuine economic
+        mechanism and this record makes no such claim. This session's own
+        WebFetch attempts were tested and confirmed blocked (HTTP 403) on nine
+        domains attempted, including sec.gov and a Wikipedia control page --
+        research rests entirely on WebSearch-returned snippets/summaries of
+        secondary sources, disclosed throughout this record and in TSLA.md's
+        Source-access disclosure rather than smoothed over. Several figures
+        were internally inconsistent across sources and are flagged, not
+        silently resolved. Note: this record does not identify a verbatim
+        Tesla-stated 'milestone framework' matching this gate's own
+        next_gate phrase; the closest identified analog is the CEO
+        compensation package's own operational-milestone structure, offered
+        as an inference, not a confirmed match to the gate's original intent.
+sources:
+  - note: "Tesla, Inc. Q2 2026 shareholder deck/earnings release (reported 2026-07-22), covering segment revenue, deliveries (480,126), energy storage deployments (13.5 GWh), margins, operating income, net income, capex, and cash position. Identified via WebSearch snippets citing Tesla's own IR press release, 8-K, and multiple outlets (Electrek, CNBC, InsideEVs, StockTitan, TradingView); not directly fetched/opened this session (WebFetch blocked)."
+    url: null
+    date: "2026-07-22"
+  - note: "Tesla, Inc. CEO compensation package shareholder vote -- terms, tranche structure, operational and market-cap milestones, and disclosed opposition (Norges Bank, Glass Lewis, ISS). Identified via WebSearch snippets citing CNBC/NBC coverage dated around 2025-11-06; not directly fetched/opened this session. Vote-date labeling across secondary sources was inconsistent (some framed as a '2026' event); 2025-11-06 is used here based on the most reliably dated source found."
+    url: null
+    date: "2025-11-06"
+  - note: "NHTSA engineering analysis EA26002 (opened 2026-03-18, ~3.2 million vehicles, camera-only FSD degraded-visibility investigation) and related recall/investigation coverage (Cybertruck wheel-separation recall, Model Y/Model 3 door-handle-related probes). Identified via WebSearch snippets citing NHTSA-sourced secondary reporting; not directly fetched/opened this session."
+    url: null
+    date: "2026-08-05"
+  - note: "Secondary/aggregator and trade-press sources (Electrek, Teslarati, InsideEVs, TradingView, Not a Tesla App, and European/Chinese-market registration-data aggregators) used for autonomy/robotaxi status, Optimus production status, regional competitive-landscape (Europe registration declines, China wholesale-versus-delivery data), and Supercharger-network figures -- explicitly labeled secondary throughout TSLA.md, several figures (China trend data, exact capex/cash-flow reconciliation, Optimus production-count claim) flagged as internally inconsistent or single-sourced and unreconciled pending direct primary-source verification."
+    url: null
+    date: "2026-08-05"
+  - note: "Added 2026-08-05 following independent review: targeted re-check of the US EV market-share claim (41% Q3 2025 to 59% Q4 2025/early 2026), which found additional secondary figures (CleanTechnica: ~46% full-year 2025, down from ~49% in 2024; another source: ~54.2% Q1 2026) not reconciled into one consistent trend line this session -- flagged as [UNVERIFIED-CONFLICT] in TSLA.md rather than presented as a single clean upward swing. Not directly verified against a primary Tesla/industry-association source (WebFetch blocked on all attempted domains on a fresh attempt)."
+    url: null
+    date: "2026-08-05"

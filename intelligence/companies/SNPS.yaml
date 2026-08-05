@@ -1,0 +1,92 @@
+sector: Information Technology
+industry: Electronic Design Automation (EDA) Software and Semiconductor IP
+portfolio_role_ref: gated
+competitive_advantages:
+  - "One of three players controlling an estimated ~78%+ of the global EDA market -- Synopsys (~31% share, 2024 estimate), Cadence Design Systems (~30%), Siemens EDA/formerly Mentor Graphics (~13%, some estimates 10-15%) -- an oligopolistic structure with end-to-end tool suites and deep, multi-year foundry-certification relationships cited as the moat mechanism. [SNPS-C01]"
+  - "Record scale and continued growth despite integration disruption: FY2025 revenue $7.054B (+15% YoY, record). Q1 FY2026 revenue $2.409B (+66.0% YoY, Ansys now in the base, beat guidance); Q2 FY2026 revenue $2.276B (vs. $1.604B Q2 FY2025), gross margin 83% (a first for the company, described as the strongest of eight quarters), non-GAAP operating margin 39.5%. [SNPS-C02]"
+  - "Post-Ansys combination creates what the company markets as 'the first vertically integrated device-to-system design stack' -- fusing chip-level EDA with Ansys's CFD/thermal/mechanical multiphysics simulation, a differentiation claim relative to Cadence, which does not own comparable simulation breadth. Reinforced by a December 2025 $2 billion Nvidia investment in Synopsys common stock (at $414.79/share, ~2.6% of shares outstanding, making Nvidia the 7th-largest shareholder per LSEG data) tied to a multi-year partnership pivoting compute-intensive workloads to Nvidia CUDA-X/AI-physics/Omniverse. [SNPS-C03]"
+  - "Deleveraging progress since the Ansys close: total debt reduced from ~$13.5B (Q4 FY2025) to ~$10.0-10.8B (Q2 FY2026), a ~$4.3B paydown using cash flow and Nvidia investment proceeds. S&P affirmed a BBB rating with outlook revised to positive, forecasting leverage declining from ~1.8x in FY2026 to ~1.2x in FY2027 against a company target of net leverage below 1x. [SNPS-C04]"
+risks:
+  - risk: "Extreme, structurally persistent GAAP-versus-non-GAAP earnings gap, directly evidencing this record's gate's 'GAAP normalization... unresolved' concern: Q2 FY2026 GAAP net income was $17.1M versus non-GAAP net income of $643.7M -- roughly a 38x gap -- driven almost entirely by non-cash Ansys purchase-intangible amortization running at approximately $403.6M per quarter. GAAP operating income fell ~68% YoY in the same quarter despite strong underlying non-GAAP performance. Goodwill ($26.9B) plus intangible assets ($11.9B) together represent roughly 83% of total assets post-close -- a material impairment-risk exposure if Ansys synergies underdeliver, per secondary financial-analysis characterization."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "A severe, company-specific credibility event occurred on 2025-09-09 (Q3 FY2025 report): the stock fell approximately 35-36% in a single day after Design IP segment revenue declined ~8% YoY ($425.9-428M) and full-year non-GAAP EPS guidance was cut sharply (from $15.11-15.19 to $12.76-12.80). Cited drivers included China export-control disruption, a major foundry-customer shortfall (commentary points to Intel, unconfirmed by primary source), and internally acknowledged 'roadmap and resource-allocation' misjudgments. The stock remained well below its pre-drop highs as of 2026-08-03 (trading ~$392 against a 52-week range of $366.00-$636.25) roughly eleven months later, despite two subsequent beat-and-raise quarters. This event directly triggered a 10% workforce reduction (~2,000 employees, $300-350M pre-tax restructuring charges) and ongoing securities litigation (see below)."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Ongoing, unresolved securities litigation directly tied to the September 2025 event: Kim v. Synopsys, Inc. (N.D. Cal.), a securities class action (class period 2024-12-04 to 2025-09-09) alleging Synopsys misrepresented Design IP business strength while customization-driven unit economics were deteriorating and that certain roadmap/resource decisions were unlikely to yield their intended results; a consolidated stockholder derivative action is stayed pending resolution of a motion to dismiss in the class action. Status unresolved as of this record's authoring date. A separate, thinly-evidenced data-breach/cybersecurity matter is under investigation by plaintiff law firms -- flagged as low-confidence, unverified."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "China / export-control exposure produced an acute, short-notice regulatory event: on 2025-05-23/29, Synopsys (along with Cadence and Siemens EDA) received a U.S. Bureau of Industry and Security letter imposing new license requirements on EDA software/technology tied to China military end-use risk, prompting Synopsys to suspend guidance and halt China sales/support; the restriction was rescinded effective immediately on 2025-07-02. China has been reported as roughly 10-12% of revenue in recent quarters (pre-Ansys base). While the restriction was reversed, the episode demonstrates recurring, not one-time, regulatory-reversal risk for the EDA industry generally."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Leverage remains substantial notwithstanding paydown progress: total debt ~$10.0-10.8B as of Q2 FY2026 (down from ~$13.5B at Q4 FY2025), with S&P's own leverage-decline forecast (1.8x FY2026E, 1.2x FY2027E) not reaching the company's own stated target of net leverage below 1x until beyond the forecast window shown to this session. Buybacks remain modest relative to the $2B authorization, consistent with an ongoing debt-paydown priority."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Disclosed activist-investor pressure: Elliott Investment Management disclosed a multi-billion-dollar stake around 2026-03-22/23, publicly pushing for better monetization of Synopsys's software/services portfolio (exact stake size undisclosed). This is a live, developing situation whose eventual demands or outcome are unknown as of this record's authoring date."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed blocked (HTTP 403) on approximately 12 domains attempted, including sec.gov and a Wikipedia control page. No primary document was directly opened this session; all facts trace to WebSearch-returned snippets, one layer further removed from source than a normal WebFetch-based research session. Several figures were internally inconsistent across sources and are flagged in SNPS.md rather than silently resolved (Ansys deal financing figures of $16B committed vs. $14.3B debt incurred; a Q3 FY2026 consensus EPS estimate that appears potentially inconsistent with recent quarterly run-rates)."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+catalysts:
+  - catalyst: "Q3 FY2026 earnings release, confirmed scheduled for Wednesday, 2026-08-26, after market close (call 2pm PT/5pm ET)."
+    expected: "2026-08-26"
+    status: pending
+  - catalyst: "Investor Day, confirmed scheduled for 2026-09-30 in New York City -- this record's gate's own explicitly named reopening trigger. Management is reported (single secondary source, lower confidence) to be expected to address the Design IP business's new business models, agentic-EDA pricing structure, and long-term margin roadmap."
+    expected: "2026-09-30"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which the September 30, 2026 Investor Day outcome, further Ansys-integration/synergy-realization detail, and resolution of the ongoing securities litigation will next be actively re-checked."
+    expected: "2026-11-01"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). Synopsys shows genuinely strong underlying business execution -- record FY2025 revenue, two consecutive beat-and-raise quarters in FY2026, a first-ever 83% gross margin, and major new AI-industry partnerships (Nvidia, Microsoft, AMD) -- and real deleveraging progress since the transformative Ansys acquisition closed. Held at Medium rather than higher because every specific concern this record's gate names is independently confirmed by this research as still live: GAAP/non-GAAP normalization shows an extreme, structurally persistent gap (~38x in the most recent quarter) driven by years of remaining non-cash amortization; leverage, while declining, remains above the company's own stated long-term target; purchase valuation is complicated by $38.8B of combined goodwill and intangibles now on the balance sheet against a still-unresolved securities class action alleging the company overstated the acquired/adjacent Design IP business's health; and the September 2025 one-day ~35% stock decline -- from which the stock had not fully recovered as of the most recent price found -- demonstrates the market itself has not resolved these questions. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from SNPS's existing gated/cash-pending-clearance status or its 2.50% canonical target -- it was reasoned solely from the disclosed operating and financial picture, which independently supports the same 'strong execution, unresolved integration/leverage/GAAP/valuation questions' conclusion the gate itself already recorded."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-05"
+  next_due: "2026-11-01"
+  log:
+    - date: "2026-08-05"
+      note: >
+        Record created under governance/decisions/PI-0038-ws0005-gated-six-company-intelligence-completion.md
+        (status: Proposed at authoring time -- not yet independently reviewed or
+        principal-accepted). First Company Intelligence coverage for SNPS (no
+        prior record existed). Filed as one of a six-company administrative
+        batch (SNPS, ICE, SPGI, WM, RKLB, TSLA) sharing identical
+        portfolio-governance status -- all six gated under PHQ-2026-01,
+        cash_pending_clearance, no prior Intelligence coverage -- and execution
+        efficiency only; the six companies share no genuine economic
+        mechanism and this record makes no such claim. This session's own
+        WebFetch attempts were tested and confirmed blocked (HTTP 403) on
+        approximately twelve domains, including sec.gov and a Wikipedia
+        control page -- research rests entirely on WebSearch-returned
+        snippets/summaries of secondary sources, disclosed throughout this
+        record and in SNPS.md's Source-access disclosure rather than smoothed
+        over. Several figures were internally inconsistent across sources and
+        are flagged, not silently resolved.
+sources:
+  - note: "Synopsys, Inc. FY2025 Form 10-K (period ended ~2025-10-31, filed ~December 2025), covering FY2025 revenue ($7.054B), segment structure post-Ansys, and headcount. Identified via WebSearch snippets; not directly fetched/opened this session (WebFetch blocked)."
+    url: null
+    date: "2025-12-01"
+  - note: "Synopsys, Inc. Q1 FY2026 earnings release (reported 2026-02-25) and Q2 FY2026 earnings release (reported 2026-05-27), covering revenue, GAAP/non-GAAP EPS, gross/operating margin, and FY2026 guidance. Identified via WebSearch snippets citing PR Newswire/Yahoo/Investing.com/StockTitan/mlq.ai coverage; not directly fetched/opened this session."
+    url: null
+    date: "2026-05-27"
+  - note: "Ansys, Inc. acquisition -- announced 2024-01-16, completed 2025-07-17. Deal terms, corrected 2026-08-05 following independent review to distinguish two figures: originally announced (2024-01-16) 0.3450 SNPS shares + $197.00 cash per Ansys share; final consideration at closing (2025-07-17, per the agreement's own anti-dilution/exchange-cap provision) 0.3399 SNPS shares + $199.91 cash per Ansys share -- an earlier draft cited only the final figures without this distinction. ~$35B enterprise value at announcement. Financing ($16B committed debt financing per one source vs. $14.3B debt incurred per another, unreconciled), synergy targets ($400M cost by year 3, $400M revenue by year 4), and the November 2025 restructuring (~2,000 employees, $300-350M pre-tax charges). Identified via WebSearch snippets citing Synopsys/Ansys press releases, PR Newswire, Cleary Gottlieb, TipRanks, CNBC, Yahoo Finance; an SEC S-4/A filing and the Ansys investor-relations FAQ page were identified as the underlying primary sources but neither was directly opened this session (WebFetch confirmed blocked on sec.gov on a fresh 2026-08-05 attempt) -- this remains WebSearch-synthesis-derived, not primary-source-verified."
+    url: null
+    date: "2025-07-17"
+  - note: "Kim v. Synopsys, Inc. securities class action (N.D. Cal.) and the related consolidated stockholder derivative action -- case captions, class period, and core allegations cross-corroborated across multiple independent plaintiff-law-firm case pages (Robbins LLP, BFA, Rosen, Kessler Topaz, RGRD). These are advocacy/interested sources and are weighted as secondary throughout SNPS.md; not independently verified against the complaint text itself."
+    url: null
+    date: "2026-08-05"
+  - note: "U.S. Bureau of Industry and Security EDA export-control letter (2025-05-23/29) and rescission (2025-07-02) -- well-corroborated across independent sources (DCD, Kirkland & Ellis, Hogan Lovells/HSF Kramer, EE Times). Identified via WebSearch snippets; not directly fetched/opened this session."
+    url: null
+    date: "2025-07-02"
+  - note: "S&P Global Ratings BBB affirmation / positive-outlook revision on Synopsys, and Elliott Investment Management's disclosed March 2026 activist stake. Identified via WebSearch snippets citing Investing.com/Tradingeconomics/Seeking Alpha (ratings) and Bloomberg/CNBC/Reuters via Investing.com (Elliott); not directly fetched/opened this session."
+    url: null
+    date: "2026-08-05"

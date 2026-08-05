@@ -201,3 +201,27 @@ tickers:
     checkpoint_status: pending
     channels: {}
     established_by: null
+  - ticker: SNPS
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: ICE
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: SPGI
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: WM
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: RKLB
+    checkpoint_status: pending
+    channels: {}
+    established_by: null
+  - ticker: TSLA
+    checkpoint_status: pending
+    channels: {}
+    established_by: null

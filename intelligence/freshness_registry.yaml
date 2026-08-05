@@ -386,3 +386,51 @@ tickers:
     filing_trigger_profile: domestic_issuer_v1
     refresh_policy: path_a_fixed_scope_v1
     monitoring_enabled: false
+  - ticker: SNPS
+    company_record_authority: PI-0038
+    enrollment_authority: PI-0038
+    enrolled_at: "2026-08-05"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: ICE
+    company_record_authority: PI-0038
+    enrollment_authority: PI-0038
+    enrolled_at: "2026-08-05"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: SPGI
+    company_record_authority: PI-0038
+    enrollment_authority: PI-0038
+    enrolled_at: "2026-08-05"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: WM
+    company_record_authority: PI-0038
+    enrollment_authority: PI-0038
+    enrolled_at: "2026-08-05"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: RKLB
+    company_record_authority: PI-0038
+    enrollment_authority: PI-0038
+    enrolled_at: "2026-08-05"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false
+  - ticker: TSLA
+    company_record_authority: PI-0038
+    enrollment_authority: PI-0038
+    enrolled_at: "2026-08-05"
+    template_version: v1
+    filing_trigger_profile: domestic_issuer_v1
+    refresh_policy: path_a_fixed_scope_v1
+    monitoring_enabled: false

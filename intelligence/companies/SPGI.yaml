@@ -1,0 +1,97 @@
+sector: Financials
+industry: Credit Ratings, Financial Data/Analytics, and Market Indices
+portfolio_role_ref: gated
+competitive_advantages:
+  - "Credit-ratings oligopoly member: S&P Global Ratings is one of the 'Big Three' rating agencies (alongside Moody's and Fitch), controlling a combined roughly 95% of the global market per secondary sources (individual SPGI/Moody's split reported inconsistently -- ~50%/31%/12%/7% in one source, ~40%/40%/15% in another). This is a regulatory-license-driven moat (NRSRO/ESMA designations) reinforced by issuer/investor reliance embedded in bond covenants and regulatory capital rules. [SPGI-C01]"
+  - "Record scale and profitability: FY2025 revenue $15.336B (+8% YoY), GAAP net income $4.471B (+16%), GAAP diluted EPS $14.66 (+19%); Q2 2026 revenue $4.146-4.15B (~+10-11% YoY), operating profit $1.812B (+17% YoY). Indices segment operating margin 68-70% and Ratings 64-65% (2025 recast figures) are among the highest-margin businesses in this repository's covered roster. [SPGI-C02]"
+  - "S&P Dow Jones Indices franchise benefits from the same AUM-linked-fee mechanism driving index-provider growth broadly: Q2 2026 Indices revenue +20% YoY, asset-linked fees +22%, ETF AUM linked to S&P indices reaching a record $6.35 trillion. [SPGI-C03]"
+  - "53 consecutive years of dividend increases, paid annually since 1937 -- one of fewer than 30 S&P 500 companies with a 50+ year increase streak, evidencing long-run capital-return discipline through multiple economic cycles. [SPGI-C04]"
+risks:
+  - risk: "Post-Mobility-spin comparability is not yet resolved -- the specific condition this record's gate names. Mobility Global Inc. (NYSE: MBGL) completed its separation from SPGI effective 2026-07-01 (record date 2026-06-15). Under the disclosed accounting treatment, Mobility's results are included in SPGI's consolidated financials only through 2026-06-30, and Mobility will be presented as discontinued operations across all comparative periods beginning with Q3 2026 (expected to be reported around 2026-10-29) -- meaning no single quarter reported as of this record's authoring date (2026-08-05) presents SPGI on a clean, fully-discontinued-operations basis. Every quarter reported to date (including Q2 2026) is a transition-period result."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "FY2026 guidance changed materially around the spin: adjusted EPS guidance moved from $19.40-$19.65 (given February 2026, pre-spin-clarity) to $17.50-$17.75 (as of the Q2 2026 call) -- a large absolute change very likely mostly or entirely mechanical (removing Mobility's EPS contribution) rather than business deterioration, but no primary-source bridge reconciling the two figures was found this session, which is exactly the kind of reconciliation the gate's own 'normalized... valuation' language calls for and is not yet available."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Valuation multiples for SPGI itself were internally inconsistent across secondary sources this session even before attempting an SPGI-vs-MSCI comparison: trailing P/E cited variously as 27.85x, 24.7x, and 33.9x; EV/EBITDA cited as 11.56x, 18.07x, and 18.45x across sources dated within about two weeks of each other. A same-date, same-earnings-basis SPGI-vs-MSCI valuation comparison -- the specific comparison the gate names -- was not achievable from sources available this session, though MSCI's own multiples (more internally consistent) appear to sit at a premium to SPGI's on every reading obtained."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "The Mobility separation triggered new corporate-level debt issuance (~$2 billion planned for H2 2026) to help fund an enlarged $7B+ FY2026 buyback target, layered on an earnings base that shrank when Mobility (~13% of FY2025 revenue) departed. Pre-issuance leverage figures were themselves inconsistent across sources (debt-to-equity cited as 0.34, 0.43, and 30.2% at different dates), and no updated post-issuance leverage figure was found. MSCI, used as the gate's own named comparator, discloses a formal leverage target range (3.0x-3.5x total-debt-to-adjusted-EBITDA) that no equivalent published SPGI target was found for."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Regulatory/litigation history in the Ratings business: SEC charged S&P Global Ratings with conflict-of-interest violations in 2022 (self-reported, cooperated, remediated); in 2024 the SEC charged six credit rating agencies, S&P Global Ratings among them per the secondary summary found, with recordkeeping failures tied to electronic-communications preservation, resulting in a $20 million civil penalty and a required compliance consultant. Ongoing Australian class-action litigation alleges investment losses tied to pre-financial-crisis CDO ratings. No 2026-dated new litigation or enforcement matter was found this session, though this is a search-limited finding, not a clean-record confirmation."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Energy segment (formerly Commodity Insights, renamed 'S&P Global Energy' effective 2025-11-14) showed the slowest growth of SPGI's four remaining segments in Q2 2026 (+3% YoY), explicitly attributed in company commentary to the Iran conflict and extreme volatility impacting renewals and GTS -- a live, named geopolitical exposure as of the most recent quarter."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) failed on every domain attempted this session, including sec.gov, investor.spglobal.com, and a Wikipedia control page used to confirm this was a general tool failure rather than domain-specific blocking. No primary document (10-K, 10-Q, 8-K, or SPGI's own press release) was directly opened. Every fact in this record traces to WebSearch-returned snippets/summaries, and several figures were internally inconsistent across sources and are flagged in SPGI.md rather than silently resolved (Q2 2026 adjusted-EPS beat-vs-miss framing conflicted across two sources; segment revenue percentages did not cleanly sum to 100%; S&P Dow Jones Indices JV ownership percentages found were dated to the 2011-2012 formation era with no 2026 confirmation)."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+catalysts:
+  - catalyst: "Q3 2026 earnings release, expected around 2026-10-29 -- the first quarter Mobility will be presented as discontinued operations across all comparative periods per SPGI's own disclosed accounting treatment, and the specific event that would satisfy this record's gate's 'one clean post-spin quarter' trigger."
+    expected: "2026-10-29"
+    status: pending
+  - catalyst: "Continued execution of the $7B+ FY2026 buyback program and the planned ~$2 billion H2 2026 debt issuance, and further Transition Services Agreement wind-down / stranded-cost normalization over the disclosed up-to-18-month post-spin window."
+    expected: "2026-12-31"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which the Q3 2026 clean-quarter results, a reconciled SPGI-vs-MSCI valuation comparison, and post-debt-issuance leverage figures will next be actively re-checked."
+    expected: "2026-11-05"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). SPGI's core Ratings/Indices/Market Intelligence/Energy businesses show record scale and profitability (FY2025 revenue $15.3B +8%, GAAP EPS +19%; Q2 2026 operating profit +17%) with genuine structural moats (Ratings oligopoly licensure, AUM-linked Indices franchise) and an unusually long dividend-growth track record (53 years). Held at Medium rather than higher because the gate's own stated concern -- post-Mobility-spin comparability -- is independently confirmed by this research as factually unresolved as of the authoring date: no clean post-spin quarter has yet been reported (the first is expected Q3 2026), FY2026 guidance moved by a large absolute amount around the spin without a found primary-source bridge, and a normalized SPGI-versus-MSCI valuation comparison (the gate's own named benchmark) was not achievable from available sources due to internally inconsistent multiples. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from SPGI's existing gated/cash-pending-clearance status or its 1.25% canonical target -- it was reasoned solely from the disclosed operating and financial picture, which independently supports the same 'strong core business, comparability not yet clean enough' conclusion the gate itself already recorded."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-05"
+  next_due: "2026-11-05"
+  log:
+    - date: "2026-08-05"
+      note: >
+        Record created under governance/decisions/PI-0038-ws0005-gated-six-company-intelligence-completion.md
+        (status: Proposed at authoring time -- not yet independently reviewed or
+        principal-accepted). First Company Intelligence coverage for SPGI (no
+        prior record existed). Filed as one of a six-company administrative
+        batch (SNPS, ICE, SPGI, WM, RKLB, TSLA) sharing identical
+        portfolio-governance status -- all six gated under PHQ-2026-01,
+        cash_pending_clearance, no prior Intelligence coverage -- and execution
+        efficiency only; the six companies share no genuine economic
+        mechanism and this record makes no such claim. This session's own
+        WebFetch attempts were tested and confirmed blocked (HTTP 403) on
+        every domain attempted, including sec.gov and a Wikipedia control --
+        research rests entirely on WebSearch-returned snippets/summaries of
+        secondary sources, disclosed throughout this record and in SPGI.md's
+        Source-access disclosure rather than smoothed over. Several figures
+        (SPGI valuation multiples, Q2 2026 EPS beat/miss framing, segment
+        revenue percentages, S&P Dow Jones Indices JV ownership split) were
+        internally inconsistent across sources and are flagged, not silently
+        resolved.
+sources:
+  - note: "S&P Global Inc. FY2025 full-year results (reported on or about 2026-02-10), covering FY2025 revenue ($15.336B), segment mix, GAAP/adjusted EPS, and initial FY2026 guidance ($19.40-$19.65 adjusted EPS). Identified via WebSearch snippets citing SEC ARS/10-K filing and the earnings release; not directly fetched/opened this session (WebFetch blocked)."
+    url: null
+    date: "2026-02-10"
+  - note: "S&P Global Inc. 'Pro Forma and Recast Financial Results and Updated Segment Information' press release (dated 2026-07-06), providing recast FY2025 and Q1 2026 segment data with Mobility removed, ahead of the actual clean post-spin quarter. Identified via WebSearch snippets citing the press release; not directly fetched/opened this session."
+    url: null
+    date: "2026-07-06"
+  - note: "S&P Global Inc. Q2 2026 earnings release/results (reported 2026-07-28), covering revenue, segment detail, GAAP/adjusted EPS, and revised FY2026 guidance ($17.50-$17.75 adjusted EPS, $7B+ buyback target). Identified via WebSearch snippets; not directly fetched/opened this session. Two sources gave conflicting adjusted-EPS beat-versus-miss framing for this quarter, unreconciled."
+    url: null
+    date: "2026-07-28"
+  - note: "Mobility Global Inc. (NYSE: MBGL) separation completion disclosure (8-K, effective 2026-07-01, record date 2026-06-15) -- distribution mechanics, discontinued-operations accounting treatment timeline, and Transition Services Agreement terms. Identified via WebSearch snippets citing multiple outlets (tradingview.com, stocktitan.net, gurufocus.com, prnewswire.com); not directly fetched/opened this session."
+    url: null
+    date: "2026-07-01"
+  - note: "MSCI Inc. Q1 2026 and Q2 2026 results, used as the direct capital-priority comparator this record's gate names -- revenue, adjusted EPS, operating/net margins, leverage (total-debt-to-adjusted-EBITDA target range 3.0x-3.5x), and dividend history. Identified via WebSearch snippets; not directly fetched/opened this session."
+    url: null
+    date: "2026-08-05"
+  - note: "Secondary/aggregator sources (bullfincher.io and similar financial-data aggregators, worldoil.com/investing.com/prnewswire.com Energy-segment-rename coverage, hudson-labs.com competitive-mindshare analysis, investor.cmegroup.com/marketswiki.com S&P Dow Jones Indices JV historical-formation detail) used for segment-mix context, competitive framing, and historical JV-ownership detail -- explicitly labeled secondary throughout SPGI.md, several figures flagged as internally inconsistent and unreconciled pending direct primary-source verification."
+    url: null
+    date: "2026-08-05"
+  - note: "Added 2026-08-05 following independent review, targeted re-verification of two disputed claims: (1) Commodity Insights FY2025 segment revenue (~$1.95B, ~15.6% of total), identified via WebSearch snippet citing ycharts.com, used to close the previously-incomplete four-segment revenue reconciliation (see SPGI.md's Business summary correction). (2) Mobility spinoff scope -- multiple secondary sources (Yahoo Finance, The Motley Fool, StockTitan, CollisionWeek, Repairer Driven News, Auto Remarketing) describing Mobility Global's portfolio as CARFAX/automotiveMastermind/Polk Automotive Solutions/Market Scan only, with Commodity Insights separately confirmed as a continuing S&P Global segment; and Morningstar/PR Newswire coverage confirming S&P Global's unrelated, much earlier 2023-05-02 sale of its Engineering Solutions business to KKR (now operating independently as Accuris), finding no connection to the 2026 Mobility separation. None of these sources was directly opened (WebFetch confirmed blocked on sec.gov on a fresh 2026-08-05 attempt) -- this is WebSearch-synthesis-derived evidence recovery, not a primary-source-document read, and is presented as this session's own finding, offered against a specific independent-review claim it did not corroborate, not as a fully settled fact."
+    url: null
+    date: "2026-08-05"
