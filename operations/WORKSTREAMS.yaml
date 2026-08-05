@@ -1770,8 +1770,8 @@ workstreams:
           milestone-5-zero-based-classification-and-tier-architecture-review
           gate's own status: proposed above, which remains accurate for the
           milestone as a whole.**
-        pr: 245
-        status: complete
+        pr: null
+        status: in_progress
         date: "2026-08-04"
       - gate: milestone-6-blind-classification
         description: >
