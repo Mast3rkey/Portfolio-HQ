@@ -4192,7 +4192,7 @@ workstreams:
       convention already used for every prior WS-0005 filing in this log — a bounded follow-up
       commit sets it once the PR is opened.
     active_branch: claude/m5-candidate-framework-design-56kvl1
-    active_pr: null
+    active_pr: 246
     last_verified_main_sha: 96020e55b5317aa6191733e22d2df84bea4a6574
     last_verified_date: "2026-08-05"
     authorized_by: >
