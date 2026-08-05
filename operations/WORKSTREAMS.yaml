@@ -2694,7 +2694,7 @@ workstreams:
           principal acceptance before it may be marked ready or merged — this entry does not itself
           constitute that review or acceptance, and the `status: complete` transition takes effect
           only on this PR's own merge and post-merge verification, per OPS-0006 §16.1.
-        pr: null
+        pr: 252
         status: in_progress
         date: "2026-08-05"
     evidence_refs:
@@ -4593,7 +4593,7 @@ workstreams:
       (`milestone6-prereq6-fresh-authorization-required`) remains its own separate, later, explicit
       authorization requirement, left exactly as merged (`status: blocked`, unedited) by this filing.
     active_branch: claude/m6-step6-fresh-authorization-0kiq9m
-    active_pr: null
+    active_pr: 252
     last_verified_main_sha: d42988f2dae167c484d0b8a07bdb3ac2676a975c
     last_verified_date: "2026-08-05"
     authorized_by: >
