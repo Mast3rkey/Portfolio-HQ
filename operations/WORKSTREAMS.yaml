@@ -2428,8 +2428,16 @@ workstreams:
           validator.py drafts from the prior, separate, idle Milestone 6
           session. Opened as a draft PR; not merged, not independently
           reviewed, not principal-accepted in this session.
+
+          **Synchronized by `REL-0007` (2026-08-05, `OPS-0009` Lane M):** `PI-0038` (PR #247)
+          independently re-confirmed merged (merge commit `37a7c92273ae66c74f84c20654975368e12cfff6`)
+          — this gate's own literal completion condition ("effective only on PI-0038's own merge") is
+          satisfied. `status` transitions `in_progress` -> `complete`. This synchronization was
+          explicitly deferred to "the next WS-0005 filing" by `PI-0039`'s own independent review
+          (`4863450699`, MINOR finding 1) and principal-acceptance comment (`issuecomment-5191738468`)
+          — `REL-0007` is that filing.
         pr: null
-        status: in_progress
+        status: complete
         date: "2026-08-05"
       - gate: milestone6-prereq1-gated-six-intelligence-completion
         description: >
@@ -2445,8 +2453,13 @@ workstreams:
           research is not authority to remove, downgrade, or negatively
           classify any of the six companies. BLOCKING for Milestone 6 until
           complete (effective only on PI-0038's own merge).
+
+          **Synchronized by `REL-0007` (2026-08-05, `OPS-0009` Lane M):** same synchronization as the
+          `pi0038-gated-six-company-intelligence-completion` gate immediately above — `PI-0038`'s
+          merge is independently re-confirmed, so this prerequisite's own BLOCKING condition is
+          satisfied. `status` transitions `in_progress` -> `complete`.
         pr: null
-        status: in_progress
+        status: complete
         date: "2026-08-05"
       - gate: milestone6-prereq2-current-roster-freshness-verification
         description: >
@@ -2474,8 +2487,16 @@ workstreams:
           Milestone 6 until complete — this gate reaches status: complete
           only on this filing's own merge and post-merge verification, per
           OPS-0006 §16.1.
+
+          **Synchronized by `REL-0007` (2026-08-05, `OPS-0009` Lane M):** `PI-0039` (PR #248)
+          independently re-confirmed merged (merge commit `1a91d8986652461584b4562bb4cd31b3c1b58bbd`),
+          reviewed (`4863450699`), principal-accepted (`issuecomment-5191738468`), and post-merge
+          verified (`issuecomment-5191791015`) — that post-merge-verification comment explicitly
+          states this gate "is now effective as `status: complete`... deferred, alongside the two
+          MINOR findings, to the next WS-0005 filing's own synchronization pass." `REL-0007` is that
+          filing. `status` transitions `in_progress` -> `complete`.
         pr: 248
-        status: in_progress
+        status: complete
         date: "2026-08-05"
       - gate: milestone6-prereq3-relationship-gap-check
         description: >
@@ -2490,8 +2511,38 @@ workstreams:
           authorized to execute — requires its own separate, later, explicit
           principal authorization and bounded implementation PR before any
           work begins. BLOCKING for Milestone 6 until complete.
+
+          **`REL-0007` filed 2026-08-05 — not yet merged, not yet independently reviewed, not yet
+          effective.** Explicitly principal-authorized ("I authorize one coherent Step 3
+          governance-and-gap-check PR"). Performed the gap check this gate requires: recomputed
+          `TIER-0002` §3.5's own three-mechanism `risk_concentration.unmeasured_flag` test against all
+          27 canonical names live (disclosing that `TIER-0001`/`TIER-0002`'s own stated "13 unmeasured"
+          figure is stale by two names — `LLY`/`TSLA` are both `issuer_lookthrough.yaml` members and
+          were never actually unmeasured under the field's own three-mechanism definition; the correct
+          count is 11: SNPS, PANW, ISRG, TMO, ICE, SPGI, V, COST, WM, RTX, RKLB); read all six PI-0038
+          gated-name records in full for newly-available relationship evidence; re-evaluated the two
+          candidates REL-0006 Criterion 6 disclosed but never actioned (GEV/ETN/PWR capital_spending_
+          dependency; MSFT/AMZN regulatory_or_reimbursement_dependency) against the TIER-0002 axes
+          specifically, finding both DUPLICATIVE OF EXISTING STRUCTURE (every named ticker already
+          fully measured via cluster cap and/or issuer look-through and/or existing relationship
+          records); and identified two candidates (SNPS<->NVDA technology_platform_dependency;
+          RTX<->RKLB, no clean primitive fit) as MATERIAL BUT REQUIRES NEW RESEARCH — both rest on a
+          single, self-disclosed-as-weak, one-sided source, wholly uncorroborated by the
+          counterparty's own comparatively well-sourced record. **No candidate reached MATERIAL AND
+          EVIDENCE-READY; no new `intelligence/relationships/` record was created.** Full detail
+          retained at governance/audits/
+          WS0005_M6PREREQ3_CLASSIFICATION_MATERIAL_RELATIONSHIP_GAP_CHECK_20260805.md. Also performed,
+          per explicit principal authorization: the deferred `pi0038-gated-six-company-intelligence-
+          completion`/`milestone6-prereq1`/`milestone6-prereq2` gate synchronizations above, and the
+          bounded AMZN.yaml Anthropic-gain wording correction PI-0039's own review recommended. This
+          governance PR itself must remain draft, gain its own independent exact-head review, complete
+          any required bounded correction and re-review, and receive explicit principal acceptance
+          before it may be marked ready or merged — this entry does not itself constitute that review
+          or acceptance, and the `status: complete` transition below takes effect only on this PR's own
+          merge and post-merge verification, per OPS-0006 §16.1 (matching every prior WS-0005 filing's
+          own identical discipline — this filing does not mark its own still-open PR complete).
         pr: null
-        status: proposed
+        status: in_progress
         date: "2026-08-05"
       - gate: milestone6-prereq4-chart-evidence-scope-decision
         description: >
@@ -4380,9 +4431,36 @@ workstreams:
       history (PR #247) remains recorded above and is unedited. `active_pr` is `null` until this
       filing's own PR number exists, per `OPS-0001`'s convention — a bounded follow-up commit sets
       it once the PR is opened.
-    active_branch: claude/roster-freshness-verification-o267m6
-    active_pr: 248
-    last_verified_main_sha: 37a7c92273ae66c74f84c20654975368e12cfff6
+
+      **`REL-0007` (this entry's own live work) independently re-confirmed `PI-0039` (PR #248)
+      merged** (merge commit `1a91d8986652461584b4562bb4cd31b3c1b58bbd`) — review `4863450699`,
+      principal acceptance `issuecomment-5191738468`, post-merge verification
+      `issuecomment-5191791015` all independently re-verified live, not copied from any prior
+      summary. `milestone6-prereq2-current-roster-freshness-verification` is therefore complete.
+      Per explicit principal authorization ("I authorize one coherent Step 3
+      governance-and-gap-check PR"), `REL-0007` executes pre-Milestone-6 roadmap step 3
+      (`milestone6-prereq3-relationship-gap-check`): a classification-material relationship gap
+      check, not an exhaustive relationship graph. Recomputed `TIER-0002` §3.5's own three-mechanism
+      `unmeasured_flag` test live against all 27 canonical names, disclosing that
+      `TIER-0001`/`TIER-0002`'s own stated 13-unmeasured-name figure is stale by two (`LLY`/`TSLA`
+      are both `issuer_lookthrough.yaml` members, never actually unmeasured) — the corrected count
+      is 11. Found zero candidates reaching MATERIAL AND EVIDENCE-READY; two (`SNPS`<->`NVDA`,
+      `RTX`<->`RKLB`) disclosed as MATERIAL BUT REQUIRES NEW RESEARCH; the two candidates `REL-0006`
+      Criterion 6 previously disclosed (`GEV`/`ETN`/`PWR`; `MSFT`/`AMZN`) re-evaluated and found
+      DUPLICATIVE OF EXISTING STRUCTURE. **No new `intelligence/relationships/` record created.**
+      Full detail retained at
+      `governance/audits/WS0005_M6PREREQ3_CLASSIFICATION_MATERIAL_RELATIONSHIP_GAP_CHECK_20260805.md`.
+      Also performed the deferred `pi0038-gated-six-company-intelligence-completion`/
+      `milestone6-prereq1`/`milestone6-prereq2` gate synchronizations and the bounded
+      `AMZN.yaml` Anthropic-gain wording correction, both explicitly authorized by this session's
+      own task packet. The `active_branch`/`active_pr` fields below are updated to this filing's own
+      branch, `claude/ws-0005-relationship-gap-check-332nnf`; `PI-0039`'s own already-merged
+      branch/PR history (PR #248) remains recorded above and is unedited. `active_pr` is `null`
+      until this filing's own PR number exists, per `OPS-0001`'s convention — a bounded follow-up
+      commit sets it once the PR is opened.
+    active_branch: claude/ws-0005-relationship-gap-check-332nnf
+    active_pr: null
+    last_verified_main_sha: 1a91d8986652461584b4562bb4cd31b3c1b58bbd
     last_verified_date: "2026-08-05"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and

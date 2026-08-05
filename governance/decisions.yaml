@@ -531,3 +531,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, OPS-0014, PI-0011, PI-0016, PI-0031, PI-0033, PI-0035, PI-0036, PI-0037, PI-0038, REL-0006]
     supporting_artifact: governance/audits/WS0005_M6PREREQ2_CURRENT_ROSTER_FRESHNESS_VERIFICATION_20260805.md
     file: governance/decisions/PI-0039-ws0005-milestone6-prereq2-current-roster-freshness-verification.md
+  - decision_id: REL-0007
+    date: 2026-08-05
+    status: Proposed
+    category: relationship_mapping_governance
+    related_decisions: [REL-0001, REL-0002, REL-0003, REL-0004, REL-0005, REL-0006, TIER-0001, TIER-0002, GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0031, PI-0035, PI-0036, PI-0037, PI-0038, PI-0039, LADDER-0001, CHART-0001, CHART-0002, OPS-0016]
+    supporting_artifact: governance/audits/WS0005_M6PREREQ3_CLASSIFICATION_MATERIAL_RELATIONSHIP_GAP_CHECK_20260805.md
+    file: governance/decisions/REL-0007-ws0005-milestone6-prereq3-relationship-gap-check.md
