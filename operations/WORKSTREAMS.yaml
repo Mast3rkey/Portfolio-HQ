@@ -1978,6 +1978,30 @@ workstreams:
           Zero diff on any `intelligence/classification/*.yaml` file or
           `COHORT_MANIFEST.yaml`. See CLAUDE.md for full detail. Requires
           its own fresh independent exact-head review.
+
+          **Third bounded correction (same day, this PR, review
+          `4868430051`):** confirmed all five items the second correction
+          targeted genuinely resolved and zero diff on any sealed record
+          or manifest, but found one new MAJOR (no independent backstop
+          for dangling section-title cross-references — the whole-
+          section-strip title list was checked at strip time only, never
+          in `_INDEPENDENT_VERIFY_PATTERNS`) and one new MINOR (PR body's
+          "genuinely separate mechanisms" top-line claim overstated
+          relative to the module's own disclosed shared-helper exception).
+          MAJOR resolved with a new independent mechanism — the strip
+          layer now returns removed section titles as factual audit
+          metadata (`removed_section_titles`, titles only, never stripped
+          prose), and a new, separately-implemented
+          `_dangling_reference_findings()` independently detects a
+          reference to any of them in the complete assembled package,
+          proven via AST-level tests to share no code path with the strip
+          decision. MINOR resolved in the PR body only — CLAUDE.md/this
+          file's own retained text already carried the shared-helper
+          caveat inline, so neither needed editing. Sanitizer tests
+          123/123 (up from 76); full suite 2756/2756 in this environment;
+          `classification_validator.py` and its tests unchanged this
+          round. See CLAUDE.md for full detail. Requires its own fresh
+          narrow independent exact-head delta review.
         pr: null
         status: in_progress
         date: "2026-08-05"
