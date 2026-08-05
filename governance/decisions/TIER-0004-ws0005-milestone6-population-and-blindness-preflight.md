@@ -94,14 +94,23 @@ prior classification-drafting session.
 
 ### C. Redacted evidence-input mechanics (specified, not implemented)
 
-One deterministic redaction procedure, reused identically across all 27 tickers (supporting artifact
-§7): strip `portfolio_role_ref` and the entire `conviction` block wholesale; strip `review.log`'s
-free-text notes wholesale (retaining only `cadence_days`/`last_reviewed`/`next_due`) — the specific
-place prior committee/policy conclusions leak into prose; scan-and-strip any chart-domain reference
-(a defensive pass; zero found live in any of the 27 records today); retain `sector`, `industry`,
-`themes`, `competitive_advantages`, `risks[]`, `sources[]` unchanged. Deterministic and re-runnable —
-the same procedure against the same source commit produces byte-identical output, auditable by
-diffing. **No sanitized package is created and no script is implemented by this filing.**
+One deterministic redaction procedure, reused identically across all 27 tickers, applied to **both**
+each ticker's `.yaml` and its paired `.md` thesis narrative (supporting artifact §7, corrected in
+this filing's own bounded correction pass — see Rationale): on the `.yaml`, strip `portfolio_role_ref`
+and the entire `conviction` block wholesale, and strip `review.log`'s free-text notes wholesale
+(retaining only `cadence_days`/`last_reviewed`/`next_due`); on the `.md`, strip any paragraph or
+sentence containing a defined marker (`portfolio_role_ref`, a tier label used as this ticker's own
+placement, `conviction.rating`/rating-level discussion, "keep current policy," "committee review,"
+"promoted to/from," and similar), **then mandatorily re-scan the redacted output against the same
+marker list and treat any surviving match as a hard failure** — the `.md` file is not exempt from
+redaction and is not assumed safe by construction (an earlier draft of this filing made that false
+claim; direct inspection found `portfolio_role_ref`/tier/conviction/committee-conclusion prose,
+unredacted, in 8 of 27 current `.md` files, including TSM, AVGO, and NVDA); on both files, scan-and-
+strip any chart-domain reference (a defensive pass; zero found live in any of the 27 records today);
+retain `sector`, `industry`, `themes`, `competitive_advantages`, `risks[]`, `sources[]`, and redacted
+`.md` thesis prose. Deterministic and re-runnable — the same procedure against the same source commit
+produces byte-identical output, auditable by diffing. **No sanitized package is created and no script
+is implemented by this filing.**
 
 ### D. Sequencing — judgment axes before risk-concentration
 
@@ -295,6 +304,56 @@ image evidence; this filing applies the same honest framing to classification-re
   copied assumption; `blocked` is already a correct, more specific non-authorization state, and
   rewriting another filing's (`PI-0038`'s) own historical gate text without a substantive reason
   would violate this repository's own convention against silently rewriting retained state.
+
+## Bounded Correction (same day, this PR)
+
+An independent exact-head review of PR #251 (anchored to head `5d76e08add4b531b8c29669c6facfa0fc95995aa`)
+confirmed every structural/population/register-synchronization claim in this filing accurate, but
+returned **CHANGES REQUIRED** on one BLOCKING and one MINOR finding, both now resolved:
+
+**BLOCKING, resolved.** The originally filed §7.2 asserted the paired `.md` thesis narrative "is
+evidence-only by construction... and passes through unredacted." The independent reviewer directly
+inspected the current 27-ticker population and found `portfolio_role_ref` values, tier-placement
+language, conviction restatements, or prior committee/policy-conclusion prose, unredacted, inside at
+least 8 of 27 `.md` files — including `TSM.md` ("`portfolio_role_ref: T1` was explicitly approved by
+the human principal..."), `AVGO.md` ("`portfolio_role_ref: T2` reflects `targets.yaml`'s current tier
+placement..."), and `NVDA.md` (the PI-0017 committee review's "Keep current policy" recommendation),
+plus `AMZN.md`, `ISRG.md`, `TMO.md`, `CEG.md`, and `GEV.md`. This finding was independently
+re-verified in this correction pass via direct grep against the same 8 files before any text changed
+— confirmed accurate, not taken on the reviewer's word alone. **Resolved** by rewriting supporting
+artifact §6.1/§7 and this decision's own §C: the false "passes through unredacted" claim is retracted;
+the redaction procedure now applies to both the `.yaml` and `.md` files, with a defined marker-based
+strip pass for the `.md` file's tier/conviction/committee-conclusion prose, **plus a mandatory
+post-redaction re-scan of the `.md` output that treats any surviving marker match as a hard failure**
+(not a one-pass trust) — because free-form prose isn't a fixed key list, and this very finding proved
+a plausible-sounding "safe by construction" claim can be wrong when actually checked against the
+corpus. No population, sequencing, sealing, abstention, or non-authorization claim in this filing was
+affected — the correction is confined to §6.1's evidence-source bullet and all of §7.
+
+**MINOR, resolved.** §6.1 and §8 of the supporting artifact attributed a quoted "risk_concentration
+computed after judgment axes" sequencing rule to `TIER-0002` §3.5 as already-existing design.
+Independently re-verified this correction pass: `TIER-0002` §3.5 states `risk_concentration` is "a
+pure cross-reference rollup" (a claim about its computational content) but contains no ordering
+language of any kind — the quoted fragment does not appear in `TIER-0002`'s text. The
+judgment-before-risk-concentration sequencing rule is legitimate, well-reasoned, and within this
+filing's own authorized scope to establish — but it is new content this filing introduces for
+Milestone 6, not a restatement of prior `TIER-0002` review. **Resolved** by rephrasing both references
+to state the sequencing rule as this filing's own, consistent with (not quoting as already decided by)
+`TIER-0002` §3.5's cross-reference-rollup description.
+
+**NOTE, not corrected (reviewer's own assessment: not a defect requiring correction now).** The
+reviewer flagged that a future ticker whose `economic_role` abstains (§F) but whose `capital_priority`
+still seals independently selects a `comparator_set` under conditions `TIER-0002`'s own rationale
+calls indefensible without a settled economic role. This is a real edge case for a future
+implementation to address explicitly (e.g., a `capital_priority` rationale disclosing that it was
+assessed without a settled `economic_role`) — left unaddressed in this filing per the reviewer's own
+recommendation, since the authorizing instruction requires non-cascading abstention and a mechanical
+fix here would risk re-introducing cascading behavior the authorizing instruction explicitly
+prohibits.
+
+This correction changes no population entry, no gate status transition, no register field beyond what
+was already specified, and no non-authorization boundary. It requires its own exact-head re-review
+before this filing may be considered ready.
 
 ## Consequences
 
