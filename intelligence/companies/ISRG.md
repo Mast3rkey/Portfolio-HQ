@@ -89,10 +89,16 @@ Medtronic's Hugo system reached FDA clearance and completed its first
 U.S. commercial procedure in February 2026, and Johnson & Johnson's
 OTTAVA advanced through an FDA De Novo submission (January 2026) and a
 30-patient pivotal study meeting its safety and performance endpoints
-(reported May 2026). This is weighed as a real change in the
-competitive picture, not as an imminent threat to current growth --
-Intuitive's own Q2 2026 results show no observable deceleration
-attributable to either competitor yet.
+(reported May 2026). **Update, 2026-08-05 (SECONDARY only, no primary
+source opened this pass):** OTTAVA reportedly received actual FDA De
+Novo market authorization on 2026-07-22, becoming the first
+table-integrated soft-tissue robotic system to receive De Novo
+clearance for a named list of general-surgery procedures -- OTTAVA has
+therefore moved from post-pivotal-study/pending-review status to
+FDA-authorized and market-entry-eligible. This is weighed as a real
+change in the competitive picture, not as an imminent threat to
+current growth -- Intuitive's own Q2 2026 results show no observable
+deceleration attributable to either competitor yet.
 
 **Conditions relevant to monitoring this thesis** (qualitative,
 observable -- no arbitrary numerical threshold, consistent with
@@ -223,7 +229,10 @@ deliberately withholds T1 promotion, because competitive entry into
 robotic-assisted surgery has moved from disclosed risk to observed
 fact since the prior review: Medtronic's Hugo reached U.S. commercial
 use in February 2026, and J&J's OTTAVA cleared a 30-patient pivotal
-study in May 2026 en route to FDA review. Intuitive's own growth shows
+study in May 2026 and reportedly received actual FDA De Novo market
+authorization on 2026-07-22 (update, 2026-08-05, SECONDARY only) --
+OTTAVA is therefore no longer merely "en route to FDA review" but
+FDA-authorized. Intuitive's own growth shows
 no observable damage from either yet, and da Vinci 5's January 2026
 cardiac-procedure clearance is real counterevidence of continued
 platform strength -- but there is not yet enough evidence on pricing,

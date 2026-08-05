@@ -524,3 +524,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, OPS-0014, PI-0011, PI-0016, PI-0031, PI-0033, PI-0035, PI-0036, PI-0037, REL-0006]
     supporting_artifact: null
     file: governance/decisions/PI-0038-ws0005-gated-six-company-intelligence-completion.md
+  - decision_id: PI-0039
+    date: 2026-08-05
+    status: Proposed
+    category: portfolio_intelligence
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, OPS-0014, PI-0011, PI-0016, PI-0031, PI-0033, PI-0035, PI-0036, PI-0037, PI-0038, REL-0006]
+    supporting_artifact: governance/audits/WS0005_M6PREREQ2_CURRENT_ROSTER_FRESHNESS_VERIFICATION_20260805.md
+    file: governance/decisions/PI-0039-ws0005-milestone6-prereq2-current-roster-freshness-verification.md
