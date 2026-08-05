@@ -1918,6 +1918,34 @@ workstreams:
           kind occurs in this filing** — sealed records only, per `TIER-0004`
           §8 step 9's own hard stop. This session does not review its own
           PR, mark it ready, merge it, or post principal acceptance.
+
+          **Bounded correction (same day, this PR, review `4867365726`):**
+          BLOCKING sanitizer defect (bare-noun "gate" never matched, only
+          the adjective "gated" — reached all six formerly-gated shards'
+          packages; a dangling ETN cross-reference to a stripped section
+          also survived; the fail-closed rescan was tautological, reusing
+          the strip pass's own pattern list) root-cause-fixed in
+          `intelligence_classification_sanitizer.py` v1.1 — a gate-policy
+          detector with a legitimate-use whitelist (technical/process
+          gates), section-title cross-reference detection merged into the
+          paragraph pass, `catalysts[]` item-level scanning added, and a
+          genuinely independent second-stage verifier
+          (`independent_policy_scan()`) replacing the tautological rescan.
+          8 of 27 sanitized packages independently confirmed contaminated
+          via byte-hash comparison (the six formerly-gated names plus ETN
+          and PWR). MAJOR finding (the "worth a reviewer's specific
+          attention" threshold was ungrounded and produced a near-uniform
+          25/27 `case_for_review` result) resolved by re-grounding the
+          drafting instruction directly in `TIER-0002` §3.4's own text and
+          redrafting `capital_priority` for all 27 tickers (economic_role
+          for the 8 contaminated only) from fresh, isolated shard sessions
+          with no exposure to the prior result or distribution. Corrected
+          result: 17 `case_for_review`, 9 `maintain_current_weight`, 1
+          `no_assessment` (SPGI) — max pairwise rationale similarity 13%,
+          confirming genuine differentiation. MINOR file-count correction
+          (33 -> 34, unchanged file count, arithmetic only). Full suite
+          2684/2684 at the corrected head; see CLAUDE.md for full detail.
+          Requires its own fresh independent exact-head review.
         pr: null
         status: in_progress
         date: "2026-08-05"
