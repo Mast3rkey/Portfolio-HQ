@@ -2588,7 +2588,7 @@ workstreams:
           receive explicit principal acceptance before it may be marked ready or merged — this entry
           does not itself constitute that review or acceptance, and the `status: complete` transition
           takes effect only on this PR's own merge and post-merge verification, per OPS-0006 §16.1.
-        pr: null
+        pr: 250
         status: in_progress
         date: "2026-08-05"
       - gate: milestone6-prereq5-population-reconciliation
@@ -4503,7 +4503,7 @@ workstreams:
       this filing's own PR number exists, per `OPS-0001`'s convention — a bounded follow-up commit
       sets it once the PR is opened.
     active_branch: claude/tier-0003-chart-evidence-scope-lsfsxd
-    active_pr: null
+    active_pr: 250
     last_verified_main_sha: 71dab2d218de5c4184d5f62bc29f0bc7b409c64f
     last_verified_date: "2026-08-05"
     authorized_by: >
