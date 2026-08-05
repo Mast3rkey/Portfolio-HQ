@@ -1865,11 +1865,62 @@ workstreams:
       - gate: milestone-6-blind-classification
         description: >
           Apply the candidate framework(s) without using current tiers or
-          targets as desired answers. No repository policy mutation. Not
-          authorized to execute.
+          targets as desired answers. No repository policy mutation.
+
+          **Authorized and in progress (this filing), per merged `TIER-0005`
+          (see `milestone6-prereq6` above).** One coherent implementation PR
+          covering all 27 canonical equities under the accepted `TIER-0002`/
+          `TIER-0003`/`TIER-0004`/`TIER-0005` controls: a fresh deterministic
+          sanitizer (`intelligence_classification_sanitizer.py`) redacting
+          both the `.yaml` and `.md` Company Intelligence content per
+          `TIER-0004` §7 (whole-key strip, item-level retained-field
+          redaction, whole-section strip for headers like `## Conviction`/
+          `## Relationship to the gate`/`## Governed policy` discovered live
+          to leak policy conclusions with no marker word in their own body,
+          plus a mandatory post-redaction re-scan and a fail-closed
+          complete-package scan — all 27 tickers passed clean, deterministic
+          across repeated runs); five ~5-6-ticker blind-drafting shards
+          (Explore subagents, instructed to read exactly one sanitized
+          scratch file and nothing else — an instructional, not filesystem-
+          sandboxed, isolation boundary, matching `TIER-0004` §9.2's own
+          disclosed hash-audit-trail limits) drafting `economic_role` and
+          `capital_priority` only, before `risk_concentration` was computed
+          mechanically from live `targets.yaml caps.clusters`/
+          `issuer_lookthrough.yaml`/`intelligence/relationships/*.yaml`
+          (11 of 27 independently confirmed `unmeasured_flag: true`,
+          matching `REL-0007`'s own corrected finding exactly) and
+          `evidence_quality` was completed from `TIER-0004` §2.3's own
+          per-ticker evidence-posture table (`limited`: the six formerly-
+          gated names; `partial`: LLY; `comprehensive`: the remaining 20)
+          plus a mechanical `risks[].severity` rollup and one authored
+          `thesis_uncertainty_statement` per ticker citing its single most
+          severe disclosed risk. A post-hoc scan of all 27 shard outputs and
+          all 27 sealed records for every forbidden marker found zero
+          leakage. Result: 25 of 27 sealed `case_for_review`, 2 (COST, WM)
+          `maintain_current_weight`, 0 `no_assessment`, 0 `economic_role`
+          abstentions — disclosed as a genuine, evidence-driven skew (every
+          Company Intelligence record in this corpus is itself risk/catalyst-
+          rich by construction) rather than templating, supported by
+          materially distinct per-ticker reasoning, comparator sets, and the
+          two differentiated exceptions. `classification_validator.py` (fresh)
+          and `test_classification_validator.py`/
+          `test_intelligence_classification_sanitizer.py` (86 tests) all
+          pass; full suite 2661/2661; `intelligence_validator.py` (53
+          companies, 2 themes), `relationship_validator.py` (13 records),
+          decision catalog (79, `issues == ()`) all unaffected; zero diff on
+          every protected path (`allocate.py`, `margin_state.py`,
+          `levels.py`, `holdings.yaml`, `targets.yaml`, `gates.yaml`,
+          `issuer_lookthrough.yaml`, existing `intelligence/` content,
+          `governance/evidence/`). **No Milestone 7 baseline reconciliation,
+          no comparison against current tiers/targets/holdings/gates, no
+          policy recommendation, and no tier/target/holdings/gate/cap/
+          cluster/allocator/margin/ladder/chart/order/trade change of any
+          kind occurs in this filing** — sealed records only, per `TIER-0004`
+          §8 step 9's own hard stop. This session does not review its own
+          PR, mark it ready, merge it, or post principal acceptance.
         pr: null
-        status: proposed
-        date: "2026-07-25"
+        status: in_progress
+        date: "2026-08-05"
       - gate: milestone-7-baseline-reconciliation
         description: >
           Unblind the sealed baseline and compare current-vs-researched role,
@@ -2694,8 +2745,23 @@ workstreams:
           principal acceptance before it may be marked ready or merged — this entry does not itself
           constitute that review or acceptance, and the `status: complete` transition takes effect
           only on this PR's own merge and post-merge verification, per OPS-0006 §16.1.
+
+          **`TIER-0005` merged (Lane M synchronization, this filing, the Milestone 6 implementation
+          PR itself).** Independently re-confirmed via the GitHub API: `merged: true`, accepted/merged
+          head `350faaf39afd6bf43348baa8444e6a7e3bb605b9`, merge commit
+          `228b2dd0c6e68b205d99f1e6a4a0fc483df64a0e` (parents
+          `d42988f2dae167c484d0b8a07bdb3ac2676a975c` and `350faaf39afd6bf43348baa8444e6a7e3bb605b9`),
+          independent exact-head review `4866670109` (APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE,
+          0 BLOCKING / 0 MAJOR / 0 MINOR / 1 NOTE), retained principal-acceptance comment
+          `issuecomment-5194672412` (explicit acceptance at exact head `350faaf3...`), retained
+          post-merge-verification comment `issuecomment-5194740939` (merge-tree identity, 5-file
+          scope, 79 decisions/`issues == ()`, full suite 2581/2581, merge-commit CI `31027034116`
+          `success`) — all independently re-confirmed live by this filing before proceeding, not
+          copied from any prior summary. `origin/main` confirmed at exactly `228b2dd0...` at this
+          filing's own base, zero open competing PRs. This transitions `milestone6-prereq6` to
+          `status: complete` — the pre-Milestone-6 roadmap (Steps 1-6) is now fully complete.
         pr: 252
-        status: in_progress
+        status: complete
         date: "2026-08-05"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
@@ -4592,9 +4658,9 @@ workstreams:
       ticker classification, any sanitized evidence package, or any validator implementation — Step 6
       (`milestone6-prereq6-fresh-authorization-required`) remains its own separate, later, explicit
       authorization requirement, left exactly as merged (`status: blocked`, unedited) by this filing.
-    active_branch: claude/m6-step6-fresh-authorization-0kiq9m
-    active_pr: 252
-    last_verified_main_sha: d42988f2dae167c484d0b8a07bdb3ac2676a975c
+    active_branch: claude/milestone-6-blind-classification-ap2uyh
+    active_pr: null
+    last_verified_main_sha: 228b2dd0c6e68b205d99f1e6a4a0fc483df64a0e
     last_verified_date: "2026-08-05"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
