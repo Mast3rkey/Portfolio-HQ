@@ -185,7 +185,7 @@ Steps 1-3 operate on a fixed, named key list; steps 4-5 operate on a fixed marke
 
 ## 8. Sequencing — judgment axes before risk-concentration
 
-Per the authorizing instruction and `TIER-0002` §3.5's own existing design ("risk_concentration is a pure cross-reference rollup... computed after"), a future Milestone 6 per-ticker drafting session must follow this order, with no step skipped or reordered:
+Per the authorizing instruction, and consistent with (not quoting as already decided by) `TIER-0002` §3.5's description of `risk_concentration` as a pure cross-reference rollup, this filing establishes the following order — this filing's own new sequencing rule for Milestone 6, not a restatement of prior `TIER-0002` review — for a future Milestone 6 per-ticker drafting session, with no step skipped or reordered:
 
 1. Generate the sanitized evidence package for the ticker (§7.2).
 2. Draft `economic_role` from the sanitized package only (§6.2's forbidden list fully in force, including `caps.clusters`/`issuer_lookthrough.yaml`).
