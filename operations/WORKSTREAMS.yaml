@@ -4349,7 +4349,7 @@ workstreams:
       convention already used for every prior WS-0005 filing in this log — a bounded follow-up
       commit sets it once the PR is opened.
     active_branch: claude/gated-six-research-completion-omi0vq-impl
-    active_pr: null
+    active_pr: 247
     last_verified_main_sha: 24be14552b0e5caed8052e07497855cde6a37085
     last_verified_date: "2026-08-05"
     authorized_by: >
