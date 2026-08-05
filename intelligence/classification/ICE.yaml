@@ -1,0 +1,47 @@
+schema_version: '1.0'
+ticker: ICE
+economic_role:
+  economic_system_ref: Financial Infrastructure
+  company_role: regulated exchange operator, derivatives clearing house, and financial data/mortgage-technology
+    services provider
+  role_basis: ICE operates CFTC-designated derivatives clearing organizations, the SEC-regulated NYSE
+    exchange, and ICE Futures U.S./Europe designated contract markets, alongside a growing Fixed Income
+    & Data Services subscription business (annual subscription value over $2.0 billion) and a Mortgage
+    Technology segment built on the MSP/Encompass platforms.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - CME
+  - NDAQ
+  - CBOE
+  rationale: 'The evidence discloses a material, newly announced change to the capital structure: an all-debt-financed
+    acquisition of MarketAxess that is expected to push pro forma gross leverage to approximately 3.4x
+    against ICE''s own stated deleveraging target, financed via a committed bridge facility, and layered
+    on top of a still-integrating prior acquisition (Black Knight) whose Mortgage Technology segment has
+    shown GAAP operating losses in at least one recent period. ICE also has direct, disclosed precedent
+    of an FTC-mandated divestiture reducing the value of its prior mortgage-technology deal, a directly
+    relevant data point for evaluating the new transaction''s antitrust risk. This combination of a fresh
+    leverage event, an unresolved prior integration, and a concrete regulatory precedent is a clear candidate
+    for specific reviewer attention.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: limited
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    the MarketAxess acquisition's all-debt financing pushing pro forma leverage further from ICE's own
+    stated deleveraging target than the disclosed ~3.4x estimate, especially while the prior Black Knight
+    integration is still producing GAAP operating losses in Mortgage Technology.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-B
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#ICE
+content_sha256: aaf77923e051700d9852503d9c8921448a44966fb6ef0455d59494c3e2bd86b2

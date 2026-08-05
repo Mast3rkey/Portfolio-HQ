@@ -1,0 +1,48 @@
+schema_version: '1.0'
+ticker: ETN
+economic_role:
+  economic_system_ref: Energy & Electrification
+  company_role: electrical equipment / power management
+  role_basis: Eaton's Electrical Americas and Electrical Global segments (~73% of FY2025's $27.448B revenue)
+    manufacture circuit protection, switchgear, power distribution/quality equipment and UPS systems,
+    with Q1 2026 Electrical-segment backlog up 48% YoY tied partly to data-center and grid-electrification
+    demand.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - VRT
+  - ABB
+  - SIEGY
+  - HUBB
+  - EMR
+  rationale: 'The evidence shows a distinctive, regulator/lead-time-protected moat and a large, accelerating
+    electrical backlog, an unusually strong quality signal. It also discloses several concrete, dated
+    developments worth specific reviewer attention: a disputed margin-quality thesis (management''s ''temporary''
+    framing versus a named analyst''s structural-decline estimate), a single acquisition (Boyd Thermal)
+    representing roughly a third of FY2025 revenue in deal value and concentrated in one growth thesis,
+    and a more complex-than-expected Reverse Morris Trust separation of the Vehicle/eMobility businesses
+    with Dana Incorporated. These combine a strong exposure story with concrete, unresolved execution
+    and concentration questions.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership:
+  - power_infra
+  issuer_lookthrough_membership: false
+  relationship_record_coverage:
+  - ETN_GNRC
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    the corrected Reverse Morris Trust separation of the Vehicle/eMobility businesses proving more complex
+    or costly to execute than currently disclosed.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-A
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#ETN
+content_sha256: 6ce55d64f5eaf6bffa28f4d4a2d3c523cd28a7b0c0f25311aafb8da29ab2e83b

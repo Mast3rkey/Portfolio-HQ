@@ -1,0 +1,45 @@
+schema_version: '1.0'
+ticker: ISRG
+economic_role:
+  economic_system_ref: Healthcare & Life Sciences
+  company_role: robotic-assisted surgical systems manufacturer (capital equipment plus recurring instruments/service)
+  role_basis: Intuitive Surgical supplies the da Vinci and Ion robotic-assisted surgical platforms through
+    a model combining systems sales with recurring, procedure-linked instruments/accessories and service
+    revenue, with Q2 2026 systems, instrument, and service revenue all growing at comparable double-digit
+    rates and installed base/procedure counts both expanding.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - MDT
+  - JNJ
+  - SYK
+  - ZBH
+  rationale: 'The evidence shows continued strong, broad-based business-quality signals -- recurring revenue
+    growing at rates comparable to systems sales, and double-digit installed-base and procedure growth
+    -- alongside a material, newly concrete competitive-entry development: Medtronic''s Hugo completed
+    its first U.S. commercial procedure and Johnson & Johnson''s OTTAVA reportedly received FDA De Novo
+    market authorization, moving competitive risk from a disclosed risk-factor category to an observed
+    market event since the prior review. The filing itself notes no observable deceleration attributable
+    to either competitor yet, but the shift from hypothetical to concrete competitive entry in a moat-dependent
+    business is precisely the kind of development a reviewer should specifically weigh going forward.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    observable procedure or installed-base deceleration attributable to Medtronic's Hugo or J&J's OTTAVA
+    now that both have moved from disclosed risk factors to concrete market events.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-B
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#ISRG
+content_sha256: c7b0079cc1aec7866902b96d97dcea04e69034af98ba361b1ffd4ea93761f384

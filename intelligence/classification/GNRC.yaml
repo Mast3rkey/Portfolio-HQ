@@ -1,0 +1,51 @@
+schema_version: '1.0'
+ticker: GNRC
+economic_role:
+  economic_system_ref: Energy & Electrification
+  company_role: backup power generation equipment (residential standby generators and commercial/industrial/data-center
+    backup power)
+  role_basis: Generac holds an estimated roughly 75-80% share of the North American residential standby-generator
+    market and has pivoted its Commercial & Industrial segment toward hyperscale data-center backup power,
+    disclosing a $1.6 billion data-center order backlog at Q2 2026 (up from $600 million) and two multi-year
+    hyperscale supply agreements.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - CAT
+  - CMI
+  - ETN
+  - VRT
+  - HUBB
+  rationale: The evidence surfaces a distinctive, newly-scaled growth exposure -- a $1.6B data-center
+    backup-power backlog and 2028 targets implying revenue growth from $4.21B to $6.2-6.6B -- that did
+    not exist in this form until the 2025-2026 period, alongside a conservative balance sheet (leverage
+    ~1.4x against a 3.75x covenant ceiling) providing headroom to fund it. This sits against a demonstrated,
+    severe boom-bust cyclicality in the core residential business (operating margin nearly halved 2021-2023,
+    FY2025 net income nearly halved partly due to a $104.5 million product-liability settlement) and competitive
+    newcomer status versus Caterpillar, Cummins, and Kohler in the data-center segment. The combination
+    of a materially new growth driver and well-documented cyclical/liability risk warrants explicit reviewer
+    attention.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage:
+  - ETN_GNRC
+  - GEV_GNRC
+  - GNRC_PWR
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a return of the demonstrated boom-bust demand cyclicality this record already documents (net sales
+    +50% in 2021 then -12% in 2023, EPS falling from $8.51 to $3.31 over the same span).
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-D
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#GNRC
+content_sha256: 23d0744e711389ae06de1cc788c3632a1f8798e496cbfcac39412d116010bba7

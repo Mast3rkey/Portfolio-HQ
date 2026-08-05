@@ -1,0 +1,48 @@
+schema_version: '1.0'
+ticker: TSM
+economic_role:
+  economic_system_ref: AI & Compute Infrastructure
+  company_role: foundry / advanced-node semiconductor manufacturing
+  role_basis: TSM is described as the world's largest dedicated pure-play foundry manufacturing chips
+    designed by fabless and IDM customers, with High-Performance Computing at 66% of Q2 2026 revenue and
+    advanced (7nm-and-below) process technology at 77% of wafer revenue, alongside management's explicit
+    attribution of the FY2026 capex raise to AI/HPC/agentic-AI demand.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - INTC
+  - GFS
+  - UMC
+  rationale: 'The evidence shows an unusually strong, currently-realized business-quality signal: record
+    margins (67.7% gross in Q2 2026), 36% YoY revenue growth, a raised full-year growth outlook, and a
+    differentiated leading-edge technology roadmap (N2/N2P/A16) that management describes as advanced-packaging-capacity-constrained.
+    This is counterbalanced by concrete, quantified disclosed risks -- top-two customer concentration
+    (19%/17% of 2025 revenue), an unresolved Nanjing export-license renewal, recurring Taiwan natural-disaster
+    losses, and capital intensity (~39% of Q2 revenue as capex) -- a combination of differentiated exposure
+    and material disclosed risk that warrants specific reviewer attention rather than passive treatment.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership:
+  - semis
+  issuer_lookthrough_membership: true
+  relationship_record_coverage:
+  - ASML_TSM
+  - AVGO_TSM
+  - KLAC_TSM
+  - NVDA_TSM
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a material reduction in orders from TSM's top two customers (19%/17% of 2025 revenue, 78% combined
+    for the top ten), which are not individually identified.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-B
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#TSM
+content_sha256: 2041d85a31cf50bb8aee2457d6da240aa60104aa8f2a6398e2055fdb40706c7f

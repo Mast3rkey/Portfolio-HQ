@@ -1,0 +1,48 @@
+schema_version: '1.0'
+ticker: PANW
+economic_role:
+  economic_system_ref: Digital Platforms & Enterprise Software
+  company_role: cybersecurity platform (network security, SASE, cloud security, and security operations)
+  role_basis: Palo Alto Networks pursues a platformization strategy consolidating network security, SASE,
+    cloud security, and Cortex/XSIAM security operations, reporting fiscal-year-end 2025 Next-Generation
+    Security ARR of $5.6 billion and remaining performance obligations of $15.8 billion.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - CRWD
+  - FTNT
+  - ZS
+  - S
+  - CHKP
+  rationale: 'The evidence shows continued scale in the platformization thesis (NGS ARR and RPO growth,
+    strong TTM adjusted free-cash-flow margin of 38.5%) alongside several disclosed items a reviewer should
+    specifically weigh: a $1.293 billion working-capital deficit and $1.1 billion of remaining CyberArk
+    convertible-note principal against $6.992 billion of combined cash and investments, a QRadar-related
+    contingent-consideration liability with an estimated $0.3-0.5 billion undiscounted payment range through
+    fiscal 2028, and a Q3 GAAP operating loss ($183 million) alongside non-GAAP operating income ($814
+    million). The record also flags that Prisma AIRS and Cortex XSIAM AI products carry commercial licensing
+    but no separately disclosed standalone revenue or ARR, and that the company''s historical billings
+    metric has been absent from recent filings without confirmed discontinuation. These disclosed comparability
+    and financial-quality gaps, combined with direct competitive overlap versus CrowdStrike, warrant explicit
+    reviewer attention rather than routine monitoring.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a material slowdown in platformization conversion (which already requires sales concessions and lengthens
+    cycles), given NGS ARR is an explicitly non-GAAP metric whose scope can expand and reduce comparability.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-D
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#PANW
+content_sha256: 91743f4f7a3102a73f564ad44a92188af4e26e2423a22265433d4b665faf601c

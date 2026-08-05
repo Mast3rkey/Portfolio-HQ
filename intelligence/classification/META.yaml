@@ -1,0 +1,47 @@
+schema_version: '1.0'
+ticker: META
+economic_role:
+  economic_system_ref: Digital Platforms & Enterprise Software
+  company_role: digital advertising / social-networking platform
+  role_basis: Q1 2026 advertising revenue was $55.024B against total revenue of $56.311B (roughly 98%
+    of revenue), generated across a Family of Apps platform with 3.56B average daily active people in
+    March 2026, funding a separate Reality Labs hardware/AI-glasses segment and large AI-infrastructure
+    capital spending.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - GOOGL
+  - SNAP
+  - PINS
+  - TTD
+  - AMZN
+  rationale: 'The evidence documents a reversal in momentum worth reviewer attention: Q2 2026 net income
+    reportedly fell 14% YoY on a $2.4B legal-proceedings charge and an ~8,000-person layoff with a $1.18B
+    severance charge, both newly disclosed and still pending primary-source (10-Q) confirmation. Structurally,
+    the file also flags that unlike other large hyperscalers in its peer set, no public-cloud-resale business
+    was disclosed to offset a very large ($125B-$145B guided) 2026 AI capex program, and revenue remains
+    roughly 98% concentrated in advertising with an already-realized Apple platform-policy headwind. These
+    are concrete, evidence-based signals (both business-quality and risk-related) that a reviewer should
+    specifically weigh, not merely routine monitoring items.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: true
+  relationship_record_coverage:
+  - AVGO_META
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    any material platform or regulatory change impairing ad targeting/measurement, given roughly 98% of
+    total revenue is concentrated in a single advertising revenue stream.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-D
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#META
+content_sha256: 6f12c3a6be65017d855e8d9d3d565920954108ac5c4de715b7017e7b2b187dd1

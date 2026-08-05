@@ -1,0 +1,46 @@
+schema_version: '1.0'
+ticker: COST
+economic_role:
+  economic_system_ref: 'other: Consumer Retail & Membership Commerce'
+  company_role: membership-fee-funded warehouse club retail
+  role_basis: Costco operates 933 warehouses funded structurally by recurring membership fees ($5.323B
+    FY2025 membership-fee revenue, +10.0% YoY) with renewal rates near 90% worldwide (92.2% U.S./Canada,
+    89.7% worldwide at Q3 FY2026), a low-margin bulk-goods model none of the five listed economic-system
+    categories directly describes.
+capital_priority:
+  status: maintain_current_weight
+  comparator_set:
+  - WMT
+  - TGT
+  - BJ
+  - DG
+  - KR
+  rationale: 'The evidence shows a stable, well-evidenced business: renewal rates essentially flat (92.3%/89.8%
+    at FY2025 year-end versus 92.2%/89.7% at Q3 FY2026, a -0.1 point change in each measure), no membership-fee
+    contraction (Q3 +10.7%), continued digitally-enabled comparable-sales growth above 20% every quarter
+    of FY2026 to date, and continued warehouse expansion and dividend increases. Disclosed risks -- labor-cost
+    pressure now covered by a ratified agreement through 2028, a pending but early-stage tariff-refund
+    class action, and a modest May-to-June comparable-sales deceleration of unresolved persistence --
+    are monitored but none rises to a thesis-threatening level in the evidence reviewed. Nothing in the
+    file argues for elevating or reconsidering the name relative to peers at this time.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a material share loss to Amazon, Walmart/Sam's Club, Target, or BJ's in a general-merchandise/e-commerce
+    environment the record already characterizes as vigorously competitive.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-D
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#COST
+content_sha256: f72ba9e05d19296769a06f02ac51f266698d0cbdeeb2a31abfe7182efe8a372f

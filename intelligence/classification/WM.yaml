@@ -1,0 +1,47 @@
+schema_version: '1.0'
+ticker: WM
+economic_role:
+  economic_system_ref: 'other: Waste & Environmental Services'
+  company_role: waste collection, landfill disposal, transfer, and recycling services
+  role_basis: WM operates North America's largest waste-services network (~262 landfill sites, 339 transfer
+    stations, 105 recycling facilities, 413 collection operations serving 20M+ customers), with FY2025
+    revenue of $25.2B from Collection, Landfill, Transfer, Recycling, and a growing Renewable Energy/Healthcare
+    Solutions category; none of the five listed economic-system categories describes this core waste/environmental-services
+    function.
+capital_priority:
+  status: maintain_current_weight
+  comparator_set:
+  - RSG
+  - WCN
+  - CWST
+  - GFL
+  rationale: The evidence describes a structurally moated core business (landfill permitting described
+    as practically impossible to newly obtain in most jurisdictions, making the existing network a scarce
+    asset base), diversified and growing revenue, and an exceptional capital-return record (23rd consecutive
+    year of dividend increases, a new $3B buyback authorization). Disclosed risks -- Stericycle integration
+    friction now management-characterized as resolved, commodity-price sensitivity in recycling, and an
+    industry-wide PFAS liability overhang without a WM-specific reserve figure found -- are real but appear
+    to be ordinary-course monitoring items rather than a distinctive thesis-altering signal in this evidence
+    set. Nothing here surfaces an unusually strong or weak deviation from the company's established profile
+    that would argue for elevating scrutiny beyond normal review cadence.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: limited
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    the Stericycle (Healthcare Solutions) integration friction, disclosed across multiple 2025 trade-press
+    articles, proving less resolved in practice than management's Q2 2026 characterization suggests.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-E
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#WM
+content_sha256: 7491dc14ff4bb375b1d6624e85fd0704d348f87d0432c941d6492e02a63b6b43

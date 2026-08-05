@@ -1,0 +1,48 @@
+schema_version: '1.0'
+ticker: SPGI
+economic_role:
+  economic_system_ref: Financial Infrastructure
+  company_role: credit ratings, financial data/analytics, and market indices
+  role_basis: The YAML evidence identifies S&P Global Ratings as a member of the 'Big Three' credit-rating
+    oligopoly (regulatory NRSRO/ESMA-designation-driven moat) alongside a high-margin S&P Dow Jones Indices
+    franchise (68-70% operating margin, ETF AUM linked to its indices reaching a record $6.35 trillion),
+    placing the company's core function in ratings, data, and index infrastructure underlying capital
+    markets rather than in operating industrial or consumer businesses.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - MCO
+  - FICO
+  - MSCI
+  - ICE
+  rationale: 'The evidence documents a live structural discontinuity: the July 2026 Mobility Global spinoff
+    means no quarter reported as of this record''s date presents SPGI on a clean, fully-discontinued-operations
+    basis, and FY2026 adjusted-EPS guidance dropped materially (from $19.40-$19.65 to $17.50-$17.75) without
+    a found primary-source bridge distinguishing mechanical spin-effects from underlying business change.
+    Valuation multiples for SPGI were also found internally inconsistent across sources, and new debt
+    issuance is planned to help fund an enlarged buyback against a smaller post-spin earnings base. These
+    are exactly the kind of transition-period ambiguities a reviewer should specifically examine once
+    a clean post-spin quarter (expected ~2026-10-29) is available, rather than carrying forward pre-spin
+    assumptions unexamined.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage: []
+  unmeasured_flag: true
+  notes: ''
+evidence_quality:
+  primary_source_coverage: limited
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    the post-Mobility-spin comparability gap resolving unfavorably once a clean quarter is available,
+    given FY2026 adjusted-EPS guidance already dropped materially without a found primary-source bridge
+    explaining how much is mechanical versus operational.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-C
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#SPGI
+content_sha256: f22f7fed9e6d3abf2e0d991f436466da9e15c5135cc1800cac601b0b8b41368d

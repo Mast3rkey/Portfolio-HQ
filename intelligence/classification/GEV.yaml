@@ -1,0 +1,45 @@
+schema_version: '1.0'
+ticker: GEV
+economic_role:
+  economic_system_ref: Energy & Electrification
+  company_role: power generation and grid/electrification equipment manufacturer
+  role_basis: GEV's backlog spans gas power, electrification, and grid equipment, growing to $176 billion
+    by Q2 2026 with gas-equipment backlog/slot-reservation agreements at 116 GW, and the Electrification
+    segment recorded over $5 billion of first-half-2026 data-center-specific equipment orders, evidencing
+    a core role supplying physical power and grid infrastructure.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - ETN
+  - VRT
+  - ABB
+  rationale: The evidence shows a distinctive, rapidly accelerating demand signal directly tied to data-center/AI-driven
+    electrification build-out -- data-center equipment orders more than doubling year-over-year and total
+    backlog growing by double-digit billions sequentially, with management twice raising FY2026 guidance
+    and accelerating its multi-year backlog target by a full year. This is weighed against a disclosed,
+    quantified weakness in the Wind segment (widening EBITDA losses, maintained ~$400M full-year loss
+    guidance) and tariff exposure, so the combination of a differentiated growth exposure and a concrete
+    offsetting segment weakness is worth a reviewer's specific attention.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership:
+  - power_infra
+  issuer_lookthrough_membership: false
+  relationship_record_coverage:
+  - GEV_GNRC
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    execution failure on one or more large, long-cycle, fixed- or competitively-bid contracts, or a further
+    widening of the Wind segment's disclosed EBITDA losses beyond the maintained ~$400M full-year guidance.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-B
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#GEV
+content_sha256: c77d9a5362b058c3644aebebe3b3d77ec3071a607fb55bab94715c58c0005962

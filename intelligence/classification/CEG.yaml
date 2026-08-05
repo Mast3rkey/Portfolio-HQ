@@ -1,0 +1,46 @@
+schema_version: '1.0'
+ticker: CEG
+economic_role:
+  economic_system_ref: Energy & Electrification
+  company_role: nuclear and multi-fuel power generation
+  role_basis: Constellation describes itself, post-Calpine acquisition, as the largest private-sector
+    power producer globally and the largest U.S. nuclear-energy company (~55 GW capacity), operating a
+    nuclear fleet with a 94.7% 2025 capacity factor and a 20-year Microsoft power purchase agreement supporting
+    the Crane Clean Energy Center restart tied specifically to data-center/AI electricity demand.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - VST
+  - NRG
+  - PEG
+  - TLN
+  - D
+  rationale: The evidence surfaces a distinctive, differentiated exposure -- a large, high-utilization
+    baseload nuclear fleet paired with a long-duration, investment-grade offtake contract explicitly tied
+    to AI/data-center electricity demand growth -- alongside a major, recently closed acquisition (Calpine,
+    ~23 GW across 72 assets) whose integration track record does not yet exist in the evidence base. A
+    large single-quarter GAAP-versus-adjusted-earnings divergence and an explicit evidence gap around
+    total debt/balance-sheet leverage further mean this name combines an unusually distinctive growth
+    thesis with unresolved integration and disclosure gaps meriting a closer look.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership: []
+  issuer_lookthrough_membership: false
+  relationship_record_coverage:
+  - CEG_MSFT
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    the newly closed Calpine acquisition (~23 GW across 72 assets) proving harder to integrate than assumed,
+    compounding an already-material GAAP-versus-adjusted-earnings divergence this quarter.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-E
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#CEG
+content_sha256: 0813d0f411f765dbe55770dcc14f33eef2c05b77864bd390aa810d00dfba6123

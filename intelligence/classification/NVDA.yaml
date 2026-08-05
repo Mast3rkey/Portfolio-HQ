@@ -1,0 +1,46 @@
+schema_version: '1.0'
+ticker: NVDA
+economic_role:
+  economic_system_ref: AI & Compute Infrastructure
+  company_role: compute
+  role_basis: Q1 FY2027 Data Center segment revenue was $75.2 billion (+92% YoY), split $60.4B compute
+    and $14.8B networking, and the company is described as the reported leading supplier of accelerated-compute
+    hardware for AI training and inference at scale.
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - AMD
+  - AVGO
+  - TSM
+  - MRVL
+  - INTC
+  rationale: The evidence shows an unusually strong growth and margin profile (Data Center revenue accelerating
+    to +92% YoY with GAAP operating margin expansion), which is a distinctive business-quality signal
+    worth weighing. At the same time it discloses concrete, primary-source-verified customer/hyperscaler
+    concentration (three customers at 21%/17%/16% of revenue) and live export-control/geopolitical exposure,
+    plus an unresolved secondary report of a large, unusual customer-financing arrangement described by
+    outside commentators as circular. This combination of exceptional growth alongside concentrated, dated
+    risk factors is exactly the kind of evidence a reviewer should specifically weigh.
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership:
+  - semis
+  issuer_lookthrough_membership: true
+  relationship_record_coverage:
+  - NVDA_TSM
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a material loss of position among the three customers representing 21%/17%/16% of Q1 FY2027 revenue,
+    or a further tightening of the 2026 export-control regime beyond what is currently disclosed.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-A
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#NVDA
+content_sha256: 3176fcde358277413934e01b087d38591256af2391fe4962d6138fb4c6a6e5d6

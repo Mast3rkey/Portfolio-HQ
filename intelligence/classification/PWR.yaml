@@ -1,0 +1,49 @@
+schema_version: '1.0'
+ticker: PWR
+economic_role:
+  economic_system_ref: Energy & Electrification
+  company_role: electrical/grid infrastructure construction and engineering services (EPC contractor)
+  role_basis: The file describes Quanta as primarily a labor-intensive specialty infrastructure services
+    contractor building transmission, distribution, substation, and data-center-adjacent electrical systems,
+    evidenced by a named 765kV EPC partnership with AEP tied to its $72B 2026-2030 capital plan and direct
+    in-facility data-center electrical work via its Cupertino Electric subsidiary, with total backlog
+    growing from $34.54B (YE2024) to $48.5B (Q1 2026).
+capital_priority:
+  status: case_for_review
+  comparator_set:
+  - MYRG
+  - MTZ
+  - EME
+  - ETN
+  rationale: 'The evidence shows an unusually strong, accelerating growth signal -- record backlog reaching
+    successive highs, ~80% recurring MSA-driven base work, margin improvement in the smaller Underground
+    segment, and a named, contractually-evidenced grid/data-center demand driver via the AEP partnership.
+    This sits alongside genuine, disclosed risks worth weighing: fixed-price contract execution exposure
+    that is qualitatively confirmed but not quantified, working-capital drag from growing unbilled receivables,
+    and renewable-tax-credit policy exposure. The combination of a distinctive, corroborated AI/data-center-adjacent
+    grid demand driver and unresolved execution/leverage risk factors is the kind of signal a reviewer
+    should specifically weigh.'
+  assessed_date: '2026-08-05'
+  assessing_record: null
+risk_concentration:
+  cluster_cap_membership:
+  - power_infra
+  issuer_lookthrough_membership: false
+  relationship_record_coverage:
+  - GNRC_PWR
+  unmeasured_flag: false
+  notes: ''
+evidence_quality:
+  primary_source_coverage: comprehensive
+  highest_disclosed_risk_severity: moderate
+  thesis_uncertainty_statement: The single disclosed fact most likely to undermine this assessment is
+    a fixed-price contract materially exceeding its assumed cost, which the company's own risk-factor
+    language states can happen substantially and is a structurally distinct risk from equipment-manufacturer
+    peers.
+  review_trigger_notes: ''
+lifecycle_status: sealed
+sealed_at: '2026-08-05T18:30:00Z'
+governing_decision: TIER-0005
+drafting_session_or_shard_id: shard-C
+cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#PWR
+content_sha256: c84273cccb300fbede10b248409987402942af18cdcaf59c04b0f022f7929cb8
