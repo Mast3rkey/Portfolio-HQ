@@ -113,20 +113,20 @@ def test_sanitize_yaml_item_level_redaction_of_leaked_risk_text():
 # ── Markdown sanitization ────────────────────────────────────────────────
 
 def test_redact_markdown_strips_marker_paragraph():
-    redacted, removed_count = sanitizer.redact_markdown(_SYNTHETIC_MD)
+    redacted, removed_count, _ = sanitizer.redact_markdown(_SYNTHETIC_MD)
     assert "portfolio_role_ref" not in redacted
     assert "approved by the human principal" not in redacted
     assert removed_count >= 1
 
 
 def test_redact_markdown_retains_unrelated_business_prose():
-    redacted, _ = sanitizer.redact_markdown(_SYNTHETIC_MD)
+    redacted, _, _ = sanitizer.redact_markdown(_SYNTHETIC_MD)
     assert "A synthetic factual description of what the company does" in redacted
     assert "A synthetic disclosed risk, unrelated to placement." in redacted
 
 
 def test_verify_markdown_redaction_clean_after_strip():
-    redacted, _ = sanitizer.redact_markdown(_SYNTHETIC_MD)
+    redacted, _, _ = sanitizer.redact_markdown(_SYNTHETIC_MD)
     findings = sanitizer.verify_markdown_redaction(redacted)
     assert findings == []
 
@@ -175,20 +175,20 @@ An ordinary disclosed risk, retained.
 
 
 def test_redact_markdown_strips_conviction_section_with_no_marker_word():
-    redacted, removed_count = sanitizer.redact_markdown(_SECTION_LEAK_MD)
+    redacted, removed_count, _ = sanitizer.redact_markdown(_SECTION_LEAK_MD)
     assert "Rating: High" not in redacted
     assert "## Conviction" not in redacted
     assert removed_count >= 1
 
 
 def test_redact_markdown_strips_relationship_to_gate_section():
-    redacted, _ = sanitizer.redact_markdown(_SECTION_LEAK_MD)
+    redacted, _, _ = sanitizer.redact_markdown(_SECTION_LEAK_MD)
     assert "Relationship to the gate" not in redacted
     assert "gates.yaml" not in redacted
 
 
 def test_redact_markdown_retains_business_and_risk_sections():
-    redacted, _ = sanitizer.redact_markdown(_SECTION_LEAK_MD)
+    redacted, _, _ = sanitizer.redact_markdown(_SECTION_LEAK_MD)
     assert "Ordinary factual business description, retained." in redacted
     assert "An ordinary disclosed risk, retained." in redacted
 
@@ -316,7 +316,7 @@ def test_module_never_imports_allocator_or_margin():
 def test_bare_gate_noun_leak_is_detected_and_stripped():
     text = "This is discussed further given this record's gate names the specific condition."
     assert sanitizer._contains_gate_policy_leak(text)
-    redacted, removed_count = sanitizer.redact_markdown("Intro.\n\n" + text + "\n\nConclusion.")
+    redacted, removed_count, _ = sanitizer.redact_markdown("Intro.\n\n" + text + "\n\nConclusion.")
     assert "gate names" not in redacted
     assert removed_count >= 1
 
@@ -376,7 +376,7 @@ def test_dangling_cross_reference_to_stripped_section_stripped_generically(tmp_p
         "## Risks\n\n"
         "An ordinary disclosed risk, retained.\n"
     )
-    redacted, _ = sanitizer.redact_markdown(md)
+    redacted, _, _ = sanitizer.redact_markdown(md)
     assert "Governed policy" not in redacted
     assert "Ordinary factual content, retained." in redacted
     assert "An ordinary disclosed risk, retained." in redacted
@@ -576,3 +576,226 @@ def test_bare_conviction_now_stripped_at_item_level_by_strip_layer_directly():
         "A fact not weighted in this record's conviction rationale.",
         sanitizer._MD_STRIP_PATTERNS,
     )
+
+
+# ── v1.3 bounded correction (review 4868430051): independent dangling-
+# section-title-reference verifier. `_dangling_reference_findings()` is
+# structurally separate from `_paragraph_is_forbidden()`'s own paragraph-
+# level section-title check -- it consumes `removed_titles` as a plain
+# factual list (audit metadata from `_strip_forbidden_sections()`), not by
+# calling any strip-decision helper.
+
+def test_title_normalization_strips_markdown_and_quotes_and_casefolds():
+    assert sanitizer._normalize_title_for_reference_matching("## Governed Policy") == "governed policy"
+    assert sanitizer._normalize_title_for_reference_matching('"Governed Policy"') == "governed policy"
+    assert sanitizer._normalize_title_for_reference_matching("**Governed Policy**") == "governed policy"
+    assert sanitizer._normalize_title_for_reference_matching("Governed   Policy.") == "governed policy"
+
+
+def test_dangling_reference_case_1_original_etn_style_quoted_and_unquoted_mix():
+    text = "This record's statement (see \"Governed policy\" below) describes the company today."
+    findings = sanitizer._dangling_reference_findings(text, ["governed policy"])
+    assert findings
+
+
+def test_dangling_reference_case_2_quoted_title_reference():
+    text = 'See "Governed policy" below.'
+    assert sanitizer._dangling_reference_findings(text, ["governed policy"])
+
+
+def test_dangling_reference_case_3_unquoted_reference():
+    text = "See Governed policy below."
+    assert sanitizer._dangling_reference_findings(text, ["governed policy"])
+
+
+def test_dangling_reference_case_4_above_reference():
+    text = "As discussed in the Governed policy section above, the company retains its structure."
+    assert sanitizer._dangling_reference_findings(text, ["governed policy"])
+
+
+def test_dangling_reference_case_5_list_item_reference():
+    text = "- See Governed policy below for the current framing.\n- An unrelated ordinary bullet."
+    findings = sanitizer._dangling_reference_findings(text, ["governed policy"])
+    assert findings
+
+
+def test_dangling_reference_case_6_punctuation_and_markdown_emphasis():
+    text = "Refer to **Governed Policy**, discussed elsewhere in this record."
+    assert sanitizer._dangling_reference_findings(text, ["governed policy"])
+
+
+def test_dangling_reference_case_7_multiple_removed_sections_reference_to_one():
+    removed = ["governed policy", "batch membership", "capital-priority discipline"]
+    text = "This paragraph only references the Governed policy section above; nothing else."
+    findings = sanitizer._dangling_reference_findings(text, removed)
+    assert findings
+    assert any("governed policy" in f for f in findings)
+    assert not any("batch membership" in f for f in findings)
+    assert not any("capital-priority discipline" in f for f in findings)
+
+
+def test_dangling_reference_case_8_section_removed_no_reference_passes():
+    text = "Ordinary factual business description with no cross-reference of any kind."
+    assert sanitizer._dangling_reference_findings(text, ["governed policy"]) == []
+
+
+def test_dangling_reference_case_9_legitimate_phrase_sharing_individual_words_passes():
+    # Shares "policy" and "capital" with real removed titles, but never the
+    # full contiguous phrase -- must not false-positive (task requirement 5
+    # / 9: no semantic guesswork, no bare-word matching).
+    text = (
+        "Management's capital allocation approach and broader corporate policy statements "
+        "were both reviewed as part of ordinary due diligence."
+    )
+    findings = sanitizer._dangling_reference_findings(
+        text, ["governed policy", "capital-priority discipline"]
+    )
+    assert findings == []
+
+
+def test_dangling_reference_case_10_verify_only_not_caught_by_transformation_logic():
+    # A title deliberately absent from _MD_FORBIDDEN_SECTION_HEADER_PATTERNS
+    # -- proving the verifier's detection is driven by the removed_titles
+    # *fact*, not by re-running the strip layer's own curated regex list.
+    synthetic_title = "quarterly stewardship memorandum"
+    assert not any(
+        p.search(synthetic_title) for p in sanitizer._MD_FORBIDDEN_SECTION_HEADER_PATTERNS
+    )
+    text = "This section briefly revisits the Quarterly Stewardship Memorandum discussed earlier."
+    assert not sanitizer._paragraph_is_forbidden(text)  # strip layer would miss it
+    findings = sanitizer._dangling_reference_findings(text, [synthetic_title])
+    assert findings  # the independent verifier still catches it
+
+
+def test_dangling_reference_case_11_real_etn_package_passes_after_sanitization():
+    repo_root = Path(__file__).resolve().parent
+    pkg, rec = sanitizer.sanitize_company_files(repo_root, "ETN")
+    assert pkg is not None, rec.complete_package_scan_findings
+    assert rec.complete_package_scan_findings == []
+
+
+@pytest.mark.parametrize("ticker", (
+    "NVDA", "MSFT", "ETN", "V", "LLY", "RTX", "TSM", "GOOGL", "GEV", "ICE", "ISRG",
+    "ASML", "AMZN", "PWR", "SPGI", "TMO", "AVGO", "META", "GNRC", "COST", "RKLB",
+    "PANW", "SNPS", "KLAC", "WM", "CEG", "TSLA",
+))
+def test_dangling_reference_case_12_all_27_real_packages_pass(ticker):
+    repo_root = Path(__file__).resolve().parent
+    pkg, rec = sanitizer.sanitize_company_files(repo_root, ticker)
+    assert pkg is not None, rec.complete_package_scan_findings
+
+
+def test_dangling_reference_all_27_real_packages_pass_deterministically():
+    repo_root = Path(__file__).resolve().parent
+    tickers = (
+        "NVDA", "MSFT", "ETN", "V", "LLY", "RTX", "TSM", "GOOGL", "GEV", "ICE", "ISRG",
+        "ASML", "AMZN", "PWR", "SPGI", "TMO", "AVGO", "META", "GNRC", "COST", "RKLB",
+        "PANW", "SNPS", "KLAC", "WM", "CEG", "TSLA",
+    )
+    run1 = {}
+    run2 = {}
+    for t in tickers:
+        pkg1, rec1 = sanitizer.sanitize_company_files(repo_root, t)
+        pkg2, rec2 = sanitizer.sanitize_company_files(repo_root, t)
+        assert pkg1 is not None and pkg2 is not None
+        run1[t] = rec1.sanitized_package_sha256
+        run2[t] = rec2.sanitized_package_sha256
+        # removed_section_titles is itself part of the deterministic audit
+        # trail -- must reproduce identically across runs too.
+        assert rec1.removed_section_titles == rec2.removed_section_titles
+    assert run1 == run2
+
+
+def test_removed_section_titles_present_in_audit_record():
+    repo_root = Path(__file__).resolve().parent
+    pkg, rec = sanitizer.sanitize_company_files(repo_root, "ETN")
+    assert pkg is not None
+    # ETN.md carries at least one whole-section strip (its own "Governed
+    # policy"-family section) -- the audit record must name it.
+    assert isinstance(rec.removed_section_titles, list)
+    assert isinstance(pkg.removed_section_titles, list)
+    assert rec.removed_section_titles == pkg.removed_section_titles
+
+
+def test_removed_section_titles_never_expose_stripped_section_body():
+    # The audit record carries only normalized TITLES, never the stripped
+    # section's own prose -- confirmed by construction (title strings are
+    # short, single-line-derived) and directly for ETN's own case.
+    repo_root = Path(__file__).resolve().parent
+    pkg, rec = sanitizer.sanitize_company_files(repo_root, "ETN")
+    assert pkg is not None
+    for title in rec.removed_section_titles:
+        assert len(title) < 80, title  # a title, not a paragraph of stripped policy prose
+        assert "\n" not in title
+
+
+def test_dangling_reference_detector_used_by_verify_markdown_redaction():
+    md = (
+        "# ZZZZ\n\n"
+        "## Business summary\n\n"
+        "Ordinary factual content, retained.\n\n"
+        "## Governed policy\n\n"
+        "Per targets.yaml, ZZZZ currently sits in a tier.\n\n"
+        "## Risks\n\n"
+        "An ordinary disclosed risk, retained.\n"
+    )
+    redacted, _, removed_titles = sanitizer.redact_markdown(md)
+    assert removed_titles  # a section was actually removed
+    # Confirm the returned redacted text, if a dangling reference were
+    # reintroduced downstream (not by the strip pass, which already
+    # handles same-document references), would still be caught by
+    # verify_markdown_redaction when given the same removed_titles.
+    findings = sanitizer.verify_markdown_redaction(
+        redacted + "\n\nSee Governed policy above for detail.", removed_titles,
+    )
+    assert findings
+
+
+def test_complete_package_scan_catches_dangling_reference_in_yaml_item():
+    # The independent verifier must also cover YAML retained free-text
+    # (risks[]/catalysts[]), not just the .md narrative -- a dangling
+    # reference surviving there is exactly as dangerous.
+    data = _synthetic_company_yaml()
+    del data["portfolio_role_ref"]
+    del data["conviction"]
+    data["risks"] = [{
+        "risk": "See the Governed policy discussion for how this is normally framed.",
+        "severity": "low", "identified": "2026-01-01", "status": "monitoring",
+    }]
+    md = "# ZZZZ\n\n## Governed policy\n\nPer targets.yaml, ZZZZ currently sits in a tier.\n"
+    pkg, findings = sanitizer.build_sanitized_package("ZZZZ", data, md)
+    assert findings
+    assert any("dangling-reference" in f for f in findings)
+
+
+# ── v1.3 structural (AST-level) independence proofs ─────────────────────
+
+def test_dangling_reference_detector_has_separate_code_path_from_strip_helper():
+    called_by_verifier = _called_function_names(sanitizer._dangling_reference_findings)
+    assert "_paragraph_is_forbidden" not in called_by_verifier
+    assert "_item_text_is_forbidden" not in called_by_verifier
+    assert "_strip_forbidden_sections" not in called_by_verifier
+    assert "independent_policy_scan" not in called_by_verifier
+
+    called_by_strip_helper = _called_function_names(sanitizer._strip_forbidden_sections)
+    assert "_dangling_reference_findings" not in called_by_strip_helper
+
+    called_by_paragraph_decision = _called_function_names(sanitizer._paragraph_is_forbidden)
+    assert "_dangling_reference_findings" not in called_by_paragraph_decision
+
+
+def test_verify_functions_call_dangling_reference_detector_not_strip_helpers():
+    for fn in (sanitizer.verify_markdown_redaction, sanitizer.complete_package_scan):
+        called = _called_function_names(fn)
+        assert "_dangling_reference_findings" in called
+        assert "_paragraph_is_forbidden" not in called
+        assert "_item_text_is_forbidden" not in called
+
+
+def test_title_normalization_is_a_separately_defined_function_from_ws_normalization():
+    # Both collapse whitespace, but must be genuinely separate
+    # implementations -- not one calling the other in a way that would
+    # make a defect in one silently propagate as "independence" to both.
+    assert sanitizer._normalize_title_for_reference_matching is not sanitizer._normalize_ws
+    called = _called_function_names(sanitizer._normalize_title_for_reference_matching)
+    assert "_normalize_ws" not in called

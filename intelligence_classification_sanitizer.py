@@ -156,6 +156,80 @@ version restores genuine mechanism separation for paragraph/item content:
     the broadened strip layer directly, not by borrowing the verify
     function.
 
+VERSION 1.3 bounded correction (post-PR-#253-review-4868430051): an
+independent exact-head delta review of v1.2 found `independent_policy_
+scan()` -- the sole verify-designated function as of v1.2 -- still had no
+backstop for the "dangling section-title cross-reference" concept, the
+same defect *class* the original BLOCKING finding (v1.1) and the ETN case
+specifically were about. `_MD_FORBIDDEN_SECTION_HEADER_PATTERNS` (the
+whole-section-strip title list, e.g. "governed policy", "capital-priority
+discipline", "batch membership") was applied at paragraph level only
+inside `_paragraph_is_forbidden()` (the strip layer); none of those title
+phrases existed in `_INDEPENDENT_VERIFY_PATTERNS`. Reproduced live by the
+reviewer: a synthetic dangling reference to a stripped section survived
+`independent_policy_scan()` even though `_paragraph_is_forbidden()` itself
+would have caught it (i.e. the *strip* layer's own paragraph-level
+cross-reference check was doing double duty as the only backstop for this
+concept -- if it ever regressed, or a future record phrased a reference
+slightly differently, `complete_package_scan()` provided zero independent
+protection for this specific content class).
+
+Fixed with a genuinely new, independently implemented detector rather than
+by copying the fixed title list into `_INDEPENDENT_VERIFY_PATTERNS` (which
+the reviewer offered as an acceptable smallest fix, but which would still
+be a *static* list bounded to today's 11 known titles, not something that
+generalizes to a title added or reworded in a future record):
+  - `_strip_forbidden_sections()` now returns, as a third value, the
+    independently-normalized (`_normalize_title_for_reference_matching()`
+    -- its own separately authored normalization, not a call into
+    `_normalize_ws()`'s exact behavior, though both collapse whitespace)
+    title of every section it actually removed. This is exposed purely as
+    a *fact* ("these titles were removed"), threaded through
+    `redact_markdown()` -\> `build_sanitized_package()` as
+    `SanitizedPackage.removed_section_titles` and into
+    `SanitizationRecord.removed_section_titles` for audit reproducibility
+    -- never as a callable decision function the verify layer invokes.
+  - `_dangling_reference_findings(text, removed_titles)` (new) is the
+    actual independent verifier: given that factual title list, it builds
+    a word-boundary-anchored regex per title from the *already-normalized*
+    title text and searches an independently-normalized copy of the
+    candidate text -- catching a quoted reference ("see 'X' below"), an
+    unquoted reference ("see X below"), an above-reference ("as discussed
+    in the X section above"), "refer to X", "the X section", or the bare
+    title surviving anywhere, while a legitimate phrase sharing only some
+    of a title's individual words does not false-positive (the full
+    normalized phrase must appear contiguously). This function is called
+    by both `verify_markdown_redaction()` (post-strip `.md` text, given
+    the `.md`-derived title list) and `complete_package_scan()` (the
+    complete assembled `.yaml`+`.md` package, catching a dangling
+    reference surviving in a retained YAML `risks[]`/`catalysts[]` item,
+    not just markdown prose) -- and it never calls, and is never called
+    by, `_paragraph_is_forbidden()`/`_item_text_is_forbidden()`/
+    `_strip_forbidden_sections()`/`independent_policy_scan()` (proven via
+    AST-level call-graph tests, not a docstring/comment substring search).
+  - Net effect: the strip layer's own paragraph-level title-cross-
+    reference check and this new independent verifier are now two
+    separately implemented mechanisms checking for the same underlying
+    concept (a genuinely redundant backstop, the property that was
+    missing) -- rather than the strip layer being the *only* place this
+    concept was ever checked.
+
+Also corrects an overstated top-line claim the review's own MINOR finding
+flagged: this module's docstring and the implementing PR's own body had
+said strip and verify are "genuinely separate mechanisms" without the
+caveat, present elsewhere in this same docstring (see the v1.2 section
+above), that `_contains_gate_policy_leak()` remains one narrowly-scoped
+leaf-level concept checker deliberately shared by both layers as an
+explicit, disclosed exception. Precise framing, restated here and in the
+PR body: transformation and verification have separate top-level control
+paths; the paragraph/item strip-decision functions do not delegate to
+`independent_policy_scan()` (v1.2) or to the new dangling-reference
+detector (v1.3); the two layers share exactly one narrowly scoped
+gate-policy concept helper, explicitly disclosed; dangling-section-title
+verification now has its own independent backstop. The layers are
+independent at the control-path level, not wholly implementation-
+independent in every leaf function.
+
 This module is a sanitizer, not a data producer or a validator of sealed
 classification records (see `classification_validator.py` for that). It
 never writes into `intelligence/companies/`, never mutates a Company
@@ -312,15 +386,79 @@ def _contains_gate_policy_leak(text: str) -> bool:
     return bool(re.search(r"\bgates?\b", working, re.IGNORECASE))
 
 
-def _strip_forbidden_sections(text: str) -> tuple[str, int]:
+def _normalize_title_for_reference_matching(raw: str) -> str:
+    """v1.3 (review 4868430051): independent normalization used *only* by
+    the dangling-reference verifier below (`_dangling_reference_findings`)
+    -- a separately authored implementation from `_normalize_ws()` and from
+    the strip layer's own header matching, even though both necessarily
+    collapse whitespace. Strips leading markdown heading markers ('#'+, at
+    the start of any line), quote characters (straight and curly), markdown
+    emphasis markers (`*`/`_`/backtick), collapses internal whitespace,
+    trims trailing sentence punctuation, and case-folds. Deliberately
+    simple and conservative -- no stemming, no synonym expansion, no
+    semantic guessing (task requirement 5): a title either survives as a
+    literal (normalized) phrase in retained text, or it doesn't."""
+    t = re.sub(r"(?m)^#+\s*", "", raw)
+    t = re.sub(r"""['"“”‘’]""", "", t)
+    t = re.sub(r"[*_`]", "", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    t = t.rstrip(".:,;")
+    return t.casefold()
+
+
+def _dangling_reference_findings(text: str, removed_titles: list[str]) -> list[str]:
+    """v1.3 (review 4868430051's MAJOR finding): independent post-
+    transformation dangling-reference detector. Consumes `removed_titles`
+    as plain factual input -- normalized section titles the transformation
+    layer already removed, supplied by the caller as AUDIT METADATA, never
+    as a callable decision function -- and independently walks `text` (the
+    caller decides scope: post-strip `.md` alone, or the complete assembled
+    package folding in YAML list-item/scalar content) for any of those
+    titles still present as a reference: quoted ("see 'X' below"),
+    unquoted ("see X below"), above-referencing ("as discussed in the X
+    section above"), "refer to X", "the X section", or the bare title
+    phrase surviving anywhere in retained text under any markdown/
+    punctuation variation. A dedicated, word-boundary-anchored regex is
+    built at call time from each *already-normalized* title (so a title
+    never matches as a sub-fragment of an unrelated longer phrase, and a
+    legitimate phrase sharing only some of a title's individual words does
+    not false-positive) and searched against an independently normalized
+    copy of `text`. This function never calls
+    `_paragraph_is_forbidden`/`_item_text_is_forbidden`/
+    `_strip_forbidden_sections`/`independent_policy_scan` and is never
+    called by them -- proven by
+    `test_dangling_reference_detector_has_separate_code_path_from_strip_helper`
+    (AST-level, not a docstring/comment substring search)."""
+    if not removed_titles:
+        return []
+    normalized_text = _normalize_title_for_reference_matching(text)
+    findings: list[str] = []
+    for title in removed_titles:
+        if not title:
+            continue
+        pattern = re.compile(r"(?<!\w)" + re.escape(title) + r"(?!\w)")
+        if pattern.search(normalized_text):
+            findings.append(
+                f"dangling-reference: removed section title {title!r} still present in retained text"
+            )
+    return findings
+
+
+def _strip_forbidden_sections(text: str) -> tuple[str, int, list[str]]:
     """Drops every section (header line through the line before the next
     '## ' header, or EOF) whose header matches a forbidden pattern. Returns
-    (text_with_sections_removed, sections_removed_count)."""
+    (text_with_sections_removed, sections_removed_count, removed_titles) --
+    v1.3 adds `removed_titles`, the independently-normalized (see
+    `_normalize_title_for_reference_matching`) header text of every section
+    actually removed, as a factual byproduct handed to callers for the
+    dangling-reference verifier below; this function itself makes no
+    reference-detection decision with that list."""
     headers = list(_MD_HEADER_LINE.finditer(text))
     if not headers:
-        return text, 0
+        return text, 0, []
 
     removed = 0
+    removed_titles: list[str] = []
     keep_spans: list[tuple[int, int]] = []
     cursor = 0
     for i, h in enumerate(headers):
@@ -330,10 +468,11 @@ def _strip_forbidden_sections(text: str) -> tuple[str, int]:
             keep_spans.append((cursor, h.start()))
             cursor = section_end
             removed += 1
+            removed_titles.append(_normalize_title_for_reference_matching(header_text))
     keep_spans.append((cursor, len(text)))
 
     kept = "".join(text[a:b] for a, b in keep_spans)
-    return kept, removed
+    return kept, removed, removed_titles
 
 
 # ── Sec7.2 step 4 / mandatory step-5 re-scan: paragraph-level markers ───────
@@ -409,6 +548,11 @@ class SanitizedPackage:
     md_exclusion_reason: str | None = None
     source_yaml_path: str = ""
     source_md_path: str = ""
+    # v1.3 (review 4868430051): normalized titles of every whole section
+    # the transformation layer removed from this ticker's .md -- audit
+    # metadata consumed by the independent dangling-reference verifier,
+    # never a decision function.
+    removed_section_titles: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -430,9 +574,14 @@ class SanitizationRecord:
     complete_package_scan_findings: list[str]
     sanitized_package_sha256: str
     shard_destination: str = ""
+    # v1.3: normalized removed-section titles only (never the stripped
+    # section bodies themselves) -- enough for a later reviewer to
+    # reproduce which sections were removed and which titles were checked,
+    # without re-exposing the policy text those sections actually contained.
+    removed_section_titles: list[str] = field(default_factory=list)
 
 
-SANITIZER_VERSION = "1.2"
+SANITIZER_VERSION = "1.3"
 
 
 _ITEM_REDACTION_PLACEHOLDER = (
@@ -575,15 +724,17 @@ def _paragraph_is_forbidden(paragraph: str) -> bool:
     return _contains_gate_policy_leak(paragraph)
 
 
-def redact_markdown(text: str) -> tuple[str, int]:
+def redact_markdown(text: str) -> tuple[str, int, list[str]]:
     """Sec7.2 step 4, extended: first drop whole forbidden sections (a
     marker word need not appear in the section's own body -- e.g. a
     "## Conviction" section reading only "**Rating: High**"), then strip
     any remaining paragraph matching a marker, a section-title
     cross-reference, or (v1.1) a gate-policy reference. Returns
-    (redacted_text, removed_count) where removed_count is
-    sections-plus-paragraphs."""
-    text, sections_removed = _strip_forbidden_sections(text)
+    (redacted_text, removed_count, removed_titles) where removed_count is
+    sections-plus-paragraphs and removed_titles (v1.3) is the independently
+    normalized title of every section actually removed -- audit metadata
+    for the dangling-reference verifier, not a decision function."""
+    text, sections_removed, removed_titles = _strip_forbidden_sections(text)
 
     paragraphs = _split_paragraphs(text)
     kept = []
@@ -593,7 +744,7 @@ def redact_markdown(text: str) -> tuple[str, int]:
             removed_count += 1
             continue
         kept.append(para)
-    return "\n\n".join(kept), removed_count
+    return "\n\n".join(kept), removed_count, removed_titles
 
 
 # ── independent second-stage verifier (v1.1: review 4867365726; mechanism
@@ -664,12 +815,19 @@ def independent_policy_scan(text: str) -> list[str]:
     return findings
 
 
-def verify_markdown_redaction(redacted_text: str) -> list[str]:
+def verify_markdown_redaction(redacted_text: str, removed_titles: list[str] = ()) -> list[str]:
     """Sec7.2 step 5: mandatory re-scan, using the independent verifier
-    (v1.1) -- not the same pattern list the strip pass already applied.
-    Returns a list of surviving marker descriptions (empty list == clean).
-    Never mutates, never trusts the strip pass alone."""
-    return independent_policy_scan(redacted_text)
+    (v1.1) -- not the same pattern list the strip pass already applied --
+    plus (v1.3) the independent dangling-section-title-reference detector,
+    given `removed_titles` as factual audit metadata from
+    `_strip_forbidden_sections()` via `redact_markdown()`. Returns a list
+    of surviving marker descriptions (empty list == clean). Never mutates,
+    never trusts the strip pass alone. `removed_titles` defaults to `()`
+    so existing callers that only care about the policy/chart/conviction
+    checks are unaffected."""
+    findings = independent_policy_scan(redacted_text)
+    findings.extend(_dangling_reference_findings(redacted_text, list(removed_titles)))
+    return findings
 
 
 def scan_chart_domain(text: str) -> list[str]:
@@ -697,7 +855,15 @@ def complete_package_scan(pkg: SanitizedPackage) -> list[str]:
     v1.1: runs the ORIGINAL strip-pattern scan (still useful -- catches
     anything a future strip-layer regression might miss) AND the
     independently-constructed `independent_policy_scan()` (review
-    4867365726's actual fix -- the two are no longer the same check)."""
+    4867365726's actual fix -- the two are no longer the same check).
+
+    v1.3: also runs the independent dangling-section-title-reference
+    detector (`_dangling_reference_findings()`) against the complete
+    assembled text, using `pkg.removed_section_titles` -- so a title
+    reference surviving anywhere in the final package (a YAML risks[]/
+    catalysts[] item, not just the `.md` narrative already covered by
+    `verify_markdown_redaction()`) is still caught here (review
+    4868430051's MAJOR finding)."""
     findings: list[str] = []
 
     for key in _PACKAGE_FORBIDDEN_YAML_KEYS:
@@ -712,6 +878,7 @@ def complete_package_scan(pkg: SanitizedPackage) -> list[str]:
             findings.append(f"forbidden marker survived in package text: {p.pattern!r} at {m.start()}")
 
     findings.extend(f"complete-package {f}" for f in independent_policy_scan(text))
+    findings.extend(f"complete-package {f}" for f in _dangling_reference_findings(text, pkg.removed_section_titles))
 
     return findings
 
@@ -732,8 +899,8 @@ def build_sanitized_package(
     caller is responsible for enforcing that; this function only reports."""
     sanitized_yaml, removed_yaml_fields = sanitize_yaml_data(yaml_data)
 
-    redacted_md, removed_count = redact_markdown(markdown_text)
-    verify_findings = verify_markdown_redaction(redacted_md)
+    redacted_md, removed_count, removed_section_titles = redact_markdown(markdown_text)
+    verify_findings = verify_markdown_redaction(redacted_md, removed_section_titles)
 
     md_excluded = False
     md_exclusion_reason = None
@@ -781,6 +948,7 @@ def build_sanitized_package(
         md_exclusion_reason=md_exclusion_reason,
         source_yaml_path=source_yaml_path,
         source_md_path=source_md_path,
+        removed_section_titles=removed_section_titles,
     )
 
     findings = complete_package_scan(pkg)
@@ -828,6 +996,7 @@ def sanitize_company_files(
         complete_package_scan_passed=not findings,
         complete_package_scan_findings=findings,
         sanitized_package_sha256=package_hash,
+        removed_section_titles=pkg.removed_section_titles,
     )
 
     if findings:
