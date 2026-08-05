@@ -510,3 +510,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0009, ONTO-0001, PI-0003, PI-0004, PI-0015, PI-0016, PI-0022, PI-0037, REL-0001, REL-0006, TGT-0001, TGT-0002]
     supporting_artifact: governance/audits/WS0005_M5_CLASSIFICATION_QUESTION_INVENTORY_20260804.md
     file: governance/decisions/TIER-0001-ws0005-milestone5-classification-question-inventory.md
+  - decision_id: TIER-0002
+    date: 2026-08-05
+    status: Proposed
+    category: tier_classification_governance
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, ONTO-0001, PI-0003, PI-0004, PI-0015, PI-0016, PI-0019, PI-0020, TIER-0001, REL-0001, TGT-0001, TGT-0002]
+    supporting_artifact: governance/audits/WS0005_M5_CANDIDATE_CLASSIFICATION_FRAMEWORK_DESIGN_20260805.md
+    file: governance/decisions/TIER-0002-ws0005-milestone5-candidate-classification-framework-design.md
