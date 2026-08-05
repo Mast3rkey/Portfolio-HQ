@@ -13,15 +13,16 @@ capital_priority:
   - AMAT
   - KLAC
   - LRCX
-  - TSM
-  rationale: 'The evidence shows a structurally rare position -- sole commercial EUV supplier with no
-    credible competitor and a supplier-ecosystem moat (Zeiss optics, wholly-owned Cymer) -- combined with
-    AI-driven demand strong enough to prompt two guidance raises within a single year. Against that sits
-    the most concentrated, actively-moving geopolitical/export-control exposure in the file: China''s
-    share of net system sales fell from 36% (Q4 2025) to 14% (Q2 2026) across two quarters, with a pending
-    US bill (MATCH Act) that could extend restrictions to DUV, ASML''s remaining sellable China product
-    line. This combination of a differentiated, hard-to-replace exposure and a live, material regulatory
-    risk is the kind of pairing a reviewer should specifically weigh.'
+  - TOELY
+  rationale: ASML holds a sole-supplier EUV lithography monopoly with a structurally difficult-to-replicate
+    supplier moat and twice-raised FY2026 guidance, but China's share of net system shipments more than
+    halved within two 2026 quarters (36% Q4 2025 -> 19% Q1 2026 -> 14% Q2 2026), and a pending US bill
+    (the MATCH Act) could extend restrictions to DUV, ASML's currently-still-sellable China product line.
+    A separate, unresolved allegation of possible export-control circumvention (publicly disputed by ASML,
+    no independent resolution) compounds a concentrated, currently-moving geopolitical risk category the
+    evidence itself frames as the most acute of any company in its comparison batch. This combination
+    of an actively escalating, unresolved risk that would materially change the investment case if enacted
+    warrants explicit reviewer reconsideration rather than routine monitoring.
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -40,8 +41,8 @@ evidence_quality:
     given China's share of net system sales already fell from 36% to 14% across two quarters.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-C
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#ASML
-content_sha256: 9280696a2f5c7707eac4ce26124c7db768653fe56251bb3622c84014cff35200
+content_sha256: 735ccaddf3f8c3183625816a48cab1136b29fb05dcf5b8f56eac252c2a0829a4

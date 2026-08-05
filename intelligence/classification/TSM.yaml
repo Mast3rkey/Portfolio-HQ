@@ -8,18 +8,19 @@ economic_role:
     advanced (7nm-and-below) process technology at 77% of wafer revenue, alongside management's explicit
     attribution of the FY2026 capex raise to AI/HPC/agentic-AI demand.
 capital_priority:
-  status: case_for_review
+  status: maintain_current_weight
   comparator_set:
-  - INTC
-  - GFS
-  - UMC
-  rationale: 'The evidence shows an unusually strong, currently-realized business-quality signal: record
-    margins (67.7% gross in Q2 2026), 36% YoY revenue growth, a raised full-year growth outlook, and a
-    differentiated leading-edge technology roadmap (N2/N2P/A16) that management describes as advanced-packaging-capacity-constrained.
-    This is counterbalanced by concrete, quantified disclosed risks -- top-two customer concentration
-    (19%/17% of 2025 revenue), an unresolved Nanjing export-license renewal, recurring Taiwan natural-disaster
-    losses, and capital intensity (~39% of Q2 revenue as capex) -- a combination of differentiated exposure
-    and material disclosed risk that warrants specific reviewer attention rather than passive treatment.'
+  - Samsung Foundry
+  - GlobalFoundries
+  - United Microelectronics (UMC)
+  - Intel Foundry
+  rationale: Q2 2026 results and raised full-year guidance reflect continued execution within TSM's established
+    leading-edge foundry profile, with disclosed customer-concentration, Taiwan geopolitical, Nanjing
+    export-license, natural-disaster, and capital-intensity risks all continuing under existing 'monitoring'
+    status rather than escalating in kind or degree. No development in the evidence, including the enlarged
+    Arizona investment commitment, represents a structural change distinct from TSM's already-disclosed
+    overseas-fab execution risk. The evidence supports treating TSM's current posture as operating within
+    its ordinary, disclosed risk/opportunity profile.
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -41,8 +42,8 @@ evidence_quality:
     for the top ten), which are not individually identified.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-B
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#TSM
-content_sha256: 2041d85a31cf50bb8aee2457d6da240aa60104aa8f2a6398e2055fdb40706c7f
+content_sha256: a37c12d7c6b8f985aa98ca07b65e25d1283abfa30514d5c617dd821132deae24

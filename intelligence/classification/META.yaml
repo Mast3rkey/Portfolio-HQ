@@ -11,18 +11,17 @@ capital_priority:
   status: case_for_review
   comparator_set:
   - GOOGL
-  - SNAP
-  - PINS
-  - TTD
   - AMZN
-  rationale: 'The evidence documents a reversal in momentum worth reviewer attention: Q2 2026 net income
-    reportedly fell 14% YoY on a $2.4B legal-proceedings charge and an ~8,000-person layoff with a $1.18B
-    severance charge, both newly disclosed and still pending primary-source (10-Q) confirmation. Structurally,
-    the file also flags that unlike other large hyperscalers in its peer set, no public-cloud-resale business
-    was disclosed to offset a very large ($125B-$145B guided) 2026 AI capex program, and revenue remains
-    roughly 98% concentrated in advertising with an already-realized Apple platform-policy headwind. These
-    are concrete, evidence-based signals (both business-quality and risk-related) that a reviewer should
-    specifically weigh, not merely routine monitoring items.'
+  - MSFT
+  - SNAP
+  rationale: 'Q2 2026 results (reported 2026-07-29, secondary-sourced pending 10-Q confirmation) show
+    a reversal from this record''s prior growth-momentum framing: net income fell 14% YoY and EPS missed
+    estimates, alongside two newly-disclosed, previously unrecorded corporate events -- a $2.4B charge
+    described only as ''related to legal proceedings'' with CFO commentary flagging youth-related litigation
+    risk of ''material losses,'' and an approximately 8,000-employee layoff with a $1.18B severance charge.
+    These are concrete, recently-realized developments materially different in kind from META''s ordinary
+    advertising-concentration and Reality Labs-loss risk disclosures, warranting explicit reconsideration
+    pending primary-source confirmation rather than routine monitoring.'
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -40,8 +39,8 @@ evidence_quality:
     total revenue is concentrated in a single advertising revenue stream.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-D
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#META
-content_sha256: 6f12c3a6be65017d855e8d9d3d565920954108ac5c4de715b7017e7b2b187dd1
+content_sha256: e34a972a41b14c757ce901e8421443d0d0d0886631b9580bf9a16ebec79dfb16

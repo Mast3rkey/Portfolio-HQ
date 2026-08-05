@@ -8,19 +8,19 @@ economic_role:
     YoY, making cloud infrastructure the dominant profit driver layered on top of the online-retail/marketplace/advertising
     business.
 capital_priority:
-  status: case_for_review
+  status: maintain_current_weight
   comparator_set:
   - MSFT
   - GOOGL
-  - ORCL
+  - META
   - WMT
-  rationale: AWS's disproportionate share of consolidated operating income, combined with capex that nearly
-    doubled YoY ($43.2B vs $24.3B) and $121.8B of unsecured notes outstanding, indicates a business whose
-    profit engine is increasingly capital-intensive rather than capital-light. The file also documents
-    multiple large, still-unrealized AI-lab commitments (OpenAI, Anthropic) carrying counterparty and
-    chip-delivery risk, plus active FTC/state antitrust litigation and a preliminary EU DMA cloud-gatekeeper
-    finding against AWS specifically. These are distinctive, evolving exposures -- both upside optionality
-    and disclosed risk -- that merit closer reviewer attention rather than routine treatment.
+  rationale: Q1/Q2 2026 evidence shows AWS as a disproportionate and accelerating profit engine (Q2 AWS
+    revenue +36.7% YoY, described as its fastest pace in 18 quarters) alongside diversified retail/advertising
+    revenue, near-doubled capex funded partly by new senior-note issuance, and ordinary-course FTC antitrust
+    litigation plus a preliminary EU DMA gatekeeper finding. None of these developments represents a marked
+    change from Amazon's already-established profile as a capital-intensive, AWS-driven business operating
+    under standing antitrust scrutiny; each is consistent with the company's ordinary, disclosed risk/opportunity
+    profile rather than a distinctive break from it.
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -39,8 +39,8 @@ evidence_quality:
     revenue against AWS capex that has already nearly doubled year-over-year.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-C
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#AMZN
-content_sha256: a2c8a3d894b6a1a259cdef28e558ed5d3caa2446714c45d29d77e7fa6c73d38c
+content_sha256: b11f536799fd64db9a494cf852277705f4e23a8e6f33ee922ab8f3b28d128b37

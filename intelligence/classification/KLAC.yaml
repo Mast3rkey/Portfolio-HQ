@@ -8,21 +8,20 @@ economic_role:
     representing 90.3% of Q3 FY2026 revenue and record FY2025 revenue of $12.16B supporting the broader
     semiconductor-capex buildout that underlies AI/compute hardware production.
 capital_priority:
-  status: case_for_review
+  status: maintain_current_weight
   comparator_set:
-  - ASML
   - AMAT
   - LRCX
+  - ASML
   - ONTO
-  - ENTG
-  rationale: The evidence shows the highest gross margin (62.3%) of a comparable equipment-sector batch,
-    a 17-consecutive-year dividend growth record, and the most specific backlog-conversion disclosure
-    found in this evidence set (71-76% within 12 months) alongside a large recent stock split and dividend
-    hike -- distinctive business-quality signals. This sits alongside a real, primary-verified, material
-    China-revenue decline (43% FY2024 to 33% FY2025) driven by tightening export controls, a second dated
-    2026 export-control shock (Hua Hong), and a confirmed FY2024 down year showing the business is not
-    fully acyclical -- a combination of strong quality and material geopolitical/cyclical exposure worth
-    a closer look.
+  rationale: KLA's evidence shows a well-established, highly profitable process-control business with
+    a normal cyclicality profile (a confirmed FY2024 down year followed by a strong FY2025 rebound), a
+    China revenue trend and export-control exposure that has been evolving for several years as a recurring,
+    disclosed industry feature rather than a new shock, and a recent post-earnings share-price decline
+    attributed to gross-margin mix concerns despite beating estimates. None of these developments represents
+    a structural change in kind or degree from KLA's own established profile -- there is no acquisition,
+    litigation, or leadership change in evidence. This falls within KLA's ordinary, disclosed risk/opportunity
+    baseline.
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -41,8 +40,8 @@ evidence_quality:
     (FY2025) tied to export-control tightening.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-E
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#KLAC
-content_sha256: ea4aaf8495fa801a58c65ce75882016e33cbb4ae043c2d99c37876e87dfab83f
+content_sha256: 1e527567b040ff56966edce75a6559cbe3032eb40d9acf67c859e3672f0c1999

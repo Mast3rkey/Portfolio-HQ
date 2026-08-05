@@ -2,27 +2,27 @@ schema_version: '1.0'
 ticker: PWR
 economic_role:
   economic_system_ref: Energy & Electrification
-  company_role: electrical/grid infrastructure construction and engineering services (EPC contractor)
-  role_basis: The file describes Quanta as primarily a labor-intensive specialty infrastructure services
-    contractor building transmission, distribution, substation, and data-center-adjacent electrical systems,
-    evidenced by a named 765kV EPC partnership with AEP tied to its $72B 2026-2030 capital plan and direct
-    in-facility data-center electrical work via its Cupertino Electric subsidiary, with total backlog
-    growing from $34.54B (YE2024) to $48.5B (Q1 2026).
+  company_role: Specialty EPC contractor building and maintaining electric-grid transmission/distribution
+    infrastructure and in-facility data-center electrical systems
+  role_basis: 'Corrected evidence shows two distinct data-center-relevant channels: (A) direct in-facility
+    electrical design/installation/manufacturing through Cupertino Electric, serving hyperscaler and technology
+    customers, and (B) indirect utility/grid exposure via the AEP 765kV transmission partnership tied
+    explicitly to AEP''s $72B capital plan and data-center-driven demand growth, with revenue skewed 70%
+    Utility and Power per the corrected FY2025 10-K end-market mix.'
 capital_priority:
-  status: case_for_review
+  status: maintain_current_weight
   comparator_set:
   - MYRG
   - MTZ
   - EME
-  - ETN
-  rationale: 'The evidence shows an unusually strong, accelerating growth signal -- record backlog reaching
-    successive highs, ~80% recurring MSA-driven base work, margin improvement in the smaller Underground
-    segment, and a named, contractually-evidenced grid/data-center demand driver via the AEP partnership.
-    This sits alongside genuine, disclosed risks worth weighing: fixed-price contract execution exposure
-    that is qualitatively confirmed but not quantified, working-capital drag from growing unbilled receivables,
-    and renewable-tax-credit policy exposure. The combination of a distinctive, corroborated AI/data-center-adjacent
-    grid demand driver and unresolved execution/leverage risk factors is the kind of signal a reviewer
-    should specifically weigh.'
+  - DY
+  rationale: Corrected evidence confirms Quanta as a growing, still-primarily-services grid/data-center
+    infrastructure contractor with record and accelerating backlog (to $53.4B by Q2 2026), raised FY2026
+    guidance, four in-quarter acquisitions, and a positive Moody's outlook -- all continuations of an
+    already-established growth trajectory rather than a break from it. Disclosed risks (fixed-price execution
+    risk, craft-labor safety/fatality exposure, renewable-policy exposure, a stale S&P rating) are ordinary
+    for a scaling contractor and remain at moderate-or-lower severity with no unresolved acute development.
+    Nothing in the corrected evidence rises above Quanta's own established operating profile.
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -42,8 +42,8 @@ evidence_quality:
     peers.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-C
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#PWR
-content_sha256: c84273cccb300fbede10b248409987402942af18cdcaf59c04b0f022f7929cb8
+content_sha256: 8336d0a24d87504eb3dd2eff2b002bfc0172ce11bd5ccdae5b26e035df94540e

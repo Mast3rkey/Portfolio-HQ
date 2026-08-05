@@ -2,27 +2,28 @@ schema_version: '1.0'
 ticker: SNPS
 economic_role:
   economic_system_ref: Digital Platforms & Enterprise Software
-  company_role: EDA software / semiconductor design software
-  role_basis: Synopsys is one of three players controlling an estimated ~78%+ of the global EDA market
-    (~31% share) via end-to-end electronic design automation tool suites, and post-Ansys markets itself
-    as offering 'the first vertically integrated device-to-system design stack,' fusing chip-level EDA
-    software with Ansys's multiphysics simulation software.
+  company_role: Oligopolist EDA software provider enabling semiconductor and device design workflows
+  role_basis: Evidence shows Synopsys as one of three firms controlling ~78%+ of the global EDA market,
+    and post-Ansys markets itself as offering an integrated device-to-system design software stack spanning
+    chip-level EDA and multiphysics simulation, reinforced by a Nvidia partnership pivoting compute-intensive
+    design workloads to AI-accelerated infrastructure.
 capital_priority:
   status: case_for_review
   comparator_set:
   - CDNS
-  - ADSK
+  - ANSS
   - PTC
-  - SIEGY
-  rationale: 'The evidence shows genuinely strong and accelerating underlying execution (record FY2025
-    revenue, first-ever 83% gross margin, a $2B Nvidia strategic investment) set against a cluster of
-    material, still-unresolved disclosed conditions worth a reviewer''s attention: an extreme and structurally
-    persistent GAAP/non-GAAP earnings gap tied to Ansys purchase-accounting amortization, a severe September
-    2025 credibility event (~35% one-day stock drop, guidance cut, workforce reduction) with ongoing securities
-    litigation, substantial post-acquisition leverage still above the company''s own target, and a disclosed
-    activist-investor stake pushing for portfolio changes. The combination of record operating scale with
-    an unusually large earnings-normalization and litigation overhang is a distinctive pattern meriting
-    explicit reconsideration rather than routine treatment.'
+  - ADSK
+  rationale: Synopsys underwent a severe, company-specific credibility event in September 2025 (a single-day
+    ~35-36% stock decline tied to Design IP guidance cuts and internally acknowledged roadmap missteps)
+    whose effects remain unresolved nearly a year later, including ongoing securities class-action litigation
+    and a newly disclosed multi-billion-dollar activist stake (Elliott) publicly pushing for changes to
+    the company's monetization strategy. The company is also still integrating its large, recently closed
+    Ansys acquisition, carrying leverage still above its own stated target even after paydown progress.
+    These are concrete, unresolved developments distinct from ordinary disclosed risk, not merely the
+    routine competitive or regulatory disclosures common to any operating business, and together warrant
+    a reviewer's explicit reconsideration of posture ahead of the September 2026 Investor Day and pending
+    litigation outcomes.
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -39,8 +40,8 @@ evidence_quality:
     outcome adverse to the company following its disclosed guidance-cut event.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-E
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#SNPS
-content_sha256: e968339545b9756ebe4f6806c872f397ea3f5a775a44dd432e8af997a0cc654e
+content_sha256: 7e8fcb7a221afaca20e8fc43db123bbd626912282084747f77c04927ed62ce1d

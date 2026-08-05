@@ -2,31 +2,30 @@ schema_version: '1.0'
 ticker: RKLB
 economic_role:
   economic_system_ref: 'other: Space Launch & Satellite Infrastructure'
-  company_role: small/medium-lift space launch services and satellite-component/spacecraft manufacturing
-  role_basis: Rocket Lab operates a vertically integrated Launch Services segment (Electron, 21 launches
-    with 100% mission success in 2025, plus Neutron in development) and a Space Systems segment (satellite
-    components/subsystems manufacturing, Q1 2026 revenue $136.7M, +57.2% YoY), with a role determinable
-    even though this record's own primary-source access was network-blocked and several figures (share
-    count, mission count) are internally inconsistent across sources.
+  company_role: Vertically integrated space-launch provider and satellite/spacecraft-component manufacturer,
+    expanding toward satellite-communications network operation via a pending acquisition.
+  role_basis: RKLB generates revenue through two segments -- Launch Services (Electron, operational since
+    2018, plus Neutron in development; Q1 2026 revenue $63.7M) and Space Systems (satellite components/subsystems/spacecraft
+    manufacturing built via acquisition; Q1 2026 revenue $136.7M) -- and has signed a definitive agreement
+    to acquire Iridium's operating satellite-communications network and licensed spectrum, evidencing
+    a shift from a pure launch/manufacturing role toward space-based infrastructure operation.
 capital_priority:
   status: case_for_review
   comparator_set:
-  - LMT
-  - RTX
   - ASTS
   - IRDM
-  - LUNR
-  rationale: 'The evidence documents two large, currently unresolved execution questions that did not
-    both exist in their current form previously: Neutron has slipped twice (most recently after a January
-    2026 Stage-1 tank rupture) with no first flight as of this record''s date and no single confirmed
-    technical milestone identified, and a transformative ~$8 billion pending acquisition of Iridium (roughly
-    an order of magnitude larger than any prior RKLB deal) requiring 2027 closing, shareholder approval,
-    and spectrum-regulatory clearance. These sit alongside continued strong revenue growth (+63.5% YoY)
-    and a substantial, evidenced national-security contract base. The combination of unusually consequential,
-    disclosed execution/integration risk and a large concurrent CEO insider stock sale is exactly the
-    kind of evidence a reviewer should weigh explicitly; this record''s own weak source-verification posture
-    (network-blocked WebFetch, several unresolved figure conflicts) further argues for closer review rather
-    than routine monitoring.'
+  - FLY
+  rationale: RKLB entered a definitive agreement to acquire Iridium (~$8B enterprise value, $54.00/share
+    cash-and-stock), a fundamental structural transaction combining launch/spacecraft manufacturing with
+    an operating satellite-communications network and licensed spectrum -- by far the largest and most
+    consequential disclosed fact in this record, financed via a $3.6B bridge loan and a newly-registered
+    $3B ATM program. Concurrently, the CEO sold approximately $286.4 million of stock over three days
+    under a 10b5-1 plan, and RKLB stock reportedly surrendered roughly a third of its post-announcement
+    gain within a month amid dilution and Neutron-delay concerns, both distinctive, recently-realized
+    developments unresolved as of the evidence date. This combination of a major pending acquisition,
+    material CEO insider selling, and an unresolved Neutron first-flight schedule (following a January
+    2026 tank-rupture setback) together constitute a distinctive circumstance warranting explicit reconsideration,
+    separate from RKLB's ordinary launch-market competitive and customer-concentration risk.
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -44,8 +43,8 @@ evidence_quality:
     uncertainty.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-D
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#RKLB
-content_sha256: 153f2bfc04aaa90413c24640f75e4ab785c64ac78d4435b983e0f0d17f696eb5
+content_sha256: b32abbcf861c443e81f95d0f50666ed55ba125e52b788785b83e916f8af5d6ed

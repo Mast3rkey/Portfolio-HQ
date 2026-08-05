@@ -8,20 +8,20 @@ economic_role:
     its network-toll-road role from a bank's credit/deposit business; FY2025 net revenue was $40.0B across
     service, data-processing, international-transaction, and other categories.
 capital_priority:
-  status: case_for_review
+  status: maintain_current_weight
   comparator_set:
   - MA
   - AXP
   - PYPL
-  - FI
-  - GPN
-  rationale: The evidence shows strong, continuing volume and revenue growth (fiscal Q2 2026 net revenue
-    +17% YoY, cross-border volume +12%) and high disclosed financial quality, a strong-quality signal.
-    It also discloses a live, unresolved DOJ monopolization case concerning debit-network services with
-    a denied motion to dismiss, plus a disclosed interchange-litigation escrow of unquantified magnitude,
-    both material and current legal exposures specific to this name rather than generic sector risk. This
-    combination of durable network economics and concrete ongoing litigation is worth a reviewer's specific
-    attention.
+  - FIS
+  rationale: 'Visa''s evidence shows continued double-digit growth (fiscal Q2 2026 net revenue +17% YoY,
+    cross-border volume +12%) alongside already-known, ongoing risk categories: the DOJ debit-network
+    monopolization case (filed 2024, motion to dismiss denied mid-2025 -- an unresolved but not newly-arising
+    procedural status), disclosed interchange litigation/escrow, and client-incentive cost pressure now
+    corrected to roughly 28% of pre-incentive gross revenue. A newly disclosed 7% workforce reduction
+    and $563M restructuring charge is a real but ordinary cost-realignment action reallocating investment
+    toward existing growth priorities, not a structural change to Visa''s network-toll-road business model.
+    Nothing here rises above Visa''s own established, ongoing risk profile.'
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -38,8 +38,8 @@ evidence_quality:
     motion to dismiss has already been denied.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-A
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#V
-content_sha256: f99ef96ee639b6528ad338083a24bfb4085f49fcae4015de686266064e32e340
+content_sha256: 88d971f98a6c5fad2ac61a8a97a02858e894e0077adb7ffc369f7f761d5e6f51

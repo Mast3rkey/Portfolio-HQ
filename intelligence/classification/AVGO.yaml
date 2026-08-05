@@ -14,17 +14,15 @@ capital_priority:
   - NVDA
   - MRVL
   - AMD
-  - TSM
   - QCOM
-  rationale: 'The evidence shows an unusually strong, fast-scaling exposure to custom AI-silicon demand
-    (AI semiconductor revenue +143% YoY, FY2027 target reaffirmed at >$100B backed by a disclosed $73B
-    backlog) combined with a distinct recurring-software business, a combination the file states no other
-    portfolio holding currently replicates. That same file also documents material, well-evidenced counterweights
-    a reviewer should weigh: AI-revenue concentration in five to six named hyperscaler customers described
-    by a secondary source as ''the largest single risk,'' three separate compounding China-exposure vectors,
-    and a VMware customer-churn dispute tied to 5x-10x pricing increases. The combination of differentiated
-    growth exposure and concrete, disclosed concentration/geopolitical risk is exactly the kind of evidence
-    that warrants explicit reviewer attention.'
+  rationale: Q2 FY2026 results show a marked, recently-realized acceleration in AI-semiconductor revenue
+    (+143% YoY, guided to +200%+ YoY for Q3), a reaffirmed FY2027 >$100B AI-semiconductor target newly
+    backed by a disclosed $73B customer backlog, and a credit-rating trajectory (S&P 'A-' positive outlook,
+    Fitch 'BBB+') that at least one source explicitly ties to the AI-semiconductor opportunity specifically.
+    This combination of a concrete, primary-sourced inflection in the AI growth trajectory plus an externally-validated
+    rating-agency confirmation of that shift is a distinctive, recently-realized development rather than
+    routine disclosed risk or catalyst, even though several supporting figures (backlog, credit metrics)
+    remain secondary-sourced and unverified against primary filings.
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -45,8 +43,8 @@ evidence_quality:
     this segment's revenue is reported to concentrate in.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-D
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#AVGO
-content_sha256: f04f723a22074d0dea8e424ac7159dea5ea21169b1efeea18c2be529c94e45ae
+content_sha256: 96b077e59971239306fe19abf72fb5f1e714ef7bf939b9c98dfc9f6760b9a7ae

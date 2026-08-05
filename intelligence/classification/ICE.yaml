@@ -2,27 +2,31 @@ schema_version: '1.0'
 ticker: ICE
 economic_role:
   economic_system_ref: Financial Infrastructure
-  company_role: regulated exchange operator, derivatives clearing house, and financial data/mortgage-technology
-    services provider
-  role_basis: ICE operates CFTC-designated derivatives clearing organizations, the SEC-regulated NYSE
-    exchange, and ICE Futures U.S./Europe designated contract markets, alongside a growing Fixed Income
-    & Data Services subscription business (annual subscription value over $2.0 billion) and a Mortgage
-    Technology segment built on the MSP/Encompass platforms.
+  company_role: Operator of regulated derivatives and securities exchanges and clearing organizations,
+    plus fixed-income data/analytics and mortgage-technology services, expanding into fixed-income electronic
+    trading infrastructure.
+  role_basis: ICE operates CFTC-designated derivatives clearing organizations and futures exchanges plus
+    the SEC-regulated NYSE national securities exchange, and derives a growing subscription-like annuity
+    from Fixed Income & Data Services (recurring revenue $531M in Q2 2026, +10% YoY); its pending, all-debt-financed
+    acquisition of MarketAxess would add an electronic fixed-income RFQ trading platform serving roughly
+    2,100 institutional investors and broker-dealers to this regulated-infrastructure and data footprint.
 capital_priority:
   status: case_for_review
   comparator_set:
-  - CME
-  - NDAQ
-  - CBOE
-  rationale: 'The evidence discloses a material, newly announced change to the capital structure: an all-debt-financed
-    acquisition of MarketAxess that is expected to push pro forma gross leverage to approximately 3.4x
-    against ICE''s own stated deleveraging target, financed via a committed bridge facility, and layered
-    on top of a still-integrating prior acquisition (Black Knight) whose Mortgage Technology segment has
-    shown GAAP operating losses in at least one recent period. ICE also has direct, disclosed precedent
-    of an FTC-mandated divestiture reducing the value of its prior mortgage-technology deal, a directly
-    relevant data point for evaluating the new transaction''s antitrust risk. This combination of a fresh
-    leverage event, an unresolved prior integration, and a concrete regulatory precedent is a clear candidate
-    for specific reviewer attention.'
+  - CME Group
+  - Nasdaq, Inc.
+  - Cboe Global Markets
+  - London Stock Exchange Group (LSEG)
+  rationale: ICE announced a definitive, entirely debt-financed agreement to acquire MarketAxess for approximately
+    $6.0B equity value, pushing pro forma gross leverage to roughly 3.4x against ICE's own stated deleveraging
+    target of 3.0x or below, while simultaneously raising its quarterly buyback rate and layering this
+    new integration on top of the still-integrating, still loss-making Black Knight acquisition. ICE has
+    direct, recent precedent for antitrust-driven value erosion on a comparable deal -- the 2023 Black
+    Knight acquisition required an FTC-mandated divestiture that cut the completed deal value from an
+    originally proposed ~$13.1B to ~$11.9B -- making the MarketAxess deal's own HSR/antitrust clearance
+    a concrete, unresolved consideration in light of that history. This is a fundamental structural change
+    (a major, leverage-increasing acquisition) squarely warranting reviewer reconsideration rather than
+    routine monitoring.
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -40,8 +44,8 @@ evidence_quality:
     integration is still producing GAAP operating losses in Mortgage Technology.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-B
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#ICE
-content_sha256: aaf77923e051700d9852503d9c8921448a44966fb6ef0455d59494c3e2bd86b2
+content_sha256: dff902ba9bda828cc6d2a79ca7872994fbeeb0a6968d9528a27a58f2171e4a96

@@ -13,15 +13,16 @@ capital_priority:
   - VST
   - NRG
   - PEG
-  - TLN
-  - D
-  rationale: The evidence surfaces a distinctive, differentiated exposure -- a large, high-utilization
-    baseload nuclear fleet paired with a long-duration, investment-grade offtake contract explicitly tied
-    to AI/data-center electricity demand growth -- alongside a major, recently closed acquisition (Calpine,
-    ~23 GW across 72 assets) whose integration track record does not yet exist in the evidence base. A
-    large single-quarter GAAP-versus-adjusted-earnings divergence and an explicit evidence gap around
-    total debt/balance-sheet leverage further mean this name combines an unusually distinctive growth
-    thesis with unresolved integration and disclosure gaps meriting a closer look.
+  - EXC
+  rationale: Constellation completed a large, transformative acquisition (Calpine, January 2026) that
+    materially changed its scale and generation mix, adding roughly 23 GW across 72 generation and battery-storage
+    assets -- a fundamental structural change whose integration execution risk is explicitly described
+    in the evidence as not yet resolved by any post-acquisition track record. The most recent quarter
+    also showed a large, unexplained divergence between GAAP and adjusted operating earnings, and the
+    Crane Clean Energy Center restart underpinning a key long-duration AI-demand-linked offtake contract
+    remains conditional rather than completed. These are concrete, recently-realized developments distinct
+    from ordinary disclosed risk and together warrant a reviewer's explicit reconsideration of posture
+    as the Calpine integration and Crane restart play out.
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -39,8 +40,8 @@ evidence_quality:
     compounding an already-material GAAP-versus-adjusted-earnings divergence this quarter.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-E
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#CEG
-content_sha256: 0813d0f411f765dbe55770dcc14f33eef2c05b77864bd390aa810d00dfba6123
+content_sha256: f7886fe8009f0cca53e5914eb26682f444160002e394523bd145588e0010b4a0

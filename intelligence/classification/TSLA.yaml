@@ -2,29 +2,30 @@ schema_version: '1.0'
 ticker: TSLA
 economic_role:
   economic_system_ref: Energy & Electrification
-  company_role: electric vehicle manufacturing, energy storage, and autonomy/robotics
-  role_basis: Tesla operates Automotive (vehicle sales, regulatory credits, leasing), Energy Generation
-    & Storage (Megapack/Powerwall, with a Brookshire Texas Megafactory targeting 50 GWh/year capacity),
-    and Services & Other segments, reporting Q2 2026 record deliveries (480,126 vehicles) and record trailing-twelve-month
-    energy storage deployments (13.5 GWh).
+  company_role: Vertically integrated electric-vehicle and energy-storage manufacturer with autonomy/robotics
+    optionality
+  role_basis: Evidence shows Tesla operating Automotive and Energy Generation & Storage segments at record
+    scale (480,126 Q2 2026 deliveries, 13.5 GWh storage deployments) alongside the largest North American
+    fast-charging network and expanding Megafactory capacity, plus emerging robotaxi/FSD and Optimus robotics
+    programs layered on the core electrification business.
 capital_priority:
   status: case_for_review
   comparator_set:
-  - RIVN
   - GM
   - F
-  - NIO
-  - LCID
-  rationale: 'The evidence shows record operating scale (deliveries, storage deployments, revenue) sitting
-    alongside a cluster of material, currently unresolved conditions: a structural collapse in regulatory-credit
-    revenue, simultaneous automotive and energy margin compression with a swing to negative free cash
-    flow against sharply rising capex, a live NHTSA engineering analysis covering ~3.2 million vehicles,
-    a confirmed structural inability of roughly 4 million HW3 vehicles to ever run unsupervised FSD, near-zero
-    disclosed Optimus production against repeated schedule slippage, and declining regional share in Europe
-    and China. The company''s own governance structure (a ~$1 trillion CEO pay package) makes explicit
-    that much of the forward valuation case rests on largely unproven autonomy, robotics, and energy milestones
-    rather than current auto/energy earnings -- a combination of scale strength and concentrated, disclosed
-    risk that merits explicit reviewer attention.'
+  - RIVN
+  - BYDDY
+  rationale: 'Tesla''s evidence shows several concrete, unresolved developments materially different from
+    ordinary disclosed risk: a live NHTSA engineering analysis (EA26002) covering approximately 3.2 million
+    vehicles that is the step preceding a potential recall, a structural collapse in regulatory-credit
+    revenue (down 67% YoY) following expiration of federal EV incentives, and a swing to negative free
+    cash flow alongside sharp margin compression in the most recent quarter. Additional distinctive factors
+    include a confirmed structural limitation permanently freezing roughly 4 million HW3 vehicles at Level-2
+    capability, and Optimus production remaining near zero against repeated reveal delays and management''s
+    own admission that the 2026 production rate is ''impossible to predict.'' Together these represent
+    a company whose forward narrative rests heavily on unproven autonomy and robotics milestones amid
+    a currently deteriorating core-business margin and regulatory picture, warranting explicit reviewer
+    reconsideration rather than routine monitoring.'
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -42,8 +43,8 @@ evidence_quality:
     appropriately.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-E
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#TSLA
-content_sha256: 13d307679e264c08565ad1d83bb24a64c813988a6036e7640ef766e3b7e281a0
+content_sha256: 038bd48dfc60bd80bb7fd1ed3a2f846c92522c0b5e7c8eb2db703f23b5fd58e2

@@ -14,15 +14,15 @@ capital_priority:
   - DHR
   - A
   - WAT
-  - MTD
-  rationale: 'The core business shows a positive, broad-based signal -- growth across all four disclosed
-    segments and FY2026 guidance reportedly raised following Q2 2026 results -- but two material, previously-untracked
-    corporate events surfaced in the same update: a reported divestiture of the microbiology business
-    and an already-closed Clario acquisition contributing a ''first full quarter'' of results, both with
-    unknown terms, financial impact, and closing dates pending primary-source confirmation. This combination
-    of steady underlying operating growth and newly-disclosed, unresolved portfolio-restructuring events
-    is a reasonable basis for a reviewer to look more closely at the current evidence base before treating
-    it as fully reconciled.'
+  - AVTR
+  rationale: 'Q2 2026 secondary reporting surfaces two developments absent from this record''s prior FY2025-anchored
+    evidence base: an announced divestiture of the microbiology business, and confirmation that a previously-unmentioned
+    Clario acquisition has already closed and contributed a first full quarter of results -- both a portfolio
+    separation and an already-integrated acquisition are the kind of structural change distinct from ordinary
+    segment-level risk. Deal terms, closing date, financial contribution, and divestiture materiality
+    are all currently unknown pending primary-source confirmation, meaning the fact pattern itself (not
+    merely the ability to write a rationale about it) constitutes a genuine, unresolved change to the
+    company''s disclosed profile worth a reviewer''s explicit reconsideration.'
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -40,8 +40,8 @@ evidence_quality:
     terms are yet primary-source confirmed.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-C
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#TMO
-content_sha256: b9e49918b4c42ef7a71b49d6b44c828979bf9040d3774b32db38bb6a55a77910
+content_sha256: 0be165cf15cf0fe51b380d241232fe8332f078f7dbc47014cb351d5bdbf02ed8

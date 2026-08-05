@@ -10,18 +10,19 @@ economic_role:
 capital_priority:
   status: case_for_review
   comparator_set:
-  - MDT
-  - JNJ
-  - SYK
-  - ZBH
-  rationale: 'The evidence shows continued strong, broad-based business-quality signals -- recurring revenue
-    growing at rates comparable to systems sales, and double-digit installed-base and procedure growth
-    -- alongside a material, newly concrete competitive-entry development: Medtronic''s Hugo completed
-    its first U.S. commercial procedure and Johnson & Johnson''s OTTAVA reportedly received FDA De Novo
-    market authorization, moving competitive risk from a disclosed risk-factor category to an observed
-    market event since the prior review. The filing itself notes no observable deceleration attributable
-    to either competitor yet, but the shift from hypothetical to concrete competitive entry in a moat-dependent
-    business is precisely the kind of development a reviewer should specifically weigh going forward.'
+  - Medtronic
+  - Johnson & Johnson (MedTech)
+  - Stryker Corporation
+  rationale: 'Since the prior review, robotic-surgery competitive entry has moved from a disclosed risk-factor
+    category to realized fact: Medtronic''s Hugo system reached FDA clearance and completed its first
+    U.S. commercial procedure in February 2026, and Johnson & Johnson''s OTTAVA progressed through a pivotal
+    clinical study to reported FDA De Novo market authorization on 2026-07-22 (secondary-sourced), becoming
+    the first table-integrated soft-tissue robotic system reported to receive such clearance for a named
+    list of general-surgery procedures. The record''s own narrative characterizes this shift as the competitive
+    backdrop becoming ''concrete rather than hypothetical,'' a change in kind from ordinary disclosed
+    competitive risk, even though Intuitive''s own Q2 2026 results show no observable deceleration yet
+    -- this concrete regulatory-cleared entry by two major competitors into ISRG''s core market warrants
+    explicit reviewer reconsideration.'
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -38,8 +39,8 @@ evidence_quality:
     now that both have moved from disclosed risk factors to concrete market events.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-B
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#ISRG
-content_sha256: c7b0079cc1aec7866902b96d97dcea04e69034af98ba361b1ffd4ea93761f384
+content_sha256: ee400b21b511d0b6b7b2f796de4014816b872b4e24d2460b551a37936dc75987

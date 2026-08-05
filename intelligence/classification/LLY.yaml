@@ -13,14 +13,16 @@ capital_priority:
   - ABBV
   - MRK
   - JNJ
-  - PFE
-  rationale: The evidence shows an unusually strong growth signal (incretin revenue +90% YoY, Zepbound
-    +80% YoY, high reported U.S. prescription share) alongside real pipeline conversion into an approved
-    new product, a distinctive business-quality signal. It also discloses extreme revenue concentration
-    in a small set of cardiometabolic products, concurrent price/payer pressure on those same products,
-    and simultaneous execution risk across four announced acquisitions and new manufacturing capacity
-    in a single quarter. This mix of exceptional growth and concentrated execution risk is exactly the
-    kind of evidence a reviewer should weigh.
+  rationale: 'Lilly''s evidence shows two concrete, fundamental developments occurring in close succession:
+    FDA approval of Foundayo -- the first new molecular entity approved under the FDA''s National Priority
+    Voucher Program, carrying a boxed warning and material gastrointestinal/pancreatitis/kidney/gallbladder/thyroid-tumor
+    precautions -- and four separate acquisition agreements (Orna, Centessa, Kelonia, Ajax) announced
+    within a single quarter, alongside a newly announced Pennsylvania manufacturing-capacity commitment.
+    Combined with extreme revenue concentration (68% of Q1 2026 revenue from a narrow key-product set)
+    and net-pricing pressure already partly offsetting reported growth, this cluster of concurrent, concrete
+    regulatory and business-development events is distinctive relative to Lilly''s own established profile
+    and merits a reviewer''s fresh look, without asserting how the new approval or acquisitions will ultimately
+    perform.'
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -38,8 +40,8 @@ evidence_quality:
     products.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-A
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#LLY
-content_sha256: ef06024ed4ecb0d0b8060480f6ed005a66198631730875b8d54ff45b7a3efd2c
+content_sha256: 2a6e2ceba7d0bcb5d4a4b1ba9e47649092f1f8e40b14ea0bbba15e14f053abdf

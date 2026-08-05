@@ -10,17 +10,18 @@ economic_role:
 capital_priority:
   status: case_for_review
   comparator_set:
-  - MSFT
-  - META
-  - AMZN
-  rationale: 'The evidence surfaces a material, disclosed thesis-relevant risk that is unusually concrete
-    for a company of this scale: two live, unresolved U.S. antitrust matters where Alphabet''s own filing
-    states proposed structural remedies in the ad-tech case could materially affect the business, distinct
-    from a closed or purely historical legal overhang. This sits alongside a capex trajectory that more
-    than doubled year-over-year in the same quarter as a $31.1B new debt issuance, a combination the evidence
-    itself flags as an unresolved funding/leverage question rather than an established fact. These are
-    exactly the kind of differentiated, quantified signals -- both regulatory and capital-intensity related
-    -- a reviewer should weigh specifically.'
+  - Microsoft (MSFT)
+  - Meta Platforms (META)
+  - Amazon (AMZN)
+  rationale: A final judgment was entered in the search-distribution antitrust case in December 2025,
+    with both Alphabet and the DOJ/states now appealing, while the separate ad-tech case's April 2025
+    liability finding is proceeding toward remedies that Alphabet's own filing says could include structural
+    remedies materially affecting the business -- a materially different risk category than a fine or
+    behavioral commitment. This concrete legal escalation coincides with capital expenditure more than
+    doubling year-over-year in the same quarter Alphabet issued $31.1B of new senior notes, with FY2026
+    capex guidance reportedly raised further (secondary-sourced, unverified) to $205B. Together these
+    represent a specific, evidence-based departure from Alphabet's ordinary disclosed profile warranting
+    explicit reviewer reconsideration rather than routine monitoring.
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -40,8 +41,8 @@ evidence_quality:
     which Alphabet's own filing states could materially affect the business.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-B
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#GOOGL
-content_sha256: d940339f775bcf225060d11f23ccddd700ba28294e1dd797e91600f0897c6cd4
+content_sha256: 34a9f1ef4f3aef6485aa09313dfdd2d04ce107631cbc91d442ae45b3218b6d82

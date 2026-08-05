@@ -2,27 +2,32 @@ schema_version: '1.0'
 ticker: ETN
 economic_role:
   economic_system_ref: Energy & Electrification
-  company_role: electrical equipment / power management
-  role_basis: Eaton's Electrical Americas and Electrical Global segments (~73% of FY2025's $27.448B revenue)
-    manufacture circuit protection, switchgear, power distribution/quality equipment and UPS systems,
-    with Q1 2026 Electrical-segment backlog up 48% YoY tied partly to data-center and grid-electrification
-    demand.
+  company_role: Electrical-equipment and power-management supplier providing switchgear, transformers,
+    and electrical distribution infrastructure -- including data-center liquid cooling -- that forms the
+    physical power/electrification layer for utility, industrial, and AI-driven data-center demand.
+  role_basis: Eaton's Electrical Americas and Electrical Global segments manufacture switchgear and transformers
+    subject to UL 891/IEC 61439 certification, with lead times reflecting acute grid/electrification capacity
+    constraints, and the FY2025-agreed, 2026-03-12-completed Boyd Thermal acquisition (~$9.5B, concentrated
+    in liquid-cooling equipment for hyperscale/AI data centers) directly extends this electrification
+    role into data-center thermal/power infrastructure, per Eaton's FY2025 Form 10-K and Q1 2026 results
+    release.
 capital_priority:
   status: case_for_review
   comparator_set:
   - VRT
-  - ABB
-  - SIEGY
+  - PWR
   - HUBB
+  - ABB
   - EMR
-  rationale: 'The evidence shows a distinctive, regulator/lead-time-protected moat and a large, accelerating
-    electrical backlog, an unusually strong quality signal. It also discloses several concrete, dated
-    developments worth specific reviewer attention: a disputed margin-quality thesis (management''s ''temporary''
-    framing versus a named analyst''s structural-decline estimate), a single acquisition (Boyd Thermal)
-    representing roughly a third of FY2025 revenue in deal value and concentrated in one growth thesis,
-    and a more complex-than-expected Reverse Morris Trust separation of the Vehicle/eMobility businesses
-    with Dana Incorporated. These combine a strong exposure story with concrete, unresolved execution
-    and concentration questions.'
+  rationale: 'Eaton''s evidence discloses two concrete, fundamental structural developments: a definitive
+    Reverse Morris Trust combination of its Vehicle+eMobility Mobility Group with Dana Incorporated (a
+    materially more complex transaction than a standalone spin-off, carrying cross-company integration,
+    governance, and shareholder-approval/regulatory-clearance contingency), and the approximately $9.5B
+    Boyd Thermal acquisition -- Eaton''s largest deal since 2012, concentrated entirely in a single data-center-liquid-cooling
+    thesis. A named analyst (UBS) has also publicly disputed management''s characterization of Q1 2026
+    margin contraction as temporary, downgrading the stock. These are concrete, dated, structural events
+    distinct from Eaton''s ordinary industrial-cyclicality risk profile and warrant a reviewer''s fresh
+    look.'
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -41,8 +46,8 @@ evidence_quality:
     or costly to execute than currently disclosed.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-A
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#ETN
-content_sha256: 6ce55d64f5eaf6bffa28f4d4a2d3c523cd28a7b0c0f25311aafb8da29ab2e83b
+content_sha256: 6b63ecd01930bbfef73e21589f0035a2c80e7b7fa7de10d003c494497e343687

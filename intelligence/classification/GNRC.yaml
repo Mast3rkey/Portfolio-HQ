@@ -11,20 +11,20 @@ economic_role:
 capital_priority:
   status: case_for_review
   comparator_set:
-  - CAT
   - CMI
+  - CAT
   - ETN
   - VRT
-  - HUBB
-  rationale: The evidence surfaces a distinctive, newly-scaled growth exposure -- a $1.6B data-center
-    backup-power backlog and 2028 targets implying revenue growth from $4.21B to $6.2-6.6B -- that did
-    not exist in this form until the 2025-2026 period, alongside a conservative balance sheet (leverage
-    ~1.4x against a 3.75x covenant ceiling) providing headroom to fund it. This sits against a demonstrated,
-    severe boom-bust cyclicality in the core residential business (operating margin nearly halved 2021-2023,
-    FY2025 net income nearly halved partly due to a $104.5 million product-liability settlement) and competitive
-    newcomer status versus Caterpillar, Cummins, and Kohler in the data-center segment. The combination
-    of a materially new growth driver and well-documented cyclical/liability risk warrants explicit reviewer
-    attention.
+  rationale: 'GNRC disclosed a concrete, dollar-quantified strategic inflection: its C&I data-center order
+    backlog scaled from $600 million to $1.6 billion within roughly 90 days, backed by two named multi-year
+    hyperscale supply agreements (the second, signed late June 2026, expected to be at least as large
+    as the first ~$700 million commitment) that management now treats as load-bearing to its 2028 revenue/EBITDA
+    targets. This is layered onto a business whose FY2025 net income nearly halved and posted a Q4 2025
+    net loss because of a $104.5 million litigation-settlement provision tied to a 2023 product-liability
+    event that catastrophically injured six workers -- a severe, concentrated, dollar-material event,
+    not merely a disclosed possibility. Together, a newly load-bearing growth leg and a realized, large
+    P&L-impacting liability event represent a materially different circumstance from GNRC''s ordinary
+    storm/outage-driven cyclicality risk, worth a reviewer''s explicit reconsideration.'
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -44,8 +44,8 @@ evidence_quality:
     +50% in 2021 then -12% in 2023, EPS falling from $8.51 to $3.31 over the same span).
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-D
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#GNRC
-content_sha256: 23d0744e711389ae06de1cc788c3632a1f8798e496cbfcac39412d116010bba7
+content_sha256: 53c52d19847f1931203397fb30c1baba39f5f5aee86a5607e21065a25e92a31e

@@ -14,13 +14,15 @@ capital_priority:
   - TSM
   - MRVL
   - INTC
-  rationale: The evidence shows an unusually strong growth and margin profile (Data Center revenue accelerating
-    to +92% YoY with GAAP operating margin expansion), which is a distinctive business-quality signal
-    worth weighing. At the same time it discloses concrete, primary-source-verified customer/hyperscaler
-    concentration (three customers at 21%/17%/16% of revenue) and live export-control/geopolitical exposure,
-    plus an unresolved secondary report of a large, unusual customer-financing arrangement described by
-    outside commentators as circular. This combination of exceptional growth alongside concentrated, dated
-    risk factors is exactly the kind of evidence a reviewer should specifically weigh.
+  rationale: NVIDIA's Q1 FY2027 results show Data Center revenue growth accelerating (92% YoY vs. FY2026's
+    own 68% YoY) alongside a materially expanded capital-return posture (a 25x quarterly dividend increase
+    and an additional $80B buyback authorization). Separately, unresolved secondary reporting describes
+    NVIDIA in talks to provide up to roughly $250B in financing guarantees and roughly $350B in chip-purchase
+    financing for OpenAI, which named commentators (Michael Burry, Bernstein's Stacy Rasgon) have characterized
+    as circular financing that would compound existing customer-concentration risk if finalized. This
+    combination of a recently-realized strengthening in the core business and an unresolved, unusually
+    large financing-dependency exposure is distinctive enough to warrant a reviewer's fresh look, without
+    asserting how the unfinalized financing talks will resolve.
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -39,8 +41,8 @@ evidence_quality:
     or a further tightening of the 2026 export-control regime beyond what is currently disclosed.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-A
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#NVDA
-content_sha256: 3176fcde358277413934e01b087d38591256af2391fe4962d6138fb4c6a6e5d6
+content_sha256: 614cd0de31eb881206c903dc13cd5bc2e834984165f0e1426b29da4d346a34ea

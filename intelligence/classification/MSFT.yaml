@@ -7,19 +7,19 @@ economic_role:
     Processes, Intelligent Cloud, More Personal Computing), with Azure/Intelligent Cloud as the fastest-growing
     segment and a management-disclosed AI business exceeding a $37B annual revenue run rate.
 capital_priority:
-  status: case_for_review
+  status: maintain_current_weight
   comparator_set:
   - GOOGL
   - AMZN
-  - ORCL
-  - CRM
   - META
-  rationale: The evidence shows a diversified, profitable, all-growing three-segment structure with accelerating
-    Azure growth and a real, disclosed AI monetization metric, an unusually strong quality signal. It
-    also discloses a distinctive and unusually deep single-counterparty dependency (the OpenAI partnership,
-    large enough to warrant its own non-GAAP earnings carve-out), disclosed cloud-margin pressure from
-    AI capital intensity, and a preliminary EU DMA gatekeeper designation for Azure. These are specific,
-    dated developments a reviewer should weigh rather than routine risk-factor boilerplate.
+  - ORCL
+  rationale: 'Microsoft''s evidence shows continued strong operating performance (FY2026 Q4 revenue +17.8%
+    YoY, Azure accelerating to 43% YoY and reportedly crossing $100B annualized) alongside ordinary, already-disclosed
+    risk categories: AI-capex-driven cloud-margin pressure, Azure capacity constraints, OpenAI relationship
+    concentration (now partially diversified by a newly reported Anthropic investment), and a preliminary,
+    non-final EU DMA cloud-gatekeeper designation. None of these represents a marked departure from Microsoft''s
+    own established profile as a fast-growing, AI-capex-heavy hyperscaler; each is best treated as ordinary
+    monitored risk rather than a distinctive trigger.'
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -40,8 +40,8 @@ evidence_quality:
     this record cannot fully evaluate.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-A
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#MSFT
-content_sha256: 1d03a55174fbd8fe7c0f1a989236e9e40676213dfe311b17f4550e7a9a42ca75
+content_sha256: f1af6bb8f6680e12385ae6c7812ea9659a301a05300233bf036145d3e8941697

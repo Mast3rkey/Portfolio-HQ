@@ -13,16 +13,15 @@ capital_priority:
   - WMT
   - TGT
   - BJ
-  - DG
-  - KR
-  rationale: 'The evidence shows a stable, well-evidenced business: renewal rates essentially flat (92.3%/89.8%
-    at FY2025 year-end versus 92.2%/89.7% at Q3 FY2026, a -0.1 point change in each measure), no membership-fee
-    contraction (Q3 +10.7%), continued digitally-enabled comparable-sales growth above 20% every quarter
-    of FY2026 to date, and continued warehouse expansion and dividend increases. Disclosed risks -- labor-cost
-    pressure now covered by a ratified agreement through 2028, a pending but early-stage tariff-refund
-    class action, and a modest May-to-June comparable-sales deceleration of unresolved persistence --
-    are monitored but none rises to a thesis-threatening level in the evidence reviewed. Nothing in the
-    file argues for elevating or reconsidering the name relative to peers at this time.'
+  rationale: 'The evidence shows COST operating within its ordinary, well-established profile: renewal
+    rates remain stable near 90% worldwide (a -0.1pp move at Q3 FY2026 that the record itself notes does
+    not establish sustained deterioration), membership-fee and digitally-enabled sales growth continue,
+    and warehouse expansion proceeds on guidance. The labor-relations history was resolved via a ratified
+    2025-2028 national agreement, the narrower Local 174 wage-theft complaint and the Stockov tariff-refund
+    litigation are both low-severity, early-stage, unresolved matters rather than realized material events,
+    and competitive/tariff/e-commerce risks are the kind of ordinary disclosed risk every large retailer
+    carries. Nothing in the evidence rises above this baseline to a distinctive, recently-realized change
+    in COST''s investment case.'
   assessed_date: '2026-08-05'
   assessing_record: null
 risk_concentration:
@@ -39,8 +38,8 @@ evidence_quality:
     environment the record already characterizes as vigorously competitive.
   review_trigger_notes: ''
 lifecycle_status: sealed
-sealed_at: '2026-08-05T18:30:00Z'
+sealed_at: '2026-08-05T21:00:00Z'
 governing_decision: TIER-0005
 drafting_session_or_shard_id: shard-D
 cohort_manifest_entry: intelligence/classification/COHORT_MANIFEST.yaml#COST
-content_sha256: f72ba9e05d19296769a06f02ac51f266698d0cbdeeb2a31abfe7182efe8a372f
+content_sha256: cb59d6f648deb9f37e895b27f3d6076bdd5dfd8d3e2b04e2523763d01e3907df

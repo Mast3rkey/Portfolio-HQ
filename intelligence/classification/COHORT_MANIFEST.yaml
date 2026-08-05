@@ -3,190 +3,190 @@ governing_decision: TIER-0005
 cohort:
 - ticker: AMZN
   shard_id: shard-C
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: a2c8a3d894b6a1a259cdef28e558ed5d3caa2446714c45d29d77e7fa6c73d38c
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: b11f536799fd64db9a494cf852277705f4e23a8e6f33ee922ab8f3b28d128b37
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/AMZN.yaml
 - ticker: ASML
   shard_id: shard-C
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: 9280696a2f5c7707eac4ce26124c7db768653fe56251bb3622c84014cff35200
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 735ccaddf3f8c3183625816a48cab1136b29fb05dcf5b8f56eac252c2a0829a4
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/ASML.yaml
 - ticker: AVGO
   shard_id: shard-D
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: f04f723a22074d0dea8e424ac7159dea5ea21169b1efeea18c2be529c94e45ae
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 96b077e59971239306fe19abf72fb5f1e714ef7bf939b9c98dfc9f6760b9a7ae
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/AVGO.yaml
 - ticker: CEG
   shard_id: shard-E
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: 0813d0f411f765dbe55770dcc14f33eef2c05b77864bd390aa810d00dfba6123
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: f7886fe8009f0cca53e5914eb26682f444160002e394523bd145588e0010b4a0
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/CEG.yaml
 - ticker: COST
   shard_id: shard-D
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: f72ba9e05d19296769a06f02ac51f266698d0cbdeeb2a31abfe7182efe8a372f
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: cb59d6f648deb9f37e895b27f3d6076bdd5dfd8d3e2b04e2523763d01e3907df
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/COST.yaml
 - ticker: ETN
   shard_id: shard-A
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: 6ce55d64f5eaf6bffa28f4d4a2d3c523cd28a7b0c0f25311aafb8da29ab2e83b
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 6b63ecd01930bbfef73e21589f0035a2c80e7b7fa7de10d003c494497e343687
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/ETN.yaml
 - ticker: GEV
   shard_id: shard-B
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: c77d9a5362b058c3644aebebe3b3d77ec3071a607fb55bab94715c58c0005962
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 4c8de31c31373b00d2549cdba3d59dda81a0f0a26962ae70445db1077fa5fc67
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/GEV.yaml
 - ticker: GNRC
   shard_id: shard-D
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: 23d0744e711389ae06de1cc788c3632a1f8798e496cbfcac39412d116010bba7
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 53c52d19847f1931203397fb30c1baba39f5f5aee86a5607e21065a25e92a31e
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/GNRC.yaml
 - ticker: GOOGL
   shard_id: shard-B
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: d940339f775bcf225060d11f23ccddd700ba28294e1dd797e91600f0897c6cd4
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 34a9f1ef4f3aef6485aa09313dfdd2d04ce107631cbc91d442ae45b3218b6d82
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/GOOGL.yaml
 - ticker: ICE
   shard_id: shard-B
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: aaf77923e051700d9852503d9c8921448a44966fb6ef0455d59494c3e2bd86b2
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: dff902ba9bda828cc6d2a79ca7872994fbeeb0a6968d9528a27a58f2171e4a96
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/ICE.yaml
 - ticker: ISRG
   shard_id: shard-B
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: c7b0079cc1aec7866902b96d97dcea04e69034af98ba361b1ffd4ea93761f384
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: ee400b21b511d0b6b7b2f796de4014816b872b4e24d2460b551a37936dc75987
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/ISRG.yaml
 - ticker: KLAC
   shard_id: shard-E
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: ea4aaf8495fa801a58c65ce75882016e33cbb4ae043c2d99c37876e87dfab83f
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 1e527567b040ff56966edce75a6559cbe3032eb40d9acf67c859e3672f0c1999
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/KLAC.yaml
 - ticker: LLY
   shard_id: shard-A
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: ef06024ed4ecb0d0b8060480f6ed005a66198631730875b8d54ff45b7a3efd2c
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 2a6e2ceba7d0bcb5d4a4b1ba9e47649092f1f8e40b14ea0bbba15e14f053abdf
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/LLY.yaml
 - ticker: META
   shard_id: shard-D
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: 6f12c3a6be65017d855e8d9d3d565920954108ac5c4de715b7017e7b2b187dd1
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: e34a972a41b14c757ce901e8421443d0d0d0886631b9580bf9a16ebec79dfb16
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/META.yaml
 - ticker: MSFT
   shard_id: shard-A
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: 1d03a55174fbd8fe7c0f1a989236e9e40676213dfe311b17f4550e7a9a42ca75
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: f1af6bb8f6680e12385ae6c7812ea9659a301a05300233bf036145d3e8941697
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/MSFT.yaml
 - ticker: NVDA
   shard_id: shard-A
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: 3176fcde358277413934e01b087d38591256af2391fe4962d6138fb4c6a6e5d6
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 614cd0de31eb881206c903dc13cd5bc2e834984165f0e1426b29da4d346a34ea
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/NVDA.yaml
 - ticker: PANW
   shard_id: shard-D
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: 91743f4f7a3102a73f564ad44a92188af4e26e2423a22265433d4b665faf601c
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: f09a98727b0ced85084d2306b1a360eaccb3af5458f5ed1b26855dc9f9d2b303
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/PANW.yaml
 - ticker: PWR
   shard_id: shard-C
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: c84273cccb300fbede10b248409987402942af18cdcaf59c04b0f022f7929cb8
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 8336d0a24d87504eb3dd2eff2b002bfc0172ce11bd5ccdae5b26e035df94540e
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/PWR.yaml
 - ticker: RKLB
   shard_id: shard-D
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: 153f2bfc04aaa90413c24640f75e4ab785c64ac78d4435b983e0f0d17f696eb5
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: b32abbcf861c443e81f95d0f50666ed55ba125e52b788785b83e916f8af5d6ed
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/RKLB.yaml
 - ticker: RTX
   shard_id: shard-A
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: eef6c7c0e371a7e2f542ff61e43d9ef0f39881e6b6bb6b3928064b4af0271a89
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: c9b2497ee4bb1476fa18fcbb48e214c2c9bf58cc029156eaf8059e2191d3ba77
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/RTX.yaml
 - ticker: SNPS
   shard_id: shard-E
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: e968339545b9756ebe4f6806c872f397ea3f5a775a44dd432e8af997a0cc654e
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 7e8fcb7a221afaca20e8fc43db123bbd626912282084747f77c04927ed62ce1d
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/SNPS.yaml
 - ticker: SPGI
   shard_id: shard-C
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: f22f7fed9e6d3abf2e0d991f436466da9e15c5135cc1800cac601b0b8b41368d
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 689d4d17d78f8c01692b1f6b9ba0185a1b67ba472649a674bab144e17d5bace9
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/SPGI.yaml
 - ticker: TMO
   shard_id: shard-C
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: b9e49918b4c42ef7a71b49d6b44c828979bf9040d3774b32db38bb6a55a77910
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 0be165cf15cf0fe51b380d241232fe8332f078f7dbc47014cb351d5bdbf02ed8
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/TMO.yaml
 - ticker: TSLA
   shard_id: shard-E
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: 13d307679e264c08565ad1d83bb24a64c813988a6036e7640ef766e3b7e281a0
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 038bd48dfc60bd80bb7fd1ed3a2f846c92522c0b5e7c8eb2db703f23b5fd58e2
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/TSLA.yaml
 - ticker: TSM
   shard_id: shard-B
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: 2041d85a31cf50bb8aee2457d6da240aa60104aa8f2a6398e2055fdb40706c7f
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: a37c12d7c6b8f985aa98ca07b65e25d1283abfa30514d5c617dd821132deae24
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/TSM.yaml
 - ticker: V
   shard_id: shard-A
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: f99ef96ee639b6528ad338083a24bfb4085f49fcae4015de686266064e32e340
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 88d971f98a6c5fad2ac61a8a97a02858e894e0077adb7ffc369f7f761d5e6f51
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/V.yaml
 - ticker: WM
   shard_id: shard-E
-  sealed_at: '2026-08-05T18:30:00Z'
-  content_sha256: 7491dc14ff4bb375b1d6624e85fd0704d348f87d0432c941d6492e02a63b6b43
+  sealed_at: '2026-08-05T21:00:00Z'
+  content_sha256: 677623eb4c6597e52e16a8ee8c4c222e7d3c87105e783fa01d1d5e1a9c6c2906
   schema_version: '1.0'
   governing_decision: TIER-0005
   record_path: intelligence/classification/WM.yaml
