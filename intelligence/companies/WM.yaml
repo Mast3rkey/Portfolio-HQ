@@ -1,0 +1,85 @@
+sector: Industrials
+industry: Environmental and Waste Management Services
+portfolio_role_ref: gated
+competitive_advantages:
+  - "North America's largest waste-services network: ~262 landfill sites, 339 transfer stations, 105 recycling facilities, and 413 collection operations (secondary aggregation, not independently verified against the 10-K), serving 20M+ residential, commercial, industrial, and municipal customers. Landfill permitting is described in secondary analysis as extremely difficult and often practically impossible to newly obtain in most jurisdictions, taking years and substantial capital -- making the existing network a structurally scarce, effectively irreplaceable asset base. [WM-C01]"
+  - "Diversified, growing revenue base: FY2025 revenue $25.2B (vs. $22.1B FY2024, largely reflecting the first full year of Stericycle consolidation). Q2 2026 revenue $6.684B (+4.0% YoY), adjusted EBITDA $2.067B (+5.5% reported, +9.1% ex-2025-wildfire-cleanup comparisons), adjusted EBITDA margin ~30.9%, free cash flow $1.104B for the quarter (+34.5% YoY). [WM-C02]"
+  - "Growing Sustainability business (Renewable Natural Gas and recycling automation): a $3 billion 2022-2026 growth-capital program (39 new/upgraded recycling facilities, 20 new RNG facilities). As of the Q1 2026 call, seven new RNG facilities had come online since Q1 2025; renewable-energy EBITDA more than doubled year-over-year; recycling EBITDA grew 18% despite a 27% decline in commodity prices. Combined recycling + renewable-energy adjusted operating EBITDA was $163M in Q2 2026, up 32.5% from $123M a year earlier. [WM-C03]"
+  - "23rd consecutive year of dividend increase for 2026 (2026 increase +14.5% to $0.945/quarter, annualized $3.78); new $3B share-repurchase authorization approved alongside the dividend hike, superseding a prior $1.5B authorization; management targets returning approximately 90% of 2026 free cash flow to shareholders via dividends and buybacks combined. [WM-C04]"
+risks:
+  - risk: "Stericycle (Healthcare Solutions) integration showed real friction through 2025 before management characterized it as substantially resolved by Q2 2026. Multiple Waste Dive articles across Q2-Q4 2025 disclosed customer onboarding and billing/ERP integration issues -- 'tremendous amount of frustration with billing or reporting' among some customers, credits/deferred price increases offered, and Q3 2025 Healthcare Solutions revenue ($628M) coming in slightly below expectations attributed partly to ERP integration friction. By the Q2 2026 call, CEO Jim Fish characterized the segment as fully integrated ('we feel like we've fixed the business now'), with segment adjusted operating EBITDA margin expanding to 19% from 17% a year earlier and cross-selling generating $32M of cumulative annualized EBITDA to date -- a self-reported characterization by management, not independently audited."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Stericycle synergy-target escalation is unverified: the deal's original 2024 announcement cited run-rate cost synergies 'exceeding $125 million,' while Q2 2026 commentary cites progress toward '>$300 million of total synergies by end of 2027' -- a materially larger, later-stated target whose origin and the timing of its increase could not be traced this session. This should be treated as an unreconciled figure, not confirmed guidance history."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Commodity-price exposure in recycling: WM's own disclosed sensitivity (per secondary characterization, not independently verified against a primary filing) is approximately $27M of EBITDA impact for every $10/ton move in single-stream recycled-commodity prices, a sensitivity described as growing as WM processes more recycling tons over time. Recycled-materials (OCC/mixed paper) prices have historically swung 60-150% peak-to-trough. Recycling EBITDA has so far grown despite commodity-price declines (volume/automation offsetting price), but this insulation is described as partial, not complete, and the Q2 2026 guidance trim was partly attributed to softer recycling brokerage."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "PFAS (per- and polyfluoroalkyl substances) regulatory and litigation exposure is a live, industry-wide issue as of 2026: an industry-wide estimate puts PFAS-leachate remediation costs at over $1 billion (timeframe/scope unclear from sources found); EPA finalized a rule in April 2026 revising PFAS TSCA reporting-period requirements; industry trade groups have sued over EPA's CERCLA hazardous-substance designation for PFAS and lobbied for a landfill/water-treatment liability exemption with no confirmed legislative movement found. A specific PFAS groundwater-contamination lawsuit against a North Carolina county landfill (filed ~June 2026) was identified but this session could not confirm whether the landfill is WM-owned/operated. No WM-specific named PFAS litigation, defendant status, or reserve figure was found this session -- disclosed as a research gap, not a finding of no exposure, given WM operates the largest landfill network in North America."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Full-year 2026 revenue guidance was trimmed at the Q2 2026 call (to $26.275B-$26.475B from $26.43B-$26.63B post-Q1, roughly a 0.5% cut) attributed to softer collection/disposal volumes (guided to decline ~1% for the year), RNG pipeline-connection delays (two completed RNG plants awaiting third-party pipeline connection as of Q2 2026), and softer recycling brokerage. Adjusted EBITDA and free cash flow guidance were maintained, and EBITDA margin guidance was raised 20bps, indicating the revenue softness is not yet flowing through to profitability guidance, but this is a fact pattern worth monitoring rather than a resolved question."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was tested and confirmed completely blocked (HTTP 403) on every domain attempted, including sec.gov, investors.wm.com, and a control domain (example.com) used to confirm this was a systemic tool failure rather than a domain-specific block. No primary document (10-K, 10-Q, 8-K, or WM's own press release/call transcript) was directly opened this session. Every fact in this record traces to WebSearch-returned snippets/summaries, and several figures were internally inconsistent across sources (net income $785M vs $786M for Q2 2026; two different debt-to-EBITDA figures for different quarters; Republic Services' landfill count cited as both 190 and 209) -- flagged in WM.md rather than silently resolved."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+catalysts:
+  - catalyst: "Q3 2026 earnings release, expected around 2026-10-27 before market open."
+    expected: "2026-10-27"
+    status: pending
+  - catalyst: "Continued RNG facility ramp-up (targeting completion of the 20-facility buildout under the $3B 2022-2026 sustainability capital program) and resolution of the two disclosed pipeline-connection delays affecting Q2 2026 guidance."
+    expected: "2026-12-31"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which Q3 2026 results, further Stericycle synergy-target reconciliation, and any WM-specific PFAS litigation development will next be actively re-checked."
+    expected: "2026-11-05"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not themselves constitute approval (see review.log below). WM's core waste-collection/landfill/transfer business carries a genuinely strong, evidenced moat (landfill-permitting scarcity, the largest North American disposal network) and a long, disciplined capital-return record (23 consecutive years of dividend increases). The Stericycle acquisition added real diversification (Healthcare Solutions) but showed documented 2025 integration friction that management now characterizes as substantially resolved -- a self-reported claim this record cannot independently verify. Held at Medium rather than higher because: this session's own source access was weak (no primary document directly opened, several figures internally inconsistent across secondary sources); the gate's own stated concern (Q2 2026 detail and purchase valuation not yet sufficiently verified) is only partially resolved by this research -- Q2 2026 headline figures were obtainable via WebSearch but not verified against a primary filing, and this session found materially divergent purchase-valuation framings across sources (some describing WM as expensive relative to historical/peer multiples, others describing it as undervalued per a proprietary model) that were not reconciled; and PFAS/landfill-environmental-liability exposure, a real industry-wide risk given WM's scale, could not be quantified with a WM-specific figure this session. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from WM's existing gated/cash-pending-clearance status or its 0.75% canonical target -- it was reasoned solely from the disclosed operating and financial picture described above."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-05"
+  next_due: "2026-11-05"
+  log:
+    - date: "2026-08-05"
+      note: >
+        Record created under governance/decisions/PI-0038-ws0005-gated-six-company-intelligence-completion.md
+        (status: Proposed at authoring time -- not yet independently reviewed or
+        principal-accepted). First Company Intelligence coverage for WM (no
+        prior record existed). Filed as one of a six-company administrative
+        batch (SNPS, ICE, SPGI, WM, RKLB, TSLA) sharing identical
+        portfolio-governance status -- all six gated under PHQ-2026-01,
+        cash_pending_clearance, no prior Intelligence coverage -- and execution
+        efficiency only; the six companies share no genuine economic
+        mechanism and this record makes no such claim. This session's own
+        WebFetch attempts were tested and confirmed completely blocked (HTTP
+        403) on every domain attempted, including a control domain used to
+        confirm a systemic tool failure -- research rests entirely on
+        WebSearch-returned snippets/summaries of secondary sources, disclosed
+        throughout this record and in WM.md's Source-access disclosure rather
+        than smoothed over. Several figures were internally inconsistent
+        across sources and are flagged, not silently resolved.
+sources:
+  - note: "Waste Management, Inc. Q2 2026 earnings release/call (reported/discussed 2026-07-27 through 2026-07-29), covering revenue, adjusted EBITDA, free cash flow, segment detail, and revised FY2026 guidance. Identified via WebSearch snippets citing the release and call commentary; not directly fetched/opened this session (WebFetch blocked)."
+    url: null
+    date: "2026-07-29"
+  - note: "Waste Management, Inc. Q1 2026 earnings release (reported ~2026-04-29), covering revenue, adjusted EBITDA, free cash flow, core pricing, and initial FY2026 guidance. Identified via WebSearch snippets; not directly fetched/opened this session."
+    url: null
+    date: "2026-04-29"
+  - note: "Waste Management, Inc. FY2025 results (referenced via secondary aggregation, e.g. Bullfincher), covering FY2025 total revenue ($25.2B) and line-of-business revenue mix. Identified via WebSearch snippet; not independently verified against the 10-K directly, and explicitly caveated in WM.md as a line-of-business view rather than WM's formal reportable-segment structure."
+    url: null
+    date: "2026-08-05"
+  - note: "Stericycle, Inc. acquisition announcement and closing coverage (announced 2024-06-03, closed 2024-11-04) -- deal terms ($62.00/share cash, ~$7.2B enterprise value), financing (Term Credit Agreement, commercial paper, $5.2B senior notes issuance priced October 2024), and subsequent 2025 integration coverage via Waste Dive across Q2-Q4 2025 earnings cycles. Identified via WebSearch snippets citing CNBC, velaw.com, and Waste Dive; not directly fetched/opened this session."
+    url: null
+    date: "2024-11-04"
+  - note: "Secondary/aggregator and trade-press sources (Waste360, Waste Dive, industry PFAS-litigation and EPA-rulemaking coverage, GuruFocus 'GF Value' snapshots, Simply Wall St community fair-value estimates, sell-side analyst-target aggregation, Republic Services comparative figures) used for competitive-landscape, PFAS-exposure, and valuation-multiple context -- explicitly labeled secondary throughout WM.md, several figures flagged as internally inconsistent and unreconciled pending direct primary-source verification."
+    url: null
+    date: "2026-08-05"

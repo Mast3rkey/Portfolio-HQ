@@ -1,0 +1,92 @@
+sector: Industrials
+industry: Space Launch Services and Spacecraft/Satellite-Component Manufacturing
+portfolio_role_ref: gated
+competitive_advantages:
+  - "Vertically integrated launch-plus-spacecraft-manufacturing model, described in secondary commentary as unique among public new-space companies: Launch Services (Electron, operational since 2018, plus HASTE) and Space Systems (satellite components/subsystems/spacecraft manufacturing built via a series of acquisitions -- Sinclair Interplanetary 2020, Advanced Solutions 2021, Planetary Systems Corp 2021, SolAero 2022, Geost 2025, Mynaric 2026, Motiv Space Systems 2026). Q1 2026 segment revenue: Space Systems $136.7M (+57.2% YoY), Launch Services $63.7M (+78.9% YoY). [RKLB-C01]"
+  - "Demonstrated Electron operational track record: 2025 full year -- 21 launches, 100% mission success per company materials; described as the third most frequently launched orbital rocket in the world behind Falcon 9 and China's Long March family. Three confirmed launch anomalies across company history (2020, 2021, 2023), none reported since September 2023 per the sources found (though one unverified, likely erroneous secondary reference to a further 2025 failure could not be conclusively ruled out -- see uncertainty section). [RKLB-C02]"
+  - "Record revenue growth and improving unit economics: Q1 2026 revenue $200.3M (record, +63.5% YoY, beat consensus $189.68M), GAAP gross margin 38.2%, backlog >$2.2B (Space Systems now 42% of backlog vs. 26% prior quarter; government 49% of backlog vs. 35% prior quarter), total liquidity ~$2B including a $450.4M ATM raise completed during the quarter. Net loss narrowed to $45M from $60.6M a year earlier. [RKLB-C03]"
+  - "Substantial and growing national-security/government contract base: over $1.3B in Space Development Agency prime contracts (an 18-space-vehicle Tranche 2 Transport Layer Beta contract, deployments slated mid-2027); selected with Stoke Space for NSSL Phase 3 Lane 1 (ceiling raised from $5.6B to $17B, covering ~170 national-security missions through FY2029); selected with Raytheon (May 2026) for the Space-Based Interceptor/Golden Dome missile-defense demonstration program; won a $266M Space Force contract (announced July 2026, the company's largest launch contract to date) for up to 18 suborbital launches supporting missile-defense/hypersonic testing. [RKLB-C04]"
+risks:
+  - risk: "No first Neutron flight has occurred as of this record's authoring date, and the program has slipped at least twice: originally targeted earlier, pushed to 'no earlier than late 2026' by November 2025, then further disrupted by a Neutron Stage 1 tank rupture during a hydrostatic pressure trial on 2026-01-21 at the Middle River, Maryland facility, attributed by CEO Peter Beck to a manufacturing defect in a tank hand-laid by a third-party contractor. As of the May 2026 earnings call and subsequent mid-2026 updates, the company continues to state Q4 2026 as the first-flight target, with an FAA launch-permit window filed for 2026-07-01 through 2026-12-31. No single, unambiguous, RKLB-confirmed 'defined technical milestone' matching this record's gate's own next_gate language could be identified with confidence from sources available this session -- this is the single most important open verification gap for this gate's reopening condition."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "A transformative, substantially larger acquisition than any prior RKLB deal was announced 2026-06-29, likely after this gate's original drafting and not fully reflected in its text: a pending, approximately $8 billion acquisition of Iridium Communications (a licensed global satellite-network and spectrum operator with 2.5M+ subscribers), structured as $27.00 cash plus RKLB stock (within a collar) per Iridium share for combined value of $54.00/share, financed in part via a $3.6 billion bridge-loan commitment from Deutsche Bank and Wells Fargo plus additional planned debt and equity financing. Expected close mid-2027, subject to Iridium shareholder approval, antitrust/communications-regulatory clearance (a licensed spectrum operator triggers real regulatory review), and Form S-4 effectiveness. Secondary commentary explicitly notes Iridium's existing constellation is expected to support operations to ~2035 with no full replacement planned before 2030 -- meaning this deal does not provide Neutron an immediate large replacement-launch manifest, contrary to what might otherwise be assumed."
+    severity: high
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Continuing GAAP losses and active, growing dilution: RKLB has posted a net loss every year since inception through FY2025 (-$198.2M FY2025, per secondary aggregation), with Q1 2026 net loss $45M and Q2 2026 guided to a continued Adjusted EBITDA loss of $20-26M. Concurrently, a $1 billion ATM program completed in April 2026 (~$474M raised, plus collared forward transactions for further proceeds) was followed by a new $3 billion ATM program registered in May 2026; shares outstanding rose from approximately 570 million (January/May 2026) to figures in the 598-625 million range by August 2026 across various, imperfectly-dated secondary sources -- this session could not establish one single precise, well-sourced current share count. The pending Iridium deal's stock-consideration component and ongoing stock-based compensation add further prospective dilution."
+    severity: moderate
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Customer concentration is meaningful on both revenue and backlog: approximately 47% of FY2025 revenue was U.S.-government-related; the top 5 customers represented 49% of FY2025 revenue and the top 5 backlog customers represented 77% of backlog, per a secondary source describing itself as 10-K-sourced but not independently confirmed by this session's own direct filing read."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "Competitive/pricing pressure in launch: SpaceX remains dominant across launch broadly and specifically won all 18 task-order missions (worth $1.6B) in a July 2026 Space Force Space-Based Sensing and Targeting competition within the same NSSL Lane 1 program RKLB participates in, illustrating that program eligibility does not guarantee individual task-order wins. Firefly Aerospace, Relativity Space, and Stoke Space are all contesting the small/medium-lift and reusable-launch market with varying stages of readiness."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "A disclosed governance/sentiment fact concurrent with the Iridium announcement: CEO Peter Beck sold approximately $286.4 million of stock (3,275,779 shares) over 2026-07-06 through 2026-07-08 under a Rule 10b5-1 plan adopted 2026-03-27; broader insider selling over the trailing 90 days totaled approximately $896 million per one secondary aggregator, with Beck as the primary seller. Secondary commentary links the stock surrendering roughly a third of its post-announcement gain within a month to a mix of this insider selling, the Neutron delay news, Iridium-deal financing/dilution concerns, and broader sector rotation -- causal weighting across these factors is muddled in the sources found and this record does not adopt any single attribution."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+  - risk: "This Claude Code session's own primary-source access (WebFetch) was completely blocked at the network-policy layer (confirmed via proxy diagnostic showing a policy-denial CONNECT rejection) for every domain attempted, including sec.gov and Rocket Lab's own investor-relations site. No primary document was directly opened this session. Several figures were internally inconsistent across sources and are flagged in RKLB.md rather than silently resolved (total Electron mission count cited as both 84 and 91; current shares outstanding cited across four conflicting figures/dates; Stericycle-unrelated accumulated-deficit figures from a third-party aggregator that appeared internally inconsistent; an unresolved and likely-erroneous single-source reference to a possible additional 2025 Electron launch failure)."
+    severity: low
+    identified: "2026-08-05"
+    status: monitoring
+catalysts:
+  - catalyst: "Q2 2026 earnings release, scheduled Monday, 2026-08-10, after market close -- the first half of this record's gate's own stated reopening trigger ('Q2 results plus a defined Neutron technical milestone'). Company's own guidance (issued with Q1 results): revenue $225-240M, GAAP gross margin 33-35%, Adjusted EBITDA loss $20-26M."
+    expected: "2026-08-10"
+    status: pending
+  - catalyst: "Neutron first flight, targeted for Q4 2026 per the company's most recently found public statements -- watch for CEO Peter Beck's own named near-term indicator ('placing of items on test stands'), further stage/engine qualification milestones, a wet-dress rehearsal, and the FAA-permitted launch window (filed for 2026-07-01 through 2026-12-31)."
+    expected: "2026-12-31"
+    status: pending
+  - catalyst: "This record's own next scheduled review checkpoint, at which the August 10, 2026 Q2 results, any further Neutron milestone disclosure, and Iridium-deal regulatory/shareholder-approval progress will next be actively re-checked."
+    expected: "2026-11-05"
+    status: pending
+conviction:
+  rating: Medium
+  rationale: "PROPOSED rating, presented for independent exact-head review and principal acceptance -- AI-assisted research and drafting do not itself constitute approval (see review.log below). Rocket Lab shows genuine, evidenced operational strength -- a demonstrated Electron reliability track record (21-for-21 in 2025), record and accelerating revenue with improving gross margins, a substantial and diversifying national-security contract base, and a real vertically integrated launch-plus-spacecraft-manufacturing model. Held at Medium rather than higher because this record's own research independently confirms every concern the gate names remains live, and surfaces one the gate's static text likely does not yet fully reflect: Neutron has not yet flown and has slipped at least twice, with no single confirmed 'defined technical milestone' identifiable as satisfying the gate's own reopening condition; the company remains GAAP-loss-making with active, growing dilution across two large 2026 ATM programs; and the newly announced, approximately $8 billion Iridium acquisition (financed via a new $3.6 billion bridge loan, not closing until mid-2027, requiring shareholder and antitrust/spectrum-regulatory approval) is a substantially larger and more complex integration question than whatever the gate's drafters likely had in mind when citing 'acquisition integration' -- a material fact any future gate reassessment should weigh explicitly, not treat as a footnote. This rating excludes valuation, entry-price, allocation, trading, and margin/safe-leverage judgments, and was not inferred from RKLB's existing gated/cash-pending-clearance status or its 0.50% canonical target -- it was reasoned solely from the disclosed operating and financial picture, which independently supports the same 'material progress, but real milestone risk' conclusion the gate itself already recorded, while surfacing the Iridium deal as a materially updated fact the gate's original text may not yet capture."
+review:
+  cadence_days: 90
+  last_reviewed: "2026-08-05"
+  next_due: "2026-11-05"
+  log:
+    - date: "2026-08-05"
+      note: >
+        Record created under governance/decisions/PI-0038-ws0005-gated-six-company-intelligence-completion.md
+        (status: Proposed at authoring time -- not yet independently reviewed or
+        principal-accepted). First Company Intelligence coverage for RKLB (no
+        prior record existed). Filed as one of a six-company administrative
+        batch (SNPS, ICE, SPGI, WM, RKLB, TSLA) sharing identical
+        portfolio-governance status -- all six gated under PHQ-2026-01,
+        cash_pending_clearance, no prior Intelligence coverage -- and execution
+        efficiency only; the six companies share no genuine economic
+        mechanism and this record makes no such claim. This session's own
+        WebFetch attempts were confirmed blocked at the network-policy layer
+        (proxy diagnostic showed a policy-denial CONNECT rejection) on every
+        domain attempted -- research rests entirely on WebSearch-returned
+        snippets/summaries of secondary sources, disclosed throughout this
+        record and in RKLB.md's Source-access disclosure rather than smoothed
+        over. Several figures were internally inconsistent across sources and
+        are flagged, not silently resolved. This record also surfaces the
+        2026-06-29 announced Iridium acquisition as a materially significant
+        fact likely postdating or not fully reflected in this gate's original
+        drafting -- flagged explicitly for any future gate reassessment.
+sources:
+  - note: "Rocket Lab USA, Inc. Q1 2026 earnings release (reported 2026-05-07), covering revenue, segment detail, GAAP gross margin, backlog, liquidity, net loss, and Q2 2026 guidance. Identified via WebSearch snippets citing Investing.com/StockTitan/mlq.ai aggregation of the underlying 8-K exhibit; the specific SEC URL could not be directly fetched (403) this session."
+    url: null
+    date: "2026-05-07"
+  - note: "Rocket Lab USA, Inc. FY2025 full-year results (reported 2026-02-26), covering FY2025 revenue ($602M record, +38% YoY), Q4 2025 revenue, and FY2025 backlog. Identified via WebSearch snippets citing a GlobeNewswire/investor-relations headline; not directly fetched/opened this session."
+    url: null
+    date: "2026-02-26"
+  - note: "Iridium Communications Inc. definitive merger agreement announcement (2026-06-29) -- deal terms, financing structure (Deutsche Bank/Wells Fargo bridge-loan commitment), expected close, and market reaction. Identified via WebSearch snippets citing CNBC, SpaceNews, GovConWire, Yahoo Finance, and Motley Fool coverage; not directly fetched/opened this session (WebFetch blocked)."
+    url: null
+    date: "2026-06-29"
+  - note: "Neutron program status updates -- the 2026-01-21 Stage 1 tank rupture, subsequent progress described on the May 2026 earnings call, Launch Complex 3 (Wallops Island) operational status, and the FAA launch-permit filing window. Identified via WebSearch snippets citing SpaceNews, Spaceflight Now, The Register, and Space.com; not directly fetched/opened this session."
+    url: null
+    date: "2026-08-05"
+  - note: "Secondary/aggregator sources (Macrotrends historical financial aggregation, TechCrunch/SpaceNews acquisition-history coverage for Sinclair Interplanetary/Advanced Solutions/Planetary Systems Corp/SolAero/Geost/Mynaric/Motiv Space Systems, NSSL Phase 3 Lane 1 and Golden Dome program coverage) used for acquisition-history, competitive-landscape, and historical financial-trend context -- explicitly labeled secondary throughout RKLB.md, several figures (share count, mission count, accumulated deficit) flagged as internally inconsistent and unreconciled pending direct primary-source verification."
+    url: null
+    date: "2026-08-05"
