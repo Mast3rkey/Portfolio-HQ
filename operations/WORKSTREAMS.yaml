@@ -1946,6 +1946,38 @@ workstreams:
           (33 -> 34, unchanged file count, arithmetic only). Full suite
           2684/2684 at the corrected head; see CLAUDE.md for full detail.
           Requires its own fresh independent exact-head review.
+
+          **Second bounded correction (same day, this PR, review
+          `4868016198`):** confirmed the first correction's fixes hold
+          (bare-"gate" leakage clean corpus-wide, 53/53; corrected
+          distribution reproduced) and found zero findings against the
+          sealed classification records themselves — 3 new MAJOR + 2 new
+          MINOR, no BLOCKING, none touching the drafting shards/sanitized
+          packages/judgments/hashes/manifest. Closed
+          `classification_validator.py`'s axis schemas (was a denylist,
+          not closed — score/weight/recommendation-shaped keys and
+          forbidden content inside `risk_concentration.notes`/
+          `economic_role.role_basis`/`evidence_quality.thesis_uncertainty_
+          statement` all validated cleanly) with explicit permitted-key
+          sets per axis plus top-level/manifest-row/manifest-top-level
+          closure, and a shared free-text content scan across every axis
+          (v1.1). Restored genuine mechanism separation in
+          `intelligence_classification_sanitizer.py` (v1.2) — the strip-
+          decision functions no longer call `independent_policy_scan()`,
+          which they had been doing, making the later "independent"
+          verify re-check confirmatory rather than independent for
+          paragraph/item content; verified via AST-level structural tests,
+          zero regressions against the real 27-ticker corpus. Corrected
+          the stale full-suite count (2709 passed / 0 failed with
+          `yfinance` installed in this environment; 2703 without — same
+          pre-existing 6-test `test_earnings.py` gap; 128 sanitizer+
+          validator tests, up from 109). Disclosed but did not correct a
+          genuinely widespread but purely stylistic recurring closing-
+          sentence pattern in `capital_priority` rationales (underlying
+          facts remain distinct per ticker) — sealed content unchanged.
+          Zero diff on any `intelligence/classification/*.yaml` file or
+          `COHORT_MANIFEST.yaml`. See CLAUDE.md for full detail. Requires
+          its own fresh independent exact-head review.
         pr: null
         status: in_progress
         date: "2026-08-05"
