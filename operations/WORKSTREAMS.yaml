@@ -2647,8 +2647,22 @@ workstreams:
           merged — this entry does not itself constitute that review or acceptance, and the
           `status: complete` transition takes effect only on this PR's own merge and post-merge
           verification, per OPS-0006 §16.1.
-        pr: null
-        status: in_progress
+
+          **Synchronized by `TIER-0005` (2026-08-05, `OPS-0009` Lane M):** `TIER-0004` (PR #251)
+          independently re-confirmed merged via the GitHub API at merge commit
+          `d42988f2dae167c484d0b8a07bdb3ac2676a975c` (parents `ecd1e89d1278432874dab0d5440a9a8eecbc57d1`,
+          `87891c9b720c14d7a37521136fe4d4248a155445`), three independent review rounds (`4865967653`
+          CHANGES REQUIRED, `4866171285` delta CHANGES REQUIRED, `4866305616` delta **DELTA APPROVED —
+          APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE**, 0/0/0/0 at exact head
+          `87891c9b720c14d7a37521136fe4d4248a155445`), principal acceptance `issuecomment-5194141626`
+          (exact head `87891c9b720c14d7a37521136fe4d4248a155445`, bound to review `4866305616` and
+          exact-head CI run `31022188426`), post-merge verification `issuecomment-5194217647`
+          (merge-tree identity confirmed byte-identical, exact 6-file scope, 78 decisions/
+          `issues == ()`, 2581/2581 full suite), and merge-commit CI run `31023085469`
+          (`completed`/`success`) — matching this gate's own stated completion condition. `status`
+          transitions `in_progress` -> `complete`.
+        pr: 251
+        status: complete
         date: "2026-08-05"
       - gate: milestone6-prereq6-fresh-authorization-required
         description: >
@@ -2665,8 +2679,23 @@ workstreams:
           classification_validator.py drafts from the prior, separate, idle
           Milestone 6 session (left untouched, per explicit principal
           instruction).
-        pr: null
-        status: blocked
+
+          **`TIER-0005` filed 2026-08-05 — not yet merged, not yet independently reviewed, not yet
+          effective.** Explicitly principal-authorized ("I authorize one Step 6 filing"). Authorizes
+          exactly one future, separate, bounded Milestone 6 implementation PR covering all 27
+          canonical equities, bound by reference (not restatement) to `TIER-0004`'s already-accepted
+          population/redaction/sequencing/sealing/abstention/validator/shard specification —
+          classifies no ticker itself, implements no Milestone 6 output itself. The
+          `milestone-6-blind-classification` gate below is deliberately left `status: proposed` and
+          non-executable by this filing — it remains gated on this filing's own merge and a later,
+          separate post-merge synchronization, matching the discipline `TIER-0004` applied to this
+          very gate. This governance PR itself must remain draft, gain its own independent exact-head
+          review, complete any required bounded correction and re-review, and receive explicit
+          principal acceptance before it may be marked ready or merged — this entry does not itself
+          constitute that review or acceptance, and the `status: complete` transition takes effect
+          only on this PR's own merge and post-merge verification, per OPS-0006 §16.1.
+        pr: 252
+        status: in_progress
         date: "2026-08-05"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
@@ -4563,9 +4592,9 @@ workstreams:
       ticker classification, any sanitized evidence package, or any validator implementation — Step 6
       (`milestone6-prereq6-fresh-authorization-required`) remains its own separate, later, explicit
       authorization requirement, left exactly as merged (`status: blocked`, unedited) by this filing.
-    active_branch: claude/m6-population-blindness-preflight-ugoeoe
-    active_pr: null
-    last_verified_main_sha: ecd1e89d1278432874dab0d5440a9a8eecbc57d1
+    active_branch: claude/m6-step6-fresh-authorization-0kiq9m
+    active_pr: 252
+    last_verified_main_sha: d42988f2dae167c484d0b8a07bdb3ac2676a975c
     last_verified_date: "2026-08-05"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
