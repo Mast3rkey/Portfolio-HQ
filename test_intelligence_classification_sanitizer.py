@@ -438,40 +438,127 @@ def test_catalysts_item_level_redaction():
     assert "catalysts[0].catalyst" in removed
 
 
-def test_bare_conviction_caught_by_independent_verifier_even_when_strip_misses_it():
-    """Strip layer's own patterns are phrase-qualified (e.g. 'conviction
-    rating') and do not catch every construction (e.g. 'conviction
-    rationale', 'weighted in ... conviction'); the independent verifier's
-    bare `conviction` check must still catch it -- this is the actual
-    proof the two layers use different mechanisms, not the same list
-    twice."""
-    text = "was not weighted in this record's conviction rationale above"
+# ── v1.2 bounded correction (review 4868016198): the strip-decision
+# functions (_paragraph_is_forbidden / _item_text_is_forbidden) must not
+# call independent_policy_scan() -- doing so was v1.1's own defect (the
+# later "independent" verify call was re-running a check the text had
+# already passed once, for paragraph/item content). The three tests below
+# replace the three v1.1 tests that asserted the *opposite* architecture
+# (that bare `conviction` was deliberately absent from the strip list and
+# caught only by the shared independent_policy_scan() call inside the
+# strip decision itself) -- that assumption is what v1.2 corrects.
+
+def _called_function_names(fn) -> set[str]:
+    """AST-level extraction of every function/attribute name actually
+    *called* inside `fn`'s body -- deliberately not a substring search over
+    `inspect.getsource()`, which would false-positive on a docstring or
+    comment merely mentioning a function's name in prose (as this module's
+    own v1.2 docstrings now do, by design, to explain the correction)."""
+    import ast
+    import inspect
+    import textwrap
+
+    src = textwrap.dedent(inspect.getsource(fn))
+    tree = ast.parse(src)
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            target = node.func
+            if isinstance(target, ast.Name):
+                names.add(target.id)
+            elif isinstance(target, ast.Attribute):
+                names.add(target.attr)
+    return names
+
+
+def test_strip_decision_helpers_never_call_independent_policy_scan():
+    """AST-level proof (not a docstring/comment substring check -- this
+    module's own v1.2 docstrings mention `independent_policy_scan()` by
+    name in prose to explain the correction, which would false-positive a
+    naive text search) that the transformation-layer decision functions do
+    not actually *invoke* the verify-designated function -- the literal
+    defect review 4868016198 found in v1.1."""
+    for fn in (sanitizer._paragraph_is_forbidden, sanitizer._item_text_is_forbidden):
+        called = _called_function_names(fn)
+        assert "independent_policy_scan" not in called, (
+            f"{fn.__name__} actually calls independent_policy_scan() -- that call belongs "
+            f"exclusively to the verify layer (verify_markdown_redaction/complete_package_scan). "
+            f"Functions actually called: {sorted(called)}"
+        )
+
+
+def test_verify_functions_never_delegate_to_strip_decision_helpers():
+    """AST-level proof of the other direction -- the verify layer must not
+    decide cleanliness by actually *calling* the strip-stage paragraph/item
+    decision helper either (would reintroduce the same tautology from the
+    other side)."""
+    for fn in (sanitizer.verify_markdown_redaction, sanitizer.complete_package_scan,
+               sanitizer.independent_policy_scan):
+        called = _called_function_names(fn)
+        assert "_paragraph_is_forbidden" not in called
+        assert "_item_text_is_forbidden" not in called
+
+
+def test_phrase_omitted_from_strip_detector_still_caught_by_verifier():
+    """The percent-of-book numeric pattern is deliberately present only in
+    _INDEPENDENT_VERIFY_PATTERNS, not _MD_STRIP_PATTERNS (no real corpus
+    content needs it stripped -- verified empirically against all 27 live
+    classification records). This is the concrete proof the two layers
+    diverge: a phrase the strip layer's own list does not enumerate is
+    still caught when the verifier walks the final assembled text."""
+    text = "a case could be made for roughly 4.5% of book given current momentum"
     assert not sanitizer._paragraph_matches_any(text, sanitizer._MD_STRIP_PATTERNS), (
-        "test invalid if the strip layer's own phrase-qualified patterns already catch this -- "
-        "the point is that they do NOT, and the independent verifier does"
+        "test invalid if the strip layer's own patterns already catch this -- the point is "
+        "that they do NOT, and the independent verifier does"
     )
+    assert not sanitizer._contains_gate_policy_leak(text)
     assert sanitizer.independent_policy_scan(text)
 
 
 def test_independent_verifier_pattern_set_differs_from_strip_pattern_set():
     """Structural proof the two layers are not the same check reused
-    twice -- their pattern sources must differ."""
+    twice -- their pattern sources must differ, and at least one concept
+    must be verify-only (not merely a superset/subset relationship that
+    happens to coincide everywhere by accident)."""
     strip_patterns = {p.pattern for p in sanitizer._MD_STRIP_PATTERNS}
     verify_patterns = {p.pattern for p in sanitizer._INDEPENDENT_VERIFY_PATTERNS}
     assert strip_patterns != verify_patterns
-    # the independent verifier's bare `conviction` check is strictly
-    # broader than anything in the strip list (which never uses a bare,
-    # unqualified `conviction` pattern).
-    assert r"\bconviction\b" in verify_patterns
-    assert r"\bconviction\b" not in strip_patterns
+    percent_of_book = r"\d+(?:\.\d+)?\s*%\s*(?:of\s+book|target|weight|allocation)"
+    assert percent_of_book in verify_patterns
+    assert percent_of_book not in strip_patterns
 
 
 def test_complete_package_scan_is_not_tautological():
     """Direct regression for the review's stated root cause: a leak that
     survives the strip pass must still be catchable by
-    complete_package_scan() because it uses a different mechanism -- not
-    provable in general, but demonstrated concretely via the bare-
-    conviction case, which strip's own patterns do not enumerate."""
+    complete_package_scan() because it uses a different mechanism --
+    demonstrated concretely via the percent-of-book case, which strip's
+    own patterns deliberately do not enumerate and which item-level
+    redaction therefore does NOT strip in place (unlike bare `conviction`,
+    which v1.2 folded into the strip layer directly for real-corpus
+    correctness -- see test_bare_conviction_now_stripped_at_item_level)."""
+    data = _synthetic_company_yaml()
+    del data["portfolio_role_ref"]
+    del data["conviction"]
+    data["risks"] = [{
+        "risk": "A case could be made for roughly 4.5% of book given current momentum.",
+        "severity": "low", "identified": "2026-01-01", "status": "monitoring",
+    }]
+    pkg, findings = sanitizer.build_sanitized_package("ZZZZ", data, "Clean markdown, no markers.")
+    # item-level strip (patterns + gate-policy leak only, no independent_policy_scan)
+    # does NOT touch this -- it survives to the assembled package...
+    assert pkg.yaml_data["risks"][0]["risk"] != sanitizer._ITEM_REDACTION_PLACEHOLDER
+    # ...and is caught only there, by the independent verify layer, blocking release.
+    assert findings != []
+    assert any("independent-verify" in f or "complete-package" in f for f in findings)
+
+
+def test_bare_conviction_now_stripped_at_item_level_by_strip_layer_directly():
+    """v1.2: bare `conviction` was folded into _MD_STRIP_PATTERNS itself
+    (a transformation-layer improvement, not a delegation to the verify
+    function) so that real corpus content needing it redacted (the ETN
+    case from review 4867365726/4868016198) is still actively fixed in
+    place, not merely fail-closed at the package level."""
     data = _synthetic_company_yaml()
     del data["portfolio_role_ref"]
     del data["conviction"]
@@ -480,8 +567,12 @@ def test_complete_package_scan_is_not_tautological():
         "severity": "low", "identified": "2026-01-01", "status": "monitoring",
     }]
     pkg, findings = sanitizer.build_sanitized_package("ZZZZ", data, "Clean markdown, no markers.")
-    # the item-level pass (which now also runs independent_policy_scan)
-    # strips this in place -- proving the fix reaches item-level content,
-    # not merely the final gate.
     assert pkg.yaml_data["risks"][0]["risk"] == sanitizer._ITEM_REDACTION_PLACEHOLDER
     assert findings == []
+    # and confirm this was via the strip-layer pattern list directly, not
+    # a fallback to independent_policy_scan -- the pattern is in both,
+    # but item-level decision must not need the verify function to catch it.
+    assert sanitizer._paragraph_matches_any(
+        "A fact not weighted in this record's conviction rationale.",
+        sanitizer._MD_STRIP_PATTERNS,
+    )

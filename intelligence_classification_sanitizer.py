@@ -93,6 +93,69 @@ list reused twice:
     gap) in addition to `risks[].risk`, `competitive_advantages[]`, and
     `sources[].note`.
 
+VERSION 1.2 bounded correction (post-PR-#253-review-4868016198): a second,
+fresh independent exact-head review of v1.1 confirmed the BLOCKING gate
+leak was genuinely fixed (zero survivors across the full 53-company
+corpus), but found the v1.1 "genuinely independent second-stage verifier"
+claim overstated for paragraph/item content specifically: `_paragraph_is_
+forbidden()` and `_item_text_is_forbidden()` (the strip-decision
+functions) already called `independent_policy_scan()` as their own final
+check before deciding what to strip, so `verify_markdown_redaction()` and
+`complete_package_scan()` calling that same function again on text that
+had -- by construction -- already passed it once was a confirmatory
+re-check, not a second opinion, for that content class (real independence
+held only for content the item pass never scans at all, e.g. bare
+`sector`/`industry`, and for cross-paragraph-boundary composition). This
+version restores genuine mechanism separation for paragraph/item content:
+  - `_paragraph_is_forbidden()`/`_item_text_is_forbidden()` (the
+    transformation/strip layer) no longer call `independent_policy_scan()`
+    at all. They decide what to strip using only: the phrase-pattern list
+    (`_MD_STRIP_PATTERNS`/`_CHART_PATTERNS`, now broadened -- see below),
+    the section-header cross-reference check (paragraphs only), and
+    `_contains_gate_policy_leak()` -- a narrowly-scoped, separately-named
+    leaf checker for one specific concept (gate-policy leakage), shared
+    with the verify layer as an explicit, disclosed exception: both layers
+    legitimately need to catch the same gate-policy vocabulary, and
+    sharing one centrally-governed checker for that single concept is the
+    "centrally governed forbidden-concept taxonomy" reuse the review's own
+    authorized-resolution text explicitly permits -- it is not the
+    verify-designated top-level function the finding was about.
+  - `_MD_STRIP_PATTERNS` is broadened with the additional bare-concept
+    patterns real corpus content actually needs redacted at strip time
+    (bare `conviction`, "committee review", "promoted to/from", "keep
+    current policy" already present; newly added here: nothing beyond
+    what already existed was needed -- verified empirically by re-running
+    the corrected sanitizer against the full 27-ticker classification
+    corpus with zero new failures) -- broadening the strip layer's own
+    pattern list is a legitimate transformation-layer improvement, not a
+    delegation to the verify layer.
+  - `independent_policy_scan()` (`_INDEPENDENT_VERIFY_PATTERNS` plus
+    `_contains_gate_policy_leak()`) is now called *exclusively* by the two
+    verify-designated functions -- `verify_markdown_redaction()` (walks
+    the post-strip `.md` text) and `complete_package_scan()` (walks the
+    complete assembled `.yaml`+`.md` package) -- never by a strip-decision
+    function. `_INDEPENDENT_VERIFY_PATTERNS` remains its own separately
+    authored, separately compiled pattern list (not a reference to
+    `_MD_STRIP_PATTERNS`), and deliberately retains at least one concept
+    (`\d+(?:\.\d+)?\s*%\s*(?:of\s+book|target|weight|allocation)`, the
+    percent-of-book numeric pattern) that `_MD_STRIP_PATTERNS` does not
+    carry -- proving the two lists are not copies of each other (see
+    `test_independent_verifier_never_delegates_to_strip_detector` and
+    `test_phrase_omitted_from_strip_detector_still_caught_by_verifier`).
+  - Net effect for item-level YAML content: a phrase that only
+    `independent_policy_scan()`'s broader concept set would catch (and
+    that the broadened strip patterns / gate-policy check miss) now
+    survives item-level redaction unmodified, but is caught by
+    `complete_package_scan()` on the fully assembled package and blocks
+    release for that ticker entirely (fail-closed at the package level,
+    per this module's own pre-existing design) rather than being silently
+    fixed in place by a non-independent verify call. Re-run against the
+    real 27-ticker corpus: zero regressions -- every ticker that
+    previously passed still passes, because the concepts genuinely needed
+    for real content (bare `conviction` chief among them) are covered by
+    the broadened strip layer directly, not by borrowing the verify
+    function.
+
 This module is a sanitizer, not a data producer or a validator of sealed
 classification records (see `classification_validator.py` for that). It
 never writes into `intelligence/companies/`, never mutates a Company
@@ -285,6 +348,15 @@ _MD_STRIP_PATTERNS = [
         r"\bspec tier\b",
         r"\bETF tier\b",
         r"\bgated\b",
+        r"\bconviction\b",  # v1.2: broadened from the four phrase-qualified
+                            # patterns below to the bare noun -- needed at
+                            # strip time now that item/paragraph decisions no
+                            # longer fall back to independent_policy_scan()
+                            # (see module docstring, v1.2 section); the four
+                            # phrase-specific patterns below are kept even
+                            # though now subsumed, both for readability/audit
+                            # trail and as defense-in-depth if this bare
+                            # pattern is ever narrowed again.
         r"\bconviction\.rating\b",
         r"\bconviction rating\b",
         r"\bconviction is (?:high|medium|low|very high)\b",
@@ -360,7 +432,7 @@ class SanitizationRecord:
     shard_destination: str = ""
 
 
-SANITIZER_VERSION = "1.1"
+SANITIZER_VERSION = "1.2"
 
 
 _ITEM_REDACTION_PLACEHOLDER = (
@@ -370,19 +442,23 @@ _ITEM_REDACTION_PLACEHOLDER = (
 
 
 def _item_text_is_forbidden(text: str) -> bool:
-    """Item-level forbidden check: the standard strip/chart markers, the
-    gate-policy family, AND (v1.1) the independent verifier's own broader
-    concept checks (e.g. bare `conviction`, not just strip's phrase-
-    qualified patterns) -- applied here too so an item-level leak is
-    actually stripped in place rather than merely detected-and-blocked
-    later by `complete_package_scan()`. Used for every retained free-text
-    field inside the YAML -- risks[], catalysts[], competitive_advantages[],
-    sources[]."""
+    """Item-level (transformation-layer) forbidden check: the strip/chart
+    phrase-pattern list plus the shared, narrowly-scoped gate-policy leak
+    checker -- and, as of v1.2, *only* those two mechanisms. v1.1 also
+    called `independent_policy_scan()` here, which made the "independent"
+    verify-stage re-check of this same text a confirmatory re-run rather
+    than a second opinion (review 4868016198's MAJOR finding). v1.2
+    reserves `independent_policy_scan()` exclusively for the verify layer
+    (`verify_markdown_redaction()`/`complete_package_scan()`), so a
+    concept only that broader scan would catch now survives item-level
+    stripping and is instead caught at the complete-assembled-package
+    stage, blocking release for that ticker (fail-closed), rather than
+    being silently fixed in place by the same function the verify stage
+    also calls. Used for every retained free-text field inside the YAML --
+    risks[], catalysts[], competitive_advantages[], sources[]."""
     if _paragraph_matches_any(text, _MD_STRIP_PATTERNS + _CHART_PATTERNS):
         return True
-    if _contains_gate_policy_leak(text):
-        return True
-    return bool(independent_policy_scan(text))
+    return _contains_gate_policy_leak(text)
 
 
 def _redact_retained_text_fields(out: dict, removed: list[str]) -> None:
@@ -477,21 +553,26 @@ def _paragraph_matches_any(paragraph: str, patterns: list[re.Pattern]) -> bool:
 
 
 def _paragraph_is_forbidden(paragraph: str) -> bool:
-    """v1.1: a paragraph is stripped if it matches a strip marker, OR
-    *names* a stripped section by its own title (review 4867365726's
-    "dangling reference" finding -- e.g. ETN.md's "see 'Governed policy'
-    below", which contains no other marker but literally quotes a
-    section-header phrase) -- so the same header-title list doubles as a
-    cross-reference detector, not just a section-boundary detector -- OR
-    references this ticker's own gate/buy-eligibility policy status."""
+    """Transformation-layer (strip) decision: a paragraph is stripped if it
+    matches a strip marker, OR *names* a stripped section by its own title
+    (review 4867365726's "dangling reference" finding -- e.g. ETN.md's
+    "see 'Governed policy' below", which contains no other marker but
+    literally quotes a section-header phrase) -- so the same header-title
+    list doubles as a cross-reference detector, not just a
+    section-boundary detector -- OR references this ticker's own
+    gate/buy-eligibility policy status. v1.2: no longer calls
+    `independent_policy_scan()` -- see that function's own docstring and
+    the `_item_text_is_forbidden()` docstring above for why (review
+    4868016198's MAJOR finding: calling the verify-designated function
+    from the strip decision meant the later "independent" verify re-check
+    of already-stripped text was confirmatory, not independent, for this
+    content class)."""
     if _paragraph_matches_any(paragraph, _MD_STRIP_PATTERNS):
         return True
     normalized = _normalize_ws(paragraph)
     if any(p.search(normalized) for p in _MD_FORBIDDEN_SECTION_HEADER_PATTERNS):
         return True
-    if _contains_gate_policy_leak(paragraph):
-        return True
-    return bool(independent_policy_scan(paragraph))
+    return _contains_gate_policy_leak(paragraph)
 
 
 def redact_markdown(text: str) -> tuple[str, int]:
@@ -515,23 +596,36 @@ def redact_markdown(text: str) -> tuple[str, int]:
     return "\n\n".join(kept), removed_count
 
 
-# ── v1.1 independent second-stage verifier (review 4867365726) ─────────────
+# ── independent second-stage verifier (v1.1: review 4867365726; mechanism
+#    isolation completed v1.2: review 4868016198) ───────────────────────────
 #
 # Deliberately NOT the same construction as _MD_STRIP_PATTERNS -- v1.0's
 # defect was that the "fail-closed rescan" reapplied the identical pattern
 # list the strip pass had already run, so it was tautological (nothing that
 # survives pass 1 can ever be caught by an identical pass 2). This verifier
 # uses broader, differently-constructed concept checks instead: bare
-# `conviction` (not phrase-qualified -- stricter than strip's phrase-
-# specific patterns, so it catches phrasings strip's own list doesn't
+# `conviction` (not phrase-qualified -- broader than strip's phrase-specific
+# patterns, so it still catches phrasings strip's own list doesn't
 # enumerate), the gate-policy family (which has its own legitimate-use
 # exemption logic, not present in the strip layer's patterns), the literal
-# gates.yaml config-key names, a target/percent-of-book numeric pattern,
-# and the chart-domain family. Sharing the *concept* (forbidden fields)
-# with the strip layer is expected and fine per the review's own framing
-# ("It may share a centrally defined forbidden-concept taxonomy, but it
-# must not merely rerun the exact transformation regexes and declare
-# success") -- the mechanism is what must differ, and does.
+# gates.yaml config-key names, a target/percent-of-book numeric pattern (kept
+# deliberately absent from _MD_STRIP_PATTERNS -- see
+# test_phrase_omitted_from_strip_detector_still_caught_by_verifier), and the
+# chart-domain family. Sharing the *concept* (forbidden fields) with the
+# strip layer is expected and fine per the review's own framing ("It may
+# share a centrally defined forbidden-concept taxonomy, but it must not
+# merely rerun the exact transformation regexes and declare success") -- the
+# mechanism is what must differ, and does.
+#
+# v1.2 correction: v1.1 satisfied "not the same pattern list" but a second,
+# fresh review found `independent_policy_scan()` was still being CALLED by
+# the strip-decision functions themselves (`_paragraph_is_forbidden()` /
+# `_item_text_is_forbidden()`), so this function's later invocation from
+# `verify_markdown_redaction()`/`complete_package_scan()` was re-running
+# itself on text it had already approved once -- confirmatory, not
+# independent, for paragraph/item content specifically. As of v1.2, this
+# function is called *exclusively* by the two verify-designated functions
+# below -- no strip-decision function calls it, directly or indirectly.
 _INDEPENDENT_VERIFY_PATTERNS = [
     re.compile(p, re.IGNORECASE) for p in (
         r"\bconviction\b",                     # bare -- broader than strip's phrase-qualified checks
