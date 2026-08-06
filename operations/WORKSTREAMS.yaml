@@ -2997,11 +2997,29 @@ workstreams:
           may be marked ready or merged — this entry does not itself
           constitute that review or acceptance, and does not itself
           authorize the future Milestone 7 implementation unit to begin,
-          which remains gated on this PR's own merge per §N of the decision
+          which remains gated on this PR's own merge per §L of the decision
           file. Neither this filing nor TIER-0006's merge authorizes
           Milestone 8, Milestone 9, or any tier/target/role/gate/holdings/
           cap/cluster/allocator/margin/ladder/chart/order/trade change.
-        pr: null
+
+          **Bounded correction (same day, this PR, review 4869718735).**
+          Independent exact-head review of PR #255 (anchored to head
+          eac680ef8ba3e11592181b6e7063b7d90566e6f0) returned CHANGES
+          REQUIRED — 0 BLOCKING / 2 MAJOR / 1 MINOR. The two MAJOR findings
+          (no deterministic precedence among simultaneously-qualifying
+          disposition conditions; the gate text's "target-vs-evidence-
+          supported range" phrase left unoperationalized against the sealed
+          evidence's actual categorical-only shape) are resolved in the
+          decision file itself — see its own "Correction history" section
+          and revised §G/§H. The MINOR finding is resolved directly here:
+          this gate's own pr field, left null by the prior bounded
+          follow-up commit that set only WS-0005's top-level active_pr,
+          now reads pr: 255, matching the TIER-0003/TIER-0005 precedent of
+          recording the real PR number on the self-tracking gate itself,
+          not only on the top-level self-reference field. status remains
+          in_progress — this filing's own governance PR is still unmerged,
+          and this correction does not mark it complete.
+        pr: 255
         status: in_progress
         date: "2026-08-05"
     evidence_refs:
