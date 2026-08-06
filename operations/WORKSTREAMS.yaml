@@ -7564,12 +7564,42 @@ workstreams:
         pr: null
         status: recorded
         date: "2026-08-04"
+      - gate: xasset0001-cross-asset-dependency-cross-reference-recorded
+        description: >
+          CONTENDER-0001 (universal contender-universe principle) and
+          XASSET-0001 (cross-asset whole-portfolio allocation architecture)
+          filed together in one governance PR. Together they record that
+          WS-0005's own Milestones 5-7 are equity-only (the 27 sealed
+          canonical-equity classifications are Portfolio-HQ's first
+          completed blind-classification cohort, not the exhaustive
+          contender universe or a sufficient basis for a final
+          whole-portfolio target), and that a new, separate, dedicated
+          workstream (WS-0014, status: proposed, priority: secondary,
+          non-executing) is required to own future contender normalization,
+          asset-appropriate ETF/crypto blind-classification framework design
+          and execution, cash/reserve/GLD/debt functional doctrine,
+          cross-asset overlap and concentration modeling, and sleeve- and
+          instrument-level cross-asset synthesis, before any final
+          controlling whole-portfolio target policy may be adopted. This
+          entry records WS-0014 as a required future dependency of this
+          workstream's own final-allocation-readiness objective, alongside
+          the existing WS-0005/WS-0012 dependencies below — additive only.
+          No change to this workstream's own status, priority,
+          authorized_scope, prohibited_scope, or completion_criteria; does
+          not accelerate, begin, or authorize any of the fifteen roadmap
+          steps above, and does not itself perform any contender-universe or
+          cross-asset work.
+        pr: null
+        status: recorded
+        date: "2026-08-06"
     evidence_refs:
       - governance/decisions/OPS-0014-routine-operational-sync.md
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md
       - governance/decisions/OPS-0015-personal-first-unified-app-roadmap.md
       - governance/decisions/OPS-0016-eureka-identity-mobile-cloud-architecture-roadmap.md
+      - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
+      - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
     next_action: >
       None authorized. The next concrete step toward this workstream's
       eventual purpose is whatever WS-0005's own next authorized unit is
@@ -7623,14 +7653,138 @@ workstreams:
       separate, explicit principal authorization — none is authorized to
       begin by this entry. No blocker exists on recording this roadmap
       itself.
-    active_branch: claude/eureka-architecture-reconciliation-93det0
-    active_pr: 236
-    last_verified_main_sha: 2a934549f5d6383e795cfd312dc2b443dc347c63
-    last_verified_date: "2026-08-04"
+
+      **On this filing's own CONTENDER-0001/XASSET-0001 self-reference**:
+      none — its own independent exact-head review and explicit principal
+      acceptance are pending, same as any other governance filing.
+    active_branch: claude/cross-asset-contender-architecture-trqpks
+    active_pr: 256
+    last_verified_main_sha: f71ea3bb1428445023c4fa582ed953ae409ba070
+    last_verified_date: "2026-08-06"
     authorized_by: >
-      OPS-0014 (this same governance filing) — recording authority only,
-      per the controlling principal's explicit authorization to record a
-      dependency-ordered final-allocation-readiness roadmap. No research,
-      policy, or execution authority is granted.
+      OPS-0014 (this workstream's original 2026-08-03 recording authority,
+      unchanged) plus, for this entry's additive
+      xasset0001-cross-asset-dependency-cross-reference-recorded gate only,
+      the controlling principal's explicit authorization to file
+      CONTENDER-0001 and XASSET-0001 and to record their WS-0014 dependency
+      here. Neither grants this workstream any research, policy, or
+      execution authority — authorized_scope remains "none — durable
+      planning intent only," unchanged.
+    supersedes: null
+    superseded_by: null
+
+  - id: WS-0014
+    title: Contender Normalization and Cross-Asset Synthesis
+    objective: >
+      Own future contender-universe normalization and cross-asset
+      allocation-architecture execution, per CONTENDER-0001 (the universal
+      contender-universe principle) and XASSET-0001 (the cross-asset
+      whole-portfolio allocation architecture): (1) contender normalization;
+      (2) research-readiness screening; (3) additional-equity
+      blind-classification cohorts, using the existing TIER-0002 equity
+      framework; (4) ETF framework design; (5) ETF blind classification;
+      (6) crypto framework design; (7) crypto blind classification; (8)
+      cash/reserve/GLD/debt functional doctrine; (9) cross-asset overlap and
+      concentration modeling; (10) cross-asset synthesis; (11) sleeve-level
+      candidate targets (Level 1 — equities/ETFs/crypto/GLD/cash-reserve/
+      debt-reduction); (12) instrument-level candidate targets (Level 2 —
+      inside each approved sleeve); (13) chart-informed deployment
+      integration, strictly within already-approved policy, never
+      automatically changing it; (14) a final independent audit. This entry
+      records that CONTENDER-0001/XASSET-0001 authorize architecture and
+      sequencing only — none of the fourteen items above is authorized to
+      begin by this entry; each requires its own separate, future, explicit
+      principal authorization and its own bounded implementation or research
+      PR, matching the discipline WS-0005 and WS-0013 already apply to their
+      own future milestones/roadmap steps. WS-0005 remains the sole
+      priority: primary workstream and is unaffected by this entry — its own
+      Milestones 3-7 remain scoped to the sealed 27-name canonical equity
+      cohort; WS-0013 remains the non-authorizing final allocation-readiness
+      orchestration and dependency ledger and does not become an execution
+      workstream.
+    governing_authority:
+      - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
+      - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
+      - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md (equity-framework precedent, dependency reference only)
+      - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md (review standard)
+      - governance/decisions/OPS-0008-research-wave-protocol-v1.md (batching discipline reference only)
+      - governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md (Lane G)
+      - governance/decisions/GOV-0001-governance-architecture-adopted.md
+      - governance/decisions/GOV-0002-operational-precedence-hierarchy.md
+    status: proposed
+    priority: secondary
+    dependencies:
+      - WS-0005
+    authorized_scope: >
+      None — architecture and sequencing planning only, recorded by
+      CONTENDER-0001/XASSET-0001. No execution unit of any kind is
+      authorized; no active implementation PR beyond the CONTENDER-0001/
+      XASSET-0001 governance filing itself exists under this workstream.
+    prohibited_scope: >
+      Creation of a contender registry or equivalent structure; ticker
+      normalization execution against any real data source; research on any
+      new ticker of any asset type; additional blind classification of any
+      equity beyond the sealed 27 (that remains WS-0005's own Milestone 3-7
+      scope, unaffected by this workstream); ETF or cryptocurrency
+      classification of any kind; ETF or crypto framework design beyond
+      CONTENDER-0001/XASSET-0001's own architecture-level description; any
+      cash/reserve/GLD/debt functional-doctrine content; any overlap,
+      concentration, or correlation model implementation; any sleeve-level
+      or instrument-level sizing of any kind; any target/tier/role/gate/
+      holdings/cap/cluster/allocator/margin/ladder/chart/order/trade change;
+      any allocation check, live or scenario; reviving or re-evaluating any
+      historical or delisted candidate (e.g., Sandisk/SNDK per PI-0032, or
+      any of the ~41 previously-tracked, currently-untracked holdings.yaml
+      tickers referenced in PHQ-2026-02's own reconciliation history)
+      without its own separate future authorization; coupling of any future
+      cross-asset output to the allocator, margin governance, or any
+      production file.
+    milestones: []
+    evidence_refs:
+      - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
+      - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
+    next_action: >
+      None authorized. This workstream's first possible future step
+      (contender normalization plus research-readiness screening, item 1 of
+      the fourteen-item scope list, per CONTENDER-0001/XASSET-0001 §J's
+      dependency-ordered roadmap step 1) may not begin without its own
+      separate, future, explicit principal authorization and its own bounded
+      implementation or research PR.
+    completion_criteria: >
+      Not applicable — no execution is authorized under this workstream by
+      this entry. XASSET-0001 §J records the recommended dependency order a
+      future completion-determination decision would need to verify, once
+      execution begins: (0) this architecture filing; (1) contender
+      normalization plus research-readiness screening; (2) additional-equity
+      blind cohorts; (3) ETF and crypto framework design; (4) ETF
+      classification; (5) crypto classification; (6) cash/reserve/GLD/debt
+      doctrine; (7) overlap and concentration modeling; (8) cross-asset
+      synthesis; (9) sleeve-level candidate targets; (10) instrument-level
+      candidate targets; (11) chart-informed deployment; (12) final
+      independent audit; (13) convergence into WS-0013's final
+      allocation-readiness sequence. Framework design and blind-
+      classification execution, ETF and crypto classification, every
+      completion determination, sleeve-level and instrument-level targets,
+      and the final independent audit each require their own separate
+      lifecycle unit — never batched, per XASSET-0001 §J.
+    blocker: >
+      Every item in the fourteen-item scope list above is blocked on its own
+      future, separate, explicit principal authorization — none is
+      authorized to begin by this entry. No blocker exists on recording this
+      workstream itself.
+    active_branch: claude/cross-asset-contender-architecture-trqpks
+    active_pr: 256
+    last_verified_main_sha: f71ea3bb1428445023c4fa582ed953ae409ba070
+    last_verified_date: "2026-08-06"
+    authorized_by: >
+      Controlling principal directive, this session, 2026-08-06: "I
+      authorize creation of one dedicated new workstream, tentatively
+      WS-0014 unless live repository truth requires another identifier, to
+      own future contender normalization, asset-appropriate classification
+      frameworks, and cross-asset synthesis execution." WS-0014 was
+      independently confirmed the next unused workstream identifier this
+      session (WS-0001 through WS-0013 all exist; WS-0014 does not appear
+      anywhere in the repository prior to this filing).
     supersedes: null
     superseded_by: null
