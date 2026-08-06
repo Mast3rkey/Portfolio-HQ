@@ -6,13 +6,14 @@
 # regeneration or correction (§I) — re-run this generator, do not patch
 # this file directly.
 schema_version: 1
-source_commit_sha: 66ddae32c276c5abd962ed4f6b130e9b567b320d
-generated_at: '2026-08-06T06:16:07-04:00'
+source_commit_sha: 481948ce0aa8840509942ac0e247690a200eec3a
+generated_at: '2026-08-06T10:52:14+00:00'
 governing_authority: governance/decisions/CONTENDER-0002-contender-normalization-and-readiness-screening-authorization.md
 legacy_gap:
   known_unenumerated_legacy_gap: true
   reported_count: approximately 41
   source_authority: PHQ-2026-02
+  clone_depth_at_generation: shallow
   recovery_status: unavailable_in_current_clone
   registry_entries_created: 0
   next_action: separately_authorized_history_recovery_sub_unit
@@ -371,6 +372,8 @@ entries:
     has_prior_deferral_superseded: false
   provenance:
   - source: CLAUDE.md
+    role: discovery
+  - source: governance/audits
     role: discovery
   investability_status: investable
   research_status: no_governed_evidence_record
@@ -1202,6 +1205,8 @@ entries:
   provenance:
   - source: CLAUDE.md
     role: discovery
+  - source: governance/audits
+    role: discovery
   investability_status: investable
   research_status: no_governed_evidence_record
   evidence_freshness_status: not_applicable
@@ -1521,6 +1526,8 @@ entries:
     has_prior_deferral_superseded: false
   provenance:
   - source: CLAUDE.md
+    role: discovery
+  - source: governance/audits
     role: discovery
   investability_status: investable
   research_status: no_governed_evidence_record
@@ -2136,6 +2143,8 @@ entries:
   provenance:
   - source: CLAUDE.md
     role: discovery
+  - source: governance/audits
+    role: discovery
   investability_status: investable
   research_status: no_governed_evidence_record
   evidence_freshness_status: not_applicable
@@ -2463,6 +2472,8 @@ entries:
     has_prior_deferral_superseded: false
   provenance:
   - source: CLAUDE.md
+    role: discovery
+  - source: governance/audits
     role: discovery
   - source: governance/decisions
     role: discovery
@@ -3039,6 +3050,8 @@ entries:
   provenance:
   - source: CLAUDE.md
     role: discovery
+  - source: governance/audits
+    role: discovery
   - source: governance/decisions
     role: discovery
   investability_status: investable
@@ -3186,6 +3199,8 @@ entries:
   provenance:
   - source: CLAUDE.md
     role: discovery
+  - source: governance/audits
+    role: discovery
   investability_status: investable
   research_status: no_governed_evidence_record
   evidence_freshness_status: not_applicable
@@ -3331,6 +3346,8 @@ entries:
     has_prior_deferral_superseded: false
   provenance:
   - source: CLAUDE.md
+    role: discovery
+  - source: governance/audits
     role: discovery
   investability_status: investable
   research_status: no_governed_evidence_record

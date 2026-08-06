@@ -100,6 +100,29 @@ ASSET_TYPES = frozenset({
     "benchmark", "fixture", "other",
 })
 
+# ── §G: clone-depth / legacy-gap recovery-status closed vocabularies.
+# Defined here (the schema authority) rather than in
+# contender_registry_generator.py, which imports these — the generator
+# already imports PRIMARY_DISPOSITIONS_IN_PRECEDENCE_ORDER from this module,
+# and defining these the other way around would create a circular import. ──
+
+CLONE_DEPTH_VALUES = frozenset({"shallow", "complete"})
+
+# §G's own YAML comment names three options
+# (`unavailable_in_current_clone` / `recovered_n_of_41` / `recovery_ambiguous`).
+# `reachable_but_recovery_not_attempted_this_generation` is a fourth,
+# disclosed addition — see contender_registry_generator.py's own module
+# docstring ("Determinism scope") for the full rationale: it covers the
+# case where full git history IS reachable but this generation does not
+# attempt §G step 2's bounded historical diff, which remains its own
+# separately scoped follow-on unit.
+RECOVERY_STATUS_VALUES = frozenset({
+    "unavailable_in_current_clone",
+    "recovered_n_of_41",
+    "recovery_ambiguous",
+    "reachable_but_recovery_not_attempted_this_generation",
+})
+
 # ── §B: the sixteen role-tagged source categories CONTENDER-0002 §B names,
 # plus the generator's own disclosed 17th (CLAUDE.md) — see
 # contender_registry_generator.py's SOURCE_CATALOG for the full citation
@@ -316,7 +339,7 @@ def validate_registry_data(data: object) -> ValidationResult:
     if legacy_gap is not None:
         required_gap_keys = {
             "known_unenumerated_legacy_gap", "reported_count", "source_authority",
-            "recovery_status", "registry_entries_created", "next_action",
+            "clone_depth_at_generation", "recovery_status", "registry_entries_created", "next_action",
         }
         if not isinstance(legacy_gap, dict):
             _err(errors, "'legacy_gap' must be a mapping when present (§G)")
@@ -329,6 +352,20 @@ def validate_registry_data(data: object) -> ValidationResult:
                     errors,
                     "legacy_gap.registry_entries_created must be exactly 0 — no invented placeholder "
                     "rows for unrecovered legacy tickers (§G)",
+                )
+            clone_depth = legacy_gap.get("clone_depth_at_generation")
+            if clone_depth not in CLONE_DEPTH_VALUES:
+                _err(
+                    errors,
+                    f"legacy_gap.clone_depth_at_generation must be one of {sorted(CLONE_DEPTH_VALUES)} "
+                    f"(§G — live-detected, never assumed) — got {clone_depth!r}",
+                )
+            recovery_status = legacy_gap.get("recovery_status")
+            if recovery_status not in RECOVERY_STATUS_VALUES:
+                _err(
+                    errors,
+                    f"legacy_gap.recovery_status must be one of {sorted(RECOVERY_STATUS_VALUES)} "
+                    f"(§G) — got {recovery_status!r}",
                 )
 
     return ValidationResult(valid=not errors, errors=errors, source="intelligence/contenders/registry.yaml")

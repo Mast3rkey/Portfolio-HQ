@@ -71,11 +71,40 @@ one of buckets 2 or 3 (see the retained audit's full token inventory) — the
 limitation applies to *future* regenerations, not to this generation's own
 completeness. A future implementation extending coverage should re-run the
 raw-token scan and manually re-triage bucket 3 before trusting it blind.
+
+── Determinism scope (§I) and clone-depth handling (§G) ────────────────────
+
+`entries` depends only on tree content at `source_commit_sha` — none of the
+sixteen-plus-one source categories requires reading git history, so
+`entries` is fully reproducible byte-for-byte (excluding `generated_at`)
+regardless of which environment (or how much local git history it holds)
+performs the generation. This has been independently verified against both
+a shallow-clone and a complete-clone environment.
+
+`legacy_gap.recovery_status` (and its accompanying `clone_depth_at_generation`
+field) is a **disclosed, intentional exception** to that determinism
+guarantee: `detect_clone_depth()` below reports the *executing environment's*
+own git clone depth, live, every generation — a shallow local development
+clone and a `fetch-depth: 0` CI checkout of the identical source commit
+correctly report `"shallow"` and `"complete"` respectively, and
+`recovery_status` follows from that (`"unavailable_in_current_clone"` vs.
+`"reachable_but_recovery_not_attempted_this_generation"` — see
+`RECOVERY_STATUS_VALUES`'s own comment). This is not a determinism defect:
+git-history reachability is genuinely environment-dependent runtime state,
+not part of the tree content the rest of this registry's `entries` are
+built from, and §G's own text requires this live re-verification on every
+generation rather than trusting a prior finding. Neither value implies
+recovery was attempted or that any of the ~41 legacy tickers were
+identified — `registry_entries_created` stays 0 in both cases, and actually
+attempting §G step 2's bounded historical diff (when history is reachable)
+remains its own separately scoped, separately authorized follow-on unit,
+not performed by this generator.
 """
 
 from __future__ import annotations
 
 import re
+import subprocess
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
@@ -113,7 +142,70 @@ def _prov(source: str, role: str) -> dict:
 
 # ── §E.2 twelve-value closed vocabulary (re-imported for a single source of truth) ──
 
-from contender_registry_validator import PRIMARY_DISPOSITIONS_IN_PRECEDENCE_ORDER  # noqa: E402
+from contender_registry_validator import (  # noqa: E402
+    CLONE_DEPTH_VALUES,
+    PRIMARY_DISPOSITIONS_IN_PRECEDENCE_ORDER,
+    RECOVERY_STATUS_VALUES,
+)
+
+
+# ── §G: clone-depth detection, live and environment-independent ────────────
+#
+# The executing environment's git clone depth is RUNTIME INPUT, never a
+# repository invariant — this session's own local clone happens to be
+# shallow, but a different environment generating from the identical source
+# commit (e.g. GitHub Actions' `actions/checkout@v4` with `fetch-depth: 0`,
+# used by this repository's own CI) legitimately sees a complete clone.
+# `build_registry()` must detect this live, every generation, never assume
+# or hardcode a prior finding as still current (§G step 1's own explicit
+# re-verification requirement). `CLONE_DEPTH_VALUES`/`RECOVERY_STATUS_VALUES`
+# are defined in contender_registry_validator.py (the schema authority) and
+# imported here — see that module's own comment for the full vocabulary
+# rationale.
+
+
+def detect_clone_depth(repo_root: Path, *, runner=None) -> str:
+    """Live, mechanical clone-depth detection (CONTENDER-0002 §G step 1).
+    Returns exactly one of CLONE_DEPTH_VALUES — never a hardcoded
+    assumption. `runner`, if supplied, replaces the actual `git` subprocess
+    call for testability (dependency injection): it must accept
+    `(args, cwd=..., text=...)` the same way `subprocess.check_output`
+    does, and return the raw stdout string. Without `runner`, this calls
+    the real `git rev-parse --is-shallow-repository` against `repo_root`."""
+    run = runner if runner is not None else subprocess.check_output
+    out = run(["git", "rev-parse", "--is-shallow-repository"], cwd=str(repo_root), text=True).strip()
+    if out == "true":
+        return "shallow"
+    if out == "false":
+        return "complete"
+    raise ValueError(
+        f"unexpected `git rev-parse --is-shallow-repository` output: {out!r} "
+        f"(expected exactly 'true' or 'false')"
+    )
+
+
+def build_legacy_gap(clone_depth: str) -> dict:
+    """§G's exact required record shape, with `recovery_status` computed
+    from a live-detected `clone_depth` rather than hardcoded. Never creates
+    a placeholder ticker row regardless of clone depth (`registry_entries_created`
+    is always 0 from this function — actually attempting the §G step-2
+    recovery diff, when history is reachable, remains its own separately
+    scoped follow-on unit, not performed here)."""
+    if clone_depth not in CLONE_DEPTH_VALUES:
+        raise ValueError(f"clone_depth must be one of {sorted(CLONE_DEPTH_VALUES)} — got {clone_depth!r}")
+    recovery_status = (
+        "unavailable_in_current_clone" if clone_depth == "shallow"
+        else "reachable_but_recovery_not_attempted_this_generation"
+    )
+    return {
+        "known_unenumerated_legacy_gap": True,
+        "reported_count": "approximately 41",
+        "source_authority": "PHQ-2026-02",
+        "clone_depth_at_generation": clone_depth,
+        "recovery_status": recovery_status,
+        "registry_entries_created": 0,
+        "next_action": "separately_authorized_history_recovery_sub_unit",
+    }
 
 
 @dataclass
@@ -511,14 +603,10 @@ def build_registry(repo_root: str | Path, source_commit_sha: str, generated_at: 
 
     sorted_entries = [entries[s].to_dict() for s in sorted(entries)]
 
-    legacy_gap = {
-        "known_unenumerated_legacy_gap": True,
-        "reported_count": "approximately 41",
-        "source_authority": "PHQ-2026-02",
-        "recovery_status": "unavailable_in_current_clone",
-        "registry_entries_created": 0,
-        "next_action": "separately_authorized_history_recovery_sub_unit",
-    }
+    # §G step 1: live, mechanical, environment-independent — never a
+    # hardcoded assumption carried over from a prior session's own clone.
+    clone_depth = detect_clone_depth(repo_root)
+    legacy_gap = build_legacy_gap(clone_depth)
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -651,7 +739,6 @@ def _assign_disposition(
 
 
 if __name__ == "__main__":
-    import subprocess
     import sys
 
     _repo_root = Path(__file__).resolve().parent

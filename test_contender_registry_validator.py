@@ -164,30 +164,40 @@ def test_valid_registry_passes():
 
 # ── §G legacy-gap record shape ────────────────────────────────────────────
 
-def test_legacy_gap_valid_shape_passes():
-    data = _registry([_entry()])
-    data["legacy_gap"] = {
+def _legacy_gap(**overrides) -> dict:
+    gap = {
         "known_unenumerated_legacy_gap": True,
         "reported_count": "approximately 41",
         "source_authority": "PHQ-2026-02",
+        "clone_depth_at_generation": "shallow",
         "recovery_status": "unavailable_in_current_clone",
         "registry_entries_created": 0,
         "next_action": "separately_authorized_history_recovery_sub_unit",
     }
+    gap.update(overrides)
+    return gap
+
+
+def test_legacy_gap_valid_shape_passes():
+    data = _registry([_entry()])
+    data["legacy_gap"] = _legacy_gap()
+    result = crv.validate_registry_data(data)
+    assert result.valid, result.errors
+
+
+def test_legacy_gap_valid_shape_passes_complete_clone_branch():
+    data = _registry([_entry()])
+    data["legacy_gap"] = _legacy_gap(
+        clone_depth_at_generation="complete",
+        recovery_status="reachable_but_recovery_not_attempted_this_generation",
+    )
     result = crv.validate_registry_data(data)
     assert result.valid, result.errors
 
 
 def test_legacy_gap_nonzero_entries_created_rejected():
     data = _registry([_entry()])
-    data["legacy_gap"] = {
-        "known_unenumerated_legacy_gap": True,
-        "reported_count": "approximately 41",
-        "source_authority": "PHQ-2026-02",
-        "recovery_status": "unavailable_in_current_clone",
-        "registry_entries_created": 3,
-        "next_action": "x",
-    }
+    data["legacy_gap"] = _legacy_gap(registry_entries_created=3, next_action="x")
     result = crv.validate_registry_data(data)
     assert not result.valid
     assert any("must be exactly 0" in e for e in result.errors)
@@ -198,6 +208,32 @@ def test_legacy_gap_missing_key_rejected():
     data["legacy_gap"] = {"known_unenumerated_legacy_gap": True}
     result = crv.validate_registry_data(data)
     assert not result.valid
+
+
+def test_legacy_gap_unknown_clone_depth_rejected():
+    data = _registry([_entry()])
+    data["legacy_gap"] = _legacy_gap(clone_depth_at_generation="somewhat_shallow")
+    result = crv.validate_registry_data(data)
+    assert not result.valid
+    assert any("clone_depth_at_generation" in e for e in result.errors)
+
+
+def test_legacy_gap_unknown_recovery_status_rejected():
+    data = _registry([_entry()])
+    data["legacy_gap"] = _legacy_gap(recovery_status="fully_recovered_and_verified")
+    result = crv.validate_registry_data(data)
+    assert not result.valid
+    assert any("recovery_status" in e for e in result.errors)
+
+
+def test_clone_depth_and_recovery_status_vocabularies_are_closed():
+    assert crv.CLONE_DEPTH_VALUES == {"shallow", "complete"}
+    assert crv.RECOVERY_STATUS_VALUES == {
+        "unavailable_in_current_clone",
+        "recovered_n_of_41",
+        "recovery_ambiguous",
+        "reachable_but_recovery_not_attempted_this_generation",
+    }
 
 
 # ── §B provenance ──────────────────────────────────────────────────────────

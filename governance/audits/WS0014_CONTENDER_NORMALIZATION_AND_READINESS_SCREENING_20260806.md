@@ -315,3 +315,95 @@ deferred candidate, no additional blind classification beyond the sealed
 work, no target/tier/holdings/gate/cap/cluster/allocator/margin change, and
 no allocation check of any kind. `WS-0014` items (3)-(14) (`XASSET-0001` §J
 steps 2-13) remain exactly as unauthorized as `CONTENDER-0002` left them.
+
+## 11. Bounded correction (same day, this PR) — environment-independent clone-depth handling
+
+Exact-head CI on this PR's original head (`481948ce0aa8840509942ac0e247690a200eec3a`,
+workflow run `31094971398`, job `92594735748`) failed: **2829 passed, 1
+failed** — `test_contender_registry_generator.py::test_this_environment_is_a_shallow_clone`,
+`AssertionError: assert 'false' == 'true'`. Root cause, independently
+confirmed from the job log: GitHub Actions' own checkout step uses
+`fetch-depth: 0` (a complete clone), so `git rev-parse
+--is-shallow-repository` correctly reports `false` there — the test's own
+hardcoded `assert out == "true"` mistook this session's own local
+development clone's shallow state (a genuine, still-accurate fact about
+*this* environment) for a universal repository invariant.
+
+A deeper, related defect was found while fixing this: `build_registry()`'s
+own `legacy_gap` block **never actually called a live clone-depth check at
+all** — `recovery_status` was a hardcoded string, `"unavailable_in_current_clone"`,
+written once by hand after this session's own manual `git rev-parse`
+check, not computed by the generator itself. In a complete-clone
+environment (like CI), this would have produced a **false claim** —
+reporting history as unrecoverable when it was, in fact, reachable.
+
+**Fix**: `contender_registry_generator.detect_clone_depth()` (new) calls
+`git rev-parse --is-shallow-repository` live, every generation, and
+normalizes the result to exactly `"shallow"` or `"complete"`
+(`contender_registry_validator.CLONE_DEPTH_VALUES`) — accepting an
+injectable `runner` for deterministic unit testing without depending on
+the actual executing environment's real clone depth.
+`build_legacy_gap(clone_depth)` (new) derives `recovery_status` from that
+live-detected value: `"unavailable_in_current_clone"` when shallow;
+a new, disclosed fourth value, `"reachable_but_recovery_not_attempted_this_generation"`,
+when complete — chosen deliberately over the two other §G-documented
+values (`recovered_n_of_41`, which would falsely claim recovery work that
+did not happen, and `unavailable_in_current_clone`, which would falsely
+claim unreachability) because **actually attempting §G step 2's bounded
+historical diff remains its own separately scoped, separately authorized
+follow-on unit** — not performed by this correction, consistent with this
+task's own explicit scope boundary against deep Git-history recovery.
+`registry.yaml`'s `legacy_gap` block gains one new required field,
+`clone_depth_at_generation`, recording exactly which state was detected —
+this field, together with `recovery_status`, is now a **disclosed,
+intentional exception** to §I's regeneration-determinism guarantee:
+`entries` depends only on tree content at `source_commit_sha` and remains
+byte-identical across environments, but `legacy_gap`'s two clone-depth
+fields legitimately vary by executing environment even at the identical
+source commit — this is documented directly in the generator module's own
+docstring ("Determinism scope") rather than left implicit.
+
+**Test redesign**: the hardcoded assertion was replaced with (a) unit
+tests exercising both `"shallow"` and `"complete"` branches via dependency
+injection (`_fake_git_output()`), independent of the real environment; (b)
+a rejection test for malformed `git` output; (c) a test proving
+`build_registry()` actually calls the live detector rather than hardcoding
+a value (`monkeypatch`-based); (d) exactly one integration-style test
+against the real environment, which accepts either valid state and
+cross-checks the detector's own output against git's real result directly
+— never hardcoding which state the runner happens to be in.
+
+**Content impact on the committed registry**: this session's own working
+clone remains shallow (independently re-verified, unchanged from §1/§7
+above) — regenerating in this same environment reproduces
+`clone_depth_at_generation: shallow`, `recovery_status:
+unavailable_in_current_clone`, identical to before. The regenerated file's
+diff is otherwise limited to `source_commit_sha`/`generated_at` (expected,
+timestamp-scoped) and a small number of new `governance/audits` provenance
+citations on the CLAUDE.md-only-discovered symbols (VMC, LHX, HYPE,
+ZORA, WIF, BONK, PEPE, EQIX) — a genuine, expected side effect of this
+same audit document now existing and itself naming those tickers in its
+own worked-case citations (§4-§5 above), not a defect. **All 84 entries
+and every primary disposition are byte-identical to before this
+correction** — independently re-verified (disposition distribution
+recomputed and matched exactly against §5's table).
+
+**Validation at the corrected head**: `contender_registry_validator.py` OK
+(84 entries); bidirectional reconciliation passes with zero errors;
+`classification_validator.py` OK (28 results); `relationship_validator.py`
+OK (13 records); `intelligence_validator.py` clean; `freshness_validator.py`
+OK; decision catalog unchanged (84 decisions, `issues == ()`); the sealed 27
+classification records and every protected path confirmed byte-identical
+(`git status --porcelain` empty against `intelligence/classification/` and
+`git diff --stat` empty against every protected path); `git diff --check`
+clean; exactly 5 files changed by this correction
+(`contender_registry_generator.py`, `contender_registry_validator.py`,
+`intelligence/contenders/registry.yaml`, `test_contender_registry_generator.py`,
+`test_contender_registry_validator.py`) — see this PR's own updated body
+for the exact corrected full-suite pass count and new exact head.
+
+This correction performed no ticker research, no disposition change, no
+Git-history recovery, and no change to `CONTENDER-0001`/`XASSET-0001`/
+`CONTENDER-0002`. This session does not review its own PR, mark it ready,
+merge it, or post principal acceptance — awaiting terminal exact-head CI
+and independent exact-head review.

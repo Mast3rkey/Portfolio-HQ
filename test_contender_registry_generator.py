@@ -242,18 +242,113 @@ def test_legacy_gap_record_present_and_creates_no_placeholder_rows(registry):
     assert gap["known_unenumerated_legacy_gap"] is True
     assert gap["source_authority"] == "PHQ-2026-02"
     assert gap["registry_entries_created"] == 0
-    assert gap["recovery_status"] in {
-        "unavailable_in_current_clone", "recovered_n_of_41", "recovery_ambiguous",
-    }
+    assert gap["clone_depth_at_generation"] in crv.CLONE_DEPTH_VALUES
+    assert gap["recovery_status"] in crv.RECOVERY_STATUS_VALUES
 
 
-def test_this_environment_is_a_shallow_clone():
-    """Independently re-verifies the environment fact CONTENDER-0002 §G
-    requires re-checking before trusting its own finding as still current."""
-    out = subprocess.check_output(
+# ── §G clone-depth detection: environment-independent (CONTENDER-0002 §G
+# step 1 is a live, per-generation re-verification — the test suite must
+# not assume, or require, any particular clone depth in the environment it
+# happens to run in; both states are exercised via dependency injection). ──
+
+def _fake_git_output(text: str):
+    def runner(args, **kwargs):
+        return text
+    return runner
+
+
+def test_detect_clone_depth_normalizes_true_to_shallow():
+    assert gen.detect_clone_depth(_REPO_ROOT, runner=_fake_git_output("true\n")) == "shallow"
+
+
+def test_detect_clone_depth_normalizes_false_to_complete():
+    assert gen.detect_clone_depth(_REPO_ROOT, runner=_fake_git_output("false\n")) == "complete"
+
+
+def test_detect_clone_depth_rejects_unexpected_output():
+    with pytest.raises(ValueError):
+        gen.detect_clone_depth(_REPO_ROOT, runner=_fake_git_output("garbage\n"))
+
+
+def test_detect_clone_depth_return_value_is_always_normalized():
+    for raw in ("true\n", "false\n"):
+        assert gen.detect_clone_depth(_REPO_ROOT, runner=_fake_git_output(raw)) in gen.CLONE_DEPTH_VALUES
+
+
+def test_build_legacy_gap_shallow_branch():
+    gap = gen.build_legacy_gap("shallow")
+    assert gap["clone_depth_at_generation"] == "shallow"
+    assert gap["recovery_status"] == "unavailable_in_current_clone"
+    assert gap["registry_entries_created"] == 0
+    assert gap["next_action"] == "separately_authorized_history_recovery_sub_unit"
+
+
+def test_build_legacy_gap_complete_branch():
+    """When history IS reachable, the generator must not falsely claim
+    'unavailable_in_current_clone' — but it also must not claim recovery
+    was performed, since actually attempting §G step 2's historical diff
+    is its own separately scoped follow-on unit, not this one."""
+    gap = gen.build_legacy_gap("complete")
+    assert gap["clone_depth_at_generation"] == "complete"
+    assert gap["recovery_status"] == "reachable_but_recovery_not_attempted_this_generation"
+    assert gap["recovery_status"] != "unavailable_in_current_clone"
+    assert gap["recovery_status"] != "recovered_n_of_41"
+    assert gap["registry_entries_created"] == 0
+    assert gap["next_action"] == "separately_authorized_history_recovery_sub_unit"
+
+
+def test_build_legacy_gap_never_creates_placeholder_rows_in_either_state():
+    for depth in gen.CLONE_DEPTH_VALUES:
+        assert gen.build_legacy_gap(depth)["registry_entries_created"] == 0
+
+
+def test_build_legacy_gap_rejects_unnormalized_input():
+    with pytest.raises(ValueError):
+        gen.build_legacy_gap("shallowish")
+
+
+def test_build_registry_uses_live_detected_clone_depth_not_hardcoded(monkeypatch):
+    """End-to-end: build_registry()'s own legacy_gap must reflect whatever
+    detect_clone_depth() reports for the given repo_root at call time — this
+    is what the pre-correction code got wrong (a hardcoded string, never
+    actually calling a live detector)."""
+    calls = []
+
+    def fake_detect(repo_root, **kwargs):
+        calls.append(repo_root)
+        return "complete"
+
+    monkeypatch.setattr(gen, "detect_clone_depth", fake_detect)
+    reg, _, _ = gen.build_registry(_REPO_ROOT, "sha-y", "ts-y")
+    assert calls, "build_registry() must call detect_clone_depth()"
+    assert reg["legacy_gap"]["clone_depth_at_generation"] == "complete"
+    assert reg["legacy_gap"]["recovery_status"] == "reachable_but_recovery_not_attempted_this_generation"
+
+
+def test_this_environments_clone_depth_is_detected_truthfully():
+    """One integration-style test against the REAL environment — but it
+    accepts either valid state and cross-checks the detector's own output
+    against git's real result directly, rather than hardcoding an
+    assumption about which state the runner happens to be in (CONTENDER-0002
+    §G step 1: re-verify live, every time, never assume)."""
+    real_git_output = subprocess.check_output(
         ["git", "rev-parse", "--is-shallow-repository"], cwd=_REPO_ROOT, text=True,
     ).strip()
-    assert out == "true"
+    expected = {"true": "shallow", "false": "complete"}[real_git_output]
+    assert gen.detect_clone_depth(_REPO_ROOT) == expected
+
+
+def test_registry_legacy_gap_clone_depth_matches_live_environment(registry):
+    """The committed registry's own legacy_gap.clone_depth_at_generation,
+    when generated in THIS run, must match this environment's real,
+    independently-checked clone depth — not a value carried over from a
+    different (e.g. the original author's) environment."""
+    reg, _, _ = registry
+    real_git_output = subprocess.check_output(
+        ["git", "rev-parse", "--is-shallow-repository"], cwd=_REPO_ROOT, text=True,
+    ).strip()
+    expected = {"true": "shallow", "false": "complete"}[real_git_output]
+    assert reg["legacy_gap"]["clone_depth_at_generation"] == expected
 
 
 # ── protected-path isolation ───────────────────────────────────────────────
