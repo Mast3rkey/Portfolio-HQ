@@ -7768,7 +7768,7 @@ workstreams:
           item 1 only, gated on CONTENDER-0002's own full independent-
           review/correction/principal-acceptance/merge/post-merge-
           verification lifecycle. Items 2-14 remain unauthorized.
-        pr: null
+        pr: 257
         status: in_progress
         date: "2026-08-06"
     evidence_refs:
@@ -7808,7 +7808,7 @@ workstreams:
       separate, explicit principal authorization each — none is authorized
       to begin by this entry.
     active_branch: claude/ws-0014-contender-normalization-jsdxi8
-    active_pr: null
+    active_pr: 257
     last_verified_main_sha: 42949907558afe1577a74e3562e777ba62469d66
     last_verified_date: "2026-08-06"
     authorized_by: >
