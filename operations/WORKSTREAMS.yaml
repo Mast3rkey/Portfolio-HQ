@@ -3277,7 +3277,7 @@ workstreams:
           one narrow future implementation step; it does not flip the
           milestone itself to in_progress, since no recommendation content
           exists yet.
-        pr: null
+        pr: 261
         status: in_progress
         date: "2026-08-06"
     evidence_refs:
@@ -5218,7 +5218,7 @@ workstreams:
       until this filing's own PR number exists, per `OPS-0001`'s convention — a bounded follow-up
       commit sets it once the PR is opened.
     active_branch: claude/ws-0005-milestone-8-design-h4k9wq
-    active_pr: null
+    active_pr: 261
     last_verified_main_sha: aed259994ea6aa2db08a24a3a1488ebcc39ca985
     last_verified_date: "2026-08-06"
     authorized_by: >
