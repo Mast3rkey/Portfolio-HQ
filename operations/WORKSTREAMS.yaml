@@ -7658,7 +7658,7 @@ workstreams:
       none — its own independent exact-head review and explicit principal
       acceptance are pending, same as any other governance filing.
     active_branch: claude/cross-asset-contender-architecture-trqpks
-    active_pr: null
+    active_pr: 256
     last_verified_main_sha: f71ea3bb1428445023c4fa582ed953ae409ba070
     last_verified_date: "2026-08-06"
     authorized_by: >
@@ -7774,7 +7774,7 @@ workstreams:
       authorized to begin by this entry. No blocker exists on recording this
       workstream itself.
     active_branch: claude/cross-asset-contender-architecture-trqpks
-    active_pr: null
+    active_pr: 256
     last_verified_main_sha: f71ea3bb1428445023c4fa582ed953ae409ba070
     last_verified_date: "2026-08-06"
     authorized_by: >
