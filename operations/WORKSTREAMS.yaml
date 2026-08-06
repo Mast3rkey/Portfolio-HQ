@@ -7705,6 +7705,7 @@ workstreams:
     governing_authority:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
+      - governance/decisions/CONTENDER-0002-contender-normalization-and-readiness-screening-authorization.md (item 1 definition and future-implementation authorization only)
       - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md (equity-framework precedent, dependency reference only)
       - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md (review standard)
@@ -7717,10 +7718,17 @@ workstreams:
     dependencies:
       - WS-0005
     authorized_scope: >
-      None — architecture and sequencing planning only, recorded by
-      CONTENDER-0001/XASSET-0001. No execution unit of any kind is
-      authorized; no active implementation PR beyond the CONTENDER-0001/
-      XASSET-0001 governance filing itself exists under this workstream.
+      None — architecture and sequencing planning only. CONTENDER-0001/
+      XASSET-0001 recorded the architecture; CONTENDER-0002 (this session's
+      own filing, draft, unmerged) additively defines item 1 (contender
+      normalization plus research-readiness screening) and authorizes
+      exactly one future, separate implementation PR for that item once
+      CONTENDER-0002 itself merges — CONTENDER-0002's own definition-and-
+      authorization text is not itself the implementation. No scan,
+      inventory, registry, or research has occurred; no active
+      implementation PR beyond these governance filings exists under this
+      workstream. Items 2-14 of the fourteen-item scope list remain wholly
+      unauthorized.
     prohibited_scope: >
       Creation of a contender registry or equivalent structure; ticker
       normalization execution against any real data source; research on any
@@ -7740,17 +7748,56 @@ workstreams:
       without its own separate future authorization; coupling of any future
       cross-asset output to the allocator, margin governance, or any
       production file.
-    milestones: []
+    milestones:
+      - gate: contender0002-normalization-and-readiness-screening-authorization
+        description: >
+          CONTENDER-0002 additively defines XASSET-0001 section J step 1
+          (contender normalization plus research-readiness screening,
+          equivalently WS-0014 objective items (1)+(2) together, per
+          CONTENDER-0002 section A's own stated numbering correspondence):
+          source locations to scan (16 categories, each tagged discovery,
+          corroboration, or context, including operations/WORKSTREAMS.yaml
+          and governed research/** protocols), a closed twelve-value primary
+          screening-disposition vocabulary in mandatory precedence order
+          plus an orthogonal secondary factual-flag set (section E, resolving
+          an independent review's finding that the original flat vocabulary
+          had no rule for a ticker matching more than one disposition —
+          worked against the real RKLB/TSLA case, where a PI-0033 deferral
+          was narrowly superseded by PI-0038 for research purposes only),
+          alias/canonicalization precedence, a mechanical-versus-judgment
+          boundary with an explicit seven-step conflict-resolution procedure
+          (section H), a hybrid audit-artifact-plus-structured-registry
+          output design with regeneration-determinism and bidirectional-
+          reconciliation requirements, validator/test requirements, stop
+          conditions split into per-entry containment versus whole-unit halt
+          (section K), and a bounded, conditional treatment of ~41 legacy
+          pre-PHQ-2026-02 tickers with an explicit gap-record format if
+          unrecovered (this session verified its own working clone is a
+          shallow git clone whose oldest reachable commit is 2026-07-31,
+          meaning that pre-migration history is not mechanically reachable
+          from this environment — recovery, if reachable elsewhere, is
+          deferred to its own future sub-unit rather than assumed).
+          CONTENDER-0002 itself performs no scan, builds no registry, and
+          researches no ticker — it authorizes exactly one future, separate,
+          combined implementation PR for XASSET-0001 section J step 1 only,
+          gated on CONTENDER-0002's own full independent-review/correction/
+          principal-acceptance/merge/post-merge-verification lifecycle.
+          XASSET-0001 section J steps 2-13 (WS-0014 objective items (3)-(14))
+          remain unauthorized.
+        pr: 257
+        status: in_progress
+        date: "2026-08-06"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
+      - governance/decisions/CONTENDER-0002-contender-normalization-and-readiness-screening-authorization.md
     next_action: >
-      None authorized. This workstream's first possible future step
-      (contender normalization plus research-readiness screening, item 1 of
-      the fourteen-item scope list, per CONTENDER-0001/XASSET-0001 §J's
-      dependency-ordered roadmap step 1) may not begin without its own
-      separate, future, explicit principal authorization and its own bounded
-      implementation or research PR.
+      Item 1's own future implementation PR (contender normalization plus
+      research-readiness screening) may not begin until CONTENDER-0002
+      itself completes its own independent-review/correction/principal-
+      acceptance/merge/post-merge-verification lifecycle. Items 2-14 of the
+      fourteen-item scope list remain wholly unauthorized and require their
+      own separate, future, explicit principal authorization each.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -7769,13 +7816,16 @@ workstreams:
       and the final independent audit each require their own separate
       lifecycle unit — never batched, per XASSET-0001 §J.
     blocker: >
-      Every item in the fourteen-item scope list above is blocked on its own
-      future, separate, explicit principal authorization — none is
-      authorized to begin by this entry. No blocker exists on recording this
-      workstream itself.
-    active_branch: claude/cross-asset-contender-architecture-trqpks
-    active_pr: 256
-    last_verified_main_sha: f71ea3bb1428445023c4fa582ed953ae409ba070
+      Item 1 (contender normalization plus research-readiness screening) is
+      blocked on CONTENDER-0002's own independent review, correction if
+      needed, principal acceptance, merge, and post-merge verification —
+      only after that lifecycle completes may its own separate future
+      implementation PR begin. Items 2-14 remain blocked on their own future,
+      separate, explicit principal authorization each — none is authorized
+      to begin by this entry.
+    active_branch: claude/ws-0014-contender-normalization-jsdxi8
+    active_pr: 257
+    last_verified_main_sha: 42949907558afe1577a74e3562e777ba62469d66
     last_verified_date: "2026-08-06"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
@@ -7786,5 +7836,19 @@ workstreams:
       independently confirmed the next unused workstream identifier this
       session (WS-0001 through WS-0013 all exist; WS-0014 does not appear
       anywhere in the repository prior to this filing).
+
+
+      Further controlling principal directive, a later session, 2026-08-06:
+      "I authorize one bounded Lane G governance filing that authorizes the
+      first WS-0014 execution unit: contender normalization plus research-
+      readiness screening. This filing may define and authorize one future,
+      separate implementation PR that mechanically inventories, normalizes,
+      deduplicates, asset-tags, provenance-labels, and research-readiness-
+      screens every genuine ticker or investable-asset reference represented
+      in Portfolio-HQ. The authorized implementation must remain screening
+      and inventory only. It may not research, classify, rank, recommend,
+      revive, target, tier, allocate, buy, trim, sell, or trade any asset."
+      This directive is implemented by CONTENDER-0002 (draft, unmerged, this
+      session) — see that decision file for the full bounded specification.
     supersedes: null
     superseded_by: null
