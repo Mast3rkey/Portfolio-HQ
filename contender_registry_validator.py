@@ -28,11 +28,16 @@ Scope, exactly what CONTENDER-0002 authorizes this module to validate:
   resolve to a real entry in the same registry, and no canonical symbol may
   appear twice.
 - §G: the legacy-gap record, when present, must carry every required key.
-  `registry_entries_created` must be exactly 0 for every non-recovery
-  outcome (no invented placeholder rows for unrecovered legacy tickers),
-  and must exactly equal the count named in a `"recovered_<N>_of_41"`-
-  shaped `recovery_status` when recovery genuinely succeeded (a real,
-  mechanically-diffed count, never invented either).
+  `registry_entries_created` must be exactly 0 unless `recovery_status`
+  is a `"recovered_<N>_of_41"`-shaped value, in which case it must equal
+  that exact `N` — a real, collision-filtered count of genuinely NEW
+  registry rows, never invented. A successful mechanical diff does not,
+  by itself, guarantee `N > 0`: every legacy ticker the diff finds may
+  already carry its own entry via another governed source, in which case
+  the correct outcome is the fixed `"all_recovered_already_tracked"`
+  value with `registry_entries_created: 0` — a genuine, clean success
+  with zero new rows needed, distinct from `"recovery_ambiguous"` (the
+  diff itself could not be resolved).
 - §I: header provenance (`source_commit_sha`, `generated_at`) must be
   present; entry ordering must be deterministic (alphabetical by
   `canonical_symbol`).
@@ -112,20 +117,31 @@ ASSET_TYPES = frozenset({
 
 CLONE_DEPTH_VALUES = frozenset({"shallow", "complete"})
 
-# §G's own YAML comment names three outcomes:
-# `unavailable_in_current_clone` (shallow — no attempt possible);
-# `recovery_ambiguous` (complete, but the reconciliation commit, a single
-# resolvable parent, or a non-empty diff could not be mechanically
-# established — §G step 3's own "stop and disclose" path); and a dynamic
-# "recovered_<N>_of_41" shape (complete, diff succeeded — `N` is that
-# filing's own placeholder character for the real, mechanically-diffed
-# count, checked below via RECOVERED_STATUS_PATTERN, not a fixed string).
+# §G's own YAML comment names three outcomes; this module recognizes four,
+# reconciled against real behavior independently observed in this
+# repository's own CI:
+# - `unavailable_in_current_clone` (shallow — no attempt possible);
+# - `recovery_ambiguous` (complete, but the reconciliation commit, a single
+#   resolvable parent, or a non-empty diff could not be mechanically
+#   established — §G step 3's own "stop and disclose" path);
+# - `all_recovered_already_tracked` (complete, diff succeeded and found one
+#   or more removed legacy tickers, but EVERY one already carries its own
+#   entry via another governed source — a genuine, clean, successful
+#   search that legitimately creates zero new rows; deliberately distinct
+#   from `recovery_ambiguous`, which describes search *failure*, not
+#   success-with-no-new-rows-needed);
+# - a dynamic "recovered_<N>_of_41" shape (complete, diff succeeded, and
+#   at least one genuinely NEW row was added — `N` is that filing's own
+#   placeholder character for the real, collision-filtered count of NEW
+#   rows, checked below via RECOVERED_STATUS_PATTERN, not a fixed string;
+#   `N` counts new rows, not raw diff hits, which can legitimately differ).
 # `perform_legacy_recovery()` (contender_registry_generator.py) ALWAYS
 # attempts the §G step 2 diff whenever clone_depth == "complete" — there is
-# no third "reachable but not attempted" outcome in the current design.
+# no "reachable but not attempted" outcome in the current design.
 RECOVERY_STATUS_VALUES = frozenset({
     "unavailable_in_current_clone",
     "recovery_ambiguous",
+    "all_recovered_already_tracked",
 })
 
 # ── §B: the sixteen role-tagged source categories CONTENDER-0002 §B names,
@@ -153,6 +169,7 @@ AUTHORIZED_SOURCE_LABELS = frozenset({
     "earnings.py",
     "governance/evidence/CHART-0002",
     "CLAUDE.md",
+    "holdings.yaml (historical — CONTENDER-0002 §G step 2 recovery)",
 })
 
 _REQUIRED_ENTRY_KEYS = frozenset({

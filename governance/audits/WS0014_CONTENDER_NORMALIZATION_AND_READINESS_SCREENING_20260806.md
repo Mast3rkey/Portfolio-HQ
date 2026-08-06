@@ -671,3 +671,109 @@ change to `CONTENDER-0001`/`XASSET-0001`/`CONTENDER-0002`. This session
 does not review its own PR, mark it ready, merge it, or post principal
 acceptance — awaiting terminal exact-head CI and a fresh independent
 exact-head delta review.
+
+## 14. Fourth bounded correction (same day, this PR) — a genuine semantic bug, not a test-only fix: `registry_entries_created` must count NEW rows, not raw diff hits
+
+Exact-head CI at the third-correction head (`6df76296129f46fcd5a32f5bffa18df0c86d8f3e`,
+run `31105070187`, job `92627971330`) failed: `1 failed, 2867 passed`,
+`assert 0 == 41`, `where 0 = len([])`. The renamed
+`test_legacy_gap_record_present_and_shape_is_valid` correctly reported
+`registry_entries_created == 41` from `legacy_gap`, but its own
+provenance-search predicate (`"§G step 2" in existing_disposition`) found
+**zero** entries actually carrying that citation. This traced to a real
+semantic defect in `perform_legacy_recovery()` itself, not merely a test
+assertion bug: `registry_entries_created` was set to `len(recovered)` —
+the raw count of legacy tickers the mechanical diff found removed —
+**regardless of whether any of them actually became a new registry row**.
+`build_registry()`'s own collision guard (§H.3 step 4: never overwrite an
+already-tracked symbol) correctly prevented every one of the 41
+mechanically-found tickers from creating a duplicate or overwriting an
+existing entry — this repository's own real, complete-history CI
+independently confirms every one of those 41 legacy tickers already
+carries its own Company Intelligence coverage today, added later by
+WS-0005's own batches (PI-0023 through PI-0030 and others) — but nothing
+downstream of the collision guard ever recomputed
+`registry_entries_created` to reflect that. The gap record's own count
+was simply wrong: it claimed 41 rows were created when the true number,
+after collision filtering, was 0.
+
+**Root cause, precisely**: `perform_legacy_recovery()` both performed the
+mechanical diff AND finalized the `legacy_gap` record in one step — but
+only `build_registry()`, which alone applies the collision guard, can
+know how many of the diff's hits actually became new rows. Finalizing
+the gap record before collision filtering was the structural mistake.
+
+**Fix, in order**:
+
+1. **`perform_legacy_recovery()` no longer constructs `legacy_gap` at
+   all.** It now returns `(recovered, outcome)` where `outcome` is
+   exactly one of `"shallow"`, `"ambiguous"`, or `"found"` — a raw
+   mechanical-fact signal, not a finished record. `build_registry()`
+   alone owns final `legacy_gap` construction, computed *after* its own
+   collision-filtering loop.
+2. **Structured provenance marker, not prose matching.** The review's own
+   implicit lesson (a fragile substring search broke on real data) is
+   addressed directly: a new, dedicated provenance source label,
+   `SRC_LEGACY_RECOVERY = "holdings.yaml (historical — CONTENDER-0002 §G
+   step 2 recovery)"`, is attached to every genuinely new recovered
+   entry's `provenance` list — distinct from `SRC_HOLDINGS` (a current
+   `holdings.yaml` citation) — added to `AUTHORIZED_SOURCE_LABELS` (an
+   18th entry; this correction leaves `CONTENDER-0002` §E.3's own
+   exactly-eight-value `secondary_flags` vocabulary untouched, on the
+   reasoning that extending this session's own open, generator-owned
+   source catalog — already precedented by the disclosed 17th
+   `CLAUDE.md` source — is less invasive than extending §E.3's own
+   closed, governing-text-enumerated vocabulary). A recovered entry is
+   now identified via `any(p["source"] == SRC_LEGACY_RECOVERY for p in
+   entry["provenance"])` — mechanical, structural, never prose-fragile.
+3. **A fourth, honest `recovery_status` outcome**: `"all_recovered_
+   already_tracked"` — the diff succeeded and found one or more removed
+   legacy tickers, but every one already had its own entry via another
+   governed source, so zero new rows were needed or created. Deliberately
+   distinct from `"recovery_ambiguous"` (which means the search itself
+   could not be resolved) — this is a clean, successful search that
+   legitimately requires no new rows, not a failure, and calling it
+   "ambiguous" would misrepresent what actually happened. The raw
+   mechanically-found count is disclosed in this outcome's own
+   `next_action` text (e.g. "identified 41 legacy ticker(s)... every one
+   already carries independent governed coverage") so this is never
+   confused with "nothing was found."
+4. **`registry_entries_created` now genuinely means "new rows created."**
+   Computed in `build_registry()` from the actual post-collision count
+   (`len(net_new_recovered_symbols)`), never `len(recovered)`.
+
+**Test rewrite**: the marker search now uses `SRC_LEGACY_RECOVERY`
+membership in `provenance`, not prose matching, and the test's own
+branching covers all four outcomes explicitly (shallow/ambiguous/
+all-already-tracked all require `registry_entries_created == 0` and zero
+marked entries; the recovered-with-new-rows branch requires the count to
+match exactly and every marked entry to carry real commit-SHA
+provenance). New focused tests added: a mixed scenario (one genuinely new
+identity, one that collides) proving `registry_entries_created` counts
+correctly in the partial case; a dedicated `all_recovered_already_tracked`
+test proving the raw found count is disclosed and the status is never
+conflated with `recovery_ambiguous`; an end-to-end `build_registry()`
+determinism test. All `perform_legacy_recovery()`-calling tests updated
+for its new `(recovered, outcome_string)` return shape.
+
+**Validation at this corrected head**: `contender_registry_validator.py`
+OK (84 entries); bidirectional reconciliation zero errors, independently
+re-verified with the mixed-collision scenario; all four domain validators
+clean; decision catalog unchanged; sealed 27 and every protected path
+byte-identical; determinism reconfirmed (including a new dedicated
+`build_registry()`-level determinism test, not just
+`perform_legacy_recovery()`'s own); 119 focused tests in the two
+`test_contender_registry_*.py` files (up from 112) — see this PR's own
+latest comment for the exact corrected full-suite pass count and this
+correction's own final head.
+
+This correction fixed a genuine semantic defect in how recovery success
+was counted — not merely a test's own assumption — while preserving
+every prior correction's own fix intact (closed schema, live clone-depth
+detection, the mandatory §G step 2 attempt itself, fail-closed handling
+on every ambiguous path, zero placeholder rows in every outcome). No
+ticker research, no ranking, no policy change, no change to
+`CONTENDER-0001`/`XASSET-0001`/`CONTENDER-0002`. This session does not
+review its own PR, mark it ready, merge it, or post principal
+acceptance — awaiting terminal exact-head CI and a fresh independent
+exact-head delta review.

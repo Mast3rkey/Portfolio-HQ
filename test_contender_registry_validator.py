@@ -340,7 +340,37 @@ def test_clone_depth_and_recovery_status_vocabularies_are_closed():
     assert crv.RECOVERY_STATUS_VALUES == {
         "unavailable_in_current_clone",
         "recovery_ambiguous",
+        "all_recovered_already_tracked",
     }
+
+
+def test_legacy_gap_all_recovered_already_tracked_accepted():
+    data = _registry([_entry()])
+    data["legacy_gap"] = _legacy_gap(
+        clone_depth_at_generation="complete",
+        recovery_status="all_recovered_already_tracked",
+        registry_entries_created=0,
+    )
+    result = crv.validate_registry_data(data)
+    assert result.valid, result.errors
+
+
+def test_legacy_gap_all_recovered_already_tracked_nonzero_created_rejected():
+    """A 'found but all already tracked' status legitimately means zero
+    new rows — a nonzero registry_entries_created alongside it would be
+    self-contradictory."""
+    data = _registry([_entry()])
+    data["legacy_gap"] = _legacy_gap(
+        clone_depth_at_generation="complete",
+        recovery_status="all_recovered_already_tracked",
+        registry_entries_created=3,
+    )
+    result = crv.validate_registry_data(data)
+    assert not result.valid
+
+
+def test_authorized_source_labels_include_legacy_recovery_marker():
+    assert "holdings.yaml (historical — CONTENDER-0002 §G step 2 recovery)" in crv.AUTHORIZED_SOURCE_LABELS
 
 
 def test_recovered_status_pattern_matches_only_well_formed_counts():

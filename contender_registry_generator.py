@@ -155,6 +155,12 @@ SRC_RESEARCH = "research_protocols"
 SRC_EARNINGS = "earnings.py"
 SRC_CHART = "governance/evidence/CHART-0002"
 SRC_CLAUDE_MD = "CLAUDE.md"  # disclosed 17th source, see module docstring
+# Dedicated, structured provenance marker (18th label) distinguishing a
+# §G-step-2-recovered entry from an ordinary current holdings.yaml
+# discovery (SRC_HOLDINGS) — mechanical, provenance-only, no policy
+# content. See perform_legacy_recovery()'s and build_registry()'s own
+# docstrings for the full rationale.
+SRC_LEGACY_RECOVERY = "holdings.yaml (historical — CONTENDER-0002 §G step 2 recovery)"
 
 
 def _prov(source: str, role: str) -> dict:
@@ -205,12 +211,20 @@ def detect_clone_depth(repo_root: Path, *, runner=None) -> str:
     )
 
 
-def _legacy_gap_record(clone_depth: str, recovery_status: str, registry_entries_created: int) -> dict:
-    """§G's exact required record shape. `registry_entries_created` is 0
-    for every non-recovery outcome (§G: 'no placeholder or invented ticker
-    row may be created for any UNRECOVERED legacy symbol') and equals the
-    real, mechanically-diffed count when recovery succeeded — never
-    invented, never a round number."""
+def _legacy_gap_record(
+    clone_depth: str, recovery_status: str, registry_entries_created: int, *, next_action: str | None = None,
+) -> dict:
+    """§G's exact required record shape. `registry_entries_created` counts
+    genuinely NEW registry rows only — 0 for every outcome where no new
+    row was added (§G: 'no placeholder or invented ticker row may be
+    created for any UNRECOVERED legacy symbol'; the same discipline
+    applies to a symbol the diff found but that already has its own
+    entry via another governed source — that is not a new row either),
+    and equals the real, collision-filtered count of NEW rows when
+    recovery genuinely added at least one — never invented, never a
+    round number. `next_action`, if supplied, overrides the default text
+    (used by the "found, but every recovered identity was already
+    tracked" outcome to disclose the raw found count honestly)."""
     if clone_depth not in CLONE_DEPTH_VALUES:
         raise ValueError(f"clone_depth must be one of {sorted(CLONE_DEPTH_VALUES)} — got {clone_depth!r}")
     return {
@@ -220,7 +234,7 @@ def _legacy_gap_record(clone_depth: str, recovery_status: str, registry_entries_
         "clone_depth_at_generation": clone_depth,
         "recovery_status": recovery_status,
         "registry_entries_created": registry_entries_created,
-        "next_action": (
+        "next_action": next_action if next_action is not None else (
             "none required for the recovered identities themselves — each carries its own "
             "ordinary next_required_action; if the recovered count differs from the originally "
             "reported ~41, that reflects this mechanical diff's own actual result at the one "
@@ -288,47 +302,56 @@ def diff_holdings_tickers_across_commit(
 
 def perform_legacy_recovery(
     repo_root: Path, clone_depth: str, *, runner=None,
-) -> tuple[list[tuple[str, str, str]], dict]:
-    """CONTENDER-0002 §G steps 2-3, orchestrated. Returns
-    `(recovered, legacy_gap)`. `recovered` is a list of
-    `(canonical_symbol, asset_type, provenance_note)` raw mechanical-fact
-    tuples — no disposition is assigned here; `build_registry()` routes
-    every recovered symbol through the same §E.2 precedence engine as
-    every other discovered identity, so a symbol that happens to already
-    carry other governed evidence (e.g. it was later re-added and already
-    has a Company Intelligence record) is never incorrectly forced into a
-    disposition this function would have guessed. `recovered` is empty
-    unless `clone_depth == "complete"` AND the reconciliation commit AND a
-    single resolvable parent were both found AND the diff itself found at
-    least one removed ticker without raising. Every recovered tuple's own
-    provenance note carries the real git commit SHAs — never guessed,
-    never a placeholder. When `clone_depth == "shallow"`, or when any step
-    fails to resolve unambiguously, this fails closed to an honest
-    `recovery_ambiguous`/`unavailable_in_current_clone` gap record with
-    zero recovered entries — matching §G step 3's own "stop and disclose"
-    instruction."""
+) -> tuple[list[tuple[str, str, str]], str]:
+    """CONTENDER-0002 §G steps 2-3, orchestrated. Returns `(recovered,
+    outcome)`. `recovered` is a list of `(canonical_symbol, asset_type,
+    provenance_note)` raw mechanical-fact tuples — every legacy ticker the
+    bounded diff actually found removed at the PHQ-2026-02 boundary, with
+    NO collision filtering and NO disposition assigned here (that is
+    `build_registry()`'s own job — see below for why). `outcome` is
+    exactly one of `"shallow"` (no attempt possible), `"ambiguous"` (an
+    attempt was made but the reconciliation commit, a single resolvable
+    parent, or a non-empty diff could not be established — §G step 3's
+    own "stop and disclose" path), or `"found"` (the diff succeeded and
+    `recovered` is non-empty). Every recovered tuple's own provenance note
+    carries the real git commit SHAs — never guessed, never a placeholder.
+
+    **This function deliberately does NOT construct the final
+    `legacy_gap` record** (an earlier version of this function did, and
+    that was itself a bug this correction fixes): a mechanically-found
+    legacy ticker may already be tracked via another governed source
+    (most concretely, this repository's own real history — independently
+    confirmed via this repository's own CI — where the pre-PHQ-2026-02
+    roster substantially overlaps with tickers later given their own
+    Company Intelligence coverage under WS-0005's batches). Counting such
+    a collision as a "created" registry row would misstate what actually
+    happened — no new row is added, `entries` is unchanged for that
+    symbol, `existing_disposition` is never overwritten (§H.3 step 4).
+    Only `build_registry()`, which alone knows which symbols are already
+    tracked, can correctly compute how many recovered identities became
+    genuinely NEW rows — so it, not this function, owns the final
+    `registry_entries_created`/`recovery_status` count."""
     if clone_depth not in CLONE_DEPTH_VALUES:
         raise ValueError(f"clone_depth must be one of {sorted(CLONE_DEPTH_VALUES)} — got {clone_depth!r}")
 
     if clone_depth == "shallow":
-        return [], _legacy_gap_record("shallow", "unavailable_in_current_clone", 0)
+        return [], "shallow"
 
     commit_sha, parent_sha = find_phq_2026_02_reconciliation_commit(repo_root, runner=runner)
     if commit_sha is None or parent_sha is None:
-        return [], _legacy_gap_record("complete", "recovery_ambiguous", 0)
+        return [], "ambiguous"
 
     try:
         removed = diff_holdings_tickers_across_commit(repo_root, commit_sha, parent_sha, runner=runner)
     except Exception:
-        return [], _legacy_gap_record("complete", "recovery_ambiguous", 0)
+        return [], "ambiguous"
 
     if not removed:
-        return [], _legacy_gap_record("complete", "recovery_ambiguous", 0)
+        return [], "ambiguous"
 
     note = f"present in holdings.yaml at {parent_sha}, absent at {commit_sha} (the PHQ-2026-02 reconciliation commit)"
     recovered = [(sym, asset_type, note) for sym, asset_type in removed]
-    status = f"recovered_{len(recovered)}_of_41"
-    return recovered, _legacy_gap_record("complete", status, len(recovered))
+    return recovered, "found"
 
 
 @dataclass
@@ -726,20 +749,66 @@ def build_registry(
     # reachable — run BEFORE disposition assignment so any genuinely new
     # recovered symbol is routed through the same §E.2 precedence engine
     # as every other discovered identity, not hardcoded to one tier.
+    #
+    # registry_entries_created must count NEW rows only — a symbol the
+    # mechanical diff finds removed at the PHQ-2026-02 boundary may
+    # already be tracked via another governed source (confirmed live
+    # against this repository's own real CI history: every one of the 41
+    # legacy tickers the diff found already carries independent Company
+    # Intelligence coverage added later by WS-0005's own batches). That is
+    # not a new row and must never be counted as one — the collision
+    # guard below both prevents overwriting the existing entry AND is the
+    # authority `build_registry()` uses to compute the real count, not
+    # `len(recovered)` (an earlier version of this function used exactly
+    # that raw count and was wrong for precisely this reason).
     clone_depth = detect_clone_depth(repo_root, runner=runner)
-    recovered, legacy_gap = perform_legacy_recovery(repo_root, clone_depth, runner=runner)
+    recovered, recovery_outcome = perform_legacy_recovery(repo_root, clone_depth, runner=runner)
+    net_new_recovered_symbols: list[str] = []
     for sym, asset_type, note in recovered:
         if sym in entries:
             # Already tracked via a live, current source (e.g. later
             # re-added to holdings/targets, or already carries a Company
             # Intelligence record) — never overwrite an existing,
             # already-provenanced entry with a historical recovery stub;
-            # §H.3 step 4 ("never overwrite... only cite").
+            # §H.3 step 4 ("never overwrite... only cite"). Not counted
+            # as a created row.
             continue
         e = entry(sym, asset_type)
-        e.add_prov(SRC_HOLDINGS, "discovery")
+        # Structured, mechanically-checkable marker: a dedicated
+        # provenance source label distinct from SRC_HOLDINGS (a CURRENT
+        # holdings.yaml citation) — preferred over matching prose text in
+        # `existing_disposition`, per the review that flagged the prior
+        # substring-matching approach as fragile, and preferred over
+        # extending CONTENDER-0002 §E.3's own exactly-eight-value
+        # secondary-flags vocabulary, which this correction leaves
+        # untouched.
+        e.add_prov(SRC_LEGACY_RECOVERY, "discovery")
         e.existing_disposition = f"Recovered via CONTENDER-0002 §G step 2's mechanical diff: {note}."
         accepted.setdefault(sym, set()).add(f"holdings.yaml (historical, §G step 2 recovery: {note})")
+        net_new_recovered_symbols.append(sym)
+
+    if recovery_outcome == "shallow":
+        legacy_gap = _legacy_gap_record("shallow", "unavailable_in_current_clone", 0)
+    elif recovery_outcome == "ambiguous":
+        legacy_gap = _legacy_gap_record("complete", "recovery_ambiguous", 0)
+    elif net_new_recovered_symbols:
+        n = len(net_new_recovered_symbols)
+        legacy_gap = _legacy_gap_record("complete", f"recovered_{n}_of_41", n)
+    else:
+        # The diff succeeded and found len(recovered) removed legacy
+        # tickers, but every single one already has its own entry via
+        # another governed source — a genuine, honest, non-error outcome
+        # (not "ambiguous," which would misrepresent a clean, successful
+        # search as an uncertain one), disclosing the raw found count so
+        # this is never confused with "nothing was found."
+        legacy_gap = _legacy_gap_record(
+            "complete", "all_recovered_already_tracked", 0,
+            next_action=(
+                f"none — the mechanical diff identified {len(recovered)} legacy ticker(s) at the "
+                "PHQ-2026-02 boundary, and every one already carries independent governed coverage "
+                "via another source; zero new rows were needed or created"
+            ),
+        )
 
     # ── §E.2: assign exactly one primary disposition per identity, top to
     # bottom precedence order, mechanically. ────────────────────────────────
