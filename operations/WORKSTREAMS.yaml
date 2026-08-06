@@ -3019,6 +3019,49 @@ workstreams:
           not only on the top-level self-reference field. status remains
           in_progress — this filing's own governance PR is still unmerged,
           and this correction does not mark it complete.
+
+          **Second bounded correction (same day, this PR, review
+          4869945654).** Independent exact-head delta review of PR #255
+          (anchored to head 6f934957ca88d1db670eaf3c57a4f509f4bc2dd2)
+          confirmed all three findings from review 4869718735 fully
+          resolved inside the decision file and this register, with zero
+          regression, but found one new MAJOR: the corrected eighteen-
+          field, primary(4)/secondary(2)-disposition, categorical-target-
+          context design (above, "Bounded correction") was never
+          propagated into this gate's own original description paragraph,
+          which still stated "the required sixteen-field per-ticker output
+          schema... a closed six-value disposition vocabulary (aligned,
+          divergence_requires_review, baseline_assumption_stale,
+          unresolved_evidence, structural_measurement_gap,
+          no_policy_conclusion)" — the exact superseded design. That
+          original paragraph is left unedited, preserved as an accurate
+          historical record of what the first commit defined; this
+          paragraph states the corrected, current specification. The
+          future Milestone 7 implementation the decision file's own §L
+          authorizes must deliver, per ticker, exactly eighteen fields
+          (sealed economic_role/capital_priority/risk_concentration/
+          evidence_quality plus current baseline context and comparison
+          results for each, a categorical target_context_comparison
+          distinct from the capital-priority comparison, primary_
+          disposition, secondary_conditions, supporting evidence,
+          uncertainty, and later governance action if any) — never a
+          sixteen-field schema. primary_disposition is exactly one value
+          from a closed, deterministically-precedenced four-value
+          vocabulary (baseline_assumption_stale > divergence_requires_
+          review > aligned > no_policy_conclusion). secondary_conditions
+          is a closed, zero-to-two-value flag set (unresolved_evidence,
+          structural_measurement_gap) — neither value is ever a primary
+          disposition, and a secondary flag never substitutes for a
+          reachable primary finding. target_context_comparison is
+          categorical only (categorically_consistent /
+          categorically_divergent / unable_to_determine) with a required
+          non-numeric rationale — it must never propose, estimate, or
+          backsolve a replacement target percentage or numeric range; the
+          sealed Milestone 6 evidence contains no numeric range of any
+          kind. milestone-7-baseline-reconciliation remains status:
+          proposed, pr: null — this correction changes no register status,
+          only this gate's own descriptive text. This gate's own pr: 255
+          and status: in_progress (below) are unchanged by this addition.
         pr: 255
         status: in_progress
         date: "2026-08-05"

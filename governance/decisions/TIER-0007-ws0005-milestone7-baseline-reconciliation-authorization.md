@@ -46,6 +46,21 @@ scope.
   labeling, chart boundary, non-retroactive-rewrite rule, non-authorization boundary, protected-path
   isolation, TIER-0006 lifecycle synchronization) was independently confirmed sound by that review —
   this correction is scoped to exactly the three findings below and touches nothing else.
+- **Second-round preflight, independently re-verified this session.** After the first bounded
+  correction (commit `6f93495`), branch and `origin` both confirmed at
+  `6f934957ca88d1db670eaf3c57a4f509f4bc2dd2`. PR #255 reconfirmed: `state: open`, `draft: true`,
+  `merged: false`, `mergeable_state: clean`, `commits: 3`, `changed_files: 5`. Independent delta
+  review `4869945654` retrieved and read directly from GitHub, anchored to that exact head. Verdict
+  `CHANGES REQUIRED` — 0 BLOCKING / 1 MAJOR / 1 MINOR / 0 NOTE — confirming all three findings from
+  review `4869718735` (the primary/secondary disposition redesign, the target-context comparison,
+  and the gate `pr:` field) fully resolved inside this decision file and `operations/
+  WORKSTREAMS.yaml`, with zero regression on every previously-confirmed section. Two new findings are
+  scoped to exactly: (A, MAJOR) the corrected schema was not propagated into the two other places in
+  this same PR that restate it in prose — `operations/WORKSTREAMS.yaml`'s `tier0007-...` gate
+  description and `CLAUDE.md`'s `TIER-0007` entry, both of which still described the superseded
+  sixteen-field/six-value design, and `CLAUDE.md` additionally still read `pr: null`, contradicting
+  `operations/WORKSTREAMS.yaml`'s already-corrected `pr: 255`; (B, MINOR) `categorically_consistent`
+  lacked the explicit anti-misreading guard already attached to `aligned`.
 
 ### Correction history (this filing, same PR)
 
@@ -77,6 +92,47 @@ comparison, and edits no sealed Milestone 6 record or manifest — confirmed by 
 inventory in §N, unchanged from the original filing (this decision file and `operations/
 WORKSTREAMS.yaml`; `CLAUDE.md` receives one further factual-synchronization update after this PR's
 own re-review, per §O, not as part of this correction commit).
+
+**Second bounded correction, review `4869945654`, two findings, 0 BLOCKING / 1 MAJOR / 1 MINOR:**
+
+1. **MAJOR (Finding A)** — the first correction rewrote §F/§G/§H to the eighteen-field, primary(4)+
+   secondary(2), categorical-target-context design, but never propagated that change to the two other
+   places in this same PR that restate the schema in prose: `operations/WORKSTREAMS.yaml`'s
+   `tier0007-milestone7-baseline-reconciliation-authorization` gate description (still read "the
+   required sixteen-field per-ticker output schema... a closed six-value disposition vocabulary") and
+   `CLAUDE.md`'s `TIER-0007` Decisions Log entry (same stale schema language, plus `pr: null`
+   directly contradicting `operations/WORKSTREAMS.yaml`'s own already-corrected `pr: 255`). Both are
+   live project context a future Milestone 7 implementer or reviewer would consult, and `CLAUDE.md`
+   in particular is auto-loaded at the start of every session — leaving it stale risked exactly the
+   kind of inconsistent-specification defect this filing's own Rationale states it exists to prevent.
+   **Resolved** by adding a further additive paragraph to the `tier0007-...` gate's own description in
+   `operations/WORKSTREAMS.yaml` (§M) and by appending "Bounded correction"/"Second bounded
+   correction" paragraphs to `CLAUDE.md`'s existing `TIER-0007` entry — matching this repository's own
+   established convention (the same file's immediately-preceding `TIER-0006` entry stacks its
+   correction rounds the identical way) rather than editing the original, dated description text in
+   place. Neither the original `operations/WORKSTREAMS.yaml` paragraph nor the original `CLAUDE.md`
+   entry's prose is rewritten — both are preserved verbatim as an accurate historical record of what
+   the *first* commit defined, with the corrected design stated in the appended paragraphs, exactly
+   as the first correction's own decision-file text already does via its "Correction history"
+   section above (which likewise preserves "the original §G... required 'exactly one' of six flat
+   values" as history rather than silently erasing it).
+2. **MINOR (Finding B)** — `categorically_consistent` (§G) carried no explicit guard against being
+   misread as "the current target is confirmed correct" — the same shape of risk §H's `aligned` value
+   was explicitly guarded against, but `categorically_consistent` was not. **Resolved** by adding an
+   explicit guard sentence to the `categorically_consistent` bullet in §G, parallel in structure and
+   coverage to §H's `aligned` guard (see §G) — it does not mean the target is approved, optimal,
+   should be retained, needs no policy review, or that Milestone 8 has adopted it; it carries no
+   policy authority of its own. `categorically_divergent`'s own bullet is also clarified as an
+   analytical finding only, naming that a divergence exists without directing an increase, decrease,
+   or replacement figure — closing the same class of gap defensively, though the reviewer did not
+   flag it as a defect.
+
+This second correction touches exactly `governance/decisions/TIER-0007-...md` (this file, §G) and
+`operations/WORKSTREAMS.yaml` (the `tier0007-...` gate description) plus, for the first time in this
+PR, `CLAUDE.md` — no `governance/decisions.yaml` change (no new decision, no metadata field
+changed), no `test_portfolio_hq_dashboard_decisions.py` change (no decision count changed), no
+`intelligence/classification/` or `COHORT_MANIFEST.yaml` change, no reconciliation content, no
+ticker-level analysis, no Milestone 8 authorization, no portfolio-policy or production change.
 
 ## Decision
 
@@ -251,10 +307,17 @@ target_context_comparison:
 
 - `categorically_consistent` — the current `target_pct`/gate context and the sealed categorical
   evidence point the same direction (e.g., sealed `maintain_current_weight` alongside an unchanged,
-  non-gated target that has been reviewed recently);
+  non-gated target that has been reviewed recently). **This means only that the existing target/tier
+  context is not categorically inconsistent with the sealed `capital_priority` evidence — parallel to
+  §H's `aligned` guard, it does not mean the existing target is approved, that the current percentage
+  is optimal, that the target should be retained, that no policy review is needed, that the portfolio
+  should maintain, add, reduce, buy, sell, hold, trim, wait, or stage, or that Milestone 8 has adopted
+  the existing target.** It carries no policy authority of its own;
 - `categorically_divergent` — they point in different directions (e.g., sealed `case_for_review`
   alongside a target that has not been reviewed since, or a gated name whose sealed evidence no
-  longer plainly supports the gate's own stated reopening condition);
+  longer plainly supports the gate's own stated reopening condition). This is an analytical finding
+  only — it does not itself direct an increase, a decrease, a specific replacement percentage, or any
+  other sizing action; it names that a divergence exists, not what to do about it;
 - `unable_to_determine` — the evidence available is insufficient to reach either of the above.
 
 `rationale` must explain, in evidence-grounded, non-numeric prose, why the status was reached.
@@ -444,19 +507,35 @@ prior WS-0005 filing in this log. `WS-0005`'s `active_branch`/`active_pr`/`last_
 top-level `status: in_progress`, `priority: primary`, `authorized_scope`, and `prohibited_scope` are
 unchanged.
 
+The second bounded correction (§ "Correction history" above, review `4869945654` Finding A) adds a
+further additive paragraph directly to the `tier0007-milestone7-baseline-reconciliation-authorization`
+gate's own description in `operations/WORKSTREAMS.yaml`, restating the corrected eighteen-field,
+primary(4)/secondary(2)-disposition, categorical-target-context design in place of the superseded
+sixteen-field/six-value language the gate's original description carried — the original description
+paragraph is preserved unedited as the historical record of what the first commit defined; the new
+paragraph states the current, corrected specification. `tier0007-...`'s own `status: in_progress`,
+`pr: 255` are unchanged by this addition. `milestone-7-baseline-reconciliation` remains `status:
+proposed`, `pr: null`, untouched. No other `WS-0005` field, gate, or self-reference value is changed
+by this second correction.
+
 ### N. Governance package scope (this filing)
 
 This filing touches exactly: (1) this decision file; (2) `governance/decisions.yaml` (one new index
 row); (3) `operations/WORKSTREAMS.yaml` (`WS-0005` only — two additive gate entries and the
-self-reference fields, per §M); (4) `CLAUDE.md` (one concise Decisions Log pointer entry, updated
-after this bounded correction to reflect the corrected specification); (5) `test_portfolio_hq_
-dashboard_decisions.py` (the two hardcoded decision-count assertions, 80 → 81). This bounded
-correction round touches only this decision file and `operations/WORKSTREAMS.yaml` (the `pr:` field
-fix, §M) — no new file, no `governance/decisions.yaml` change (no metadata field changed), no
-`test_portfolio_hq_dashboard_decisions.py` change (no count changed). No production code, no
+self-reference fields, per §M); (4) `CLAUDE.md` (one concise Decisions Log pointer entry); (5)
+`test_portfolio_hq_dashboard_decisions.py` (the two hardcoded decision-count assertions, 80 → 81).
+The first bounded correction round touched only this decision file and `operations/WORKSTREAMS.yaml`
+(the `pr:` field fix, §M). This second bounded correction round touches this decision file (§G's
+`categorically_consistent`/`categorically_divergent` guards), `operations/WORKSTREAMS.yaml` (an
+additive paragraph on the `tier0007-...` gate propagating the corrected schema, §M), and — for the
+first time in this PR — `CLAUDE.md` (additive "Bounded correction"/"Second bounded correction"
+paragraphs appended to the existing `TIER-0007` entry, correcting its stale sixteen-field/six-value
+restatement and its stale `pr: null`, without editing the entry's original prose). Neither correction
+round adds a new file, changes `governance/decisions.yaml` (no metadata field changed), or changes
+`test_portfolio_hq_dashboard_decisions.py` (no decision count changed). No production code, no
 `intelligence/classification/` or `intelligence/relationships/` file, no `governance/audits/`
 artifact, no other workstream, and no existing Company/Theme Intelligence or classification record
-is touched, in either the original filing or this correction.
+is touched, in the original filing or either correction round.
 
 ### O. Effectiveness, review, and merge gates
 
