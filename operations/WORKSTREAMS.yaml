@@ -2048,9 +2048,39 @@ workstreams:
           cadence-vs-thesis uncertainty; every difference states evidence,
           reasoning, uncertainty, opportunity cost, controlling policy, and
           required governance action. Not authorized to execute.
-        pr: null
-        status: proposed
-        date: "2026-07-25"
+
+          **Implementation begun (this filing), per merged `TIER-0007`.** One
+          coherent artifact, `intelligence/reconciliation/
+          MILESTONE7_BASELINE_RECONCILIATION.yaml`, covering all 27 sealed
+          canonical equities in TIER-0007 §F's exact 18-field schema
+          (alphabetical order, primary disposition — 0 baseline_assumption_
+          stale / 14 divergence_requires_review / 12 aligned / 1
+          no_policy_conclusion (SPGI) — plus zero-to-two closed secondary
+          conditions, a categorical-only target_context_comparison, no
+          numeric target/range/score/ranking anywhere). §C's six pre-
+          unblinding integrity checks all passed (classification_validator
+          OK, 27/27 hash reconciliation, 27/27 sealed, zero diff on
+          intelligence/classification/ since the TIER-0006 merge commit
+          1107c5b70801ff5e7027efddf6a2aa916030dce2, comparison source main
+          SHA 1d5d93f94bbc39a0b9d99178a7b477e6f0f27928 recorded). New
+          `reconciliation_validator.py` (closed top-level/per-ticker schema,
+          closed vocabularies, forbidden-key/forbidden-phrase scan against
+          any new numeric target) plus `test_reconciliation_validator.py`
+          (64 tests). Retained narrative audit: `governance/audits/
+          WS0005_M7_BASELINE_RECONCILIATION_20260806.md`. Zero edit to any
+          sealed classification record, COHORT_MANIFEST.yaml,
+          classification_validator.py, or the sanitizer. **This filing does
+          not itself determine Milestone 7 complete** — following the
+          `PI-0031`/`PI-0037` (Milestone 3) and `REL-0001`/`REL-0004`/
+          `REL-0006` (Milestone 4) precedent, a completion determination is
+          its own separate, later, independently-reviewed Lane G filing;
+          TIER-0007 authorized and specified this one implementation unit
+          without itself defining a Milestone 7 completion standard. Does
+          not authorize, begin, schedule, or imply Milestone 8 or Milestone
+          9.
+        pr: 259
+        status: in_progress
+        date: "2026-08-06"
       - gate: milestone-8-policy-recommendation-package
         description: >
           Advisory-only recommendations covering portfolio roles, tier/
@@ -3065,6 +3095,43 @@ workstreams:
         pr: 255
         status: in_progress
         date: "2026-08-05"
+      - gate: tier0007-post-merge-verification
+        description: >
+          Lane M factual synchronization (OPS-0009 §1), folded into this
+          Milestone 7 implementation filing per OPS-0008 §4(a)'s read-only
+          post-merge convention, closing the deferred synchronization
+          TIER-0007's own post-merge-verification comment
+          (issuecomment-5199253045) explicitly disclosed rather than
+          performed. TIER-0007 (PR #255) independently re-confirmed this
+          session via the GitHub API: MERGED, accepted head
+          4a4408ab133b8ebb58309d607f397f37853bfaa6, merge commit
+          f71ea3bb1428445023c4fa582ed953ae409ba070 (an ancestor of the
+          current origin/main tip, confirmed via git merge-base
+          --is-ancestor). Independent review history: original
+          4869718735 (CHANGES REQUIRED, 0/2/1/0), first delta
+          4869945654 (CHANGES REQUIRED, 0/1/1/0), final delta
+          4870096664 (DELTA APPROVED — APPROVED FOR PRINCIPAL EXACT-HEAD
+          ACCEPTANCE, 0/0/0/0), all independently retrieved and read in
+          full, not merely cited. Principal acceptance
+          issuecomment-5199184589 confirmed at the exact accepted head.
+          Post-merge verification issuecomment-5199253045 confirmed,
+          including its own disclosure that this workstream's
+          active_branch/active_pr/last_verified_main_sha self-reference
+          fields still read PR #255's own pre-merge state — corrected by
+          this same filing's active_branch/active_pr/last_verified_main_sha
+          update below. Merge-commit CI (check 92485616796, workflow
+          31059983036) completed/success at the accepted head,
+          independently re-confirmed. The tier0007-milestone7-baseline-
+          reconciliation-authorization gate above is left unedited — this
+          entry records confirmation of its already-established merge and
+          post-merge state, the same tier0006-post-merge-verification /
+          tier0001-post-merge-verification pattern. Creates no new
+          tier/target/holdings/cluster/cap/allocator/margin authority and
+          does not itself advance Milestone 7 beyond what the
+          milestone-7-baseline-reconciliation gate above already records.
+        pr: 255
+        status: complete
+        date: "2026-08-06"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md
@@ -4960,10 +5027,10 @@ workstreams:
       ticker classification, any sanitized evidence package, or any validator implementation — Step 6
       (`milestone6-prereq6-fresh-authorization-required`) remains its own separate, later, explicit
       authorization requirement, left exactly as merged (`status: blocked`, unedited) by this filing.
-    active_branch: claude/milestone-7-baseline-reconciliation-auth-dmtyr6
-    active_pr: 255
-    last_verified_main_sha: 1107c5b70801ff5e7027efddf6a2aa916030dce2
-    last_verified_date: "2026-08-05"
+    active_branch: claude/ws-0005-milestone-7-baseline-ygez0e
+    active_pr: 259
+    last_verified_main_sha: 1d5d93f94bbc39a0b9d99178a7b477e6f0f27928
+    last_verified_date: "2026-08-06"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
       roadmap; execution of Milestones 1-2 only, per its 2026-07-25
