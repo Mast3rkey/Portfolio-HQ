@@ -2882,6 +2882,189 @@ workstreams:
         pr: 252
         status: complete
         date: "2026-08-05"
+      - gate: tier0006-post-merge-verification
+        description: >
+          Lane M factual synchronization (OPS-0009 §1), folded into the
+          TIER-0007 governance filing per OPS-0008 §4(a)'s read-only
+          post-merge convention rather than a dedicated reconciliation PR.
+          TIER-0006 (PR #254) independently re-confirmed this session via
+          the GitHub API: MERGED, accepted head
+          306e1a0f716d2fd8d515f1d0496b81ca30af93f4, merge commit
+          1107c5b70801ff5e7027efddf6a2aa916030dce2 (== current origin/main
+          tip, confirmed via get_commit). Independent exact-head review
+          4869309702 (APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0
+          BLOCKING / 0 MAJOR / 0 MINOR / 1 non-actionable NOTE) confirmed
+          anchored to the accepted head. Principal acceptance
+          issuecomment-5198112358 confirmed at that exact head, explicitly
+          scoped to not authorize Milestone 7. Post-merge verification
+          issuecomment-5198142601 confirmed, including its own disclosure
+          that this workstream's active_branch/active_pr/
+          last_verified_main_sha self-reference fields still read PR #254's
+          own pre-merge branch/base state (claude/milestone-6-completion-
+          8bu7w0 / 254 / 7f2ffed8...) rather than the post-merge state.
+          Merge-commit CI run 31052845524 completed/success on head_sha
+          1107c5b70801ff5e7027efddf6a2aa916030dce2, independently
+          re-confirmed. The milestone-6-blind-classification gate entry
+          above is left unedited — this entry records confirmation of its
+          already-established merge and post-merge state, exactly the
+          tier0001-post-merge-verification / rel0002-post-merge-
+          verification pattern. Creates no new tier/target/holdings/
+          cluster/cap/allocator/margin authority and does not advance
+          Milestone 7 or any later milestone.
+        pr: 254
+        status: complete
+        date: "2026-08-05"
+      - gate: tier0007-milestone7-baseline-reconciliation-authorization
+        description: >
+          TIER-0007 filed 2026-08-05 — the first explicit, separate
+          principal authorization addressing Milestone 7 ("Baseline
+          reconciliation"), now that Milestone 6 is formally complete
+          (TIER-0006). Explicitly principal-authorized: "one small,
+          coherent Lane G governance filing that defines and authorizes the
+          future WS-0005 Milestone 7 baseline-reconciliation
+          implementation... must not perform the reconciliation itself."
+          Live preflight independently re-verified this session:
+          origin/main and local branch both at
+          1107c5b70801ff5e7027efddf6a2aa916030dce2, working tree clean,
+          zero open pull requests, TIER-0006/PR #254's full lifecycle
+          reconfirmed (see tier0006-post-merge-verification above),
+          TIER-0007 confirmed the next unused identifier (80 decision files
+          reconciled 1:1 against 80 governance/decisions.yaml rows), and
+          the 27-name sealed classification population, all 27 content
+          hashes, and COHORT_MANIFEST.yaml bidirectional consistency
+          independently reconfirmed unchanged since TIER-0006.
+
+          Defines, as doctrine only, not executed by this filing: Milestone
+          7's purpose (unblind the 27 sealed Milestone 6 records and
+          compare each against the current governed baseline on role,
+          capital priority, target/tier context, structural risk, and
+          evidence quality — analysis only, no policy recommendation or
+          adoption); mandatory sealed-record integrity checks before any
+          future unblinding (re-run classification_validator.py, recompute
+          all 27 content hashes, reconcile COHORT_MANIFEST.yaml, confirm
+          sealed status, confirm no drift since TIER-0006, record the exact
+          comparison-source merge SHA); the permitted comparison-input list
+          (targets.yaml, gates.yaml, portfolio_role_ref, holdings.yaml as
+          descriptive-only, issuer_lookthrough.yaml, intelligence/
+          relationships/, Company/Theme Intelligence, current review/
+          evidence-quality state, controlling governance decisions), with
+          mandatory separation of blind-classification conclusion / current
+          baseline policy / factual current state / governing constraint /
+          reconciliation analysis / unresolved evidence; the fundamentals-
+          only chart-evidence boundary (TIER-0003's exclusion is not
+          reopened); the required sixteen-field per-ticker output schema
+          (no new target percentage, score, or ranking); a closed six-value
+          disposition vocabulary (aligned, divergence_requires_review,
+          baseline_assumption_stale, unresolved_evidence,
+          structural_measurement_gap, no_policy_conclusion); required
+          aggregate analytical-only outputs; a no-retroactive-rewrite rule
+          protecting intelligence/classification/*.yaml and
+          COHORT_MANIFEST.yaml as immutable evidence inputs; and an
+          explicit, enumerated non-authorization boundary (no target/tier/
+          role/gate/holdings/cap/cluster/issuer-lookthrough/allocator/
+          margin/ladder change; no chart evidence; no buy/sell/hold/trim/
+          wait/stage/sizing instruction; no order; no Milestone 8 or 9
+          work; no live or scenario allocation check; no edit to any sealed
+          record).
+
+          Authorizes exactly one later, separate, bounded Milestone 7
+          implementation PR covering all 27 canonical equities in one
+          coherent retained reconciliation artifact (or a small logically
+          partitioned set — never one PR per ticker), effective only after
+          this governance decision is independently reviewed,
+          principal-accepted, merged, and post-merge verified. Internal
+          read-only shards may be used for drafting efficiency; only one
+          primary authoring session may mutate the repository. That future
+          PR still requires its own full independent-review/
+          correction/re-review/principal-acceptance/merge/post-merge-
+          verification lifecycle.
+
+          The milestone-7-baseline-reconciliation gate above is
+          deliberately left status: proposed, unedited, by this filing —
+          matching REL-0001 §K's identical treatment of the
+          milestone-4-portfolio-relationship-mapping gate and TIER-0001's
+          identical treatment of the milestone-5 gate: a schema/definition/
+          authorization filing that performs no substantive milestone
+          content is not itself "the milestone beginning." This new gate
+          entry tracks this filing's own progress instead, following
+          TIER-0001's own corrected precedent (review 4859945925 found a
+          filing marking its own still-open PR's gate complete a MAJOR
+          defect) — status: in_progress, pr: null, since this filing's own
+          governance PR is itself unmerged. This governance PR must remain
+          draft, gain its own eligible independent exact-head review under
+          OPS-0007 §1, complete any required bounded correction and
+          re-review, and receive explicit principal acceptance before it
+          may be marked ready or merged — this entry does not itself
+          constitute that review or acceptance, and does not itself
+          authorize the future Milestone 7 implementation unit to begin,
+          which remains gated on this PR's own merge per §L of the decision
+          file. Neither this filing nor TIER-0006's merge authorizes
+          Milestone 8, Milestone 9, or any tier/target/role/gate/holdings/
+          cap/cluster/allocator/margin/ladder/chart/order/trade change.
+
+          **Bounded correction (same day, this PR, review 4869718735).**
+          Independent exact-head review of PR #255 (anchored to head
+          eac680ef8ba3e11592181b6e7063b7d90566e6f0) returned CHANGES
+          REQUIRED — 0 BLOCKING / 2 MAJOR / 1 MINOR. The two MAJOR findings
+          (no deterministic precedence among simultaneously-qualifying
+          disposition conditions; the gate text's "target-vs-evidence-
+          supported range" phrase left unoperationalized against the sealed
+          evidence's actual categorical-only shape) are resolved in the
+          decision file itself — see its own "Correction history" section
+          and revised §G/§H. The MINOR finding is resolved directly here:
+          this gate's own pr field, left null by the prior bounded
+          follow-up commit that set only WS-0005's top-level active_pr,
+          now reads pr: 255, matching the TIER-0003/TIER-0005 precedent of
+          recording the real PR number on the self-tracking gate itself,
+          not only on the top-level self-reference field. status remains
+          in_progress — this filing's own governance PR is still unmerged,
+          and this correction does not mark it complete.
+
+          **Second bounded correction (same day, this PR, review
+          4869945654).** Independent exact-head delta review of PR #255
+          (anchored to head 6f934957ca88d1db670eaf3c57a4f509f4bc2dd2)
+          confirmed all three findings from review 4869718735 fully
+          resolved inside the decision file and this register, with zero
+          regression, but found one new MAJOR: the corrected eighteen-
+          field, primary(4)/secondary(2)-disposition, categorical-target-
+          context design (above, "Bounded correction") was never
+          propagated into this gate's own original description paragraph,
+          which still stated "the required sixteen-field per-ticker output
+          schema... a closed six-value disposition vocabulary (aligned,
+          divergence_requires_review, baseline_assumption_stale,
+          unresolved_evidence, structural_measurement_gap,
+          no_policy_conclusion)" — the exact superseded design. That
+          original paragraph is left unedited, preserved as an accurate
+          historical record of what the first commit defined; this
+          paragraph states the corrected, current specification. The
+          future Milestone 7 implementation the decision file's own §L
+          authorizes must deliver, per ticker, exactly eighteen fields
+          (sealed economic_role/capital_priority/risk_concentration/
+          evidence_quality plus current baseline context and comparison
+          results for each, a categorical target_context_comparison
+          distinct from the capital-priority comparison, primary_
+          disposition, secondary_conditions, supporting evidence,
+          uncertainty, and later governance action if any) — never a
+          sixteen-field schema. primary_disposition is exactly one value
+          from a closed, deterministically-precedenced four-value
+          vocabulary (baseline_assumption_stale > divergence_requires_
+          review > aligned > no_policy_conclusion). secondary_conditions
+          is a closed, zero-to-two-value flag set (unresolved_evidence,
+          structural_measurement_gap) — neither value is ever a primary
+          disposition, and a secondary flag never substitutes for a
+          reachable primary finding. target_context_comparison is
+          categorical only (categorically_consistent /
+          categorically_divergent / unable_to_determine) with a required
+          non-numeric rationale — it must never propose, estimate, or
+          backsolve a replacement target percentage or numeric range; the
+          sealed Milestone 6 evidence contains no numeric range of any
+          kind. milestone-7-baseline-reconciliation remains status:
+          proposed, pr: null — this correction changes no register status,
+          only this gate's own descriptive text. This gate's own pr: 255
+          and status: in_progress (below) are unchanged by this addition.
+        pr: 255
+        status: in_progress
+        date: "2026-08-05"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md
@@ -4777,9 +4960,9 @@ workstreams:
       ticker classification, any sanitized evidence package, or any validator implementation — Step 6
       (`milestone6-prereq6-fresh-authorization-required`) remains its own separate, later, explicit
       authorization requirement, left exactly as merged (`status: blocked`, unedited) by this filing.
-    active_branch: claude/milestone-6-completion-8bu7w0
-    active_pr: 254
-    last_verified_main_sha: 7f2ffed80472057472ca17e39ed88ae0a0a2b77e
+    active_branch: claude/milestone-7-baseline-reconciliation-auth-dmtyr6
+    active_pr: 255
+    last_verified_main_sha: 1107c5b70801ff5e7027efddf6a2aa916030dce2
     last_verified_date: "2026-08-05"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
