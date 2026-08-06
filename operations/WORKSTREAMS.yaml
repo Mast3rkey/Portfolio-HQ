@@ -7812,7 +7812,7 @@ workstreams:
           change; zero allocation check; the sealed 27-name Milestone 6
           classification cohort and every existing Company/Theme/
           Relationship Intelligence record remain byte-identical.
-        pr: null
+        pr: 258
         status: in_progress
         date: "2026-08-06"
     evidence_refs:
@@ -7855,7 +7855,7 @@ workstreams:
       future, separate, explicit principal authorization each — none is
       authorized to begin by this entry or by item 1's implementation.
     active_branch: claude/contender-normalization-readiness-fvgeec
-    active_pr: null
+    active_pr: 258
     last_verified_main_sha: 66ddae32c276c5abd962ed4f6b130e9b567b320d
     last_verified_date: "2026-08-06"
     authorized_by: >
