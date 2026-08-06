@@ -2078,8 +2078,54 @@ workstreams:
           without itself defining a Milestone 7 completion standard. Does
           not authorize, begin, schedule, or imply Milestone 8 or Milestone
           9.
+
+          **MILESTONE 7 COMPLETE, per `TIER-0008`.** `TIER-0008`
+          independently re-read PR #259's full lifecycle via the GitHub API
+          this session: accepted head
+          `d5dea092c6e2c1a5afa6fda7783e3a8a9d419514`, merge commit
+          `79b5a15ba0427856c9655beeb490d0cbb1c02718` (merged
+          2026-08-06T15:21:30Z, merge-tree identical to the accepted head —
+          zero drift), independent exact-head review `4876183783`
+          (APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0
+          MAJOR / 2 MINOR / 2 NOTE — the reviewer independently re-derived
+          the disposition-precedence heuristic across all 27 tickers with
+          zero deviations, and manually read 12 tickers in full), principal
+          acceptance `issuecomment-5206850218` (explicitly accepting both
+          MINOR findings as non-blocking), and post-merge verification
+          `issuecomment-5206936450`. `TIER-0008` derived twelve completion
+          criteria from `TIER-0007` §§A-L plus `OPS-0001`/`OPS-0006`
+          §16.1/`OPS-0007` and independently re-evaluated each against live
+          state: population (27/27, zero drift), sealed-cohort integrity
+          (zero diff on `intelligence/classification/` since the
+          `TIER-0006` merge), schema/disposition/target-context compliance
+          (`reconciliation_validator.py` `OK (27 tickers)`, independently
+          reproduced), aggregate reconciliation (0/14/12/1 primary,
+          13/11/7 secondary — exact match, independently recomputed from
+          the raw per-ticker data, not merely read from the artifact's own
+          `aggregate` block), honest residual-evidence treatment (SPGI's
+          `no_policy_conclusion` evidence-grounded, zero-`baseline_
+          assumption_stale` scrutinized as a genuine finding, not
+          under-analysis), scope isolation (zero protected-path diff),
+          validator/test sufficiency (`reconciliation_validator.py`,
+          `classification_validator.py`, `relationship_validator.py`,
+          `intelligence_validator.py`, `freshness_validator.py` all clean;
+          64/64 focused tests; full `pytest` 2939/0; decision catalog
+          84/`issues == ()` — all independently re-run this session), full
+          PR #259 lifecycle completeness, and register/catalog
+          synchronization (performed by `TIER-0008` itself). The two
+          accepted MINOR findings (a chart-evidence-terminology
+          defense-in-depth gap in `reconciliation_validator.py`'s
+          free-text scan, and a missing direct test of `validate_
+          reconciliation_file`'s YAML-parse-error branch) are carried
+          forward as disclosed, non-blocking improvement notes — neither
+          modified nor represented as fixed by `TIER-0008`. Completion
+          enables only a future, separately authorized Milestone 8
+          filing — no Milestone 8 content, policy recommendation,
+          allocation analysis, or tier/target/holdings/gate/cap/cluster/
+          allocator/margin/ladder/chart/order/trade change is authorized
+          by this transition.
         pr: 259
-        status: in_progress
+        status: complete
         date: "2026-08-06"
       - gate: milestone-8-policy-recommendation-package
         description: >
@@ -5027,9 +5073,26 @@ workstreams:
       ticker classification, any sanitized evidence package, or any validator implementation — Step 6
       (`milestone6-prereq6-fresh-authorization-required`) remains its own separate, later, explicit
       authorization requirement, left exactly as merged (`status: blocked`, unedited) by this filing.
-    active_branch: claude/ws-0005-milestone-7-baseline-ygez0e
-    active_pr: 259
-    last_verified_main_sha: 1d5d93f94bbc39a0b9d99178a7b477e6f0f27928
+
+      **`TIER-0008` (this filing) — WS-0005 Milestone 7 completion determination.** Independently
+      re-confirmed PR #259 (Milestone 7 baseline-reconciliation implementation) merged via the GitHub
+      API this session: accepted head `d5dea092c6e2c1a5afa6fda7783e3a8a9d419514`, merge commit
+      `79b5a15ba0427856c9655beeb490d0cbb1c02718`, independent exact-head review `4876183783`
+      (APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 2 MINOR / 2 NOTE),
+      principal acceptance `issuecomment-5206850218`, post-merge verification
+      `issuecomment-5206936450`, merge-commit CI (`31115451909`/`92663693490`) `completed`/
+      `success` — zero open competing PRs. Derived and independently evaluated twelve Milestone 7
+      completion criteria from `TIER-0007` §§A-L, recorded in full in the `milestone-7-baseline-
+      reconciliation` gate entry above, which this filing transitions `status: in_progress` ->
+      `status: complete`. Does not authorize, begin, schedule, or imply Milestone 8 or Milestone 9 —
+      `OPS-0006` §5's own per-milestone authorization gate remains in force. The `active_branch`/
+      `active_pr` fields below are updated to this filing's own branch,
+      `claude/milestone-7-completion-filing-v4v3zf`; PR #259's own already-merged branch/PR history
+      remains recorded above and is unedited. `active_pr` is `null` until this filing's own PR number
+      exists, per `OPS-0001`'s convention — a bounded follow-up commit sets it once the PR is opened.
+    active_branch: claude/milestone-7-completion-filing-v4v3zf
+    active_pr: null
+    last_verified_main_sha: 79b5a15ba0427856c9655beeb490d0cbb1c02718
     last_verified_date: "2026-08-06"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
