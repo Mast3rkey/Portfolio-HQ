@@ -3,7 +3,7 @@ decision_id: CONTENDER-0002
 date: 2026-08-06
 status: Proposed
 category: contender_universe_governance
-related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0011, PI-0016, PI-0023, PI-0024, PI-0027, PI-0029, PI-0032, PI-0033, PI-0035, TIER-0002, TIER-0004, REL-0001, CHART-0001, CHART-0002, PHQ-2026-02, CONTENDER-0001, XASSET-0001]
+related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0011, PI-0016, PI-0023, PI-0024, PI-0027, PI-0029, PI-0032, PI-0033, PI-0035, PI-0036, PI-0038, TIER-0002, TIER-0004, TIER-0007, REL-0001, CHART-0001, CHART-0002, MARGIN-0005, PHQ-2026-02, CONTENDER-0001, XASSET-0001]
 supporting_artifact: null
 file: governance/decisions/CONTENDER-0002-contender-normalization-and-readiness-screening-authorization.md
 ---
@@ -78,46 +78,101 @@ inventory, classifies nothing, and researches nothing itself.
 
 ## Decision
 
-### A. Scope — item 1 only
+### A. Scope — one combined execution unit; numbering authority stated explicitly
 
-This filing authorizes exactly `XASSET-0001` §J's dependency-order step 1: **contender normalization
-plus research-readiness screening**, described there as "genuinely one evidence-gathering pass." It
-authorizes nothing else in the fourteen-item `WS-0014` scope list — no additional-equity blind
-cohort, no ETF/crypto framework design, no cash/reserve/GLD/debt doctrine, no overlap modeling, no
-synthesis, no sleeve- or instrument-level sizing, no chart-informed deployment, no final audit.
+This filing authorizes exactly one future, separate implementation PR, covering exactly
+`XASSET-0001` §J's dependency-order step 1: **contender normalization plus research-readiness
+screening**, described there as "genuinely one evidence-gathering pass." It authorizes nothing else
+in `WS-0014`'s scope.
+
+**Two different, already-live numbering schemes both describe this same scope, and this filing states
+which governs "item N" references going forward.** `XASSET-0001` §J's own roadmap numbers steps
+`0`–`13` (14 entries), where step `0` is the architecture filing itself and step `1` is the
+**combined** pair this filing authorizes. `WS-0014`'s own live `objective` field (unedited by this
+filing) instead enumerates 14 conceptually distinct components with normalization as `(1)` and
+research-readiness screening as `(2)` — two separate list entries for the same combined step. Read
+literally against the register's own count, "item 1" alone would name normalization only, leaving it
+ambiguous whether screening is covered.
+
+**`XASSET-0001` §J's step numbering (`0`–`13`) is authoritative for what a `WS-0014` authorization
+filing has covered.** `WS-0014`'s own `objective` field's `(1)`–`(14)` list is a **descriptive
+component enumeration**, not a second independent authorization-tracking sequence — its `(1)` and
+`(2)` are the same combined `XASSET-0001` §J step `1` this filing authorizes, not two separately
+authorizable units. Concretely: **this filing's "item 1" covers both `WS-0014` objective items `(1)`
+and `(2)`; no second authorization is required between normalization and screening; both occur in the
+same future implementation PR.**
+
+**No general index formula is asserted beyond this one step, and none should be assumed.** The two
+lists' internal structure diverges past step 2: `XASSET-0001` §J step `2` ("additional-equity blind
+cohorts") does correspond to `WS-0014` objective item `(3)` — both name the same next unit — but
+`XASSET-0001` §J step `3` ("ETF and crypto framework design," one combined step) does **not** map
+cleanly to any single `WS-0014` objective item; the register's own list instead splits that
+combined step across items `(4)` ETF framework design and `(6)` crypto framework design, with item
+`(5)` (ETF blind classification) interleaved between them, while `XASSET-0001` §J keeps framework
+design as one step (`3`) followed by ETF classification (`4`) and crypto classification (`5`)
+separately. **A future authorization filing for any step beyond this one must state its own explicit
+correspondence between the two numbering schemes rather than assume a fixed offset** — the mismatch
+documented here is a disclosed fact about the two already-merged lists, not something this filing
+attempts to reconcile or renumber (`CONTENDER-0001`/`XASSET-0001` are not edited by this correction).
+Every `WS-0014` objective item `(3)` through `(14)`, and every `XASSET-0001` §J step `2` through
+`13`, remains exactly as unauthorized as before this filing.
 
 ### B. Source locations the future implementation must scan
 
-The future implementation PR must mechanically inventory ticker-shaped references from, at minimum:
+The future implementation PR must mechanically inventory ticker-shaped references from, at minimum,
+the following sixteen categories. Each is tagged with its **role** — `discovery` (a source that may
+introduce a symbol not found anywhere else), `corroboration` (a source that confirms or adds
+provenance to a symbol discovery expects to find elsewhere too, but must still be scanned rather than
+assumed empty), or `context` (a source read for disposition-relevant facts about a symbol, not itself
+treated as an independent discovery site) — matching `CONTENDER-0001` §A's own list of what counts as
+eligible-for-screening provenance, which this list operationalizes:
 
-1. `targets.yaml`'s `destination:` list (canonical population, `asset_class` field);
-2. `gates.yaml` (gated names, their `status`/`next_gate` disposition);
-3. `holdings.yaml`'s `shares:` and `crypto_shares:` blocks (current positions);
+1. `targets.yaml`'s `destination:` list (canonical population, `asset_class` field) — `discovery`;
+2. `gates.yaml` (gated names, their `status`/`next_gate` disposition) — `discovery`;
+3. `holdings.yaml`'s `shares:` and `crypto_shares:` blocks (current positions) — `discovery`;
 4. `issuer_lookthrough.yaml` (ETF constituent symbols — tickers appearing only as fund constituents,
-   never independently held);
+   never independently held) — `discovery`;
 5. `intelligence/companies/*.yaml` and `*.md` (53 records — both the 27 covering a current canonical
-   name and the 26 `PI-0035` classified "retained/historical-advisory/non-current");
-6. `intelligence/themes/*.yaml` and `*.md` (2 records);
+   name and the 26 `PI-0035` classified "retained/historical-advisory/non-current") — `discovery`;
+6. `intelligence/themes/*.yaml` and `*.md` (2 records) — `corroboration`;
 7. `intelligence/relationships/*.yaml` and `*.md` (13 records — pairwise, likely no new symbols
-   beyond items 1/5, but must be scanned for completeness, not assumed empty);
-8. `intelligence/classification/*.yaml` and `COHORT_MANIFEST.yaml` — read-only reference only (§D);
+   beyond items 1/5, but must be scanned for completeness, not assumed empty) — `corroboration`;
+8. `intelligence/classification/*.yaml` and `COHORT_MANIFEST.yaml` — read-only reference only (§D) —
+   `context`, never rescanned as a new-discovery source;
 9. `governance/decisions/*.md` (comparator sets named in committee-review authorizations —
    `PI-0016`-methodology filings and their comparator lists — plus explicit deferrals: `PI-0014`'s
    INTC/SYK/DHR, `PI-0027`'s deferred EQIX, `PI-0029`'s excluded UNH, `PI-0032`'s Sandisk/SNDK
-   candidate, `PI-0033`'s fourteen dispositioned names);
-10. `intelligence/BATCH*_COMPARISON.md` artifacts (external-opportunity/replacement-candidate leads,
-    per `PI-0023`'s own authorized shape);
-11. `governance/audits/*.md` (retained audit artifacts that may name additional comparator or
-    candidate tickers, e.g. coverage-gap registers);
-12. `decision_log.yaml` (the pre-`governance/decisions/` historical ledger, `PI-0001`–`PI-0009`,
-    `MARGIN-0001`–`MARGIN-0003`);
-13. `earnings.py`'s `_YAHOO_SYMBOL` map (known-alias precedent, §C);
-14. `governance/evidence/CHART-0002/` package manifests (chart-covered tickers, per `CHART-0001`/
-    `CHART-0002`'s governed library).
+   candidate, `PI-0033`'s fourteen dispositioned names, and any later decision that narrowly
+   supersedes a deferral for specific names — e.g. `PI-0036` for GNRC/RTX, `PI-0038` for RKLB/TSLA,
+   see §E) — `discovery` for comparator names, `context` for disposition history;
+10. `operations/WORKSTREAMS.yaml` (workstream register entries — `CONTENDER-0001` §A itself names "a
+    workstream register entry" as eligible provenance; this file's own `evidence_refs`/`objective`/
+    `next_action` prose may name a candidate ticker not otherwise enumerated) — `discovery`;
+11. `intelligence/BATCH*_COMPARISON.md` artifacts (external-opportunity/replacement-candidate leads,
+    per `PI-0023`'s own authorized shape) — `discovery`;
+12. `governance/audits/*.md` (retained audit artifacts that may name additional comparator or
+    candidate tickers, e.g. coverage-gap registers) — `discovery`;
+13. `decision_log.yaml` (the pre-`governance/decisions/` historical ledger, `PI-0001`–`PI-0009`,
+    `MARGIN-0001`–`MARGIN-0003`) — `discovery`;
+14. `research/**/*.md` governed research protocols (e.g. `research/margin_target_study/PROTOCOL_V2.md`,
+    `research/buy_ladder_backtest/PROTOCOL_V1.md` — `CONTENDER-0001` §A itself names "a research
+    protocol" as eligible provenance; these name their own study universes, which may reference a
+    ticker not otherwise enumerated; `research/margin_target_study/data/untouched_sealed/` is
+    excluded from any scan, matching `MARGIN-0005`'s own sealed-data isolation requirement) —
+    `discovery`;
+15. `earnings.py`'s `_YAHOO_SYMBOL` map (known-alias precedent, §C) — `context`, resolves identity,
+    does not itself introduce a new candidate;
+16. `governance/evidence/CHART-0002/` package manifests (chart-covered tickers, per `CHART-0001`/
+    `CHART-0002`'s governed library) — `discovery`.
 
 `test_*.py` files are explicitly **excluded** as a source of candidates — they exist only to confirm,
 where a symbol also appears in an authoritative source above, that it is real, or, where a
 symbol appears *only* in test code, to classify it `synthetic_or_test_fixture` (§E).
+
+**Deduplication is per canonical identity, not per source.** A symbol discovered in more than one
+`discovery`-role source (e.g. a current holding also named in a batch-comparison artifact) is one
+inventory entry, not one per source — every source that mentioned it is recorded as a provenance
+location on that single entry (§E), never as separate rows counted toward source-occurrence totals.
 
 ### C. Canonicalization precedence and alias handling
 
@@ -140,54 +195,163 @@ or extend any sealed record, and must not treat "already classified" as itself a
 disposition (the 27 are equities with an existing canonical destination row; contender screening is
 about the wider, currently-uninventoried set `CONTENDER-0001` §A defines as eligible).
 
-### E. Closed screening-disposition vocabulary
+### E. Disposition model — exactly one primary disposition, deterministic precedence, orthogonal secondary flags
 
-The future implementation must assign, to every normalized ticker-shaped reference it finds, exactly
-one of the following twelve closed dispositions — no thirteenth value, no free-text substitute:
+A single canonical identity can genuinely satisfy more than one of the twelve dispositions'
+descriptions at once (§E.4 below works a real, already-live example). Assigning "exactly one of
+twelve, no rule for overlap" — this filing's own original text — leaves that overlap to be invented
+ad hoc by a future implementation under time pressure. This repository's own immediately-preceding
+precedent, `TIER-0007`, hit the identical defect in its own closed-disposition design and resolved it
+by splitting a flat vocabulary into one required **primary disposition** plus a small set of optional
+**secondary condition flags** — this filing adopts the same structure.
 
-1. `evaluation_ready` — genuine investable instrument, has an adequate, sufficiently current governed
-   evidence base (Company Intelligence, Theme Intelligence, or equivalent asset-appropriate record),
-   ready for a future, separately authorized research-readiness-consuming step (e.g., an additional
-   blind-classification cohort under `XASSET-0001` §C item 1);
-2. `requires_research` — genuine investable instrument, no adequate governed evidence base exists yet;
-3. `requires_freshness_review` — genuine investable instrument with a governed record, but its
-   evidence currency is stale or unverified against the record's own `review.next_due`/freshness
-   fields (owned by `PI-0011`/`AUTO-0001`, never duplicated here — see §F);
-4. `requires_identity_resolution` — symbol or asset identity is ambiguous and cannot be mechanically
-   resolved (an alias mapping to more than one live security, a corporate-action successor that is
-   unclear from repository text alone, or any other identity conflict);
-5. `insufficient_evidence` — genuine investable instrument with some governed record, but that
-   record's own text discloses evidence access failures or gaps too material to support even a
-   readiness call (matching this repository's own disclosed-access-failure precedent, e.g.
-   `PI-0038`'s six gated-name records);
-6. `duplicate_or_alias` — resolved as the same underlying instrument as another canonical entry
-   already inventoried under its own canonical symbol (§C) — carries a `duplicate_of` link, never
-   inventoried as a second independent candidate;
-7. `benchmark_or_index` — used only as a comparison benchmark or index proxy in repository text, not
-   itself represented as a position candidate;
-8. `synthetic_or_test_fixture` — a ticker-shaped string appearing only in test code, synthetic data,
-   or documentation examples;
-9. `stale_or_superseded` — an identity genuinely superseded by a corporate action (this repository's
-   own confirmed precedent: `PI-0032`'s WDC → Sandisk/SNDK separation) — distinct from
-   `requires_freshness_review` (evidence currency) because the underlying *identity*, not just its
-   evidence, has changed;
-10. `non_investable` — a malformed, truncated, placeholder, or otherwise not-a-real-ticker string;
-11. `explicitly_deferred_or_excluded` — a genuine investable instrument the repository has already,
-    separately, and specifically dispositioned as deferred or excluded (`PI-0014`, `PI-0027`'s EQIX,
-    `PI-0029`'s UNH, `PI-0033`'s fourteen names) — the future implementation must cite the existing
-    decision and reason verbatim, never re-derive or re-litigate it;
-12. `abstain_pending_human_decision` — none of the above can be mechanically assigned without a new
-    research or policy judgment the future implementation is not authorized to make (§H).
+**E.1 — Model.** Every normalized ticker-shaped identity receives:
 
-Each entry must retain: canonical symbol/identity; asset type (`equity`/`fund`/`crypto`/`benchmark`/
-`fixture`/other, matching `targets.yaml`'s existing `asset_class` vocabulary where applicable, extended
-only as needed for non-investable categories); every provenance location found (§B); investability
-status; research status; evidence-freshness status (mechanically read, never recomputed); Milestone-6
-classification status where applicable (§D); current-policy status (current holding/target/gate,
-mechanically read from `targets.yaml`/`holdings.yaml`/`gates.yaml`); existing gate or prior-decision
-disposition where one exists (§E.11); duplicate/supersession link where applicable (§E.6/§E.9); a
-plain-text reason; a review trigger where applicable; and the exact next required governed action
-(which is never itself authorized by that record's own presence in the inventory).
+- **exactly one primary disposition**, chosen from the twelve-value closed vocabulary below by
+  mechanically applying the precedence order in §E.2 — never chosen by discretion, never left
+  unset, never assigned more than one;
+- **zero or more secondary factual-state flags** (§E.3) — orthogonal metadata that must not be lost
+  just because the primary disposition took precedence over the fact that flag represents.
+
+**E.2 — Closed twelve-value vocabulary, in mandatory precedence order.** Evaluate top to bottom;
+assign the primary disposition at the first value whose condition is mechanically true; each
+definition below is the corrected, disambiguated text (superseding the original, ambiguous
+definitions in this filing's first commit — no other filing is edited):
+
+1. `synthetic_or_test_fixture` — a ticker-shaped string appearing only in test code, synthetic data,
+   or documentation examples, **or** a structural, non-ticker destination row that names an
+   accounting construct rather than a tradeable instrument (`targets.yaml`'s `CASH`/`RESERVE` rows,
+   `asset_class: cash`/`reserve` — per `CONTENDER-0001` §C.7's "synthetic or placeholder row"
+   category). Checked first because a fixture or structural row can otherwise superficially match
+   several later conditions (e.g. "appears in `targets.yaml`" looks like evidence of investability).
+2. `benchmark_or_index` — used only as a comparison benchmark or index proxy in repository text or
+   configuration, never represented anywhere as a `destination:` row, holding, or position candidate
+   (e.g. `QQQ` — present in `targets.yaml`'s own `regime_ticker: QQQ` config field, "informational"
+   per that field's own comment, and in the regime-gate/trend-gate backtest entries of CLAUDE.md's
+   Decisions Log, but absent from `targets.yaml`'s `destination:` list, `holdings.yaml`, `gates.yaml`,
+   and every Company Intelligence record). If the same symbol is *also* a genuine current
+   `destination:` target/holding (this repository's SPY is the concrete counter-example — a real fund
+   with its own `destination:` row, not merely a benchmark proxy), it does not qualify here; it
+   proceeds to the dispositions below on its own merits.
+3. `non_investable` — a malformed, truncated, placeholder, or otherwise not-a-real-ticker string.
+4. `duplicate_or_alias` — resolved, per §C's alias rule, as the same underlying instrument as another
+   canonical entry already inventoried under its own canonical symbol — carries a `duplicate_of`
+   link, never inventoried as a second independent candidate.
+5. `stale_or_superseded` — reserved **strictly** for a case where the *old* symbol itself no longer
+   refers to any live, tradeable security — a true identity supersession (an acquisition, a delisting,
+   a ticker change that leaves the prior symbol dead), never merely "this company's most recent
+   corporate action produced a new, related instrument." **Corrected worked example** (the original
+   filing's WDC → Sandisk/SNDK citation was wrong and is withdrawn): WDC's own February 2025 Sandisk
+   spinoff created a *new* instrument (SNDK) — WDC itself kept trading under its own unchanged
+   ticker, with its own unchanged Company Intelligence record (`PI-0035`'s "retained/historical-
+   advisory/non-current" classification refers to *portfolio-roster* status, not identity death). A
+   spinoff is therefore **not** `stale_or_superseded` for the pre-existing name — WDC's own
+   disposition depends on its own governed-record state (§E's lower tiers), while the *new* entity
+   (SNDK) with no prior identity of its own is `requires_research` (tier 9), never `stale_or_
+   superseded`. A future implementation must not apply this tier to any symbol whose old form still
+   resolves to a live security merely because a related new symbol now also exists.
+6. `requires_identity_resolution` — the canonical security identity cannot be resolved mechanically
+   (an alias mapping to more than one live security, ambiguity between a true `stale_or_superseded`
+   case and a spinoff per tier 5's own distinction, or any other identity conflict a documented alias
+   rule (§C) does not settle).
+7. `explicitly_deferred_or_excluded` — a genuine investable instrument the repository has already,
+   separately, and specifically dispositioned as deferred or excluded, **and that deferral is
+   currently live and unsuperseded as of the scan** (`PI-0014`, `PI-0027`'s EQIX, `PI-0029`'s UNH,
+   the surviving members of `PI-0033`'s fourteen names) — the future implementation must cite the
+   existing decision and reason verbatim, never re-derive or re-litigate it. **Mandatory
+   supersession check before applying this tier**: a name's deferral must be checked against any
+   later decision that narrowly supersedes it for that specific name before being cited at face
+   value — this repository has done this twice already (`PI-0036` narrowly superseded `PI-0033`'s
+   deferral for GNRC/RTX "solely and exactly to the extent needed to authorize Company Intelligence
+   research... and no further"; `PI-0038` did the identical thing for RKLB/TSLA). A name whose
+   research-block has been narrowly superseded is **not** currently deferred from evaluation for
+   purposes of this registry, even though its underlying gate/tier/target consequences (unchanged by
+   either supersession) may still apply — see §E.4's worked example. This is a mechanical check: the
+   superseding decision's own text states its exact scope, nothing is inferred.
+8. `abstain_pending_human_decision` — mechanical facts are available, but assigning any of the
+   dispositions above, or distinguishing between tiers 9–12 below, would require a new research or
+   policy judgment the future implementation is not authorized to make (§H) — e.g. a genuinely
+   ambiguous read of whether an existing record's own text discloses "insufficient" evidence (tier
+   11) versus merely "not yet fresh" evidence (tier 10).
+9. `requires_research` — genuine investable instrument, **no** governed evidence record of any kind
+   exists yet (no Company/Theme Intelligence record, no asset-appropriate equivalent).
+10. `requires_freshness_review` — genuine investable instrument **with** a governed record, and that
+    record's own mechanical freshness fields (owned by `PI-0011`/`AUTO-0001`, read not recomputed —
+    §F) report the evidence as stale or due, **and** the record's own text does not separately
+    disclose an evidence-sufficiency problem (that is tier 11, checked first).
+11. `insufficient_evidence` — genuine investable instrument with a governed record that exists and
+    was substantively drafted, but that record's own text explicitly discloses evidence access
+    failures or gaps too material to support the next evaluation step (matching this repository's
+    own disclosed-access-failure precedent — `PI-0038`'s six gated-name records, all of which
+    explicitly "disclose their own research session's source-access failure in full"). Distinct from
+    tier 10: this is about the record's own *content* disclosing a gap, not merely its `next_due`
+    date having passed.
+12. `evaluation_ready` — genuine investable instrument, has an adequate, sufficiently current governed
+    evidence base, with none of tiers 1–11 applying — ready for a future, separately authorized
+    research-readiness-consuming step (e.g., an additional blind-classification cohort under
+    `XASSET-0001` §C item 1).
+
+**E.3 — Secondary factual-state flags (optional, orthogonal, never a disposition substitute).** The
+registry schema must support recording, independent of the primary disposition, whichever of the
+following are mechanically true for an identity: `has_current_gate` (present in `gates.yaml`);
+`has_historical_intelligence` (a Company/Theme Intelligence record exists but the ticker is not in
+the current canonical roster, per `PI-0035`'s "retained/historical-advisory/non-current"
+classification); `has_prior_deferral_superseded` (a `PI-0033`-style deferral exists but was narrowly
+superseded for this name per §E.2 tier 7's check); `freshness_due` (the record's own freshness field
+reads stale/due, read regardless of which primary tier it landed on); `classification_exists` (a
+sealed Milestone 6 record exists, §D); `chart_evidence_exists` (covered in the governed chart
+library); `current_holding` (present in `holdings.yaml`); `current_target` (present in `targets.yaml`
+`destination:`, including while gated). A flag is metadata only — it never adds a second primary
+disposition, never changes which precedence tier governs, and must never be omitted from the
+registry merely because a higher-precedence primary disposition applied instead.
+
+**E.4 — Worked example: RKLB and TSLA (resolves the review's own concrete overlap case).**
+Mechanical facts: both are current canonical, gated equities (`gates.yaml`, `has_current_gate: true`,
+`current_target: true`); both are named among `PI-0033`'s fourteen deferred names; both had that
+deferral narrowly superseded by `PI-0038` "solely and exactly to the extent needed to authorize
+Company Intelligence research... and no further" (leaving the deferral's gate/tier/target
+consequences fully in force, per `PI-0038`'s own text — only the research-block was lifted); both now
+have real, substantively drafted `intelligence/companies/{RKLB,TSLA}.yaml` records that themselves
+disclose primary-source access failures. Applying §E.2 top to bottom: tier 7
+(`explicitly_deferred_or_excluded`) does **not** apply — the mandatory supersession check finds the
+research-block superseded, so the deferral is not currently live for evaluation purposes. Tier 11
+(`insufficient_evidence`) applies — a governed record exists, was substantively drafted, and
+explicitly discloses an access-failure gap. **Primary disposition: `insufficient_evidence`** for
+both, with secondary flags `has_current_gate: true`, `has_prior_deferral_superseded: true`,
+`current_target: true` preserved on each entry so no fact is lost. `PI-0036`'s GNRC/RTX pair applies
+the identical *primary-disposition reasoning* (a `PI-0033` deferral narrowly superseded for research
+purposes only, landing on `insufficient_evidence` via tier 11) — but their secondary flags differ:
+GNRC and RTX are **not** gated (`PI-0035` independently confirms both as "non-gated, already-
+dispositioned canonical-roster names"), so their entries carry `has_current_gate: false`,
+`has_prior_deferral_superseded: true`, `current_target: true` — a future implementation must read
+each identity's own facts rather than assume all four names share one flag profile. This is the
+concrete case this correction exists to make unambiguous; a future implementation must not need to
+re-derive this reasoning from first principles.
+
+**E.5 — Further stress cases, briefly (illustrative only — no research performed by this filing).**
+A current canonical *ungated* equity with a sealed classification and a governed record: tier 10 or
+12, depending only on the record's own live freshness field. A retained/historical Company
+Intelligence name (e.g. one of the 26 `PI-0035` "retained" records): eligible under `CONTENDER-0001`
+§A regardless of roster absence — same tier-10/12 evaluation, `has_historical_intelligence: true`,
+`current_target: false`. `QQQ` (referenced only as a regime-gate benchmark, no target/holding/record
+anywhere): tier 2. `CASH`/`RESERVE` (`targets.yaml`'s structural rows): tier 1. A `BRK.B`/`BRK-B`-
+style alias pair, if both raw forms are found as separate occurrences: tier 4, one entry, `duplicate_
+of` recorded. A symbol named only once in decision prose as a considered-but-excluded comparator
+with no other coverage (e.g. a name mentioned only in a cluster-correlation discussion): tier 9,
+`requires_research` — its identity is not ambiguous, only its evidence base is absent.
+
+**E.6 — Required per-entry fields.** Each registry entry must retain: canonical symbol/identity;
+primary disposition (§E.2, exactly one); applicable secondary flags (§E.3); asset type
+(`equity`/`fund`/`crypto`/`benchmark`/`fixture`/other, matching `targets.yaml`'s existing
+`asset_class` vocabulary where applicable, extended only as needed for non-investable categories);
+every provenance location found, with each source's role (§B); investability status; research
+status; evidence-freshness status (mechanically read, never recomputed); Milestone-6 classification
+status where applicable (§D); current-policy status (mechanically read from
+`targets.yaml`/`holdings.yaml`/`gates.yaml`); existing gate or prior-decision disposition where one
+exists, including the supersession check's own result (§E.2 tier 7); duplicate/supersession link
+where applicable (tiers 4/5); a plain-text reason; a review trigger where applicable; and the exact
+next required governed action (which is never itself authorized by that record's own presence in the
+inventory).
 
 ### F. Research-readiness screening rules — mechanical only, no new evaluation
 
@@ -222,21 +386,66 @@ verified. The future implementation must, before attempting any recovery:
    sub-unit, not silently folded into or dropped from this one.
 
 No legacy ticker may be guessed, reconstructed from memory, or asserted without a directly inspected
-source.
+source. If, after step 1–3 above, the 41 legacy tickers remain unrecovered, the retained audit
+artifact (§I) must record an explicit gap entry rather than omit the topic silently:
 
-### H. Mechanical-versus-judgment boundary
+```
+known_unenumerated_legacy_gap: true
+reported_count: approximately 41
+source_authority: PHQ-2026-02
+recovery_status: unavailable_in_current_clone   # or: recovered_n_of_41 / recovery_ambiguous
+registry_entries_created: 0
+next_action: separately_authorized_history_recovery_sub_unit
+```
 
-Permitted, mechanical facts: symbol occurrence and its exact file/line provenance; current
+No placeholder or invented ticker row may be created for any unrecovered legacy symbol — the gap is
+recorded once, at this granularity, never as 41 individual `abstain_pending_human_decision` rows for
+symbols nobody has actually seen.
+
+### H. Mechanical-versus-judgment boundary and conflict-resolution procedure
+
+**H.1 — Permitted, mechanical facts.** Symbol occurrence and its exact file/line provenance; current
 `targets.yaml`/`holdings.yaml`/`gates.yaml` membership and field values; `issuer_lookthrough.yaml`
 constituent membership; the known alias map (§C); each governed record's own existing
 freshness/staleness/review-status fields (read, not recomputed content-wise); Milestone 6
-classification-status presence (§D); an existing governed disposition's own recorded text (§E.11).
+classification-status presence (§D); an existing governed disposition's own recorded text, including
+whether a later decision narrowly supersedes it for a specific name (§E.2 tier 7).
 
-Prohibited: any new investment-merit judgment; any new freshness determination beyond what an
-existing owning system already computes; any new identity resolution beyond §C's documented-alias
-rule; any research beyond reading already-committed repository text; any reopening of a closed
-deferral's own reasoning. Where a symbol's disposition cannot be resolved by a mechanical rule above,
-it is `abstain_pending_human_decision` (§E.12) — never forced into a more definite-sounding category.
+**H.2 — Prohibited.** Any new investment-merit judgment; any new freshness determination beyond what
+an existing owning system already computes; any new identity resolution beyond §C's documented-alias
+rule; any research beyond reading already-committed repository text; any reopening or reinterpretation
+of a closed deferral's, evidence-quality's, or classification's own stated conclusion. Where a
+symbol's disposition cannot be resolved by a mechanical rule above, it is
+`abstain_pending_human_decision` (§E.2 tier 8) — never forced into a more definite-sounding category.
+
+**H.3 — Conflict-resolution procedure.** Real cases exist (§E.4) where more than one governed fact
+about the same identity points toward a different disposition — a live deferral and an existing
+Intelligence record; stale-and-also-insufficient evidence; a gate with a research-ready record; a
+chart-covered ticker absent from canonical policy; a name named only in decision prose with no other
+coverage; a current-policy presence alongside superseded-identity evidence. The future implementation
+must, for every such case:
+
+1. collect every mechanically-observable factual state for the identity first, before assigning
+   anything (§H.1);
+2. apply §E.2's precedence order mechanically to select the one primary disposition — the order
+   itself is the conflict-resolution rule; no case-by-case discretion is exercised at this step;
+3. preserve every orthogonal fact not captured by the winning tier as a secondary flag (§E.3) — a
+   fact is never dropped merely because a higher-precedence tier governed the primary disposition;
+4. never overwrite, edit, or reinterpret any existing governed decision's own text or conclusion —
+   only cite it;
+5. never reinterpret an existing evidence-quality conclusion (e.g. a record's own disclosed
+   "insufficient evidence" finding is read as-is, never second-guessed as "actually sufficient" or
+   vice versa);
+6. if applying §E.2's order still leaves genuine ambiguity — the mechanical facts collected in step 1
+   do not cleanly satisfy any single tier's condition — assign `abstain_pending_human_decision`
+   (§E.2 tier 8) rather than force a resolution;
+7. disclose every case where more than one tier's condition was mechanically true before precedence
+   resolved it, in the retained audit artifact (§I) — the registry itself records only the winning
+   primary disposition and its secondary flags, but the audit preserves the reasoning trail so a
+   human reviewer can see what the precedence rule actually did.
+
+The registry reports existing governed facts through the disposition/flag model; it never harmonizes
+conflicting facts into a new investment conclusion of its own.
 
 ### I. Output design — hybrid, matching repository precedent
 
@@ -246,20 +455,32 @@ split `TIER-0001`'s inventory audit and `TIER-0002`'s framework design establish
 6's execution, and the split `REL-0001`'s inventory audit established before `REL-0002`'s content):
 
 1. **One retained narrative audit artifact** under `governance/audits/` documenting the full scan
-   methodology, source-by-source findings, and any stop-condition disclosures (§G, §K) — the human-
-   readable record of how the inventory was built and what was found ambiguous.
+   methodology, source-by-source findings, every §H.3.7 overlap disclosure, the legacy-gap record
+   (§G), and any other stop-condition disclosures (§K) — the human-readable record of how the
+   inventory was built and what was found ambiguous.
 2. **One small, structured, committed registry** (e.g. `intelligence/contenders/registry.yaml`, one
-   row per normalized ticker, schema matching §E's required fields) plus a **new, narrowly-scoped
-   validator** (e.g. `contender_registry_validator.py`) enforcing the closed disposition vocabulary,
-   required fields, and internal consistency (no duplicate canonical symbol, every `duplicate_of`/
-   `explicitly_deferred_or_excluded` citation resolving to a real target) — matching
-   `classification_validator.py`'s and `relationship_validator.py`'s own precedent of a committed,
-   validated record rather than an uncommitted, regenerated-on-demand report. A structured registry is
-   preferred over a purely regenerated report (the `PI-0011` staleness-report pattern) because this
-   unit's own output — unlike freshness, which is a pure function of already-owned fields — includes
-   abstentions and identity-resolution calls (§E.4/§E.12) that are themselves point-in-time editorial
-   findings worth a stable, citable record for `WS-0014`'s later items to build on, not a value that
-   silently changes on every regeneration.
+   row per normalized identity, schema matching §E.6's required fields) plus a **new, narrowly-scoped
+   validator** (e.g. `contender_registry_validator.py`) enforcing the closed primary-disposition
+   vocabulary, the secondary-flag schema, required fields, and internal consistency (no duplicate
+   canonical symbol, every `duplicate_of`/`explicitly_deferred_or_excluded` citation resolving to a
+   real target, exactly one primary disposition per entry) — matching `classification_validator.py`'s
+   and `relationship_validator.py`'s own precedent of a committed, validated record rather than an
+   uncommitted, regenerated-on-demand report. A structured registry is preferred over a purely
+   regenerated report (the `PI-0011` staleness-report pattern) because this unit's own output — unlike
+   freshness, which is a pure function of already-owned fields — includes abstentions and identity-
+   resolution calls (§E.2 tiers 6/8) that are themselves point-in-time editorial findings worth a
+   stable, citable record for `WS-0014`'s later items to build on.
+
+**The registry is a governed snapshot, not investment-policy truth.** `targets.yaml`, `holdings.yaml`,
+`gates.yaml`, and every existing Intelligence/relationship/classification record remain sole
+authority for their own facts — the registry only reports what those sources already say, per §H's
+procedure. Regeneration must be deterministic from the same source commit — running the scan twice
+against an unchanged `main` must produce byte-identical entries (excluding the run timestamp field
+below); the registry's own header must record the exact source commit SHA it was generated from and a
+generation timestamp, so a later session can mechanically detect staleness by comparing the recorded
+source SHA against current `main` rather than re-deriving whether anything changed. No hand edit to a
+generated entry is permitted outside a new, explicitly governed regeneration or correction — an entry
+that needs to change requires re-running the deterministic process, not a manual patch.
 
 The registry must carry zero import coupling with `allocate.py`/`margin_state.py` in either direction
 and must never be read by, or coupled to, any allocator or production decision path — it is inventory,
@@ -269,39 +490,72 @@ not policy.
 
 The future implementation must, at minimum: parse-validate every new/changed YAML and Markdown file;
 run the new `contender_registry_validator.py` clean against its own registry; add focused tests
-covering the closed-vocabulary enforcement, duplicate/alias resolution, and abstention-path behavior;
-re-run and report the full existing suite (`classification_validator.py`, `relationship_validator.py`,
-`intelligence_validator.py`, `freshness_validator.py`, the decision-catalog reconciliation, and full
-`pytest`) to confirm zero regression; confirm zero diff on every existing protected path listed in
-§B item 8's own read-only boundary and every path `CONTENDER-0001`/`XASSET-0001` already named;
-confirm exactly one `priority: primary` workstream; and pass `git diff --check` clean.
+covering the closed primary-disposition vocabulary and its precedence order (§E.2), the secondary-flag
+schema (§E.3), duplicate/alias resolution, and abstention-path behavior; **require bidirectional
+reconciliation** between the §B scan's discovered references and the registry — (a) every accepted
+discovered identity from the authorized source set (§B) is represented in the registry by exactly one
+entry, or explicitly recorded in the retained audit as excluded/ambiguous with a stated reason (a
+false-positive prose match, a resolved fixture, or an unresolved token pending §K containment); (b)
+every registry entry cites at least one valid provenance location from an authorized §B source — no
+registry-only invented identity. The validator must fail if a discovered reference from the scan
+disappears from both the registry and the audit's own exclusion record without disposition, and must
+fail if a registry entry cites no real §B provenance. The retained audit must include a reconciliation
+summary (counts: discovered, registered, excluded-with-reason, legacy-gap per §G) so the two
+directions can be checked by a human reviewer without re-running the scan; re-run and report the full
+existing suite (`classification_validator.py`, `relationship_validator.py`, `intelligence_validator.py`,
+`freshness_validator.py`, the decision-catalog reconciliation, and full `pytest`) to confirm zero
+regression; confirm zero diff on every existing protected path listed in §B item 8's own read-only
+boundary and every path `CONTENDER-0001`/`XASSET-0001` already named; confirm exactly one
+`priority: primary` workstream; and pass `git diff --check` clean.
 
-### K. Stop conditions
+### K. Stop conditions — per-entry containment versus whole-unit halt
 
-The future implementation must stop and disclose, rather than guess past, any of: a symbol
-indistinguishable between a genuine reference and a fixture; an alias mapping to more than one live
-security; investability that cannot be confirmed from repository text or a documented alias rule;
-conflicting repository sources for the same symbol; a git-history recovery attempt that expands scope
-or ambiguity beyond §G's bound; any point at which assigning a disposition would require a new
-research or policy judgment (§H); any need to mutate a protected path (`targets.yaml`, `holdings.yaml`,
-`gates.yaml`, `issuer_lookthrough.yaml`, `allocate.py`, `margin_state.py`, `levels.py`,
+Not every stop condition has the same severity, and conflating them risks either halting an entire
+scan over one ambiguous ticker or failing to halt on a genuine structural blocker. The future
+implementation must distinguish the two:
+
+**K.1 — Per-entry containment (continue processing every other identity).** Applies when the problem
+is scoped to one identity: a symbol indistinguishable between a genuine reference and a fixture; an
+alias mapping to more than one live security; investability that cannot be confirmed from repository
+text or a documented alias rule; conflicting repository sources for the same symbol; any point at
+which that one identity's disposition would require a new research or policy judgment (§H). Required
+behavior: assign `requires_identity_resolution` (§E.2 tier 6) or `abstain_pending_human_decision`
+(tier 8), whichever fits per §H.3; preserve every provenance location found for that identity; record
+the reason in the registry entry and the audit; continue processing every other identity in the same
+run; never silently omit the entry from the registry.
+
+**K.2 — Whole-unit halt (stop the entire implementation unit).** Applies when the problem is not
+scoped to one identity: the §B source-set definition proves materially incomplete against live
+repository state; canonicalization logic (§C) produces a nondeterministic result across the cohort
+(the same raw input yields different canonical forms on repeated runs); the registry schema cannot
+represent a required fact from §E.6; §J's bidirectional reconciliation fails at the whole-scan level
+(not one entry); a git-history recovery attempt (§G) unexpectedly expands scope or ambiguity beyond
+§G's own bound; a protected path (`targets.yaml`, `holdings.yaml`, `gates.yaml`,
+`issuer_lookthrough.yaml`, `allocate.py`, `margin_state.py`, `levels.py`,
 `intelligence/classification/`, any existing Company/Theme/Relationship Intelligence record,
-`governance/evidence/`); or the appearance of another concurrent mutation lane.
+`governance/evidence/`) would need to be mutated; another concurrent mutation lane appears; or the
+validator/test architecture itself proves defective (not just a failing individual test). Required
+behavior: stop the implementation unit entirely; preserve all work completed so far in a safe,
+clearly-labeled partial state; report the exact partial state (what was scanned, what was not) in the
+PR/audit; **never publish a registry or audit that reads as complete when it is not**.
 
 ### L. `operations/WORKSTREAMS.yaml` update performed by this filing
 
 `WS-0014` receives exactly one additive milestone entry, `contender0002-normalization-and-readiness-
-screening-authorization`, recording this filing's own bounded scope (§A–§K) without editing
-`WS-0014`'s own `status` (`proposed`), `priority` (`secondary`), `dependencies` (`[WS-0005]`), or
-`prohibited_scope` fields. `WS-0014`'s `authorized_scope` and `next_action` fields are updated,
-additively, to state that this filing (once merged) authorizes exactly one future, separate,
-implementation PR for item 1 only — every other item in the fourteen-item list remains exactly as
-unauthorized as before. The new milestone gate is recorded `status: in_progress`, `pr: null` at this
-filing's own first commit, consistent with `TIER-0004`/`TIER-0005`'s own established precedent that a
-filing may not mark its own still-unmerged work `complete` — a later Lane M synchronization, once this
-PR's own independent review, correction if needed, principal acceptance, merge, and post-merge
-verification occur, is the appropriate place to close it. No `WS-0013` field is touched by this
-filing — `WS-0014`'s own dependency relationship to `WS-0013` (recorded by PR #256) is unaffected.
+screening-authorization`, recording this filing's own bounded scope (§A–§K), including the numbering
+cross-reference from §A (this filing's authorized unit is `XASSET-0001` §J step 1, covering `WS-0014`
+objective items `(1)` and `(2)` together), without editing `WS-0014`'s own `status` (`proposed`),
+`priority` (`secondary`), `dependencies` (`[WS-0005]`), or `prohibited_scope` fields. `WS-0014`'s
+`authorized_scope` and `next_action` fields are updated, additively, to state that this filing (once
+merged) authorizes exactly one future, separate, combined implementation PR for `XASSET-0001` §J step
+1 only — every remaining step/item remains exactly as unauthorized as before. The new milestone gate
+is recorded `status: in_progress`, `pr: 257` (this filing's own PR, recorded once opened — this
+filing's own bounded correction runs inside that same PR, so no chicken-and-egg gap arises this
+round), consistent with `TIER-0004`/`TIER-0005`'s own established precedent that a filing may not mark
+its own still-unmerged work `complete` — a later Lane M synchronization, once this PR's own
+independent review, correction if needed, principal acceptance, merge, and post-merge verification
+occur, is the appropriate place to close it. No `WS-0013` field is touched by this filing — `WS-0014`'s
+own dependency relationship to `WS-0013` (recorded by PR #256) is unaffected.
 
 ### M. Explicit non-authorization
 
@@ -321,7 +575,8 @@ authorize, and no future action may treat it as having authorized:
   change;
 - any allocation check, live or scenario;
 - Milestone 7 implementation or any Milestone 8/9 work;
-- any item 2 through 14 of `WS-0014`'s fourteen-item scope list.
+- `XASSET-0001` §J steps 2 through 13 (equivalently, `WS-0014` objective items `(3)` through `(14)`,
+  per §A's own stated correspondence).
 
 ## Rationale
 
@@ -353,6 +608,16 @@ disclosed limitation on what this specific working environment can mechanically 
 kind of "verify before acting" discipline CLAUDE.md's own Guardrails section requires, applied here to
 an environment fact rather than an external claim.
 
+**The primary-disposition/secondary-flag split (§E) is not a novel design — it directly reapplies this
+repository's own immediately-preceding precedent.** `TIER-0007`'s own independent review
+(`4869718735`, Finding A) found its closed-disposition vocabulary required "exactly one" value with no
+precedence rule for a ticker qualifying for more than one category, and resolved it by superseding a
+flat vocabulary with a primary disposition plus a closed secondary-condition flag set. This filing's
+own first commit repeated the identical defect one filing later, in a different domain — this
+correction closes it the same way, rather than inventing a new resolution shape, and the RKLB/TSLA
+worked example (§E.4) demonstrates the fix against a real, already-live case rather than a
+hypothetical one, matching `TIER-0007`'s own use of a concrete case to validate its precedence rule.
+
 ## Alternatives Considered
 
 **Authorize the full fourteen-item `WS-0014` scope in one filing.** Rejected — `XASSET-0001` §J
@@ -363,7 +628,7 @@ bounded-unit-per-authorization pattern throughout `WS-0005`/`WS-0012`.
 
 **Skip the structured registry and rely on a regenerated report only, matching the `PI-0011`
 freshness-report precedent.** Rejected per §I's own reasoning — this unit's output includes point-in-
-time editorial abstentions (§E.4/§E.12), unlike pure freshness facts, which are a stable function of
+time editorial abstentions (§E.2 tiers 6/8), unlike pure freshness facts, which are a stable function of
 already-owned fields and regenerate identically every time.
 
 **Leave the disposition vocabulary open-ended, to be defined by the future implementation session
@@ -376,6 +641,21 @@ time pressure.
 architecture only and performs no implementation; §G instead specifies the exact verification a future
 implementation session must perform and the exact condition under which recovery becomes its own
 separate sub-unit, rather than guessing at scope now.
+
+**Allow an identity to carry more than one primary disposition simultaneously, instead of a strict
+precedence order.** Rejected — a multi-valued primary field reintroduces exactly the "which one wins"
+ambiguity §E exists to close, just moved one layer down (a future consumer of the registry would still
+need its own precedence rule to pick one). A single ordered precedence list, with orthogonal facts
+captured separately as secondary flags (§E.3), keeps the registry's primary field simple and
+deterministic while losing no information.
+
+**Renumber or edit `XASSET-0001` §J or `WS-0014`'s live `objective` field to eliminate the two-list
+mismatch (§A) at the source.** Rejected — the task authorizing this correction explicitly bars
+redesigning `CONTENDER-0001`/`XASSET-0001`, and this repository's own narrow-supersession convention
+never edits a merged decision's substance after acceptance. An additive clarification in this filing
+(and the mirrored `operations/WORKSTREAMS.yaml` text) that states which numbering governs and
+discloses exactly where the two lists diverge resolves the live ambiguity without touching either
+merged document.
 
 ## Consequences
 

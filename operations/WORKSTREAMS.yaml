@@ -7751,23 +7751,39 @@ workstreams:
     milestones:
       - gate: contender0002-normalization-and-readiness-screening-authorization
         description: >
-          CONTENDER-0002 additively defines item 1 (contender normalization
-          plus research-readiness screening): source locations to scan, a
-          closed twelve-value screening-disposition vocabulary, alias/
-          canonicalization precedence, the mechanical-versus-judgment
-          boundary, a hybrid audit-artifact-plus-structured-registry output
-          design, validator/test requirements, stop conditions, and a
-          bounded, conditional treatment of ~41 legacy pre-PHQ-2026-02
-          tickers (this session verified its own working clone is a shallow
-          git clone whose oldest reachable commit is 2026-07-31, meaning
-          that pre-migration history is not mechanically reachable from this
-          environment — recovery, if reachable elsewhere, is deferred to its
-          own future sub-unit rather than assumed). CONTENDER-0002 itself
-          performs no scan, builds no registry, and researches no ticker —
-          it authorizes exactly one future, separate implementation PR for
-          item 1 only, gated on CONTENDER-0002's own full independent-
-          review/correction/principal-acceptance/merge/post-merge-
-          verification lifecycle. Items 2-14 remain unauthorized.
+          CONTENDER-0002 additively defines XASSET-0001 section J step 1
+          (contender normalization plus research-readiness screening,
+          equivalently WS-0014 objective items (1)+(2) together, per
+          CONTENDER-0002 section A's own stated numbering correspondence):
+          source locations to scan (16 categories, each tagged discovery,
+          corroboration, or context, including operations/WORKSTREAMS.yaml
+          and governed research/** protocols), a closed twelve-value primary
+          screening-disposition vocabulary in mandatory precedence order
+          plus an orthogonal secondary factual-flag set (section E, resolving
+          an independent review's finding that the original flat vocabulary
+          had no rule for a ticker matching more than one disposition —
+          worked against the real RKLB/TSLA case, where a PI-0033 deferral
+          was narrowly superseded by PI-0038 for research purposes only),
+          alias/canonicalization precedence, a mechanical-versus-judgment
+          boundary with an explicit seven-step conflict-resolution procedure
+          (section H), a hybrid audit-artifact-plus-structured-registry
+          output design with regeneration-determinism and bidirectional-
+          reconciliation requirements, validator/test requirements, stop
+          conditions split into per-entry containment versus whole-unit halt
+          (section K), and a bounded, conditional treatment of ~41 legacy
+          pre-PHQ-2026-02 tickers with an explicit gap-record format if
+          unrecovered (this session verified its own working clone is a
+          shallow git clone whose oldest reachable commit is 2026-07-31,
+          meaning that pre-migration history is not mechanically reachable
+          from this environment — recovery, if reachable elsewhere, is
+          deferred to its own future sub-unit rather than assumed).
+          CONTENDER-0002 itself performs no scan, builds no registry, and
+          researches no ticker — it authorizes exactly one future, separate,
+          combined implementation PR for XASSET-0001 section J step 1 only,
+          gated on CONTENDER-0002's own full independent-review/correction/
+          principal-acceptance/merge/post-merge-verification lifecycle.
+          XASSET-0001 section J steps 2-13 (WS-0014 objective items (3)-(14))
+          remain unauthorized.
         pr: 257
         status: in_progress
         date: "2026-08-06"
