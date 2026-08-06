@@ -2078,7 +2078,7 @@ workstreams:
           without itself defining a Milestone 7 completion standard. Does
           not authorize, begin, schedule, or imply Milestone 8 or Milestone
           9.
-        pr: null
+        pr: 259
         status: in_progress
         date: "2026-08-06"
       - gate: milestone-8-policy-recommendation-package
@@ -5028,7 +5028,7 @@ workstreams:
       (`milestone6-prereq6-fresh-authorization-required`) remains its own separate, later, explicit
       authorization requirement, left exactly as merged (`status: blocked`, unedited) by this filing.
     active_branch: claude/ws-0005-milestone-7-baseline-ygez0e
-    active_pr: null
+    active_pr: 259
     last_verified_main_sha: 1d5d93f94bbc39a0b9d99178a7b477e6f0f27928
     last_verified_date: "2026-08-06"
     authorized_by: >
