@@ -74,6 +74,21 @@ raw-token scan and manually re-triage bucket 3 before trusting it blind.
 
 ── Determinism scope (§I) and clone-depth handling (§G) ────────────────────
 
+**Explicit contract**: this registry is deterministic for the same
+repository state AND the same git-history availability — it is NOT, and
+`CONTENDER-0002` §G's own conditional structure does not require it to be,
+byte-identical across environments with different clone depths. §G's
+three-step design (re-verify live; attempt when reachable; stop and
+disclose otherwise) itself mandates different, environment-appropriate
+behavior — a single cross-environment invariant would contradict the
+governing text, not satisfy it. Confirmed empirically, not merely
+theorized: this repository's own CI (`fetch-depth: 0`) independently
+recovered 41 real, mechanically-diffed legacy tickers on its first run
+under this design — a shallow local clone generating from the identical
+source commit correctly recovers zero (see `test_legacy_gap_record_present_and_shape_is_valid`
+in the companion test module, which asserts the shape is valid in either
+outcome rather than assuming one).
+
 The sixteen-plus-one *ordinary* source categories require no git history —
 they read tree content at `source_commit_sha` only, so the portion of
 `entries` they produce is fully reproducible byte-for-byte (excluding

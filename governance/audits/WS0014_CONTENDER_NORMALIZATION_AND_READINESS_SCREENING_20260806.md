@@ -560,3 +560,114 @@ change, and no change to `CONTENDER-0001`/`XASSET-0001`/`CONTENDER-0002`.
 This session does not review its own PR, mark it ready, merge it, or post
 principal acceptance — awaiting terminal exact-head CI and a fresh
 independent exact-head delta review.
+
+## 13. Third bounded correction (same day, this PR) — CI proved §G step 2 works, one test's own assumption was wrong
+
+Exact-head CI on the second-correction head (`be9c951c5e096c75eac1c9eb462642cf14326690`, run `31104047670`, job `92624528328`) **failed — but not because the new §G step 2 recovery logic malfunctioned.** It worked exactly as designed: `1 failed, 2867 passed` —
+`test_legacy_gap_record_present_and_creates_no_placeholder_rows` asserted
+`registry_entries_created == 0` unconditionally; the real assertion
+failure was `assert 41 == 0`. GitHub Actions' own checkout
+(`fetch-depth: 0`) gave `perform_legacy_recovery()` genuine reachable
+history for the first time, it correctly located the real `PHQ-2026-02`
+reconciliation commit, diffed `holdings.yaml` across it, and recovered
+**41 real, mechanically-derived legacy tickers** — landing almost exactly
+on `CONTENDER-0002` §G's own "approximately 41" estimate. This is the
+intended, disclosed, environment-dependent behavior working correctly in
+its own genuinely-complete-history environment for the first time; the
+test's own hardcoded `== 0` was the defect, not the recovery logic.
+
+**Governing-contract question, resolved from the text, not invented**:
+should the committed `registry.yaml` be regenerated to reflect CI's
+successful recovery, or does the governing design tolerate — even
+require — different committed output per environment? `CONTENDER-0002`
+§G's own three-step structure (re-verify clone depth live; **attempt**
+recovery only *if* full history is reachable; stop and disclose
+otherwise) is itself conditioned on environment-dependent reachability —
+a single cross-environment byte-identical requirement would contradict
+that text, not satisfy it. §I's determinism guarantee ("running the scan
+twice against an unchanged `main` must produce byte-identical `entries`")
+is read, on its own terms, as *same-environment* reproducibility (the two
+runs it describes happen within one session), not a claim about a shallow
+run and a complete run of the identical commit. **Resolved**: the
+contract is "deterministic for the same repository state AND the same
+git-history availability," not "deterministic regardless of clone
+depth" — stated explicitly now in the generator's own module docstring.
+This session's own working clone remains genuinely shallow (independently
+re-verified) — the committed `registry.yaml` correctly continues to
+report `clone_depth_at_generation: shallow`, `recovery_status:
+unavailable_in_current_clone`, 84 entries. **Not regenerated to reflect
+CI's 41 recovered tickers** — doing so would require actually operating
+in a complete-clone environment (which this session is not), and CI's own
+in-memory test run (the `registry` pytest fixture calling `build_registry()`
+directly) never writes to `intelligence/contenders/registry.yaml` — no
+risk of CI silently overwriting the committed file with a different
+entry count exists today, by construction (the generator's `__main__`
+regeneration script is a separate, manually-invoked path, not something
+CI's `pytest -q` step runs).
+
+**Fix**: `test_legacy_gap_record_present_and_creates_no_placeholder_rows`
+is renamed to `test_legacy_gap_record_present_and_shape_is_valid` and
+rewritten to assert the *invariant* rather than one environment's
+particular outcome: `clone_depth_at_generation` is always one of the two
+closed values; when `recovery_status` matches the dynamic
+`"recovered_<N>_of_41"` pattern, `registry_entries_created` must equal
+that exact `N`, be greater than 0, `clone_depth_at_generation` must be
+`"complete"`, and — checked directly against `reg["entries"]`, not merely
+trusted — exactly `N` entries must carry a `"§G step 2"`/"PHQ-2026-02
+reconciliation commit" citation in their own `existing_disposition` text;
+otherwise (`unavailable_in_current_clone` or `recovery_ambiguous`),
+`registry_entries_created` must be exactly 0. This is the same test, now
+correctly encoding "zero placeholder rows in either state" rather than
+"zero rows in every state" — the actual property `CONTENDER-0002` §G
+requires. No other test in either file assumed a fixed entry count
+against the real, non-injected `registry` fixture — independently
+re-checked (grepped for hardcoded counts against fixture-based tests;
+only two hardcoded counts exist anywhere in the suite, both inside tests
+using a fully injected synthetic git runner, immune to real-environment
+variation).
+
+**Verification of the 41 recovered identities, honestly bounded**: this
+session cannot directly enumerate or independently re-inspect the 41 real
+ticker symbols CI's own complete-history environment found — the CI log
+truncates the failing test's own dict repr, and this session's own clone
+remains shallow, unable to reproduce the same real-history diff locally.
+What IS independently verified, mechanically, not by trust: the recovery
+code path itself (`find_phq_2026_02_reconciliation_commit()`,
+`diff_holdings_tickers_across_commit()`, `perform_legacy_recovery()`) was
+exercised end-to-end against nine dependency-injected synthetic scenarios
+in §12 above, each proving the mechanism cannot fabricate a ticker
+(it only ever returns literal YAML-key set differences between two real
+git blobs), cannot invent a placeholder (every recovered row requires a
+real removed key), and fails closed rather than guessing whenever the
+commit, parent, or diff cannot be established. CI's real 41-ticker result
+landing almost exactly on the "approximately 41" figure `PHQ-2026-02`'s
+own reconciliation history already discloses is independent corroborating
+evidence the mechanism found the right boundary, not a coincidence this
+session can claim credit for engineering — the number came from real
+history, not from this correction's own code choosing it.
+
+**Documentation updated for accuracy** (no other document claimed a
+false universal invariant beyond the one test above, independently
+re-checked): the generator's own module docstring gains an explicit
+"contract" paragraph stating deterministic-per-environment scope and
+citing this real CI outcome; `contender_registry_validator.py`'s own
+module docstring §G bullet corrected from "`registry_entries_created`
+must be exactly 0" to the accurate conditional rule; this PR's body and
+CLAUDE.md's own bounded-correction paragraph (appended again, not
+edited) both restate the same corrected figures.
+
+**Validation at this corrected head**: `contender_registry_validator.py`
+OK (84 entries); bidirectional reconciliation zero errors; all four
+other domain validators clean; decision catalog unchanged (84
+decisions); sealed 27 and every protected path byte-identical;
+determinism reconfirmed within this environment; `git diff --check`
+clean — see this PR's own latest comment for the exact corrected
+full-suite pass count and this correction's own final head.
+
+This correction performed no ticker research, no disposition change
+beyond what the already-existing, already-tested mechanical §G recovery
+logic itself produces, no weakening of the recovery requirement, and no
+change to `CONTENDER-0001`/`XASSET-0001`/`CONTENDER-0002`. This session
+does not review its own PR, mark it ready, merge it, or post principal
+acceptance — awaiting terminal exact-head CI and a fresh independent
+exact-head delta review.

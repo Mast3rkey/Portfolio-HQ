@@ -27,9 +27,12 @@ Scope, exactly what CONTENDER-0002 authorizes this module to validate:
 - §C: alias/duplicate integrity — every `duplicate_of` reference must
   resolve to a real entry in the same registry, and no canonical symbol may
   appear twice.
-- §G: the legacy-gap record, when present, must carry every required key
-  and `registry_entries_created` must be exactly 0 (no invented placeholder
-  rows for unrecovered legacy tickers).
+- §G: the legacy-gap record, when present, must carry every required key.
+  `registry_entries_created` must be exactly 0 for every non-recovery
+  outcome (no invented placeholder rows for unrecovered legacy tickers),
+  and must exactly equal the count named in a `"recovered_<N>_of_41"`-
+  shaped `recovery_status` when recovery genuinely succeeded (a real,
+  mechanically-diffed count, never invented either).
 - §I: header provenance (`source_commit_sha`, `generated_at`) must be
   present; entry ordering must be deterministic (alphabetical by
   `canonical_symbol`).

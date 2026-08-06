@@ -6,8 +6,8 @@
 # regeneration or correction (§I) — re-run this generator, do not patch
 # this file directly.
 schema_version: 1
-source_commit_sha: 6c22aaba718c38c21ad580e99f717cefea12844d
-generated_at: '2026-08-06T12:08:15+00:00'
+source_commit_sha: be9c951c5e096c75eac1c9eb462642cf14326690
+generated_at: '2026-08-06T13:02:06+00:00'
 governing_authority: governance/decisions/CONTENDER-0002-contender-normalization-and-readiness-screening-authorization.md
 legacy_gap:
   known_unenumerated_legacy_gap: true

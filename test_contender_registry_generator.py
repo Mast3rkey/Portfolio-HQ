@@ -236,14 +236,46 @@ def test_sealed_classification_directory_untouched_by_generation(registry):
 
 # ── §G legacy-ticker provenance ───────────────────────────────────────────
 
-def test_legacy_gap_record_present_and_creates_no_placeholder_rows(registry):
+def test_legacy_gap_record_present_and_shape_is_valid(registry):
+    """Runs against the REAL environment via the `registry` fixture — which
+    may be a shallow local clone (registry_entries_created == 0,
+    recovery_status a fixed value) OR a genuinely complete clone, such as
+    this repository's own CI (`fetch-depth: 0`), where §G step 2's
+    mandatory recovery attempt can — and, against this repository's real
+    history, does — succeed and add real recovered entries. Both are
+    valid, correctly-behaving outcomes; this test asserts the *shape* is
+    internally consistent in either case, never a hardcoded assumption
+    about which one the environment happens to produce (CONTENDER-0002
+    §G step 1: never assume, always re-verify live)."""
     reg, _, _ = registry
     gap = reg["legacy_gap"]
     assert gap["known_unenumerated_legacy_gap"] is True
     assert gap["source_authority"] == "PHQ-2026-02"
-    assert gap["registry_entries_created"] == 0
     assert gap["clone_depth_at_generation"] in crv.CLONE_DEPTH_VALUES
-    assert gap["recovery_status"] in crv.RECOVERY_STATUS_VALUES
+
+    recovered_match = crv.RECOVERED_STATUS_PATTERN.match(gap["recovery_status"])
+    if recovered_match:
+        # Real recovery succeeded (only reachable with a complete clone) —
+        # registry_entries_created must equal the count named in
+        # recovery_status, be > 0, and every one of that many entries must
+        # actually be present with real §G-step-2 git provenance — never a
+        # placeholder, and never an invented count.
+        n = int(recovered_match.group(1))
+        assert gap["registry_entries_created"] == n
+        assert n > 0
+        assert gap["clone_depth_at_generation"] == "complete"
+        recovered_entries = [
+            e for e in reg["entries"]
+            if "§G step 2" in (e.get("existing_disposition") or "")
+        ]
+        assert len(recovered_entries) == n
+        for e in recovered_entries:
+            assert "PHQ-2026-02 reconciliation commit" in e["existing_disposition"]
+    else:
+        # No recovery — either shallow (unavailable) or complete-but-
+        # ambiguous. Either way, zero entries may be invented.
+        assert gap["recovery_status"] in crv.RECOVERY_STATUS_VALUES
+        assert gap["registry_entries_created"] == 0
 
 
 # ── §G clone-depth detection: environment-independent (CONTENDER-0002 §G
