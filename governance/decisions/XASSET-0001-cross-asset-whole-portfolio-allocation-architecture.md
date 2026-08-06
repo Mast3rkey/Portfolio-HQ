@@ -55,32 +55,49 @@ MINOR:**
 
 1. **MAJOR** — the original §I stated `dependencies: [WS-0005, CONTENDER-0001 (governance record,
    not a workstream)]` for the new `WS-0014` entry, while §K (the section describing what was
-   actually implemented) stated `dependencies: [WS-0005]` — and the live, already-merged
-   `operations/WORKSTREAMS.yaml` field independently re-confirmed at correction time to be exactly
-   `['WS-0005']`. §I's stated value never matched what the accompanying commit actually implemented —
-   a direct, mechanically verifiable self-contradiction within the same decision document.
-   **Resolved** by correcting §I to state `dependencies: [WS-0005]`, matching §K and the live
-   register exactly, and adding an explicit workstream-dependency-versus-governing-authority
-   distinction: `operations/WORKSTREAMS.yaml`'s `dependencies:` field is reserved for `WS-####`
-   workstream identifiers only (true of every other workstream's own field in the live register);
-   `CONTENDER-0001`'s relationship to `WS-0014` is recorded as governing authority (§K), never as a
-   workstream dependency. This correction does not touch `operations/WORKSTREAMS.yaml` — the live
-   field was already correct; only this decision file's own prose was wrong.
+   actually implemented) stated `dependencies: [WS-0005]` — and the proposed `operations/
+   WORKSTREAMS.yaml` field, as implemented by this PR's own first commit and independently
+   re-confirmed unchanged at correction time, reads exactly `['WS-0005']`. §I's stated value never
+   matched what the accompanying commit actually implemented — a direct, mechanically verifiable
+   self-contradiction within the same decision document. **Resolved** by correcting §I to state
+   `dependencies: [WS-0005]`, matching §K and this PR's own proposed register entry exactly, and
+   adding an explicit workstream-dependency-versus-governing-authority distinction:
+   `operations/WORKSTREAMS.yaml`'s `dependencies:` field is reserved for `WS-####` workstream
+   identifiers only (true of every other, already-established workstream's own field in the current,
+   already-merged register); `CONTENDER-0001`'s relationship to `WS-0014` is recorded as governing
+   authority (§K), never as a workstream dependency. This correction does not touch `operations/
+   WORKSTREAMS.yaml` — the field this PR's own first commit proposed was already correct; only this
+   decision file's own prose was wrong.
 2. **MINOR** — §K's `governing_authority` bracket summary listed 6 entries (`CONTENDER-0001,
-   XASSET-0001, OPS-0001, OPS-0006 (...), OPS-0007, OPS-0009`), while the live, already-merged
-   `WS-0014.governing_authority` field independently re-confirmed at correction time to contain 9
-   entries — the 6 named plus `OPS-0008` (batching discipline reference only), `GOV-0001`, and
-   `GOV-0002`, all three present in the actual implemented field from the start. **Resolved** by
-   updating §K's bracket list to reproduce all 9 entries exactly, with their live parenthetical
-   annotations, matching `operations/WORKSTREAMS.yaml`'s actual field. This correction likewise does
-   not touch `operations/WORKSTREAMS.yaml` — the live field was already correct and complete; only
-   this decision file's own summary of it was incomplete.
+   XASSET-0001, OPS-0001, OPS-0006 (...), OPS-0007, OPS-0009`), while the proposed `WS-0014.
+   governing_authority` field — as implemented by this PR's own first commit and independently
+   re-confirmed unchanged at correction time — contains 9 entries: the 6 named plus `OPS-0008`
+   (batching discipline reference only), `GOV-0001`, and `GOV-0002`, all three present in that field
+   from the start. **Resolved** by updating §K's bracket list to reproduce all 9 entries exactly,
+   with their annotations, matching this PR's own proposed `operations/WORKSTREAMS.yaml` field. This
+   correction likewise does not touch `operations/WORKSTREAMS.yaml` — the field this PR's own first
+   commit proposed was already correct and complete; only this decision file's own summary of it was
+   incomplete.
 
 Both findings were prose-only defects in this decision file's own description of what its
-accompanying commit implemented — in both cases, the actually-implemented `operations/
-WORKSTREAMS.yaml` field was already correct, and remains untouched by this correction. No
-architecture, sequencing, `WS-0014`/`WS-0013` status, non-authorization boundary, or any other
-content is changed. `CONTENDER-0001` is not edited.
+accompanying commit implemented — in both cases, the field this PR's own first commit actually
+proposed in `operations/WORKSTREAMS.yaml` was already correct, and remains untouched by this
+correction. No architecture, sequencing, `WS-0014`/`WS-0013` status, non-authorization boundary, or
+any other content is changed. `CONTENDER-0001` is not edited.
+
+**Second bounded correction, independent delta review `4870417206`, one finding, 0 BLOCKING / 0
+MAJOR / 1 MINOR:** the first bounded correction's own new prose above twice described the proposed
+`operations/WORKSTREAMS.yaml` field — introduced by this same still-open, draft, unmerged PR's own
+first commit — as "the live, already-merged" field. `PR #256` is confirmed `open`/`draft: true`/
+`merged: false`; `main` is confirmed still at this filing's own stated base SHA; nothing in
+`operations/WORKSTREAMS.yaml`'s `WS-0014` entry is live on `main` until this PR itself merges — the
+same distinction this document's own frontmatter (`status: Proposed`) and Consequences section
+("**Once this filing merges**...") already draw correctly. **Resolved** by rewording both
+occurrences (above) to describe the field as proposed by this PR's own first commit, never as
+already merged or already live — while continuing to state plainly that the field's own content was
+correct throughout and is unchanged by either correction round. No architecture, sequencing,
+`WS-0014`/`WS-0013` status, or non-authorization boundary changes; `operations/WORKSTREAMS.yaml`
+itself is still untouched by any correction in this PR.
 
 ## Decision
 
@@ -329,8 +346,8 @@ This filing authorizes creation of **`WS-0014`**, a new, dedicated workstream to
 - `authorized_scope: "none — architecture and sequencing planning only, recorded by this filing;
   no execution unit authorized"`;
 - no active implementation PR beyond this governance filing itself;
-- `dependencies: [WS-0005]` — the only entry in `operations/WORKSTREAMS.yaml`'s `dependencies:` field
-  for this workstream, matching §K and the live register exactly. `WS-0014`'s equity-cohort work
+- `dependencies: [WS-0005]` — the only entry this PR's own accompanying commit proposes for
+  `WS-0014`'s `dependencies:` field in `operations/WORKSTREAMS.yaml`, matching §K exactly. `WS-0014`'s equity-cohort work
   (items 2–3) depends on `WS-0005`'s Milestone 3–7 evidence, which is what this field records.
   **Workstream dependency and governing authority are distinct concepts and must not be conflated**:
   `operations/WORKSTREAMS.yaml`'s `dependencies:` field is reserved for `WS-####` workstream
@@ -404,9 +421,10 @@ Wave Protocol discipline (a genuine common mechanism, not a shared label, justif
    workstream-dependency-versus-governing-authority distinction), `governing_authority: [CONTENDER-
    0001, XASSET-0001, OPS-0001 (recording only), OPS-0006 (equity-framework precedent, dependency
    reference only), OPS-0007 (review standard), OPS-0008 (batching discipline reference only),
-   OPS-0009 (Lane G), GOV-0001, GOV-0002]` — nine entries, reproduced here exactly matching the live
-   field (independently re-verified against `operations/WORKSTREAMS.yaml` at correction time; the
-   original commit's summary of this bracket omitted `OPS-0008`, `GOV-0001`, and `GOV-0002`, all
+   OPS-0009 (Lane G), GOV-0001, GOV-0002]` — nine entries, reproduced here exactly matching the field
+   this PR's own first commit proposes in `operations/WORKSTREAMS.yaml` (independently re-verified
+   against that proposed field at correction time; the original commit's summary of this bracket
+   omitted `OPS-0008`, `GOV-0001`, and `GOV-0002`, all
    three present in the actual implemented field from the start — see the Correction history below),
    `evidence_refs: [CONTENDER-0001, XASSET-0001]`, `next_action: "None
    authorized. WS-0014's first step (contender normalization, item 1 of the fourteen-item list) may
