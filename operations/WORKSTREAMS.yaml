@@ -7800,7 +7800,8 @@ workstreams:
           source beyond CONTENDER-0002 §B's own sixteen, see the retained
           audit's §2.1), contender_registry_generator.py,
           contender_registry_validator.py, their test suites (74 focused
-          tests), and one retained narrative audit
+          tests at initial delivery, 119 at the final corrected head below),
+          and one retained narrative audit
           (governance/audits/WS0014_CONTENDER_NORMALIZATION_AND_READINESS_SCREENING_20260806.md)
           documenting the full scan methodology, the RKLB/TSLA/GNRC/RTX/
           SNPS/ICE/SPGI/WM worked-case reasoning, the WDC/SNDK spinoff
@@ -7811,7 +7812,18 @@ workstreams:
           gate/cluster/cap/holdings/allocator/margin/chart/order/trade
           change; zero allocation check; the sealed 27-name Milestone 6
           classification cohort and every existing Company/Theme/
-          Relationship Intelligence record remain byte-identical.
+          Relationship Intelligence record remain byte-identical. Corrected
+          across four bounded correction rounds (environment-independent
+          clone-depth handling; closed registry schema plus genuine
+          CONTENDER-0002 §G step 2 recovery compliance; environment-
+          dependent legacy-gap invariant handling, not a fixed count;
+          registry_entries_created recomputed from net-new rows, not raw
+          diff hits) to final corrected head
+          66faa6d21773a35b8a10220c904ff1c8582e74b3 — 119 focused tests,
+          full pytest 2875 passed/0 failed at that head, exact-head CI (run
+          31106466634 / job 92632809520) success. No claim of acceptance,
+          readiness, merge, or completion; awaiting a fresh independent
+          exact-head delta review.
         pr: 258
         status: in_progress
         date: "2026-08-06"
