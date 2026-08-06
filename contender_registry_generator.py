@@ -74,31 +74,37 @@ raw-token scan and manually re-triage bucket 3 before trusting it blind.
 
 ── Determinism scope (§I) and clone-depth handling (§G) ────────────────────
 
-`entries` depends only on tree content at `source_commit_sha` — none of the
-sixteen-plus-one source categories requires reading git history, so
-`entries` is fully reproducible byte-for-byte (excluding `generated_at`)
-regardless of which environment (or how much local git history it holds)
-performs the generation. This has been independently verified against both
-a shallow-clone and a complete-clone environment.
+The sixteen-plus-one *ordinary* source categories require no git history —
+they read tree content at `source_commit_sha` only, so the portion of
+`entries` they produce is fully reproducible byte-for-byte (excluding
+`generated_at`) regardless of which environment performs the generation.
 
-`legacy_gap.recovery_status` (and its accompanying `clone_depth_at_generation`
-field) is a **disclosed, intentional exception** to that determinism
-guarantee: `detect_clone_depth()` below reports the *executing environment's*
-own git clone depth, live, every generation — a shallow local development
-clone and a `fetch-depth: 0` CI checkout of the identical source commit
-correctly report `"shallow"` and `"complete"` respectively, and
-`recovery_status` follows from that (`"unavailable_in_current_clone"` vs.
-`"reachable_but_recovery_not_attempted_this_generation"` — see
-`RECOVERY_STATUS_VALUES`'s own comment). This is not a determinism defect:
-git-history reachability is genuinely environment-dependent runtime state,
-not part of the tree content the rest of this registry's `entries` are
-built from, and §G's own text requires this live re-verification on every
-generation rather than trusting a prior finding. Neither value implies
-recovery was attempted or that any of the ~41 legacy tickers were
-identified — `registry_entries_created` stays 0 in both cases, and actually
-attempting §G step 2's bounded historical diff (when history is reachable)
-remains its own separately scoped, separately authorized follow-on unit,
-not performed by this generator.
+**§G step 2 legacy recovery is a disclosed, intentional, environment-
+dependent exception to that guarantee — for BOTH `legacy_gap` and,
+potentially, `entries` itself.** `detect_clone_depth()` below reports the
+*executing environment's* own live git clone depth, every generation — a
+shallow local development clone and a `fetch-depth: 0` CI checkout of the
+identical source commit correctly report `"shallow"` and `"complete"`
+respectively. When `"complete"`, `perform_legacy_recovery()` ALWAYS
+attempts §G step 2's mandatory bounded, mechanical diff of `holdings.yaml`
+across the PHQ-2026-02 reconciliation commit — a genuinely conditional
+requirement, not skipped or deferred. If that attempt succeeds, every
+mechanically-recovered legacy ticker becomes a real, fully-dispositioned
+registry entry (routed through the same §E.2 precedence engine as every
+other discovered identity) — meaning `entries` itself can legitimately
+differ between a shallow environment (recovery impossible, no legacy
+entries added) and a complete environment (recovery attempted; zero or
+more legacy entries added, depending on what the mechanical diff actually
+finds). This is not a determinism *defect*: git-history reachability is
+genuinely environment-dependent runtime state, not part of the tree
+content the rest of this registry is built from, and §G's own text
+requires the live re-verification and, where reachable, the attempt,
+rather than trusting or skipping based on a prior finding. Every recovery
+outcome fails closed to an honest `recovery_ambiguous` (zero entries
+added, `registry_entries_created: 0`) rather than guessing, whenever the
+reconciliation commit, a single resolvable parent, or a non-empty diff
+cannot be mechanically established — see `perform_legacy_recovery()`'s own
+docstring for the exact conditions.
 """
 
 from __future__ import annotations
@@ -184,28 +190,130 @@ def detect_clone_depth(repo_root: Path, *, runner=None) -> str:
     )
 
 
-def build_legacy_gap(clone_depth: str) -> dict:
-    """§G's exact required record shape, with `recovery_status` computed
-    from a live-detected `clone_depth` rather than hardcoded. Never creates
-    a placeholder ticker row regardless of clone depth (`registry_entries_created`
-    is always 0 from this function — actually attempting the §G step-2
-    recovery diff, when history is reachable, remains its own separately
-    scoped follow-on unit, not performed here)."""
+def _legacy_gap_record(clone_depth: str, recovery_status: str, registry_entries_created: int) -> dict:
+    """§G's exact required record shape. `registry_entries_created` is 0
+    for every non-recovery outcome (§G: 'no placeholder or invented ticker
+    row may be created for any UNRECOVERED legacy symbol') and equals the
+    real, mechanically-diffed count when recovery succeeded — never
+    invented, never a round number."""
     if clone_depth not in CLONE_DEPTH_VALUES:
         raise ValueError(f"clone_depth must be one of {sorted(CLONE_DEPTH_VALUES)} — got {clone_depth!r}")
-    recovery_status = (
-        "unavailable_in_current_clone" if clone_depth == "shallow"
-        else "reachable_but_recovery_not_attempted_this_generation"
-    )
     return {
         "known_unenumerated_legacy_gap": True,
         "reported_count": "approximately 41",
         "source_authority": "PHQ-2026-02",
         "clone_depth_at_generation": clone_depth,
         "recovery_status": recovery_status,
-        "registry_entries_created": 0,
-        "next_action": "separately_authorized_history_recovery_sub_unit",
+        "registry_entries_created": registry_entries_created,
+        "next_action": (
+            "none required for the recovered identities themselves — each carries its own "
+            "ordinary next_required_action; if the recovered count differs from the originally "
+            "reported ~41, that reflects this mechanical diff's own actual result at the one "
+            "reconciliation boundary it checked, not an additional unresolved gap"
+            if registry_entries_created > 0
+            else "separately_authorized_history_recovery_sub_unit"
+        ),
     }
+
+
+def find_phq_2026_02_reconciliation_commit(repo_root: Path, *, runner=None) -> tuple[str | None, str | None]:
+    """§G step 2: mechanically locate "the PHQ-2026-02 reconciliation
+    commit" — the commit that performed PHQ-2026-02's holdings.yaml
+    reconciliation — by searching reachable commit history for a commit
+    whose own subject line names PHQ-2026-02 and which touched
+    `holdings.yaml`, matching this repository's own consistent commit-
+    message convention of prefixing decision-implementing commits with
+    their governing decision ID (verified against real committed history,
+    e.g. "PHQ-2026-06: cash-only factual sync..."). History is walked
+    oldest-first so the *original* reconciliation commit is found, not a
+    later commit that merely mentions PHQ-2026-02 in passing. Returns
+    `(commit_sha, parent_sha)`; returns `(None, None)` if no matching
+    commit is found, or `(commit_sha, None)` if the match has zero or more
+    than one parent (a root or merge commit — no single unambiguous
+    "before" state to diff against) — in both non-resolvable cases the
+    caller must fail closed, never guess."""
+    run = runner if runner is not None else subprocess.check_output
+    log = run(
+        ["git", "log", "--reverse", "--format=%H%x1f%P%x1f%s", "--", "holdings.yaml"],
+        cwd=str(repo_root), text=True,
+    )
+    for line in log.splitlines():
+        parts = line.split("\x1f")
+        if len(parts) != 3:
+            continue
+        commit_sha, parents_field, subject = parts
+        if "PHQ-2026-02" in subject:
+            parents = parents_field.split()
+            if len(parents) == 1:
+                return commit_sha, parents[0]
+            return commit_sha, None  # root or merge commit — ambiguous parent, fail closed
+    return None, None
+
+
+def diff_holdings_tickers_across_commit(
+    repo_root: Path, commit_sha: str, parent_sha: str, *, runner=None,
+) -> list[tuple[str, str]]:
+    """§G step 2's own "bounded, mechanical diff of holdings.yaml" —
+    tickers present in `shares:`/`crypto_shares:` at `parent_sha` but
+    absent at `commit_sha` (PHQ-2026-02's own disclosed "removed, not
+    zeroed" reconciliation shape). Propagates any exception from a failed
+    `git show` or unparseable YAML — callers must treat that as
+    `recovery_ambiguous`, never guess a partial result."""
+    run = runner if runner is not None else subprocess.check_output
+    before = yaml.safe_load(run(["git", "show", f"{parent_sha}:holdings.yaml"], cwd=str(repo_root), text=True)) or {}
+    after = yaml.safe_load(run(["git", "show", f"{commit_sha}:holdings.yaml"], cwd=str(repo_root), text=True)) or {}
+    removed: list[tuple[str, str]] = []
+    for key, asset_type in (("shares", "equity"), ("crypto_shares", "crypto")):
+        before_syms = set((before.get(key) or {}).keys())
+        after_syms = set((after.get(key) or {}).keys())
+        for sym in sorted(before_syms - after_syms):
+            removed.append((sym, asset_type))
+    return removed
+
+
+def perform_legacy_recovery(
+    repo_root: Path, clone_depth: str, *, runner=None,
+) -> tuple[list[tuple[str, str, str]], dict]:
+    """CONTENDER-0002 §G steps 2-3, orchestrated. Returns
+    `(recovered, legacy_gap)`. `recovered` is a list of
+    `(canonical_symbol, asset_type, provenance_note)` raw mechanical-fact
+    tuples — no disposition is assigned here; `build_registry()` routes
+    every recovered symbol through the same §E.2 precedence engine as
+    every other discovered identity, so a symbol that happens to already
+    carry other governed evidence (e.g. it was later re-added and already
+    has a Company Intelligence record) is never incorrectly forced into a
+    disposition this function would have guessed. `recovered` is empty
+    unless `clone_depth == "complete"` AND the reconciliation commit AND a
+    single resolvable parent were both found AND the diff itself found at
+    least one removed ticker without raising. Every recovered tuple's own
+    provenance note carries the real git commit SHAs — never guessed,
+    never a placeholder. When `clone_depth == "shallow"`, or when any step
+    fails to resolve unambiguously, this fails closed to an honest
+    `recovery_ambiguous`/`unavailable_in_current_clone` gap record with
+    zero recovered entries — matching §G step 3's own "stop and disclose"
+    instruction."""
+    if clone_depth not in CLONE_DEPTH_VALUES:
+        raise ValueError(f"clone_depth must be one of {sorted(CLONE_DEPTH_VALUES)} — got {clone_depth!r}")
+
+    if clone_depth == "shallow":
+        return [], _legacy_gap_record("shallow", "unavailable_in_current_clone", 0)
+
+    commit_sha, parent_sha = find_phq_2026_02_reconciliation_commit(repo_root, runner=runner)
+    if commit_sha is None or parent_sha is None:
+        return [], _legacy_gap_record("complete", "recovery_ambiguous", 0)
+
+    try:
+        removed = diff_holdings_tickers_across_commit(repo_root, commit_sha, parent_sha, runner=runner)
+    except Exception:
+        return [], _legacy_gap_record("complete", "recovery_ambiguous", 0)
+
+    if not removed:
+        return [], _legacy_gap_record("complete", "recovery_ambiguous", 0)
+
+    note = f"present in holdings.yaml at {parent_sha}, absent at {commit_sha} (the PHQ-2026-02 reconciliation commit)"
+    recovered = [(sym, asset_type, note) for sym, asset_type in removed]
+    status = f"recovered_{len(recovered)}_of_41"
+    return recovered, _legacy_gap_record("complete", status, len(recovered))
 
 
 @dataclass
@@ -439,12 +547,20 @@ def _load_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text()) or {}
 
 
-def build_registry(repo_root: str | Path, source_commit_sha: str, generated_at: str) -> dict:
+def build_registry(
+    repo_root: str | Path, source_commit_sha: str, generated_at: str, *, runner=None,
+) -> dict:
     """Deterministic given (repo_root contents at source_commit_sha,
-    source_commit_sha, generated_at). Running this twice against an
-    unchanged `main` must produce byte-identical `entries` (CONTENDER-0002
-    §I) — `generated_at` is the only field expected to vary run-to-run and
-    is excluded from that determinism guarantee."""
+    source_commit_sha, generated_at, AND the executing environment's own
+    git clone depth — see the module docstring's "Determinism scope"
+    section for the disclosed exception this last dependency creates).
+    Running this twice against an unchanged `main` in the SAME clone-depth
+    environment must produce byte-identical `entries` (CONTENDER-0002 §I)
+    — `generated_at` is the only field expected to vary run-to-run within
+    one environment and is excluded from that determinism guarantee.
+    `runner`, if supplied, replaces every `git` subprocess call this
+    function makes (clone-depth detection and §G step 2 legacy recovery)
+    for end-to-end testability without depending on the real environment."""
     repo_root = Path(repo_root)
     entries: dict[str, _Entry] = {}
 
@@ -590,6 +706,26 @@ def build_registry(repo_root: str | Path, source_commit_sha: str, generated_at: 
                 e.add_prov(_label_for_prose_path(f), "discovery")
             e.existing_disposition = spec["cite"]
 
+    # §G steps 1-3: live, mechanical, environment-independent clone-depth
+    # detection plus the mandatory recovery attempt when history is
+    # reachable — run BEFORE disposition assignment so any genuinely new
+    # recovered symbol is routed through the same §E.2 precedence engine
+    # as every other discovered identity, not hardcoded to one tier.
+    clone_depth = detect_clone_depth(repo_root, runner=runner)
+    recovered, legacy_gap = perform_legacy_recovery(repo_root, clone_depth, runner=runner)
+    for sym, asset_type, note in recovered:
+        if sym in entries:
+            # Already tracked via a live, current source (e.g. later
+            # re-added to holdings/targets, or already carries a Company
+            # Intelligence record) — never overwrite an existing,
+            # already-provenanced entry with a historical recovery stub;
+            # §H.3 step 4 ("never overwrite... only cite").
+            continue
+        e = entry(sym, asset_type)
+        e.add_prov(SRC_HOLDINGS, "discovery")
+        e.existing_disposition = f"Recovered via CONTENDER-0002 §G step 2's mechanical diff: {note}."
+        accepted.setdefault(sym, set()).add(f"holdings.yaml (historical, §G step 2 recovery: {note})")
+
     # ── §E.2: assign exactly one primary disposition per identity, top to
     # bottom precedence order, mechanically. ────────────────────────────────
     for sym, e in entries.items():
@@ -602,11 +738,6 @@ def build_registry(repo_root: str | Path, source_commit_sha: str, generated_at: 
     # to dedupe; this is asserted in tests.
 
     sorted_entries = [entries[s].to_dict() for s in sorted(entries)]
-
-    # §G step 1: live, mechanical, environment-independent — never a
-    # hardcoded assumption carried over from a prior session's own clone.
-    clone_depth = detect_clone_depth(repo_root)
-    legacy_gap = build_legacy_gap(clone_depth)
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -708,7 +839,10 @@ def _assign_disposition(
     if sym not in company_symbols:
         # funds and crypto with a current target/holding but no equity-style
         # Company Intelligence framework, and no ETF/crypto-appropriate
-        # equivalent exists yet (XASSET-0001).
+        # equivalent exists yet (XASSET-0001) — or a §G step 2 recovered
+        # legacy equity ticker with no Company Intelligence record of its
+        # own (existing_disposition, set before this loop ran, already
+        # carries its git-commit provenance and is left untouched here).
         e.primary_disposition = "requires_research"
         e.investability_status = "investable"
         e.research_status = "no_governed_evidence_record"

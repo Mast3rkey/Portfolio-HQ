@@ -78,6 +78,37 @@ def test_unknown_disposition_rejected():
     assert any("primary_disposition" in e for e in result.errors)
 
 
+# ── MAJOR 1 (review pullrequestreview-4874631727): the registry schema must
+# be closed against EXTRA keys at every level, not just missing ones —
+# mirroring _validate_secondary_flags's own missing+extra pattern. ─────────
+
+def test_entry_rejects_extra_conviction_score_key():
+    """Demonstrates the exact exploit the review found: a policy-shaped
+    'conviction_score' key silently passed validation before this fix."""
+    entry = _entry()
+    entry["conviction_score"] = 9.7
+    result = crv.validate_entry(entry)
+    assert not result.valid
+    assert any("conviction_score" in e for e in result.errors)
+
+
+def test_entry_rejects_extra_recommended_target_pct_key():
+    entry = _entry()
+    entry["recommended_target_pct"] = 3.35
+    result = crv.validate_entry(entry)
+    assert not result.valid
+    assert any("recommended_target_pct" in e for e in result.errors)
+
+
+def test_entry_rejects_both_extra_keys_at_once():
+    entry = _entry()
+    entry["conviction_score"] = 9.7
+    entry["recommended_target_pct"] = 3.35
+    result = crv.validate_entry(entry)
+    assert not result.valid
+    assert any("conviction_score" in e and "recommended_target_pct" in e for e in result.errors)
+
+
 @pytest.mark.parametrize("disposition", sorted(crv.PRIMARY_DISPOSITIONS))
 def test_every_closed_vocabulary_value_accepted(disposition):
     entry = _entry(primary_disposition=disposition)
@@ -162,6 +193,27 @@ def test_valid_registry_passes():
     assert result.valid, result.errors
 
 
+def test_registry_header_rejects_arbitrary_extra_key():
+    """MAJOR 1: the header-level check previously only computed `missing`,
+    never `extra` — an arbitrary top-level key (policy-shaped or not)
+    silently passed."""
+    data = _registry([_entry()])
+    data["conviction_methodology"] = "proprietary scoring model v2"
+    result = crv.validate_registry_data(data)
+    assert not result.valid
+    assert any("conviction_methodology" in e for e in result.errors)
+
+
+def test_registry_header_entries_and_legacy_gap_keys_not_flagged_as_extra():
+    """The top-level extra-key check must not misfire on the registry's
+    own legitimate 'entries'/'legacy_gap' keys, which sit alongside the
+    header fields, not among them."""
+    data = _registry([_entry()])
+    data["legacy_gap"] = _legacy_gap()
+    result = crv.validate_registry_data(data)
+    assert result.valid, result.errors
+
+
 # ── §G legacy-gap record shape ────────────────────────────────────────────
 
 def _legacy_gap(**overrides) -> dict:
@@ -185,11 +237,11 @@ def test_legacy_gap_valid_shape_passes():
     assert result.valid, result.errors
 
 
-def test_legacy_gap_valid_shape_passes_complete_clone_branch():
+def test_legacy_gap_valid_shape_passes_complete_clone_ambiguous_branch():
     data = _registry([_entry()])
     data["legacy_gap"] = _legacy_gap(
         clone_depth_at_generation="complete",
-        recovery_status="reachable_but_recovery_not_attempted_this_generation",
+        recovery_status="recovery_ambiguous",
     )
     result = crv.validate_registry_data(data)
     assert result.valid, result.errors
@@ -206,6 +258,63 @@ def test_legacy_gap_nonzero_entries_created_rejected():
 def test_legacy_gap_missing_key_rejected():
     data = _registry([_entry()])
     data["legacy_gap"] = {"known_unenumerated_legacy_gap": True}
+    result = crv.validate_registry_data(data)
+    assert not result.valid
+
+
+def test_legacy_gap_rejects_arbitrary_extra_key():
+    """MAJOR 1: legacy_gap previously only checked `missing`, never
+    `extra`."""
+    data = _registry([_entry()])
+    data["legacy_gap"] = _legacy_gap(fabricated_confidence_score=0.97)
+    result = crv.validate_registry_data(data)
+    assert not result.valid
+    assert any("fabricated_confidence_score" in e for e in result.errors)
+
+
+# ── §G step 2: dynamic "recovered_N_of_41" recovery_status ─────────────────
+
+def test_legacy_gap_recovered_n_of_41_pattern_accepted():
+    data = _registry([_entry()])
+    data["legacy_gap"] = _legacy_gap(
+        clone_depth_at_generation="complete",
+        recovery_status="recovered_7_of_41",
+        registry_entries_created=7,
+    )
+    result = crv.validate_registry_data(data)
+    assert result.valid, result.errors
+
+
+def test_legacy_gap_recovered_count_mismatch_rejected():
+    data = _registry([_entry()])
+    data["legacy_gap"] = _legacy_gap(
+        clone_depth_at_generation="complete",
+        recovery_status="recovered_7_of_41",
+        registry_entries_created=3,  # mismatched — must equal 7
+    )
+    result = crv.validate_registry_data(data)
+    assert not result.valid
+    assert any("registry_entries_created" in e for e in result.errors)
+
+
+def test_legacy_gap_recovered_zero_rejected():
+    """A 'recovered_0_of_41' status would claim recovery succeeded while
+    finding nothing — perform_legacy_recovery() itself never produces this
+    (an empty diff is recovery_ambiguous instead), and the validator must
+    independently reject it too."""
+    data = _registry([_entry()])
+    data["legacy_gap"] = _legacy_gap(
+        clone_depth_at_generation="complete",
+        recovery_status="recovered_0_of_41",
+        registry_entries_created=0,
+    )
+    result = crv.validate_registry_data(data)
+    assert not result.valid
+
+
+def test_legacy_gap_malformed_recovered_pattern_rejected():
+    data = _registry([_entry()])
+    data["legacy_gap"] = _legacy_gap(recovery_status="recovered_some_of_41")
     result = crv.validate_registry_data(data)
     assert not result.valid
 
@@ -230,10 +339,16 @@ def test_clone_depth_and_recovery_status_vocabularies_are_closed():
     assert crv.CLONE_DEPTH_VALUES == {"shallow", "complete"}
     assert crv.RECOVERY_STATUS_VALUES == {
         "unavailable_in_current_clone",
-        "recovered_n_of_41",
         "recovery_ambiguous",
-        "reachable_but_recovery_not_attempted_this_generation",
     }
+
+
+def test_recovered_status_pattern_matches_only_well_formed_counts():
+    assert crv.RECOVERED_STATUS_PATTERN.match("recovered_7_of_41")
+    assert crv.RECOVERED_STATUS_PATTERN.match("recovered_0_of_41")  # pattern-valid; semantically rejected elsewhere
+    assert not crv.RECOVERED_STATUS_PATTERN.match("recovered_seven_of_41")
+    assert not crv.RECOVERED_STATUS_PATTERN.match("recovered_of_41")
+    assert not crv.RECOVERED_STATUS_PATTERN.match("recovered_n_of_41")
 
 
 # ── §B provenance ──────────────────────────────────────────────────────────

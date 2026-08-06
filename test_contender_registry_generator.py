@@ -275,36 +275,242 @@ def test_detect_clone_depth_return_value_is_always_normalized():
         assert gen.detect_clone_depth(_REPO_ROOT, runner=_fake_git_output(raw)) in gen.CLONE_DEPTH_VALUES
 
 
-def test_build_legacy_gap_shallow_branch():
-    gap = gen.build_legacy_gap("shallow")
+def test_legacy_gap_record_shallow_branch():
+    gap = gen._legacy_gap_record("shallow", "unavailable_in_current_clone", 0)
     assert gap["clone_depth_at_generation"] == "shallow"
     assert gap["recovery_status"] == "unavailable_in_current_clone"
     assert gap["registry_entries_created"] == 0
     assert gap["next_action"] == "separately_authorized_history_recovery_sub_unit"
 
 
-def test_build_legacy_gap_complete_branch():
-    """When history IS reachable, the generator must not falsely claim
-    'unavailable_in_current_clone' — but it also must not claim recovery
-    was performed, since actually attempting §G step 2's historical diff
-    is its own separately scoped follow-on unit, not this one."""
-    gap = gen.build_legacy_gap("complete")
-    assert gap["clone_depth_at_generation"] == "complete"
-    assert gap["recovery_status"] == "reachable_but_recovery_not_attempted_this_generation"
-    assert gap["recovery_status"] != "unavailable_in_current_clone"
-    assert gap["recovery_status"] != "recovered_n_of_41"
-    assert gap["registry_entries_created"] == 0
-    assert gap["next_action"] == "separately_authorized_history_recovery_sub_unit"
-
-
-def test_build_legacy_gap_never_creates_placeholder_rows_in_either_state():
-    for depth in gen.CLONE_DEPTH_VALUES:
-        assert gen.build_legacy_gap(depth)["registry_entries_created"] == 0
-
-
-def test_build_legacy_gap_rejects_unnormalized_input():
+def test_legacy_gap_record_rejects_unnormalized_clone_depth():
     with pytest.raises(ValueError):
-        gen.build_legacy_gap("shallowish")
+        gen._legacy_gap_record("shallowish", "unavailable_in_current_clone", 0)
+
+
+# ── §G step 2: perform_legacy_recovery() — shallow branch (unreachable) ────
+
+def test_perform_legacy_recovery_shallow_never_attempts_recovery():
+    """§G step 1/3's existing shallow-clone path: no recovery attempted,
+    honest 'unavailable' disclosure, matching the pre-existing behavior
+    this correction must not regress."""
+
+    def runner_should_not_be_called(args, **kwargs):
+        raise AssertionError(f"no git call should happen for a shallow clone: {args}")
+
+    recovered, gap = gen.perform_legacy_recovery(_REPO_ROOT, "shallow", runner=runner_should_not_be_called)
+    assert recovered == []
+    assert gap["clone_depth_at_generation"] == "shallow"
+    assert gap["recovery_status"] == "unavailable_in_current_clone"
+    assert gap["registry_entries_created"] == 0
+
+
+# ── §G step 2: complete/reachable branch, successful bounded recovery ──────
+
+def _synthetic_recovery_runner(before_holdings: str, after_holdings: str, *, commit_subject="PHQ-2026-02: holdings reconciled"):
+    def runner(args, **kwargs):
+        if args[:2] == ["git", "log"]:
+            return f"COMMITSHA\x1fPARENTSHA\x1f{commit_subject}\n"
+        if args[:2] == ["git", "show"]:
+            target = args[2]
+            if target.startswith("PARENTSHA"):
+                return before_holdings
+            if target.startswith("COMMITSHA"):
+                return after_holdings
+        raise AssertionError(f"unexpected call: {args}")
+    return runner
+
+
+def test_perform_legacy_recovery_complete_successful_diff():
+    runner = _synthetic_recovery_runner(
+        before_holdings="shares:\n  AMZN: 1.0\n  LEGACYCO: 2.5\ncrypto_shares:\n  BTC: 0.1\n  DEADCOIN: 5.0\n",
+        after_holdings="shares:\n  AMZN: 1.0\ncrypto_shares:\n  BTC: 0.1\n",
+    )
+    recovered, gap = gen.perform_legacy_recovery(_REPO_ROOT, "complete", runner=runner)
+    recovered_symbols = {sym for sym, _asset_type, _note in recovered}
+    assert recovered_symbols == {"LEGACYCO", "DEADCOIN"}
+    assert gap["clone_depth_at_generation"] == "complete"
+    assert gap["recovery_status"] == "recovered_2_of_41"
+    assert gap["registry_entries_created"] == 2
+    for sym, asset_type, note in recovered:
+        assert "PARENTSHA" in note and "COMMITSHA" in note  # real git provenance, never guessed
+    asset_types = {sym: asset_type for sym, asset_type, _note in recovered}
+    assert asset_types["LEGACYCO"] == "equity"
+    assert asset_types["DEADCOIN"] == "crypto"
+
+
+def test_perform_legacy_recovery_finds_earliest_matching_commit():
+    """History is walked oldest-first so the ORIGINAL reconciliation
+    commit is found, not a later commit that merely mentions PHQ-2026-02
+    in passing."""
+    def runner(args, **kwargs):
+        if args[:2] == ["git", "log"]:
+            return (
+                "OLDSHA\x1fOLDPARENT\x1fPHQ-2026-02: holdings reconciled\n"
+                "NEWSHA\x1fNEWPARENT\x1fLane M: reference PHQ-2026-02 for context\n"
+            )
+        if args[:2] == ["git", "show"]:
+            target = args[2]
+            if target.startswith("OLDPARENT"):
+                return "shares:\n  X: 1.0\ncrypto_shares: {}\n"
+            if target.startswith("OLDSHA"):
+                return "shares: {}\ncrypto_shares: {}\n"
+        raise AssertionError(f"unexpected call: {args}")
+
+    commit_sha, parent_sha = gen.find_phq_2026_02_reconciliation_commit(_REPO_ROOT, runner=runner)
+    assert commit_sha == "OLDSHA"
+    assert parent_sha == "OLDPARENT"
+
+
+# ── §G step 2/3: complete history where the boundary cannot be resolved ────
+
+def test_perform_legacy_recovery_no_matching_commit_fails_closed():
+    def runner(args, **kwargs):
+        if args[:2] == ["git", "log"]:
+            return "SHA1\x1fPARENT1\x1funrelated commit, no PHQ mention\n"
+        raise AssertionError(f"unexpected call: {args}")
+
+    recovered, gap = gen.perform_legacy_recovery(_REPO_ROOT, "complete", runner=runner)
+    assert recovered == []
+    assert gap["recovery_status"] == "recovery_ambiguous"
+    assert gap["registry_entries_created"] == 0
+
+
+def test_perform_legacy_recovery_merge_commit_fails_closed():
+    """A merge commit (more than one parent) has no single unambiguous
+    'before' state — must fail closed, never guess which parent."""
+    def runner(args, **kwargs):
+        if args[:2] == ["git", "log"]:
+            return "SHA1\x1fPARENT1 PARENT2\x1fPHQ-2026-02: merge reconciliation\n"
+        raise AssertionError(f"unexpected call: {args}")
+
+    recovered, gap = gen.perform_legacy_recovery(_REPO_ROOT, "complete", runner=runner)
+    assert recovered == []
+    assert gap["recovery_status"] == "recovery_ambiguous"
+    assert gap["registry_entries_created"] == 0
+
+
+def test_perform_legacy_recovery_empty_diff_fails_closed():
+    """A matching commit is found but the diff finds nothing removed —
+    treated as ambiguous (a real boundary that didn't remove any ticker is
+    not the ~41-ticker reconciliation §G describes), never silently
+    reported as a successful zero-ticker recovery."""
+    runner = _synthetic_recovery_runner(
+        before_holdings="shares:\n  AMZN: 1.0\ncrypto_shares: {}\n",
+        after_holdings="shares:\n  AMZN: 1.0\ncrypto_shares: {}\n",
+    )
+    recovered, gap = gen.perform_legacy_recovery(_REPO_ROOT, "complete", runner=runner)
+    assert recovered == []
+    assert gap["recovery_status"] == "recovery_ambiguous"
+    assert gap["registry_entries_created"] == 0
+
+
+# ── malformed git output ────────────────────────────────────────────────
+
+def test_perform_legacy_recovery_malformed_show_output_fails_closed():
+    def runner(args, **kwargs):
+        if args[:2] == ["git", "log"]:
+            return "SHA1\x1fPARENT1\x1fPHQ-2026-02: reconciled\n"
+        if args[:2] == ["git", "show"]:
+            return "{ not: valid: yaml: ][\n"
+        raise AssertionError(args)
+
+    recovered, gap = gen.perform_legacy_recovery(_REPO_ROOT, "complete", runner=runner)
+    assert recovered == []
+    assert gap["recovery_status"] == "recovery_ambiguous"
+
+
+def test_perform_legacy_recovery_git_show_raising_fails_closed():
+    def runner(args, **kwargs):
+        if args[:2] == ["git", "log"]:
+            return "SHA1\x1fPARENT1\x1fPHQ-2026-02: reconciled\n"
+        if args[:2] == ["git", "show"]:
+            raise RuntimeError("simulated missing blob")
+        raise AssertionError(args)
+
+    recovered, gap = gen.perform_legacy_recovery(_REPO_ROOT, "complete", runner=runner)
+    assert recovered == []
+    assert gap["recovery_status"] == "recovery_ambiguous"
+    assert gap["registry_entries_created"] == 0
+
+
+def test_detect_clone_depth_malformed_output_never_silently_defaults():
+    with pytest.raises(ValueError):
+        gen.detect_clone_depth(_REPO_ROOT, runner=_fake_git_output("maybe?\n"))
+
+
+# ── zero invented placeholders, in every branch ─────────────────────────
+
+def test_perform_legacy_recovery_never_invents_placeholder_rows():
+    scenarios = [
+        ("shallow", lambda a, **k: (_ for _ in ()).throw(AssertionError("no git call for shallow"))),
+        ("complete", lambda a, **k: "SHA1\x1fPARENT1\x1fno phq mention\n" if a[:2] == ["git", "log"] else ""),
+    ]
+    for depth, runner in scenarios:
+        recovered, gap = gen.perform_legacy_recovery(_REPO_ROOT, depth, runner=runner)
+        assert recovered == []
+        assert gap["registry_entries_created"] == 0
+
+
+# ── build_registry() end-to-end: recovered identities become real entries ──
+
+def test_build_registry_merges_recovered_identities_into_entries():
+    runner = _synthetic_recovery_runner(
+        before_holdings="shares:\n  AMZN: 1.0\n  LEGACYCO: 2.5\ncrypto_shares: {}\n",
+        after_holdings="shares:\n  AMZN: 1.0\ncrypto_shares: {}\n",
+    )
+
+    def combined_runner(args, **kwargs):
+        if args[:2] == ["git", "rev-parse"]:
+            return "false\n"
+        return runner(args, **kwargs)
+
+    reg, accepted, _excluded = gen.build_registry(_REPO_ROOT, "sha-z", "ts-z", runner=combined_runner)
+    by = {e["canonical_symbol"]: e for e in reg["entries"]}
+    assert "LEGACYCO" in by
+    assert by["LEGACYCO"]["primary_disposition"] == "requires_research"
+    assert "§G step 2" in by["LEGACYCO"]["existing_disposition"]
+    assert "LEGACYCO" in accepted  # bidirectional reconciliation must account for it
+    assert reg["legacy_gap"]["recovery_status"] == "recovered_1_of_41"
+    assert reg["legacy_gap"]["registry_entries_created"] == 1
+    assert len(reg["entries"]) == 85  # 84 baseline + 1 genuinely new recovered identity
+
+
+def test_build_registry_never_duplicates_an_already_tracked_recovered_symbol():
+    """A symbol the mechanical diff finds removed, but that is ALSO
+    currently tracked via a live source (e.g. re-added later, or already
+    carries a Company Intelligence record), must never be duplicated or
+    have its existing, already-provenanced entry overwritten by a bare
+    historical recovery stub (§H.3 step 4)."""
+    runner = _synthetic_recovery_runner(
+        before_holdings="shares:\n  AMZN: 1.0\ncrypto_shares: {}\n",
+        after_holdings="shares: {}\ncrypto_shares: {}\n",
+    )
+
+    def combined_runner(args, **kwargs):
+        if args[:2] == ["git", "rev-parse"]:
+            return "false\n"
+        return runner(args, **kwargs)
+
+    reg, _accepted, _excluded = gen.build_registry(_REPO_ROOT, "sha-z2", "ts-z2", runner=combined_runner)
+    by = {e["canonical_symbol"]: e for e in reg["entries"]}
+    amzn_symbols = [e for e in reg["entries"] if e["canonical_symbol"] == "AMZN"]
+    assert len(amzn_symbols) == 1  # never duplicated
+    assert "§G step 2" not in (by["AMZN"].get("existing_disposition") or "")  # not overwritten
+    assert len(reg["entries"]) == 84  # no net-new entry — AMZN was already tracked
+
+
+# ── deterministic output for the same repository state ─────────────────
+
+def test_perform_legacy_recovery_is_deterministic_for_same_synthetic_state():
+    runner = _synthetic_recovery_runner(
+        before_holdings="shares:\n  AMZN: 1.0\n  LEGACYCO: 2.5\ncrypto_shares: {}\n",
+        after_holdings="shares:\n  AMZN: 1.0\ncrypto_shares: {}\n",
+    )
+    recovered1, gap1 = gen.perform_legacy_recovery(_REPO_ROOT, "complete", runner=runner)
+    recovered2, gap2 = gen.perform_legacy_recovery(_REPO_ROOT, "complete", runner=runner)
+    assert recovered1 == recovered2
+    assert gap1 == gap2
 
 
 def test_build_registry_uses_live_detected_clone_depth_not_hardcoded(monkeypatch):
@@ -316,13 +522,55 @@ def test_build_registry_uses_live_detected_clone_depth_not_hardcoded(monkeypatch
 
     def fake_detect(repo_root, **kwargs):
         calls.append(repo_root)
-        return "complete"
+        return "shallow"
 
     monkeypatch.setattr(gen, "detect_clone_depth", fake_detect)
     reg, _, _ = gen.build_registry(_REPO_ROOT, "sha-y", "ts-y")
     assert calls, "build_registry() must call detect_clone_depth()"
-    assert reg["legacy_gap"]["clone_depth_at_generation"] == "complete"
-    assert reg["legacy_gap"]["recovery_status"] == "reachable_but_recovery_not_attempted_this_generation"
+    assert reg["legacy_gap"]["clone_depth_at_generation"] == "shallow"
+    assert reg["legacy_gap"]["recovery_status"] == "unavailable_in_current_clone"
+
+
+def test_bidirectional_reconciliation_passes_with_recovered_identities_included():
+    """§J's own bidirectional check must still pass when §G step 2
+    recovery adds genuinely new entries — the recovered symbol must be
+    represented in the `accepted` discovery bookkeeping, not just silently
+    added to `entries` (which would make it a 'registry-only invented
+    identity' from §J's own point of view)."""
+    runner = _synthetic_recovery_runner(
+        before_holdings="shares:\n  AMZN: 1.0\n  LEGACYCO: 2.5\ncrypto_shares: {}\n",
+        after_holdings="shares:\n  AMZN: 1.0\ncrypto_shares: {}\n",
+    )
+
+    def combined_runner(args, **kwargs):
+        if args[:2] == ["git", "rev-parse"]:
+            return "false\n"
+        return runner(args, **kwargs)
+
+    reg, accepted, excluded = gen.build_registry(_REPO_ROOT, "sha-recon", "ts-recon", runner=combined_runner)
+    registry_symbols = frozenset(e["canonical_symbol"] for e in reg["entries"])
+    discovered = frozenset(accepted) | frozenset(excluded) | registry_symbols
+    result = crv.reconcile(
+        discovered_symbols=discovered,
+        registry_symbols=registry_symbols,
+        excluded_with_reason=frozenset(excluded),
+    )
+    assert result.valid, result.errors
+    assert "LEGACYCO" in registry_symbols
+
+
+def test_build_registry_calls_perform_legacy_recovery_with_detected_depth(monkeypatch):
+    calls = []
+
+    def fake_recover(repo_root, clone_depth, **kwargs):
+        calls.append(clone_depth)
+        return [], gen._legacy_gap_record(clone_depth, "recovery_ambiguous", 0)
+
+    monkeypatch.setattr(gen, "detect_clone_depth", lambda repo_root, **kw: "complete")
+    monkeypatch.setattr(gen, "perform_legacy_recovery", fake_recover)
+    reg, _, _ = gen.build_registry(_REPO_ROOT, "sha-w", "ts-w")
+    assert calls == ["complete"]
+    assert reg["legacy_gap"]["recovery_status"] == "recovery_ambiguous"
 
 
 def test_this_environments_clone_depth_is_detected_truthfully():

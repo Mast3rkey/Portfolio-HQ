@@ -407,3 +407,156 @@ Git-history recovery, and no change to `CONTENDER-0001`/`XASSET-0001`/
 `CONTENDER-0002`. This session does not review its own PR, mark it ready,
 merge it, or post principal acceptance — awaiting terminal exact-head CI
 and independent exact-head review.
+
+## 12. Second bounded correction (same day, this PR) — closed schema everywhere, and genuine §G step 2 compliance
+
+An independent exact-head review (`pullrequestreview-4874631727`, anchored
+to `6c22aaba718c38c21ad580e99f717cefea12844d`) returned **CHANGES
+REQUIRED** — 0 BLOCKING / 2 MAJOR / 2 MINOR / 1 NOTE. All confirmed-correct
+findings from that review (population, dispositions, worked cases,
+protected-path isolation, the sealed-27 cohort, and §11's own clone-depth
+fix) stand unedited.
+
+**MAJOR — validator schema not actually closed at three levels.**
+`_validate_secondary_flags()` already rejected both missing and extra
+keys; `validate_entry()`, the registry-header check, and the `legacy_gap`
+check each computed only `missing`, never `extra` — demonstrated live by
+the reviewer: an entry carrying `conviction_score`/`recommended_target_pct`
+(exactly the policy-shaped content `CONTENDER-0002` §M forbids) validated
+as `valid=True`. **Fixed** with one shared helper,
+`_check_closed_keys(value, allowed, errors, where, cite)`, applied at all
+three levels (entry, top-level header/document, `legacy_gap`) — mirroring
+`_validate_secondary_flags`'s own pattern rather than inventing a new one.
+The top-level document check uses a combined allowed-set
+(`_TOP_LEVEL_ALLOWED_KEYS = _REQUIRED_HEADER_KEYS | {"entries", "legacy_gap"}`)
+so the registry's own legitimate `entries`/`legacy_gap` keys are never
+misflagged as extra. Regression tests added for `conviction_score`,
+`recommended_target_pct` (both individually and together), an arbitrary
+top-level key, and an arbitrary `legacy_gap` key — each independently
+confirmed to now fail validation, and a positive test confirms
+`entries`/`legacy_gap` are never themselves flagged.
+
+**MAJOR — `perform_legacy_recovery()` did not implement §G step 2's
+mandatory recovery attempt.** `CONTENDER-0002` §G step 2 reads: "if full
+history is reachable ... **attempt** a bounded, mechanical diff of
+`holdings.yaml` across the `PHQ-2026-02` reconciliation commit to recover
+the 41 symbols" — a requirement conditioned only on reachability, not
+discretionary. The prior correction's `build_legacy_gap()` instead
+unconditionally substituted a disclosed-but-non-compliant
+`"reachable_but_recovery_not_attempted_this_generation"` for every
+complete-clone environment, deferring the actual diff to an unfiled
+follow-on unit — meaning every CI run of this generator's own test suite
+(GitHub Actions checks out with `fetch-depth: 0`, a complete clone) would
+permanently skip the mandatory attempt. **Fixed**: `build_legacy_gap()` is
+removed entirely (superseded, not left as dead code) and replaced with
+three new functions —
+`find_phq_2026_02_reconciliation_commit(repo_root, runner=None)` (walks
+reachable history oldest-first for a commit whose own subject line names
+`PHQ-2026-02` and touches `holdings.yaml`, matching this repository's own
+consistent commit-message convention; returns `(None, None)` if no match,
+or `(commit_sha, None)` if the match is a root/merge commit with no single
+resolvable parent — both fail-closed, never guessed);
+`diff_holdings_tickers_across_commit(repo_root, commit_sha, parent_sha,
+runner=None)` (the literal "bounded, mechanical diff" — tickers present in
+`shares:`/`crypto_shares:` at the parent but absent at the commit; raises
+on any read/parse failure rather than returning a partial result); and
+`perform_legacy_recovery(repo_root, clone_depth, runner=None)`
+(orchestrates both, always attempting when `clone_depth == "complete"`,
+failing closed to `recovery_ambiguous` — zero entries, zero invented
+placeholders — whenever the commit, the parent, or a non-empty diff
+cannot be established). `build_registry()` now runs recovery *before*
+disposition assignment and merges every genuinely new recovered symbol
+into the same `_assign_disposition()` pipeline every other discovered
+identity goes through (never hardcoded to one tier) — with an explicit
+collision guard so a recovered symbol that is *already* tracked via a
+live source (re-added later, or already carrying a Company Intelligence
+record) is never duplicated or has its existing entry overwritten (§H.3
+step 4). `legacy_gap.recovery_status` now takes the dynamic shape
+`"recovered_<N>_of_41"` when recovery succeeds — `N` is §G's own YAML
+comment's literal placeholder character, substituted with the real,
+mechanically-diffed count — validated via a new
+`RECOVERED_STATUS_PATTERN` regex rather than a fixed enum value, with
+`registry_entries_created` required to equal that same `N` and be greater
+than 0 (§G's "no placeholder row for any UNRECOVERED symbol" is read, on
+its own terms, as not barring a real row for a RECOVERED one).
+`RECOVERY_STATUS_VALUES` is trimmed to the two genuinely fixed outcomes
+(`unavailable_in_current_clone`, `recovery_ambiguous`); the now-superseded
+`reachable_but_recovery_not_attempted_this_generation` value and the
+never-actually-produced literal `"recovered_n_of_41"` are both removed
+from the closed vocabulary rather than left as dead, confusing options.
+
+**Verified this environment remains genuinely shallow** (independently
+re-run `git rev-parse --is-shallow-repository` → `true`) — the committed
+`registry.yaml` therefore still correctly reports
+`clone_depth_at_generation: shallow`, `recovery_status:
+unavailable_in_current_clone`, 84 entries, identical dispositions to §5's
+table. **The new "complete" recovery path is exercised only via
+dependency-injected synthetic git output in this session** (a fabricated
+commit log and two synthetic `holdings.yaml` blobs, not this repository's
+real full history) — deliberately, not an oversight: this repository's
+own actual pre-`PHQ-2026-02` history is not reachable from this shallow
+clone to test against directly, and unshallowing this real, live
+repository mid-correction to manufacture reachability would itself be a
+heavier, riskier action than this bounded correction requires — §G step 2
+only mandates the attempt when reachability already exists as a fact of
+the environment, not that a correction PR manufacture reachability that
+doesn't otherwise exist here. **This will be exercised for real** the next
+time this test suite runs in this repository's own CI (`fetch-depth: 0`,
+a genuinely complete clone) — `build_registry()`'s own pytest fixture
+calls the real function against the real checked-out repository state
+there, so the real reconciliation-commit search and real diff will run
+against real history on the very next CI invocation, not merely a
+simulated one. If that search does not find a real match (e.g. because
+this repository's actual commit-message convention differs subtly from
+what this correction assumed), the code fails closed to
+`recovery_ambiguous` rather than crashing or fabricating a result — a safe
+outcome either way, independently verified via nine dedicated unit tests
+covering: successful recovery with correct asset-type tagging and real
+git-SHA provenance; earliest-match selection when more than one commit
+mentions PHQ-2026-02; no matching commit; a merge/root commit with an
+unresolvable parent; an empty diff (also treated as ambiguous, not a
+successful zero-ticker recovery); malformed `git show` YAML; a raising
+`git show` call; the shallow branch never issuing a single git call;
+end-to-end merging into `build_registry()`'s own `entries` with correct
+bidirectional-reconciliation bookkeeping; the collision guard against
+duplicating an already-tracked symbol; and determinism across two calls
+against identical synthetic input.
+
+**MINOR — stale PR/audit cross-reference.** Resolved directly: this
+section states the corrected figures itself rather than deferring to the
+PR body, and the PR body is updated in the same correction round with the
+actual corrected numbers (see this PR's own latest comment).
+
+**MINOR — CLAUDE.md missing a "Bounded correction" paragraph.** Resolved:
+CLAUDE.md's own Decisions Log entry for this implementation gains a
+concise correction paragraph recording the original CI failure, the first
+clone-depth fix, this review's four actionable findings, and this
+correction's own bounded scope — matching this repository's own
+consistent same-PR self-documentation convention.
+
+**NOTE** (the 365-token prose auto-exclusion bucket being manually
+triaged, not fully mechanical) — no action required; already correctly
+disclosed as a bounded, known limitation, not a defect, per the review's
+own text.
+
+**Validation at this corrected head**: `contender_registry_validator.py`
+OK (84 entries); bidirectional reconciliation passes with zero errors
+(including a dedicated test exercising it with recovered identities
+present); `classification_validator.py` OK (28 results);
+`relationship_validator.py` OK (13 records); `intelligence_validator.py`
+clean; `freshness_validator.py` OK; decision catalog unchanged (84
+decisions, `issues == ()`); the sealed 27 classification records and
+every protected path confirmed byte-identical; determinism reconfirmed
+(two generation runs against the same source commit produce
+byte-identical `entries`, excluding `generated_at`); `git diff --check`
+clean; exactly 5 files changed this round
+(`contender_registry_generator.py`, `contender_registry_validator.py`,
+`intelligence/contenders/registry.yaml`, `test_contender_registry_generator.py`,
+`test_contender_registry_validator.py`) — see this PR's own latest
+comment for the exact corrected full-suite pass count and new exact head.
+
+This correction performed no ticker research, no ranking, no policy
+change, and no change to `CONTENDER-0001`/`XASSET-0001`/`CONTENDER-0002`.
+This session does not review its own PR, mark it ready, merge it, or post
+principal acceptance — awaiting terminal exact-head CI and a fresh
+independent exact-head delta review.

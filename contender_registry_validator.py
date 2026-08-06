@@ -50,6 +50,7 @@ production decision path (CONTENDER-0002 §I) — it is inventory, not policy.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -108,19 +109,20 @@ ASSET_TYPES = frozenset({
 
 CLONE_DEPTH_VALUES = frozenset({"shallow", "complete"})
 
-# §G's own YAML comment names three options
-# (`unavailable_in_current_clone` / `recovered_n_of_41` / `recovery_ambiguous`).
-# `reachable_but_recovery_not_attempted_this_generation` is a fourth,
-# disclosed addition — see contender_registry_generator.py's own module
-# docstring ("Determinism scope") for the full rationale: it covers the
-# case where full git history IS reachable but this generation does not
-# attempt §G step 2's bounded historical diff, which remains its own
-# separately scoped follow-on unit.
+# §G's own YAML comment names three outcomes:
+# `unavailable_in_current_clone` (shallow — no attempt possible);
+# `recovery_ambiguous` (complete, but the reconciliation commit, a single
+# resolvable parent, or a non-empty diff could not be mechanically
+# established — §G step 3's own "stop and disclose" path); and a dynamic
+# "recovered_<N>_of_41" shape (complete, diff succeeded — `N` is that
+# filing's own placeholder character for the real, mechanically-diffed
+# count, checked below via RECOVERED_STATUS_PATTERN, not a fixed string).
+# `perform_legacy_recovery()` (contender_registry_generator.py) ALWAYS
+# attempts the §G step 2 diff whenever clone_depth == "complete" — there is
+# no third "reachable but not attempted" outcome in the current design.
 RECOVERY_STATUS_VALUES = frozenset({
     "unavailable_in_current_clone",
-    "recovered_n_of_41",
     "recovery_ambiguous",
-    "reachable_but_recovery_not_attempted_this_generation",
 })
 
 # ── §B: the sixteen role-tagged source categories CONTENDER-0002 §B names,
@@ -175,6 +177,24 @@ _REQUIRED_HEADER_KEYS = frozenset({
     "governing_authority",
 })
 
+# The full top-level document also carries `entries` (required, checked via
+# its own dedicated shape check) and `legacy_gap` (optional) — both are
+# legitimate top-level keys, not "extra," when checking the document as a
+# whole for unrecognized/policy-shaped content.
+_TOP_LEVEL_ALLOWED_KEYS = _REQUIRED_HEADER_KEYS | frozenset({"entries", "legacy_gap"})
+
+_REQUIRED_LEGACY_GAP_KEYS = frozenset({
+    "known_unenumerated_legacy_gap", "reported_count", "source_authority",
+    "clone_depth_at_generation", "recovery_status", "registry_entries_created", "next_action",
+})
+
+# §G step 2: when recovery succeeds, `recovery_status` takes the shape
+# "recovered_<N>_of_41" (the literal template CONTENDER-0002 §G's own YAML
+# comment shows, with `N` — that filing's own placeholder character —
+# substituted for the real, mechanically-diffed count). This is checked as
+# a pattern, not a closed value, precisely because `N` is not fixed.
+RECOVERED_STATUS_PATTERN = re.compile(r"^recovered_(\d+)_of_41$")
+
 
 @dataclass
 class ValidationResult:
@@ -197,6 +217,27 @@ class ReconciliationResult:
 
 def _err(errors: list[str], msg: str) -> None:
     errors.append(msg)
+
+
+def _check_closed_keys(value: dict, allowed: frozenset[str], errors: list[str], where: str, cite: str) -> None:
+    """Shared closed-schema check — missing AND extra keys both rejected,
+    mirroring `_validate_secondary_flags`'s own pattern. A registry level
+    that only checks `missing` silently accepts policy-shaped smuggled
+    content (e.g. a `conviction_score`/`recommended_target_pct` key) —
+    exactly what CONTENDER-0002 §M forbids this registry from ever
+    carrying. Used for entry-level, header-level, and legacy_gap-level
+    validation so the "closed schema" guarantee actually holds everywhere
+    it is claimed, not only for secondary_flags."""
+    missing = allowed - value.keys()
+    extra = value.keys() - allowed
+    if missing:
+        _err(errors, f"{where} missing required key(s): {sorted(missing)} ({cite})")
+    if extra:
+        _err(
+            errors,
+            f"{where} has unrecognized/extra key(s): {sorted(extra)} — the registry schema is "
+            f"closed, never a place for policy-shaped content ({cite})",
+        )
 
 
 def _validate_provenance(entries: object, errors: list[str], where: str) -> None:
@@ -251,9 +292,7 @@ def validate_entry(entry: object, *, known_symbols: frozenset[str] = frozenset()
     symbol = entry.get("canonical_symbol")
     where = f"entry[{symbol!r}]" if isinstance(symbol, str) else "entry[<unknown>]"
 
-    missing = _REQUIRED_ENTRY_KEYS - entry.keys()
-    if missing:
-        _err(errors, f"{where} missing required key(s): {sorted(missing)}")
+    _check_closed_keys(entry, _REQUIRED_ENTRY_KEYS, errors, where, "CONTENDER-0002 §E.6")
 
     if not isinstance(symbol, str) or not symbol.strip():
         _err(errors, f"{where}.canonical_symbol must be a non-empty string")
@@ -305,6 +344,13 @@ def validate_registry_data(data: object) -> ValidationResult:
     missing_header = _REQUIRED_HEADER_KEYS - data.keys()
     if missing_header:
         _err(errors, f"registry header missing required key(s): {sorted(missing_header)} (§I)")
+    extra_top_level = data.keys() - _TOP_LEVEL_ALLOWED_KEYS
+    if extra_top_level:
+        _err(
+            errors,
+            f"registry top-level document has unrecognized/extra key(s): {sorted(extra_top_level)} — "
+            f"closed schema, never a place for policy-shaped content (§I/§M)",
+        )
 
     entries = data.get("entries")
     if not isinstance(entries, list):
@@ -337,22 +383,11 @@ def validate_registry_data(data: object) -> ValidationResult:
 
     legacy_gap = data.get("legacy_gap")
     if legacy_gap is not None:
-        required_gap_keys = {
-            "known_unenumerated_legacy_gap", "reported_count", "source_authority",
-            "clone_depth_at_generation", "recovery_status", "registry_entries_created", "next_action",
-        }
         if not isinstance(legacy_gap, dict):
             _err(errors, "'legacy_gap' must be a mapping when present (§G)")
         else:
-            missing_gap = required_gap_keys - legacy_gap.keys()
-            if missing_gap:
-                _err(errors, f"legacy_gap missing required key(s): {sorted(missing_gap)} (§G)")
-            if legacy_gap.get("registry_entries_created") != 0:
-                _err(
-                    errors,
-                    "legacy_gap.registry_entries_created must be exactly 0 — no invented placeholder "
-                    "rows for unrecovered legacy tickers (§G)",
-                )
+            _check_closed_keys(legacy_gap, _REQUIRED_LEGACY_GAP_KEYS, errors, "legacy_gap", "§G")
+
             clone_depth = legacy_gap.get("clone_depth_at_generation")
             if clone_depth not in CLONE_DEPTH_VALUES:
                 _err(
@@ -360,12 +395,32 @@ def validate_registry_data(data: object) -> ValidationResult:
                     f"legacy_gap.clone_depth_at_generation must be one of {sorted(CLONE_DEPTH_VALUES)} "
                     f"(§G — live-detected, never assumed) — got {clone_depth!r}",
                 )
+
             recovery_status = legacy_gap.get("recovery_status")
-            if recovery_status not in RECOVERY_STATUS_VALUES:
+            recovered_match = RECOVERED_STATUS_PATTERN.match(recovery_status) if isinstance(recovery_status, str) else None
+            if recovery_status not in RECOVERY_STATUS_VALUES and recovered_match is None:
                 _err(
                     errors,
-                    f"legacy_gap.recovery_status must be one of {sorted(RECOVERY_STATUS_VALUES)} "
-                    f"(§G) — got {recovery_status!r}",
+                    f"legacy_gap.recovery_status must be one of {sorted(RECOVERY_STATUS_VALUES)} or match "
+                    f"the pattern {RECOVERED_STATUS_PATTERN.pattern!r} (§G) — got {recovery_status!r}",
+                )
+
+            entries_created = legacy_gap.get("registry_entries_created")
+            if recovered_match is not None:
+                expected_n = int(recovered_match.group(1))
+                if entries_created != expected_n or expected_n <= 0:
+                    _err(
+                        errors,
+                        f"legacy_gap.registry_entries_created ({entries_created!r}) must equal the "
+                        f"recovered count named in recovery_status ({recovery_status!r} implies "
+                        f"{expected_n}) and be greater than 0 — no invented count (§G)",
+                    )
+            elif entries_created != 0:
+                _err(
+                    errors,
+                    "legacy_gap.registry_entries_created must be exactly 0 when recovery_status is not "
+                    "a 'recovered_N_of_41'-shaped value — no invented placeholder rows for unrecovered "
+                    "legacy tickers (§G)",
                 )
 
     return ValidationResult(valid=not errors, errors=errors, source="intelligence/contenders/registry.yaml")
