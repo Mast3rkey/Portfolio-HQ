@@ -5834,7 +5834,7 @@ workstreams:
       before it may be marked ready or merged — this entry does not itself constitute that review or
       acceptance.
     active_branch: claude/ws0005-milestone5-completion-9fq2la
-    active_pr: null
+    active_pr: 267
     last_verified_main_sha: 31b2674be7024662b696352e80c0079e7d0744ca
     last_verified_date: "2026-08-07"
     authorized_by: >
