@@ -622,3 +622,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, ONTO-0001, PI-0004, PI-0011, PI-0016, PI-0031, PI-0037, TIER-0001, TIER-0002, TIER-0003, TIER-0004, TIER-0005, TIER-0006, TIER-0007, TIER-0008, TIER-0009, TIER-0010, REL-0001, REL-0004, REL-0006, REL-0007, CHART-0001, CHART-0002, LADDER-0001, OPS-0016, CONTENDER-0001, CONTENDER-0002, XASSET-0001]
     supporting_artifact: null
     file: governance/decisions/TIER-0011-ws0005-milestone9-independent-review-and-adoption-authorization.md
+  - decision_id: TIER-0012
+    date: 2026-08-07
+    status: Proposed
+    category: tier_classification_governance
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, PI-0016, PI-0031, PI-0037, TIER-0001, TIER-0002, TIER-0003, TIER-0004, TIER-0005, TIER-0006, TIER-0007, TIER-0008, TIER-0009, TIER-0010, TIER-0011, REL-0001, REL-0004, REL-0006, REL-0007, CHART-0001, CHART-0002, LADDER-0001, OPS-0016, CONTENDER-0001, CONTENDER-0002, XASSET-0001]
+    supporting_artifact: null
+    file: governance/decisions/TIER-0012-ws0005-milestone9-completion-determination.md
