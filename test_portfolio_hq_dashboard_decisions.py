@@ -105,7 +105,7 @@ def synth_repo(tmp_path: Path) -> Path:
 
 def test_real_repository_catalog_builds_all_71_with_no_issues():
     cat = decisions.build_catalog(REPO_ROOT)
-    assert len(cat.decisions) == 91
+    assert len(cat.decisions) == 92
     assert len(cat.legacy) == 12
     assert cat.issues == ()
     assert sum(len(d.issues) for d in cat.decisions) == 0
@@ -922,7 +922,7 @@ def test_real_repository_model_and_render_succeed_end_to_end():
     m = build_model(REPO_ROOT)
     html = render_html(m)
     assert html.startswith("<!DOCTYPE html>")
-    assert len(m.decision_catalog.decisions) == 91
+    assert len(m.decision_catalog.decisions) == 92
 
 
 def test_generated_html_size_within_regression_ceiling():
