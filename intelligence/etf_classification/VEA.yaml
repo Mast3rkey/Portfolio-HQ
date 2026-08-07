@@ -1,0 +1,97 @@
+schema_version: '1.0'
+instrument_id: VEA
+asset_type: etf
+structural_role:
+  role_category: developed_ex_us_equity
+constituent_exposure:
+  geographic_concentration: developed_ex_us
+  sector_concentration: broad_diversified
+  currency_exposure: foreign_currency_mixed
+overlap_and_concentration:
+  not_applicable: false
+  measured_by_existing_mechanism: true
+  unmeasured_flag: false
+cost_and_tracking_quality:
+  expense_ratio_pct: 0.03
+  tracking_quality_category: not_yet_measured
+liquidity:
+  liquidity_tier: high_liquidity
+structure_and_methodology:
+  replication_method: physical_full_replication
+  benchmark_type: published_market_index
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: 'Every primary source for this record (Vanguard''s own VEA fund/prospectus
+    pages) was attempted but not directly inspected -- this environment''s network egress policy blocked
+    both investor.vanguard.com and advisors.vanguard.com outright. Search-aggregated secondary evidence
+    also disagrees on the fund''s own replication discipline: one description states VEA ''uses full replication
+    when feasible, sampling when necessary,'' recorded here as physical_full_replication (the disclosed
+    primary method) with the sampling flexibility disclosed as an open question rather than silently resolved;
+    a precise, sourced tracking-difference figure against the FTSE Developed All Cap ex US Index could
+    not be located and is recorded as not_yet_measured.'
+provenance:
+  sources:
+  - source_identifier: Vanguard FTSE Developed Markets ETF (VEA) fund page, investor.vanguard.com/investment-products/etfs/profile/vea
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: attempted_not_directly_inspected
+    limitation: Blocked by this environment's network egress proxy on the investor.vanguard.com domain.
+  - source_identifier: Vanguard advisor-facing VEA product page, advisors.vanguard.com/investments/products/vea/vanguard-ftse-developed-markets-etf
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: attempted_not_directly_inspected
+    limitation: Blocked by this environment's network egress proxy on the advisors.vanguard.com domain.
+  - source_identifier: WebSearch aggregation citing Vanguard's own VEA fact sheet (workplace.vanguard.com
+      PDF, as of 2026-06-30) and etfdb.com -- expense ratio 0.03%, tracks the FTSE Developed All Cap ex
+      U.S. Index, $230,949 million total net assets, inception 2007-07-20, 3,868 stocks held, full-replication
+      approach with sampling flexibility for very large indexes
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on VEA geographic weighting -- Japan approximately 22%, United
+      Kingdom 15%, Germany 9%, Switzerland 9%, Australia 6%
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+uncertainty_summary: 'Every primary source for this record (Vanguard''s own VEA fund/prospectus pages)
+  was attempted but not directly inspected -- this environment''s network egress policy blocked both investor.vanguard.com
+  and advisors.vanguard.com outright. Search-aggregated secondary evidence also disagrees on the fund''s
+  own replication discipline: one description states VEA ''uses full replication when feasible, sampling
+  when necessary,'' recorded here as physical_full_replication (the disclosed primary method) with the
+  sampling flexibility disclosed as an open question rather than silently resolved; a precise, sourced
+  tracking-difference figure against the FTSE Developed All Cap ex US Index could not be located and is
+  recorded as not_yet_measured.'
+evidence_quality_status: partial
+structural_risk_flags:
+  unmeasured_flag: false
+  not_applicable: false
+record_status: sealed
+valuation_and_economic_assessment_readiness:
+  status: valuation_required
+  rationale: No governed valuation methodology exists in this repository for any asset type -- equity,
+    ETF, or cryptocurrency alike (TIER-0009 SS G.4/SS G.5's forced equity-sleeve design; XASSET-0002 supporting
+    artifact SS6.3 carries the same discipline forward for this fund). This classification record supplies
+    structural, categorical facts only; it neither computes nor implies a fair value, target price, target_pct,
+    target range, or maximum position size.
+cross_asset_handoff:
+  role_summary: developed_ex_us_equity
+  evidence_quality_summary: partial
+  uncertainty_summary: 'Every primary source for this record (Vanguard''s own VEA fund/prospectus pages)
+    was attempted but not directly inspected -- this environment''s network egress policy blocked both
+    investor.vanguard.com and advisors.vanguard.com outright. Search-aggregated secondary evidence also
+    disagrees on the fund''s own replication discipline: one description states VEA ''uses full replication
+    when feasible, sampling when necessary,'' recorded here as physical_full_replication (the disclosed
+    primary method) with the sampling flexibility disclosed as an open question rather than silently resolved;
+    a precise, sourced tracking-difference figure against the FTSE Developed All Cap ex US Index could
+    not be located and is recorded as not_yet_measured.'
+  liquidity_risk_summary: high_liquidity
+  overlap_or_correlation_signal:
+    unmeasured_flag: false
+    not_applicable: false
+  valuation_readiness: valuation_required
+abstention_index: []
+sealed_at: '2026-08-07T21:32:11Z'
+governing_decision: XASSET-0003
+drafting_session_or_shard_id: single-pass-etf-implementation
+content_sha256: cd005cf8310e8dfa37c138f2173b9d0509c8dcfac92bbcaa3770e45a060471fe
+cohort_manifest_entry: intelligence/etf_classification/COHORT_MANIFEST.yaml#VEA
