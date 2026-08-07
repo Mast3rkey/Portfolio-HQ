@@ -180,12 +180,23 @@ no investment, allocation, or trading authority.
 ### A. Milestone 5 completion criteria — derived from controlling text, evaluated fresh against live state
 
 No prior filing enumerated a numbered Milestone 5 completion standard the way `REL-0004` did for
-Milestone 4 or `PI-0031` did for Milestone 3. `OPS-0006` §4.5's own gate text (quoted in full, not
-restated, per the reference-not-restate discipline `TIER-0005`/`TIER-0007`/`TIER-0008`/`TIER-0010`
-all applied) is: *"Determine what questions the current tier system answers, where it mixes
-unrelated concepts, whether one tier label is adequate; design the smallest set of
-evidence-supported candidate frameworks; reject unnecessary complexity; no single mechanical
-conviction score substituting for judgment."* Unlike Milestones 3/4/6/7/8, Milestone 5 is a design
+Milestone 4 or `PI-0031` did for Milestone 3. `OPS-0006` §4.5's own controlling text (quoted in
+full, not restated, per the reference-not-restate discipline `TIER-0005`/`TIER-0007`/`TIER-0008`/
+`TIER-0010` all applied — **corrected by bounded correction, independent review: the version
+originally presented here was a compressed paraphrase, omitting the seven-concept candidate-
+separation clause below, and is now replaced with the actual full text**) is: *"What questions the
+current tier system answers; where it mixes unrelated concepts; whether one tier label is adequate;
+the smallest set of candidate frameworks the evidence supports; candidate separation, where useful
+and not required merely because listed, of economic role, business quality, thesis uncertainty,
+capital priority, position boundaries, overlap constraints, and review cadence; rejection of
+unnecessary complexity; no single mechanical conviction score substituting for judgment."*
+`TIER-0001`'s own nine-question inventory independently corroborates that this fuller canvassing —
+covering business quality, position boundaries, and review cadence alongside the four axes
+`TIER-0002` ultimately retained — actually took place: `TIER-0001` §6 explicitly found position
+boundaries already served by `target_pct`, review cadence already served by Company Intelligence's
+own `review.cadence_days` field, and business quality folded into the retained axes' evidence
+sources, rather than silently narrowing scope without addressing them. Unlike Milestones 3/4/6/7/8,
+Milestone 5 is a design
 milestone, not a content-production milestone — it has no artifact of its own analogous to a
 Company Intelligence record, a relationship record, a sealed classification, a reconciliation, or a
 recommendation package. Its "deliverable" is the framework itself, and the only evidence capable of
@@ -447,17 +458,23 @@ review roadmap `OPS-0006` §4 defined is fully executed, reviewed, and register-
 transition creates no adoption authority, no policy change, and no new workstream — it records that
 this workstream's own bounded charter has been fulfilled.
 
-**`WS-0005`'s `priority: primary` field is left unedited by this filing.** Reassigning primary-
-workstream status to a different register entry is itself a governance act with its own precedent —
-`OPS-0006` originally made WS-0005 primary via its own explicit text, and `OPS-0003` later performed
-a comparable primary-workstream reassignment as its own dedicated, separately-authorized decision,
-not as a byproduct of a routine completion filing. This filing does not invent that authorization.
-A completed workstream retaining `priority: primary` is not itself a defect — no schema, validator,
-or test in this repository ties `priority` to `status`, confirmed by direct inspection of
-`render.py`'s `n_ws_primary` computation (a plain count over `priority`, independent of `status`) —
-and a future, separate, explicit priority-transition decision, matching `OPS-0003`'s own precedent
-shape, remains available and required before any other workstream may be named primary. This filing
-does not perform that transition and does not identify a specific successor.
+**`WS-0005`'s `priority` transitions from `primary` to `secondary` in this same filing** (bounded
+correction, following an independent exact-head review of this PR). The original text left
+`priority: primary` unedited, citing `OPS-0003` as precedent for treating any reassignment as "its
+own governance act... not a byproduct of a routine completion filing" — the review found this
+mischaracterizes `OPS-0003` item 1, the directly on-point precedent, which performed exactly this
+reassignment inside the same filing that recorded WS-0002's own scope completion, for the identical
+stated reason: *"its authorized planning work is done; nothing further is pending on it that would
+justify holding `priority: primary`."* That reasoning transfers here without modification — WS-0005's
+authorized nine-milestone roadmap is done; nothing further is pending on it that would justify
+holding `priority: primary`. Accordingly, `WS-0005`'s `priority` field is set to `secondary`, matching
+`OPS-0003` item 1 exactly. No schema, validator, or test in this repository ties `priority` to
+`status` (confirmed by direct inspection of `render.py`'s `n_ws_primary` computation, a plain count
+independent of `status`), and `OPS-0001`'s register rules permit zero `priority: primary`
+workstreams — this filing accordingly names no successor primary workstream; identifying one is its
+own separate judgment, left to a future, separate decision (matching `OPS-0003` item 2's own treatment
+of WS-0001's priority as a distinct action from item 1's WS-0002 downgrade, not a single combined
+act).
 
 ### E. Whole-portfolio, valuation, and adoption boundaries — preserved unchanged
 
@@ -500,14 +517,28 @@ require:
    state — the gap `TIER-0002`'s own post-merge comment explicitly deferred to "a future WS-0005
    session's own preflight." The pre-existing `tier0002-candidate-framework-design` gate entry is
    left byte-unedited.
-3. `WS-0005`'s top-level `status`: `in_progress` → `complete`, with an appended note recording this
-   filing's own §D reasoning and explicitly restating the whole-portfolio/valuation/adoption
-   boundaries from §E. `priority: primary` is left unedited (§D).
+3. `WS-0005`'s top-level `status`: `in_progress` → `complete`, and `priority`: `primary` →
+   `secondary`, with an appended note recording this filing's own §D reasoning and explicitly
+   restating the whole-portfolio/valuation/adoption boundaries from §E.
 4. `WS-0005`'s own `active_branch`/`active_pr`/`last_verified_main_sha`/`last_verified_date`
    self-reference fields updated to this filing's own branch, `active_pr: null` until this filing's
    own PR number exists (per `OPS-0001`'s established convention — a bounded follow-up commit sets
    it once the PR is opened), `last_verified_main_sha:
    31b2674be7024662b696352e80c0079e7d0744ca`, `last_verified_date: "2026-08-07"`.
+5. **A new, additive `tier0013-ws0005-roadmap-completion` gate entry**, self-tracking this filing's
+   own progress. Following `tier0002-candidate-framework-design`'s, `tier0007-milestone7-baseline-
+   reconciliation-authorization`'s, `tier0009-milestone8-policy-recommendation-framework-
+   authorization`'s, and `tier0011-milestone9-independent-review-and-adoption-authorization`'s own
+   established convention exactly, this gate is left at `status: in_progress`, `pr: null` — not
+   marked `complete` — since this filing's own governance PR is itself still draft, unreviewed, and
+   unmerged. This gate's eventual `status: complete` transition, if warranted, belongs to a later,
+   separate `tier0013-post-merge-verification` filing once independent review, correction if needed,
+   principal acceptance, merge, and post-merge verification have actually occurred — exactly the
+   pattern this filing itself applies to the `tier0002-post-merge-verification` gate at item 2 above.
+   (**Bounded correction, independent review**: this gate was originally, mistakenly, filed at
+   `status: complete` while PR #267 remained draft — the identical defect class `TIER-0001`'s own
+   independent review classified MAJOR for `TIER-0001`'s own self-referencing gate. Corrected to
+   `status: in_progress` per the convention stated above.)
 
 No other `WS-0005` field (`objective`, `governing_authority`, `dependencies`, `authorized_scope`,
 `prohibited_scope`) or any other milestone's own gate (Milestones 1-4 and 6-9, all left byte-for-byte
@@ -566,6 +597,53 @@ out-of-scope state.
   No independent review, no correction pass, no re-review, no merge, and no post-merge verification
   is performed by this session — each is a separate future step requiring a separate actor. This
   session does not review its own work, mark it ready, merge it, or post principal acceptance.
+
+### I. Bounded correction (same PR, independent review)
+
+An independent exact-head review of this PR's original head (`8deda40ddd3fb8ff413a9aa2ed59636d07204cf4`)
+returned CHANGES REQUIRED — 0 BLOCKING / 2 MAJOR / 1 MINOR / 1 NOTE. All ten Milestone 5 completion
+criteria (§A), the Criterion-7 framework-identity finding (§B), and the WS-0005 top-level closure
+reasoning against `TIER-0011` §K.4 and `OPS-0006` §4 item 9/§7 item 5 were all independently
+re-derived and confirmed sound by that review — none of the findings below touch the substantive
+Milestone 5 or WS-0005-closure verdicts.
+
+**MAJOR 1, resolved**: the new `tier0013-ws0005-roadmap-completion` self-tracking gate was originally
+filed at `status: complete`/`pr: null` while this PR remained draft, unreviewed, and unmerged —
+contradicting this repository's own established convention for a filing's self-tracking gate
+(`tier0002-candidate-framework-design`, `tier0007-milestone7-baseline-reconciliation-authorization`,
+`tier0009-milestone8-policy-recommendation-framework-authorization`, `tier0011-milestone9-
+independent-review-and-adoption-authorization` — all stay `status: in_progress` until a later,
+separate post-merge-verification filing closes them) and reproducing the identical defect class
+`TIER-0001`'s own independent review classified MAJOR. Corrected to `status: in_progress`, `pr: null`
+(§F.5); the gate's real completion recording is deferred to a future `tier0013-post-merge-
+verification` filing.
+
+**MAJOR 2, resolved**: the original text left `WS-0005`'s `priority: primary` unedited, citing
+`OPS-0003` as precedent for treating any reassignment as its own separate, later governance act. The
+review found this mischaracterizes `OPS-0003` item 1, the directly on-point precedent, which
+performed exactly this reassignment inside the same filing that recorded WS-0002's own scope
+completion, for the identical "authorized work is done" reasoning. Corrected: `WS-0005`'s `priority`
+now transitions `primary` → `secondary` in this same filing (§D, §F.3), matching `OPS-0003` item 1
+exactly, without naming a successor primary workstream (a materially different, still-rejected
+alternative — Alternatives Considered).
+
+**MINOR, resolved**: `OPS-0006` §4.5's gate text was presented as "quoted in full" but was in fact a
+compressed paraphrase omitting the seven-concept candidate-separation clause. Corrected to the actual
+full controlling text, with `TIER-0001`'s own inventory cited as corroborating that the omitted
+concepts (business quality, position boundaries, review cadence) were genuinely canvassed, not
+silently dropped (§A).
+
+**NOTE, no correction required**: the reviewing session's own local `pytest` run showed one failure
+(`test_real_repository_model_builds`), independently diagnosed by that review as a pre-existing,
+clone-path-sensitive assertion tied to the reviewing worktree's own directory name — not a defect in
+this PR's content, and the same artifact class `TIER-0002`'s own review chain already disclosed. This
+session's own local runs (worktree named `Portfolio-HQ`) show the full **3091 passed, 0 failed** at
+both the original and this corrected head.
+
+No Milestone 5 completion criterion, no Criterion 7 finding, no WS-0005-closure reasoning, no
+whole-portfolio/valuation/adoption boundary, and no protected-path scope changed as a result of this
+correction. Requires its own fresh independent exact-head delta review before this PR may be
+considered ready.
 
 ## Rationale
 
@@ -630,9 +708,19 @@ separates from the roadmap.
   adoption boundary deliberately, and the controlling authorization for this filing explicitly
   instructs against keeping WS-0005 open "solely because adoption is unauthorized unless live
   governance explicitly requires that."
-- **Reassign `priority: primary` to a different workstream (e.g. `WS-0014`) as part of this
-  filing.** Rejected — see §D; a primary-workstream reassignment is its own governance act, with its
-  own precedent (`OPS-0003`), not a byproduct of a completion-determination filing.
+- **Name a different workstream (e.g. `WS-0014`) as the new `priority: primary` in this same
+  filing.** Rejected — distinct from downgrading `WS-0005`'s own priority (performed, see §D and the
+  correction below): identifying which workstream should next hold `priority: primary` is its own
+  separate judgment this filing is not positioned to make, and `OPS-0001`'s register rules permit
+  zero `priority: primary` workstreams in the meantime.
+- **Leave `WS-0005`'s `priority: primary` unedited, treating a primary-workstream reassignment as
+  always requiring its own separate, later, dedicated decision.** This was this filing's original
+  position, citing `OPS-0003` as precedent — rejected on correction (independent review) once direct
+  inspection of `OPS-0003` item 1's own text showed it is not a separate-decision precedent but a
+  same-filing one: `OPS-0003` downgraded WS-0002's priority in the very filing that recorded its
+  scope completion, for the same "authorized work is done" reasoning that applies to `WS-0005` here.
+  Corrected to perform the downgrade (`priority: primary` → `secondary`) in this same filing, per §D,
+  without naming a successor (a materially different, still-rejected alternative — see above).
 - **Begin any Milestone-10-equivalent, adoption, or `WS-0014`/`XASSET-0001` content in the same
   filing, since all nine milestones are now complete.** Rejected — explicitly outside this unit's
   authorization; nothing in `OPS-0006`, `TIER-0011`, or `XASSET-0001` treats roadmap completion as
@@ -643,9 +731,11 @@ separates from the roadmap.
 **Authorized, effective only on this decision's merge:** the factual determination that WS-0005
 Milestone 5 satisfies all ten completion criteria derived above, the corresponding
 `status: complete` update to the `milestone-5-zero-based-classification-and-tier-architecture-review`
-gate, the new `tier0002-post-merge-verification` gate entry, the factual determination that all nine
-`OPS-0006` §4 milestone gates are now complete, the corresponding `status: complete` update to
-`WS-0005`'s own top-level entry, and the minimum `WS-0005` self-reference synchronization in §F.
+gate, the new `tier0002-post-merge-verification` gate entry, the new self-tracking
+`tier0013-ws0005-roadmap-completion` gate (left `status: in_progress` per §F.5), the factual
+determination that all nine `OPS-0006` §4 milestone gates are now complete, the corresponding
+`status: complete` update to `WS-0005`'s own top-level entry, the `priority: primary` → `secondary`
+transition (§D), and the minimum `WS-0005` self-reference synchronization in §F.
 
 **Unchanged by this decision:** `TIER-0001`'s and `TIER-0002`'s own decision-file text and
 `governance/decisions.yaml` frontmatter, byte-for-byte; both filings' retained artifacts, byte-for-
@@ -656,8 +746,10 @@ byte; `classification_validator.py`, `intelligence_classification_sanitizer.py`,
 existing Company/Theme/relationship Intelligence record, all of them, including
 `intelligence/companies/LLY.yaml`; `issuer_lookthrough.yaml`; `targets.yaml`, `holdings.yaml`,
 `gates.yaml`, `allocate.py`, `levels.py`, `margin_state.py`; the Constitution; `WS-0005`'s own
-`objective`, `governing_authority`, `dependencies`, `authorized_scope`, `prohibited_scope`, and
-`priority` fields; Milestones 1-4 and 6-9's own `status: complete` gates (unedited, not reopened);
+`objective`, `governing_authority`, `dependencies`, `authorized_scope`, and `prohibited_scope`
+fields (`priority` is changed by this decision — `primary` → `secondary`, per §D and the bounded
+correction above, with no successor primary workstream named); Milestones 1-4 and 6-9's own
+`status: complete` gates (unedited, not reopened);
 `TIER-0001` through `TIER-0012`'s own accepted text and scope, in full, unedited.
 
 **Explicitly not authorized by this decision, stated repeatedly for clarity:** any framework

@@ -540,7 +540,7 @@ workstreams:
       - governance/decisions/GOV-0002-operational-precedence-hierarchy.md
       - governance/decisions/PI-0016-standing-company-review-framework.md (methodology reference only)
     status: complete
-    priority: primary
+    priority: secondary
     dependencies: []
     completion_note: >
       **Status transitioned in_progress → complete 2026-08-07 (TIER-0013).**
@@ -553,10 +553,26 @@ workstreams:
       decision and implementation PR), and it does not mean the final
       portfolio, final holdings, final target weights, valuation, an ETF
       framework, a crypto framework, GLD/cash/debt doctrine, cross-asset
-      synthesis, or chart deployment are complete. `priority: primary` is left
-      unedited — a future, separate priority-transition decision (matching
-      OPS-0003's own precedent) remains required before any other workstream
-      may be named primary; none is named by this filing.
+      synthesis, or chart deployment are complete.
+
+      **`priority` transitioned `primary` → `secondary` in this same filing
+      (bounded correction, independent review).** The original text left
+      `priority: primary` unedited, citing OPS-0003 as precedent for treating
+      any reassignment as "its own governance act... not a byproduct of a
+      completion-determination filing" — an independent review found this
+      mischaracterizes OPS-0003 item 1, the directly on-point precedent, which
+      performed exactly this reassignment in the same filing that recorded
+      WS-0002's own scope completion, for the identical stated reason: "its
+      authorized planning work is done; nothing further is pending on it that
+      would justify holding `priority: primary`." That reasoning applies here
+      without modification — WS-0005's authorized nine-milestone roadmap is
+      done; nothing further is pending on it that would justify holding
+      `priority: primary`. Corrected to `priority: secondary`, matching
+      OPS-0003 item 1 exactly. No successor primary workstream is named —
+      OPS-0001's register rules permit zero `priority: primary` workstreams,
+      and naming a successor is its own separate judgment this filing is not
+      positioned to make; a future, separate decision remains free to name one
+      when warranted.
     authorized_scope: >
       Recording of the governing purpose, the zero-based-research-discipline
       protocol, and the nine-milestone roadmap (OPS-0006 §§1-4), plus —
@@ -3792,8 +3808,30 @@ workstreams:
           `claude/ws0005-milestone5-completion-9fq2la`; `active_pr` is `null`
           until this filing's own PR number exists, per OPS-0001's convention —
           a bounded follow-up commit sets it once the PR is opened.
+
+          **Bounded correction (same PR, independent review): this gate's own
+          `status` was found prematurely set to `complete` while PR #267
+          remained draft, unreviewed, and unmerged — the identical defect
+          class `TIER-0001`'s own independent review (`4859945925`)
+          classified MAJOR for `TIER-0001`'s own self-referencing gate, and
+          contrary to this repository's own established precedent
+          (`tier0002-candidate-framework-design`, `tier0007-milestone7-
+          baseline-reconciliation-authorization`, `tier0009-milestone8-
+          policy-recommendation-framework-authorization`,
+          `tier0011-milestone9-independent-review-and-adoption-
+          authorization` — every one of these self-tracking gates stays
+          `status: in_progress`, `pr: null` even after its own governing PR
+          fully merges, is reviewed, and is principal-accepted; the real PR
+          number and `status: complete` are recorded only by a later,
+          separate `tier00##-post-merge-verification` companion gate).
+          Corrected below to `status: in_progress`, `pr: null`, matching that
+          convention exactly. This gate's own eventual `status: complete`
+          transition, if warranted, belongs to a later, separate
+          `tier0013-post-merge-verification` filing — not to this PR's own
+          governance text — exactly the pattern this PR itself already
+          applies to the `tier0002-post-merge-verification` gate it adds.**
         pr: null
-        status: complete
+        status: in_progress
         date: "2026-08-07"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
