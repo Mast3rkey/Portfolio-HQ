@@ -5336,7 +5336,7 @@ workstreams:
       until this filing's own PR number exists, per `OPS-0001`'s convention — a bounded follow-up
       commit sets it once the PR is opened.
     active_branch: claude/ws-0005-milestone-8-completion-9jmyc0
-    active_pr: null
+    active_pr: 263
     last_verified_main_sha: eecbb72f752957d27494f818aa49fa6122f67dfb
     last_verified_date: "2026-08-07"
     authorized_by: >
