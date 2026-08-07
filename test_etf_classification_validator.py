@@ -326,7 +326,10 @@ def test_unable_to_determine_without_abstention_reason_rejected():
 
 
 def test_unable_to_determine_with_abstention_reason_accepted():
-    record = _record(structural_role=_structural_role(role_category="unable_to_determine", abstention_reason="Evidence insufficient."))
+    record = _record(
+        structural_role=_structural_role(role_category="unable_to_determine", abstention_reason="Evidence insufficient."),
+        abstention_index=[{"axis": "structural_role", "field": "role_category", "value": "unable_to_determine", "reason": "Evidence insufficient."}],
+    )
     result = ev.validate_etf_classification_data(record)
     assert result.valid, result.errors
 
@@ -740,3 +743,87 @@ def test_manifest_required_when_records_exist_but_missing(tmp_path):
     result = ev.validate_etf_classification_directory(tmp_path, authorized_population=frozenset({"SPY"}))
     assert not result.valid
     assert any("COHORT_MANIFEST.yaml is required" in e for r in result.results for e in r.errors)
+
+
+# ── v1.1 bounded correction: independent-review MINOR-1/MINOR-2/MINOR-3 ────
+
+def test_missing_structural_risk_flags_rejected():
+    # MINOR-1: structural_risk_flags is a required envelope field -- omitting
+    # it entirely must be independently rejected, not silently pass because
+    # the projection-consistency comparison no-ops on a non-dict.
+    record = _record()
+    del record["structural_risk_flags"]
+    result = ev.validate_etf_classification_data(record)
+    assert not result.valid
+    assert any("structural_risk_flags must be a mapping" in e for e in result.errors)
+
+
+def test_structural_risk_flags_wrong_type_rejected():
+    record = _record()
+    record["structural_risk_flags"] = "not-a-mapping"
+    result = ev.validate_etf_classification_data(record)
+    assert not result.valid
+    assert any("structural_risk_flags must be a mapping" in e for e in result.errors)
+
+
+def test_structural_risk_flags_extra_key_rejected():
+    record = _record()
+    record["structural_risk_flags"] = {"unmeasured_flag": False, "not_applicable": False, "extra": 1}
+    result = ev.validate_etf_classification_data(record)
+    assert not result.valid
+    assert any("structural_risk_flags contains unexpected key" in e for e in result.errors)
+
+
+@pytest.mark.parametrize("text", [
+    "The expense ratio should be increased to 0.50%.",
+    "We recommend a target of 10% for this fund.",
+    "See the new target pct for this instrument.",
+    "This record carries a buy recommendation.",
+    "This record carries a sell recommendation.",
+    "This record carries a trim recommendation.",
+    "This fund represents 5% of book target for the sleeve.",
+])
+def test_forbidden_recommendation_shaped_phrase_rejected(text):
+    # MINOR-2: XASSET-0002 SS9 explicitly requires this as its own test
+    # item, distinct from the directive-word and chart-term scans.
+    record = _record(evidence_quality=_evidence_quality(thesis_uncertainty_statement=text))
+    record["uncertainty_summary"] = text
+    record["cross_asset_handoff"]["uncertainty_summary"] = text
+    result = ev.validate_etf_classification_data(record)
+    assert not result.valid
+    assert any("forbidden recommendation-shaped phrase" in e for e in result.errors)
+
+
+def test_unable_to_determine_without_matching_abstention_index_entry_rejected():
+    # MINOR-3: a genuine unable_to_determine abstention must appear in
+    # abstention_index -- a self-declared empty list must not pass.
+    record = _record(structural_role=_structural_role(role_category="unable_to_determine", abstention_reason="Evidence insufficient."))
+    record["cross_asset_handoff"]["role_summary"] = "unable_to_determine"
+    result = ev.validate_etf_classification_data(record)
+    assert not result.valid
+    assert any("abstention_index is missing an entry for structural_role.role_category" in e for e in result.errors)
+
+
+def test_unable_to_determine_with_matching_abstention_index_entry_accepted():
+    record = _record(
+        structural_role=_structural_role(role_category="unable_to_determine", abstention_reason="Evidence insufficient."),
+        abstention_index=[{"axis": "structural_role", "field": "role_category", "value": "unable_to_determine", "reason": "Evidence insufficient."}],
+    )
+    record["cross_asset_handoff"]["role_summary"] = "unable_to_determine"
+    result = ev.validate_etf_classification_data(record)
+    assert result.valid, result.errors
+
+
+def test_not_yet_measured_does_not_require_abstention_index_entry():
+    # Deliberately disclosed, not resolved: not_yet_measured is a distinct
+    # vocabulary value from unable_to_determine and is not treated as an
+    # abstention by this completeness check (module docstring v1.1 note).
+    record = _record(cost_and_tracking_quality=_cost_and_tracking(tracking_quality_category="not_yet_measured"))
+    result = ev.validate_etf_classification_data(record)
+    assert result.valid, result.errors
+
+
+def test_real_repository_records_pass_new_abstention_and_risk_flags_checks():
+    directory = REPO_ROOT / "intelligence" / "etf_classification"
+    result = ev.validate_etf_classification_directory(directory, repo_root=REPO_ROOT)
+    assert result.valid, [(r.source, e) for r in result.results if not r.valid for e in r.errors]

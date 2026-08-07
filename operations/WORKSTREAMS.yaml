@@ -8930,6 +8930,24 @@ workstreams:
           precedent — decision catalog unchanged at 92, issues == ()). No claim of
           acceptance, readiness, merge, or completion; awaiting a fresh independent
           exact-head review.
+
+          Bounded correction (same day, this PR): an independent exact-head review
+          of the original head (d00b374430e22c4d2bdcf4d5a4f86a82488a4cf2) returned
+          APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE — 0 BLOCKING / 0 MAJOR / 3
+          MINOR / 2 NOTE, all three MINOR findings independently reproduced live
+          before any fix. Resolved: (1) structural_risk_flags had no independent
+          presence/type check in the validator — fixed; (2) zero dedicated tests for
+          the seven forbidden-recommendation-shaped-phrase patterns despite XASSET-
+          0002's own required test item — fixed with seven parametrized tests; (3)
+          abstention_index was never cross-checked against actual per-axis
+          unable_to_determine abstentions — fixed with a narrow completeness check,
+          deliberately leaving unresolved (per XASSET-0003 §B, not this
+          implementation's call) whether the separate not_yet_measured value used by
+          all four real records should also populate abstention_index. No content of
+          any of the four sealed records changed. Full re-validation: 108 focused
+          tests (up from 94), full pytest 3199/0 (3185+14), decision catalog
+          unchanged at 92/issues == (), zero protected-path diff. Requires its own
+          fresh independent exact-head delta review.
         pr: 270
         status: in_progress
         date: "2026-08-07"

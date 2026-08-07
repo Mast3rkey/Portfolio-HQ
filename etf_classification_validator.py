@@ -83,6 +83,30 @@ relationship with `allocate.py` or `margin_state.py` in either direction.
 It does not import `classification_validator.py`/`relationship_validator.py`
 for schema logic (each schema is independent), consistent with this
 repository's "each Intelligence schema owns its own validator" convention.
+
+VERSION 1.1 bounded correction (post-PR-#270-independent-review): three
+MINOR findings, all independently reproduced live before fixing. (1)
+`structural_risk_flags` (a required envelope field, SS6.1) had no
+independent presence/type check -- a record with the field omitted
+entirely validated clean; fixed by giving absence/wrong-type its own
+error, separate from the projection-consistency comparison. (2)
+`_FORBIDDEN_TEXT_PATTERNS` (the seven forbidden-recommendation-shaped-
+phrase regexes) had zero dedicated test coverage despite being an
+explicitly required SS9 test item; fixed in the test file, no validator
+change. (3) `abstention_index` was checked only for its own internal
+shape, never cross-checked against the axes it claims to summarize -- a
+record with a genuine `unable_to_determine` abstention and an empty
+`abstention_index` validated clean, the same "self-declared flag, no
+independent scan" defect class SS9.1 already names. Fixed with a narrow
+cross-check (`_check_abstention_index_completeness`) that requires every
+literal `unable_to_determine` value to have a matching `abstention_index`
+entry. **Deliberately left unresolved**: whether `cost_and_tracking_
+quality.tracking_quality_category`'s separate `not_yet_measured` value
+(distinct from `unable_to_determine`, and the value all four real records
+in this batch use) should also populate `abstention_index` is a genuine
+ambiguity in `XASSET-0002`'s own text, not a defect this implementation
+may resolve unilaterally (`XASSET-0003` SS B) -- it is disclosed here,
+not silently decided either way.
 """
 
 from __future__ import annotations
@@ -637,6 +661,61 @@ def _validate_abstention_index(value: object, errors: list[str]) -> None:
                 errors.append(f"{label}.{k} must be a non-empty string")
 
 
+_UNABLE_TO_DETERMINE_VALUE = "unable_to_determine"
+
+
+def _find_unable_to_determine_fields(data: dict) -> list[tuple[str, str]]:
+    """(axis, field) pairs where a field is literally set to
+    'unable_to_determine' -- the one closed-vocabulary abstention value
+    every axis unambiguously treats as a genuine abstention (SS3.3/SS4.4).
+    Deliberately does NOT treat cost_and_tracking_quality.tracking_quality_
+    category's separate `not_yet_measured` value as an abstention here --
+    XASSET-0002's own text is ambiguous on whether that value should also
+    populate abstention_index (see the module docstring's v1.1 note); per
+    XASSET-0003 SS B, resolving that ambiguity is not this implementation's
+    call to make unilaterally."""
+    pairs: list[tuple[str, str]] = []
+    for axis in _AXIS_NAMES:
+        axis_value = data.get(axis)
+        if not isinstance(axis_value, dict):
+            continue
+        for field_name, field_value in axis_value.items():
+            if field_value == _UNABLE_TO_DETERMINE_VALUE:
+                pairs.append((axis, field_name))
+    return pairs
+
+
+def _check_abstention_index_completeness(data: dict, errors: list[str]) -> None:
+    """SS6.1: abstention_index is described as a mechanical rollup a future
+    cross-asset synthesis unit can scan "without re-reading every axis" --
+    that guarantee requires every genuine unable_to_determine abstention to
+    actually appear in it, not merely a self-declared list left
+    unreconciled against the axes it claims to summarize (the same defect
+    class SS9.1 names: "a self-declared flag is not a substitute for an
+    independent scan"). Independent-review finding, v1.1 bounded
+    correction: a synthetic record combining a real unable_to_determine
+    abstention with an empty abstention_index previously validated clean."""
+    actual = _find_unable_to_determine_fields(data)
+    if not actual:
+        return
+    index = data.get("abstention_index")
+    if not isinstance(index, list):
+        return  # already flagged by _validate_abstention_index
+    indexed = {
+        (entry.get("axis"), entry.get("field"))
+        for entry in index
+        if isinstance(entry, dict)
+    }
+    for axis, field_name in actual:
+        if (axis, field_name) not in indexed:
+            errors.append(
+                f"abstention_index is missing an entry for {axis}.{field_name}, which is set to "
+                f"{_UNABLE_TO_DETERMINE_VALUE!r} -- every genuine unable_to_determine abstention "
+                f"must be represented in abstention_index (XASSET-0002 supporting artifact SS6.1), "
+                f"not merely self-declared and left unreconciled (SS9.1)"
+            )
+
+
 def _validate_envelope_projection_consistency(data: dict, errors: list[str]) -> None:
     """SS6.2: every envelope-level field that summarizes an axis is a
     read-only copy, never independently computed -- checked for exact
@@ -656,16 +735,28 @@ def _validate_envelope_projection_consistency(data: dict, errors: list[str]) -> 
 
     overlap = data.get("overlap_and_concentration") or {}
     risk_flags = data.get("structural_risk_flags")
-    if isinstance(overlap, dict) and isinstance(risk_flags, dict):
-        expected_flags = {
-            "unmeasured_flag": overlap.get("unmeasured_flag"),
-            "not_applicable": overlap.get("not_applicable"),
-        }
-        if risk_flags != expected_flags:
-            errors.append(
-                f"structural_risk_flags must exactly project overlap_and_concentration's "
-                f"unmeasured_flag/not_applicable (SS6.2) -- expected {expected_flags}, got {risk_flags}"
-            )
+    if not isinstance(risk_flags, dict):
+        # v1.1 bounded correction (independent-review finding): this branch
+        # was previously reached only via the `isinstance(risk_flags, dict)`
+        # guard below, which silently no-oped when structural_risk_flags was
+        # missing entirely -- a required envelope field (SS6.1) had no
+        # independent presence/type check of its own, masked in sealed
+        # records only because the field happens to be part of
+        # _HASHABLE_KEYS. Fixed by making absence/wrong-type its own error,
+        # independent of whether overlap_and_concentration is well-formed.
+        errors.append("structural_risk_flags must be a mapping (SS6.1 required envelope field)")
+    else:
+        _reject_unknown_keys(risk_flags, "structural_risk_flags", _STRUCTURAL_RISK_FLAGS_ALLOWED_KEYS, errors)
+        if isinstance(overlap, dict):
+            expected_flags = {
+                "unmeasured_flag": overlap.get("unmeasured_flag"),
+                "not_applicable": overlap.get("not_applicable"),
+            }
+            if risk_flags != expected_flags:
+                errors.append(
+                    f"structural_risk_flags must exactly project overlap_and_concentration's "
+                    f"unmeasured_flag/not_applicable (SS6.2) -- expected {expected_flags}, got {risk_flags}"
+                )
 
     structural_role = data.get("structural_role") or {}
     liquidity = data.get("liquidity") or {}
@@ -861,6 +952,7 @@ def validate_etf_classification_data(
         errors.append("record missing required field: abstention_index")
     else:
         _validate_abstention_index(data["abstention_index"], errors)
+        _check_abstention_index_completeness(data, errors)
 
     _validate_no_stray_top_level_fields(data, errors)
     _validate_envelope_projection_consistency(data, errors)
