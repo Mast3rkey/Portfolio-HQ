@@ -2151,7 +2151,7 @@ workstreams:
           complete. A future, separate, independently-reviewed Lane G
           completion-determination filing remains required, matching the
           PI-0031→PI-0037/REL-0001→REL-0006/TIER-0007→TIER-0008 precedent.
-        pr: null
+        pr: 262
         status: in_progress
         date: "2026-08-07"
       - gate: milestone-9-independent-review-and-later-adoption
@@ -3336,7 +3336,7 @@ workstreams:
           Milestone 7 reconciliation artifact confirmed byte-identical
           throughout — none touched. Not yet independently reviewed,
           principal-accepted, merged, or post-merge verified.
-        pr: null
+        pr: 262
         status: in_progress
         date: "2026-08-07"
     evidence_refs:
@@ -5277,7 +5277,7 @@ workstreams:
       until this filing's own PR number exists, per `OPS-0001`'s convention — a bounded follow-up
       commit sets it once the PR is opened.
     active_branch: claude/milestone-8-policy-recommendation-740p8e
-    active_pr: null
+    active_pr: 262
     last_verified_main_sha: dc302d45b4cca417cc306e98584dba556cb055b5
     last_verified_date: "2026-08-07"
     authorized_by: >
