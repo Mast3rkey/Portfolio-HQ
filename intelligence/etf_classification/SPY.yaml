@@ -1,0 +1,91 @@
+schema_version: '1.0'
+instrument_id: SPY
+asset_type: etf
+structural_role:
+  role_category: broad_market_beta
+constituent_exposure:
+  geographic_concentration: domestic_us
+  sector_concentration: broad_diversified
+  currency_exposure: usd_only
+overlap_and_concentration:
+  not_applicable: false
+  measured_by_existing_mechanism: true
+  unmeasured_flag: false
+cost_and_tracking_quality:
+  expense_ratio_pct: 0.0945
+  tracking_quality_category: not_yet_measured
+liquidity:
+  liquidity_tier: high_liquidity
+structure_and_methodology:
+  replication_method: physical_full_replication
+  benchmark_type: published_market_index
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: Every primary source for this record (State Street's own SPY fund page
+    and SEC EDGAR) was attempted but not directly inspected -- this environment's network egress policy
+    blocked www.ssga.com and www.sec.gov outright; a precise, sourced tracking-difference figure against
+    the S&P 500 Index (as distinct from the disclosed 0.0945% expense ratio, which is itself a cost fact,
+    not a measured tracking-error figure) could not be located via search aggregation and is recorded
+    as not_yet_measured rather than assumed from SPY's general reputation for tight tracking.
+provenance:
+  sources:
+  - source_identifier: State Street SPDR S&P 500 ETF Trust (SPY) fund page, www.ssga.com/us/en/individual/etfs/spdr-sp-500-etf-trust-spy
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: attempted_not_directly_inspected
+    limitation: Blocked by this environment's network egress proxy on the ssga.com domain.
+  - source_identifier: SEC EDGAR filings for SPDR S&P 500 ETF Trust (CIK 0000884394), www.sec.gov
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: attempted_not_directly_inspected
+    limitation: Blocked by this environment's network egress proxy on the sec.gov domain.
+  - source_identifier: WebSearch aggregation citing SPY fact sheet (ssga.com library-content PDF), fundcompli.rightprospectus.com
+      prospectus, and etfdb.com -- expense ratio 0.0945%, full-replication technique tracking the S&P
+      500 Index, formed January 22 1993, unit investment trust structure with State Street Global Advisors
+      Trust Company as trustee and PDR Services LLC as sponsor
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on SPY trading volume and AUM -- roughly $62 billion daily
+      dollar volume, 50,658,218 shares traded as of 2026-08-04, $791.56 billion AUM
+    source_type: secondary
+    as_of_date: '2026-08-04'
+    access_status: consulted_via_search_aggregation
+uncertainty_summary: Every primary source for this record (State Street's own SPY fund page and SEC EDGAR)
+  was attempted but not directly inspected -- this environment's network egress policy blocked www.ssga.com
+  and www.sec.gov outright; a precise, sourced tracking-difference figure against the S&P 500 Index (as
+  distinct from the disclosed 0.0945% expense ratio, which is itself a cost fact, not a measured tracking-error
+  figure) could not be located via search aggregation and is recorded as not_yet_measured rather than
+  assumed from SPY's general reputation for tight tracking.
+evidence_quality_status: partial
+structural_risk_flags:
+  unmeasured_flag: false
+  not_applicable: false
+record_status: sealed
+valuation_and_economic_assessment_readiness:
+  status: valuation_required
+  rationale: No governed valuation methodology exists in this repository for any asset type -- equity,
+    ETF, or cryptocurrency alike (TIER-0009 SS G.4/SS G.5's forced equity-sleeve design; XASSET-0002 supporting
+    artifact SS6.3 carries the same discipline forward for this fund). This classification record supplies
+    structural, categorical facts only; it neither computes nor implies a fair value, target price, target_pct,
+    target range, or maximum position size.
+cross_asset_handoff:
+  role_summary: broad_market_beta
+  evidence_quality_summary: partial
+  uncertainty_summary: Every primary source for this record (State Street's own SPY fund page and SEC
+    EDGAR) was attempted but not directly inspected -- this environment's network egress policy blocked
+    www.ssga.com and www.sec.gov outright; a precise, sourced tracking-difference figure against the S&P
+    500 Index (as distinct from the disclosed 0.0945% expense ratio, which is itself a cost fact, not
+    a measured tracking-error figure) could not be located via search aggregation and is recorded as not_yet_measured
+    rather than assumed from SPY's general reputation for tight tracking.
+  liquidity_risk_summary: high_liquidity
+  overlap_or_correlation_signal:
+    unmeasured_flag: false
+    not_applicable: false
+  valuation_readiness: valuation_required
+abstention_index: []
+sealed_at: '2026-08-07T21:32:11Z'
+governing_decision: XASSET-0003
+drafting_session_or_shard_id: single-pass-etf-implementation
+content_sha256: 10f3f805933b134fdfb0f1fcb9ad0126b5f0130e30c95088b6c9de1d5a58f63f
+cohort_manifest_entry: intelligence/etf_classification/COHORT_MANIFEST.yaml#SPY

@@ -1,0 +1,99 @@
+schema_version: '1.0'
+instrument_id: VWO
+asset_type: etf
+structural_role:
+  role_category: emerging_market_equity
+constituent_exposure:
+  geographic_concentration: emerging_markets
+  sector_concentration: broad_diversified
+  currency_exposure: foreign_currency_mixed
+overlap_and_concentration:
+  not_applicable: false
+  measured_by_existing_mechanism: true
+  unmeasured_flag: false
+cost_and_tracking_quality:
+  expense_ratio_pct: 0.06
+  tracking_quality_category: not_yet_measured
+liquidity:
+  liquidity_tier: high_liquidity
+structure_and_methodology:
+  replication_method: physical_sampling
+  benchmark_type: published_market_index
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: Every primary source for this record (Vanguard's own VWO fund/prospectus
+    pages) was attempted but not directly inspected -- this environment's network egress policy blocked
+    investor.vanguard.com outright. Search-aggregated secondary evidence disagrees materially on VWO's
+    own China country weight (approximately 20% in one description versus 32% in another, in the same
+    search response), disclosed here as an unresolved conflict rather than silently averaged or resolved;
+    a precise, sourced tracking-difference figure against the FTSE Emerging Markets All Cap China A Inclusion
+    Index could not be located and is recorded as not_yet_measured.
+provenance:
+  sources:
+  - source_identifier: Vanguard FTSE Emerging Markets ETF (VWO) fund page, investor.vanguard.com/investment-products/etfs/profile/vwo
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: attempted_not_directly_inspected
+    limitation: Blocked by this environment's network egress proxy on the investor.vanguard.com domain.
+  - source_identifier: WebSearch aggregation citing Vanguard's own VWO documentation and etfdb.com --
+      expense ratio 0.06%, tracks the FTSE Emerging Markets All Cap China A Inclusion Index via a sampling
+      approach, $122.0 billion total net assets
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on VWO geographic/holdings composition -- primary exposures
+      China, Taiwan, India, Brazil, Saudi Arabia, South Africa; China weight reported inconsistently as
+      approximately 20% in one source and 32% in another within the same aggregation; approximately 6,288
+      stocks held; largest single holding Taiwan Semiconductor Manufacturing Co. Ltd. at approximately
+      11.7%
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+    limitation: China country-weight figures conflict across sources within the same search aggregation
+      and were not reconciled.
+  - source_identifier: WebSearch aggregation on VWO trading liquidity -- approximately $90 billion AUM
+      as of mid-2025, average daily share volume approximately 12.94 million shares over a trailing 3-month
+      window, average daily dollar volume approximately $724.54 million
+    source_type: secondary
+    as_of_date: 2025-mid-year (as reported)
+    access_status: consulted_via_search_aggregation
+uncertainty_summary: Every primary source for this record (Vanguard's own VWO fund/prospectus pages) was
+  attempted but not directly inspected -- this environment's network egress policy blocked investor.vanguard.com
+  outright. Search-aggregated secondary evidence disagrees materially on VWO's own China country weight
+  (approximately 20% in one description versus 32% in another, in the same search response), disclosed
+  here as an unresolved conflict rather than silently averaged or resolved; a precise, sourced tracking-difference
+  figure against the FTSE Emerging Markets All Cap China A Inclusion Index could not be located and is
+  recorded as not_yet_measured.
+evidence_quality_status: partial
+structural_risk_flags:
+  unmeasured_flag: false
+  not_applicable: false
+record_status: sealed
+valuation_and_economic_assessment_readiness:
+  status: valuation_required
+  rationale: No governed valuation methodology exists in this repository for any asset type -- equity,
+    ETF, or cryptocurrency alike (TIER-0009 SS G.4/SS G.5's forced equity-sleeve design; XASSET-0002 supporting
+    artifact SS6.3 carries the same discipline forward for this fund). This classification record supplies
+    structural, categorical facts only; it neither computes nor implies a fair value, target price, target_pct,
+    target range, or maximum position size.
+cross_asset_handoff:
+  role_summary: emerging_market_equity
+  evidence_quality_summary: partial
+  uncertainty_summary: Every primary source for this record (Vanguard's own VWO fund/prospectus pages)
+    was attempted but not directly inspected -- this environment's network egress policy blocked investor.vanguard.com
+    outright. Search-aggregated secondary evidence disagrees materially on VWO's own China country weight
+    (approximately 20% in one description versus 32% in another, in the same search response), disclosed
+    here as an unresolved conflict rather than silently averaged or resolved; a precise, sourced tracking-difference
+    figure against the FTSE Emerging Markets All Cap China A Inclusion Index could not be located and
+    is recorded as not_yet_measured.
+  liquidity_risk_summary: high_liquidity
+  overlap_or_correlation_signal:
+    unmeasured_flag: false
+    not_applicable: false
+  valuation_readiness: valuation_required
+abstention_index: []
+sealed_at: '2026-08-07T21:32:11Z'
+governing_decision: XASSET-0003
+drafting_session_or_shard_id: single-pass-etf-implementation
+content_sha256: af297ea75766b9d992a1dee68f05652fef9cf4df20cf24f54fe48f41cd96ebe3
+cohort_manifest_entry: intelligence/etf_classification/COHORT_MANIFEST.yaml#VWO
