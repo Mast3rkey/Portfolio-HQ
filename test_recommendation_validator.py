@@ -538,6 +538,14 @@ def test_valid_artifact_passes_without_universe_check():
     assert all("exactly 27" in e for e in result.errors), result.errors
 
 
+@pytest.mark.parametrize("bad_top_level", [None, "not a mapping", ["a", "list"], 42, True])
+def test_validate_recommendation_data_rejects_non_dict_top_level(bad_top_level):
+    result = rv.validate_recommendation_data(bad_top_level)
+    assert not result.valid
+    assert any("must be a mapping" in e for e in result.errors)
+    assert result.source == "MILESTONE8_POLICY_RECOMMENDATION_PACKAGE.yaml"
+
+
 def test_artifact_governing_decision_must_be_tier_0009():
     data = _artifact(governing_decision="TIER-0001")
     result = rv.validate_recommendation_data(data)
@@ -776,6 +784,50 @@ def test_real_artifact_validation_is_deterministic_across_repeated_reads():
     )
     assert result1.valid == result2.valid == True
     assert result1.errors == result2.errors == []
+
+
+# ── file-read error branches ──────────────────────────────────────────────
+
+def test_validate_recommendation_file_missing_file_reports_os_error(tmp_path):
+    missing = tmp_path / "does_not_exist.yaml"
+    result = rv.validate_recommendation_file(missing)
+    assert not result.valid
+    assert len(result.errors) == 1
+    assert "could not read" in result.errors[0]
+    assert str(missing) in result.errors[0]
+    assert result.source == str(missing)
+
+
+def test_validate_recommendation_file_unreadable_directory_reports_os_error(tmp_path):
+    """A path that exists but cannot be read as a file (a directory) also
+    exercises the OSError branch of _read_yaml, not just a missing path."""
+    a_directory = tmp_path / "a_directory"
+    a_directory.mkdir()
+    result = rv.validate_recommendation_file(a_directory)
+    assert not result.valid
+    assert len(result.errors) == 1
+    assert "could not read" in result.errors[0]
+
+
+def test_validate_recommendation_file_malformed_yaml_reports_parse_error(tmp_path):
+    bad_yaml = tmp_path / "malformed.yaml"
+    bad_yaml.write_text("top: [unclosed\n  - this: is not valid yaml\n")
+    result = rv.validate_recommendation_file(bad_yaml)
+    assert not result.valid
+    assert len(result.errors) == 1
+    assert "YAML parse error" in result.errors[0]
+    assert str(bad_yaml) in result.errors[0]
+    assert result.source == str(bad_yaml)
+
+
+def test_validate_recommendation_file_empty_file_is_none_not_a_mapping(tmp_path):
+    """An empty (but readable, syntactically valid) YAML file parses to
+    None -- exercised separately from the OSError/YAMLError branches."""
+    empty = tmp_path / "empty.yaml"
+    empty.write_text("")
+    result = rv.validate_recommendation_file(empty)
+    assert not result.valid
+    assert any("must be a mapping" in e for e in result.errors)
 
 
 # ── real repository artifact ──────────────────────────────────────────────

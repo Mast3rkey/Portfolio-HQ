@@ -67,7 +67,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (aligned) as the consistency signal. No new tier schema, threshold, category, or replacement architecture
-        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design note, addressing why this
+        area deliberately reuses Milestone 7''s signal rather than computing an independently distinct
+        one: for AMZN as a non-gated ticker, the only tier-context evidence TIER-0009 SS G.2(7) authorizes
+        beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale, pre-PHQ-2026-02 label
+        already disclosed corpus-wide (TIER-0001) to carry no economic-function or consistency content
+        of its own. It supplies no second signal capable of differing from Milestone 7''s own finding.
+        Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6) prohibits
+        outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=AMZN, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -185,7 +192,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for ASML as a non-gated ticker, the only tier-context evidence
+        TIER-0009 SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref
+        -- a stale, pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=ASML, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -309,7 +323,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for AVGO as a non-gated ticker, the only tier-context evidence
+        TIER-0009 SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref
+        -- a stale, pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=AVGO, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -433,7 +454,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for CEG as a non-gated ticker, the only tier-context evidence TIER-0009
+        SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale,
+        pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=CEG, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -557,7 +585,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (aligned) as the consistency signal. No new tier schema, threshold, category, or replacement architecture
-        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design note, addressing why this
+        area deliberately reuses Milestone 7''s signal rather than computing an independently distinct
+        one: for COST as a non-gated ticker, the only tier-context evidence TIER-0009 SS G.2(7) authorizes
+        beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale, pre-PHQ-2026-02 label
+        already disclosed corpus-wide (TIER-0001) to carry no economic-function or consistency content
+        of its own. It supplies no second signal capable of differing from Milestone 7''s own finding.
+        Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6) prohibits
+        outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=COST, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -681,7 +716,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for ETN as a non-gated ticker, the only tier-context evidence TIER-0009
+        SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale,
+        pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=ETN, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -801,7 +843,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for GEV as a non-gated ticker, the only tier-context evidence TIER-0009
+        SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale,
+        pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=GEV, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -922,7 +971,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for GNRC as a non-gated ticker, the only tier-context evidence
+        TIER-0009 SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref
+        -- a stale, pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=GNRC, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -1046,7 +1102,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for GOOGL as a non-gated ticker, the only tier-context evidence
+        TIER-0009 SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref
+        -- a stale, pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=GOOGL, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -1177,7 +1240,17 @@ recommendations:
         treatment (gated=true, next_gate defined) appears consistent with Milestone 7''s reconciled role_comparison
         and capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (aligned) as the consistency signal. No new tier schema, threshold, category, or replacement architecture
-        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design note, addressing why this
+        area deliberately reuses Milestone 7''s signal rather than computing an independently distinct
+        one: for ICE as a gated ticker, Milestone 7''s own capital_priority_comparison text is itself
+        already a gate-consistency test -- it reasons directly from whether the gate''s own withholding
+        posture and the sealed capital-priority finding point the same direction. Re-deriving ''is the
+        current gate treatment consistent with reconciled evidence'' as a second, separate computation
+        would necessarily reproduce that identical reasoning, not answer a distinct question -- the two
+        TIER-0009-SS-G.2(7)-authorized evidence sources (gates.yaml/portfolio_role_ref state, and Milestone
+        7''s own comparison text) do not contain a second, independent gate-consistency signal to draw
+        on. Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6)
+        prohibits outright.'
       supporting_evidence:
       - gates.yaml (ticker=ICE)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -1314,7 +1387,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for ISRG as a non-gated ticker, the only tier-context evidence
+        TIER-0009 SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref
+        -- a stale, pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=ISRG, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -1445,7 +1525,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (aligned) as the consistency signal. No new tier schema, threshold, category, or replacement architecture
-        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design note, addressing why this
+        area deliberately reuses Milestone 7''s signal rather than computing an independently distinct
+        one: for KLAC as a non-gated ticker, the only tier-context evidence TIER-0009 SS G.2(7) authorizes
+        beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale, pre-PHQ-2026-02 label
+        already disclosed corpus-wide (TIER-0001) to carry no economic-function or consistency content
+        of its own. It supplies no second signal capable of differing from Milestone 7''s own finding.
+        Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6) prohibits
+        outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=KLAC, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -1566,7 +1653,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for LLY as a non-gated ticker, the only tier-context evidence TIER-0009
+        SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale,
+        pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=LLY, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -1695,7 +1789,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for META as a non-gated ticker, the only tier-context evidence
+        TIER-0009 SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref
+        -- a stale, pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=META, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -1820,7 +1921,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (aligned) as the consistency signal. No new tier schema, threshold, category, or replacement architecture
-        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design note, addressing why this
+        area deliberately reuses Milestone 7''s signal rather than computing an independently distinct
+        one: for MSFT as a non-gated ticker, the only tier-context evidence TIER-0009 SS G.2(7) authorizes
+        beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale, pre-PHQ-2026-02 label
+        already disclosed corpus-wide (TIER-0001) to carry no economic-function or consistency content
+        of its own. It supplies no second signal capable of differing from Milestone 7''s own finding.
+        Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6) prohibits
+        outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=MSFT, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -1941,7 +2049,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for NVDA as a non-gated ticker, the only tier-context evidence
+        TIER-0009 SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref
+        -- a stale, pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=NVDA, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -2069,7 +2184,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (aligned) as the consistency signal. No new tier schema, threshold, category, or replacement architecture
-        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design note, addressing why this
+        area deliberately reuses Milestone 7''s signal rather than computing an independently distinct
+        one: for PANW as a non-gated ticker, the only tier-context evidence TIER-0009 SS G.2(7) authorizes
+        beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale, pre-PHQ-2026-02 label
+        already disclosed corpus-wide (TIER-0001) to carry no economic-function or consistency content
+        of its own. It supplies no second signal capable of differing from Milestone 7''s own finding.
+        Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6) prohibits
+        outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=PANW, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -2193,7 +2315,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (aligned) as the consistency signal. No new tier schema, threshold, category, or replacement architecture
-        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design note, addressing why this
+        area deliberately reuses Milestone 7''s signal rather than computing an independently distinct
+        one: for PWR as a non-gated ticker, the only tier-context evidence TIER-0009 SS G.2(7) authorizes
+        beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale, pre-PHQ-2026-02 label
+        already disclosed corpus-wide (TIER-0001) to carry no economic-function or consistency content
+        of its own. It supplies no second signal capable of differing from Milestone 7''s own finding.
+        Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6) prohibits
+        outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=PWR, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -2317,7 +2446,17 @@ recommendations:
         treatment (gated=true, next_gate defined) appears consistent with Milestone 7''s reconciled role_comparison
         and capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (aligned) as the consistency signal. No new tier schema, threshold, category, or replacement architecture
-        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design note, addressing why this
+        area deliberately reuses Milestone 7''s signal rather than computing an independently distinct
+        one: for RKLB as a gated ticker, Milestone 7''s own capital_priority_comparison text is itself
+        already a gate-consistency test -- it reasons directly from whether the gate''s own withholding
+        posture and the sealed capital-priority finding point the same direction. Re-deriving ''is the
+        current gate treatment consistent with reconciled evidence'' as a second, separate computation
+        would necessarily reproduce that identical reasoning, not answer a distinct question -- the two
+        TIER-0009-SS-G.2(7)-authorized evidence sources (gates.yaml/portfolio_role_ref state, and Milestone
+        7''s own comparison text) do not contain a second, independent gate-consistency signal to draw
+        on. Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6)
+        prohibits outright.'
       supporting_evidence:
       - gates.yaml (ticker=RKLB)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -2450,7 +2589,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for RTX as a non-gated ticker, the only tier-context evidence TIER-0009
+        SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale,
+        pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=RTX, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -2583,7 +2729,17 @@ recommendations:
         treatment (gated=true, next_gate defined) appears consistent with Milestone 7''s reconciled role_comparison
         and capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (aligned) as the consistency signal. No new tier schema, threshold, category, or replacement architecture
-        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design note, addressing why this
+        area deliberately reuses Milestone 7''s signal rather than computing an independently distinct
+        one: for SNPS as a gated ticker, Milestone 7''s own capital_priority_comparison text is itself
+        already a gate-consistency test -- it reasons directly from whether the gate''s own withholding
+        posture and the sealed capital-priority finding point the same direction. Re-deriving ''is the
+        current gate treatment consistent with reconciled evidence'' as a second, separate computation
+        would necessarily reproduce that identical reasoning, not answer a distinct question -- the two
+        TIER-0009-SS-G.2(7)-authorized evidence sources (gates.yaml/portfolio_role_ref state, and Milestone
+        7''s own comparison text) do not contain a second, independent gate-consistency signal to draw
+        on. Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6)
+        prohibits outright.'
       supporting_evidence:
       - gates.yaml (ticker=SNPS)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -2719,7 +2875,17 @@ recommendations:
         treatment (gated=true, next_gate defined) appears consistent with Milestone 7''s reconciled role_comparison
         and capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (no_policy_conclusion) as the consistency signal. No new tier schema, threshold, category, or
-        replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for SPGI as a gated ticker, Milestone 7''s own capital_priority_comparison
+        text is itself already a gate-consistency test -- it reasons directly from whether the gate''s
+        own withholding posture and the sealed capital-priority finding point the same direction. Re-deriving
+        ''is the current gate treatment consistent with reconciled evidence'' as a second, separate computation
+        would necessarily reproduce that identical reasoning, not answer a distinct question -- the two
+        TIER-0009-SS-G.2(7)-authorized evidence sources (gates.yaml/portfolio_role_ref state, and Milestone
+        7''s own comparison text) do not contain a second, independent gate-consistency signal to draw
+        on. Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6)
+        prohibits outright.'
       supporting_evidence:
       - gates.yaml (ticker=SPGI)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -2860,7 +3026,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for TMO as a non-gated ticker, the only tier-context evidence TIER-0009
+        SS G.2(7) authorizes beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale,
+        pre-PHQ-2026-02 label already disclosed corpus-wide (TIER-0001) to carry no economic-function
+        or consistency content of its own. It supplies no second signal capable of differing from Milestone
+        7''s own finding. Any attempt to manufacture one would require inventing new tier judgment, which
+        SS G.2(6) prohibits outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=TMO, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -2994,7 +3167,17 @@ recommendations:
         treatment (gated=true, next_gate defined) appears consistent with Milestone 7''s reconciled role_comparison
         and capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (aligned) as the consistency signal. No new tier schema, threshold, category, or replacement architecture
-        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design note, addressing why this
+        area deliberately reuses Milestone 7''s signal rather than computing an independently distinct
+        one: for TSLA as a gated ticker, Milestone 7''s own capital_priority_comparison text is itself
+        already a gate-consistency test -- it reasons directly from whether the gate''s own withholding
+        posture and the sealed capital-priority finding point the same direction. Re-deriving ''is the
+        current gate treatment consistent with reconciled evidence'' as a second, separate computation
+        would necessarily reproduce that identical reasoning, not answer a distinct question -- the two
+        TIER-0009-SS-G.2(7)-authorized evidence sources (gates.yaml/portfolio_role_ref state, and Milestone
+        7''s own comparison text) do not contain a second, independent gate-consistency signal to draw
+        on. Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6)
+        prohibits outright.'
       supporting_evidence:
       - gates.yaml (ticker=TSLA)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -3118,7 +3301,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (aligned) as the consistency signal. No new tier schema, threshold, category, or replacement architecture
-        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design note, addressing why this
+        area deliberately reuses Milestone 7''s signal rather than computing an independently distinct
+        one: for TSM as a non-gated ticker, the only tier-context evidence TIER-0009 SS G.2(7) authorizes
+        beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale, pre-PHQ-2026-02 label
+        already disclosed corpus-wide (TIER-0001) to carry no economic-function or consistency content
+        of its own. It supplies no second signal capable of differing from Milestone 7''s own finding.
+        Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6) prohibits
+        outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=TSM, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -3239,7 +3429,14 @@ recommendations:
         treatment (gated=false) appears consistent with Milestone 7''s reconciled role_comparison and
         capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (aligned) as the consistency signal. No new tier schema, threshold, category, or replacement architecture
-        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design note, addressing why this
+        area deliberately reuses Milestone 7''s signal rather than computing an independently distinct
+        one: for V as a non-gated ticker, the only tier-context evidence TIER-0009 SS G.2(7) authorizes
+        beyond Milestone 7''s own comparison text is portfolio_role_ref -- a stale, pre-PHQ-2026-02 label
+        already disclosed corpus-wide (TIER-0001) to carry no economic-function or consistency content
+        of its own. It supplies no second signal capable of differing from Milestone 7''s own finding.
+        Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6) prohibits
+        outright.'
       supporting_evidence:
       - targets.yaml destination row (ticker=V, portfolio_role_ref context)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,
@@ -3368,7 +3565,17 @@ recommendations:
         treatment (gated=true, next_gate defined) appears consistent with Milestone 7''s reconciled role_comparison
         and capital_priority_comparison evidence, reusing Milestone 7''s own ticker-level primary_disposition
         (divergence_requires_review) as the consistency signal. No new tier schema, threshold, category,
-        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)).'
+        or replacement architecture is proposed, evaluated, or implied here (TIER-0009 SS G.2(6)). Design
+        note, addressing why this area deliberately reuses Milestone 7''s signal rather than computing
+        an independently distinct one: for WM as a gated ticker, Milestone 7''s own capital_priority_comparison
+        text is itself already a gate-consistency test -- it reasons directly from whether the gate''s
+        own withholding posture and the sealed capital-priority finding point the same direction. Re-deriving
+        ''is the current gate treatment consistent with reconciled evidence'' as a second, separate computation
+        would necessarily reproduce that identical reasoning, not answer a distinct question -- the two
+        TIER-0009-SS-G.2(7)-authorized evidence sources (gates.yaml/portfolio_role_ref state, and Milestone
+        7''s own comparison text) do not contain a second, independent gate-consistency signal to draw
+        on. Any attempt to manufacture one would require inventing new tier judgment, which SS G.2(6)
+        prohibits outright.'
       supporting_evidence:
       - gates.yaml (ticker=WM)
       - intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml (role_comparison, capital_priority_comparison,

@@ -3334,7 +3334,17 @@ workstreams:
           not deferred as reconciliation_validator.py's own disclosed MINOR
           gap was. Sealed Milestone 6 records, COHORT_MANIFEST.yaml, and the
           Milestone 7 reconciliation artifact confirmed byte-identical
-          throughout — none touched. Not yet independently reviewed,
+          throughout — none touched. Bounded correction applied same day
+          (see CLAUDE.md): an independent exact-head review of head
+          15514bc8968e76c7d9191edb47b3d2fa322e86e2 returned CHANGES
+          REQUIRED (0 BLOCKING / 1 MAJOR / 1 MINOR / 2 NOTE) — the MAJOR
+          (tier_architecture mechanically reusing role/capital_priority's
+          signal) resolved via explicit design-justification text grounded
+          in TIER-0009 §G.2(6)/(7), not a new computation; the MINOR
+          (untested error branches) resolved with 9 new focused tests
+          (152 total, up from 143). No primary_status/secondary_conditions/
+          supporting_evidence/later_governance_action value changed on any
+          ticker or area. Not yet independently re-reviewed,
           principal-accepted, merged, or post-merge verified.
         pr: 262
         status: in_progress
