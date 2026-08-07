@@ -539,9 +539,40 @@ workstreams:
       - governance/decisions/GOV-0001-governance-architecture-adopted.md
       - governance/decisions/GOV-0002-operational-precedence-hierarchy.md
       - governance/decisions/PI-0016-standing-company-review-framework.md (methodology reference only)
-    status: in_progress
-    priority: primary
+    status: complete
+    priority: secondary
     dependencies: []
+    completion_note: >
+      **Status transitioned in_progress → complete 2026-08-07 (TIER-0013).**
+      All nine OPS-0006 §4 milestone gates now read status: complete (see the
+      milestones list below, and the tier0013-ws0005-roadmap-completion gate's
+      own text for the full determination). This closes the nine-milestone
+      research/design/review roadmap only — it does not close, authorize, or
+      imply adoption (OPS-0006 §4 item 9's own text keeps adoption outside the
+      numbered roadmap, requiring its own separate accepted governance
+      decision and implementation PR), and it does not mean the final
+      portfolio, final holdings, final target weights, valuation, an ETF
+      framework, a crypto framework, GLD/cash/debt doctrine, cross-asset
+      synthesis, or chart deployment are complete.
+
+      **`priority` transitioned `primary` → `secondary` in this same filing
+      (bounded correction, independent review).** The original text left
+      `priority: primary` unedited, citing OPS-0003 as precedent for treating
+      any reassignment as "its own governance act... not a byproduct of a
+      completion-determination filing" — an independent review found this
+      mischaracterizes OPS-0003 item 1, the directly on-point precedent, which
+      performed exactly this reassignment in the same filing that recorded
+      WS-0002's own scope completion, for the identical stated reason: "its
+      authorized planning work is done; nothing further is pending on it that
+      would justify holding `priority: primary`." That reasoning applies here
+      without modification — WS-0005's authorized nine-milestone roadmap is
+      done; nothing further is pending on it that would justify holding
+      `priority: primary`. Corrected to `priority: secondary`, matching
+      OPS-0003 item 1 exactly. No successor primary workstream is named —
+      OPS-0001's register rules permit zero `priority: primary` workstreams,
+      and naming a successor is its own separate judgment this filing is not
+      positioned to make; a future, separate decision remains free to name one
+      when warranted.
     authorized_scope: >
       Recording of the governing purpose, the zero-based-research-discipline
       protocol, and the nine-milestone roadmap (OPS-0006 §§1-4), plus —
@@ -1711,9 +1742,85 @@ workstreams:
           the smallest set of evidence-supported candidate frameworks; reject
           unnecessary complexity; no single mechanical conviction score
           substituting for judgment. Not authorized to execute.
+
+          **Milestone 5 determined complete 2026-08-07 (TIER-0013).** TIER-0001
+          (classification-question inventory, PR #245, merged
+          96020e55b5317aa6191733e22d2df84bea4a6574) and TIER-0002 (candidate
+          framework design, PR #246, merged
+          24be14552b0e5caed8052e07497855cde6a37085) together delivered the
+          milestone's own deliverable: a nine-question inventory narrowed by
+          evidence to four axes, and a field-by-field structural design for
+          exactly those four axes (economic_role, capital_priority,
+          risk_concentration, evidence_quality) — both filings fully
+          independently reviewed (TIER-0001 two-round: review 4859945925 CHANGES
+          REQUIRED, 2 MAJOR/1 MINOR, corrected, delta review 4860022747 DELTA
+          APPROVED; TIER-0002 single-round: review 4860208858 APPROVED FOR
+          PRINCIPAL EXACT-HEAD ACCEPTANCE, zero findings beyond one non-blocking
+          NOTE), both explicitly principal-accepted at their exact accepted
+          heads (issuecomment-5186141437; issuecomment-5186480372), both merged,
+          both post-merge verified (issuecomment-5186176928;
+          issuecomment-5186508964). TIER-0013 independently traced the full
+          Milestone 6 correction history and confirmed the framework Milestone 6
+          actually classified all 27 canonical equities against —
+          classification_validator.py's live `_FOUR_AXES` constant — is
+          identical in name, order, and vocabulary to TIER-0002's own design;
+          every Milestone 6 correction (a sanitizer bare-noun-"gate" leak, a
+          dangling section-title-reference gap, and a `capital_priority`
+          drafting-instruction recalibration grounded in TIER-0002 §3.4's own
+          already-accepted text) was implementation- or instruction-layer, never
+          a framework redesign — no axis added, removed, renamed, or redefined
+          across any of Milestone 6's three correction commits. Milestones 7 and
+          8 then each independently reused the sealed four-axis output (Milestone
+          7's role_comparison/capital_priority_comparison fields; Milestone 8's
+          role/tier_architecture/capital_priority recommendation areas) with zero
+          further framework redesign. This entry also closes the
+          tier0002-post-merge-verification gap TIER-0002's own post-merge
+          comment explicitly deferred to "a future WS-0005 session's own
+          preflight" — see the new gate entry immediately below.
         pr: null
-        status: proposed
-        date: "2026-07-25"
+        status: complete
+        date: "2026-08-07"
+      - gate: tier0002-post-merge-verification
+        description: >
+          Lane M factual synchronization (OPS-0009 §1), folded into the
+          TIER-0013 governance filing per OPS-0008 §4(a)'s read-only post-merge
+          convention rather than a dedicated reconciliation PR — the exact
+          synchronization TIER-0002's own post-merge-verification comment
+          (issuecomment-5186508964) explicitly named as required and deferred.
+          TIER-0002 (PR #246) independently re-confirmed via the GitHub API:
+          MERGED, merge commit 24be14552b0e5caed8052e07497855cde6a37085 (base
+          96020e55b5317aa6191733e22d2df84bea4a6574, accepted head
+          bc63a03c05e7dc8736fdd0078ece805c152dbe42), merged
+          2026-08-05T01:29:19Z. Independent exact-head review 4860208858
+          returned APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0
+          MAJOR / 0 MINOR / 1 NOTE (a pre-existing, clone-path-sensitive test
+          assertion unrelated to this PR's content — no correction required,
+          single review round). A retained Principal acceptance: comment
+          (issuecomment-5186480372) explicitly accepts exact head
+          bc63a03c05e7dc8736fdd0078ece805c152dbe42. A retained
+          post-merge-verification comment (issuecomment-5186508964)
+          independently confirmed: 73 decisions/issues == (), YAML clean,
+          intelligence_validator.py/freshness_validator.py/
+          relationship_validator.py all clean, 183/183 focused and 2581/2581
+          full-suite tests passing, git diff --check clean, protected paths
+          (targets.yaml, holdings.yaml, gates.yaml, issuer_lookthrough.yaml,
+          allocate.py, margin_state.py, levels.py, docs/INVESTMENT_ONTOLOGY.md,
+          docs/PORTFOLIO_INTELLIGENCE_SPEC.md, intelligence/, research/,
+          constitution/) byte-identical to base, exactly one priority: primary
+          workstream (WS-0005), and merge-commit CI success. TIER-0002's own
+          decision-file and governance/decisions.yaml frontmatter still read
+          status: Proposed — a known, pre-existing, out-of-scope state matching
+          the CHART-0001/CHART-0002/REL-0002-REL-0005/TIER-0001 two-step
+          acceptance-recording pattern; not corrected here. The
+          tier0002-candidate-framework-design gate entry immediately above is
+          left unedited — this entry records confirmation of its
+          already-established merge and post-merge state, exactly the
+          tier0001-post-merge-verification / rel0002-post-merge-verification
+          pattern. Creates no new tier/target/holdings/cluster/cap/allocator/
+          margin authority.
+        pr: null
+        status: complete
+        date: "2026-08-07"
       - gate: tier0001-classification-question-inventory-bounded-unit
         description: >
           TIER-0001 filed 2026-08-04 — the first explicit, separate principal
@@ -3649,6 +3756,82 @@ workstreams:
           determine Milestone 9 complete or authorize any adoption action.
         pr: 264
         status: complete
+        date: "2026-08-07"
+      - gate: tier0013-ws0005-roadmap-completion
+        description: >
+          TIER-0013 independently re-verified this session (before any edit):
+          PR #266 (TIER-0012) merged at 31b2674be7024662b696352e80c0079e7d0744ca;
+          all nine OPS-0006 §4 milestone gates individually re-read at that
+          starting head — Milestones 1/2/3/4/6/7/8/9 all status: complete;
+          Milestone 5 the sole remaining status: proposed gate. TIER-0013
+          determined Milestone 5 complete (see the
+          milestone-5-zero-based-classification-and-tier-architecture-review
+          gate above, and the new tier0002-post-merge-verification gate closing
+          the one open synchronization gap TIER-0012 disclosed but was not
+          authorized to resolve). With all nine gates now complete, TIER-0013
+          §D determined WS-0005's own top-level status transitions
+          in_progress → complete — the nine-milestone research/design/review
+          roadmap OPS-0006 §4 defined is fully executed, reviewed, and
+          register-synchronized. TIER-0013 §D directly addressed, rather than
+          silently inherited, TIER-0012's own disclosed "broader objective"
+          consideration (that WS-0005's register `objective` text reads more
+          broadly than the nine-milestone roadmap) and found no accepted
+          governance decision anywhere requires WS-0005 to remain in_progress
+          pending adoption — OPS-0006 §4 item 9's own text deliberately draws
+          the adoption boundary outside the numbered roadmap ("Any adoption
+          requires its own separate accepted governance decision and a later,
+          separately authorized implementation PR"), and TIER-0011 §K.4
+          restates the identical boundary for Milestone 9 specifically. `WS-0005`'s
+          `priority: primary` field is left unedited — reassigning primary-
+          workstream status is its own governance act (OPS-0003 precedent), not
+          performed by this filing; no successor primary workstream is named.
+          **Preserved boundaries, unweakened**: closing Milestone 5/WS-0005 does
+          not mean the final portfolio, final holdings, final target weights,
+          valuation, an ETF framework, a crypto framework, GLD/cash/debt
+          doctrine, cross-asset synthesis, chart deployment, or adoption are
+          complete — WS-0005 closure is equity-workstream roadmap closure only.
+          `target_and_range`/`maximum_position_size` remain valuation_required
+          for all 27 sealed equities; no numeric target/range/size is
+          authorized. Review ≠ adoption (TIER-0011 §K) — no
+          portfolio_role_ref/conviction/target_pct/holdings/gate/cap/cluster/
+          allocator/margin/ladder change is authorized by this filing. TIER-0013
+          also independently traced the full Milestone 6 correction history and
+          confirmed the framework Milestone 6 actually classified all 27
+          canonical equities against is identical, axis-for-axis, to TIER-0002's
+          own design — every Milestone 6 correction was implementation- or
+          instruction-layer, never a framework redesign. TIER-0013's own
+          governance PR must remain in draft state, gain its own independent
+          exact-head review per OPS-0007 §1, and receive explicit principal
+          acceptance before it may be marked ready or merged — this entry does
+          not itself constitute that review or acceptance. This filing's own
+          `active_branch`/`active_pr` fields below are updated to
+          `claude/ws0005-milestone5-completion-9fq2la`; `active_pr` is `null`
+          until this filing's own PR number exists, per OPS-0001's convention —
+          a bounded follow-up commit sets it once the PR is opened.
+
+          **Bounded correction (same PR, independent review): this gate's own
+          `status` was found prematurely set to `complete` while PR #267
+          remained draft, unreviewed, and unmerged — the identical defect
+          class `TIER-0001`'s own independent review (`4859945925`)
+          classified MAJOR for `TIER-0001`'s own self-referencing gate, and
+          contrary to this repository's own established precedent
+          (`tier0002-candidate-framework-design`, `tier0007-milestone7-
+          baseline-reconciliation-authorization`, `tier0009-milestone8-
+          policy-recommendation-framework-authorization`,
+          `tier0011-milestone9-independent-review-and-adoption-
+          authorization` — every one of these self-tracking gates stays
+          `status: in_progress`, `pr: null` even after its own governing PR
+          fully merges, is reviewed, and is principal-accepted; the real PR
+          number and `status: complete` are recorded only by a later,
+          separate `tier00##-post-merge-verification` companion gate).
+          Corrected below to `status: in_progress`, `pr: null`, matching that
+          convention exactly. This gate's own eventual `status: complete`
+          transition, if warranted, belongs to a later, separate
+          `tier0013-post-merge-verification` filing — not to this PR's own
+          governance text — exactly the pattern this PR itself already
+          applies to the `tier0002-post-merge-verification` gate it adds.**
+        pr: null
+        status: in_progress
         date: "2026-08-07"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
@@ -5688,9 +5871,9 @@ workstreams:
       independent exact-head review per `OPS-0007` §1, and receive explicit principal acceptance
       before it may be marked ready or merged — this entry does not itself constitute that review or
       acceptance.
-    active_branch: claude/milestone-9-completion-bvwxvd
-    active_pr: 266
-    last_verified_main_sha: e248b878d7a647ed0d3a3d2c6b7f2bc1d88a6cb3
+    active_branch: claude/ws0005-milestone5-completion-9fq2la
+    active_pr: 267
+    last_verified_main_sha: 31b2674be7024662b696352e80c0079e7d0744ca
     last_verified_date: "2026-08-07"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
