@@ -202,7 +202,7 @@ every record; abstention validity and non-cascading behavior, including the `not
 concentration` rollup); GLD's structural-only treatment with no functional-role content; the forced
 `valuation_and_economic_assessment_readiness: valuation_required` state on all four records; the
 envelope's read-only-projection consistency (§6.2's rule); the validator and its tests against `XASSET-
-0002` §8/§9's full specification, including the three explicitly carried-forward lessons (§9.1); CI;
+0002`'s supporting artifact §8/§9's full specification, including the three explicitly carried-forward lessons (§9.1); CI;
 protected-path isolation; absence of any crypto content; absence of any cross-asset synthesis, sleeve
 target, or instrument target; and absence of any policy mutation. Any correction requires its own fresh
 exact-head delta review before principal acceptance.
@@ -306,8 +306,8 @@ already exists in `XASSET-0002`'s merged, reviewed text and its supporting artif
 retained document that restates the same content would violate this repository's own "reference, don't
 restate" discipline (`REL-0001`, `PI-0016`, `TIER-0005`) without adding verifiable evidence.
 
-**Why crypto classification is explicitly excluded rather than silently out of scope.** `XASSET-0002`
-§7 point 5 requires that ETF and crypto content "never share a filing" — this filing names that
+**Why crypto classification is explicitly excluded rather than silently out of scope.** `XASSET-0002`'s
+supporting artifact §7 point 5 requires that ETF and crypto content "never share a filing" — this filing names that
 exclusion explicitly (§A, §G) rather than relying on the reader to infer it from the filing's title
 alone, matching this repository's own repeated correction history around ambiguous or under-stated
 scope boundaries (`XASSET-0002`'s own MAJOR finding on roadmap-numbering ambiguity is the most recent
