@@ -12,7 +12,10 @@ file: governance/decisions/XASSET-0003-ws0014-etf-classification-content-authori
 
 ### Authority for this unit
 
-`XASSET-0002` §M states, verbatim: "ETF classification (§I item 5 / §J step 4)... require[s] its own
+`XASSET-0002`'s own unlettered "Numbering note" paragraph, within its `## Decision` section (`XASSET-0002`
+uses no lettered `§A`–`§M` sections anywhere — only unlettered `##`/`###` Markdown headers; only its
+supporting artifact uses numbered `§1`–`§11` sections, cited as such throughout this filing), states,
+verbatim: "ETF classification (§I item 5 / §J step 4)... require[s] its own
 separate, future, explicit principal authorization and independent-review lifecycle, and this filing
 does not combine, foreshadow, or pre-stage either." The supporting artifact's §7 restates this as a
 binding future-lifecycle rule: "ETF classification content is its own future, separate implementation
@@ -58,15 +61,15 @@ binding by reference to the already-accepted design, no restatement, no redesign
   state, "deferring that specific factual sync to the next filing that substantively touches
   `WS-0014`." This filing is that next filing — §I performs the deferred synchronization.
 - **`XASSET-0001` and `XASSET-0002` (plus its supporting artifact) read in full this session** — not
-  summarized from memory. `XASSET-0002` §7 point 2 ("ETF classification content is its own future,
-  separate implementation PR"), §8 (13-point validator specification), and §9 (test specification) are
-  the controlling text this filing binds to (§B below).
+  summarized from memory. `XASSET-0002`'s supporting artifact §7 point 2 ("ETF classification content
+  is its own future, separate implementation PR"), §8 (13-point validator specification), and §9 (test
+  specification) are the controlling text this filing binds to (§B below).
 - **`targets.yaml` independently re-read**: exactly four `asset_class: fund` rows in `destination:` —
   `SPY` (15.00%), `VEA` (7.00%), `VWO` (1.00%), `GLD` (4.00%) — zero drift from `XASSET-0002`'s own
   stated population. No fifth fund row exists.
 - **`issuer_lookthrough.yaml` independently re-read**: `funds:` entries across every issuer row name
   only `SPY`, `VEA`, `VWO` — `GLD` is confirmed absent from every constituent-bearing fund reference,
-  consistent with `XASSET-0002` §5's own GLD determination.
+  consistent with `XASSET-0002`'s supporting artifact §5's own GLD determination.
 - **`intelligence/contenders/registry.yaml` independently re-read**: `SPY`, `VEA`, `VWO`, `GLD` each
   carry `asset_type: fund`, `primary_disposition: requires_research`, `classification_exists: false`,
   `current_holding: true`, `current_target: true` — set before `XASSET-0002`'s framework existed
@@ -125,7 +128,7 @@ verification — the same lifecycle every prior filing in this chain has followe
 3. Build exactly one ETF classification validator (or one shared-envelope-helper module plus one
    ETF-specific validator, if the future crypto content authorization reuses the shared helpers — that
    determination belongs to whichever authorization is filed second, not to this filing) and its
-   dedicated test file, per `XASSET-0002` §8/§9.
+   dedicated test file, per `XASSET-0002`'s supporting artifact §8/§9.
 4. Stop after the first instrument, without a separate pilot authorization, if a systemic schema,
    evidence, or contamination defect is discovered — an internal stop-and-fix condition within the one
    authorized implementation PR, not a license to split into a second governance filing or a
@@ -133,7 +136,7 @@ verification — the same lifecycle every prior filing in this chain has followe
 
 **No crypto classification content of any kind is authorized by this filing.** Crypto classification
 requires its own separate, future, explicit authorization and its own separate implementation PR,
-per `XASSET-0002` §7 point 3/point 5 — this filing does not combine, foreshadow, or pre-stage it, and
+per `XASSET-0002`'s supporting artifact §7 point 3/point 5 — this filing does not combine, foreshadow, or pre-stage it, and
 an ETF-classification implementation PR authorized here must not classify BTC, ETH, or SOL under any
 circumstance.
 
@@ -144,21 +147,21 @@ The implementation PR must follow `XASSET-0002`'s specification exactly, as acce
 that specification in its own words beyond the index below — the implementation session has no
 discretion to depart from it:
 
-| Control | Governing section |
+| Control | Governing section (all `XASSET-0002 §N` citations below refer to `XASSET-0002`'s supporting artifact, `governance/audits/WS0014_ETF_CRYPTO_CLASSIFICATION_FRAMEWORK_DESIGN_20260807.md` — `XASSET-0002`'s own decision file uses no numbered or lettered sections) |
 |---|---|
 | 4-instrument population, zero exclusions, `QQQ` explicitly out | This filing §A, cross-checked against `targets.yaml`'s live `destination:` list at implementation time |
-| Seven-field ETF schema (`structural_role`, `constituent_exposure`, `overlap_and_concentration`, `cost_and_tracking_quality`, `liquidity`, `structure_and_methodology`, `evidence_quality`) — no fifth substantive axis beyond the six named, no score, no ranking formula, no target percentage, no weighting formula, no buy/sell/hold/trim/exit signal | `XASSET-0002` §3 (frozen by that filing's own acceptance) |
-| Method: narrative-judgment axes kept separate from mechanically-computed axes; no standalone "uncertainty axis" — `evidence_quality` is the one axis that summarizes uncertainty | `XASSET-0002` §2 |
-| Permitted inputs / forbidden answer-key inputs — the fund's own prospectus/fact-sheet/index-methodology/cost-and-tracking disclosures; `issuer_lookthrough.yaml`'s `fund_holding_weight` entries for the mechanical `overlap_and_concentration` rollup only; `targets.yaml`'s existing row permitted only for symbol identity, **never** for `target_pct`; no chart-domain content in any form; no `conviction`/`portfolio_role_ref`-style policy language of any kind (no such field exists for a fund today, but the prohibition is explicit regardless) | `XASSET-0002` §3.2 (per-axis evidence-input and prohibited-inference statements), §6.2 |
-| GLD structural-only treatment — `structural_role`, `cost_and_tracking_quality`, `liquidity`, `structure_and_methodology` must reach a real determination or a genuine `unable_to_determine`; `constituent_exposure` and `overlap_and_concentration` are expected to resolve `not_applicable` as a genuine structural fact, not a schema failure. **No functional/defensive/ballast role determination for GLD is authorized by this filing or by any implementation it authorizes** — that remains reserved to a fully separate, future, functional-doctrine unit under `XASSET-0001` §D | `XASSET-0002` §5 |
-| Judgment-before-mechanical-rollup sequencing — `structural_role`/`constituent_exposure`/`cost_and_tracking_quality`/`liquidity`/`structure_and_methodology` (narrative/evidence-sourced) drafted before `overlap_and_concentration` (mechanical rollup of `issuer_lookthrough.yaml`) is computed, mirroring `TIER-0002`'s judgment-before-`risk_concentration` sequencing | `XASSET-0002` §2, §3.2 |
-| Abstention discipline — two genuinely distinct semantics (`not_applicable` for a structurally absent axis; `unable_to_determine`, always with a required `abstention_reason`, for a genuine evidence gap); abstention does not cascade between axes | `XASSET-0002` §3.3 |
-| Shared cross-asset-handoff envelope (`instrument_id`, `asset_type: etf`, `schema_version`, `provenance`, `evidence_quality_status`, `uncertainty_summary`, `structural_risk_flags`, `record_status`, `valuation_and_economic_assessment_readiness`, `cross_asset_handoff`, `abstention_index`) — every summary field a read-only copy of an already-computed axis value, never independently computed | `XASSET-0002` §6.1, §6.2, §6.4 |
-| `valuation_and_economic_assessment_readiness.status` forced to exactly one value, `valuation_required`, on all four records, zero exception — no fair value, target price, `target_pct`, target range, maximum position size, score, or rank anywhere | `XASSET-0002` §6.3 |
-| Numeric-field boundary — `cost_and_tracking_quality.expense_ratio_pct` is the **sole** numeric field either framework defines; `tracking_quality_category` is categorical, not numeric (as corrected in `XASSET-0002`'s own bounded-correction round — no "tracking-difference companion" numeric field exists) | `XASSET-0002` §3.2, §6.1 (post-correction text) |
-| Validator specification (13 points: exact population enforcement, closed schema at every level with extra-key rejection, asset-type separation, no ETF/crypto schema cross-contamination, no equity-field leakage, no numeric score/rank/target leakage with a scoped exception for `expense_ratio_pct`, independent chart-terminology scan, evidence/provenance validation, abstention requirements, deterministic generation, protected-path isolation, allocator/margin import decoupling, cross-asset policy non-implication) | `XASSET-0002` §8 |
-| Test specification (~24-item inventory: happy-path, malformed top-level/instrument, extra/missing keys at every level, wrong `asset_type`, cross-contamination in both directions, forbidden equity-field leakage, invalid evidence citation, abstention behavior including the two-semantics distinction, duplicate/missing/extra instrument against the named population, numeric/score/rank leakage, the `expense_ratio_pct` scoped-acceptance test, chart-terminology leakage per term, directive-language leakage, forced-`valuation_required` violation, envelope-projection-mismatch rejection, determinism, protected-path isolation, allocator/margin import-coupling isolation) | `XASSET-0002` §9, including §9.1's three explicitly carried-forward lessons (extra-key rejection, independent-mechanism verification, no self-declared-flag-without-independent-scan) |
-| Batching/future-lifecycle rules — design never recombined with content; ETF and crypto content never share one filing; a schema revision, if ever needed, is its own future, separately authorized design-amendment unit | `XASSET-0002` §7 |
+| Seven-field ETF schema (`structural_role`, `constituent_exposure`, `overlap_and_concentration`, `cost_and_tracking_quality`, `liquidity`, `structure_and_methodology`, `evidence_quality`) — no fifth substantive axis beyond the six named, no score, no ranking formula, no target percentage, no weighting formula, no buy/sell/hold/trim/exit signal | `XASSET-0002` supporting artifact §3 (frozen by that filing's own acceptance) |
+| Method: narrative-judgment axes kept separate from mechanically-computed axes; no standalone "uncertainty axis" — `evidence_quality` is the one axis that summarizes uncertainty | `XASSET-0002` supporting artifact §2 |
+| Permitted inputs / forbidden answer-key inputs — the fund's own prospectus/fact-sheet/index-methodology/cost-and-tracking disclosures; `issuer_lookthrough.yaml`'s `fund_holding_weight` entries for the mechanical `overlap_and_concentration` rollup only; `targets.yaml`'s existing row permitted only for symbol identity, **never** for `target_pct`; no chart-domain content in any form; no `conviction`/`portfolio_role_ref`-style policy language of any kind (no such field exists for a fund today, but the prohibition is explicit regardless) | `XASSET-0002` supporting artifact §3.2 (per-axis evidence-input and prohibited-inference statements), §6.2 |
+| GLD structural-only treatment — `structural_role`, `cost_and_tracking_quality`, `liquidity`, `structure_and_methodology` must reach a real determination or a genuine `unable_to_determine`; `constituent_exposure` and `overlap_and_concentration` are expected to resolve `not_applicable` as a genuine structural fact, not a schema failure. **No functional/defensive/ballast role determination for GLD is authorized by this filing or by any implementation it authorizes** — that remains reserved to a fully separate, future, functional-doctrine unit under `XASSET-0001` §D | `XASSET-0002` supporting artifact §5 |
+| Judgment-before-mechanical-rollup sequencing — `structural_role`/`constituent_exposure`/`cost_and_tracking_quality`/`liquidity`/`structure_and_methodology` (narrative/evidence-sourced) drafted before `overlap_and_concentration` (mechanical rollup of `issuer_lookthrough.yaml`) is computed, mirroring `TIER-0002`'s judgment-before-`risk_concentration` sequencing | `XASSET-0002` supporting artifact §2, §3.2 |
+| Abstention discipline — two genuinely distinct semantics (`not_applicable` for a structurally absent axis; `unable_to_determine`, always with a required `abstention_reason`, for a genuine evidence gap); abstention does not cascade between axes | `XASSET-0002` supporting artifact §3.3 |
+| Shared cross-asset-handoff envelope (`instrument_id`, `asset_type: etf`, `schema_version`, `provenance`, `evidence_quality_status`, `uncertainty_summary`, `structural_risk_flags`, `record_status`, `valuation_and_economic_assessment_readiness`, `cross_asset_handoff`, `abstention_index`) — every summary field a read-only copy of an already-computed axis value, never independently computed | `XASSET-0002` supporting artifact §6.1, §6.2, §6.4 |
+| `valuation_and_economic_assessment_readiness.status` forced to exactly one value, `valuation_required`, on all four records, zero exception — no fair value, target price, `target_pct`, target range, maximum position size, score, or rank anywhere | `XASSET-0002` supporting artifact §6.3 |
+| Numeric-field boundary — `cost_and_tracking_quality.expense_ratio_pct` is the **sole** numeric field either framework defines; `tracking_quality_category` is categorical, not numeric (as corrected in `XASSET-0002`'s own bounded-correction round — no "tracking-difference companion" numeric field exists) | `XASSET-0002` supporting artifact §3.2, §6.1 (post-correction text) |
+| Validator specification (13 points: exact population enforcement, closed schema at every level with extra-key rejection, asset-type separation, no ETF/crypto schema cross-contamination, no equity-field leakage, no numeric score/rank/target leakage with a scoped exception for `expense_ratio_pct`, independent chart-terminology scan, evidence/provenance validation, abstention requirements, deterministic generation, protected-path isolation, allocator/margin import decoupling, cross-asset policy non-implication) | `XASSET-0002` supporting artifact §8 |
+| Test specification (~24-item inventory: happy-path, malformed top-level/instrument, extra/missing keys at every level, wrong `asset_type`, cross-contamination in both directions, forbidden equity-field leakage, invalid evidence citation, abstention behavior including the two-semantics distinction, duplicate/missing/extra instrument against the named population, numeric/score/rank leakage, the `expense_ratio_pct` scoped-acceptance test, chart-terminology leakage per term, directive-language leakage, forced-`valuation_required` violation, envelope-projection-mismatch rejection, determinism, protected-path isolation, allocator/margin import-coupling isolation) | `XASSET-0002` supporting artifact §9, including §9.1's three explicitly carried-forward lessons (extra-key rejection, independent-mechanism verification, no self-declared-flag-without-independent-scan) |
+| Batching/future-lifecycle rules — design never recombined with content; ETF and crypto content never share one filing; a schema revision, if ever needed, is its own future, separately authorized design-amendment unit | `XASSET-0002` supporting artifact §7 |
 
 Nothing in this table is amended, expanded, or narrowed by this filing. Any future session finding a
 genuine ambiguity or gap in `XASSET-0002`'s specification must return for its own separate governance
@@ -242,7 +245,7 @@ defensive-role determination; any valuation or economic-assessment methodology; 
 debt functional doctrine; any cross-asset overlap, concentration, or opportunity-cost synthesis; any
 sleeve-level or instrument-level sizing; classification of any fund by this filing itself; creation of
 `intelligence/etf_classification/` or any file inside it; any sanitized evidence package (none is
-required or authorized — `XASSET-0002` §7's Rationale determined the equity pipeline's redaction
+required or authorized — `XASSET-0002`'s supporting artifact §7's Rationale determined the equity pipeline's redaction
 apparatus does not transfer, since no ETF evidence source embeds portfolio-policy content); any validator
 implementation; or any edit to `XASSET-0001`, `XASSET-0002`, or its supporting artifact's own text.
 
@@ -280,8 +283,8 @@ carry (a phantom numeric field claimed in four locations; a roadmap-numbering in
 across three files) — the smaller and more reliable move is to bind the future implementation to
 `XASSET-0002`'s own text by reference, unchanged.
 
-**Why implementation is not folded into this same filing.** `XASSET-0002` §M and its supporting
-artifact's §7 are both explicit and unambiguous that ETF classification content requires its own
+**Why implementation is not folded into this same filing.** `XASSET-0002`'s own unlettered "Numbering
+note" paragraph and its supporting artifact's §7 are both explicit and unambiguous that ETF classification content requires its own
 separate authorization and its own separate implementation lifecycle — this is controlling text this
 filing has no discretion to reinterpret. This also matches this repository's own general pattern for a
 framework's first-ever content application (`TIER-0004`→`TIER-0005`→separate Milestone 6 implementation)
@@ -314,11 +317,13 @@ direct precedent for why an explicit statement is worth the extra sentence).
 
 - **Combine this authorization with ETF classification content in one PR**, matching several smaller
   Company Intelligence batches' combined-filing precedent (`REL-0002`, `PI-0036`, `PI-0038`). Rejected —
-  `XASSET-0002` §M and its supporting artifact §7 explicitly prohibit combining design/authorization
-  with content for either asset type; this is controlling text, not a discretionary style choice.
+  `XASSET-0002`'s own unlettered "Numbering note" paragraph and its supporting artifact §7 explicitly
+  prohibit combining design/authorization with content for either asset type; this is controlling text,
+  not a discretionary style choice.
 - **Authorize both ETF and crypto classification content in this same filing**, since both frameworks
-  were designed together in `XASSET-0002`. Rejected outright — `XASSET-0002` §7 point 5 is explicit that
-  "ETF and crypto content must never share a filing," restated as binding by this filing's own §A/§G.
+  were designed together in `XASSET-0002`. Rejected outright — `XASSET-0002`'s supporting artifact §7
+  point 5 is explicit that "ETF and crypto content must never share a filing," restated as binding by
+  this filing's own §A/§G.
 - **Redesign or restate `XASSET-0002`'s specification in this filing's own words**, on the theory that a
   content authorization should be self-contained. Rejected — see Rationale; restatement itself
   introduces drift risk the binding-by-reference table (§B) avoids, and `XASSET-0002`'s own review

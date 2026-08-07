@@ -8858,9 +8858,10 @@ workstreams:
           functional/defensive-role determination authorized), shared cross-asset-
           handoff envelope, forced valuation_and_economic_assessment_readiness:
           valuation_required state, and the 13-point validator / ~24-item test
-          specification (XASSET-0002 sections 3, 5, 6, 7, 8, 9). Explicitly excludes
-          crypto classification content of any kind (BTC/ETH/SOL) — XASSET-0002 section
-          7 point 5 requires ETF and crypto content never share a filing; crypto
+          specification (XASSET-0002 supporting artifact sections 3, 5, 6, 7, 8, 9).
+          Explicitly excludes crypto classification content of any kind (BTC/ETH/SOL) —
+          XASSET-0002 supporting artifact section 7 point 5 requires ETF and crypto
+          content never share a filing; crypto
           classification remains separately, wholly unauthorized and requires its own
           future filing. No fund is classified by XASSET-0003 itself; no validator or
           intelligence/etf_classification/ content is created by this filing. Also folds
@@ -8973,8 +8974,9 @@ workstreams:
       XASSET-0002 framework — ETF/fund blind-classification content only,
       no crypto content, no valuation, no functional GLD-role
       determination, no cross-asset synthesis, no portfolio weights.
-      XASSET-0002 §M and its supporting artifact §7 were independently
-      determined, this session, to require their own separate, future,
+      XASSET-0002's own unlettered "Numbering note" paragraph and its
+      supporting artifact §7 were independently determined, this session,
+      to require their own separate, future,
       explicit principal authorization and independent-review lifecycle
       for ETF classification content before any content implementation may
       proceed — this session therefore filed that authorization
