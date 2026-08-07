@@ -140,9 +140,17 @@ reasoning, never assigned a value on any axis); create `intelligence/etf_classif
 mechanical score of any kind; perform any valuation, cross-asset synthesis, or sizing; define cash/
 reserve/GLD/debt functional doctrine (`XASSET-0001` §D remains wholly undesigned by this filing beyond
 the GLD structural/functional boundary determination in point 4 above); or authorize any of `WS-0014`'s
-remaining items (4–14, per `XASSET-0001` §I/§J) — ETF classification (item 5) and crypto classification
-(item 7) each require their own separate, future, explicit principal authorization and independent-review
-lifecycle, and this filing does not combine, foreshadow, or pre-stage either.
+remaining, later work. **Numbering note, to avoid the exact cross-document ambiguity `XASSET-0001`'s own
+correction history already flagged once**: `XASSET-0001` §I's fourteen-item list and §J's fourteen-step
+dependency order use two different, non-linearly-related numbering schemes for the same roadmap (§I items
+1+2 collapse into §J step 1; §I items 4+6 — ETF framework design and crypto framework design,
+respectively — collapse into §J step 3, which is exactly what this filing performs). Stated in §J's step
+numbering, the numbering this filing's own `operations/WORKSTREAMS.yaml` `blocker:` field also uses:
+**this filing performs step 3 in full** (§I items 4 and 6, both framework design); **steps 4 through 12
+remain wholly unauthorized** (§I items 5, 7–14) — ETF classification (§I item 5 / §J step 4) and crypto
+classification (§I item 7 / §J step 5) each require their own separate, future, explicit principal
+authorization and independent-review lifecycle, and this filing does not combine, foreshadow, or
+pre-stage either.
 
 ## Rationale
 

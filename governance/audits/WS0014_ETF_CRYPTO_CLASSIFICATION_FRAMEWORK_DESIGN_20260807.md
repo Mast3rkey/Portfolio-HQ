@@ -495,10 +495,15 @@ mutually reinforcing, and none of them conflicts with another.
 | `abstention_index` | a list of every axis that abstained on this record, with its stated reason | a mechanical rollup of the individual axis abstentions, for a future cross-asset synthesis to scan without re-reading every axis. |
 
 **No numeric score, rank, or target field exists anywhere in this envelope or in either framework's own
-axes** — the only numeric fields anywhere in this design are `cost_and_tracking_quality.expense_ratio_pct`
-and its tracking-difference companion, both real, disclosed, inherited financial facts (not proposed
-values), matching exactly how Milestone 6/7/8 already carry inherited percentages from company
-disclosures without those being "scores."
+axes** — the only numeric field anywhere in this design is `cost_and_tracking_quality.expense_ratio_pct`,
+a real, disclosed, inherited financial fact (not a proposed value), matching exactly how Milestone 6/7/8
+already carry inherited percentages from company disclosures without those being "scores." Tracking
+quality itself is deliberately represented **categorically**, not as a second numeric field —
+`cost_and_tracking_quality.tracking_quality_category` (§3.2) — because a precise tracking-difference
+percentage is a more demanding, less consistently disclosed evidence standard than the fund's own headline
+expense ratio, and a categorical judgment (`tight_tracking` / `moderate_tracking_deviation` /
+`material_tracking_deviation` / `not_yet_measured`) is sufficient for the decision this axis serves
+without inventing a numeric field the evidence standard doesn't reliably support.
 
 ### 6.2 Read-only projection, not new computation
 
@@ -603,9 +608,10 @@ sharing envelope-level helpers) enforcing, at minimum:
 6. **No numeric score/rank/target leakage** — a forbidden-key scan for `target_pct`, `target_range`,
    `max_position_size`, `score`, `rank`, `conviction_score`, `recommended_target_pct` (the exact exploit
    class `contender_registry_validator.py`'s own review found and fixed — §9.1), applied at every schema
-   level; a **scoped** numeric-percent-token check that explicitly permits `expense_ratio_pct` and its
-   tracking-difference companion (real disclosed financial facts) while rejecting any percent-shaped value
-   attached to a forbidden key.
+   level; a **scoped** numeric-percent-token check that explicitly permits `cost_and_tracking_quality.
+   expense_ratio_pct` — the sole numeric field either framework defines (§6.1; `tracking_quality_category`
+   is categorical, not numeric — §3.2) — while rejecting any percent-shaped value attached to a forbidden
+   key.
 7. **No chart evidence leakage** — an independent, free-text scan for chart-domain terminology (support/
    resistance, breakout, trend line, moving average, RSI, MACD, candlestick, chart pattern, technical
    analysis, oversold, overbought, Fibonacci, volume profile, price target, momentum), built in from the
