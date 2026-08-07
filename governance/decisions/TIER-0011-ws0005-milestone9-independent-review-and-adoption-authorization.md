@@ -38,9 +38,13 @@ Milestone 7, and `TIER-0009` used for Milestone 8, rather than inventing new mil
 - **Zero open pull requests** confirmed via the GitHub API (`list_pull_requests`, `state: open`) —
   empty result. No competing mutation lane exists.
 - **PR #263 (`TIER-0010`) independently re-confirmed merged** via the GitHub API: `merged: true`,
-  `state: closed`, head `910caa4547627f505ddbae3115799a300cc2f437`, merge commit
+  `state: closed`, head `466321891a4b05df564e2e34e2685a4a3d7dccee`, merge commit
   `64dbbee1a16768704169e8f1d8df49b4370d6eb3`, `merged_at: 2026-08-07`, 5 changed files, 2 commits —
-  matching the session brief exactly. `main`'s current tip is exactly this merge commit.
+  matching the session brief exactly. `main`'s current tip is exactly this merge commit. (Bounded
+  correction, same PR: this line originally, mistakenly, cited PR #262's own accepted head
+  `910caa4547627f505ddbae3115799a300cc2f437` here instead of PR #263's actual head — caught by an
+  independent reviewer of this PR via direct git ancestry and GitHub API re-verification, corrected
+  above; see §N for the parallel correction to the `tier0010-post-merge-verification` gate entry.)
 - **`milestone-8-policy-recommendation-package` gate independently re-read** from live
   `operations/WORKSTREAMS.yaml`: `status: complete`, `pr: 262`, carrying `TIER-0010`'s own additive
   paragraph recording PR #262's accepted head, both review rounds, the bounded correction, principal
@@ -490,11 +494,19 @@ This filing also folds in the routine Lane M post-merge factual synchronization 
 (PR #263), matching the `tier0006-post-merge-verification`/`tier0007-post-merge-verification`/
 `tier0008-post-merge-verification` pattern used by every prior WS-0005 filing in this log: a new
 `tier0010-post-merge-verification` gate records the independently re-verified accepted head
-(`910caa4547627f505ddbae3115799a300cc2f437`), merge commit
-(`64dbbee1a16768704169e8f1d8df49b4370d6eb3`), independent review (`4879786313`, APPROVED FOR PRINCIPAL
-EXACT-HEAD ACCEPTANCE, 0/0/0/0), principal acceptance (`issuecomment-5212688009`), post-merge
-verification (`issuecomment-5212728415`), and both exact-head and merge-commit CI success
-(`92757721969`/`31143369532`, `92776874235`/`31149785644`). `WS-0005`'s `active_branch`/`active_pr`/
+(`466321891a4b05df564e2e34e2685a4a3d7dccee`), merge commit
+(`64dbbee1a16768704169e8f1d8df49b4370d6eb3`), independent review (`pullrequestreview-4880363396`, a
+single round, 0 BLOCKING / 0 MAJOR / 1 MINOR / 3 NOTE, APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE —
+no correction cycle required), principal acceptance (`issuecomment-5216175391`), post-merge
+verification (`issuecomment-5216241179`), and both exact-head and merge-commit CI success
+(`31151303950`/`92781382424`, `31172275983`/`92846505389`). **Bounded correction, same PR**: this
+section, the Preflight bullet above, and the parallel `operations/WORKSTREAMS.yaml` gate description
+and `CLAUDE.md` entry originally, mistakenly, attributed PR #262's own accepted head, review chain
+(`4879556015`→`4879786313`), acceptance/verification comments, and CI run identifiers to PR #263 —
+caught by an independent reviewer of this PR via direct git ancestry (`910caa45...` confirmed an
+ancestor of PR #262's own merge commit `eecbb72f7`, not of PR #263's) and GitHub API re-verification of
+PR #263's actual comments and review; corrected above to PR #263's own actual, independently
+re-verified data. `WS-0005`'s `active_branch`/`active_pr`/
 `last_verified_main_sha`/`last_verified_date` self-reference fields are updated to this filing's own
 live state (`active_pr` set to `null` until this filing's own PR number exists, per `OPS-0001`'s
 convention — a bounded follow-up commit sets it once the PR is opened). `WS-0005`'s top-level `status:

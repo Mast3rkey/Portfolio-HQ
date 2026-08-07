@@ -3404,22 +3404,31 @@ workstreams:
           Milestone 9 authorization/design filing (TIER-0011) per OPS-0008
           §4(a)'s read-only post-merge convention. TIER-0010 (PR #263)
           independently re-confirmed this session via the GitHub API:
-          MERGED, accepted head 910caa4547627f505ddbae3115799a300cc2f437,
+          MERGED, accepted head 466321891a4b05df564e2e34e2685a4a3d7dccee,
           merge commit 64dbbee1a16768704169e8f1d8df49b4370d6eb3, 5 changed
-          files, 2 commits. First-round review 4879556015 returned CHANGES
-          REQUIRED (0 BLOCKING / 1 MAJOR — tier_architecture/G.2 design
-          justification / 1 MINOR — validator error-path test coverage); a
-          bounded correction resolved both without changing any
-          recommendation content; corrected-head delta review 4879786313
-          returned APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0/0/0/0.
-          Principal acceptance issuecomment-5212688009; post-merge
-          verification issuecomment-5212728415. Exact-head CI
-          (92757721969/31143369532) and merge-commit CI
-          (92776874235/31149785644) both independently re-fetched and
-          confirmed success. milestone-8-policy-recommendation-package's
-          own status: complete, pr: 262 (set by TIER-0010 directly) is
-          left unedited — this entry records confirmation of TIER-0010's
-          already-established merge state only, the same
+          files, 2 commits. Independent exact-head review
+          pullrequestreview-4880363396 returned 0 BLOCKING / 0 MAJOR / 1
+          MINOR / 3 NOTE — APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE on
+          the first round; the single MINOR (a decision-catalog-count
+          clarity gap between two parallel summaries, both individually
+          accurate at their respective points in time) was explicitly
+          accepted as a disclosed, non-blocking residual note requiring no
+          correction cycle. Principal acceptance issuecomment-5216175391;
+          post-merge verification issuecomment-5216241179. Exact-head CI
+          (31151303950/92781382424) and merge-commit CI
+          (31172275983/92846505389) both independently re-fetched and
+          confirmed success. **Bounded correction, same PR (TIER-0011,
+          review pullrequestreview on PR #264): this gate's original text
+          mistakenly attributed PR #262's own provenance data (accepted
+          head 910caa4547627f505ddbae3115799a300cc2f437, review chain
+          4879556015→4879786313, issuecomment-5212688009/
+          issuecomment-5212728415, CI 92757721969/92776874235) to PR #263 —
+          an independent reviewer of PR #264 caught this via direct git
+          ancestry and GitHub API re-verification; corrected above to
+          PR #263's own actual data.** milestone-8-policy-recommendation-
+          package's own status: complete, pr: 262 (set by TIER-0010
+          directly) is left unedited — this entry records confirmation of
+          TIER-0010's already-established merge state only, the same
           tier0006-post-merge-verification/tier0007-post-merge-
           verification/tier0008-post-merge-verification pattern. Creates
           no new tier/target/holdings/cluster/cap/allocator/margin
