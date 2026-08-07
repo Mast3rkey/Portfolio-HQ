@@ -1,0 +1,81 @@
+# WS-0005 Milestone 8 — Policy Recommendation Package (retained audit)
+
+**Date:** 2026-08-07
+**Authority:** `governance/decisions/TIER-0009-ws0005-milestone8-policy-recommendation-framework-authorization.md` (merged, PR #261, merge commit `dc302d45b4cca417cc306e98584dba556cb055b5`, independently reviewed, verdict APPROVED SUBSTANTIVELY, principal-accepted, post-merge verified).
+**Comparison-source main SHA:** `dc302d45b4cca417cc306e98584dba556cb055b5` (the exact `origin/main` head this implementation branched from and verified against).
+**Milestone 6 reference:** `intelligence/classification/*.yaml` + `COHORT_MANIFEST.yaml`, sealed at merge commit `1107c5b70801ff5e7027efddf6a2aa916030dce2`, completed by `TIER-0006`.
+**Milestone 7 reference:** `intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml` (27 tickers, source_main_sha `1d5d93f94bbc39a0b9d99178a7b477e6f0f27928`), completion determined by `TIER-0008`.
+**Produced artifact:** `intelligence/recommendations/MILESTONE8_POLICY_RECOMMENDATION_PACKAGE.yaml` (27 tickers, alphabetical, 8 policy areas per entry, 5-field area-entry schema per TIER-0009 SS I.1).
+
+This is the single implementation unit TIER-0009 SS L authorized: exactly one later, separate, bounded Milestone 8 PR producing an advisory, per-area policy-recommendation entry for each of the 27 sealed-and-reconciled canonical equities. **Analysis only.** It recommends, authorizes, and executes no target/tier/role/gate/holdings/cap/cluster/allocator/margin/ladder/chart/order/trade change of any kind.
+
+## Pre-drafting integrity checks (performed before any recommendation content was drafted)
+
+1. `classification_validator.py`: `OK (28 result(s))` — 27 sealed records + `COHORT_MANIFEST.yaml`, independently re-run this session.
+2. `reconciliation_validator.py`: `OK (27 tickers)` — the Milestone 7 artifact this filing reuses, independently re-run this session.
+3. `git diff <TIER-0006 merge commit> HEAD -- intelligence/classification/` and `git diff -- intelligence/reconciliation/`: both empty — zero drift in any sealed record, the manifest, or the Milestone 7 artifact since their respective sealing/acceptance commits.
+4. Live recomputation of the 11-name structural-measurement-gap set (`caps.clusters`, `issuer_lookthrough.yaml`, `intelligence/relationships/*.yaml`) independently reproduced `REL-0007`'s own finding exactly: `COST, ICE, ISRG, PANW, RKLB, RTX, SNPS, SPGI, TMO, V, WM`.
+5. Zero open pull requests confirmed via the GitHub API before this branch's first edit. No competing mutation lane.
+
+`intelligence/classification/*.yaml`, `COHORT_MANIFEST.yaml`, and `intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml` were opened read-only throughout this implementation. None of the three, nor `classification_validator.py`, nor `reconciliation_validator.py`, nor the sanitizer, was edited.
+
+## Methodology
+
+Every one of the 27 per-ticker entries was computed mechanically from already-governed Milestone 6/7 fields plus `gates.yaml`/`intelligence/companies/<TICKER>.yaml` — no new external research, no new judgment invented, no field re-derived from scratch, per TIER-0009 SS C. The eight areas are populated as follows (TIER-0009 SS G, treatment classes in parentheses):
+
+- **`role`, `capital_priority`** (class A): `primary_status` is mapped 1:1 from Milestone 7's own ticker-level `primary_disposition` (`aligned` → `retain_current_baseline`; `divergence_requires_review`/`baseline_assumption_stale` → `review_warranted`; `no_policy_conclusion` → `no_policy_conclusion`) — no independent re-derivation, per TIER-0009 SS G.1(1)/SS G.3(1).
+- **`tier_architecture`** (class A, narrowly bounded to a consistency check): the same Milestone-7-derived mapping is reused as the consistency signal, since "is current tier/gate/role treatment consistent with reconciled evidence" is exactly what `primary_disposition` already measures — no new tier schema, threshold, category, or replacement architecture is proposed anywhere (TIER-0009 SS G.2(6), mechanically verified: the validator's chart/directive/forbidden-key scan covers this area's free text identically to every other area).
+- **`target_and_range`, `maximum_position_size`** (class B): doctrinally forced to `primary_status: valuation_required` on all 27 tickers, no exception, non-ticker-specific rationale, zero secondary conditions — no governed valuation methodology exists anywhere in this repository (TIER-0009 SS G.4/SS G.5/SS K).
+- **`overlap_and_concentration`** (class A for 16 names / class D for 11 names): the structural-measurement-gap set was independently recomputed live this session (not read from any cached field) — the 11 tickers so flagged are forced to `relationship_measurement_required`; the remaining 16, for which Milestone 7's own `structural_risk_comparison` found zero drift, receive `retain_current_baseline`. The whole-portfolio (cross-sleeve) overlap question is disclosed once at the artifact level (`equity_scope_disclosure`), never attempted per-ticker (TIER-0009 SS G.6(1)/(3)).
+- **`monitoring_and_thesis_break`** (class A): `primary_status` is computed from Milestone 6's `evidence_quality.primary_source_coverage` and each record's `review.next_due` (none of the 27 records is overdue as of this session's comparison date) — `comprehensive` coverage and not-overdue yields `retain_current_baseline`; `limited`/`partial` coverage yields `review_warranted`; SPGI (whose underlying Milestone 6 evidence is majority-redacted, per that milestone's own disclosed correction) yields `no_policy_conclusion` rather than a forced categorical finding. No new cadence number is proposed and no thesis is declared broken anywhere (TIER-0009 SS G.7(6)).
+- **`add_hold_trim_exit_discipline`** (class A, strictly bounded to mechanism-existence): for the six gated names, `gates.yaml`'s own `next_gate` text was confirmed non-empty and current for all six; for the 21 non-gated names, each Company Intelligence record's `risks[]` list was confirmed non-empty (4 to 8 entries per record) as the thesis-break/review-trigger basis. All 27 reach `retain_current_baseline` — a review-trigger mechanism exists and appears adequate for every name. No actual add/hold/trim/exit action is issued, recommended, or implied anywhere; the rationale text is written to describe the *absence* of a directive without using the literal directive vocabulary (`buy`/`sell`/`add`/`hold`/`trim`/`exit`/`wait`/`stage`), which the validator's independent directive-language scan mechanically confirms holds across all 27 × 8 = 216 area-entries.
+
+**Secondary-condition propagation** (deterministic, disclosed here for reproducibility, since TIER-0009 SS H's own text gives one worked example — G.1 — rather than a rule for every area): `unresolved_evidence` propagates from Milestone 7's own ticker-level secondary flag to every categorical area (`role`, `tier_architecture`, `capital_priority`, `overlap_and_concentration`, `monitoring_and_thesis_break`, `add_hold_trim_exit_discipline`) whenever present, since an evidence-quality limitation in the shared sealed record bears on every judgment drawn from it. `structural_measurement_gap` propagates identically to every categorical area **except** `overlap_and_concentration`, where the identical gap is instead the primary-status-forcing condition itself (TIER-0009 SS H's explicit contrast: "role-comparison area-entry for an unmeasured ticker may still reach `retain_current_baseline` with this flag attached ... contrast with G.6, where the identical gap *is* the blocking condition"). Neither flag is ever attached to `target_and_range`/`maximum_position_size`, whose forced, universal rationale is non-ticker-specific by design.
+
+## Aggregate result
+
+| Area | `retain_current_baseline` | `review_warranted` | `valuation_required` | `relationship_measurement_required` | `no_policy_conclusion` |
+|---|---|---|---|---|---|
+| `role` | 12 | 14 | — | — | 1 (SPGI) |
+| `tier_architecture` | 12 | 14 | — | — | 1 (SPGI) |
+| `capital_priority` | 12 | 14 | — | — | 1 (SPGI) |
+| `target_and_range` | — | — | 27 | — | — |
+| `maximum_position_size` | — | — | 27 | — | — |
+| `overlap_and_concentration` | 16 | — | — | 11 | — |
+| `monitoring_and_thesis_break` | 20 | 6 | — | — | 1 (SPGI) |
+| `add_hold_trim_exit_discipline` | 27 | — | — | — | — |
+
+`role`/`tier_architecture`/`capital_priority` share an identical 12/14/1 split because all three are mapped 1:1 from the same Milestone 7 `primary_disposition` field (TIER-0009 SS G.1(1)/SS G.2(1)/SS G.3(1) all require exactly this reuse, not independent per-area judgment) — this is a designed structural consequence, not templated content masking distinct reasoning. `overlap_and_concentration`'s 11-name `relationship_measurement_required` set exactly reproduces `REL-0007`'s independently-computed finding. `target_and_range`/`maximum_position_size` are uniformly `valuation_required` by doctrinal force. `monitoring_and_thesis_break` diverges from the 12/14/1 pattern because it is driven by evidence-quality/cadence facts, not by `primary_disposition` — 6 of the 14 `review_warranted`-role tickers do **not** also carry `review_warranted` on monitoring (their evidence coverage is `comprehensive` even though their role/capital-priority evidence separately warrants review), and one `retain_current_baseline`-role ticker (ICE) **does** carry `review_warranted` on monitoring (limited coverage despite an otherwise-aligned role finding) — confirming the two axes are genuinely independently computed, not copy-pasted. `add_hold_trim_exit_discipline` is uniformly `retain_current_baseline` because every one of the 27 names, gated or not, was independently confirmed to carry an adequate review-trigger mechanism.
+
+No count, list, or combination above constitutes a score, rank, or implied action priority (`aggregate.cross_tabulation_disclaimer`, TIER-0009 SS I).
+
+## Prohibited-content verification (mechanically enforced by `recommendation_validator.py`, independently re-run this session)
+
+- Forced `valuation_required` on `target_and_range`/`maximum_position_size` for all 27 tickers, no exception.
+- Live-recomputed `relationship_measurement_required` set on `overlap_and_concentration` matches exactly the 11-name structural-gap population, checked in both directions (no missing forcing, no stale forcing).
+- Zero numeric-percent-shaped tokens anywhere in `target_and_range`/`maximum_position_size` free text.
+- Zero forbidden key names (`proposed_target_pct`, `target_range`, `score`, `rank`, `ranking`, `recommendation`, etc.) anywhere in any ticker entry.
+- Zero directive words (`buy`/`sell`/`add`/`hold`/`trim`/`exit`/`wait`/`stage`) appearing as an actual directive anywhere in any ticker entry's free text — independently scanned, not merely absent by casual inspection.
+- Zero chart-derived terminology (support/resistance, breakout, trend line, moving average, RSI, MACD, candlestick, chart pattern, technical analysis, oversold, overbought, Fibonacci, volume profile, price target, momentum) anywhere in any ticker entry's free text — an independent scan, not reliance on the self-declared `chart_evidence_used: false` flag alone, per TIER-0009 SS I.3.e's explicit instruction not to repeat `reconciliation_validator.py`'s own disclosed MINOR defense-in-depth gap (`TIER-0007`/`TIER-0008` SS B.1).
+- `aggregate` per-area primary/secondary ticker lists independently recomputed from the raw 27 entries and reconciled exactly against the recorded aggregate section.
+
+## Scope discipline
+
+This artifact and this audit cover **exactly the 27 sealed-and-reconciled canonical equity classifications** and nothing else. `equity_scope_disclosure` is carried at the artifact's top level, stating explicitly that ETF, cryptocurrency, cash/reserve, GLD/defensive-asset, debt-reduction, and broader contender-universe policy remain governed separately (TIER-0009 SS E.2). No final whole-portfolio target claim is made anywhere. Broader contender-universe screening (`WS-0014`), ETF and cryptocurrency classification frameworks, cash/reserve/GLD/debt-reduction doctrine, cross-asset opportunity-cost synthesis (`XASSET-0001`), and Milestone 9 (independent review and later adoption) all remain separate, unconcluded, unauthorized-by-this-unit future work.
+
+## Validation performed
+
+- `recommendation_validator.py`: `OK (27 tickers)`.
+- `classification_validator.py`: `OK (28 result(s))` (unaffected).
+- `reconciliation_validator.py`: `OK (27 tickers)` (unaffected).
+- `relationship_validator.py`: `OK (13 record(s))` (unaffected).
+- `freshness_validator.py`: `OK` (unaffected).
+- `contender_registry_validator.py`: `OK (84 entries)` (unaffected).
+- Decision catalog: 86 decisions, `issues == ()` (unchanged — no new governance decision filed by this implementation; `TIER-0009` already recorded decision 86 at its own merge).
+- `test_recommendation_validator.py`: 143/143 passing (schema, precedence, forced-value, live-recompute, prohibited-content, aggregate-reconciliation, and determinism coverage).
+- Full repository `pytest` suite: see this PR's own summary for the exact count at the merged head.
+- `git diff --check`: clean.
+- Zero diff on every protected path (`allocate.py`, `margin_state.py`, `levels.py`, `targets.yaml`, `holdings.yaml`, `gates.yaml`, `issuer_lookthrough.yaml`, every `intelligence/classification|companies|themes|relationships/` record, `COHORT_MANIFEST.yaml`, `intelligence/reconciliation/MILESTONE7_BASELINE_RECONCILIATION.yaml`, `classification_validator.py`, `reconciliation_validator.py`, `intelligence_classification_sanitizer.py`).
+- Changed-file inventory: exactly the files this filing's own governance authorization (TIER-0009 SS N, analogized to the implementation scope) and the task brief's "expected coherent artifact set" name — one recommendation-package YAML, one validator, one test file, one retained audit, plus the minimum `operations/WORKSTREAMS.yaml`/`CLAUDE.md` synchronization documented in this PR's own diff.
+
+This implementation does not itself determine Milestone 8 complete, perform Milestone 9, or authorize any further WS-0005 milestone. A future, separate, independently-reviewed Lane G completion-determination filing remains required, matching the `PI-0031`→`PI-0037` (Milestone 3), `REL-0001`→`REL-0006` (Milestone 4), and `TIER-0007`→`TIER-0008` (Milestone 7) precedent.

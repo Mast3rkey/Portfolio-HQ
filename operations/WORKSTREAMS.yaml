@@ -2134,9 +2134,26 @@ workstreams:
           targets/target ranges, maximum position sizes, economic-system/
           overlap limits, monitoring frequency, thesis-break review rules,
           add/hold/trim/exit-review discipline. Not authorized to execute.
+          Content work has begun (TIER-0009-authorized implementation,
+          see CLAUDE.md): intelligence/recommendations/
+          MILESTONE8_POLICY_RECOMMENDATION_PACKAGE.yaml delivers all 27
+          canonical equities across all eight areas, closed
+          seven-value primary-status vocabulary per TIER-0009 §H,
+          target_and_range/maximum_position_size doctrinally forced
+          valuation_required on all 27, overlap_and_concentration
+          live-recomputed relationship_measurement_required on exactly
+          the 11 structurally-unmeasured tickers, recommendation_validator.py
+          + test_recommendation_validator.py + one retained audit
+          (governance/audits/WS0005_M8_POLICY_RECOMMENDATION_PACKAGE_20260807.md)
+          delivered. Not yet independently reviewed, principal-accepted,
+          merged, or post-merge verified — this transition to in_progress
+          records that drafting has begun, not that Milestone 8 is
+          complete. A future, separate, independently-reviewed Lane G
+          completion-determination filing remains required, matching the
+          PI-0031→PI-0037/REL-0001→REL-0006/TIER-0007→TIER-0008 precedent.
         pr: null
-        status: proposed
-        date: "2026-07-25"
+        status: in_progress
+        date: "2026-08-07"
       - gate: milestone-9-independent-review-and-later-adoption
         description: >
           Independent review, by an eligible reviewer per OPS-0007 §1's
@@ -3280,6 +3297,48 @@ workstreams:
         pr: 261
         status: in_progress
         date: "2026-08-06"
+      - gate: tier0009-post-merge-verification
+        description: >
+          Lane M factual synchronization for TIER-0009 (PR #261), performed
+          by this Milestone 8 implementation filing. Independently
+          re-confirmed via the GitHub API: accepted head
+          78c525a360efb7a83f6de07c3cfe9a7341001250, merge commit
+          dc302d45b4cca417cc306e98584dba556cb055b5, exactly 5 changed
+          files, exact-head CI success (workflow run 31133158484, job/check
+          92726551948, conclusion success), post-merge CI success (workflow
+          run 31133567735, job/check 92727828891, conclusion success),
+          independent review pullrequestreview-4877541469 (verdict APPROVED
+          SUBSTANTIVELY, zero substantive findings), principal acceptance
+          issuecomment-5210170792, post-merge verification
+          issuecomment-5210222155. Zero open pull requests confirmed before
+          this filing's own first edit.
+        pr: 261
+        status: complete
+        date: "2026-08-07"
+      - gate: milestone8-implementation-drafted
+        description: >
+          The TIER-0009-authorized Milestone 8 implementation itself (see
+          CLAUDE.md for full detail): intelligence/recommendations/
+          MILESTONE8_POLICY_RECOMMENDATION_PACKAGE.yaml (27 tickers,
+          alphabetical, eight policy areas each, closed schema at every
+          level), recommendation_validator.py, test_recommendation_validator.py
+          (143 focused tests), and one retained narrative audit
+          (governance/audits/WS0005_M8_POLICY_RECOMMENDATION_PACKAGE_20260807.md).
+          G.4/G.5 doctrinally forced valuation_required on all 27 tickers,
+          mechanically validator-enforced. G.6 (overlap_and_concentration)
+          live-recomputed relationship_measurement_required on exactly the
+          11 structurally-unmeasured tickers (SNPS, PANW, ISRG, TMO, ICE,
+          SPGI, V, COST, WM, RTX, RKLB), reproducing REL-0007's own finding
+          exactly. Independent free-text chart-terminology and
+          directive-language scans built in from the start (TIER-0009 §I.3.e),
+          not deferred as reconciliation_validator.py's own disclosed MINOR
+          gap was. Sealed Milestone 6 records, COHORT_MANIFEST.yaml, and the
+          Milestone 7 reconciliation artifact confirmed byte-identical
+          throughout — none touched. Not yet independently reviewed,
+          principal-accepted, merged, or post-merge verified.
+        pr: null
+        status: in_progress
+        date: "2026-08-07"
     evidence_refs:
       - governance/decisions/OPS-0006-portfolio-intelligence-completion-and-zero-based-tier-review.md
       - governance/audits/WS0005_MILESTONES1-2_PORTFOLIO_INVENTORY_AUDIT_20260725.md
@@ -5217,10 +5276,10 @@ workstreams:
       already-merged branch/PR history remains recorded above and is unedited. `active_pr` is `null`
       until this filing's own PR number exists, per `OPS-0001`'s convention — a bounded follow-up
       commit sets it once the PR is opened.
-    active_branch: claude/ws-0005-milestone-8-design-h4k9wq
-    active_pr: 261
-    last_verified_main_sha: aed259994ea6aa2db08a24a3a1488ebcc39ca985
-    last_verified_date: "2026-08-06"
+    active_branch: claude/milestone-8-policy-recommendation-740p8e
+    active_pr: null
+    last_verified_main_sha: dc302d45b4cca417cc306e98584dba556cb055b5
+    last_verified_date: "2026-08-07"
     authorized_by: >
       OPS-0006 (workstream establishment, governing purpose, protocol, and
       roadmap; execution of Milestones 1-2 only, per its 2026-07-25
