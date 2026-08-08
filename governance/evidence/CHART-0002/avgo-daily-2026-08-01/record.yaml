@@ -94,8 +94,9 @@ content:
   - Volume panel shows a teal-toned tag "20.39M" and a yellow tag "19.26M"
   - Volume-panel bottom row carries green/red "E" hexagon icons and blue circular "D" icons at several
     points
-  - Oscillator panel (0-100 axis) shows a purple tag "52.58" and a yellow tag "48.33", with a dashed pink
-    line near 75 and a dashed green line near 40
+  - Oscillator panel (0-100 axis) shows a purple tag "52.58" and a yellow tag "48.33", with three dashed
+    horizontal reference lines -- red/pink near the top (axis-calibrated to approximately 70), gray/blue-gray
+    at the panel's midpoint (approximately 50), and green near the bottom (approximately 30)
   - Bottom sub-panel axis runs 0.00-30.00(+) with a red line and red tag "17.56"
   - 'Date axis reads: Jul, Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug'
   - '"TradingView" wordmark appears bottom-left'
@@ -136,8 +137,8 @@ content:
   - Timezone convention for "UTC-4" not stated as exchange vs. device time
   - Exact calendar date of the leftmost candle not numerically given
   - Whether the rightmost candle is a completed or in-progress session is not stated
-  - Precise numeric values of the oscillator's dashed threshold lines beyond the two labeled readouts
-    are not printed
+  - The oscillator's ~70/~50/~30 dashed reference-line values (beyond the two labeled readouts) are axis-calibrated
+    estimates, not values printed directly on the lines themselves
 thesis_relationship:
   related_holding: AVGO
   related_intelligence_record: intelligence/companies/AVGO.yaml

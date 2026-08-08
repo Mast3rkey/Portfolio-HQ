@@ -91,7 +91,9 @@ content:
     timeline
   - Third panel contains a purple line and yellow line on a 0-120 scale, labeled "75.86" (purple) and
     "54.51" (yellow)
-  - That panel's upper dashed reference line is red/pink; its lower dashed reference line is green
+  - That panel has three dashed horizontal reference lines -- a red/pink line near the top (axis-calibrated,
+    against this image's own 0-120-scale gridlines, to approximately 70), a gray/blue-gray line at the
+    panel's midpoint (approximately 50), and a green line near the bottom (approximately 30)
   - Bottom panel contains a single red line on an approximately 4-24 scale, labeled "19.09"
   - 'X-axis date labels read: Jul, Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug'
   - '"TradingView" wordmark/logo appears at bottom-left'
@@ -133,8 +135,9 @@ content:
   - Exact date of the final large green candle is not individually labeled
   - The computation window for "High 555.45"/"Low 349.20" is not stated
   - Whether the final candle represents a fully closed session or an in-progress/partial one is not stated
-  - The reason for the differing reference-line colors is not explained in-image -- could reflect a per-ticker
-    setting difference, not confirmed
+  - The oscillator's ~70/~50/~30 dashed reference-line values are axis-calibrated estimates, not values
+    printed directly on the lines themselves; these same three colors and approximate levels recur across
+    other tickers in this same batch, not a setting distinct to this specific chart
 thesis_relationship:
   related_holding: MSFT
   related_intelligence_record: intelligence/companies/MSFT.yaml

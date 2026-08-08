@@ -53,7 +53,7 @@
   "no_live_market_data_authority_statement": "This package creates no live market-data authority of any kind. holdings.yaml, targets.yaml, gates.yaml, issuer_lookthrough.yaml, allocate.py, margin_state.py, and levels.py are all unmodified and unread by anything in this package; nothing here changes any allocator computation, any current price source, or any live-priced holding value. No LADDER-0001 study input either -- LADDER-0001's own protocol independently excludes chart/screenshot input.",
   "governed_consequence": "none",
   "generated_file_hashes": {
-    "record.yaml": "a1435f9e2ecd784a8c20aefefa3fc5f38c63d45170125ef0da7b5fe7ccbaad4f",
+    "record.yaml": "2b1345059d1dd3ebf277539efa7eccea4b342e0aef13d0067453e71d4c24e9f0",
     "README.md": "ccd17b5a1298648a439b42d007008db9498c61be7da9ae4e19f61a09177f3127"
   }
 }

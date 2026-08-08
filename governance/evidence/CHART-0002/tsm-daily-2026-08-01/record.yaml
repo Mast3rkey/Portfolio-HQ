@@ -95,8 +95,10 @@ content:
     M" (yellow box) and "11.96 M" (teal box)
   - Green "E" and blue "D" circular markers appear periodically along the bottom of the volume panel
   - A momentum-style panel below volume shows a purple line and a yellow line, right-axis tags "42.33"
-    (yellow) and "48.06" (purple); a pink/magenta dashed horizontal line and a green dashed horizontal
-    line are also present in this panel, axis labeled 0.00 to 100.00
+    (yellow) and "48.06" (purple), axis labeled 0.00 to 100.00 in increments of 20; this panel has three
+    dashed horizontal reference lines -- a red/pink line near the top (axis-calibrated to approximately
+    70), a gray/blue-gray line at the panel's midpoint (approximately 50), and a green line near the
+    bottom (approximately 30)
   - Bottom-most panel shows a single red line with right-axis tag "20.71"; axis labeled 0.00 to 30.00
   - 'Bottom date axis is labeled: Jul, Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug
     -- one month earlier start ("Jul") than some other tickers'' "Aug" start'
@@ -119,7 +121,7 @@ content:
     region
   - In the purple/yellow oscillator panel, the yellow line (42.33) is below the purple line (48.06) at
     the chart's right edge, and the purple line's peaks earlier in the range approach or briefly cross
-    the pink/magenta dashed upper reference line
+    the red/pink dashed upper (~70) reference line
   - The bottom red-line panel trends generally upward across the full date range, with visible step-like
     increases and no clear decline back to earlier (left-edge) levels
   inferences:
@@ -127,22 +129,22 @@ content:
     from typical charting convention, not a printed label
   - The orange dotted line is likely a longer-period/slower moving average, given its smoothness and lag
     relative to price -- interpretive, not confirmed
-  - The purple/yellow panel with pink and green dashed reference lines is likely a momentum oscillator
-    such as RSI with overbought/oversold reference levels, but no indicator name or period is printed
+  - The purple/yellow panel with red/pink, gray, and green dashed reference lines is likely a momentum
+    oscillator such as RSI with overbought/midline/oversold reference levels, but no indicator name or
+    period is printed
   - The bottom red-line panel is plausibly a volatility-style indicator (e.g., ATR) given its small distinct
     numeric scale and gradual trend, though unconfirmed
-  - The extra pink and green dashed lines present in this panel (not clearly present in the same form
-    on some other tickers' charts) may indicate a different or additionally-configured reference-level
-    setting for this specific chart, but the exact numeric values of those dashed lines are not printed,
-    so this is an inference only
+  - This panel's three dashed reference lines are present in essentially the same form (same three colors,
+    same approximate ~70/~50/~30 axis-calibrated levels) on other tickers' charts in this same batch,
+    not a configuration distinct to this specific chart
   uncertainties:
   - No indicator names or parameter settings are printed anywhere in the image for the overlay lines or
     the two lower panels
   - Exact numeric values of the moving-average lines at the current candle are not printed
   - The exact date of the rightmost candle is not individually labeled beyond month tick marks
   - The precise meaning of "E"/"D" markers is not confirmed by any on-image legend
-  - The exact numeric values of the pink and green dashed reference lines in the oscillator panel are
-    not printed/labeled
+  - The exact numeric values of the oscillator panel's three dashed reference lines are not printed/labeled
+    in-image; the ~70/~50/~30 figures given above are axis-calibrated estimates, not printed values
   - The exact values represented by the isolated tall volume-spike bars are not printed/labeled
   - Whether the price axis is linear or logarithmic is not indicated
 thesis_relationship:

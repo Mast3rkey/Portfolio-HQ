@@ -85,13 +85,14 @@ content:
   - A gray dotted line is labeled "Low 520.26"
   - A magenta dotted horizontal line is labeled "556.71 -22.37%"
   - Additional stacked right-edge price labels read "634.63", "620.09", and "602.68"
-  - Volume panel numeric labels read "24.26M" (teal box) and "17.3M" (yellow box)
+  - Volume panel numeric labels read "24.26M" (red box) and "17.3M" (yellow box)
   - Square "E" markers (some red-bordered, some teal-bordered) and circular "D" markers (blue-bordered)
     appear along the volume-panel timeline
   - Third panel contains a purple line and yellow line on a 0-100 scale, labeled "51.15" (yellow) and
     "35.46" (purple)
-  - A dashed magenta/pink line sits near the upper portion of that panel and a dashed white/gray line
-    sits lower
+  - That panel has three dashed horizontal reference lines -- a red line near the top (axis-calibrated
+    to approximately 70; pixel-verified plain red, not magenta/pink), a gray/blue-gray line at the panel's
+    midpoint (approximately 50), and a green line near the bottom (approximately 30)
   - Bottom panel contains a single red line on an approximately 10-35 scale, labeled "31.02"
   - 'X-axis date labels read: Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep --
     with visible empty chart space after the last candle before the "Sep" label'

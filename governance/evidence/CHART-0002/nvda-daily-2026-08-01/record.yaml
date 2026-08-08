@@ -83,15 +83,18 @@ content:
   - Right-side price axis labeled in $10 increments from 100.00 to 280.00
   - A gray dotted line is labeled "High 236.54"
   - A gray dotted line is labeled "Low 142.03"
-  - A magenta dotted horizontal line is labeled "202.95 +38.89%"
-  - Additional stacked right-edge labels read "206.32" (teal/green box), "200.75" (yellow box), and "193.17"
-    (orange box)
+  - A magenta dotted horizontal line is labeled "200.75 +38.89%"
+  - Stacked right-edge labels, top to bottom, read "206.32" (red box), "202.95" (yellow box, no percentage
+    attached), "200.75 +38.89%" (teal/green box -- this is the box the magenta dotted line's own label
+    corresponds to), and "193.17" (orange box)
   - Volume panel numeric labels read "139.9M" (teal box) and "127.72M" (yellow box)
   - Green-bordered "E" square markers and blue-bordered "D" circle markers recur at multiple points along
     the volume timeline (four visible "E" markers)
   - Third panel contains a purple line and yellow line on a 0-100 scale, labeled "45.13" (purple) and
     "49.53" (yellow)
-  - That panel's upper dashed line is red/pink (~70 level) and lower dashed line is green (~40 level)
+  - That panel has three dashed horizontal reference lines -- a red/pink line near the top (axis-calibrated
+    against this image's own printed gridlines to approximately the 70 level), a gray/blue-gray line at
+    the panel's midpoint (approximately 50), and a green line near the bottom (approximately 30)
   - Bottom panel contains a single red line on an approximately 2-12 scale, labeled "8.20"
   - 'X-axis date labels read: Jul, Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug'
   - '"TradingView" wordmark/logo appears at bottom-left'
@@ -109,8 +112,9 @@ content:
     a yellow moving-average line running through them
   - The bottom red-line panel rises from its lowest levels near the left edge to a broad plateau in the
     6-10 range for most of the remaining chart
-  - The purple/yellow third-panel lines cross back and forth around the 45-50 mid-range multiple times
-    without persistently reaching either dashed reference line for long stretches
+  - The purple/yellow third-panel lines cross back and forth around the 45-50 mid-range multiple times,
+    hovering near the panel's middle (~50) dashed reference line without persistently reaching either
+    outer (~70 or ~30) dashed reference line for long stretches
   inferences:
   - The yellow/red overlay lines are most likely short/medium moving averages -- inferred from convention,
     not confirmed in-image
@@ -131,6 +135,8 @@ content:
   - Whether "E"/"D" markers specifically denote earnings/dividends is not textually confirmed anywhere
     in-image
   - Whether the rightmost candle represents a fully closed session is not stated
+  - The third panel's three dashed reference-line values (~70/~50/~30) are axis-calibrated estimates derived
+    from this image's own printed gridlines, not values printed directly on the lines themselves
 thesis_relationship:
   related_holding: NVDA
   related_intelligence_record: intelligence/companies/NVDA.yaml

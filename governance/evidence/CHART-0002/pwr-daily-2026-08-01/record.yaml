@@ -98,15 +98,16 @@ content:
   - A third panel below volume contains a purple line and a yellow line, with right-axis value tags "54.38"
     (purple) and "39.33" (yellow); the panel's numeric axis is labeled 0.00 to 120.00 in increments of
     20
-  - Dashed horizontal reference lines are drawn in this third panel at approximately the 80 and 60 gridline
-    levels
+  - That panel has three dashed horizontal reference lines -- a red/pink line near the top (axis-calibrated,
+    against this image's own 0-120-scale gridlines, to approximately 70), a gray/blue-gray line at the
+    panel's midpoint (approximately 50), and a green line near the bottom (approximately 30)
   - A fourth, bottom-most panel shows a single red line with a right-axis tag "39.88"; its numeric axis
     is labeled 0.00 to 50.00
   - 'Bottom date axis is labeled: Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep'
   - '"TradingView" wordmark/logo appears in the bottom-left corner of the image'
   - Vertical dashed teal lines cross the full chart height at several points along the timeline
-  - A tall isolated red volume spike bar is visible in the volume panel roughly between the "Jul" and
-    "Aug"(2026) date labels, taller than surrounding bars
+  - A tall isolated red volume spike bar is visible in the volume panel roughly between the "Jun" and
+    "Jul" date labels, taller than surrounding bars
   observations:
   - The candlestick series rises from roughly the 400 level near the left (Aug) edge of the chart to a
     peak in the mid-700s to high-780s range around the April-May period, then declines toward the current

@@ -82,11 +82,12 @@ content:
   - 'Watermark text: "nichmasters created with TradingView.com, Aug 01, 2026 14:46 UTC-4"'
   - 'Large semi-transparent overlay text: "CEG, 1D"'
   - 'Company-name watermark beneath it: "Constellation Energy Corporation"'
-  - Right-side price axis labeled in $20 increments from roughly 200.00 (partially cut at bottom) to 500.00
+  - Right-side price axis labeled in $20 increments; visible legibly from roughly 500.00 down through
+    140.00 near the volume panel -- no cropping is present anywhere in this visible range
   - Dotted line labeled "High 412.70"
   - Dotted line labeled "Low 228.63"
   - Orange dotted-line tag reads "308.53"
-  - A magenta/light-teal tag reads "262.75" with "-18.39%" beneath it (percentage shown as negative)
+  - A teal/green tag reads "262.75" with "-18.39%" beneath it (percentage shown as negative)
   - Red price tag reads "263.57"
   - Yellow price tag reads "257.98"
   - Volume panel shows a yellow tag "2.71M" and a teal tag "1.85M"
@@ -95,8 +96,9 @@ content:
   - A distinct purple/magenta "E" tag with its own dashed vertical line appears past the rightmost candle,
     near the date axis's Aug/Sep boundary -- visually different color from the other "E" markers on this
     same chart
-  - Oscillator panel (0-100 axis) shows a purple tag "52.57" and a yellow tag "52.39", with dashed pink
-    line near 75 and dashed grey/green lines lower in the panel
+  - Oscillator panel (0-100 axis) shows a purple tag "52.57" and a yellow tag "52.39", with three dashed
+    horizontal reference lines -- red/pink near the top (axis-calibrated to approximately 70), gray/blue-gray
+    at the panel's midpoint (approximately 50), and green near the bottom (approximately 30)
   - Bottom sub-panel axis runs 8.00-24.00 with a red line and red tag "11.86"
   - 'Date axis reads: Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep'
   - '"TradingView" wordmark appears bottom-left'
@@ -140,8 +142,8 @@ content:
   - Timezone convention for "UTC-4" not stated as exchange vs. device time
   - Exact calendar date of the leftmost candle not numerically given
   - Whether the rightmost visible candle is a completed or in-progress session is not stated
-  - Precise numeric values of the oscillator's dashed threshold lines beyond the two labeled readouts
-    are not printed
+  - The oscillator's ~70/~50/~30 dashed reference-line values (beyond the two labeled readouts) are axis-calibrated
+    estimates, not values printed directly on the lines themselves
 thesis_relationship:
   related_holding: CEG
   related_intelligence_record: intelligence/companies/CEG.yaml

@@ -92,10 +92,13 @@ content:
   - Candlesticks are colored teal/green (up) and red (down)
   - Volume histogram panel shows teal/red bars with a yellow overlay line; right-axis tags read "7.83
     M" (teal box) and "7.38 M" (yellow box)
-  - Green "E" and blue "D" circular markers appear periodically along the bottom of the volume panel
+  - Green-bordered "E" pentagon/house-shaped markers and blue-bordered "D" circular markers appear periodically
+    along the bottom of the volume panel -- only the "D" markers are circular; the "E" markers are five-sided
   - A momentum-style panel below volume shows a purple line and a yellow line, right-axis tags "65.07"
-    (yellow) and "64.81" (purple); a pink/magenta dashed horizontal line is present near the upper portion
-    of this panel, axis labeled 0.00 to 100.00
+    (yellow) and "64.81" (purple), axis labeled 0.00 to 100.00; this panel has three dashed horizontal
+    reference lines -- a red/pink line near the top (axis-calibrated to approximately 70), a gray/blue-gray
+    line at the panel's midpoint (approximately 50), and a green line near the bottom (approximately
+    30)
   - Bottom-most panel shows a single red line with right-axis tag "9.00"; axis labeled 4.00 to 10.00
   - 'Bottom date axis is labeled: Jul, Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug'
   - '"TradingView" wordmark/logo appears bottom-left'
@@ -115,8 +118,8 @@ content:
   - Volume bars show several isolated tall spikes scattered through the timeline rather than a smooth/even
     pattern, with the tallest spike appearing around the April-May period near the low-price trough
   - In the purple/yellow oscillator panel, the yellow (65.07) and purple (64.81) lines are nearly equal
-    at the chart's right edge, both positioned above the panel's mid-range and near the pink dashed reference
-    line
+    at the chart's right edge, both positioned above the panel's mid-range and near the red/pink (~70)
+    dashed reference line
   - The bottom red-line panel shows a declining trend from the left edge down to a mid-chart low, then
     a rise beginning around June continuing to the current right-edge value
   inferences:
@@ -124,8 +127,9 @@ content:
     charting convention -- not a printed label
   - The orange dotted line is likely a longer-period/slower moving average, given its relative smoothness
     -- interpretive, not confirmed
-  - The purple/yellow panel with a pink dashed reference line is likely a momentum oscillator (e.g., RSI-type)
-    with an overbought-style reference level, but no indicator name or period is printed
+  - The purple/yellow panel with red/pink, gray, and green dashed reference lines is likely a momentum
+    oscillator (e.g., RSI-type) with overbought/midline/oversold-style reference levels, but no indicator
+    name or period is printed
   - The bottom red-line panel is plausibly a volatility-style indicator (e.g., ATR) given its small distinct
     numeric scale and gradual wave pattern, though unconfirmed
   - The tall volume spike near the April-May trough plausibly coincides with a notable single-session
@@ -136,7 +140,8 @@ content:
   - Exact numeric values of the moving-average lines at the current candle are not printed
   - The exact date of the rightmost candle is not individually labeled beyond month tick marks
   - The precise meaning of "E"/"D" markers is not confirmed by any on-image legend
-  - The exact numeric value of the pink dashed reference line in the oscillator panel is not printed/labeled
+  - The oscillator's ~70/~50/~30 dashed reference-line values are axis-calibrated estimates, not values
+    printed directly on the lines themselves
   - The exact values represented by the isolated tall volume-spike bars are not printed/labeled
   - Whether the price axis is linear or logarithmic is not indicated
 thesis_relationship:

@@ -84,16 +84,22 @@ content:
   - A gray dotted horizontal line is labeled "High 1,249.45"
   - A gray dotted horizontal line is labeled "Low 623.78"
   - A magenta/pink dotted horizontal line carries the label "1,148.84 +45.60%"
-  - Three stacked price labels on the right edge read "1,184.11" (yellow box), "1,148.84" (pink/magenta),
-    and "1,147.53" (red box)
+  - Three stacked price labels on the right edge read "1,184.11" (yellow box), "1,148.84 +45.60%" (red
+    box -- the box itself is solid red, distinct from the magenta/pink dotted horizontal reference line
+    described above whose label it carries), and "1,147.53" (red box)
   - An orange dotted overlay line's current-value label reads "1,024.66"
-  - 'Bottom volume panel shows two numeric labels: "2.88M" (teal box) and "2.32M" (yellow box)'
+  - 'Bottom volume panel shows two numeric labels: "2.88M" (red box) and "2.32M" (yellow box)'
   - Small square markers labeled "E" (green-bordered) and circular markers labeled "D" (blue-bordered)
     appear at multiple points along the volume-panel timeline
+  - One additional "E" square marker, positioned at the current-date vertical dashed line near the right
+    edge of the volume panel, is bordered in magenta/pink rather than the green border used by every
+    other "E" marker on this chart -- a color distinct from the convention described above
   - A third panel below volume contains a purple line and a yellow line on a 0-120 scale, with numeric
     labels "53.80" (yellow box) and "43.36" (purple box)
-  - A dashed red horizontal reference line sits near the top of that third panel (~70-80 level) and a
-    dashed gray line sits lower (~25-30 level)
+  - That third panel has three dashed horizontal reference lines -- a red/pink line near the top (axis-calibrated,
+    against this image's own 0-120-scale gridlines, to approximately 70), a gray/blue-gray line at the
+    panel's midpoint (approximately 50), and a green line near the bottom (approximately 30, not gray
+    as the panel's middle line is)
   - A fourth, bottom-most panel contains a single red line on an approximately 10-60 scale, labeled "43.50"
   - 'X-axis (date) labels read: Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug -- with
     "2026" rendered in bold'
@@ -138,6 +144,9 @@ content:
   - The exact date range over which "High 1,249.45" and "Low 623.78" were computed is not stated
   - Whether "E"/"D" markers specifically denote earnings/dividends, versus some other event type, is not
     textually confirmed
+  - Why the current-date "E" marker is bordered magenta/pink instead of the green used by every other
+    "E" marker is not textually confirmed -- possibly denotes a distinct sub-category (e.g. an upcoming
+    versus past event) but this is not stated anywhere in-image
   - Individual candle open/high/low/close values are not legible beyond the printed High/Low/current-price
     callouts
   - Whether the displayed UTC-4 timestamp reflects the chart's bar-close convention or only the capture

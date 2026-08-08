@@ -93,8 +93,9 @@ content:
   - 'Volume value boxes: "13.51M" (red), "13.19M" (yellow)'
   - Green hexagon "E" markers and blue circle "D" markers along the bottom of the volume panel, plus one
     distinct gold/orange circular marker labeled "S" appearing once near the Jun/Jul area
-  - 'Oscillator subpanel: yellow and purple lines, axis 0-100, dashed red line near 78, dashed gray line
-    near 60, dashed green line near ~37'
+  - 'Oscillator subpanel: yellow and purple lines, axis 0-100, three dashed horizontal reference lines
+    -- red/pink near the top (axis-calibrated to approximately 70), gray/blue-gray at the panel''s midpoint
+    (approximately 50), and green near the bottom (approximately 30)'
   - 'Oscillator value boxes: "42.58" (yellow), "36.94" (purple)'
   - 'Bottom subpanel: single red line, axis 0.00-30.00, current value box "18.17" (red)'
   - 'X-axis labels: Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep'
@@ -102,8 +103,9 @@ content:
   observations:
   - Price shows a strong sustained uptrend from roughly 90 (August, left edge) to a peak near the 307.37
     high (around July), followed by a pullback to the current ~213-221 level
-  - The most recent (Jun-Jul) price action shows a topping pattern of lower highs followed by a decline
-    into the current cluster of red (down) candles
+  - The most recent (Jun-Jul) price action shows several consecutive lower highs, followed by a sharp
+    decline into the current cluster of red (down) candles -- this decline coincides with the dashed
+    vertical marker line near the gold "S" icon discussed in inferences below
   - Both yellow and red overlay lines sit above current price at the right edge and slope downward, consistent
     with recent weakness relative to those lines
   - The orange dotted line rises continuously and smoothly throughout, remaining well below price the
@@ -127,6 +129,9 @@ content:
   - Precise numeric values of overlay lines at points other than the current right-edge boxes not labeled
   - Exact date of the "S" marker and of the price peak near the High line not numerically labeled (only
     inferable from month gridlines)
+  - Whether the sharp price decline described in observations reflects genuine organic price movement,
+    a stock-split price adjustment coinciding with the "S" marker, or some combination of both is not
+    determinable from this image alone
 thesis_relationship:
   related_holding: KLAC
   related_intelligence_record: intelligence/companies/KLAC.yaml

@@ -93,7 +93,9 @@ content:
   - Green hexagonal markers labeled "E" and blue circular markers labeled "D" positioned along the bottom
     of the volume panel at several x-axis points
   - Oscillator subpanel with a yellow line and a purple/blue line, axis labeled 0.00-100.00 (20/40/60/80
-    gridlines), dashed red line near 70, dashed gray lines near 60 and ~35
+    gridlines); three dashed horizontal reference lines -- red/pink near the top (axis-calibrated to approximately
+    70), gray/blue-gray at the panel's midpoint (approximately 50), and green (not gray) near the bottom
+    (approximately 30)
   - 'Oscillator value boxes: "54.55" (purple) and "47.62" (yellow)'
   - 'Bottom subpanel: single red line, axis labeled 4.00-24.00, current value box "20.20" (red)'
   - 'X-axis date labels: Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep'
