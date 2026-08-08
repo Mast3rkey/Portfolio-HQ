@@ -1,0 +1,35 @@
+schema_version: '1.0'
+ticker: AVGO
+primary_archetype: F
+secondary_archetype: A
+rationale: 'Broadcom operates two reportable segments with materially different economics: Semiconductor
+  Solutions ($15.1B in Q2 FY2026, including AI accelerator revenue up 143% YoY and dependent on external
+  foundry/advanced-packaging capacity) and Infrastructure Software ($7.18B, +9% YoY, built around the
+  VMware Cloud Foundation subscription model with reported >87% customer migration and double-digit ARR
+  growth). The semiconductor business carries customer-concentration and foundry-dependency risk typical
+  of a cyclical, capital-intensive hardware business, while the software segment shows asset-light, high-incremental-margin,
+  recurring-revenue characteristics. This segment-level divergence supports F as primary, with A as a
+  secondary lens on the software segment''s distinct recurring-revenue profile. Archetype-F test: F was
+  considered and selected as primary: Broadcom''s Semiconductor Solutions segment (custom AI accelerators,
+  networking silicon, foundry-dependent) and Infrastructure Software segment (VMware Cloud Foundation
+  subscription platform, $7.18B/+9% YoY) have materially different, separately disclosed segment economics,
+  supporting a sum-of-the-parts framing over a single blended valuation.'
+evidence_quality:
+  primary_source_coverage: limited
+  uncertainty_statement: No primary document was directly opened by any researcher for this record at
+    any point (WebFetch confirmed blocked on all four domains attempted, including a control domain) --
+    every fact, including the AI-semiconductor revenue/segment figures underlying this archetype call,
+    traces to WebSearch-returned snippet synthesis, and the $73B AI-semiconductor backlog and Google TPU
+    agreement figures remain unverified against a primary contract or filing.
+disclosed_evidence_conflicts:
+- Secondary reporting simultaneously frames the VMware Cloud Foundation transition as driving double-digit
+  ARR growth and as generating customer backlash over 5x-10x list-price increases with elevated churn
+  risk; the evidence does not resolve which framing will dominate.
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-1
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#AVGO
+content_sha256: 8b5cee773882e52d219ec4b5b582989fc92e1adca4badf70346482d13afb5831

@@ -1,0 +1,32 @@
+schema_version: '1.0'
+ticker: V
+primary_archetype: C
+secondary_archetype: A
+rationale: 'Visa is explicitly a payment network -- a category the taxonomy names directly under archetype
+  C -- and just as explicitly states it is not a financial institution, does not issue cards, extend credit,
+  or set account-holder rates, distinguishing its network-toll-road economics from a lender''s balance-sheet-driven
+  business. At the same time, the disclosed financials show a genuinely asset-light structure: FY2025
+  operating cash flow of $23.059B against only $1.482B of property/equipment/technology purchases, with
+  large-scale capital return via buybacks and dividends, resembling the high-incremental-margin, low-reinvestment-intensity
+  profile the taxonomy associates with archetype A. Client incentives (a $15.751B contra-revenue deduction,
+  ~28% of gross revenue) function as a real competitive cost specific to network relationships, reinforcing
+  the network-economics framing over a pure subscription-platform read, hence C as primary with A recognized
+  secondarily for the asset-light capital profile. Archetype-F test: F was considered but not selected:
+  Visa''s four revenue categories (service, data-processing, international-transaction, other) are different
+  volume-linked fee streams within one unified network business (VisaNet), not segments with materially
+  different underlying economics, so a sum-of-the-parts framing is not supported by this evidence.'
+evidence_quality:
+  primary_source_coverage: comprehensive
+  uncertainty_statement: Visa's FY2025 Form 10-K -- the primary source for the revenue-category/network-economics
+    facts underlying the C-primary call -- was directly inspected by an independent evidence-recovery
+    researcher (GPT-5.6 Thinking); only the most recent quarter (fiscal Q3 2026 results and the July 2026
+    workforce-reduction announcement) is secondary-sourced and explicitly disclosed as such.
+disclosed_evidence_conflicts: null
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-5
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#V
+content_sha256: 22033a85c6f056ac9a4d774b941061416315bf0b9beef86ef15fa893eefaef28

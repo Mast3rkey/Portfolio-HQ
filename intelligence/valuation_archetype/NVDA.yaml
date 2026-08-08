@@ -1,0 +1,31 @@
+schema_version: '1.0'
+ticker: NVDA
+primary_archetype: A
+secondary_archetype: D
+rationale: 'NVIDIA''s fabless model shows very low reinvestment intensity relative to revenue (Q1 FY2027
+  capital expenditure of approximately $1.8B against $81.6B quarterly revenue) combined with a very high
+  gross margin (74.9%) and large free cash flow ($48.6B in the quarter) -- capital-light, high-incremental-margin
+  economics consistent with archetype A. However, the packet also discloses material customer-concentration
+  risk (three direct customers representing 21%, 17%, and 16% of total revenue), export-control and geopolitical
+  exposure directly affecting addressable market (NVIDIA states it was effectively foreclosed from China''s
+  data-center compute market as of Q1 FY2027), and an unresolved, large-scale financing arrangement under
+  negotiation with a key customer that multiple named commentators characterize as creating circular-demand
+  risk -- together indicating meaningful sensitivity to a concentrated AI-infrastructure spending cycle
+  that supports archetype D as a secondary consideration. Archetype-F test: F was considered but not selected:
+  NVIDIA''s Data Center segment represented $193.7B of $215.938B FY2026 total revenue (roughly 90%) and
+  accelerated further in Q1 FY2027 (+92% YoY), so one segment''s economics overwhelmingly dominate rather
+  than presenting materially diversified, sum-of-the-parts-relevant segment structure.'
+evidence_quality:
+  primary_source_coverage: comprehensive
+  uncertainty_statement: The reported NVIDIA financing-guarantee talks with a key customer (~$250B backstop,
+    up to ~$350B in chip-purchase financing) remain unfinalized and unconfirmed by any primary source
+    as of this record's evidence date.
+disclosed_evidence_conflicts: null
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-3
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#NVDA
+content_sha256: 1669c579dd6b2aa65258e271a4ac57327c11bf6fae46a127e59b91175a234783

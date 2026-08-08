@@ -1,0 +1,36 @@
+schema_version: '1.0'
+ticker: KLAC
+primary_archetype: D
+secondary_archetype: null
+rationale: 'KLA''s revenue is concentrated (90%+) in process-control/inspection equipment tied to semiconductor
+  fabrication capex, and the packet discloses a real, confirmed down year (FY2024 revenue -6.5% vs FY2023)
+  directly evidencing sensitivity to the wafer-fab-equipment spending cycle, which argues for cycle-normalized
+  rather than trailing-year valuation inputs (archetype D). No secondary archetype is retained: the business''s
+  high gross margin (62.3% FY2025), 17-year dividend-growth record, and backlog-conversion disclosure
+  are financial-quality indicators, not evidence of subscription or platform-network economics -- archetype
+  A''s actual defining mechanism (protocol §5). KLA is a capital-equipment manufacturer selling discrete
+  systems and services, not a recurring-subscription or network-effect platform, so A does not fit as
+  a genuine dual-lens beyond the primary D classification. Archetype-F test: KLA reports three segments
+  (Semiconductor Process Control, Specialty Semiconductor Process, PCB and Component Inspection), so F
+  was considered, but Semiconductor Process Control alone is 90.3% of Q3 FY2026 revenue -- one segment
+  overwhelmingly dominates, so the business does not present materially diversified segment economics
+  warranting F as primary or secondary either.'
+evidence_quality:
+  primary_source_coverage: limited
+  uncertainty_statement: This session's primary-source access (WebFetch) was blocked on every attempt
+    across all research passes, and no exception (no evidence-recovery researcher directly opening a KLA
+    filing) is disclosed anywhere in this ticker's research history -- all figures, including the China-revenue
+    and gross-margin figures underlying this archetype call, rest on cross-corroborated secondary sourcing
+    rather than direct filing inspection.
+disclosed_evidence_conflicts:
+- 'The April 2026 Hua Hong export-restriction revenue impact is unreconciled: one secondary source relays
+  a company characterization of ''fairly immaterial,'' while another cites a possible $300-350M estimate
+  of unclear (company-stated vs. analyst-estimated) origin.'
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-3
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#KLAC
+content_sha256: 21edd290053ddf9568da65bc034ec92a4f5fb922aa40a2b547fdb75b6a45bb98

@@ -1,0 +1,29 @@
+schema_version: '1.0'
+ticker: ISRG
+primary_archetype: A
+secondary_archetype: null
+rationale: Intuitive Surgical's revenue growth is driven predominantly by an expanding installed base
+  (da Vinci systems +12% to 11,710; Ion systems +21% to 1,096) generating recurring, procedure-linked
+  instrument/accessory and service revenue that grew at rates comparable to systems sales in Q2 2026 (instruments
+  +18%, service approximately +21%, systems +19%) -- a durable, high-incremental-margin, installed-base/network-economics
+  model consistent with archetype A rather than a pure capital-equipment or early-stage business. The
+  company is not disclosed as organized into multiple reportable segments with materially different economics
+  -- both da Vinci and Ion apply the same systems-plus-recurring-revenue model -- so a diversified/multi-segment
+  (F) treatment is not supported by the disclosed evidence. Balance-sheet strength ($8.63B cash and investments
+  against $2.58B total liabilities) further supports a stable, cash-generative platform reading rather
+  than an early-stage or cyclical one.
+evidence_quality:
+  primary_source_coverage: comprehensive
+  uncertainty_statement: Newly-disclosed competitive developments (J&J's OTTAVA reportedly receiving FDA
+    De Novo market authorization on 2026-07-22) are sourced only secondarily (TechTimes, MassDevice, FierceBiotech)
+    and have not been confirmed against a primary FDA or company source, so the near-term competitive-entry
+    picture may be understated or overstated.
+disclosed_evidence_conflicts: null
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-2
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#ISRG
+content_sha256: b8687c6da1e0c40f8204924e79e234919519b1832c7ed625d1c98619aa4d0a58
