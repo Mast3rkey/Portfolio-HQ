@@ -200,9 +200,10 @@ to extract or reference any individual company's actual field values; and this p
 itself. **Explicitly not a permitted evidence source for this study**: any individual company's
 actual financial statements, disclosures, share price, market capitalization, analyst estimate, or
 Company Intelligence record content; `targets.yaml`, `holdings.yaml`, `gates.yaml`, or
-`issuer_lookthrough.yaml` field values (structure may be read for the RQ4 evidence-category question
-only, per above); any chart, screenshot, or technical-analysis source (§3); any brokerage, Alpaca, or
-live-market-data feed.
+`issuer_lookthrough.yaml` field values, structure included — these four files are barred outright,
+with no RQ4 or other carve-out (the only structural-read permission in this section applies solely
+to the Company Intelligence schema, above); any chart, screenshot, or technical-analysis source (§3);
+any brokerage, Alpaca, or live-market-data feed.
 
 ## 7. Evaluation design — bounded, closed matrix (the "trial" mechanism for this study)
 

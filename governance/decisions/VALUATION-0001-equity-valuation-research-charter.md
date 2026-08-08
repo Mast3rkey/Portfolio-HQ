@@ -167,7 +167,7 @@ exact hash inserted here — both this decision and the protocol are filed toget
 governance PR:
 
 - `research/equity_valuation_study/PROTOCOL_V1.md`
-  SHA-256: `80aee45dbdc766d96625ce65887a85b7579658d5cf5b3d39dc7a1a0f1e35c995`
+  SHA-256: `2948e4a852330fdbb649dc67a0cf317ef91119af21e053659fcd5a3709a10980`
 
 After merge, the hash is verified from the committed blob (`git show <merge>:research/
 equity_valuation_study/PROTOCOL_V1.md | sha256sum`). **No methodology-comparison research,
@@ -398,3 +398,31 @@ valuation has been computed, no methodology has been selected, no company has be
 production behavior has changed by this filing.
 
 This decision becomes effective only when its implementing pull request merges to `main`.
+
+### Correction history (this filing, same PR)
+
+**Bounded correction, independent exact-head review `pullrequestreview-4888034268` of head
+`be2ca335435a750c5f2359a8c7035274826ea203`, one finding, 0 BLOCKING / 0 MAJOR / 1 MINOR / 1
+non-actionable NOTE:** the review independently re-read `research/equity_valuation_study/PROTOCOL_V1.md`
+§6 in full and found an internal cross-reference error — the clause barring `targets.yaml`,
+`holdings.yaml`, `gates.yaml`, and `issuer_lookthrough.yaml` field values as evidence carried a
+parenthetical, "(structure may be read for the RQ4 evidence-category question only, per above)," whose
+"per above" back-reference actually points to the immediately preceding Company Intelligence schema
+sentence, not to anything said about these four files — RQ4 (§2) is defined solely in terms of the
+Company Intelligence schema and makes zero mention of these four files anywhere. As written, a future
+implementer could misread the parenthetical as authorizing a structural read of four live production
+config files for a purpose RQ4 never asks about. **Resolved** by removing the ambiguous parenthetical
+and replacing it with an explicit statement that these four files are barred outright, structure
+included, with the sole structural-read permission in §6 confirmed to apply only to the Company
+Intelligence schema. This is a narrow, bounded wording correction inside §6 only — it does not touch
+§2/§4/§5/§7/§14 or any other prohibition list, all of which the review independently confirmed were
+already unambiguous. Because the corrected protocol's bytes differ from the originally filed version,
+its SHA-256 changes and is re-pinned in full above (§3): **old hash**
+`80aee45dbdc766d96625ce65887a85b7579658d5cf5b3d39dc7a1a0f1e35c995` → **new hash**
+`2948e4a852330fdbb649dc67a0cf317ef91119af21e053659fcd5a3709a10980`, independently reproducible via
+`sha256sum research/equity_valuation_study/PROTOCOL_V1.md` at the corrected head. No research question,
+methodology family, archetype category, matrix cell, closed vocabulary, absolute prohibition, or
+`VALUATION-0001`/`WS-0015` authority is changed by this correction. The review's own non-actionable
+NOTE (directional methodology-fit framing embedded in §5's archetype descriptions) is carried forward
+unresolved and non-actionable, per the review's own explicit finding that it is not a defect. Requires
+its own fresh independent exact-head delta review before this PR may be considered ready.
