@@ -37,6 +37,33 @@ unchanged by this correction — the corrected population of ten is derived dire
 own text, not from the original eight-item authorizing-prompt list, which this correction supersedes as
 the controlling source for population size.
 
+**Second bounded correction (same day, this PR).** A fresh independent exact-head delta review of the
+first correction's own head (`a8020e1ae097e6ea31ce8e86a673c8af948aae40`) confirmed the MAJOR above
+genuinely resolved and every other boundary in this artifact untouched and intact, but found two new
+MINOR findings, 0 BLOCKING, 0 MAJOR. **MINOR-1, resolved**: the decision file's own "Why the
+overlap-model dimensions stay ten separate records" paragraph — heading already corrected — still read
+"**Eight** independently evidenced, independently abstaining records..." two lines below, a
+same-paragraph contradiction directly contradicting this section's own completeness claim above ("every
+'eight'/'eight-dimension' reference... is corrected to 'ten'"). Fixed: "Eight" → "Ten," in the decision
+file only (this artifact never had that specific line). **MINOR-2, resolved**: §6.1's liquidity-exclusion
+paragraph originally argued liquidity needs no dimension because it's "already represented per-instrument"
+with "no existing... mechanism to extend... inventing one here would be... asset-specific-judgment
+content" — the review correctly identified this as indistinguishable from the reasoning that had just
+justified adding the other two dimensions (both `geographic_currency_exposure` and `whole_portfolio_
+volatility_drawdown_concentration` also lack an aggregation mechanism, and were resolved by adding a pure
+`interface_placeholder` rather than treating the absence of a mechanism as a reason to add nothing).
+Replaced §6.1's liquidity paragraph with the textually-grounded distinction the review itself surfaced:
+`XASSET-0001` §F phrases liquidity at the **per-sleeve** level ("how quickly *each sleeve* can be
+converted to cash"), already fully answered by the three existing per-instrument liquidity axes, while
+items 4 and 6 are phrased at the **whole-portfolio/cross-sleeve** level (item 6 explicitly: "across the
+whole portfolio, not sleeve-by-sleeve in isolation"; item 4 inherently, since geographic/currency
+exposure spans multiple sleeves) — a distinction in kind, not degree, and the genuine reason liquidity
+gets no placeholder while the other two do. The identical fix was mirrored in the decision file's own
+shorter summary of this rationale. Neither fix touches functional-doctrine content, the GLD structural-
+reference/hash mechanism, the `DEBT_REDUCTION` split, or the validator/test specification (§7/§8
+unchanged by this second correction). The original NOTE above is carried forward unchanged — the review
+explicitly confirmed it was neither worsened nor resolved by either correction round.
+
 ---
 
 ## 1. Why one artifact covers both architectures
@@ -428,15 +455,23 @@ id` anywhere in this design, undisclosed. This section is corrected to add both 
 following the identical `interface_placeholder` pattern already used for `crypto_correlation_interface`/
 `defensive_offset_interface` — a small, bounded, same-shape extension, not a redesign.
 
-`XASSET-0001` §F's ninth item, liquidity, remains deliberately **not** a dimension of its own here — it
-is already represented per-instrument (the ETF framework's `liquidity` axis, the crypto framework's
-`liquidity_and_market_structure` axis, and this filing's own `liquidity_character` axis, §3.2) and a
-whole-portfolio liquidity rollup has no existing mechanism to extend yet (unlike, e.g., `sleeve_
-concentration`'s direct reuse of `targets.yaml`'s own weights) — inventing one here would be exactly the
-kind of asset-specific-judgment content this design-only filing is not authorized to perform. This is a
-disclosed, deliberate scoping choice, not a silent omission — restated explicitly here precisely because
-the review that found the other two gaps makes clear that "adequately covered elsewhere" must be argued,
-not assumed.
+`XASSET-0001` §F's ninth item, liquidity, remains deliberately **not** a dimension of its own here — and
+the reason is a textual distinction in §F itself, not merely "already represented elsewhere" (a rationale
+an earlier version of this paragraph gave, which an independent review correctly found indistinguishable
+from the reasoning that justified adding the other two dimensions below, and which this paragraph no
+longer relies on). §F phrases liquidity specifically at the **per-sleeve** level — "how quickly *each
+sleeve* can be converted to cash without material value loss" — a question the three existing
+per-instrument liquidity axes already fully answer (the ETF framework's `liquidity` axis, the crypto
+framework's `liquidity_and_market_structure` axis, and this filing's own `liquidity_character` axis,
+§3.2): §F asks no *whole-portfolio rollup* question about liquidity the way it explicitly does for items
+4 and 6. That is the genuine distinction from `geographic_currency_exposure` and `whole_portfolio_
+volatility_drawdown_concentration` below: §F phrases item 6 explicitly at the whole-portfolio/cross-sleeve
+level ("across the whole portfolio, not sleeve-by-sleeve in isolation"), and item 4 inherently so —
+geographic/currency exposure spans multiple sleeves (VEA/VWO plus any future international instrument)
+rather than describing any single sleeve's own character — so both genuinely lack a mechanism this design
+must at least name a placeholder for, while liquidity's own §F framing never asks for one. This is a
+disclosed, deliberate scoping choice grounded in §F's own text, not an assumption that liquidity is
+merely "covered elsewhere."
 
 **Every one of the ten named dimensions is preserved as its own separate record — none is merged with
 another, and none is dropped.** This is a deliberate divergence from the merge-where-redundant method §2

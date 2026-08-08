@@ -130,6 +130,28 @@ the review's own characterization — the corrected population of ten is derived
 §F's own controlling text, which supersedes the original eight-item authorizing-prompt list as the source
 of population size. Full correction narrative in the supporting artifact §0.
 
+**Second bounded correction, independent exact-head delta review of head
+`a8020e1ae097e6ea31ce8e86a673c8af948aae40`, two findings, 0 BLOCKING / 0 MAJOR / 2 MINOR / 1
+non-actionable NOTE carried forward:** confirmed the first correction's MAJOR genuinely resolved and every
+other boundary (functional-doctrine schema, `hard_constraint_status`/`economic_assessment_readiness`
+separation, GLD hash mechanism, `DEBT_REDUCTION` split, no-composite-score rule, protected-path isolation)
+untouched and intact, but found two narrow textual defects. **MINOR-1, resolved**: this decision file's
+own "Why the overlap-model dimensions stay ten separate records" paragraph — heading already corrected —
+still read "**Eight** independently evidenced, independently abstaining records..." two lines below, a
+same-paragraph contradiction; the exact stale-reference defect class the first correction was meant to
+eliminate, one instance short of complete. Fixed: "Eight" → "Ten." **MINOR-2, resolved**: §6.1's (and this
+file's mirrored) liquidity-exclusion rationale argued "already represented per-instrument, no aggregation
+mechanism, inventing one would be asset-specific-judgment" — the review correctly found this
+indistinguishable from the reasoning that justified adding the other two dimensions (both also lack an
+aggregation mechanism, and were resolved by adding a placeholder, not by treating the absence as a reason
+to add nothing). Replaced with the review's own suggested, textually-grounded distinction: `XASSET-0001`
+§F phrases liquidity at the **per-sleeve** level, already answered by three existing per-instrument
+liquidity axes, while items 4 and 6 are phrased at the **whole-portfolio/cross-sleeve** level — a
+distinction in kind, not degree. Neither fix touches functional-doctrine content, the GLD mechanism, or
+the validator/test specification. The original NOTE is carried forward unchanged, per the review's own
+explicit confirmation that it was neither worsened nor resolved. Full correction narrative in the
+supporting artifact §0.
+
 ## Decision
 
 This filing does three things, in one bounded PR:
@@ -175,10 +197,11 @@ This filing does three things, in one bounded PR:
    explicitly marked `not_yet_computable_interface_only` where no such mechanism exists yet (crypto
    cross-correlation, defensive-offset, geographic/currency-exposure aggregation, whole-portfolio
    volatility/drawdown aggregation) — never a new measurement invented by this design. §F's ninth item,
-   liquidity, is deliberately not a dimension of its own — already represented per-instrument in the
-   ETF/crypto/functional-doctrine schemas, with no existing whole-portfolio rollup mechanism to extend, a
-   disclosed scoping choice, not a silent omission. Full field-by-field detail in the supporting artifact
-   §6.
+   liquidity, is deliberately not a dimension of its own — §F phrases it at the per-sleeve level ("how
+   quickly each sleeve can be converted to cash"), a question the three existing per-instrument liquidity
+   axes already answer, unlike items 4 and 6, which §F phrases at the whole-portfolio/cross-sleeve level
+   and which therefore do need a placeholder. A disclosed scoping choice grounded in §F's own text, not a
+   silent omission. Full field-by-field detail in the supporting artifact §6.
 
 Both the functional-doctrine schema and the overlap-model schema carry **zero numeric fields of any
 kind** — stricter than the ETF framework's one disclosed-fact carve-out (`expense_ratio_pct`), matching
@@ -262,7 +285,7 @@ design direction is explicit: "Preserve these as separate dimensions. NO composi
 A composite score would itself be exactly the kind of "hidden scoring" `TIER-0009`, `recommendation_
 validator.py`, and every classification framework in this repository since `TIER-0002` has been built to
 prohibit — and would silently pre-empt the cross-asset opportunity-cost synthesis `XASSET-0001` §E
-reserves to its own separate, later, undesigned unit. Eight independently evidenced, independently
+reserves to its own separate, later, undesigned unit. Ten independently evidenced, independently
 abstaining records give a future synthesis unit exactly the raw material it needs without this design
 performing any part of that synthesis itself.
 
