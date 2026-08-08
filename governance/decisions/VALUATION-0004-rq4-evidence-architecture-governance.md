@@ -293,15 +293,15 @@ pre-select comparators.
 
 The schema must support, per company: named scenario variables and their evidence basis; a provenance
 label from the closed §F.2 four-value vocabulary for every scenario input; and an explicit "unable to
-determine a defensible scenario set" abstention. Consistent with `VALUATION-0002` §3's own RQ3
-elaboration for archetype E ("every scenario's probability weight must itself carry a provenance
-label... an undisclosed or unlabeled probability weight reintroduces exactly the false precision this
-specification exists to prevent"), the schema's scenario-probability field, wherever the future
-implementation places it, must be structurally present but is **not populated with any value for any
-company by this decision or by the schema/validator implementation it authorizes** (§P) — assigning an
-actual probability weight to an actual scenario for an actual company is real-company valuation-relevant
-judgment, not scaffold structure, and remains its own future, separately authorized population/
-application step.
+determine a defensible scenario set" abstention. Consistent with the report's own RQ3 elaboration for
+archetype E (`METHODOLOGY_EVALUATION_REPORT.md` §6, adopted by reference via `VALUATION-0002` §3, not
+restated there in full: "every scenario's probability weight must itself carry a provenance label... an
+undisclosed or unlabeled probability weight reintroduces exactly the false precision this specification
+exists to prevent"), the schema's scenario-probability field, wherever the future implementation places
+it, must be structurally present but is **not populated with any value for any company by this decision
+or by the schema/validator implementation it authorizes** (§P) — assigning an actual probability weight
+to an actual scenario for an actual company is real-company valuation-relevant judgment, not scaffold
+structure, and remains its own future, separately authorized population/application step.
 
 ### L. Segment / sum-of-the-parts (SOTP) evidence — structure only, no SOTP performed
 
@@ -309,10 +309,11 @@ The schema must support, per company, a list of disclosed business segments, eac
 level revenue, profit, and cash-flow evidence where disclosed; shared or unallocated cost evidence;
 intersegment-elimination evidence; and a segment-level abstention (**segment data unavailable or
 insufficiently granular**) where a company does not disclose segment-level detail adequate to populate
-the above. This directly supports `VALUATION-0002` §3's own archetype-F elaboration ("a segment-level
-sum-of-the-parts output must disclose each segment's own range and assumptions ledger separately") for
-a future application phase — **this decision performs no sum-of-the-parts valuation of any kind for any
-company.**
+the above. This directly supports the report's own archetype-F elaboration
+(`METHODOLOGY_EVALUATION_REPORT.md` §6, adopted by reference via `VALUATION-0002` §3, not restated
+there in full: "a segment-level sum-of-the-parts output must disclose each segment's own range and
+assumptions ledger separately") for a future application phase — **this decision performs no
+sum-of-the-parts valuation of any kind for any company.**
 
 ### M. Lane M — PR #279 (`VALUATION-0003`-authorized archetype-assignment implementation) lifecycle,
 independently re-verified and recorded
@@ -614,6 +615,27 @@ own Rationale explicitly cites as the model for this exact situation.
   (§I) reserves this to later application policy, and doing so here would exceed a design-governance
   filing's own bounded scope into methodology-application territory `VALUATION-0002` §6.3 already
   reserves for a separate, later, explicitly authorized unit.
+
+## Bounded Correction (same day, this PR)
+
+An independent exact-head review of the original head (`4d25b71de4a0d6edb609618261832439fbb1bb85`)
+returned **CHANGES REQUIRED** — 0 BLOCKING / 0 MAJOR / 1 MINOR / 0 NOTE. **MINOR, resolved**: §K and §L
+each quoted report text (`METHODOLOGY_EVALUATION_REPORT.md` §6's archetype-E scenario-probability-weight
+elaboration and archetype-F segment-level-range elaboration, respectively) but attributed the quoted
+words to `VALUATION-0002` §3 as its "own" elaboration. Independently re-verified: neither quoted passage
+appears anywhere in `VALUATION-0002`'s own text — `VALUATION-0002` §3 itself states plainly that these
+report elaborations are "adopted by reference to the report's own text, not restated here in full." Both
+citations are corrected to attribute the quoted words to the report directly, while preserving the
+unchanged, correct authority chain (the report's own text, adopted by reference through `VALUATION-0002`
+§3). No doctrine substance, RQ4 closure semantics, schema architecture, implementation authority,
+provenance vocabulary, false-precision rule, discount-rate boundary, peer/scenario/SOTP rule, Lane M
+fact, `WS-0015` scope, or whole-universe boundary is changed by this correction — it is a citation-
+accuracy fix only, confined to §K and §L. Full validation re-run clean at the corrected head (focused
+decision-catalog tests, decision-catalog reconciliation, repo-wide YAML/YML and JSON parsing,
+`git diff --check`, exact changed-file inventory, protected-path scan, and prohibited-scope scan — no
+code, schema, or test file changed by this correction, so the full `pytest` suite was not re-run; see the
+PR's own validation record). Requires its own fresh independent exact-head delta review before this PR
+may be considered ready.
 
 ## Consequences
 
