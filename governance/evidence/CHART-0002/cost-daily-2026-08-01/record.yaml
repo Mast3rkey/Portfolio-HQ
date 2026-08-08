@@ -82,7 +82,7 @@ content:
   - 'Watermark text: "nichmasters created with TradingView.com, Aug 01, 2026 16:43 UTC-4"'
   - 'Large semi-transparent overlay text: "COST, 1D"'
   - 'Company-name watermark beneath it: "Costco Wholesale Corporation"'
-  - Right-side price axis labeled in $20 increments; visible legibly from 1,120.00 at the top down through
+  - Right-side price axis labeled in $20 increments; visible legibly from 1,220.00 at the top down through
     720.00 near the bottom of the volume panel -- no cropping is present anywhere in this visible range
   - Dotted line labeled "High 1,096.50"
   - Dotted line labeled "Low 844.06"
