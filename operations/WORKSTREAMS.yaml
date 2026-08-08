@@ -9257,6 +9257,55 @@ workstreams:
         pr: 273
         status: in_progress
         date: "2026-08-08"
+      - gate: xasset0005-implementation-post-merge-verification
+        description: >
+          Lane M factual synchronization, folded into this equity-valuation
+          research-charter filing (VALUATION-0001) per OPS-0009/OPS-0008
+          §4(a)'s established read-only-by-default convention (matching
+          XASSET-0005's own identical synchronization of XASSET-0004's gate,
+          and the same TIER-0002/REL-0002-REL-0006/PI-0039/REL-0007/
+          TIER-0007/TIER-0009/TIER-0011/XASSET-0002/XASSET-0003/XASSET-0004
+          chain). The gate immediately above
+          (xasset0005-functional-doctrine-and-overlap-architecture-design,
+          status: in_progress, pr: 273) is accurate as originally filed but
+          stale — independently re-confirmed this session via the GitHub
+          API, not assumed: PR #273's accepted head
+          8415c82ec82bbd4a99a1c0961184200290945350; three independent
+          reviews — pullrequestreview-4887790034 (CHANGES REQUIRED, 0
+          BLOCKING / 1 MAJOR / 0 MINOR / 1 non-actionable NOTE, the
+          overlap-model nine-vs-eight-dimension coverage-gap finding),
+          pullrequestreview-4887859729 (CHANGES REQUIRED, 0 BLOCKING / 0
+          MAJOR / 2 MINOR / 1 non-actionable NOTE), and
+          pullrequestreview-4887894742 (APPROVED FOR PRINCIPAL EXACT-HEAD
+          ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR / 1 non-actionable
+          NOTE, at exact head 8415c82e...) — this last review is the
+          correct, real final review; a previously-circulated identifier,
+          pullrequestreview-4887997383, does not exist anywhere in this
+          PR's review history and must not be propagated; principal
+          acceptance (issuecomment-5224205559, accepted head
+          8415c82ec82bbd4a99a1c0961184200290945350); merge (merge commit
+          1921864326f2cc75609b1c91037c24e333c4e3d0, parents
+          e5446cd5c4bfce744691fd1914ec8ef098286839 and
+          8415c82ec82bbd4a99a1c0961184200290945350, both independently
+          re-confirmed via git show, merge-tree confirmed byte-identical to
+          the accepted head's own tree — zero drift at merge); merge-commit
+          CI independently re-fetched — workflow run 31236387352, job
+          93049536968, status: completed / conclusion: success, head_sha
+          matching exactly. Local HEAD, origin/main, and GitHub main
+          independently re-confirmed identical at
+          1921864326f2cc75609b1c91037c24e333c4e3d0 before this charter
+          session's own first edit. Full repository pytest independently
+          re-run this session: 3341 passed, 0 failed, matching the expected
+          post-merge baseline exactly. WS-0014 steps 6-7 (cash/reserve/GLD/
+          debt functional doctrine plus overlap and concentration-model
+          architecture design, §I items 8-9 / §J step 6-7) are therefore
+          complete and merged. The original gate's own text above is left
+          unedited, per this repository's established convention of never
+          rewriting a prior filing's own historical description — only this
+          additive gate records the confirmed post-merge state.
+        pr: 273
+        status: complete
+        date: "2026-08-08"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -9334,9 +9383,9 @@ workstreams:
       and steps 8 through 13 remain blocked on their own future, separate,
       explicit principal authorization each — none is authorized to begin
       by this entry or by steps 1/3/4/5/XASSET-0005's own work.
-    active_branch: claude/xasset-0005-doctrine-overlap-l1dd71
-    active_pr: 273
-    last_verified_main_sha: e5446cd5c4bfce744691fd1914ec8ef098286839
+    active_branch: null
+    active_pr: null
+    last_verified_main_sha: 1921864326f2cc75609b1c91037c24e333c4e3d0
     last_verified_date: "2026-08-08"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
@@ -9432,5 +9481,126 @@ workstreams:
       not reopened. This directive is implemented by XASSET-0005 (draft,
       unmerged, this session) — see that decision file and its supporting
       artifact for the full specification.
+    supersedes: null
+    superseded_by: null
+  - id: WS-0015
+    title: Equity Valuation and Economic-Assessment Research (VALUATION-0001)
+    objective: >
+      Track VALUATION-0001's bounded, pre-registered, hash-pinned research
+      charter closing the gap TIER-0009 §K identified: no governed equity
+      valuation or economic-assessment methodology exists anywhere in this
+      repository, forcing target_and_range/maximum_position_size to
+      primary_status: valuation_required on all 27 canonical equities.
+      VALUATION-0001 authorizes a closed, literature-grounded comparison of
+      seven candidate valuation-methodology families against seven
+      candidate business-economics archetype categories (a 49-cell closed
+      matrix, four-value disposition vocabulary — never a numeric score),
+      answering whether archetype-differentiated methodology is required
+      and what evidence-quality/false-precision protections a future
+      application phase must carry. Equity only — ETF, crypto, GLD,
+      cash/reserve, and debt-reduction valuation/economic-assessment
+      methodology remain separately governed under WS-0014/XASSET-0001
+      §C/§D, unaffected by this workstream. This workstream records that
+      the study is authorized, not yet run; implementation has not begun;
+      no valuation of any real company exists or is authorized; no current
+      policy change or trade recommendation exists; independent review and
+      principal acceptance of the governance PR are required before this
+      authorization is effective.
+    governing_authority:
+      - governance/decisions/VALUATION-0001-equity-valuation-research-charter.md
+      - research/equity_valuation_study/PROTOCOL_V1.md (pinned SHA-256, VALUATION-0001 §3)
+      - governance/decisions/TIER-0009-ws0005-milestone8-policy-recommendation-framework-authorization.md (§K — the gap this charter closes)
+      - governance/decisions/OPS-0007-capability-based-review-provisional-allocation-bridge.md (review standard)
+      - governance/decisions/OPS-0009-lean-delivery-review-lifecycle-v1.md (Lane G)
+      - governance/decisions/OPS-0001-portfolio-hq-workstream-register.md (recording only)
+    status: proposed
+    priority: secondary
+    dependencies: []
+    authorized_scope: >
+      None yet — effective only upon VALUATION-0001's governance PR
+      merging. Even then, exactly VALUATION-0001 §1/§4's bounded charter
+      grant: execution of research/equity_valuation_study/PROTOCOL_V1.md's
+      frozen four-research-question, seven-methodology-family,
+      seven-archetype-category, 49-cell closed-matrix study, plus one
+      later, separate implementation PR limited to VALUATION-0001 §4's
+      approved files (research/equity_valuation_study/**, one output
+      report, focused tests only if the implementation's own scope
+      introduces a parseable artifact warranting one). No production file
+      may be created or modified under this workstream. No valuation of
+      any real company, no archetype-category assignment of any real
+      company, and no historical backtest of any kind may be performed
+      under this workstream, ever, per the protocol's own §1/§3/§12.
+    prohibited_scope: >
+      Any allocate.py/levels.py/margin_state.py change; any
+      targets.yaml/holdings.yaml/gates.yaml/issuer_lookthrough.yaml
+      change; any dashboard integration; any Company/Theme/relationship/
+      classification/reconciliation/recommendation Intelligence record
+      creation or edit; any valuation, fair value, price target, or
+      expected return for any real company, including an "illustrative"
+      application of any methodology family; any archetype-category
+      assignment of any real, named canonical-roster company; any
+      historical backtest of a valuation methodology's output against
+      subsequent stock-price performance, under any framing (predictive
+      research, permanently prohibited by CLAUDE.md's Guardrails); any
+      chart, technical-indicator, or screenshot-derived input of any kind;
+      any resolution of TIER-0009's valuation_required status on any
+      equity; any ETF/crypto/GLD/cash-reserve/debt-reduction valuation or
+      economic-assessment methodology content of any kind (that remains
+      WS-0014/XASSET-0001 §C/§D's own separate scope, unaffected by this
+      workstream); any cash or margin deployment; any Constitution change;
+      any Intelligence-to-allocator coupling; any automated scoring or
+      ranking; any consumption of MARGIN-0005's or LADDER-0001's trial
+      budget or any change to either charter; any research execution
+      before VALUATION-0001's governance PR merges and its pinned protocol
+      hash verifies.
+    milestones:
+      - gate: governance-pr-drafted
+        description: >
+          VALUATION-0001 filed (governance decision file plus
+          research/equity_valuation_study/PROTOCOL_V1.md, hash-pinned),
+          governance/decisions.yaml and the CLAUDE.md Decisions Log
+          pointer updated, this register entry added, and PR #273's
+          (XASSET-0005) full merge lifecycle independently re-verified and
+          recorded as an additive Lane M gate on the WS-0014 entry
+          immediately above. holdings.yaml, targets.yaml, gates.yaml,
+          issuer_lookthrough.yaml, allocate.py, levels.py, margin_state.py,
+          and every existing intelligence/** record confirmed byte-
+          identical to origin/main at filing time (this filing does not
+          touch any of them).
+        pr: null
+        status: drafted
+        date: "2026-08-08"
+    evidence_refs:
+      - governance/decisions/VALUATION-0001-equity-valuation-research-charter.md
+      - research/equity_valuation_study/PROTOCOL_V1.md
+      - governance/decisions/TIER-0009-ws0005-milestone8-policy-recommendation-framework-authorization.md
+    next_action: >
+      Independent, exact-head review of VALUATION-0001's governance PR
+      under OPS-0007 §1's capability-based standard (OPS-0009 Lane G —
+      full weight, no reduction), followed by any required bounded
+      correction, exact-head re-review, and explicit principal acceptance
+      before the PR may be marked ready and merged. No implementation
+      work and no methodology-comparison research may begin before that
+      merge and the pinned protocol hash's post-merge verification.
+    completion_criteria: >
+      Not met. Requires, at minimum: VALUATION-0001 merged with its
+      pinned hash verified; a later, separate implementation PR executing
+      PROTOCOL_V1.md exactly (the complete 49-cell matrix, all four
+      research-question findings, the required limitations section),
+      itself independently reviewed and principal-accepted; and — only if
+      a future application phase is ever separately proposed and
+      accepted — its own further, separate governance decision before any
+      methodology is selected, adopted, or applied to a real company
+      (VALUATION-0001 §5, protocol §14/§15 — no result automatically
+      changes policy).
+    blocker: >
+      VALUATION-0001's governance PR has not yet been independently
+      reviewed or principal-accepted. No implementation PR may open until
+      it merges.
+    active_branch: claude/valuation-0001-research-charter-xg2jz8
+    active_pr: null
+    last_verified_main_sha: 1921864326f2cc75609b1c91037c24e333c4e3d0
+    last_verified_date: "2026-08-08"
+    authorized_by: null
     supersedes: null
     superseded_by: null
