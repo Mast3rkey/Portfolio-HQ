@@ -9026,6 +9026,77 @@ workstreams:
         pr: 271
         status: in_progress
         date: "2026-08-07"
+      - gate: xasset0004-post-merge-verification
+        description: >
+          Lane M factual synchronization, folded into this crypto classification
+          implementation filing per OPS-0009/OPS-0008 §4(a)'s established
+          read-only-by-default convention (matching XASSET-0003's/XASSET-0004's own
+          identical synchronization pattern for the immediately-preceding merged PR,
+          and the TIER-0002/REL-0002-REL-0006/PI-0039/REL-0007/TIER-0007/TIER-0009/
+          TIER-0011/XASSET-0002/XASSET-0003 chain). The gate immediately above
+          (xasset0004-crypto-classification-content-authorization, status:
+          in_progress, pr: 271) is accurate as originally filed but stale —
+          independently re-confirmed this session via the GitHub API, not assumed:
+          PR #271 accepted at head 8341b428c51b9a83878ec3ab81bdf5a613945b20;
+          independent exact-head review (pullrequestreview-4887313482); principal
+          acceptance (issuecomment-5223248900, accepted head
+          8341b428c51b9a83878ec3ab81bdf5a613945b20); merge (merge commit
+          7b9af50af001ed0db5933a6d65b18b19f9952ffc, merge-tree byte-identical to the
+          accepted head); merge-commit CI (workflow run 31227835940, job
+          93025582179, status: completed / conclusion: success). Local HEAD,
+          origin/main, and GitHub main independently re-confirmed identical at
+          7b9af50af001ed0db5933a6d65b18b19f9952ffc before this implementation
+          session's own first edit. XASSET-0004 is therefore effective and its
+          authorization (one future, separate, bounded crypto classification
+          implementation PR covering BTC/ETH/SOL) is live. The original gate's own
+          text above is left unedited, per this repository's established convention
+          of never rewriting a historical gate description in place.
+        pr: 271
+        status: complete
+        date: "2026-08-08"
+      - gate: xasset0004-crypto-classification-implementation
+        description: >
+          The one future crypto classification implementation PR XASSET-0004 §A
+          authorized: sealed classification records for all three canonical crypto
+          destinations (BTC, ETH, SOL — ZORA/WIF/BONK/PEPE/HYPE explicitly excluded,
+          reconfirmed absent from targets.yaml's destination: list and
+          holdings.yaml's crypto_shares: block this session) under the exact
+          seven-field schema, evidence standard, judgment-before-mechanical-rollup
+          sequencing, blindness/contamination boundary, forced
+          cross_coin_correlation_status: not_yet_measured default (no new
+          correlation study or numeric coefficient of any kind), shared
+          cross-asset-handoff envelope, and forced valuation_required state
+          XASSET-0002's supporting artifact specifies, bound by reference per
+          XASSET-0004 §B's table. Delivers intelligence/crypto_classification/
+          {BTC,ETH,SOL}.yaml, COHORT_MANIFEST.yaml, crypto_classification_
+          validator.py (closed schema at every level, exact three-instrument
+          population enforcement with explicit ZORA/WIF/BONK/PEPE/HYPE rejection,
+          no equity/ETF-field leakage, no numeric field of any kind — unlike the
+          ETF schema's one permitted expense_ratio_pct, this schema authorizes zero
+          numeric fields — independent chart-terminology and directive-language
+          scans built in from the start, a forced cross_coin_correlation_status
+          check, zero allocate.py/margin_state.py import coupling), test_crypto_
+          classification_validator.py (133 focused tests), and one retained
+          narrative audit (governance/audits/WS0014_CRYPTO_CLASSIFICATION_
+          IMPLEMENTATION_20260808.md) documenting the full evidence-gathering
+          methodology (every primary protocol-documentation domain attempted and
+          blocked by this environment's network egress policy — bitcoin.org,
+          ethereum.org, solana.com, www.coingecko.com — all evidence gathered via
+          WebSearch aggregation and disclosed as such, matching this repository's
+          own extensively disclosed prior access-failure pattern, plus CLAUDE.md's
+          own Portfolio Doctrine section directly inspected as the primary source
+          for each coin's actual Robinhood custody arrangement), per-coin
+          classification results, the correlation/volatility and valuation
+          boundaries confirmed observed, and full validation results. Zero equity
+          or ETF content touched, zero valuation output, zero tier/target/holdings/
+          gate/cluster/cap/allocator/margin/ladder/order/trade change; no new
+          governance decision filed (matching the TIER-0005→Milestone-6-
+          implementation and XASSET-0003→PR-#270 precedent — decision catalog
+          unchanged at 93, issues == ()). No claim of acceptance, readiness, merge,
+          or completion; awaiting a fresh independent exact-head review.
+        pr: null
+        status: in_progress
+        date: "2026-08-08"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -9036,20 +9107,22 @@ workstreams:
       - governance/decisions/XASSET-0003-ws0014-etf-classification-content-authorization.md
       - governance/audits/WS0014_ETF_CLASSIFICATION_IMPLEMENTATION_20260807.md
       - governance/decisions/XASSET-0004-ws0014-crypto-classification-content-authorization.md
+      - governance/audits/WS0014_CRYPTO_CLASSIFICATION_IMPLEMENTATION_20260808.md
     next_action: >
-      This crypto classification content authorization PR (XASSET-0004)
-      requires its own full independent exact-head review under OPS-0007 §1,
-      any required bounded correction and re-review, explicit principal
-      acceptance, merge, and post-merge verification before the
-      xasset0004-crypto-classification-content-authorization gate may be
-      marked complete (the "status: in_progress"/"pr: null" above is not an
-      oversight — this session does not mark its own unmerged work complete).
-      Once merged, it authorizes exactly one future, separate, bounded
-      crypto classification implementation PR covering BTC/ETH/SOL under
-      XASSET-0002's already-accepted framework — no evidence gathering, no
-      classification, and no validator implementation occurs in the
-      authorization filing itself. Step 2 and steps 6 through 12 remain
-      blocked on their own future, separate, explicit principal
+      XASSET-0004 is merged and effective (see the xasset0004-post-merge-
+      verification gate above). This crypto classification implementation PR
+      (the xasset0004-crypto-classification-implementation gate above, sealed
+      BTC/ETH/SOL records plus validator/tests/audit) requires its own full
+      independent exact-head review under OPS-0007 §1, any required bounded
+      correction and re-review, explicit principal acceptance, merge, and
+      post-merge verification before that gate may be marked complete (the
+      "status: in_progress"/"pr: null" above is not an oversight — this
+      session does not mark its own unmerged work complete). No Milestone-7-
+      style completion determination for step 5 exists yet — that remains a
+      separate, later, explicit principal authorization once this
+      implementation merges, matching the TIER-0005→Milestone-6→TIER-0006
+      and XASSET-0003→PR-#270 precedent. Step 2 and steps 6 through 12
+      remain blocked on their own future, separate, explicit principal
       authorization each.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
@@ -9079,23 +9152,24 @@ workstreams:
       is complete and merged — see the xasset0003-post-merge-verification
       gate above. Step 4 (ETF classification content, §I item 5) is
       complete and merged (PR #270) — see the
-      xasset0003-implementation-post-merge-verification gate above. Step 5
-      (crypto classification content, §I item 7) is in_progress: this
-      session's own draft governance filing (XASSET-0004) authorizes,
-      once merged, exactly one future, separate, bounded crypto
-      classification implementation PR covering BTC/ETH/SOL under
-      XASSET-0002's already-accepted framework — see the
-      xasset0004-crypto-classification-content-authorization gate above —
-      blocked only on its own independent exact-head review, correction if
-      needed, principal acceptance, merge, and post-merge verification.
-      XASSET-0004 itself gathers zero crypto evidence and classifies zero
-      coins. Step 2 and steps 6 through 13 remain blocked on their own
-      future, separate, explicit principal authorization each — none is
-      authorized to begin by this entry or by steps 1/3/4's own work.
-    active_branch: claude/xasset-0004-crypto-auth-p78mjm
-    active_pr: 271
-    last_verified_main_sha: 7441c274f4bfea29da493dc7cfe99373e5f12b17
-    last_verified_date: "2026-08-07"
+      xasset0003-implementation-post-merge-verification gate above.
+      XASSET-0004 (PR #271) is complete and merged — see the
+      xasset0004-post-merge-verification gate above. Step 5 (crypto
+      classification content, §I item 7) is in_progress: this session's own
+      draft implementation PR (the xasset0004-crypto-classification-
+      implementation gate above) delivers sealed BTC/ETH/SOL records,
+      crypto_classification_validator.py, test_crypto_classification_
+      validator.py, and one retained implementation audit — blocked only on
+      its own independent exact-head review, correction if needed, principal
+      acceptance, merge, and post-merge verification, and on a later,
+      separate completion-determination filing once merged. Step 2 and
+      steps 6 through 13 remain blocked on their own future, separate,
+      explicit principal authorization each — none is authorized to begin
+      by this entry or by steps 1/3/4/XASSET-0004's own work.
+    active_branch: claude/btc-eth-sol-classification-snl488
+    active_pr: null
+    last_verified_main_sha: 7b9af50af001ed0db5933a6d65b18b19f9952ffc
+    last_verified_date: "2026-08-08"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively

@@ -1,0 +1,140 @@
+schema_version: '1.0'
+instrument_id: BTC
+asset_type: cryptocurrency
+network_fundamentals:
+  consensus_mechanism: proof_of_work
+  adoption_trend_category: declining_or_stagnant_usage
+economic_model:
+  supply_model: fixed_capped_supply
+  fee_accrual_applicable: false
+  staking_applicable: false
+liquidity_and_market_structure:
+  liquidity_tier: high_liquidity
+  market_structure_notes: Roughly $1.5-1.6 trillion market capitalization (approximately 40% of total
+    cryptocurrency market capitalization) as of early May 2026, with daily spot trading volume that has
+    ranged from roughly $15 billion on quiet sessions to above $80 billion during high-volatility events
+    over the trailing year ($37.5 billion on one specific early-May-2026 data point). Trades across 500+
+    trading platforms globally -- the broadest and deepest exchange-listing footprint of any cryptocurrency
+    covered in this batch.
+custody_and_counterparty_risk:
+  custody_model: exchange_custodied
+  smart_contract_risk_category: base_layer_minimal_smart_contract_surface
+correlation_and_volatility:
+  historical_volatility_category: high_volatility
+  cross_coin_correlation_status: not_yet_measured
+regulatory_and_structural_uncertainty:
+  disclosed_regulatory_matter_exists: true
+  matter_summary_and_citation: On 2026-03-17, the SEC and CFTC jointly issued interpretive guidance formally
+    classifying Bitcoin -- together with 15 other digital assets including Ethereum and Solana -- as a
+    digital commodity rather than a security under federal law, ending a multi-year period of regulatory
+    ambiguity and enabling new ETF product categories. A further, separate formal rulemaking proposal
+    (reported at 400+ pages) was expected within weeks of the guidance to provide additional implementation
+    detail and safe-harbor provisions. The same guidance explicitly does not resolve the CFTC's own regulatory
+    authority over digital-commodity spot markets and intermediaries -- multiple law-firm analyses describe
+    this gap as requiring further rulemaking and, most likely, congressional action to fully resolve.
+  structural_uncertainty_category: disclosed_and_unresolved
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: The primary source attempted for this record (bitcoin.org) was blocked
+    by this environment's network egress policy and could not be directly inspected; every fact below
+    rests on WebSearch-aggregated secondary sources, cross-corroborated across multiple independent outlets
+    where possible. A genuine, disclosed tension exists in the current adoption evidence -- the network's
+    hash rate exceeded 1 exahash/second in mid-2026 (security participation at or near all-time highs),
+    while active-address counts were separately reported at year lows, the lowest level since December
+    2024 -- recorded here as declining_or_stagnant_usage on the specific adoption_trend_category vocabulary
+    (which concerns usage/adoption, not network security), with the security-metric divergence disclosed
+    rather than smoothed over or silently dropped.
+provenance:
+  sources:
+  - source_identifier: Bitcoin.org, "How does Bitcoin work?", bitcoin.org/en/how-it-works
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: attempted_not_directly_inspected
+    limitation: Blocked by this environment's network egress proxy on the bitcoin.org domain.
+  - source_identifier: WebSearch aggregation on Bitcoin's proof-of-work consensus mechanism and network
+      security -- global hash rate exceeded 1 exahash/second in mid-2026; the top five mining pools control
+      more than 75% of hash rate; the network has delivered near-perfect uptime for 17+ years since January
+      2009
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on Bitcoin active-address activity -- active addresses reported
+      at year lows, the lowest level since December 2024
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on Bitcoin's 21 million fixed supply cap and halving schedule
+      -- block subsidy halves every 210,000 blocks (~4 years); the fourth halving occurred April 2024,
+      cutting the block reward from 6.25 to 3.125 BTC; more than 95% of total supply had been mined by
+      early 2026, with the 20 millionth bitcoin mined in March 2026; the final bitcoin is expected to
+      be mined around the year 2140
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation comparing Bitcoin's Script language to Ethereum's smart-contract
+      environment -- Bitcoin Script is deliberately limited and non-Turing-complete, with no loops and
+      no persistent state between executions, used chiefly for multisignature wallets, time-locked transactions,
+      Hash Time-Locked Contracts (the foundation of the Lightning Network), escrow, and Discreet Log Contracts
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on Bitcoin market capitalization and trading volume -- roughly
+      $1.57 trillion market capitalization and approximately 40% market dominance as of May 2, 2026; $37.5
+      billion in daily trading volume on that date; trades across 500+ trading platforms globally
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on the 2026-03-17 SEC/CFTC joint interpretive guidance classifying
+      16 digital assets (including Bitcoin, Ethereum, and Solana) as digital commodities, its disclosed
+      staking-specific interpretation, and its disclosed unresolved gap regarding CFTC authority over
+      digital-commodity spot markets and intermediaries
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: CLAUDE.md, this repository's Portfolio Doctrine section -- confirms the account's
+      actual custody arrangement (Robinhood) for the crypto sleeve, including BTC
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: directly_inspected
+uncertainty_summary: The primary source attempted for this record (bitcoin.org) was blocked by this environment's
+  network egress policy and could not be directly inspected; every fact below rests on WebSearch-aggregated
+  secondary sources, cross-corroborated across multiple independent outlets where possible. A genuine,
+  disclosed tension exists in the current adoption evidence -- the network's hash rate exceeded 1 exahash/second
+  in mid-2026 (security participation at or near all-time highs), while active-address counts were separately
+  reported at year lows, the lowest level since December 2024 -- recorded here as declining_or_stagnant_usage
+  on the specific adoption_trend_category vocabulary (which concerns usage/adoption, not network security),
+  with the security-metric divergence disclosed rather than smoothed over or silently dropped.
+evidence_quality_status: partial
+structural_risk_flags:
+  custody_model: exchange_custodied
+  smart_contract_risk_category: base_layer_minimal_smart_contract_surface
+  cross_coin_correlation_status: not_yet_measured
+record_status: sealed
+valuation_and_economic_assessment_readiness:
+  status: valuation_required
+  rationale: No governed valuation methodology exists in this repository for any asset type -- equity,
+    ETF, or cryptocurrency alike (TIER-0009 SS G.4/SS G.5's forced equity-sleeve design; XASSET-0002 supporting
+    artifact SS6.3 and XASSET-0004 SS F carry the same discipline forward for this coin). This classification
+    record supplies structural, categorical facts only; it neither computes nor implies a fair value,
+    target price, target_pct, target range, or maximum position size.
+cross_asset_handoff:
+  role_summary: proof_of_work / declining_or_stagnant_usage
+  evidence_quality_summary: partial
+  uncertainty_summary: The primary source attempted for this record (bitcoin.org) was blocked by this
+    environment's network egress policy and could not be directly inspected; every fact below rests on
+    WebSearch-aggregated secondary sources, cross-corroborated across multiple independent outlets where
+    possible. A genuine, disclosed tension exists in the current adoption evidence -- the network's hash
+    rate exceeded 1 exahash/second in mid-2026 (security participation at or near all-time highs), while
+    active-address counts were separately reported at year lows, the lowest level since December 2024
+    -- recorded here as declining_or_stagnant_usage on the specific adoption_trend_category vocabulary
+    (which concerns usage/adoption, not network security), with the security-metric divergence disclosed
+    rather than smoothed over or silently dropped.
+  liquidity_risk_summary: high_liquidity
+  overlap_or_correlation_signal: not_yet_measured
+  valuation_readiness: valuation_required
+abstention_index: []
+sealed_at: '2026-08-07T23:56:51Z'
+governing_decision: XASSET-0004
+drafting_session_or_shard_id: single-pass-crypto-implementation
+content_sha256: a1fabed97e0c00aefba1b6de3750446a3eed51ea0bad29d950b368d6010030d0
+cohort_manifest_entry: intelligence/crypto_classification/COHORT_MANIFEST.yaml#BTC
