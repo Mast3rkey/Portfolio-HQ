@@ -117,6 +117,7 @@ def _market_observed_input(**overrides) -> dict:
         "unit": "usd_per_share",
         "as_of_date": "2026-08-07",
         "provenance": _provenance(),
+        "value_basis": "reported",
     }
     d.update(overrides)
     return d
@@ -819,6 +820,103 @@ class TestProhibitedValuationOutputFields:
         assert "discount_rate" not in vev._DISCOUNT_RATE_EVIDENCE_ALLOWED_KEYS
 
 
+# ── free-text valuation-conclusion/recommendation leakage (bounded correction,
+# post-PR-#281-independent-review MAJOR finding) ────────────────────────────
+
+class TestFreeTextValuationConclusionLeakage:
+    """The structural key-name scan above (TestProhibitedValuationOutputFields)
+    only catches a value smuggled in as a *field*. This class proves the
+    companion free-text scan catches the same conclusions smuggled in as
+    *prose* -- the exact gap an independent exact-head review of PR #281
+    demonstrated: six realistic valuation-conclusion/recommendation
+    sentences inserted into a legitimate free-text field
+    (`discount_rate_evidence.risk_free_rate.note`) all passed validation
+    silently before this correction."""
+
+    # The exact six phrases the independent review demonstrated bypass the
+    # pre-correction scan -- each must now be rejected.
+    _REVIEWER_DEMONSTRATED_BYPASSES = [
+        "Intrinsic value is estimated around $150 per share.",
+        "The stock looks cheap relative to peers, worth accumulating.",
+        "Discount rate applied here is roughly 9%.",
+        "This company is undervalued and likely to outperform.",
+        "Expected upside of 25% over the next 12 months.",
+        "WACC comes out to about 9.2% based on this input.",
+    ]
+
+    @pytest.mark.parametrize("phrase", _REVIEWER_DEMONSTRATED_BYPASSES)
+    def test_all_six_reviewer_demonstrated_bypasses_now_rejected(self, phrase):
+        data = _record()
+        data["discount_rate_evidence"]["risk_free_rate"]["note"] = f"Synthetic note: {phrase}"
+        assert_invalid(vev.validate_valuation_evidence_data(data))
+
+    @pytest.mark.parametrize("phrase", _REVIEWER_DEMONSTRATED_BYPASSES)
+    def test_all_six_bypasses_rejected_in_a_different_free_text_field(self, phrase):
+        """Proves the scan is genuinely applied document-wide, not merely
+        to the one field the reviewer happened to test -- injected instead
+        into uncertainty_summary."""
+        data = _record()
+        data["uncertainty_summary"] = f"Synthetic note: {phrase}"
+        assert_invalid(vev.validate_valuation_evidence_data(data))
+
+    @pytest.mark.parametrize("phrase", [
+        "Our fair value estimate lands near $200.",
+        "The fair value is approximately $88 per share.",
+        "Applying the discount rate is estimated at 8.5%.",
+        "The discount rate used here comes out to 7%.",
+        "WACC used in this illustration is 9%.",
+        "The name looks overvalued at current levels.",
+        "Shares appear undervalued versus history.",
+        "Expected downside of 15% under the bear case.",
+        "Expected return of 10% annualized.",
+        "18% upside implied by this figure.",
+        "22% downside implied by this figure.",
+        "The name is expected to outperform peers.",
+        "Consensus is this name is likely to underperform.",
+        "It is worth reducing exposure here.",
+        "Analysts suggest accumulating the position.",
+        "We recommend buying this stock now.",
+    ])
+    def test_semantically_equivalent_variants_rejected(self, phrase):
+        data = _record()
+        data["discount_rate_evidence"]["risk_free_rate"]["note"] = f"Synthetic note: {phrase}"
+        assert_invalid(vev.validate_valuation_evidence_data(data))
+
+    @pytest.mark.parametrize("phrase", [
+        # Legitimate, sourced evidence about named discount-rate COMPONENTS
+        # (SS I) -- must never be mistaken for a final discount-rate/WACC
+        # conclusion, per the task's own explicit boundary.
+        "Risk-free rate observation of 4.2% as of 2026-08-07, sourced from the 10-year Treasury yield.",
+        "Cost of debt is sourced from the company's disclosed effective borrowing rate of 5.5%.",
+        "Tax rate reflects the disclosed effective rate per the fictional 10-K note 9.",
+        "Capital structure: debt weight 30%, equity weight 70%, historically observed from the balance sheet.",
+        "Beta observation of 1.1 -- conditional, usable only once a future methodology decision defines the estimation window and reference index.",
+        # Legitimate provenance/citation/limitation text.
+        "Synthetic fictional 10-K excerpt, consulted via search aggregation.",
+        "Alternate aggregator reported a different fictional figure for the same period.",
+        "No discount-rate evidence sourced for this fictional entity.",
+        "The discount-rate evidence for this record is limited to a risk-free-rate observation.",
+        # Legitimate historical/operating disclosures that share vocabulary
+        # with, but are not, a valuation conclusion.
+        "Management recommended reducing capex guidance for next year.",
+        "The fictional segment underperformed guidance in the fictional Q2 report.",
+        "Debt was reduced by a fictional $200 million following the divestiture.",
+        "Revenue growth of 12% year-over-year for this fictional entity.",
+        "This filing's capex figure was derived from a linear interpolation, disclosed in note 4.",
+    ])
+    def test_legitimate_evidence_language_remains_accepted(self, phrase):
+        data = _record()
+        data["discount_rate_evidence"]["risk_free_rate"]["note"] = phrase
+        assert_valid(vev.validate_valuation_evidence_data(data))
+
+    def test_legitimate_component_evidence_remains_accepted_across_the_real_fixture(self):
+        """The unmodified default fixture (real component-level provenance,
+        no umbrella discount_rate/WACC prose anywhere) must still validate
+        clean after the correction -- the strengthened scan must not have
+        regressed ordinary evidence."""
+        assert_valid(vev.validate_valuation_evidence_data(_record()))
+
+
 # ── 19: chart-language leakage ───────────────────────────────────────────
 
 class TestChartLanguageLeakage:
@@ -984,6 +1082,96 @@ class TestSegmentEvidenceStructure:
     def test_no_sotp_valuation_field_exists_anywhere_in_schema(self):
         assert "sotp_value" not in vev._SEGMENT_EVIDENCE_ALLOWED_KEYS
         assert "sum_of_the_parts_value" not in vev._SEGMENT_EVIDENCE_ALLOWED_KEYS
+
+
+# ── market_observed_evidence reported-vs-derived (bounded correction,
+# post-PR-#281-independent-review MINOR finding) ────────────────────────────
+
+class TestMarketObservedEvidenceReportedVsDerived:
+    """SS C.14 names 'an observed share price or trading-derived figure' as
+    its own example -- the schema could not previously represent the
+    derived half of that example at all (a governed independent review
+    found `value_basis`/`derivation_note` rejected outright as unknown
+    keys). This class proves the fix: the same reported-vs-derived
+    enforcement `_validate_line_item` already applies now also applies
+    here, via the shared `_validate_value_basis_and_derivation` helper."""
+
+    def test_directly_observed_reported_input_valid(self):
+        data = _record()
+        data["market_observed_evidence"]["inputs"][0] = _market_observed_input(value_basis="reported")
+        assert_valid(vev.validate_valuation_evidence_data(data))
+
+    def test_derived_market_input_with_derivation_note_valid(self):
+        data = _record()
+        data["market_observed_evidence"]["inputs"][0] = _market_observed_input(
+            input_name="thirty_day_vwap",
+            value_basis="derived",
+            derivation_note="Synthetic: computed as a 30-day volume-weighted average of observed daily closes.",
+        )
+        assert_valid(vev.validate_valuation_evidence_data(data))
+
+    def test_derived_market_input_without_derivation_note_rejected(self):
+        data = _record()
+        entry = _market_observed_input(value_basis="derived")
+        entry.pop("derivation_note", None)
+        data["market_observed_evidence"]["inputs"][0] = entry
+        assert_invalid(vev.validate_valuation_evidence_data(data), contains="derivation_note is required")
+
+    def test_reported_market_input_with_stray_derivation_note_rejected(self):
+        data = _record()
+        data["market_observed_evidence"]["inputs"][0] = _market_observed_input(
+            value_basis="reported", derivation_note="should not be here",
+        )
+        assert_invalid(vev.validate_valuation_evidence_data(data), contains="derivation_note must be absent")
+
+    def test_market_input_missing_value_basis_when_populated_rejected(self):
+        data = _record()
+        entry = _market_observed_input()
+        del entry["value_basis"]
+        data["market_observed_evidence"]["inputs"][0] = entry
+        assert_invalid(vev.validate_valuation_evidence_data(data), contains="value_basis must be one of")
+
+    def test_market_input_unknown_value_basis_rejected(self):
+        data = _record()
+        data["market_observed_evidence"]["inputs"][0] = _market_observed_input(value_basis="guessed")
+        assert_invalid(vev.validate_valuation_evidence_data(data), contains="value_basis must be one of")
+
+    def test_abstained_market_input_with_stray_value_basis_rejected(self):
+        data = _record()
+        data["market_observed_evidence"]["inputs"][0] = {
+            "input_name": "observed_share_price",
+            "abstention_reason": "No observed price located for this fictional entity.",
+            "value_basis": "reported",
+        }
+        assert_invalid(vev.validate_valuation_evidence_data(data), contains="must be absent when")
+
+    def test_abstained_market_input_with_stray_derivation_note_rejected(self):
+        data = _record()
+        data["market_observed_evidence"]["inputs"][0] = {
+            "input_name": "observed_share_price",
+            "abstention_reason": "No observed price located for this fictional entity.",
+            "derivation_note": "should not be here",
+        }
+        assert_invalid(vev.validate_valuation_evidence_data(data), contains="must be absent when")
+
+    def test_market_input_still_rejects_unrelated_extra_key(self):
+        """Closed-schema extra-key rejection must remain intact after the
+        two new keys were added -- an unrelated key is still rejected."""
+        data = _record()
+        entry = _market_observed_input()
+        entry["completely_unrelated_key"] = "x"
+        data["market_observed_evidence"]["inputs"][0] = entry
+        assert_invalid(vev.validate_valuation_evidence_data(data), contains="unexpected key")
+
+    def test_market_input_shared_helper_matches_line_item_enforcement(self):
+        """Proves the two call sites genuinely share one implementation
+        (VALUATION-0004 SS Q's own preference), not two independently
+        drifting copies of the same rule."""
+        import inspect
+        line_item_source = inspect.getsource(vev._validate_line_item)
+        market_source = inspect.getsource(vev._validate_market_observed_evidence)
+        assert "_validate_value_basis_and_derivation" in line_item_source
+        assert "_validate_value_basis_and_derivation" in market_source
 
 
 # ── 26: methodology-domain completeness (SS D/SS Q) ──────────────────────

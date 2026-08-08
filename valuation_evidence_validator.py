@@ -214,6 +214,15 @@ _SEGMENT_EVIDENCE_ALLOWED_KEYS = frozenset({
 
 _MARKET_OBSERVED_INPUT_ALLOWED_KEYS = frozenset({
     "input_name", "value", "unit", "as_of_date", "provenance", "abstention_reason",
+    # Bounded correction (post-PR-#281-independent-review MINOR finding):
+    # SS C.14's own example -- "an observed share price or trading-derived
+    # figure" -- names a derived market input directly, but this domain had
+    # no way to carry the SS C.10/SS E.3 reported-vs-derived marker any
+    # populated fact requires. `value_basis`/`derivation_note` reuse the
+    # exact same enforcement `_validate_line_item` already applies (SS E.4),
+    # via the shared `_validate_value_basis_and_derivation` helper below --
+    # not a second, drifting implementation of the same rule.
+    "value_basis", "derivation_note",
 })
 _MARKET_OBSERVED_INPUT_REQUIRED_KEYS = frozenset({"input_name"})
 _MARKET_OBSERVED_EVIDENCE_ALLOWED_KEYS = frozenset({"inputs", "abstention_reason"})
@@ -362,6 +371,34 @@ _FORBIDDEN_TEXT_PATTERNS = [
         r"\bfair\s+value\s+(is|of|estimate)\b",
         r"\bprice\s+target\s+(is|of)\b",
         r"\d+(?:\.\d+)?\s*%\s*(?:of\s+book|target|weight|allocation)",
+        # Bounded correction (post-PR-#281-independent-review MAJOR finding):
+        # the nine patterns above only caught a handful of hardcoded
+        # templates -- realistic valuation-conclusion/recommendation prose
+        # (an intrinsic-value estimate, an applied discount-rate/WACC
+        # conclusion, an expected-return figure, an undervalued/overvalued
+        # judgment, an outperform/underperform call, or a "worth
+        # accumulating"-style recommendation) passed through silently when
+        # inserted into any of this schema's legitimate free-text fields
+        # (e.g. a discount-rate component's own optional `note`). The ten
+        # patterns below close that gap while deliberately preserving the
+        # distinction VALUATION-0004 SS I requires: permitted, sourced
+        # evidence about a named discount-rate COMPONENT (risk_free_rate,
+        # cost_of_debt, tax_rate, capital_structure, beta_observation) never
+        # uses the umbrella terms "discount rate"/"WACC" themselves, so
+        # component-level provenance text (e.g. "cost of debt is sourced
+        # from...") is never matched -- only a concluding, applied-value
+        # statement using the umbrella term is.
+        r"\b(?:intrinsic|fair)\s+value\s+(?:is|of|estimated?|around|near|approximately)\b",
+        r"\bdiscount\s+rate\s+(?:is|of|applied|used|estimated|comes?\s+out\s+to|works?\s+out\s+to)\b",
+        r"\bwacc\s+(?:is|of|applied|used|estimated|comes?\s+out\s+to|works?\s+out\s+to)\b",
+        r"\b(?:undervalued|overvalued)\b",
+        r"\bexpected\s+(?:upside|downside|return)\s+of\b",
+        r"\d+(?:\.\d+)?\s*%\s+(?:upside|downside)\b",
+        r"\blikely\s+to\s+(?:outperform|underperform)\b",
+        r"\b(?:expected|projected|forecast(?:ed)?)\s+to\s+(?:outperform|underperform)\b",
+        r"\bworth\s+(?:accumulating|buying|selling|reducing|trimming|adding\s+to)\b",
+        r"\b(?:recommend(?:ed|s|ing)?|suggest(?:ed|s|ing)?)\s+(?:buying|selling|accumulating|reducing|"
+        r"trimming|holding)\s+(?:the\s+|this\s+)?(?:position|shares?|stock|equity|exposure)\b",
     )
 ]
 
@@ -568,6 +605,25 @@ def _validate_assumption_provenance_label(value: object, field_name: str, errors
 
 # ── line items (financial_evidence periods, segment sub-fields) ────────────
 
+def _validate_value_basis_and_derivation(value: dict, path: str, errors: list[str]) -> None:
+    """Shared reported-vs-derived enforcement (SS C.10/SS E.3/SS E.4) --
+    used by both financial/segment line items (`_validate_line_item`) and
+    market-observed inputs (`_validate_market_observed_evidence`), so the
+    rule has exactly one implementation rather than two that could drift
+    apart (bounded correction, post-PR-#281-independent-review MINOR
+    finding). A `derived` value requires a non-empty `derivation_note`; a
+    `reported` value must not carry one."""
+    basis = value.get("value_basis")
+    if basis not in _VALUE_BASIS_VALUES:
+        errors.append(f"{path}.value_basis must be one of {sorted(_VALUE_BASIS_VALUES)} when value is populated (SS C.10) -- got {basis!r}")
+    derivation_note = value.get("derivation_note")
+    if basis == "derived":
+        if not _non_empty_str(derivation_note):
+            errors.append(f"{path}.derivation_note is required and non-empty when value_basis is 'derived' (SS E.4)")
+    elif derivation_note is not None:
+        errors.append(f"{path}.derivation_note must be absent unless value_basis is 'derived'")
+
+
 def _validate_line_item(value: object, path: str, errors: list[str]) -> None:
     if not _require_keys(value, path, _LINE_ITEM_REQUIRED_KEYS, errors):
         return
@@ -586,15 +642,7 @@ def _validate_line_item(value: object, path: str, errors: list[str]) -> None:
             errors.append(f"{path}.value must be a number or null (VALUATION-0004 SS C.20/SS E.7)")
         if not _non_empty_str(value.get("unit")):
             errors.append(f"{path}.unit is required and non-empty when value is populated")
-        basis = value.get("value_basis")
-        if basis not in _VALUE_BASIS_VALUES:
-            errors.append(f"{path}.value_basis must be one of {sorted(_VALUE_BASIS_VALUES)} when value is populated (SS C.10) -- got {basis!r}")
-        derivation_note = value.get("derivation_note")
-        if basis == "derived":
-            if not _non_empty_str(derivation_note):
-                errors.append(f"{path}.derivation_note is required and non-empty when value_basis is 'derived' (SS E.4)")
-        elif derivation_note is not None:
-            errors.append(f"{path}.derivation_note must be absent unless value_basis is 'derived'")
+        _validate_value_basis_and_derivation(value, path, errors)
         if "provenance" not in value:
             errors.append(f"{path}.provenance is required when value is populated (SS F.1/SS E.2)")
         else:
@@ -809,6 +857,7 @@ def _validate_market_observed_evidence(value: object, errors: list[str]) -> list
                 errors.append(f"{path}.as_of_date must be a valid YYYY-MM-DD date when value is populated")
             else:
                 dates.append(entry["as_of_date"])
+            _validate_value_basis_and_derivation(entry, path, errors)
             if "provenance" not in entry:
                 errors.append(f"{path}.provenance is required when value is populated")
             else:
@@ -816,7 +865,7 @@ def _validate_market_observed_evidence(value: object, errors: list[str]) -> list
             if entry.get("abstention_reason") is not None:
                 errors.append(f"{path}.abstention_reason must be absent when value is populated")
         else:
-            for k in ("unit", "as_of_date", "provenance"):
+            for k in ("unit", "as_of_date", "provenance", "value_basis", "derivation_note"):
                 if entry.get(k) is not None:
                     errors.append(f"{path}.{k} must be absent when {path}.value is null/absent")
             if not _non_empty_str(entry.get("abstention_reason")):
