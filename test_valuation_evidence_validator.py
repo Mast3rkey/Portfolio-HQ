@@ -917,6 +917,147 @@ class TestFreeTextValuationConclusionLeakage:
         assert_valid(vev.validate_valuation_evidence_data(_record()))
 
 
+# ── free-text valuation-conclusion/recommendation leakage, second bounded
+# correction (post-PR-#281-independent-DELTA-review MINOR finding, review
+# 4889931092) ─────────────────────────────────────────────────────────────
+
+class TestSecondBoundedCorrectionGapClosure:
+    """The first correction (TestFreeTextValuationConclusionLeakage above)
+    closed the free-text scan's coverage gap for a handful of literal
+    templates, but every one of its new patterns still required its own
+    anchor noun/verb to sit *immediately* adjacent -- so ordinary short word
+    insertion, or an alternate verb tense the templates hadn't enumerated,
+    still slipped through. A delta review of that correction demonstrated
+    three such narrower bypasses; this class proves those three, several
+    same-class variants across every affected pattern family (fair/intrinsic
+    value, discount rate, WACC, expected upside/downside/return,
+    outperform/underperform in both past and present tense, worth-phrasing,
+    recommend-phrasing), that the original six reviewer-demonstrated
+    bypasses from the FIRST correction remain blocked, and that the
+    broadened bounded-gap patterns do not reject legitimate evidence prose."""
+
+    # The exact three phrases the independent delta review demonstrated
+    # bypass the first correction -- each must now be rejected.
+    _DELTA_REVIEW_DEMONSTRATED_BYPASSES = [
+        "The fair value here is close to $200.",
+        "Our estimate of intrinsic value sits near $88.",
+        "Analysts expect it to underperform going forward.",
+    ]
+
+    @pytest.mark.parametrize("phrase", _DELTA_REVIEW_DEMONSTRATED_BYPASSES)
+    def test_all_three_delta_review_demonstrated_bypasses_now_rejected(self, phrase):
+        data = _record()
+        data["discount_rate_evidence"]["risk_free_rate"]["note"] = f"Synthetic note: {phrase}"
+        assert_invalid(vev.validate_valuation_evidence_data(data))
+
+    @pytest.mark.parametrize("phrase", _DELTA_REVIEW_DEMONSTRATED_BYPASSES)
+    def test_all_three_bypasses_rejected_in_a_different_free_text_field(self, phrase):
+        """Proves the broadened scan is still applied document-wide, not
+        merely patched for the one field the delta reviewer happened to
+        test -- injected instead into uncertainty_summary."""
+        data = _record()
+        data["uncertainty_summary"] = f"Synthetic note: {phrase}"
+        assert_invalid(vev.validate_valuation_evidence_data(data))
+
+    @pytest.mark.parametrize("phrase", [
+        # -- one inserted word --
+        "The fair value looks around $150 per share.",
+        "Intrinsic value here is roughly $60.",
+        "The discount rate here is approximately 8%.",
+        "WACC currently is about 9%.",
+        "We expect shares to outperform peers.",
+        "The stock is likely to modestly outperform.",
+        # -- two inserted words --
+        "The fair value truly does appear near $210.",
+        "Our intrinsic value estimate today stands around $95.",
+        "The discount rate in this scenario comes out to 7.5%.",
+        "WACC under this scenario comes out to 9.4%.",
+        "Consensus expects the shares broadly to outperform peers.",
+        "It really does seem likely to soon underperform the group.",
+        # -- present-tense "expect ... to outperform/underperform" --
+        "We expect this name to outperform the index.",
+        "Analysts expect the stock to underperform its peers.",
+        "The desk expects shares to outperform over the next year.",
+        # -- "estimate of intrinsic value ..." phrasing --
+        "This is our estimate of intrinsic value and it is near $70.",
+        "The team's estimate of intrinsic value sits around $130.",
+        # -- worth / recommend, one and two inserted words --
+        "The shares look worth actively accumulating right now.",
+        "Analysts recommend actively buying this stock.",
+        "The desk would recommend rather cautiously buying the position.",
+        # -- expected upside/downside/return, inserted word plus alternate verb --
+        "We see expected total upside of about 20%.",
+        "The expected modest downside of 12% is disclosed here.",
+        "Their expected annualized return of 11% was cited.",
+    ])
+    def test_same_class_bounded_gap_variants_rejected(self, phrase):
+        data = _record()
+        data["discount_rate_evidence"]["risk_free_rate"]["note"] = f"Synthetic note: {phrase}"
+        assert_invalid(vev.validate_valuation_evidence_data(data))
+
+    @pytest.mark.parametrize("phrase", TestFreeTextValuationConclusionLeakage._REVIEWER_DEMONSTRATED_BYPASSES)
+    def test_original_six_major_finding_bypasses_still_rejected(self, phrase):
+        """The original MAJOR finding's six bypasses (review 4889789139)
+        must remain caught by this second, broader correction -- proves the
+        new additive patterns did not somehow crowd out or shadow the
+        existing, already-reviewed tight patterns."""
+        data = _record()
+        data["discount_rate_evidence"]["risk_free_rate"]["note"] = f"Synthetic note: {phrase}"
+        assert_invalid(vev.validate_valuation_evidence_data(data))
+
+    @pytest.mark.parametrize("phrase", [
+        # Legitimate, sourced evidence about named discount-rate COMPONENTS
+        # (SS I) -- the broadened gap must still never mistake this for a
+        # final discount-rate/WACC conclusion.
+        "Risk-free rate observation of 4.2% as of 2026-08-07, sourced from the 10-year Treasury yield.",
+        "Cost of debt is sourced from the company's disclosed effective borrowing rate of 5.5%.",
+        "Beta observation of 1.1 -- conditional, usable only once a future methodology decision "
+        "defines the estimation window and reference index.",
+        # "the methodology expects inputs to be documented" -- ordinary,
+        # non-adversarial use of "expects ... to" with no outperform/
+        # underperform anywhere nearby.
+        "The methodology expects inputs to be documented before any evidence is finalized.",
+        # "the source expects the filing to be published next quarter" --
+        # same shape, a genuine forward-looking disclosure statement.
+        "The source expects the filing to be published next quarter.",
+        # A generic use of "value" with no "fair"/"intrinsic" qualifier and
+        # no investment-valuation conclusion asserted.
+        "This adds value to the overall disclosure but changes no figure.",
+        "Book value of $50 per share was disclosed in the fictional 10-K.",
+        # Provenance/source text that happens to sit near words used inside
+        # the new bounded-gap patterns above (near/around/approximately/is),
+        # without ever forming a forbidden anchor+verb pair.
+        "This estimate is near the midpoint of the disclosed range, sourced from a secondary aggregator.",
+        "The figure is approximately what the prior filing reported, per a fictional footnote.",
+        "Cost of debt is around 5.5%, sourced from the company's own disclosed borrowing rate.",
+        "The filing was published near the fiscal year-end, per the fictional 8-K.",
+        # "worth" used with no accumulating/buying/selling/etc. verb nearby.
+        "The disclosure is worth noting for context but implies no conclusion.",
+        # "recommend"/"suggest" used about something other than a
+        # buy/sell/accumulate/reduce/trim/hold action.
+        "Management suggested reviewing the segment footnote for additional detail.",
+        "The filing recommended additional disclosure in a future period.",
+    ])
+    def test_broadened_bounded_gap_patterns_do_not_reject_legitimate_prose(self, phrase):
+        data = _record()
+        data["discount_rate_evidence"]["risk_free_rate"]["note"] = phrase
+        assert_valid(vev.validate_valuation_evidence_data(data))
+
+    def test_broadened_patterns_remain_bounded_not_unbounded_wildcards(self):
+        """Structural proof that every newly added pattern uses an
+        explicitly bounded, counted repetition (`{0,N}`) for its gap, never
+        an unbounded `.*` or `.+` -- guards against a future edit silently
+        reintroducing a runaway, cross-sentence match."""
+        for pattern in vev._FORBIDDEN_TEXT_PATTERNS:
+            assert ".*" not in pattern.pattern
+            assert ".+" not in pattern.pattern
+
+    def test_legitimate_component_evidence_remains_accepted_across_the_real_fixture_again(self):
+        """The unmodified default fixture must still validate clean after
+        this second correction too."""
+        assert_valid(vev.validate_valuation_evidence_data(_record()))
+
+
 # ── 19: chart-language leakage ───────────────────────────────────────────
 
 class TestChartLanguageLeakage:

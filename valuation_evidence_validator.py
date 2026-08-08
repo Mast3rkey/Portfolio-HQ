@@ -399,6 +399,39 @@ _FORBIDDEN_TEXT_PATTERNS = [
         r"\bworth\s+(?:accumulating|buying|selling|reducing|trimming|adding\s+to)\b",
         r"\b(?:recommend(?:ed|s|ing)?|suggest(?:ed|s|ing)?)\s+(?:buying|selling|accumulating|reducing|"
         r"trimming|holding)\s+(?:the\s+|this\s+)?(?:position|shares?|stock|equity|exposure)\b",
+        # Second bounded correction (post-PR-#281-independent-delta-review MINOR
+        # finding, review 4889931092): every pattern above still required its
+        # anchor noun/verb to sit *immediately* adjacent to the concluding
+        # word, so ordinary short word insertion ("fair value HERE is...",
+        # "expect IT to underperform") or a present-tense/alternate-verb
+        # variation the tight adjacency didn't enumerate ("value SITS near",
+        # "recommend ACTIVELY buying") silently defeated the scan. The
+        # patterns below add a short, explicitly BOUNDED gap (0-3 tokens,
+        # each token barred from containing '.', '!', or '?' so a match can
+        # never run across a sentence boundary or an unrelated text block --
+        # never an unbounded `.*`) between the same anchor/verb pairs already
+        # used above, plus a small number of additional verb forms
+        # ("sits"/"stands"/"appears" for value; "is" for expected
+        # upside/downside/return) covering the same conclusion in ordinary
+        # present tense. These are ADDITIONS, not replacements -- every
+        # pattern above is unchanged and still runs. Deliberately excludes
+        # "of" from every gapped variant below: unlike the tight,
+        # already-reviewed originals (where "of" sits directly next to the
+        # anchor noun), "of" inside a multi-token gap would false-positive on
+        # ordinary connectors ("fair value... as OF the reporting date") --
+        # see this correction's own PR discussion for the reproduction.
+        r"\b(?:intrinsic|fair)\s+value\b(?:\s+[^\s.!?]+){0,3}?\s+(?:is|sits?|stands?|appears?|"
+        r"comes?\s+out\s+to|around|near|approximately|estimated?)\b",
+        r"\bdiscount\s+rate\b(?:\s+[^\s.!?]+){0,3}?\s+(?:is|applied|used|estimated|"
+        r"comes?\s+out\s+to|works?\s+out\s+to)\b",
+        r"\bwacc\b(?:\s+[^\s.!?]+){0,3}?\s+(?:is|applied|used|estimated|comes?\s+out\s+to|works?\s+out\s+to)\b",
+        r"\bexpected\b(?:\s+[^\s.!?]+){0,3}?\s+(?:upside|downside|return)\s+(?:of|is)\b",
+        r"\b(?:likely|expects?|expected|projects?|projected|forecast(?:s|ed)?)\b"
+        r"(?:\s+[^\s.!?]+){0,3}?\s+to\b(?:\s+[^\s.!?]+){0,2}?\s+(?:outperform|underperform)\b",
+        r"\bworth\b(?:\s+[^\s.!?]+){0,2}?\s+(?:accumulating|buying|selling|reducing|trimming|adding\s+to)\b",
+        r"\b(?:recommend(?:ed|s|ing)?|suggest(?:ed|s|ing)?)\b(?:\s+[^\s.!?]+){0,2}?\s+(?:buying|selling|"
+        r"accumulating|reducing|trimming|holding)\s+(?:the\s+|this\s+)?(?:position|shares?|stock|equity|"
+        r"exposure)\b",
     )
 ]
 
