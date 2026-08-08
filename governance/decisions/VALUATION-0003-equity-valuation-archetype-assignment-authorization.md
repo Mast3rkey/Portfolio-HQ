@@ -134,9 +134,14 @@ Intelligence record (`intelligence/companies/<TICKER>.yaml`/`.md`):
   6's `economic_role` axis answers a different question (portfolio-relationship economic role) than this
   filing's archetype axis (valuation-methodology fit), and the two must not be conflated or copied
   wholesale from one into the other.
-- `gates.yaml`'s `next_gate` text, **read-only, for disclosure as portfolio context in the record's own
-  governance-context metadata only** (§H) — **never** as an input to, or justification for, the primary
-  or secondary archetype determination itself (§E).
+- A **sanitized fact about**, never the literal text of, `gates.yaml`'s `next_gate` entry: exactly
+  (a) that a gate exists for the ticker, and (b) whether that gate's `next_gate` text references
+  valuation (a single boolean-shaped fact mechanically established by the redaction mechanism, §F —
+  never read directly by a blind drafter) — for disclosure as portfolio context in the record's own
+  `portfolio_context` metadata only (§H). **The literal `next_gate` text itself — including any named
+  peer or comparator, methodology framing, or price/valuation language it contains — must never reach
+  a blind drafter and must never appear in any sealed record.** This sanitized fact is **never** an
+  input to, or justification for, the primary or secondary archetype determination itself (§E).
 
 ### E. Prohibited evidence inputs — binding on the blind drafting workflow
 
@@ -146,9 +151,12 @@ drafter from receiving:
 - `portfolio_role_ref`.
 - `conviction.rating`.
 - Any `targets.yaml` `target_pct` or other allocation weight value.
-- `gates.yaml` gate/`allow_add` status **as assignment evidence** (the `next_gate` text's mere
-  *existence* may be disclosed post-hoc as context per §D — but the gate status itself must never
-  determine, or be cited as supporting, an archetype choice).
+- `gates.yaml` gate/`allow_add` status **as assignment evidence**, and the literal `next_gate` text in
+  any form — the redaction/isolation mechanism (§F) may pass through only the two sanitized facts §D
+  specifies (that a gate exists; whether its `next_gate` text references valuation), never the text
+  itself and never any peer name, comparator, methodology framing, or price/valuation language the text
+  contains. Neither the gate/`allow_add` status nor the sanitized topic-flag may ever determine, or be
+  cited as supporting, an archetype choice.
 - Any chart, technical-indicator, or screenshot-derived evidence of any kind, including any
   `CHART-0001`/`CHART-0002` record, fresh or historical.
 - Any allocator output (`allocate.py`, `--review`/`--health`/`--levels` output).
@@ -410,6 +418,43 @@ adjacent categories for a decision playing a structurally different role in the 
 - **Allow a secondary archetype without the mandatory archetype-F disclosure test.** Rejected per the
   principal's own explicit instruction — a secondary tag must not become a way to avoid seriously testing
   whether a diversified company's primary should be `F`.
+
+## Bounded Correction (same day, this PR)
+
+An independent exact-head review of the original head (`5929eb6a87fc4ec0fa275181947a759d25134827`)
+returned **APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE** — 0 BLOCKING / 0 MAJOR / 1 MINOR / 1
+non-actionable NOTE. **MINOR, resolved**: §D, §E, and §H described the permitted scope of `gates.yaml`
+`next_gate`-text disclosure inconsistently — §D's original wording ("`next_gate` text, read-only, for
+disclosure") could be read as permitting the literal text; §E's original wording narrowed this to "mere
+existence"; only §H was already correctly narrowed to a fact-about-the-text ("exists" + "references
+valuation"). The reviewer independently confirmed this is not academic: live `gates.yaml`'s real SPGI
+`next_gate` value — *"Review one clean post-spin quarter and normalized SPGI-versus-MSCI valuation,
+leverage, and growth comparison"* — names an external peer comparator (MSCI, not a member of the
+27-name governed roster) and carries explicit valuation-methodology framing, exactly the kind of
+content a literal reading of §D's original wording could have let leak into a sealed record.
+
+**Resolved by narrowing §D and §E to §H's already-correct formulation**, not by loosening §H: §D now
+states the permitted input is "a sanitized fact about, never the literal text of," the `next_gate`
+entry — exactly two boolean-shaped facts (a gate exists; whether its `next_gate` text references
+valuation) — with the literal text, any named peer/comparator, methodology framing, or price/valuation
+language explicitly barred from ever reaching a blind drafter or appearing in any sealed record. §E's
+prohibited-evidence entry is symmetrically tightened to state the redaction mechanism (§F) may pass
+through only those same two sanitized facts, never the text itself. §H's own wording is unchanged — it
+was already the target formulation, confirmed correct by the review.
+
+No other section is touched by this correction: the 27-company roster, the archetype taxonomy, the
+secondary-archetype policy and mandatory archetype-F test, the RQ4 boundary, the blindness/redaction
+architecture (§F, other than the pre-existing pointers to §D), the batch/shard structure (§G), the
+output contract's other fields (§H), and the non-authority/prohibited scope (§L) are all unchanged. The
+reviewer's one NOTE (an imprecise citation to `VALUATION-0001` §5 in the Context section) was
+independently confirmed non-actionable and is not corrected here, per the review's own explicit
+disposition and this correction's own narrow, bounded scope.
+
+Full validation re-run clean at the corrected head: focused decision-catalog tests, full repository
+`pytest`, all 9 applicable validators, decision-catalog reconciliation, repo-wide YAML/YML and JSON
+parsing, `git diff --check`, exact changed-file inventory (one file: this decision document), and a
+full protected-path scan all pass — see the PR's own validation record for exact figures. Requires its
+own fresh independent exact-head delta review before this PR may be considered ready.
 
 ## Consequences
 
