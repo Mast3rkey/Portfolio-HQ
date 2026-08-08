@@ -9761,25 +9761,129 @@ workstreams:
         pr: 279
         status: in_progress
         date: "2026-08-08"
+      - gate: valuation0003-archetype-assignment-implementation-post-merge-verification
+        description: >
+          PR #279 (VALUATION-0003 archetype-assignment implementation)
+          independently reconfirmed merged via the GitHub API this
+          session, not assumed: accepted head
+          7d9634c6d8c1d455cd24ed769574605dbec302e7, 35 changed files, 3
+          commits. Original independent exact-head review
+          pullrequestreview-4889352085 (anchored
+          8dc8250c577713f946834bd16bf57df442cccad4): CHANGES REQUIRED, 0
+          BLOCKING / 4 MAJOR / 5 MINOR / 5 NOTE, targeting substantive
+          archetype-judgment quality (ASML primary/secondary ordering,
+          RKLB's unmentioned Iridium acquisition, SPGI's secondary-C fit,
+          cross-shard evidence-quality-tier inconsistency), not mechanics
+          (independently verified clean in the same review). Bounded
+          correction commit 7d9634c6d8c1d455cd24ed769574605dbec302e7
+          resolved all 4 MAJOR findings (ASML D/B->B/D reordering; RKLB
+          Iridium disclosure added; SPGI secondary C->A reordering; three
+          unsupported secondaries removed — KLAC A, LLY E, GNRC B) plus
+          WM's inline caveat and a documented evidence-quality
+          recalibration rule applied cohort-wide. Final independent
+          exact-head delta review pullrequestreview-4889412082 (anchored
+          exactly to the corrected head): APPROVED FOR PRINCIPAL EXACT-
+          HEAD ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR surviving.
+          Principal acceptance issuecomment-5227655923. Exact-head CI run
+          31271248381 success. Merge
+          a8dfd0d1f30eb9d5759f874de1932bb49da98385 (parents
+          0d0252021ded7f18a44c8688148606c9ee39fad4 and
+          7d9634c6d8c1d455cd24ed769574605dbec302e7, merge-tree confirmed
+          byte-identical to the accepted head). Merge-commit CI run
+          31273622505 success. Corrected final archetype-cohort figures,
+          independently re-derived from the merged
+          intelligence/valuation_archetype/*.yaml records this session —
+          primary distribution A:6 B:6 C:2 D:2 E:1 F:8 G:2 (correcting the
+          pre-correction A:6 B:5 C:2 D:3 E:1 F:8 G:2 figures still
+          recorded in the valuation0003-archetype-assignment-
+          implementation gate's own text above); secondary present on
+          19/27; zero abstentions; evidence quality comprehensive:12
+          partial:4 limited:11 blocked:0. This gate is additive; the
+          valuation0003-archetype-assignment-implementation gate's own
+          text above is left byte-unedited.
+        pr: 279
+        status: complete
+        date: "2026-08-08"
+      - gate: valuation0004-rq4-evidence-architecture-governance
+        description: >
+          VALUATION-0004 filed — governs the structure and rules for a
+          new, separate, roster-agnostic companion evidence architecture
+          (intelligence/valuation_evidence/<TICKER>.yaml) closing RQ4's
+          identified gap at the governance-design level: minimum evidence
+          domains (financial-statement history, revenue/earnings/FCF,
+          margins, capex/reinvestment, invested-capital/ROIC evidence,
+          balance sheet, cash/debt/net-debt, share count/dilution,
+          segment-level economics, reported-vs-derived and annual/
+          quarterly/TTM distinctions, as-of/fiscal-period dates,
+          restatement state, market-observed inputs, discount-rate
+          components as individually sourced inputs, peer-set evidence,
+          scenario-variable evidence, provenance/uncertainty, disclosed
+          conflicts, and first-class abstention); false-precision
+          controls extending VALUATION-0002 §3's doctrine into the
+          evidence layer; reused provenance vocabulary (source_type
+          primary/secondary, access_status directly_inspected/
+          consulted_via_search_aggregation/attempted_not_directly_
+          inspected — matching etf_classification_validator.py/
+          crypto_classification_validator.py exactly; assumption/scenario
+          provenance market_derived/historically_observed/analyst_
+          consensus_cited/assumed_for_illustration — matching
+          VALUATION-0002 §3 exactly); a source hierarchy with honest
+          fallback disclosure; no invented minimum time-series length; a
+          discount-rate evidence-vs-policy boundary (sourced inputs only —
+          no ERP value, beta window, or WACC convention decided here);
+          peer-set, scenario, and segment/SOTP evidence rules (structure
+          only, no peers selected, no probabilities assigned, no SOTP
+          performed); and a validator contract for a future
+          implementation. Precisely distinguishes four RQ4 states — (1)
+          evidence architecture governed [this filing], (2) schema/
+          validator/test implementation merged [future PR, not this
+          filing], (3) real-company evidence population [separately
+          authorized, later], (4) valuation execution authorized [later,
+          requires 2+3 plus VALUATION-0002 §6.3(a)/(c)/(d)] — and claims
+          only state 1; VALUATION-0002 §6.3(b)'s RQ4-closure precondition
+          is not satisfied until a future implementation PR actually
+          merges. Authorizes exactly one future, separate, bounded
+          implementation PR to build the schema, its validator, and its
+          test suite as an empty/synthetic-fixture-only scaffold —
+          explicitly barred from creating, populating, or seeding any
+          real company's evidence record under any circumstance. Does not
+          touch docs/PORTFOLIO_INTELLIGENCE_SPEC.md, PROTOCOL_V1.md,
+          METHODOLOGY_EVALUATION_REPORT.md, or any existing
+          intelligence/** record; does not resolve TIER-0009 §K's
+          valuation_required status on any equity; no tier/target/
+          holdings/gate/cap/cluster/allocator/margin/ladder/chart/order/
+          trade change of any kind; no CONTENDER-0003, ETF/crypto, or
+          cross-asset work. No company is valued or evidence-populated by
+          this filing itself.
+        pr: null
+        status: in_progress
+        date: "2026-08-08"
     evidence_refs:
       - governance/decisions/VALUATION-0001-equity-valuation-research-charter.md
       - governance/decisions/VALUATION-0002-equity-valuation-methodology-doctrine-adoption.md
       - governance/decisions/VALUATION-0003-equity-valuation-archetype-assignment-authorization.md
+      - governance/decisions/VALUATION-0004-rq4-evidence-architecture-governance.md
       - research/equity_valuation_study/PROTOCOL_V1.md
       - research/equity_valuation_study/METHODOLOGY_EVALUATION_REPORT.md
+      - docs/PORTFOLIO_INTELLIGENCE_SPEC.md
       - governance/decisions/TIER-0009-ws0005-milestone8-policy-recommendation-framework-authorization.md
       - governance/decisions/TIER-0004-ws0005-milestone6-population-and-blindness-preflight.md
       - governance/decisions/TIER-0005-ws0005-milestone6-fresh-authorization.md
+      - governance/decisions/NUM-0001-numeric-parameter-provenance-standards.md
     next_action: >
-      Independent, exact-head review of this archetype-assignment
-      implementation PR under OPS-0007 §1's capability-based standard
-      (OPS-0009 Lane G — full weight, no reduction), followed by any
-      required bounded correction, exact-head re-review, and explicit
-      principal acceptance before the PR may be marked ready and merged.
-      No real-company valuation, fair value, price target, or TIER-0009
-      §K resolution is authorized by this implementation under any
+      Independent, exact-head review of VALUATION-0004's governance PR
+      under OPS-0007 §1's capability-based standard (OPS-0009 Lane G —
+      full weight, no reduction), followed by any required bounded
+      correction, exact-head re-review, and explicit principal acceptance
+      before it may be marked ready and merged. Only after that merge may
+      the future schema/validator/test implementation PR it authorizes be
+      opened — that future PR may not create, populate, or seed any real
+      company's evidence record under any circumstance (VALUATION-0004
+      §P). No real-company valuation, fair value, price target, or
+      TIER-0009 §K resolution is authorized by any of this work under any
       circumstance; each remains its own separate, later, explicitly
-      authorized unit per VALUATION-0002 §6.3/VALUATION-0003 §L.
+      authorized unit per VALUATION-0002 §6.3/VALUATION-0003 §L/
+      VALUATION-0004 §O.
     completion_criteria: >
       Not met for WS-0015 as a whole. Met so far: VALUATION-0001 merged
       with its pinned hash verified (valuation0001-governance-pr-merged);
@@ -9791,26 +9895,34 @@ workstreams:
       archetype-assignment authorization merged, independently reviewed,
       and principal-accepted
       (valuation0003-archetype-assignment-authorization,
-      valuation0003-authorization-post-merge-verification). Not yet met:
-      the archetype-assignment implementation PR itself
-      (valuation0003-archetype-assignment-implementation) independently
-      reviewed, principal-accepted, and merged; and — only if a future
-      application phase is ever separately proposed and accepted — its
-      own further, separate governance decisions for (a) closing the RQ4
-      evidence-category gap and (b) real-company valuation execution,
-      each independently reviewed and principal-accepted before any
-      methodology is applied to a real company (VALUATION-0001 §5,
-      VALUATION-0002 §6, VALUATION-0003 §L, protocol §§14/15 — no result
-      automatically changes policy).
+      valuation0003-authorization-post-merge-verification); the
+      archetype-assignment implementation PR (#279) independently
+      reviewed, corrected, re-reviewed, principal-accepted, and merged
+      (valuation0003-archetype-assignment-implementation,
+      valuation0003-archetype-assignment-implementation-post-merge-
+      verification). Not yet met: VALUATION-0004's RQ4 evidence-
+      architecture-governance filing itself independently reviewed,
+      principal-accepted, and merged
+      (valuation0004-rq4-evidence-architecture-governance); the future
+      schema/validator/test implementation PR it authorizes (schema
+      structure only, no real-company population under any circumstance);
+      and — only if a future application phase is ever separately
+      proposed and accepted — its own further, separate governance
+      decisions for (a) real-company evidence population and (b)
+      real-company valuation execution, each independently reviewed and
+      principal-accepted before any methodology is applied to a real
+      company (VALUATION-0001 §5, VALUATION-0002 §6, VALUATION-0003 §L,
+      VALUATION-0004 §O, protocol §§14/15 — no result automatically
+      changes policy).
     blocker: >
-      The archetype-assignment implementation PR has not yet been opened
-      for independent review, or independently reviewed, corrected, or
-      principal-accepted. No real-company valuation work is authorized by
-      it under any circumstance.
-    active_branch: claude/valuation-archetype-27-equities-1y28my
-    active_pr: 279
-    last_verified_main_sha: 0d0252021ded7f18a44c8688148606c9ee39fad4
+      VALUATION-0004's governance PR has not yet been opened for
+      independent review, or independently reviewed, corrected, or
+      principal-accepted. No real-company valuation or evidence-
+      population work is authorized by it under any circumstance.
+    active_branch: claude/valuation-0004-evidence-governance-noucj9
+    active_pr: null
+    last_verified_main_sha: a8dfd0d1f30eb9d5759f874de1932bb49da98385
     last_verified_date: "2026-08-08"
-    authorized_by: VALUATION-0003 (PR #278, merged)
+    authorized_by: VALUATION-0002 §4/§6.3, VALUATION-0003 §L (both merged)
     supersedes: null
     superseded_by: null
