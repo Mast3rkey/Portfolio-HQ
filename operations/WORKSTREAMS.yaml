@@ -9570,36 +9570,128 @@ workstreams:
         pr: null
         status: drafted
         date: "2026-08-08"
+      - gate: valuation0001-governance-pr-merged
+        description: >
+          PR #274 (VALUATION-0001 governance charter) independently
+          reconfirmed merged via the GitHub API, not assumed: first
+          independent exact-head review pullrequestreview-4888034268
+          (CHANGES REQUIRED, 0/0/1/1 — a protocol §6 RQ4/evidence-boundary
+          cross-reference ambiguity), resolved by bounded correction
+          commit 69966164d01f038d75bbe9b3d86f93e5ce6ceb36
+          (issuecomment-5224700359, protocol hash re-pinned
+          80aee45d...→2948e4a8...), corrected-head delta review
+          pullrequestreview-4888414235 (APPROVED FOR PRINCIPAL EXACT-HEAD
+          ACCEPTANCE, 0/0/0/0 new), principal acceptance
+          issuecomment-5225166375 at exact head
+          69966164d01f038d75bbe9b3d86f93e5ce6ceb36, merge
+          2f47adeafc9703e4074f07951df2a15a407fdc8b (parents
+          1921864326f2cc75609b1c91037c24e333c4e3d0 and
+          69966164d01f038d75bbe9b3d86f93e5ce6ceb36, merge-tree confirmed
+          byte-identical to the accepted head), merge-commit CI run
+          31246702088 / job 93076401495 success (all steps including "Run
+          test suite" green). VALUATION-0001 and WS-0015 are therefore
+          effective. This gate is additive; the governance-pr-drafted
+          gate's own text above is left byte-unedited.
+        pr: 274
+        status: complete
+        date: "2026-08-08"
+      - gate: valuation0001-implementation-report-merged
+        description: >
+          PR #275 (equity valuation methodology evaluation report)
+          independently reconfirmed merged via the GitHub API: exact head
+          728521ad9fd4adc711f96818275331f0a0035adf, 1 file (+562/-0),
+          independent exact-head review pullrequestreview-4888768567
+          (APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0
+          MAJOR / 0 MINOR / 4 non-actionable NOTE — submitted as a
+          COMMENT-type review due to the same-account self-approval
+          platform restriction, disclosed as not a substantive downgrade),
+          principal acceptance issuecomment-5226041482 at exact head
+          728521ad9fd4adc711f96818275331f0a0035adf, merge
+          5066168b681a0c720a52b61044f220e38d21ffda (parents
+          2f47adeafc9703e4074f07951df2a15a407fdc8b and
+          728521ad9fd4adc711f96818275331f0a0035adf, merge-tree confirmed
+          byte-identical to the accepted head), merge-commit CI run
+          31256665243 success. Protocol hash independently reproduced
+          from this exact repository state:
+          2948e4a852330fdbb649dc67a0cf317ef91119af21e053659fcd5a3709a10980
+          — zero drift since VALUATION-0001's own merge. Report
+          independently read in full (562 lines): all 49 matrix cells
+          resolved, zero insufficient_evidence_to_determine cells, all
+          four research questions substantively answered, zero real
+          company named/valued/archetype-assigned anywhere.
+        pr: 275
+        status: complete
+        date: "2026-08-08"
+      - gate: valuation0002-methodology-doctrine-adoption
+        description: >
+          VALUATION-0002 filed — adopts, as governing doctrine, exactly
+          two things the merged METHODOLOGY_EVALUATION_REPORT.md directly
+          supports: (1) archetype-differentiated methodology selection is
+          required (RQ1 finding adopted, bound by reference to the
+          report's own unedited 49-cell matrix); (2) the report's RQ3
+          false-precision-prevention specification (mandatory range
+          output, four-label provenance-tagged assumptions ledger, no
+          fabricated precision, mandatory company-level abstention path,
+          no opaque scoring) as binding doctrine on any future
+          company-level application. Defines a closed, mechanical
+          five-value governed-role mapping rule (primary candidate /
+          secondary-corroborative / adjustment-required / prohibited /
+          insufficient basis for adoption) applied to the report's own
+          disposition vocabulary without altering any cell, producing a
+          per-family archetype-conditioned role summary — not a numeric
+          score or ranking. Acknowledges RQ4's evidence-category gap as
+          open, not designed here. Explicitly does not authorize any
+          real-company archetype-category assignment or any real-company
+          valuation — both remain separate, later, explicitly authorized
+          future units. Does not touch PROTOCOL_V1.md or
+          METHODOLOGY_EVALUATION_REPORT.md; does not resolve TIER-0009
+          §K's valuation_required status on any equity; no
+          tier/target/holdings/gate/cap/cluster/allocator/margin/ladder/
+          chart/order/trade change of any kind.
+        pr: null
+        status: in_progress
+        date: "2026-08-08"
     evidence_refs:
       - governance/decisions/VALUATION-0001-equity-valuation-research-charter.md
+      - governance/decisions/VALUATION-0002-equity-valuation-methodology-doctrine-adoption.md
       - research/equity_valuation_study/PROTOCOL_V1.md
+      - research/equity_valuation_study/METHODOLOGY_EVALUATION_REPORT.md
       - governance/decisions/TIER-0009-ws0005-milestone8-policy-recommendation-framework-authorization.md
     next_action: >
-      Independent, exact-head review of VALUATION-0001's governance PR
+      Independent, exact-head review of VALUATION-0002's governance PR
       under OPS-0007 §1's capability-based standard (OPS-0009 Lane G —
       full weight, no reduction), followed by any required bounded
       correction, exact-head re-review, and explicit principal acceptance
-      before the PR may be marked ready and merged. No implementation
-      work and no methodology-comparison research may begin before that
-      merge and the pinned protocol hash's post-merge verification.
+      before the PR may be marked ready and merged. No real-company
+      archetype-category assignment and no real-company valuation may
+      begin before — and are not authorized by — that merge; either
+      remains its own separate, later, explicitly authorized unit per
+      VALUATION-0002 §6.
     completion_criteria: >
-      Not met. Requires, at minimum: VALUATION-0001 merged with its
-      pinned hash verified; a later, separate implementation PR executing
-      PROTOCOL_V1.md exactly (the complete 49-cell matrix, all four
-      research-question findings, the required limitations section),
-      itself independently reviewed and principal-accepted; and — only if
-      a future application phase is ever separately proposed and
-      accepted — its own further, separate governance decision before any
-      methodology is selected, adopted, or applied to a real company
-      (VALUATION-0001 §5, protocol §14/§15 — no result automatically
-      changes policy).
+      Not met for WS-0015 as a whole. Met so far: VALUATION-0001 merged
+      with its pinned hash verified (valuation0001-governance-pr-merged);
+      the implementation report merged, independently reviewed, and
+      principal-accepted (valuation0001-implementation-report-merged).
+      Not yet met: VALUATION-0002's methodology-doctrine adoption merged
+      with its own independent review and principal acceptance
+      (valuation0002-methodology-doctrine-adoption); and — only if a
+      future application phase is ever separately proposed and
+      accepted — its own further, separate governance decisions for (a)
+      closing the RQ4 evidence-category gap, (b) real-company
+      archetype-category assignment, and (c) real-company valuation
+      execution, each independently reviewed and principal-accepted
+      before any methodology is applied to a real company
+      (VALUATION-0001 §5, VALUATION-0002 §6, protocol §§14/15 — no result
+      automatically changes policy).
     blocker: >
-      VALUATION-0001's governance PR has not yet been independently
-      reviewed or principal-accepted. No implementation PR may open until
-      it merges.
-    active_branch: claude/valuation-0001-research-charter-xg2jz8
+      VALUATION-0002's governance PR has not yet been independently
+      reviewed or principal-accepted. No real-company archetype
+      assignment or valuation work may open until it merges, and neither
+      is authorized even then without its own further, separate
+      governance decision.
+    active_branch: claude/valuation-methodology-adoption-sdiaof
     active_pr: null
-    last_verified_main_sha: 1921864326f2cc75609b1c91037c24e333c4e3d0
+    last_verified_main_sha: 5066168b681a0c720a52b61044f220e38d21ffda
     last_verified_date: "2026-08-08"
     authorized_by: null
     supersedes: null
