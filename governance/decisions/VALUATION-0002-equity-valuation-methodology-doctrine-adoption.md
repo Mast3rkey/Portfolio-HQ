@@ -125,7 +125,7 @@ the report's own §4.1–§4.7 prose remains the citable reasoning behind every 
 | 4 | Earnings / FCF-yield screens | — | G | A, B, C, D, F | E | — |
 | 5 | Relative valuation / multiples | A, B | G | C, D, E, F | — | — |
 | 6 | ROIC / reinvestment economics | — | B, G | A, C, D, F | E | — |
-| 7 | Scenario / probability-weighted | D, E | A, B, C, F, G | — | — | — |
+| 7 | Scenario / probability-weighted | D, E | — | A, B, C, F, G | — | — |
 
 Two families — 4 (earnings/FCF-yield screens) and 6 (ROIC/reinvestment economics) — never reach
 **primary candidate** for any archetype under this mapping, because the report's own protocol-sourced
@@ -136,11 +136,18 @@ input to, not a replacement for, an intrinsic-value method," protocol §4 item 6
 report's own family-wide characterization, not an inference invented by this decision. Family 7
 (scenario/probability-weighted) reaches **primary candidate** only for archetypes D and E, where the
 report's own text explicitly frames it as first-order rather than supplementary ("not merely a
-supplementary check," "the strongest, least-qualified fit in the entire matrix") — everywhere else it
-is explicitly a supplement to another family's primary method. No family is unconditionally prohibited
-or unconditionally a primary candidate across all seven archetypes — this table itself is the direct,
-mechanical expression of the RQ1 finding adopted in §1: methodology selection remains
-archetype-conditioned in every case, never flattened to a single "best method."
+supplementary check," "the strongest, least-qualified fit in the entire matrix"). For every other
+archetype (A, B, C, F, G), the report rates family 7 `defensible_with_adjustment`, not `defensible`
+(report §4/§4.7) — under the mapping rule's own unconditional `defensible_with_adjustment` →
+**Adjustment-required** row (first table above), these five cells are **adjustment-required**, not
+secondary/corroborative: the mapping rule's Primary/Secondary distinction applies only to
+`defensible`-rated cells, and the report's own language describing one of these five as, for example,
+"a disclosed supplement to the DDM/excess-return primary method" (archetype C) names the *content of
+the required adjustment* — use alongside, not instead of, a primary method — not a downgrade of its
+governed role below adjustment-required. No family is unconditionally prohibited or unconditionally a
+primary candidate across all seven archetypes — this table itself is the direct, mechanical expression
+of the RQ1 finding adopted in §1: methodology selection remains archetype-conditioned in every case,
+never flattened to a single "best method."
 
 ### 3. False-precision protections adopted as binding doctrine for any future application
 
