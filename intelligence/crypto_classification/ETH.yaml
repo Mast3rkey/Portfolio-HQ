@@ -1,0 +1,158 @@
+schema_version: '1.0'
+instrument_id: ETH
+asset_type: cryptocurrency
+network_fundamentals:
+  consensus_mechanism: proof_of_stake
+  adoption_trend_category: growing_usage
+economic_model:
+  supply_model: disinflationary_schedule
+  fee_accrual_applicable: true
+  fee_accrual_basis: Under EIP-1559, the base transaction fee is permanently burned (removing ETH from
+    circulating supply on every block), while priority fees ("tips") and MEV accrue to proof-of-stake
+    validators. Over the 90 days to 2026-07-27, validators earned roughly 254,000 ETH in issuance while
+    base-fee burns removed only about 5,200 ETH, leaving net supply growth of roughly +0.21% for that
+    window -- the burn is demand-sensitive (rising with network activity, fading when activity softens),
+    so the net issuance/burn balance genuinely varies period to period rather than following a fixed schedule
+    like Bitcoin's halving.
+  staking_applicable: true
+  staking_basis: Native proof-of-stake staking currently yields approximately 2.78-3.3% APY (figures vary
+    by source and measurement date) across roughly 897,000-1,240,000 active validators. Staked ETH climbed
+    from approximately 35.6 million ETH (January 1, 2026) to approximately 39.7 million ETH (June 15,
+    2026) -- roughly 23-32% of the ~121.7 million ETH circulating supply, depending on the specific measurement
+    date and source. Liquid-staking protocol Lido alone holds an approximately 47.4-61.7% share of the
+    liquid-staked-ETH market (figures vary by source), with its own TVL reported in the $27.6-32 billion
+    range.
+liquidity_and_market_structure:
+  liquidity_tier: high_liquidity
+  market_structure_notes: Approximately $229 billion market capitalization as of 2026-08-07 (ranked second
+    by market capitalization among all cryptocurrencies), with reported 24-hour trading volume in the
+    approximately $7-9 billion range (figures vary modestly by data provider). Ethereum DeFi total-value-locked
+    rose 4.11% over the trailing 30 days to approximately $41.54 billion as of 2026-08-06, with Ethereum
+    accounting for roughly 13.7% of all on-chain DEX volume globally on that date. Broadly listed across
+    major centralized and decentralized exchanges.
+custody_and_counterparty_risk:
+  custody_model: exchange_custodied
+  smart_contract_risk_category: smart_contract_platform_material_surface
+correlation_and_volatility:
+  historical_volatility_category: high_volatility
+  cross_coin_correlation_status: not_yet_measured
+regulatory_and_structural_uncertainty:
+  disclosed_regulatory_matter_exists: true
+  matter_summary_and_citation: On 2026-03-17, the SEC and CFTC jointly issued interpretive guidance formally
+    classifying Ethereum -- together with 15 other digital assets including Bitcoin and Solana -- as a
+    digital commodity rather than a security under federal law, ending a multi-year period of regulatory
+    ambiguity. The same guidance's disclosed staking-specific interpretation states that staking activities
+    on proof-of-stake networks (directly applicable to Ethereum) are not securities transactions, covering
+    self-staking, self-custodial staking with a third party, custodial arrangements, and liquid staking.
+    A further, separate formal rulemaking proposal (reported at 400+ pages) was expected within weeks
+    of the guidance to provide additional implementation detail and safe-harbor provisions. The same guidance
+    explicitly does not resolve the CFTC's own regulatory authority over digital-commodity spot markets
+    and intermediaries -- multiple law-firm analyses describe this gap as requiring further rulemaking
+    and, most likely, congressional action to fully resolve.
+  structural_uncertainty_category: disclosed_and_unresolved
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: The primary source attempted for this record (ethereum.org) was blocked
+    by this environment's network egress policy and could not be directly inspected; every fact below
+    rests on WebSearch-aggregated secondary sources, cross-corroborated across multiple independent outlets
+    where possible. Reported figures for staking APY, validator count, staked-ETH percentage, and 24-hour
+    trading volume vary modestly across sources depending on measurement date and methodology -- ranges,
+    not single point figures, are recorded above rather than a false precision.
+provenance:
+  sources:
+  - source_identifier: Ethereum.org, "Understanding ETH Supply and Issuance", ethereum.org/eth/supply/
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: attempted_not_directly_inspected
+    limitation: Blocked by this environment's network egress proxy on the ethereum.org domain.
+  - source_identifier: WebSearch aggregation on Ethereum's proof-of-stake validator count and staking
+      growth -- 35,623,779 ETH staked across 1,143,333 validators as of January 1, 2026, rising to 39,673,448
+      ETH and 1,239,795 validators by June 15, 2026 (a net gain of ~4.05 million ETH and ~96,462 validators);
+      the validator entry queue reached 3,589,414 ETH with a 62-day, 8-hour queue delay as of May 20,
+      2026; native staking APR compressed to 2.78% across roughly 897,000 active validators
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on EIP-1559 fee burn and Ethereum's supply dynamics -- base
+      fees are permanently burned while priority fees/MEV accrue to validators; over the 90 days to 2026-07-27,
+      validators earned ~254,000 ETH in issuance against ~5,200 ETH burned, net supply growth of ~+0.21%
+      for the window; over 4.5 million ETH has been permanently destroyed since EIP-1559 launched in August
+      2021; approximately 120-122 million ETH is in circulating supply
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on Ethereum liquid staking and smart-contract risk -- Lido
+      Finance's TVL reported at $27.6-32 billion with a 47.4-61.7% share of the liquid-staked-ETH market
+      (figures vary by source); Ethereum staking yields compressed to approximately 3.3% APY in 2026;
+      Lido's smart contracts are audited by firms including Sigma Prime and MixBytes; Lido holds roughly
+      28% of staked ETH, approaching but self-limited below a threshold that could theoretically influence
+      consensus
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on Ethereum market capitalization, trading volume, and DeFi
+      activity -- approximately $229.47 billion market capitalization (#2 by market capitalization) as
+      of 2026-08-07, with reported 24-hour trading volume ranging $7.05-8.978 billion across different
+      data providers; Ethereum DeFi TVL rose 4.11% over 30 days to ~$41.54 billion as of 2026-08-06, with
+      Ethereum accounting for ~13.7% of on-chain DEX volume that day
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation on the 2026-03-17 SEC/CFTC joint interpretive guidance classifying
+      16 digital assets (including Bitcoin, Ethereum, and Solana) as digital commodities, its disclosed
+      staking-specific interpretation (staking is not a securities transaction, covering self-staking,
+      self-custodial staking, custodial arrangements, and liquid staking), and its disclosed unresolved
+      gap regarding CFTC authority over digital-commodity spot markets and intermediaries
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: WebSearch aggregation comparing Ethereum's Turing-complete smart-contract environment
+      (Solidity/EVM) to Bitcoin's deliberately limited Script language -- Ethereum's stateful model permits
+      writing and executing arbitrary programs, a design that has also produced high-profile smart-contract
+      vulnerabilities (e.g., the 2016 DAO hack, a reentrancy exploit causing roughly $60 million in losses
+      at then-current prices)
+    source_type: secondary
+    as_of_date: '2026-08-07'
+    access_status: consulted_via_search_aggregation
+  - source_identifier: CLAUDE.md, this repository's Portfolio Doctrine section -- confirms the account's
+      actual custody arrangement (Robinhood) for the crypto sleeve, including ETH
+    source_type: primary
+    as_of_date: '2026-08-07'
+    access_status: directly_inspected
+uncertainty_summary: The primary source attempted for this record (ethereum.org) was blocked by this environment's
+  network egress policy and could not be directly inspected; every fact below rests on WebSearch-aggregated
+  secondary sources, cross-corroborated across multiple independent outlets where possible. Reported figures
+  for staking APY, validator count, staked-ETH percentage, and 24-hour trading volume vary modestly across
+  sources depending on measurement date and methodology -- ranges, not single point figures, are recorded
+  above rather than a false precision.
+evidence_quality_status: partial
+structural_risk_flags:
+  custody_model: exchange_custodied
+  smart_contract_risk_category: smart_contract_platform_material_surface
+  cross_coin_correlation_status: not_yet_measured
+record_status: sealed
+valuation_and_economic_assessment_readiness:
+  status: valuation_required
+  rationale: No governed valuation methodology exists in this repository for any asset type -- equity,
+    ETF, or cryptocurrency alike (TIER-0009 SS G.4/SS G.5's forced equity-sleeve design; XASSET-0002 supporting
+    artifact SS6.3 and XASSET-0004 SS F carry the same discipline forward for this coin). This classification
+    record supplies structural, categorical facts only; it neither computes nor implies a fair value,
+    target price, target_pct, target range, or maximum position size.
+cross_asset_handoff:
+  role_summary: proof_of_stake / growing_usage
+  evidence_quality_summary: partial
+  uncertainty_summary: The primary source attempted for this record (ethereum.org) was blocked by this
+    environment's network egress policy and could not be directly inspected; every fact below rests on
+    WebSearch-aggregated secondary sources, cross-corroborated across multiple independent outlets where
+    possible. Reported figures for staking APY, validator count, staked-ETH percentage, and 24-hour trading
+    volume vary modestly across sources depending on measurement date and methodology -- ranges, not single
+    point figures, are recorded above rather than a false precision.
+  liquidity_risk_summary: high_liquidity
+  overlap_or_correlation_signal: not_yet_measured
+  valuation_readiness: valuation_required
+abstention_index: []
+sealed_at: '2026-08-07T23:56:51Z'
+governing_decision: XASSET-0004
+drafting_session_or_shard_id: single-pass-crypto-implementation
+content_sha256: c9b931471e876b947c78a0a0c27412bdf003bc0133f5c53976442dab593caa73
+cohort_manifest_entry: intelligence/crypto_classification/COHORT_MANIFEST.yaml#ETH
