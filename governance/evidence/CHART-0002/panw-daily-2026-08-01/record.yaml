@@ -88,9 +88,11 @@ content:
   - Volume panel numeric labels read "6.11M" (yellow box) and "5.03M" (teal box)
   - Green-bordered "E" square markers appear at four points along the volume-panel timeline; no "D"-style
     circular markers are visible in this image
-  - Third panel contains a purple line and yellow line on a 0-120 scale, labeled "59.70" (magenta/pink-toned
-    box) and "54.58" (yellow box)
-  - That panel's upper dashed line is magenta/pink (~78 level) and lower dashed line is green (~40 level)
+  - Third panel contains a purple line and yellow line on a 0-120 scale, labeled "59.70" (yellow box)
+    and "54.58" (purple box)
+  - That panel has three dashed horizontal reference lines -- a red line near the top (axis-calibrated
+    to approximately 70; pixel-verified plain red, not magenta/pink), a gray/blue-gray line at the panel's
+    midpoint (approximately 50), and a green line near the bottom (approximately 30)
   - Bottom panel contains a single red line on an approximately 0-30 scale, labeled "18.67"
   - 'X-axis date labels read: Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug'
   - '"TradingView" wordmark/logo appears at bottom-left'

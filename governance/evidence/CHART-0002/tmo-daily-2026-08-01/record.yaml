@@ -95,10 +95,11 @@ content:
   - Green "E" and blue "D" circular markers appear periodically along the bottom of the volume panel
   - A momentum-style panel below volume shows a purple line and a yellow line with right-axis tags "66.51"
     (yellow) and "66.36" (purple); axis labeled 0.00 to 100.00 in increments of 20
-  - Dashed horizontal reference lines appear in this panel at approximately the 80 and 40 gridline levels,
-    plus a lighter dashed line near 60
-  - A shaded purple/lavender region appears below the lower dashed reference line in this panel around
-    the Feb-Mar period
+  - This panel has three dashed horizontal reference lines -- a red/pink line near the top (axis-calibrated,
+    against this image's own printed gridlines, to approximately 70), a gray/blue-gray line at the panel's
+    midpoint (approximately 50), and a green line near the bottom (approximately 30)
+  - A shaded purple/lavender region appears below the lowest (green, ~30) dashed reference line in this
+    panel around the Feb-Mar period
   - Bottom-most panel shows a single red line with right-axis tag "19.84"; axis labeled 8.00 to 24.00
   - 'Bottom date axis is labeled: Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep'
   - '"TradingView" wordmark/logo appears bottom-left'

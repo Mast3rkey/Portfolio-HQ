@@ -82,19 +82,21 @@ content:
   - 'Watermark text: "nichmasters created with TradingView.com, Aug 01, 2026 16:43 UTC-4"'
   - 'Large semi-transparent overlay text: "COST, 1D"'
   - 'Company-name watermark beneath it: "Costco Wholesale Corporation"'
-  - Right-side price axis labeled in $20 increments from roughly 820.00 (bottom, partially cut) to 1,220.00
+  - Right-side price axis labeled in $20 increments; visible legibly from 1,220.00 at the top down through
+    720.00 near the bottom of the volume panel -- no cropping is present anywhere in this visible range
   - Dotted line labeled "High 1,096.50"
   - Dotted line labeled "Low 844.06"
   - Red price tag reads "961.41"
-  - Yellow price tag reads "957.72"
-  - Magenta-toned tag reads "951.89" with "-2.22%" beneath it
-  - Orange dotted-line tag reads "939.35"
+  - Orange price tag reads "957.72"
+  - Solid red tag reads "951.89" with "-2.22%" beneath it
+  - Yellow dotted-line tag reads "939.35"
   - Volume panel shows a yellow tag "2.05M" and a red-toned tag "1.76M"
   - Volume-panel bottom row carries green/red "E" hexagons and blue circular "D" icons at multiple points
   - A single unusually tall dark-red volume bar appears near the Dec/Jan region of the volume panel, clearly
     taller than surrounding bars
-  - Oscillator panel (0-100 axis) shows a purple tag "49.83" and a yellow tag "46.71", with a dashed pink
-    line near 75 and a dashed green line near 40
+  - Oscillator panel (0-100 axis) shows a purple tag "49.83" and a yellow tag "46.71", with three dashed
+    horizontal reference lines -- red/pink near the top (axis-calibrated to approximately 70), gray/blue-gray
+    at the panel's midpoint (approximately 50), and green near the bottom (approximately 30)
   - Bottom sub-panel axis runs roughly 10.00-40.00 with a red line and red tag "23.86"
   - 'Date axis reads: Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep'
   - '"TradingView" wordmark appears bottom-left'
@@ -128,7 +130,6 @@ content:
   uncertainties:
   - No indicator names/parameters are legible for either overlay line, the oscillator, or the bottom panel
   - Reference anchor for the "-2.22%" figure is not stated
-  - Bottom edge of the right-hand price axis is partially cut off/not fully legible
   - Timezone convention for "UTC-4" not stated as exchange vs. device time
   - Exact calendar date of the leftmost candle not numerically given
   - Whether the rightmost visible candle is a completed or in-progress session is not stated

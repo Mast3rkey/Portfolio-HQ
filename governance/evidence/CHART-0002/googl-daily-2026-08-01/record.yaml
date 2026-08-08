@@ -92,8 +92,10 @@ content:
   - 'Volume value boxes: "46.5M" (teal), "35.16M" (yellow)'
   - Green hexagon "E" markers and blue circle "D" markers along the volume-panel bottom at multiple x-axis
     points
-  - 'Oscillator subpanel: yellow and purple lines, axis 0-120 labeled in 20-unit steps, dashed line near
-    80 and near 20'
+  - 'Oscillator subpanel: yellow and purple lines, axis 0-120 labeled in 20-unit steps; three dashed horizontal
+    reference lines -- red/pink near the top (axis-calibrated, against this image''s own 0-120-scale gridlines,
+    to approximately 70), gray/blue-gray at the panel''s midpoint (approximately 50), and green near
+    the bottom (approximately 30)'
   - 'Oscillator value boxes: "51.07" (purple), "42.54" (yellow)'
   - 'Bottom subpanel: single red line, axis 0.00-16.00, current value box "14.40" (red)'
   - 'X-axis labels: Jul, Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug -- this chart''s

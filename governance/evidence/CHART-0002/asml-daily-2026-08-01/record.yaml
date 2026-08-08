@@ -89,12 +89,13 @@ content:
   - Red price tag reads "1,751.43"
   - Yellow price tag reads "1,744.10"
   - Orange dotted-line tag reads "1,391.29"
-  - Volume panel shows a yellow tag "2.02M" and a teal tag reading "1.6M" (partially truncated at the
-    panel edge)
+  - Volume panel shows a yellow tag "2.02M" and a teal tag reading "1.6M" -- both tags are fully legible;
+    a background axis gridline label is partially obscured behind the teal tag, not the tag's own text
   - Volume-panel bottom row carries alternating green/red "E" hexagon icons and blue circular "D" icons
     at multiple points
-  - Oscillator panel (0-100 axis) shows a purple tag "43.34" and a yellow tag "46.55", with a dashed pink
-    line near 80 and a dashed green line near 40
+  - Oscillator panel (0-100 axis) shows a purple tag "43.34" and a yellow tag "46.55", with three dashed
+    horizontal reference lines -- red/pink near the top (axis-calibrated to approximately 70), gray/blue-gray
+    at the panel's midpoint (approximately 50), and green near the bottom (approximately 30)
   - Bottom sub-panel axis runs 0.00-120.00 with a red line and red tag "95.20"
   - 'Date axis reads: Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep'
   - '"TradingView" wordmark appears bottom-left'
@@ -137,8 +138,8 @@ content:
   - Timezone convention (exchange vs. device local) for "UTC-4" is not stated
   - Exact calendar date of the leftmost candle is not numerically given
   - Whether the rightmost visible candle represents a completed session or a partial/live one is not stated
-  - The precise numeric values of the oscillator's dashed threshold lines (beyond the two labeled current
-    readouts) are not printed
+  - The oscillator's ~70/~50/~30 dashed reference-line values (beyond the two labeled current readouts)
+    are axis-calibrated estimates, not values printed directly on the lines themselves
 thesis_relationship:
   related_holding: ASML
   related_intelligence_record: intelligence/companies/ASML.yaml

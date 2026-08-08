@@ -90,12 +90,16 @@ content:
   - A red price tag reads "246.88"
   - A yellow price tag reads "243.86"
   - An orange dotted line carries a tag reading "235.05"
-  - Volume sub-panel shows a yellow line labeled "51.75M" and a teal value tag reading "129.05M"
-  - Small dark hexagon icons labeled "E" appear at multiple points along the bottom of the volume panel
+  - Volume sub-panel shows a yellow moving-average line running through the bars, a yellow value tag
+    reading "51.75M", and a separate teal value tag reading "129.05M"
+  - Small dark pentagon/house-shaped icons (not hexagons -- five-sided, flat bottom, pointed top), green-bordered
+    with a green "E" letter, appear at multiple points along the bottom of the volume panel
   - A third (oscillator) sub-panel has a 0-100 axis, a purple tag reading "67.70", and a yellow tag reading
     "47.81"
-  - A dashed pink horizontal reference line sits in the oscillator panel near the 67.70 level; a dashed
-    green line sits lower in the same panel
+  - This oscillator panel has three dashed horizontal reference lines -- a red/pink line near the top (axis-calibrated
+    to approximately 70), a gray/blue-gray line at the panel's midpoint (approximately 50), and a green
+    line near the bottom (approximately 30) -- the upper line is not itself positioned at the current
+    67.70 purple-tag reading, which sits just below it
   - A fourth (bottom) sub-panel has an axis labeled from 2.00 to 12.00, with a red line and a red tag
     reading "10.68"
   - 'Bottom date axis is labeled: Jul, Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug'
@@ -114,9 +118,9 @@ content:
   - The yellow and red overlay lines on the price panel move together with the candles at a similar pace,
     while the orange dotted line moves more slowly and stays below price for most of the chart's visible
     history
-  - Volume bars are tallest at the points aligned with the "E" hexagon markers
-  - The oscillator-panel purple line ends near its own labeled reading of 67.70, close to the dashed pink
-    reference line, at the chart's right edge
+  - Volume bars are tallest at the points aligned with the "E" pentagon/house-shaped markers
+  - The oscillator-panel purple line ends near its own labeled reading of 67.70, close to the red/pink
+    (~70) reference line, at the chart's right edge
   inferences:
   - The yellow and red lines overlaid on the candlesticks are most likely short/medium-period moving averages
     -- an inference from typical charting convention, not a confirmed fact, since no period parameter
@@ -125,8 +129,8 @@ content:
     slower-reacting shape relative to price -- not confirmed by any visible label
   - The third (0-100 scale) sub-panel is likely a bounded momentum oscillator such as RSI or Stochastic,
     inferred from its scale and dashed reference lines -- the image contains no text naming this indicator
-  - The green "E" hexagon icons are likely earnings-date markers, an inference from a common TradingView
-    icon convention -- no on-image text confirms this
+  - The green "E" pentagon/house-shaped icons are likely earnings-date markers, an inference from a common
+    TradingView icon convention -- no on-image text confirms this
   - The bottom sub-panel (small numeric range, single red line) is possibly a volatility-related indicator
     such as ATR, inferred from its scale and smooth shape -- not confirmed by a label
   - The green "271.58 / +28.17%" tag most likely represents the latest price and a percent change measured
@@ -145,6 +149,8 @@ content:
     is not labeled
   - Whether any candle beyond the visible right edge exists (i.e., whether Aug 01, 2026 is itself the
     last completed candle or an in-progress one) is not stated
+  - The oscillator panel's ~70/~50/~30 dashed reference-line values are axis-calibrated estimates, not
+    values printed directly on the lines themselves
 thesis_relationship:
   related_holding: AMZN
   related_intelligence_record: intelligence/companies/AMZN.yaml

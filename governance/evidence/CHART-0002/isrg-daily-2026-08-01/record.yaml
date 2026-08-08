@@ -94,8 +94,9 @@ content:
   - 'Volume value boxes: "4.85 M" and "2.46 M"'
   - Green hexagon "E" markers only (four visible) along the volume-panel bottom; no blue "D" markers observed
     in this image
-  - 'Oscillator subpanel: yellow and purple lines, axis 0-100, dashed red line near 78-80, dashed gray
-    line near 60, and a distinct dashed green line near ~33'
+  - 'Oscillator subpanel: yellow and purple lines, axis 0-100; three dashed horizontal reference lines:
+    red/pink near the top (axis-calibrated to approximately 70), gray/blue-gray at the panel''s midpoint
+    (approximately 50), and a distinct green line near the bottom (approximately 30)'
   - 'Oscillator value boxes: "38.27" (purple), "33.33" (yellow)'
   - 'Bottom subpanel: single red line, axis 4.00-28.00, current value box "18.35" (red)'
   - 'X-axis labels: Aug, Sep, Oct, Nov, Dec, 2026, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep'
@@ -122,12 +123,14 @@ content:
   - The green "E" markers likely denote earnings dates by convention; the apparent absence of "D" markers
     in this particular image may indicate no dividend events fell within the displayed window, or may
     simply reflect a difference not otherwise explained -- genuinely uncertain, not confirmed either way
-  - The added green dashed line in the oscillator panel (not seen on some other charts) may represent
-    a custom oversold reference level, an inference from its distinct color and lower position, not confirmed
-    as to exact value or purpose
+  - The green dashed line in the oscillator panel likely represents an oversold reference level, an inference
+    from its distinct color and lower position -- this same three-line (red/gray/green) reference-band
+    pattern, at approximately the same ~70/~50/~30 levels, is present on other tickers' charts in this
+    same batch, not a configuration distinct to this specific chart
   uncertainties:
   - No parameter/period labels for any overlay or subpanel indicator
-  - Purpose/value of the extra green dashed oscillator reference line not labeled
+  - The oscillator's ~70/~50/~30 dashed reference-line values are axis-calibrated estimates, not values
+    printed directly on the lines themselves
   - Whether "D" markers are truly absent or simply not visible/legible in this crop is uncertain
   - Exact date of the large single-bar gap-up candle not numerically labeled
   - Precise numeric values of overlay lines at points other than the current right-edge boxes not labeled
