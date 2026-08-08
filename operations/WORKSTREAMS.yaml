@@ -9120,6 +9120,114 @@ workstreams:
         pr: 272
         status: in_progress
         date: "2026-08-08"
+      - gate: xasset0004-implementation-post-merge-verification
+        description: >
+          Lane M factual synchronization, folded into this functional-
+          doctrine-and-overlap-architecture design filing per OPS-0009/
+          OPS-0008 §4(a)'s established read-only-by-default convention
+          (matching XASSET-0003's identical synchronization of XASSET-0002's
+          own stale gate, and the TIER-0002/REL-0002-REL-0006/PI-0039/
+          REL-0007/TIER-0007/TIER-0009/TIER-0011/XASSET-0002/XASSET-0003/
+          XASSET-0004 chain). The gate immediately above
+          (xasset0004-crypto-classification-implementation, status:
+          in_progress, pr: 272) is accurate as originally filed but stale —
+          independently re-confirmed this session via the GitHub API, not
+          assumed: PR #272's implementation-summary body at exact head
+          6eee128ce85bdea63a3fd65f843835f42a243f0d; first independent
+          exact-head review (pullrequestreview-4887530037, CHANGES REQUIRED
+          — 0 BLOCKING / 0 MAJOR / 2 MINOR / 2 non-actionable NOTE); bounded
+          correction (issuecomment-5223594454, corrected head
+          d65cc0148ed197953e7db4e6056d7e5d56681259, resolving both MINOR
+          findings — an audit workstream-count correction and nine new
+          validate_cohort_manifest negative-path tests, bringing
+          test_crypto_classification_validator.py to 142 passing); corrected-
+          head delta review (pullrequestreview-4887618331, APPROVED FOR
+          PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR / 2
+          non-actionable NOTE carried forward); principal acceptance
+          (issuecomment-5223695674, accepted head
+          d65cc0148ed197953e7db4e6056d7e5d56681259); merge (merge commit
+          e5446cd5c4bfce744691fd1914ec8ef098286839, parents
+          7b9af50af001ed0db5933a6d65b18b19f9952ffc and
+          d65cc0148ed197953e7db4e6056d7e5d56681259, both independently
+          re-confirmed via git show); merge-commit CI independently
+          re-fetched — workflow run 31231452840, job 93035960909, status:
+          completed / conclusion: success, head_sha matching exactly. Local
+          HEAD, origin/main, and GitHub main independently re-confirmed
+          identical at e5446cd5c4bfce744691fd1914ec8ef098286839 before this
+          design session's own first edit. WS-0014 step 5 (crypto
+          classification content, §I item 7 / §J step 5) is therefore
+          complete and merged. The original gate's own text above is left
+          unedited, per this repository's established convention of never
+          rewriting a historical gate description in place.
+        pr: 272
+        status: complete
+        date: "2026-08-08"
+      - gate: xasset0005-functional-doctrine-and-overlap-architecture-design
+        description: >
+          XASSET-0005 additively defines XASSET-0001 §J steps 6-7 (cash/
+          reserve/GLD/debt functional-doctrine architecture plus overlap and
+          concentration-model architecture, batched as one design-only unit
+          per XASSET-0001's own explicit permission: "cash/GLD/debt doctrine
+          + overlap-model architecture (steps 6-7) — permitted to batch only
+          where no asset-specific judgment occurs"). Designs a shared
+          functional-doctrine schema for exactly four capital-use types —
+          CASH, RESERVE, GLD_DEFENSIVE_ROLE, DEBT_REDUCTION — sharing one
+          schema shape (six substantive axes plus evidence_quality:
+          functional_role, hard_constraint_status, economic_assessment_
+          readiness, liquidity_character, capital_preservation_character,
+          freshness_state), with hard_constraint_status kept structurally
+          independent of economic_assessment_readiness (two separate axes,
+          two separate envelope projections, no cross-derivation permitted),
+          a mandatory content-hash structural_reference pinning
+          GLD_DEFENSIVE_ROLE to GLD's already-sealed ETF structural record
+          (intelligence/etf_classification/GLD.yaml, verified via a
+          read-only reuse of etf_classification_validator.canonical_record_
+          hash() — never duplicating or re-deriving any of its seven
+          structural fields), and a two-part economic_assessment_readiness
+          shape for DEBT_REDUCTION only (avoided_borrowing_cost_readiness
+          and survivability_and_buffer_benefit_readiness, independently
+          forced to assessment_required, never blended). Also designs an
+          eight-dimension overlap/concentration-model architecture (issuer
+          overlap/ETF look-through, economic-role overlap, correlated-loss
+          mechanisms, sleeve concentration, ETF/direct-equity duplication, a
+          crypto-correlation interface placeholder, a defensive-offset
+          interface, and leverage/debt interaction), each its own
+          independent record extending an already-existing repository
+          mechanism (issuer_lookthrough.yaml, caps.clusters,
+          intelligence/relationships/, targets.yaml's destination weights,
+          the crypto framework's correlation_and_volatility axis, this
+          filing's own GLD_DEFENSIVE_ROLE interface, margin_state.py's
+          existing classification output) — with no composite overlap or
+          risk score anywhere, enforced both structurally (no shared
+          envelope across the eight records) and by a dedicated forbidden-
+          pattern validator scan. Both schemas carry zero numeric fields of
+          any kind — stricter than the ETF framework's own expense_ratio_pct
+          carve-out — since a debt-reduction "readiness" schema sits too
+          close to an implicit avoided-interest calculation to draw a
+          narrow exception. Specifies a combined validator specification
+          (fourteen requirements) and a focused test inventory for a future,
+          separate implementing PR, both drawing explicit lessons from this
+          repository's own prior validator-review history (closed-schema
+          extra-key gaps, independent-mechanism verification, a required
+          envelope field needing its own independent presence/type check,
+          self-declared-flag-without-independent-scan gaps). Also folds in
+          (Lane M) the confirmation that XASSET-0004's own authorized
+          implementation PR (#272) is fully merged, reviewed, corrected,
+          accepted, and post-merge verified — see the
+          xasset0004-implementation-post-merge-verification gate immediately
+          above. Classifies no capital-use type; computes no overlap or
+          concentration figure; determines no GLD functional role;
+          calculates no avoided-borrowing-cost number; creates no
+          intelligence/functional_doctrine/ or intelligence/overlap_model/
+          file; reopens, weakens, or restates no leverage cap or buffer
+          floor. XASSET-0001 §J's remaining steps (8 through 13) — cross-
+          asset synthesis, sleeve-level targets, instrument-level targets,
+          chart-informed deployment, and the final independent audit —
+          remain wholly unauthorized and each requires its own separate,
+          future, explicit principal authorization.
+        pr: null
+        status: in_progress
+        date: "2026-08-08"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -9131,22 +9239,25 @@ workstreams:
       - governance/audits/WS0014_ETF_CLASSIFICATION_IMPLEMENTATION_20260807.md
       - governance/decisions/XASSET-0004-ws0014-crypto-classification-content-authorization.md
       - governance/audits/WS0014_CRYPTO_CLASSIFICATION_IMPLEMENTATION_20260808.md
+      - governance/decisions/XASSET-0005-functional-doctrine-and-overlap-concentration-architecture.md
+      - governance/audits/WS0014_FUNCTIONAL_DOCTRINE_AND_OVERLAP_CONCENTRATION_ARCHITECTURE_DESIGN_20260808.md
     next_action: >
-      XASSET-0004 is merged and effective (see the xasset0004-post-merge-
-      verification gate above). This crypto classification implementation PR
-      (the xasset0004-crypto-classification-implementation gate above, sealed
-      BTC/ETH/SOL records plus validator/tests/audit) requires its own full
-      independent exact-head review under OPS-0007 §1, any required bounded
-      correction and re-review, explicit principal acceptance, merge, and
-      post-merge verification before that gate may be marked complete (the
-      "status: in_progress"/"pr: null" above is not an oversight — this
-      session does not mark its own unmerged work complete). No Milestone-7-
-      style completion determination for step 5 exists yet — that remains a
-      separate, later, explicit principal authorization once this
-      implementation merges, matching the TIER-0005→Milestone-6→TIER-0006
-      and XASSET-0003→PR-#270 precedent. Step 2 and steps 6 through 12
-      remain blocked on their own future, separate, explicit principal
-      authorization each.
+      XASSET-0004 is merged and effective; PR #272 (WS-0014 step 5, crypto
+      classification content) is merged and effective (see the
+      xasset0004-implementation-post-merge-verification gate above). This
+      functional-doctrine-and-overlap-architecture design filing (the
+      xasset0005-functional-doctrine-and-overlap-architecture-design gate
+      above) requires its own full independent exact-head review under
+      OPS-0007 §1, any required bounded correction and re-review, explicit
+      principal acceptance, merge, and post-merge verification before that
+      gate may be marked complete (the "status: in_progress"/"pr: null"
+      above is not an oversight — this session does not mark its own
+      unmerged work complete). No completion determination for steps 6-7
+      exists yet — that remains a separate, later, explicit principal
+      authorization once this design filing merges, matching the
+      TIER-0005→Milestone-6→TIER-0006 and XASSET-0003→PR-#270 precedent.
+      Step 2 and steps 8 through 13 remain blocked on their own future,
+      separate, explicit principal authorization each.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -9178,20 +9289,25 @@ workstreams:
       xasset0003-implementation-post-merge-verification gate above.
       XASSET-0004 (PR #271) is complete and merged — see the
       xasset0004-post-merge-verification gate above. Step 5 (crypto
-      classification content, §I item 7) is in_progress: this session's own
-      draft implementation PR (the xasset0004-crypto-classification-
-      implementation gate above) delivers sealed BTC/ETH/SOL records,
-      crypto_classification_validator.py, test_crypto_classification_
-      validator.py, and one retained implementation audit — blocked only on
-      its own independent exact-head review, correction if needed, principal
-      acceptance, merge, and post-merge verification, and on a later,
-      separate completion-determination filing once merged. Step 2 and
-      steps 6 through 13 remain blocked on their own future, separate,
+      classification content, §I item 7) is complete and merged (PR #272)
+      — see the xasset0004-implementation-post-merge-verification gate
+      above. Steps 6-7 (cash/reserve/GLD/debt functional doctrine plus
+      overlap and concentration-model architecture, batched design-only per
+      XASSET-0001 §J's own explicit permission) are in_progress: this
+      session's own draft governance filing (the
+      xasset0005-functional-doctrine-and-overlap-architecture-design gate
+      above) delivers the full functional-doctrine and overlap/
+      concentration-model schema design plus a combined validator/test
+      specification for a future, separate implementing PR — blocked only
+      on its own independent exact-head review, correction if needed,
+      principal acceptance, merge, and post-merge verification, and on a
+      later, separate completion-determination filing once merged. Step 2
+      and steps 8 through 13 remain blocked on their own future, separate,
       explicit principal authorization each — none is authorized to begin
-      by this entry or by steps 1/3/4/XASSET-0004's own work.
-    active_branch: claude/btc-eth-sol-classification-snl488
-    active_pr: 272
-    last_verified_main_sha: 7b9af50af001ed0db5933a6d65b18b19f9952ffc
+      by this entry or by steps 1/3/4/5/XASSET-0005's own work.
+    active_branch: claude/xasset-0005-doctrine-overlap-l1dd71
+    active_pr: null
+    last_verified_main_sha: e5446cd5c4bfce744691fd1914ec8ef098286839
     last_verified_date: "2026-08-08"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
@@ -9262,5 +9378,30 @@ workstreams:
       (draft, unmerged, this session) — see that decision file for the full
       bounded specification and its binding-by-reference table to
       XASSET-0002.
+
+
+      Further controlling principal directive, a later session, 2026-08-08:
+      the PR #272 crypto classification implementation having merged, file
+      the next bounded WS-0014 governance unit — a design-only filing for
+      XASSET-0001 §J steps 6-7 (cash/reserve/GLD/debt functional doctrine
+      plus overlap and concentration-model architecture), batched as one
+      unit since both are shape-only exercises with no asset-specific
+      judgment. CASH and RESERVE must share one doctrine schema with an
+      explicit role/type distinction rather than duplicated schemas; hard
+      constraints and economic-comparison inputs must remain structurally
+      separate (reserve/survival requirements may never be converted into
+      or overridden by a return figure); debt reduction must expose
+      avoided-borrowing-cost readiness separately from survivability/
+      leverage-buffer benefit, never blended into one score or return; GLD's
+      already-sealed ETF structural classification must be consumed by
+      reference only, never duplicated or re-derived, and this filing must
+      not itself decide GLD's actual portfolio role; the overlap/
+      concentration-model architecture must preserve its named dimensions
+      separately, with no composite overlap/risk score. No CASH/RESERVE/
+      GLD/DEBT_REDUCTION record is populated, no overlap/concentration
+      figure is computed, and the 1.8x leverage cap / 30% buffer floor are
+      not reopened. This directive is implemented by XASSET-0005 (draft,
+      unmerged, this session) — see that decision file and its supporting
+      artifact for the full specification.
     supersedes: null
     superseded_by: null
