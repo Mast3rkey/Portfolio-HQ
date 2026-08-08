@@ -9962,7 +9962,7 @@ workstreams:
           (valuation execution) remain separate, later, explicitly
           authorized units, not approached here. This filing does not
           itself review, mark ready, or merge its own PR.
-        pr: null
+        pr: 281
         status: in_progress
         date: "2026-08-08"
     evidence_refs:
@@ -10031,7 +10031,7 @@ workstreams:
       evidence-population work is authorized by it under any
       circumstance.
     active_branch: claude/valuation-0004-stage-2-schema-ulp5tc
-    active_pr: null
+    active_pr: 281
     last_verified_main_sha: 6f70e7d2de0ad202a1386d1e6fb20bb34b2d0b6b
     last_verified_date: "2026-08-08"
     authorized_by: VALUATION-0004 §A/§P (merged)
