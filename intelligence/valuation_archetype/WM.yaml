@@ -1,0 +1,42 @@
+schema_version: '1.0'
+ticker: WM
+primary_archetype: B
+secondary_archetype: F
+rationale: 'WM''s core economics are explicitly infrastructure-like: landfill permitting is described
+  as extremely difficult to newly obtain in most jurisdictions, making the existing ~262-site network
+  a structurally scarce, effectively irreplaceable asset base, reinforced by a disclosed $3 billion 2022-2026
+  growth-capital program funding new recycling and renewable-natural-gas facilities. This combination
+  of long asset lives, high reinvestment intensity, and utility-like recurring demand (20M+ customers)
+  is the defining characteristic. The Healthcare Solutions segment (from the Stericycle acquisition) shows
+  a materially different, lower disclosed margin (19% vs. ~30.9% consolidated adjusted EBITDA margin)
+  and its own integration and synergy-target history, supporting a secondary diversified/multi-segment
+  read without displacing the dominant landfill-network infrastructure economics. Archetype-F test: F
+  was considered and selected as secondary: the Stericycle-derived Healthcare Solutions segment (medical/regulated
+  waste) is described with its own distinct margin trajectory (adjusted operating EBITDA margin expanding
+  from 17% to 19%) and integration history separate from the core landfill/collection business, and Renewable
+  Energy is another distinct, fast-growing line -- but the core landfill/transfer/collection network still
+  represents the large majority of revenue and is described with dominant infrastructure characteristics,
+  so B was selected as primary rather than F.'
+evidence_quality:
+  primary_source_coverage: limited
+  uncertainty_statement: WM's FY2025 revenue could not be reconciled to a single, complete, non-overlapping
+    segment or line-of-business breakdown from any combination of secondary sources available this session
+    -- the packet explicitly instructs treating every revenue-mix figure as partial and directionally
+    indicative only.
+disclosed_evidence_conflicts:
+- Q2 2026 net income is reported inconsistently across sources ($785M vs. $786M); two different debt-to-EBITDA
+  figures are cited for different quarters; the Stericycle deal's original synergy target ('exceeding
+  $125 million') and the later-cited '>$300 million by end of 2027' target could not be reconciled or
+  traced to a documented revision.
+evidence_gap_statement: null
+portfolio_context:
+  gate_exists: true
+  next_gate_references_valuation: true
+  disclosure_note: Sanitized, mechanically-derived fact only -- never used as archetype-determining evidence
+    (VALUATION-0003 SS D/SS E).
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-5
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#WM
+content_sha256: 79a15cd6c3facbeeee0aec9db95c616809443f1d46c5d34a3d340cdc395212b0

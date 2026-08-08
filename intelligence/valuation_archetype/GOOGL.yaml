@@ -1,0 +1,38 @@
+schema_version: '1.0'
+ticker: GOOGL
+primary_archetype: F
+secondary_archetype: A
+rationale: 'Alphabet discloses three segments with genuinely divergent economics: Google Services (the
+  advertising-driven core, $40.589B Q1 2026 operating income on classic high-incremental-margin platform
+  economics), Google Cloud (now segment-profitable at $6.598B operating income but growing capex-intensively
+  at +63% YoY revenue), and Other Bets (a persistent operating loss of -$2.100B with no disclosed profitability
+  path). This structural divergence -- one highly profitable platform business, one profitable-but-reinvestment-heavy
+  infrastructure business, and one venture-stage loss-maker -- is the defining fact pattern for a sum-of-the-parts
+  (F) approach rather than a single blended DCF or multiple. A secondary asset-light-platform lens (A)
+  is appropriate because the largest single revenue and profit driver, Search advertising ($60.399B of
+  $109.896B Q1 2026 revenue), exhibits classic high-incremental-margin network/platform economics, even
+  as capex has more than doubled ($17.2B to $35.7B YoY) to fund AI/data-center infrastructure. Archetype-F
+  test: F was affirmatively selected as primary: Alphabet''s own segment reporting shows materially different
+  economics -- Google Services operating income of $40.589B (Q1 2026) driven predominantly by high-margin
+  advertising, a now-profitable but still fast-growing and capital-intensive Google Cloud segment ($6.598B
+  operating income on 63% YoY revenue growth), and a persistently loss-making Other Bets segment (-$2.100B
+  operating income) with no disclosed near-term profitability path -- supporting a sum-of-the-parts view
+  over a single blended multiple or entity-wide DCF.'
+evidence_quality:
+  primary_source_coverage: partial
+  uncertainty_statement: The more recent Q2 2026 figures (revenue $119.8B, Cloud revenue $24.8B, raised
+    capex guidance to $205B) are secondary-sourced only and have not been verified against Alphabet's
+    own primary 10-Q filing as of this record.
+disclosed_evidence_conflicts:
+- The record's own risk framing still cites the older $180B-$190B FY2026 capex guidance in places even
+  though a later secondary source reports guidance was raised to $205B; the $205B figure is flagged as
+  more current but unconfirmed against a primary source, creating an internal inconsistency between the
+  two capex figures within the same record.
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-2
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#GOOGL
+content_sha256: 454ca61ac7b20143af2f1271570b83f11d13bd2a0a0bd93b176324a8cd013e76

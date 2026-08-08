@@ -1,0 +1,33 @@
+schema_version: '1.0'
+ticker: PANW
+primary_archetype: A
+secondary_archetype: null
+rationale: PANW's economics center on subscription/support revenue recognized over time alongside a smaller
+  shipped-license/hardware component, with NGS ARR of $5.6B, RPO of $15.8B, and a trailing-12-month adjusted
+  free-cash-flow margin of 38.5% -- a high-incremental-margin, platform-licensing profile. The business
+  is one integrated platformization strategy (network, SASE, cloud, Cortex/XSIAM) rather than reportable
+  segments with materially different economics, and reinvestment shows up mainly as acquisition-led platform
+  expansion (QRadar, CyberArk, Chronosphere) rather than heavy fixed-asset capital intensity. A single-quarter
+  GAAP operating loss coexisting with strong non-GAAP operating income and cash flow is a common feature
+  of subscription-platform accounting (deferred revenue, acquisition-related charges), not evidence of
+  a different economic archetype. This fits classic asset-light, recurring-revenue platform economics
+  best.
+evidence_quality:
+  primary_source_coverage: comprehensive
+  uncertainty_statement: NGS ARR is an explicitly non-GAAP operating metric whose scope can expand over
+    time (reducing period-over-period and cross-issuer comparability), and every cited figure traces to
+    a separate researcher's direct filing inspection rather than this session's own document review.
+disclosed_evidence_conflicts:
+- A billings metric was disclosed in the April 2024 10-Q but is absent from the more recent 10-K/10-Q/earnings
+  release reviewed here, leaving its status ambiguous (de-emphasized vs. formally discontinued) rather
+  than resolved either way; separately, commercial AI-product (Prisma AIRS/XSIAM-AI) licensing exists
+  but standalone AI-product revenue/ARR/margin is undisclosed and cannot be separated from company-wide
+  NGS ARR.
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-4
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#PANW
+content_sha256: e6e6ed06888c1a25c9ed6405064ec44a206983119c9487354daabb53f2713cd1

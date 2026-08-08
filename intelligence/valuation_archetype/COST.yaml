@@ -1,0 +1,28 @@
+schema_version: '1.0'
+ticker: COST
+primary_archetype: G
+secondary_archetype: A
+rationale: 'Costco is a large, stable, well-covered retailer (933 warehouses; competitors named include
+  Amazon, Walmart, Target, BJ''s) with consistent double-digit revenue and net-income growth, near-90%
+  worldwide membership renewal rates, and operating cash flow well in excess of capital expenditures --
+  characteristics consistent with a mature, diversified-revenue compounder valued by standard DCF/multiples
+  (G, primary). The recurring, high-margin membership-fee revenue stream ($5.323B FY2025, funding a structurally
+  low-margin bulk-goods retail model) is a distinct, asset-light, recurring-revenue economic layer within
+  the business, supporting A as a secondary lens rather than treating Costco as pure-play discount retail
+  alone. Archetype-F test: F was not selected: Costco is described as a single warehouse-club retail business
+  with a dual-track revenue model (low-margin bulk goods plus recurring membership fees) rather than materially
+  distinct reportable segments, so no disclosed basis for a sum-of-the-parts framing exists.'
+evidence_quality:
+  primary_source_coverage: comprehensive
+  uncertainty_statement: No FY2026 full-year free-cash-flow figure is asserted, and the free-cash-flow
+    proxy used ($6.905B) is a non-GAAP committee calculation on two company-reported inputs, not a company-reported
+    metric.
+disclosed_evidence_conflicts: null
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-1
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#COST
+content_sha256: bba6726d02f0cbbce08571509293c8f176539e8682bcdfca183092d06ee9bce1

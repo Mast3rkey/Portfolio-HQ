@@ -1,0 +1,39 @@
+schema_version: '1.0'
+ticker: SPGI
+primary_archetype: F
+secondary_archetype: C
+rationale: 'SPGI''s Ratings segment (~36% of FY2025 revenue) fits the ratings-agency category explicitly
+  named under archetype C, built on regulatory-license (NRSRO/ESMA) moats embedded in bond covenants and
+  regulatory capital rules -- a fee structure distinct from a subscription or platform business. Indices
+  (68-70% margin, AUM-linked fees, record $6.35T of linked ETF assets) and Market Intelligence (lower,
+  more variable 19-33% margin, pursuing AI-monetization) behave more like asset-light data/subscription
+  businesses. The wide margin dispersion across segments (19% to 70%) is the direct evidentiary basis
+  for treating this as diversified rather than homogeneous. Ratings'' distinct regulatory-license economics
+  justify C as a secondary lens on the segment that most resembles the taxonomy''s financial-intermediation
+  examples. Archetype-F test: F was considered and selected as primary: the four (post-Mobility-spin)
+  reported segments show materially different margin profiles -- Indices 68-70%, Ratings 64-65%, Energy
+  40-46%, Market Intelligence only 19-33% -- indicating genuinely distinct business economics rather than
+  one unified engine, which supports a sum-of-the-parts framing over a single blended multiple or entity-wide
+  DCF.'
+evidence_quality:
+  primary_source_coverage: partial
+  uncertainty_statement: Segment revenue figures rely on a secondary aggregation that initially omitted
+    the Commodity Insights/Energy segment entirely and, even after correction, remains unverified against
+    the primary 10-K (WebFetch blocked on sec.gov).
+disclosed_evidence_conflicts:
+- Big Three ratings-agency market-share splits are reported inconsistently across sources (~50%/31%/12%/7%
+  in one source vs. ~40%/40%/15% in another); Q2 2026 adjusted-EPS beat-vs-miss framing conflicted across
+  sources; S&P Dow Jones Indices JV ownership percentages found are dated to the 2011-2012 formation era
+  with no 2026 confirmation.
+evidence_gap_statement: null
+portfolio_context:
+  gate_exists: true
+  next_gate_references_valuation: true
+  disclosure_note: Sanitized, mechanically-derived fact only -- never used as archetype-determining evidence
+    (VALUATION-0003 SS D/SS E).
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-5
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#SPGI
+content_sha256: 79bbed43518633c1294644b2872a08a567ea692ff80db11f488e62bb5639ec7e

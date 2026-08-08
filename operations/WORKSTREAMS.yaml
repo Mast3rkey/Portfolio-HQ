@@ -9701,6 +9701,66 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-08"
+      - gate: valuation0003-authorization-post-merge-verification
+        description: >
+          VALUATION-0003 independently reconfirmed merged this session, not
+          assumed: accepted head 647892ac59743b2bbf98837beb84a2605df57d0e,
+          final exact-head delta review 4889166749 (APPROVED FOR PRINCIPAL
+          EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR), principal
+          acceptance issuecomment-5226982097, merge SHA
+          0d0252021ded7f18a44c8688148606c9ee39fad4 (PR #278), merge-commit
+          CI run 31266841966 success, zero open competing PRs at session
+          start. This gate is additive; the governance-pr-drafted gate's
+          own text above is left byte-unedited.
+        pr: 278
+        status: complete
+        date: "2026-08-08"
+      - gate: valuation0003-archetype-assignment-implementation
+        description: >
+          Implementation of the VALUATION-0003-authorized archetype
+          assignment: a freshly-authored valuation_archetype_sanitizer.py
+          (whole-key strip of portfolio_role_ref/conviction/review, allow-
+          list extraction of only SS D's permitted evidence fields —
+          sector, industry, Business summary narrative, competitive_
+          advantages, risks[], catalysts[], and Milestone 6 economic_role.
+          role_basis as context — item-level scan/redact, and a
+          mechanistically independent second-stage independent_policy_scan
+          never sharing code with the strip-decision functions); 27
+          sanitized evidence packets generated and independently verified
+          leak-free before any drafting; five internal ~5-6-company blind-
+          drafting shards (fresh, isolated subagents, no tool access, no
+          file reads, instructed to use only the embedded sanitized text —
+          the same instructional-not-filesystem-sandboxed isolation
+          boundary Milestone 6 disclosed) producing primary/secondary
+          archetype, evidence-quality, uncertainty, and disclosed-conflict
+          judgments; 27 sealed intelligence/valuation_archetype/<TICKER>.
+          yaml records plus COHORT_MANIFEST.yaml, each independently
+          re-verified against the independent second-stage scan after
+          sealing (zero leaks); the six gated tickers' portfolio_context
+          carries only the two SS D-permitted mechanical facts (gate
+          exists; whether next_gate references "valuation") computed
+          directly from gates.yaml, never passed to a drafting shard;
+          zero abstentions (all 27 evidence-rich enough for a determined
+          primary archetype) — primary distribution A:6 B:5 C:2 D:3 E:1
+          F:8 G:2, 22 of 27 carry a secondary, all with the mandatory
+          archetype-F disclosure; a freshly-authored, zero-import-coupled
+          valuation_archetype_validator.py (closed schema at every level,
+          primary/secondary vocabulary and cardinality, abstention/
+          evidence_gap_statement enforcement, archetype-F disclosure
+          check, live 27-name roster reconciliation via relationship_
+          validator.load_canonical_universe, an independently-implemented
+          prohibited-field/chart-domain/directive-word scan sharing no
+          code with the sanitizer's own scan, and manifest/hash
+          reconciliation) plus 183 new focused tests (both files) — full
+          repository pytest, every applicable pre-existing validator,
+          repo-wide YAML/JSON parsing, and git diff --check all
+          independently re-run clean at this filing's own head. No
+          valuation, fair value, price target, RQ4 work, or TIER-0009
+          resolution performed. This filing does not itself review,
+          mark ready, or merge its own PR.
+        pr: null
+        status: in_progress
+        date: "2026-08-08"
     evidence_refs:
       - governance/decisions/VALUATION-0001-equity-valuation-research-charter.md
       - governance/decisions/VALUATION-0002-equity-valuation-methodology-doctrine-adoption.md
@@ -9711,15 +9771,15 @@ workstreams:
       - governance/decisions/TIER-0004-ws0005-milestone6-population-and-blindness-preflight.md
       - governance/decisions/TIER-0005-ws0005-milestone6-fresh-authorization.md
     next_action: >
-      Independent, exact-head review of VALUATION-0003's governance PR
-      under OPS-0007 §1's capability-based standard (OPS-0009 Lane G —
-      full weight, no reduction), followed by any required bounded
-      correction, exact-head re-review, and explicit principal acceptance
-      before the PR may be marked ready and merged. No real-company
-      archetype-category assignment may begin before — and is not
-      authorized by — that merge. No real-company valuation is authorized
-      by VALUATION-0003 under any circumstance; it remains its own
-      separate, later, explicitly authorized unit per VALUATION-0002 §6.3.
+      Independent, exact-head review of this archetype-assignment
+      implementation PR under OPS-0007 §1's capability-based standard
+      (OPS-0009 Lane G — full weight, no reduction), followed by any
+      required bounded correction, exact-head re-review, and explicit
+      principal acceptance before the PR may be marked ready and merged.
+      No real-company valuation, fair value, price target, or TIER-0009
+      §K resolution is authorized by this implementation under any
+      circumstance; each remains its own separate, later, explicitly
+      authorized unit per VALUATION-0002 §6.3/VALUATION-0003 §L.
     completion_criteria: >
       Not met for WS-0015 as a whole. Met so far: VALUATION-0001 merged
       with its pinned hash verified (valuation0001-governance-pr-merged);
@@ -9727,27 +9787,30 @@ workstreams:
       principal-accepted (valuation0001-implementation-report-merged);
       VALUATION-0002's methodology-doctrine adoption merged, independently
       reviewed, and principal-accepted
-      (valuation0002-doctrine-adoption-pr-merged). Not yet met:
-      VALUATION-0003's archetype-assignment authorization merged with its
-      own independent review and principal acceptance
-      (valuation0003-archetype-assignment-authorization); the future
-      archetype-assignment implementation PR it would authorize; and —
-      only if a future application phase is ever separately proposed and
-      accepted — its own further, separate governance decisions for (a)
-      closing the RQ4 evidence-category gap and (b) real-company
-      valuation execution, each independently reviewed and
-      principal-accepted before any methodology is applied to a real
-      company (VALUATION-0001 §5, VALUATION-0002 §6, VALUATION-0003 §L,
-      protocol §§14/15 — no result automatically changes policy).
+      (valuation0002-doctrine-adoption-pr-merged); VALUATION-0003's
+      archetype-assignment authorization merged, independently reviewed,
+      and principal-accepted
+      (valuation0003-archetype-assignment-authorization,
+      valuation0003-authorization-post-merge-verification). Not yet met:
+      the archetype-assignment implementation PR itself
+      (valuation0003-archetype-assignment-implementation) independently
+      reviewed, principal-accepted, and merged; and — only if a future
+      application phase is ever separately proposed and accepted — its
+      own further, separate governance decisions for (a) closing the RQ4
+      evidence-category gap and (b) real-company valuation execution,
+      each independently reviewed and principal-accepted before any
+      methodology is applied to a real company (VALUATION-0001 §5,
+      VALUATION-0002 §6, VALUATION-0003 §L, protocol §§14/15 — no result
+      automatically changes policy).
     blocker: >
-      VALUATION-0003's governance PR has not yet been independently
-      reviewed or principal-accepted. No real-company archetype
-      assignment work may open until it merges, and no real-company
-      valuation work is authorized by it under any circumstance.
-    active_branch: claude/valuation-0003-archetype-auth-evtwbt
+      The archetype-assignment implementation PR has not yet been opened
+      for independent review, or independently reviewed, corrected, or
+      principal-accepted. No real-company valuation work is authorized by
+      it under any circumstance.
+    active_branch: claude/valuation-archetype-27-equities-1y28my
     active_pr: null
-    last_verified_main_sha: 7640ade92edbb54f86e0c4b6ec123fc75eb7aa0c
+    last_verified_main_sha: 0d0252021ded7f18a44c8688148606c9ee39fad4
     last_verified_date: "2026-08-08"
-    authorized_by: null
+    authorized_by: VALUATION-0003 (PR #278, merged)
     supersedes: null
     superseded_by: null

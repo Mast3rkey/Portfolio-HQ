@@ -1,0 +1,37 @@
+schema_version: '1.0'
+ticker: GEV
+primary_archetype: B
+secondary_archetype: F
+rationale: 'GEV''s economics are dominated by a large, multi-year order backlog ($176B at Q2 2026, growing
+  from $150B at FY2025) converting into equipment/services revenue across gas power, electrification,
+  and grid infrastructure -- a classic capital-intensive, long-cycle industrial model where execution
+  risk, supply-chain dependency, and reinvestment-rate/backlog-conversion assumptions materially affect
+  the business more than in an asset-light model. Fixed or competitively-bid, multi-year contract structures
+  and disclosed supply-chain dependency for specialized components reinforce a reinvestment-intensive,
+  long-asset-life profile (archetype B) requiring ROIC/reinvestment framing alongside DCF. Segment-level
+  divergence -- profitable, growing Power/Electrification versus a loss-making Wind segment carrying guided
+  full-year losses of approximately $400 million -- supports a secondary sum-of-the-parts (F) view without
+  displacing the overall capital-intensive-infrastructure characterization. Archetype-F test: F was considered
+  because GEV reports three segments (Power, Electrification, Wind) with materially different profitability
+  profiles -- Power and Electrification posting roughly 18% EBITDA margins and strong order growth, while
+  Wind posted an EBITDA loss (-13.6% margin in Q2 2026) with continued full-year loss guidance -- but
+  the company''s core valuation driver (a $176B multi-year equipment/services backlog funding long-cycle
+  capital projects) is best captured as capital-intensive infrastructure with segment-level reinvestment/ROIC
+  framing, so F is assigned only as a secondary, sum-of-the-parts lens rather than primary.'
+evidence_quality:
+  primary_source_coverage: partial
+  uncertainty_statement: The FY2026 Wind segment loss guidance of approximately $400 million has an unresolved
+    metric basis (segment EBITDA vs. EBIT) that could not be independently confirmed via a reproducible
+    primary-source read.
+disclosed_evidence_conflicts:
+- Some secondary sources describe the approximately $400M FY2026 Wind loss guidance as an EBIT figure
+  rather than segment EBITDA (the basis inferred here by analogy to confirmed quarterly actuals), an unreconciled
+  discrepancy disclosed in the packet.
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-2
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#GEV
+content_sha256: d182431e5baaba6a854d535cee719c6c97d8f7f5d42d5568103bad1c769b6a7a

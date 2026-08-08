@@ -1,0 +1,34 @@
+schema_version: '1.0'
+ticker: RTX
+primary_archetype: F
+secondary_archetype: G
+rationale: 'The three RTX segments differ materially in margin profile, end-market mix, and risk character
+  (Collins'' commercial aftermarket exposure vs. Pratt & Whitney''s sole-source military engine franchise
+  burdened by an unresolved powder-metal liability vs. Raytheon''s government-backlog-driven missile/defense
+  systems), which is the defining condition for a diversified/multi-segment archetype. At the same time,
+  the company overall is large, long-established, has a diversified revenue base (roughly 52% government
+  / 48% commercial across three distinct end-market channels), a growing $289B backlog, an improving credit
+  profile, and is well covered by public comparables -- features consistent with a mature, stable compounder
+  framing at the consolidated level. The two are not mutually exclusive here: segment-level valuation
+  is more defensible given the margin/risk disparity, while the company''s overall maturity and comparable
+  coverage support a secondary, complementary framing. Archetype-F test: F was directly evaluated and
+  selected as primary: RTX''s three segments show materially different disclosed economics -- Collins
+  Aerospace (16.3% operating margin, commercial-aftermarket-heavy), Pratt & Whitney (7.9% margin, structurally
+  the weakest, carrying an open multi-billion-dollar GTF liability), and Raytheon (11.5% margin, government-backlog-driven
+  defense/missile systems) -- with the evidence itself explicitly framing this margin disparity as ''a
+  legitimate conglomerate-discount consideration,'' supporting a sum-of-the-parts approach over a single
+  blended multiple or entity-level DCF.'
+evidence_quality:
+  primary_source_coverage: comprehensive
+  uncertainty_statement: The Pratt & Whitney GTF powder-metal matter remains open more than three years
+    after discovery, with an active SEC investigation and appealed securities litigation whose ultimate
+    cost and timeline are not yet resolved as of this record's evidence cutoff.
+disclosed_evidence_conflicts: null
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-4
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#RTX
+content_sha256: fbab330990a365c454dfdfd69906a71ec71a2ebbf2d01c2edfad4284dbbe0a3d

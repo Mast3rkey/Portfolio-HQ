@@ -1,0 +1,41 @@
+schema_version: '1.0'
+ticker: SNPS
+primary_archetype: A
+secondary_archetype: null
+rationale: 'Synopsys generates revenue predominantly through software licensing and IP subscriptions within
+  an oligopolistic EDA market (~78%+ share held by three players), evidenced by an 83% gross margin, 39.5%
+  non-GAAP operating margin, and continued double-digit revenue growth (FY2025 +15% YoY) despite integration
+  disruption from the Ansys acquisition -- a classic high-incremental-margin, low-relative-reinvestment-intensity
+  software platform profile. Reinvestment shows up mainly as acquisition-funded expansion (Ansys) and
+  associated deleveraging (debt reduced from ~$13.5B to ~$10.0-10.8B) rather than ongoing heavy capital
+  expenditure. A severe single-day stock decline tied to a Design IP segment revenue miss, guidance cut,
+  and disclosed roadmap/resource misjudgments reflects execution risk and customer concentration within
+  the licensing model rather than a change in the underlying economic archetype. Archetype-F test: F was
+  considered given SNPS''s two reportable segments (Design Automation and Design IP, now including Ansys''s
+  multiphysics simulation products) but was not selected as primary because both segments share the same
+  underlying software/IP-licensing economic model -- high gross margin (83% in the most recent quarter),
+  subscription- and license-based revenue recognition, and a common oligopolistic EDA-market structure
+  -- rather than being materially different businesses; the Design IP segment''s 2025 revenue decline
+  reflects an operational/execution and customer-concentration issue within that model, not a structurally
+  distinct economic driver.'
+evidence_quality:
+  primary_source_coverage: partial
+  uncertainty_statement: This session's primary-source access was blocked on all domains attempted (including
+    SEC and a control page), so every fact traces to WebSearch-returned snippets rather than a directly
+    inspected filing.
+disclosed_evidence_conflicts:
+- Ansys deal financing figures are cited inconsistently as $16B committed versus $14.3B debt incurred,
+  and a Q3 FY2026 consensus EPS estimate found in sources appears potentially inconsistent with recent
+  quarterly run-rates.
+evidence_gap_statement: null
+portfolio_context:
+  gate_exists: true
+  next_gate_references_valuation: true
+  disclosure_note: Sanitized, mechanically-derived fact only -- never used as archetype-determining evidence
+    (VALUATION-0003 SS D/SS E).
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-4
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#SNPS
+content_sha256: a9bbb78770b736243872453fdc03db84688b266a88ed3ff33affb048bb31eab3

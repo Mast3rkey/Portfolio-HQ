@@ -1,0 +1,32 @@
+schema_version: '1.0'
+ticker: MSFT
+primary_archetype: F
+secondary_archetype: A
+rationale: 'Microsoft''s three reportable segments show real, disclosed margin and business-model divergence
+  (Productivity and Business Processes at roughly 58% operating margin vs. More Personal Computing at
+  roughly 26%), each large enough to matter on its own, which is the direct evidentiary basis for archetype
+  F. At the same time, the dominant characteristics across all three segments -- and especially the fastest-growing
+  Intelligent Cloud/Azure business -- remain software- and cloud-subscription-like: high recurring revenue,
+  an AI business already exceeding a stated $37B annual run rate, and substantial free-cash generation
+  ($94.6B cash/short-term investments, funding capex, buybacks, and dividends simultaneously) -- consistent
+  with archetype A as a secondary lens, notwithstanding real and disclosed AI-infrastructure capital intensity
+  pressuring cloud gross margin. Archetype-F test: F was considered and selected as primary: Microsoft
+  reports three segments with materially different economics -- Productivity and Business Processes (FY2025
+  operating margin ~57.8%), Intelligent Cloud (~42.0%), and More Personal Computing (~25.9%) -- each individually
+  representing tens of billions of dollars in revenue, with genuinely distinct demand drivers (productivity
+  software/LinkedIn, cloud/AI infrastructure, and consumer devices/gaming/search), supporting a sum-of-the-parts
+  view over a single blended multiple or entity-level DCF.'
+evidence_quality:
+  primary_source_coverage: partial
+  uncertainty_statement: FY2026 Q4/full-year figures (including the ~$3.20B Anthropic-investment gain
+    and the ~$175B FY2027 capex guidance) are sourced entirely secondarily in this record, with no primary-source
+    (10-K/8-K) confirmation obtained.
+disclosed_evidence_conflicts: null
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-3
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#MSFT
+content_sha256: 1f6f269a7f04b878222a63fdbc5c92851c2eb12de1de3a0c138faa6800a7811f

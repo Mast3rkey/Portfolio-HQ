@@ -1,0 +1,44 @@
+schema_version: '1.0'
+ticker: TSLA
+primary_archetype: F
+secondary_archetype: E
+rationale: 'The evidence shows three reported segments with different margin trajectories (automotive
+  gross margin ex-credits fell to 16.3%, energy segment margin fell sharply to 20.4% from 39.5%) alongside
+  emerging, explicitly binary/pre-commercial businesses: Optimus production was reported near zero with
+  the CEO himself calling 2026 output ''literally impossible to predict,'' and Robotaxi operates under
+  an active, unresolved NHTSA safety investigation (EA26002) covering ~3.2 million vehicles. The company''s
+  own governance structure -- a ~$1 trillion CEO compensation package gated on operational milestones
+  including 1 million Optimus units and 1 million robotaxis operating -- makes explicit that a material
+  share of the equity story rests on these unproven, approval-gated outcomes rather than the mature automotive/energy
+  base. Free cash flow turned negative in the most recent quarter alongside sharply rising capex, consistent
+  with a capital-intensive core business layered with speculative optionality rather than one uniform
+  economic engine. Archetype-F test: F was considered and selected as primary: Automotive (record $20.52B
+  quarterly revenue but compressing margin, now largely reliant on core vehicle economics as regulatory-credit
+  revenue collapses), Energy Generation & Storage (capital-intensive, multi-year Megafactory buildout),
+  and Services & Other (record profitability/margin) are materially different businesses that a sum-of-the-parts
+  approach would separate rather than blend into one multiple. E is flagged as a secondary given the explicit,
+  evidence-grounded valuation dependence on unproven, binary-outcome ventures layered on top of those
+  core segments -- Robotaxi and Optimus -- whose economics are not yet stable enough for a single blended
+  DCF.'
+evidence_quality:
+  primary_source_coverage: partial
+  uncertainty_statement: This session's primary-source access was fully blocked (confirmed via a control-domain
+    test), so every figure traces to WebSearch-returned secondary snippets rather than a directly inspected
+    filing or transcript.
+disclosed_evidence_conflicts:
+- China volume trends conflict across sources (wholesale/export figures reported up ~38% YoY vs. a separately
+  reported fifth consecutive quarterly delivery decline of -2.05% YoY), likely reflecting different measurement
+  bases that could not be reconciled; the exact number of simultaneous federal FSD investigations is reported
+  inconsistently across sources.
+evidence_gap_statement: null
+portfolio_context:
+  gate_exists: true
+  next_gate_references_valuation: true
+  disclosure_note: Sanitized, mechanically-derived fact only -- never used as archetype-determining evidence
+    (VALUATION-0003 SS D/SS E).
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-5
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#TSLA
+content_sha256: 8d5ce709ae207b126fb08b4181441fec741642e204c7cd87cceeed5844fbf792

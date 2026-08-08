@@ -1,0 +1,41 @@
+schema_version: '1.0'
+ticker: RKLB
+primary_archetype: E
+secondary_archetype: F
+rationale: 'RKLB has posted a net loss every year since inception through FY2025, continues to guide to
+  further losses, and is funding growth through large and repeated ATM share issuances (a $1B program
+  followed by a new $3B program) -- cash flow is not yet stable or predictable. Its flagship growth catalyst,
+  the medium-lift Neutron vehicle, has not yet flown, making near-term company trajectory dependent on
+  an unresolved technical/commercial milestone rather than an established, extrapolatable cash-flow base.
+  The Space Systems segment and growing government backlog (Space Development Agency, NSSL Lane 1, Golden
+  Dome) show real and growing revenue, but company-wide profitability remains negative and forward-looking.
+  This combination of pre-profitability, pipeline/milestone dependency, and a not-yet-flown core product
+  is the defining characteristic of the early-stage/binary-outcome archetype. Archetype-F test: F was
+  considered given RKLB''s two genuinely distinct segments -- Launch Services (an operating, revenue-generating
+  rocket business plus the not-yet-flown Neutron) and Space Systems (satellite component/spacecraft manufacturing
+  assembled through a series of acquisitions) -- which have different underlying economics and were assigned
+  as a secondary archetype rather than primary, because the company''s overall financial profile (net
+  losses every year since inception, active dilution, an unproven medium-lift vehicle) is currently dominated
+  by binary-outcome/early-stage characteristics that cut across both segments rather than segment diversification
+  being the defining valuation challenge.'
+evidence_quality:
+  primary_source_coverage: limited
+  uncertainty_statement: This session's primary-source access was completely blocked for every domain
+    attempted, and multiple load-bearing figures (total Electron mission count, current shares outstanding)
+    are internally inconsistent across the secondary sources available.
+disclosed_evidence_conflicts:
+- Total Electron mission count is cited as both 84 and 91 across sources; current shares outstanding is
+  cited across a 598-625 million range from imperfectly-dated secondary sources; a single, likely-erroneous
+  secondary reference to a possible additional 2025 launch failure could not be conclusively ruled out.
+evidence_gap_statement: null
+portfolio_context:
+  gate_exists: true
+  next_gate_references_valuation: false
+  disclosure_note: Sanitized, mechanically-derived fact only -- never used as archetype-determining evidence
+    (VALUATION-0003 SS D/SS E).
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-4
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#RKLB
+content_sha256: 22794347549987a3ccf120a0c18cdf7316baf970e1fa0d027ac03df7b1a18e3d

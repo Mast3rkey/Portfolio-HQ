@@ -1,0 +1,34 @@
+schema_version: '1.0'
+ticker: TMO
+primary_archetype: G
+secondary_archetype: A
+rationale: 'TMO is a large-scale ($44.56B FY2025 revenue), mature supplier across four segments with positive
+  growth in every segment and a large recurring consumables/reagents/services revenue base anchoring the
+  largest segment (Laboratory Products and Biopharma Services, $23.98B). No segment shows disclosed extreme
+  cyclicality, commodity-price dependence, or binary/pre-commercial economics. The company is well covered
+  by public life-sciences-tools comparables and shows steady, diversified growth consistent with a mature
+  compounder. The strong emphasis on recurring consumables/reagents/services revenue (the classic instrument-plus-consumable
+  model) also supports a secondary asset-light, recurring-revenue read, tempered by the fact that instrument
+  and biopharma-services manufacturing is not purely asset-light. Archetype-F test: F was considered given
+  the packet''s own framing of TMO as ''a diversified supplier of consumables, instruments, and services''
+  across four segments, but was not selected as primary: unlike a case with disclosed materially different
+  segment margins, the evidence here shows only revenue-growth dispersion (1%-8%), not a disclosed difference
+  in underlying economics, and all four segments share a common recurring consumables/reagents/services
+  revenue engine rather than fundamentally distinct business models.'
+evidence_quality:
+  primary_source_coverage: partial
+  uncertainty_statement: The four disclosed FY2025 segment totals sum to approximately $46.58 billion
+    against a stated $44.56 billion consolidated total, a roughly $2.0 billion gap the packet explicitly
+    states was not reconciled against a primary eliminations table.
+disclosed_evidence_conflicts:
+- The four-segment revenue sum (~$46.58B) does not reconcile to the stated consolidated FY2025 total ($44.56B);
+  Q2 2026 figures (revenue, EPS, guidance raise, divestiture, and the Clario acquisition) are secondary-sourced
+  only and not verified against a primary filing.
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-5
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#TMO
+content_sha256: f89b128eebd3b86944976af8b67a1b5b217b051e5adfc5b1334ad1fbe505df73

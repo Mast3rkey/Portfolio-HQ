@@ -1,0 +1,33 @@
+schema_version: '1.0'
+ticker: ASML
+primary_archetype: D
+secondary_archetype: B
+rationale: 'ASML''s earnings and guidance have shown material sensitivity to the semiconductor capital-equipment
+  demand cycle, demonstrated directly by the October 2024 guidance cut (citing delayed Intel/Samsung orders)
+  that produced an approximately 16% single-day stock decline -- evidence that a trailing or single-year
+  figure is not representative of normalized earnings power. At the same time, ASML sells into and enables
+  a multi-year, capacity-constrained industry buildout (High-NA EUV backlog into 2027, new fab capacity
+  investments) with long order-to-delivery lead times, high gross margins (54.0% Q2 2026), and a recurring
+  Installed Base Management stream that smooths results between system-sale cycles. Demand-cycle-driven
+  earnings volatility (primary D) combined with multi-year infrastructure-buildout, reinvestment-sensitive
+  dynamics (secondary B) better captures ASML''s economics than a stable, generically comparable compounder
+  framing. Archetype-F test: F was considered and rejected: the evidence describes ASML as a single, focused
+  lithography-systems business with two revenue streams (system sales and Installed Base Management) rather
+  than materially distinct reportable segments, so no diversified/multi-segment economics are disclosed
+  that would support sum-of-the-parts.'
+evidence_quality:
+  primary_source_coverage: partial
+  uncertainty_statement: TSMC's ~24% customer-concentration figure and the top-two/top-ten concentration
+    percentages are secondary-sourced estimates not independently traced to ASML's own 20-F disclosure.
+disclosed_evidence_conflicts:
+- A single, unattributed 29.1% China-sales figure surfaced once in search synthesis, inconsistent with
+  the multiply-corroborated 14% Q2 2026 figure; it was not traced to any specific document and is not
+  treated as a credible open conflict, but is disclosed here for completeness.
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-1
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#ASML
+content_sha256: 9c91516cd94e8f76c0c1bb5a561a5e3ce9454c3cbf5d1f63fa326e050874e74a

@@ -1,0 +1,36 @@
+schema_version: '1.0'
+ticker: META
+primary_archetype: A
+secondary_archetype: F
+rationale: 'Meta''s core economics are advertising-platform-driven: essentially the entire revenue base
+  (roughly 98%) comes from advertising monetized across a very large user base (3.56B average daily active
+  people), with growth from both volume (+19% ad impressions) and price (+12% per ad), and a high-margin
+  Family of Apps segment funding discretionary investment -- classic high-incremental-margin, asset-light
+  platform-network economics (archetype A). The Reality Labs segment, by contrast, is a large, persistent
+  operating loss with guidance for continued losses at a similar magnitude, and no disclosed customer-facing
+  cloud business exists to offset AI capital spending the way peers in this batch disclose -- a materially
+  different economic profile from the core ads business, supporting F as a secondary, sum-of-the-parts-relevant
+  consideration. Archetype-F test: F was considered given Meta''s two-segment reporting structure (Family
+  of Apps vs. Reality Labs) with clearly divergent economics -- Family of Apps operating income of $102.469B
+  (FY2025) against a large, persistent, guided-to-continue Reality Labs operating loss ($19.193B FY2025)
+  -- but was not selected as primary because advertising/Family of Apps revenue is roughly 98% of total
+  disclosed revenue, so one segment''s economics still overwhelmingly dominate the consolidated picture;
+  it is retained as secondary to flag that Reality Labs is a materially different, loss-making economic
+  engine worth valuing separately rather than blending into one multiple.'
+evidence_quality:
+  primary_source_coverage: partial
+  uncertainty_statement: The most recent reported quarter (Q2 2026, including a reported 14% YoY net income
+    decline, a new $2.4B legal-proceedings charge, and an ~8,000-employee layoff) is sourced entirely
+    secondarily, with no primary-source (10-Q) confirmation obtained.
+disclosed_evidence_conflicts:
+- The Q2 2026 secondary reporting shows net income down 14% YoY and an EPS miss, a reversal from the accelerating-growth,
+  beat-oriented framing established by the primary-sourced Q1 2026 figures earlier in the same record
+  -- the two data points are in tension and the more recent one is unverified.
+evidence_gap_statement: null
+portfolio_context: null
+lifecycle_status: sealed
+sealed_at: '2026-08-08T17:00:00Z'
+governing_decision: VALUATION-0003
+drafting_session_or_shard_id: shard-3
+cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#META
+content_sha256: b20604ad58db7d3eeb7a87d0cf1d1b6000e1ea47b0c13336727da00b66b019d5
