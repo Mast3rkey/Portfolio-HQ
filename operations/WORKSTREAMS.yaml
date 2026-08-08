@@ -9186,22 +9186,25 @@ workstreams:
           structural fields), and a two-part economic_assessment_readiness
           shape for DEBT_REDUCTION only (avoided_borrowing_cost_readiness
           and survivability_and_buffer_benefit_readiness, independently
-          forced to assessment_required, never blended). Also designs an
-          eight-dimension overlap/concentration-model architecture (issuer
+          forced to assessment_required, never blended). Also designs a
+          ten-dimension overlap/concentration-model architecture (issuer
           overlap/ETF look-through, economic-role overlap, correlated-loss
           mechanisms, sleeve concentration, ETF/direct-equity duplication, a
           crypto-correlation interface placeholder, a defensive-offset
-          interface, and leverage/debt interaction), each its own
+          interface, leverage/debt interaction, a geographic/currency-
+          exposure interface placeholder, and a whole-portfolio volatility/
+          drawdown-concentration interface placeholder), each its own
           independent record extending an already-existing repository
           mechanism (issuer_lookthrough.yaml, caps.clusters,
           intelligence/relationships/, targets.yaml's destination weights,
-          the crypto framework's correlation_and_volatility axis, this
-          filing's own GLD_DEFENSIVE_ROLE interface, margin_state.py's
-          existing classification output) — with no composite overlap or
-          risk score anywhere, enforced both structurally (no shared
-          envelope across the eight records) and by a dedicated forbidden-
-          pattern validator scan. Both schemas carry zero numeric fields of
-          any kind — stricter than the ETF framework's own expense_ratio_pct
+          the crypto framework's correlation_and_volatility axis, the ETF
+          framework's constituent_exposure axis, this filing's own
+          GLD_DEFENSIVE_ROLE interface, margin_state.py's existing
+          classification output) — with no composite overlap or risk score
+          anywhere, enforced both structurally (no shared envelope across
+          the ten records) and by a dedicated forbidden-pattern validator
+          scan. Both schemas carry zero numeric fields of any kind —
+          stricter than the ETF framework's own expense_ratio_pct
           carve-out — since a debt-reduction "readiness" schema sits too
           close to an implicit avoided-interest calculation to draw a
           narrow exception. Specifies a combined validator specification
@@ -9225,6 +9228,32 @@ workstreams:
           chart-informed deployment, and the final independent audit —
           remain wholly unauthorized and each requires its own separate,
           future, explicit principal authorization.
+
+          Bounded correction (same day, this PR): an independent exact-head
+          review of the original head (6b726de3fd2da7ff83f103d109db4166a70981e3)
+          returned CHANGES REQUIRED — 0 BLOCKING / 1 MAJOR / 0 MINOR / 1
+          non-actionable NOTE, independently confirmed before any fix.
+          Resolved: XASSET-0001 §F enumerates nine "at minimum" required
+          overlap/concentration/risk items, not the eight this design
+          originally addressed — geographic/currency exposure and
+          whole-portfolio volatility/drawdown concentration had no
+          dimension_id anywhere, undisclosed. Two dimensions were added
+          (geographic_currency_exposure, whole_portfolio_volatility_
+          drawdown_concentration), both following the identical
+          interface_placeholder pattern already used for
+          crypto_correlation_interface/defensive_offset_interface, raising
+          the population from eight to ten; §F's ninth item (liquidity)
+          is explicitly addressed as a disclosed, deliberate non-dimension
+          (already represented per-instrument in the ETF/crypto/functional-
+          doctrine schemas, no existing whole-portfolio rollup mechanism to
+          extend) rather than left to read as an unexplained gap. No
+          functional-doctrine content, structural_reference/hash mechanism,
+          or hard_constraint_status/economic_assessment_readiness
+          separation changed. The review's own non-actionable NOTE (whether
+          "eight, specifically" traced to a concrete principal enumeration)
+          is carried forward unresolved — the corrected population of ten
+          derives directly from XASSET-0001 §F's own controlling text.
+          Requires its own fresh independent exact-head delta review.
         pr: 273
         status: in_progress
         date: "2026-08-08"

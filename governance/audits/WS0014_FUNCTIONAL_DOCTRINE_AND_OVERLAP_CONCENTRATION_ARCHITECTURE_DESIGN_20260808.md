@@ -3,13 +3,39 @@
 **Filed under**: `XASSET-0005` (`governance/decisions/XASSET-0005-functional-doctrine-and-overlap-concentration-architecture.md`)
 **Date**: 2026-08-08
 **Scope**: `XASSET-0001` §D + §F / §J steps 6–7 — structural design of (1) a shared functional-doctrine
-schema for `CASH`, `RESERVE`, `GLD_DEFENSIVE_ROLE`, and `DEBT_REDUCTION`, and (2) an eight-dimension
+schema for `CASH`, `RESERVE`, `GLD_DEFENSIVE_ROLE`, and `DEBT_REDUCTION`, and (2) a ten-dimension
 overlap/concentration-model architecture. Design only. No capital-use type is populated and no
 overlap/concentration figure is computed by this artifact.
 
 This artifact is the full field-by-field design. The decision file summarizes it and carries the
 authorization/consequences text; this document is the retained detail, matching the
 `TIER-0001`→`TIER-0002` and `XASSET-0001`→`XASSET-0002` supporting-artifact precedent.
+
+---
+
+## 0. Bounded correction (same day, this PR)
+
+An independent exact-head review of this filing's original submission (head
+`6b726de3fd2da7ff83f103d109db4166a70981e3`) returned CHANGES REQUIRED — 0 BLOCKING / 1 MAJOR / 0 MINOR /
+1 non-actionable NOTE, independently confirmed before any fix. **MAJOR, resolved**: `XASSET-0001` §F
+enumerates nine "at minimum" required overlap/concentration/risk items, not the eight this design
+originally addressed — two items, geographic/currency exposure and whole-portfolio volatility/drawdown
+concentration, had no `dimension_id` anywhere in the original §6.1 table, undisclosed. Resolved by adding
+two new dimensions, `geographic_currency_exposure` and `whole_portfolio_volatility_drawdown_concentration`
+(§6.1), both following the identical `interface_placeholder` pattern already used for `crypto_correlation_
+interface`/`defensive_offset_interface` — the population grows from eight to ten, every "eight"
+population/count reference throughout §6 and §7/§8's validator and test specifications is corrected to
+"ten," and §F's ninth item (liquidity) is explicitly addressed as a disclosed, deliberate non-dimension
+(already represented per-instrument in the ETF/crypto/functional-doctrine schemas, with no existing
+whole-portfolio rollup mechanism to extend) rather than left to look like an unexplained omission. No
+functional-doctrine content, no `structural_reference`/hash mechanism, no `hard_constraint_status`/
+`economic_assessment_readiness` separation, and no validator/test lesson-carrying content changed — the
+correction is scoped entirely to §6's dimension table and the population-count references it drives
+downstream. The **NOTE** (whether "eight, specifically" traces to a concrete principal enumeration or
+this implementing session's own synthesis of §F) is carried forward as accurate and non-actionable,
+unchanged by this correction — the corrected population of ten is derived directly from `XASSET-0001` §F's
+own text, not from the original eight-item authorizing-prompt list, which this correction supersedes as
+the controlling source for population size.
 
 ---
 
@@ -377,7 +403,7 @@ the seven-step sequence `TIER-0012`/`TIER-0013`/`XASSET-0002` §10 most recently
    `survivability_and_buffer_benefit_readiness` fields are the explicit markers of this boundary, not an
    attempt to cross it);
 3. conduct cross-asset opportunity-cost and overlap/concentration synthesis (`XASSET-0001` §E/§F,
-   future — this design's eight dimension records, §6, are inputs to this step, not the step itself);
+   future — this design's ten dimension records, §6, are inputs to this step, not the step itself);
 4. produce Level 1 sleeve targets (future);
 5. produce Level 2 instrument targets inside each sleeve (future);
 6. ingest and interpret governed chart evidence for applicable market-priced instruments, deployment/
@@ -388,13 +414,35 @@ the seven-step sequence `TIER-0012`/`TIER-0013`/`XASSET-0002` §10 most recently
 
 ## 6. Overlap and concentration-model architecture
 
-### 6.1 Candidate dimensions evaluated (eight named in the authorizing prompt) → eight preserved dimensions, zero merges, zero composite
+### 6.1 Candidate dimensions evaluated → ten preserved dimensions, zero merges, zero composite
 
-Unlike §3.1's functional-doctrine table, **every one of the eight named dimensions is preserved as its
-own separate record — none is merged with another, and none is dropped.** This is a deliberate
-divergence from the merge-where-redundant method §2 otherwise applies, because the authorizing design
-direction is explicit and singular on this point: "Preserve these as separate dimensions. NO composite
-overlap/risk score." Merging any two would itself be a step toward the prohibited composite.
+**Corrected by bounded review (§0 below).** The authorizing design direction named eight illustrative
+dimensions, but `XASSET-0001` §F — the actual controlling authority this filing is designing an
+architecture *for* — enumerates **nine** items "at minimum": ETF look-through overlap; sector/
+correlated-cluster duplication; issuer concentration; **geographic and currency exposure**; crypto
+cross-correlation; **volatility and drawdown concentration across the whole portfolio, not sleeve-by-
+sleeve in isolation**; liquidity; duplicated exposure across sleeves; margin/debt interaction. An
+independent exact-head review of this filing's original submission found that two of those nine items —
+geographic/currency exposure and whole-portfolio volatility/drawdown concentration — had no `dimension_
+id` anywhere in this design, undisclosed. This section is corrected to add both as their own dimensions,
+following the identical `interface_placeholder` pattern already used for `crypto_correlation_interface`/
+`defensive_offset_interface` — a small, bounded, same-shape extension, not a redesign.
+
+`XASSET-0001` §F's ninth item, liquidity, remains deliberately **not** a dimension of its own here — it
+is already represented per-instrument (the ETF framework's `liquidity` axis, the crypto framework's
+`liquidity_and_market_structure` axis, and this filing's own `liquidity_character` axis, §3.2) and a
+whole-portfolio liquidity rollup has no existing mechanism to extend yet (unlike, e.g., `sleeve_
+concentration`'s direct reuse of `targets.yaml`'s own weights) — inventing one here would be exactly the
+kind of asset-specific-judgment content this design-only filing is not authorized to perform. This is a
+disclosed, deliberate scoping choice, not a silent omission — restated explicitly here precisely because
+the review that found the other two gaps makes clear that "adequately covered elsewhere" must be argued,
+not assumed.
+
+**Every one of the ten named dimensions is preserved as its own separate record — none is merged with
+another, and none is dropped.** This is a deliberate divergence from the merge-where-redundant method §2
+otherwise applies, because the authorizing design direction is explicit and singular on this point:
+"Preserve these as separate dimensions. NO composite overlap/risk score." Merging any two would itself be
+a step toward the prohibited composite.
 
 | Dimension (as named) | Record `dimension_id` | `dimension_type` | `source_mechanism` (extends, never duplicates) |
 |---|---|---|---|
@@ -406,14 +454,16 @@ overlap/risk score." Merging any two would itself be a step toward the prohibite
 | crypto-correlation interface | `crypto_correlation_interface` | `interface_placeholder` | The crypto framework's own `correlation_and_volatility.cross_coin_correlation_status` axis (`XASSET-0002` §4.3) — currently forced `not_yet_measured`; this dimension is a pass-through pointer, never a new study. |
 | defensive-offset interface | `defensive_offset_interface` | `interface_placeholder` | This filing's own `GLD_DEFENSIVE_ROLE`/`capital_preservation_character` axis (§3.2) — currently unpopulated (no record exists), so this dimension has nothing to point at yet; it exists so a future populated `GLD_DEFENSIVE_ROLE` record has somewhere to be read from without a schema change at that time. |
 | leverage/debt interaction | `leverage_debt_interaction` | `mechanical_rollup`, evidence sourced from a **cited, never recomputed** `margin_state.classify_margin_state()` run | `margin_state.py`'s existing four-state classifier and `DEBT_REDUCTION`'s own `hard_constraint_status` axis (§3.2) — cross-referenced, never duplicated; the overlap-model validator never imports `margin_state.py` (§7 point 12). |
+| geographic/currency exposure | `geographic_currency_exposure` | `interface_placeholder` | The ETF framework's own `constituent_exposure.geographic_concentration`/`.currency_exposure` fields (`XASSET-0002` §3.2, already populated per-instrument for SPY/VEA/VWO) plus a future international/currency-denominated equity's own comparable evidence, if one is ever added — no whole-portfolio aggregation mechanism exists today to roll these per-instrument facts up across sleeves, so this dimension is a pointer to where that future aggregation would read from, never a new geography/currency study performed here. |
+| whole-portfolio volatility/drawdown concentration | `whole_portfolio_volatility_drawdown_concentration` | `interface_placeholder` | The crypto framework's own `correlation_and_volatility.historical_volatility_category` axis (`XASSET-0002` §4.3, already populated per-coin) as the one currently-existing instrument-level volatility fact to point at — equities and ETFs currently carry **no** comparable volatility/drawdown axis of their own anywhere in this repository (independently confirmed: neither `TIER-0002`'s four-axis equity schema nor `XASSET-0002`'s ETF schema defines one), so a genuine whole-portfolio rollup is not yet computable even in principle until that gap is separately closed — disclosed here as a real, two-layer evidence gap (no per-instrument equity/ETF volatility axis, and no cross-sleeve aggregation mechanism), not glossed over as a simple pointer. |
 
-### 6.2 Field-by-field design (one shared shape across all eight dimension records)
+### 6.2 Field-by-field design (one shared shape across all ten dimension records)
 
 Unlike the functional-doctrine schema's four-type population, the overlap model's population is a fixed
-set of exactly eight `dimension_id` values, one record each, sharing one schema shape (no per-dimension
-schema variation is needed — every field below applies identically to all eight):
+set of exactly ten `dimension_id` values, one record each, sharing one schema shape (no per-dimension
+schema variation is needed — every field below applies identically to all ten):
 
-- **`dimension_id`**: closed vocabulary, exactly the eight values in the table above (§6.1). Population
+- **`dimension_id`**: closed vocabulary, exactly the ten values in the table above (§6.1). Population
   discriminator, not a judgment field.
 - **`schema_version`**: framework schema version string, same convention as every prior framework.
 - **`dimension_type`**: closed vocabulary — `mechanical_rollup` | `narrative_evidence` |
@@ -422,7 +472,7 @@ schema variation is needed — every field below applies identically to all eigh
   a judgment about the dimension's current value.
 - **`source_mechanism`**: required citation of the specific existing repository mechanism this dimension
   extends (file path, module, or schema field — §6.1's table gives the canonical citation for each of the
-  eight). A dimension record whose `source_mechanism` names a mechanism this artifact did not already
+  ten). A dimension record whose `source_mechanism` names a mechanism this artifact did not already
   identify in §6.1 is not authorized by this design.
 - **`computation_status`**: closed vocabulary — `computed_from_existing_mechanism` |
   `not_yet_computable_interface_only` | `requires_future_authorization`. For the two `interface_
@@ -464,14 +514,14 @@ information the record's own required disclosure doesn't already carry.
 functional-doctrine records (which need a normalized cross-type-comparable summary for a future synthesis
 unit that reads many different instrument schemas), an overlap-model dimension record is already a
 portfolio-level meta-record with one clear consumer (a future `XASSET-0001` §E/§F synthesis unit, which
-would read all eight dimension records directly) — no further indirection layer is needed.
+would read all ten dimension records directly) — no further indirection layer is needed.
 
 ### 6.3 The no-composite-score rule, made structural
 
 **No field, at any level of this schema, may aggregate two or more dimensions' `computation_status` or
 `output_shape` values into a single number, category, rank, or score.** This is enforced two ways:
 
-1. **Structurally**: there is no envelope object shared across the eight dimension records (unlike the
+1. **Structurally**: there is no envelope object shared across the ten dimension records (unlike the
    functional-doctrine schema's shared four-type envelope) — each dimension record stands alone, with no
    natural home for a rollup field to live in even if one were later proposed. Adding a composite would
    require inventing a *new* ninth record type, not adding a field to an existing one — a materially
@@ -479,7 +529,7 @@ would read all eight dimension records directly) — no further indirection laye
 2. **By validator rule** (§7 point 7): a dedicated forbidden-key/forbidden-pattern scan for any field
    name suggesting aggregation (`composite_score`, `overall_risk`, `aggregate_concentration`,
    `overlap_index`, `risk_rank`, or any bare `score`/`rank`/`index` key not already part of this schema's
-   own named fields) applied across all eight dimension records as a set, not merely within one record —
+   own named fields) applied across all ten dimension records as a set, not merely within one record —
    catching a future attempt to smuggle a composite in via a ninth, ungoverned file.
 
 ## 7. Validator specification (for the future implementing PR)
@@ -489,7 +539,7 @@ envelope-level helpers, mirroring `etf_classification_validator.py`/`crypto_clas
 own sibling-module precedent) enforcing, at minimum:
 
 1. **Exact population enforcement** — exactly four `capital_use_type` values for the functional-doctrine
-   schema, exactly eight `dimension_id` values for the overlap-model schema, no more, no fewer (mirrors
+   schema, exactly ten `dimension_id` values for the overlap-model schema, no more, no fewer (mirrors
    every prior population-enforcement precedent in this repository).
 2. **Closed schema at every level, rejecting extra keys, not just missing ones** — envelope, per-axis,
    `structural_reference`, `economic_assessment_readiness`'s conditional two shapes, and every dimension
@@ -518,7 +568,7 @@ own sibling-module precedent) enforcing, at minimum:
    framework's own scoped `expense_ratio_pct` exception, §3.3/§7's own zero-numeric-field design means
    this scan has nothing to exempt).
 7. **No composite-overlap-score leakage** — the dedicated forbidden-pattern scan described in §6.3 point
-   2, applied across the full set of eight dimension records together, not merely within one.
+   2, applied across the full set of ten dimension records together, not merely within one.
 8. **`GLD_DEFENSIVE_ROLE` structural-reference enforcement** — §3.4's full mechanism: required-and-only-
    present-on-`GLD_DEFENSIVE_ROLE` shape check; a live recompute of GLD's ETF record hash via
    `etf_classification_validator.canonical_record_hash()` (read-only reuse of the existing public
@@ -557,11 +607,11 @@ A future implementation's focused test suite must cover, at minimum, one test pe
 
 - Functional-doctrine happy-path record for each of the four `capital_use_type` values (all axes
   present, valid, no abstention where not required) validates clean.
-- Overlap-model happy-path record for each of the eight `dimension_id` values validates clean.
+- Overlap-model happy-path record for each of the ten `dimension_id` values validates clean.
 - Malformed envelope/axis schema (missing required field) rejected, for both schemas.
 - Extra unknown key at envelope level and at axis level rejected, for both schemas (the
   `contender_registry_validator.py` MAJOR-finding exploit class — proactively tested here).
-- Wrong `capital_use_type`/`dimension_id` value (outside the closed four/eight) rejected.
+- Wrong `capital_use_type`/`dimension_id` value (outside the closed four/ten) rejected.
 - `economic_assessment_readiness` single-part shape on a `DEBT_REDUCTION` record rejected; two-part shape
   on any non-`DEBT_REDUCTION` record rejected.
 - `structural_reference` present on a non-`GLD_DEFENSIVE_ROLE` record rejected; missing on a
@@ -578,7 +628,7 @@ A future implementation's focused test suite must cover, at minimum, one test pe
   — with **no** positive/accepted-numeric-field test (unlike the ETF framework's `expense_ratio_pct`
   acceptance test), since this design carries zero numeric-field exceptions.
 - Forbidden composite-overlap-score pattern (each named term in §6.3 point 2, individually) rejected,
-  tested against the full eight-record set together, not a single record in isolation.
+  tested against the full ten-record set together, not a single record in isolation.
 - Cross-schema field-name leakage: an ETF-, crypto-, or equity-shaped key present anywhere in either the
   functional-doctrine or overlap-model schema rejected (each source schema's key names tested
   individually).
