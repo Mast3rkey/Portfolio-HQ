@@ -461,6 +461,122 @@ def test_excluded_dust_coin_rejected():
         assert not result.valid, f"{excluded} should be rejected"
 
 
+# ── validate_cohort_manifest negative-path branches (independent-review MINOR-2) ─
+#
+# The two tests above (duplicate/missing) already exercise two branches of
+# validate_cohort_manifest, but with placeholder/valid hashes throughout --
+# they never exercise the hash-mismatch, orphan-record, out-of-population-
+# via-manifest, or unknown-key branches. Added per an independent exact-head
+# review of PR #272 (MINOR-2): the mechanism was already sound, only the
+# test coverage was missing, matching PR #270's own MINOR-2 precedent.
+
+def test_manifest_row_hash_mismatch_against_recomputed_hash_rejected():
+    record = _record(instrument_id="BTC", sealed=True)
+    manifest = {"schema_version": "1.0", "governing_decision": "XASSET-0004", "cohort": [
+        {"instrument_id": "BTC", "sealed_at": record["sealed_at"], "content_sha256": "0" * 64,
+         "schema_version": "1.0", "governing_decision": "XASSET-0004", "record_path": "p"},
+    ]}
+    result = cv.validate_cohort_manifest(
+        manifest, {"BTC": record}, authorized_population=frozenset({"BTC"}),
+    )
+    assert not result.valid
+    assert any("content_sha256 mismatch" in e for e in result.errors)
+
+
+def test_manifest_row_hash_disagrees_with_records_own_recorded_hash_rejected():
+    record = _record(instrument_id="BTC", sealed=True)
+    # The manifest row's content_sha256 correctly reproduces the record's
+    # *content* hash (so the mismatch check above would not itself fire),
+    # but the record's own recorded content_sha256 field has been separately
+    # corrupted -- a distinct failure mode from a recomputation mismatch.
+    corrupted_record = dict(record)
+    corrupted_record["content_sha256"] = "1" * 64
+    manifest = {"schema_version": "1.0", "governing_decision": "XASSET-0004", "cohort": [
+        {"instrument_id": "BTC", "sealed_at": record["sealed_at"],
+         "content_sha256": cv.canonical_record_hash(record),
+         "schema_version": "1.0", "governing_decision": "XASSET-0004", "record_path": "p"},
+    ]}
+    result = cv.validate_cohort_manifest(
+        manifest, {"BTC": corrupted_record}, authorized_population=frozenset({"BTC"}),
+    )
+    assert not result.valid
+    assert any("manifest content_sha256 does not match the record's own recorded content_sha256" in e for e in result.errors)
+
+
+def test_manifest_row_referencing_nonexistent_record_rejected():
+    manifest = {"schema_version": "1.0", "governing_decision": "XASSET-0004", "cohort": [
+        {"instrument_id": "BTC", "sealed_at": "x", "content_sha256": "h",
+         "schema_version": "1.0", "governing_decision": "XASSET-0004", "record_path": "p"},
+    ]}
+    result = cv.validate_cohort_manifest(manifest, {}, authorized_population=frozenset({"BTC"}))
+    assert not result.valid
+    assert any("has no corresponding sealed record file" in e for e in result.errors)
+
+
+def test_manifest_lists_instrument_outside_authorized_population_rejected():
+    record = _record(instrument_id="DOGE", sealed=True)
+    manifest = {"schema_version": "1.0", "governing_decision": "XASSET-0004", "cohort": [
+        {"instrument_id": "DOGE", "sealed_at": record["sealed_at"],
+         "content_sha256": cv.canonical_record_hash(record),
+         "schema_version": "1.0", "governing_decision": "XASSET-0004", "record_path": "p"},
+    ]}
+    result = cv.validate_cohort_manifest(
+        manifest, {"DOGE": record}, authorized_population=frozenset({"BTC", "ETH", "SOL"}),
+    )
+    assert not result.valid
+    assert any("outside the authorized population" in e for e in result.errors)
+
+
+def test_orphan_sealed_record_with_no_manifest_entry_rejected():
+    record = _record(instrument_id="BTC", sealed=True)
+    manifest = {"schema_version": "1.0", "governing_decision": "XASSET-0004", "cohort": []}
+    result = cv.validate_cohort_manifest(
+        manifest, {"BTC": record}, authorized_population=frozenset(),
+    )
+    assert not result.valid
+    assert any("sealed record(s) exist with no corresponding cohort manifest entry" in e for e in result.errors)
+
+
+def test_manifest_row_unknown_key_rejected():
+    record = _record(instrument_id="BTC", sealed=True)
+    manifest = {"schema_version": "1.0", "governing_decision": "XASSET-0004", "cohort": [
+        {"instrument_id": "BTC", "sealed_at": record["sealed_at"],
+         "content_sha256": cv.canonical_record_hash(record),
+         "schema_version": "1.0", "governing_decision": "XASSET-0004", "record_path": "p",
+         "smuggled_row_key": "oops"},
+    ]}
+    result = cv.validate_cohort_manifest(
+        manifest, {"BTC": record}, authorized_population=frozenset({"BTC"}),
+    )
+    assert not result.valid
+    assert any("cohort[0] contains unexpected key(s)" in e for e in result.errors)
+
+
+def test_manifest_top_level_unknown_key_rejected():
+    manifest = {
+        "schema_version": "1.0", "governing_decision": "XASSET-0004", "cohort": [],
+        "smuggled_top_level_key": "oops",
+    }
+    result = cv.validate_cohort_manifest(manifest, {}, authorized_population=frozenset())
+    assert not result.valid
+    assert any("cohort manifest contains unexpected top-level key(s)" in e for e in result.errors)
+
+
+def test_manifest_missing_required_row_key_rejected():
+    manifest = {"schema_version": "1.0", "governing_decision": "XASSET-0004", "cohort": [
+        {"instrument_id": "BTC", "sealed_at": "x"},
+    ]}
+    result = cv.validate_cohort_manifest(manifest, {}, authorized_population=frozenset({"BTC"}))
+    assert not result.valid
+    assert any("cohort[0] missing required key(s)" in e for e in result.errors)
+
+
+def test_manifest_not_a_mapping_with_cohort_list_rejected():
+    result = cv.validate_cohort_manifest(["not", "a", "mapping"], {})
+    assert not result.valid
+    assert any("cohort manifest must be a mapping with a 'cohort' list" in e for e in result.errors)
+
+
 # ── 20: numeric target/range/score/rank leakage ─────────────────────────────
 
 @pytest.mark.parametrize("numeric_key", [

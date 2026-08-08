@@ -9094,6 +9094,29 @@ workstreams:
           implementation and XASSET-0003→PR-#270 precedent — decision catalog
           unchanged at 93, issues == ()). No claim of acceptance, readiness, merge,
           or completion; awaiting a fresh independent exact-head review.
+
+          Bounded correction (same day, this PR): an independent exact-head review
+          of the original head (6eee128ce85bdea63a3fd65f843835f42a243f0d) returned
+          CHANGES REQUIRED — 0 BLOCKING / 0 MAJOR / 2 MINOR / 2 non-actionable NOTE,
+          both MINOR findings independently reproduced before any fix. Resolved:
+          (1) the retained audit's own SS8 claim of "exactly one priority: primary
+          workstream" was wrong and internally inconsistent with its own
+          parenthetical — corrected to "exactly zero" (WS-0005 is secondary under
+          TIER-0013, no successor primary workstream named); this PR's own body and
+          CLAUDE.md entry already stated it correctly. (2) validate_cohort_
+          manifest's logic was already sound (independently re-confirmed) but had
+          zero dedicated negative-path tests for six branches — hash-mismatch in
+          both directions, a manifest row referencing a nonexistent record, an
+          out-of-population instrument named in the manifest, an orphan sealed
+          record, and unknown-key rejection at both the row and top level — nine
+          new tests added (one per gap plus a malformed-shape test), matching PR
+          #270's own MINOR-2 precedent (sound mechanism, untested branch). No
+          content of any of the three sealed records changed; crypto_
+          classification_validator.py itself is unchanged. Full re-validation:
+          test_crypto_classification_validator.py 142 passed (up from 133); full
+          pytest 3341/0 (3199+142, exact match); decision catalog unchanged at
+          93/issues == (); git diff --check clean; zero protected-path diff.
+          Requires its own fresh independent exact-head delta review.
         pr: 272
         status: in_progress
         date: "2026-08-08"

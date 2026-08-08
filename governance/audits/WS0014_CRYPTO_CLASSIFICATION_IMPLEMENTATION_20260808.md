@@ -248,8 +248,10 @@ partial`.
   `intelligence_validator.py` clean; `freshness_validator.py` `OK`; `contender_registry_validator.py`
   `OK (84 entries)`; `etf_classification_validator.py` `OK (5 result(s))` — all seven pre-existing
   validators unaffected by this implementation.
-- `test_crypto_classification_validator.py`: **133 focused tests**, all passing.
-- Full repository `pytest` suite: **3332 passed, 0 failed** (3199 pre-existing baseline plus 133 new
+- `test_crypto_classification_validator.py`: **142 focused tests**, all passing (133 in the original
+  drafting pass plus 9 added in a bounded correction, per an independent exact-head review's MINOR-2
+  finding — see §10 below).
+- Full repository `pytest` suite: **3341 passed, 0 failed** (3199 pre-existing baseline plus 142 new
   tests), one pre-existing, unrelated `DeprecationWarning` (`intelligence_classification_sanitizer.py`'s
   own `\d`-escape docstring warning, disclosed in this repository's own history since the Milestone 6
   correction chain).
@@ -261,7 +263,7 @@ partial`.
   `allocate.py`, `margin_state.py`, `levels.py`, every existing `intelligence/etf_classification/` file,
   every existing `intelligence/classification|companies|themes|relationships|reconciliation|recommendations|
   contenders/` file, and `governance/decisions/`.
-- Exactly one `priority: primary` workstream (unaffected — `WS-0005` remains `secondary` per `TIER-0013`;
+- Exactly zero `priority: primary` workstreams (unaffected — `WS-0005` remains `secondary` per `TIER-0013`, with no successor primary workstream named;
   `WS-0014` remains `status: proposed`/`priority: secondary`, unedited by this implementation).
 - Changed-file inventory: `intelligence/crypto_classification/BTC.yaml`,
   `intelligence/crypto_classification/ETH.yaml`, `intelligence/crypto_classification/SOL.yaml`,
@@ -280,3 +282,39 @@ instrument-level sizing, no chart evidence of any kind, and no tier/target/holdi
 allocator/margin/ladder/order/trade change is authorized, implied, or performed by this implementation.
 `WS-0014` items 2 and 6 through 14 remain wholly unauthorized. This session does not review its own PR,
 mark it ready, merge it, or post principal acceptance.
+
+## 10. Bounded correction (same day, this PR)
+
+An independent exact-head review of the original head (`6eee128ce85bdea63a3fd65f843835f42a243f0d`)
+returned CHANGES REQUIRED — 0 BLOCKING / 0 MAJOR / 2 MINOR / 2 non-actionable NOTE, both MINOR findings
+independently reproduced and confirmed valid before any fix.
+
+**MINOR-1, resolved**: this document's own §8 stated "Exactly one `priority: primary` workstream" — wrong
+and internally inconsistent with its own parenthetical, which already correctly named `WS-0005` as
+`secondary`. Independently re-confirmed via a fresh `operations/WORKSTREAMS.yaml` read: **zero**
+`priority: primary` workstreams live in the repository (`WS-0005` transitioned to `secondary` under the
+accepted `TIER-0013`, with no successor primary workstream named). §8 above is corrected to "Exactly zero."
+This PR's own PR body and its `CLAUDE.md` Decisions Log entry both already stated this correctly — only this
+retained audit had the wrong count.
+
+**MINOR-2, resolved**: `crypto_classification_validator.validate_cohort_manifest`'s logic was already
+correct (independently re-confirmed by direct code reading and a live re-run against the real repository),
+but had zero dedicated negative-path test coverage for six of its branches: a manifest row's
+`content_sha256` failing to reproduce a freshly-recomputed record hash; a manifest row's `content_sha256`
+disagreeing with the record's own separately-recorded `content_sha256`; a manifest row referencing an
+`instrument_id` with no corresponding record file; a manifest row naming an instrument outside the
+authorized population; an orphan sealed record with no corresponding manifest entry; and unknown-key
+rejection at both the manifest-row and manifest-top-level. The two pre-existing manifest tests
+(`test_duplicate_instrument_within_directory_detected_by_manifest`,
+`test_missing_instrument_from_population_rejected`) exercised only two of `validate_cohort_manifest`'s
+branches, using placeholder/valid hashes throughout. Nine new tests were added, one per gap (plus a
+malformed-manifest-shape test), bringing `test_crypto_classification_validator.py` to 142 tests — matching
+`PR #270`'s own MINOR-2 precedent exactly (sound mechanism, untested branch). No content of any of the
+three sealed records changed; `crypto_classification_validator.py` itself is unchanged by this correction.
+
+Full re-validation at the corrected head: `crypto_classification_validator.py` `OK (4 result(s))`; all
+seven other pre-existing validators clean and unaffected; `test_crypto_classification_validator.py`
+**142 passed** (up from 133); full repository `pytest` **3341 passed, 0 failed** (3199 + 142, exact match);
+decision catalog unchanged at **93, `issues == ()`**; `git diff --check` clean; zero diff on every protected
+path; population/exclusion/manifest/hash/envelope checks all unaffected and unchanged. Requires its own
+fresh independent exact-head delta review before this PR may be considered ready.
