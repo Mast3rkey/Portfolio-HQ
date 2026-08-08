@@ -9651,47 +9651,102 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-08"
+      - gate: valuation0002-doctrine-adoption-pr-merged
+        description: >
+          PR #276 (VALUATION-0002 methodology doctrine adoption)
+          independently reconfirmed merged via the GitHub API: merged:
+          true, merged_by Mast3rkey, head
+          74840993fd75fff9f5ea53322f341bb109321b59, base main @
+          9640069a0fb2a7b89e5681208664db2331af2860, 5 changed files
+          (+564/-21), 2 commits, merge
+          7640ade92edbb54f86e0c4b6ec123fc75eb7aa0c (independently
+          confirmed matching this session's own branch base via git log —
+          not merely quoted from the authorizing task). Principal
+          acceptance issuecomment-5226649304. Merge-commit CI run
+          31263265804 success. VALUATION-0002's own PR body independently
+          re-read in full: adopts archetype-differentiated methodology
+          selection and the RQ3 false-precision specification as
+          doctrine; explicitly authorizes neither archetype assignment
+          nor valuation execution. This gate is additive; the
+          valuation0002-methodology-doctrine-adoption gate's own text
+          above is left byte-unedited.
+        pr: 276
+        status: complete
+        date: "2026-08-08"
+      - gate: valuation0003-archetype-assignment-authorization
+        description: >
+          VALUATION-0003 filed — authorizes exactly one future, separate,
+          bounded implementation PR to assign each of the 27 canonical
+          equities a qualitative valuation-methodology archetype (one of
+          protocol §5's closed A-G taxonomy, bound by reference, or a
+          first-class unable_to_determine_archetype abstention), plus at
+          most one optional secondary archetype (never a substitute for
+          testing archetype F on genuinely diversified/multi-segment
+          businesses), under a blind/redacted drafting workflow modeled
+          on WS-0005 Milestone 6 (TIER-0004/TIER-0005), a strict
+          permitted/prohibited evidence-input boundary (portfolio_role_
+          ref, conviction.rating, target weights, gate/allow_add status,
+          chart/technical evidence, allocator output, and margin/trade
+          state all prohibited as assignment evidence; sector/industry
+          admitted only as suggestive context, never mechanically
+          determinative), one authorized implementation cycle internally
+          sharded into ~5-6-company review shards (no per-shard
+          governance gating), and mandatory dedicated schema/validator/
+          test coverage from the start. Explicitly does not authorize any
+          valuation, fair value, price target, expected return, RQ4
+          evidence-category design, or TIER-0009 §K resolution — archetype
+          assignment may proceed before RQ4 closure; valuation execution
+          may not. No company is assigned, valued, or chart-analyzed by
+          this filing itself.
+        pr: null
+        status: in_progress
+        date: "2026-08-08"
     evidence_refs:
       - governance/decisions/VALUATION-0001-equity-valuation-research-charter.md
       - governance/decisions/VALUATION-0002-equity-valuation-methodology-doctrine-adoption.md
+      - governance/decisions/VALUATION-0003-equity-valuation-archetype-assignment-authorization.md
       - research/equity_valuation_study/PROTOCOL_V1.md
       - research/equity_valuation_study/METHODOLOGY_EVALUATION_REPORT.md
       - governance/decisions/TIER-0009-ws0005-milestone8-policy-recommendation-framework-authorization.md
+      - governance/decisions/TIER-0004-ws0005-milestone6-population-and-blindness-preflight.md
+      - governance/decisions/TIER-0005-ws0005-milestone6-fresh-authorization.md
     next_action: >
-      Independent, exact-head review of VALUATION-0002's governance PR
+      Independent, exact-head review of VALUATION-0003's governance PR
       under OPS-0007 §1's capability-based standard (OPS-0009 Lane G —
       full weight, no reduction), followed by any required bounded
       correction, exact-head re-review, and explicit principal acceptance
       before the PR may be marked ready and merged. No real-company
-      archetype-category assignment and no real-company valuation may
-      begin before — and are not authorized by — that merge; either
-      remains its own separate, later, explicitly authorized unit per
-      VALUATION-0002 §6.
+      archetype-category assignment may begin before — and is not
+      authorized by — that merge. No real-company valuation is authorized
+      by VALUATION-0003 under any circumstance; it remains its own
+      separate, later, explicitly authorized unit per VALUATION-0002 §6.3.
     completion_criteria: >
       Not met for WS-0015 as a whole. Met so far: VALUATION-0001 merged
       with its pinned hash verified (valuation0001-governance-pr-merged);
       the implementation report merged, independently reviewed, and
-      principal-accepted (valuation0001-implementation-report-merged).
-      Not yet met: VALUATION-0002's methodology-doctrine adoption merged
-      with its own independent review and principal acceptance
-      (valuation0002-methodology-doctrine-adoption); and — only if a
-      future application phase is ever separately proposed and
+      principal-accepted (valuation0001-implementation-report-merged);
+      VALUATION-0002's methodology-doctrine adoption merged, independently
+      reviewed, and principal-accepted
+      (valuation0002-doctrine-adoption-pr-merged). Not yet met:
+      VALUATION-0003's archetype-assignment authorization merged with its
+      own independent review and principal acceptance
+      (valuation0003-archetype-assignment-authorization); the future
+      archetype-assignment implementation PR it would authorize; and —
+      only if a future application phase is ever separately proposed and
       accepted — its own further, separate governance decisions for (a)
-      closing the RQ4 evidence-category gap, (b) real-company
-      archetype-category assignment, and (c) real-company valuation
-      execution, each independently reviewed and principal-accepted
-      before any methodology is applied to a real company
-      (VALUATION-0001 §5, VALUATION-0002 §6, protocol §§14/15 — no result
-      automatically changes policy).
+      closing the RQ4 evidence-category gap and (b) real-company
+      valuation execution, each independently reviewed and
+      principal-accepted before any methodology is applied to a real
+      company (VALUATION-0001 §5, VALUATION-0002 §6, VALUATION-0003 §L,
+      protocol §§14/15 — no result automatically changes policy).
     blocker: >
-      VALUATION-0002's governance PR has not yet been independently
+      VALUATION-0003's governance PR has not yet been independently
       reviewed or principal-accepted. No real-company archetype
-      assignment or valuation work may open until it merges, and neither
-      is authorized even then without its own further, separate
-      governance decision.
-    active_branch: claude/valuation-methodology-adoption-sdiaof
+      assignment work may open until it merges, and no real-company
+      valuation work is authorized by it under any circumstance.
+    active_branch: claude/valuation-0003-archetype-auth-evtwbt
     active_pr: null
-    last_verified_main_sha: 5066168b681a0c720a52b61044f220e38d21ffda
+    last_verified_main_sha: 7640ade92edbb54f86e0c4b6ec123fc75eb7aa0c
     last_verified_date: "2026-08-08"
     authorized_by: null
     supersedes: null
