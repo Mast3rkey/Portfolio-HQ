@@ -9758,7 +9758,7 @@ workstreams:
           valuation, fair value, price target, RQ4 work, or TIER-0009
           resolution performed. This filing does not itself review,
           mark ready, or merge its own PR.
-        pr: null
+        pr: 279
         status: in_progress
         date: "2026-08-08"
     evidence_refs:
@@ -9808,7 +9808,7 @@ workstreams:
       principal-accepted. No real-company valuation work is authorized by
       it under any circumstance.
     active_branch: claude/valuation-archetype-27-equities-1y28my
-    active_pr: null
+    active_pr: 279
     last_verified_main_sha: 0d0252021ded7f18a44c8688148606c9ee39fad4
     last_verified_date: "2026-08-08"
     authorized_by: VALUATION-0003 (PR #278, merged)
