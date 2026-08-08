@@ -16,10 +16,12 @@ rationale: 'TMO is a large-scale ($44.56B FY2025 revenue), mature supplier acros
   in underlying economics, and all four segments share a common recurring consumables/reagents/services
   revenue engine rather than fundamentally distinct business models.'
 evidence_quality:
-  primary_source_coverage: partial
-  uncertainty_statement: The four disclosed FY2025 segment totals sum to approximately $46.58 billion
-    against a stated $44.56 billion consolidated total, a roughly $2.0 billion gap the packet explicitly
-    states was not reconciled against a primary eliminations table.
+  primary_source_coverage: limited
+  uncertainty_statement: No primary document was directly opened by any researcher for this record --
+    direct rendering of Thermo Fisher's primary documents was never achieved, and no claim in this record
+    is labeled directly inspected first-party; the four disclosed FY2025 segment totals sum to a figure
+    not directly additive to the stated consolidated total, an unreconciled gap this record does not rely
+    on.
 disclosed_evidence_conflicts:
 - The four-segment revenue sum (~$46.58B) does not reconcile to the stated consolidated FY2025 total ($44.56B);
   Q2 2026 figures (revenue, EPS, guidance raise, divestiture, and the Clario acquisition) are secondary-sourced
@@ -31,4 +33,4 @@ sealed_at: '2026-08-08T17:00:00Z'
 governing_decision: VALUATION-0003
 drafting_session_or_shard_id: shard-5
 cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#TMO
-content_sha256: f89b128eebd3b86944976af8b67a1b5b217b051e5adfc5b1334ad1fbe505df73
+content_sha256: 40be6359a2a4b9b7cb874a989e7993f724ae900dc880b81971596031b8fe24e9

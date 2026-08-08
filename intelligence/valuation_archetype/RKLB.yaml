@@ -17,12 +17,24 @@ rationale: 'RKLB has posted a net loss every year since inception through FY2025
   as a secondary archetype rather than primary, because the company''s overall financial profile (net
   losses every year since inception, active dilution, an unproven medium-lift vehicle) is currently dominated
   by binary-outcome/early-stage characteristics that cut across both segments rather than segment diversification
-  being the defining valuation challenge.'
+  being the defining valuation challenge. A third, larger, structurally different business -- Iridium''s
+  operating satellite-communications network and licensed spectrum -- is disclosed in the permitted portfolio-relationship
+  context as the subject of a signed, pending acquisition that would shift the company toward space-infrastructure
+  operation if completed. Because the transaction has not closed, is not reflected in any reported segment
+  structure, and its regulatory/shareholder-approval progress remains outstanding per the permitted evidence,
+  it is deliberately disclosed and excluded from this current-state archetype and F-test rather than treated
+  as a third economic driver -- an exclusion made explicit here, not a silent omission, and one that should
+  be revisited once the deal closes and its economics are reflected in reported segment results. The pending
+  deal itself reinforces rather than weakens the E-primary call in the interim: a large, unclosed, still-conditional
+  transaction pending regulatory and shareholder approval is itself a binary (may-or-may-not-close-as-structured)
+  element layered on top of the existing pre-profitability and unproven-Neutron considerations.'
 evidence_quality:
   primary_source_coverage: limited
   uncertainty_statement: This session's primary-source access was completely blocked for every domain
-    attempted, and multiple load-bearing figures (total Electron mission count, current shares outstanding)
-    are internally inconsistent across the secondary sources available.
+    attempted, multiple load-bearing figures (total Electron mission count, current shares outstanding)
+    are internally inconsistent across the secondary sources available, and the pending, unclosed ~$8B
+    Iridium acquisition -- not yet reflected in any reported segment structure -- adds a further, currently
+    unresolved layer of forward uncertainty to this classification.
 disclosed_evidence_conflicts:
 - Total Electron mission count is cited as both 84 and 91 across sources; current shares outstanding is
   cited across a 598-625 million range from imperfectly-dated secondary sources; a single, likely-erroneous
@@ -38,4 +50,4 @@ sealed_at: '2026-08-08T17:00:00Z'
 governing_decision: VALUATION-0003
 drafting_session_or_shard_id: shard-4
 cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#RKLB
-content_sha256: 22794347549987a3ccf120a0c18cdf7316baf970e1fa0d027ac03df7b1a18e3d
+content_sha256: 320e835768e43ccfec91483930b97b0bceb69f9903c158f38e7cb8959aa2ae66

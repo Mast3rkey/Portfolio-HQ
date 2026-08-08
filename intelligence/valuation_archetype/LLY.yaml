@@ -1,20 +1,22 @@
 schema_version: '1.0'
 ticker: LLY
 primary_archetype: A
-secondary_archetype: E
+secondary_archetype: null
 rationale: 'Lilly''s current economics are dominated by a fast-growing, high-margin, patent-protected
   drug franchise (incretin revenue +90% YoY, key products 68% of Q1 2026 revenue) with volume-driven growth
-  on an already-established, profitable base -- characteristics consistent with high-incremental-margin,
+  on an already-established, profitable, positive-cash-flow base -- characteristics consistent with high-incremental-margin,
   asset-light-style recurring franchise economics once a product is approved and launched (archetype A).
-  However, the packet also discloses meaningful binary/pipeline-dependent elements bearing on forward
-  value: a just-approved product (Foundayo) carrying a boxed warning and real safety/monitoring burden,
-  four pipeline-stage acquisitions announced in a single quarter requiring integration, and explicitly
-  unresolved patent/exclusivity-date evidence for the existing franchise -- these argue for scenario/probability-weighted
-  treatment as a necessary companion (archetype E) rather than a single-path projection of current growth.
-  Archetype-F test: F was not considered as a live candidate: the packet describes Lilly''s current revenue
-  as extremely concentrated (68% of Q1 2026 revenue from a small set of key incretin products) rather
-  than diversified across materially distinct segments, so a sum-of-the-parts framing was not indicated
-  by the disclosed evidence.'
+  No secondary archetype is retained: archetype E is defined at the level of a company whose cash flow
+  is ''not yet stable, predictable, or positive'' -- Lilly''s own permitted evidence shows the opposite
+  (56% YoY revenue growth, an already-commercial, profitable franchise). The disclosed pipeline-stage
+  acquisitions (Orna, Centessa, Kelonia, Ajax), Foundayo''s new safety-label burden, and the unresolved
+  patent-exclusivity dates are ordinary, disclosed risk factors on an already-commercial business, not
+  evidence that Lilly''s own cash flow is early-stage or binary in the way archetype E''s definition requires
+  -- they are captured as disclosed risk and uncertainty within the archetype-A framing rather than a
+  distinct secondary archetype. Archetype-F test: F was not considered as a live candidate: the packet
+  describes Lilly''s current revenue as extremely concentrated (68% of Q1 2026 revenue from a small set
+  of key incretin products) rather than diversified across materially distinct segments, so a sum-of-the-parts
+  framing was not indicated by the disclosed evidence.'
 evidence_quality:
   primary_source_coverage: partial
   uncertainty_statement: Precise product-by-product patent and regulatory-exclusivity dates for the incretin
@@ -28,4 +30,4 @@ sealed_at: '2026-08-08T17:00:00Z'
 governing_decision: VALUATION-0003
 drafting_session_or_shard_id: shard-3
 cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#LLY
-content_sha256: e2d2527d5406161bc0927c17237a535918ce1bddadbf8fa89c4ff642a854357f
+content_sha256: 19e286b61957c2c8b843424f96bbdf8e3ebe8a2a09e1c5881bfab986a5972640

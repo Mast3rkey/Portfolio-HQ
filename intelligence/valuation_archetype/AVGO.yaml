@@ -15,10 +15,12 @@ rationale: 'Broadcom operates two reportable segments with materially different 
   subscription platform, $7.18B/+9% YoY) have materially different, separately disclosed segment economics,
   supporting a sum-of-the-parts framing over a single blended valuation.'
 evidence_quality:
-  primary_source_coverage: partial
-  uncertainty_statement: The ~$73B AI-semiconductor backlog figure and the Google TPU agreement through
-    2031 are secondary-sourced (aggregated analyst/trade coverage) and were not independently verified
-    against a primary contract or filing.
+  primary_source_coverage: limited
+  uncertainty_statement: No primary document was directly opened by any researcher for this record at
+    any point (WebFetch confirmed blocked on all four domains attempted, including a control domain) --
+    every fact, including the AI-semiconductor revenue/segment figures underlying this archetype call,
+    traces to WebSearch-returned snippet synthesis, and the $73B AI-semiconductor backlog and Google TPU
+    agreement figures remain unverified against a primary contract or filing.
 disclosed_evidence_conflicts:
 - Secondary reporting simultaneously frames the VMware Cloud Foundation transition as driving double-digit
   ARR growth and as generating customer backlash over 5x-10x list-price increases with elevated churn
@@ -30,4 +32,4 @@ sealed_at: '2026-08-08T17:00:00Z'
 governing_decision: VALUATION-0003
 drafting_session_or_shard_id: shard-1
 cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#AVGO
-content_sha256: 2b9a736b3840bf92c89045f593f9613b3daba793a6ad978f02e45cb206399ada
+content_sha256: 8b5cee773882e52d219ec4b5b582989fc92e1adca4badf70346482d13afb5831

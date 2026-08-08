@@ -4,21 +4,21 @@ cohort:
 - ticker: AMZN
   shard_id: shard-1
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: 7992b37525eed2b7f6f7c0c5c5a5b4954b11c690920c5727c9bbcb3ae98559aa
+  content_sha256: 0c2a682b6b0ceaabfc36cd90c319b760e62abe16c55e79f1780ae4c23d078b98
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/AMZN.yaml
 - ticker: ASML
   shard_id: shard-1
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: 9c91516cd94e8f76c0c1bb5a561a5e3ce9454c3cbf5d1f63fa326e050874e74a
+  content_sha256: 31e0938e68ea9be875648f5680d057e45233617ec15030341ebc76ecb4a699c8
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/ASML.yaml
 - ticker: AVGO
   shard_id: shard-1
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: 2b9a736b3840bf92c89045f593f9613b3daba793a6ad978f02e45cb206399ada
+  content_sha256: 8b5cee773882e52d219ec4b5b582989fc92e1adca4badf70346482d13afb5831
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/AVGO.yaml
@@ -46,21 +46,21 @@ cohort:
 - ticker: GEV
   shard_id: shard-2
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: d182431e5baaba6a854d535cee719c6c97d8f7f5d42d5568103bad1c769b6a7a
+  content_sha256: cf775759133b2fcd128fccb9f8bf5964fbdbbef7493c1ad1fb154eb40052b7ca
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/GEV.yaml
 - ticker: GNRC
   shard_id: shard-2
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: 103ef716200c2fc105894e19927ebf75d9fb86eea7494a2f4280a0c856dbcbd0
+  content_sha256: 3679c6aa9947999e2b7439b40459ebe373302772e173e3a045f9b34163af6f22
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/GNRC.yaml
 - ticker: GOOGL
   shard_id: shard-2
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: 454ca61ac7b20143af2f1271570b83f11d13bd2a0a0bd93b176324a8cd013e76
+  content_sha256: c2a67f194635b9f0e2101a1af2b36e7ccfcf348ea7f56ab9e8416cd74676ff03
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/GOOGL.yaml
@@ -81,28 +81,28 @@ cohort:
 - ticker: KLAC
   shard_id: shard-3
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: bb39434dff394e0ff3d7c986686a0f493f2a1b1cb5fa2b66fa75fa8a55f55377
+  content_sha256: 21edd290053ddf9568da65bc034ec92a4f5fb922aa40a2b547fdb75b6a45bb98
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/KLAC.yaml
 - ticker: LLY
   shard_id: shard-3
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: e2d2527d5406161bc0927c17237a535918ce1bddadbf8fa89c4ff642a854357f
+  content_sha256: 19e286b61957c2c8b843424f96bbdf8e3ebe8a2a09e1c5881bfab986a5972640
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/LLY.yaml
 - ticker: META
   shard_id: shard-3
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: b20604ad58db7d3eeb7a87d0cf1d1b6000e1ea47b0c13336727da00b66b019d5
+  content_sha256: 9513197207cd89e40ee873298f108521aae0e5531a9535c34a8510baad7a0933
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/META.yaml
 - ticker: MSFT
   shard_id: shard-3
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: 1f6f269a7f04b878222a63fdbc5c92851c2eb12de1de3a0c138faa6800a7811f
+  content_sha256: dd2b445ae07db2b2b7583c2673ebb8bc99e7eec672e7f613445d7d9beb125e37
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/MSFT.yaml
@@ -130,7 +130,7 @@ cohort:
 - ticker: RKLB
   shard_id: shard-4
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: 22794347549987a3ccf120a0c18cdf7316baf970e1fa0d027ac03df7b1a18e3d
+  content_sha256: 320e835768e43ccfec91483930b97b0bceb69f9903c158f38e7cb8959aa2ae66
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/RKLB.yaml
@@ -144,28 +144,28 @@ cohort:
 - ticker: SNPS
   shard_id: shard-4
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: a9bbb78770b736243872453fdc03db84688b266a88ed3ff33affb048bb31eab3
+  content_sha256: ec01574523eba3bf1c653df4f2d35101c46c112e3073249fa01f2dbac77ba5d2
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/SNPS.yaml
 - ticker: SPGI
   shard_id: shard-5
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: 79bbed43518633c1294644b2872a08a567ea692ff80db11f488e62bb5639ec7e
+  content_sha256: 0541bb9a56f795485a0f248781ab07acf1f943351d5029158bf7cc26d771ec62
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/SPGI.yaml
 - ticker: TMO
   shard_id: shard-5
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: f89b128eebd3b86944976af8b67a1b5b217b051e5adfc5b1334ad1fbe505df73
+  content_sha256: 40be6359a2a4b9b7cb874a989e7993f724ae900dc880b81971596031b8fe24e9
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/TMO.yaml
 - ticker: TSLA
   shard_id: shard-5
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: 8d5ce709ae207b126fb08b4181441fec741642e204c7cd87cceeed5844fbf792
+  content_sha256: 04f1db1ea3fe68e2639cecf31fc229a6f15511a6a83e82023c6e1a608be41760
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/TSLA.yaml
@@ -179,14 +179,14 @@ cohort:
 - ticker: V
   shard_id: shard-5
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: 86d301e993cf993056dff4550ebd9ddf6e04434535762bc26ef2f6a280230f3e
+  content_sha256: 22033a85c6f056ac9a4d774b941061416315bf0b9beef86ef15fa893eefaef28
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/V.yaml
 - ticker: WM
   shard_id: shard-5
   sealed_at: '2026-08-08T17:00:00Z'
-  content_sha256: 79a15cd6c3facbeeee0aec9db95c616809443f1d46c5d34a3d340cdc395212b0
+  content_sha256: 8370c039f7d9f9ca9307ba9942265f1a9dda8348043adec44f1c8b5f6c364e38
   schema_version: '1.0'
   governing_decision: VALUATION-0003
   record_path: intelligence/valuation_archetype/WM.yaml

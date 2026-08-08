@@ -1,25 +1,33 @@
 schema_version: '1.0'
 ticker: SPGI
 primary_archetype: F
-secondary_archetype: C
-rationale: 'SPGI''s Ratings segment (~36% of FY2025 revenue) fits the ratings-agency category explicitly
-  named under archetype C, built on regulatory-license (NRSRO/ESMA) moats embedded in bond covenants and
-  regulatory capital rules -- a fee structure distinct from a subscription or platform business. Indices
-  (68-70% margin, AUM-linked fees, record $6.35T of linked ETF assets) and Market Intelligence (lower,
-  more variable 19-33% margin, pursuing AI-monetization) behave more like asset-light data/subscription
-  businesses. The wide margin dispersion across segments (19% to 70%) is the direct evidentiary basis
-  for treating this as diversified rather than homogeneous. Ratings'' distinct regulatory-license economics
-  justify C as a secondary lens on the segment that most resembles the taxonomy''s financial-intermediation
-  examples. Archetype-F test: F was considered and selected as primary: the four (post-Mobility-spin)
-  reported segments show materially different margin profiles -- Indices 68-70%, Ratings 64-65%, Energy
-  40-46%, Market Intelligence only 19-33% -- indicating genuinely distinct business economics rather than
-  one unified engine, which supports a sum-of-the-parts framing over a single blended multiple or entity-wide
-  DCF.'
+secondary_archetype: A
+rationale: 'SPGI''s four (post-Mobility-spin) reported segments show materially different margin profiles
+  -- Indices 68-70%, Ratings 64-65%, Energy 40-46%, Market Intelligence only 19-33% -- indicating genuinely
+  distinct business economics rather than one unified engine, which is the direct evidentiary basis for
+  treating this as diversified (F) rather than homogeneous. Re-examined against protocol §5''s literal
+  archetype-C definition -- financial intermediation / network economics, where a business''s OWN capital
+  structure and regulatory-capital requirements make a standard FCFF-DCF theoretically inappropriate because
+  financing flows are the business itself, not a residual claim on operating cash flow: S&P Global Ratings
+  has no such balance-sheet or financing-flow economics of its own -- it holds no loan book, deposits,
+  or float requiring its own regulatory capital treatment. Its moat is a regulatory-license (NRSRO/ESMA)
+  requirement that OTHERS rely on its ratings for their own capital calculations -- a licensing/market-structure
+  barrier, not archetype C''s own defining mechanism. Ratings, Indices, and Market Intelligence instead
+  share fee-based, asset-light, high-incremental-margin licensing/subscription/data economics (Indices''
+  AUM-linked fees on a record $6.35T of linked ETF assets, Ratings'' per-issuance/subscription fee model,
+  Market Intelligence''s data/AI-monetization push) -- consistent with archetype A as the better-fitting
+  secondary lens across these three higher-margin segments, while Energy (the lowest-margin, most commodity/geopolitically-exposed
+  segment, +3% YoY growth attributed to the Iran conflict) is the segment most responsible for the genuine
+  diversification finding underlying the F-primary call. Archetype-F test: F was considered and selected
+  as primary: the four reported segments'' materially different margin profiles (19% to 70%) indicate
+  genuinely distinct business economics rather than one unified engine, which supports a sum-of-the-parts
+  framing over a single blended multiple or entity-wide DCF.'
 evidence_quality:
-  primary_source_coverage: partial
-  uncertainty_statement: Segment revenue figures rely on a secondary aggregation that initially omitted
-    the Commodity Insights/Energy segment entirely and, even after correction, remains unverified against
-    the primary 10-K (WebFetch blocked on sec.gov).
+  primary_source_coverage: limited
+  uncertainty_statement: No primary-source document was directly opened by any researcher for this record
+    -- every fact, including the segment revenue mix underlying the diversification (F) call, traces to
+    WebSearch-returned snippet synthesis; segment percentages required an in-record correction to reconcile
+    to the stated FY2025 total and remain unverified against the primary 10-K.
 disclosed_evidence_conflicts:
 - Big Three ratings-agency market-share splits are reported inconsistently across sources (~50%/31%/12%/7%
   in one source vs. ~40%/40%/15% in another); Q2 2026 adjusted-EPS beat-vs-miss framing conflicted across
@@ -36,4 +44,4 @@ sealed_at: '2026-08-08T17:00:00Z'
 governing_decision: VALUATION-0003
 drafting_session_or_shard_id: shard-5
 cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#SPGI
-content_sha256: 79bbed43518633c1294644b2872a08a567ea692ff80db11f488e62bb5639ec7e
+content_sha256: 0541bb9a56f795485a0f248781ab07acf1f943351d5029158bf7cc26d771ec62

@@ -211,3 +211,195 @@ equities. No `PROTOCOL_V1.md`, `METHODOLOGY_EVALUATION_REPORT.md`, `VALUATION-00
 margin, or ladder value changed. No chart evidence of any kind was consumed. This session does
 not review its own PR, mark it ready, or merge it — that lifecycle remains for a separate,
 independent, exact-head review per `OPS-0007` §1.
+
+## 12. Bounded correction (same PR, following independent review 4889352085)
+
+An independent exact-head review of this PR's original head (`8dc8250c577713f946834bd16bf57df442cccad4`)
+returned **CHANGES REQUIRED** — 0 BLOCKING / 4 MAJOR / 5 MINOR / 5 NOTE. This section records the
+bounded correction pass performed in response, independently re-verifying each finding against
+`VALUATION-0003`, `PROTOCOL_V1.md` §5, and the ticker's own permitted evidence before editing —
+not mechanically adopting the reviewer's suggested outcome. All 27 names, the blind/redacted
+workflow, the closed schema, and every prohibited-scope boundary (no valuation, no chart
+evidence, no portfolio-policy leakage, no exhaustiveness claim) are unchanged.
+
+### MAJOR findings
+
+**1. ASML — primary/secondary reordered (D/B → B/D).** Independently re-read ASML's permitted
+`risks[]` evidence and confirmed the reviewer's underlying point on different grounds than the
+review itself cited: the review pointed to `ASML.md`'s non-permitted "Margin-relevance evidence"
+section (explicitly excluded from this axis's evidence boundary, VALUATION-0003 §D — it is not
+business-model narrative, competitive advantage, risk, catalyst, or `role_basis`). That section
+was correctly never given to the blind drafter and this correction does not import it. However,
+the *same* substantive fact — that ASML's long order-to-delivery lead time structurally smooths
+recognized revenue relative to the broader order cycle, so a guidance-driven stock drop is not
+evidence of sustained revenue-cycle sensitivity — is independently present in ASML's own
+*permitted* `risks[]` text ("a long (12-24 month) order-to-delivery lead time, which smooths
+ASML's recognized revenue relative to the broader WFE order cycle but does not eliminate
+demand-timing risk to guidance"). The original D-primary rationale did not engage this
+permitted-evidence disclosure and effectively mischaracterized it. Re-derived, from permitted
+evidence only: primary **B** (capital-intensive infrastructure — sole EUV supplier building
+constrained, multi-year capacity into a structural fab-capex buildout, ROIC/reinvestment framing
+needed given guidance-timing sensitivity), secondary **D** (the underlying demand driver remains
+a real semiconductor-capex cycle; the 2026 discontinuation of quarterly bookings disclosure means
+a future downturn may surface later via revenue/guidance rather than earlier via bookings).
+`evidence_quality` recalibrated `partial` → `limited` (see §13 below — no primary document was
+ever directly opened for ASML by any researcher).
+
+**2. RKLB — Iridium acquisition now explicitly disclosed in the rationale and F-test.**
+Independently confirmed the pending, unclosed Iridium acquisition was never mentioned in the
+original rationale. Traced why: the one CI `risks[]` item describing the deal in detail was
+correctly redacted by the sanitizer (it contains the bare-noun phrase "this gate's original
+drafting," a genuine self-reference to RKLB's own `gates.yaml` governance entry, not a false
+positive) — the blind shard genuinely never received it. The permitted Milestone 6
+`role_basis` context sentence *did* disclose the deal at a high level ("has signed a definitive
+agreement to acquire Iridium's operating satellite-communications network and licensed
+spectrum"), but the shard's rationale did not engage even that. The correction adds an explicit
+paragraph, using only permitted evidence (the `role_basis` context and the surviving catalyst-item
+fragment), disclosing the deal, explaining why it is excluded from the *current-state* archetype
+(not closed, not reflected in reported segment structure, regulatory/shareholder approval
+outstanding) rather than silently omitted, and noting the pending, conditional transaction itself
+reinforces rather than undermines the existing E-primary/F-secondary call. Primary `E` and
+secondary `F` are unchanged — the exclusion is defensible on the merits, not merely convenient.
+`evidence_quality` unchanged (`limited`, already correctly set).
+
+**3. SPGI — secondary archetype reordered (C → A).** Independently re-read `PROTOCOL_V1.md` §5's
+literal archetype-C definition: businesses whose *own* capital structure and regulatory-capital
+requirements make FCFF-DCF theoretically inappropriate because financing flows are the business
+itself. S&P Global Ratings holds no loan book, deposits, or float requiring its own regulatory
+capital treatment — its moat is a regulatory-license (NRSRO/ESMA) requirement that *others* rely
+on for their own capital calculations, a licensing/market-structure barrier, not archetype C's own
+defining mechanism. Re-derived secondary **A** (asset-light, high-incremental-margin
+licensing/subscription/data economics, shared by Ratings, Indices, and Market Intelligence — the
+three highest-margin segments). Primary **F** independently re-confirmed strongly supported
+(genuine 19%–70% margin spread across four segments) and left unchanged, exactly as the review
+itself found. `evidence_quality` recalibrated `partial` → `limited` (see §13 — no primary document
+was ever directly opened for SPGI by any researcher).
+
+### MINOR findings
+
+- **KLAC** — secondary `A` removed (set to `null`). Re-examined against protocol §5's actual A
+  definition ("subscription or platform-network economics"): KLAC's cited evidence (62.3% gross
+  margin, a 17-year dividend-growth streak, backlog-conversion disclosure) is financial-quality
+  signal, not subscription/platform-network economics — KLA is a capital-equipment manufacturer
+  selling discrete systems and services. No equally well-supported alternative secondary was found;
+  removed rather than forced. Primary `D` and the F-test (correctly rejecting F given 90.3%
+  single-segment concentration) unchanged.
+- **LLY** — secondary `E` removed (set to `null`). Protocol's E is defined at the whole-company
+  cash-flow level ("not yet stable, predictable, or positive"); Lilly's own permitted evidence
+  shows the opposite (56% YoY revenue growth on an already-commercial, profitable franchise). The
+  cited pipeline acquisitions, Foundayo's safety label, and unresolved patent-exclusivity dates are
+  ordinary disclosed risk on an already-commercial business, not E's defining condition. Removed
+  rather than forced; those facts are retained as disclosed risk/uncertainty within the unchanged
+  primary-`A` rationale. F-test (already correctly rejecting F — revenue is concentrated, not
+  diversified) unchanged.
+- **GNRC** — secondary `B` removed (set to `null`). Re-examined: the cited evidence (Enercon
+  acquisition, Belvidere/Sussex capacity expansion) is a growth-leg capex story for one
+  still-developing C&I product line, not evidence that Generac's *own* core economics are those of
+  a long-lived-asset infrastructure operator with utility-like recurring demand — archetype B's
+  actual defining mechanism. Generac remains fundamentally a cyclical durable-goods equipment
+  manufacturer. Removed rather than forced (independently agreed with the review's characterization
+  as the weakest-grounded secondary in the batch alongside KLAC's). Primary `D` and F-test
+  unchanged.
+- **PWR** — independently re-examined; no change made. The rationale already transparently
+  discloses the exact taxonomy-fit tension the review flagged ("even though its capital intensity
+  is expressed through labor/backlog rather than owned heavy assets") and `secondary_archetype` was
+  already `null`. Confirmed this is the right way to handle a genuinely imperfect fit — disclosed,
+  not concealed — and left unchanged, exactly matching the review's own MINOR (not MAJOR)
+  classification and its reasoning for why.
+- **WM** — inline-caveated. The `rationale`'s "large majority of revenue" framing supporting
+  B-over-F now explicitly states it does not rely on WM's own line-of-business revenue breakdown
+  (which `WM.md` itself says could not be reconciled to a complete, non-overlapping accounting) —
+  the B-primary call is restated to rest instead on the independently-disclosed structural-scarcity
+  and permitting-barrier facts about the landfill network, which do not depend on the unreconciled
+  percentage. Primary `B` and secondary `F` unchanged (not disputed by the review).
+
+### 13. Evidence-quality calibration rule (MAJOR finding 4)
+
+**Derivation.** `VALUATION-0003` §H specifies only that `primary_source_coverage` reuses the
+existing four-value vocabulary (`comprehensive`/`partial`/`limited`/`blocked`) "matching
+`TIER-0002`/`XASSET-0002`" — it does not itself define the boundary between the values. Inspected
+each of the 27 companies' own Company Intelligence `Source-access disclosure` section (the
+authoritative, per-ticker record of what was and was not directly opened by any researcher across
+that ticker's entire research history — this session, a prior CI-authoring session, or a disclosed
+independent evidence-recovery researcher, e.g. "GPT-5.6 Thinking," a principal-supplied
+checksum-verified evidence bundle). This is a factual, mechanically-checkable record already
+present in every one of the 27 source files, not a new field or new judgment.
+
+**Adopted rule** (a bounded implementation convention, not new governance, per this session's own
+explicit authorization to adopt one where the schema is under-specified):
+
+- **`limited`** — the ticker's own Source-access disclosure states primary-source access was
+  tested and confirmed **completely blocked for the entire research history**, with **no instance,
+  anywhere in the record, of a primary document being directly opened** by any researcher. Every
+  fact, including the load-bearing facts the archetype rationale itself relies on, traces to
+  WebSearch-returned snippet synthesis, one layer removed from primary text, for the whole record.
+- **`partial`** — at least one primary document was directly opened by some researcher, covering
+  some but not all of the record's material facts, **and** a specific, named evidentiary gap
+  remains that bears materially on the archetype determination itself (not merely "the very latest
+  quarter's headline figure is still secondary-only pending confirmation" — an ordinary, expected
+  staleness pattern present in most records that does not by itself change an archetype call).
+- **`comprehensive`** — primary documents were directly opened covering essentially the full
+  evidentiary base the archetype rationale actually relies on, with no named gap that bears
+  materially on the archetype call; an ordinary "latest quarter is secondary-only" caveat alone
+  does not prevent this tier.
+- **`blocked`** — reserved for "no usable *permitted* evidence exists at all" (would force
+  abstention). Explicitly **not** used anywhere in this cohort and not forced merely because the
+  label exists: every one of the 27 records has usable business-model/competitive/risk/catalyst
+  evidence regardless of how that evidence was sourced — a web-access failure alone never triggers
+  `blocked` under this rule, consistent with the zero-abstention result being genuine rather than
+  an artifact of a miscalibrated vocabulary.
+
+**Verification against the six formerly-gated names** (the group the review specifically
+scrutinized): all six — ICE, RKLB, SNPS, SPGI, TSLA, WM — have Source-access disclosures stating,
+in near-identical terms, that WebFetch was tested and confirmed blocked on every domain attempted
+(including a neutral control domain used specifically to rule out a domain-specific block), with
+no exception anywhere in the record. Under the rule above, all six independently resolve to
+`limited`, uniformly — directly resolving the review's specific complaint (SNPS and RKLB, both
+shard-4 records with comparably severe access failures, had received different tiers — `partial`
+and `limited` respectively — under the original, uncalibrated application).
+
+**Cohort-wide reapplication.** Applying the rule to all 27 records (not only the six scrutinized)
+produced 13 tier changes beyond the three MAJOR-finding records (ASML, SPGI) already recalibrated
+above:
+
+| Change | Tickers | Reason |
+|---|---|---|
+| `partial` → `comprehensive` | AMZN, GOOGL, META, MSFT, V | Load-bearing base facts directly opened by a named evidence-recovery researcher (GPT-5.6 Thinking) from a primary filing; only the latest quarter is secondary-only, an ordinary gap that does not change the archetype call. |
+| `partial` → `limited` | AVGO, GEV, KLAC, TMO, SNPS, TSLA | Source-access disclosure confirms no primary document was ever directly opened by any researcher for the entire record — the same severity class as the six formerly-gated names. |
+| `partial` → `limited` (MAJOR-finding records) | ASML, SPGI | See MAJOR findings 1 and 3 above. |
+
+Unchanged (already correctly calibrated under this rule on independent re-check): CEG, COST,
+ISRG, NVDA, PANW, RTX, TSM (`comprehensive` — direct primary access with no material gap); ETN,
+GNRC, LLY, PWR (`partial` — some primary access via a disclosed evidence-recovery correction pass,
+but a specific named gap remains: ETN's base segment table was WebSearch-reproduced with only
+later corrections GPT-5.6-inspected; GNRC's SEC-filing base data was never primary-opened, only
+its Q2 2026 release; LLY's patent-exclusivity dates are unestablished; PWR's FY2025 adjusted-EBITDA
+figure remains unreconciled even after an independent audit pass); ICE, RKLB, WM (`limited` —
+already correctly set, matching the six-gated-name pattern).
+
+**Final cohort-wide distribution**: `comprehensive` 12 (up from 7), `partial` 4 (down from 17),
+`limited` 11 (up from 3), `blocked` 0 (unchanged). Every `uncertainty_statement` for a changed
+record was rewritten to state, specifically and mechanically, the Source-access basis for its new
+tier — not merely relabeled.
+
+### 14. Post-correction regression checks
+
+- **Primary/secondary/abstention integrity**: `valuation_archetype_validator.py` re-run clean
+  (`OK (28 result(s))`) after every edit — primary vocabulary, secondary cardinality
+  (`secondary != primary`, forced `null` on abstention), archetype-F disclosure requirement (all
+  three MINOR-finding secondary removals left their existing, still-required F-test paragraph
+  intact), and the 27-name roster all independently re-verified.
+- **Leak scan**: the sanitizer's independently-implemented `independent_policy_scan()` was re-run
+  directly against every changed record's free-text fields (`rationale`, `uncertainty_statement`,
+  `disclosed_evidence_conflicts`) — zero findings across all 17 changed records.
+- **Manifest/hash reconciliation**: `COHORT_MANIFEST.yaml` regenerated by reading each record's own
+  recomputed `content_sha256` directly (not hand-edited) — exactly the 17 changed records' manifest
+  rows updated, zero unrelated churn; bidirectional reconciliation independently re-verified by
+  `valuation_archetype_validator.py`.
+- **Final distribution**: primary `A:6 B:6 C:2 D:2 E:1 F:8 G:2` (27 total); secondary present on
+  19/27 (down from 22, reflecting the three MINOR-finding removals); abstentions 0 (unchanged).
+
+No valuation, fair value, price target, expected return, chart evidence, or portfolio-policy
+content was introduced by this correction. This correction does not itself determine the PR ready,
+principal-accept it, or merge it — a fresh independent exact-head review remains required per
+`OPS-0007` §1 / `OPS-0009` Lane G before that may occur.

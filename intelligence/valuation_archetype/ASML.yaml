@@ -1,24 +1,33 @@
 schema_version: '1.0'
 ticker: ASML
-primary_archetype: D
-secondary_archetype: B
-rationale: 'ASML''s earnings and guidance have shown material sensitivity to the semiconductor capital-equipment
-  demand cycle, demonstrated directly by the October 2024 guidance cut (citing delayed Intel/Samsung orders)
-  that produced an approximately 16% single-day stock decline -- evidence that a trailing or single-year
-  figure is not representative of normalized earnings power. At the same time, ASML sells into and enables
-  a multi-year, capacity-constrained industry buildout (High-NA EUV backlog into 2027, new fab capacity
-  investments) with long order-to-delivery lead times, high gross margins (54.0% Q2 2026), and a recurring
-  Installed Base Management stream that smooths results between system-sale cycles. Demand-cycle-driven
-  earnings volatility (primary D) combined with multi-year infrastructure-buildout, reinvestment-sensitive
-  dynamics (secondary B) better captures ASML''s economics than a stable, generically comparable compounder
-  framing. Archetype-F test: F was considered and rejected: the evidence describes ASML as a single, focused
-  lithography-systems business with two revenue streams (system sales and Installed Base Management) rather
-  than materially distinct reportable segments, so no diversified/multi-segment economics are disclosed
-  that would support sum-of-the-parts.'
+primary_archetype: B
+secondary_archetype: D
+rationale: 'ASML''s own permitted evidence discloses that its long (12-24 month) order-to-delivery lead
+  time structurally smooths recognized revenue relative to the broader wafer-fab-equipment order cycle
+  -- guidance and order timing, not recognized revenue itself, carry the demonstrated volatility (the
+  October 2024 guidance cut produced an approximately 16% single-day stock decline without evidence of
+  a corresponding sustained revenue decline in the record reviewed). This is capital-intensive-infrastructure
+  economics, not raw commodity-cycle economics: ASML is the sole commercial EUV supplier building constrained,
+  multi-year capacity (fewer than 20 High-NA systems/year, a wholly-owned EUV light-source subsidiary,
+  an exclusive multi-decade optics relationship with Zeiss) into a structural, multi-year AI-driven fab-capex
+  buildout, with FY2026 guidance raised twice on ''extremely strong'' order intake and high, stable gross
+  margins (52.8%-54.0%) -- a reinvestment-and-buildout-driven profile fitting archetype B as primary,
+  where ROIC/reinvestment framing is the necessary companion to DCF given demonstrated guidance-timing
+  sensitivity. The underlying demand driver is nonetheless a real semiconductor-capex cycle: the same
+  permitted evidence explicitly ties the guidance cut to delayed customer orders, and ASML''s own 2026
+  discontinuation of quarterly bookings disclosure means a future cyclical downturn may now surface later
+  (via revenue/guidance) rather than earlier (via bookings) than under the prior disclosure regime --
+  supporting D as a secondary lens on that order-timing/cyclical risk, without displacing B as primary,
+  since the evidence does not show the sustained revenue-cycle sensitivity D''s definition centers on.
+  Archetype-F test: not applicable -- ASML is described as a single, focused lithography-systems business
+  with two revenue streams (system sales and Installed Base Management) rather than materially distinct
+  reportable segments, so no diversified/multi-segment economics are disclosed that would support sum-of-the-parts.'
 evidence_quality:
-  primary_source_coverage: partial
-  uncertainty_statement: TSMC's ~24% customer-concentration figure and the top-two/top-ten concentration
-    percentages are secondary-sourced estimates not independently traced to ASML's own 20-F disclosure.
+  primary_source_coverage: limited
+  uncertainty_statement: No primary document (annual report, 20-F, or earnings release) was directly opened
+    by any researcher for this record -- every figure, including the order-timing-versus-revenue-stability
+    facts underlying this archetype call, traces to WebSearch-returned snippet synthesis; TSMC's customer-concentration
+    percentages are additionally unresolved against ASML's own 20-F.
 disclosed_evidence_conflicts:
 - A single, unattributed 29.1% China-sales figure surfaced once in search synthesis, inconsistent with
   the multiply-corroborated 14% Q2 2026 figure; it was not traced to any specific document and is not
@@ -30,4 +39,4 @@ sealed_at: '2026-08-08T17:00:00Z'
 governing_decision: VALUATION-0003
 drafting_session_or_shard_id: shard-1
 cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#ASML
-content_sha256: 9c91516cd94e8f76c0c1bb5a561a5e3ce9454c3cbf5d1f63fa326e050874e74a
+content_sha256: 31e0938e68ea9be875648f5680d057e45233617ec15030341ebc76ecb4a699c8

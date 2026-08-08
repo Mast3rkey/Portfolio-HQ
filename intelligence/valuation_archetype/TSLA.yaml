@@ -21,10 +21,12 @@ rationale: 'The evidence shows three reported segments with different margin tra
   core segments -- Robotaxi and Optimus -- whose economics are not yet stable enough for a single blended
   DCF.'
 evidence_quality:
-  primary_source_coverage: partial
-  uncertainty_statement: This session's primary-source access was fully blocked (confirmed via a control-domain
-    test), so every figure traces to WebSearch-returned secondary snippets rather than a directly inspected
-    filing or transcript.
+  primary_source_coverage: limited
+  uncertainty_statement: No primary document was directly opened by any researcher for this record --
+    WebFetch was attempted against nine domains, including a neutral control domain, and every attempt
+    returned HTTP 403; every fact, including the segment revenue figures underlying this archetype call,
+    traces to WebSearch-tool-synthesized secondary reporting, not this or any session's own direct reading
+    of a 10-Q, 8-K, or IR material.
 disclosed_evidence_conflicts:
 - China volume trends conflict across sources (wholesale/export figures reported up ~38% YoY vs. a separately
   reported fifth consecutive quarterly delivery decline of -2.05% YoY), likely reflecting different measurement
@@ -41,4 +43,4 @@ sealed_at: '2026-08-08T17:00:00Z'
 governing_decision: VALUATION-0003
 drafting_session_or_shard_id: shard-5
 cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#TSLA
-content_sha256: 8d5ce709ae207b126fb08b4181441fec741642e204c7cd87cceeed5844fbf792
+content_sha256: 04f1db1ea3fe68e2639cecf31fc229a6f15511a6a83e82023c6e1a608be41760

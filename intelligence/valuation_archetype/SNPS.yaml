@@ -19,10 +19,12 @@ rationale: 'Synopsys generates revenue predominantly through software licensing 
   reflects an operational/execution and customer-concentration issue within that model, not a structurally
   distinct economic driver.'
 evidence_quality:
-  primary_source_coverage: partial
-  uncertainty_statement: This session's primary-source access was blocked on all domains attempted (including
-    SEC and a control page), so every fact traces to WebSearch-returned snippets rather than a directly
-    inspected filing.
+  primary_source_coverage: limited
+  uncertainty_statement: No primary document was directly opened by any researcher for this record --
+    WebFetch was attempted against roughly twelve domains and every attempt returned HTTP 403; every fact,
+    including the EDA-market-share and post-Ansys segment figures underlying this archetype call, traces
+    to WebSearch-returned snippets, one layer further removed from source than a normal WebFetch-based
+    session.
 disclosed_evidence_conflicts:
 - Ansys deal financing figures are cited inconsistently as $16B committed versus $14.3B debt incurred,
   and a Q3 FY2026 consensus EPS estimate found in sources appears potentially inconsistent with recent
@@ -38,4 +40,4 @@ sealed_at: '2026-08-08T17:00:00Z'
 governing_decision: VALUATION-0003
 drafting_session_or_shard_id: shard-4
 cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#SNPS
-content_sha256: a9bbb78770b736243872453fdc03db84688b266a88ed3ff33affb048bb31eab3
+content_sha256: ec01574523eba3bf1c653df4f2d35101c46c112e3073249fa01f2dbac77ba5d2

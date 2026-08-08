@@ -10,13 +10,19 @@ rationale: 'WM''s core economics are explicitly infrastructure-like: landfill pe
   is the defining characteristic. The Healthcare Solutions segment (from the Stericycle acquisition) shows
   a materially different, lower disclosed margin (19% vs. ~30.9% consolidated adjusted EBITDA margin)
   and its own integration and synergy-target history, supporting a secondary diversified/multi-segment
-  read without displacing the dominant landfill-network infrastructure economics. Archetype-F test: F
-  was considered and selected as secondary: the Stericycle-derived Healthcare Solutions segment (medical/regulated
-  waste) is described with its own distinct margin trajectory (adjusted operating EBITDA margin expanding
-  from 17% to 19%) and integration history separate from the core landfill/collection business, and Renewable
-  Energy is another distinct, fast-growing line -- but the core landfill/transfer/collection network still
-  represents the large majority of revenue and is described with dominant infrastructure characteristics,
-  so B was selected as primary rather than F.'
+  read without displacing the dominant landfill-network infrastructure economics. This B-over-F ordering
+  rests on a qualitative reading of the core business''s dominant character, not on a precise revenue-mix
+  percentage: WM''s own permitted evidence explicitly states its FY2025 line-of-business revenue breakdown
+  could not be reconciled to a single, complete, non-overlapping accounting, so no specific ''majority
+  of revenue'' figure is asserted or relied upon here -- the B-primary call instead rests on the landfill
+  network''s structural scarcity and permitting-barrier characteristics, which are independently disclosed
+  and not dependent on the unreconciled percentage breakdown. Archetype-F test: F was considered and selected
+  as secondary: the Stericycle-derived Healthcare Solutions segment (medical/regulated waste) is described
+  with its own distinct margin trajectory (adjusted operating EBITDA margin expanding from 17% to 19%)
+  and integration history separate from the core landfill/collection business, and Renewable Energy is
+  another distinct, fast-growing line -- but the core landfill/transfer/collection network is described
+  with dominant, structurally scarce infrastructure characteristics independent of the unreconciled revenue-mix
+  figures, so B was selected as primary rather than F.'
 evidence_quality:
   primary_source_coverage: limited
   uncertainty_statement: WM's FY2025 revenue could not be reconciled to a single, complete, non-overlapping
@@ -39,4 +45,4 @@ sealed_at: '2026-08-08T17:00:00Z'
 governing_decision: VALUATION-0003
 drafting_session_or_shard_id: shard-5
 cohort_manifest_entry: intelligence/valuation_archetype/COHORT_MANIFEST.yaml#WM
-content_sha256: 79a15cd6c3facbeeee0aec9db95c616809443f1d46c5d34a3d340cdc395212b0
+content_sha256: 8370c039f7d9f9ca9307ba9942265f1a9dda8348043adec44f1c8b5f6c364e38
