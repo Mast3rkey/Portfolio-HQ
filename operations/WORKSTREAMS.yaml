@@ -10746,6 +10746,125 @@ workstreams:
         pr: 288
         status: in_progress
         date: "2026-08-09"
+      - gate: valuation0006-methodology-application-policy-and-result-architecture-post-merge-verification
+        description: >
+          Lane M fold-forward, independently re-verified this session via
+          the GitHub API, not assumed. PR #288 (VALUATION-0006):
+          accepted head 3390682edbd4cccac8e6a421a7c72258f6469174, base
+          main @ b3fb5325cac5736daf59a109ebc5e1daa1704297, 5 changed
+          files, 3 commits. Original review 4892228754 (CHANGES
+          REQUIRED, 0 BLOCKING / 3 MAJOR / 0 MINOR / 0 NOTE — the
+          terminal-growth g<=r wording, 5 of 7 NUM-0001 class-5 review
+          conditions missing, and the isolation rule omitting
+          terminal-growth-rate selection). Bounded correction resolved
+          all three (terminal growth restated as strict g < r with a new
+          SS L bullet; all 7 class-5 parameters now carry a review
+          condition; SS O's isolation rule extended to a third protected
+          sub-judgment). Delta review 4892312173 — APPROVED FOR PRINCIPAL
+          EXACT-HEAD ACCEPTANCE, 0/0/0/0. Principal acceptance
+          issuecomment-5233408179 at exact head
+          3390682edbd4cccac8e6a421a7c72258f6469174. Exact-head CI run
+          31330341997/job 93287478544 — success. Merge commit
+          03dc2a044390a4944257f4027a480ef955b3a6d7, parents
+          b3fb5325cac5736daf59a109ebc5e1daa1704297 and
+          3390682edbd4cccac8e6a421a7c72258f6469174. Post-merge validation
+          independently reproduced this session: decision catalog 103
+          decisions/0 issues; test_portfolio_hq_dashboard_decisions.py
+          95 passed; full pytest 4042 passed, 0 failed (matching
+          pre-change baseline exactly); all 11 pre-existing repository
+          validators clean; intelligence/valuation_results/ confirmed
+          absent. VALUATION-0006 is therefore merged and effective — the
+          one future implementation PR it authorizes (this session's own
+          work, recorded in the gate immediately below) may now proceed.
+          This gate is additive; the governance-pr-drafted gate's own
+          text above is left byte-unedited.
+        pr: 288
+        status: complete
+        date: "2026-08-09"
+      - gate: valuation0006-stage4-result-scaffold-implementation
+        description: >
+          Implements exactly the VALUATION-0006-authorized Stage-4
+          valuation-result technical scaffold, zero real-company
+          population. Delivers valuation_result_validator.py (a
+          dedicated module, not an extension of
+          valuation_evidence_validator.py) and
+          test_valuation_result_validator.py (110 focused tests, entirely
+          synthetic fixtures). Schema translates VALUATION-0006 SS K
+          exactly: intelligence/valuation_results/<TICKER>.yaml,
+          one-way hash-pinned references to the sealed archetype and
+          evidence records (independently recomputed via read-only calls
+          to valuation_archetype_validator.canonical_record_hash() and
+          valuation_evidence_validator.canonical_record_hash(), never
+          trusted), a live mechanical cross-check of
+          methodology_families_applied against a fixed transcription of
+          VALUATION-0002 SS2's own 7x7 governed-role table (a Prohibited
+          or Insufficient-basis family is structurally rejected, never a
+          self-declared governed_role trusted), the strict terminal-growth
+          hard rule (reject terminal_growth >= applicable_discount_rate
+          at any populated precision, including exact equality — the
+          bounded-correction fix from PR #288 itself), range-not-point
+          enforcement (low<=base<=high for standard families, a disclosed
+          scenario_outcomes[] exception for family 7), peer-set/scenario
+          subset rules (applied_peers/scenario_outcomes must be subsets of
+          the pinned evidence record's own included candidates/named
+          scenarios; the two-peer minimum for family 5 to reach
+          family_status: completed; +/-0.02 scenario-probability-sum
+          coherence with a disclosed non-exhaustive exemption), a
+          four-label provenance-tagged assumptions ledger, live
+          conflict-propagation cross-checking (a family whose required
+          evidence domain carries a bearing abstention/conflict may not
+          reach 'completed'; conflicts_carried_forward is live-checked,
+          never a self-declared flag), the closed three-value
+          result_status vocabulary with mechanically-checked triggering
+          conditions, a read-only-projection cross_asset_handoff envelope,
+          closed schema at every nesting level (extra-key rejection,
+          learning from contender_registry_validator.py's own disclosed
+          MAJOR finding), and an independent free-text leakage scan
+          (opaque-score/fair-value/target-weight field names, directive
+          trading language, chart-domain terminology) built as its own
+          materially different mechanism from any strip/redaction logic
+          (there is none in this module). Disclosed reconciliation: SS K
+          item 2's "governing_decision list" and item 16's
+          "governing_decision" seal field would collide as one
+          same-named, differently-shaped key — resolved by naming item 2's
+          field governing_decisions (plural) and keeping item 16's
+          governing_decision (singular) as the seal field, matching every
+          sibling validator's own seal-field convention; no new authority
+          is created by this naming choice. Zero import coupling with
+          allocate.py/margin_state.py (independently verified via AST
+          inspection, also asserted by a dedicated test). Zero
+          intelligence/valuation_results/ directory or manifest created —
+          the missing directory validates as a valid, zero-coverage state,
+          matching every prior Intelligence validator's own
+          filesystem-as-index doctrine. No generator and no sanitizer
+          module created (VALUATION-0006 SS O found neither necessary for
+          the zero-population scaffold; a targeted isolation rule for
+          three execution-time sub-judgments applies only once real
+          execution is separately authorized). Full validation: 110/110
+          focused tests; standalone module run -> "OK (0 result(s))"; all
+          11 pre-existing repository validators clean and unaffected;
+          decision catalog unchanged at 103 decisions/0 issues (no new
+          governance decision filed by this implementation); repo-wide
+          YAML/YML parse 206 files/0 errors, JSON parse 178 files/0
+          errors; git diff --check clean; exact 4-file changed inventory
+          (valuation_result_validator.py,
+          test_valuation_result_validator.py, this file, CLAUDE.md); zero
+          diff on every protected path; intelligence/valuation_results/
+          confirmed absent by a dedicated test. Does not itself determine
+          this implementation complete -- the future independent review,
+          correction if needed, principal acceptance, merge, and
+          post-merge verification remain this filing's own required next
+          steps. Does not authorize, begin, schedule, or imply any
+          real-company valuation, fair value, price target, expected
+          return, discount rate, WACC, applied peer set, scenario
+          probability, TIER-0009 SS K resolution, or any
+          tier/target/holdings/gate/cap/cluster/allocator/margin/
+          ladder/chart/order/trade change of any kind. This session does
+          not review its own PR, mark it ready, merge it, or post
+          principal acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-09"
     evidence_refs:
       - governance/decisions/VALUATION-0001-equity-valuation-research-charter.md
       - governance/decisions/VALUATION-0002-equity-valuation-methodology-doctrine-adoption.md
@@ -10816,30 +10935,37 @@ workstreams:
       valuation0005-stage3-implementation-post-merge-verification — real
       quantitative evidence populated for all 27 equities, discount_rate_
       evidence abstained on all 27, zero applied peer sets, zero scenario
-      probabilities, no company valued). Not yet met: VALUATION-0006
-      (Stage-4 methodology-application policy and valuation-result
-      architecture) independently reviewed, corrected if needed, and
-      principal-accepted (valuation0006-methodology-application-policy-
-      and-result-architecture); the future result-schema/validator/test
-      implementation it would authorize; and — only if a future
-      application phase is ever separately proposed and accepted — its
-      own further, separate governance decision for real-company
+      probabilities, no company valued). VALUATION-0006 (Stage-4
+      methodology-application policy and valuation-result architecture)
+      is merged, independently reviewed, corrected, and principal-
+      accepted (valuation0006-methodology-application-policy-and-result-
+      architecture, valuation0006-methodology-application-policy-and-
+      result-architecture-post-merge-verification). The result-schema/
+      validator/test scaffold it authorizes has been implemented, zero
+      real-company population (valuation0006-stage4-result-scaffold-
+      implementation) — not yet independently reviewed, corrected if
+      needed, or principal-accepted. Not yet met: that implementation's
+      own independent review/acceptance/merge cycle; and — only if a
+      future application phase is ever separately proposed and accepted —
+      its own further, separate governance decision for real-company
       valuation execution, independently reviewed and principal-accepted
       before any methodology is applied to a real company (VALUATION-0001
       §5, VALUATION-0002 §6, VALUATION-0003 §L, VALUATION-0004 §O,
       VALUATION-0005 §A/§O, VALUATION-0006 §T, protocol §§14/15 — no
       result automatically changes policy).
     blocker: >
-      VALUATION-0006 (Stage-4 methodology-application policy and
-      valuation-result architecture) has not yet been independently
+      The VALUATION-0006-authorized Stage-4 result-scaffold
+      implementation (valuation_result_validator.py,
+      test_valuation_result_validator.py) has not yet been independently
       reviewed, corrected if needed, or principal-accepted. No real-
       company valuation, discount-rate value, WACC, peer set, or scenario
       probability is authorized by it, or by anything in WS-0015 to date,
-      under any circumstance.
-    active_branch: claude/valuation-0006-stage-4-design-bov9rs
-    active_pr: 288
-    last_verified_main_sha: b3fb5325cac5736daf59a109ebc5e1daa1704297
+      under any circumstance. intelligence/valuation_results/ remains
+      absent from the repository.
+    active_branch: claude/stage-4-result-scaffold-nsee7j
+    active_pr: null
+    last_verified_main_sha: 03dc2a044390a4944257f4027a480ef955b3a6d7
     last_verified_date: "2026-08-09"
-    authorized_by: VALUATION-0002 §6.3 / VALUATION-0004 §I/§J/§K (merged); this filing itself, per TIER-0009 §K
+    authorized_by: VALUATION-0006 §A (merged); this filing itself
     supersedes: null
     superseded_by: null
