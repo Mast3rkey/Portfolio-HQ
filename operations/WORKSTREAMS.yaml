@@ -9582,52 +9582,99 @@ workstreams:
           Design-only filing (XASSET-0008, draft, unmerged) closing XASSET-
           0005 §5 step 2's own restated sequence ("perform asset-
           appropriate valuation/economic assessment — future, separate,
-          undesigned") for exactly three functional-doctrine capital-use
-          types: CASH, RESERVE, and GLD_DEFENSIVE_ROLE. DEBT_REDUCTION is
-          explicitly excluded — its own economic-assessment gap belongs to
-          the separately governed margin/leverage-policy track. Designs a
-          closed economic-assessment schema (deployability_and_optionality,
-          all three types; a GLD-only compound
-          instrument_specific_economic_characterization axis with three
+          undesigned") for GLD and, in bounded non-interpretive form, the
+          legacy CASH/RESERVE identifiers. DEBT_REDUCTION is explicitly
+          excluded — its own economic-assessment gap belongs to the
+          separately governed margin/leverage-policy track.
+
+          Bounded correction (same day, this PR, before any independent
+          review — zero reviews existed at correction time): before further
+          work, the controlling principal directed a read-only,
+          repository-wide, full-history provenance investigation (844
+          commits, back to the actual root commit, via a read-only
+          git fetch --unshallow) into whether CASH and RESERVE were ever
+          established as genuinely distinct economic concepts. Findings:
+          both first appear together, simultaneously, in commit b3afa70
+          (2026-07-31, the PHQ-2026-02 canonical-architecture migration) —
+          no earlier commit mentions either; both weights (RESERVE 4.00%,
+          CASH 1.00%) are sourced verbatim from an external,
+          non-retained committee document
+          (Portfolio_HQ_Grand_Master_Architecture_v1_30.csv, cited only by
+          SHA-256); zero mechanical distinction exists anywhere in
+          allocate.py/levels.py (both group ("reserve","cash") as one
+          identical tuple in every branch), margin_state.py (no RESERVE
+          reference at all), gates.yaml, or issuer_lookthrough.yaml; neither
+          is persisted as a holdings.yaml balance; zero principal-authorized
+          text anywhere establishes a distinction; the only prior attempts
+          to characterize one (CASH.yaml's own operational_liquidity_float
+          determination; XASSET-0005's own "difference in role only"
+          language) are themselves AI-authored inferences, not
+          principal-sourced facts. The controlling principal's explicit
+          decision: CASH and RESERVE are not presently recognized as
+          distinct economic functions; treat them as semantically
+          equivalent, unresolved members of one cash-like capital family
+          unless a future principal-approved decision establishes a genuine
+          distinction; the different labels/target_pct values are not
+          evidence of distinct purpose; no later AI-authored description may
+          bootstrap itself into such evidence.
+
+          Resulting redesign: the population collapses from three
+          independently-assessed members (CASH, RESERVE, GLD_DEFENSIVE_ROLE)
+          to two analytical subjects — GLD (unchanged) and
+          CASH_LIKE_CAPITAL (new — an analytical family/projection over the
+          unresolved combined CASH/RESERVE identifiers, never a new target
+          row, investable symbol, or production concept; not created in
+          targets.yaml/holdings.yaml/allocator code). deployability_and_
+          optionality is now computed once for the combined family, not once
+          per legacy identifier. The GLD-only compound axis
+          (instrument_specific_economic_characterization, three
           independently-abstainable sub-fields — cost_and_tracking_
           economic_significance, historical_inflation_sensitivity,
-          historical_equity_drawdown_behavior; evidence_quality; two
-          structural-reference hash-pin mechanisms reusing
-          functional_doctrine_validator.canonical_record_hash() and
-          etf_classification_validator.canonical_record_hash(), never
-          duplicating sealed fields) plus a combined validator/test
-          specification for a future implementing PR. Zero numeric fields
-          anywhere. Explicitly preserves RESERVE.yaml's own sealed
-          functional_role: unable_to_determine abstention — does not infer
-          or assume a RESERVE-specific purpose, designs a non-cascading
-          abstention path, and names the two future resolution paths
-          (new CLAUDE.md doctrine/principal clarification naming RESERVE's
-          purpose, or an explicit principal statement confirming the
-          abstention should stand permanently) without performing either.
-          Draws an explicit, structurally-enforced boundary between this
-          design's own single-asset, historically-grounded GLD
-          characterization questions and XASSET-0007's own
-          defensive_offset_interface overlap-model dimension (portfolio-
-          level, still forced not_yet_computable_interface_only, unchanged
-          here) — every future record populating
-          historical_equity_drawdown_behavior must carry an explicit
-          single-asset disclosure. Identifies three future research
-          questions (GLD's historical equity-drawdown behavior; GLD's
-          realized tracking quality vs. its own benchmark; a sourced,
-          long-horizon gold/inflation characterization) as unanswered —
-          performs no research toward any of them. Performs the ordinary
-          WS-0014 self-reference synchronization (active_branch,
-          last_verified_main_sha, last_verified_date) and folds in the
-          xasset0007-post-merge-verification gate above. Creates no
-          intelligence/economic_assessment/ file, no
+          historical_equity_drawdown_behavior) is entirely unaffected.
+          CASH_LIKE_CAPITAL's own structural-reference mechanism is
+          redesigned: a list of exactly two legacy structural references
+          (into CASH.yaml and RESERVE.yaml, via
+          functional_doctrine_validator.canonical_record_hash()) cited as
+          provenance context only — neither pinned record's own content may
+          be copied, restated, or treated as a CASH_LIKE_CAPITAL-level
+          finding. RESERVE.yaml's own sealed functional_role:
+          unable_to_determine abstention is preserved, unresolved, and made
+          structurally non-blocking by design (no CASH_LIKE_CAPITAL axis is
+          ever asked on RESERVE's behalf specifically, so there is nothing
+          for the abstention to cascade into or out of). A new validator
+          rule mechanically forbids any future record from asserting a
+          distinct CASH-versus-RESERVE purpose in any field. Records, as a
+          disclosed future governance question and not implementation
+          authority, whether the legacy CASH/RESERVE targets.yaml rows
+          should ultimately be consolidated — requiring its own future
+          authority/provenance review, target-policy determination,
+          schema-migration analysis, protected-path review, independent
+          review, and explicit principal acceptance; not answered here.
+
+          Draws an explicit, structurally-enforced boundary between GLD's
+          own single-asset, historically-grounded characterization
+          questions and XASSET-0007's own defensive_offset_interface
+          overlap-model dimension (portfolio-level, still forced
+          not_yet_computable_interface_only, unchanged here). Identifies
+          three future research questions (GLD's historical equity-drawdown
+          behavior; GLD's realized tracking quality vs. its own benchmark; a
+          sourced, long-horizon gold/inflation characterization) as
+          unanswered — performs no research toward any of them. Performs
+          the ordinary WS-0014 self-reference synchronization
+          (active_branch, last_verified_main_sha, last_verified_date) and
+          folds in the xasset0007-post-merge-verification gate above.
+
+          Creates no intelligence/economic_assessment/ file, no
           economic_assessment_validator.py, no content-validator tests, no
           overlap-model record, and no overlap_model_validator.py; performs
           no cross-asset synthesis; resolves no sealed record's forced
-          economic_assessment_readiness value; changes no
+          economic_assessment_readiness value; consolidates, merges, deletes,
+          or renames no CASH/RESERVE row or record; changes no
           targets.yaml/holdings.yaml/gates.yaml/issuer_lookthrough.yaml/
           allocate.py/margin_state.py/levels.py/existing functional-
-          doctrine record/GLD ETF classification content/margin policy/
-          chart policy/buy ladder/monitoring-sell policy/trade.
+          doctrine record (CASH.yaml/RESERVE.yaml included, unedited)/GLD
+          ETF classification content/margin policy/chart policy/buy
+          ladder/monitoring-sell policy/trade.
         pr: null
         status: in_progress
         date: "2026-08-09"
