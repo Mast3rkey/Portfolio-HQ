@@ -75,11 +75,11 @@ All 27 records populate `financial_evidence.periods[]` with at least revenue and
 
 ### 6.2 Market-observed evidence
 
-25 of 27 records populate a current observed share price (dated, sourced). **SNPS and GEV are the two exceptions** — both explicitly abstained (`market_observed_evidence.abstention_reason`) because the underlying research session's own WebSearch budget was exhausted before a reliable current price could be located for either, a genuine disclosed gap rather than an estimate.
+24 of 27 records populate a current observed share price (dated, sourced). **Three records abstain the domain entirely, each with a populated domain-level `market_observed_evidence.abstention_reason` (`inputs: []`)**: SNPS and GEV — the underlying research session's own WebSearch budget was exhausted before a reliable current price could be located for either — and **GOOGL**, whose current price/market cap was genuinely conflicting across sources ($356.72 vs. "trading near $375-378"; market cap reported as both "$4.32T" and "$4.271T") and was not resolved to a single confident figure rather than picked arbitrarily. All three are structurally identical domain-level abstentions, not individual line-item gaps.
 
 ### 6.3 Segment evidence
 
-18 of 27 records populate at least one real, dated segment entry (`segment_name` + `revenue`/`profit`/`cash_flow` as available). 9 records abstain the domain entirely with a specific, ticker-level reason (e.g. TSM discloses revenue mix by node/platform percentage rather than a dollar-denominated segment table the schema's `segment_evidence` domain is built to hold; GNRC's only located "segment" figures were identified as a likely mislabeled single quarter and explicitly rejected rather than used; V's segment structure was not independently confirmed by search this session and is therefore not asserted).
+14 of 27 records populate at least one real, dated segment entry (`segment_name` + `revenue`/`profit`/`cash_flow` as available): AMZN, ASML, AVGO, GOOGL, ICE, META, MSFT, NVDA, PWR, RKLB, RTX, SPGI, TMO, TSLA. 13 records abstain the domain entirely with a specific, ticker-level reason: CEG, COST, ETN, GEV, GNRC, ISRG, KLAC, LLY, PANW, SNPS, TSM, V, WM (e.g. TSM discloses revenue mix by node/platform percentage rather than a dollar-denominated segment table the schema's `segment_evidence` domain is built to hold; GNRC's only located "segment" figures were identified as a likely mislabeled single quarter and explicitly rejected rather than used; V's segment structure was not independently confirmed by search this session and is therefore not asserted). ICE is correctly populated, not abstained — its three segments (Exchanges, Fixed Income & Data Services, Mortgage Technology) carry real FY2024 dollar figures, with a disclosed `limitation` that FY2024 (not FY2025) is the most recent full breakdown found.
 
 ### 6.4 Peer-candidate evidence
 
@@ -98,22 +98,26 @@ All 27 records populate 1–3 factual, sourced, currently-known catalyst/scenari
 | Ticker | Domain | Reason |
 |---|---|---|
 | SNPS | market_observed_evidence | Price/market cap not obtained; WebSearch budget exhausted |
-| SNPS | segment_evidence | Full-year segment split not obtained; WebSearch budget exhausted |
 | GEV | market_observed_evidence | Price/market cap not obtained; WebSearch budget exhausted |
-| GEV | segment_evidence | Power/Wind/Electrification breakdown not obtained; WebSearch budget exhausted |
-| TSM | segment_evidence | Only percentage-of-revenue node/platform mix exists, not a dollar-value segment table |
-| ICE | segment_evidence | Only FY2024 (not FY2025) segment breakdown was located; FY2024 populated with the limitation disclosed |
-| V | segment_evidence | Segment structure not independently confirmed by search this session |
-| GNRC | segment_evidence | Only figures located appear to be a mislabeled single quarter, not genuine full-year data; rejected rather than used |
-| WM | segment_evidence | Only partial/quarterly figures located for each segment; no full-year table |
-| PANW | segment_evidence | Only quarterly Product-vs-recurring-revenue figures located, no full-year split |
-| KLAC | segment_evidence | Only a single quarter's breakdown located, no full-year table |
+| GOOGL | market_observed_evidence | Genuinely conflicting current price/market-cap figures across sources, not resolved to a single confident figure |
 | CEG | segment_evidence | Only a qualitative generation-mix description located, no quantitative breakdown |
+| COST | segment_evidence | Only geographic growth percentages and a qualitative statement located, no precise dollar-value segment breakdown |
+| ETN | segment_evidence | Only Q4 2025 quarterly segment figures located, no full-year table retrieved despite multiple targeted searches |
+| GEV | segment_evidence | Power/Wind/Electrification breakdown not obtained; WebSearch budget exhausted |
+| GNRC | segment_evidence | Only figures located appear to be a mislabeled single quarter, not genuine full-year data; rejected rather than used |
 | ISRG | segment_evidence | No clean full-year dollar breakdown across product categories located |
+| KLAC | segment_evidence | Only a single quarter's breakdown located, no full-year table |
 | LLY | segment_evidence | No clean full-year product-revenue table located |
+| PANW | segment_evidence | Only quarterly Product-vs-recurring-revenue figures located, no full-year split |
+| SNPS | segment_evidence | Full-year segment split not obtained; WebSearch budget exhausted |
+| TSM | segment_evidence | Only percentage-of-revenue node/platform mix exists, not a dollar-value segment table |
+| V | segment_evidence | Segment structure not independently confirmed by search this session |
+| WM | segment_evidence | Only partial/quarterly figures located for each segment; no full-year table |
 | All 27 | discount_rate_evidence | No dedicated discount-rate-component research conducted this pass (disclosed scope limitation) |
 
-Individual line-item-level abstentions (e.g. PANW FY2025 net income, GOOGL current price/market cap, GOOGL Cloud/Other Bets full-year operating income, LLY FY2021/FY2022 net income, SNPS FY2022 net income, GNRC FY2021 diluted EPS) are additionally disclosed within each affected record's own `financial_evidence`/`market_observed_evidence` line items via `abstention_reason`, not tallied separately here — see each record's own `uncertainty_summary` for the complete per-ticker account.
+**ICE is correctly absent from this table** — its segment_evidence is populated (three real FY2024 segments), not abstained; a prior version of this table incorrectly listed it here (see §15).
+
+Individual line-item-level abstentions (e.g. PANW FY2025 net income, GOOGL Cloud/Other Bets full-year operating income, LLY FY2021/FY2022 net income, SNPS FY2022 net income, GNRC FY2021 diluted EPS) are additionally disclosed within each affected record's own `financial_evidence` line items via `abstention_reason`, not tallied separately here — see each record's own `uncertainty_summary` for the complete per-ticker account. GOOGL's current-price gap is a **domain-level** `market_observed_evidence` abstention (listed in the table above), not a line-item-level one.
 
 No ticker was dropped from the 27-name roster for any reason. Every abstention is domain- or item-scoped within a still-present, still-sealed record.
 
@@ -171,6 +175,24 @@ No `governance/decisions.yaml` change. No new governance decision filed. No deci
 No company was valued. No fair value, price target, expected return, DCF result, FCFF/FCFE output, SOTP result, applied trading multiple, selected peer set, scenario probability, selected ERP, selected WACC, or selected discount rate exists anywhere in any of the 27 records. `TIER-0009` §K's `valuation_required` status is unresolved for all 27 equities. No tier/target/holdings/gate/allocator/margin/ladder/order/trade change was made. No chart evidence, ETF/crypto economic evaluation, `CONTENDER-0003`, or cross-asset/`XASSET` work was performed. Stage 4 (valuation execution) remains its own separate, unauthorized, future unit — requiring, at minimum, this Stage-3 population to exist for the company in question plus `VALUATION-0002` §6.3(a)/(c)/(d)'s further conditions, none of which are satisfied by this filing.
 
 This session does not review its own PR, mark it ready, merge it, or post principal acceptance.
+
+## 15. Bounded correction (same day, this PR, following independent review 4890579208)
+
+An independent exact-head review of PR #283 (anchored to head `e81596a5c47689bb85672e381ffe1785193cf8ef`) returned **CHANGES REQUIRED** — 0 BLOCKING / 2 MAJOR / 1 MINOR / 2 NOTE. The review found the underlying 27 sealed evidence records, manifest, generator, validator, tests, provenance discipline, minimum-history handling, and Stage-3 evidence-only boundary sound throughout — every finding was scoped to this retained audit document's own narrative reporting, not to the sealed data.
+
+**MAJOR-1, resolved**: §6.3's segment-evidence summary and this document's own §7 abstention table were independently re-derived, mechanically, directly from the 27 committed records (not assumed from the review's own numbers) and confirmed genuinely wrong — the true figure is **14 populated / 13 abstained**, not the originally-stated 18/9. The original §7 table was also internally self-contradictory with its own 18/9 claim, since it listed only 12 names. Two specific defects, both independently reproduced and confirmed: ICE was incorrectly listed as a segment_evidence abstention (its `segment_evidence.segments` is in fact populated — three real FY2024 dollar-denominated segments, with a disclosed `limitation` that FY2024 rather than FY2025 is the most recent full breakdown found — this is a populated-with-caveat record, not an abstention); COST and ETN were both missing from the table despite being genuinely, correctly abstained in their own sealed records. §6.3 and §7 above are corrected to the mechanically-verified 14/13 split with the exact abstained-ticker list (CEG, COST, ETN, GEV, GNRC, ISRG, KLAC, LLY, PANW, SNPS, TSM, V, WM) and ICE's own correct populated status is now stated explicitly.
+
+**MAJOR-2, resolved**: §6.2's market-observed-evidence summary was independently re-derived the same way and confirmed wrong — the true figure is **24 populated / 3 abstained** (SNPS, GEV, and **GOOGL**), not the originally-stated 25/2 (SNPS, GEV only). Direct inspection of `GOOGL.yaml` confirms `market_observed_evidence.inputs: []` with a populated domain-level `abstention_reason` — structurally identical to SNPS's and GEV's own domain-level abstentions, not the "individual line-item-level abstention" the original §7 prose incorrectly characterized it as (grouped there alongside genuine line-item gaps like PANW's FY2025 net income). §6.2 and §7 above are corrected to list all three tickers as domain-level abstentions, and the individual-line-item prose no longer includes GOOGL.
+
+**MINOR-1, resolved via the PR body, not this audit**: the review found this PR's own body text claimed "Files changed (33)" and an implementation-summary reference claimed "2 commits," while the live head `e81596a5c47689bb85672e381ffe1785193cf8ef` actually carries **35 changed files across 3 commits** (the third being a trivial, in-scope `operations/WORKSTREAMS.yaml`-only `active_pr` self-reference update, not scope drift). The PR body was updated separately to state the accurate cumulative counts; this audit's own §13 file inventory was already accurate (it lists file categories, not a numeric total, and was not itself a source of the miscount).
+
+**NOTE-1 and NOTE-2 are retained, not acted on** — both explicitly non-blocking per the review, and no live verification in this correction pass found either to be an actionable defect requiring a fix: (1) AMZN's rejected total-debt aggregator figure is disclosed via `provenance.sources[].limitation` rather than the schema's more structured `disclosed_conflicts` list; the review itself independently re-searched this and found it a reasonable, defensible sourcing choice for a genuinely ambiguous figure, not an error — worth preferring the structured mechanism in a future population pass, not a correction to this one. (2) TSM's single peer candidate (ASML, a value-chain supplier rather than a competitive comparable) is thin but schema-permitted and not classified as a defect.
+
+**No sealed evidence record, manifest entry, generator, validator, or test changed in this correction** — independently reconfirmed via `git diff` against every one of the 27 `intelligence/valuation_evidence/*.yaml` files, `COHORT_MANIFEST.yaml`, `ticker_data.py`, `valuation_evidence_generator.py`, `valuation_evidence_validator.py`, and `test_valuation_evidence_validator.py`: zero diff on all of them. This correction is scoped entirely to this retained audit document's own narrative text and the PR body's narrative counts.
+
+Full validation re-run at the corrected head: mechanically recomputed segment/market-observed counts and ticker lists match this document's now-corrected text exactly; `valuation_evidence_validator.py` → `OK (28 result(s))`; `test_valuation_evidence_validator.py` → 329 passed (unchanged, since no test file changed); `git diff --check` clean; zero diff on every protected path; prohibited-content scans unaffected and still clean.
+
+Requires its own fresh independent exact-head delta review before this PR may be considered ready.
 
 ---
 
