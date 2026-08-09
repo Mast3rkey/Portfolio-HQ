@@ -1,0 +1,152 @@
+capital_use_type: DEBT_REDUCTION
+schema_version: '1.0'
+functional_role:
+  role_category: leverage_reduction
+hard_constraint_status:
+  binding: true
+  constraint_source: 'CLAUDE.md Portfolio Doctrine: the 1.8x gross/equity structural leverage cap and
+    30% margin-buffer floor, hard cutoff -- before any margin-funded purchase, the system checks the most
+    recently synced, Robinhood-displayed buffer against the 30% floor; a buffer already below 30% blocks
+    the purchase outright and is treated as a forced de-leverage signal of the same severity as the cash-tight
+    guardrail'
+economic_assessment_readiness:
+  avoided_borrowing_cost_readiness:
+    status: assessment_required
+    rationale: No governed methodology exists to compare the return foregone or gained by reducing margin
+      debt against deploying the same capital elsewhere -- an opportunity-cost/return-shaped question
+      XASSET-0005 SS3.5 keeps structurally distinct from survivability_and_buffer_benefit_readiness below,
+      never blended into one figure. CLAUDE.md's own margin-interest doctrine ('~5% APR... a guaranteed
+      cost, not something to optimize around -- it's a hurdle rate, not a variable') is cited as existing
+      context, never restated here as a computed comparison.
+  survivability_and_buffer_benefit_readiness:
+    status: assessment_required
+    rationale: 'No governed methodology exists to assess how a margin-debt change affects the account''s
+      risk posture relative to the 1.8x leverage cap and 30% buffer floor -- a risk/survival-shaped question,
+      distinct in kind from the opportunity-cost question above per XASSET-0005 SS3.5''s full rationale
+      (the same return-versus-survival distinction CLAUDE.md''s own trim_backtest.md Decisions Log entry
+      already applies: ''the unlevered backtest was able to remain invested through its worst moment,
+      a levered account may not have that same latitude'').'
+liquidity_character:
+  liquidity_category: not_applicable
+capital_preservation_character:
+  capital_preservation_category: reduces_liability_not_an_asset
+freshness_state:
+  status: unable_to_determine_freshness
+  as_of_reference: holdings.yaml margin.synced_at (2026-07-31) was considered as a candidate reference
+    point but not relied upon as the governing freshness citation -- see abstention_reason. No persisted
+    classify_margin_state() run artifact and no standalone governance decision recording a margin-state
+    sync exist in this repository today.
+  abstention_reason: holdings.yaml's own margin.synced_at field is a live operational-tracking field,
+    populated by the same 'allocate.py update-margin' command that also writes the live debt/buffer values
+    themselves, sitting in the same file, with no accompanying governance decision or independent review
+    of its own -- structurally different in kind from a standalone governed artifact (e.g. an accepted
+    governance decision, or a persisted classify_margin_state() run record, neither of which exists for
+    margin state today). Treating it as this record's freshness reference point risks blurring exactly
+    the line XASSET-0005 SS3.6's contamination rule draws between citing that a governed mechanism exists
+    and citing an account-specific live-state field. freshness_state therefore abstains (unable_to_determine_freshness)
+    rather than resolving this genuinely open question unilaterally, per XASSET-0006 SS C.2.
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: holdings.yaml's own margin.synced_at field is a live operational-tracking
+    field, populated by the same 'allocate.py update-margin' command that also writes the live debt/buffer
+    values themselves, sitting in the same file, with no accompanying governance decision or independent
+    review of its own -- structurally different in kind from a standalone governed artifact (e.g. an accepted
+    governance decision, or a persisted classify_margin_state() run record, neither of which exists for
+    margin state today). Treating it as this record's freshness reference point risks blurring exactly
+    the line XASSET-0005 SS3.6's contamination rule draws between citing that a governed mechanism exists
+    and citing an account-specific live-state field. freshness_state therefore abstains (unable_to_determine_freshness)
+    rather than resolving this genuinely open question unilaterally, per XASSET-0006 SS C.2.
+provenance:
+  sources:
+  - source_identifier: CLAUDE.md Portfolio Doctrine section (this repository's own governing operational-synthesis
+      document)
+    source_type: primary
+    as_of_date: '2026-08-09'
+    access_status: directly_inspected
+  - source_identifier: CLAUDE.md Guardrails section ('enforce on me' rules), including the cash-tight
+      guardrail and the margin-buffer-floor guardrail
+    source_type: primary
+    as_of_date: '2026-08-09'
+    access_status: directly_inspected
+  - source_identifier: 'targets.yaml destination: list rows for CASH, RESERVE, and GLD (symbol/asset_class
+      identity only, per XASSET-0005 SS3.2''s contamination boundary -- target_pct values were read but
+      are never cited as evidence for any judgment axis)'
+    source_type: primary
+    as_of_date: '2026-08-09'
+    access_status: directly_inspected
+evidence_quality_status: partial
+uncertainty_summary: holdings.yaml's own margin.synced_at field is a live operational-tracking field,
+  populated by the same 'allocate.py update-margin' command that also writes the live debt/buffer values
+  themselves, sitting in the same file, with no accompanying governance decision or independent review
+  of its own -- structurally different in kind from a standalone governed artifact (e.g. an accepted governance
+  decision, or a persisted classify_margin_state() run record, neither of which exists for margin state
+  today). Treating it as this record's freshness reference point risks blurring exactly the line XASSET-0005
+  SS3.6's contamination rule draws between citing that a governed mechanism exists and citing an account-specific
+  live-state field. freshness_state therefore abstains (unable_to_determine_freshness) rather than resolving
+  this genuinely open question unilaterally, per XASSET-0006 SS C.2.
+structural_risk_flags:
+  binding: true
+  capital_preservation_category: reduces_liability_not_an_asset
+record_status: sealed
+later_governance_action: A future, separate, explicit governance decision identifying an appropriate governed,
+  dated margin-sync artifact (e.g. a persisted classify_margin_state() run record, or a standalone governance
+  decision analogous to PHQ-2026-06 for cash) would resolve this record's own open freshness_state question
+  -- not authorized or attempted by this record itself. A future opportunity-cost/economic-assessment
+  methodology would supersede both forced economic_assessment_readiness sub-fields; MARGIN-0005's own
+  existing, bounded research charter is the separate, already-governed vehicle for any conditional margin-deployment
+  research, unaffected and not extended by this record.
+abstention_index:
+- axis: freshness_state
+  field: status
+  value: unable_to_determine_freshness
+  reason: holdings.yaml's own margin.synced_at field is a live operational-tracking field, populated by
+    the same 'allocate.py update-margin' command that also writes the live debt/buffer values themselves,
+    sitting in the same file, with no accompanying governance decision or independent review of its own
+    -- structurally different in kind from a standalone governed artifact (e.g. an accepted governance
+    decision, or a persisted classify_margin_state() run record, neither of which exists for margin state
+    today). Treating it as this record's freshness reference point risks blurring exactly the line XASSET-0005
+    SS3.6's contamination rule draws between citing that a governed mechanism exists and citing an account-specific
+    live-state field. freshness_state therefore abstains (unable_to_determine_freshness) rather than resolving
+    this genuinely open question unilaterally, per XASSET-0006 SS C.2.
+cross_asset_handoff:
+  role_summary: leverage_reduction
+  evidence_quality_summary: partial
+  uncertainty_summary: holdings.yaml's own margin.synced_at field is a live operational-tracking field,
+    populated by the same 'allocate.py update-margin' command that also writes the live debt/buffer values
+    themselves, sitting in the same file, with no accompanying governance decision or independent review
+    of its own -- structurally different in kind from a standalone governed artifact (e.g. an accepted
+    governance decision, or a persisted classify_margin_state() run record, neither of which exists for
+    margin state today). Treating it as this record's freshness reference point risks blurring exactly
+    the line XASSET-0005 SS3.6's contamination rule draws between citing that a governed mechanism exists
+    and citing an account-specific live-state field. freshness_state therefore abstains (unable_to_determine_freshness)
+    rather than resolving this genuinely open question unilaterally, per XASSET-0006 SS C.2.
+  liquidity_risk_summary: not_applicable
+  hard_constraint_signal:
+    binding: true
+    constraint_source: 'CLAUDE.md Portfolio Doctrine: the 1.8x gross/equity structural leverage cap and
+      30% margin-buffer floor, hard cutoff -- before any margin-funded purchase, the system checks the
+      most recently synced, Robinhood-displayed buffer against the 30% floor; a buffer already below 30%
+      blocks the purchase outright and is treated as a forced de-leverage signal of the same severity
+      as the cash-tight guardrail'
+  economic_assessment_readiness_summary:
+    avoided_borrowing_cost_readiness:
+      status: assessment_required
+      rationale: No governed methodology exists to compare the return foregone or gained by reducing margin
+        debt against deploying the same capital elsewhere -- an opportunity-cost/return-shaped question
+        XASSET-0005 SS3.5 keeps structurally distinct from survivability_and_buffer_benefit_readiness
+        below, never blended into one figure. CLAUDE.md's own margin-interest doctrine ('~5% APR... a
+        guaranteed cost, not something to optimize around -- it's a hurdle rate, not a variable') is cited
+        as existing context, never restated here as a computed comparison.
+    survivability_and_buffer_benefit_readiness:
+      status: assessment_required
+      rationale: 'No governed methodology exists to assess how a margin-debt change affects the account''s
+        risk posture relative to the 1.8x leverage cap and 30% buffer floor -- a risk/survival-shaped
+        question, distinct in kind from the opportunity-cost question above per XASSET-0005 SS3.5''s full
+        rationale (the same return-versus-survival distinction CLAUDE.md''s own trim_backtest.md Decisions
+        Log entry already applies: ''the unlevered backtest was able to remain invested through its worst
+        moment, a levered account may not have that same latitude'').'
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: XASSET-0006
+drafting_session_or_shard_id: single-pass-functional-doctrine-implementation
+content_sha256: 5433bd04eab41309845228622957a58d624db6228e071fa35bb115aa5c2e1ae3
+cohort_manifest_entry: intelligence/functional_doctrine/COHORT_MANIFEST.yaml#DEBT_REDUCTION
