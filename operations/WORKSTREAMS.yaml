@@ -9539,6 +9539,98 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-09"
+      - gate: xasset0007-post-merge-verification
+        description: >
+          Lane M synchronization confirming XASSET-0007's own governance
+          filing (PR #286) is fully merged, reviewed, and principal-
+          accepted, without editing the xasset0007-overlap-model-content-
+          authorization gate's own historical text above. Independently
+          re-verified via the GitHub API: accepted head
+          cf478cdbcf10fd930d337e74ada9f72a42e09a92 (base main @
+          c90eb6fcf6fc7c2b5a77a6a8d79bc73c0506c50e); single independent
+          exact-head review pullrequestreview-4891559425 (APPROVED FOR
+          PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR /
+          0 NOTE — independently reconciled the exact 6-file changed
+          inventory, the exact ten-dimension overlap-model population
+          against XASSET-0005 §6.1's own table, the 4/6
+          interface_placeholder/mechanical_rollup-or-narrative_evidence
+          split, the bounded four-location factual correction, the
+          one-direction evidence-flow boundary, the deliberate
+          non-loosening of the forced value despite GLD_DEFENSIVE_ROLE.yaml
+          now existing, PR #285's own full chain, the WS-0014 Lane M
+          synchronization, the decision-catalog delta (101, issues == ()),
+          and all 12 repository validators plus the full test suite (4042
+          passed, 0 failed), all independently reproduced); principal
+          acceptance issuecomment-5231939730 (accepted head
+          cf478cdbcf10fd930d337e74ada9f72a42e09a92, explicitly
+          re-confirming head/base/mergeable_state: clean/6 changed files/1
+          commit/zero competing PRs/clean working tree immediately before
+          posting); merge commit 67c62d363fc2a5c5e627b8c1b0449ca8d0bb8e6c
+          (parents c90eb6fcf6fc7c2b5a77a6a8d79bc73c0506c50e and
+          cf478cdbcf10fd930d337e74ada9f72a42e09a92); merge-commit CI
+          independently re-fetched — workflow run 31317721215, run #575,
+          head_sha matching exactly, status: completed, conclusion:
+          success. WS-0014 step 7's own content half (overlap-model record
+          population, once a future implementation PR performs it) is
+          therefore authorized and awaiting that separate implementation —
+          not begun by this gate or by XASSET-0008.
+        pr: 286
+        status: complete
+        date: "2026-08-09"
+      - gate: xasset0008-gld-cash-reserve-economic-assessment-methodology-design
+        description: >
+          Design-only filing (XASSET-0008, draft, unmerged) closing XASSET-
+          0005 §5 step 2's own restated sequence ("perform asset-
+          appropriate valuation/economic assessment — future, separate,
+          undesigned") for exactly three functional-doctrine capital-use
+          types: CASH, RESERVE, and GLD_DEFENSIVE_ROLE. DEBT_REDUCTION is
+          explicitly excluded — its own economic-assessment gap belongs to
+          the separately governed margin/leverage-policy track. Designs a
+          closed economic-assessment schema (deployability_and_optionality,
+          all three types; a GLD-only compound
+          instrument_specific_economic_characterization axis with three
+          independently-abstainable sub-fields — cost_and_tracking_
+          economic_significance, historical_inflation_sensitivity,
+          historical_equity_drawdown_behavior; evidence_quality; two
+          structural-reference hash-pin mechanisms reusing
+          functional_doctrine_validator.canonical_record_hash() and
+          etf_classification_validator.canonical_record_hash(), never
+          duplicating sealed fields) plus a combined validator/test
+          specification for a future implementing PR. Zero numeric fields
+          anywhere. Explicitly preserves RESERVE.yaml's own sealed
+          functional_role: unable_to_determine abstention — does not infer
+          or assume a RESERVE-specific purpose, designs a non-cascading
+          abstention path, and names the two future resolution paths
+          (new CLAUDE.md doctrine/principal clarification naming RESERVE's
+          purpose, or an explicit principal statement confirming the
+          abstention should stand permanently) without performing either.
+          Draws an explicit, structurally-enforced boundary between this
+          design's own single-asset, historically-grounded GLD
+          characterization questions and XASSET-0007's own
+          defensive_offset_interface overlap-model dimension (portfolio-
+          level, still forced not_yet_computable_interface_only, unchanged
+          here) — every future record populating
+          historical_equity_drawdown_behavior must carry an explicit
+          single-asset disclosure. Identifies three future research
+          questions (GLD's historical equity-drawdown behavior; GLD's
+          realized tracking quality vs. its own benchmark; a sourced,
+          long-horizon gold/inflation characterization) as unanswered —
+          performs no research toward any of them. Performs the ordinary
+          WS-0014 self-reference synchronization (active_branch,
+          last_verified_main_sha, last_verified_date) and folds in the
+          xasset0007-post-merge-verification gate above. Creates no
+          intelligence/economic_assessment/ file, no
+          economic_assessment_validator.py, no content-validator tests, no
+          overlap-model record, and no overlap_model_validator.py; performs
+          no cross-asset synthesis; resolves no sealed record's forced
+          economic_assessment_readiness value; changes no
+          targets.yaml/holdings.yaml/gates.yaml/issuer_lookthrough.yaml/
+          allocate.py/margin_state.py/levels.py/existing functional-
+          doctrine record/GLD ETF classification content/margin policy/
+          chart policy/buy ladder/monitoring-sell policy/trade.
+        pr: null
+        status: in_progress
+        date: "2026-08-09"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -9555,25 +9647,34 @@ workstreams:
       - governance/decisions/XASSET-0006-ws0014-functional-doctrine-content-authorization.md
       - governance/audits/WS0014_FUNCTIONAL_DOCTRINE_IMPLEMENTATION_20260809.md
       - governance/decisions/XASSET-0007-ws0014-overlap-model-content-authorization.md
+      - governance/decisions/XASSET-0008-gld-cash-reserve-economic-assessment-methodology.md
+      - governance/audits/WS0014_GLD_CASH_RESERVE_ECONOMIC_ASSESSMENT_METHODOLOGY_DESIGN_20260809.md
     next_action: >
-      XASSET-0006's own governance filing (PR #284) and its authorized
-      functional-doctrine content implementation (PR #285) are both merged
-      and effective — see the xasset0006-post-merge-verification and
-      xasset0006-implementation-post-merge-verification gates above. Step 6
-      of XASSET-0001 §J (functional-doctrine record population) is
-      therefore complete. This overlap-model-content authorization filing
-      (the xasset0007-overlap-model-content-authorization gate above)
-      requires its own full independent exact-head review under OPS-0007
-      §1, any required bounded correction and re-review, explicit principal
-      acceptance, merge, and post-merge verification before that gate may
-      be marked complete (the "status: in_progress"/"pr: null" above is not
-      an oversight — this session does not mark its own unmerged work
-      complete, and does not review, mark ready, or merge its own PR). Once
-      XASSET-0007 merges, exactly one future overlap-model content
-      implementation PR is authorized (step 7's own content half) — not
-      begun by this filing. Step 2 and steps 8 through 13 (this entry's own
-      0-13 numbering) remain blocked on their own future, separate,
-      explicit principal authorization each.
+      XASSET-0007's own governance filing (PR #286) is merged and
+      effective — see the xasset0007-post-merge-verification gate above.
+      Step 7 of XASSET-0001 §J (overlap-model content) is therefore
+      authorized; its own future, separate implementation PR (populating
+      all ten dimension records) has not yet begun and requires its own
+      full independent-review/correction/re-review/principal-acceptance/
+      merge/post-merge-verification lifecycle when a session takes it up.
+      This economic-assessment-methodology-design filing (the
+      xasset0008-gld-cash-reserve-economic-assessment-methodology-design
+      gate above) requires its own full independent exact-head review
+      under OPS-0007 §1, any required bounded correction and re-review,
+      explicit principal acceptance, merge, and post-merge verification
+      before that gate may be marked complete (the "status: in_progress"/
+      "pr: null" above is not an oversight — this session does not mark
+      its own unmerged work complete, and does not review, mark ready, or
+      merge its own PR). Once XASSET-0008 merges, it authorizes no content
+      of any kind by itself — a future, separate, explicit content
+      authorization (mirroring XASSET-0003/XASSET-0004/XASSET-0006 for the
+      ETF, crypto, and functional-doctrine sleeves) would still be
+      required before any GLD/CASH/RESERVE economic-assessment record
+      could be populated. Step 2 and steps 8 through 13 (this entry's own
+      0-13 numbering), the overlap-model content implementation itself,
+      and DEBT_REDUCTION's own economic-assessment methodology all remain
+      blocked on their own future, separate, explicit principal
+      authorization each.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -9622,20 +9723,28 @@ workstreams:
       reference to XASSET-0005's specification, independently reviewed,
       corrected, principal-accepted, merged, and post-merge verified. Step
       7's own content half (overlap-model dimension computation) is
-      in_progress: this session's own draft governance authorization filing
-      (the xasset0007-overlap-model-content-authorization gate above)
-      authorizes, once merged, exactly one future overlap-model content
-      implementation PR covering all ten dimensions, bound by reference to
-      XASSET-0005's specification as corrected — blocked only on its own
-      independent exact-head review, correction if needed, principal
-      acceptance, merge, and post-merge verification. Step 2 and steps 8
-      through 13 (this entry's own 0-13 numbering) remain blocked on their
-      own future, separate, explicit principal authorization each — none is
-      authorized to begin by this entry or by steps 1/3/4/5/6/XASSET-0005/
-      XASSET-0006/XASSET-0007's own work.
-    active_branch: claude/xasset-0007-overlap-auth-25p7xx
+      authorized and merged (PR #286) — see the
+      xasset0007-post-merge-verification gate above: XASSET-0007
+      authorizes exactly one future overlap-model content implementation
+      PR covering all ten dimensions, bound by reference to XASSET-0005's
+      specification as corrected; that implementation PR itself has not
+      yet begun. This session's own draft filing (the
+      xasset0008-gld-cash-reserve-economic-assessment-methodology-design
+      gate above) designs, but does not authorize content for, a closed
+      GLD/CASH/RESERVE economic-assessment methodology (XASSET-0005 §5
+      step 2's own restated sequence, DEBT_REDUCTION explicitly excluded)
+      — blocked only on its own independent exact-head review, correction
+      if needed, principal acceptance, merge, and post-merge verification.
+      Step 2 and steps 8 through 13 (this entry's own 0-13 numbering), the
+      overlap-model content implementation itself, any GLD/CASH/RESERVE
+      economic-assessment content, and DEBT_REDUCTION's own economic-
+      assessment methodology all remain blocked on their own future,
+      separate, explicit principal authorization each — none is authorized
+      to begin by this entry or by steps 1/3/4/5/6/7/XASSET-0005/
+      XASSET-0006/XASSET-0007/XASSET-0008's own work.
+    active_branch: claude/xasset-0008-economic-assessment-b5078s
     active_pr: null
-    last_verified_main_sha: c90eb6fcf6fc7c2b5a77a6a8d79bc73c0506c50e
+    last_verified_main_sha: 67c62d363fc2a5c5e627b8c1b0449ca8d0bb8e6c
     last_verified_date: "2026-08-09"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
@@ -9778,6 +9887,35 @@ workstreams:
       specification, its binding-by-reference table to XASSET-0005 as
       corrected, and the four narrowly bounded factual corrections applied
       to XASSET-0005's supporting artifact §6.2/§8.
+
+
+      Further controlling principal directive, a later session, 2026-08-09:
+      the PR #286 overlap-model-content authorization having merged, file
+      the next bounded WS-0014 governance unit — a design-only methodology
+      filing for XASSET-0005 §5 step 2's own restated sequence ("perform
+      asset-appropriate valuation/economic assessment"), scoped to exactly
+      CASH, RESERVE, and GLD_DEFENSIVE_ROLE, with DEBT_REDUCTION explicitly
+      excluded as belonging to the separately governed margin/leverage-
+      policy track. The filing must design a closed, categorical,
+      zero-numeric economic-assessment question set with permitted/
+      prohibited evidence, evidence quality, freshness, abstention routes,
+      and stop conditions per question; must reuse the existing
+      structural-reference/content-hash mechanism GLD_DEFENSIVE_ROLE.yaml
+      already established, rather than duplicating GLD's own sealed ETF
+      fields; must preserve, not resolve or infer around, RESERVE.yaml's
+      own sealed functional_role: unable_to_determine abstention, and must
+      state what future evidence or principal clarification would actually
+      be needed to resolve it; must draw an explicit, structurally-
+      enforced boundary against duplicating XASSET-0007's own overlap-
+      model defensive_offset_interface dimension (portfolio-level,
+      unchanged, still forced not_yet_computable_interface_only); must
+      identify, without answering, the future research questions a real
+      GLD economic characterization would require; and must not populate
+      any record, compute any economic finding, or resolve any sealed
+      functional-doctrine record's forced economic_assessment_readiness
+      value. This directive is implemented by XASSET-0008 (draft,
+      unmerged, this session) — see that decision file and its supporting
+      artifact for the full specification.
     supersedes: null
     superseded_by: null
   - id: WS-0015
