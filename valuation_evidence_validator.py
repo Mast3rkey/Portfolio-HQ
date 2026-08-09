@@ -360,6 +360,28 @@ _FORBIDDEN_KEY_NAMES = frozenset({
     *_ETF_CRYPTO_LEAKAGE, *_NUMERIC_SCORE_LEAKAGE,
 })
 
+# Third bounded correction (post-PR-#281-independent-delta-review MINOR
+# finding, review 4890158953): the round-2 bounded-gap patterns' generic
+# `is` alternative had no requirement that an actual figure follow it --
+# unlike its sibling alternatives (near/around/approximately/estimated/
+# sits/stands/appears/comes out to), which are specific enough to a real
+# value-assertion that they never fire on concept-discussion prose. That
+# let ordinary, non-conclusion sentences ("discount rate TOPIC is
+# complex...", "fair value ACCOUNTING is a standard...") be mistaken for a
+# valuation-output statement. This short, explicitly bounded lookahead
+# (0-4 tokens, each barred from containing '.'/'!'/'?', same token
+# exclusion already used for every gap above -- never an unbounded `.*`)
+# requires a nearby digit or "$" before the generic `is` branch is allowed
+# to fire, so "anchor + gap + is" only matches when an actual figure
+# follows nearby; every other, already-specific verb alternative is
+# untouched. Applied to the two round-2 patterns the delta review
+# demonstrated (fair/intrinsic value, discount rate) plus the pre-existing
+# round-1 WACC pattern and its round-2 gapped counterpart -- the reviewer
+# independently confirmed WACC's own bare `is` shares this identical root
+# cause and the identical fix applies mechanically, so it is corrected in
+# this same pass rather than left as a separate future correction.
+_NUMERIC_CONCLUSION_LOOKAHEAD = r"(?=(?:\s+[^\s.!?]+){0,4}?[\s(]*[\$\d])"
+
 _FORBIDDEN_TEXT_PATTERNS = [
     re.compile(p, re.IGNORECASE) for p in (
         r"\bshould\s+be\s+(increased|decreased|raised|lowered|set)\s+to\b",
@@ -390,7 +412,8 @@ _FORBIDDEN_TEXT_PATTERNS = [
         # statement using the umbrella term is.
         r"\b(?:intrinsic|fair)\s+value\s+(?:is|of|estimated?|around|near|approximately)\b",
         r"\bdiscount\s+rate\s+(?:is|of|applied|used|estimated|comes?\s+out\s+to|works?\s+out\s+to)\b",
-        r"\bwacc\s+(?:is|of|applied|used|estimated|comes?\s+out\s+to|works?\s+out\s+to)\b",
+        r"\bwacc\s+(?:is" + _NUMERIC_CONCLUSION_LOOKAHEAD +
+        r"|of|applied|used|estimated|comes?\s+out\s+to|works?\s+out\s+to)\b",
         r"\b(?:undervalued|overvalued)\b",
         r"\bexpected\s+(?:upside|downside|return)\s+of\b",
         r"\d+(?:\.\d+)?\s*%\s+(?:upside|downside)\b",
@@ -420,11 +443,12 @@ _FORBIDDEN_TEXT_PATTERNS = [
         # anchor noun), "of" inside a multi-token gap would false-positive on
         # ordinary connectors ("fair value... as OF the reporting date") --
         # see this correction's own PR discussion for the reproduction.
-        r"\b(?:intrinsic|fair)\s+value\b(?:\s+[^\s.!?]+){0,3}?\s+(?:is|sits?|stands?|appears?|"
-        r"comes?\s+out\s+to|around|near|approximately|estimated?)\b",
-        r"\bdiscount\s+rate\b(?:\s+[^\s.!?]+){0,3}?\s+(?:is|applied|used|estimated|"
-        r"comes?\s+out\s+to|works?\s+out\s+to)\b",
-        r"\bwacc\b(?:\s+[^\s.!?]+){0,3}?\s+(?:is|applied|used|estimated|comes?\s+out\s+to|works?\s+out\s+to)\b",
+        r"\b(?:intrinsic|fair)\s+value\b(?:\s+[^\s.!?]+){0,3}?\s+(?:is" + _NUMERIC_CONCLUSION_LOOKAHEAD +
+        r"|sits?|stands?|appears?|comes?\s+out\s+to|around|near|approximately|estimated?)\b",
+        r"\bdiscount\s+rate\b(?:\s+[^\s.!?]+){0,3}?\s+(?:is" + _NUMERIC_CONCLUSION_LOOKAHEAD +
+        r"|applied|used|estimated|comes?\s+out\s+to|works?\s+out\s+to)\b",
+        r"\bwacc\b(?:\s+[^\s.!?]+){0,3}?\s+(?:is" + _NUMERIC_CONCLUSION_LOOKAHEAD +
+        r"|applied|used|estimated|comes?\s+out\s+to|works?\s+out\s+to)\b",
         r"\bexpected\b(?:\s+[^\s.!?]+){0,3}?\s+(?:upside|downside|return)\s+(?:of|is)\b",
         r"\b(?:likely|expects?|expected|projects?|projected|forecast(?:s|ed)?)\b"
         r"(?:\s+[^\s.!?]+){0,3}?\s+to\b(?:\s+[^\s.!?]+){0,2}?\s+(?:outperform|underperform)\b",

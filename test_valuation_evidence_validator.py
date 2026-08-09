@@ -1058,6 +1058,106 @@ class TestSecondBoundedCorrectionGapClosure:
         assert_valid(vev.validate_valuation_evidence_data(_record()))
 
 
+# ── free-text valuation-conclusion/recommendation leakage, third bounded
+# correction (post-PR-#281-independent-DELTA-review MINOR finding, review
+# 4890158953) ─────────────────────────────────────────────────────────────
+
+class TestThirdBoundedCorrectionNumericConclusionRequirement:
+    """The second correction's bounded-gap patterns closed the adjacency/
+    tense gap, but their generic `is` alternative had no requirement that
+    an actual figure follow -- so ordinary concept-discussion prose using
+    "is" near "fair value"/"discount rate"/"WACC" was mistaken for a
+    valuation-output conclusion. A delta review of that correction
+    demonstrated two such false positives (plus a third, pre-existing one
+    in WACC's own round-1 tight pattern, sharing the identical root cause).
+    This class proves both exact false positives are now accepted, close
+    legitimate variants remain accepted, a genuine numeric "is" conclusion
+    is still rejected, and every previously-resolved bypass (the three
+    adjacency/tense bypasses and the original six MAJOR-finding bypasses)
+    remains blocked."""
+
+    # The exact two phrases the independent delta review demonstrated are
+    # incorrectly rejected -- both must now be accepted.
+    _DELTA_REVIEW_DEMONSTRATED_FALSE_POSITIVES = [
+        "The discount rate topic is complex and covered in a separate policy document.",
+        "Fair value accounting is a standard reporting framework used broadly.",
+    ]
+
+    @pytest.mark.parametrize("phrase", _DELTA_REVIEW_DEMONSTRATED_FALSE_POSITIVES)
+    def test_both_delta_review_demonstrated_false_positives_now_accepted(self, phrase):
+        data = _record()
+        data["discount_rate_evidence"]["risk_free_rate"]["note"] = phrase
+        assert_valid(vev.validate_valuation_evidence_data(data))
+
+    @pytest.mark.parametrize("phrase", [
+        # Close legitimate variants of the two exact false positives.
+        "The fair value topic is discussed at length in the appendix.",
+        "Discount rate methodology is a separate, unresolved question here.",
+        # The mirrored same-root WACC false positive the delta review
+        # disclosed for context (pre-existing round-1 tight pattern).
+        "WACC is a standard corporate-finance concept used in valuation.",
+        "WACC is not yet computed for this fictional entity -- only "
+        "individual components are sourced.",
+    ])
+    def test_close_legitimate_variants_accepted(self, phrase):
+        data = _record()
+        data["discount_rate_evidence"]["risk_free_rate"]["note"] = phrase
+        assert_valid(vev.validate_valuation_evidence_data(data))
+
+    @pytest.mark.parametrize("phrase", [
+        # A genuine numeric "is" valuation conclusion must still be caught
+        # -- proves the lookahead requires, rather than merely tolerates,
+        # a nearby figure.
+        "The fair value is approximately $88 per share.",
+        "Intrinsic value here is roughly $60.",
+        "Discount rate applied here is roughly 9%.",
+        "The discount rate here is approximately 8%.",
+        "WACC currently is about 9%.",
+    ])
+    def test_numeric_is_valuation_assertions_still_rejected(self, phrase):
+        data = _record()
+        data["discount_rate_evidence"]["risk_free_rate"]["note"] = phrase
+        assert_invalid(vev.validate_valuation_evidence_data(data))
+
+    @pytest.mark.parametrize(
+        "phrase", TestSecondBoundedCorrectionGapClosure._DELTA_REVIEW_DEMONSTRATED_BYPASSES
+    )
+    def test_prior_three_adjacency_bypasses_still_rejected(self, phrase):
+        """The three bypasses the SECOND correction closed (review
+        4889931092) must remain blocked -- proves the numeric-lookahead
+        addition to the `is` branch didn't accidentally reopen them (all
+        three are themselves numeric "is"/"to VERB" conclusions, so the
+        lookahead should never affect them)."""
+        data = _record()
+        data["discount_rate_evidence"]["risk_free_rate"]["note"] = f"Synthetic note: {phrase}"
+        assert_invalid(vev.validate_valuation_evidence_data(data))
+
+    @pytest.mark.parametrize(
+        "phrase", TestFreeTextValuationConclusionLeakage._REVIEWER_DEMONSTRATED_BYPASSES
+    )
+    def test_original_six_major_finding_bypasses_still_rejected(self, phrase):
+        """The original MAJOR finding's six bypasses (review 4889789139)
+        must remain caught by this third correction too."""
+        data = _record()
+        data["discount_rate_evidence"]["risk_free_rate"]["note"] = f"Synthetic note: {phrase}"
+        assert_invalid(vev.validate_valuation_evidence_data(data))
+
+    def test_lookahead_uses_only_bounded_repetition_not_unbounded_wildcards(self):
+        """Structural proof that the new numeric-conclusion lookahead uses
+        an explicitly bounded, counted repetition (`{0,4}`), never an
+        unbounded `.*`/`.+`."""
+        assert ".*" not in vev._NUMERIC_CONCLUSION_LOOKAHEAD
+        assert ".+" not in vev._NUMERIC_CONCLUSION_LOOKAHEAD
+        for pattern in vev._FORBIDDEN_TEXT_PATTERNS:
+            assert ".*" not in pattern.pattern
+            assert ".+" not in pattern.pattern
+
+    def test_legitimate_component_evidence_remains_accepted_across_the_real_fixture_third_time(self):
+        """The unmodified default fixture must still validate clean after
+        this third correction too."""
+        assert_valid(vev.validate_valuation_evidence_data(_record()))
+
+
 # ── 19: chart-language leakage ───────────────────────────────────────────
 
 class TestChartLanguageLeakage:
