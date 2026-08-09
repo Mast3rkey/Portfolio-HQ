@@ -57,8 +57,9 @@ full unshallowed history — 844 commits back to the repository's actual root co
 - **Zero mechanical distinction anywhere in code.** `allocate.py` and `levels.py` group
   `("reserve", "cash")` as one identical tuple in every conditional branch (buy-candidate exclusion,
   trim-eligibility exclusion, market-data-fetch exclusion). `margin_state.py` has no `RESERVE` reference at
-  all. `gates.yaml` has zero `RESERVE` mentions; its only `cash` occurrences are the unrelated
-  `cash_pending_clearance` status label on six formerly-gated names, not a `RESERVE`/`CASH`-differentiating
+  all. `gates.yaml` has zero `RESERVE` mentions; its `cash` occurrences (seven total, independently
+  reproduced via a case-insensitive search) are the `cash_pending_clearance` status label on six
+  formerly-gated names plus one incidental header/comment usage — none a `RESERVE`/`CASH`-differentiating
   mechanism. `issuer_lookthrough.yaml` has zero mentions of either. `holdings.yaml` persists neither as a
   tracked balance. The **only** difference anywhere in this repository is the bare `target_pct` number.
 - The functional-doctrine records' own later characterizations (`CASH.yaml`'s determined
