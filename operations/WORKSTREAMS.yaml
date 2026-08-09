@@ -9306,6 +9306,62 @@ workstreams:
         pr: 273
         status: complete
         date: "2026-08-08"
+      - gate: xasset0006-functional-doctrine-content-authorization
+        description: >
+          Authorization-only filing (XASSET-0006, draft, unmerged) for the
+          content half of XASSET-0001 §J step 6 (WS-0014 objective item 8):
+          population of exactly four functional-doctrine capital-use records
+          — CASH, RESERVE, GLD_DEFENSIVE_ROLE, DEBT_REDUCTION — under the
+          shared six-axis-plus-evidence-quality schema, GLD structural-
+          reference hash-pin mechanism, DEBT_REDUCTION split
+          economic_assessment_readiness shape, and combined validator/test
+          specification XASSET-0005 already designed and merged (PR #273).
+          Binds by reference, not restatement, to XASSET-0005's supporting
+          artifact; authorizes exactly one future, separate, bounded
+          functional-doctrine content implementation PR, gated on its own
+          full independent-review/correction/re-review/principal-acceptance/
+          merge/post-merge-verification lifecycle. Explicitly preserves,
+          rather than pre-decides, two evidence-sufficiency questions: (1)
+          whether RESERVE's functional_role can be defensibly cited as
+          capital_preservation_buffer or must abstain unable_to_determine —
+          no CLAUDE.md passage narrates a RESERVE-specific functional
+          purpose the way it does for GLD's ballast role; and (2) whether
+          holdings.yaml's dated margin.synced_at field is an appropriate
+          governed freshness-state citation for DEBT_REDUCTION, or whether
+          the implementation must abstain unable_to_determine_freshness,
+          since no persisted dated margin_state.py run artifact exists.
+          Explicitly excludes all overlap-model content (the ten dimensions
+          XASSET-0005 §6 designed) — that remains a separate, future,
+          unfiled XASSET-0007 authorization, never combined with this
+          filing, mirroring the XASSET-0002-to-XASSET-0003/XASSET-0004
+          ETF/crypto content-authorization precedent exactly. Discloses,
+          without correcting (out of this filing's own bounded scope), a
+          genuine stale-wording defect independently found in XASSET-0005's
+          own supporting artifact §6.2 (three references to "two"
+          interface_placeholder / "five" mechanical_rollup-or-narrative_
+          evidence dimensions, stale since XASSET-0005's own first bounded
+          correction raised the corrected §6.1 table to 4 interface_
+          placeholder / 6 mechanical_rollup-or-narrative_evidence dimensions
+          — missed by both of XASSET-0005's own correction rounds) —
+          preserved for the future XASSET-0007 filing's own preflight, not
+          resolved here. Performs the ordinary WS-0014 self-reference
+          synchronization (active_branch, last_verified_main_sha,
+          last_verified_date) reflecting this session's own live-state
+          verification against current main — no prior gate's historical
+          text edited; XASSET-0005's own gates were found accurate as
+          filed, so no Lane M correction was required. Creates no
+          intelligence/functional_doctrine/ or intelligence/overlap_model/
+          file; populates no capital-use type; computes no overlap or
+          concentration figure; determines no GLD functional role;
+          calculates no avoided-borrowing-cost number; reopens, weakens, or
+          restates no leverage cap or buffer floor; edits no XASSET-0001 or
+          XASSET-0005 text. XASSET-0001 §J's remaining steps (the content
+          half of step 7, and steps 8 through 13) remain wholly unauthorized
+          and each requires its own separate, future, explicit principal
+          authorization.
+        pr: null
+        status: in_progress
+        date: "2026-08-09"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -9319,23 +9375,24 @@ workstreams:
       - governance/audits/WS0014_CRYPTO_CLASSIFICATION_IMPLEMENTATION_20260808.md
       - governance/decisions/XASSET-0005-functional-doctrine-and-overlap-concentration-architecture.md
       - governance/audits/WS0014_FUNCTIONAL_DOCTRINE_AND_OVERLAP_CONCENTRATION_ARCHITECTURE_DESIGN_20260808.md
+      - governance/decisions/XASSET-0006-ws0014-functional-doctrine-content-authorization.md
     next_action: >
-      XASSET-0004 is merged and effective; PR #272 (WS-0014 step 5, crypto
-      classification content) is merged and effective (see the
-      xasset0004-implementation-post-merge-verification gate above). This
-      functional-doctrine-and-overlap-architecture design filing (the
-      xasset0005-functional-doctrine-and-overlap-architecture-design gate
-      above) requires its own full independent exact-head review under
-      OPS-0007 §1, any required bounded correction and re-review, explicit
-      principal acceptance, merge, and post-merge verification before that
-      gate may be marked complete (the "status: in_progress"/"pr: null"
-      above is not an oversight — this session does not mark its own
-      unmerged work complete). No completion determination for steps 6-7
-      exists yet — that remains a separate, later, explicit principal
-      authorization once this design filing merges, matching the
-      TIER-0005→Milestone-6→TIER-0006 and XASSET-0003→PR-#270 precedent.
-      Step 2 and steps 8 through 13 remain blocked on their own future,
-      separate, explicit principal authorization each.
+      XASSET-0005 (PR #273, steps 6-7's shared design) is merged and
+      effective — see the xasset0005-implementation-post-merge-verification
+      gate above. This functional-doctrine content authorization filing
+      (the xasset0006-functional-doctrine-content-authorization gate above)
+      requires its own full independent exact-head review under OPS-0007
+      §1, any required bounded correction and re-review, explicit principal
+      acceptance, merge, and post-merge verification before that gate may
+      be marked complete (the "status: in_progress"/"pr: null" above is not
+      an oversight — this session does not mark its own unmerged work
+      complete). Once merged, XASSET-0006 authorizes exactly one future,
+      separate functional-doctrine content implementation PR (the content
+      half of step 6) — it does not authorize any overlap-model content
+      (the content half of step 7), which remains a separate, future,
+      unfiled XASSET-0007 authorization. Step 2 and steps 9 through 13
+      remain blocked on their own future, separate, explicit principal
+      authorization each.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -9369,24 +9426,31 @@ workstreams:
       xasset0004-post-merge-verification gate above. Step 5 (crypto
       classification content, §I item 7) is complete and merged (PR #272)
       — see the xasset0004-implementation-post-merge-verification gate
-      above. Steps 6-7 (cash/reserve/GLD/debt functional doctrine plus
-      overlap and concentration-model architecture, batched design-only per
-      XASSET-0001 §J's own explicit permission) are in_progress: this
-      session's own draft governance filing (the
-      xasset0005-functional-doctrine-and-overlap-architecture-design gate
-      above) delivers the full functional-doctrine and overlap/
-      concentration-model schema design plus a combined validator/test
-      specification for a future, separate implementing PR — blocked only
-      on its own independent exact-head review, correction if needed,
-      principal acceptance, merge, and post-merge verification, and on a
-      later, separate completion-determination filing once merged. Step 2
-      and steps 8 through 13 remain blocked on their own future, separate,
-      explicit principal authorization each — none is authorized to begin
-      by this entry or by steps 1/3/4/5/XASSET-0005's own work.
-    active_branch: null
+      above. Steps 6-7's shared design (cash/reserve/GLD/debt functional
+      doctrine plus overlap and concentration-model architecture, batched
+      design-only per XASSET-0001 §J's own explicit permission) is complete
+      and merged (PR #273) — see the
+      xasset0005-implementation-post-merge-verification gate above. Step
+      6's own content half (functional-doctrine record population) is
+      in_progress: this session's own draft governance filing (the
+      xasset0006-functional-doctrine-content-authorization gate above)
+      authorizes exactly one future, separate functional-doctrine content
+      implementation PR, bound by reference to XASSET-0005's specification
+      — blocked only on its own independent exact-head review, correction
+      if needed, principal acceptance, merge, and post-merge verification.
+      Step 7's own content half (overlap-model dimension computation)
+      remains separately, wholly unauthorized and requires its own future,
+      unfiled XASSET-0007 authorization — never combined with step 6's
+      content, per XASSET-0001 §J's separation rule and the direct
+      XASSET-0002→XASSET-0003/XASSET-0004 ETF/crypto content-authorization
+      precedent. Step 2 and steps 9 through 13 remain blocked on their own
+      future, separate, explicit principal authorization each — none is
+      authorized to begin by this entry or by steps 1/3/4/5/XASSET-0005/
+      XASSET-0006's own work.
+    active_branch: claude/xasset-0006-functional-doctrine-5mkxyl
     active_pr: null
-    last_verified_main_sha: 1921864326f2cc75609b1c91037c24e333c4e3d0
-    last_verified_date: "2026-08-08"
+    last_verified_main_sha: b97ad2a2a23554b6072340ebff9ceddc799b1a22
+    last_verified_date: "2026-08-09"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively
@@ -9481,6 +9545,27 @@ workstreams:
       not reopened. This directive is implemented by XASSET-0005 (draft,
       unmerged, this session) — see that decision file and its supporting
       artifact for the full specification.
+
+
+      Further controlling principal directive, a later session, 2026-08-09:
+      the XASSET-0005 design filing having merged (PR #273), file the next
+      bounded WS-0014 governance unit — an authorization-only filing for
+      future population of exactly four functional-doctrine capital-use
+      records (CASH, RESERVE, GLD_DEFENSIVE_ROLE, DEBT_REDUCTION), binding
+      by reference to XASSET-0005's already-accepted schema, mirroring
+      XASSET-0003's/XASSET-0004's own role for the ETF and crypto sleeves.
+      This filing must not implement any of the four records; must not
+      touch the overlap model in any way; must preserve, not pre-decide,
+      RESERVE's functional_role evidence-sufficiency question and
+      DEBT_REDUCTION's freshness_state evidence-sufficiency question; must
+      require the future implementation to use GLD's structural-reference
+      hash pin, never duplicate or re-derive GLD's own sealed ETF fields;
+      and must disclose, without correcting, any stale wording found in
+      XASSET-0005's own supporting artifact, deferring correction to the
+      future XASSET-0007 overlap-model authorization. This directive is
+      implemented by XASSET-0006 (draft, unmerged, this session) — see that
+      decision file for the full bounded specification and its
+      binding-by-reference table to XASSET-0005.
     supersedes: null
     superseded_by: null
   - id: WS-0015
