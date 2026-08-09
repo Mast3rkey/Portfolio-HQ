@@ -10717,7 +10717,7 @@ workstreams:
           whichever identifier is next unused when filed) must authorize
           real-company execution after this decision and its own
           implementation are each independently reviewed and accepted.
-        pr: null
+        pr: 288
         status: in_progress
         date: "2026-08-09"
     evidence_refs:
@@ -10811,7 +10811,7 @@ workstreams:
       probability is authorized by it, or by anything in WS-0015 to date,
       under any circumstance.
     active_branch: claude/valuation-0006-stage-4-design-bov9rs
-    active_pr: null
+    active_pr: 288
     last_verified_main_sha: b3fb5325cac5736daf59a109ebc5e1daa1704297
     last_verified_date: "2026-08-09"
     authorized_by: VALUATION-0002 §6.3 / VALUATION-0004 §I/§J/§K (merged); this filing itself, per TIER-0009 §K
