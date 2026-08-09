@@ -731,3 +731,11 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, TIER-0002, TIER-0009, REL-0001, REL-0007, CHART-0001, CHART-0002, LADDER-0001, PHQ-2026-01, PHQ-2026-02, CONTENDER-0001, CONTENDER-0002, XASSET-0001, XASSET-0002, XASSET-0003, XASSET-0004, XASSET-0005, XASSET-0006, XASSET-0007, VALUATION-0001, VALUATION-0002, VALUATION-0004]
     supporting_artifact: governance/audits/WS0014_GLD_CASH_RESERVE_ECONOMIC_ASSESSMENT_METHODOLOGY_DESIGN_20260809.md
     file: governance/decisions/XASSET-0008-gld-cash-reserve-economic-assessment-methodology.md
+
+  - decision_id: VALUATION-0006
+    date: 2026-08-09
+    status: Proposed
+    category: valuation_application_governance
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, NUM-0001, ONTO-0001, TIER-0002, TIER-0003, TIER-0009, MARGIN-0005, LADDER-0001, XASSET-0001, XASSET-0002, XASSET-0005, VALUATION-0001, VALUATION-0002, VALUATION-0003, VALUATION-0004, VALUATION-0005, PHQ-2026-01, PHQ-2026-02]
+    supporting_artifact: null
+    file: governance/decisions/VALUATION-0006-stage4-methodology-application-policy-and-result-architecture.md
