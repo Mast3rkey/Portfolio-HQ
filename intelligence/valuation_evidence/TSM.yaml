@@ -1,0 +1,319 @@
+schema_version: '1.0'
+ticker: TSM
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 1587.42
+      unit: twd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM FY2021 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 596.54
+      unit: twd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM FY2021 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 2263.89
+      unit: twd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 1016.53
+      unit: twd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM FY2022 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 2161.74
+      unit: twd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 838.5
+      unit: twd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 2894.31
+      unit: twd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 1173.27
+      unit: twd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: net_margin
+      value: 0.405
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM FY2024 net margin (company-reported)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 3809.05
+      unit: twd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM FY2025 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 1717.88
+      unit: twd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM FY2025 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: revenue
+      value: 122.42
+      unit: usd_billions
+      value_basis: derived
+      derivation_note: USD-equivalent of the TWD-reported FY2025 revenue figure, as separately disclosed
+        by TSMC for ADR investors (a second source cited $122.9B, ~0.4% variance, not reconciled).
+      provenance:
+        sources:
+        - source_identifier: TSM FY2025 USD-equivalent revenue disclosure
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: gross_margin
+      value: 0.599
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: 'TSM FY2025 gross margin (2024: 56.1%)'
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.508
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: 'TSM FY2025 operating margin (2024: 45.7%)'
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: net_margin
+      value: 0.451
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: 'TSM FY2025 net margin (2024: 40.5%)'
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 40.9
+      unit: usd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: 'TSM FY2025 capital expenditures (2024: $29.8B)'
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: total_assets
+      value: 252.291
+      unit: usd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM total assets, FY2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: total_equity
+      value: 173.6
+      unit: usd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM total equity, FY2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 34.07
+      unit: usd_billions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TSM total debt (single aggregator, not cross-verified against a primary filing)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 5186
+      unit: shares_millions_adr_equivalent
+      value_basis: derived
+      derivation_note: 'Derived: ~25,929M ordinary shares divided by 5 (ADR ratio) equals ~5,186M ADR-equivalent
+        diluted shares.'
+      provenance:
+        sources:
+        - source_identifier: TSM diluted weighted-average ordinary shares, FY2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments: []
+  abstention_reason: TSM does not disclose dollar-denominated business segments in the classic sense;
+    it discloses revenue mix by technology node (3nm 24%, 5nm 36%, 7nm 14%, mature/16nm+ 26% of FY2025
+    revenue) and by platform (HPC 57%, Smartphone 30%, IoT 5%, Automotive 5%, DCE 1%, Other 2%) -- percentage-of-revenue
+    mix data, not the dollar-value segment table this schema's segment_evidence domain expects.
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 422.82
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Aug 7 2026 close; market cap reported ~$2.178T.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: ASML
+    comparability_rationale: Critical lithography-equipment supplier to TSM, not a direct manufacturing
+      competitor but tightly linked in the value chain.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Arizona fab expansion
+    variables:
+    - variable_name: arizona_fab_expansion
+      evidence_basis: Up to 12 fabs planned; additional $100B+ committed for at least 4 more 2nm fabs;
+        second Phase-2 Arizona fab volume production pulled forward to 2H2027 citing strong/urgent demand
+        from US customers.
+      provenance_label: historically_observed
+  - scenario_name: CoWoS advanced-packaging capacity
+    variables:
+    - variable_name: cowos_advanced-packaging_capacity
+      evidence_basis: CoWoS advanced packaging was the primary AI-chip production bottleneck through 2025,
+        running at full capacity; TSMC is accelerating CoWoS/InFO/SoIC expansion.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  TSM reports in NT$; the annual revenue/net-income trend above is in TWD as reported, with a single disclosed
+  USD-equivalent figure for FY2025 revenue only (two sources disagreed by ~0.4%, not reconciled). A reported
+  cash balance figure ('~$94.67B', apparently EUR-labeled for a Taiwan company) was found to be evidently
+  garbled and is not used -- cash is abstained from the balance sheet items above as a result. Full-year
+  operating cash flow was not found (only a single quarter's figure). Diluted EPS in TWD (2023/2024) was
+  not found and is omitted rather than guessed. No IPO/spin-off/restructuring affects TSM's own 5-year
+  comparability.
+abstention_index:
+- domain: segment_evidence
+  reason: TSM does not disclose dollar-denominated business segments in the classic sense; it discloses
+    revenue mix by technology node (3nm 24%, 5nm 36%, 7nm 14%, mature/16nm+ 26% of FY2025 revenue) and
+    by platform (HPC 57%, Smartphone 30%, IoT 5%, Automotive 5%, DCE 1%, Other 2%) -- percentage-of-revenue
+    mix data, not the dollar-value segment table this schema's segment_evidence domain expects.
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: TSM
+content_sha256: 51d5143435a1b48118f584e83e8cbadb61d1afb190173576e68ab81df6aac295

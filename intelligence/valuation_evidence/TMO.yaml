@@ -1,0 +1,375 @@
+schema_version: '1.0'
+ticker: TMO
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 39210
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO FY2021 revenue, +22% YoY, including $2.45B of COVID-testing-related response
+            revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 7730
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO FY2021 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 44915
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO FY2022 revenue, +14.55% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 6950
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO FY2022 net income, -10.03% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 42857
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO FY2023 revenue, -4.58% YoY (COVID-testing revenue fading)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 5995
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO FY2023 net income, -13.74% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 42879
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO FY2024 revenue, +0.05% YoY, essentially flat
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 6335
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO FY2024 net income, +5.67% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 44560
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO FY2025 revenue, +4% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 6704
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO FY2025 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.174
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2025 GAAP operating income $7.75B divided by revenue $44.56B equals
+        17.4 percent (adjusted operating margin separately reported at 22.7%, adjusted operating income
+        $10.11B).'
+      provenance:
+        sources:
+        - source_identifier: TMO FY2025 GAAP operating income $7.75B
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 6340
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO FY2025 free cash flow (stated directly as operating cash flow minus capex,
+            internally consistent)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 1480
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO FY2025 net capital expenditures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 9879
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO cash & equivalents, year-end 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 39380
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO total debt, year-end 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: net_debt
+      value: 29500
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: total debt $39.38B minus cash $9.879B equals ~$29.5B net debt.'
+      provenance:
+        sources:
+        - source_identifier: TMO balance sheet, year-end 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 371.484244
+      unit: shares_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO diluted shares outstanding (precise secondary-sourced figure, treat with
+            some caution given source type)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments:
+  - segment_name: Life Sciences Solutions
+    revenue:
+      item_category: revenue
+      value: 4840
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO H1 2025 Life Sciences Solutions segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: This is a half-year (H1 2025), not full fiscal-year, figure -- a full FY2025 segment
+            table was not located.
+  - segment_name: Analytical Instruments
+    revenue:
+      item_category: revenue
+      value: 5339
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO 9-months-2025 Analytical Instruments segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: This is a 9-month, not full fiscal-year, figure.
+    profit:
+      item_category: earnings
+      value: 1153
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO 9-months-2025 Analytical Instruments segment income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: This is a 9-month, not full fiscal-year, figure.
+  - segment_name: Specialty Diagnostics
+    revenue:
+      item_category: revenue
+      value: 2282
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO H1 2025 Specialty Diagnostics segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: This is a half-year, not full fiscal-year, figure.
+  - segment_name: Laboratory Products and Biopharma Services
+    revenue:
+      item_category: revenue
+      value: 11635
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: TMO H1 2025 'Laboratory Products and Biopharma Services' segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: This is a half-year, not full fiscal-year, figure. Note this segment name appears
+            recently renamed from the prior 'Laboratory Products and Services' -- plausibly tied to the
+            Solventum/Clario integration below; not independently confirmed.
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 579.0
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Aug 6 2026; market cap ~$215.89B (date basis for this figure unclear, approximate).
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: DHR
+    comparability_rationale: Danaher Corporation -- closest-scale life-sciences/diagnostics conglomerate.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: A
+    comparability_rationale: Agilent Technologies -- analytical instruments overlap.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: WAT
+    comparability_rationale: Waters Corporation -- liquid chromatography/analytical instruments overlap.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Clario acquisition
+    variables:
+    - variable_name: clario_acquisition
+      evidence_basis: Clinical-trial imaging/eCOA technology acquisition completed Q2 2026; deal value
+        cited inconsistently across sources ('$8.9B' at a 'late March' close vs. '$9.1B' in Q2 2026 context)
+        -- possibly enterprise value vs. equity value, or a revised figure, not reconciled.
+      provenance_label: historically_observed
+  - scenario_name: Solventum and microbiology portfolio changes
+    variables:
+    - variable_name: solventum_and_microbiology_portfolio_changes
+      evidence_basis: Acquired Solventum's Purification & Filtration business for ~$4.0B cash, completed
+        2025 (the acquired business generated ~$1B revenue in 2024). Separately, TMO is divesting its
+        microbiology business for ~$1.075B, expected to close Q3 2026, expected to reduce 2026 revenue
+        by ~$200M (net of a retained channel business) and 2026 adjusted EPS by $0.05.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  The 2021-peak-to-2023-trough revenue pattern reflects COVID-testing revenue fading, a real and disclosed
+  pattern, not an error -- multi-year comparisons should account for it rather than treating it as a clean
+  organic trend. Full-year FY2025 segment revenue was not found -- only partial-year (H1 or 9-month) figures
+  were located for each segment and are disclosed as such in segment_evidence above rather than presented
+  as full-year data. Three real M&A/divestiture events fall inside the last 12 months of this record (Solventum
+  acquisition, Clario acquisition, microbiology divestiture), making segment and total-revenue trends
+  genuinely hard to compare cleanly year over year without further adjustment.
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: TMO
+content_sha256: ef62e4a9ae29d8ba7d2420e0ff05b196c4bb723c92071223a59d6bda93802e2d

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import datetime
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -1452,11 +1453,18 @@ class TestDeterminism:
         b["uncertainty_summary"] = "A different fictional statement."
         assert vev.canonical_record_hash(a) != vev.canonical_record_hash(b)
 
-    def test_directory_validation_deterministic_on_missing_directory(self):
+    def test_directory_validation_deterministic_on_missing_directory(self, tmp_path: Path):
+        missing = tmp_path / "does" / "not" / "exist"
+        r1 = vev.validate_valuation_evidence_directory(missing)
+        r2 = vev.validate_valuation_evidence_directory(missing)
+        assert r1.valid == r2.valid == True
+        assert r1.record_count == r2.record_count == 0
+
+    def test_directory_validation_deterministic_on_populated_repository_directory(self):
         r1 = vev.validate_valuation_evidence_directory(REPO_ROOT / "intelligence" / "valuation_evidence")
         r2 = vev.validate_valuation_evidence_directory(REPO_ROOT / "intelligence" / "valuation_evidence")
         assert r1.valid == r2.valid == True
-        assert r1.record_count == r2.record_count == 0
+        assert r1.record_count == r2.record_count == 28  # 27 sealed records + 1 manifest result
 
 
 # ── discount-rate evidence, direct coverage ──────────────────────────────
@@ -1585,8 +1593,8 @@ class TestCohortManifest:
 # ── 31: directory validation ──────────────────────────────────────────────
 
 class TestDirectoryValidation:
-    def test_missing_directory_is_valid_zero_coverage(self):
-        result = vev.validate_valuation_evidence_directory(REPO_ROOT / "intelligence" / "valuation_evidence")
+    def test_missing_directory_is_valid_zero_coverage(self, tmp_path: Path):
+        result = vev.validate_valuation_evidence_directory(tmp_path / "intelligence" / "valuation_evidence")
         assert result.valid is True
         assert result.record_count == 0
 
@@ -1654,30 +1662,71 @@ class TestSealValidation:
 
 # ── 33/34: zero real-company population, absolute ────────────────────────
 
-class TestZeroRealCompanyPopulation:
-    _KNOWN_REAL_TICKERS = frozenset({
-        "AAPL", "AMZN", "ASML", "AVGO", "CEG", "COST", "ETN", "GEV", "GNRC", "GOOGL",
-        "ICE", "ISRG", "KLAC", "LLY", "META", "MSFT", "NVDA", "PANW", "PWR", "RKLB",
-        "RTX", "SNPS", "SPGI", "TMO", "TSLA", "TSM", "V", "WM", "SPY", "VEA", "VWO",
-        "GLD", "BTC", "ETH", "SOL",
+class TestAuthorizedCohortPopulation:
+    """VALUATION-0005 authorized exactly one bounded Stage-3 population unit:
+    the 27-name canonical equity cohort. These tests supersede the prior
+    TestZeroRealCompanyPopulation class, which asserted the opposite (zero
+    population) -- accurate for the Stage-2 scaffold this validator shipped
+    with, not for this implementation, which performs the authorized
+    population itself. The schema and this validator module remain
+    roster-agnostic (SS B) -- these tests check the *content* of this one
+    population, not a closed-population rule inside the validator itself."""
+
+    _AUTHORIZED_27 = frozenset({
+        "AMZN", "ASML", "AVGO", "CEG", "COST", "ETN", "GEV", "GNRC", "GOOGL",
+        "ICE", "ISRG", "KLAC", "LLY", "META", "MSFT", "NVDA", "PANW", "PWR",
+        "RKLB", "RTX", "SNPS", "SPGI", "TMO", "TSLA", "TSM", "V", "WM",
     })
 
-    def test_valuation_evidence_directory_does_not_exist_in_repository(self):
-        assert not (REPO_ROOT / "intelligence" / "valuation_evidence").exists()
+    def test_valuation_evidence_directory_exists_with_authorized_cohort(self):
+        d = REPO_ROOT / "intelligence" / "valuation_evidence"
+        assert d.is_dir()
+        tickers = {p.stem for p in d.glob("*.yaml") if p.name != "COHORT_MANIFEST.yaml"}
+        assert tickers == self._AUTHORIZED_27
 
-    def test_no_cohort_manifest_committed(self):
-        assert not (REPO_ROOT / "intelligence" / "valuation_evidence" / "COHORT_MANIFEST.yaml").exists()
+    def test_cohort_manifest_is_committed_and_reconciles(self):
+        manifest_path = REPO_ROOT / "intelligence" / "valuation_evidence" / "COHORT_MANIFEST.yaml"
+        assert manifest_path.is_file()
+        manifest = yaml.safe_load(manifest_path.read_text())
+        rows = {row["ticker"] for row in manifest["cohort"]}
+        assert rows == self._AUTHORIZED_27
 
-    def test_validator_source_contains_no_real_ticker_as_a_data_value(self):
+    def test_validator_source_contains_no_hardcoded_authorized_population(self):
         """The module may legitimately mention real tickers only inside
         prose citing other governance decisions/validators (e.g. the
         docstring's own references to VALUATION-0003's 27-name cohort) --
-        it must never define a real ticker as test/fixture/default data.
-        This module defines no AUTHORIZED_POPULATION and no default ticker
-        constant at all, so this is checked structurally instead."""
+        it must never hardcode the authorized population as validator
+        logic, since the schema itself stays roster-agnostic (SS B)."""
         assert not hasattr(vev, "AUTHORIZED_POPULATION")
         assert not hasattr(vev, "DEFAULT_TICKER")
 
-    def test_repository_directory_scan_returns_zero_records(self):
+    def test_repository_directory_scan_returns_exactly_27_records(self):
         result = vev.validate_valuation_evidence_directory(REPO_ROOT / "intelligence" / "valuation_evidence")
-        assert result.record_count == 0
+        assert result.valid is True
+        assert result.record_count == 28  # 27 sealed records + 1 manifest result
+
+    def test_every_sealed_record_is_marked_sealed_and_hash_matches(self):
+        d = REPO_ROOT / "intelligence" / "valuation_evidence"
+        for ticker in self._AUTHORIZED_27:
+            data = yaml.safe_load((d / f"{ticker}.yaml").read_text())
+            assert data["record_status"] == "sealed"
+            assert data["content_sha256"] == vev.canonical_record_hash(data)
+
+    def test_authorized_cohort_helper_confirms_exact_match_against_live_targets(self):
+        sys.path.insert(0, str(REPO_ROOT))
+        from relationship_validator import load_canonical_universe
+
+        canonical = load_canonical_universe(REPO_ROOT)
+        assert canonical == self._AUTHORIZED_27
+
+        d = REPO_ROOT / "intelligence" / "valuation_evidence"
+        records_by_ticker = {}
+        for p in d.glob("*.yaml"):
+            if p.name == "COHORT_MANIFEST.yaml":
+                continue
+            data = yaml.safe_load(p.read_text())
+            records_by_ticker[data["ticker"]] = data
+
+        result = vev.validate_authorized_cohort(records_by_ticker, canonical)
+        assert result.valid is True
+        assert result.errors == []
