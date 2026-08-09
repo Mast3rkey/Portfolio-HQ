@@ -10623,6 +10623,103 @@ workstreams:
         pr: 283
         status: in_progress
         date: "2026-08-09"
+      - gate: valuation0005-stage3-implementation-post-merge-verification
+        description: >
+          PR #283 (VALUATION-0005 Stage-3 evidence-population
+          implementation) independently reconfirmed merged via the GitHub
+          API this session, not assumed: base main @
+          272c0e770c16afefe68c5396e7d4e661283b35db, head
+          ff4becc8eb4f6129f78f1361ac4d3bee37eb80bd, 35 changed files, 4
+          commits. Original independent exact-head review
+          pullrequestreview-4890579208 (anchored
+          e81596a5c47689bb85672e381ffe1785193cf8ef): CHANGES REQUIRED, 0
+          BLOCKING / 2 MAJOR / 1 MINOR / 2 NOTE — both MAJOR findings
+          targeted the retained audit document's own narrative miscounts
+          (segment coverage stated 18/9, actually 14/13, ICE mislabeled
+          abstained, COST/ETN omitted from the table; market-observed
+          coverage stated 25/2, actually 24/3, omitting GOOGL's genuine
+          domain-level abstention) — the 27 sealed evidence records,
+          manifest, generator, validator, and tests were independently
+          verified sound throughout the same review, including a
+          byte-for-byte regeneration check and live re-search fabrication
+          spot-checks (Visa/Amazon) that both came back clean. Bounded
+          correction commit ff4becc8eb4f6129f78f1361ac4d3bee37eb80bd
+          corrected the retained audit's own counts/tables and the PR
+          body's stale file/commit counts — zero diff on any sealed
+          record, manifest, generator, validator, or test. Corrected-head
+          delta review pullrequestreview-4890605238 (anchored exactly to
+          ff4becc8eb4f6129f78f1361ac4d3bee37eb80bd): APPROVED FOR
+          PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR
+          / 0 new NOTE. Principal acceptance issuecomment-5229973691 at
+          that exact head. Exact-head CI run 31296610587/job 93202615822
+          success. Merge b97ad2a2a23554b6072340ebff9ceddc799b1a22
+          (parents 272c0e770c16afefe68c5396e7d4e661283b35db and
+          ff4becc8eb4f6129f78f1361ac4d3bee37eb80bd). Merge-commit CI run
+          31297094534 success. Post-merge validation independently
+          reproduced this session: valuation_evidence_validator.py OK (28
+          result(s)); test_valuation_evidence_validator.py 329 passed;
+          decision catalog 99 decisions/0 issues at that commit. This
+          gate is additive; the valuation0005-stage3-implementation
+          gate's own text above is left byte-unedited.
+        pr: 283
+        status: complete
+        date: "2026-08-09"
+      - gate: valuation0006-methodology-application-policy-and-result-architecture
+        description: >
+          VALUATION-0006 filed — governs Stage-4 equity valuation
+          methodology-application policy (seventeen governed conventions:
+          risk-free-rate/ERP/beta/WACC/capital-structure/cost-of-debt/
+          tax-rate handling, terminal-value discipline, peer-candidate to
+          applied-peer-set selection, minimum peer-set sufficiency,
+          scenario-probability assignment and coherence, evidence-quality
+          treatment, sensitivity/range construction, conflict propagation,
+          and company-level abstention — each bound by reference to
+          VALUATION-0002 §2/§3, each carrying its own NUM-0001 provenance
+          class, no numeric value invented without evidence) and a new,
+          separate, roster-agnostic valuation-result architecture
+          (intelligence/valuation_results/<TICKER>.yaml, three-value
+          result_status vocabulary — completed/partial/unable_to_
+          determine — mandatory range-not-point output per applied
+          methodology family, mandatory provenance-labeled assumptions
+          ledger, mechanical archetype/methodology compatibility
+          enforcement against VALUATION-0002 §2's own table, zero opaque
+          score/ranking/trade-directive/target-weight field). Authorizes
+          exactly one future, separate, bounded implementation PR to
+          build the schema, a dedicated valuation_result_validator.py
+          (not an extension of valuation_evidence_validator.py, which
+          stays evidence-only), and its test suite as an empty/
+          synthetic-fixture-only scaffold — no real company's result
+          record created or populated. Discloses, without closing, that
+          discount_rate_evidence is abstained on all 27 Stage-3 records
+          today, which under this policy's own abstention rules would
+          force any DCF-family (Primary for archetypes A/G, 8 of 27
+          tickers) result to partial/unable_to_determine until a future,
+          separate discount-rate-evidence population unit closes that
+          gap. Recommends (does not authorize) four method-homogeneous
+          execution batches — DCF/compounder (A+G, 8), SOTP/diversified
+          (F, 8), relative-valuation/adjustment (B+C, 8),
+          scenario/cyclical-binary (D+E, 3) — derived from the corrected
+          27-name archetype distribution (A:6 B:6 C:2 D:2 E:1 F:8 G:2).
+          Decides no full blind-drafting/sanitizer architecture is
+          required for Stage-4 execution as a whole (evidence-derived,
+          not a policy-contamination-risk judgment call the way
+          archetype assignment was), but adopts a targeted isolation rule
+          for applied-peer-set selection and scenario-probability
+          assignment specifically — the two genuinely anchoring-
+          vulnerable sub-judgments. Finds the Stage-3 segment-evidence
+          schema's absence of segment_assets/segment_capex keys
+          non-blocking (handled via the existing abstention path, no
+          schema amendment authorized). Explicitly does not authorize any
+          real-company valuation, discount-rate-evidence population,
+          TIER-0009 §K resolution, or the actual schema/validator/test
+          code itself. No company is valued by this filing itself — a
+          separate future decision (provisionally VALUATION-0007, or
+          whichever identifier is next unused when filed) must authorize
+          real-company execution after this decision and its own
+          implementation are each independently reviewed and accepted.
+        pr: null
+        status: in_progress
+        date: "2026-08-09"
     evidence_refs:
       - governance/decisions/VALUATION-0001-equity-valuation-research-charter.md
       - governance/decisions/VALUATION-0002-equity-valuation-methodology-doctrine-adoption.md
@@ -10636,20 +10733,27 @@ workstreams:
       - governance/decisions/TIER-0004-ws0005-milestone6-population-and-blindness-preflight.md
       - governance/decisions/TIER-0005-ws0005-milestone6-fresh-authorization.md
       - governance/decisions/NUM-0001-numeric-parameter-provenance-standards.md
+      - governance/decisions/VALUATION-0006-stage4-methodology-application-policy-and-result-architecture.md
     next_action: >
-      PR #282 (VALUATION-0005 Stage-3 evidence-population authorization)
-      is merged. Independent, exact-head review of the Stage-3
-      implementation PR it authorized (structured quantitative valuation
-      evidence populated for all 27 canonical equities) under OPS-0007
-      §1's capability-based standard (OPS-0009 Lane G), followed by any
-      required bounded correction, exact-head re-review, and explicit
-      principal acceptance before it may be marked ready and merged.
-      Stage 4 (valuation execution) remains its own further, separately
-      authorized, later unit, requiring the Stage-3 population to exist
-      for the company in question plus VALUATION-0002 §6.3(a)/(c)/(d).
-      No real-company valuation, fair value, price target, or TIER-0009
-      §K resolution is authorized by any of this work under any
-      circumstance.
+      PR #283 (VALUATION-0005 Stage-3 evidence-population implementation)
+      is merged. VALUATION-0006 (Stage-4 methodology-application policy
+      and valuation-result architecture) is filed as a draft PR; requires
+      independent, exact-head review under OPS-0007 §1's capability-based
+      standard (OPS-0009 Lane G, full weight — a new authorization), any
+      required bounded correction and exact-head re-review, and explicit
+      principal acceptance before it may be marked ready and merged. Once
+      merged, VALUATION-0006 itself authorizes exactly one further,
+      separate, bounded implementation PR (the valuation-result schema/
+      validator/test scaffold, no real-company population). Real-company
+      Stage-4 execution remains its own further, separately authorized,
+      later unit (provisionally VALUATION-0007 or whichever identifier is
+      next unused when filed), requiring the schema/validator
+      implementation to exist, discount-rate-evidence population to occur
+      for the company/family in question (currently abstained on all 27
+      Stage-3 records), and VALUATION-0002 §6.3(a)/(c)/(d). No
+      real-company valuation, fair value, price target, discount rate,
+      WACC, peer set, scenario probability, or TIER-0009 §K resolution is
+      authorized by any of this work under any circumstance.
     completion_criteria: >
       Not met for WS-0015 as a whole. Met so far: VALUATION-0001 merged
       with its pinned hash verified (valuation0001-governance-pr-merged);
@@ -10679,27 +10783,37 @@ workstreams:
       authorization merged, independently reviewed, and principal-
       accepted (valuation0005-evidence-population-authorization,
       valuation0005-evidence-population-authorization-post-merge-
-      verification). Not yet met: the Stage-3 implementation PR
-      (valuation0005-stage3-implementation, real evidence populated for
-      all 27 equities, not yet independently reviewed, corrected if
-      needed, principal-accepted, or merged); and — only if a future
+      verification); the Stage-3 implementation PR (#283) independently
+      reviewed, corrected (a retained-audit narrative-count MAJOR fix,
+      not a sealed-data fix), re-reviewed, principal-accepted, and merged
+      (valuation0005-stage3-implementation,
+      valuation0005-stage3-implementation-post-merge-verification — real
+      quantitative evidence populated for all 27 equities, discount_rate_
+      evidence abstained on all 27, zero applied peer sets, zero scenario
+      probabilities, no company valued). Not yet met: VALUATION-0006
+      (Stage-4 methodology-application policy and valuation-result
+      architecture) independently reviewed, corrected if needed, and
+      principal-accepted (valuation0006-methodology-application-policy-
+      and-result-architecture); the future result-schema/validator/test
+      implementation it would authorize; and — only if a future
       application phase is ever separately proposed and accepted — its
       own further, separate governance decision for real-company
       valuation execution, independently reviewed and principal-accepted
       before any methodology is applied to a real company (VALUATION-0001
       §5, VALUATION-0002 §6, VALUATION-0003 §L, VALUATION-0004 §O,
-      VALUATION-0005 §A/§O, protocol §§14/15 — no result automatically
-      changes policy).
+      VALUATION-0005 §A/§O, VALUATION-0006 §T, protocol §§14/15 — no
+      result automatically changes policy).
     blocker: >
-      The Stage-3 evidence-population implementation PR (structured
-      quantitative valuation evidence for all 27 canonical equities) has
-      not yet been independently reviewed, corrected if needed, or
-      principal-accepted. No real-company valuation is authorized by it,
-      or by anything in WS-0015 to date, under any circumstance.
-    active_branch: claude/stage-3-valuation-evidence-p3a38u
-    active_pr: 283
-    last_verified_main_sha: 272c0e770c16afefe68c5396e7d4e661283b35db
+      VALUATION-0006 (Stage-4 methodology-application policy and
+      valuation-result architecture) has not yet been independently
+      reviewed, corrected if needed, or principal-accepted. No real-
+      company valuation, discount-rate value, WACC, peer set, or scenario
+      probability is authorized by it, or by anything in WS-0015 to date,
+      under any circumstance.
+    active_branch: claude/valuation-0006-stage-4-design-bov9rs
+    active_pr: null
+    last_verified_main_sha: b3fb5325cac5736daf59a109ebc5e1daa1704297
     last_verified_date: "2026-08-09"
-    authorized_by: VALUATION-0004 §A/§P (merged); this filing per VALUATION-0004 §O.3
+    authorized_by: VALUATION-0002 §6.3 / VALUATION-0004 §I/§J/§K (merged); this filing itself, per TIER-0009 §K
     supersedes: null
     superseded_by: null
