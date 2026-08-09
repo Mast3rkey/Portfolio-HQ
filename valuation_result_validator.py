@@ -353,36 +353,121 @@ _FAMILY_REQUIRED_EVIDENCE_DOMAINS: dict[str, frozenset[str]] = {
 # specific dollar figure was actually used in a specific computation).
 _ITEM_CATEGORY_SCOPED_CONFLICT_DOMAINS = frozenset({"financial_evidence", "segment_evidence"})
 
+# Bounded correction (post-PR-#289-independent-delta-review MINOR finding,
+# review 4892545747): the mapping above (as first drafted) left seven of
+# the 21 governed `_LINE_ITEM_CATEGORIES` values unreachable by any
+# family -- `cash`, `debt`, `net_debt`, `dilutive_instrument`,
+# `gross_margin`, `share_count_basic`, `share_count_diluted` -- and
+# omitted `total_equity` from family 5 despite `PROTOCOL_V1.md` SS4 item 5
+# explicitly naming "P/B where asset-based comparison is more appropriate
+# than earnings-based comparison" as an applicable relative-valuation
+# multiple. Unlike MAJOR-2's own over-inclusion defect, this is an
+# under-inclusion gap (a conflict on one of these categories would never
+# bear on any family) -- independently re-derived from the same protocol
+# text, not merely re-typed from the review's own list, with each
+# addition traced to specific, already-adopted `PROTOCOL_V1.md` SS4
+# language, never to "seems economically reasonable" alone:
+#
+# - `cash`/`debt`/`net_debt` are added only to the families whose own
+#   protocol-SS4 description names a balance-sheet-bridged or
+#   enterprise-value-based construction: family 1 ("net asset value" is,
+#   definitionally, net of debt and cash -- the word "net" is the
+#   protocol's own); family 2 (FCFF DCF is described as
+#   "enterprise-level," and every unlevered/enterprise valuation
+#   mechanically requires the standard enterprise-value-to-equity-value
+#   bridge -- subtract debt, add cash -- to reach the per-diluted-share
+#   equity-value output `VALUATION-0006` SS K.7's own two illustrative
+#   `unit_and_basis` examples both use); family 4 ("FCF/EV" is named
+#   verbatim in SS4 item 4 -- EV is, by definition, not computable without
+#   a debt/cash bridge); family 5 ("EV/EBITDA, EV/Sales" are named
+#   verbatim in SS4 item 5, for the identical EV-bridge reason); family 6
+#   (invested capital is the textbook sum of debt and equity net of cash
+#   -- the "invested capital" the family is literally named for). Family
+#   3 (FCFE DCF, already equity-level with no enterprise-value bridge
+#   named or implied) and family 7 (scenario/probability-weighted, whose
+#   own SS4 description names no balance-sheet or enterprise-value
+#   mechanism) are deliberately left without this addition -- extending
+#   them would not be authority-grounded, only "economically plausible."
+# - `share_count_basic`/`share_count_diluted`/`dilutive_instrument` are
+#   added uniformly to all seven families: `VALUATION-0006` SS K.7's own
+#   *only* two worked `unit_and_basis` examples ("USD per diluted share,
+#   equity value" / "USD per diluted share, enterprise value / diluted
+#   shares") are both per-diluted-share -- the governing document's own
+#   text, not an inference, ties every family's mandatory output-basis
+#   field to a diluted-share conversion, and `share_count_basic`/
+#   `dilutive_instrument` are the direct, standard-treasury-method inputs
+#   that derivation itself consumes.
+# - `total_equity` is added to family 5 for the P/B reason quoted above.
+#
+# `gross_margin` is the one governed category this correction does **not**
+# assign to any family -- no family's own `PROTOCOL_V1.md` SS4 text names
+# gross margin specifically (as distinct from the already-mapped
+# `operating_margin`/`net_margin`), and inventing a mapping without that
+# textual anchor would violate this correction's own authority-grounding
+# discipline. This is an intentional, disclosed, explicitly tested
+# non-assignment -- not an accidental omission -- see
+# `_INTENTIONALLY_UNMAPPED_ITEM_CATEGORIES` and
+# `test_every_governed_item_category_has_an_explicit_disposition` below.
+_INTENTIONALLY_UNMAPPED_ITEM_CATEGORIES = frozenset({"gross_margin"})
+
 _FAMILY_RELEVANT_ITEM_CATEGORIES: dict[str, frozenset[str]] = {
-    # Asset-based / NAV / SOTP -- balance-sheet/segment-breakup value, not
-    # an earnings-per-share-driven method (protocol SS4 item 1).
+    # Asset-based / NAV / SOTP -- balance-sheet/segment-breakup value, "net
+    # asset value" is definitionally net of debt/cash (protocol SS4 item 1).
     "family_1_asset_based_sotp": frozenset({
         "total_assets", "total_liabilities", "total_equity", "segment_margin", "other",
+        "cash", "debt", "net_debt",
+        "share_count_basic", "share_count_diluted", "dilutive_instrument",
     }),
     # FCFF DCF -- unlevered free cash flow built from revenue/margin/
-    # reinvestment (protocol SS4 item 2).
+    # reinvestment, "enterprise-level" per protocol SS4 item 2 -- the
+    # standard EV-to-equity bridge (subtract debt, add cash) is mechanically
+    # required to reach a per-diluted-share equity-value output.
     "family_2_fcff_dcf": frozenset({
         "free_cash_flow", "revenue", "capex", "reinvestment", "operating_margin",
+        "cash", "debt", "net_debt",
+        "share_count_basic", "share_count_diluted", "dilutive_instrument",
     }),
     # FCFE DCF -- levered/equity free cash flow, closer to the earnings line
-    # (protocol SS4 item 3).
-    "family_3_fcfe_dcf": frozenset({"free_cash_flow", "earnings", "revenue"}),
+    # (protocol SS4 item 3); already equity-level, no EV bridge named or
+    # implied, so no cash/debt/net_debt addition here.
+    "family_3_fcfe_dcf": frozenset({
+        "free_cash_flow", "earnings", "revenue",
+        "share_count_basic", "share_count_diluted", "dilutive_instrument",
+    }),
     # Earnings / FCF-yield screens -- literally named for these two inputs
-    # (protocol SS4 item 4).
-    "family_4_earnings_fcf_yield": frozenset({"earnings", "free_cash_flow"}),
+    # (protocol SS4 item 4); "FCF/EV" is named verbatim, requiring the same
+    # EV bridge as family 2/5.
+    "family_4_earnings_fcf_yield": frozenset({
+        "earnings", "free_cash_flow",
+        "cash", "debt", "net_debt",
+        "share_count_basic", "share_count_diluted", "dilutive_instrument",
+    }),
     # Relative valuation / multiples -- the applied multiple basis varies by
-    # execution (P/E, EV/Revenue, EV/FCF, margin-adjusted), so this family's
-    # relevant-category set is deliberately the broadest of the seven.
+    # execution (P/E, EV/EBITDA, EV/Sales, P/FCF, P/B, per protocol SS4 item
+    # 5 verbatim) -- EV/EBITDA and EV/Sales require the EV bridge; P/B
+    # requires total_equity (book value) directly.
     "family_5_relative_valuation": frozenset({
         "revenue", "earnings", "free_cash_flow", "operating_margin", "net_margin",
+        "total_equity", "cash", "debt", "net_debt",
+        "share_count_basic", "share_count_diluted", "dilutive_instrument",
     }),
-    # ROIC / reinvestment economics -- capital-efficiency inputs, not
-    # earnings-per-share (protocol SS4 item 6).
-    "family_6_roic_reinvestment": frozenset({"invested_capital", "roic_related", "reinvestment"}),
+    # ROIC / reinvestment economics -- capital-efficiency inputs; invested
+    # capital is the textbook sum of debt and equity net of cash (protocol
+    # SS4 item 6).
+    "family_6_roic_reinvestment": frozenset({
+        "invested_capital", "roic_related", "reinvestment",
+        "cash", "debt", "net_debt",
+        "share_count_basic", "share_count_diluted", "dilutive_instrument",
+    }),
     # Scenario / probability-weighted -- scenario_evidence is the family's
     # own distinguishing required domain; its financial_evidence usage is
-    # ordinarily a revenue/cash-flow trajectory under each named scenario.
-    "family_7_scenario_probability_weighted": frozenset({"revenue", "free_cash_flow"}),
+    # ordinarily a revenue/cash-flow trajectory under each named scenario;
+    # protocol SS4 item 7 names no balance-sheet/EV mechanism, so no
+    # cash/debt/net_debt addition here.
+    "family_7_scenario_probability_weighted": frozenset({
+        "revenue", "free_cash_flow",
+        "share_count_basic", "share_count_diluted", "dilutive_instrument",
+    }),
 }
 
 _PROBABILITY_SUM_TOLERANCE = 0.02

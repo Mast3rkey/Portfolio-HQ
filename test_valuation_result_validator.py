@@ -1619,3 +1619,227 @@ class TestReview4892431010MinorThreeUnitConventionDisclosure:
         # the two values using incompatible unit conventions. This is the
         # disclosed limitation, not a defect this correction resolves.
         assert errors == []
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Bounded correction, independent exact-head delta review 4892545747
+# (0 BLOCKING / 0 MAJOR / 1 MINOR (new) / 3 NOTE)
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestReview4892545747ItemCategoryCoverageInvariant:
+    """The delta review's one new MINOR: seven governed item_category
+    values (`cash`, `debt`, `net_debt`, `dilutive_instrument`,
+    `gross_margin`, `share_count_basic`, `share_count_diluted`) never bore
+    on any family, and family 5 omitted `total_equity` despite
+    PROTOCOL_V1.md SS4 item 5 explicitly naming P/B. This class both
+    reproduces the pre-correction gap (for the historical record) and
+    proves the corrected mapping is now exhaustive against the live
+    governed vocabulary, with every non-assignment explicit and tested --
+    never an accidental omission."""
+
+    def test_governed_item_category_vocabulary_matches_expectation(self):
+        """Preflight: confirms this test class's own assumed vocabulary
+        still matches the live valuation_evidence_validator.py schema."""
+        expected = {
+            "capex", "cash", "debt", "dilutive_instrument", "earnings",
+            "free_cash_flow", "gross_margin", "invested_capital", "net_debt",
+            "net_margin", "operating_margin", "other", "reinvestment", "revenue",
+            "roic_related", "segment_margin", "share_count_basic",
+            "share_count_diluted", "total_assets", "total_equity", "total_liabilities",
+        }
+        assert set(vev._LINE_ITEM_CATEGORIES) == expected
+
+    def test_every_governed_item_category_has_an_explicit_disposition(self):
+        """Every one of the 21 governed item_category values is either
+        (a) relevant to at least one family, or (b) explicitly,
+        deliberately listed as unmapped -- never silently absent from
+        both. This is the coverage invariant the review's own MINOR
+        finding asks for: it fails if a category is accidentally omitted,
+        and fails just as loudly if an unknown/non-governed category
+        sneaks into the map."""
+        all_categories = frozenset(vev._LINE_ITEM_CATEGORIES)
+        covered = frozenset().union(*vrv._FAMILY_RELEVANT_ITEM_CATEGORIES.values())
+
+        # No family may reference a category outside the governed vocabulary.
+        unknown = covered - all_categories
+        assert not unknown, f"family map references non-governed category(ies): {sorted(unknown)}"
+
+        # No entry in the "intentionally unmapped" disclosure list may
+        # itself be outside the governed vocabulary (a stale/typo'd entry
+        # would otherwise silently mask a real coverage gap).
+        assert vrv._INTENTIONALLY_UNMAPPED_ITEM_CATEGORIES <= all_categories
+
+        # A category cannot be both mapped to a family AND declared
+        # intentionally unmapped -- that would be a self-contradiction.
+        overlap = covered & vrv._INTENTIONALLY_UNMAPPED_ITEM_CATEGORIES
+        assert not overlap, f"category both mapped and declared unmapped: {sorted(overlap)}"
+
+        # Every governed category must be accounted for by exactly one of
+        # the two buckets -- covered by some family, or explicitly disclosed
+        # as unmapped. Nothing may fall through silently.
+        accounted = covered | vrv._INTENTIONALLY_UNMAPPED_ITEM_CATEGORIES
+        missing = all_categories - accounted
+        assert not missing, f"governed category(ies) with no explicit disposition: {sorted(missing)}"
+
+    def test_gross_margin_is_the_sole_intentionally_unmapped_category(self):
+        """Pins the exact, disclosed non-assignment -- no other category
+        is silently left out."""
+        assert vrv._INTENTIONALLY_UNMAPPED_ITEM_CATEGORIES == frozenset({"gross_margin"})
+
+    def test_family_5_now_includes_total_equity_per_protocol_pb_reference(self):
+        assert "total_equity" in vrv._FAMILY_RELEVANT_ITEM_CATEGORIES["family_5_relative_valuation"]
+
+    @pytest.mark.parametrize("category", [
+        "cash", "debt", "net_debt", "dilutive_instrument",
+        "share_count_basic", "share_count_diluted",
+    ])
+    def test_previously_uncovered_category_now_covered_by_at_least_one_family(self, category):
+        covered = frozenset().union(*vrv._FAMILY_RELEVANT_ITEM_CATEGORIES.values())
+        assert category in covered
+
+
+class TestReview4892545747TotalEquityRegression:
+    """Family 5 / total_equity: a conflict on total_equity can now
+    mechanically bear on family 5 (P/B), and an unrelated category
+    conflict does not automatically bear on family 5. Synthetic
+    fixtures only -- no real company valuation."""
+
+    @staticmethod
+    def _financial_evidence_with_conflicted_category(category: str) -> dict:
+        item = _line_item(item_category=category)
+        item["disclosed_conflicts"] = [{
+            "value": 999.0, "source_identifier": "Fictional conflicting source",
+            "source_type": "secondary", "access_status": "consulted_via_search_aggregation",
+            "as_of_date": "2026-08-09",
+        }]
+        return {"periods": [_period(line_items=[item])]}
+
+    def test_total_equity_conflict_bears_on_family_5(self):
+        evid = _evidence(ticker="ZZFAKE1", financial_evidence=self._financial_evidence_with_conflicted_category("total_equity"))
+        bearing = vrv._domains_bearing_on_family("family_5_relative_valuation", evid)
+        assert "financial_evidence" in bearing
+
+    def test_unrelated_category_conflict_does_not_bear_on_family_5(self):
+        """invested_capital is not in family 5's relevant set (it is
+        family 6's own defining category) -- confirms the mapping is not
+        merely permissive-by-default."""
+        assert "invested_capital" not in vrv._FAMILY_RELEVANT_ITEM_CATEGORIES["family_5_relative_valuation"]
+        evid = _evidence(ticker="ZZFAKE1", financial_evidence=self._financial_evidence_with_conflicted_category("invested_capital"))
+        bearing = vrv._domains_bearing_on_family("family_5_relative_valuation", evid)
+        assert "financial_evidence" not in bearing
+
+    def test_total_equity_conflict_blocks_family_5_completed_end_to_end(self):
+        arch = _archetype(ticker="ZZFAKE1", primary="B")
+        evid = _evidence(
+            ticker="ZZFAKE1",
+            financial_evidence=self._financial_evidence_with_conflicted_category("total_equity"),
+        )
+        family = _family_entry(family_status="completed")
+        res = _result(archetype=arch, evidence=evid, families=[family], result_status="completed")
+        result = _validate(res, arch, evid)
+        assert_invalid(result, contains="may not be 'completed'")
+
+
+class TestReview4892545747CashDebtNetDebtRegressions:
+    """Targeted, per-category synthetic regressions -- each proves the
+    relevant family sees the category as bearing, and an obviously
+    unrelated family does not. Deliberately not one giant parametrization,
+    per the correction's own instruction to avoid hiding mapping mistakes
+    behind a single brittle test."""
+
+    @staticmethod
+    def _conflicted_evidence(category: str) -> dict:
+        item = _line_item(item_category=category)
+        item["disclosed_conflicts"] = [{
+            "value": 1.0, "source_identifier": "Fictional conflicting source",
+            "source_type": "secondary", "access_status": "consulted_via_search_aggregation",
+            "as_of_date": "2026-08-09",
+        }]
+        return _evidence(ticker="ZZFAKE1", financial_evidence={"periods": [_period(line_items=[item])]})
+
+    def test_cash_conflict_bears_on_fcff_dcf(self):
+        evid = self._conflicted_evidence("cash")
+        assert "financial_evidence" in vrv._domains_bearing_on_family("family_2_fcff_dcf", evid)
+
+    def test_cash_conflict_does_not_bear_on_fcfe_dcf(self):
+        """Family 3 (FCFE) is deliberately excluded from the cash/debt/
+        net_debt addition -- already equity-level, no EV bridge named."""
+        assert "cash" not in vrv._FAMILY_RELEVANT_ITEM_CATEGORIES["family_3_fcfe_dcf"]
+        evid = self._conflicted_evidence("cash")
+        assert "financial_evidence" not in vrv._domains_bearing_on_family("family_3_fcfe_dcf", evid)
+
+    def test_debt_conflict_bears_on_earnings_fcf_yield_via_fcf_ev_screen(self):
+        evid = self._conflicted_evidence("debt")
+        assert "financial_evidence" in vrv._domains_bearing_on_family("family_4_earnings_fcf_yield", evid)
+
+    def test_debt_conflict_does_not_bear_on_scenario_family(self):
+        """Family 7 names no balance-sheet/EV mechanism in its own
+        protocol description."""
+        assert "debt" not in vrv._FAMILY_RELEVANT_ITEM_CATEGORIES["family_7_scenario_probability_weighted"]
+        evid = self._conflicted_evidence("debt")
+        assert "financial_evidence" not in vrv._domains_bearing_on_family("family_7_scenario_probability_weighted", evid)
+
+    def test_net_debt_conflict_bears_on_asset_based_sotp_via_net_asset_value(self):
+        evid = self._conflicted_evidence("net_debt")
+        assert "financial_evidence" in vrv._domains_bearing_on_family("family_1_asset_based_sotp", evid)
+
+    def test_net_debt_conflict_bears_on_roic_via_invested_capital_definition(self):
+        evid = self._conflicted_evidence("net_debt")
+        assert "financial_evidence" in vrv._domains_bearing_on_family("family_6_roic_reinvestment", evid)
+
+    def test_share_count_diluted_conflict_bears_on_every_family(self):
+        """Universal addition, grounded in VALUATION-0006 SS K.7's own two
+        illustrative unit_and_basis examples, both per-diluted-share."""
+        evid = self._conflicted_evidence("share_count_diluted")
+        for family_id in vrv._FAMILY_IDS:
+            assert "financial_evidence" in vrv._domains_bearing_on_family(family_id, evid), family_id
+
+    def test_dilutive_instrument_conflict_bears_on_every_family(self):
+        evid = self._conflicted_evidence("dilutive_instrument")
+        for family_id in vrv._FAMILY_IDS:
+            assert "financial_evidence" in vrv._domains_bearing_on_family(family_id, evid), family_id
+
+    def test_gross_margin_conflict_bears_on_no_family(self):
+        """The one intentionally-unmapped category -- a conflict here
+        never bears on any family under current authority, disclosed
+        rather than silently dropped."""
+        evid = self._conflicted_evidence("gross_margin")
+        for family_id in vrv._FAMILY_IDS:
+            assert "financial_evidence" not in vrv._domains_bearing_on_family(family_id, evid), family_id
+
+
+class TestReview4892545747PwrRegressionStillIntact:
+    """Reconfirms the original MAJOR-2 fix survives this correction: the
+    live PWR earnings conflict still does not blanket-block unrelated
+    families, and family 4 (whose relevant categories genuinely include
+    'earnings') remains correctly constrained."""
+
+    @staticmethod
+    def _load_pwr():
+        arch = yaml.safe_load((REPO_ROOT / "intelligence" / "valuation_archetype" / "PWR.yaml").read_text())
+        evid = yaml.safe_load((REPO_ROOT / "intelligence" / "valuation_evidence" / "PWR.yaml").read_text())
+        return arch, evid
+
+    def test_pwr_earnings_conflict_still_does_not_bear_on_roic(self):
+        _, evid = self._load_pwr()
+        assert "earnings" not in vrv._FAMILY_RELEVANT_ITEM_CATEGORIES["family_6_roic_reinvestment"]
+        bearing = vrv._domains_bearing_on_family("family_6_roic_reinvestment", evid)
+        assert "financial_evidence" not in bearing
+
+    def test_pwr_earnings_conflict_still_bears_on_earnings_fcf_yield(self):
+        _, evid = self._load_pwr()
+        assert "earnings" in vrv._FAMILY_RELEVANT_ITEM_CATEGORIES["family_4_earnings_fcf_yield"]
+        bearing = vrv._domains_bearing_on_family("family_4_earnings_fcf_yield", evid)
+        assert "financial_evidence" in bearing
+
+    def test_pwr_earnings_conflict_still_does_not_bear_on_relative_valuation_via_revenue_only(self):
+        """Family 5 now also includes total_equity/cash/debt/net_debt/
+        share counts, but the conflict is specifically on 'earnings',
+        which remains in family 5's set too (P/E is a named multiple) --
+        this test instead confirms the mechanism is category-specific, not
+        that family 5 is now unconditionally clear of this exact PWR
+        conflict (it correctly is NOT, since P/E still uses earnings)."""
+        _, evid = self._load_pwr()
+        assert "earnings" in vrv._FAMILY_RELEVANT_ITEM_CATEGORIES["family_5_relative_valuation"]
+        bearing = vrv._domains_bearing_on_family("family_5_relative_valuation", evid)
+        assert "financial_evidence" in bearing
