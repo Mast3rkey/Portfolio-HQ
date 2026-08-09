@@ -510,14 +510,22 @@ schema variation is needed — every field below applies identically to all ten)
   ten). A dimension record whose `source_mechanism` names a mechanism this artifact did not already
   identify in §6.1 is not authorized by this design.
 - **`computation_status`**: closed vocabulary — `computed_from_existing_mechanism` |
-  `not_yet_computable_interface_only` | `requires_future_authorization`. For the two `interface_
-  placeholder` dimensions (`crypto_correlation_interface`, `defensive_offset_interface`), this field is
+  `not_yet_computable_interface_only` | `requires_future_authorization`. For the four `interface_
+  placeholder` dimensions (`crypto_correlation_interface`, `defensive_offset_interface`,
+  `geographic_currency_exposure`, `whole_portfolio_volatility_drawdown_concentration`), this field is
   **forced** to `not_yet_computable_interface_only` today, with no exception — the crypto framework's own
-  forced `not_yet_measured` default (`XASSET-0002` §4.3) and this filing's own unpopulated
-  `GLD_DEFENSIVE_ROLE` schema (§3.4) mean neither dimension has anything to compute from yet. For the
-  five `mechanical_rollup`/`narrative_evidence` dimensions, a future implementation may set
-  `computed_from_existing_mechanism` once it actually performs the rollup or cross-reference — **this
-  design authorizes no such computation itself.**
+  forced `not_yet_measured` default (`XASSET-0002` §4.3), this filing's own unpopulated
+  `GLD_DEFENSIVE_ROLE` schema (§3.4), and the absence of any whole-portfolio geographic/currency or
+  volatility/drawdown rollup mechanism anywhere in this repository (§6.1) mean none of the four
+  dimensions has anything to compute from yet. For the six `mechanical_rollup`/`narrative_evidence`
+  dimensions, a future implementation may set `computed_from_existing_mechanism` once it actually
+  performs the rollup or cross-reference — **this design authorizes no such computation itself.**
+  *(Corrected by `XASSET-0007` §B, 2026-08-09 — this paragraph originally read "the two `interface_
+  placeholder` dimensions... the five `mechanical_rollup`/`narrative_evidence` dimensions," stale since
+  this filing's own first bounded correction (§0 above) added `geographic_currency_exposure` and
+  `whole_portfolio_volatility_drawdown_concentration` as `interface_placeholder` dimensions without
+  propagating the count into this paragraph. Purely a factual reconciliation against §6.1's own
+  already-corrected table — no dimension, `source_mechanism`, or forced value changed.)*
 - **`evidence_or_source_refs`**: a list of specific file/field pointers this dimension reads (e.g.,
   `issuer_lookthrough.yaml:issuers[].funds[].fund_holding_weight` for `issuer_overlap_etf_lookthrough`)
   — never a duplicated copy of the referenced values.
@@ -528,10 +536,13 @@ schema variation is needed — every field below applies identically to all ten)
   against whatever cap mechanism already governs that sleeve (`caps.clusters` for the equity sub-sleeves
   it already covers; no cap exists yet for the ETF/crypto/functional-doctrine sleeves as wholes) — a
   description of a future shape, not a populated value.
-- **`uncertainty_or_gap_disclosure`**: required free-text sentence — for the two `interface_placeholder`
+- **`uncertainty_or_gap_disclosure`**: required free-text sentence — for the four `interface_placeholder`
   dimensions, this is where the genuine gap ("no correlation study exists," "no `GLD_DEFENSIVE_ROLE`
-  record exists yet to read from") is stated plainly, mirroring every prior framework's uncertainty-
-  disclosure discipline.
+  record exists yet to read from," "no whole-portfolio geographic/currency or volatility/drawdown
+  rollup mechanism exists yet") is stated plainly, mirroring every prior framework's uncertainty-
+  disclosure discipline. *(Corrected by `XASSET-0007` §B, 2026-08-09 — see the identical correction
+  note on the `computation_status` field above; this paragraph originally read "the two `interface_
+  placeholder` dimensions.")*
 - **`later_governance_action`**: same field name and purpose as the functional-doctrine schema's own
   field (§3.2) — states what future authorization this dimension's own content implies, if any (e.g.,
   `crypto_correlation_interface`'s own field would state that a future correlation study requires its own
@@ -681,9 +692,14 @@ A future implementation's focused test suite must cover, at minimum, one test pe
 - Envelope-level field failing to match its source axis field (§4's read-only-projection rule) rejected —
   e.g., `hard_constraint_signal` on the envelope not matching `hard_constraint_status.binding`/
   `.constraint_source` on the axis.
-- `overlap_model` `computation_status` forced-value violation: `crypto_correlation_interface` or
-  `defensive_offset_interface` carrying any value other than `not_yet_computable_interface_only`
-  rejected.
+- `overlap_model` `computation_status` forced-value violation: any of the four `interface_placeholder`
+  dimensions (`crypto_correlation_interface`, `defensive_offset_interface`,
+  `geographic_currency_exposure`, `whole_portfolio_volatility_drawdown_concentration`) carrying any
+  value other than `not_yet_computable_interface_only` rejected. *(Corrected by `XASSET-0007` §B,
+  2026-08-09 — this item originally named only `crypto_correlation_interface` and
+  `defensive_offset_interface`, the identical stale-enumeration defect the two §6.2 corrections above
+  fix, found independently in this session's own preflight — not previously disclosed by `XASSET-0006`.
+  Purely a factual reconciliation against §6.1's own already-corrected table.)*
 - Deterministic output: two consecutive validator runs against identical input produce byte-identical
   results.
 - Protected-path isolation: a dedicated test asserting zero diff on every path named in §7 point 14,
