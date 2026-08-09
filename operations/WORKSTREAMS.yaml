@@ -10865,6 +10865,141 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-09"
+      - gate: valuation0006-stage4-result-scaffold-implementation-post-merge-verification
+        description: >
+          Lane M fold-forward, independently re-verified this session via
+          the GitHub API, not assumed. PR #289
+          (VALUATION-0006-authorized Stage-4 result-scaffold
+          implementation): base main @
+          03dc2a044390a4944257f4027a480ef955b3a6d7, accepted head
+          af0e8fa67e5d204dc50da1d7bd11d4c57290c474. Review chain:
+          pullrequestreview-4892431010 (first review — CHANGES REQUIRED,
+          findings including the _domains_bearing_on_family MAJOR-2
+          over-blocking defect and the terminal-growth unit-convention
+          MINOR-3 disclosure), resolved by a bounded correction narrowing
+          _ITEM_CATEGORY_SCOPED_CONFLICT_DOMAINS/
+          _FAMILY_RELEVANT_ITEM_CATEGORIES;
+          pullrequestreview-4892545747 (delta review — a further MINOR
+          under-inclusion gap, seven of 21 governed item categories left
+          unreachable by any family), resolved by a second bounded
+          correction extending the mapping, each addition traced to
+          specific PROTOCOL_V1.md SS4 language; pullrequestreview-4892667088
+          (final delta review). Zero sealed
+          intelligence/valuation_results/ record existed at either
+          correction — both corrections touched only
+          valuation_result_validator.py's own internal mapping constants
+          and their test coverage, never a populated record, since none
+          existed. Principal acceptance issuecomment-5234132129 at the
+          accepted head. Exact-head CI run 31336183418/job 93302308154 —
+          success. Merge commit 3efc055882ae38ad68283d7ad1c2a63c6bbb82c7,
+          parents 03dc2a044390a4944257f4027a480ef955b3a6d7 and
+          af0e8fa67e5d204dc50da1d7bd11d4c57290c474. Merge-commit CI run
+          31339074586/job 93309736882 — success. Post-merge validation
+          independently reproduced this session:
+          valuation_result_validator.py -> OK (0 result(s));
+          intelligence/valuation_results/ confirmed still absent;
+          test_valuation_result_validator.py -> 173 focused tests, all
+          passing (up from the 110 originally reported at PR #289's own
+          first commit, reflecting the tests both bounded corrections
+          added); full repository pytest -> 4215 passed, 0 failed;
+          decision catalog -> 103 decisions, 0 issues (at that commit,
+          before this filing's own new VALUATION-0007 entry); all twelve
+          pre-existing repository validators clean and unaffected. This
+          gate is additive; the
+          valuation0006-stage4-result-scaffold-implementation gate's own
+          text above is left byte-unedited.
+        pr: 289
+        status: complete
+        date: "2026-08-09"
+      - gate: valuation0007-equity-valuation-execution-authorization
+        description: >
+          Governance-authorization-only filing (VALUATION-0007) for the
+          real-company Stage-4 equity valuation-result execution
+          population VALUATION-0006 SS T named by this provisional
+          identifier. Authorizes exactly one future, separate, bounded
+          implementation PR to populate intelligence/valuation_results/
+          <TICKER>.yaml for the same 27-name canonical equity cohort
+          already sealed under valuation_archetype/valuation_evidence,
+          applying VALUATION-0006's already-governed methodology and
+          result schema unedited. Independently re-derives the 27-name
+          cohort from live targets.yaml (zero drift from the sealed
+          archetype/evidence cohorts) and the live archetype distribution
+          (A:6 B:6 C:2 D:2 E:1 F:8 G:2, exact match to VALUATION-0006 SS N).
+          Resolves VALUATION-0006 SS T's state-3 "for the company/family
+          in question" language mechanically, via
+          valuation_result_validator.py's own
+          _FAMILY_REQUIRED_EVIDENCE_DOMAINS mapping: state 3 is satisfied
+          today for families 1/4/5/6/7 (evidence exists and is readable,
+          sufficiency remains an honest per-pairing execution-time
+          determination) and NOT satisfied for families 2/3
+          (discount_rate_evidence independently reconfirmed abstained on
+          all 27 of 27 sealed Stage-3 records) — a gap this filing does
+          not close or authorize closing. Discloses seven specific,
+          code-verified cohort limitations: the universal discount-rate
+          gap; a second, currently-dormant terminal-growth/discount-rate
+          numeric-unit-convention gap (carried from
+          valuation_result_validator.py's own PR #289 bounded-correction
+          disclosure, not invented here); ETN's segment_evidence
+          domain-level abstention blocking its own SOTP-primary path
+          (archetype F's only Primary/Secondary-eligible family) from
+          completed; TSM's single, supplier-relationship peer candidate
+          constraining but not foreclosing family 5 (family 6 remains an
+          unblocked Secondary alternative); PWR's disclosed earnings
+          conflict independently traced through
+          _FAMILY_RELEVANT_ITEM_CATEGORIES to bear on family 5 (its own
+          Primary path) but not family 6 (Secondary, unaffected); ICE/V
+          (archetype C) structurally capped at partial by doctrine — zero
+          families reach Primary/Secondary anywhere in
+          VALUATION-0002 SS2's own governed-role table for archetype C,
+          independently re-verified cell-for-cell against the live
+          validator's _GOVERNED_ROLE_TABLE constant; and GNRC/KLAC/RKLB's
+          (archetypes D/E) named-but-unweighted scenarios, the least
+          constrained batch on current evidence. Adopts, from
+          VALUATION-0006 SS N's own evaluation ("evaluated, not
+          authorized"), four method-homogeneous execution batches — DCF/
+          compounder (A+G, 8: ISRG LLY META NVDA PANW SNPS COST TMO);
+          SOTP/diversified (F, 8: AMZN AVGO ETN GOOGL MSFT RTX SPGI TSLA);
+          relative-valuation/adjustment (B+C, 8: ASML CEG GEV PWR TSM WM
+          ICE V); scenario/cyclical-binary (D+E, 3: GNRC KLAC RKLB) —
+          packaged as ONE implementation PR (not four), internally
+          sharded, matching VALUATION-0003 SS G's own established 27-name/
+          one-PR/internal-shard precedent. Restates and binds by
+          reference, unweakened: the closed three-value result_status
+          vocabulary (completed/partial/unable_to_determine, never a
+          promise every ticker reaches completed); VALUATION-0006 SS O's
+          targeted isolation rule for exactly three sub-judgments (applied
+          peer-set selection, scenario-probability assignment,
+          terminal-growth selection within the softer ceiling) — no full
+          Milestone-6-style sanitizer required or authorized; zero
+          automatic portfolio authority (valuation result -> independent
+          review/acceptance -> a still-unauthorized future
+          recommendation/adoption decision -> a still-unauthorized future
+          cross-asset synthesis -> a still-unauthorized future execution
+          plan, never valuation result -> automatic target/trade);
+          TIER-0009 SS K's valuation_required status, unresolved by any
+          amount of populated valuation-result content on its own; and the
+          whole-universe boundary (26 non-canonical equities, broader
+          CONTENDER registry, ETF/crypto/GLD/cash/debt methodology,
+          overlap model, cross-asset synthesis, chart evidence, ladder/
+          deployment integration, unlevered testing, margin/leverage
+          review, monitoring/sell discipline, final integration/audit —
+          all remain separately unfinished and unauthorized). Authorizes
+          no valuation_result_validator.py schema/compatibility-table/
+          free-text-scan redesign, no discount-rate-evidence population,
+          no numeric-unit-convention settlement, no real-company
+          valuation-result population of any kind by this filing itself,
+          and no tier/target/holdings/gate/cap/cluster/allocator/margin/
+          ladder/chart/order/trade change of any kind. Filed under a new
+          category, valuation_execution_authorization, distinct from
+          VALUATION-0006's valuation_application_governance — the same
+          precedent VALUATION-0005's own
+          valuation_evidence_population_authorization category applied
+          one layer earlier. Draft PR; not merged, not independently
+          reviewed, not principal-accepted in this session — effective
+          only on merge. No company was valued.
+        pr: null
+        status: in_progress
+        date: "2026-08-09"
     evidence_refs:
       - governance/decisions/VALUATION-0001-equity-valuation-research-charter.md
       - governance/decisions/VALUATION-0002-equity-valuation-methodology-doctrine-adoption.md
@@ -10879,26 +11014,30 @@ workstreams:
       - governance/decisions/TIER-0005-ws0005-milestone6-fresh-authorization.md
       - governance/decisions/NUM-0001-numeric-parameter-provenance-standards.md
       - governance/decisions/VALUATION-0006-stage4-methodology-application-policy-and-result-architecture.md
+      - governance/decisions/VALUATION-0007-equity-valuation-execution-authorization.md
     next_action: >
-      PR #283 (VALUATION-0005 Stage-3 evidence-population implementation)
-      is merged. VALUATION-0006 (Stage-4 methodology-application policy
-      and valuation-result architecture) is filed as a draft PR; requires
+      PR #289 (VALUATION-0006-authorized Stage-4 result-scaffold
+      implementation) is merged. VALUATION-0007 (equity valuation
+      execution authorization) is filed as a draft PR; requires
       independent, exact-head review under OPS-0007 §1's capability-based
       standard (OPS-0009 Lane G, full weight — a new authorization), any
       required bounded correction and exact-head re-review, and explicit
       principal acceptance before it may be marked ready and merged. Once
-      merged, VALUATION-0006 itself authorizes exactly one further,
-      separate, bounded implementation PR (the valuation-result schema/
-      validator/test scaffold, no real-company population). Real-company
-      Stage-4 execution remains its own further, separately authorized,
-      later unit (provisionally VALUATION-0007 or whichever identifier is
-      next unused when filed), requiring the schema/validator
-      implementation to exist, discount-rate-evidence population to occur
-      for the company/family in question (currently abstained on all 27
-      Stage-3 records), and VALUATION-0002 §6.3(a)/(c)/(d). No
-      real-company valuation, fair value, price target, discount rate,
-      WACC, peer set, scenario probability, or TIER-0009 §K resolution is
-      authorized by any of this work under any circumstance.
+      merged, VALUATION-0007 itself authorizes exactly one further,
+      separate, bounded implementation PR to populate real
+      intelligence/valuation_results/<TICKER>.yaml records for the
+      27-name canonical equity cohort, internally organized into the
+      four method-homogeneous execution batches VALUATION-0006 §N
+      evaluated and VALUATION-0007 now adopts (DCF/compounder A+G 8;
+      SOTP/diversified F 8; relative-valuation/adjustment B+C 8;
+      scenario/cyclical-binary D+E 3), packaged as one implementation PR.
+      That future implementation requires its own full independent-
+      review/correction/re-review/principal-acceptance/merge/post-merge-
+      verification lifecycle before any populated record is
+      authoritative. No real-company valuation, fair value, price
+      target, discount rate, WACC, peer set, scenario probability, or
+      TIER-0009 §K resolution is authorized by any of this work under
+      any circumstance.
     completion_criteria: >
       Not met for WS-0015 as a whole. Met so far: VALUATION-0001 merged
       with its pinned hash verified (valuation0001-governance-pr-merged);
@@ -10941,31 +11080,51 @@ workstreams:
       accepted (valuation0006-methodology-application-policy-and-result-
       architecture, valuation0006-methodology-application-policy-and-
       result-architecture-post-merge-verification). The result-schema/
-      validator/test scaffold it authorizes has been implemented, zero
-      real-company population (valuation0006-stage4-result-scaffold-
-      implementation) — not yet independently reviewed, corrected if
-      needed, or principal-accepted. Not yet met: that implementation's
-      own independent review/acceptance/merge cycle; and — only if a
-      future application phase is ever separately proposed and accepted —
-      its own further, separate governance decision for real-company
-      valuation execution, independently reviewed and principal-accepted
-      before any methodology is applied to a real company (VALUATION-0001
-      §5, VALUATION-0002 §6, VALUATION-0003 §L, VALUATION-0004 §O,
-      VALUATION-0005 §A/§O, VALUATION-0006 §T, protocol §§14/15 — no
-      result automatically changes policy).
+      validator/test scaffold it authorizes is implemented, independently
+      reviewed across two bounded-correction rounds, corrected, and
+      principal-accepted, and merged (valuation0006-stage4-result-
+      scaffold-implementation,
+      valuation0006-stage4-result-scaffold-implementation-post-merge-
+      verification — zero real-company population; discount_rate_
+      evidence remains abstained on all 27; TIER-0009 §K unresolved).
+      VALUATION-0007 (equity valuation execution authorization) is filed
+      as a draft PR (valuation0007-equity-valuation-execution-
+      authorization) — not yet independently reviewed, corrected if
+      needed, or principal-accepted. Not yet met: VALUATION-0007's own
+      independent review/acceptance/merge cycle; the future, further,
+      separate implementation PR it authorizes (real-company
+      intelligence/valuation_results/<TICKER>.yaml population for the
+      27-name cohort, packaged as one PR internally organized into four
+      method-homogeneous batches per VALUATION-0006 §N/VALUATION-0007
+      §G); that implementation's own independent review/correction/
+      re-review/principal-acceptance/merge/post-merge-verification
+      cycle; the separately authorized discount-rate-evidence-population
+      extension that would be required before any family-2/3 (DCF)
+      output could reach completed for any of the 27 (not authorized by
+      VALUATION-0007); and — only if a future application phase is ever
+      separately proposed and accepted — its own further, separate
+      governance decision reviewing populated results before any
+      resolution of TIER-0009 §K's valuation_required status (VALUATION-
+      0001 §5, VALUATION-0002 §6, VALUATION-0003 §L, VALUATION-0004 §O,
+      VALUATION-0005 §A/§O, VALUATION-0006 §T, VALUATION-0007 §K,
+      protocol §§14/15 — no result automatically changes policy).
     blocker: >
-      The VALUATION-0006-authorized Stage-4 result-scaffold
-      implementation (valuation_result_validator.py,
-      test_valuation_result_validator.py) has not yet been independently
-      reviewed, corrected if needed, or principal-accepted. No real-
-      company valuation, discount-rate value, WACC, peer set, or scenario
-      probability is authorized by it, or by anything in WS-0015 to date,
-      under any circumstance. intelligence/valuation_results/ remains
-      absent from the repository.
-    active_branch: claude/stage-4-result-scaffold-nsee7j
+      VALUATION-0007 (equity valuation execution authorization) has not
+      yet been independently reviewed, corrected if needed, or
+      principal-accepted. No real-company valuation, discount-rate
+      value, WACC, peer set, or scenario probability is authorized by
+      it, or by anything in WS-0015 to date, under any circumstance.
+      intelligence/valuation_results/ remains absent from the
+      repository. discount_rate_evidence remains abstained on all 27
+      sealed Stage-3 records — family 2/3 (DCF) output for any of the
+      27 canonical equities is structurally blocked from
+      family_status: completed until a separately authorized
+      evidence-population extension closes that gap, which VALUATION-0007
+      does not authorize.
+    active_branch: claude/valuation-0007-authorization-4ukhkj
     active_pr: null
-    last_verified_main_sha: 03dc2a044390a4944257f4027a480ef955b3a6d7
+    last_verified_main_sha: 3efc055882ae38ad68283d7ad1c2a63c6bbb82c7
     last_verified_date: "2026-08-09"
-    authorized_by: VALUATION-0006 §A (merged); this filing itself
+    authorized_by: VALUATION-0006 §T (merged); this filing itself
     supersedes: null
     superseded_by: null
