@@ -365,9 +365,10 @@ anything beyond `unable_to_determine`:
 1. **GLD's own historical behavior during major equity-market drawdown periods** (feeds `historical_
    equity_drawdown_behavior`, §4.3) — requires sourced, dated historical market data or academic material;
    not gathered by this design.
-2. **GLD's realized tracking quality against its own benchmark** (the LBMA Gold Price PM, per `GLD.yaml`'s
-   own sealed `structure_and_methodology.benchmark_type`) — feeds `cost_and_tracking_economic_
-   significance`, §4.3; not gathered by this design.
+2. **GLD's realized tracking quality against its own benchmark** (the LBMA Gold Price PM, named in
+   `GLD.yaml`'s own sealed narrative/provenance text — the categorical `structure_and_methodology.
+   benchmark_type` field records this structurally as `spot_commodity_price`) — feeds `cost_and_tracking_
+   economic_significance`, §4.3; not gathered by this design.
 3. **A defensible, sourced, long-horizon characterization of gold's relationship to inflation regimes**
    (feeds `historical_inflation_sensitivity`, §4.3) — requires citable historical/academic literature; not
    gathered by this design.
