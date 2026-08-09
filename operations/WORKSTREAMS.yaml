@@ -10061,7 +10061,7 @@ workstreams:
           resolution, or any tier/target/holdings/gate/cap/cluster/
           allocator/margin/ladder/chart/order/trade change of any kind.
           No company is populated or valued by this filing itself.
-        pr: null
+        pr: 282
         status: in_progress
         date: "2026-08-09"
     evidence_refs:
@@ -10139,7 +10139,7 @@ workstreams:
       evidence-population work is authorized by it, or by anything in
       WS-0015 to date, under any circumstance.
     active_branch: claude/valuation-0005-authorization-xh7fxo
-    active_pr: null
+    active_pr: 282
     last_verified_main_sha: 6eeec0b1a9107d9b3c058f25d0892a7fdf6f1fe0
     last_verified_date: "2026-08-09"
     authorized_by: VALUATION-0004 §A/§P (merged); this filing per VALUATION-0004 §O.3
