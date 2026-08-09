@@ -58,7 +58,14 @@ Scope, exactly what is validated:
   two recognized markers this rule watches for -- `terminal_growth >=
   applicable_discount_rate` is a hard validation failure at any populated
   precision, including exact equality. This is the one hard,
-  mathematically-necessary rule in this schema.
+  mathematically-necessary rule in this schema. **Disclosed limitation
+  (review 4892431010 MINOR-3, not resolved by this module):** the
+  comparison assumes both values share the same numeric-unit convention
+  (e.g. decimal fraction) -- `VALUATION-0006` specifies none, and this
+  module invents none; see `_check_terminal_growth_hard_rule`'s own
+  docstring for the full disclosure. Settling a unit convention for
+  `assumptions_ledger` values is a still-open governance question for a
+  future, separate decision, required before real Stage-4 execution.
 - **Range-not-point, per family** (SS K.7, SS L): every standard family
   (all but family 7) requires `{low, base, high}`, all populated numbers,
   `low <= base <= high` -- a single-point range is rejected. Family 7
@@ -289,8 +296,99 @@ _FAMILY_REQUIRED_EVIDENCE_DOMAINS: dict[str, frozenset[str]] = {
     "family_7_scenario_probability_weighted": frozenset({"financial_evidence", "scenario_evidence"}),
 }
 
+# Bounded correction (post-PR-#289-independent-review MAJOR-2 finding,
+# review 4892431010): the domain-wide "any disclosed_conflicts entry
+# anywhere in this required domain's subtree bears on every family that
+# requires the domain" rule was demonstrably over-broad -- independently
+# reproduced against the live PWR Stage-3 evidence record (its sole
+# disclosed_conflicts entry sits on exactly one line item,
+# `financial_evidence.periods[4].line_items[1]`, `item_category:
+# "earnings"`, the disclosed FY2025 diluted-EPS discrepancy) -- since
+# `financial_evidence` is a required domain for all seven methodology
+# families, the unscoped check would structurally block PWR from ever
+# reaching `family_status: completed` on *any* family, including one
+# (e.g. a revenue-multiple relative-valuation, or an invested-capital-
+# based ROIC family) whose own governing inputs never touch the
+# conflicted "earnings" item at all -- a materially more restrictive
+# outcome than VALUATION-0006 SS I's own "materially bears on... required
+# inputs" standard, which is about a specific family's specific inputs,
+# not "this family's domain happens to also contain an unrelated fact
+# under dispute."
+#
+# `financial_evidence` and `segment_evidence` are the only two evidence
+# domains that share the identical per-line-item `item_category` +
+# `disclosed_conflicts` shape (`valuation_evidence_validator.py`'s own
+# `_validate_line_item`) -- for exactly these two domains, conflict-
+# bearing is narrowed to line items whose `item_category` is one this
+# family's own governing economic definition mechanically consumes
+# (`_FAMILY_RELEVANT_ITEM_CATEGORIES` below, derived directly from each
+# family's own name/description in `PROTOCOL_V1.md` SS4 -- already-
+# adopted authority, not an invented taxonomy: family 4 is literally
+# named "earnings/FCF-yield screens," family 6 is literally "ROIC/
+# reinvestment economics," etc.). This is a mechanical, category-name-
+# level proxy for relevance, deliberately not a claim of true economic
+# materiality for any *specific* application of a family (this schema
+# has no per-assumption item_category-reference field, and adding one
+# would be a schema extension beyond VALUATION-0006 SS K's own field
+# list -- out of this bounded correction's scope) -- a coarse, safe-side
+# categorization, not a precision claim. The remaining four evidence
+# domains (`market_observed_evidence`, `discount_rate_evidence`,
+# `peer_set_evidence`, `scenario_evidence`) have no live conflict today,
+# have no item_category concept at all (they are keyed by input name,
+# component name, peer identity, or scenario name instead), and are
+# therefore left with the original, coarser, conservative "any conflict
+# in the domain bears" default -- unchanged, and disclosed as
+# intentionally out of this bounded correction's scope, not silently
+# narrowed without a live case demonstrating a problem.
+#
+# A conflict's `conflicts_carried_forward` disclosure requirement (SS L)
+# is governed by this exact same "bearing" determination -- a conflict
+# a family's own relevant categories exclude is never *required* to be
+# carried forward for that family, but nothing in this design prevents a
+# session from voluntarily carrying an unrelated conflict forward for
+# reviewer awareness regardless (VALUATION-0006 SS J's "reviewer-only
+# judgment about economic materiality" remains the executing session's
+# to exercise -- this validator only ever enforces the mechanical,
+# category-name-level floor, never a semantic judgment about whether a
+# specific dollar figure was actually used in a specific computation).
+_ITEM_CATEGORY_SCOPED_CONFLICT_DOMAINS = frozenset({"financial_evidence", "segment_evidence"})
+
+_FAMILY_RELEVANT_ITEM_CATEGORIES: dict[str, frozenset[str]] = {
+    # Asset-based / NAV / SOTP -- balance-sheet/segment-breakup value, not
+    # an earnings-per-share-driven method (protocol SS4 item 1).
+    "family_1_asset_based_sotp": frozenset({
+        "total_assets", "total_liabilities", "total_equity", "segment_margin", "other",
+    }),
+    # FCFF DCF -- unlevered free cash flow built from revenue/margin/
+    # reinvestment (protocol SS4 item 2).
+    "family_2_fcff_dcf": frozenset({
+        "free_cash_flow", "revenue", "capex", "reinvestment", "operating_margin",
+    }),
+    # FCFE DCF -- levered/equity free cash flow, closer to the earnings line
+    # (protocol SS4 item 3).
+    "family_3_fcfe_dcf": frozenset({"free_cash_flow", "earnings", "revenue"}),
+    # Earnings / FCF-yield screens -- literally named for these two inputs
+    # (protocol SS4 item 4).
+    "family_4_earnings_fcf_yield": frozenset({"earnings", "free_cash_flow"}),
+    # Relative valuation / multiples -- the applied multiple basis varies by
+    # execution (P/E, EV/Revenue, EV/FCF, margin-adjusted), so this family's
+    # relevant-category set is deliberately the broadest of the seven.
+    "family_5_relative_valuation": frozenset({
+        "revenue", "earnings", "free_cash_flow", "operating_margin", "net_margin",
+    }),
+    # ROIC / reinvestment economics -- capital-efficiency inputs, not
+    # earnings-per-share (protocol SS4 item 6).
+    "family_6_roic_reinvestment": frozenset({"invested_capital", "roic_related", "reinvestment"}),
+    # Scenario / probability-weighted -- scenario_evidence is the family's
+    # own distinguishing required domain; its financial_evidence usage is
+    # ordinarily a revenue/cash-flow trajectory under each named scenario.
+    "family_7_scenario_probability_weighted": frozenset({"revenue", "free_cash_flow"}),
+}
+
 _PROBABILITY_SUM_TOLERANCE = 0.02
 _MIN_APPLIED_PEERS_FOR_COMPLETED = 2
+_PROBABILITY_WEIGHT_MIN = 0.0
+_PROBABILITY_WEIGHT_MAX = 1.0
 
 # ── seal / envelope shape ────────────────────────────────────────────────
 
@@ -462,11 +560,75 @@ _RECOMMENDATION_SHAPED_PATTERNS = [
 _DIRECTIVE_WORDS = ("buy", "sell", "add", "hold", "trim", "exit", "wait", "stage")
 _DIRECTIVE_PATTERNS = [re.compile(rf"\b{w}\b", re.IGNORECASE) for w in _DIRECTIVE_WORDS]
 
+# Bounded correction (post-PR-#289-independent-review MAJOR-1 finding,
+# review 4892431010): the bare word-boundary directive/chart scan above
+# false-positives on ordinary, expected valuation-domain vocabulary this
+# schema's own governing document requires or invites -- most severely
+# "Stage-3"/"Stage-4" (VALUATION-0006's own repository-wide terminology
+# for referencing upstream evidence/archetype layers, which SS I's own
+# secondary-sourcing disclosure requirement makes near-inevitable in a
+# real record's uncertainty_summary). This repository already found and
+# fixed the identical defect class once, in the directly analogous
+# sibling module `valuation_archetype_validator.py`
+# (`_STAGE_LEGITIMATE_USE_PATTERN`) -- that fix is ported and extended
+# here (to also cover "Stage-<digit>", which the sibling module's own
+# hyphenated-compound-only pattern does not catch), plus two further,
+# independently confirmed same-root instances: "exit multiple" (a
+# standard, textbook terminal-value/relative-valuation methodology term)
+# and "revenue momentum" (ordinary fundamentals-research language,
+# unrelated to chart/technical analysis), plus one further mirrored
+# same-root defect found during this correction's own search: "buy-side"/
+# "sell-side" (standard financial-industry terminology for describing
+# analyst-sourced provenance -- directly relevant to this schema's own
+# `analyst_consensus_cited` provenance label and evidence-sourcing
+# descriptions). Each whitelist below scrubs only the specific,
+# demonstrated legitimate compound before the bare word/term is checked --
+# it does not weaken detection of the genuine prohibited case (e.g.
+# "stage a purchase", "exit the position", "price momentum", "buy the
+# stock"), which remain rejected exactly as before (regression-tested).
+_DIRECTIVE_LEGITIMATE_USE_PATTERNS: dict[str, list[re.Pattern]] = {
+    "stage": [
+        re.compile(r"[a-z]+-stage", re.IGNORECASE),      # early-stage, pipeline-stage, venture-stage
+        re.compile(r"\bstage-\d+\b", re.IGNORECASE),      # Stage-1, Stage-2, Stage-3, Stage-4 (this repository's own layer terminology)
+    ],
+    "exit": [
+        re.compile(r"\bexit\s+multiples?\b", re.IGNORECASE),  # standard terminal-value/relative-valuation methodology term
+    ],
+    "buy": [
+        re.compile(r"\bbuy-side\b", re.IGNORECASE),
+    ],
+    "sell": [
+        re.compile(r"\bsell-side\b", re.IGNORECASE),
+    ],
+}
+
 _CHART_TERMS = (
     "support", "resistance", "breakout", "trend line", "trendline", "moving average",
     "rsi", "macd", "candlestick", "chart pattern", "technical analysis", "oversold",
     "overbought", "fibonacci", "volume profile", "price target", "momentum",
 )
+
+_CHART_TERM_LEGITIMATE_USE_PATTERNS: dict[str, list[re.Pattern]] = {
+    "momentum": [
+        # Ordinary business-fundamentals usage ("revenue momentum," "earnings
+        # momentum") -- distinct from chart/technical-analysis usage ("price
+        # momentum," "momentum breakout," "momentum indicator"), which
+        # remains rejected since it is not matched by this narrow whitelist.
+        re.compile(
+            r"\b(?:revenue|earnings|margin|sales|growth|business|demand|profit)\s+momentum\b",
+            re.IGNORECASE,
+        ),
+    ],
+    # Mirrored-defect search (review 4892431010 SS9): "support" as an
+    # ordinary evidentiary verb ("provides support for," "supports the,"
+    # "supported by") -- exactly the phrasing this schema's own required
+    # sensitivity_disclosure/uncertainty_summary fields naturally invite --
+    # is distinct from chart/technical-analysis usage ("at support," "key
+    # support," "support level"), which remains rejected.
+    "support": [
+        re.compile(r"\bsupport(?:s|ed)?\s+(?:for|by|the)\b", re.IGNORECASE),
+    ],
+}
 
 
 def _chart_pattern(term: str) -> re.Pattern:
@@ -478,10 +640,23 @@ def _chart_pattern(term: str) -> re.Pattern:
 _CHART_PATTERNS = [(t, _chart_pattern(t)) for t in _CHART_TERMS]
 
 
+def _scrub_legitimate_uses(text: str, patterns: list[re.Pattern] | None) -> str:
+    if not patterns:
+        return text
+    scrubbed = text
+    for pat in patterns:
+        scrubbed = pat.sub(" ", scrubbed)
+    return scrubbed
+
+
 def _scan_free_text_strings(value: object, path: str, errors: list[str]) -> None:
     """Recursively scan every free-text string for prohibited
     recommendation-shaped phrases, chart-domain terminology, and
-    word-boundary-matched directive/trading language."""
+    word-boundary-matched directive/trading language. A small, explicitly
+    whitelisted set of legitimate valuation-domain compounds (see
+    `_DIRECTIVE_LEGITIMATE_USE_PATTERNS`/`_CHART_TERM_LEGITIMATE_USE_
+    PATTERNS`) is scrubbed before each specific word/term check -- the
+    genuine prohibited usage of the same bare word/term is unaffected."""
     if isinstance(value, dict):
         for k, v in value.items():
             _scan_free_text_strings(v, f"{path}.{k}", errors)
@@ -492,15 +667,17 @@ def _scan_free_text_strings(value: object, path: str, errors: list[str]) -> None
         for pattern in _RECOMMENDATION_SHAPED_PATTERNS:
             if pattern.search(value):
                 errors.append(f"{path}: contains forbidden recommendation-shaped phrase matching {pattern.pattern!r}")
-        for pattern in _DIRECTIVE_PATTERNS:
-            if pattern.search(value):
+        for word, pattern in zip(_DIRECTIVE_WORDS, _DIRECTIVE_PATTERNS):
+            haystack = _scrub_legitimate_uses(value, _DIRECTIVE_LEGITIMATE_USE_PATTERNS.get(word))
+            if pattern.search(haystack):
                 errors.append(
                     f"{path}: contains directive word {pattern.pattern!r} -- no buy/sell/add/hold/"
                     f"trim/exit/wait/stage signal is permitted in any field, under any framing "
                     f"(VALUATION-0006 SS K)"
                 )
         for term, pattern in _CHART_PATTERNS:
-            if pattern.search(value):
+            haystack = _scrub_legitimate_uses(value, _CHART_TERM_LEGITIMATE_USE_PATTERNS.get(term))
+            if pattern.search(haystack):
                 errors.append(
                     f"{path}: contains chart-derived terminology {term!r} -- no chart evidence of "
                     f"any kind is permitted (VALUATION-0006 SS H/SS K)"
@@ -551,7 +728,31 @@ def _check_terminal_growth_hard_rule(ledger: list[dict], path: str, errors: list
     assumptions_ledger, if an entry named 'terminal_growth' and an entry
     named 'applicable_discount_rate' are both present, terminal_growth
     must be strictly less than applicable_discount_rate -- g < r, never
-    g <= r, at any populated precision including exact equality."""
+    g <= r, at any populated precision including exact equality.
+
+    **Disclosed limitation (post-PR-#289-independent-review MINOR-3
+    finding, review 4892431010), not resolved by this correction.** This
+    comparison assumes `terminal_growth` and `applicable_discount_rate`
+    share the same numeric-unit convention (e.g. both a decimal fraction,
+    such as 0.02 for "2%") -- it has no way to detect a unit mismatch
+    (e.g. `terminal_growth: 4` intended as "4%" compared against
+    `applicable_discount_rate: 0.08` intended as "8%"), and would either
+    incorrectly reject a validly-paired assumption or incorrectly accept
+    an invalidly-paired one in that case. `VALUATION-0006` itself
+    specifies no numeric-unit convention for `assumptions_ledger` values
+    generally (SS K.8's own field list -- `assumption_name`, `value`,
+    `provenance_label`, `source_or_derivation_note` -- carries no `unit`
+    field, and none is added here, since doing so would be a schema
+    extension beyond SS K's own authority), so this is not a deviation
+    from stated authority -- it is a real, disclosed, unresolved gap this
+    bounded correction does not attempt to close by inventing a
+    convention. **Settling a `terminal_growth`/`applicable_discount_rate`
+    (and `assumptions_ledger` generally) unit convention is a genuine,
+    still-open governance question that must be resolved by its own
+    future, separately authorized decision before real Stage-4 execution
+    populates a real assumptions_ledger** -- this validator neither claims
+    nor guarantees semantic unit consistency between paired assumptions
+    today."""
     terminal_growth = None
     discount_rate = None
     for entry in ledger:
@@ -590,6 +791,17 @@ def _validate_scenario_outcome(value: object, path: str, errors: list[str]) -> d
     if weight is not None:
         if not _is_number(weight):
             errors.append(f"{path}.probability_weight must be a number when present")
+        elif not (_PROBABILITY_WEIGHT_MIN <= weight <= _PROBABILITY_WEIGHT_MAX):
+            # Bounded correction (post-PR-#289-independent-review MINOR-1
+            # finding, review 4892431010): a probability is a normalized
+            # fraction of 1.0 (SS C item 13/SS G's own "+/-0.02 tolerance
+            # of 1.0" sum requirement is meaningless for a weight that
+            # isn't itself bounded to [0, 1]) -- previously only checked
+            # for numeric type, silently accepting a negative or >1 value.
+            errors.append(
+                f"{path}.probability_weight must be within [{_PROBABILITY_WEIGHT_MIN}, "
+                f"{_PROBABILITY_WEIGHT_MAX}] -- got {weight!r} (VALUATION-0006 SS C item 13/SS G)"
+            )
         if weight_label not in _ASSUMPTION_PROVENANCE_LABELS:
             errors.append(
                 f"{path}.probability_weight_provenance_label must be one of "
@@ -634,6 +846,27 @@ def _validate_valuation_range(
             v = _validate_scenario_outcome(o, f"{path}.scenario_outcomes[{i}]", errors)
             if v is not None:
                 parsed_outcomes.append(v)
+
+        # Bounded correction (post-PR-#289-independent-review MINOR-2
+        # finding, review 4892431010): a duplicate scenario_name was
+        # previously not rejected at all, and would have silently
+        # double-counted into the probability-sum coherence check below --
+        # explicitly rejected instead, so that check always operates on a
+        # valid, duplicate-free sequence.
+        _seen_scenario_names: list[str] = []
+        _duplicate_scenario_names: set[str] = set()
+        for o in parsed_outcomes:
+            name = o.get("scenario_name")
+            if _non_empty_str(name):
+                if name in _seen_scenario_names:
+                    _duplicate_scenario_names.add(name)
+                _seen_scenario_names.append(name)
+        if _duplicate_scenario_names:
+            errors.append(
+                f"{path}.scenario_outcomes contains duplicate scenario_name(s): "
+                f"{sorted(_duplicate_scenario_names)} -- each scenario outcome must be listed at "
+                f"most once"
+            )
 
         exhaustive = value.get("scenario_set_is_exhaustive")
         if not isinstance(exhaustive, bool):
@@ -699,7 +932,13 @@ def _validate_conflicts_carried_forward(value: object, errors: list[str]) -> lis
 
 def _domain_has_disclosed_conflicts(node: object) -> bool:
     """Recursive scan of one evidence-domain subtree for any non-empty
-    disclosed_conflicts list anywhere within it."""
+    disclosed_conflicts list anywhere within it -- domain-wide, no
+    item_category scoping. Used for the four evidence domains that have
+    no item_category concept at all (`market_observed_evidence`,
+    `discount_rate_evidence`, `peer_set_evidence`, `scenario_evidence`);
+    see `_ITEM_CATEGORY_SCOPED_CONFLICT_DOMAINS` for why
+    `financial_evidence`/`segment_evidence` use the finer-grained
+    `_domain_has_relevant_disclosed_conflicts` instead."""
     if isinstance(node, dict):
         dc = node.get("disclosed_conflicts")
         if isinstance(dc, list) and dc:
@@ -710,19 +949,53 @@ def _domain_has_disclosed_conflicts(node: object) -> bool:
     return False
 
 
+def _domain_has_relevant_disclosed_conflicts(node: object, relevant_categories: frozenset[str]) -> bool:
+    """Item-category-scoped conflict detection (bounded correction,
+    review 4892431010 MAJOR-2): true only if a line item within this
+    subtree carries BOTH a non-empty disclosed_conflicts list AND an
+    item_category the caller has identified as mechanically consumed by
+    the family in question (`_FAMILY_RELEVANT_ITEM_CATEGORIES`). A
+    mechanical, category-name-level proxy for relevance -- never a claim
+    of true economic materiality for a specific application."""
+    if isinstance(node, dict):
+        dc = node.get("disclosed_conflicts")
+        category = node.get("item_category")
+        if isinstance(dc, list) and dc and category in relevant_categories:
+            return True
+        return any(
+            _domain_has_relevant_disclosed_conflicts(v, relevant_categories) for v in node.values()
+        )
+    if isinstance(node, list):
+        return any(
+            _domain_has_relevant_disclosed_conflicts(item, relevant_categories) for item in node
+        )
+    return False
+
+
 def _domains_bearing_on_family(family_id: str, evidence_data: dict) -> set[str]:
     """Live recompute (never a self-declared flag) of which of a family's
-    required evidence domains carry a domain-level abstention_reason or a
-    disclosed_conflicts entry anywhere within their own subtree in the
-    pinned evidence record."""
+    required evidence domains carry a domain-level abstention_reason
+    (always domain-wide, genuinely blocking by construction), or a
+    disclosed_conflicts entry that mechanically bears on this family's own
+    relevant inputs, in the pinned evidence record. For
+    `financial_evidence`/`segment_evidence` this is item-category-scoped
+    (bounded correction, review 4892431010 MAJOR-2); for the remaining
+    four evidence domains it remains the original, coarser, conservative
+    domain-wide check (unchanged -- disclosed as intentionally out of this
+    correction's scope, since no live conflict exists in any of those
+    domains today to demonstrate an over-blocking problem)."""
     required = _FAMILY_REQUIRED_EVIDENCE_DOMAINS.get(family_id, frozenset())
     bearing: set[str] = set()
+    relevant_categories = _FAMILY_RELEVANT_ITEM_CATEGORIES.get(family_id, frozenset())
     for domain in required:
         node = evidence_data.get(domain)
         if not isinstance(node, dict):
             continue
         if _non_empty_str(node.get("abstention_reason")):
             bearing.add(domain)
+        elif domain in _ITEM_CATEGORY_SCOPED_CONFLICT_DOMAINS:
+            if _domain_has_relevant_disclosed_conflicts(node, relevant_categories):
+                bearing.add(domain)
         elif _domain_has_disclosed_conflicts(node):
             bearing.add(domain)
     return bearing
@@ -832,6 +1105,24 @@ def _validate_family_entry(
         for i, p in enumerate(applied_peers):
             if not _non_empty_str(p):
                 errors.append(f"{path}.applied_peers[{i}] must be a non-empty string")
+        # Bounded correction (post-PR-#289-independent-review MINOR-2
+        # finding, review 4892431010): a duplicate peer identity was
+        # previously silently absorbed by the set() used for the
+        # two-peer-minimum count below, without ever being flagged as its
+        # own defect -- explicitly rejected instead, so the minimum-count
+        # check always operates on a valid, duplicate-free sequence.
+        _seen_peers: list[str] = []
+        _duplicate_peers: set[str] = set()
+        for p in applied_peers:
+            if _non_empty_str(p):
+                if p in _seen_peers:
+                    _duplicate_peers.add(p)
+                _seen_peers.append(p)
+        if _duplicate_peers:
+            errors.append(
+                f"{path}.applied_peers contains duplicate peer identity(ies): "
+                f"{sorted(_duplicate_peers)} -- each applied peer must be listed at most once"
+            )
         if evidence_data is not None:
             included = _included_peer_identities(evidence_data)
             invented = {p for p in applied_peers if _non_empty_str(p)} - included

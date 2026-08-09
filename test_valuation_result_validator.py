@@ -1310,3 +1310,312 @@ class TestFamilyEntryMissingRequiredKey:
         del res["methodology_families_applied"][0]["family_id"]
         _reseal(res)
         assert_invalid(_validate(res, arch, evid), contains="missing required key")
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Bounded correction, independent exact-head review 4892431010
+# (0 BLOCKING / 2 MAJOR / 3 MINOR / 2 NOTE)
+# ═══════════════════════════════════════════════════════════════════════
+
+class TestReview4892431010MajorOneRealisticFreeText:
+    """MAJOR-1: the free-text directive-word/chart-term scan false-
+    positived on ordinary, expected valuation-domain vocabulary. Every
+    fixture below uses realistic prose (not "Fictional ... for automated
+    testing" placeholders) matching the review's own explicit finding
+    that unrealistic placeholder prose masked these false positives."""
+
+    @pytest.mark.parametrize("text", [
+        "This valuation relies entirely on Stage-3 evidence, which is secondary-sourced only.",
+        "The applied methodology follows Stage-4 methodology-application policy governing terminal-growth discipline.",
+        "Terminal value is estimated using an exit multiple derived from comparable transactions.",
+        "Revenue momentum improved during the latest fiscal period, supporting the base-case range.",
+        "Earnings momentum has been positive across the trailing four quarters.",
+        "Peer multiples were sourced from sell-side analyst consensus estimates.",
+        "Discount rate inputs reflect buy-side model assumptions disclosed by the evidence record.",
+        "The peer comparable set provides support for the base-case figure.",
+        "This assumption is supported by the sourced discount-rate evidence.",
+        "An early-stage archetype (E) governs the scenario-weighted treatment applied here.",
+    ])
+    def test_realistic_legitimate_valuation_prose_accepted(self, text):
+        errors: list[str] = []
+        vrv._scan_free_text_strings(text, "field", errors)
+        assert not errors, f"expected no errors for {text!r}, got {errors}"
+
+    @pytest.mark.parametrize("text", [
+        "An analyst might stage a purchase over several weeks.",
+        "Consider an exit strategy: exit the position if it underperforms.",
+        "The stock shows strong price momentum heading into earnings.",
+        "A technical breakout above resistance suggests further gains.",
+        "This analysis recommends buying the stock immediately.",
+        "The plan is to sell the shares next week.",
+        "Consider a trim to the position size.",
+        "Investors should hold the stock for now.",
+        "Wait for a better entry point before adding to the position.",
+        "The stock found support at the prior swing low.",
+        "A key support level was tested during the quarter.",
+    ])
+    def test_realistic_prohibited_prose_still_rejected(self, text):
+        errors: list[str] = []
+        vrv._scan_free_text_strings(text, "field", errors)
+        assert errors, f"expected at least one error for {text!r}, got none"
+
+    def test_result_record_with_realistic_stage3_disclosure_validates_end_to_end(self):
+        """End-to-end regression through the public validate_result_data()
+        path, not just the isolated free-text scanner -- the exact
+        scenario the review's own MAJOR-1 finding named as "not a
+        hypothetical edge case": SS I requires uncertainty_summary to
+        disclose secondary-only Stage-3 sourcing."""
+        arch, evid = _archetype(), _evidence()
+        res = _result(archetype=arch, evidence=evid)
+        res["uncertainty_summary"] = (
+            "This result relies entirely on Stage-3 evidence, which is secondary-sourced only "
+            "(consulted_via_search_aggregation) -- no primary-sourced input backs this range."
+        )
+        res["sensitivity_disclosure"] = "Most sensitive to the applied exit multiple and revenue momentum assumptions."
+        _reseal(res)
+        assert_valid(_validate(res, arch, evid))
+
+
+class TestReview4892431010MajorTwoConflictScoping:
+    """MAJOR-2: the domain-wide "any conflict anywhere in this required
+    domain's subtree bears on every family" check was demonstrably over-
+    broad against the live PWR Stage-3 evidence record (its sole
+    disclosed_conflicts entry sits on exactly one line item,
+    financial_evidence.periods[4].line_items[1], item_category
+    "earnings" -- the disclosed FY2025 diluted-EPS discrepancy)."""
+
+    @staticmethod
+    def _load_pwr():
+        arch = yaml.safe_load((REPO_ROOT / "intelligence" / "valuation_archetype" / "PWR.yaml").read_text())
+        evid = yaml.safe_load((REPO_ROOT / "intelligence" / "valuation_evidence" / "PWR.yaml").read_text())
+        return arch, evid
+
+    @staticmethod
+    def _pwr_result(archetype, evidence, family, *, result_status="completed", abstention_reason=None, conflicts=None):
+        eqs = {
+            "access_status_values_present": sorted(vrv._true_access_status_values(evidence)),
+            "domain_abstentions_echoed": sorted(vrv._true_domain_abstentions(evidence)),
+        }
+        result = {
+            "schema_version": "1.0", "ticker": "PWR", "asset_class": "equity",
+            "governing_decisions": ["VALUATION-0006"],
+            "archetype_reference": {"source_file": "intelligence/valuation_archetype/PWR.yaml", "content_sha256": archetype["content_sha256"]},
+            "evidence_reference": {"source_file": "intelligence/valuation_evidence/PWR.yaml", "content_sha256": evidence["content_sha256"]},
+            "as_of_date": "2026-08-09",
+            "methodology_families_applied": [family],
+            "sensitivity_disclosure": "Sensitive to the applied basis.",
+            "uncertainty_summary": "Entirely secondary-sourced.",
+            "evidence_quality_summary": eqs,
+            "conflicts_carried_forward": conflicts or [],
+            "result_status": result_status,
+            "abstention_reason": abstention_reason,
+        }
+        result["cross_asset_handoff"] = {
+            "ticker": "PWR", "asset_class": "equity", "result_status": result_status,
+            "family_summary": [{"family_id": family["family_id"], "governed_role": family["governed_role"], "family_status": family["family_status"]}],
+            "evidence_quality_summary_echo": eqs,
+        }
+        result["record_status"] = "sealed"
+        result["sealed_at"] = "2026-08-09T00:00:00Z"
+        result["governing_decision"] = "VALUATION-0006"
+        result["drafting_session_or_shard_id"] = "test-shard"
+        result["cohort_manifest_entry"] = "x#PWR"
+        result["content_sha256"] = vrv.canonical_record_hash(result)
+        return result
+
+    def test_pwr_conflict_is_confirmed_scoped_to_a_single_earnings_line_item(self):
+        """Preflight: confirm the live PWR fixture this test class depends
+        on still has exactly the structure the review demonstrated against
+        (a single disclosed_conflicts entry, item_category 'earnings')."""
+        _, evid = self._load_pwr()
+        conflicted = []
+        for period in evid["financial_evidence"]["periods"]:
+            for item in period.get("line_items", []):
+                if item.get("disclosed_conflicts"):
+                    conflicted.append(item["item_category"])
+        assert conflicted == ["earnings"], conflicted
+
+    def test_unrelated_family_not_blocked_by_pwr_earnings_conflict(self):
+        """A conflict on 'earnings' does NOT automatically block an
+        unrelated family (ROIC/reinvestment economics -- invested_capital/
+        roic_related/reinvestment, none of which is 'earnings')."""
+        arch, evid = self._load_pwr()
+        family = {
+            "family_id": "family_6_roic_reinvestment", "governed_role": "secondary_corroborative",
+            "family_status": "completed",
+            "valuation_range": _range(governing_sensitivity="invested capital turnover"),
+            "assumptions_ledger": [_assumption(
+                assumption_name="roic", value=0.15,
+                source_or_derivation_note="Corroborative ROIC input, unrelated to the disclosed EPS conflict.",
+            )],
+        }
+        res = self._pwr_result(arch, evid, family)
+        assert_valid(vrv.validate_result_data(res, archetype_data=arch, evidence_data=evid))
+
+    def test_genuinely_required_family_still_blocked_by_pwr_earnings_conflict(self):
+        """A conflict on 'earnings' DOES block family_status: completed for
+        a family whose own governing definition is literally earnings/
+        FCF-yield-based (family 4)."""
+        arch, evid = self._load_pwr()
+        family = {
+            "family_id": "family_4_earnings_fcf_yield", "governed_role": "adjustment_required",
+            "family_status": "completed",
+            "valuation_range": _range(governing_sensitivity="earnings yield"),
+            "assumptions_ledger": [_assumption(
+                assumption_name="earnings_yield", value=0.05,
+                source_or_derivation_note="Directly depends on the conflicted FY2025 diluted EPS line item.",
+            )],
+        }
+        res = self._pwr_result(arch, evid, family)
+        result = vrv.validate_result_data(res, archetype_data=arch, evidence_data=evid)
+        assert_invalid(result, contains="may not be 'completed'")
+
+    def test_conflict_can_still_be_voluntarily_carried_forward_for_an_unrelated_family(self):
+        """SS J's reviewer-awareness path stays open even when the
+        mechanical bearing check does not itself require disclosure --
+        the schema does not forbid a session from voluntarily disclosing
+        an unrelated conflict for reviewer awareness."""
+        arch, evid = self._load_pwr()
+        family = {
+            "family_id": "family_6_roic_reinvestment", "governed_role": "secondary_corroborative",
+            "family_status": "completed",
+            "valuation_range": _range(governing_sensitivity="invested capital turnover"),
+            "assumptions_ledger": [_assumption(assumption_name="roic", value=0.15)],
+        }
+        conflicts = [{
+            "domain": "financial_evidence", "pointer_type": "disclosed_conflict",
+            "pointer_note": "Disclosed for reviewer awareness even though it does not bear on this family's own inputs.",
+        }]
+        res = self._pwr_result(arch, evid, family, conflicts=conflicts)
+        assert_valid(vrv.validate_result_data(res, archetype_data=arch, evidence_data=evid))
+
+    def test_bearing_check_uses_only_item_category_name_never_a_materiality_judgment(self):
+        """No code claims to judge economic materiality -- the bearing
+        determination is a pure category-name membership test, verified
+        directly against the module's own public helper."""
+        _, evid = self._load_pwr()
+        relevant = vrv._FAMILY_RELEVANT_ITEM_CATEGORIES["family_6_roic_reinvestment"]
+        assert "earnings" not in relevant
+        bearing = vrv._domains_bearing_on_family("family_6_roic_reinvestment", evid)
+        assert "financial_evidence" not in bearing
+        relevant_efy = vrv._FAMILY_RELEVANT_ITEM_CATEGORIES["family_4_earnings_fcf_yield"]
+        assert "earnings" in relevant_efy
+        bearing_efy = vrv._domains_bearing_on_family("family_4_earnings_fcf_yield", evid)
+        assert "financial_evidence" in bearing_efy
+
+
+class TestReview4892431010MinorOneProbabilityBounds:
+    def _scenario_result_with_weight(self, weight):
+        arch = _archetype(ticker="ZZFAKE1", primary="D")
+        evid = _evidence(ticker="ZZFAKE1")
+        outcomes = [
+            _scenario_outcome(scenario_name="Fictional upside case", value=25.0, probability_weight=weight, probability_weight_provenance_label="assumed_for_illustration"),
+        ]
+        families = [_family_entry(
+            family_id="family_7_scenario_probability_weighted", governed_role="primary_candidate",
+            family_status="partial", valuation_range=_scenario_range(outcomes, exhaustive=False),
+            assumptions_ledger=[], applied_peers=None,
+        )]
+        del families[0]["applied_peers"]
+        res = _result(archetype=arch, evidence=evid, families=families, result_status="partial", abstention_reason="x")
+        return arch, evid, res
+
+    def test_zero_accepted(self):
+        arch, evid, res = self._scenario_result_with_weight(0.0)
+        assert_valid(_validate(res, arch, evid))
+
+    def test_one_accepted(self):
+        arch, evid, res = self._scenario_result_with_weight(1.0)
+        assert_valid(_validate(res, arch, evid))
+
+    def test_interior_value_accepted(self):
+        arch, evid, res = self._scenario_result_with_weight(0.5)
+        assert_valid(_validate(res, arch, evid))
+
+    def test_negative_rejected(self):
+        arch, evid, res = self._scenario_result_with_weight(-0.1)
+        assert_invalid(_validate(res, arch, evid), contains="must be within")
+
+    def test_greater_than_one_rejected(self):
+        arch, evid, res = self._scenario_result_with_weight(1.5)
+        assert_invalid(_validate(res, arch, evid), contains="must be within")
+
+
+class TestReview4892431010MinorTwoDuplicates:
+    def test_duplicate_applied_peers_rejected(self):
+        arch = _archetype(ticker="ZZFAKE1", primary="B")
+        evid = _evidence(ticker="ZZFAKE1")
+        res = _result(archetype=arch, evidence=evid)
+        res["methodology_families_applied"][0]["applied_peers"] = ["FAKEPEER1", "FAKEPEER1"]
+        _reseal(res)
+        assert_invalid(_validate(res, arch, evid), contains="duplicate peer identity")
+
+    def test_duplicate_scenario_names_rejected(self):
+        arch = _archetype(ticker="ZZFAKE1", primary="D")
+        evid = _evidence(ticker="ZZFAKE1")
+        outcomes = [
+            _scenario_outcome(scenario_name="Fictional upside case", value=25.0),
+            _scenario_outcome(scenario_name="Fictional upside case", value=30.0),
+        ]
+        families = [_family_entry(
+            family_id="family_7_scenario_probability_weighted", governed_role="primary_candidate",
+            family_status="partial", valuation_range=_scenario_range(outcomes, exhaustive=False),
+            assumptions_ledger=[], applied_peers=None,
+        )]
+        del families[0]["applied_peers"]
+        res = _result(archetype=arch, evidence=evid, families=families, result_status="partial", abstention_reason="x")
+        assert_invalid(_validate(res, arch, evid), contains="duplicate scenario_name")
+
+    def test_unique_peer_and_scenario_sets_accepted(self):
+        arch = _archetype(ticker="ZZFAKE1", primary="B")
+        evid = _evidence(ticker="ZZFAKE1")
+        res = _result(archetype=arch, evidence=evid)
+        res["methodology_families_applied"][0]["applied_peers"] = ["FAKEPEER1", "FAKEPEER2"]
+        _reseal(res)
+        assert_valid(_validate(res, arch, evid))
+
+    def test_duplicate_peers_do_not_silently_inflate_the_minimum_count(self):
+        """Two duplicate entries of the same peer must not be counted as
+        satisfying the two-peer minimum for family_status: completed."""
+        arch = _archetype(ticker="ZZFAKE1", primary="B")
+        evid = _evidence(ticker="ZZFAKE1")
+        res = _result(archetype=arch, evidence=evid)
+        res["methodology_families_applied"][0]["applied_peers"] = ["FAKEPEER1", "FAKEPEER1"]
+        res["methodology_families_applied"][0]["family_status"] = "completed"
+        _reseal(res)
+        result = _validate(res, arch, evid)
+        assert not result.valid
+        assert any("duplicate peer identity" in e for e in result.errors)
+        assert any("at least 2 applied peers" in e for e in result.errors)
+
+
+class TestReview4892431010MinorThreeUnitConventionDisclosure:
+    """MINOR-3: no existing merged authority (VALUATION-0002/0004/0006)
+    settles a numeric-unit convention for assumptions_ledger values. This
+    correction does not invent one -- it discloses the limitation and pins
+    the current (not unit-checked) behavior so it stays visible rather
+    than silently assumed away."""
+
+    def test_module_discloses_the_unit_convention_limitation(self):
+        assert "unit" in vrv._check_terminal_growth_hard_rule.__doc__.lower()
+        assert "governance" in vrv._check_terminal_growth_hard_rule.__doc__.lower()
+
+    def test_mismatched_unit_convention_pairing_is_not_detected_known_limitation(self):
+        """Pins the disclosed, unresolved limitation: a terminal_growth of
+        4 (intended as "4%") paired against an applicable_discount_rate of
+        0.08 (intended as "8%") passes the g < r check numerically (4 is
+        not < 0.08 -- wait, 4 >= 0.08, so this actually WOULD be caught).
+        The genuinely undetectable case is the reverse: a decimal-fraction
+        terminal_growth compared against a percentage-point discount rate
+        that happens to still satisfy g < r numerically despite being
+        semantically incoherent -- this test pins that specific case."""
+        ledger = [
+            {"assumption_name": "terminal_growth", "value": 0.02, "provenance_label": "assumed_for_illustration", "source_or_derivation_note": "Decimal-fraction convention (2%)."},
+            {"assumption_name": "applicable_discount_rate", "value": 9.0, "provenance_label": "market_derived", "source_or_derivation_note": "Percentage-point convention (9%), semantically mismatched with the decimal-fraction terminal_growth above."},
+        ]
+        errors: list[str] = []
+        vrv._check_terminal_growth_hard_rule(ledger, "path", errors)
+        # Numerically 0.02 < 9.0, so no error is raised today -- despite
+        # the two values using incompatible unit conventions. This is the
+        # disclosed limitation, not a defect this correction resolves.
+        assert errors == []
