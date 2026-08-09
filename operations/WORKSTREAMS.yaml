@@ -10138,7 +10138,7 @@ workstreams:
           peer-set/discount-rate-component/valuation-output leakage
           confirmed by direct scan. No company was valued. Stage 4
           (valuation execution) remains separately unauthorized.
-        pr: null
+        pr: 283
         status: in_progress
         date: "2026-08-09"
     evidence_refs:
@@ -10215,7 +10215,7 @@ workstreams:
       principal-accepted. No real-company valuation is authorized by it,
       or by anything in WS-0015 to date, under any circumstance.
     active_branch: claude/stage-3-valuation-evidence-p3a38u
-    active_pr: 282
+    active_pr: 283
     last_verified_main_sha: 272c0e770c16afefe68c5396e7d4e661283b35db
     last_verified_date: "2026-08-09"
     authorized_by: VALUATION-0004 §A/§P (merged); this filing per VALUATION-0004 §O.3
