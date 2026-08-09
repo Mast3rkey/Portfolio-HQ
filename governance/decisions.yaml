@@ -699,3 +699,11 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, NUM-0001, ONTO-0001, TIER-0002, TIER-0003, TIER-0009, MARGIN-0005, LADDER-0001, XASSET-0001, XASSET-0002, XASSET-0005, VALUATION-0001, VALUATION-0002, VALUATION-0003, PHQ-2026-01, PHQ-2026-02]
     supporting_artifact: null
     file: governance/decisions/VALUATION-0004-rq4-evidence-architecture-governance.md
+
+  - decision_id: VALUATION-0005
+    date: 2026-08-09
+    status: Proposed
+    category: valuation_evidence_population_authorization
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, NUM-0001, ONTO-0001, TIER-0002, TIER-0003, TIER-0009, MARGIN-0005, LADDER-0001, XASSET-0001, XASSET-0002, XASSET-0005, VALUATION-0001, VALUATION-0002, VALUATION-0003, VALUATION-0004, PHQ-2026-01, PHQ-2026-02]
+    supporting_artifact: null
+    file: governance/decisions/VALUATION-0005-equity-valuation-evidence-population-authorization.md
