@@ -10717,6 +10717,32 @@ workstreams:
           whichever identifier is next unused when filed) must authorize
           real-company execution after this decision and its own
           implementation are each independently reviewed and accepted.
+
+          **Bounded correction (same day, this PR, review
+          4892228754):** CHANGES REQUIRED, 0 BLOCKING / 3 MAJOR / 0
+          MINOR / 0 NOTE. Resolved: (1) the terminal-growth hard rule's
+          "must never exceed" wording permitted the mathematically
+          invalid g = r boundary — corrected to explicit strict
+          inequality (g < r) in §C item 9/§E, plus a new §L validator
+          bullet requiring rejection of any assumptions_ledger pairing
+          where terminal_growth >= discount_rate for the same
+          family/company; (2) five of the filing's seven NUM-0001
+          class-5 parameters (risk-free-rate maturity/instrument
+          convention, beta estimation window, beta reference index,
+          capital-structure book-value fallback, ±0.02
+          probability-coherence tolerance) lacked NUM-0001 §6's
+          required stated review condition — each now carries one
+          (§D/§G); (3) §O's targeted isolation rule covered only
+          applied-peer-set selection and scenario-probability
+          assignment — extended to three protected sub-judgments,
+          adding terminal-growth-rate selection within the disclosed
+          softer ceiling, using the same mechanism, while explicitly
+          preserving that Stage-3/Stage-2 economic evidence remains
+          fully visible (only portfolio-policy anchors are isolated).
+          No redesign beyond these three findings. This gate's own
+          description above is left byte-unedited above this
+          paragraph. Requires its own fresh independent exact-head
+          delta review before this PR may be considered ready.
         pr: 288
         status: in_progress
         date: "2026-08-09"

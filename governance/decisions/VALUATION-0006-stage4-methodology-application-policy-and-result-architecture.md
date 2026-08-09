@@ -198,10 +198,12 @@ class definitions directly); items with material design depth receive their own 
    effective yield-to-maturity figure; no invented default spread. Deep dive: §D.
 8. **Tax-rate handling.** Reuses the Stage-3 schema's existing `tax_rate_type` (`effective`/`statutory`)
    distinction unedited — class 1, externally imposed/observed; no new vocabulary invented. Deep dive: §D.
-9. **Terminal-value / terminal-growth discipline.** Two-part rule: terminal growth **must never exceed the
-   same valuation's own sourced discount-rate input** — class 2, mathematically derived (a perpetuity-
-   growth model diverges or becomes economically nonsensical otherwise; this is a mathematical necessity,
-   not a governance preference). A softer convention — terminal growth should not exceed a disclosed
+9. **Terminal-value / terminal-growth discipline.** Two-part rule: terminal growth **must be strictly less
+   than the same valuation's own sourced discount-rate input (`g < r`, never `g ≤ r`)** — class 2,
+   mathematically derived (at `g = r` the perpetuity-growth model's denominator is zero and the expression
+   is undefined; at `g > r` it turns negative — equality is not a boundary case that merely weakens the
+   model, it breaks it; this is a mathematical necessity, not a governance preference). A softer
+   convention — terminal growth should not exceed a disclosed
    long-run risk-free-rate or real-GDP-growth proxy — is class 5, provisional guardrail, an industry norm
    this repository has not evidence-tested. No fixed percentage ceiling (e.g., "2.5%") is invented here.
    Deep dive: §E.
@@ -273,6 +275,33 @@ rate, per items 1–8 above:
    execution session must address on its own evidence, using the same risk-free-rate/beta/ERP component
    inputs already governed above, and must disclose which construction it used and why.
 
+**Review conditions for this section's `NUM-0001` class-5 provisional guardrails** (`NUM-0001` §6 requires
+every class-5 parameter to carry a stated review condition, not merely the class-5 label — matching the
+identical discipline already applied to item 9's softer terminal-growth ceiling, §E, and item 11's
+two-peer minimum, §F):
+
+- **Item 1, risk-free-rate maturity/instrument convention**: revisit if a future execution unit finds the
+  selected maturity/instrument materially mismatches the duration profile of the governed valuation
+  methods for a given company (e.g., a short-lived, high-turnover business valued against a 10-year
+  reference), or if authoritative market convention for a currency this cohort covers changes.
+- **Item 3, beta estimation window**: revisit if a future implementation or execution unit finds the
+  two-year/104-weekly-observation window produces unstable or non-comparable beta observations across the
+  governed cohort, or a future, separately accepted methodology decision adopts a different defensible
+  convention.
+- **Item 4, beta reference index**: revisit if a selected benchmark index ceases to be appropriate for the
+  specific company/cohort exposure being measured (e.g., a foreign-listed company whose most liquid
+  benchmark changes), or a future, separately accepted methodology decision establishes a more defensible
+  reference-index convention.
+- **Item 6, capital-structure book-value fallback**: revisit if adequate market-value capital-structure
+  evidence becomes reliably available for a company currently relying on the fallback, or a future
+  execution unit's own experience demonstrates the book-value substitute materially distorts the derived
+  capital-structure weights relative to what market values would have produced.
+
+None of these review conditions authorizes new research on its own — each states only what future
+evidence or event would justify reopening the convention, matching item 9's and item 11's own identical
+"a trigger opens the question, it does not itself change the answer" discipline: satisfying a review
+condition opens a future review, it does not by itself reclassify the parameter or change its value.
+
 **Disclosed prerequisite gap, not closed by this filing.** `discount_rate_evidence` is independently
 confirmed abstained on all 27 of 27 current Stage-3 records (Preflight above). Under this policy's own
 abstention rules (§J), **any future Stage-4 execution attempting family 2 (FCFF DCF) or family 3 (FCFE
@@ -286,10 +315,12 @@ explicitly so a future reader does not discover it by surprise mid-execution.
 
 ### E. Terminal-value / terminal-growth discipline
 
-Restating item 9 with its full reasoning: the hard rule (terminal growth must not exceed the same
-valuation's own sourced discount rate) is a mathematical necessity of the perpetuity-growth model, not a
-policy preference — a terminal growth rate at or above the discount rate makes the model's terminal-value
-term diverge or turn negative, an internally inconsistent output no amount of disclosure can rescue. The
+Restating item 9 with its full reasoning: the hard rule (terminal growth must be **strictly less than**
+the same valuation's own sourced discount rate — `g < r`, not `g ≤ r`) is a mathematical necessity of the
+perpetuity-growth model, not a policy preference — a terminal growth rate at or above the discount rate
+makes the model's terminal-value term diverge (at exact equality, division by zero) or turn negative
+(above it), an internally inconsistent output no amount of disclosure can rescue. Equality is not a
+permitted edge case; it is exactly the point at which the model breaks. The
 softer convention (terminal growth should not exceed a disclosed long-run risk-free-rate or real-GDP-growth
 proxy) is adopted as a **provisional guardrail** (`NUM-0001` class 5) rather than a fixed invented
 percentage, because no evidence internal to this repository has tested one specific ceiling number against
@@ -352,7 +383,12 @@ judgment applied to already-sourced possibilities.
 within a disclosed ±0.02 tolerance of 1.0 — `NUM-0001` class 5, a rounding-error allowance, not an
 evidence-derived figure. A scenario set explicitly disclosed as non-exhaustive is exempt from summing to
 1.0, but the record must say so in `uncertainty_summary` rather than silently presenting an incomplete set
-as though it were complete. Every populated `probability_weight` must carry one of `VALUATION-0002` §3's
+as though it were complete. **Review condition** (item 13, evidence-driven, per `NUM-0001` §6): revisit if
+a future implementation or execution unit demonstrates the ±0.02 tolerance is systematically too tight
+(rejecting legitimate, honestly-rounded scenario sets) or too loose (permitting a materially incoherent
+probability set to pass) across the governed cohort — either would support reclassifying a revised
+tolerance under `NUM-0001` class 3 or 4, not merely re-asserting class 5 with a different number. Every
+populated `probability_weight` must carry one of `VALUATION-0002` §3's
 four provenance labels (§C item 2's restriction against `assumed_for_illustration`-only ERP does **not**
 apply here — an illustrative scenario-probability weight is permitted, provided it is honestly labeled as
 such, since scenario analysis for archetype E (early-stage/binary-outcome) inherently trades in disclosed
@@ -523,6 +559,13 @@ valuation-output content as its own §Q design already requires — must, at min
   with no `low`/`high` (or no `scenario_outcomes[]` for family 7); enforce `low ≤ base ≤ high` where all
   three are populated, with an explicit, disclosed exception path for a scenario-style range that has no
   single "base" (§K.7).
+- **Enforce the terminal-growth hard rule mechanically, as a strict inequality, never an inclusive one**
+  (item 9, §E): reject any populated `assumptions_ledger` where a named terminal-growth assumption's
+  `value` is `≥` its correspondingly-named discount-rate assumption's `value` for the same methodology
+  family and company — `terminal_growth >= discount_rate` is a hard validation failure at any populated
+  precision, including exact equality, not merely a value strictly above it. This is the one hard,
+  mathematically-necessary rule in this filing and must be structurally rejected, matching §M's own
+  "never merely discouraged by prose" standard for compatibility enforcement.
 - **Enforce methodology/archetype compatibility** as a live cross-check against `VALUATION-0002` §2's own
   per-family, per-archetype governed-role table (§M) — reject any `methodology_families_applied` entry
   whose `governed_role` is Prohibited or Insufficient basis for adoption for the ticker's own pinned
@@ -657,7 +700,7 @@ re-derive individual ticker-to-archetype assignments beyond what is already seal
 ### O. Blindness / sanitizer decision
 
 **Full Milestone-6-style blind-drafting with a dedicated sanitizer is not required for Stage-4 execution,
-by design, for the majority of the work — but a narrower, targeted isolation rule is required for two
+by design, for the majority of the work — but a narrower, targeted isolation rule is required for three
 specific, genuinely anchoring-vulnerable judgment sub-steps.** Reasoning:
 
 Archetype assignment (`VALUATION-0003`) required full blind sharding because it was a discrete, categorical
@@ -682,20 +725,35 @@ label; (3) the compatibility enforcement in §M mechanically forecloses the most
 driven bias (applying a Prohibited family to make a holding "look" more favorably valued) at the validator
 level, independent of any human or session-level discipline.
 
-**However, two specific sub-judgments remain genuinely, non-hypothetically anchoring-vulnerable and are
-not adequately constrained by §M's mechanical compatibility check alone**: (a) **applied-peer-set
-selection** (§F) — which Stage-3-included candidates actually get used, and which get excluded with a
-"disclosed rationale" that could easily be reverse-engineered to produce a more flattering multiple; and
-(b) **scenario-probability assignment** (§G) — which named scenario gets more weight, a judgment as
-subjective and single-scalar-movable as a conviction rating itself. **Minimum necessary isolation rule,
-adopted for exactly these two sub-steps and no others**: the future execution session performing either
-judgment must not have `portfolio_role_ref`, `conviction.rating`, `target_pct`, current holding size, or
-`gates.yaml` status open, cited, or referenced while making that specific call, and the resulting written
-rationale must independently justify the choice from Stage-3 evidence and market/peer facts alone — an
-explicit "why this peer / this probability weight, sourced from evidence, not from portfolio status"
-disclosure requirement, mechanically checkable by the same free-text/keyword-absence scan pattern §L
-already requires for prohibited output content, extended to scan the peer-exclusion and scenario-weight
-rationale fields specifically for portfolio-policy vocabulary. This is a documentation/procedure-level
+**However, three specific sub-judgments remain genuinely, non-hypothetically anchoring-vulnerable and are
+not adequately constrained by §M's mechanical compatibility check alone — nor, for the third, by §L's
+mechanical `g < r` enforcement alone, which governs only the hard floor, never the actual chosen point
+beneath the softer ceiling**: (a) **applied-peer-set selection** (§F) — which Stage-3-included candidates
+actually get used, and which get excluded with a "disclosed rationale" that could easily be
+reverse-engineered to produce a more flattering multiple; (b) **scenario-probability assignment** (§G) —
+which named scenario gets more weight, a judgment as subjective and single-scalar-movable as a conviction
+rating itself; and (c) **terminal-growth-rate selection within the disclosed softer ceiling** (item 9,
+§E) — the hard `g < r` rule is mechanical and mechanically enforced (§L), but *where*, below that floor
+and below the softer risk-free-rate/GDP-growth-proxy ceiling, the actual chosen figure lands for a
+DCF-family result (Primary for archetypes A/G, 8 of 27 tickers) is itself a single, unconstrained scalar
+pick — structurally the same category of risk as (a) and (b), capable of materially inflating or
+deflating a valuation range's magnitude on its own. **Minimum necessary isolation rule, adopted for
+exactly these three sub-steps and no others**: the future execution session performing any of the three
+judgments must not have `portfolio_role_ref`, `conviction.rating`, `target_pct` or any other current
+allocation/target-weight figure, current holding status or size, `intelligence/recommendations/`
+(Milestone 8) disposition, or `gates.yaml` status open, cited, or referenced while making that specific
+call, and the resulting written rationale must independently justify the choice from Stage-3/Stage-2
+evidence and market/peer/discount-rate facts alone — an explicit "why this peer / this probability weight
+/ this terminal-growth figure, sourced from evidence, not from portfolio status" disclosure requirement,
+mechanically checkable by the same free-text/keyword-absence scan pattern §L already requires for
+prohibited output content, extended to scan the peer-exclusion, scenario-weight, and terminal-growth-
+selection rationale fields specifically for portfolio-policy vocabulary. **This isolation rule targets
+portfolio-policy anchors specifically, never the underlying economic evidence** — the Stage-3/Stage-2
+evidence each of these three judgments actually depends on (financial evidence, peer candidates and their
+comparability rationale, scenario evidence, and the sourced risk-free-rate/discount-rate/GDP-growth-proxy
+inputs governing the softer ceiling) remains fully visible throughout; nothing in this rule blinds an
+execution session to the evidence its own judgment is supposed to be based on. This is a
+documentation/procedure-level
 isolation requirement, not a full sanitizer-and-blind-shard architecture — deliberately the smallest
 sufficient control given the actual, disclosed size of the risk, avoiding the over-engineering `OPS-0008`
 §12 already warns this repository's own protocol design against.
@@ -913,13 +971,14 @@ numeric convention it introduces, rather than presenting any of them as though t
 optimized.
 
 **Why full blind-drafting/sanitizer architecture is not adopted for the whole of Stage-4 execution, but a
-narrower isolation rule is adopted for applied-peer-set selection and scenario-probability assignment
-specifically.** §O's own analysis is not restated here — the short version is that Stage-4 execution's
-inputs are already-sealed, already-redacted-of-policy evidence plus external market data, materially unlike
-archetype assignment's own vulnerability to a single categorical anchor, while two specific sub-judgments
-remain genuinely anchoring-vulnerable and warrant a targeted, disclosure-based control rather than either
-no control at all or the full Milestone-6-style architecture `VALUATION-0005` §M already found unnecessary
-for the adjacent, less judgment-heavy evidence-population step.
+narrower isolation rule is adopted for applied-peer-set selection, scenario-probability assignment, and
+terminal-growth-rate selection within the softer ceiling specifically.** §O's own analysis is not restated
+here — the short version is that Stage-4 execution's inputs are already-sealed, already-redacted-of-policy
+evidence plus external market data, materially unlike archetype assignment's own vulnerability to a single
+categorical anchor, while three specific sub-judgments (the third added by this filing's own bounded
+correction, below) remain genuinely anchoring-vulnerable and warrant a targeted, disclosure-based control
+rather than either no control at all or the full Milestone-6-style architecture `VALUATION-0005` §M
+already found unnecessary for the adjacent, less judgment-heavy evidence-population step.
 
 **Why `category: valuation_application_governance`, a new category distinct from every prior `VALUATION-####`
 category.** `VALUATION-0002` adopts methodology-selection doctrine; `VALUATION-0003` authorizes archetype-
