@@ -1,0 +1,27 @@
+schema_version: '1.0'
+governing_decision: XASSET-0006
+cohort:
+- capital_use_type: CASH
+  sealed_at: '2026-08-09T00:00:00Z'
+  content_sha256: 165e2de8bba5017b2619b3a6affd2d22babb65adef68970981d85c2a367c20a7
+  schema_version: '1.0'
+  governing_decision: XASSET-0006
+  record_path: intelligence/functional_doctrine/CASH.yaml
+- capital_use_type: RESERVE
+  sealed_at: '2026-08-09T00:00:00Z'
+  content_sha256: a06e477ea3b66cdcd1da941fd00b112ca45667dd4acc3c221202dc5821a27db3
+  schema_version: '1.0'
+  governing_decision: XASSET-0006
+  record_path: intelligence/functional_doctrine/RESERVE.yaml
+- capital_use_type: GLD_DEFENSIVE_ROLE
+  sealed_at: '2026-08-09T00:00:00Z'
+  content_sha256: 52dd76614fab7e3a6ac33b9da6486ea2d485b935a8ab633cef88ba323c9a9b5e
+  schema_version: '1.0'
+  governing_decision: XASSET-0006
+  record_path: intelligence/functional_doctrine/GLD_DEFENSIVE_ROLE.yaml
+- capital_use_type: DEBT_REDUCTION
+  sealed_at: '2026-08-09T00:00:00Z'
+  content_sha256: 5433bd04eab41309845228622957a58d624db6228e071fa35bb115aa5c2e1ae3
+  schema_version: '1.0'
+  governing_decision: XASSET-0006
+  record_path: intelligence/functional_doctrine/DEBT_REDUCTION.yaml
