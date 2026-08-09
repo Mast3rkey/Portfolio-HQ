@@ -1,0 +1,312 @@
+schema_version: '1.0'
+ticker: RKLB
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 62.2
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2021 revenue, +77% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: -117.3
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2021 net loss
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 211.0
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: -135.2
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2022 net loss
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 244.6
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: -178.9
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2023 net loss
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 436.2
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2024 revenue, +78% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: -189.4
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2024 net loss
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 601.8
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2025 revenue, +38% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: -198.2
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2025 net loss, widened ~4.2% from FY2024
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: -321
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2025 free cash flow (negative -- cash burn), described as a '210.72%
+            increase in cash burn from 2024'
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 49.7
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB Q4 2025 capital expenditures (quarterly figure, not full-year)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 1100
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB cash & equivalents, year-end 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 152.4
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB convertible senior notes, net, Dec 31 2025 (down from an original $355M
+            issuance)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 589.5
+      unit: shares_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB shares issued (common stock) as of Dec 31 2025 -- not necessarily the
+            same as a weighted-average diluted count.
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments:
+  - segment_name: Space Systems
+    revenue:
+      item_category: revenue
+      value: 402.8
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2025 Space Systems segment revenue, 66.9% of total
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Launch Services
+    revenue:
+      item_category: revenue
+      value: 199.0
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RKLB FY2025 Launch Services segment revenue, 33.1% of total
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 75.97
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: 'Aug 4 2026; market cap ~$47.28B (sanity check: 589.5M shares x $75.97 = ~$44.8B,
+          ~$2.5B under the reported cap, plausibly because the share count has grown further in 2026 via
+          option/convertible-note conversions beyond the Dec 31 2025 figure used here). 52-week range
+          $37.57-$151.00, all-time high $150.23 (May 27 2026) -- a genuinely volatile stock.'
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: SPACEX
+    comparability_rationale: SpaceX -- dominant private competitor, far larger, not a public-market valuation
+      comparable but the obvious market-position benchmark.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: FLY
+    comparability_rationale: Firefly Aerospace -- closest maturity/size public peer, smaller than RKLB
+      (FY2025 revenue $160M vs. RKLB's $601.8M) but with a similarly young, high-growth profile.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Neutron rocket development
+    variables:
+    - variable_name: neutron_rocket_development
+      evidence_basis: First orbital launch has slipped multiple times; as of the most recent (Jul 2026)
+        reporting, Rocket Lab is targeting Q4 2026 for first flight, after a January 2026 tank failure
+        removed an earlier window. Program cost originally guided at $250-300M, but delays mean cumulative
+        spend was reported at likely ~$360M by end of 2025. Structural-test qualification and the Wallops
+        Island, VA launch site are reported complete.
+      provenance_label: historically_observed
+  - scenario_name: Pending Iridium acquisition
+    variables:
+    - variable_name: pending_iridium_acquisition
+      evidence_basis: Announced Jun 29 2026 -- Rocket Lab to acquire Iridium Communications for ~$8.0B
+        enterprise value, a cash-and-stock deal at $54.00/share for Iridium common stock, with $3.6B in
+        acquisition financing from Deutsche Bank and Wells Fargo. Reported 'expected to close next year'
+        (2027) -- not yet closed as of this research. Rationale reported as vertical integration, combining
+        launch and satellite manufacturing with Iridium's L-band spectrum/network and subscriber base.
+      provenance_label: historically_observed
+  - scenario_name: Government contract backlog
+    variables:
+    - variable_name: government_contract_backlog
+      evidence_basis: FY2025 total backlog grew 73% YoY to $1.85B; Rocket Lab was awarded an $816M Space
+        Development Agency contract to design and build 18 satellites for the 'Tracking Layer Tranche
+        3' program.
+      provenance_label: historically_observed
+uncertainty_summary: 'All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  Rocket Lab''s public listing was fact-checked and confirmed: SPAC merger with Vector Acquisition Corporation,
+  trading commenced under ''RKLB'' on Aug 25 2021 -- a full loss history is available for all fiscal years
+  since listing (no data gaps), so no shortened-history exception is needed on listing-age grounds, though
+  this remains an archetype E (scenario/binary-outcome-relevant) record given the young, historically
+  unprofitable, launch-milestone-dependent nature of the business -- cash-runway and scenario evidence
+  (Neutron timeline, the pending Iridium acquisition, backlog) are prioritized accordingly. FY2025 capex
+  is a Q4-only quarterly figure, not a full-year total (a full-year figure was not found and this is disclosed
+  rather than annualized/estimated). The Iridium acquisition is real and pending, explicitly not yet closed.'
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: RKLB
+content_sha256: 0fe2b52918485bde9faa535a1d9f68ba18e130c7c0eaca0523d7347e2395c26d

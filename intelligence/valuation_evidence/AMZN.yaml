@@ -1,0 +1,452 @@
+schema_version: '1.0'
+ticker: AMZN
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 469822
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2021 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 33360
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2021 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Moderate confidence only -- the underlying search snippet was internally contradictory
+            (stating net income 'increased by $33.4bn from $21.3bn a year earlier,' which would imply
+            ~$54.7B, not $33.36B). $33.36B is used because it is the widely-cited actual figure and cross-checks
+            reasonably via EPS math ($33.36B / $64.81 pre-split EPS = ~515M pre-split shares, a plausible
+            AMZN 2021 share count).
+    - item_category: operating_margin
+      value: 0.053
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2021 operating income $24,879M divided by revenue $469,822M equals
+        5.3 percent.'
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2021 operating income $24,879M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 513983
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: -2722
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2022 net loss
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.024
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2022 operating income $12,248M divided by revenue $513,983M equals
+        2.4 percent.'
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2022 operating income $12,248M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 574785
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2023 revenue (rounded, cited as '$575B')
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 30400
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.064
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2023 operating income $36,900M divided by revenue $574,785M equals
+        6.4 percent.'
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2023 operating income $36,900M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 638000
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 59200
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.108
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2024 operating income $68,600M divided by revenue $638,000M equals
+        10.75 percent.'
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2024 operating income $68,600M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 38200
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2024 free cash flow
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 716900
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2025 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 77700
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2025 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.112
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2025 operating income $80,000M divided by revenue $716,900M equals
+        11.16 percent (one source cited $79.9B, a rounding variance).'
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2025 operating income $80,000M
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 11200
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2025 free cash flow
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 131820
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2025 'purchases of property and equipment'
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: A derived cross-check (operating cash flow $139,500M minus FCF $11,200M = ~$128,300M)
+            does not exactly reconcile with this $131,820M figure (~$3.5B gap) -- likely because AMZN's
+            disclosed FCF is capex net of proceeds from sales/incentives while $131.82B may be the gross
+            line; not resolved.
+    - item_category: cash
+      value: 123029
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: cash & equivalents $86,810M plus marketable securities $36,200M equals
+        $123,029M combined (internally consistent, 86.81+36.2=123.01).'
+      provenance:
+        sources:
+        - source_identifier: AMZN balance sheet, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 68396
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: long-term debt $65,648M plus current portion of long-term debt $2,748M
+        equals ~$68,396M total debt.'
+      provenance:
+        sources:
+        - source_identifier: AMZN balance sheet, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: A separate aggregator claim of 'total debt $209.88B / net debt $66.18B' was investigated
+            and rejected as likely wrong (probably conflates total liabilities or lease obligations with
+            debt); this record uses the directly-reported long-term-debt components instead.
+    - item_category: net_debt
+      value: -54700
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate, net CASH position): total cash+securities $123,029M minus
+        total debt $68,396M equals ~$54.6B net cash (negative net debt).'
+      provenance:
+        sources:
+        - source_identifier: AMZN balance sheet figures above
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 10830
+      unit: shares_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN diluted weighted-average shares, Q4 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments:
+  - segment_name: North America
+    revenue:
+      item_category: revenue
+      value: 426300
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2025 North America segment net sales, +10% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    profit:
+      item_category: earnings
+      value: 29600
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2025 North America segment operating income (vs. $25,000M FY2024)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: International
+    revenue:
+      item_category: revenue
+      value: 161900
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2025 International segment net sales, +13% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    profit:
+      item_category: earnings
+      value: 4700
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2025 International segment operating income (vs. $3,800M FY2024)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: AWS
+    revenue:
+      item_category: revenue
+      value: 128700
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2025 AWS segment net sales, +20% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    profit:
+      item_category: earnings
+      value: 45600
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: AMZN FY2025 AWS segment operating income (vs. $39,800M FY2024; AWS was 57%
+            of total FY2025 operating income)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 274.34
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Aug 8 2026; market cap ~$2.96T. Stock briefly crossed a $3T market cap on Aug 3 2026
+          (all-time-high close $284.02) before pulling back; 52-week range $196.00-$287.20.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: MSFT
+    comparability_rationale: Closest direct AWS-vs-Azure cloud-infrastructure comparable.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: GOOGL
+    comparability_rationale: Comparable diversified big-tech profile (Cloud plus a large core business,
+      similar scale).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: WMT
+    comparability_rationale: Closest large-scale physical/omnichannel retail comparable for the e-commerce
+      side of the business.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: AWS/AI capex trajectory
+    variables:
+    - variable_name: aws/ai_capex_trajectory
+      evidence_basis: CEO guided ~$220B cash capex for 2026, up from an originally-planned ~$200B (~$20B
+        increase attributed to rising memory prices); Trainium in-house AI chips have deals with Anthropic/OpenAI,
+        with early exploratory conversations about offering Trainium to customers outside AWS's own cloud.
+      provenance_label: historically_observed
+  - scenario_name: FTC antitrust litigation
+    variables:
+    - variable_name: ftc_antitrust_litigation
+      evidence_basis: FTC and 18 state Attorneys General's monopoly-power suit against Amazon; bench trial
+        now scheduled for Feb 9 2027, delayed from an earlier October 2026 date (Amazon lost its bid to
+        keep the earlier date).
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  FY2021 net income is moderate-confidence only (the underlying snippet was internally contradictory,
+  cross-checked via EPS-implied share count instead). AMZN executed a 20-for-1 stock split effective June
+  2022 -- FY2021 EPS is not reported in this record to avoid a pre/post-split comparability trap (revenue
+  and net income, unaffected by the split, are reported normally). AMZN's own reported capex and the capex
+  figure implied by OCF minus FCF disagree by ~$3.5B, disclosed rather than reconciled. A materially wrong-looking
+  aggregator claim about total debt ($209.88B) and net debt ($66.18B net DEBT) was investigated and explicitly
+  rejected in favor of a directly-reported-component-based derivation showing AMZN in a net CASH position
+  instead.
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: AMZN
+content_sha256: 52832c3e10789db1afd3917c146d59a17cba8938fabf2b95bf5183a364af488d

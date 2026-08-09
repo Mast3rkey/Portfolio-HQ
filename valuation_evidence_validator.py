@@ -1550,6 +1550,34 @@ def validate_valuation_evidence_directory(directory: str | Path) -> DirectoryVal
     return DirectoryValidationResult(valid=all(r.valid for r in results), results=results)
 
 
+def validate_authorized_cohort(
+    records_by_ticker: dict[str, dict], authorized_population: frozenset[str]
+) -> ValidationResult:
+    """VALUATION-0005 SS N's bounded cohort-completeness addition: for a
+    specific authorized population (e.g. the 27-name Stage-3 cohort),
+    check exactly that population is present -- zero missing, zero extra.
+    An abstained record (every domain's own abstention_reason populated)
+    still counts as present, since presence here means "a sealed record
+    file exists for this ticker", not "every domain is populated".
+
+    Deliberately NOT folded into the schema-level validate_cohort_manifest
+    (VALUATION-0004 SS B: the schema itself stays roster-agnostic) -- this
+    is a separate, optional, population-specific check a caller opts into,
+    mirroring valuation_archetype_validator.validate_archetype_directory's
+    own canonical_universe parameter and reusing
+    relationship_validator.load_canonical_universe() for the population
+    itself rather than hand-maintaining a duplicate ticker list."""
+    errors: list[str] = []
+    present = set(records_by_ticker)
+    missing = authorized_population - present
+    extra = present - authorized_population
+    if missing:
+        errors.append(f"authorized cohort missing ticker(s): {sorted(missing)}")
+    if extra:
+        errors.append(f"cohort contains ticker(s) outside the authorized population: {sorted(extra)}")
+    return ValidationResult(valid=not errors, errors=errors, source="authorized_cohort")
+
+
 if __name__ == "__main__":
     import sys
 
@@ -1561,8 +1589,27 @@ if __name__ == "__main__":
             print(f"  - {_err}")
         sys.exit(1)
 
-    _result = validate_valuation_evidence_directory(_repo_root / "intelligence" / "valuation_evidence")
-    if _result.valid:
+    _evidence_dir = _repo_root / "intelligence" / "valuation_evidence"
+    _result = validate_valuation_evidence_directory(_evidence_dir)
+
+    _cohort_result = None
+    if _evidence_dir.is_dir():
+        sys.path.insert(0, str(_repo_root))
+        from relationship_validator import load_canonical_universe  # noqa: E402
+
+        _authorized = load_canonical_universe(_repo_root)
+        if _authorized:
+            _records_by_ticker: dict[str, dict] = {}
+            for _p in _evidence_dir.glob("*.yaml"):
+                if _p.name == _MANIFEST_FILENAME:
+                    continue
+                _data, _read_errors = _read_yaml(_p)
+                if not _read_errors and isinstance(_data, dict) and _non_empty_str(_data.get("ticker")):
+                    _records_by_ticker[_data["ticker"]] = _data
+            _cohort_result = validate_authorized_cohort(_records_by_ticker, _authorized)
+
+    _ok = _result.valid and (_cohort_result is None or _cohort_result.valid)
+    if _ok:
         print(f"valuation_evidence_validator: OK ({_result.record_count} result(s))")
         sys.exit(0)
     else:
@@ -1571,4 +1618,7 @@ if __name__ == "__main__":
             if not _r.valid:
                 for _err in _r.errors:
                     print(f"  - [{_r.source}] {_err}")
+        if _cohort_result and not _cohort_result.valid:
+            for _err in _cohort_result.errors:
+                print(f"  - [authorized_cohort] {_err}")
         sys.exit(1)

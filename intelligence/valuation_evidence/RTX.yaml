@@ -1,0 +1,358 @@
+schema_version: '1.0'
+ticker: RTX
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      abstention_reason: FY2021 revenue was not found this session; only net income was located for this
+        year.
+    - item_category: earnings
+      value: 3864
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2021 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: RTX was formed by the April 2020 merger of Raytheon Company and United Technologies
+            Corp; FY2020 itself was a net-loss year (-$3,519M, reflecting merger/integration costs and
+            pandemic-era aerospace demand collapse) and is a poor comparison-year baseline. Pre-2020 standalone
+            'Raytheon' or 'UTC' historical financials are not directly comparable to post-merger RTX consolidated
+            financials.
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: earnings
+      value: 5197
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2022 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 68920
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 3195
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2023 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 80740
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 4774
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2024 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 88600
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2025 revenue, +9.8-10% YoY, +11% organic
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 6732
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2025 net income, +41% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.105
+      unit: ratio
+      value_basis: derived
+      derivation_note: 'Derived: FY2025 operating income $9.3B divided by revenue $88.60B equals 10.5
+        percent (matches company-reported margin).'
+      provenance:
+        sources:
+        - source_identifier: RTX FY2025 operating income $9.3B
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 8460
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX trailing-twelve-month (through ~early 2026) free cash flow -- closest
+            available proxy for FY2025, not confirmed as an exact calendar-year figure
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 2660
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX trailing-twelve-month capital expenditures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 6820
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX cash (~Q4 2025/early 2026)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 38940
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX total debt (~Q4 2025/early 2026)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: net_debt
+      value: 32120
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: total debt $38.94B minus cash $6.82B equals ~$32.12B net debt.'
+      provenance:
+        sources:
+        - source_identifier: RTX balance sheet figures above
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 1357
+      unit: shares_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): FY2025 net income $6,732M divided by diluted EPS $4.96
+        (GAAP) equals ~1,357M diluted shares.'
+      provenance:
+        sources:
+        - source_identifier: RTX FY2025 net income and diluted EPS figures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments:
+  - segment_name: Collins Aerospace
+    revenue:
+      item_category: revenue
+      value: 30200
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2025 Collins Aerospace segment sales
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    profit:
+      item_category: earnings
+      value: 1402
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2025 Collins Aerospace GAAP operating profit (+27% YoY; adjusted figure
+            separately cited at $1,223M, +1% YoY)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: The implied operating margin (~4-5% of segment revenue) is anomalously low for an
+            aerospace supplier and may reflect heavy acquisition-amortization/restructuring drag specific
+            to GAAP reporting, or an aggregation/parsing error in the underlying search snippet -- this
+            figure is reported with lower confidence than the segment's revenue figure.
+  - segment_name: Pratt & Whitney
+    revenue:
+      item_category: revenue
+      value: 32920
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2025 Pratt & Whitney segment sales
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    profit:
+      item_category: earnings
+      value: 776
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2025 Pratt & Whitney adjusted (non-GAAP) operating profit, +8% YoY
+            (GAAP figure not found)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Raytheon
+    revenue:
+      item_category: revenue
+      value: 28040
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: RTX FY2025 Raytheon segment sales
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 223.03
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Recent observation (~Aug 2026 context); market cap ~$300.89B.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: LMT
+    comparability_rationale: Lockheed Martin -- direct defense-sector peer (Raytheon segment overlap).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: GE
+    comparability_rationale: GE Aerospace -- direct commercial-engine peer (Pratt & Whitney overlap),
+      larger market cap than RTX.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: SAF
+    comparability_rationale: Safran (Paris-listed, EUR) -- direct commercial-engine/aerostructures peer
+      (Pratt & Whitney/Collins overlap), international comparable.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Pratt & Whitney GTF powder-metal engine issue
+    variables:
+    - variable_name: pratt_&_whitney_gtf_powder-metal_engine_issue
+      evidence_basis: A 2023-disclosed contamination issue in powder metal used for certain PW1100 GTF
+        engine parts (powers the A320neo family) triggered an accelerated inspection/removal campaign.
+        RTX took a ~$3B pre-tax charge in Q3 2023, with total projected gross costs of $6-7B over several
+        years. As of late October 2025, the global count of stored/grounded GTF-powered aircraft reportedly
+        reached 835 (up from 748 mid-2025); Q1 2026 saw a reported 15% decline in groundings as maintenance
+        capacity ramped. Some analyst commentary projects full fleet recovery not until 2027 or later
+        -- this remains an active, material, ongoing operational and cash-flow issue for Pratt & Whitney
+        specifically.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  RTX was formed by the April 2020 Raytheon-UTC merger and renamed from Raytheon Technologies to RTX Corporation
+  in July 2023 -- FY2021/FY2022 revenue was not found and only net income is reported for those years;
+  FY2020 (a net-loss merger/integration year) and any pre-merger standalone Raytheon/UTC data are excluded
+  entirely as not comparable. The large GAAP-vs-adjusted-EPS gap each period is a direct, disclosed consequence
+  of merger purchase-accounting amortization, not an anomaly. Collins Aerospace's segment operating-profit
+  figure carries a specific, disclosed low-confidence flag (anomalously low implied margin, possibly a
+  parsing error).
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: RTX
+content_sha256: 0261e7c082c0a0bb6a3b4f7558fb15e8b6da29d747fc3ce035f1704656a17189

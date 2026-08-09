@@ -1,0 +1,273 @@
+schema_version: '1.0'
+ticker: PWR
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 12980
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR FY2021 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 17070
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 491.2
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR FY2022 net income attributable to common
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 20880
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 23670
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 904.8
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR FY2024 net income attributable to common
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 28480
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR FY2025 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: PWR restructured its reportable segments starting Q1 2025, moving from three segments
+            (Electric Power / Underground & Infrastructure / Pipeline) to two (Electric / Underground
+            and Infrastructure) -- a structural change affecting segment comparability with pre-2025 data.
+    - item_category: earnings
+      value: 1030
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR FY2025 net income attributable to common
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+      disclosed_conflicts:
+      - value: 6.8
+        source_identifier: PWR FY2025 GAAP diluted EPS, one source (press-release aggregation)
+        source_type: secondary
+        access_status: consulted_via_search_aggregation
+        as_of_date: '2026-08-09'
+        note: Two irreconcilable FY2025 diluted EPS figures were found ($6.80 vs $6.91); net income $1.03B
+          is corroborated independently of either EPS figure.
+      - value: 6.91
+        source_identifier: PWR FY2025 GAAP diluted EPS, a second source
+        source_type: secondary
+        access_status: consulted_via_search_aggregation
+        as_of_date: '2026-08-09'
+    - item_category: free_cash_flow
+      value: 1200
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR FY2025 free cash flow
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: capex
+      value: 500
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR FY2025 net capital expenditures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 506.4
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR cash, ~Q4 2025/early 2026
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 6600
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR total debt, ~Q4 2025/early 2026
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: A separate Q1 2026 snippet showed total debt of $5.89B, a different (later) data
+            point -- both disclosed, not reconciled.
+segment_evidence:
+  segments:
+  - segment_name: Electric
+    revenue:
+      item_category: revenue
+      value: 23000
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: PWR FY2025 Electric segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 673.46
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Recent observation (~Aug 2026 context); market cap ~$100.41B.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: MTZ
+    comparability_rationale: MasTec -- direct infrastructure/electrical construction peer, similar end
+      markets.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: EME
+    comparability_rationale: EMCOR Group -- electrical/mechanical construction services peer.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: MYRG
+    comparability_rationale: MYR Group -- smaller pure-play electrical/transmission construction peer.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Record backlog on electrification demand
+    variables:
+    - variable_name: record_backlog_on_electrification_demand
+      evidence_basis: Year-end 2025 total backlog $43.98B, growing to ~$48.5B by Q1 2026, driven by grid
+        modernization, utility transmission, and hyperscale data-center/large-load electrification demand.
+        Electric segment year-end backlog alone was $36.2B (record).
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  FY2025 diluted EPS carries a genuine, unresolved two-source conflict ($6.80 vs $6.91), disclosed rather
+  than resolved; total debt has a similar unreconciled discrepancy across dates. PWR restructured its
+  reportable segments in Q1 2025 (three segments to two) -- the FY2025 Underground and Infrastructure
+  segment's full-year revenue was not found (only a Q3 2025 quarterly figure), so only the Electric segment
+  is populated in segment_evidence above; this is a partial, disclosed gap, not a full domain abstention,
+  since at least one genuine segment figure is available.
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: PWR
+content_sha256: 186679de7bd92cebba1b59bad4dcf8f6a63fc9bfa7270c2ceed9c0db2ebaa02a

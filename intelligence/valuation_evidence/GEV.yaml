@@ -1,0 +1,140 @@
+schema_version: '1.0'
+ticker: GEV
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 38100
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GEV FY2025 revenue, +9% YoY (GAAP and organic)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 4900
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GEV FY2025 net income (net margin 12.8%)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Inflated by a one-time $2.9B tax benefit from a US valuation-allowance release;
+            underlying/normalized net income is materially lower, and no clean adjusted-net-income figure
+            was found -- this figure should not be read as a clean operating result.
+    - item_category: free_cash_flow
+      value: 3700
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GEV FY2025 free cash flow
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 8800
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: GEV cash balance, FY2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments: []
+  abstention_reason: GEV's Power/Wind/Electrification segment revenue breakdown was not found this session
+    -- a direct gap against the segment-evidence domain, disclosed rather than estimated. This research
+    session's WebSearch budget was exhausted before this specific search could be run.
+market_observed_evidence:
+  inputs: []
+  abstention_reason: No reliable current stock price or market capitalization for GEV was found this session
+    -- a genuine gap, not assumed or estimated.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: ETN
+    comparability_rationale: Eaton -- power-infrastructure/electrification peer by rough industry analogy
+      (not independently verified via a fresh search for this specific pairing).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: PWR
+    comparability_rationale: Quanta Services -- power-infrastructure/electrification peer by rough industry
+      analogy (not independently verified via a fresh search for this specific pairing).
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Backlog growth and Prolec GE acquisition
+    variables:
+    - variable_name: backlog_growth_and_prolec_ge_acquisition
+      evidence_basis: Backlog increased to $150B as of FY2025 year-end. GE Vernova's own Q4/FY2025 results
+        press release references a Prolec GE acquisition in its headline ('increasing outlook with Prolec
+        GE acquisition'), indicating a real, recent transaction affecting guidance -- deal size, structure,
+        and close date were not found this session.
+      provenance_label: historically_observed
+uncertainty_summary: 'All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  This is the weakest-covered record in this population pass: GE Vernova has existed as a standalone public
+  company only since approximately April 2024 (spun off from General Electric) -- the exact spin-off date
+  was not independently re-confirmed this session -- meaning at most ~1.5-2 completed fiscal years of
+  clean standalone history exist, nowhere near the general 5-year target. This is the disclosed IPO/spin-off
+  shortened-history exception under VALUATION-0005 SS C.1, applied for a genuine structural limitation.
+  FY2024 standalone revenue/net-income/EPS were not found this session (a real gap, this research session''s
+  search budget was exhausted before it could be located) and are therefore also absent from this record
+  -- only the single available FY2025 period is populated. Segment revenue, balance-sheet detail beyond
+  cash, capex, D&A, diluted share count, and current stock price/market cap were all not found and are
+  abstained rather than estimated.'
+abstention_index:
+- domain: segment_evidence
+  reason: GEV's Power/Wind/Electrification segment revenue breakdown was not found this session -- a direct
+    gap against the segment-evidence domain, disclosed rather than estimated. This research session's
+    WebSearch budget was exhausted before this specific search could be run.
+- domain: market_observed_evidence
+  reason: No reliable current stock price or market capitalization for GEV was found this session -- a
+    genuine gap, not assumed or estimated.
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: GEV
+content_sha256: 93a5795f057a4e1cff16f2191d75917be11a615689d25f6a9a66aa8f4d50d99a

@@ -1,0 +1,387 @@
+schema_version: '1.0'
+ticker: ICE
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 7146
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2021 net revenue (ICE's own headline metric, net of transaction-based
+            expenses)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 4100
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2021 net income attributable to ICE
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Inflated by a large one-time gain from the Coinbase divestment/Bakkt deconsolidation,
+            disclosed in the underlying source commentary explaining the 2021-to-2022 net income collapse.
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 7292
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2022 net revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 1400
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2022 net income attributable to ICE
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: Sharp decline from 2021 explained in source commentary by net losses from Bakkt
+            in 2022 plus the absence of 2021's one-time gain.
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 7988
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2023 net revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 2400
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2023 net income attributable to ICE
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 9279
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2024 net revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: A separate aggregator (macrotrends) showed '2025 revenue $12.64B,' very likely gross
+            revenue before transaction-based expenses rather than ICE's own headlined net-revenue convention
+            -- not reconciled, net revenue used consistently here per ICE's own convention.
+    - item_category: earnings
+      value: 2800
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2024 net income attributable to ICE
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.46
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2024 GAAP operating margin (GAAP operating income $4.3B; adjusted operating
+            margin separately reported at 59%, adjusted operating income $5.5B)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 9930
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2025 net revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 3300
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2025 net income attributable to ICE
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: operating_margin
+      value: 0.5
+      unit: ratio
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2025 GAAP operating margin (GAAP operating income $4.9B; adjusted operating
+            margin separately reported at 60%, adjusted operating income $6.0B)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 4200
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2025 'adjusted free cash flow' (company's own non-GAAP figure)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: A simple operating-cash-flow-minus-capex calculation ($4.7B - $791M = $3.9B) does
+            not match this $4.2B 'adjusted' figure; ICE's own adjusted-FCF methodology differs from a
+            plain subtraction and the reconciliation was not found.
+    - item_category: capex
+      value: 791
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2025 capital expenditures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 850
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE cash & short-term investments, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 19000
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE total debt, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: net_debt
+      value: 18150
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: total debt $19.0B minus cash & short-term investments $850M equals ~$18.15B
+        net debt.'
+      provenance:
+        sources:
+        - source_identifier: ICE balance sheet, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 572
+      unit: shares_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): FY2025 net income $3,300M divided by diluted EPS $5.77
+        equals ~572M diluted shares.'
+      provenance:
+        sources:
+        - source_identifier: ICE FY2025 net income and diluted EPS figures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: total_equity
+      value: 28700
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE shareholder equity, Dec 31 2025
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments:
+  - segment_name: Exchanges
+    revenue:
+      item_category: revenue
+      value: 5000
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2024 Exchanges segment revenue, +12% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Fixed Income & Data Services
+    revenue:
+      item_category: revenue
+      value: 2300
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2024 Fixed Income & Data Services segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Mortgage Technology
+    revenue:
+      item_category: revenue
+      value: 2000
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2024 Mortgage Technology segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    profit:
+      item_category: earnings
+      value: -170
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: ICE FY2024 Mortgage Technology segment operating loss (-8% margin); adjusted
+            operating income separately reported at $724M, 36% adjusted margin
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: This segment table is for FY2024, the most recent full breakdown found -- a FY2025
+            segment split was not located.
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 149.84
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Aug 5 2026. A market cap figure of $89.14B was dated March 2026 (stale); a derived
+          current estimate at this price x ~572M shares is ~$85.7B (derived, low confidence).
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: CME
+    comparability_rationale: CME Group -- largest US derivatives/futures exchange operator.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: NDAQ
+    comparability_rationale: Nasdaq Inc -- exchange plus market-data/technology hybrid business model.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: CBOE
+    comparability_rationale: Cboe Global Markets -- options/equities exchange operator.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Pending MarketAxess acquisition
+    variables:
+    - variable_name: pending_marketaxess_acquisition
+      evidence_basis: Announced ~Jul 30 2026, $167/share, $5.7B enterprise value, unanimous board approval
+        on both sides, expected close H1 2027 pending shareholder/regulatory approval.
+      provenance_label: historically_observed
+  - scenario_name: Black Knight acquisition
+    variables:
+    - variable_name: black_knight_acquisition
+      evidence_basis: Completed September 2023, $13.1B deal value, forms the core of the ICE Mortgage
+        Technology segment alongside prior Ellie Mae (2020), Simplifile (2019), and MERS (2018) deals
+        -- a major restructuring event limiting clean pre/post comparability for that segment.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  ICE's own net-revenue convention (net of transaction-based expenses) is used consistently for the revenue
+  trend above; a separate gross-revenue figure found for 2025 was not reconciled and is disclosed, not
+  used. FY2025 segment revenue was not located (only FY2024's), so segment_evidence reflects FY2024 with
+  that limitation disclosed. ICE's own 'adjusted free cash flow' methodology does not reconcile to a simple
+  OCF-minus-capex calculation and the gap is disclosed rather than resolved. Current market capitalization
+  is a low-confidence derived estimate, since the only directly reported figure found was several months
+  stale.
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: ICE
+content_sha256: d656c6cc10bd37a4a6b1dc2f062ca5e49ddb7bf0d94ad22c9462540177e80ee5

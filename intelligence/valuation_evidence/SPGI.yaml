@@ -1,0 +1,343 @@
+schema_version: '1.0'
+ticker: SPGI
+asset_class: equity
+financial_evidence:
+  periods:
+  - period_type: annual
+    fiscal_period_end_date: '2021-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 8300
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2021 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 3020
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): reverse-engineered from later years'' stated figures/context,
+        not a directly reported number.'
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2021 context surrounding the 2022 IHS Markit merger
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2022-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 11181
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2022 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: The FY2021-to-FY2022 revenue jump (+35%) is almost entirely attributable to the
+            Feb 28 2022 IHS Markit all-stock merger (~$43.5B consideration, 113.8M new shares issued),
+            not organic growth -- a major comparability break.
+    - item_category: earnings
+      value: 3248
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2022 net income
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2023-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 12497
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2023 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 2626
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2023 net income, -19.15% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2024-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 14208
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2024 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 3852
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2024 net income, +46.69% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - period_type: annual
+    fiscal_period_end_date: '2025-12-31'
+    as_of_date: '2026-08-09'
+    restated: false
+    line_items:
+    - item_category: revenue
+      value: 15336
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2025 revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: earnings
+      value: 4471
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2025 net income, +16% YoY
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: free_cash_flow
+      value: 5560
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI trailing-twelve-month free cash flow (basis/period ambiguous, may not
+            equal clean FY2025); company's own FY2025 FCF guidance range was $5.4-5.6B operating-based
+            / $5.6-5.8B adjusted
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: cash
+      value: 1810
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI cash (recent)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: debt
+      value: 13900
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI total debt (recent)
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: net_debt
+      value: 12090
+      unit: usd_millions
+      value_basis: derived
+      derivation_note: 'Derived: total debt $13.90B minus cash $1.81B equals ~$12.09B net debt.'
+      provenance:
+        sources:
+        - source_identifier: SPGI balance sheet figures above
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+    - item_category: share_count_diluted
+      value: 305
+      unit: shares_millions
+      value_basis: derived
+      derivation_note: 'Derived (approximate): FY2025 net income $4,471M divided by diluted EPS $14.66
+        (GAAP) equals ~305M diluted shares.'
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2025 net income and diluted EPS figures
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+segment_evidence:
+  segments:
+  - segment_name: Market Intelligence
+    revenue:
+      item_category: revenue
+      value: 4920
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2025 Market Intelligence segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Ratings
+    revenue:
+      item_category: revenue
+      value: 4720
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2025 Ratings segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+  - segment_name: Mobility
+    revenue:
+      item_category: revenue
+      value: 1750
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2025 Mobility segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+          limitation: 'The Mobility segment was spun off as Mobility Global Inc. (NYSE: MBGL) effective
+            Jul 1 2026, removing it from SPGI''s go-forward segment structure -- not reflected in this
+            FY2025 figure.'
+  - segment_name: Indices
+    revenue:
+      item_category: revenue
+      value: 1850
+      unit: usd_millions
+      value_basis: reported
+      provenance:
+        sources:
+        - source_identifier: SPGI FY2025 Indices segment revenue
+          source_type: secondary
+          as_of_date: '2026-08-09'
+          access_status: consulted_via_search_aggregation
+market_observed_evidence:
+  inputs:
+  - input_name: observed_share_price
+    value: 405.24
+    unit: usd_per_share
+    as_of_date: '2026-08-09'
+    value_basis: reported
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, current stock price
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+        limitation: Aug 6 2026; market cap reported as both $123.96B (Jul 2026) and $122.7B (a second
+          source), minor variance.
+discount_rate_evidence:
+  abstention_reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax
+    rate, capital-structure weights, beta observation) was conducted in this evidence-gathering pass --
+    this domain requires a separate research effort beyond the financial-statement, market-price, segment,
+    peer-candidate, and catalyst/scenario research performed here.
+peer_set_evidence:
+  candidates:
+  - identity: MCO
+    comparability_rationale: Moody's Corporation -- closest direct peer, core credit-ratings overlap.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: MSCI
+    comparability_rationale: MSCI Inc -- index/ESG-data overlap with SPGI's Indices segment.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+  - identity: CME
+    comparability_rationale: CME Group -- was SPGI's 50/50 OSTTRA joint-venture partner (now divested),
+      an adjacent market-data/derivatives-infrastructure business.
+    provenance:
+      sources:
+      - source_identifier: WebSearch aggregation, candidate peer identification
+        source_type: secondary
+        as_of_date: '2026-08-09'
+        access_status: consulted_via_search_aggregation
+    as_of_date: '2026-08-09'
+    inclusion_status: included
+    inclusion_rationale: Disclosed as a comparability candidate only; no peer set has been selected or
+      applied to any valuation.
+scenario_evidence:
+  scenarios:
+  - scenario_name: Mobility Global spin-off
+    variables:
+    - variable_name: mobility_global_spin-off
+      evidence_basis: Completed Jul 1 2026; 1:1 pro-rata share distribution to holders of record Jun 15
+        2026; now trades independently on NYSE as MBGL, removing the Mobility segment from SPGI going
+        forward.
+      provenance_label: historically_observed
+  - scenario_name: OSTTRA joint-venture divestiture
+    variables:
+    - variable_name: osttra_joint-venture_divestiture
+      evidence_basis: The CME/SPGI 50-50 post-trade joint venture was sold to KKR-managed funds for $3.1B
+        total enterprise value, split evenly between the two parents, completed 2026.
+      provenance_label: historically_observed
+uncertainty_summary: All figures secondary/search-aggregation-sourced; no primary document directly opened.
+  FY2021 net income is a low-confidence derived estimate. Operating income/margin was not found as a clean
+  dollar figure for any year despite qualitative commentary ('operating margin grew... driven by revenue
+  growth across all five divisions') and is omitted rather than estimated. Segment figures mix full-year
+  (revenue, where found) and margin-only H1-2025 detail in the underlying research -- only full-year revenue
+  is reported in segment_evidence above (Commodity Insights full-year revenue was not found and is therefore
+  not included as a fifth segment entry). The Feb 2022 IHS Markit merger (~$43.5B all-stock) is the dominant
+  structural discontinuity in this 5-year history -- FY2021-to-FY2022 revenue and share-count changes
+  are merger-driven, not organic.
+abstention_index:
+- domain: discount_rate_evidence
+  reason: No dedicated discount-rate-component research (risk-free rate, cost of debt, tax rate, capital-structure
+    weights, beta observation) was conducted in this evidence-gathering pass -- this domain requires a
+    separate research effort beyond the financial-statement, market-price, segment, peer-candidate, and
+    catalyst/scenario research performed here.
+freshness_state:
+  most_recent_evidence_date: '2026-08-09'
+  review_cadence_days: 90
+  next_review_due_date: '2026-11-07'
+  stale: false
+record_status: sealed
+sealed_at: '2026-08-09T00:00:00Z'
+governing_decision: VALUATION-0005
+drafting_session_or_shard_id: ws0015-valuation0005-stage3-implementation
+cohort_manifest_entry: SPGI
+content_sha256: 42b5f338fe1a8daa5fd6e17be1332e52b03560dc12152df748a9334c2b89b587
