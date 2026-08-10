@@ -1,0 +1,99 @@
+schema_version: '1.0'
+ticker: GEV
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/GEV.yaml
+  content_sha256: cf775759133b2fcd128fccb9f8bf5964fbdbbef7493c1ad1fb154eb40052b7ca
+evidence_reference:
+  source_file: intelligence/valuation_evidence/GEV.yaml
+  content_sha256: 93a5795f057a4e1cff16f2191d75917be11a615689d25f6a9a66aa8f4d50d99a
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_5_relative_valuation
+  governed_role: primary_candidate
+  family_status: partial
+  valuation_range:
+    low: 73500
+    base: 93100
+    high: 117600
+    unit_and_basis: USD millions, aggregate implied equity value (no diluted share count available in
+      Stage-3 evidence to convert to a per-share basis)
+    governing_sensitivity: Illustrative P/E-equivalent band for a capital-intensive power-generation-equipment
+      infrastructure archetype (B); capped at partial (see uncertainty_summary), not completed, despite
+      mechanically meeting the two-peer floor.
+  assumptions_ledger:
+  - assumption_name: pe_multiple_low
+    value: 15
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end pe multiple; no peer-specific trading multiple was
+      gathered in Stage-3 evidence (only peer identities/comparability rationale), so this is a disclosed
+      illustrative band, not a peer-derived figure.
+  - assumption_name: pe_multiple_base
+    value: 19
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base-case pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: pe_multiple_high
+    value: 24
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: latest_fy_net_income
+    value: 4900
+    provenance_label: historically_observed
+    source_or_derivation_note: FY2025 (ended 2025-12-31) net income $4,900M, reported, from the pinned
+      Stage-3 evidence record's own financial_evidence -- the only fiscal period populated for GEV.
+  applied_peers:
+  - ETN
+  - PWR
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-B
+  P/E-equivalent assumption applied to a single fiscal period's aggregate net income; not an independent
+  fair-value opinion.
+uncertainty_summary: 'family_5 (relative valuation) was attempted, using GEV''s only populated fiscal
+  period of net income, but is deliberately capped at partial rather than completed: two of GEV''s six
+  Stage-3 evidence domains (segment_evidence, market_observed_evidence) are abstained, and only one fiscal
+  period of financial_evidence exists (no multi-year trend data, unlike every other ticker in this cohort).
+  No diluted share count is populated either, so the range is presented in aggregate dollar terms. No
+  peer-specific trading multiples were gathered in Stage-3 evidence (peer_set_evidence carries only candidate
+  identity and comparability rationale) -- the multiple band applied here is a disclosed, illustrative
+  assumption (provenance_label: assumed_for_illustration), archetype-informed but not peer-derived or
+  market-derived. family_2 (FCFF DCF), adjustment_required for archetype B and prohibited for archetype
+  C, was not applied to any ticker in this batch -- discount_rate_evidence is abstained across all 27
+  sealed Stage-3 evidence records (VALUATION-0005), so no discount rate, WACC, beta, or terminal growth
+  rate was fabricated for this or any other ticker.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+  - market_observed_evidence
+  - segment_evidence
+conflicts_carried_forward: []
+result_status: partial
+cross_asset_handoff:
+  ticker: GEV
+  asset_class: equity
+  result_status: partial
+  family_summary:
+  - family_id: family_5_relative_valuation
+    governed_role: primary_candidate
+    family_status: partial
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+    - market_observed_evidence
+    - segment_evidence
+record_status: sealed
+abstention_reason: 'family_5 reached family_status partial only (not completed): thin single-period evidence
+  base with two abstained domains.'
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchC-relative
+content_sha256: a2106e2678f5af83dddb57d09b1610a513cb4504df2f926a17ae893353993167
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for GEV

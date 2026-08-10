@@ -1,0 +1,143 @@
+schema_version: '1.0'
+ticker: MSFT
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/MSFT.yaml
+  content_sha256: dd2b445ae07db2b2b7583c2673ebb8bc99e7eec672e7f613445d7d9beb125e37
+evidence_reference:
+  source_file: intelligence/valuation_evidence/MSFT.yaml
+  content_sha256: cdfaba4efe4e09315e2d31f7c9d5f04a3930a6299c5d5502078cb11c7cbe8b30
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_1_asset_based_sotp
+  governed_role: primary_candidate
+  family_status: completed
+  valuation_range:
+    low: 269.22
+    base: 331.76
+    high: 413.22
+    unit_and_basis: USD per diluted share, equity value (sum-of-segments enterprise value less net debt,
+      divided by diluted shares)
+    governing_sensitivity: Range reflects a +/-multiple sensitivity band summed across disclosed segments,
+      less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
+      exercise, not an independent fair-value opinion, and not a comparison to the current market price.
+  assumptions_ledger:
+  - assumption_name: pbp_ebit_multiple_low
+    value: 14
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative low-end ebit multiple applied to the Productivity and Business
+      Processes segment''s reported ebit of 83879; no segment-specific peer trading multiple was gathered
+      in Stage-3 evidence, so this is a disclosed illustrative assumption. (Segment''s own disclosed margin:
+      59.9% = 83879/139996, used to select this multiple tier.)'
+  - assumption_name: pbp_ebit_multiple_base
+    value: 17
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative base-end ebit multiple applied to the Productivity and Business
+      Processes segment''s reported ebit of 83879; no segment-specific peer trading multiple was gathered
+      in Stage-3 evidence, so this is a disclosed illustrative assumption. (Segment''s own disclosed margin:
+      59.9% = 83879/139996, used to select this multiple tier.)'
+  - assumption_name: pbp_ebit_multiple_high
+    value: 21
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative high-end ebit multiple applied to the Productivity and Business
+      Processes segment''s reported ebit of 83879; no segment-specific peer trading multiple was gathered
+      in Stage-3 evidence, so this is a disclosed illustrative assumption. (Segment''s own disclosed margin:
+      59.9% = 83879/139996, used to select this multiple tier.)'
+  - assumption_name: cloud_ebit_multiple_low
+    value: 14
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative low-end ebit multiple applied to the Intelligent Cloud segment''s
+      reported ebit of 56972; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 41.3% = 56972/137791,
+      used to select this multiple tier.)'
+  - assumption_name: cloud_ebit_multiple_base
+    value: 17
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative base-end ebit multiple applied to the Intelligent Cloud segment''s
+      reported ebit of 56972; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 41.3% = 56972/137791,
+      used to select this multiple tier.)'
+  - assumption_name: cloud_ebit_multiple_high
+    value: 21
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative high-end ebit multiple applied to the Intelligent Cloud segment''s
+      reported ebit of 56972; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 41.3% = 56972/137791,
+      used to select this multiple tier.)'
+  - assumption_name: mpc_ebit_multiple_low
+    value: 11
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative low-end ebit multiple applied to the More Personal Computing
+      segment''s reported ebit of 14349; no segment-specific peer trading multiple was gathered in Stage-3
+      evidence, so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 26.6%
+      = 14349/54013, used to select this multiple tier.)'
+  - assumption_name: mpc_ebit_multiple_base
+    value: 14
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative base-end ebit multiple applied to the More Personal Computing
+      segment''s reported ebit of 14349; no segment-specific peer trading multiple was gathered in Stage-3
+      evidence, so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 26.6%
+      = 14349/54013, used to select this multiple tier.)'
+  - assumption_name: mpc_ebit_multiple_high
+    value: 17
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative high-end ebit multiple applied to the More Personal Computing
+      segment''s reported ebit of 14349; no segment-specific peer trading multiple was gathered in Stage-3
+      evidence, so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 26.6%
+      = 14349/54013, used to select this multiple tier.)'
+  - assumption_name: net_debt_bridge
+    value: 125400
+    provenance_label: historically_observed
+    source_or_derivation_note: Debt 125400 minus cash/equivalents 0, as sourced in the pinned Stage-3
+      evidence record; subtracted from segment-summed enterprise value to reach implied equity value.
+  - assumption_name: diluted_shares_outstanding
+    value: 7445
+    provenance_label: historically_observed
+    source_or_derivation_note: Diluted share count as sourced in the pinned Stage-3 evidence record's
+      own financial_evidence.
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band summed across disclosed segments,
+  less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
+  exercise, not an independent fair-value opinion, and not a comparison to the current market price.
+uncertainty_summary: 'Sum-of-the-parts range built from real reported FY2026 segment revenue and operating
+  profit for all three segments, and consolidated debt. Each segment gets its own margin-derived EV/EBIT
+  multiple tier (Productivity and Business Processes at 59.9% and Intelligent Cloud at 41.3% margin both
+  select the high tier; More Personal Computing''s materially lower 26.6% margin selects the mid tier)
+  -- genuine per-segment differentiation grounded in each segment''s own disclosed figures. No ''cash''
+  item_category is populated in Stage-3 evidence for MSFT (only ''debt''), so this record''s net-debt
+  bridge conservatively subtracts debt only, without adding back any cash offset -- disclosed as a downward-biasing
+  simplification, not a claim that MSFT holds zero cash. The per-segment multiples applied here are disclosed,
+  illustrative assumptions (provenance_label: assumed_for_illustration) -- no segment-specific peer trading
+  multiple was gathered in Stage-3 evidence. family_2 (FCFF DCF) and family_3 (FCFE DCF), while adjustment_required
+  rather than blocked outright for archetype F, were not applied -- discount_rate_evidence is abstained
+  across all 27 sealed Stage-3 evidence records (VALUATION-0005), so no discount rate, WACC, beta, or
+  terminal growth rate was fabricated for this or any other ticker.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+conflicts_carried_forward: []
+result_status: completed
+cross_asset_handoff:
+  ticker: MSFT
+  asset_class: equity
+  result_status: completed
+  family_summary:
+  - family_id: family_1_asset_based_sotp
+    governed_role: primary_candidate
+    family_status: completed
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+record_status: sealed
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchB-sotp
+content_sha256: b007c76c6026dd4deb5f6cf7b4c25c5dbaecb502ac79651bfab32db2344e3d8d
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for MSFT
