@@ -376,6 +376,11 @@ _PORTFOLIO_DIVERSIFICATION_PATTERNS = [
         r"\bportfolio\b[^.]{0,60}diversif\w*",
         r"\bportfolio\b[^.]{0,60}correlat(?:ed|ion)\w*",
         r"reduc\w*[^.]{0,60}\bportfolio\b[^.]{0,30}\b(risk|drawdown|volatility)\b",
+        # Reversed word order of the pattern immediately above -- "the
+        # portfolio's risk is reduced by GLD" states the identical claim
+        # with "portfolio...risk" preceding "reduc(ed)", which the
+        # forward-order pattern alone does not match.
+        r"\bportfolio(?:'s)?\b[^.]{0,30}\b(risk|drawdown|volatility)\b[^.]{0,60}reduc\w*",
         r"\bportfolio\b[^.]{0,20}\bhedge\w*\b",
         r"offsets?\w*[^.]{0,60}\bportfolio\b",
     )
@@ -409,11 +414,53 @@ _DISCLAIMING_NEGATION_PATTERN = re.compile(
     r"(?:compute|constitute|impl\w*|substitute|establish\w*|determine\w*|represent\w*|assert\w*|claim\w*|find\w*|show\w*|demonstrate\w*|indicate\w*|prove\w*)",
     re.IGNORECASE,
 )
+
+# Second bounded correction (same-sentence, cross-clause negation
+# laundering, disclosed in the retained audit SS10): a genuine negation in
+# one clause of a sentence was being treated as disclaiming a later,
+# independent claim in a *different* clause of the same sentence, joined
+# by a comma+conjunction, a semicolon, or a contrastive conjunction (e.g.
+# "This does not establish X, and GLD diversifies the whole portfolio.").
+# Sentence-scoping alone is too coarse for negation; a disclaiming cue
+# must be evaluated per *clause*, not per sentence.
+#
+# `remains separately governed` (and equivalent phrasing) is accepted as a
+# second, independent disclaiming cue alongside the negation-verb pattern
+# above -- both are genuine ways to defer a portfolio-level claim to
+# defensive_offset_interface without literally saying "does not X".
+_DECLARATIVE_DEFERRAL_PATTERN = re.compile(
+    r"remains?\s+(?:separately\s+)?"
+    r"(?:governed|unmeasured|unresolved|ungoverned|undetermined|unaddressed)\b",
+    re.IGNORECASE,
+)
+
+# Clause boundaries: a semicolon; a comma immediately followed by a
+# coordinating conjunction that plausibly opens a new independent clause
+# (deliberately excluding "or" -- "or" overwhelmingly joins items within a
+# same-clause disclaiming-verb list, e.g. "does not compute, constitute,
+# imply, or substitute for X", and splitting on it there would sever a
+# genuine negation from the very claim it disclaims); or a bare
+# contrastive conjunction, with or without a preceding comma. This is a
+# conservative, punctuation/conjunction-based split -- not a general-
+# purpose NLP parser -- chosen specifically because every demonstrated
+# bypass construction (comma+and, comma+but, semicolon, "however"/"yet")
+# is one of these forms, while the real sealed disclaimer's own
+# comma+"or" verb list is deliberately left unsplit.
+_CLAUSE_BOUNDARY_PATTERN = re.compile(
+    r";"
+    r"|,\s*(?=(?:and|but|yet|so|nor)\b)"
+    r"|\b(?:but|however|though|although|yet|while)\b",
+    re.IGNORECASE,
+)
 _SENTENCE_SPLIT_PATTERN = re.compile(r"(?<=[.!?])\s+")
 
 
 def _split_sentences(text: str) -> list[str]:
     return [s for s in _SENTENCE_SPLIT_PATTERN.split(text) if s]
+
+
+def _split_clauses(sentence: str) -> list[str]:
+    return [c for c in _CLAUSE_BOUNDARY_PATTERN.split(sentence) if c and c.strip()]
 
 
 @dataclass
@@ -584,16 +631,23 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
     `single_asset_disclosure` is scanned too (bounded correction -- an
     independent review found the original full exemption too broad,
     §11.1's own "self-declared flag is not a substitute for an
-    independent scan" lesson applied a second time here), but negation-
-    aware and sentence-scoped: a match is allowed only when a genuine
-    disclaiming-negation phrase (`_DISCLAIMING_NEGATION_PATTERN` -- a
-    negation word immediately paired with a disclaiming verb, e.g. "does
-    not compute", never a bare "not" anywhere in the field) appears
-    earlier in the *same sentence*. Sentence-scoping (not a fixed
-    character window) is required for correctness: the real sealed
-    record's own negation cue sits well beyond any small fixed window
-    from the claim it disclaims, so a naive proximity check would
-    misfire against genuine governed content."""
+    independent scan" lesson applied a second time here). The check is
+    negation-aware and **clause-scoped**, not merely sentence-scoped
+    (second bounded correction, disclosed in the retained audit SS10): a
+    sentence is first split into clauses at semicolons, comma+coordinating
+    -conjunction boundaries, and bare contrastive conjunctions
+    (`_split_clauses`), and a portfolio-diversification match is allowed
+    only when a genuine disclaiming cue -- either a disclaiming-negation
+    phrase (`_DISCLAIMING_NEGATION_PATTERN`, e.g. "does not compute") or a
+    declarative-deferral phrase (`_DECLARATIVE_DEFERRAL_PATTERN`, e.g.
+    "remains separately governed") -- appears **anywhere in that same
+    clause**, never merely earlier in the same sentence. Sentence-scoping
+    alone allowed a genuine negation in one clause to "shield" an
+    unrelated, unnegated claim in a later clause of the same sentence
+    (e.g. "This does not establish X, and GLD diversifies the whole
+    portfolio."); clause-scoping closes that gap while still accepting
+    the real sealed record's own multi-clause disclaimer, whose negation
+    and the claim it disclaims sit in the same semicolon-joined clause."""
     rationale = drawdown.get("rationale")
     if isinstance(rationale, str):
         for pattern in _PORTFOLIO_DIVERSIFICATION_PATTERNS:
@@ -609,20 +663,24 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
     disclosure = drawdown.get("single_asset_disclosure")
     if isinstance(disclosure, str):
         for sentence in _split_sentences(disclosure):
-            for pattern in _PORTFOLIO_DIVERSIFICATION_PATTERNS:
-                for m in pattern.finditer(sentence):
-                    preceding = sentence[:m.start()]
-                    if _DISCLAIMING_NEGATION_PATTERN.search(preceding):
-                        continue  # a genuine disclaimer negating this exact claim precedes it
-                    errors.append(
-                        f"historical_equity_drawdown_behavior.single_asset_disclosure: "
-                        f"asserts a whole-portfolio diversification-benefit or correlation-"
-                        f"to-the-current-portfolio claim not preceded, within the same "
-                        f"sentence, by a genuine disclaiming negation -- that remains "
-                        f"defensive_offset_interface's own, separate, still-forced-"
-                        f"abstention job (XASSET-0008 SSE, supporting artifact SS6) "
-                        f"matching pattern {pattern.pattern!r} in sentence {sentence!r}"
-                    )
+            for clause in _split_clauses(sentence):
+                has_disclaiming_cue = (
+                    _DISCLAIMING_NEGATION_PATTERN.search(clause) is not None
+                    or _DECLARATIVE_DEFERRAL_PATTERN.search(clause) is not None
+                )
+                if has_disclaiming_cue:
+                    continue  # a genuine disclaiming cue is present in this same clause
+                for pattern in _PORTFOLIO_DIVERSIFICATION_PATTERNS:
+                    for m in pattern.finditer(clause):
+                        errors.append(
+                            f"historical_equity_drawdown_behavior.single_asset_disclosure: "
+                            f"asserts a whole-portfolio diversification-benefit or correlation-"
+                            f"to-the-current-portfolio claim not accompanied, within the same "
+                            f"clause, by a genuine disclaiming negation or declarative deferral "
+                            f"-- that remains defensive_offset_interface's own, separate, "
+                            f"still-forced-abstention job (XASSET-0008 SSE, supporting artifact "
+                            f"SS6) matching pattern {pattern.pattern!r} in clause {clause!r}"
+                        )
 
 
 def _scan_predictive_language(value: dict, sub_field_name: str, errors: list[str]) -> None:

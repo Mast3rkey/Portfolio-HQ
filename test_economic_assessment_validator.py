@@ -707,7 +707,7 @@ def test_single_asset_disclosure_reviewer_crafted_attack_rejected():
         "diversification benefit to the current portfolio and reduces the portfolio risk "
         "materially, correlated with the current portfolio at a strongly negative level."
     )
-    _assert_invalid(data, contains="not preceded")
+    _assert_invalid(data, contains="not accompanied")
 
 
 def test_single_asset_disclosure_unnegated_diversifies_claim_rejected():
@@ -715,7 +715,7 @@ def test_single_asset_disclosure_unnegated_diversifies_claim_rejected():
     data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
         "This is a single-asset assessment, and GLD therefore diversifies the whole portfolio."
     )
-    _assert_invalid(data, contains="not preceded")
+    _assert_invalid(data, contains="not accompanied")
 
 
 def test_single_asset_disclosure_unnegated_drawdown_reduction_claim_rejected():
@@ -723,7 +723,7 @@ def test_single_asset_disclosure_unnegated_drawdown_reduction_claim_rejected():
     data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
         "This is a single-asset finding. GLD reduces total portfolio drawdown."
     )
-    _assert_invalid(data, contains="not preceded")
+    _assert_invalid(data, contains="not accompanied")
 
 
 def test_single_asset_disclosure_unnegated_negative_correlation_claim_rejected():
@@ -731,7 +731,7 @@ def test_single_asset_disclosure_unnegated_negative_correlation_claim_rejected()
     data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
         "This is a single-asset finding. GLD is negatively correlated with the portfolio."
     )
-    _assert_invalid(data, contains="not preceded")
+    _assert_invalid(data, contains="not accompanied")
 
 
 def test_single_asset_disclosure_unnegated_portfolio_offset_claim_rejected():
@@ -739,7 +739,7 @@ def test_single_asset_disclosure_unnegated_portfolio_offset_claim_rejected():
     data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
         "This is a single-asset finding, and this asset offsets equity risk at the portfolio level."
     )
-    _assert_invalid(data, contains="not preceded")
+    _assert_invalid(data, contains="not accompanied")
 
 
 def test_single_asset_disclosure_unnegated_portfolio_hedge_claim_rejected():
@@ -747,7 +747,7 @@ def test_single_asset_disclosure_unnegated_portfolio_hedge_claim_rejected():
     data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
         "This is a single-asset finding, and this provides a portfolio hedge."
     )
-    _assert_invalid(data, contains="not preceded")
+    _assert_invalid(data, contains="not accompanied")
 
 
 @pytest.mark.parametrize("boundary_sentence", [
@@ -791,7 +791,135 @@ def test_single_asset_disclosure_negation_does_not_launder_across_sentences():
         "This finding does not overreach in any way. Separately, GLD provides a diversification "
         "benefit to the current portfolio."
     )
-    _assert_invalid(data, contains="not preceded")
+    _assert_invalid(data, contains="not accompanied")
+
+
+# ── second bounded correction: clause-scoped negation (not merely
+# sentence-scoped) ────────────────────────────────────────────────────────
+# A fresh independent exact-head delta review (pullrequestreview-4896559501)
+# found the first correction's sentence-scoped negation check could still
+# be bypassed: a genuine negation in one clause of a sentence can "shield"
+# an unnegated whole-portfolio claim in a *different* clause of the same
+# sentence, joined by a comma+conjunction, semicolon, or contrastive
+# conjunction. These tests reproduce the reviewer's demonstrated bypass
+# constructions and confirm the corrected, clause-scoped scan closes it.
+
+@pytest.mark.parametrize("laundering_sentence", [
+    "This assessment does not establish portfolio diversification, and GLD diversifies the whole portfolio.",
+    "This assessment does not establish portfolio correlation; GLD is negatively correlated with the portfolio.",
+    "This single-asset evidence does not resolve diversification, but GLD provides a portfolio hedge.",
+    "This single-asset evidence does not establish diversification, but GLD provides a portfolio hedge.",
+    "This finding does not compute a whole-portfolio diversification benefit, but gold reduces portfolio risk during equity drawdowns.",
+    "This finding does not establish a portfolio-level diversification benefit; gold offsets portfolio risk during equity drawdowns.",
+])
+def test_single_asset_disclosure_same_sentence_cross_clause_laundering_rejected(laundering_sentence):
+    """The exact class of bypass the independent review demonstrated:
+    a genuine negation in one clause must not shield an unnegated
+    whole-portfolio claim in a different clause of the same sentence."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        laundering_sentence
+    )
+    _assert_invalid(data, contains="not accompanied")
+
+
+@pytest.mark.parametrize("laundering_sentence", [
+    "This does not establish anything, and GLD reduces the portfolio's drawdown during equity crashes.",
+    "This does not establish anything, and GLD offers a portfolio hedge against equity declines.",
+    "This does not establish anything, and GLD offsets the portfolio's equity risk.",
+    "This does not establish anything, and the portfolio's risk is reduced by GLD.",
+])
+def test_single_asset_disclosure_laundered_claim_variants_rejected(laundering_sentence):
+    """Nearby variants of the laundering construction -- proving the fix
+    is semantic (clause-scoped negation), not hardcoded to the reviewer's
+    two exact example strings."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        laundering_sentence
+    )
+    _assert_invalid(data, contains="not accompanied")
+
+
+@pytest.mark.parametrize("legit_sentence", [
+    "This single-asset assessment does not establish whole-portfolio diversification or correlation.",
+    "This does not establish portfolio diversification; it also does not establish portfolio correlation.",
+    "This does not establish portfolio diversification. This does not establish portfolio correlation either.",
+    "Whole-portfolio diversification and correlation effects remain separately governed by the overlap model.",
+    "The defensive_offset_interface dimension, which would characterize any portfolio diversification benefit, remains unresolved.",
+])
+def test_single_asset_disclosure_clause_scoped_legitimate_disclaimers_accepted(legit_sentence):
+    """Legitimate disclaimer constructions -- single-clause, semicolon-
+    joined with both clauses non-assertive, two wholly separate negative
+    sentences, and declarative-deferral phrasing -- must still validate
+    clean under the clause-scoped design. Each is prefixed with the
+    required single-asset marker sentence (SS6's mandatory disclosure
+    requirement), matching test_single_asset_disclosure_allowed_boundary_
+    language_accepted's own established fixture pattern."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        f"This finding is single-asset and historical only. {legit_sentence}"
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert result.valid, result.errors
+
+
+def test_single_asset_disclosure_multi_clause_disclaimer_with_deferral_accepted():
+    """A multi-clause disclaimer where the second, comma+and-joined clause
+    defers to governance rather than repeating a negation -- the
+    declarative-deferral cue, not just the negation-verb cue, must satisfy
+    the same-clause disclaiming-cue check."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This is a single-asset assessment; it does not establish whole-portfolio "
+        "diversification, and portfolio correlation remains separately governed."
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert result.valid, result.errors
+
+
+def test_single_asset_disclosure_negation_still_does_not_launder_across_sentences_clause_scoped():
+    """The first correction's own cross-sentence laundering guard must
+    still hold under the clause-scoped rewrite -- a negation in an earlier
+    sentence must not excuse an unnegated claim in a wholly separate later
+    sentence, regardless of clause boundaries within either one."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This finding does not overreach in any way. Separately, GLD provides a diversification "
+        "benefit to the current portfolio."
+    )
+    _assert_invalid(data, contains="not accompanied")
+
+
+def test_rationale_diversification_scan_still_unconditional_after_clause_scoping():
+    """rationale's unconditional-block behavior (no negation or deferral
+    carve-out of any kind) must remain unchanged by the clause-scoping
+    rewrite, which touches only single_asset_disclosure's own scan."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["rationale"] = (
+        "This does not establish that gold diversifies the whole portfolio, and portfolio "
+        "effects remain separately governed."
+    )
+    _assert_invalid(data, contains="whole-portfolio diversification")
+
+
+def test_single_asset_disclosure_real_disclaimer_text_accepted_clause_scoped():
+    """The real sealed record's own single_asset_disclosure text (a
+    semicolon-joined, multi-verb-list disclaimer) must still validate
+    clean under the clause-scoped rewrite -- confirms the comma+'or'
+    exclusion from the clause-boundary pattern was the correct fix for
+    the regression the clause-scoping design first introduced."""
+    data = yaml.safe_load(
+        (REPO_ROOT / "intelligence" / "economic_assessment" / "GLD.yaml").read_text()
+    )
+    disclosure = data["instrument_specific_economic_characterization"][
+        "historical_equity_drawdown_behavior"
+    ]["single_asset_disclosure"]
+    assert "does not compute, constitute, imply, or substitute" in disclosure
+    errors: list[str] = []
+    eav._scan_overlap_model_non_duplication(
+        {"rationale": "", "single_asset_disclosure": disclosure}, errors
+    )
+    assert errors == []
 
 
 def test_rationale_diversification_scan_still_unconditional_no_negation_carveout():
