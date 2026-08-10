@@ -70,13 +70,22 @@ promotion/demotion, no portfolio selection, and no capital-allocation decision.
   records — confirmed by direct inspection of `governance/decisions/PI-0019*.md` and
   `PI-0021*.md`.
 - **Canonical validator population-closure mechanism** independently confirmed by direct source
-  inspection: `classification_validator.py` (Milestone 6), `valuation_archetype_validator.py`,
-  `valuation_evidence_validator.py`, and `valuation_result_validator.py` all import and enforce
-  `relationship_validator.load_canonical_universe()` — a live, 27-name population derived from
-  `targets.yaml`'s `destination:` list, `asset_class == equity` only — as their hard population
-  ceiling. Neither `VRT` nor `WMT` can pass any of these validators' population checks without either
-  adding them to `targets.yaml` (out of scope, prohibited) or weakening the validators themselves
-  (explicitly prohibited by this filing's own authorizing instruction).
+  inspection: `classification_validator.py` (Milestone 6), `valuation_archetype_validator.py`, and
+  `valuation_evidence_validator.py` all import and enforce `relationship_validator.
+  load_canonical_universe()` — a live, 27-name population derived from `targets.yaml`'s
+  `destination:` list, `asset_class == equity` only — as their hard population ceiling.
+  `valuation_result_validator.py` does **not** import `relationship_validator` or call
+  `load_canonical_universe()` at all — independently confirmed by direct grep (zero matches) and by
+  its own module docstring, which states explicitly it is "**roster-agnostic by design (`VALUATION-
+  0006` §B): no closed/authorized population is enforced here**," a deliberate accepted design choice
+  distinct from the other three validators, not an oversight. This does not change this filing's own
+  conclusion: three of the four canonical validators genuinely hard-enforce the 27-name population,
+  and none of the four validators — including the roster-agnostic one — defines any schema field
+  this pilot's own `contender_evaluation` records could populate, so a dedicated non-canonical
+  domain remains necessary regardless of `valuation_result_validator.py`'s own population posture.
+  Neither `VRT` nor `WMT` can pass either of the three hard-enforced validators' population checks
+  without either adding them to `targets.yaml` (out of scope, prohibited) or weakening the validators
+  themselves (explicitly prohibited by this filing's own authorizing instruction).
 - **No existing decision authorizes contender-evaluation content of any kind.** `CONTENDER-0001` §F
   and `CONTENDER-0002` §M both explicitly withhold authorization for "additional blind classification
   of any equity beyond the sealed 27"; `XASSET-0001` §I item 3 / §J step 2 name this work as its own
@@ -131,9 +140,12 @@ The future implementation this filing authorizes must reuse, unmodified, by refe
    established convention: an abstention on one field never forces or implies a value on another.
 4. **False-precision controls** — `VALUATION-0002` §3's zero-fabricated-precision doctrine and, more
    specifically, the **zero-numeric-field rule with no carve-out**, matching `XASSET-0005`'s (`GLD`/
-   `CASH_LIKE_CAPITAL`/functional-doctrine/overlap-model) and `XASSET-0010`'s (ETF/crypto instrument)
-   own strictest posture — stricter even than the equity `valuation_archetype`/`valuation_evidence`/
-   `valuation_result` schemas' own scoped numeric carve-outs (e.g. a sealed cost figure), since this
+   `CASH_LIKE_CAPITAL`/functional-doctrine/overlap-model), `XASSET-0010`'s (ETF/crypto instrument),
+   and `VALUATION-0003`'s (equity `valuation_archetype`, itself already "no numeric field of any
+   kind" — this pilot shares that identical posture, not a stricter one) own zero-numeric-field
+   design. This pilot's own posture is genuinely stricter only relative to `valuation_evidence`'s
+   and `valuation_result`'s schemas — the two layers that do carry governed numeric content (sourced
+   financial figures; low/base/high ranges) — never relative to `valuation_archetype`, since this
    pilot's own purpose is a bounded comparability finding, not a quantitative valuation exercise.
 5. **Methodology-application/result conventions** — `VALUATION-0002` §2's already-accepted, closed
    per-family governed-role table (mapping each of the seven methodology families to a governed role
@@ -158,17 +170,20 @@ bound by reference to its own already-accepted governing text.
 
 ### D. A separate, non-canonical content domain — new directory, dedicated validator
 
-Because `classification_validator.py`, `valuation_archetype_validator.py`, `valuation_evidence_
-validator.py`, and `valuation_result_validator.py` each hard-enforce the live 27-name canonical
-population (§ preflight) and must not be weakened or expanded to admit `VRT`/`WMT` (an explicit
-instruction of this authorization), the future implementation must define a **new, separate,
-non-canonical directory and a dedicated validator module** — matching this repository's own repeated,
-settled pattern of "different population/schema → different directory, different validator" (`etf_
-classification_validator.py`, `crypto_classification_validator.py`, `functional_doctrine_validator.
-py`, `overlap_model_validator.py`, `economic_assessment_validator.py`, `instrument_economic_
-assessment_validator.py` — none shares a population-closure mechanism with any sealed-27 validator,
-and none has ever needed to). This is the smallest structure capable of producing like-for-like
-evidence-parity outputs without touching a single line of any canonical-27 validator.
+Because `classification_validator.py`, `valuation_archetype_validator.py`, and `valuation_evidence_
+validator.py` each hard-enforce the live 27-name canonical population (§ preflight) and must not be
+weakened or expanded to admit `VRT`/`WMT` (an explicit instruction of this authorization) —
+`valuation_result_validator.py` is roster-agnostic by its own accepted `VALUATION-0006` §B design and
+enforces no population at all, but defines no field this pilot's schema could populate either, so its
+different posture does not change the conclusion below — the future implementation must define a
+**new, separate, non-canonical directory and a dedicated validator module** — matching this
+repository's own repeated, settled pattern of "different population/schema → different directory,
+different validator" (`etf_classification_validator.py`, `crypto_classification_validator.py`,
+`functional_doctrine_validator.py`, `overlap_model_validator.py`, `economic_assessment_validator.py`,
+`instrument_economic_assessment_validator.py` — none shares a population-closure mechanism with any
+sealed-27 validator, and none has ever needed to). This is the smallest structure capable of
+producing like-for-like evidence-parity outputs without touching a single line of any canonical-27
+validator.
 
 - **Directory**: `intelligence/contender_evaluation/` — a new, roster-agnostic-in-shape-but-fixed-
   population-in-practice directory, one record per contender ticker (`VRT.yaml`, `WMT.yaml`) plus
@@ -245,9 +260,31 @@ The future, separate, bounded implementation PR this filing authorizes must buil
   replace/supersede/displace its canonical comparator within `targets.yaml`/`holdings.yaml`/the
   canonical 27, and any composite-score- or ranking-shaped key name (`score`, `rank`, `priority_
   index`, `composite`, and equivalents);
+- a further, **materially separate, dedicated comparative-investment-superiority scan** on
+  `evidence_parity_finding.rationale` and `archetype_assessment.rationale` specifically — the
+  forbidden-promotion-language scan above catches only an explicit add/promote/replace/supersede/
+  displace/score/rank assertion, and would not by itself catch a generic comparative-quality claim
+  (e.g. "VRT's business is a stronger investment than GEV," "WMT is the superior compounder,"
+  "better positioned," "preferable investment," "outperform," "underperform," or equivalents) that
+  converts §E.6's own descriptive evidence-completeness/archetype finding into an implied investment
+  preference or expected-relative-performance judgment without ever naming a score, rank, or
+  add/promote/replace action. This scan must remain a bounded, closed term/phrase list — matching
+  every prior pattern-based free-text scan already accepted throughout this repository's validator
+  history — never a generic sentiment/NLP classifier, and must be independently tested with
+  adversarial false positives proving it does **not** reject legitimate descriptive language about
+  evidence completeness, evidence maturity, archetype classification, uncertainty, or abstention
+  (e.g. "the contender's evidence base is materially less mature than the comparator's," "both
+  records share the same primary archetype," "insufficient evidence exists to support a parity
+  determination" must all still validate cleanly);
 - manifest bidirectional reconciliation (hash, duplicate, missing, extra, orphan — every check the
   independent review history of prior manifests in this repository has required);
 - zero import coupling with `allocate.py`/`margin_state.py`, independently AST-verified;
+- a dedicated test confirming `GEV.yaml`/`COST.yaml` and their sealed `valuation_archetype`/
+  Milestone 6 `classification` records remain byte-identical before and after the future
+  implementation, matching `economic_assessment_validator.py`'s and `functional_doctrine_validator.
+  py`'s own established `test_protected_intelligence_records_untouched` precedent — a live
+  `git status --porcelain` check against those exact paths, not merely the structural-reference
+  hash-pin's own indirect, next-run-only detection;
 - a focused test suite covering every check above, both directions of every conditional/closed
   vocabulary, and a real-corpus validation pass against the two real sealed records once populated.
 

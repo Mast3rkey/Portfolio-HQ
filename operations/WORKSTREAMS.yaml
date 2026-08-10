@@ -10177,11 +10177,27 @@ workstreams:
           contender_evaluation_validator.py (hard-coded closed population
           {VRT, WMT}, zero import coupling with allocate.py/margin_state.
           py), explicitly because classification_validator.py/valuation_
-          archetype_validator.py/valuation_evidence_validator.py/
-          valuation_result_validator.py all hard-enforce the live 27-name
-          canonical population via relationship_validator.
-          load_canonical_universe() and must not be weakened or expanded
-          — independently confirmed by direct source inspection. GEV (for
+          archetype_validator.py/valuation_evidence_validator.py all
+          hard-enforce the live 27-name canonical population via
+          relationship_validator.load_canonical_universe() (independently
+          confirmed by direct source inspection); valuation_result_
+          validator.py is independently confirmed roster-agnostic by its
+          own accepted VALUATION-0006 §B design and enforces no
+          population at all, but defines no field this pilot's schema
+          could populate either, so its different posture does not change
+          the conclusion — none of the four may be weakened or expanded.
+          A dedicated, materially separate future-validator scan is
+          required to reject comparative-investment-superiority language
+          (e.g. "stronger investment," "superior compounder,"
+          "outperform") from evidence_parity_finding.rationale/
+          archetype_assessment.rationale specifically, with adversarial
+          false-positive tests proving legitimate evidence-completeness/
+          archetype-classification/abstention language still validates
+          cleanly; a dedicated test_protected_intelligence_records_
+          untouched-style test (matching economic_assessment_validator.
+          py's/functional_doctrine_validator.py's own precedent) is
+          likewise required for GEV.yaml/COST.yaml and their sealed
+          valuation_archetype/classification records. GEV (for
           VRT) and COST (for WMT) are referenced structurally, read-only,
           via a content-hash pin into each comparator's own already-sealed
           valuation_archetype record — neither comparator record is edited
