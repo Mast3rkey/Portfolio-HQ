@@ -411,7 +411,32 @@ _DISCLAIMING_NEGATION_PATTERN = re.compile(
     r"\b(?:does|do|did|is|are|will|can)\s+not\s+"
     r"(?:compute|constitute|imply|substitute|establish|determine|represent|assert|claim|find|show|demonstrate|indicate|prove)\w*"
     r"|\bnever\s+"
-    r"(?:compute|constitute|impl\w*|substitute|establish\w*|determine\w*|represent\w*|assert\w*|claim\w*|find\w*|show\w*|demonstrate\w*|indicate\w*|prove\w*)",
+    r"(?:compute|constitute|impl\w*|substitute|establish\w*|determine\w*|represent\w*|assert\w*|claim\w*|find\w*|show\w*|demonstrate\w*|indicate\w*|prove\w*)"
+    r"|\bnone\b[^.;:]{0,20}?\b"
+    r"(?:establish\w*|constitute\w*|impl\w*|substitute\w*|determine\w*|represent\w*|assert\w*|claim\w*|find\w*|show\w*|demonstrate\w*|indicate\w*|prove\w*)",
+    re.IGNORECASE,
+)
+
+# Fourth bounded correction, MINOR half (a legitimate quantifier-negation
+# false rejection, disclosed in the retained audit SS12): the negation
+# pattern above only recognized "(does/is/...) not VERB" and "never VERB"
+# forms -- it did not recognize a bare quantifier negation ("No X
+# conclusion is established.", "None of this establishes X..."), an
+# ordinary, entirely safe way to phrase the exact same disclaimer. The
+# "None ... VERB" form is folded into _DISCLAIMING_NEGATION_PATTERN above
+# (it behaves like ordinary negation -- the claim is the object of the
+# negated verb, governed by the same per-match veto check below). The
+# "No [claim] conclusion/finding/determination/benefit is
+# established/drawn/made/..." form is structurally different -- the claim
+# sits *between* "No" and the meta-noun ("conclusion", etc.), which is
+# itself the subject of "is established", not the claim directly -- so it
+# is matched as its own whole-span pattern, and a claim match falling
+# entirely within that span is accepted outright, bypassing the veto
+# check below (which would otherwise misfire on "conclusion is
+# established" immediately following the claim).
+_QUANTIFIER_NEGATION_CLAIM_PATTERN = re.compile(
+    r"\bno\b[^.;:]{0,80}?\b(?:conclusion|finding|determination|benefit)\b[^.;:]{0,30}?"
+    r"\b(?:is|are|was|were)\s+(?:established|drawn|made|supported|reached|claimed|found|identified)\w*",
     re.IGNORECASE,
 )
 
@@ -520,6 +545,60 @@ def _split_clauses(sentence: str) -> list[str]:
         pos = end
     clauses.append(sentence[pos:])
     return [c for c in clauses if c and c.strip()]
+
+
+# Fourth bounded correction, MAJOR half (subject-vs-object ambiguity,
+# disclosed in the retained audit SS12): the soft-boundary continuation
+# check above (_COORDINATION_CONTINUATION_PATTERN) only verifies that
+# "and"/"or" is *immediately followed* by a disclaiming-verb-word or
+# diversification-concept-noun -- it cannot distinguish that word being
+# used as one more item in a coordinated OBJECT list (legitimate: "does
+# not compute, constitute, imply, or SUBSTITUTE for X") from that same
+# word opening a brand-new independent clause as its own grammatical
+# SUBJECT (illegitimate: "does not compute X, and DIVERSIFICATION of the
+# whole portfolio IS ACHIEVED by GLD"). Rather than trying to detect a
+# subject directly (parsing), this is resolved with a matched-claim-
+# centered veto: for every claim match, check whether the text
+# *immediately following the match itself* (a bounded local window, up to
+# the next comma/semicolon/hard-boundary word) contains a genuinely
+# independent finite predicate verb (an inflected form -- "is"/"are"/
+# "diversifies"/"reduces"/etc, never the bare disclaiming-verb-word
+# infinitives used in a legitimate object list) that is not itself part
+# of a declarative-deferral phrase. If so, the match is functioning as
+# the SUBJECT of a new clause, not the OBJECT of any earlier negation or
+# the subject of a legitimate deferral -- and it is rejected regardless
+# of whatever disclaiming cue exists elsewhere in the clause. This is the
+# exact structural signal the reviewer's own root-cause diagnosis named:
+# the object of a negated verb is never itself immediately followed by
+# its own finite predicate; only a new independent clause's subject is.
+_FINITE_VERB_INTERRUPTOR_PATTERN = re.compile(
+    r"\b(?:is|are|was|were|has|have|had)\b"
+    r"|\b(?:provides?|offers?|reduces?|diversifies|correlates?|offsets?|hedges?|"
+    r"achieves?|establishes|represents?|asserts?|claims?|finds?|determines?|"
+    r"constitutes?|implies?|substitutes?|shows?|demonstrates?|indicates?|proves?)\b",
+    re.IGNORECASE,
+)
+_VETO_WINDOW_STOP_PATTERN = re.compile(
+    r"[,;:]|\b(?:but|so|nor|yet|however|though|although|while)\b", re.IGNORECASE
+)
+
+
+def _match_is_new_clause_subject(clause: str, match_end: int) -> bool:
+    """Checks whether the text immediately following a claim match reveals
+    the match is itself the SUBJECT of a new, independent predicate
+    (e.g. "diversification of the whole portfolio IS ACHIEVED by GLD")
+    rather than the OBJECT of an earlier negated verb or the subject of a
+    legitimate declarative-deferral clause ("... REMAINS separately
+    governed"). Scans only a bounded local window -- up to the next
+    comma/semicolon/hard-boundary word, or 80 characters -- so a later,
+    unrelated interruptor elsewhere in the clause never vetoes an
+    earlier, genuinely governed match."""
+    following = clause[match_end:]
+    stop = _VETO_WINDOW_STOP_PATTERN.search(following)
+    window = following[:stop.start()] if stop else following[:80]
+    if _DECLARATIVE_DEFERRAL_PATTERN.search(window):
+        return False  # a deferral, not a new unrelated predicate
+    return bool(_FINITE_VERB_INTERRUPTOR_PATTERN.search(window))
 
 
 @dataclass
@@ -714,12 +793,29 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
     disclaimer. "and"/"or" are treated as conditional ("soft") boundaries:
     a boundary only when the text immediately following is not itself one
     more item from the closed disclaiming-verb-word or diversification-
-    concept-noun list this scan already matches against -- the exact
-    distinction between the real sealed record's own legitimate
-    coordination ("does not compute, constitute, imply, or substitute for
-    X", "diversification-benefit or correlation finding") and every
-    demonstrated bypass construction (whose own claim subject, "GLD" or
-    "the portfolio", is never a member of either closed list)."""
+    concept-noun list this scan already matches against.
+
+    That soft-boundary continuation check alone is ambiguous (fourth
+    bounded correction, disclosed in the retained audit §12): "and"/"or"
+    immediately followed by one of those closed-list words could mean
+    either a legitimate object-list continuation ("or substitute for X")
+    or that word opening a brand-new independent clause as its own
+    grammatical subject ("and diversification of the whole portfolio IS
+    ACHIEVED by GLD"). Each individual claim match is therefore also
+    checked with a per-match veto (`_match_is_new_clause_subject`): if
+    the text immediately following the match itself reveals a genuinely
+    independent finite predicate (not a declarative deferral), the match
+    is rejected outright, regardless of any disclaiming cue elsewhere in
+    the clause -- the object of a negated verb is never itself
+    immediately followed by its own finite predicate; only a new
+    independent clause's subject is.
+
+    A legitimate quantifier-negation construction ("No portfolio
+    correlation conclusion is established.") is recognized as its own
+    whole-span pattern (`_QUANTIFIER_NEGATION_CLAIM_PATTERN`) -- a claim
+    match falling entirely within that span is accepted outright, since
+    the per-match veto above would otherwise misfire on the construction's
+    own "conclusion is established" tail immediately following the claim."""
     rationale = drawdown.get("rationale")
     if isinstance(rationale, str):
         for pattern in _PORTFOLIO_DIVERSIFICATION_PATTERNS:
@@ -740,10 +836,28 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
                     _DISCLAIMING_NEGATION_PATTERN.search(clause) is not None
                     or _DECLARATIVE_DEFERRAL_PATTERN.search(clause) is not None
                 )
-                if has_disclaiming_cue:
-                    continue  # a genuine disclaiming cue is present in this same clause
+                quantifier_spans = [
+                    qm.span() for qm in _QUANTIFIER_NEGATION_CLAIM_PATTERN.finditer(clause)
+                ]
                 for pattern in _PORTFOLIO_DIVERSIFICATION_PATTERNS:
                     for m in pattern.finditer(clause):
+                        if any(qs <= m.start() and m.end() <= qe for qs, qe in quantifier_spans):
+                            continue  # governed by a quantifier-negation construction
+                        if _match_is_new_clause_subject(clause, m.end()):
+                            errors.append(
+                                f"historical_equity_drawdown_behavior.single_asset_disclosure: "
+                                f"asserts a whole-portfolio diversification-benefit or correlation-"
+                                f"to-the-current-portfolio claim whose own immediately-following "
+                                f"predicate reveals it as the subject of a new, independent clause "
+                                f"-- not the object of any preceding negation or a declarative "
+                                f"deferral -- that remains defensive_offset_interface's own, "
+                                f"separate, still-forced-abstention job (XASSET-0008 SSE, "
+                                f"supporting artifact SS6) matching pattern {pattern.pattern!r} "
+                                f"in clause {clause!r}"
+                            )
+                            continue
+                        if has_disclaiming_cue:
+                            continue  # a genuine disclaiming cue is present in this same clause
                         errors.append(
                             f"historical_equity_drawdown_behavior.single_asset_disclosure: "
                             f"asserts a whole-portfolio diversification-benefit or correlation-"

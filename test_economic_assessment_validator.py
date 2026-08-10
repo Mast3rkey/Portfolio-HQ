@@ -1040,6 +1040,221 @@ def test_single_asset_disclosure_prior_correction_bypasses_still_rejected_under_
     _assert_invalid(data2, contains="not accompanied")
 
 
+# ── fourth bounded correction: subject-vs-object ambiguity (MAJOR) plus
+# quantifier-negation recognition (MINOR) ────────────────────────────────
+# A third fresh independent exact-head delta review found the third
+# correction's soft-boundary continuation check ambiguous: "and"/"or"
+# immediately followed by a disclaiming-verb-word or diversification-
+# concept-noun was always treated as protected list-continuation, but
+# that same word can instead open a brand-new independent clause as its
+# own grammatical subject ("and diversification of the whole portfolio
+# IS ACHIEVED by GLD"). These tests reproduce the reviewer's demonstrated
+# subject-vs-object bypass and confirm the matched-claim veto
+# (`_match_is_new_clause_subject`) closes it. The same review also found
+# a legitimate quantifier-negation phrasing ("No portfolio correlation
+# conclusion is established.") incorrectly rejected -- these tests
+# confirm `_QUANTIFIER_NEGATION_CLAIM_PATTERN` accepts it while still
+# rejecting every guard construction where the negation does not actually
+# govern the later positive claim.
+
+@pytest.mark.parametrize("bypass_sentence", [
+    # subject opens with "diversification"
+    "This does not compute a numeric hurdle rate, and diversification of the whole portfolio is achieved by GLD in every regime.",
+    "This does not compute a numeric hurdle rate and diversification of the whole portfolio is achieved by GLD.",
+    "This assessment does not establish diversification and diversification of the whole portfolio is provided by GLD.",
+    # subject opens with "correlation"
+    "This does not compute a numeric hurdle rate, and correlation with the current portfolio is strongly negative for GLD.",
+    "This does not compute a numeric hurdle rate or correlation with the current portfolio is negative for GLD.",
+    "This assessment does not establish correlation or correlation with the portfolio is negative for GLD.",
+    # subject opens with "hedge"/portfolio hedge concept
+    "This evidence does not establish hedge effectiveness and portfolio hedge effectiveness is improved by GLD.",
+    # after a completely legitimate prior disclaimer in the same field
+    (
+        "This single-asset assessment does not establish whole-portfolio diversification or "
+        "correlation. Separately, and to be clear, diversification of the whole portfolio is "
+        "nonetheless achieved by GLD in every measured period."
+    ),
+])
+def test_single_asset_disclosure_subject_vs_object_ambiguity_rejected(bypass_sentence):
+    """The exact class of bypass the third delta review demonstrated: a
+    disclaiming-verb-word or diversification-concept-noun immediately
+    following "and"/"or" can be the SUBJECT of a brand-new independent
+    clause, not one more item in a coordinated OBJECT list -- the
+    per-match veto must reject these regardless of the soft-boundary
+    continuation check's own "protected coordination" classification."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        bypass_sentence
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert not result.valid
+
+
+def test_single_asset_disclosure_subject_vs_object_reversed_passive_rejected():
+    """A passive-voice/reversed-order variant of the subject-vs-object
+    bypass -- proving the veto is semantic, not tied to one exact
+    phrasing."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This does not establish anything, and diversification of the whole portfolio is "
+        "provided in passive form by GLD."
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert not result.valid
+
+
+def test_single_asset_disclosure_reviewer_exact_major_bypass_end_to_end_rejected():
+    """Full end-to-end reproduction of the reviewer's own exact
+    hand-crafted, correctly-resealed record -- not just the sub-function
+    -- confirming the corrected validator rejects it via
+    validate_economic_assessment_data itself, matching how the reviewer
+    demonstrated it."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This finding is single-asset in name only. It does not compute a "
+        "numeric hurdle rate, and diversification of the whole portfolio is "
+        "achieved by GLD in every regime, a real and significant "
+        "portfolio-level benefit worth noting for allocation purposes."
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert not result.valid
+    assert any("new, independent clause" in e for e in result.errors)
+
+
+@pytest.mark.parametrize("quantifier_sentence", [
+    "No portfolio correlation conclusion is established.",
+    "No whole-portfolio diversification conclusion is drawn.",
+    "No portfolio hedge conclusion is made here.",
+    "No portfolio risk-reduction conclusion is supported.",
+    "No whole-portfolio diversification benefit is established by this single-asset finding.",
+])
+def test_single_asset_disclosure_quantifier_negation_accepted(quantifier_sentence):
+    """Legitimate bare-quantifier negation phrasing ("No X conclusion is
+    established.") must be accepted -- the negation pattern's original
+    "(does/is/...) not VERB" / "never VERB" forms did not recognize this
+    ordinary, entirely safe construction."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        f"This finding is single-asset and historical only. {quantifier_sentence}"
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert result.valid, result.errors
+
+
+def test_single_asset_disclosure_none_establishes_form_accepted():
+    """The "None [of X] establishes..." negation form -- folded into
+    _DISCLAIMING_NEGATION_PATTERN as one more alternative, governed by
+    the same per-match veto as ordinary "does not establish" negation."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This is single-asset only. None of this establishes correlation with the current "
+        "portfolio."
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert result.valid, result.errors
+
+
+@pytest.mark.parametrize("guard_sentence", [
+    "No conclusion is established here, but GLD diversifies the whole portfolio.",
+    "No correlation conclusion is established for equities, and GLD reduces total portfolio risk.",
+    "No hedge conclusion is claimed in the first clause; GLD nevertheless provides a portfolio hedge.",
+])
+def test_single_asset_disclosure_quantifier_negation_guards_rejected(guard_sentence):
+    """A quantifier negation elsewhere in the sentence must not
+    automatically suppress a later, unrelated positive claim -- negation
+    must still govern the matched proposition itself, not merely appear
+    somewhere in the same field."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        guard_sentence
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert not result.valid
+
+
+@pytest.mark.parametrize("prior_round_sentence", [
+    # original disclosure-exemption exploit (round 1)
+    (
+        "This finding is single-asset in name only -- in fact it demonstrates a genuine "
+        "diversification benefit to the current portfolio and reduces the portfolio risk "
+        "materially, correlated with the current portfolio at a strongly negative level."
+    ),
+    # cross-sentence laundering (round 2)
+    "This finding does not overreach in any way. Separately, GLD provides a diversification benefit to the current portfolio.",
+    # comma+and / comma+but (round 2)
+    "This assessment does not establish portfolio diversification, and GLD diversifies the whole portfolio.",
+    "This single-asset finding does not compute a numeric hurdle rate, but GLD diversifies the whole portfolio and materially reduces total portfolio drawdown, a real and significant portfolio-level benefit worth noting.",
+    # semicolon (round 2/3)
+    "This single-asset finding does not compute a numeric hurdle rate; GLD diversifies the whole portfolio and reduces total portfolio drawdown materially.",
+    # colon (round 3)
+    "This does not compute a numeric hurdle rate: GLD diversifies the whole portfolio in every tested period.",
+    # bare and/so/nor (round 3)
+    "This does not compute a numeric hurdle rate and GLD diversifies the whole portfolio in every tested period.",
+    "This does not compute a numeric hurdle rate so GLD diversifies the whole portfolio materially.",
+    "This does not compute a numeric hurdle rate, nor GLD diversifies the whole portfolio.",
+    # em dash / double hyphen (round 3)
+    "This does not compute a numeric hurdle rate — GLD diversifies the whole portfolio in every tested period.",
+    "This does not compute a numeric hurdle rate -- GLD diversifies the whole portfolio in every tested period.",
+    # independent-clause or (round 3)
+    "This does not compute a numeric hurdle rate, or GLD diversifies the whole portfolio in every period.",
+    # reversed word order / drawdown reduction / hedge / offsets / negatively correlated
+    "This does not establish anything, and the portfolio's risk is reduced by GLD.",
+    "This does not establish anything, and GLD reduces the portfolio's drawdown during equity crashes.",
+    "This does not establish anything, and GLD provides a portfolio hedge.",
+    "This does not establish anything, and GLD offsets equity risk at the portfolio level.",
+    "This does not establish anything; GLD is negatively correlated with the portfolio.",
+])
+def test_single_asset_disclosure_all_prior_round_bypasses_remain_rejected(prior_round_sentence):
+    """Explicit reconfirmation that every bypass family closed by the
+    first three bounded corrections remains closed under the fourth
+    correction's per-match veto and quantifier-negation additions --
+    proves the fourth correction is a superset fix, not a lateral
+    rewrite that reopens any already-closed gap."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        prior_round_sentence
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert not result.valid
+
+
+@pytest.mark.parametrize("legit_sentence", [
+    "This single-asset assessment does not establish whole-portfolio diversification or correlation.",
+    "This single-asset finding does not establish diversification, correlation, or hedge effectiveness.",
+    "This is a single-asset assessment; it does not establish whole-portfolio diversification, and portfolio correlation remains separately governed.",
+    "This single-asset finding does not establish portfolio diversification; it also does not establish portfolio correlation.",
+    "This finding is single-asset only. Whole-portfolio diversification and correlation effects remain separately governed by the overlap model.",
+])
+def test_single_asset_disclosure_allowed_language_still_accepted_under_fourth_correction(legit_sentence):
+    """Every category of legitimate disclaimer language required by the
+    round-4 task's own allowed-language list must remain accepted under
+    the veto/quantifier additions -- coordinated-object negation,
+    multi-clause disclaimers, semicolon-separated non-assertive clauses,
+    and declarative deferrals. Each fixture carries the required
+    single-asset marker (SS6's mandatory disclosure requirement)."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        legit_sentence
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert result.valid, result.errors
+
+
+def test_single_asset_disclosure_real_gld_and_no_cash_like_disclosure_field_unaffected():
+    """The real sealed GLD.yaml single_asset_disclosure text, and the
+    real sealed CASH_LIKE_CAPITAL.yaml record (which carries no
+    single_asset_disclosure field at all, `not_applicable: true`), both
+    remain valid under the fourth correction."""
+    gld_result = eav.validate_economic_assessment_file(
+        REPO_ROOT / "intelligence" / "economic_assessment" / "GLD.yaml"
+    )
+    assert gld_result.valid, gld_result.errors
+    cash_result = eav.validate_economic_assessment_file(
+        REPO_ROOT / "intelligence" / "economic_assessment" / "CASH_LIKE_CAPITAL.yaml"
+    )
+    assert cash_result.valid, cash_result.errors
+
+
 def test_rationale_diversification_scan_still_unconditional_no_negation_carveout():
     """rationale keeps its original, stricter, unconditional-block
     behavior -- unlike single_asset_disclosure, a negated claim in
@@ -1048,6 +1263,18 @@ def test_rationale_diversification_scan_still_unconditional_no_negation_carveout
     data = _record(analytical_subject="GLD")
     data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["rationale"] = (
         "This does not establish that gold diversifies the whole portfolio."
+    )
+    _assert_invalid(data, contains="whole-portfolio diversification")
+
+
+def test_rationale_diversification_scan_unaffected_by_quantifier_negation_addition():
+    """rationale's unconditional block is not weakened by the quantifier-
+    negation addition -- a quantifier-negated claim in rationale is still
+    rejected outright, since rationale has no negation carve-out of any
+    kind, quantifier or otherwise."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["rationale"] = (
+        "No portfolio correlation conclusion is established, though the correlation with the current portfolio is notable."
     )
     _assert_invalid(data, contains="whole-portfolio diversification")
 
