@@ -1255,6 +1255,218 @@ def test_single_asset_disclosure_real_gld_and_no_cash_like_disclosure_field_unaf
     assert cash_result.valid, cash_result.errors
 
 
+# ── fifth bounded correction: comma-delimited appositive/parenthetical
+# veto-window truncation ─────────────────────────────────────────────────
+# A fourth fresh independent exact-head delta review found the fourth
+# correction's per-match veto window terminated at the first bare comma
+# it encountered -- but a comma very often introduces a non-clause-ending
+# appositive/parenthetical phrase, not a genuine boundary. A comma-
+# delimited aside inserted between a matched claim-noun and its own
+# finite verb ("...and diversification of the whole portfolio, across
+# every historical regime examined in this record's own review, is
+# achieved by GLD") truncated the veto window before it ever reached the
+# finite predicate that would reveal the match as a new clause's subject.
+# These tests reproduce the reviewer's demonstrated appositive bypass and
+# confirm the redesigned veto window (no longer terminated by a bare
+# comma) closes it.
+
+@pytest.mark.parametrize("appositive_sentence", [
+    # the exact long appositive the reviewer demonstrated
+    (
+        "This single-asset finding does not compute a numeric hurdle rate, and diversification "
+        "of the whole portfolio, across every historical regime examined in this record's own "
+        "review, is achieved by GLD."
+    ),
+    # single-word appositive
+    (
+        "This single-asset finding does not compute a numeric hurdle rate, and diversification "
+        "of the whole portfolio, frankly, is achieved by GLD in every regime."
+    ),
+    # correlation-claim family, not just diversification
+    (
+        "This single-asset finding does not compute a numeric hurdle rate, and correlation with "
+        "the current portfolio, per this record, is strongly negative for GLD."
+    ),
+    # nested/two-comma parenthetical
+    (
+        "This does not compute a numeric hurdle rate, and diversification of the whole "
+        "portfolio, in every measured regime, without exception, is achieved by GLD."
+    ),
+    # appositive combined with "or" instead of "and"
+    (
+        "This does not compute a numeric hurdle rate, or diversification of the whole "
+        "portfolio, across every regime, is achieved by GLD."
+    ),
+    # appositive combined with a comma-less "and"
+    (
+        "This does not compute a numeric hurdle rate and diversification of the whole "
+        "portfolio, frankly, is achieved by GLD."
+    ),
+    # hedge-claim family
+    (
+        "This evidence does not establish hedge effectiveness and portfolio hedge "
+        "effectiveness, upon closer review, is confirmed strong by GLD."
+    ),
+    # portfolio-risk/reversed-order family
+    (
+        "This does not establish anything, and the portfolio's risk, upon closer inspection, "
+        "is reduced by GLD."
+    ),
+])
+def test_single_asset_disclosure_appositive_veto_window_truncation_rejected(appositive_sentence):
+    """The exact class of bypass the fourth delta review demonstrated: a
+    comma-delimited appositive/parenthetical phrase inserted between a
+    claim match and its own finite verb must not shield the match from
+    the per-match veto -- a bare comma no longer terminates the veto
+    window on its own."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        appositive_sentence
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert not result.valid
+
+
+def test_single_asset_disclosure_reviewer_exact_appositive_bypass_end_to_end_rejected():
+    """Full end-to-end reproduction of the reviewer's own exact
+    hand-crafted, correctly-resealed record using the real test harness's
+    own helpers -- confirming the corrected validator rejects it via
+    validate_economic_assessment_data itself, not merely the
+    sub-function."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This single-asset finding does not compute a numeric hurdle rate, and diversification "
+        "of the whole portfolio, across every historical regime examined in this record's own "
+        "review, is achieved by GLD."
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert not result.valid
+    assert any("new, independent clause" in e for e in result.errors)
+
+
+@pytest.mark.parametrize("hard_boundary_appositive_sentence", [
+    # "so" -- hard boundary -- the appositive construction here was
+    # already correctly rejected before this correction; reconfirmed
+    # unaffected by the veto-window redesign
+    (
+        "This does not compute a numeric hurdle rate so diversification of the whole "
+        "portfolio, across every regime, is achieved by GLD."
+    ),
+    # semicolon -- hard boundary
+    (
+        "This does not compute a numeric hurdle rate; diversification of the whole "
+        "portfolio, across every regime, is achieved by GLD."
+    ),
+])
+def test_single_asset_disclosure_hard_boundary_appositive_still_rejected(hard_boundary_appositive_sentence):
+    """Sanity confirmation that the identical appositive-comma
+    construction was already correctly rejected behind a genuine hard
+    boundary (a real clause split occurs, leaving the second clause with
+    no disclaiming cue of its own) -- proving the defect was scoped to
+    the soft-boundary veto-window path specifically, and remains fixed
+    there under the widened window."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        hard_boundary_appositive_sentence
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert not result.valid
+
+
+@pytest.mark.parametrize("quantifier_appositive_sentence", [
+    (
+        "No conclusion about diversification of the whole portfolio is established, and "
+        "diversification of the whole portfolio, in every regime, is achieved by GLD."
+    ),
+    (
+        "No conclusion is established here, but diversification of the whole portfolio, "
+        "across every regime, is achieved by GLD."
+    ),
+])
+def test_single_asset_disclosure_quantifier_negation_appositive_not_laundered(quantifier_appositive_sentence):
+    """A legitimate quantifier-negation construction earlier in the field
+    must not, combined with an appositive-comma bypass later in the same
+    field, launder an unrelated later positive claim -- the quantifier
+    pattern governs only its own claim span, and the later independent
+    clause still needs its own disclaiming cue."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        quantifier_appositive_sentence
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert not result.valid
+
+
+@pytest.mark.parametrize("prior_round_sentence", [
+    # round 4 exact bypasses (no appositive)
+    "This does not compute a numeric hurdle rate, and diversification of the whole portfolio is achieved by GLD in every regime.",
+    "This does not compute a numeric hurdle rate, and correlation with the current portfolio is strongly negative for GLD.",
+    # round 1-3 families
+    (
+        "This finding is single-asset in name only -- in fact it demonstrates a genuine "
+        "diversification benefit to the current portfolio and reduces the portfolio risk "
+        "materially, correlated with the current portfolio at a strongly negative level."
+    ),
+    "This finding does not overreach in any way. Separately, GLD provides a diversification benefit to the current portfolio.",
+    "This assessment does not establish portfolio diversification, and GLD diversifies the whole portfolio.",
+    "This single-asset finding does not compute a numeric hurdle rate; GLD diversifies the whole portfolio and reduces total portfolio drawdown materially.",
+    "This does not compute a numeric hurdle rate: GLD diversifies the whole portfolio in every tested period.",
+    "This does not compute a numeric hurdle rate and GLD diversifies the whole portfolio in every tested period.",
+    "This does not compute a numeric hurdle rate — GLD diversifies the whole portfolio in every tested period.",
+    "This does not compute a numeric hurdle rate, or GLD diversifies the whole portfolio in every period.",
+    "This does not establish anything, and the portfolio's risk is reduced by GLD.",
+    "This does not establish anything; GLD is negatively correlated with the portfolio.",
+])
+def test_single_asset_disclosure_all_families_remain_rejected_under_fifth_correction(prior_round_sentence):
+    """Explicit reconfirmation that every bypass family closed by the
+    first four bounded corrections remains closed under the fifth
+    correction's widened veto window -- proves the fifth correction is a
+    superset fix, not a lateral rewrite that reopens any already-closed
+    gap."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        prior_round_sentence
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert not result.valid
+
+
+@pytest.mark.parametrize("legit_sentence", [
+    "This single-asset assessment does not establish whole-portfolio diversification or correlation.",
+    "This single-asset finding does not establish diversification, correlation, or hedge effectiveness.",
+    "This is a single-asset assessment; it does not establish whole-portfolio diversification, and portfolio correlation remains separately governed.",
+    "This finding is single-asset only. Whole-portfolio diversification and correlation effects remain separately governed by the overlap model.",
+    "This finding is single-asset and historical only. No portfolio correlation conclusion is established.",
+    "This finding is single-asset and historical only. No whole-portfolio diversification benefit is established by this single-asset finding.",
+    "This is single-asset only. None of this establishes correlation with the current portfolio.",
+])
+def test_single_asset_disclosure_allowed_language_still_accepted_under_fifth_correction(legit_sentence):
+    """Every category of legitimate disclaimer language required by the
+    round-5 task's own allowed-language list must remain accepted under
+    the widened veto window -- coordinated-object negation, multi-clause
+    disclaimers, declarative deferrals, and quantifier-negation forms."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        legit_sentence
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert result.valid, result.errors
+
+
+def test_single_asset_disclosure_real_gld_and_cash_like_unaffected_by_fifth_correction():
+    """The real sealed GLD.yaml single_asset_disclosure text, and the
+    real sealed CASH_LIKE_CAPITAL.yaml record (no single_asset_disclosure
+    field at all), both remain valid under the widened veto window."""
+    gld_result = eav.validate_economic_assessment_file(
+        REPO_ROOT / "intelligence" / "economic_assessment" / "GLD.yaml"
+    )
+    assert gld_result.valid, gld_result.errors
+    cash_result = eav.validate_economic_assessment_file(
+        REPO_ROOT / "intelligence" / "economic_assessment" / "CASH_LIKE_CAPITAL.yaml"
+    )
+    assert cash_result.valid, cash_result.errors
+
+
 def test_rationale_diversification_scan_still_unconditional_no_negation_carveout():
     """rationale keeps its original, stricter, unconditional-block
     behavior -- unlike single_asset_disclosure, a negated claim in

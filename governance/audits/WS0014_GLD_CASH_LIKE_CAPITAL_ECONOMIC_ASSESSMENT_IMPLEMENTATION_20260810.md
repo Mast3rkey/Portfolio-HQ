@@ -296,3 +296,51 @@ Neither `GLD.yaml` nor `CASH_LIKE_CAPITAL.yaml` was edited -- both remain byte-i
 `economic_assessment_validator.py` standalone: `OK (3 result(s))`. `test_economic_assessment_validator.py`: **296/296 passed**. `test_overlap_model_validator.py`: **199/199 passed**, unaffected. `test_functional_doctrine_validator.py`: **189/189 passed**, unaffected. All fourteen other repository validators clean and unaffected. Full repository `pytest`: **4713 passed, 0 failed** (4670 pre-correction baseline + 43 new tests, exact match). Decision catalog unchanged: **105 decisions, `issues == ()`** (95/95 `test_portfolio_hq_dashboard_decisions.py`). YAML/YML parse: 249 files, 0 errors. JSON parse: 178 files, 0 errors. `git diff --check`: clean. Exact changed-file inventory for this correction: `economic_assessment_validator.py`, `test_economic_assessment_validator.py`, this retained audit -- three files, no fourth, matching §9's, §10's, and §11's own precedent exactly. Zero diff on every protected path and on both sealed `intelligence/economic_assessment/` records and `COHORT_MANIFEST.yaml`, independently reconfirmed.
 
 This session does not review its own PR, mark it ready, merge it, or post principal acceptance -- requires its own fresh independent exact-head delta review before this PR may be considered ready.
+
+## 13. Fifth bounded correction (same day, this PR): comma-delimited appositive/parenthetical veto-window truncation
+
+A fourth fresh independent exact-head delta review (`pullrequestreview-4897736026`, anchored to head `ac258ef8ef9e956ee85a496a32d07b5c6619ee80`) returned **CHANGES REQUIRED** -- 0 BLOCKING / 1 MAJOR / 0 MINOR / 1 non-actionable NOTE carried forward (§12's own out-of-scope NOTE, unresolved by this correction either, disclosed above). §12's own MAJOR and MINOR were independently reconfirmed resolved.
+
+### 13.1 The finding
+
+§12's per-match veto window (`_match_is_new_clause_subject`) terminated at the *first bare comma* it encountered after a claim match. A comma very often introduces a non-clause-ending appositive/parenthetical phrase, not a genuine boundary -- when such a phrase was inserted between a matched claim-noun and its own finite verb, the window truncated *before* it ever reached the verb that would reveal the match as a new clause's subject, while the soft-boundary coordination check still kept the sentence unsplit (since "and"/"diversification" is still a protected continuation at the split-detection level) -- letting an unrelated earlier negation "shield" the later, entirely unnegated claim. Reproduced against `ac258ef` before any code change, all `valid: True, errors: []`:
+
+```python
+"This single-asset finding does not compute a numeric hurdle rate, and diversification of the "
+"whole portfolio, across every historical regime examined in this record's own review, is "
+"achieved by GLD."
+
+"This single-asset finding does not compute a numeric hurdle rate, and diversification of the "
+"whole portfolio, frankly, is achieved by GLD in every regime."
+
+"This single-asset finding does not compute a numeric hurdle rate, and correlation with the "
+"current portfolio, per this record, is strongly negative for GLD."
+```
+
+Sanity-confirmed the defect was scoped to the soft-boundary veto-window path specifically, not a general regression: the identical appositive construction behind a genuine hard boundary (`so`, `;`) was already correctly rejected at `ac258ef`, since a real clause split occurs there regardless of the veto window's own bug. Neither sealed record uses this construction -- both independently reconfirmed byte-identical to `ac258ef` and unaffected.
+
+### 13.2 Root cause
+
+A bare comma is not, by itself, a genuine clause boundary in English -- an appositive or parenthetical aside is exactly a comma-delimited construction that does *not* end the current clause. Treating every comma as an unconditional veto-window terminator conflated these two, structurally different uses of the same punctuation mark.
+
+### 13.3 Correction, `economic_assessment_validator.py` only
+
+`_VETO_WINDOW_STOP_PATTERN` no longer includes a bare comma as a stop signal -- only a semicolon, a colon, or one of the already-enumerated hard-boundary conjunction words (`but`/`so`/`nor`/`yet`/`however`/`though`/`although`/`while`) now terminates the lookahead, matching exactly the same unambiguous markers `_CLAUSE_HARD_BOUNDARY_PATTERN` already treats as always splitting a sentence. The bounded character cap (`_VETO_WINDOW_MAX_CHARS`) was widened from 80 to 160 characters to keep the "local window, not the whole clause" guarantee intact for a longer appositive, independently confirmed sufficient for the reviewer's own longest demonstrated example (the finite verb "is" falls well within the widened cap). This is the smallest change that closes the defect: it does not touch `_split_clauses`'s own hard/soft boundary logic, `_QUANTIFIER_NEGATION_CLAIM_PATTERN`, `_DISCLAIMING_NEGATION_PATTERN`, or `_FINITE_VERB_INTERRUPTOR_PATTERN` -- the veto mechanism's own matched-claim-centered design (per-match, not clause-boundary-list-scoped) is unchanged; only the definition of what counts as "immediately following" the match was corrected.
+
+### 13.4 Empirical validation before implementation
+
+Before editing the module, the corrected veto-window design was validated as a standalone Python script against 30 cases: 8 appositive-bypass constructions (the reviewer's exact long/single-word/correlation examples, a nested two-comma parenthetical, appositive combined with `or` and with a comma-less `and`, and hedge/portfolio-risk claim-family variants), 2 hard-boundary sanity cases (confirming the already-correct `so`/`;` behavior is unaffected), 2 quantifier-negation-not-laundered-via-appositive cases (proving the quantifier pattern's own acceptance cannot be combined with an appositive to shield an unrelated later claim), 4 round-4 regression cases, 11 prior-round (1-3) regression cases, and 8 allowed-language cases (including the real sealed record) -- **all 30 passed on the first standalone run**. Only after this standalone confirmation was the actual module edited; the same battery was then re-run directly against the live module's `_scan_overlap_model_non_duplication` function, `validate_economic_assessment_data` end-to-end on a re-sealed record, and `validate_economic_assessment_file` on both real sealed records, with identical results.
+
+### 13.5 Regression tests added
+
+Thirty-three new focused tests in `test_economic_assessment_validator.py` (296 -> 329): a parametrized `test_single_asset_disclosure_appositive_veto_window_truncation_rejected` (8 cases -- the reviewer's exact long/single-word/correlation appositive examples, a nested two-comma parenthetical, appositive+`or`, appositive+comma-less-`and`, and hedge/portfolio-risk claim-family variants, testing the vulnerability *class* rather than only the exact reviewer strings); a full end-to-end reproduction of the reviewer's own exact hand-crafted record using the real test harness's own `_record()`/`REPO_ROOT` helpers; a parametrized hard-boundary-appositive sanity reconfirmation (2 cases -- `so`/`;`, proving the fix is scoped correctly and doesn't touch already-working behavior); a parametrized quantifier-negation-not-laundered-via-appositive test (2 cases); a parametrized `test_single_asset_disclosure_all_families_remain_rejected_under_fifth_correction` (12 cases spanning every family from rounds 1-4, an explicit superset-fix proof); a parametrized allowed-language reconfirmation (7 cases, including all three of round 4's own quantifier-negation constructions); and a direct real-record test for both sealed records.
+
+### 13.6 What this correction does not do
+
+Neither `GLD.yaml` nor `CASH_LIKE_CAPITAL.yaml` was edited -- both remain byte-identical, confirmed via `git diff --stat` (empty) and independent `content_sha256` reproduction (`validate_economic_assessment_file` returns `valid: True` for both, unchanged). `COHORT_MANIFEST.yaml` is likewise untouched. `roadmap_preservation`, `operations/WORKSTREAMS.yaml`, `CLAUDE.md`, `XASSET-0008`, and `XASSET-0009`'s own text are all unaffected -- this correction touches exactly `economic_assessment_validator.py`, `test_economic_assessment_validator.py`, and this retained audit. §12's own carried-forward NOTE (no independent scan confirming `CASH_LIKE_CAPITAL`'s free text never restates a legacy record's own field value as a `CASH_LIKE_CAPITAL`-level finding) is again explicitly **not** addressed here. The fourth delta review's separately-disclosed, non-blocking observation (a handful of `_PORTFOLIO_DIVERSIFICATION_PATTERNS` word-order variants not matched by the underlying claim-detection pattern list at all, pre-existing and identical on both `9dc1077a` and `ac258ef`, reproducing even in `rationale`'s own unconditional scan) is likewise explicitly **not** addressed here -- per the task's own instruction, neither is folded into this correction's scope.
+
+### 13.7 Full validation at the corrected head
+
+`economic_assessment_validator.py` standalone: `OK (3 result(s))`. `test_economic_assessment_validator.py`: **329/329 passed**. `test_overlap_model_validator.py`: **199/199 passed**, unaffected. `test_functional_doctrine_validator.py`: **189/189 passed**, unaffected. All fourteen other repository validators clean and unaffected. Full repository `pytest`: **4746 passed, 0 failed** (4713 pre-correction baseline + 33 new tests, exact match). Decision catalog unchanged: **105 decisions, `issues == ()`** (95/95 `test_portfolio_hq_dashboard_decisions.py`). YAML/YML parse: 249 files, 0 errors. JSON parse: 178 files, 0 errors. `git diff --check`: clean. Exact changed-file inventory for this correction: `economic_assessment_validator.py`, `test_economic_assessment_validator.py`, this retained audit -- three files, no fourth, matching §9's, §10's, §11's, and §12's own precedent exactly. Zero diff on every protected path and on both sealed `intelligence/economic_assessment/` records and `COHORT_MANIFEST.yaml`, independently reconfirmed.
+
+This session does not review its own PR, mark it ready, merge it, or post principal acceptance -- requires its own fresh independent exact-head delta review before this PR may be considered ready.

@@ -578,9 +578,25 @@ _FINITE_VERB_INTERRUPTOR_PATTERN = re.compile(
     r"constitutes?|implies?|substitutes?|shows?|demonstrates?|indicates?|proves?)\b",
     re.IGNORECASE,
 )
+# Fifth bounded correction (SS12's own MAJOR finding, disclosed in the
+# retained audit SS13): a bare comma alone used to terminate the veto
+# window let a comma-delimited appositive/parenthetical phrase ("...and
+# diversification of the whole portfolio, across every historical regime
+# examined in this record's own review, IS ACHIEVED by GLD") truncate the
+# lookahead before it ever reached the finite predicate that would reveal
+# the match as a new clause's subject -- an ordinary English construction,
+# not adversarial cleverness. A comma is not, by itself, a genuine clause
+# boundary; only a semicolon, a colon, or a comma-or-no-comma hard-
+# boundary conjunction word is. The window is therefore no longer
+# terminated by a bare comma at all -- only by the same unambiguous
+# markers `_CLAUSE_HARD_BOUNDARY_PATTERN` already treats as always
+# splitting a sentence -- with the bounded character cap widened to keep
+# the "local window, not the whole clause" guarantee intact for a longer
+# appositive.
 _VETO_WINDOW_STOP_PATTERN = re.compile(
-    r"[,;:]|\b(?:but|so|nor|yet|however|though|although|while)\b", re.IGNORECASE
+    r";|:|\b(?:but|so|nor|yet|however|though|although|while)\b", re.IGNORECASE
 )
+_VETO_WINDOW_MAX_CHARS = 160
 
 
 def _match_is_new_clause_subject(clause: str, match_end: int) -> bool:
@@ -590,12 +606,16 @@ def _match_is_new_clause_subject(clause: str, match_end: int) -> bool:
     rather than the OBJECT of an earlier negated verb or the subject of a
     legitimate declarative-deferral clause ("... REMAINS separately
     governed"). Scans only a bounded local window -- up to the next
-    comma/semicolon/hard-boundary word, or 80 characters -- so a later,
-    unrelated interruptor elsewhere in the clause never vetoes an
-    earlier, genuinely governed match."""
+    semicolon/colon/hard-boundary word, or `_VETO_WINDOW_MAX_CHARS`
+    characters -- so a later, unrelated interruptor elsewhere in the
+    clause never vetoes an earlier, genuinely governed match. A bare
+    comma does *not* terminate the window on its own (fifth bounded
+    correction) -- an appositive/parenthetical aside is not a genuine
+    clause boundary, and truncating there let the finite predicate that
+    exposes a subject-vs-object bypass go undetected."""
     following = clause[match_end:]
     stop = _VETO_WINDOW_STOP_PATTERN.search(following)
-    window = following[:stop.start()] if stop else following[:80]
+    window = following[:stop.start()] if stop else following[:_VETO_WINDOW_MAX_CHARS]
     if _DECLARATIVE_DEFERRAL_PATTERN.search(window):
         return False  # a deferral, not a new unrelated predicate
     return bool(_FINITE_VERB_INTERRUPTOR_PATTERN.search(window))
