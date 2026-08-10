@@ -755,3 +755,11 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, TIER-0002, TIER-0009, XASSET-0001, XASSET-0002, XASSET-0003, XASSET-0004, XASSET-0005, XASSET-0006, XASSET-0007, XASSET-0008, VALUATION-0001, VALUATION-0002, VALUATION-0004, PHQ-2026-01, PHQ-2026-02, CONTENDER-0001, CONTENDER-0002]
     supporting_artifact: null
     file: governance/decisions/XASSET-0009-ws0014-gld-cash-like-economic-assessment-content-authorization.md
+
+  - decision_id: XASSET-0010
+    date: 2026-08-10
+    status: Proposed
+    category: cross_asset_allocation_architecture
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0006, OPS-0007, OPS-0008, OPS-0009, TIER-0002, TIER-0009, XASSET-0001, XASSET-0002, XASSET-0003, XASSET-0004, XASSET-0005, XASSET-0006, XASSET-0007, XASSET-0008, XASSET-0009, VALUATION-0001, VALUATION-0002, VALUATION-0004, PHQ-2026-01, PHQ-2026-02, CONTENDER-0001, CONTENDER-0002]
+    supporting_artifact: governance/audits/WS0014_ETF_CRYPTO_INSTRUMENT_ECONOMIC_ASSESSMENT_METHODOLOGY_DESIGN_20260810.md
+    file: governance/decisions/XASSET-0010-etf-crypto-economic-assessment-methodology.md
