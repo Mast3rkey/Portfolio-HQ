@@ -1,0 +1,102 @@
+schema_version: '1.0'
+ticker: SNPS
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/SNPS.yaml
+  content_sha256: ec01574523eba3bf1c653df4f2d35101c46c112e3073249fa01f2dbac77ba5d2
+evidence_reference:
+  source_file: intelligence/valuation_evidence/SNPS.yaml
+  content_sha256: e5a12e1298d8de51ca803bf929994ab37a4a8504e9c3407d179dec9876112265
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_5_relative_valuation
+  governed_role: primary_candidate
+  family_status: completed
+  valuation_range:
+    low: 193.62
+    base: 242.03
+    high: 306.57
+    unit_and_basis: USD per diluted share, equity value
+    governing_sensitivity: Illustrative P/E band for an asset-light, high-margin EDA-software-platform
+      archetype (A); reflects typical sensitivity to the Ansys-integration/software-platformization thesis,
+      not a peer-derived or market-observed multiple.
+  assumptions_ledger:
+  - assumption_name: pe_multiple_low
+    value: 24
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end pe multiple; no peer-specific trading multiple was
+      gathered in Stage-3 evidence (only peer identities/comparability rationale), so this is a disclosed
+      illustrative band, not a peer-derived figure.
+  - assumption_name: pe_multiple_base
+    value: 30
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base-case pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: pe_multiple_high
+    value: 38
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: latest_fy_pe
+    value: 1336
+    provenance_label: historically_observed
+    source_or_derivation_note: FY2025 (ended 2025-10-31) net income $1,336M, reported, from the pinned
+      Stage-3 evidence record's own financial_evidence.
+  - assumption_name: diluted_shares_outstanding
+    value: 165.6
+    provenance_label: historically_observed
+    source_or_derivation_note: Diluted share count as sourced in the pinned Stage-3 evidence record's
+      own financial_evidence.
+  applied_peers:
+  - CDNS
+  - KEYS
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-A
+  P/E assumption; not an independent fair-value opinion and cannot be cross-checked against a current
+  market price, since none exists in Stage-3 evidence for SNPS.
+uncertainty_summary: 'Relative-valuation range built from real reported FY2025 net income and diluted
+  share count. No current market price exists in Stage-3 evidence for SNPS (market_observed_evidence is
+  abstained) -- this record''s multiple assumption is illustrative and archetype-informed, not market-derived,
+  so the missing price is not itself a blocker to this methodology. No peer-specific trading multiples
+  were gathered in Stage-3 evidence (peer_set_evidence carries only candidate identity and comparability
+  rationale, never the peer''s own financial figures or multiples) -- the multiple bands applied here
+  are disclosed, illustrative assumptions (provenance_label: assumed_for_illustration), archetype-informed
+  but not peer-derived or market-derived. Families 2 (FCFF DCF) and 3 (FCFE DCF) were not applied to this
+  or any other ticker in the 27-company VALUATION-0007 cohort. discount_rate_evidence is abstained across
+  all 27 sealed Stage-3 evidence records (VALUATION-0005) -- no risk-free-rate, cost-of-debt, tax-rate,
+  capital-structure, or beta-observation input exists to enable even a partial DCF computation. No discount
+  rate, WACC, beta, or terminal growth rate was fabricated for this or any other ticker. Closing this
+  evidence gap is a separate, future, unauthorized governance unit.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+  - market_observed_evidence
+  - segment_evidence
+conflicts_carried_forward: []
+result_status: completed
+cross_asset_handoff:
+  ticker: SNPS
+  asset_class: equity
+  result_status: completed
+  family_summary:
+  - family_id: family_5_relative_valuation
+    governed_role: primary_candidate
+    family_status: completed
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+    - market_observed_evidence
+    - segment_evidence
+record_status: sealed
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchA-compounder
+content_sha256: 4d63010717c5f08a9c055f887ca474047811388172131f4d287a0573ae04ee61
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for SNPS

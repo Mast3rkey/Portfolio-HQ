@@ -1,0 +1,97 @@
+schema_version: '1.0'
+ticker: TSLA
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/TSLA.yaml
+  content_sha256: 04f1db1ea3fe68e2639cecf31fc229a6f15511a6a83e82023c6e1a608be41760
+evidence_reference:
+  source_file: intelligence/valuation_evidence/TSLA.yaml
+  content_sha256: 83c134f5556d4907226b7720fdf2377fc2e5dc23cb390fec3d6cd3c73129eaa1
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_1_asset_based_sotp
+  governed_role: primary_candidate
+  family_status: completed
+  valuation_range:
+    low: 34.8
+    base: 47.44
+    high: 60.09
+    unit_and_basis: USD per diluted share, equity value (sum-of-segments enterprise value less net debt,
+      divided by diluted shares)
+    governing_sensitivity: Range reflects a +/-multiple sensitivity band summed across disclosed segments,
+      less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
+      exercise, not an independent fair-value opinion, and not a comparison to the current market price.
+  assumptions_ledger:
+  - assumption_name: auto_revenue_multiple_base
+    value: 1.5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base revenue multiple applied to the Automotive segment's
+      reported revenue of 69520; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: energy_revenue_multiple_base
+    value: 1.5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base revenue multiple applied to the Energy Generation & Storage
+      segment's reported revenue of 12800; no segment-specific peer trading multiple was gathered in Stage-3
+      evidence, so this is a disclosed illustrative assumption.
+  - assumption_name: services_revenue_multiple_base
+    value: 1.5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base revenue multiple applied to the Services & Other segment's
+      reported revenue of 12530; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: net_debt_bridge
+    value: -35683
+    provenance_label: historically_observed
+    source_or_derivation_note: Debt 8376 minus cash/equivalents 44059, as sourced in the pinned Stage-3
+      evidence record; subtracted from segment-summed enterprise value to reach implied equity value.
+  - assumption_name: diluted_shares_outstanding
+    value: 3751
+    provenance_label: historically_observed
+    source_or_derivation_note: Diluted share count as sourced in the pinned Stage-3 evidence record's
+      own financial_evidence.
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band summed across disclosed segments,
+  less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
+  exercise, not an independent fair-value opinion, and not a comparison to the current market price.
+uncertainty_summary: 'Sum-of-the-parts range built from real reported FY2025 segment revenue, consolidated
+  debt, and cash. No segment-level operating profit is disclosed in Stage-3 evidence, so a uniform EV/Revenue-style
+  multiple tier (selected from TSLA''s own overall operating margin, ~4.6%, a low-margin proxy) is applied
+  to all three segments. No segment-specific peer trading multiples were gathered in Stage-3 evidence
+  -- the per-segment multiples applied here are disclosed, illustrative assumptions (provenance_label:
+  assumed_for_illustration), differentiated only where the pinned Stage-3 evidence record itself discloses
+  segment-level operating profit (an EV/EBIT-style multiple is then used); segments lacking disclosed
+  profit use a uniform EV/Revenue-style multiple tier selected from the company''s own overall reported
+  operating (or net) margin, not from any segment-specific comparable. family_2 (FCFF DCF) and family_3
+  (FCFE DCF), while adjustment_required rather than blocked outright for archetype F, were not applied
+  -- discount_rate_evidence is abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005),
+  so no discount rate, WACC, beta, or terminal growth rate was fabricated for this or any other ticker.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+conflicts_carried_forward: []
+result_status: completed
+cross_asset_handoff:
+  ticker: TSLA
+  asset_class: equity
+  result_status: completed
+  family_summary:
+  - family_id: family_1_asset_based_sotp
+    governed_role: primary_candidate
+    family_status: completed
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+record_status: sealed
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchB-sotp
+content_sha256: 687257e56d49525219d4264d33019c1a8a988db6508483698cfcd69f929ba710
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for TSLA

@@ -1,0 +1,102 @@
+schema_version: '1.0'
+ticker: V
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/V.yaml
+  content_sha256: 22033a85c6f056ac9a4d774b941061416315bf0b9beef86ef15fa893eefaef28
+evidence_reference:
+  source_file: intelligence/valuation_evidence/V.yaml
+  content_sha256: 07cdecd707030688f942ba249e95ec323f8e5716031325c5cdd89ee19cd66089
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_5_relative_valuation
+  governed_role: adjustment_required
+  family_status: partial
+  valuation_range:
+    low: 142.84
+    base: 173.45
+    high: 214.26
+    unit_and_basis: USD per diluted share, equity value
+    governing_sensitivity: Illustrative P/E band for a financial-market-infrastructure archetype (C);
+      VALUATION-0002's own governed-role table reaches no primary_candidate or secondary_corroborative
+      family for archetype C at all -- family_5 is adjustment_required only, so this range is corroborative-only
+      by design, capped at partial regardless of underlying data quality.
+  assumptions_ledger:
+  - assumption_name: pe_multiple_low
+    value: 14
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end pe multiple; no peer-specific trading multiple was
+      gathered in Stage-3 evidence (only peer identities/comparability rationale), so this is a disclosed
+      illustrative band, not a peer-derived figure.
+  - assumption_name: pe_multiple_base
+    value: 17
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base-case pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: pe_multiple_high
+    value: 21
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: latest_fy_pe
+    value: 20100
+    provenance_label: historically_observed
+    source_or_derivation_note: FY2025 (ended 2025-09-30) net income $20,100M, reported, from the pinned
+      Stage-3 evidence record's own financial_evidence.
+  - assumption_name: diluted_shares_outstanding
+    value: 1970
+    provenance_label: historically_observed
+    source_or_derivation_note: Diluted share count as sourced in the pinned Stage-3 evidence record's
+      own financial_evidence.
+  applied_peers:
+  - MA
+  - AXP
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-C
+  P/E assumption, offered as corroborative-only context; not an independent fair-value opinion.
+uncertainty_summary: 'family_5 (relative valuation) was attempted using clean, real reported FY2025 net
+  income, diluted share count, and three included peers -- but archetype C (regulated financial-market
+  infrastructure) reaches no primary_candidate or secondary_corroborative family anywhere in VALUATION-0002''s
+  governed-role table; every family is either prohibited or adjustment_required. This result therefore
+  cannot reach ''completed'' by design (VALUATION-0006 SS J), independent of evidence quality. No peer-specific
+  trading multiples were gathered in Stage-3 evidence (peer_set_evidence carries only candidate identity
+  and comparability rationale) -- the multiple band applied here is a disclosed, illustrative assumption
+  (provenance_label: assumed_for_illustration), archetype-informed but not peer-derived or market-derived.
+  family_2 (FCFF DCF), adjustment_required for archetype B and prohibited for archetype C, was not applied
+  to any ticker in this batch -- discount_rate_evidence is abstained across all 27 sealed Stage-3 evidence
+  records (VALUATION-0005), so no discount rate, WACC, beta, or terminal growth rate was fabricated for
+  this or any other ticker.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+  - segment_evidence
+conflicts_carried_forward: []
+result_status: partial
+cross_asset_handoff:
+  ticker: V
+  asset_class: equity
+  result_status: partial
+  family_summary:
+  - family_id: family_5_relative_valuation
+    governed_role: adjustment_required
+    family_status: partial
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+    - segment_evidence
+record_status: sealed
+abstention_reason: family_5 is adjustment_required (not primary/secondary) for archetype C -- VALUATION-0002's
+  own governed-role table reaches no primary_candidate or secondary_corroborative family for archetype
+  C at all, so this result is structurally capped at partial regardless of evidence quality.
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchC-relative
+content_sha256: 123c1a38039831703dd183ddf87d9fa272102fbcb64e87c9880627c76bea81b1
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for V

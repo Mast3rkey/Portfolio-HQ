@@ -1,0 +1,95 @@
+schema_version: '1.0'
+ticker: AMZN
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/AMZN.yaml
+  content_sha256: 0c2a682b6b0ceaabfc36cd90c319b760e62abe16c55e79f1780ae4c23d078b98
+evidence_reference:
+  source_file: intelligence/valuation_evidence/AMZN.yaml
+  content_sha256: 52832c3e10789db1afd3917c146d59a17cba8938fabf2b95bf5183a364af488d
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_1_asset_based_sotp
+  governed_role: primary_candidate
+  family_status: completed
+  valuation_range:
+    low: 93.58
+    base: 115.71
+    high: 145.22
+    unit_and_basis: USD per diluted share, equity value (sum-of-segments enterprise value less net debt,
+      divided by diluted shares)
+    governing_sensitivity: Range reflects a +/-multiple sensitivity band summed across disclosed segments,
+      less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
+      exercise, not an independent fair-value opinion, and not a comparison to the current market price.
+  assumptions_ledger:
+  - assumption_name: na_ebit_multiple_base
+    value: 15
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base ebit multiple applied to the North America segment's
+      reported ebit of 29600; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: intl_ebit_multiple_base
+    value: 15
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base ebit multiple applied to the International segment's
+      reported ebit of 4700; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: aws_ebit_multiple_base
+    value: 15
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base ebit multiple applied to the AWS segment's reported ebit
+      of 45600; no segment-specific peer trading multiple was gathered in Stage-3 evidence, so this is
+      a disclosed illustrative assumption.
+  - assumption_name: net_debt_bridge
+    value: -54633
+    provenance_label: historically_observed
+    source_or_derivation_note: Debt 68396 minus cash/equivalents 123029, as sourced in the pinned Stage-3
+      evidence record; subtracted from segment-summed enterprise value to reach implied equity value.
+  - assumption_name: diluted_shares_outstanding
+    value: 10830
+    provenance_label: historically_observed
+    source_or_derivation_note: Diluted share count as sourced in the pinned Stage-3 evidence record's
+      own financial_evidence.
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band summed across disclosed segments,
+  less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
+  exercise, not an independent fair-value opinion, and not a comparison to the current market price.
+uncertainty_summary: 'Sum-of-the-parts range built from real reported FY2025 segment revenue/operating
+  profit, consolidated debt, and cash. No segment-specific peer trading multiples were gathered in Stage-3
+  evidence -- the per-segment multiples applied here are disclosed, illustrative assumptions (provenance_label:
+  assumed_for_illustration), differentiated only where the pinned Stage-3 evidence record itself discloses
+  segment-level operating profit (an EV/EBIT-style multiple is then used); segments lacking disclosed
+  profit use a uniform EV/Revenue-style multiple tier selected from the company''s own overall reported
+  operating (or net) margin, not from any segment-specific comparable. family_2 (FCFF DCF) and family_3
+  (FCFE DCF), while adjustment_required rather than blocked outright for archetype F, were not applied
+  -- discount_rate_evidence is abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005),
+  so no discount rate, WACC, beta, or terminal growth rate was fabricated for this or any other ticker.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+conflicts_carried_forward: []
+result_status: completed
+cross_asset_handoff:
+  ticker: AMZN
+  asset_class: equity
+  result_status: completed
+  family_summary:
+  - family_id: family_1_asset_based_sotp
+    governed_role: primary_candidate
+    family_status: completed
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+record_status: sealed
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchB-sotp
+content_sha256: 963448211e6a23a6228aa99f6c5feb2906146ff14e2052a72b2014415a954a57
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for AMZN

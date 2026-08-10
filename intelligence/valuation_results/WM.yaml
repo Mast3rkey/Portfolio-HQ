@@ -1,0 +1,94 @@
+schema_version: '1.0'
+ticker: WM
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/WM.yaml
+  content_sha256: 8370c039f7d9f9ca9307ba9942265f1a9dda8348043adec44f1c8b5f6c364e38
+evidence_reference:
+  source_file: intelligence/valuation_evidence/WM.yaml
+  content_sha256: eba58bf0b05412585287ad41fb02e5ab32ec90a328f328985a5abfc0262ee591
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_5_relative_valuation
+  governed_role: primary_candidate
+  family_status: completed
+  valuation_range:
+    low: 100.49
+    base: 127.29
+    high: 160.79
+    unit_and_basis: USD per diluted share, equity value
+    governing_sensitivity: Illustrative P/E band for a capital-intensive waste-management infrastructure
+      archetype (B); reflects typical sensitivity to Stericycle-integration and PFAS-liability assumptions,
+      not a peer-derived or market-observed multiple.
+  assumptions_ledger:
+  - assumption_name: pe_multiple_low
+    value: 15
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end pe multiple; no peer-specific trading multiple was
+      gathered in Stage-3 evidence (only peer identities/comparability rationale), so this is a disclosed
+      illustrative band, not a peer-derived figure.
+  - assumption_name: pe_multiple_base
+    value: 19
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base-case pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: pe_multiple_high
+    value: 24
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: latest_fy_pe
+    value: 2710
+    provenance_label: historically_observed
+    source_or_derivation_note: FY2025 (ended 2025-12-31) net income $2,710M, reported, from the pinned
+      Stage-3 evidence record's own financial_evidence.
+  - assumption_name: diluted_shares_outstanding
+    value: 404.5
+    provenance_label: historically_observed
+    source_or_derivation_note: Diluted share count as sourced in the pinned Stage-3 evidence record's
+      own financial_evidence.
+  applied_peers:
+  - RSG
+  - GFL
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-B
+  P/E assumption; not an independent fair-value opinion and not a comparison to the current market price.
+uncertainty_summary: 'Relative-valuation range built from real reported FY2025 net income and diluted
+  share count. No peer-specific trading multiples were gathered in Stage-3 evidence (peer_set_evidence
+  carries only candidate identity and comparability rationale) -- the multiple band applied here is a
+  disclosed, illustrative assumption (provenance_label: assumed_for_illustration), archetype-informed
+  but not peer-derived or market-derived. family_2 (FCFF DCF), adjustment_required for archetype B and
+  prohibited for archetype C, was not applied to any ticker in this batch -- discount_rate_evidence is
+  abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005), so no discount rate, WACC,
+  beta, or terminal growth rate was fabricated for this or any other ticker.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+  - segment_evidence
+conflicts_carried_forward: []
+result_status: completed
+cross_asset_handoff:
+  ticker: WM
+  asset_class: equity
+  result_status: completed
+  family_summary:
+  - family_id: family_5_relative_valuation
+    governed_role: primary_candidate
+    family_status: completed
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+    - segment_evidence
+record_status: sealed
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchC-relative
+content_sha256: ad3d69bbc40d2a831346a80f9ca38731f616140384c4202520f98cd3c7d144f1
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for WM

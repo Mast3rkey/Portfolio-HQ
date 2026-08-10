@@ -1,0 +1,98 @@
+schema_version: '1.0'
+ticker: CEG
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/CEG.yaml
+  content_sha256: 025be45b95c651d948f69b7cfd6e46e615e64cf35a4da24f397e9b478a6fe054
+evidence_reference:
+  source_file: intelligence/valuation_evidence/CEG.yaml
+  content_sha256: 160e6163c3d47cd1c02bbf9130845fec459b75fdebe8b943fbd1b2aa140a6782
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_5_relative_valuation
+  governed_role: primary_candidate
+  family_status: completed
+  valuation_range:
+    low: 97.45
+    base: 123.44
+    high: 155.92
+    unit_and_basis: USD per diluted share, equity value
+    governing_sensitivity: Illustrative P/E band for a capital-intensive nuclear/independent-power-generation
+      infrastructure archetype (B); reflects typical sensitivity to power-purchase-agreement and restart-execution
+      assumptions, not a peer-derived or market-observed multiple.
+  assumptions_ledger:
+  - assumption_name: pe_multiple_low
+    value: 15
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end pe multiple; no peer-specific trading multiple was
+      gathered in Stage-3 evidence (only peer identities/comparability rationale), so this is a disclosed
+      illustrative band, not a peer-derived figure.
+  - assumption_name: pe_multiple_base
+    value: 19
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base-case pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: pe_multiple_high
+    value: 24
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: latest_fy_pe
+    value: 2320
+    provenance_label: historically_observed
+    source_or_derivation_note: FY2025 (ended 2025-12-31) net income $2,320M, reported, from the pinned
+      Stage-3 evidence record's own financial_evidence.
+  - assumption_name: diluted_shares_outstanding
+    value: 357.1
+    provenance_label: historically_observed
+    source_or_derivation_note: Diluted share count as sourced in the pinned Stage-3 evidence record's
+      own financial_evidence.
+  applied_peers:
+  - VST
+  - NRG
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-B
+  P/E assumption; not an independent fair-value opinion and not a comparison to the current market price.
+uncertainty_summary: 'Relative-valuation range built from real reported FY2025 net income. Diluted share
+  count uses the pinned Stage-3 evidence record''s own disclosed current shares outstanding (357.10M,
+  August 2026, which includes ~50M shares issued for the Calpine acquisition) rather than the FY2025 weighted-average
+  share count implicit in the reported EPS -- the evidence record''s own provenance note flags these as
+  not directly comparable; current shares outstanding is used here as the appropriate divisor for a current
+  point-in-time equity-value estimate, not for reproducing historical EPS. No peer-specific trading multiples
+  were gathered in Stage-3 evidence (peer_set_evidence carries only candidate identity and comparability
+  rationale) -- the multiple band applied here is a disclosed, illustrative assumption (provenance_label:
+  assumed_for_illustration), archetype-informed but not peer-derived or market-derived. family_2 (FCFF
+  DCF), adjustment_required for archetype B and prohibited for archetype C, was not applied to any ticker
+  in this batch -- discount_rate_evidence is abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005),
+  so no discount rate, WACC, beta, or terminal growth rate was fabricated for this or any other ticker.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+  - segment_evidence
+conflicts_carried_forward: []
+result_status: completed
+cross_asset_handoff:
+  ticker: CEG
+  asset_class: equity
+  result_status: completed
+  family_summary:
+  - family_id: family_5_relative_valuation
+    governed_role: primary_candidate
+    family_status: completed
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+    - segment_evidence
+record_status: sealed
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchC-relative
+content_sha256: 4a73172e6718248fc5f5db7c76446d37b6a916e78567630393f564df5e3b3437
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for CEG

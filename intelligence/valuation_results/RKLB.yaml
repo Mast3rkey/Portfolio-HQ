@@ -1,0 +1,89 @@
+schema_version: '1.0'
+ticker: RKLB
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/RKLB.yaml
+  content_sha256: 320e835768e43ccfec91483930b97b0bceb69f9903c158f38e7cb8959aa2ae66
+evidence_reference:
+  source_file: intelligence/valuation_evidence/RKLB.yaml
+  content_sha256: 0fe2b52918485bde9faa535a1d9f68ba18e130c7c0eaca0523d7347e2395c26d
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_7_scenario_probability_weighted
+  governed_role: primary_candidate
+  family_status: partial
+  valuation_range:
+    scenario_outcomes:
+    - scenario_name: Neutron rocket development
+      value: 15.31
+      probability_weight: 0.3
+      probability_weight_provenance_label: assumed_for_illustration
+    - scenario_name: Pending Iridium acquisition
+      value: 30.63
+      probability_weight: 0.3
+      probability_weight_provenance_label: assumed_for_illustration
+    - scenario_name: Government contract backlog
+      value: 20.42
+      probability_weight: 0.4
+      probability_weight_provenance_label: assumed_for_illustration
+    scenario_set_is_exhaustive: true
+    unit_and_basis: USD per share, scenario-outcome equity-value estimate
+    governing_sensitivity: 'Revenue-per-share ($1.02, FY2025 reported revenue $601.8M / diluted shares
+      589.5M) is used as the base metric, since RKLB''s FY2025 net income (-$198.2M) and free cash flow
+      (-$321M) are both negative -- a P/E or P/FCF-yield approach is not meaningful for a pre-profit,
+      cash-burning company; illustrative Price/Sales-style multiples are applied per scenario instead
+      (15x downside/execution-risk-weighted for continued Neutron delays; 30x upside for the pending,
+      not-yet-closed Iridium acquisition''s re-rating potential; 20x base-case for organic backlog-driven
+      growth, the most evidentially grounded of the three). Probability weights (0.30/0.30/0.40, summing
+      to 1.00) are this session''s own freshly assigned execution-time judgment, not sourced from Stage-3
+      evidence -- Stage-3 evidence names the three scenarios and their qualitative basis only, never a
+      probability. family_status: partial, not completed, because the weights themselves lack an evidentiary
+      basis, even though the underlying per-scenario multiple assumptions are individually disclosed and
+      the scenario names/qualitative evidence are real. Scenario-value and (for RKLB) probability-weight
+      assignment was performed under VALUATION-0006 SS O''s targeted isolation rule: this record''s own
+      portfolio_role_ref, conviction.rating, target_pct, current holding size/status, Milestone-8 recommendation
+      disposition, and gate status were not consulted or cited while making these judgments -- only the
+      pinned archetype and evidence records'' own content was used.'
+  assumptions_ledger: []
+sensitivity_disclosure: See methodology_families_applied[0].valuation_range.governing_sensitivity for
+  the full basis of each scenario's value and the disclosed, non-evidence-sourced probability weights;
+  not an independent fair-value opinion.
+uncertainty_summary: family_7 (scenario/probability-weighted) is RKLB's primary_candidate family, and
+  Stage-3 evidence names three real, evidence-grounded scenarios -- the richest scenario base in this
+  batch -- but net income and free cash flow are both negative for FY2025, so revenue-per-share is used
+  as the base metric with illustrative Price/Sales-style multiples per scenario. family_2/family_3 (DCF),
+  prohibited or adjustment_required for archetypes D/E, were not applied -- discount_rate_evidence is
+  abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005), so no discount rate, WACC,
+  beta, or terminal growth rate was fabricated for this or any other ticker.
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+conflicts_carried_forward: []
+result_status: partial
+cross_asset_handoff:
+  ticker: RKLB
+  asset_class: equity
+  result_status: partial
+  family_summary:
+  - family_id: family_7_scenario_probability_weighted
+    governed_role: primary_candidate
+    family_status: partial
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+record_status: sealed
+abstention_reason: 'family_7 reached family_status partial only (not completed): the assigned probability
+  weights are this session''s own execution-time judgment, not sourced from Stage-3 evidence.'
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchD-scenario
+content_sha256: 9fdeed5af558bf12adb4af6e0133ee78b5fdf47cf5affdada10c2d1250954e35
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for RKLB

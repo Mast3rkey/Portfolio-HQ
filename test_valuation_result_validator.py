@@ -1009,16 +1009,64 @@ class TestLeakage:
 # ═══════════════════════════════════════════════════════════════════════
 
 class TestPopulationAndLifecycle:
-    def test_absent_result_directory_accepted_at_scaffold_state(self):
-        result = vrv.validate_valuation_results_directory(REPO_ROOT / "intelligence" / "valuation_results", repo_root=REPO_ROOT)
-        assert result.valid
-        assert result.record_count == 0
+    """VALUATION-0007 authorized exactly one bounded Stage-4 population unit: the
+    27-name canonical equity cohort. The two tests below supersede the prior
+    scaffold-era assertions (an absent directory / zero real-company
+    population) -- accurate for the Stage-4 scaffold this validator shipped
+    with under VALUATION-0006, not for this implementation, which performs
+    the VALUATION-0007-authorized population itself. The schema and this
+    validator module remain roster-agnostic (SS B) -- these tests check the
+    *content* of this one population, not a closed-population rule inside
+    the validator itself, matching the identical precedent already
+    established by valuation_archetype_validator.py's and
+    valuation_evidence_validator.py's own TestAuthorizedCohortPopulation
+    classes."""
 
-    def test_zero_real_company_population_in_repository(self):
-        assert not (REPO_ROOT / "intelligence" / "valuation_results").exists(), (
-            "VALUATION-0006 SS A/SS S authorizes zero real-company population -- this "
-            "implementation must not create any real result file"
-        )
+    _AUTHORIZED_27 = frozenset({
+        "AMZN", "ASML", "AVGO", "CEG", "COST", "ETN", "GEV", "GNRC", "GOOGL",
+        "ICE", "ISRG", "KLAC", "LLY", "META", "MSFT", "NVDA", "PANW", "PWR",
+        "RKLB", "RTX", "SNPS", "SPGI", "TMO", "TSLA", "TSM", "V", "WM",
+    })
+
+    def test_valuation_results_directory_exists_with_authorized_cohort(self):
+        d = REPO_ROOT / "intelligence" / "valuation_results"
+        assert d.is_dir()
+        tickers = {p.stem for p in d.glob("*.yaml") if p.name != "COHORT_MANIFEST.yaml"}
+        assert tickers == self._AUTHORIZED_27
+
+    def test_cohort_manifest_is_committed_and_reconciles(self):
+        manifest_path = REPO_ROOT / "intelligence" / "valuation_results" / "COHORT_MANIFEST.yaml"
+        assert manifest_path.is_file()
+        manifest = yaml.safe_load(manifest_path.read_text())
+        rows = {row["ticker"] for row in manifest["cohort"]}
+        assert rows == self._AUTHORIZED_27
+
+    def test_validator_source_contains_no_hardcoded_authorized_population(self):
+        """The module may legitimately mention real tickers only inside prose
+        (e.g. the module docstring's own references), never as validator
+        logic -- the schema itself stays roster-agnostic (SS B)."""
+        assert not hasattr(vrv, "AUTHORIZED_POPULATION")
+        assert not hasattr(vrv, "DEFAULT_TICKER")
+
+    def test_repository_directory_scan_returns_exactly_27_records(self):
+        result = vrv.validate_valuation_results_directory(REPO_ROOT / "intelligence" / "valuation_results", repo_root=REPO_ROOT)
+        assert result.valid is True
+        # record_count includes the manifest's own ValidationResult alongside the
+        # 27 per-ticker file results (28 total) -- matching the __main__ block's
+        # own "OK (28 result(s))" output.
+        assert result.record_count == 28
+
+    def test_authorized_cohort_check_passes_against_live_repository_state(self):
+        d = REPO_ROOT / "intelligence" / "valuation_results"
+        records_by_ticker = {}
+        for p in sorted(d.glob("*.yaml")):
+            if p.name == "COHORT_MANIFEST.yaml":
+                continue
+            data = yaml.safe_load(p.read_text())
+            records_by_ticker[data["ticker"]] = data
+        res = vrv.validate_authorized_cohort(records_by_ticker, self._AUTHORIZED_27)
+        assert res.valid is True
+        assert res.errors == []
 
     def test_deterministic_canonical_hash(self):
         arch, evid = _archetype(), _evidence()

@@ -1,0 +1,75 @@
+schema_version: '1.0'
+ticker: KLAC
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/KLAC.yaml
+  content_sha256: 21edd290053ddf9568da65bc034ec92a4f5fb922aa40a2b547fdb75b6a45bb98
+evidence_reference:
+  source_file: intelligence/valuation_evidence/KLAC.yaml
+  content_sha256: ad66d3e81882a0ac49a44efd1fd3340ed4c9fb039d4d40f11a09cd5fc38ec860
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_7_scenario_probability_weighted
+  governed_role: primary_candidate
+  family_status: partial
+  valuation_range:
+    scenario_outcomes:
+    - scenario_name: China export-control exposure
+      value: 492.12
+    scenario_set_is_exhaustive: false
+    unit_and_basis: USD per share, scenario-outcome equity-value estimate
+    governing_sensitivity: 'A single named scenario (Stage-3 evidence discloses only one), so this cannot
+      constitute a genuine probability-weighted decomposition -- presented as one illustrative, evidence-informed
+      outcome value, not a weighted range, hence family_status: partial rather than completed. Value =
+      FY2025 EPS ($30.76, reported net income $4,060M / diluted shares 132.0M) x an illustrative multiple
+      of 16x, modestly below a generic semiconductor-equipment baseline, reflecting the disclosed China
+      export-control revenue-impact estimate (~$300-350M CY2026) this scenario names -- the multiple itself
+      is assumed_for_illustration, not peer- or market-derived. Scenario-value and (for RKLB) probability-weight
+      assignment was performed under VALUATION-0006 SS O''s targeted isolation rule: this record''s own
+      portfolio_role_ref, conviction.rating, target_pct, current holding size/status, Milestone-8 recommendation
+      disposition, and gate status were not consulted or cited while making these judgments -- only the
+      pinned archetype and evidence records'' own content was used.'
+  assumptions_ledger: []
+sensitivity_disclosure: See methodology_families_applied[0].valuation_range.governing_sensitivity for
+  the full basis of the single scenario value; not an independent fair-value opinion.
+uncertainty_summary: Stage-3 evidence names exactly one scenario for KLAC (disclosed China export-control
+  revenue exposure) -- a genuine probability-weighted methodology requires multiple weighted outcomes
+  to be meaningful; with only one named scenario, this record offers a single illustrative outcome value
+  instead, not a weighted range. family_2/family_3 (DCF), prohibited or adjustment_required for archetypes
+  D/E, were not applied -- discount_rate_evidence is abstained across all 27 sealed Stage-3 evidence records
+  (VALUATION-0005), so no discount rate, WACC, beta, or terminal growth rate was fabricated for this or
+  any other ticker.
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+  - segment_evidence
+conflicts_carried_forward: []
+result_status: partial
+cross_asset_handoff:
+  ticker: KLAC
+  asset_class: equity
+  result_status: partial
+  family_summary:
+  - family_id: family_7_scenario_probability_weighted
+    governed_role: primary_candidate
+    family_status: partial
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+    - segment_evidence
+record_status: sealed
+abstention_reason: 'family_7 reached family_status partial only (not completed): only one named scenario
+  exists in Stage-3 evidence, insufficient for a genuine multi-outcome probability-weighted decomposition.'
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchD-scenario
+content_sha256: f2d347a7f2f0d93ab49957a8d7a5318e829405a1a1e33eb16d17b91824f3c4f5
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for KLAC

@@ -1,0 +1,96 @@
+schema_version: '1.0'
+ticker: ASML
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/ASML.yaml
+  content_sha256: 31e0938e68ea9be875648f5680d057e45233617ec15030341ebc76ecb4a699c8
+evidence_reference:
+  source_file: intelligence/valuation_evidence/ASML.yaml
+  content_sha256: 0f76013f537703ee1ca94c80b33400b8b8659b94518aa8b9528a13f0af58c0ef
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_5_relative_valuation
+  governed_role: primary_candidate
+  family_status: completed
+  valuation_range:
+    low: 371.0
+    base: 469.94
+    high: 593.61
+    unit_and_basis: EUR per diluted share, equity value
+    governing_sensitivity: Illustrative P/E band for a capital-intensive semiconductor-equipment infrastructure
+      archetype (B); reflects typical sensitivity to cyclical-demand/export-control assumptions, not a
+      peer-derived or market-observed multiple.
+  assumptions_ledger:
+  - assumption_name: pe_multiple_low
+    value: 15
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end pe multiple; no peer-specific trading multiple was
+      gathered in Stage-3 evidence (only peer identities/comparability rationale), so this is a disclosed
+      illustrative band, not a peer-derived figure.
+  - assumption_name: pe_multiple_base
+    value: 19
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base-case pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: pe_multiple_high
+    value: 24
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: latest_fy_pe
+    value: 9609
+    provenance_label: historically_observed
+    source_or_derivation_note: FY2025 (ended 2025-12-31) net income EUR9,609M, reported, from the pinned
+      Stage-3 evidence record's own financial_evidence.
+  - assumption_name: diluted_shares_outstanding
+    value: 388.5
+    provenance_label: historically_observed
+    source_or_derivation_note: Diluted share count as sourced in the pinned Stage-3 evidence record's
+      own financial_evidence.
+  applied_peers:
+  - KLAC
+  - LRCX
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-B
+  P/E assumption, denominated in EUR; not an independent fair-value opinion and not a comparison to any
+  USD market price.
+uncertainty_summary: 'Relative-valuation range built from real reported FY2025 net income and diluted
+  share count. ASML''s Stage-3 financial_evidence is denominated in EUR (its primary reporting currency),
+  while its ADR trades in USD -- no FX rate exists in Stage-3 evidence to reconcile the two, so this range
+  is presented entirely in EUR terms and is not directly comparable to a USD share price without an independently
+  sourced exchange rate. No peer-specific trading multiples were gathered in Stage-3 evidence (peer_set_evidence
+  carries only candidate identity and comparability rationale) -- the multiple band applied here is a
+  disclosed, illustrative assumption (provenance_label: assumed_for_illustration), archetype-informed
+  but not peer-derived or market-derived. family_2 (FCFF DCF), adjustment_required for archetype B and
+  prohibited for archetype C, was not applied to any ticker in this batch -- discount_rate_evidence is
+  abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005), so no discount rate, WACC,
+  beta, or terminal growth rate was fabricated for this or any other ticker.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+conflicts_carried_forward: []
+result_status: completed
+cross_asset_handoff:
+  ticker: ASML
+  asset_class: equity
+  result_status: completed
+  family_summary:
+  - family_id: family_5_relative_valuation
+    governed_role: primary_candidate
+    family_status: completed
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+record_status: sealed
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchC-relative
+content_sha256: 16eba16d00f41134becf5854b5180e4fde76ee49c9a71f9a627b3838fef35913
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for ASML

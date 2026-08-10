@@ -1,0 +1,95 @@
+schema_version: '1.0'
+ticker: META
+asset_class: equity
+governing_decisions:
+- VALUATION-0002
+- VALUATION-0006
+- VALUATION-0007
+archetype_reference:
+  source_file: intelligence/valuation_archetype/META.yaml
+  content_sha256: 9513197207cd89e40ee873298f108521aae0e5531a9535c34a8510baad7a0933
+evidence_reference:
+  source_file: intelligence/valuation_evidence/META.yaml
+  content_sha256: 8aa988c938101e936787b441ed3590958d6630acc64931aee2a56d51b632b5b4
+as_of_date: '2026-08-10'
+methodology_families_applied:
+- family_id: family_5_relative_valuation
+  governed_role: primary_candidate
+  family_status: completed
+  valuation_range:
+    low: 563.93
+    base: 704.91
+    high: 892.89
+    unit_and_basis: USD per diluted share, equity value
+    governing_sensitivity: Illustrative P/E band for an asset-light, high-margin advertising/platform
+      archetype (A); reflects typical sensitivity to AI-capex-return and engagement-durability assumptions,
+      not a peer-derived or market-observed multiple.
+  assumptions_ledger:
+  - assumption_name: pe_multiple_low
+    value: 24
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end pe multiple; no peer-specific trading multiple was
+      gathered in Stage-3 evidence (only peer identities/comparability rationale), so this is a disclosed
+      illustrative band, not a peer-derived figure.
+  - assumption_name: pe_multiple_base
+    value: 30
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative base-case pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: pe_multiple_high
+    value: 38
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
+      the low/high band.
+  - assumption_name: latest_fy_pe
+    value: 60458
+    provenance_label: historically_observed
+    source_or_derivation_note: FY2025 (ended 2025-12-31) net income $60,458M, reported, from the pinned
+      Stage-3 evidence record's own financial_evidence.
+  - assumption_name: diluted_shares_outstanding
+    value: 2573
+    provenance_label: historically_observed
+    source_or_derivation_note: Diluted share count as sourced in the pinned Stage-3 evidence record's
+      own financial_evidence.
+  applied_peers:
+  - GOOGL
+  - SNAP
+sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-A
+  P/E assumption; not an independent fair-value opinion and not a comparison to the current market price.
+uncertainty_summary: 'Relative-valuation range built from real reported FY2025 net income and diluted
+  share count. No peer-specific trading multiples were gathered in Stage-3 evidence (peer_set_evidence
+  carries only candidate identity and comparability rationale, never the peer''s own financial figures
+  or multiples) -- the multiple bands applied here are disclosed, illustrative assumptions (provenance_label:
+  assumed_for_illustration), archetype-informed but not peer-derived or market-derived. Families 2 (FCFF
+  DCF) and 3 (FCFE DCF) were not applied to this or any other ticker in the 27-company VALUATION-0007
+  cohort. discount_rate_evidence is abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005)
+  -- no risk-free-rate, cost-of-debt, tax-rate, capital-structure, or beta-observation input exists to
+  enable even a partial DCF computation. No discount rate, WACC, beta, or terminal growth rate was fabricated
+  for this or any other ticker. Closing this evidence gap is a separate, future, unauthorized governance
+  unit.'
+evidence_quality_summary:
+  access_status_values_present:
+  - consulted_via_search_aggregation
+  domain_abstentions_echoed:
+  - discount_rate_evidence
+conflicts_carried_forward: []
+result_status: completed
+cross_asset_handoff:
+  ticker: META
+  asset_class: equity
+  result_status: completed
+  family_summary:
+  - family_id: family_5_relative_valuation
+    governed_role: primary_candidate
+    family_status: completed
+  evidence_quality_summary_echo:
+    access_status_values_present:
+    - consulted_via_search_aggregation
+    domain_abstentions_echoed:
+    - discount_rate_evidence
+record_status: sealed
+sealed_at: '2026-08-10'
+governing_decision: VALUATION-0006
+drafting_session_or_shard_id: VALUATION-0007-impl-batchA-compounder
+content_sha256: 94e17acf140177d6b76bf8c948e0a14076815bd9b6e2588ba81e8894e9787b77
+cohort_manifest_entry: COHORT_MANIFEST.yaml row for META
