@@ -184,3 +184,64 @@ The reviewing session's own count (248 YAML/YML files at both the old and the co
 `economic_assessment_validator.py` standalone: `OK (3 result(s))`. `test_economic_assessment_validator.py`: **237/237 passed**. All fourteen other repository validators clean and unaffected. Full repository `pytest`: **4654 passed, 0 failed** (4635 pre-correction baseline + 19 new tests, exact match). Decision catalog unchanged: **105 decisions, `issues == ()`** (95/95 `test_portfolio_hq_dashboard_decisions.py`). YAML/YML parse: 249 files, 0 errors. JSON parse: 178 files, 0 errors. `git diff --check`: clean. Exact changed-file inventory for this correction: `economic_assessment_validator.py`, `test_economic_assessment_validator.py`, this retained audit -- three files, no fourth, matching §9's own precedent exactly. Zero diff on every protected path and on both sealed `intelligence/economic_assessment/` records and `COHORT_MANIFEST.yaml`, independently reconfirmed.
 
 This session does not review its own PR, mark it ready, merge it, or post principal acceptance -- requires its own fresh independent exact-head delta review before this PR may be considered ready.
+
+## 11. Third bounded correction (same day, this PR): matched-claim-scoped clause detection, closing the broader boundary-construction class
+
+A second fresh independent exact-head delta review (`pullrequestreview-4896892801`, anchored to head `97f329cf00073b7eb3bbbd607919b6cc4daae9d4`) returned **CHANGES REQUIRED** -- 0 BLOCKING / 1 MAJOR / 0 MINOR / 1 non-actionable NOTE carried forward (§10's own out-of-scope NOTE, unresolved by this correction either, disclosed above). §10's own MAJOR was independently reconfirmed resolved for the exact bypasses it demonstrated (comma+`but`, bare semicolon).
+
+### 11.1 The finding
+
+§10's clause-scoped negation check split sentences into clauses only at a fixed subset of English boundaries: semicolons, comma+`{and,but,yet,so,nor}`, and a fixed contrastive-conjunction word list. The review found four further, ordinary (non-adversarial) clause-boundary constructions the pattern did not recognize at all, each letting a genuine negation "shield" a later, entirely unrelated positive claim in the same sentence -- reproduced against `97f329c` before any code change, all `valid: True, errors: []`:
+
+```python
+# 1. Bare "and"/"so"/"nor" with no preceding comma
+"This does not compute a numeric hurdle rate and GLD diversifies the whole portfolio in every tested period."
+"This does not compute a numeric hurdle rate so GLD diversifies the whole portfolio materially."
+
+# 2. Em dash / double hyphen (this repository's own house style)
+"This does not compute a numeric hurdle rate — GLD diversifies the whole portfolio in every tested period."
+"This does not compute a numeric hurdle rate -- GLD diversifies the whole portfolio in every tested period."
+
+# 3. "or" introducing an independent clause (not a same-clause verb/noun list)
+"This does not compute a numeric hurdle rate, or GLD diversifies the whole portfolio in every period."
+
+# 4. Colon
+"This does not compute a numeric hurdle rate: GLD diversifies the whole portfolio in every tested period."
+```
+
+Neither sealed record uses any of these constructions -- both independently reconfirmed byte-identical to `97f329c` and unaffected.
+
+### 11.2 Root cause
+
+§10's design correctly identified clause-scoping as the right granularity, but implemented it as a fixed enumeration of specific boundary tokens rather than a principled distinction between two structurally different roles a conjunction can play. Continuing to patch one more punctuation form at a time (as the task's own ROBUSTNESS REQUIREMENT anticipated) would reopen the identical vulnerability class on the next untested construction.
+
+### 11.3 Correction, `economic_assessment_validator.py` only -- matched-claim-scoped, not punctuation-enumerated
+
+Replaces `_CLAUSE_BOUNDARY_PATTERN`/`_split_clauses` entirely with a hard/soft boundary distinction and a custom splitting function (`_CLAUSE_HARD_BOUNDARY_PATTERN`, `_CLAUSE_SOFT_BOUNDARY_PATTERN`, `_COORDINATION_CONTINUATION_PATTERN`, `_DISCLAIMING_VERB_WORDS`, `_DIVERSIFICATION_CONCEPT_NOUNS`, rewritten `_split_clauses`):
+
+1. **Hard boundaries** -- semicolon, colon, em dash/double hyphen, and `but`/`so`/`nor`/`yet`/`however`/`though`/`although`/`while` -- always end a clause, comma or no comma, since none of these words is ever legitimately used to coordinate within this scan's own closed vocabulary.
+2. **Soft boundaries** -- `and`/`or` -- these DO legitimately coordinate within the closed disclaiming-verb-word list ("does not compute, constitute, imply, **or** substitute for X") and the closed diversification-concept-noun list ("diversification-benefit **or** correlation finding", "remain separately governed **and** unmeasured"). A soft-boundary `and`/`or` is treated as an actual clause boundary only when the text immediately following it is **not** itself one more item from either closed list -- checked via `_COORDINATION_CONTINUATION_PATTERN.match()` against the text right after the match.
+
+This is deliberately **matched-claim-scoped, not clause-boundary-list-scoped**, per the task's own explicit robustness requirement: it does not attempt to detect a new grammatical subject, parse sentence structure, or continue enumerating punctuation/conjunction combinations. The single, closed-vocabulary check -- "does the text after `and`/`or` continue the same coordinated list the negation or the claim vocabulary already started?" -- is the exact structural distinction between every demonstrated legitimate disclaimer (where what follows is always one more disclaiming verb or diversification-concept noun) and every demonstrated bypass construction across both delta reviews (where what follows is always a new subject, "GLD" or "the portfolio", neither of which is a member of either closed list). No general parser, no subject detection, no NLP dependency.
+
+### 11.4 Empirical validation before implementation
+
+Before editing the module, the redesigned mechanism was validated as a standalone Python script against a battery of 20 prohibited constructions (all seven of the reviewer's newly-demonstrated boundary forms, both of the prior review's already-fixed bypasses re-verified, the original §9 reviewer-crafted attack, cross-sentence laundering, and eight nearby claim-wording variants combined with the new boundary forms) and 10 legitimate constructions (the required single-clause and `or`-joined object-list disclaimers, the multi-clause deferral disclaimer, semicolon-both-nonassertive, two-separate-negative-sentences, declarative-deferral phrasing, and the real sealed record's own text) -- **all 30 passed on the first standalone run**, including the real record. Only after this standalone confirmation was the actual module edited; the same full battery was then re-run directly against the live module's `_scan_overlap_model_non_duplication` function and against `validate_economic_assessment_file` on both real sealed records, with identical results.
+
+### 11.5 Regression tests added
+
+Sixteen new focused tests in `test_economic_assessment_validator.py` (237 -> 253): a parametrized `test_single_asset_disclosure_broader_clause_boundary_laundering_rejected` (7 cases -- bare `and`/`so`/`nor`, em dash, double hyphen, independent-clause `or`, colon, all rejected); a parametrized `test_single_asset_disclosure_broader_boundary_claim_variants_rejected` (5 cases -- each new boundary form combined with a *different* claim wording -- reduces-risk/hedge/offsets/negatively-correlated/diversifies -- proving the fix is semantic across both boundary form and claim wording, not hardcoded to any one combination); a parametrized `test_single_asset_disclosure_or_joined_object_list_still_accepted` (2 cases -- the exact false-positive risk this redesign had to avoid: `or` joining items within the same closed verb-word or noun list); `test_single_asset_disclosure_real_disclaimer_verb_list_or_survives_broader_boundaries` (asserts both of the real record's own exact comma+`or` coordinated-list substrings are present and confirms zero scan errors under the broadened design); and `test_single_asset_disclosure_prior_correction_bypasses_still_rejected_under_redesign` (both of §10's own exact bypass strings, reconfirmed rejected -- proves the redesign is a superset fix, not a lateral rewrite that reopens an already-closed gap).
+
+### 11.6 What this correction does not do
+
+Neither `GLD.yaml` nor `CASH_LIKE_CAPITAL.yaml` was edited -- both remain byte-identical, confirmed via `git diff --stat` (empty) and independent `content_sha256` reproduction (`validate_economic_assessment_file` returns `valid: True` for both, unchanged). `COHORT_MANIFEST.yaml` is likewise untouched. `roadmap_preservation`, `operations/WORKSTREAMS.yaml`, `CLAUDE.md`, `XASSET-0008`, and `XASSET-0009`'s own text are all unaffected -- this correction touches exactly `economic_assessment_validator.py`, `test_economic_assessment_validator.py`, and this retained audit. §10's own carried-forward NOTE (no independent scan confirming `CASH_LIKE_CAPITAL`'s free text never restates a legacy record's own field value as a `CASH_LIKE_CAPITAL`-level finding) is again explicitly **not** addressed here, per the task's own instruction not to address it unless independently required -- it was not.
+
+### 11.7 YAML/YML count reconciliation
+
+Independently re-checked this round via three separate counting methods (`git ls-files`; `find` excluding `.git`; a Python `pathlib.rglob` walk) -- all three agree on **249** files at this corrected head, unchanged from every prior round; `git status --porcelain` confirms zero YAML/YML files touched by this correction. §10.8's own conclusion (the "248" figure being counting-method/environment variance on the earlier reviewing session's own side, not a real discrepancy) stands unrevised; no change made in response to it.
+
+### 11.8 Full validation at the corrected head
+
+`economic_assessment_validator.py` standalone: `OK (3 result(s))`. `test_economic_assessment_validator.py`: **253/253 passed**. `test_overlap_model_validator.py`: **199/199 passed**, unaffected. `test_functional_doctrine_validator.py`: **189/189 passed**, unaffected. All fourteen other repository validators clean and unaffected. Full repository `pytest`: **4670 passed, 0 failed** (4654 pre-correction baseline + 16 new tests, exact match). Decision catalog unchanged: **105 decisions, `issues == ()`** (95/95 `test_portfolio_hq_dashboard_decisions.py`). YAML/YML parse: 249 files, 0 errors. JSON parse: 178 files, 0 errors. `git diff --check`: clean. Exact changed-file inventory for this correction: `economic_assessment_validator.py`, `test_economic_assessment_validator.py`, this retained audit -- three files, no fourth, matching §9's and §10's own precedent exactly. Zero diff on every protected path and on both sealed `intelligence/economic_assessment/` records and `COHORT_MANIFEST.yaml`, independently reconfirmed.
+
+This session does not review its own PR, mark it ready, merge it, or post principal acceptance -- requires its own fresh independent exact-head delta review before this PR may be considered ready.

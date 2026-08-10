@@ -922,6 +922,124 @@ def test_single_asset_disclosure_real_disclaimer_text_accepted_clause_scoped():
     assert errors == []
 
 
+# ── third bounded correction: matched-claim-scoped clause detection
+# (broader boundary constructions, not merely a bigger punctuation list)
+# ────────────────────────────────────────────────────────────────────────
+# A second fresh independent exact-head delta review found the clause-
+# scoped design's boundary detection recognized only a fixed subset of
+# English clause boundaries -- ordinary, non-adversarial constructions
+# (a comma-less bare "and"/"so"/"nor", an em dash/double hyphen, a colon,
+# and "or" introducing a genuinely new independent clause) could all still
+# bypass it. These tests reproduce the reviewer's demonstrated
+# constructions and confirm the redesigned, matched-claim-scoped clause
+# detection (`_split_clauses`, hard vs. soft boundary distinction) closes
+# the whole vulnerability class rather than one more punctuation form.
+
+@pytest.mark.parametrize("laundering_sentence", [
+    "This does not compute a numeric hurdle rate and GLD diversifies the whole portfolio in every tested period.",
+    "This does not compute a numeric hurdle rate so GLD diversifies the whole portfolio materially.",
+    "This does not compute a numeric hurdle rate, nor GLD diversifies the whole portfolio.",
+    "This does not compute a numeric hurdle rate — GLD diversifies the whole portfolio in every tested period.",
+    "This does not compute a numeric hurdle rate -- GLD diversifies the whole portfolio in every tested period.",
+    "This does not compute a numeric hurdle rate, or GLD diversifies the whole portfolio in every period.",
+    "This does not compute a numeric hurdle rate: GLD diversifies the whole portfolio in every tested period.",
+])
+def test_single_asset_disclosure_broader_clause_boundary_laundering_rejected(laundering_sentence):
+    """The exact class of bypass the second delta review demonstrated:
+    a bare conjunction (no comma required), an em dash, a double hyphen,
+    an independent-clause "or", and a colon must all be recognized as
+    genuine clause boundaries, closing the specific gap left by the prior
+    correction's narrower, punctuation-enumerated boundary pattern."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        laundering_sentence
+    )
+    _assert_invalid(data, contains="not accompanied")
+
+
+@pytest.mark.parametrize("laundering_sentence", [
+    "This does not establish anything and GLD reduces the portfolio's risk materially.",
+    "This does not establish anything, or GLD offers a portfolio hedge against equity declines.",
+    "This does not establish anything -- GLD offsets equity risk at the portfolio level.",
+    "This does not establish anything; GLD is negatively correlated with the portfolio.",
+    "This does not establish anything, or GLD diversifies the whole portfolio.",
+])
+def test_single_asset_disclosure_broader_boundary_claim_variants_rejected(laundering_sentence):
+    """Nearby variants combining each newly-recognized boundary form with
+    a different prohibited claim (reduces-risk/hedge/offsets/negatively-
+    correlated/diversifies) -- proving the redesigned mechanism is
+    semantic and generalizes across boundary form and claim wording
+    together, not hardcoded to any one combination."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        laundering_sentence
+    )
+    _assert_invalid(data, contains="not accompanied")
+
+
+@pytest.mark.parametrize("legit_sentence", [
+    "This does not establish diversification, correlation, or hedge effectiveness.",
+    "This single-asset assessment does not establish whole-portfolio diversification or correlation.",
+])
+def test_single_asset_disclosure_or_joined_object_list_still_accepted(legit_sentence):
+    """The exact false-positive risk this correction's own redesign must
+    avoid: "or" joining items within the SAME closed disclaiming-verb-
+    word or diversification-concept-noun list (the object of a single
+    negated verb) must remain a protected, non-boundary "or" -- distinct
+    from an "or" that introduces a genuinely new independent clause."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        f"This finding is single-asset and historical only. {legit_sentence}"
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert result.valid, result.errors
+
+
+def test_single_asset_disclosure_real_disclaimer_verb_list_or_survives_broader_boundaries():
+    """The real sealed record's own comma+'or' disclaiming-verb list
+    ("does not compute, constitute, imply, or substitute for...") and its
+    comma+'or' diversification-concept-noun list ("diversification-
+    benefit or correlation finding") must both still survive as protected
+    coordination under the broadened hard/soft boundary redesign -- not
+    merely under the narrower second-correction pattern that first
+    motivated excluding "or" from splitting altogether."""
+    data = yaml.safe_load(
+        (REPO_ROOT / "intelligence" / "economic_assessment" / "GLD.yaml").read_text()
+    )
+    disclosure = data["instrument_specific_economic_characterization"][
+        "historical_equity_drawdown_behavior"
+    ]["single_asset_disclosure"]
+    assert "does not compute, constitute, imply, or substitute" in disclosure
+    assert "diversification-benefit or correlation finding" in disclosure
+    errors: list[str] = []
+    eav._scan_overlap_model_non_duplication(
+        {"rationale": "", "single_asset_disclosure": disclosure}, errors
+    )
+    assert errors == []
+
+
+def test_single_asset_disclosure_prior_correction_bypasses_still_rejected_under_redesign():
+    """Both of the second delta review's own exact bypass constructions
+    (comma+'but', bare semicolon) must remain rejected under the third
+    correction's redesigned clause detection -- confirms the redesign is
+    a superset fix, not a lateral rewrite that reopens an already-closed
+    gap."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This single-asset finding does not compute a numeric hurdle rate, but GLD diversifies "
+        "the whole portfolio and materially reduces total portfolio drawdown, a real and "
+        "significant portfolio-level benefit worth noting."
+    )
+    _assert_invalid(data, contains="not accompanied")
+
+    data2 = _record(analytical_subject="GLD")
+    data2["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This single-asset finding does not compute a numeric hurdle rate; GLD diversifies the "
+        "whole portfolio and reduces total portfolio drawdown materially."
+    )
+    _assert_invalid(data2, contains="not accompanied")
+
+
 def test_rationale_diversification_scan_still_unconditional_no_negation_carveout():
     """rationale keeps its original, stricter, unconditional-block
     behavior -- unlike single_asset_disclosure, a negated claim in

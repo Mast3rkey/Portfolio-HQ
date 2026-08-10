@@ -434,24 +434,61 @@ _DECLARATIVE_DEFERRAL_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-# Clause boundaries: a semicolon; a comma immediately followed by a
-# coordinating conjunction that plausibly opens a new independent clause
-# (deliberately excluding "or" -- "or" overwhelmingly joins items within a
-# same-clause disclaiming-verb list, e.g. "does not compute, constitute,
-# imply, or substitute for X", and splitting on it there would sever a
-# genuine negation from the very claim it disclaims); or a bare
-# contrastive conjunction, with or without a preceding comma. This is a
-# conservative, punctuation/conjunction-based split -- not a general-
-# purpose NLP parser -- chosen specifically because every demonstrated
-# bypass construction (comma+and, comma+but, semicolon, "however"/"yet")
-# is one of these forms, while the real sealed disclaimer's own
-# comma+"or" verb list is deliberately left unsplit.
-_CLAUSE_BOUNDARY_PATTERN = re.compile(
-    r";"
-    r"|,\s*(?=(?:and|but|yet|so|nor)\b)"
-    r"|\b(?:but|however|though|although|yet|while)\b",
+# Third bounded correction (SS10.1's own MAJOR finding, disclosed in the
+# retained audit SS11): the second correction's clause-boundary pattern
+# only recognized a fixed, incomplete subset of English clause boundaries
+# (comma+specific-conjunction, a small contrastive-conjunction word list).
+# An independent delta review demonstrated it does not recognize a
+# comma-less bare "and"/"so"/"nor", an em dash/double hyphen (this
+# repository's own house style), a colon, or "or" used to introduce a
+# genuinely new independent clause -- all ordinary, non-adversarial
+# English constructions, all still capable of laundering an unrelated
+# negation across a clause boundary. Rather than continuing to enumerate
+# punctuation/conjunction combinations one bypass at a time, the design
+# below is matched-claim-scoped, not clause-list-scoped: it distinguishes
+# two structurally different roles "and"/"or" play, using a closed,
+# bounded vocabulary check rather than a general parser --
+#
+#   - HARD boundaries (never legitimately used to coordinate within the
+#     closed disclaiming-verb-list or diversification-concept-noun-list
+#     this scan's own vocabulary is built from): a semicolon, a colon, an
+#     em dash / double hyphen, or one of "but"/"so"/"nor"/"yet"/
+#     "however"/"though"/"although"/"while" -- always end a clause,
+#     comma or no comma.
+#   - SOFT boundaries: "and"/"or" -- these DO legitimately coordinate
+#     within the same closed lists (e.g. "does not compute, constitute,
+#     imply, or substitute for X", "diversification-benefit or
+#     correlation finding", "remain separately governed and unmeasured").
+#     A soft-boundary "and"/"or" is only treated as an actual clause
+#     boundary when the text immediately following it is NOT itself one
+#     more item from the closed disclaiming-verb-word list or the closed
+#     diversification-concept-noun list -- i.e., when it is not a
+#     continuation of the same coordinated list the negation or the claim
+#     vocabulary already started. This directly separates the real sealed
+#     record's own legitimate coordination ("or substitute", "or
+#     correlation") from every demonstrated bypass ("or GLD diversifies",
+#     "and GLD reduces...") without needing to detect a new grammatical
+#     subject at all -- the closed-vocabulary check IS the distinguishing
+#     signal, because none of the demonstrated bypass claims' own subject
+#     ("GLD", "the portfolio") is a member of either closed list.
+_DISCLAIMING_VERB_WORDS = (
+    r"compute|constitute|imply|substitute|establish|determine|represent|"
+    r"assert|claim|find|show|demonstrate|indicate|prove"
+)
+_DIVERSIFICATION_CONCEPT_NOUNS = (
+    r"diversification(?:-benefit)?|correlation|hedge(?:\s+effectiveness)?|"
+    r"risk(?:\s+reduction)?|drawdown|volatility"
+)
+_COORDINATION_CONTINUATION_PATTERN = re.compile(
+    rf"(?:{_DISCLAIMING_VERB_WORDS})\w*|(?:{_DIVERSIFICATION_CONCEPT_NOUNS})\b",
     re.IGNORECASE,
 )
+_CLAUSE_HARD_BOUNDARY_PATTERN = re.compile(
+    r";|:|--|—"
+    r"|\b(?:but|so|nor|yet|however|though|although|while)\b",
+    re.IGNORECASE,
+)
+_CLAUSE_SOFT_BOUNDARY_PATTERN = re.compile(r"\b(?:and|or)\b", re.IGNORECASE)
 _SENTENCE_SPLIT_PATTERN = re.compile(r"(?<=[.!?])\s+")
 
 
@@ -460,7 +497,29 @@ def _split_sentences(text: str) -> list[str]:
 
 
 def _split_clauses(sentence: str) -> list[str]:
-    return [c for c in _CLAUSE_BOUNDARY_PATTERN.split(sentence) if c and c.strip()]
+    """Splits a sentence into clauses at hard boundaries unconditionally,
+    and at "and"/"or" only when the text immediately following is not
+    itself a continuation of the same closed disclaiming-verb-word or
+    diversification-concept-noun coordination -- see the module-level
+    comment above for the full rationale."""
+    boundaries: list[tuple[int, int]] = []
+    for m in _CLAUSE_HARD_BOUNDARY_PATTERN.finditer(sentence):
+        boundaries.append((m.start(), m.end()))
+    for m in _CLAUSE_SOFT_BOUNDARY_PATTERN.finditer(sentence):
+        following = sentence[m.end():].lstrip()
+        if _COORDINATION_CONTINUATION_PATTERN.match(following):
+            continue  # protected coordination -- not a real clause boundary
+        boundaries.append((m.start(), m.end()))
+    boundaries.sort()
+    clauses: list[str] = []
+    pos = 0
+    for start, end in boundaries:
+        if start < pos:
+            continue  # overlapping match already consumed by an earlier boundary
+        clauses.append(sentence[pos:start])
+        pos = end
+    clauses.append(sentence[pos:])
+    return [c for c in clauses if c and c.strip()]
 
 
 @dataclass
@@ -633,21 +692,34 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
     §11.1's own "self-declared flag is not a substitute for an
     independent scan" lesson applied a second time here). The check is
     negation-aware and **clause-scoped**, not merely sentence-scoped
-    (second bounded correction, disclosed in the retained audit SS10): a
-    sentence is first split into clauses at semicolons, comma+coordinating
-    -conjunction boundaries, and bare contrastive conjunctions
-    (`_split_clauses`), and a portfolio-diversification match is allowed
-    only when a genuine disclaiming cue -- either a disclaiming-negation
-    phrase (`_DISCLAIMING_NEGATION_PATTERN`, e.g. "does not compute") or a
+    (second bounded correction, disclosed in the retained audit §10): a
+    sentence is first split into clauses (`_split_clauses`), and a
+    portfolio-diversification match is allowed only when a genuine
+    disclaiming cue -- either a disclaiming-negation phrase
+    (`_DISCLAIMING_NEGATION_PATTERN`, e.g. "does not compute") or a
     declarative-deferral phrase (`_DECLARATIVE_DEFERRAL_PATTERN`, e.g.
     "remains separately governed") -- appears **anywhere in that same
     clause**, never merely earlier in the same sentence. Sentence-scoping
     alone allowed a genuine negation in one clause to "shield" an
-    unrelated, unnegated claim in a later clause of the same sentence
-    (e.g. "This does not establish X, and GLD diversifies the whole
-    portfolio."); clause-scoping closes that gap while still accepting
-    the real sealed record's own multi-clause disclaimer, whose negation
-    and the claim it disclaims sit in the same semicolon-joined clause."""
+    unrelated, unnegated claim in a later clause of the same sentence.
+
+    Clause detection itself is matched-claim-scoped, not an ever-growing
+    enumeration of punctuation/conjunction combinations (third bounded
+    correction, disclosed in the retained audit §11): `_split_clauses`
+    treats a semicolon, colon, em dash/double hyphen, and a fixed set of
+    conjunctions never legitimately used to coordinate within this scan's
+    own closed vocabulary ("but"/"so"/"nor"/"yet"/"however"/"though"/
+    "although"/"while") as unconditional ("hard") boundaries -- comma or
+    no comma, since none of these ever appear mid-list in a genuine
+    disclaimer. "and"/"or" are treated as conditional ("soft") boundaries:
+    a boundary only when the text immediately following is not itself one
+    more item from the closed disclaiming-verb-word or diversification-
+    concept-noun list this scan already matches against -- the exact
+    distinction between the real sealed record's own legitimate
+    coordination ("does not compute, constitute, imply, or substitute for
+    X", "diversification-benefit or correlation finding") and every
+    demonstrated bypass construction (whose own claim subject, "GLD" or
+    "the portfolio", is never a member of either closed list)."""
     rationale = drawdown.get("rationale")
     if isinstance(rationale, str):
         for pattern in _PORTFOLIO_DIVERSIFICATION_PATTERNS:
