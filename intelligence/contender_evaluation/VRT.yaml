@@ -1,0 +1,89 @@
+schema_version: "1.0"
+contender_symbol: VRT
+canonical_comparator_symbol: GEV
+provenance:
+  sources:
+    - source_identifier: intelligence/companies/VRT.yaml
+      source_type: secondary
+      as_of_date: "2026-07-26"
+      access_status: directly_inspected
+    - source_identifier: intelligence/companies/VRT.md
+      source_type: secondary
+      as_of_date: "2026-07-26"
+      access_status: directly_inspected
+    - source_identifier: governance/decisions/PI-0019-gev-committee-review-authorization.md
+      source_type: secondary
+      as_of_date: "2026-07-22"
+      access_status: directly_inspected
+      limitation: >-
+        Cited for process-only comparator context (VRT named alongside ETN/PWR as one of
+        exactly three comparators in GEV's own committee review) -- not itself a capital-
+        priority finding about VRT.
+    - source_identifier: governance/decisions/PI-0020-gev-intelligence-refresh-authorization.md
+      source_type: secondary
+      as_of_date: "2026-07-22"
+      access_status: directly_inspected
+      limitation: >-
+        Cited for process-only comparator context, not a capital-priority finding about VRT.
+comparator_structural_reference:
+  source_schema: valuation_archetype
+  source_file: intelligence/valuation_archetype/GEV.yaml
+  referenced_content_sha256: cf775759133b2fcd128fccb9f8bf5964fbdbbef7493c1ad1fb154eb40052b7ca
+archetype_assessment:
+  primary_archetype: B
+  secondary_archetype: null
+  rationale: >-
+    Vertiv designs, manufactures, and services power and thermal-management equipment for
+    data centers, funded by a large, growing, multi-year order backlog converting into
+    equipment and services revenue -- a capital-intensive, long-cycle industrial model.
+    Vertiv's own disclosed manufacturing-capacity expansion (a European chiller-production
+    campus, plus a planned testing facility) and elevated order-to-shipment (book-to-bill)
+    dynamics reinforce a reinvestment-intensive, long-asset-life profile in which
+    reinvestment-rate and backlog-conversion assumptions materially affect the business,
+    requiring ROIC/reinvestment framing alongside a discounted-cash-flow view -- archetype
+    B's own description. No secondary archetype is assigned: Vertiv's own evidence base
+    does not disclose segment-level financial detail showing materially different economics
+    across its power-equipment, thermal-management, and services-and-spares product lines
+    sufficient to support a distinct sum-of-the-parts lens, so no secondary archetype is
+    forced from the available evidence.
+evidence_quality_assessment:
+  primary_source_coverage: partial
+  uncertainty_statement: >-
+    An external audit process independently inspected several of Vertiv's own official
+    disclosures underlying this assessment, but this evaluation session did not itself open
+    any primary document. Vertiv's own evidence base retains real, disclosed unresolved
+    items -- a metric-basis ambiguity in one segment's loss guidance, an unquantified
+    customer-concentration gap flagged by outside commentary, and a materially large backlog
+    figure the underlying audit could not substantiate against an official filing and which
+    is accordingly excluded from this assessment's reasoning -- placing overall coverage
+    between the comprehensive and limited tiers.
+methodology_applicability_reference:
+  archetype: B
+  family_1_asset_based_sotp: adjustment_required
+  family_2_fcff_dcf: adjustment_required
+  family_3_fcfe_dcf: adjustment_required
+  family_4_earnings_fcf_yield: adjustment_required
+  family_5_relative_valuation: primary_candidate
+  family_6_roic_reinvestment: secondary_corroborative
+  family_7_scenario_probability_weighted: adjustment_required
+evidence_parity_finding:
+  finding: comparable_evidence_depth
+  rationale: >-
+    Vertiv's own evidence base and this comparator's own sealed evidence-quality state sit
+    at broadly comparable investigative maturity: both rest on evidence gathered by a party
+    other than this evaluation session (an independent audit process for the contender,
+    WebSearch-based synthesis for the comparator) rather than direct primary-document access
+    by this session, and both records openly disclose real, unresolved evidentiary items
+    rather than presenting an artificially clean picture. Neither evidence base is
+    meaningfully thinner or richer than the other for the purpose of supporting a future,
+    separately authorized capital-priority comparison -- both would need further evidentiary
+    work before such a comparison could proceed with confidence, a maturity gap that runs in
+    the same general direction for the contender as for the comparator.
+abstention_index: []
+lifecycle_status: sealed
+sealed_at: "2026-08-10T23:00:00Z"
+governing_decisions:
+  - CONTENDER-0003
+drafting_session_or_shard_id: contender-0003-pilot-session
+cohort_manifest_entry: intelligence/contender_evaluation/COHORT_MANIFEST.yaml#VRT
+content_sha256: 084fb4d1bc727df4a4749efcffd53d2940884eabccbd7394cb774797af85ad82
