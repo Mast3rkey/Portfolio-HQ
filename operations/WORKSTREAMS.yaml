@@ -9773,6 +9773,111 @@ workstreams:
         pr: 292
         status: in_progress
         date: "2026-08-10"
+      - gate: xasset0007-overlap-model-content-implementation-post-merge-verification
+        description: >
+          Lane M synchronization confirming PR #292 (the
+          xasset0007-overlap-model-content-implementation gate above) is
+          fully merged, reviewed, and principal-accepted, without editing
+          that gate's own historical text. Independently re-verified via
+          the GitHub API: merged (merged_by Mast3rkey), head
+          3a36e831d7f7f958649150e5508ead187f5f7d0e, base main @
+          957d14b7d3ac8e299b3c966d7aeed00f85c03ae0, 17 changed files, 2
+          commits; independent exact-head review
+          pullrequestreview-4893474500 (APPROVED FOR PRINCIPAL EXACT-HEAD
+          ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR / 2 non-blocking
+          NOTE), cited verbatim in the merge-commit message itself; merge
+          commit 47851f8042c65989e3b9ed606943089fec47b23e (parents
+          957d14b7d3ac8e299b3c966d7aeed00f85c03ae0 and
+          3a36e831d7f7f958649150e5508ead187f5f7d0e); merge-commit CI
+          independently re-fetched — workflow run 31352460106, status:
+          completed, conclusion: success. WS-0014 step 7's own content
+          half (all ten overlap-model dimension records) is therefore
+          fully implemented and merged.
+        pr: 292
+        status: complete
+        date: "2026-08-10"
+      - gate: xasset0008-post-merge-verification
+        description: >
+          Lane M synchronization correcting a stale-state finding: the
+          xasset0008-gld-cash-reserve-economic-assessment-methodology-
+          design gate above (recorded by the PR #292 authoring session)
+          describes XASSET-0008 as "this session, unmerged" / "draft,
+          unmerged" — independently confirmed this session to be stale,
+          not accurate as of this filing's own starting head. XASSET-0008
+          (PR #287) in fact merged to main before PR #292 was even
+          branched (PR #292's own base, 957d14b7..., is a descendant of PR
+          #287's merge commit, b3fb5325...) — the PR #292 authoring
+          session's own copy of this file simply had no occasion to touch
+          the unrelated xasset0008 gate, since its own scope was
+          overlap-model content only. Per this repository's own
+          never-silently-rewrite-a-prior-gate's-own-text convention, that
+          gate's text is left exactly as filed; this new, additive gate
+          records the accurate, independently re-verified state instead.
+          PR #287's full lifecycle, independently re-verified via the
+          GitHub API: accepted head
+          ed117baba90e537a97292675dd19138d8c4eb72e (base main @
+          67c62d363fc2a5c5e627b8c1b0449ca8d0bb8e6c); three independent
+          review rounds — original pullrequestreview-4891713650 (CHANGES
+          REQUIRED, 0 BLOCKING / 0 MAJOR / 2 MINOR / 0 NOTE — a gates.yaml
+          "zero mentions" overstatement and a GLD benchmark citation
+          misattribution), delta pullrequestreview-4891924618 (CHANGES
+          REQUIRED, 0/0/2/0 — a stale CLAUDE.md copy of the first finding
+          plus a 6-vs-7 undercount in the correction's own new wording),
+          final delta pullrequestreview-4891981315 (APPROVED FOR PRINCIPAL
+          EXACT-HEAD ACCEPTANCE, 0/0/0/0, anchored exactly to
+          ed117baba90e537a97292675dd19138d8c4eb72e); principal acceptance
+          posted as review pullrequestreview-4891991832, accepting that
+          exact head; merge commit
+          b3fb5325cac5736daf59a109ebc5e1daa1704297 (parents
+          67c62d363fc2a5c5e627b8c1b0449ca8d0bb8e6c and
+          ed117baba90e537a97292675dd19138d8c4eb72e); merge-commit CI
+          independently re-fetched — workflow run 31326626381, status:
+          completed, conclusion: success. XASSET-0008 (the closed
+          GLD/CASH_LIKE_CAPITAL economic-assessment methodology design)
+          is therefore merged and effective — independently confirmed by
+          the presence, on this session's own main-identical HEAD, of the
+          decision file, its supporting artifact, and every commit in PR
+          #287's own history (bb938ec, 1323307, 252622b, ed117ba, all
+          confirmed ancestors of HEAD).
+        pr: 287
+        status: complete
+        date: "2026-08-10"
+      - gate: xasset0009-gld-cash-like-economic-assessment-content-authorization
+        description: >
+          Authorization-only filing (XASSET-0009, draft, unmerged, this
+          session) closing XASSET-0008 SS A stage 2 ("future, separate
+          content authorization") — authorizes exactly one future,
+          separate, bounded economic-assessment content implementation PR
+          covering both analytical subjects XASSET-0008 designed, GLD and
+          CASH_LIKE_CAPITAL, bound by reference to XASSET-0008's
+          already-accepted schema (one shared validator module,
+          economic_assessment_validator.py), mirroring
+          XASSET-0003's/XASSET-0004's/XASSET-0006's own role for the ETF,
+          crypto, and functional-doctrine content steps. Both subjects are
+          authorized in one filing (not split into two), since XASSET-0008
+          designed one shared schema across the two population members,
+          not two separate frameworks — the same structural shape
+          XASSET-0006 already used for the functional-doctrine sleeve's
+          four-type population. This filing must not populate either
+          record, must not create economic_assessment_validator.py or any
+          intelligence/economic_assessment/ content, must preserve (not
+          resolve) RESERVE.yaml's own sealed functional_role abstention as
+          structurally non-blocking, must preserve (not resolve) the
+          question of whether CASH's own operational_liquidity_float
+          characterization may be relied upon, must mechanically prohibit
+          any future record from asserting a distinct CASH-versus-RESERVE
+          purpose, must preserve GLD's own three named, unanswered
+          research questions without answering any of them, must restate
+          the boundary against duplicating defensive_offset_interface's
+          own still-forced not_yet_computable_interface_only value, and
+          must leave DEBT_REDUCTION's own economic-assessment gap entirely
+          out of scope. Also performs the Lane M fold-forward for PR
+          #292's own and PR #287's own confirmed post-merge state (see the
+          two post-merge-verification gates above) and the ordinary
+          WS-0014 self-reference synchronization.
+        pr: 293
+        status: in_progress
+        date: "2026-08-10"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -9792,36 +9897,41 @@ workstreams:
       - governance/audits/WS0014_OVERLAP_MODEL_IMPLEMENTATION_20260810.md
       - governance/decisions/XASSET-0008-gld-cash-reserve-economic-assessment-methodology.md
       - governance/audits/WS0014_GLD_CASH_RESERVE_ECONOMIC_ASSESSMENT_METHODOLOGY_DESIGN_20260809.md
+      - governance/decisions/XASSET-0009-ws0014-gld-cash-like-economic-assessment-content-authorization.md
     next_action: >
-      XASSET-0007's own governance filing (PR #286) is merged and
-      effective — see the xasset0007-post-merge-verification gate above.
-      Step 7 of XASSET-0001 §J (overlap-model content) is therefore
-      authorized; its own future, separate implementation PR (populating
-      all ten dimension records) has now been drafted, this session — see
-      the xasset0007-overlap-model-content-implementation gate above —
-      and requires its own full independent-review/correction/re-review/
-      principal-acceptance/merge/post-merge-verification lifecycle before
-      it may be considered complete (the "status: in_progress"/"pr: null"
-      above is not an oversight — this implementing session does not
-      review its own PR, mark it ready, merge it, or post principal
-      acceptance). This economic-assessment-methodology-design filing (the
-      xasset0008-gld-cash-reserve-economic-assessment-methodology-design
-      gate above) requires its own full independent exact-head review
-      under OPS-0007 §1, any required bounded correction and re-review,
-      explicit principal acceptance, merge, and post-merge verification
-      before that gate may be marked complete (the "status: in_progress"/
+      PR #292 (the overlap-model content implementation) is independently
+      confirmed merged — see the
+      xasset0007-overlap-model-content-implementation-post-merge-
+      verification gate above. Step 7 of XASSET-0001 §J (overlap-model
+      content) is therefore fully implemented. PR #287 (XASSET-0008, the
+      GLD/CASH_LIKE_CAPITAL economic-assessment methodology design) is
+      likewise independently confirmed merged — see the
+      xasset0008-post-merge-verification gate above, which corrects a
+      stale "unmerged"/"draft" description this workstream's own prior
+      gate carried without editing that gate's own historical text.
+      XASSET-0009 (draft, unmerged, this session) is the future, separate,
+      explicit content authorization XASSET-0008 itself named as its own
+      required stage 2 — it authorizes exactly one future economic-
+      assessment content implementation PR covering both GLD and
+      CASH_LIKE_CAPITAL, bound by reference to XASSET-0008's already-
+      accepted schema. It requires its own full independent exact-head
+      review under OPS-0007 §1, any required bounded correction and
+      re-review, explicit principal acceptance, merge, and post-merge
+      verification before the
+      xasset0009-gld-cash-like-economic-assessment-content-authorization
+      gate above may be marked complete (the "status: in_progress"/
       "pr: null" above is not an oversight — this session does not mark
       its own unmerged work complete, and does not review, mark ready, or
-      merge its own PR). Once XASSET-0008 merges, it authorizes no content
-      of any kind by itself — a future, separate, explicit content
-      authorization (mirroring XASSET-0003/XASSET-0004/XASSET-0006 for the
-      ETF, crypto, and functional-doctrine sleeves) would still be
-      required before any GLD/CASH/RESERVE economic-assessment record
-      could be populated. Step 2 and steps 8 through 13 (this entry's own
-      0-13 numbering), the overlap-model content implementation itself,
-      and DEBT_REDUCTION's own economic-assessment methodology all remain
-      blocked on their own future, separate, explicit principal
-      authorization each.
+      merge its own PR). Once XASSET-0009 merges, it authorizes no
+      population of any kind by itself — the future implementation PR it
+      authorizes still requires its own separate independent-review/
+      correction/re-review/principal-acceptance/merge/post-merge-
+      verification lifecycle before any GLD/CASH_LIKE_CAPITAL economic-
+      assessment record could be sealed. Step 2 and steps 8 through 13
+      (this entry's own 0-13 numbering), the future economic-assessment
+      content implementation itself, and DEBT_REDUCTION's own economic-
+      assessment methodology all remain blocked on their own future,
+      separate, explicit principal authorization each.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -9874,30 +9984,37 @@ workstreams:
       xasset0007-post-merge-verification gate above: XASSET-0007
       authorizes exactly one future overlap-model content implementation
       PR covering all ten dimensions, bound by reference to XASSET-0005's
-      specification as corrected. That implementation PR has now been
-      drafted, this session — see the
-      xasset0007-overlap-model-content-implementation gate above: ten
-      sealed intelligence/overlap_model/ dimension records, a new
-      dedicated overlap_model_validator.py, and its 199-test focused
-      suite — blocked only on its own independent exact-head review,
-      correction if needed, principal acceptance, merge, and post-merge
-      verification. A separate, earlier-drafted session's own draft
-      filing (the
+      specification as corrected. That implementation PR is independently
+      confirmed complete and merged (PR #292) — see the
+      xasset0007-overlap-model-content-implementation-post-merge-
+      verification gate above: ten sealed intelligence/overlap_model/
+      dimension records, a new dedicated overlap_model_validator.py, and
+      its 199-test focused suite, independently reviewed, principal-
+      accepted, merged, and post-merge verified. XASSET-0008 (the closed
+      GLD/CASH_LIKE_CAPITAL economic-assessment methodology design,
+      XASSET-0005 §5 step 2's own restated sequence, DEBT_REDUCTION
+      explicitly excluded) is independently confirmed complete and merged
+      (PR #287) — see the xasset0008-post-merge-verification gate above,
+      which corrects a stale "unmerged" description carried by the
       xasset0008-gld-cash-reserve-economic-assessment-methodology-design
-      gate above) designs, but does not authorize content for, a closed
-      GLD/CASH/RESERVE economic-assessment methodology (XASSET-0005 §5
-      step 2's own restated sequence, DEBT_REDUCTION explicitly excluded)
-      — blocked only on its own independent exact-head review, correction
-      if needed, principal acceptance, merge, and post-merge verification.
-      Step 2 and steps 8 through 13 (this entry's own 0-13 numbering), any
-      GLD/CASH/RESERVE economic-assessment content, and DEBT_REDUCTION's
-      own economic-assessment methodology all remain blocked on their own
-      future, separate, explicit principal authorization each — none is
-      authorized to begin by this entry or by steps 1/3/4/5/6/7/
-      XASSET-0005/XASSET-0006/XASSET-0007/XASSET-0008's own work.
-    active_branch: claude/xasset-0007-overlap-model-mqov2k
-    active_pr: 292
-    last_verified_main_sha: 957d14b7d3ac8e299b3c966d7aeed00f85c03ae0
+      gate above without editing that gate's own text. XASSET-0009 (this
+      session's own draft filing) authorizes exactly one future economic-
+      assessment content implementation PR covering both GLD and
+      CASH_LIKE_CAPITAL, bound by reference to XASSET-0008's specification
+      — see the
+      xasset0009-gld-cash-like-economic-assessment-content-authorization
+      gate above — blocked only on its own independent exact-head review,
+      correction if needed, principal acceptance, merge, and post-merge
+      verification. Step 2 and steps 8 through 13 (this entry's own 0-13
+      numbering), the future economic-assessment content implementation
+      itself, and DEBT_REDUCTION's own economic-assessment methodology
+      all remain blocked on their own future, separate, explicit
+      principal authorization each — none is authorized to begin by this
+      entry or by steps 1/3/4/5/6/7/XASSET-0005/XASSET-0006/XASSET-0007/
+      XASSET-0008/XASSET-0009's own work.
+    active_branch: claude/xasset-0009-gld-authorization-s7qao5
+    active_pr: 293
+    last_verified_main_sha: 47851f8042c65989e3b9ed606943089fec47b23e
     last_verified_date: "2026-08-10"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
@@ -10089,6 +10206,42 @@ workstreams:
       verified — see the xasset0007-overlap-model-content-implementation
       gate above and governance/audits/WS0014_OVERLAP_MODEL_
       IMPLEMENTATION_20260810.md for the full retained record.
+
+
+      Further controlling principal directive, a later session, 2026-08-10:
+      the PR #292 overlap-model content implementation having merged
+      (independently re-confirmed via the GitHub API — merge commit
+      47851f8042c65989e3b9ed606943089fec47b23e, review
+      pullrequestreview-4893474500, principal acceptance, merge-commit CI
+      run 31352460106 success), and a stale-state finding independently
+      discovered (XASSET-0008/PR #287 had in fact already merged before
+      PR #292 was even branched, contradicting the "this session,
+      unmerged" description this workstream's own prior gate carried),
+      file the smallest coherent WS-0014 governance unit authorizing the
+      future WS-0014 economic-assessment content implementation for the
+      two analytical subjects XASSET-0008 designed — GLD and
+      CASH_LIKE_CAPITAL — bound by reference to XASSET-0008's already-
+      accepted schema, mirroring XASSET-0003's/XASSET-0004's/XASSET-0006's
+      own role for the ETF, crypto, and functional-doctrine content steps.
+      This filing must not populate either record, must not create
+      economic_assessment_validator.py or any
+      intelligence/economic_assessment/ content, must preserve (not
+      resolve) RESERVE.yaml's own sealed functional_role abstention as
+      structurally non-blocking, must preserve (not resolve) whether
+      CASH.yaml's own operational_liquidity_float characterization may be
+      relied upon, must mechanically prohibit any future record from
+      asserting a distinct CASH-versus-RESERVE purpose, must preserve
+      GLD's own three named, unanswered research questions without
+      answering any of them, must restate the boundary against
+      duplicating defensive_offset_interface's own still-forced
+      not_yet_computable_interface_only value, must leave DEBT_REDUCTION's
+      own economic-assessment gap entirely out of scope, and must fold in
+      the deferred WS-0014 Lane M synchronization for both PR #292's own
+      and PR #287's own confirmed post-merge state via additive gates,
+      without editing either prior gate's own historical text. This
+      directive is implemented by XASSET-0009 (draft, unmerged, this
+      session) — see that decision file for the full bounded
+      specification and its binding-by-reference table to XASSET-0008.
     supersedes: null
     superseded_by: null
   - id: WS-0015
