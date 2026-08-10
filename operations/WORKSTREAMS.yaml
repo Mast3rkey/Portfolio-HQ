@@ -10029,6 +10029,48 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-10"
+      - gate: xasset0010-post-merge-verification
+        description: >
+          Records — without editing the xasset0010-etf-crypto-economic-
+          assessment-methodology-design gate's own historical text above
+          — that PR #295 (XASSET-0010's own governance filing) is fully
+          merged: head bd04cda9eaa12c4a7da269a27b963eb222010f33, base main
+          @ 3a7c89e6f4137c7ee37c643af1dc3f6a58d4912c, merge commit
+          5b2e3be1419cc54ed7c5903960e38d5b44dbc2ec. XASSET-0010 is
+          therefore merged and effective — the closed six-instrument
+          (SPY, VEA, VWO, BTC, ETH, SOL) economic-assessment methodology
+          design is live, accepted specification. Added by XASSET-0011
+          (this session's own draft filing), independently re-verified
+          via the GitHub API, not assumed.
+        pr: 295
+        status: complete
+        date: "2026-08-10"
+      - gate: xasset0011-etf-crypto-economic-assessment-content-authorization
+        description: >
+          XASSET-0011 (this session's own draft filing) authorizes exactly
+          one future, separate, bounded ETF+crypto instrument economic-
+          assessment content implementation PR covering all six
+          instruments (SPY, VEA, VWO, BTC, ETH, SOL) in one implementation,
+          bound by reference to XASSET-0010's already-accepted
+          methodology design — no restatement, no redesign. Batches both
+          asset classes in one authorization and one future implementation
+          PR (matching XASSET-0006's/XASSET-0009's own combined-shared-
+          schema precedent, not the XASSET-0002-to-XASSET-0003-plus-
+          XASSET-0004 split-classification-framework precedent), per the
+          controlling principal's explicit directive and XASSET-0010 §D.7's
+          own express permission to make and justify that choice. Explicitly
+          excludes any cross-coin correlation study/coefficient/claim of
+          any kind (reserved to a future, separate, bounded, pre-registered
+          research charter), any GLD/CASH_LIKE_CAPITAL/DEBT_REDUCTION
+          content, any overlap-model content, and any QQQ or other future
+          candidate expansion — still blocked only on its own independent
+          exact-head review, correction if needed, principal acceptance,
+          merge, and post-merge verification. This session does not
+          review its own PR, mark it ready, merge it, or post principal
+          acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-10"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -10052,6 +10094,7 @@ workstreams:
       - governance/audits/WS0014_GLD_CASH_LIKE_CAPITAL_ECONOMIC_ASSESSMENT_IMPLEMENTATION_20260810.md
       - governance/decisions/XASSET-0010-etf-crypto-economic-assessment-methodology.md
       - governance/audits/WS0014_ETF_CRYPTO_INSTRUMENT_ECONOMIC_ASSESSMENT_METHODOLOGY_DESIGN_20260810.md
+      - governance/decisions/XASSET-0011-ws0014-etf-crypto-economic-assessment-content-authorization.md
     next_action: >
       XASSET-0009 (PR #293) is independently confirmed merged — see the
       xasset0009-post-merge-verification gate above. Its authorization
@@ -10103,6 +10146,29 @@ workstreams:
       own economic-assessment methodology, the CASH/RESERVE consolidation
       question (XASSET-0008 §N), and steps 8 through 13 remain wholly
       unauthorized, unchanged.
+
+
+      Update, a later session, 2026-08-10: PR #295 (XASSET-0010's own
+      governance filing) independently confirmed merged — see the
+      xasset0010-post-merge-verification gate above. XASSET-0010 is
+      therefore merged and effective. This same session then authorized,
+      as text only (the xasset0011-etf-crypto-economic-assessment-
+      content-authorization gate above, draft, unmerged), exactly one
+      future ETF+crypto instrument economic-assessment content
+      implementation PR covering all six instruments (SPY, VEA, VWO, BTC,
+      ETH, SOL) in one implementation, bound by reference to XASSET-0010's
+      already-accepted methodology — requiring its own full independent
+      exact-head review, any required bounded correction, principal
+      acceptance, merge, and post-merge verification before that gate may
+      be marked complete; this session does not review its own work, mark
+      it ready, merge it, or post principal acceptance. Once XASSET-0011
+      merges, a future, separate content-implementation PR may proceed to
+      populate the six sealed instrument_economic_assessment records —
+      not performed by XASSET-0011 itself. DEBT_REDUCTION's own economic-
+      assessment methodology, the CASH/RESERVE consolidation question
+      (XASSET-0008 §N), QQQ/any other future ETF or crypto candidate
+      expansion, a future cross-coin correlation study, and steps 8
+      through 13 remain wholly unauthorized, unchanged.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -10219,9 +10285,28 @@ workstreams:
       their own future, separate, explicit principal authorization each —
       none is authorized to begin by this entry or by XASSET-0010's own
       work.
-    active_branch: claude/etf-crypto-assessment-methodology-7ybkis
+
+
+      Update, a later session, 2026-08-10: PR #295 (XASSET-0010's own
+      governance filing) independently confirmed merged — see the
+      xasset0010-post-merge-verification gate above. XASSET-0010 is
+      merged and effective; its six-instrument (SPY, VEA, VWO, BTC, ETH,
+      SOL) economic-assessment methodology design is live, accepted
+      specification. This same session then authorized, as text only
+      (the xasset0011-etf-crypto-economic-assessment-content-
+      authorization gate above, draft, unmerged), exactly one future
+      content implementation PR covering all six instruments in one
+      implementation — blocked only on its own independent exact-head
+      review, correction if needed, principal acceptance, merge, and
+      post-merge verification. DEBT_REDUCTION's own economic-assessment
+      methodology, the CASH/RESERVE consolidation question, QQQ/any other
+      future ETF or crypto candidate expansion, a future cross-coin
+      correlation study, and steps 8 through 13 remain blocked on their
+      own future, separate, explicit principal authorization each — none
+      is authorized to begin by this entry or by XASSET-0011's own work.
+    active_branch: claude/xasset-0011-etf-crypto-content-auth-7a3e84
     active_pr: null
-    last_verified_main_sha: 3a7c89e6f4137c7ee37c643af1dc3f6a58d4912c
+    last_verified_main_sha: 5b2e3be1419cc54ed7c5903960e38d5b44dbc2ec
     last_verified_date: "2026-08-10"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
