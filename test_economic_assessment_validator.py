@@ -2267,20 +2267,30 @@ def test_sixth_correction_offset_interface_no_false_match():
     )
 
 
+def _explained(sentence):
+    """Round-7 helper: `_match_content_is_explained` now takes sentence-
+    relative offsets plus a precomputed fixed-range list (the seventh
+    bounded correction's own sentence-wide, not span-local, fixed-phrase
+    design) rather than an isolated match string."""
+    fixed_ranges = eav._fixed_phrase_ranges(sentence)
+    return eav._match_content_is_explained(sentence, 0, len(sentence), fixed_ranges)
+
+
 def test_sixth_correction_match_content_is_explained_helper_direct():
     """Direct unit tests of `_match_content_is_explained`'s three
     branches: purely connective (accepted), impure-but-containing-a-
     genuine-negation-or-deferral (accepted), and impure-with-neither
     (rejected) -- the exact distinction the decoy-negation probes above
-    exercise end-to-end."""
-    assert eav._match_content_is_explained("portfolio diversification")
-    assert eav._match_content_is_explained(
+    exercise end-to-end. Updated for the seventh bounded correction's
+    `(sentence, match_start, match_end, fixed_ranges)` signature."""
+    assert _explained("portfolio diversification")
+    assert _explained(
         "diversification; it also does not establish portfolio"
     )
-    assert eav._match_content_is_explained(
+    assert _explained(
         "diversification and correlation effects remain separately governed"
     )
-    assert not eav._match_content_is_explained(
+    assert not _explained(
         "diversification, and GLD diversifies the whole portfolio"
     )
 
@@ -2325,4 +2335,364 @@ def test_sixth_correction_known_pre_existing_out_of_scope_coverage_gap_disclosed
     assert result.valid, (
         "if this now fails, the claim-detection coverage gap has been closed -- "
         "update this test's expectation and its docstring accordingly"
+    )
+
+
+# ── Seventh bounded correction ──────────────────────────────────────────
+# Independent review (pullrequestreview-4898549236, anchored to the sixth
+# correction's own exact head) found the sixth correction's whitelist
+# still contained two BARE, POLYSEMOUS tokens -- "own" and "benefit" --
+# each independently exploitable as a finite verb (subject-verb-object),
+# letting an unrelated earlier negation appear to govern a later,
+# genuinely new, unnegated claim built entirely from whitelist-approved
+# tokens. A full audit of every whitelist token for the same property
+# found four more risky tokens ("level", "effect", "effects", "finding")
+# plus five more disclaiming-verb "-ing" gerunds independently exploitable
+# via the SAME unconstrained `\w*` wildcard "finding" itself used
+# (establishing/representing/showing/claiming/asserting -- each forms its
+# "-ing" gerund by simple concatenation onto a consonant-ending base verb,
+# unlike compute/determine/indicate/demonstrate/prove, which drop a silent
+# "e" and are therefore accidentally, not by design, unmatched).
+#
+# Fix: own/benefit/level/effect/effects removed from the bare connective
+# whitelist outright; a negative lookahead `(?!ing\b)` closes the gerund
+# path for every disclaiming verb at once (finding/establishing/
+# representing/showing/claiming/asserting). Each removed word's narrow
+# legitimate use is restored only through a bounded, fully-anchored fixed-
+# phrase mechanism (`_OWN_FIXED_PHRASE`, `_BENEFIT_FIXED_PHRASE`,
+# `_LEVEL_FIXED_PHRASE`, `_EFFECT_FIXED_PHRASE`, `_FINDING_FIXED_PHRASE`)
+# requiring BOTH a specific legitimate predecessor and a positive allow-
+# list of safe followers -- never a negative denylist (testing found a
+# denylist of "not the/a/an" still lets a bare, article-less noun object
+# through, e.g. "benefit portfolio directly"). Fixed-phrase coverage is
+# computed once per SENTENCE, not per isolated span, because a legitimate
+# bigram can straddle the boundary between a claim match's own text and a
+# separately-extracted connective span.
+#
+# Own-suite regression testing (this same correction, before push) found
+# two further gaps in the FIRST widening pass and closed both: (1)
+# "diversification-benefit finding for Portfolio-HQ's own current
+# holdings" and "a portfolio-level correlation" (both pre-existing
+# accepted constructions) initially failed -- `_FINDING_FIXED_PHRASE`
+# widened to accept "benefit" as a predecessor and a narrow, exact
+# safe-tail follower ("for {hq's own (current) holdings}", never a bare
+# "for"); `_LEVEL_FIXED_PHRASE` widened to accept the full closed
+# `_DIVERSIFICATION_CONCEPT_NOUNS` vocabulary as a follower, not just
+# "diversification". (2) That LEVEL widening, in its first form, allowed a
+# bare SPACE (not just hyphen) between "portfolio" and "level" -- own
+# self-challenge testing (>= 30 unseen constructions, this same pass)
+# found this concretely exploitable: "This never establishes
+# diversification, and the whole portfolio level correlation for the
+# current holdings." was accepted, because the fixed-phrase match starts
+# at "portfolio" (already part of an earlier claim match) and straddles
+# into the trailing connective window, hiding a claim-relevant concept
+# noun ("correlation") behind an ambiguous verb token. Closed by requiring
+# a literal HYPHEN specifically ("portfolio-level", never bare-space
+# "portfolio level") -- confirmed, by exhaustive corpus search, to be the
+# only form any real sealed record or existing accepted test ever uses.
+#
+# The pre-existing, already-disclosed correlat-word-order claim-detection
+# gap (see `test_sixth_correction_known_pre_existing_out_of_scope_
+# coverage_gap_disclosed` above) is unchanged by this correction -- not
+# widened, not narrowed, not touched.
+
+
+@pytest.mark.parametrize("bypass_sentence", [
+    # Independent review's own exact reported bypasses (own/benefit as
+    # bare finite verbs)
+    "This is a single-asset finding. This does not establish a finding, "
+    "and diversification benefit the portfolio, with effect for the "
+    "current holdings level.",
+    "This is a single-asset finding. Diversification benefit the "
+    "portfolio, with effect for the whole current holdings level, "
+    "remains separately governed.",
+    # NOTE: the independent review's own third reported construction
+    # ("...and the current portfolio own effect for the whole level, with
+    # a specific finding of hedge and correlation.") is deliberately NOT
+    # included here -- direct diagnosis found it produces ZERO claim-
+    # pattern matches at all (no anchor pair falls within any pattern's
+    # own bounded gap), so it was never actually exploitable via the
+    # whitelist-polysemy mechanism this correction closes; it is a
+    # coincidental non-match of the same, already-disclosed, pre-existing
+    # claim-*detection* shape as the correlat-word-order gap, not a
+    # governance-*laundering* bypass. Confirmed via direct inspection of
+    # `_PORTFOLIO_DIVERSIFICATION_PATTERNS.finditer()` before this
+    # decision -- included here as a documented, deliberate omission, not
+    # an oversight.
+    # own/benefit as bare verbs, cleanly isolated
+    "This is a single-asset finding. This does not establish a finding, "
+    "and the whole portfolio own a diversification benefit for the current.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and diversification benefit the portfolio, with effect for the "
+    "current holdings level.",
+    # level/effect/effects as bare finite verbs (same whitelist-polysemy
+    # class as own/benefit, found during the full whitelist audit)
+    "This is a single-asset finding. This does not establish a finding, "
+    "and diversification level the whole portfolio, with a specific "
+    "finding for the current holdings.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and diversification effect the whole portfolio, with a specific "
+    "finding for the current holdings level.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and diversification effects the whole portfolio, with a specific "
+    "finding for the current holdings level.",
+    # "finding" as a bare participial predicate head (the same
+    # unconstrained gerund-wildcard mechanism as own/benefit, not merely
+    # a coincidental extra case)
+    "This is a single-asset finding. This does not establish a specific "
+    "hedge, and the whole portfolio finding a correlation for the "
+    "current holdings level.",
+    "This is a single-asset finding. This does not establish a specific "
+    "hedge, and the whole portfolio finding correlation for the current "
+    "holdings level.",
+    "This is a single-asset finding. This does not establish a specific "
+    "hedge, and this finding a diversification for the whole portfolio.",
+    # the five other disclaiming-verb "-ing" gerunds sharing "finding"'s
+    # own exploitable wildcard mechanism
+    "This is a single-asset finding. This does not establish a finding, "
+    "and the whole portfolio establishing a correlation for the current "
+    "holdings level.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and the whole portfolio representing a correlation for the current "
+    "holdings level.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and the whole portfolio showing a correlation for the current "
+    "holdings level.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and the whole portfolio claiming a correlation for the current "
+    "holdings level.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and the whole portfolio asserting a correlation for the current "
+    "holdings level.",
+    # conjunction, punctuation, subject, case, and whitespace variations
+    "This is a single-asset finding. This does not establish a finding, "
+    "or the whole portfolio own a diversification benefit for the current.",
+    "This is a single-asset finding. This does not establish a finding; "
+    "diversification benefit the portfolio, with effect for the current "
+    "holdings.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and the portfolio benefit from diversification the whole current.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and diversification BENEFIT the portfolio, with effect for the "
+    "current holdings level.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and the whole portfolio OWN a diversification benefit for the current.",
+    "This is a single-asset finding.  This does not establish a finding,  "
+    "and  diversification  benefit  the portfolio,  with effect for the "
+    "current holdings level.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and diversification benefit portfolio directly for the current "
+    "holdings level.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and the whole portfolio, which never computes anything, own a "
+    "diversification benefit for the current.",
+    # fixed-phrase widening must not create new bypass surface: wrong
+    # "for" tail, wrong finding predecessor, reversed bigram order,
+    # inserted words before the safe anchor, chained bridges
+    "This does not establish a finding, and the whole portfolio benefit "
+    "finding for portfolio-hq's own current holdings, and correlation "
+    "own the book.",
+    "This does not establish a finding, and portfolio-level correlation, "
+    "and diversification level the whole portfolio.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and diversification benefit finding for the whole current portfolio.",
+    "This does not establish a finding, and diversification finding for "
+    "a specific correlation with the whole portfolio.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and the whole portfolio finding for portfolio-hq's own current "
+    "holdings.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and own finding for portfolio-hq's own current holdings.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and the whole portfolio finding benefit for portfolio-hq's own "
+    "current holdings.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and correlation finding for the whole portfolio-hq's own current "
+    "holdings.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and the whole portfolio, which never computes anything, benefit "
+    "finding for portfolio-hq's own current holdings, and own the book.",
+    "This is a single-asset finding. This does not establish a finding, "
+    "and DIVERSIFICATION BENEFIT FINDING FOR PORTFOLIO-HQ'S OWN CURRENT "
+    "HOLDINGS is claimed, and correlation own the whole book.",
+    "This is a single-asset finding.  This does not establish a finding,  "
+    "and  diversification  benefit  finding  for  portfolio-hq's  own  "
+    "current  holdings,  and  correlation  own  the  book.",
+    "This is a single-asset finding. This does not establish a finding; "
+    "it also does not establish a finding, and portfolio-level hedge, "
+    "and diversification level the whole portfolio.",
+    # dedicated LEVEL space-vs-hyphen straddling-boundary regressions
+    # (the second gap found and closed during this same correction)
+    "This never establishes diversification, and the whole portfolio "
+    "level correlation for the current holdings.",
+    "This never establishes diversification, and the whole portfolio "
+    "level hedge for the current holdings.",
+    "This never establishes correlation, and the whole portfolio level "
+    "diversification for the current holdings.",
+    "This never establishes diversification, and the whole portfolio "
+    "level risk for the current holdings.",
+    "This never establishes diversification, and the whole PORTFOLIO "
+    "LEVEL VOLATILITY for the current holdings.",
+    "This never establishes diversification, and the whole portfolio "
+    "level correlation for the current, and correlation own the book.",
+])
+def test_seventh_correction_known_bypass_families_rejected(bypass_sentence):
+    """Every construction from the seventh correction's own demonstrated
+    vulnerability family -- the independent review's exact reported
+    bypasses, every other bare-polysemous-token whitelist violation found
+    by the full audit, the five additional exploitable disclaiming-verb
+    gerunds, and both fixed-phrase-widening regressions found and closed
+    during this same correction's own pre-push regression testing -- must
+    be rejected."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        bypass_sentence
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert not result.valid
+
+
+@pytest.mark.parametrize("legit_sentence", [
+    # the exact pre-existing accepted construction that regressed during
+    # this correction's own first widening pass, and was fixed
+    "It never establishes a portfolio-level correlation or "
+    "diversification-benefit finding for Portfolio-HQ's own current holdings.",
+    # LEVEL fixed phrase, widened vocabulary, hyphen required
+    "This does not establish a portfolio-level correlation.",
+    "This does not establish a portfolio-level hedge.",
+    "This does not establish a portfolio-level drawdown finding.",
+    "This never establishes diversification, and the whole portfolio-level "
+    "correlation for the current holdings.",
+    "This never establishes diversification, and the whole portfolio-level "
+    "hedge for the current holdings.",
+    # FINDING fixed phrase, widened predecessor (benefit) and follower
+    # (the exact safe "for {own holdings}" tail)
+    "This does not establish a diversification-benefit finding for HQ's "
+    "own holdings.",
+    "This does not establish a correlation finding for Portfolio-HQ's own "
+    "current holdings.",
+    "This does not establish a diversification-benefit finding for "
+    "Portfolio-HQ's own current holdings.",
+])
+def test_seventh_correction_mandatory_allowed_language_accepted(legit_sentence):
+    """The seventh correction's own mandatory allowed-language matrix --
+    the exact previously-accepted construction its own first widening
+    pass regressed, plus every other legitimate use of the widened LEVEL
+    and FINDING fixed phrases -- must remain accepted."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        f"This finding is single-asset and historical only. {legit_sentence}"
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert result.valid, result.errors
+
+
+def test_seventh_correction_real_gld_and_cash_like_unaffected():
+    """The real sealed GLD.yaml and CASH_LIKE_CAPITAL.yaml records must
+    still validate cleanly after the seventh correction -- reused, not
+    duplicated, from the sixth correction's own identical check."""
+    for ticker in ("GLD", "CASH_LIKE_CAPITAL"):
+        path = REPO_ROOT / "intelligence" / "economic_assessment" / f"{ticker}.yaml"
+        with open(path, "r", encoding="utf-8") as fh:
+            data = yaml.safe_load(fh)
+        result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+        assert result.valid, (ticker, result.errors)
+
+
+def test_seventh_correction_full_whitelist_audit_no_bare_risky_tokens():
+    """Direct audit of the live connective whitelist: none of the six
+    tokens found independently exploitable as a bare finite verb/
+    participle (own, benefit, level, effect, effects, finding) may appear
+    as a bare member of `_CONNECTIVE_WORD_WHITELIST` -- each must be
+    supported, where legitimate, only through its own bounded fixed-
+    phrase mechanism."""
+    risky = {"own", "benefit", "level", "effect", "effects", "finding"}
+    assert not (risky & eav._CONNECTIVE_WORD_WHITELIST), (
+        risky & eav._CONNECTIVE_WORD_WHITELIST
+    )
+
+
+def test_seventh_correction_gerund_guard_blocks_every_disclaiming_verb():
+    """`_CONNECTIVE_VERB_NOUN_PATTERN`'s `(?!ing\\b)` guard must reject
+    the "-ing" gerund of every disclaiming verb, not just "finding" --
+    direct unit coverage of the mechanism, independent of the end-to-end
+    scan."""
+    for verb in (
+        "establishing", "representing", "showing", "claiming", "asserting",
+        "finding",
+    ):
+        assert not eav._CONNECTIVE_VERB_NOUN_PATTERN.match(verb), verb
+    # the five silent-e verbs are accidentally, not by design, unaffected
+    # by the gerund guard (their own gerund spelling drops the "e",
+    # breaking the literal base-form prefix match already) -- confirmed
+    # directly, not merely asserted, since this is the reasoning basis for
+    # not flagging them during the full whitelist audit
+    for verb in ("computing", "determining", "indicating", "demonstrating", "proving"):
+        assert not eav._CONNECTIVE_VERB_NOUN_PATTERN.match(verb), verb
+
+
+def test_seventh_correction_fixed_phrase_ranges_helper_direct():
+    """Direct unit coverage of `_fixed_phrase_ranges`: each of the five
+    fixed-phrase patterns is independently reachable, and unrelated text
+    produces no ranges at all."""
+    assert eav._fixed_phrase_ranges("nothing relevant here") == []
+    sentence = "diversification-benefit finding for hq's own current holdings"
+    ranges = eav._fixed_phrase_ranges(sentence)
+    assert ranges, "expected at least one fixed-phrase range"
+    # every returned range must be a valid, in-bounds (start, end) pair
+    for start, end in ranges:
+        assert 0 <= start < end <= len(sentence)
+
+
+def test_seventh_correction_level_fixed_phrase_requires_hyphen_not_space():
+    """Direct unit coverage of the space-vs-hyphen fix: `_LEVEL_FIXED_
+    PHRASE` must match the hyphenated form and must NOT match the bare-
+    space form, even though both were treated identically before this
+    correction's own second widening-regression fix."""
+    assert eav._LEVEL_FIXED_PHRASE.search("portfolio-level correlation")
+    assert eav._LEVEL_FIXED_PHRASE.search("portfolio-level diversification")
+    assert not eav._LEVEL_FIXED_PHRASE.search("portfolio level correlation")
+    assert not eav._LEVEL_FIXED_PHRASE.search("portfolio level diversification")
+
+
+def test_seventh_correction_finding_fixed_phrase_predecessor_and_tail():
+    """Direct unit coverage of the FINDING fixed phrase: "benefit" must
+    now be an accepted predecessor (matching "correlation"/
+    "diversification"), and the widened "for {safe tail}" follower must
+    accept only the exact hq's-own-holdings anchor, not an arbitrary
+    "for" continuation."""
+    assert eav._FINDING_FIXED_PHRASE.search(
+        "diversification-benefit finding for Portfolio-HQ's own current holdings"
+    )
+    assert eav._FINDING_FIXED_PHRASE.search(
+        "correlation finding for hq's own holdings"
+    )
+    assert eav._FINDING_FIXED_PHRASE.search("correlation finding specific")
+    assert eav._FINDING_FIXED_PHRASE.search("diversification finding.")
+    # wrong tail: "for" not followed by the exact safe anchor
+    assert not eav._FINDING_FIXED_PHRASE.search(
+        "diversification-benefit finding for the whole current portfolio"
+    )
+    assert not eav._FINDING_FIXED_PHRASE.search(
+        "correlation finding for a specific correlation"
+    )
+
+
+def test_seventh_correction_known_pre_existing_out_of_scope_gap_unchanged():
+    """The pre-existing, already-disclosed correlat-word-order claim-
+    detection gap (see the sixth correction's own identically-named test
+    above) is explicitly out of this correction's own authorized scope --
+    reused, unchanged, not widened or narrowed, confirmed still present
+    under the seventh-correction code."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This finding is single-asset and historical only. This does not establish "
+        "anything, and correlation, which this does not itself quantify, with the "
+        "current portfolio is real, per GLD."
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert result.valid, (
+        "if this now fails, the claim-detection coverage gap has been closed -- "
+        "update this test's expectation and its docstring accordingly -- "
+        "the seventh correction leaves this gap exactly as the sixth left it"
     )

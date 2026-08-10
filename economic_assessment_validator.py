@@ -497,11 +497,20 @@ _DECLARATIVE_DEFERRAL_PATTERN = re.compile(
 # subject, predicate, or unrelated claim using only connective tissue --
 # a real new clause's own subject or verb is, definitionally, not a
 # preposition/article/conjunction/one of these two closed vocabularies.
-# This closes the whole demonstrated vulnerability class (every round
-# two through five bypass, plus an adversarial matrix of unseen variants
-# spanning coordination, punctuation, subject/object order, voice,
-# parentheticals, negation position, quantifiers, and clause order --
-# retained audit SS14) rather than one more punctuation form.
+# This closes the whole demonstrated CLAUSE-BOUNDARY-BLACKLIST-ENUMERATION
+# vulnerability class (every round two through five bypass, plus an
+# adversarial matrix of unseen variants spanning coordination,
+# punctuation, subject/object order, voice, parentheticals, negation
+# position, quantifiers, and clause order -- retained audit SS14) rather
+# than one more punctuation form. Narrowed by the seventh bounded
+# correction (retained audit SS15): a whitelist architecture is not
+# invulnerable BY CONSTRUCTION -- it introduces its own, categorically
+# different vulnerability surface (a word added to the whitelist for one
+# legitimate reading can independently carry an unrelated, dangerous
+# reading, e.g. a noun/adjective sense versus a bare finite-verb sense).
+# This comment's own claim is scoped precisely to the boundary-enumeration
+# class it was written against, not a guarantee against every future
+# vulnerability class this architecture could exhibit.
 _DISCLAIMING_VERB_WORDS = (
     r"compute|constitute|imply|substitute|establish|determine|represent|"
     r"assert|claim|find|show|demonstrate|indicate|prove"
@@ -522,22 +531,154 @@ def _split_sentences(text: str) -> list[str]:
     return [s for s in _SENTENCE_SPLIT_PATTERN.split(text) if s]
 
 
+# Seventh bounded correction (whitelist-token-polysemy vulnerability,
+# disclosed in the retained audit SS15): an independent exact-head delta
+# review found `own` and `benefit` -- both added to the whitelist below
+# purely to support legitimate NOUN/ADJECTIVE usage ("Portfolio-HQ's own
+# current holdings", "diversification-benefit") -- could ALSO serve as
+# the bare-form finite VERB of an entirely independent, unnegated clause
+# built otherwise from whitelist tokens alone (e.g. "...and
+# diversification benefit the portfolio, with effect for the current
+# holdings level."). A flat token whitelist has no part-of-speech
+# awareness, so nothing distinguished the safe noun reading from the
+# unsafe verb-plus-object reading.
+#
+# A full audit of every token in the whitelist (not just the two
+# reported) found four more genuinely polysemous entries with the same
+# property -- `level` ("to level an accusation"), `effect`/`effects`
+# ("to effect/effects change") -- plus a structurally different but
+# related gap: `finding`, which is whitelisted BOTH directly and (more
+# dangerously) unconditionally via `_CONNECTIVE_VERB_NOUN_PATTERN`'s own
+# `find\w*` wildcard (any inflected form of the disclaiming verb "find"),
+# letting it head a bare participial predicate ("...and the whole
+# portfolio finding a correlation..."). The same wildcard mechanism was
+# also found to independently expose `establishing`/`representing`/
+# `showing`/`claiming`/`asserting` (every disclaiming-verb-family "-ing"
+# form whose base spelling survives unchanged before the suffix, e.g.
+# "establish"+"ing" -- by contrast "compute"/"determine"/"indicate"/
+# "demonstrate"/"prove" all drop a trailing silent "e" in their gerund
+# spelling, "comput"+"ing" etc., so the wildcard's literal-prefix match
+# never fires for those and they were never actually exposed). Every
+# other whitelist token was individually tested and found to have no
+# plausible verb/predicate reading in standard English (a mechanical
+# "insert into the verb slot" probe still "works" for words like
+# "portfolio"/"whole"/"current" since the underlying claim patterns'
+# own gap-matching accepts any whitelisted filler regardless of
+# grammaticality, but none of these produce a sentence a human reader
+# would recognize as an actual assertion, unlike own/benefit/level/
+# effect/effects/finding, which all read as genuine, if informal,
+# claims -- and portfolio is additionally structurally required as the
+# literal anchor every one of the thirteen claim patterns is built
+# around, so removing it would break the mechanism outright).
+#
+# All six risky words are removed as bare whitelist entries (own,
+# benefit, level, effect, effects below; finding is closed off via the
+# `(?!ing\b)` guard on `_CONNECTIVE_VERB_NOUN_PATTERN` further down,
+# since it was never a bare frozenset member acting alone). Their
+# legitimate uses are instead supported only through the bounded,
+# fully-anchored fixed-phrase patterns immediately below (`_OWN_FIXED_
+# PHRASE` etc.) -- each requires both a specific, narrow legitimate
+# predecessor and a positive allow-list of safe followers (never a
+# negative denylist of "not the/a/an", which testing found still lets a
+# bare, article-less noun object through, e.g. "benefit portfolio
+# directly"). Fixed-phrase coverage is computed once per SENTENCE
+# (`_fixed_phrase_ranges`), not per isolated span, because a legitimate
+# bigram such as "diversification...benefit" can straddle the boundary
+# between a claim match's own text and a separately-extracted trailing
+# connective span (the match consumes "diversification", leaving
+# "benefit" orphaned with no locally-visible predecessor) -- checking
+# only the current span in isolation was found, during design testing,
+# to miss this and falsely reject the real sealed record and multiple
+# already-accepted allowed-language tests.
+_OWN_FIXED_PHRASE = re.compile(r"\bhq's\s+own\s+(?:current\s+)?holdings\b", re.IGNORECASE)
+_BENEFIT_FIXED_PHRASE = re.compile(
+    r"\bdiversification[\s-]benefit\b(?=[,;:.]|\s+or\b|$)", re.IGNORECASE
+)
+# Widened during own-suite regression testing (this same correction, before
+# push): the pre-existing accepted construction "a portfolio-level
+# correlation or diversification-benefit finding" pairs "-level" with
+# "correlation", not just "diversification" -- narrowed to the same closed
+# `_DIVERSIFICATION_CONCEPT_NOUNS` vocabulary already used elsewhere (never a
+# bare `\w+`).
+#
+# HYPHEN REQUIRED, not `[\s-]` (space-or-hyphen) as originally widened: a
+# bare-space "portfolio level {noun}" is genuinely ambiguous with a
+# subject-verb-object reading ("[the] portfolio level[s] {noun}" -- see
+# `level_verb_clean`), and this pattern's own match starts at "portfolio",
+# straddling a claim match's own end boundary the identical way the
+# "diversification...benefit" bigram straddles one elsewhere in this
+# design. A dedicated self-challenge construction confirmed this concretely
+# exploitable pre-fix: "This never establishes diversification, and the
+# whole portfolio level correlation for the current holdings." -- the claim
+# match ends exactly at "portfolio", and the (space-permitting) fixed range
+# extended past match_end to swallow "level correlation" into the trailing
+# connective window, hiding a claim-relevant concept noun ("correlation")
+# behind an ambiguous verb token with no real predecessor constraint.
+# Hyphenated "portfolio-level" is unambiguous in English (always a compound
+# adjective, never a verb reading) and is the only form any real sealed
+# record or existing accepted test ever uses -- confirmed by exhaustive
+# corpus search before narrowing.
+_LEVEL_FIXED_PHRASE = re.compile(
+    rf"\bportfolio-level\s+(?:{_DIVERSIFICATION_CONCEPT_NOUNS})\b",
+    re.IGNORECASE,
+)
+_EFFECT_FIXED_PHRASE = re.compile(
+    r"\b(?:portfolio|correlation|diversification)\s+effects?\b(?=[,;:.]|\s+remains?\b|$)",
+    re.IGNORECASE,
+)
+# Widened during the same regression pass: the pre-existing accepted
+# construction "...diversification-benefit finding for Portfolio-HQ's own
+# current holdings" pairs "finding" with the predecessor "benefit" (not just
+# "correlation"/"diversification") and the follower "for <the exact same
+# safe tail _OWN_FIXED_PHRASE itself anchors on>", not a bare "for" -- a bare
+# "for" was tested and rejected during design (it would let "for" attach an
+# arbitrary, unrelated object noun phrase). The match span for this pattern
+# always includes its own predecessor word, so "benefit finding" is covered
+# as ONE bigram range -- "benefit" never needs separate coverage here.
+_FINDING_FIXED_PHRASE = re.compile(
+    r"\b(?:correlation|diversification|benefit)\s+finding\b"
+    r"(?=[,;:.]|\s+(?:or|specific|remains?)\b"
+    r"|\s+for\s+(?:portfolio-)?hq's\s+own\s+(?:current\s+)?holdings\b|$)",
+    re.IGNORECASE,
+)
+_FIXED_PHRASE_PATTERNS = (
+    _OWN_FIXED_PHRASE,
+    _BENEFIT_FIXED_PHRASE,
+    _LEVEL_FIXED_PHRASE,
+    _EFFECT_FIXED_PHRASE,
+    _FINDING_FIXED_PHRASE,
+)
+
+
+def _fixed_phrase_ranges(sentence: str) -> list[tuple[int, int]]:
+    """Every non-overlapping fixed-phrase occurrence found anywhere in
+    the whole SENTENCE, as (start, end) character offsets into
+    `sentence` -- computed once per sentence and reused across every
+    span check performed against it (see module comment above)."""
+    ranges: list[tuple[int, int]] = []
+    for pat in _FIXED_PHRASE_PATTERNS:
+        for m in pat.finditer(sentence):
+            ranges.append((m.start(), m.end()))
+    return ranges
+
+
 # The whitelist itself: pure function words plus the fixed noun-phrase
 # scaffolding the real sealed disclosure and every accepted allowed-
 # language construction actually use to connect a negation/deferral to
-# its governed claim (e.g. "for a whole-portfolio diversification-
-# benefit or correlation finding specific to Portfolio-HQ's own current
-# holdings"). Kept as small as the real record and the governed allowed-
-# language matrix actually require, never widened speculatively -- a
-# wider whitelist is a wider bypass surface. Note the tokenizer below
-# deliberately excludes the hyphen from its word-character class, so a
-# hyphenated compound like "whole-portfolio" splits into two separate
-# tokens ("whole", "portfolio"), each independently whitelisted, rather
-# than needing every hyphenated form spelled out as its own entry.
+# its governed claim. Kept as small as the real record and the governed
+# allowed-language matrix actually require, never widened speculatively
+# -- a wider whitelist is a wider bypass surface. own/benefit/level/
+# effect/effects are deliberately absent (seventh bounded correction
+# above) -- their legitimate uses are supported only via the bounded
+# fixed-phrase patterns, never as free-standing tokens. Note the
+# tokenizer below deliberately excludes the hyphen from its word-
+# character class, so a hyphenated compound like "whole-portfolio"
+# splits into two separate tokens ("whole", "portfolio"), each
+# independently whitelisted, rather than needing every hyphenated form
+# spelled out as its own entry.
 _CONNECTIVE_WORD_WHITELIST = frozenset({
     "and", "or", "for", "a", "an", "the", "to", "of", "specific",
-    "finding", "whole", "benefit", "level", "own", "current", "holdings",
-    "hq", "hq's", "effect", "effects", "portfolio",
+    "whole", "current", "holdings", "hq", "hq's", "portfolio",
     # "with" is a literal anchor word inside one of the thirteen fixed
     # _PORTFOLIO_DIVERSIFICATION_PATTERNS phrases itself
     # (correlat(?:ed|ion)\s+with\s+...portfolio) -- any match of that
@@ -553,24 +694,39 @@ _CONNECTIVE_WORD_WHITELIST = frozenset({
     "either",
 })
 _CONNECTIVE_VERB_NOUN_PATTERN = re.compile(
-    rf"^(?:{_DISCLAIMING_VERB_WORDS})\w*$|^(?:{_DIVERSIFICATION_CONCEPT_NOUNS})$",
+    # Seventh bounded correction: the `(?!ing\b)` guard excludes every
+    # "-ing" continuation of the disclaiming-verb family from matching
+    # here -- none is needed for any legitimate accepted construction
+    # (the real record's own object-list enumeration always uses base/
+    # infinitive forms, "compute, constitute, imply, or substitute for"),
+    # and several ("establishing"/"representing"/"showing"/"claiming"/
+    # "asserting", plus "finding" via the identical "find\w*" wildcard)
+    # were independently found exploitable as bare participial predicate
+    # heads through this exact mechanism.
+    rf"^(?:{_DISCLAIMING_VERB_WORDS})(?!ing\b)\w*$|^(?:{_DIVERSIFICATION_CONCEPT_NOUNS})$",
     re.IGNORECASE,
 )
 _TOKEN_PATTERN = re.compile(r"[A-Za-z][\w']*")
 _MAX_CONNECTIVE_SPAN_CHARS = 160
 
 
-def _is_purely_connective(span: str) -> bool:
-    """True only when every word token in `span` is either a member of
-    the small closed function-word whitelist or itself one more item
-    from the scan's own two closed vocabularies (a disclaiming-verb-word
-    or a diversification-concept-noun) -- i.e. the span could only ever
-    be inert connective tissue joining a governing cue to the claim it
-    governs, never an intervening subject, predicate, or unrelated
-    claim. A single disqualifying token anywhere in the span fails the
-    whole check."""
-    for tok in _TOKEN_PATTERN.findall(span):
-        low = tok.lower()
+def _is_purely_connective(
+    sentence: str, span_start: int, span_end: int, fixed_ranges: list[tuple[int, int]]
+) -> bool:
+    """True only when every word token in sentence[span_start:span_end]
+    is either a member of the small closed function-word whitelist, one
+    more item from the scan's own two closed vocabularies (a
+    disclaiming-verb-word or a diversification-concept-noun), or falls
+    entirely within a precomputed fixed-phrase range (checked against
+    the token's own absolute position in `sentence`, not the span in
+    isolation -- see the module comment above for why this must be
+    sentence-wide, not span-local). A single disqualifying token
+    anywhere in the span fails the whole check."""
+    for m in _TOKEN_PATTERN.finditer(sentence, span_start, span_end):
+        tok_start, tok_end = m.start(), m.end()
+        if any(fs <= tok_start and tok_end <= fe for fs, fe in fixed_ranges):
+            continue
+        low = m.group().lower()
         if low in _CONNECTIVE_WORD_WHITELIST:
             continue
         if _CONNECTIVE_VERB_NOUN_PATTERN.match(low):
@@ -579,9 +735,11 @@ def _is_purely_connective(span: str) -> bool:
     return True
 
 
-def _match_content_is_explained(match_text: str) -> bool:
-    """Own-suite regression testing, before push, found that a match's
-    impure filler is not always dangerous: "does not establish portfolio
+def _match_content_is_explained(
+    sentence: str, match_start: int, match_end: int, fixed_ranges: list[tuple[int, int]]
+) -> bool:
+    """Sixth-correction regression testing found a match's impure filler
+    is not always dangerous: "does not establish portfolio
     diversification; it also does not establish portfolio correlation"
     produces one claim match whose own text spans a semicolon and a
     second, independent "it also does not establish" -- genuinely impure
@@ -600,22 +758,26 @@ def _match_content_is_explained(match_text: str) -> bool:
     decoy negation/deferral inside an otherwise-impure match's filler,
     while a real unguarded claim survives elsewhere in the same match or
     sentence, does not itself satisfy that downstream check."""
-    if _is_purely_connective(match_text):
+    if _is_purely_connective(sentence, match_start, match_end, fixed_ranges):
         return True
+    match_text = sentence[match_start:match_end]
     return bool(
         _DISCLAIMING_NEGATION_PATTERN.search(match_text)
         or _DECLARATIVE_DEFERRAL_PATTERN.search(match_text)
     )
 
 
-def _bounded_trailing_window(sentence: str, start: int, other_claim_starts: list[int]) -> str:
-    """The span from `start` up to whichever comes first: an unambiguous
-    hard clause boundary (`_HARD_BOUNDARY_STOP_PATTERN`), the bounded
-    character cap, or the start of another recognized claim match in the
-    same sentence (multiple _PORTFOLIO_DIVERSIFICATION_PATTERNS entries
-    can match overlapping/adjacent spans of one real sentence -- stopping
-    here prevents one match's own trailing-connective check from
-    spilling into text that belongs to a different match)."""
+def _bounded_trailing_window_end(
+    sentence: str, start: int, other_claim_starts: list[int]
+) -> int:
+    """The end offset of the span from `start` up to whichever comes
+    first: an unambiguous hard clause boundary
+    (`_HARD_BOUNDARY_STOP_PATTERN`), the bounded character cap, or the
+    start of another recognized claim match in the same sentence
+    (multiple _PORTFOLIO_DIVERSIFICATION_PATTERNS entries can match
+    overlapping/adjacent spans of one real sentence -- stopping here
+    prevents one match's own trailing-connective check from spilling
+    into text that belongs to a different match)."""
     stop = _HARD_BOUNDARY_STOP_PATTERN.search(sentence, start)
     candidates = [start + _MAX_CONNECTIVE_SPAN_CHARS]
     if stop:
@@ -623,11 +785,15 @@ def _bounded_trailing_window(sentence: str, start: int, other_claim_starts: list
     for pos in other_claim_starts:
         if pos > start:
             candidates.append(pos)
-    return sentence[start:min(candidates)]
+    return min(candidates)
 
 
 def _claim_is_governed(
-    sentence: str, match_start: int, match_end: int, other_claim_starts: list[int]
+    sentence: str,
+    match_start: int,
+    match_end: int,
+    other_claim_starts: list[int],
+    fixed_ranges: list[tuple[int, int]],
 ) -> bool:
     """A claim match is governed only when the governing cue applies to
     THAT specific claim, not merely occurs elsewhere in the sentence:
@@ -642,13 +808,14 @@ def _claim_is_governed(
     follows the claim with nothing but connective tissue between claim
     and deferral."""
     for neg in _DISCLAIMING_NEGATION_PATTERN.finditer(sentence[:match_start]):
-        if not _is_purely_connective(sentence[neg.end():match_start]):
+        if not _is_purely_connective(sentence, neg.end(), match_start, fixed_ranges):
             continue
-        trailing = _bounded_trailing_window(sentence, match_end, other_claim_starts)
-        if _is_purely_connective(trailing):
+        trailing_end = _bounded_trailing_window_end(sentence, match_end, other_claim_starts)
+        if _is_purely_connective(sentence, match_end, trailing_end, fixed_ranges):
             return True
     for defr in _DECLARATIVE_DEFERRAL_PATTERN.finditer(sentence[match_end:]):
-        if _is_purely_connective(sentence[match_end:match_end + defr.start()]):
+        defr_start_abs = match_end + defr.start()
+        if _is_purely_connective(sentence, match_end, defr_start_abs, fixed_ranges):
             return True
     return False
 
@@ -824,8 +991,10 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
     independent scan" lesson applied a second time here).
 
     Sixth bounded correction (structural redesign closing the whole
-    negation-laundering vulnerability CLASS, disclosed in the retained
-    audit §14): rounds two through five each patched one more concrete
+    CLAUSE-BOUNDARY-BLACKLIST-ENUMERATION vulnerability class, disclosed
+    in the retained audit §14 -- narrowed by the seventh correction below,
+    since a whitelist architecture is not invulnerable by construction):
+    rounds two through five each patched one more concrete
     bypass construction with an ever-growing BLACKLIST of enumerated
     clause-boundary punctuation, conjunction words, and finite-verb
     interruptors -- and each blacklist was, in turn, demonstrated
@@ -869,7 +1038,31 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
     every governed allowed-language construction); a match containing any
     other token has necessarily absorbed foreign clause content and is
     rejected outright, without regard to whatever negation or deferral
-    might otherwise appear to govern it."""
+    might otherwise appear to govern it.
+
+    Seventh bounded correction (whitelist-token-polysemy, disclosed in
+    the retained audit §15): an independent review found the sixth
+    correction's own `_CONNECTIVE_WORD_WHITELIST` still contained two
+    BARE, POLYSEMOUS tokens -- "own" and "benefit" -- each independently
+    exploitable as a finite verb, letting an unrelated earlier negation
+    appear to govern a later, genuinely new, unnegated claim built
+    entirely from whitelist-approved tokens. A full audit of every
+    whitelist token for the same property found four more risky tokens
+    ("level", "effect", "effects", "finding") plus five more disclaiming-
+    verb "-ing" gerunds sharing the same unconstrained-wildcard mechanism
+    "finding" itself exploited. All six risky words were removed from the
+    bare whitelist; the gerund path is closed for every disclaiming verb
+    at once via `_CONNECTIVE_VERB_NOUN_PATTERN`'s own `(?!ing\\b)` guard;
+    each word's narrow legitimate use is restored only through a bounded,
+    fully-anchored fixed-phrase mechanism (`_fixed_phrase_ranges` and the
+    five `_*_FIXED_PHRASE` patterns immediately above), each requiring
+    both a specific legitimate predecessor and a positive allow-list of
+    safe followers, computed once per sentence so a legitimate bigram can
+    still be recognized even when a claim match's own boundary falls
+    between its two words. This closes exactly the whitelist-token-
+    polysemy vulnerability class this round's own independent review and
+    full audit demonstrated -- not a guarantee against every future
+    vulnerability class a whitelist architecture could exhibit."""
     rationale = drawdown.get("rationale")
     if isinstance(rationale, str):
         for pattern in _PORTFOLIO_DIVERSIFICATION_PATTERNS:
@@ -885,6 +1078,7 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
     disclosure = drawdown.get("single_asset_disclosure")
     if isinstance(disclosure, str):
         for sentence in _split_sentences(disclosure):
+            fixed_ranges = _fixed_phrase_ranges(sentence)
             quantifier_spans = [
                 qm.span() for qm in _QUANTIFIER_NEGATION_CLAIM_PATTERN.finditer(sentence)
             ]
@@ -896,7 +1090,7 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
             for pattern, m in all_matches:
                 if any(qs <= m.start() and m.end() <= qe for qs, qe in quantifier_spans):
                     continue  # governed by a quantifier-negation construction
-                if not _match_content_is_explained(m.group()):
+                if not _match_content_is_explained(sentence, m.start(), m.end(), fixed_ranges):
                     # The claim pattern's own bounded same-sentence gap
                     # ([^.]{0,60} between anchor concepts) swallowed a
                     # foreign token -- an unrelated subject/predicate that
@@ -928,7 +1122,9 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
                     )
                     continue
                 other_claim_starts = [s for s in all_starts if s > m.start()]
-                if _claim_is_governed(sentence, m.start(), m.end(), other_claim_starts):
+                if _claim_is_governed(
+                    sentence, m.start(), m.end(), other_claim_starts, fixed_ranges
+                ):
                     continue
                 errors.append(
                     f"historical_equity_drawdown_behavior.single_asset_disclosure: "
