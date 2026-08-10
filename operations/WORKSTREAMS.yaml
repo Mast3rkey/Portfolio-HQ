@@ -9962,6 +9962,73 @@ workstreams:
         pr: 294
         status: in_progress
         date: "2026-08-10"
+      - gate: xasset0009-implementation-post-merge-verification
+        description: >
+          Lane M factual synchronization, folded into this ETF/crypto
+          instrument economic-assessment methodology-design filing per
+          OPS-0009/OPS-0008 §4(a)'s established read-only-by-default
+          convention (matching every prior gate in this chain's identical
+          treatment). The gate immediately above (xasset0009-economic-
+          assessment-content-implementation, status: in_progress, pr: 294)
+          is accurate as originally filed but stale on the merge question
+          specifically — independently re-confirmed this session via a
+          live git fetch and rev-parse, not assumed: local HEAD and
+          origin/main both identical at
+          3a7c89e6f4137c7ee37c643af1dc3f6a58d4912c (PR #294's own merge
+          commit), zero open pull requests. XASSET-0009's own economic-
+          assessment content step (sealed GLD.yaml/CASH_LIKE_CAPITAL.yaml,
+          economic_assessment_validator.py, and its 203-test suite) is
+          therefore complete and merged. This gate does not itself perform
+          or claim PR #294's own independent review, correction, principal
+          acceptance, or full post-merge-verification lifecycle — those
+          remain that PR's own record to complete; this entry records only
+          the confirmed merge fact this filing's own preflight relied on
+          before proceeding. The original gate's own text above is left
+          unedited, per this repository's established convention of never
+          rewriting a historical gate description in place.
+        pr: 294
+        status: complete
+        date: "2026-08-10"
+      - gate: xasset0010-etf-crypto-economic-assessment-methodology-design
+        description: >
+          Designs, as text only — not an authorization, not applied to any
+          fund or coin — a closed economic-assessment methodology for the
+          six instruments XASSET-0008's own whole-universe boundary named
+          as still unfinished: SPY, VEA, VWO (ETF) and BTC, ETH, SOL
+          (crypto). GLD and CASH_LIKE_CAPITAL remain governed exclusively
+          by XASSET-0008/XASSET-0009's own sealed methodology and
+          economic_assessment_validator.py — untouched, not reopened, not
+          extended. One shared envelope and structural-reference mechanism
+          (a single hash pin per instrument into its own already-sealed
+          etf_classification or crypto_classification record, reusing
+          each module's own existing canonical_record_hash() function);
+          one ETF-shared substantive axis (cost_and_tracking_quality_
+          economic_significance); one crypto-shared compound substantive
+          axis (macro_behavioral_characterization, two independently-
+          abstainable sub-fields: historical_equity_market_drawdown_
+          behavior, historical_inflation_sensitivity_narrative) —
+          deliberately asymmetric axis depth between the two asset types,
+          each disposition table (decision file §E/§F) explicitly
+          reasoning through every candidate question, including several
+          rejected as already answered at the classification layer
+          (deployability/liquidity for both asset types) or as
+          structurally tautological (an equity-drawdown-behavior question
+          for broad-market-beta ETFs that already are the equity market by
+          definition). A dedicated cross-coin-correlation non-leakage
+          validator requirement explicitly reserves any future BTC/ETH/SOL
+          correlation study to its own separate, bounded, pre-registered
+          research charter (matching MARGIN-0005/LADDER-0001's own
+          precedent) — not designed, authorized, or implied here. Full
+          field-by-field spec, sixteen-point validator specification, and
+          test inventory retained at governance/audits/WS0014_ETF_CRYPTO_
+          INSTRUMENT_ECONOMIC_ASSESSMENT_METHODOLOGY_DESIGN_20260810.md.
+          Also performs the ordinary WS-0014 self-reference
+          synchronization and the Lane M fold-forward for PR #294's own
+          confirmed merge (see the xasset0009-implementation-post-merge-
+          verification gate above).
+        pr: null
+        status: in_progress
+        date: "2026-08-10"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -9983,6 +10050,8 @@ workstreams:
       - governance/audits/WS0014_GLD_CASH_RESERVE_ECONOMIC_ASSESSMENT_METHODOLOGY_DESIGN_20260809.md
       - governance/decisions/XASSET-0009-ws0014-gld-cash-like-economic-assessment-content-authorization.md
       - governance/audits/WS0014_GLD_CASH_LIKE_CAPITAL_ECONOMIC_ASSESSMENT_IMPLEMENTATION_20260810.md
+      - governance/decisions/XASSET-0010-etf-crypto-economic-assessment-methodology.md
+      - governance/audits/WS0014_ETF_CRYPTO_INSTRUMENT_ECONOMIC_ASSESSMENT_METHODOLOGY_DESIGN_20260810.md
     next_action: >
       XASSET-0009 (PR #293) is independently confirmed merged — see the
       xasset0009-post-merge-verification gate above. Its authorization
@@ -10010,6 +10079,30 @@ workstreams:
       same session as the next substantive WS-0014 mutation; it creates no
       new research, sizing, margin, backtest, chart, or trade authority of
       any kind.
+
+
+      Update, a later session, 2026-08-10: PR #294 (XASSET-0009's own
+      economic-assessment content implementation, sealed GLD.yaml/
+      CASH_LIKE_CAPITAL.yaml) independently confirmed merged — see the
+      xasset0009-implementation-post-merge-verification gate above. The
+      GLD/CASH_LIKE_CAPITAL economic-assessment content step is therefore
+      complete. This same session then designed, as text only (the
+      xasset0010-etf-crypto-economic-assessment-methodology-design gate
+      above, draft, unmerged), a closed economic-assessment methodology
+      for the six remaining ETF/crypto instruments (SPY, VEA, VWO, BTC,
+      ETH, SOL) XASSET-0008's own whole-universe boundary had named as
+      still unfinished — requiring its own full independent exact-head
+      review, any required bounded correction, principal acceptance,
+      merge, and post-merge verification before that gate may be marked
+      complete; this session does not review its own work, mark it ready,
+      merge it, or post principal acceptance. Once XASSET-0010 merges, a
+      future, separate content-authorization filing (mirroring XASSET-
+      0003's/XASSET-0004's/XASSET-0009's own role) is required before any
+      of the six instruments' economic-assessment records may be
+      populated — not authorized by XASSET-0010 itself. DEBT_REDUCTION's
+      own economic-assessment methodology, the CASH/RESERVE consolidation
+      question (XASSET-0008 §N), and steps 8 through 13 remain wholly
+      unauthorized, unchanged.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -10106,9 +10199,29 @@ workstreams:
       post principal acceptance. DEBT_REDUCTION's own economic-assessment
       methodology, the CASH/RESERVE consolidation question (XASSET-0008
       §N), and steps 8 through 13 remain wholly unauthorized, unchanged.
-    active_branch: claude/xasset-0009-economic-assessment-prjxng
-    active_pr: 294
-    last_verified_main_sha: 9fa5ac9370b04c255dee31d183a00db96e7fae09
+
+
+      Update, a later session, 2026-08-10: PR #294 independently confirmed
+      merged — see the xasset0009-implementation-post-merge-verification
+      gate above. The GLD/CASH_LIKE_CAPITAL economic-assessment content
+      step is complete. XASSET-0010 (this session's own draft filing)
+      designs, as text only, a closed economic-assessment methodology for
+      the remaining six ETF/crypto instruments (SPY, VEA, VWO, BTC, ETH,
+      SOL) — see the xasset0010-etf-crypto-economic-assessment-
+      methodology-design gate above — blocked only on its own independent
+      exact-head review, correction if needed, principal acceptance,
+      merge, and post-merge verification. Once merged, a future, separate
+      content-authorization filing remains required before any of the six
+      instruments' economic-assessment records may be populated — not
+      authorized by XASSET-0010 itself. Step 2's remainder (DEBT_
+      REDUCTION's own economic-assessment methodology), the CASH/RESERVE
+      consolidation question, and steps 8 through 13 remain blocked on
+      their own future, separate, explicit principal authorization each —
+      none is authorized to begin by this entry or by XASSET-0010's own
+      work.
+    active_branch: claude/etf-crypto-assessment-methodology-7ybkis
+    active_pr: null
+    last_verified_main_sha: 3a7c89e6f4137c7ee37c643af1dc3f6a58d4912c
     last_verified_date: "2026-08-10"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
