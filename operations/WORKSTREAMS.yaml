@@ -10147,6 +10147,67 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-10"
+      - gate: contender0003-vrt-wmt-competition-pilot-authorization
+        description: >
+          A new, separate session, on explicit principal authorization,
+          independently reconfirmed PR #297 (XASSET-0011's own content
+          implementation) merged (merge commit a79c2a8b65e2220e08b5471fc5d
+          30f019db86872, confirmed via the GitHub API to be PR #297's own
+          merge commit, base 5e7e6c07..., head 580ecd1d... after one
+          bounded correction resolving two MINOR findings — a SPY.yaml
+          spelled-out numeric-magnitude leak and a manifest record_path
+          presence-only check — delta review APPROVED FOR PRINCIPAL
+          EXACT-HEAD ACCEPTANCE, principal acceptance issuecomment-
+          5245186740, merge-commit CI workflow run 31426005526 success),
+          closing the six-instrument ETF+crypto economic-assessment
+          content step. This session then filed CONTENDER-0003 (draft,
+          unmerged), a bounded design-and-authorization filing for a
+          two-name broader-equity contender-competition pilot — exactly
+          VRT and WMT, no third ticker — the first WS-0014 filing to move
+          from architecture/normalization (CONTENDER-0001/CONTENDER-0002/
+          XASSET-0001) into an actual contender-comparison mechanism.
+          Reuses, by reference only, the already-accepted VALUATION-####
+          series doctrine (PROTOCOL_V1.md §5's closed archetype taxonomy;
+          VALUATION-0004's evidence-quality/provenance vocabulary;
+          VALUATION-0002's per-family governed-role table, as a mechanical
+          lookup only, never a valuation); the zero-numeric-field rule
+          with no carve-out; and non-cascading abstention discipline —
+          none of it redesigned. Defines a new, separate, non-canonical
+          intelligence/contender_evaluation/ directory and a dedicated
+          contender_evaluation_validator.py (hard-coded closed population
+          {VRT, WMT}, zero import coupling with allocate.py/margin_state.
+          py), explicitly because classification_validator.py/valuation_
+          archetype_validator.py/valuation_evidence_validator.py/
+          valuation_result_validator.py all hard-enforce the live 27-name
+          canonical population via relationship_validator.
+          load_canonical_universe() and must not be weakened or expanded
+          — independently confirmed by direct source inspection. GEV (for
+          VRT) and COST (for WMT) are referenced structurally, read-only,
+          via a content-hash pin into each comparator's own already-sealed
+          valuation_archetype record — neither comparator record is edited
+          by this filing or authorized to be edited by the future
+          implementation. The authorized schema (archetype_assessment,
+          evidence_quality_assessment, a read-only methodology_
+          applicability_reference, and a purely descriptive evidence_
+          parity_finding comparing evidence completeness/maturity only —
+          never investment merit) produces no score, rank, composite
+          index, or capital-priority conclusion; VRT and WMT's own prior
+          committee-review comparator context (PI-0019/PI-0020 for GEV;
+          PI-0021/PI-0022 for COST) is cited as existing context, not
+          converted into a capital-priority finding about VRT/WMT
+          themselves. Authorizes exactly one future, separate, bounded
+          implementation PR — nothing performed by this filing itself: no
+          contender evaluation content, no research conclusion, no
+          promotion/demotion, no portfolio selection, no capital-
+          allocation decision. Requires its own full independent exact-
+          head review under OPS-0007 §1, any required bounded correction
+          and re-review, explicit principal acceptance, merge, and
+          post-merge verification before this gate may be marked complete
+          — this session does not review its own PR, mark it ready, merge
+          it, or post principal acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-10"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -10171,6 +10232,7 @@ workstreams:
       - governance/decisions/XASSET-0010-etf-crypto-economic-assessment-methodology.md
       - governance/audits/WS0014_ETF_CRYPTO_INSTRUMENT_ECONOMIC_ASSESSMENT_METHODOLOGY_DESIGN_20260810.md
       - governance/decisions/XASSET-0011-ws0014-etf-crypto-economic-assessment-content-authorization.md
+      - governance/decisions/CONTENDER-0003-vrt-wmt-contender-competition-pilot-authorization.md
     next_action: >
       XASSET-0009 (PR #293) is independently confirmed merged — see the
       xasset0009-post-merge-verification gate above. Its authorization
@@ -10424,9 +10486,9 @@ workstreams:
       other future ETF or crypto candidate expansion, a future cross-coin
       correlation study, and steps 8 through 13 remain wholly
       unauthorized, unchanged.
-    active_branch: claude/xasset-0011-six-instrument-s3gpg0
+    active_branch: claude/vrt-wmt-contender-pilot-fakayi
     active_pr: null
-    last_verified_main_sha: 5e7e6c07ddae8494e2eda4be7808e62376a82751
+    last_verified_main_sha: a79c2a8b65e2220e08b5471fc5d30f019db86872
     last_verified_date: "2026-08-10"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
@@ -10687,6 +10749,33 @@ workstreams:
       ASSESSMENT_IMPLEMENTATION_20260810.md for the full retained record,
       and the roadmap_preservation field immediately below for the fold-
       forward roadmap itself.
+
+
+      Update, a later session, 2026-08-10: PR #297 (XASSET-0011's own
+      content implementation, sealed instrument_economic_assessment
+      records for SPY/VEA/VWO/BTC/ETH/SOL) independently confirmed merged
+      — see the xasset0011-post-merge-verification gate above. The six-
+      instrument ETF+crypto economic-assessment content step is therefore
+      complete. This same session then filed CONTENDER-0003 (the
+      contender0003-vrt-wmt-competition-pilot-authorization gate above,
+      draft, unmerged) — a bounded design-and-authorization filing for a
+      two-name VRT/WMT contender-competition pilot, the first WS-0014
+      filing to exercise the "broader equity contender competition" item
+      in the roadmap_preservation field below, reusing the already-
+      accepted VALUATION-#### archetype/evidence-quality/false-precision
+      doctrine by reference and defining a new, separate, non-canonical
+      intelligence/contender_evaluation/ directory and dedicated
+      validator rather than weakening any canonical-27 validator —
+      requiring its own full independent exact-head review, any required
+      bounded correction, principal acceptance, merge, and post-merge
+      verification before that gate may be marked complete; this session
+      does not review its own work, mark it ready, merge it, or post
+      principal acceptance. DEBT_REDUCTION's own economic-assessment
+      methodology, the CASH/RESERVE consolidation question (XASSET-0008
+      §N), QQQ/any other future ETF or crypto candidate expansion, a
+      future cross-coin correlation study, any contender other than
+      VRT/WMT, and the remaining roadmap_preservation items below all
+      remain wholly unauthorized, unchanged.
     roadmap_preservation: >
       Planning/coordination only, additively folded forward by the
       economic-assessment content-implementation session (2026-08-10,
