@@ -41,7 +41,7 @@ methodology_families_applied:
     provenance_label: assumed_for_illustration
     source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
       the low/high band.
-  - assumption_name: latest_fy_pe
+  - assumption_name: latest_fy_net_income
     value: 9609
     provenance_label: historically_observed
     source_or_derivation_note: FY2025 (ended 2025-12-31) net income EUR9,609M, reported, from the pinned
@@ -54,6 +54,7 @@ methodology_families_applied:
   applied_peers:
   - KLAC
   - LRCX
+  - AMAT
 sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-B
   P/E assumption, denominated in EUR; not an independent fair-value opinion and not a comparison to any
   USD market price.
@@ -92,5 +93,5 @@ record_status: sealed
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchC-relative
-content_sha256: 16eba16d00f41134becf5854b5180e4fde76ee49c9a71f9a627b3838fef35913
+content_sha256: 2b562d56368932ccc6cd963a6c900aa232c97a69651fc9200971711524ccdb7d
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for ASML

@@ -28,11 +28,11 @@ methodology_families_applied:
       FY2025 EPS ($30.76, reported net income $4,060M / diluted shares 132.0M) x an illustrative multiple
       of 16x, modestly below a generic semiconductor-equipment baseline, reflecting the disclosed China
       export-control revenue-impact estimate (~$300-350M CY2026) this scenario names -- the multiple itself
-      is assumed_for_illustration, not peer- or market-derived. Scenario-value and (for RKLB) probability-weight
-      assignment was performed under VALUATION-0006 SS O''s targeted isolation rule: this record''s own
-      portfolio_role_ref, conviction.rating, target_pct, current holding size/status, Milestone-8 recommendation
-      disposition, and gate status were not consulted or cited while making these judgments -- only the
-      pinned archetype and evidence records'' own content was used.'
+      is assumed_for_illustration, not peer- or market-derived. Scenario-value assignment was performed
+      under VALUATION-0006 SS O''s targeted isolation rule: this record''s own portfolio_role_ref, conviction.rating,
+      target_pct, current holding size/status, Milestone-8 recommendation disposition, and gate status
+      were not consulted or cited while making this judgment -- only the pinned archetype and evidence
+      records'' own content was used.'
   assumptions_ledger: []
 sensitivity_disclosure: See methodology_families_applied[0].valuation_range.governing_sensitivity for
   the full basis of the single scenario value; not an independent fair-value opinion.
@@ -71,5 +71,5 @@ abstention_reason: 'family_7 reached family_status partial only (not completed):
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchD-scenario
-content_sha256: f2d347a7f2f0d93ab49957a8d7a5318e829405a1a1e33eb16d17b91824f3c4f5
+content_sha256: 139b125bb58334c5c1c3191f3f8a4d61190a799c3d18abb1c4cf3a39854f5f02
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for KLAC

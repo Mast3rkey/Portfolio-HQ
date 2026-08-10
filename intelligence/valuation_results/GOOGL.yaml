@@ -26,22 +26,58 @@ methodology_families_applied:
       less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
       exercise, not an independent fair-value opinion, and not a comparison to the current market price.
   assumptions_ledger:
+  - assumption_name: search_revenue_multiple_low
+    value: 5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end revenue multiple applied to the Google Search & Other
+      segment's reported revenue of 224530; no segment-specific peer trading multiple was gathered in
+      Stage-3 evidence, so this is a disclosed illustrative assumption.
   - assumption_name: search_revenue_multiple_base
     value: 7
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base revenue multiple applied to the Google Search & Other
+    source_or_derivation_note: Illustrative base-end revenue multiple applied to the Google Search & Other
       segment's reported revenue of 224530; no segment-specific peer trading multiple was gathered in
       Stage-3 evidence, so this is a disclosed illustrative assumption.
+  - assumption_name: search_revenue_multiple_high
+    value: 10
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end revenue multiple applied to the Google Search & Other
+      segment's reported revenue of 224530; no segment-specific peer trading multiple was gathered in
+      Stage-3 evidence, so this is a disclosed illustrative assumption.
+  - assumption_name: cloud_revenue_multiple_low
+    value: 5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end revenue multiple applied to the Google Cloud segment's
+      reported revenue of 58710; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
   - assumption_name: cloud_revenue_multiple_base
     value: 7
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base revenue multiple applied to the Google Cloud segment's
+    source_or_derivation_note: Illustrative base-end revenue multiple applied to the Google Cloud segment's
       reported revenue of 58710; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: cloud_revenue_multiple_high
+    value: 10
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end revenue multiple applied to the Google Cloud segment's
+      reported revenue of 58710; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: other_bets_revenue_multiple_low
+    value: 5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end revenue multiple applied to the Other Bets segment's
+      reported revenue of 1540; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
       so this is a disclosed illustrative assumption.
   - assumption_name: other_bets_revenue_multiple_base
     value: 7
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base revenue multiple applied to the Other Bets segment's
+    source_or_derivation_note: Illustrative base-end revenue multiple applied to the Other Bets segment's
+      reported revenue of 1540; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: other_bets_revenue_multiple_high
+    value: 10
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end revenue multiple applied to the Other Bets segment's
       reported revenue of 1540; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
       so this is a disclosed illustrative assumption.
   - assumption_name: net_debt_bridge
@@ -59,21 +95,21 @@ sensitivity_disclosure: Range reflects a +/-multiple sensitivity band summed acr
   exercise, not an independent fair-value opinion, and not a comparison to the current market price.
 uncertainty_summary: 'Sum-of-the-parts range built from real reported FY2025 segment revenue, consolidated
   debt, and combined cash-and-marketable-securities. No segment-level operating profit is disclosed in
-  Stage-3 evidence, so a uniform EV/Revenue-style multiple tier (selected from GOOGL''s own overall operating
-  margin, 32%, a high-margin proxy) is applied to all three segments. market_observed_evidence (current
-  price) is abstained for GOOGL in Stage-3 evidence, but this methodology does not require a current price
-  as an input (it derives an estimate from segment fundamentals and illustrative multiples), so the missing
-  price does not itself block this family. Diluted share count is a derived, approximate figure (net income
-  / diluted EPS) per the pinned Stage-3 evidence record''s own disclosure. No segment-specific peer trading
-  multiples were gathered in Stage-3 evidence -- the per-segment multiples applied here are disclosed,
-  illustrative assumptions (provenance_label: assumed_for_illustration), differentiated only where the
-  pinned Stage-3 evidence record itself discloses segment-level operating profit (an EV/EBIT-style multiple
-  is then used); segments lacking disclosed profit use a uniform EV/Revenue-style multiple tier selected
-  from the company''s own overall reported operating (or net) margin, not from any segment-specific comparable.
-  family_2 (FCFF DCF) and family_3 (FCFE DCF), while adjustment_required rather than blocked outright
-  for archetype F, were not applied -- discount_rate_evidence is abstained across all 27 sealed Stage-3
-  evidence records (VALUATION-0005), so no discount rate, WACC, beta, or terminal growth rate was fabricated
-  for this or any other ticker.'
+  Stage-3 evidence for GOOGL -- every one of its 3 segments therefore shares one company-level-margin-derived
+  EV/Revenue multiple tier, with no genuine segment-to-segment differentiation. This makes this SOTP computation
+  arithmetically equivalent to applying that one multiple to GOOGL''s consolidated revenue (sum(segment_revenue
+  x multiple) = multiple x total_revenue when the multiple is identical across every segment) -- the segment
+  breakdown is disclosed for transparency, but does not, in this record, capture genuine sum-of-the-parts
+  differentiation. market_observed_evidence (current price) is abstained for GOOGL in Stage-3 evidence,
+  but this methodology does not require a current price as an input (it derives an estimate from segment
+  fundamentals and illustrative multiples), so the missing price does not itself block this family. Diluted
+  share count is a derived, approximate figure (net income / diluted EPS) per the pinned Stage-3 evidence
+  record''s own disclosure. The per-segment multiples applied here are disclosed, illustrative assumptions
+  (provenance_label: assumed_for_illustration) -- no segment-specific peer trading multiple was gathered
+  in Stage-3 evidence. family_2 (FCFF DCF) and family_3 (FCFE DCF), while adjustment_required rather than
+  blocked outright for archetype F, were not applied -- discount_rate_evidence is abstained across all
+  27 sealed Stage-3 evidence records (VALUATION-0005), so no discount rate, WACC, beta, or terminal growth
+  rate was fabricated for this or any other ticker.'
 evidence_quality_summary:
   access_status_values_present:
   - consulted_via_search_aggregation
@@ -100,5 +136,5 @@ record_status: sealed
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchB-sotp
-content_sha256: 0c6dc8bf7954839f0df901a69f833ceaac1d6363103d621f119285820095e009
+content_sha256: c0a7680d24da95a122360f5be6d844194d8bbc87f9926379a0fcd42ef2ebc9a6
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for GOOGL

@@ -3,163 +3,163 @@ governing_decision: VALUATION-0006
 cohort:
 - ticker: AMZN
   sealed_at: '2026-08-10'
-  content_sha256: 963448211e6a23a6228aa99f6c5feb2906146ff14e2052a72b2014415a954a57
+  content_sha256: 83e82b151569e8c2764a7eaf78445e47f2ec6938beaf45e2e432026a2263994a
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/AMZN.yaml
 - ticker: ASML
   sealed_at: '2026-08-10'
-  content_sha256: 16eba16d00f41134becf5854b5180e4fde76ee49c9a71f9a627b3838fef35913
+  content_sha256: 2b562d56368932ccc6cd963a6c900aa232c97a69651fc9200971711524ccdb7d
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/ASML.yaml
 - ticker: AVGO
   sealed_at: '2026-08-10'
-  content_sha256: a75f70e77b15fe75238609969b32803d7fbfd219b374cdb01c600437c59f1a35
+  content_sha256: 9c1445fd994abd97613e9b2c8559f5261d531767bb1f83c86f6dfb2d92238760
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/AVGO.yaml
 - ticker: CEG
   sealed_at: '2026-08-10'
-  content_sha256: 4a73172e6718248fc5f5db7c76446d37b6a916e78567630393f564df5e3b3437
+  content_sha256: 13e62f53066088d6de72a97dcb2be1e8a892f14c9164e7a3a955af889fe1bc8a
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/CEG.yaml
 - ticker: COST
   sealed_at: '2026-08-10'
-  content_sha256: 85a3936874d387d62af2778ec373a03d64ca0945190dc5c2c934a38c6204f960
+  content_sha256: 2b05bac403331a2f4c58fbe2962aacb66248b0adfe0fc69432e85401955a1753
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/COST.yaml
 - ticker: ETN
   sealed_at: '2026-08-10'
-  content_sha256: 812d58478c94e8169c8c2caacae0ba2980ad6876a9156e88eaa782e47ffacdc7
+  content_sha256: fab75ac23b305bdc7c1b9573af09f333e1a9be3d61b08809f8fdcbd530eb107a
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/ETN.yaml
 - ticker: GEV
   sealed_at: '2026-08-10'
-  content_sha256: a5fd812c26d825db755e7301b7eafdfd370c50fa28bcdf40eb8ffb203fe22254
+  content_sha256: a2106e2678f5af83dddb57d09b1610a513cb4504df2f926a17ae893353993167
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/GEV.yaml
 - ticker: GNRC
   sealed_at: '2026-08-10'
-  content_sha256: 8d20ad01b973350c8371c58b9ab517f4cfdc5fffef86453e256b4c29894c401d
+  content_sha256: ac161b743b6456429d5e742e125e41ed0ab29e24ae33744e30843ca18e839a56
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/GNRC.yaml
 - ticker: GOOGL
   sealed_at: '2026-08-10'
-  content_sha256: 0c6dc8bf7954839f0df901a69f833ceaac1d6363103d621f119285820095e009
+  content_sha256: c0a7680d24da95a122360f5be6d844194d8bbc87f9926379a0fcd42ef2ebc9a6
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/GOOGL.yaml
 - ticker: ICE
   sealed_at: '2026-08-10'
-  content_sha256: 192ceb6db0639a8e2fc4026714490bf9f2f833b2769d695f810219fa9ab29369
+  content_sha256: 8b2b7b8fb92733bc4ba5aec23889596bde07628e06cedae6c2ebbb4d7fb2e1d8
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/ICE.yaml
 - ticker: ISRG
   sealed_at: '2026-08-10'
-  content_sha256: 16929eab0e48caed32703e8b6226e47f61a60eb30655a5eda17b4a9f98c6eefb
+  content_sha256: 4b2c33ff52f3fbbc4a40594c664b06f681dc1c4e6f4e29cc0df218bb6286135a
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/ISRG.yaml
 - ticker: KLAC
   sealed_at: '2026-08-10'
-  content_sha256: f2d347a7f2f0d93ab49957a8d7a5318e829405a1a1e33eb16d17b91824f3c4f5
+  content_sha256: 139b125bb58334c5c1c3191f3f8a4d61190a799c3d18abb1c4cf3a39854f5f02
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/KLAC.yaml
 - ticker: LLY
   sealed_at: '2026-08-10'
-  content_sha256: 3d77b3c3bccae92db8335d7f827ce4bc92aa175d6bd770b4ce2b0a677e935e57
+  content_sha256: d9d5d0f9ee5537506625975e3218cb313c7787903d2dab872d159130e8a7253d
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/LLY.yaml
 - ticker: META
   sealed_at: '2026-08-10'
-  content_sha256: 94e17acf140177d6b76bf8c948e0a14076815bd9b6e2588ba81e8894e9787b77
+  content_sha256: 77c2847c5df024258f9865b66b1abed47386c7d017b4039f3627484a082ad830
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/META.yaml
 - ticker: MSFT
   sealed_at: '2026-08-10'
-  content_sha256: 8b0a1d7c76e1ccef04ca5f4a14fc6355f427592e1877331be8cc63df40a3e520
+  content_sha256: b007c76c6026dd4deb5f6cf7b4c25c5dbaecb502ac79651bfab32db2344e3d8d
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/MSFT.yaml
 - ticker: NVDA
   sealed_at: '2026-08-10'
-  content_sha256: fc031f8bc3f209b3db1375d45128045876a17992698ed8a6c9bc3e32fb2c6377
+  content_sha256: 4e932a577d01b5da30e52979794d2695f2fae28ad406f48a537e478078e64d99
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/NVDA.yaml
 - ticker: PANW
   sealed_at: '2026-08-10'
-  content_sha256: 4eb302c389b83edba1e80923d5289d67d4f29bb1f5a76bfc46a87486977b33ce
+  content_sha256: d5eabe04c25388465365efb069fb71288ef25e096ef15a509c3b15bbe6e8df2f
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/PANW.yaml
 - ticker: PWR
   sealed_at: '2026-08-10'
-  content_sha256: 16eddfd8b558a33bb45c63812e51ed5335be35791919592abe0d10c8a7175a55
+  content_sha256: 04227dca5300c7c0170dcfa53a1cba6dbdabc1de0d20dae554c0832eca38c865
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/PWR.yaml
 - ticker: RKLB
   sealed_at: '2026-08-10'
-  content_sha256: 9fdeed5af558bf12adb4af6e0133ee78b5fdf47cf5affdada10c2d1250954e35
+  content_sha256: bd5cfe6f51530f21e164180f63202d63b85ee4e9f665f7a1fe063e0f93af0255
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/RKLB.yaml
 - ticker: RTX
   sealed_at: '2026-08-10'
-  content_sha256: aab4d053b2575652f7763e4b9d5e016457e6fa45a894723072fc4061cc7f9ae8
+  content_sha256: fb811ea6fc6a6b6464c9de20fddf1a1d27fa3ec8f6f93ae10ab467352e8dc184
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/RTX.yaml
 - ticker: SNPS
   sealed_at: '2026-08-10'
-  content_sha256: 4d63010717c5f08a9c055f887ca474047811388172131f4d287a0573ae04ee61
+  content_sha256: cead36ad13d31c898de506f43aad8f8d65d503cd79af9c3f6b4f82936fd3b32d
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/SNPS.yaml
 - ticker: SPGI
   sealed_at: '2026-08-10'
-  content_sha256: 697c10a43111a6252eef8890033674a2981f45443cb2ef716edcf08294761de0
+  content_sha256: 3880bbcb6c5290f837664f161bad545771531447e7cfc3d3af1f6a758aa2eb8f
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/SPGI.yaml
 - ticker: TMO
   sealed_at: '2026-08-10'
-  content_sha256: 9ab9f7dd7f59b5a5678e7db1152b9b3da5fb3b5122b35614d01057b32c91f445
+  content_sha256: 7c70c4c66c31936fa2bc47710bc1096c35324a59d775d94941917c08175f3f2b
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/TMO.yaml
 - ticker: TSLA
   sealed_at: '2026-08-10'
-  content_sha256: 687257e56d49525219d4264d33019c1a8a988db6508483698cfcd69f929ba710
+  content_sha256: 5df1fe0900ae55ee61dd60d7945f875639c7a39f014ce8a62422ec123084eae5
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/TSLA.yaml
 - ticker: TSM
   sealed_at: '2026-08-10'
-  content_sha256: 2fde4262b425bb079a5a2dd216cf3080435e657bd1889a22da9e8e3e8b9bfc4c
+  content_sha256: b5f7eca88647dbc5bed8797246f7a6dd15645e634c4fbe90b8915d63e414d546
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/TSM.yaml
 - ticker: V
   sealed_at: '2026-08-10'
-  content_sha256: 123c1a38039831703dd183ddf87d9fa272102fbcb64e87c9880627c76bea81b1
+  content_sha256: b375a059e28d2560fb35b95326b75a1a63adbc7ea773e310df73f3f5832ecf06
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/V.yaml
 - ticker: WM
   sealed_at: '2026-08-10'
-  content_sha256: ad3d69bbc40d2a831346a80f9ca38731f616140384c4202520f98cd3c7d144f1
+  content_sha256: 1b977616eba87ec1f5f051ee373b8f809842e4d31ec283a31f7757fcafb9d042
   schema_version: '1.0'
   governing_decision: VALUATION-0006
   record_path: intelligence/valuation_results/WM.yaml

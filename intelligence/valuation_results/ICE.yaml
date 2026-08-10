@@ -42,7 +42,7 @@ methodology_families_applied:
     provenance_label: assumed_for_illustration
     source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
       the low/high band.
-  - assumption_name: latest_fy_pe
+  - assumption_name: latest_fy_net_income
     value: 3300
     provenance_label: historically_observed
     source_or_derivation_note: FY2025 (ended 2025-12-31) net income $3,300M, reported, from the pinned
@@ -55,6 +55,7 @@ methodology_families_applied:
   applied_peers:
   - CME
   - NDAQ
+  - CBOE
 sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-C
   P/E assumption, offered as corroborative-only context; not an independent fair-value opinion.
 uncertainty_summary: 'family_5 (relative valuation) was attempted using clean, real reported FY2025 net
@@ -96,5 +97,5 @@ abstention_reason: family_5 is adjustment_required (not primary/secondary) for a
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchC-relative
-content_sha256: 192ceb6db0639a8e2fc4026714490bf9f2f833b2769d695f810219fa9ab29369
+content_sha256: 8b2b7b8fb92733bc4ba5aec23889596bde07628e06cedae6c2ebbb4d7fb2e1d8
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for ICE

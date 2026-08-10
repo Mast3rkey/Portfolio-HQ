@@ -41,7 +41,7 @@ methodology_families_applied:
     provenance_label: assumed_for_illustration
     source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
       the low/high band.
-  - assumption_name: latest_fy_pe
+  - assumption_name: latest_fy_net_income
     value: 60458
     provenance_label: historically_observed
     source_or_derivation_note: FY2025 (ended 2025-12-31) net income $60,458M, reported, from the pinned
@@ -54,6 +54,7 @@ methodology_families_applied:
   applied_peers:
   - GOOGL
   - SNAP
+  - PINS
 sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-A
   P/E assumption; not an independent fair-value opinion and not a comparison to the current market price.
 uncertainty_summary: 'Relative-valuation range built from real reported FY2025 net income and diluted
@@ -91,5 +92,5 @@ record_status: sealed
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchA-compounder
-content_sha256: 94e17acf140177d6b76bf8c948e0a14076815bd9b6e2588ba81e8894e9787b77
+content_sha256: 77c2847c5df024258f9865b66b1abed47386c7d017b4039f3627484a082ad830
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for META

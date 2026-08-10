@@ -26,16 +26,40 @@ methodology_families_applied:
       less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
       exercise, not an independent fair-value opinion, and not a comparison to the current market price.
   assumptions_ledger:
+  - assumption_name: semi_revenue_multiple_low
+    value: 5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end revenue multiple applied to the Semiconductor Solutions
+      segment's reported revenue of 37000; no segment-specific peer trading multiple was gathered in Stage-3
+      evidence, so this is a disclosed illustrative assumption.
   - assumption_name: semi_revenue_multiple_base
     value: 7
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base revenue multiple applied to the Semiconductor Solutions
+    source_or_derivation_note: Illustrative base-end revenue multiple applied to the Semiconductor Solutions
       segment's reported revenue of 37000; no segment-specific peer trading multiple was gathered in Stage-3
+      evidence, so this is a disclosed illustrative assumption.
+  - assumption_name: semi_revenue_multiple_high
+    value: 10
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end revenue multiple applied to the Semiconductor Solutions
+      segment's reported revenue of 37000; no segment-specific peer trading multiple was gathered in Stage-3
+      evidence, so this is a disclosed illustrative assumption.
+  - assumption_name: infra_sw_revenue_multiple_low
+    value: 5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end revenue multiple applied to the Infrastructure Software
+      segment's reported revenue of 27000; no segment-specific peer trading multiple was gathered in Stage-3
       evidence, so this is a disclosed illustrative assumption.
   - assumption_name: infra_sw_revenue_multiple_base
     value: 7
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base revenue multiple applied to the Infrastructure Software
+    source_or_derivation_note: Illustrative base-end revenue multiple applied to the Infrastructure Software
+      segment's reported revenue of 27000; no segment-specific peer trading multiple was gathered in Stage-3
+      evidence, so this is a disclosed illustrative assumption.
+  - assumption_name: infra_sw_revenue_multiple_high
+    value: 10
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end revenue multiple applied to the Infrastructure Software
       segment's reported revenue of 27000; no segment-specific peer trading multiple was gathered in Stage-3
       evidence, so this is a disclosed illustrative assumption.
   - assumption_name: net_debt_bridge
@@ -52,17 +76,17 @@ sensitivity_disclosure: Range reflects a +/-multiple sensitivity band summed acr
   less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
   exercise, not an independent fair-value opinion, and not a comparison to the current market price.
 uncertainty_summary: 'Sum-of-the-parts range built from real reported FY2025 segment revenue, consolidated
-  debt, and cash. No segment-level operating profit is disclosed in Stage-3 evidence, so a uniform EV/Revenue-style
-  multiple tier (selected from AVGO''s own overall net margin, ~36%, a high-margin proxy) is applied to
-  both segments. No segment-specific peer trading multiples were gathered in Stage-3 evidence -- the per-segment
-  multiples applied here are disclosed, illustrative assumptions (provenance_label: assumed_for_illustration),
-  differentiated only where the pinned Stage-3 evidence record itself discloses segment-level operating
-  profit (an EV/EBIT-style multiple is then used); segments lacking disclosed profit use a uniform EV/Revenue-style
-  multiple tier selected from the company''s own overall reported operating (or net) margin, not from
-  any segment-specific comparable. family_2 (FCFF DCF) and family_3 (FCFE DCF), while adjustment_required
-  rather than blocked outright for archetype F, were not applied -- discount_rate_evidence is abstained
-  across all 27 sealed Stage-3 evidence records (VALUATION-0005), so no discount rate, WACC, beta, or
-  terminal growth rate was fabricated for this or any other ticker.'
+  debt, and cash. No segment-level operating profit is disclosed in Stage-3 evidence for AVGO -- every
+  one of its 2 segments therefore shares one company-level-margin-derived EV/Revenue multiple tier, with
+  no genuine segment-to-segment differentiation. This makes this SOTP computation arithmetically equivalent
+  to applying that one multiple to AVGO''s consolidated revenue (sum(segment_revenue x multiple) = multiple
+  x total_revenue when the multiple is identical across every segment) -- the segment breakdown is disclosed
+  for transparency, but does not, in this record, capture genuine sum-of-the-parts differentiation. The
+  per-segment multiples applied here are disclosed, illustrative assumptions (provenance_label: assumed_for_illustration)
+  -- no segment-specific peer trading multiple was gathered in Stage-3 evidence. family_2 (FCFF DCF) and
+  family_3 (FCFE DCF), while adjustment_required rather than blocked outright for archetype F, were not
+  applied -- discount_rate_evidence is abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005),
+  so no discount rate, WACC, beta, or terminal growth rate was fabricated for this or any other ticker.'
 evidence_quality_summary:
   access_status_values_present:
   - consulted_via_search_aggregation
@@ -87,5 +111,5 @@ record_status: sealed
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchB-sotp
-content_sha256: a75f70e77b15fe75238609969b32803d7fbfd219b374cdb01c600437c59f1a35
+content_sha256: 9c1445fd994abd97613e9b2c8559f5261d531767bb1f83c86f6dfb2d92238760
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for AVGO

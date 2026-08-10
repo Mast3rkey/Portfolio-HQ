@@ -41,7 +41,7 @@ methodology_families_applied:
     provenance_label: assumed_for_illustration
     source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
       the low/high band.
-  - assumption_name: latest_fy_pe
+  - assumption_name: latest_fy_net_income
     value: 1336
     provenance_label: historically_observed
     source_or_derivation_note: FY2025 (ended 2025-10-31) net income $1,336M, reported, from the pinned
@@ -54,6 +54,7 @@ methodology_families_applied:
   applied_peers:
   - CDNS
   - KEYS
+  - PTC
 sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-A
   P/E assumption; not an independent fair-value opinion and cannot be cross-checked against a current
   market price, since none exists in Stage-3 evidence for SNPS.
@@ -98,5 +99,5 @@ record_status: sealed
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchA-compounder
-content_sha256: 4d63010717c5f08a9c055f887ca474047811388172131f4d287a0573ae04ee61
+content_sha256: cead36ad13d31c898de506f43aad8f8d65d503cd79af9c3f6b4f82936fd3b32d
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for SNPS

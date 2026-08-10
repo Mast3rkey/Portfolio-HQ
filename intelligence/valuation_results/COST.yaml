@@ -41,7 +41,7 @@ methodology_families_applied:
     provenance_label: assumed_for_illustration
     source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
       the low/high band.
-  - assumption_name: latest_fy_pe
+  - assumption_name: latest_fy_net_income
     value: 8099
     provenance_label: historically_observed
     source_or_derivation_note: FY2025 (ended 2025-08-31) net income $8,099M, reported, from the pinned
@@ -53,6 +53,7 @@ methodology_families_applied:
       own financial_evidence.
   applied_peers:
   - WMT
+  - BJ
   - TGT
 sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-G
   P/E assumption; not an independent fair-value opinion and not a comparison to the current market price.
@@ -94,5 +95,5 @@ record_status: sealed
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchA-compounder
-content_sha256: 85a3936874d387d62af2778ec373a03d64ca0945190dc5c2c934a38c6204f960
+content_sha256: 2b05bac403331a2f4c58fbe2962aacb66248b0adfe0fc69432e85401955a1753
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for COST

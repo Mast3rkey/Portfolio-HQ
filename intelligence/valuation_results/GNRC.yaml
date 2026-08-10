@@ -28,11 +28,11 @@ methodology_families_applied:
       FY2025 EPS ($2.69, reported net income $160M / diluted shares 59.5M) x an illustrative multiple
       of 22x, modestly above a generic industrial baseline, reflecting the disclosed raised full-year
       growth guidance partly attributed to this scenario''s demand driver -- the multiple itself is assumed_for_illustration,
-      not peer- or market-derived. Scenario-value and (for RKLB) probability-weight assignment was performed
-      under VALUATION-0006 SS O''s targeted isolation rule: this record''s own portfolio_role_ref, conviction.rating,
-      target_pct, current holding size/status, Milestone-8 recommendation disposition, and gate status
-      were not consulted or cited while making these judgments -- only the pinned archetype and evidence
-      records'' own content was used.'
+      not peer- or market-derived. Scenario-value assignment was performed under VALUATION-0006 SS O''s
+      targeted isolation rule: this record''s own portfolio_role_ref, conviction.rating, target_pct, current
+      holding size/status, Milestone-8 recommendation disposition, and gate status were not consulted
+      or cited while making this judgment -- only the pinned archetype and evidence records'' own content
+      was used.'
   assumptions_ledger: []
 sensitivity_disclosure: See methodology_families_applied[0].valuation_range.governing_sensitivity for
   the full basis of the single scenario value; not an independent fair-value opinion.
@@ -71,5 +71,5 @@ abstention_reason: 'family_7 reached family_status partial only (not completed):
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchD-scenario
-content_sha256: 8d20ad01b973350c8371c58b9ab517f4cfdc5fffef86453e256b4c29894c401d
+content_sha256: ac161b743b6456429d5e742e125e41ed0ab29e24ae33744e30843ca18e839a56
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for GNRC

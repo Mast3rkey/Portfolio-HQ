@@ -42,7 +42,7 @@ methodology_families_applied:
     provenance_label: assumed_for_illustration
     source_or_derivation_note: Illustrative high-end pfcf multiple, same disclosed-illustrative basis
       as the low/high band.
-  - assumption_name: latest_fy_pfcf
+  - assumption_name: latest_fy_fcf
     value: 3470
     provenance_label: historically_observed
     source_or_derivation_note: FY2025 (ended 2025-07-31) free cash flow $3,470M, reported, from the pinned
@@ -51,6 +51,7 @@ methodology_families_applied:
   applied_peers:
   - CRWD
   - FTNT
+  - ZS
 sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-A
   Price/FCF-equivalent assumption applied to aggregate free cash flow; not an independent fair-value opinion
   and not a comparison to the current market price.
@@ -92,5 +93,5 @@ record_status: sealed
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchA-compounder
-content_sha256: 4eb302c389b83edba1e80923d5289d67d4f29bb1f5a76bfc46a87486977b33ce
+content_sha256: d5eabe04c25388465365efb069fb71288ef25e096ef15a509c3b15bbe6e8df2f
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for PANW

@@ -45,7 +45,7 @@ methodology_families_applied:
     provenance_label: assumed_for_illustration
     source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
       the low/high band.
-  - assumption_name: latest_fy_pe
+  - assumption_name: latest_fy_net_income
     value: 4087
     provenance_label: historically_observed
     source_or_derivation_note: FY2025 (ended 2025-12-31) net income $4,087M, reported, from the pinned
@@ -58,6 +58,7 @@ methodology_families_applied:
   applied_peers:
   - EMR
   - ROK
+  - VRT
 sensitivity_disclosure: family_1's sum-of-the-parts methodology cannot be constructed for ETN at all (see
   uncertainty_summary); family_5's range reflects a +/-multiple sensitivity band around an illustrative
   corroborative-only P/E assumption, not an independent fair-value opinion.
@@ -67,15 +68,13 @@ uncertainty_summary: 'family_1 (asset_based_sotp), ETN''s sole primary_candidate
   figures exist either to enable a NAV-style alternative. A corroborative-only family_5 (relative valuation,
   adjustment_required for archetype F) is offered instead, using real reported net income and diluted
   shares, but its governed_role structurally caps it below the ''completed'' bar regardless of data quality.
-  No segment-specific peer trading multiples were gathered in Stage-3 evidence -- the per-segment multiples
-  applied here are disclosed, illustrative assumptions (provenance_label: assumed_for_illustration), differentiated
-  only where the pinned Stage-3 evidence record itself discloses segment-level operating profit (an EV/EBIT-style
-  multiple is then used); segments lacking disclosed profit use a uniform EV/Revenue-style multiple tier
-  selected from the company''s own overall reported operating (or net) margin, not from any segment-specific
-  comparable. family_2 (FCFF DCF) and family_3 (FCFE DCF), while adjustment_required rather than blocked
-  outright for archetype F, were not applied -- discount_rate_evidence is abstained across all 27 sealed
-  Stage-3 evidence records (VALUATION-0005), so no discount rate, WACC, beta, or terminal growth rate
-  was fabricated for this or any other ticker.'
+  All three Stage-3-included peer candidates (EMR, ROK, VRT) are cited as comparability context -- no
+  candidate was excluded. The per-segment multiples applied here are disclosed, illustrative assumptions
+  (provenance_label: assumed_for_illustration) -- no segment-specific peer trading multiple was gathered
+  in Stage-3 evidence. family_2 (FCFF DCF) and family_3 (FCFE DCF), while adjustment_required rather than
+  blocked outright for archetype F, were not applied -- discount_rate_evidence is abstained across all
+  27 sealed Stage-3 evidence records (VALUATION-0005), so no discount rate, WACC, beta, or terminal growth
+  rate was fabricated for this or any other ticker.'
 evidence_quality_summary:
   access_status_values_present:
   - consulted_via_search_aggregation
@@ -111,5 +110,5 @@ abstention_reason: family_1 (its own doctrine-primary family) could not be attem
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchB-sotp
-content_sha256: 812d58478c94e8169c8c2caacae0ba2980ad6876a9156e88eaa782e47ffacdc7
+content_sha256: fab75ac23b305bdc7c1b9573af09f333e1a9be3d61b08809f8fdcbd530eb107a
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for ETN

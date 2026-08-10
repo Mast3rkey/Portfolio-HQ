@@ -43,11 +43,11 @@ methodology_families_applied:
       evidence -- Stage-3 evidence names the three scenarios and their qualitative basis only, never a
       probability. family_status: partial, not completed, because the weights themselves lack an evidentiary
       basis, even though the underlying per-scenario multiple assumptions are individually disclosed and
-      the scenario names/qualitative evidence are real. Scenario-value and (for RKLB) probability-weight
-      assignment was performed under VALUATION-0006 SS O''s targeted isolation rule: this record''s own
-      portfolio_role_ref, conviction.rating, target_pct, current holding size/status, Milestone-8 recommendation
-      disposition, and gate status were not consulted or cited while making these judgments -- only the
-      pinned archetype and evidence records'' own content was used.'
+      the scenario names/qualitative evidence are real. Scenario-value and probability-weight assignment
+      was performed under VALUATION-0006 SS O''s targeted isolation rule: this record''s own portfolio_role_ref,
+      conviction.rating, target_pct, current holding size/status, Milestone-8 recommendation disposition,
+      and gate status were not consulted or cited while making these judgments -- only the pinned archetype
+      and evidence records'' own content was used.'
   assumptions_ledger: []
 sensitivity_disclosure: See methodology_families_applied[0].valuation_range.governing_sensitivity for
   the full basis of each scenario's value and the disclosed, non-evidence-sourced probability weights;
@@ -85,5 +85,5 @@ abstention_reason: 'family_7 reached family_status partial only (not completed):
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchD-scenario
-content_sha256: 9fdeed5af558bf12adb4af6e0133ee78b5fdf47cf5affdada10c2d1250954e35
+content_sha256: bd5cfe6f51530f21e164180f63202d63b85ee4e9f665f7a1fe063e0f93af0255
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for RKLB

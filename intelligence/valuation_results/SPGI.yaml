@@ -26,30 +26,78 @@ methodology_families_applied:
       less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
       exercise, not an independent fair-value opinion, and not a comparison to the current market price.
   assumptions_ledger:
+  - assumption_name: mi_revenue_multiple_low
+    value: 5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end revenue multiple applied to the Market Intelligence
+      segment's reported revenue of 4920; no segment-specific peer trading multiple was gathered in Stage-3
+      evidence, so this is a disclosed illustrative assumption.
   - assumption_name: mi_revenue_multiple_base
     value: 7
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base revenue multiple applied to the Market Intelligence segment's
-      reported revenue of 4920; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+    source_or_derivation_note: Illustrative base-end revenue multiple applied to the Market Intelligence
+      segment's reported revenue of 4920; no segment-specific peer trading multiple was gathered in Stage-3
+      evidence, so this is a disclosed illustrative assumption.
+  - assumption_name: mi_revenue_multiple_high
+    value: 10
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end revenue multiple applied to the Market Intelligence
+      segment's reported revenue of 4920; no segment-specific peer trading multiple was gathered in Stage-3
+      evidence, so this is a disclosed illustrative assumption.
+  - assumption_name: ratings_revenue_multiple_low
+    value: 5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end revenue multiple applied to the Ratings segment's
+      reported revenue of 4720; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
       so this is a disclosed illustrative assumption.
   - assumption_name: ratings_revenue_multiple_base
     value: 7
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base revenue multiple applied to the Ratings segment's reported
-      revenue of 4720; no segment-specific peer trading multiple was gathered in Stage-3 evidence, so
-      this is a disclosed illustrative assumption.
+    source_or_derivation_note: Illustrative base-end revenue multiple applied to the Ratings segment's
+      reported revenue of 4720; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: ratings_revenue_multiple_high
+    value: 10
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end revenue multiple applied to the Ratings segment's
+      reported revenue of 4720; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: mobility_revenue_multiple_low
+    value: 5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end revenue multiple applied to the Mobility segment's
+      reported revenue of 1750; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
   - assumption_name: mobility_revenue_multiple_base
     value: 7
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base revenue multiple applied to the Mobility segment's reported
-      revenue of 1750; no segment-specific peer trading multiple was gathered in Stage-3 evidence, so
-      this is a disclosed illustrative assumption.
+    source_or_derivation_note: Illustrative base-end revenue multiple applied to the Mobility segment's
+      reported revenue of 1750; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: mobility_revenue_multiple_high
+    value: 10
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end revenue multiple applied to the Mobility segment's
+      reported revenue of 1750; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: indices_revenue_multiple_low
+    value: 5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end revenue multiple applied to the Indices segment's
+      reported revenue of 1850; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
   - assumption_name: indices_revenue_multiple_base
     value: 7
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base revenue multiple applied to the Indices segment's reported
-      revenue of 1850; no segment-specific peer trading multiple was gathered in Stage-3 evidence, so
-      this is a disclosed illustrative assumption.
+    source_or_derivation_note: Illustrative base-end revenue multiple applied to the Indices segment's
+      reported revenue of 1850; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: indices_revenue_multiple_high
+    value: 10
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end revenue multiple applied to the Indices segment's
+      reported revenue of 1850; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
   - assumption_name: net_debt_bridge
     value: 12090
     provenance_label: historically_observed
@@ -64,17 +112,17 @@ sensitivity_disclosure: Range reflects a +/-multiple sensitivity band summed acr
   less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
   exercise, not an independent fair-value opinion, and not a comparison to the current market price.
 uncertainty_summary: 'Sum-of-the-parts range built from real reported FY2025 segment revenue, consolidated
-  debt, and cash. No segment-level operating profit is disclosed in Stage-3 evidence, so a uniform EV/Revenue-style
-  multiple tier (selected from SPGI''s own overall net margin, ~29%, a high-margin proxy) is applied to
-  all four segments. No segment-specific peer trading multiples were gathered in Stage-3 evidence -- the
-  per-segment multiples applied here are disclosed, illustrative assumptions (provenance_label: assumed_for_illustration),
-  differentiated only where the pinned Stage-3 evidence record itself discloses segment-level operating
-  profit (an EV/EBIT-style multiple is then used); segments lacking disclosed profit use a uniform EV/Revenue-style
-  multiple tier selected from the company''s own overall reported operating (or net) margin, not from
-  any segment-specific comparable. family_2 (FCFF DCF) and family_3 (FCFE DCF), while adjustment_required
-  rather than blocked outright for archetype F, were not applied -- discount_rate_evidence is abstained
-  across all 27 sealed Stage-3 evidence records (VALUATION-0005), so no discount rate, WACC, beta, or
-  terminal growth rate was fabricated for this or any other ticker.'
+  debt, and cash. No segment-level operating profit is disclosed in Stage-3 evidence for SPGI -- every
+  one of its 4 segments therefore shares one company-level-margin-derived EV/Revenue multiple tier, with
+  no genuine segment-to-segment differentiation. This makes this SOTP computation arithmetically equivalent
+  to applying that one multiple to SPGI''s consolidated revenue (sum(segment_revenue x multiple) = multiple
+  x total_revenue when the multiple is identical across every segment) -- the segment breakdown is disclosed
+  for transparency, but does not, in this record, capture genuine sum-of-the-parts differentiation. The
+  per-segment multiples applied here are disclosed, illustrative assumptions (provenance_label: assumed_for_illustration)
+  -- no segment-specific peer trading multiple was gathered in Stage-3 evidence. family_2 (FCFF DCF) and
+  family_3 (FCFE DCF), while adjustment_required rather than blocked outright for archetype F, were not
+  applied -- discount_rate_evidence is abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005),
+  so no discount rate, WACC, beta, or terminal growth rate was fabricated for this or any other ticker.'
 evidence_quality_summary:
   access_status_values_present:
   - consulted_via_search_aggregation
@@ -99,5 +147,5 @@ record_status: sealed
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchB-sotp
-content_sha256: 697c10a43111a6252eef8890033674a2981f45443cb2ef716edcf08294761de0
+content_sha256: 3880bbcb6c5290f837664f161bad545771531447e7cfc3d3af1f6a758aa2eb8f
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for SPGI

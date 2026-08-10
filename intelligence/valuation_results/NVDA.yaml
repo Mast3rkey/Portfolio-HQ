@@ -42,7 +42,7 @@ methodology_families_applied:
     provenance_label: assumed_for_illustration
     source_or_derivation_note: Illustrative high-end pe multiple, same disclosed-illustrative basis as
       the low/high band.
-  - assumption_name: latest_fy_pe
+  - assumption_name: latest_fy_net_income
     value: 120070
     provenance_label: historically_observed
     source_or_derivation_note: FY2026 (ended 2026-01-25) net income $120,070M, reported, from the pinned
@@ -50,6 +50,7 @@ methodology_families_applied:
   applied_peers:
   - AMD
   - AVGO
+  - TSM
 sensitivity_disclosure: Range reflects a +/-multiple sensitivity band around an illustrative archetype-A
   P/E-equivalent assumption applied to aggregate net income; not an independent fair-value opinion and
   not a comparison to the current market price or market capitalization.
@@ -91,5 +92,5 @@ record_status: sealed
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchA-compounder
-content_sha256: fc031f8bc3f209b3db1375d45128045876a17992698ed8a6c9bc3e32fb2c6377
+content_sha256: 4e932a577d01b5da30e52979794d2695f2fae28ad406f48a537e478078e64d99
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for NVDA

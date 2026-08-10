@@ -17,33 +17,78 @@ methodology_families_applied:
   governed_role: primary_candidate
   family_status: completed
   valuation_range:
-    low: 93.58
-    base: 115.71
-    high: 145.22
+    low: 89.33
+    base: 108.29
+    high: 134.64
     unit_and_basis: USD per diluted share, equity value (sum-of-segments enterprise value less net debt,
       divided by diluted shares)
     governing_sensitivity: Range reflects a +/-multiple sensitivity band summed across disclosed segments,
       less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
       exercise, not an independent fair-value opinion, and not a comparison to the current market price.
   assumptions_ledger:
-  - assumption_name: na_ebit_multiple_base
-    value: 15
+  - assumption_name: na_ebit_multiple_low
+    value: 8
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base ebit multiple applied to the North America segment's
+    source_or_derivation_note: 'Illustrative low-end ebit multiple applied to the North America segment''s
       reported ebit of 29600; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
-      so this is a disclosed illustrative assumption.
-  - assumption_name: intl_ebit_multiple_base
-    value: 15
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 6.9% = 29600/426300,
+      used to select this multiple tier.)'
+  - assumption_name: na_ebit_multiple_base
+    value: 10
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base ebit multiple applied to the International segment's
+    source_or_derivation_note: 'Illustrative base-end ebit multiple applied to the North America segment''s
+      reported ebit of 29600; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 6.9% = 29600/426300,
+      used to select this multiple tier.)'
+  - assumption_name: na_ebit_multiple_high
+    value: 13
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative high-end ebit multiple applied to the North America segment''s
+      reported ebit of 29600; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 6.9% = 29600/426300,
+      used to select this multiple tier.)'
+  - assumption_name: intl_ebit_multiple_low
+    value: 8
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative low-end ebit multiple applied to the International segment''s
       reported ebit of 4700; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
-      so this is a disclosed illustrative assumption.
-  - assumption_name: aws_ebit_multiple_base
-    value: 15
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 2.9% = 4700/161900,
+      used to select this multiple tier.)'
+  - assumption_name: intl_ebit_multiple_base
+    value: 10
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base ebit multiple applied to the AWS segment's reported ebit
-      of 45600; no segment-specific peer trading multiple was gathered in Stage-3 evidence, so this is
-      a disclosed illustrative assumption.
+    source_or_derivation_note: 'Illustrative base-end ebit multiple applied to the International segment''s
+      reported ebit of 4700; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 2.9% = 4700/161900,
+      used to select this multiple tier.)'
+  - assumption_name: intl_ebit_multiple_high
+    value: 13
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative high-end ebit multiple applied to the International segment''s
+      reported ebit of 4700; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 2.9% = 4700/161900,
+      used to select this multiple tier.)'
+  - assumption_name: aws_ebit_multiple_low
+    value: 14
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative low-end ebit multiple applied to the AWS segment''s reported
+      ebit of 45600; no segment-specific peer trading multiple was gathered in Stage-3 evidence, so this
+      is a disclosed illustrative assumption. (Segment''s own disclosed margin: 35.4% = 45600/128700,
+      used to select this multiple tier.)'
+  - assumption_name: aws_ebit_multiple_base
+    value: 17
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative base-end ebit multiple applied to the AWS segment''s reported
+      ebit of 45600; no segment-specific peer trading multiple was gathered in Stage-3 evidence, so this
+      is a disclosed illustrative assumption. (Segment''s own disclosed margin: 35.4% = 45600/128700,
+      used to select this multiple tier.)'
+  - assumption_name: aws_ebit_multiple_high
+    value: 21
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative high-end ebit multiple applied to the AWS segment''s reported
+      ebit of 45600; no segment-specific peer trading multiple was gathered in Stage-3 evidence, so this
+      is a disclosed illustrative assumption. (Segment''s own disclosed margin: 35.4% = 45600/128700,
+      used to select this multiple tier.)'
   - assumption_name: net_debt_bridge
     value: -54633
     provenance_label: historically_observed
@@ -57,15 +102,15 @@ methodology_families_applied:
 sensitivity_disclosure: Range reflects a +/-multiple sensitivity band summed across disclosed segments,
   less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
   exercise, not an independent fair-value opinion, and not a comparison to the current market price.
-uncertainty_summary: 'Sum-of-the-parts range built from real reported FY2025 segment revenue/operating
-  profit, consolidated debt, and cash. No segment-specific peer trading multiples were gathered in Stage-3
-  evidence -- the per-segment multiples applied here are disclosed, illustrative assumptions (provenance_label:
-  assumed_for_illustration), differentiated only where the pinned Stage-3 evidence record itself discloses
-  segment-level operating profit (an EV/EBIT-style multiple is then used); segments lacking disclosed
-  profit use a uniform EV/Revenue-style multiple tier selected from the company''s own overall reported
-  operating (or net) margin, not from any segment-specific comparable. family_2 (FCFF DCF) and family_3
-  (FCFE DCF), while adjustment_required rather than blocked outright for archetype F, were not applied
-  -- discount_rate_evidence is abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005),
+uncertainty_summary: 'Sum-of-the-parts range built from real reported FY2025 segment revenue and operating
+  profit, consolidated debt, and cash. All three segments disclose operating profit, so each gets its
+  own margin-derived EV/EBIT multiple tier (AWS''s 35.4% margin selects a materially higher tier than
+  North America''s 6.9% or International''s 2.9%) -- genuine per-segment differentiation grounded in each
+  segment''s own disclosed figures, not a company-level proxy applied uniformly. The per-segment multiples
+  applied here are disclosed, illustrative assumptions (provenance_label: assumed_for_illustration) --
+  no segment-specific peer trading multiple was gathered in Stage-3 evidence. family_2 (FCFF DCF) and
+  family_3 (FCFE DCF), while adjustment_required rather than blocked outright for archetype F, were not
+  applied -- discount_rate_evidence is abstained across all 27 sealed Stage-3 evidence records (VALUATION-0005),
   so no discount rate, WACC, beta, or terminal growth rate was fabricated for this or any other ticker.'
 evidence_quality_summary:
   access_status_values_present:
@@ -91,5 +136,5 @@ record_status: sealed
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchB-sotp
-content_sha256: 963448211e6a23a6228aa99f6c5feb2906146ff14e2052a72b2014415a954a57
+content_sha256: 83e82b151569e8c2764a7eaf78445e47f2ec6938beaf45e2e432026a2263994a
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for AMZN

@@ -17,33 +17,75 @@ methodology_families_applied:
   governed_role: primary_candidate
   family_status: completed
   valuation_range:
-    low: 47.25
-    base: 72.73
-    high: 110.14
+    low: 40.83
+    base: 64.7
+    high: 100.51
     unit_and_basis: USD per diluted share, equity value (sum-of-segments enterprise value less net debt,
       divided by diluted shares)
     governing_sensitivity: Range reflects a +/-multiple sensitivity band summed across disclosed segments,
       less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
       exercise, not an independent fair-value opinion, and not a comparison to the current market price.
   assumptions_ledger:
-  - assumption_name: collins_ebit_multiple_base
-    value: 15
+  - assumption_name: collins_ebit_multiple_low
+    value: 8
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base ebit multiple applied to the Collins Aerospace segment's
+    source_or_derivation_note: 'Illustrative low-end ebit multiple applied to the Collins Aerospace segment''s
       reported ebit of 1402; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
-      so this is a disclosed illustrative assumption.
-  - assumption_name: pw_ebit_multiple_base
-    value: 15
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 4.6% = 1402/30200,
+      used to select this multiple tier.)'
+  - assumption_name: collins_ebit_multiple_base
+    value: 10
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base ebit multiple applied to the Pratt & Whitney segment's
+    source_or_derivation_note: 'Illustrative base-end ebit multiple applied to the Collins Aerospace segment''s
+      reported ebit of 1402; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 4.6% = 1402/30200,
+      used to select this multiple tier.)'
+  - assumption_name: collins_ebit_multiple_high
+    value: 13
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative high-end ebit multiple applied to the Collins Aerospace segment''s
+      reported ebit of 1402; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 4.6% = 1402/30200,
+      used to select this multiple tier.)'
+  - assumption_name: pw_ebit_multiple_low
+    value: 8
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative low-end ebit multiple applied to the Pratt & Whitney segment''s
       reported ebit of 776; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 2.4% = 776/32920,
+      used to select this multiple tier.)'
+  - assumption_name: pw_ebit_multiple_base
+    value: 10
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative base-end ebit multiple applied to the Pratt & Whitney segment''s
+      reported ebit of 776; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 2.4% = 776/32920,
+      used to select this multiple tier.)'
+  - assumption_name: pw_ebit_multiple_high
+    value: 13
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: 'Illustrative high-end ebit multiple applied to the Pratt & Whitney segment''s
+      reported ebit of 776; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption. (Segment''s own disclosed margin: 2.4% = 776/32920,
+      used to select this multiple tier.)'
+  - assumption_name: raytheon_revenue_multiple_low
+    value: 2.5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative low-end revenue multiple applied to the Raytheon segment's
+      reported revenue of 28040; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
       so this is a disclosed illustrative assumption.
   - assumption_name: raytheon_revenue_multiple_base
     value: 3.5
     provenance_label: assumed_for_illustration
-    source_or_derivation_note: Illustrative base revenue multiple applied to the Raytheon segment's reported
-      revenue of 28040; no segment-specific peer trading multiple was gathered in Stage-3 evidence, so
-      this is a disclosed illustrative assumption.
+    source_or_derivation_note: Illustrative base-end revenue multiple applied to the Raytheon segment's
+      reported revenue of 28040; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
+  - assumption_name: raytheon_revenue_multiple_high
+    value: 5
+    provenance_label: assumed_for_illustration
+    source_or_derivation_note: Illustrative high-end revenue multiple applied to the Raytheon segment's
+      reported revenue of 28040; no segment-specific peer trading multiple was gathered in Stage-3 evidence,
+      so this is a disclosed illustrative assumption.
   - assumption_name: net_debt_bridge
     value: 32120
     provenance_label: historically_observed
@@ -58,18 +100,17 @@ sensitivity_disclosure: Range reflects a +/-multiple sensitivity band summed acr
   less net debt, divided by diluted shares where available; an illustrative sum-of-the-parts sensitivity
   exercise, not an independent fair-value opinion, and not a comparison to the current market price.
 uncertainty_summary: 'Sum-of-the-parts range built from real reported FY2025 segment revenue, consolidated
-  debt, and cash. Collins Aerospace and Pratt & Whitney disclose segment operating profit (EV/EBIT-style
-  multiple applied); the Raytheon segment does not disclose profit, so a uniform EV/Revenue-style multiple
-  tier (selected from RTX''s own overall operating margin, 10.5%, a moderate-margin proxy) is applied
-  to it instead. No segment-specific peer trading multiples were gathered in Stage-3 evidence -- the per-segment
-  multiples applied here are disclosed, illustrative assumptions (provenance_label: assumed_for_illustration),
-  differentiated only where the pinned Stage-3 evidence record itself discloses segment-level operating
-  profit (an EV/EBIT-style multiple is then used); segments lacking disclosed profit use a uniform EV/Revenue-style
-  multiple tier selected from the company''s own overall reported operating (or net) margin, not from
-  any segment-specific comparable. family_2 (FCFF DCF) and family_3 (FCFE DCF), while adjustment_required
-  rather than blocked outright for archetype F, were not applied -- discount_rate_evidence is abstained
-  across all 27 sealed Stage-3 evidence records (VALUATION-0005), so no discount rate, WACC, beta, or
-  terminal growth rate was fabricated for this or any other ticker.'
+  debt, and cash. Collins Aerospace (4.6% margin) and Pratt & Whitney (2.4% margin) both disclose segment
+  operating profit and both land in the same margin-derived low EV/EBIT tier -- a real, evidence-grounded
+  finding (both segments genuinely have similarly thin margins), not an artificial uniform assumption;
+  the Raytheon segment does not disclose profit, so it uses a company-level-margin-proxy EV/Revenue tier
+  (RTX''s own overall operating margin, 10.5%) instead, since no stronger segment-specific evidence exists
+  for it. The per-segment multiples applied here are disclosed, illustrative assumptions (provenance_label:
+  assumed_for_illustration) -- no segment-specific peer trading multiple was gathered in Stage-3 evidence.
+  family_2 (FCFF DCF) and family_3 (FCFE DCF), while adjustment_required rather than blocked outright
+  for archetype F, were not applied -- discount_rate_evidence is abstained across all 27 sealed Stage-3
+  evidence records (VALUATION-0005), so no discount rate, WACC, beta, or terminal growth rate was fabricated
+  for this or any other ticker.'
 evidence_quality_summary:
   access_status_values_present:
   - consulted_via_search_aggregation
@@ -94,5 +135,5 @@ record_status: sealed
 sealed_at: '2026-08-10'
 governing_decision: VALUATION-0006
 drafting_session_or_shard_id: VALUATION-0007-impl-batchB-sotp
-content_sha256: aab4d053b2575652f7763e4b9d5e016457e6fa45a894723072fc4061cc7f9ae8
+content_sha256: fb811ea6fc6a6b6464c9de20fddf1a1d27fa3ec8f6f93ae10ab467352e8dc184
 cohort_manifest_entry: COHORT_MANIFEST.yaml row for RTX
