@@ -11088,7 +11088,19 @@ workstreams:
           tier/target/holdings/gate/cap/cluster/allocator/margin/ladder/
           chart state; authorizes no CONTENDER-0003/ETF/crypto/cross-asset
           work. This session does not review its own PR, mark it ready, or
-          merge it.
+          merge it. Bounded correction (same day): an independent exact-
+          head review anchored to head eaac705a32afb582728f32490d6ad0e0a02aea74
+          returned CHANGES REQUIRED (0 BLOCKING / 3 MAJOR / 3 MINOR / 2
+          NOTE) — 3 MAJOR (SOTP low/high multipliers never logged to the
+          ledger; uniform intra-company SOTP segment multiples collapsing
+          several results to a single blended multiple; 14 of 27 family_5
+          records silently truncating one of three included peers) and
+          MINOR-2/MINOR-3 resolved at head 4a02f8d; MINOR-1 (PR body file
+          count) fixed in the PR description. result_status/family_status
+          unchanged for all 27 tickers (18/9/0). Full narrative:
+          governance/audits/WS0015_VALUATION0007_EXECUTION_IMPLEMENTATION_
+          20260810.md SS13-14. Awaiting a fresh independent exact-head
+          delta review at 4a02f8d.
         pr: 291
         status: in_progress
         date: "2026-08-10"
