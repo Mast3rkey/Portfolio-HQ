@@ -106,6 +106,16 @@ validator` for exactly one read-only public function each
 -- no other cross-module coupling, and it never imports or is imported by
 `economic_assessment_validator.py` (the permanently separate GLD/
 CASH_LIKE_CAPITAL schema, XASSET-0010 SSG).
+
+VERSION 1.1 bounded correction (post-independent-review): a MINOR finding
+-- `validate_cohort_manifest` required every manifest row's `record_path`
+key to be *present* but never checked its *value* against the expected
+`intelligence/instrument_economic_assessment/<instrument_id>.yaml` path, so
+a row citing a wrong path validated clean as long as its hash matched. Fixed
+by giving `record_path` its own independent value check inside the existing
+per-row loop, alongside the pre-existing `asset_type` value check it now
+sits next to. No live-content consequence (the real six manifest rows were
+already all correct), and no other check in the module was affected.
 """
 
 from __future__ import annotations
@@ -1268,6 +1278,15 @@ def validate_cohort_manifest(
                 f"cohort[{i}] ({instrument_id!r}) asset_type {row.get('asset_type')!r} does not "
                 f"match the expected {expected_asset_type!r}"
             )
+
+        if _non_empty_str(instrument_id):
+            expected_record_path = f"intelligence/instrument_economic_assessment/{instrument_id}.yaml"
+            if row.get("record_path") != expected_record_path:
+                errors.append(
+                    f"cohort[{i}] ({instrument_id!r}) record_path must be exactly "
+                    f"{expected_record_path!r} -- got {row.get('record_path')!r} (a present-but-"
+                    f"wrong-value record_path must be rejected, not merely required to be present)"
+                )
 
         record = records_by_instrument_id.get(instrument_id)
         if record is None:

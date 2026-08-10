@@ -1046,6 +1046,27 @@ class TestManifestValidation:
         result = v.validate_cohort_manifest(manifest, {"SPY": rec}, authorized_population=frozenset({"SPY"}))
         assert not result.valid
 
+    def test_wrong_record_path_value_rejected_even_with_matching_hash(self, classification_repo):
+        """MINOR-2 (independent review, PR #297): record_path being merely
+        *present* is not enough -- a row citing an entirely wrong path,
+        with an otherwise-correct hash and instrument_id, must still be
+        rejected. Reproduces the exact bypass the review demonstrated
+        before this correction (record_path: 'totally/wrong/path/does/
+        not/exist.yaml' validating clean)."""
+        rec, row = self._record_and_row(classification_repo, "SPY", "etf")
+        row["record_path"] = "totally/wrong/path/does/not/exist.yaml"
+        manifest = {"schema_version": "1.0", "governing_decision": "XASSET-0011", "cohort": [row]}
+        result = v.validate_cohort_manifest(manifest, {"SPY": rec}, authorized_population=frozenset({"SPY"}))
+        assert not result.valid
+        assert any("record_path" in e for e in result.errors)
+
+    def test_correct_record_path_value_accepted(self, classification_repo):
+        rec, row = self._record_and_row(classification_repo, "SPY", "etf")
+        assert row["record_path"] == "intelligence/instrument_economic_assessment/SPY.yaml"
+        manifest = {"schema_version": "1.0", "governing_decision": "XASSET-0011", "cohort": [row]}
+        result = v.validate_cohort_manifest(manifest, {"SPY": rec}, authorized_population=frozenset({"SPY"}))
+        assert result.valid, result.errors
+
     def test_missing_directory_is_valid_zero_coverage_state(self, tmp_path):
         result = v.validate_instrument_economic_assessment_directory(tmp_path / "does_not_exist")
         assert result.valid
