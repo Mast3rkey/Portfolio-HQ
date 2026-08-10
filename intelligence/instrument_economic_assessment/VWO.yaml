@@ -1,0 +1,77 @@
+schema_version: '1.0'
+instrument_id: VWO
+asset_type: etf
+structural_reference:
+  source_instrument_id: VWO
+  source_schema: etf_classification
+  source_file: intelligence/etf_classification/VWO.yaml
+  referenced_content_sha256: af297ea75766b9d992a1dee68f05652fef9cf4df20cf24f54fe48f41cd96ebe3
+cost_and_tracking_quality_economic_significance:
+  significance_category: in_line_with_category
+  rationale: VWO's own sealed ETF classification record discloses its expense ratio as a structural
+    fact (consumed here by reference only, never restated as a bare figure). Sourced comparison against
+    two other major emerging-market index funds in VWO's own category -- iShares Core MSCI Emerging
+    Markets ETF and Schwab Emerging Markets Equity ETF -- found VWO's own disclosed cost figure is lower
+    than the first named peer, and matches the second named peer's own cost figure following that peer's
+    own disclosed mid-2026 fee reduction. VWO's own cost is therefore neither meaningfully elevated nor
+    distinctly the cheapest of the category peers actually located -- it sits at the low end of the
+    category alongside its cheapest same-category peer, rather than standing out in either direction.
+    This is a categorical cost comparison against same-category peers, never a numeric cost-savings or
+    hurdle-rate calculation.
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: This record's own peer-comparison finding rests entirely on WebSearch-aggregated
+    secondary financial-press and fund-comparison material -- no primary issuer fact sheet, prospectus,
+    or SEC filing for VWO or either of its two named peers was directly inspected, matching VWO's own
+    sealed ETF classification record's disclosed primary-source-access limitation (this environment's
+    network egress policy blocked investor.vanguard.com outright). The specific numeric cost figures
+    located are not restated in this record's own free text under any circumstance (XASSET-0010's own
+    zero-numeric-field rule, no carve-out) -- they informed the categorical determination only.
+provenance:
+  sources:
+  - source_identifier: VWO's own sealed intelligence/etf_classification/VWO.yaml record (structural
+      reference, consumed by hash pin only)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: WebSearch aggregation comparing VWO's own disclosed expense ratio against iShares
+      Core MSCI Emerging Markets ETF, citing fund-comparison articles from multiple financial-press and
+      fund-analysis outlets (2026 vintage)
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing multiple financial-press fund-comparison articles; no
+      primary issuer fact sheet, prospectus, or SEC filing for VWO or the named peer was directly opened.
+  - source_identifier: WebSearch aggregation on Schwab Emerging Markets Equity ETF's own disclosed
+      operating-expense-ratio reduction effective mid-2026, citing Schwab Asset Management's own press
+      release and third-party fund-data pages
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing a press release summary and third-party fund-data
+      pages; the primary Schwab press release itself was not directly opened.
+uncertainty_summary: This record's own peer-comparison finding rests entirely on WebSearch-aggregated
+  secondary financial-press and fund-comparison material -- no primary issuer fact sheet, prospectus,
+  or SEC filing for VWO or either of its two named peers was directly inspected, matching VWO's own
+  sealed ETF classification record's disclosed primary-source-access limitation (this environment's
+  network egress policy blocked investor.vanguard.com outright). The specific numeric cost figures
+  located are not restated in this record's own free text under any circumstance (XASSET-0010's own
+  zero-numeric-field rule, no carve-out) -- they informed the categorical determination only.
+evidence_quality_status: partial
+record_status: sealed
+cross_asset_handoff:
+  economic_characterization_summary: in_line_with_category
+  evidence_quality_summary: partial
+  uncertainty_summary: This record's own peer-comparison finding rests entirely on WebSearch-aggregated
+    secondary financial-press and fund-comparison material -- no primary issuer fact sheet, prospectus,
+    or SEC filing for VWO or either of its two named peers was directly inspected, matching VWO's own
+    sealed ETF classification record's disclosed primary-source-access limitation (this environment's
+    network egress policy blocked investor.vanguard.com outright). The specific numeric cost figures
+    located are not restated in this record's own free text under any circumstance (XASSET-0010's own
+    zero-numeric-field rule, no carve-out) -- they informed the categorical determination only.
+abstention_index: []
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0011
+drafting_session_or_shard_id: single-pass-etf-crypto-economic-assessment-implementation
+content_sha256: 4f9986fb7eae9758b558d5f9d76325eb6469e82912ed0c2457d6c491ca10ac00
+cohort_manifest_entry: intelligence/instrument_economic_assessment/COHORT_MANIFEST.yaml#VWO

@@ -1,0 +1,124 @@
+schema_version: '1.0'
+instrument_id: BTC
+asset_type: cryptocurrency
+structural_reference:
+  source_instrument_id: BTC
+  source_schema: crypto_classification
+  source_file: intelligence/crypto_classification/BTC.yaml
+  referenced_content_sha256: a1fabed97e0c00aefba1b6de3750446a3eed51ea0bad29d950b368d6010030d0
+macro_behavioral_characterization:
+  historical_equity_market_drawdown_behavior:
+    behavior_category: historically_mixed
+    rationale: Sourced material covering two major historical episodes shows a genuinely mixed pattern,
+      not a clean uncorrelated or negatively correlated relationship. During the acute panic phase of
+      the March 2020 crash, BTC's own price fell sharply alongside equities within a single day, one of
+      its fastest and deepest drawdowns on record, occurring in the same week broad equity indices sold
+      off sharply on the same COVID-driven liquidity shock. During the 2022 broad decline, BTC's own
+      price fell further in percentage terms than the S&P 500 or NASDAQ over the same window, and
+      short-window statistical measures of BTC's own price co-movement with the NASDAQ reached their
+      highest levels on record during that specific year, driven by a shared macro catalyst (the Federal
+      Reserve's own rate-hike cycle) rather than an idiosyncratic, BTC-specific event. Sourced material
+      also discloses that BTC's own price co-movement with US equities is itself time-varying rather than
+      stable -- longer trailing-window measures over a full decade are reported far lower than the
+      shorter, crisis-period-specific measures cited above, and separate sourced material describes
+      BTC's own relationship with equities as having shifted from largely absent before 2020 toward a
+      materially closer, though still fluctuating, relationship afterward. The pattern across both
+      episodes is initial co-decline during acute macro-liquidity panics, with the strength of that
+      relationship itself varying considerably across the broader historical record -- not a reliable,
+      uniform relationship in either direction.
+    single_asset_disclosure: This finding characterizes BTC's own historical price behavior in isolation
+      during past equity-market drawdown episodes -- a single-asset, historical characterization only.
+      It does not compute, constitute, imply, or substitute for a whole-portfolio diversification-benefit
+      or correlation finding specific to Portfolio-HQ's own current holdings; that remains the separate,
+      still-forced-abstention job of the overlap model's defensive_offset_interface dimension. It also
+      makes no claim, and is not intended to be read as making any claim, about BTC's own relationship
+      to ETH or SOL specifically; any cross-coin relationship remains a separate, future, bounded,
+      pre-registered research charter's own unaddressed question.
+  historical_inflation_sensitivity_narrative:
+    sensitivity_category: historically_mixed_or_inconsistent
+    rationale: Sourced academic and financial-press material presents a genuinely divided picture rather
+      than a single consistent relationship, reflecting the wider "digital gold" debate specifically
+      attached to BTC. Sourced academic material finds BTC's own ability to hedge risk is significantly
+      limited compared to a conventional inflation hedge such as gold, casting doubt on dependable
+      inflation protection; separate sourced material finds BTC's own inflation-hedging function is at
+      best conditional and context-dependent, strongest in economies with weak monetary institutions or
+      currency devaluation and materially weaker in developed-market contexts. Other sourced material
+      finds BTC's own price co-movement with gold rises specifically during periods of systemic financial
+      stress, suggesting a partial, situational convergence toward store-of-value behavior rather than a
+      consistent standing property. This record discloses this genuine divide rather than silently
+      resolving it toward either the skeptical or the supportive reading -- BTC's own volatility profile
+      (reported as far higher than gold's own long-term volatility in the same sourced material) is
+      itself cited as a structural reason the comparison to a traditional inflation hedge is contested.
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: BTC's own referenced crypto classification record already discloses that
+    bitcoin.org was blocked by this environment's network egress policy; this record's own two findings
+    rest entirely on further WebSearch-aggregated secondary sources -- financial-press retrospectives,
+    an industry research publication, and academic-literature summaries -- none of which was directly
+    inspected as a primary document. The drawdown-behavior finding synthesizes multiple distinct
+    correlation-measurement methodologies and time windows from different sourced articles rather than
+    one consistent dataset, and discloses that measured co-movement itself varies materially by window
+    length rather than presenting one figure as definitive. The inflation-sensitivity finding rests on
+    genuinely conflicting sourced academic conclusions, disclosed as a real divide rather than reconciled.
+provenance:
+  sources:
+  - source_identifier: BTC's own sealed intelligence/crypto_classification/BTC.yaml record (structural
+      reference, consumed by hash pin only)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: WebSearch aggregation on BTC's own price behavior during the March 2020 COVID-driven
+      crash and the 2022 Federal Reserve rate-hike-driven decline, citing financial-press retrospectives
+      and an industry research publication on bear-market drawdown history
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing financial-press and industry-research retrospective
+      articles; no primary market-data series was directly opened.
+  - source_identifier: WebSearch aggregation on BTC's own historical co-movement with the S&P 500 and
+      NASDAQ across multiple measurement windows (2020 through 2024), citing industry commentary, a
+      corporate research-and-education publication, and an academic working paper
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing industry commentary and an academic working-paper
+      abstract; the full paper was not directly opened.
+  - source_identifier: WebSearch aggregation on academic and financial-press literature debating BTC's
+      own effectiveness as an inflation hedge and its "digital gold" narrative, including a peer-reviewed
+      comparative study and multiple academic working-paper abstracts
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing academic-journal abstracts and working-paper summaries;
+      no full paywalled academic paper was directly opened.
+uncertainty_summary: BTC's own referenced crypto classification record already discloses that bitcoin.org
+  was blocked by this environment's network egress policy; this record's own two findings rest entirely
+  on further WebSearch-aggregated secondary sources -- financial-press retrospectives, an industry
+  research publication, and academic-literature summaries -- none of which was directly inspected as a
+  primary document. The drawdown-behavior finding synthesizes multiple distinct correlation-measurement
+  methodologies and time windows from different sourced articles rather than one consistent dataset, and
+  discloses that measured co-movement itself varies materially by window length rather than presenting
+  one figure as definitive. The inflation-sensitivity finding rests on genuinely conflicting sourced
+  academic conclusions, disclosed as a real divide rather than reconciled.
+evidence_quality_status: partial
+record_status: sealed
+cross_asset_handoff:
+  economic_characterization_summary:
+    historical_equity_market_drawdown_behavior: historically_mixed
+    historical_inflation_sensitivity_narrative: historically_mixed_or_inconsistent
+  evidence_quality_summary: partial
+  uncertainty_summary: BTC's own referenced crypto classification record already discloses that
+    bitcoin.org was blocked by this environment's network egress policy; this record's own two findings
+    rest entirely on further WebSearch-aggregated secondary sources -- financial-press retrospectives,
+    an industry research publication, and academic-literature summaries -- none of which was directly
+    inspected as a primary document. The drawdown-behavior finding synthesizes multiple distinct
+    correlation-measurement methodologies and time windows from different sourced articles rather than
+    one consistent dataset, and discloses that measured co-movement itself varies materially by window
+    length rather than presenting one figure as definitive. The inflation-sensitivity finding rests on
+    genuinely conflicting sourced academic conclusions, disclosed as a real divide rather than reconciled.
+abstention_index: []
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0011
+drafting_session_or_shard_id: single-pass-etf-crypto-economic-assessment-implementation
+content_sha256: 99a2e2dabc40aa6cf8004b17807495390e1d65523efa9bd4d48fe9329f72d3c0
+cohort_manifest_entry: intelligence/instrument_economic_assessment/COHORT_MANIFEST.yaml#BTC

@@ -1,0 +1,119 @@
+schema_version: '1.0'
+instrument_id: ETH
+asset_type: cryptocurrency
+structural_reference:
+  source_instrument_id: ETH
+  source_schema: crypto_classification
+  source_file: intelligence/crypto_classification/ETH.yaml
+  referenced_content_sha256: c9b931471e876b947c78a0a0c27412bdf003bc0133f5c53976442dab593caa73
+macro_behavioral_characterization:
+  historical_equity_market_drawdown_behavior:
+    behavior_category: historically_mixed
+    rationale: Sourced material covering two major historical episodes shows a genuinely mixed pattern,
+      not a clean uncorrelated or negatively correlated relationship. During the acute panic phase of the
+      March 2020 "Black Thursday" episode, ETH's own price fell sharply within a single 24-hour window --
+      sourced material discloses the reported single-day decline inconsistently (one figure near a third
+      of value, another figure near half), disclosed here as a genuine reporting range rather than
+      resolved to one number -- occurring the same day broad equity indices sold off sharply on the same
+      COVID-driven liquidity shock. During the 2022 decline, ETH's own price fell by a materially larger
+      percentage than the S&P 500 over the same broad window, in a period sourced material attributes
+      partly to the same Federal Reserve rate-hike macro catalyst affecting equities and partly to
+      crypto-specific contagion events (the Terra/LUNA ecosystem collapse and related counterparty
+      failures) that have no clean equity-market analogue. The pattern across both episodes is initial
+      co-decline during acute macro-liquidity panics, with the 2022 episode's own magnitude substantially
+      amplified by idiosyncratic, ETH-specific and crypto-sector-specific contagion factors layered on
+      top of the shared macro driver -- not a reliable, uniform relationship attributable to equity-market
+      correlation alone.
+    single_asset_disclosure: This finding characterizes ETH's own historical price behavior in isolation
+      during past equity-market drawdown episodes -- a single-asset, historical characterization only.
+      It does not compute, constitute, imply, or substitute for a whole-portfolio diversification-benefit
+      or correlation finding specific to Portfolio-HQ's own current holdings; that remains the separate,
+      still-forced-abstention job of the overlap model's defensive_offset_interface dimension. It also
+      makes no claim, and is not intended to be read as making any claim, about ETH's own relationship to
+      BTC or SOL specifically; any cross-coin relationship remains a separate, future, bounded,
+      pre-registered research charter's own unaddressed question.
+  historical_inflation_sensitivity_narrative:
+    sensitivity_category: historically_weakly_associated
+    rationale: Sourced material finds ETH carries a materially weaker, less-established inflation-hedge
+      narrative than BTC's own frequently-cited "digital gold" framing. Sourced financial-press material
+      characterizes ETH's own price behavior as demand driven chiefly by protocol usage -- decentralized-finance
+      activity, non-fungible-token activity, and broader smart-contract adoption -- rather than by a
+      store-of-value or scarcity-driven investment thesis of the kind cited for BTC specifically. Sourced
+      academic material covering both major cryptocurrencies together finds limited and inconsistent
+      backing for either as a reliable inflation hedge, with ETH specifically not carrying an equivalent,
+      widely-cited narrative of its own the way BTC does. This record treats the narrative's own comparative
+      weakness (relative to BTC, not an absolute absence of any inflation-related commentary) as the basis
+      for this determination rather than treating a genuinely absent narrative as automatic grounds for
+      abstention.
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: ETH's own referenced crypto classification record already discloses that
+    ethereum.org was blocked by this environment's network egress policy; this record's own two findings
+    rest entirely on further WebSearch-aggregated secondary sources -- financial-press retrospectives and
+    academic-literature summaries -- none of which was directly inspected as a primary document. The
+    reported single-day March-2020 price-decline figure is disclosed as a genuine range across sources
+    rather than resolved to a single number. The drawdown-behavior finding also discloses that the 2022
+    episode's own magnitude is confounded by crypto-sector-specific contagion events layered on top of a
+    shared macro driver, rather than isolating a clean equity-correlation signal.
+provenance:
+  sources:
+  - source_identifier: ETH's own sealed intelligence/crypto_classification/ETH.yaml record (structural
+      reference, consumed by hash pin only)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: WebSearch aggregation on ETH's own price behavior during the March 2020 "Black
+      Thursday" crash, citing a financial-press retrospective and an academic-adjacent research-diagram
+      summary, disclosing a reported-decline figure that varies across sources
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing financial-press retrospective articles; no primary
+      market-data series was directly opened, and the exact single-day percentage decline is reported
+      inconsistently across sources.
+  - source_identifier: WebSearch aggregation on ETH's own price decline during the 2022 crypto bear
+      market and its relationship to the Terra/LUNA collapse, Three Arrows Capital, and the broader
+      Federal Reserve rate-hike cycle affecting equities, citing financial-press and industry-education
+      articles
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing financial-press and industry-education articles; no
+      primary market-data series was directly opened.
+  - source_identifier: WebSearch aggregation comparing BTC's and ETH's own respective inflation-hedge
+      narratives and the academic literature's treatment of both, citing financial-press commentary and
+      an academic working paper covering both assets together
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing financial-press commentary and an academic working-paper
+      abstract; the full paper was not directly opened.
+uncertainty_summary: ETH's own referenced crypto classification record already discloses that ethereum.org
+  was blocked by this environment's network egress policy; this record's own two findings rest entirely
+  on further WebSearch-aggregated secondary sources -- financial-press retrospectives and academic-literature
+  summaries -- none of which was directly inspected as a primary document. The reported single-day
+  March-2020 price-decline figure is disclosed as a genuine range across sources rather than resolved to
+  a single number. The drawdown-behavior finding also discloses that the 2022 episode's own magnitude is
+  confounded by crypto-sector-specific contagion events layered on top of a shared macro driver, rather
+  than isolating a clean equity-correlation signal.
+evidence_quality_status: partial
+record_status: sealed
+cross_asset_handoff:
+  economic_characterization_summary:
+    historical_equity_market_drawdown_behavior: historically_mixed
+    historical_inflation_sensitivity_narrative: historically_weakly_associated
+  evidence_quality_summary: partial
+  uncertainty_summary: ETH's own referenced crypto classification record already discloses that
+    ethereum.org was blocked by this environment's network egress policy; this record's own two findings
+    rest entirely on further WebSearch-aggregated secondary sources -- financial-press retrospectives and
+    academic-literature summaries -- none of which was directly inspected as a primary document. The
+    reported single-day March-2020 price-decline figure is disclosed as a genuine range across sources
+    rather than resolved to a single number. The drawdown-behavior finding also discloses that the 2022
+    episode's own magnitude is confounded by crypto-sector-specific contagion events layered on top of a
+    shared macro driver, rather than isolating a clean equity-correlation signal.
+abstention_index: []
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0011
+drafting_session_or_shard_id: single-pass-etf-crypto-economic-assessment-implementation
+content_sha256: 830953dc1da2f74f30f77fc7ab6e518e59c77cc6612454554ba133010c6ba4b4
+cohort_manifest_entry: intelligence/instrument_economic_assessment/COHORT_MANIFEST.yaml#ETH
