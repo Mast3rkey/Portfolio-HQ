@@ -1,0 +1,73 @@
+schema_version: '1.0'
+instrument_id: SPY
+asset_type: etf
+structural_reference:
+  source_instrument_id: SPY
+  source_schema: etf_classification
+  source_file: intelligence/etf_classification/SPY.yaml
+  referenced_content_sha256: 10f3f805933b134fdfb0f1fcb9ad0126b5f0130e30c95088b6c9de1d5a58f63f
+cost_and_tracking_quality_economic_significance:
+  significance_category: elevated_vs_category
+  rationale: SPY's own sealed ETF classification record discloses its expense ratio as a structural
+    fact (consumed here by reference only, never restated as a bare figure). Sourced comparison against
+    the two other major, effectively identical S&P 500-tracking funds in SPY's own category -- Vanguard's
+    S&P 500 ETF and iShares Core S&P 500 ETF -- found both of those peers charge a cost meaningfully
+    lower than SPY's own disclosed figure, more than three times lower by one sourced comparison. The
+    same sourced comparison also found SPY captures a smaller share of the underlying index's own upside
+    than at least one of those two peers over three-, five-, and ten-year lookback periods, consistent
+    with a materially higher-cost structure producing a measurable performance drag relative to
+    same-category, same-benchmark peers. This is a categorical cost/tracking comparison against
+    same-category peers, never a numeric cost-savings or hurdle-rate calculation.
+evidence_quality:
+  primary_source_coverage: partial
+  thesis_uncertainty_statement: This record's own peer-comparison finding rests entirely on WebSearch-aggregated
+    secondary financial-press and fund-comparison material -- no primary issuer fact sheet, prospectus,
+    or SEC filing for SPY or either of its two named peers was directly inspected, matching SPY's own
+    sealed ETF classification record's disclosed primary-source-access limitation (this environment's
+    network egress policy blocked ssga.com and sec.gov outright). The specific numeric cost differential
+    and upside-capture figures located are not restated in this record's own free text under any
+    circumstance (XASSET-0010's own zero-numeric-field rule, no carve-out) -- they informed the
+    categorical determination only.
+provenance:
+  sources:
+  - source_identifier: SPY's own sealed intelligence/etf_classification/SPY.yaml record (structural
+      reference, consumed by hash pin only)
+    source_type: primary
+    as_of_date: '2026-08-10'
+    access_status: directly_inspected
+  - source_identifier: WebSearch aggregation comparing SPY's own disclosed expense ratio and index-tracking
+      performance against Vanguard's S&P 500 ETF and iShares Core S&P 500 ETF, citing fund-comparison
+      articles from multiple financial-press and fund-analysis outlets (2026 vintage)
+    source_type: secondary
+    as_of_date: '2026-08-10'
+    access_status: consulted_via_search_aggregation
+    limitation: Aggregated search results citing multiple financial-press fund-comparison articles;
+      no primary issuer fact sheet, prospectus, or SEC filing for SPY or either named peer was directly
+      opened.
+uncertainty_summary: This record's own peer-comparison finding rests entirely on WebSearch-aggregated
+  secondary financial-press and fund-comparison material -- no primary issuer fact sheet, prospectus,
+  or SEC filing for SPY or either of its two named peers was directly inspected, matching SPY's own
+  sealed ETF classification record's disclosed primary-source-access limitation (this environment's
+  network egress policy blocked ssga.com and sec.gov outright). The specific numeric cost differential
+  and upside-capture figures located are not restated in this record's own free text under any
+  circumstance (XASSET-0010's own zero-numeric-field rule, no carve-out) -- they informed the
+  categorical determination only.
+evidence_quality_status: partial
+record_status: sealed
+cross_asset_handoff:
+  economic_characterization_summary: elevated_vs_category
+  evidence_quality_summary: partial
+  uncertainty_summary: This record's own peer-comparison finding rests entirely on WebSearch-aggregated
+    secondary financial-press and fund-comparison material -- no primary issuer fact sheet, prospectus,
+    or SEC filing for SPY or either of its two named peers was directly inspected, matching SPY's own
+    sealed ETF classification record's disclosed primary-source-access limitation (this environment's
+    network egress policy blocked ssga.com and sec.gov outright). The specific numeric cost differential
+    and upside-capture figures located are not restated in this record's own free text under any
+    circumstance (XASSET-0010's own zero-numeric-field rule, no carve-out) -- they informed the
+    categorical determination only.
+abstention_index: []
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0011
+drafting_session_or_shard_id: single-pass-etf-crypto-economic-assessment-implementation
+content_sha256: 616c96ba5211bed13d352c0c55ae305067103271a3904209d29d59f111c1acf8
+cohort_manifest_entry: intelligence/instrument_economic_assessment/COHORT_MANIFEST.yaml#SPY
