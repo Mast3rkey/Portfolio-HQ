@@ -9959,7 +9959,7 @@ workstreams:
           XASSET-0004/XASSET-0006/XASSET-0007 content-implementation
           precedent exactly. This session does not review its own PR, mark
           it ready, merge it, or post principal acceptance.
-        pr: null
+        pr: 294
         status: in_progress
         date: "2026-08-10"
     evidence_refs:
@@ -10107,7 +10107,7 @@ workstreams:
       methodology, the CASH/RESERVE consolidation question (XASSET-0008
       §N), and steps 8 through 13 remain wholly unauthorized, unchanged.
     active_branch: claude/xasset-0009-economic-assessment-prjxng
-    active_pr: null
+    active_pr: 294
     last_verified_main_sha: 9fa5ac9370b04c255dee31d183a00db96e7fae09
     last_verified_date: "2026-08-10"
     authorized_by: >
