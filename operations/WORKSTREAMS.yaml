@@ -9678,6 +9678,101 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-09"
+      - gate: xasset0007-overlap-model-content-implementation
+        description: >
+          Implementation (draft, unmerged, this session) of the one future
+          overlap-model content PR XASSET-0007 authorized: ten sealed
+          intelligence/overlap_model/<DIMENSION_ID>.yaml records (issuer_
+          overlap_etf_lookthrough, economic_role_overlap, correlated_loss_
+          mechanisms, sleeve_concentration, etf_direct_equity_duplication,
+          crypto_correlation_interface, defensive_offset_interface,
+          leverage_debt_interaction, geographic_currency_exposure,
+          whole_portfolio_volatility_drawdown_concentration) plus
+          COHORT_MANIFEST.yaml, a new dedicated overlap_model_validator.py
+          (zero import coupling with functional_doctrine_validator.py, in
+          either direction — the two-independent-sibling-module
+          architecture XASSET-0007 SS A point 6 left to this session's own
+          determination, mirroring etf_classification_validator.py/
+          crypto_classification_validator.py's own precedent), and its own
+          199-test focused suite (test_overlap_model_validator.py). Bound
+          exactly to XASSET-0005's specification as corrected by XASSET-0007
+          SS B — no restatement, no redesign. All four interface_placeholder
+          dimensions (crypto_correlation_interface, defensive_offset_
+          interface, geographic_currency_exposure, whole_portfolio_
+          volatility_drawdown_concentration) carry the forced
+          computation_status: not_yet_computable_interface_only, zero
+          exception — including defensive_offset_interface, whose own cited
+          source_mechanism (GLD_DEFENSIVE_ROLE.yaml) now exists and is
+          sealed but does not loosen the forced value, per XASSET-0007 SS A
+          point 2/SS D's own unconditional restatement, independently
+          re-verified this session and mechanically enforced (not merely
+          documented) by the validator's own two-way dimension_type ↔
+          computation_status lock. The six mechanical_rollup/
+          narrative_evidence dimensions (issuer_overlap_etf_lookthrough,
+          economic_role_overlap, correlated_loss_mechanisms, sleeve_
+          concentration, etf_direct_equity_duplication, leverage_debt_
+          interaction) all reached computation_status:
+          computed_from_existing_mechanism, each genuinely cross-referencing
+          its own named source_mechanism (issuer_lookthrough.yaml;
+          intelligence/classification|etf_classification|crypto_
+          classification economic-role-equivalent fields; intelligence/
+          relationships/; targets.yaml destination[].asset_class and caps.
+          clusters; the ETF framework's own overlap_and_concentration axis;
+          margin_state.py's classify_margin_state existence/closed
+          vocabulary cited, never recomputed, plus DEBT_REDUCTION.yaml's own
+          hard_constraint_status) — every evidence_or_source_refs pointer
+          independently traceable to a real, currently-existing repository
+          fact, with genuine limitations (issuer_lookthrough.yaml's own
+          point-in-time staleness; the 13-record relationship corpus's own
+          bounded, non-exhaustive scope; the two-layer geographic/currency
+          and whole-portfolio-volatility evidence gaps XASSET-0005 §6.1
+          itself already named) disclosed in uncertainty_or_gap_disclosure
+          rather than glossed over. Zero numeric field anywhere in any of
+          the ten records, with no carve-out of any kind (independently
+          re-scanned, not merely asserted). No composite overlap/risk score
+          anywhere, checked per-record and across the full ten-record set
+          together. No cross-schema field-name leakage (equity/ETF/crypto/
+          functional-doctrine-shaped keys all independently tested,
+          individually, and confirmed absent). No chart-domain or directive/
+          trading-language leakage. Zero import coupling with allocate.py/
+          margin_state.py in either direction. One disclosed, necessary
+          correction outside intelligence/overlap_model/ itself: one stale
+          scaffold-era assertion in test_functional_doctrine_validator.py
+          ("no intelligence/overlap_model/ directory exists," accurate only
+          before this authorized content existed) rewritten to assert the
+          directory now exists and that functional_doctrine_validator.py
+          correctly performs no cross-schema validation against it — the
+          same scaffold-superseded-by-authorized-content pattern already
+          applied elsewhere in this repository (e.g. the ETF/crypto/
+          valuation validators' own TestZeroRealCompanyPopulation ->
+          TestAuthorizedCohortPopulation precedent) — no functional-
+          doctrine data file touched. Full validation: overlap_model_
+          validator.py OK (11 results — 10 records + manifest);
+          functional_doctrine_validator.py and all thirteen other
+          pre-existing repository validators clean and unaffected; 199/199
+          new focused tests; full repository pytest 4417 passed, 0 failed
+          (4218 pre-existing baseline + 199 new, exact match); decision
+          catalog unchanged at 104 decisions, 0 issues — no new governance
+          decision filed by this implementation; repo-wide YAML/YML parse
+          245 files/0 errors, JSON parse 178 files/0 errors; git diff
+          --check clean; zero diff on every protected path (targets.yaml,
+          holdings.yaml, gates.yaml, issuer_lookthrough.yaml, allocate.py,
+          margin_state.py, levels.py, every existing intelligence/
+          classification|companies|themes|relationships|reconciliation|
+          recommendations|contenders|etf_classification|crypto_
+          classification|valuation_archetype|valuation_evidence|
+          valuation_results|functional_doctrine/ record, every governance/
+          decisions/*.md file, governance/decisions.yaml). Creates no
+          functional-doctrine content of any kind; performs no cross-asset
+          synthesis; determines no GLD portfolio-policy defensive role
+          beyond what GLD_DEFENSIVE_ROLE.yaml already sealed; computes no
+          avoided-borrowing-cost or economic-assessment conclusion; changes
+          no tier/target/holdings/role/cluster/cap/gate/allocator/margin/
+          ladder/chart/order/trade. This session does not review its own
+          PR, mark it ready, merge it, or post principal acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-10"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -9694,6 +9789,7 @@ workstreams:
       - governance/decisions/XASSET-0006-ws0014-functional-doctrine-content-authorization.md
       - governance/audits/WS0014_FUNCTIONAL_DOCTRINE_IMPLEMENTATION_20260809.md
       - governance/decisions/XASSET-0007-ws0014-overlap-model-content-authorization.md
+      - governance/audits/WS0014_OVERLAP_MODEL_IMPLEMENTATION_20260810.md
       - governance/decisions/XASSET-0008-gld-cash-reserve-economic-assessment-methodology.md
       - governance/audits/WS0014_GLD_CASH_RESERVE_ECONOMIC_ASSESSMENT_METHODOLOGY_DESIGN_20260809.md
     next_action: >
@@ -9701,10 +9797,14 @@ workstreams:
       effective — see the xasset0007-post-merge-verification gate above.
       Step 7 of XASSET-0001 §J (overlap-model content) is therefore
       authorized; its own future, separate implementation PR (populating
-      all ten dimension records) has not yet begun and requires its own
-      full independent-review/correction/re-review/principal-acceptance/
-      merge/post-merge-verification lifecycle when a session takes it up.
-      This economic-assessment-methodology-design filing (the
+      all ten dimension records) has now been drafted, this session — see
+      the xasset0007-overlap-model-content-implementation gate above —
+      and requires its own full independent-review/correction/re-review/
+      principal-acceptance/merge/post-merge-verification lifecycle before
+      it may be considered complete (the "status: in_progress"/"pr: null"
+      above is not an oversight — this implementing session does not
+      review its own PR, mark it ready, merge it, or post principal
+      acceptance). This economic-assessment-methodology-design filing (the
       xasset0008-gld-cash-reserve-economic-assessment-methodology-design
       gate above) requires its own full independent exact-head review
       under OPS-0007 §1, any required bounded correction and re-review,
@@ -9774,25 +9874,31 @@ workstreams:
       xasset0007-post-merge-verification gate above: XASSET-0007
       authorizes exactly one future overlap-model content implementation
       PR covering all ten dimensions, bound by reference to XASSET-0005's
-      specification as corrected; that implementation PR itself has not
-      yet begun. This session's own draft filing (the
+      specification as corrected. That implementation PR has now been
+      drafted, this session — see the
+      xasset0007-overlap-model-content-implementation gate above: ten
+      sealed intelligence/overlap_model/ dimension records, a new
+      dedicated overlap_model_validator.py, and its 199-test focused
+      suite — blocked only on its own independent exact-head review,
+      correction if needed, principal acceptance, merge, and post-merge
+      verification. A separate, earlier-drafted session's own draft
+      filing (the
       xasset0008-gld-cash-reserve-economic-assessment-methodology-design
       gate above) designs, but does not authorize content for, a closed
       GLD/CASH/RESERVE economic-assessment methodology (XASSET-0005 §5
       step 2's own restated sequence, DEBT_REDUCTION explicitly excluded)
       — blocked only on its own independent exact-head review, correction
       if needed, principal acceptance, merge, and post-merge verification.
-      Step 2 and steps 8 through 13 (this entry's own 0-13 numbering), the
-      overlap-model content implementation itself, any GLD/CASH/RESERVE
-      economic-assessment content, and DEBT_REDUCTION's own economic-
-      assessment methodology all remain blocked on their own future,
-      separate, explicit principal authorization each — none is authorized
-      to begin by this entry or by steps 1/3/4/5/6/7/XASSET-0005/
-      XASSET-0006/XASSET-0007/XASSET-0008's own work.
-    active_branch: claude/xasset-0008-economic-assessment-b5078s
+      Step 2 and steps 8 through 13 (this entry's own 0-13 numbering), any
+      GLD/CASH/RESERVE economic-assessment content, and DEBT_REDUCTION's
+      own economic-assessment methodology all remain blocked on their own
+      future, separate, explicit principal authorization each — none is
+      authorized to begin by this entry or by steps 1/3/4/5/6/7/
+      XASSET-0005/XASSET-0006/XASSET-0007/XASSET-0008's own work.
+    active_branch: claude/xasset-0007-overlap-model-mqov2k
     active_pr: null
-    last_verified_main_sha: 67c62d363fc2a5c5e627b8c1b0449ca8d0bb8e6c
-    last_verified_date: "2026-08-09"
+    last_verified_main_sha: 957d14b7d3ac8e299b3c966d7aeed00f85c03ae0
+    last_verified_date: "2026-08-10"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively
@@ -9963,6 +10069,26 @@ workstreams:
       value. This directive is implemented by XASSET-0008 (draft,
       unmerged, this session) — see that decision file and its supporting
       artifact for the full specification.
+
+
+      Further controlling principal directive, a later session, 2026-08-10:
+      implement XASSET-0007's own already-authorized overlap-model content
+      — exactly ten sealed intelligence/overlap_model/<DIMENSION_ID>.yaml
+      records, one COHORT_MANIFEST.yaml, a new dedicated
+      overlap_model_validator.py, and its own focused test suite, bound by
+      reference to XASSET-0005's specification as corrected by XASSET-0007
+      SS B, with no schema redesign, no eleventh dimension, no loosening of
+      the forced not_yet_computable_interface_only value on any of the
+      four interface_placeholder dimensions (including
+      defensive_offset_interface, despite GLD_DEFENSIVE_ROLE.yaml now
+      existing and sealed), zero numeric fields anywhere with no carve-out,
+      no composite overlap/risk score, no cross-schema field-name leakage,
+      and zero import coupling with allocate.py/margin_state.py. This
+      session's own implementation is a draft PR, not yet independently
+      reviewed, corrected, principal-accepted, merged, or post-merge
+      verified — see the xasset0007-overlap-model-content-implementation
+      gate above and governance/audits/WS0014_OVERLAP_MODEL_
+      IMPLEMENTATION_20260810.md for the full retained record.
     supersedes: null
     superseded_by: null
   - id: WS-0015

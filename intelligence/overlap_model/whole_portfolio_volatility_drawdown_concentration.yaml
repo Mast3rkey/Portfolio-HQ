@@ -1,0 +1,29 @@
+dimension_id: whole_portfolio_volatility_drawdown_concentration
+schema_version: '1.0'
+dimension_type: interface_placeholder
+source_mechanism:
+- intelligence/crypto_classification/<TICKER>.yaml:correlation_and_volatility.historical_volatility_category
+computation_status: not_yet_computable_interface_only
+evidence_or_source_refs:
+- intelligence/crypto_classification/BTC.yaml:correlation_and_volatility.historical_volatility_category
+- intelligence/crypto_classification/ETH.yaml:correlation_and_volatility.historical_volatility_category
+- intelligence/crypto_classification/SOL.yaml:correlation_and_volatility.historical_volatility_category
+output_shape: A future computed record, once both a comparable equity/ETF-sleeve volatility axis and a
+  whole-portfolio aggregation mechanism are separately built, would restate a categorical whole-portfolio
+  volatility/drawdown concentration comparison across sleeves -- never a numeric standard deviation, beta,
+  maximum-drawdown percentage, or portfolio-level risk figure.
+uncertainty_or_gap_disclosure: Only the three crypto instruments carry a populated, per-instrument historical_volatility_category
+  finding of their own; neither the equity classification schema nor the ETF classification schema defines
+  a comparable volatility/drawdown axis anywhere, and no cross-sleeve aggregation mechanism exists to
+  combine even the crypto sleeve's own three data points into a whole-portfolio figure. This is a genuine
+  two-layer evidence gap (no per-instrument equity/ETF volatility axis, and no cross-sleeve aggregation
+  mechanism), disclosed plainly rather than glossed over as a simple pointer.
+later_governance_action: Extending the equity and ETF schemas with their own volatility/drawdown axis,
+  and/or building a whole-portfolio aggregation mechanism, each requires its own separate future authorization
+  -- not proposed, designed, or begun by this record.
+record_status: sealed
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0007
+drafting_session_or_shard_id: single-pass-overlap-model-implementation
+content_sha256: 2a19f10a772eada74d1ff97b824f1f8f3268b7135a268cde17262bf83cbfaac0
+cohort_manifest_entry: intelligence/overlap_model/COHORT_MANIFEST.yaml#whole_portfolio_volatility_drawdown_concentration

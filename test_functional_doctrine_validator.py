@@ -1015,8 +1015,31 @@ def test_real_functional_doctrine_files_exact_four_capital_use_types():
     assert set(yaml_files) == fdv.AUTHORIZED_POPULATION
 
 
-def test_real_functional_doctrine_no_overlap_model_directory_exists():
-    assert not (REPO_ROOT / "intelligence" / "overlap_model").exists()
+def test_real_functional_doctrine_overlap_model_directory_is_a_sibling_not_a_subject():
+    """`intelligence/overlap_model/` is now populated (XASSET-0007's own
+    authorized content implementation) -- this test no longer asserts its
+    absence (that assertion was accurate only for the functional-doctrine-
+    only implementation scaffold this file was originally authored under,
+    the same scaffold-superseded-by-authorized-content pattern already
+    applied elsewhere in this repository, e.g. the ETF/crypto/valuation
+    validators' own TestZeroRealCompanyPopulation -> TestAuthorizedCohort
+    Population precedent). What remains true, and is what this test now
+    asserts: this module (`functional_doctrine_validator.py`) validates
+    `intelligence/functional_doctrine/` only -- it has no knowledge of, and
+    performs no validation against, `intelligence/overlap_model/`, which is
+    validated entirely by its own sibling module, `overlap_model_validator
+    .py` (test_overlap_model_validator.py's own scope)."""
+    overlap_model_dir = REPO_ROOT / "intelligence" / "overlap_model"
+    assert overlap_model_dir.exists() and overlap_model_dir.is_dir()
+    result = fdv.validate_functional_doctrine_directory(overlap_model_dir, repo_root=REPO_ROOT)
+    # A directory containing only overlap-model records (none of which
+    # carries a capital_use_type field) is not a valid functional-doctrine
+    # directory from this module's own point of view -- each of the ten
+    # files correctly fails to parse as a functional-doctrine record,
+    # confirming this module performs no cross-schema validation of
+    # overlap-model content, not merely that it happens not to have been
+    # pointed there.
+    assert not result.valid
 
 
 def test_real_gld_defensive_role_structural_reference_matches_live_gld():

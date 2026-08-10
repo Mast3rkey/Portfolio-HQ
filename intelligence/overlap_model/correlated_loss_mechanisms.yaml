@@ -1,0 +1,29 @@
+dimension_id: correlated_loss_mechanisms
+schema_version: '1.0'
+dimension_type: narrative_evidence
+source_mechanism:
+- intelligence/relationships/
+computation_status: computed_from_existing_mechanism
+evidence_or_source_refs:
+- intelligence/relationships/*.yaml (13 sealed pairwise records, drawn from REL-0001 through REL-0007's
+  closed twelve-item relationship-primitive taxonomy)
+- relationship_validator.load_canonical_universe() (the 27-name canonical equity population these records
+  are drawn from)
+output_shape: A future computed record would restate, per sealed relationship record, its own already-governed
+  relationship_type/primitive and evidence_classification, organized by which correlated-loss-relevant
+  primitives it carries (for example customer_dependency, manufacturing_dependency, capital_spending_dependency)
+  -- never a new pairwise relationship inferred, and never a numeric correlated-loss magnitude.
+uncertainty_or_gap_disclosure: The sealed relationship corpus (13 records) covers only the specific pairs
+  REL-0002/REL-0003/REL-0005 actually researched and authorized -- REL-0006's own Milestone 4 completion
+  determination found the corpus complete under its own authorized scope, but that scope was never exhaustive
+  across every possible pair in the 27-name canonical equity roster, and this dimension does not attempt
+  to fill that gap; it cites exactly what the sealed corpus already contains.
+later_governance_action: Any further relationship research beyond the 13 sealed records requires its own
+  separate future authorization, matching REL-0001 through REL-0007's own per-batch discipline -- not
+  implied or begun by this record.
+record_status: sealed
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0007
+drafting_session_or_shard_id: single-pass-overlap-model-implementation
+content_sha256: 2aaeaf199e951f6dc40213ee00d6ed7bf4fac7cdaa59407089a7ccf1c2d3248c
+cohort_manifest_entry: intelligence/overlap_model/COHORT_MANIFEST.yaml#correlated_loss_mechanisms

@@ -1,0 +1,34 @@
+dimension_id: leverage_debt_interaction
+schema_version: '1.0'
+dimension_type: mechanical_rollup
+source_mechanism:
+- margin_state.py:classify_margin_state
+- intelligence/functional_doctrine/DEBT_REDUCTION.yaml:hard_constraint_status
+computation_status: computed_from_existing_mechanism
+evidence_or_source_refs:
+- margin_state.py:classify_margin_state (existence and closed four-state output vocabulary -- NORMAL,
+  CAUTION, RESTRICTED, FORCED_DELEVER -- cited, never recomputed at implementation time)
+- margin_state.py:ALLOWED_ACTIONS (closed action vocabulary -- structurally contains no leverage-increasing
+  action)
+- intelligence/functional_doctrine/DEBT_REDUCTION.yaml:hard_constraint_status (binding true, citing CLAUDE.md's
+  own 1.8x leverage cap and 30% margin-buffer-floor doctrine)
+output_shape: A future computed record would restate, per correlated equity cluster (semis, power_infra,
+  oil) or sleeve, whether that group's own proximity to its governed cap coincides with an elevated margin-risk-state
+  finding from classify_margin_state's own live output at the time of a future run -- a categorical co-occurrence
+  flag, never a numeric leverage ratio, buffer percentage, or margin-state figure duplicated from margin_state.py's
+  own live computation.
+uncertainty_or_gap_disclosure: margin_state.py is a pure calculator with no persisted output artifact
+  -- there is no dated, governed run result to cite as a standing fact the way issuer_lookthrough.yaml's
+  own retained snapshot can be cited; this dimension can cite the module's existence and closed vocabulary
+  only, never a specific classification result, since any such result would go stale the moment margin
+  debt or holdings change.
+later_governance_action: None required by this record itself. Any future computed instance of this dimension
+  must call classify_margin_state() live at run time rather than citing a frozen result -- the same discipline
+  a prior functional-doctrine preflight already applied when it found no persisted margin_state.py run
+  artifact to cite for DEBT_REDUCTION.yaml's own freshness_state.
+record_status: sealed
+sealed_at: '2026-08-10T00:00:00Z'
+governing_decision: XASSET-0007
+drafting_session_or_shard_id: single-pass-overlap-model-implementation
+content_sha256: fcb92fb3287a8176d91b4c1e26db50a9ccf8726d2c3c90497d025bc46df40bf6
+cohort_manifest_entry: intelligence/overlap_model/COHORT_MANIFEST.yaml#leverage_debt_interaction
