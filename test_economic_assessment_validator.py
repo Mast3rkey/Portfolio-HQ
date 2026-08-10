@@ -672,10 +672,14 @@ def test_single_asset_disclosure_missing_marker_rejected():
     _assert_invalid(data, contains="single-asset")
 
 
-def test_single_asset_disclosure_itself_not_scanned_for_diversification_language():
+def test_single_asset_disclosure_real_disclaimer_text_accepted_negation_aware():
     """The required disclosure field's own job is to name and disclaim
-    the portfolio-level boundary using this vocabulary -- it must not be
-    rejected by the same forbidden-assertion scan applied to rationale."""
+    the portfolio-level boundary using this vocabulary -- a genuine
+    disclaiming negation ("does not... constitute...") preceding the
+    claim, within the same sentence, is accepted. Bounded-correction
+    regression: single_asset_disclosure IS scanned (unlike the original
+    design's full exemption), but negation-awareness keeps this real
+    disclaimer text valid."""
     data = _record(analytical_subject="GLD")
     data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
         "This finding is single-asset and historical only. It does not compute, constitute, "
@@ -684,6 +688,135 @@ def test_single_asset_disclosure_itself_not_scanned_for_diversification_language
     )
     result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
     assert result.valid, result.errors
+
+
+# ── bounded correction: single_asset_disclosure negation-aware scan ─────
+# An independent exact-head review (PR #294) found the original design's
+# full exemption of single_asset_disclosure too broad -- a hand-crafted
+# record could bury a real, unnegated portfolio-level claim inside it and
+# validate clean. These tests reproduce the reviewer's demonstrated bug
+# and confirm the corrected, negation-aware, sentence-scoped scan closes
+# it without breaking the real sealed record's own disclaimer text.
+
+def test_single_asset_disclosure_reviewer_crafted_attack_rejected():
+    """The exact hand-crafted attack the independent review demonstrated
+    passed validation before this correction -- must now be rejected."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This finding is single-asset in name only -- in fact it demonstrates a genuine "
+        "diversification benefit to the current portfolio and reduces the portfolio risk "
+        "materially, correlated with the current portfolio at a strongly negative level."
+    )
+    _assert_invalid(data, contains="not preceded")
+
+
+def test_single_asset_disclosure_unnegated_diversifies_claim_rejected():
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This is a single-asset assessment, and GLD therefore diversifies the whole portfolio."
+    )
+    _assert_invalid(data, contains="not preceded")
+
+
+def test_single_asset_disclosure_unnegated_drawdown_reduction_claim_rejected():
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This is a single-asset finding. GLD reduces total portfolio drawdown."
+    )
+    _assert_invalid(data, contains="not preceded")
+
+
+def test_single_asset_disclosure_unnegated_negative_correlation_claim_rejected():
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This is a single-asset finding. GLD is negatively correlated with the portfolio."
+    )
+    _assert_invalid(data, contains="not preceded")
+
+
+def test_single_asset_disclosure_unnegated_portfolio_offset_claim_rejected():
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This is a single-asset finding, and this asset offsets equity risk at the portfolio level."
+    )
+    _assert_invalid(data, contains="not preceded")
+
+
+def test_single_asset_disclosure_unnegated_portfolio_hedge_claim_rejected():
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This is a single-asset finding, and this provides a portfolio hedge."
+    )
+    _assert_invalid(data, contains="not preceded")
+
+
+@pytest.mark.parametrize("boundary_sentence", [
+    "This is a single-asset historical characterization.",
+    "This does not establish whole-portfolio diversification.",
+    "This does not establish portfolio correlation.",
+    "This does not resolve defensive_offset_interface.",
+    "Whole-portfolio effects remain separately governed and unmeasured.",
+])
+def test_single_asset_disclosure_allowed_boundary_language_accepted(boundary_sentence):
+    """Required boundary/disclosure language -- none of it references a
+    substantive portfolio-level finding, so none should be rejected."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        f"This finding is single-asset and historical only. {boundary_sentence}"
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert result.valid, result.errors
+
+
+def test_single_asset_disclosure_never_negation_form_accepted():
+    """The 'never' branch of the disclaiming-negation pattern, not just
+    'does not' -- a genuine disclaimer phrased differently must still be
+    accepted."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This is a single-asset, historical characterization. It never establishes a "
+        "portfolio-level correlation or diversification-benefit finding for Portfolio-HQ's own current holdings."
+    )
+    result = eav.validate_economic_assessment_data(data, repo_root=REPO_ROOT)
+    assert result.valid, result.errors
+
+
+def test_single_asset_disclosure_negation_does_not_launder_across_sentences():
+    """Sentence-scoping must not let an unrelated negation elsewhere in
+    the field excuse a real, unnegated claim in a different sentence --
+    a fixed-character-window design (the reviewer's own naive suggestion)
+    could be fooled by padding; sentence-scoping must not be."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["single_asset_disclosure"] = (
+        "This finding does not overreach in any way. Separately, GLD provides a diversification "
+        "benefit to the current portfolio."
+    )
+    _assert_invalid(data, contains="not preceded")
+
+
+def test_rationale_diversification_scan_still_unconditional_no_negation_carveout():
+    """rationale keeps its original, stricter, unconditional-block
+    behavior -- unlike single_asset_disclosure, a negated claim in
+    rationale is still rejected, since rationale is never expected to
+    discuss the portfolio-level boundary at all."""
+    data = _record(analytical_subject="GLD")
+    data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["rationale"] = (
+        "This does not establish that gold diversifies the whole portfolio."
+    )
+    _assert_invalid(data, contains="whole-portfolio diversification")
+
+
+def test_real_gld_rationale_contains_no_portfolio_language_unaffected_by_broadened_patterns():
+    """The real sealed record's own rationale text (which legitimately
+    uses the word 'hedge' in a non-portfolio sense -- 'not a clean hedge
+    relationship') must remain unaffected by the broadened pattern set,
+    since it never mentions 'portfolio' at all."""
+    data = yaml.safe_load((REPO_ROOT / "intelligence" / "economic_assessment" / "GLD.yaml").read_text())
+    rationale = data["instrument_specific_economic_characterization"]["historical_equity_drawdown_behavior"]["rationale"]
+    assert "portfolio" not in rationale.lower()
+    errors: list[str] = []
+    eav._scan_overlap_model_non_duplication({"rationale": rationale, "single_asset_disclosure": "placeholder single-asset text"}, errors)
+    assert errors == []
 
 
 # ── CASH-vs-RESERVE distinction leakage (SS11 point 15) ──────────────────

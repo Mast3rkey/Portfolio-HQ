@@ -352,7 +352,10 @@ _DISTINCTION_PATTERNS = [
 #    point 12) -- rejects a whole-portfolio diversification/correlation
 #    claim anywhere in historical_equity_drawdown_behavior's own free
 #    text; a separate mechanism from the required single_asset_disclosure
-#    presence check ────────────────────────────────────────────────────
+#    presence check. Bounded correction: broadened beyond the original
+#    fixed-phrase set to catch equivalent verb forms ("diversifies",
+#    "offsets", "hedge") that a hand-crafted record could otherwise use
+#    to smuggle the same class of assertion past a narrower list ────────
 
 _PORTFOLIO_DIVERSIFICATION_PATTERNS = [
     re.compile(p, re.IGNORECASE) for p in (
@@ -362,10 +365,55 @@ _PORTFOLIO_DIVERSIFICATION_PATTERNS = [
         r"reduces?\s+(the\s+)?portfolio(?:'s)?\s+risk",
         r"hedges?\s+(the\s+)?(current\s+)?portfolio",
         r"portfolio-hq's\s+own\s+(current\s+)?holdings",
+        # Broader verb-form coverage, each pairing the concept word with
+        # "portfolio" inside a bounded, same-sentence-scale window (a
+        # deliberately loose "concept near portfolio" match, not a fixed
+        # multi-word phrase) -- catches "diversifies the whole portfolio",
+        # "reduces total portfolio drawdown", "offsets equity risk at the
+        # portfolio level", "provides a portfolio hedge", and equivalent
+        # phrasing the original fixed-phrase list above would miss.
+        r"diversif\w*[^.]{0,60}\bportfolio\b",
+        r"\bportfolio\b[^.]{0,60}diversif\w*",
+        r"\bportfolio\b[^.]{0,60}correlat(?:ed|ion)\w*",
+        r"reduc\w*[^.]{0,60}\bportfolio\b[^.]{0,30}\b(risk|drawdown|volatility)\b",
+        r"\bportfolio\b[^.]{0,20}\bhedge\w*\b",
+        r"offsets?\w*[^.]{0,60}\bportfolio\b",
     )
 ]
 
 _REQUIRED_DISCLOSURE_MARKERS = ("single-asset", "single asset")
+
+# Bounded correction (SS11 point 12 defense-in-depth gap, disclosed in
+# the retained audit): the original design fully exempted single_asset_
+# disclosure from this scan, since its own required job is to name and
+# disclaim the portfolio-level boundary using this same vocabulary. That
+# exemption was too broad -- a hand-crafted record could bury a real,
+# unnegated portfolio-level claim inside single_asset_disclosure and pass
+# clean. The corrected mechanism is negation-aware and sentence-scoped,
+# not a fixed-character-window heuristic (which would misfire against the
+# real sealed record's own disclaimer -- its own negation cue sits well
+# beyond a small fixed window from the claim it disclaims): a
+# _PORTFOLIO_DIVERSIFICATION_PATTERNS match inside single_asset_
+# disclosure is allowed only when a genuine disclaiming-negation phrase
+# (a negation word immediately paired with a disclaiming verb -- "does
+# not compute", "never establishes", etc., not a bare "not" anywhere in
+# the field) appears earlier in the *same sentence*. This is a materially
+# different mechanism from rationale's own unconditional block (below),
+# never a byproduct of it -- rationale is never expected to discuss
+# portfolio-level boundaries at all, disclaiming or otherwise, so it
+# keeps the original full-block behavior unchanged.
+_DISCLAIMING_NEGATION_PATTERN = re.compile(
+    r"\b(?:does|do|did|is|are|will|can)\s+not\s+"
+    r"(?:compute|constitute|imply|substitute|establish|determine|represent|assert|claim|find|show|demonstrate|indicate|prove)\w*"
+    r"|\bnever\s+"
+    r"(?:compute|constitute|impl\w*|substitute|establish\w*|determine\w*|represent\w*|assert\w*|claim\w*|find\w*|show\w*|demonstrate\w*|indicate\w*|prove\w*)",
+    re.IGNORECASE,
+)
+_SENTENCE_SPLIT_PATTERN = re.compile(r"(?<=[.!?])\s+")
+
+
+def _split_sentences(text: str) -> list[str]:
+    return [s for s in _SENTENCE_SPLIT_PATTERN.split(text) if s]
 
 
 @dataclass
@@ -525,26 +573,55 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
     a computed portfolio-level correlation or diversification-benefit
     finding -- independent of, and in addition to, the required single_
     asset_disclosure presence check (SSE, supporting artifact SS6).
-    Scoped to `rationale` only, deliberately excluding `single_asset_
-    disclosure` -- the disclosure field's own required job is to name and
-    disclaim exactly this boundary using this same vocabulary (e.g. "does
-    not... constitute... a diversification-benefit... finding specific to
-    Portfolio-HQ's own current holdings"), so scanning it with the same
-    forbidden-assertion patterns would reject the very disclaimer this
-    schema requires. A positive assertion has nowhere else to hide: any
-    field other than rationale is a closed enum/hash/citation, not free
-    judgment prose."""
-    for field_name in ("rationale",):
-        text = drawdown.get(field_name)
-        if isinstance(text, str):
+
+    `rationale` is scanned unconditionally (any match is rejected, no
+    negation carve-out) -- rationale is never expected to discuss
+    portfolio-level boundaries at all, disclaiming or otherwise; a
+    positive assertion has nowhere else to hide there, since every other
+    field on this sub-object is a closed enum, an abstention reason, or
+    the disclosure field itself.
+
+    `single_asset_disclosure` is scanned too (bounded correction -- an
+    independent review found the original full exemption too broad,
+    §11.1's own "self-declared flag is not a substitute for an
+    independent scan" lesson applied a second time here), but negation-
+    aware and sentence-scoped: a match is allowed only when a genuine
+    disclaiming-negation phrase (`_DISCLAIMING_NEGATION_PATTERN` -- a
+    negation word immediately paired with a disclaiming verb, e.g. "does
+    not compute", never a bare "not" anywhere in the field) appears
+    earlier in the *same sentence*. Sentence-scoping (not a fixed
+    character window) is required for correctness: the real sealed
+    record's own negation cue sits well beyond any small fixed window
+    from the claim it disclaims, so a naive proximity check would
+    misfire against genuine governed content."""
+    rationale = drawdown.get("rationale")
+    if isinstance(rationale, str):
+        for pattern in _PORTFOLIO_DIVERSIFICATION_PATTERNS:
+            if pattern.search(rationale):
+                errors.append(
+                    f"historical_equity_drawdown_behavior.rationale: asserts a whole-"
+                    f"portfolio diversification-benefit or correlation-to-the-current-"
+                    f"portfolio claim -- that remains defensive_offset_interface's own, "
+                    f"separate, still-forced-abstention job (XASSET-0008 SSE, supporting "
+                    f"artifact SS6) matching pattern {pattern.pattern!r}"
+                )
+
+    disclosure = drawdown.get("single_asset_disclosure")
+    if isinstance(disclosure, str):
+        for sentence in _split_sentences(disclosure):
             for pattern in _PORTFOLIO_DIVERSIFICATION_PATTERNS:
-                if pattern.search(text):
+                for m in pattern.finditer(sentence):
+                    preceding = sentence[:m.start()]
+                    if _DISCLAIMING_NEGATION_PATTERN.search(preceding):
+                        continue  # a genuine disclaimer negating this exact claim precedes it
                     errors.append(
-                        f"historical_equity_drawdown_behavior.{field_name}: asserts a whole-"
-                        f"portfolio diversification-benefit or correlation-to-the-current-"
-                        f"portfolio claim -- that remains defensive_offset_interface's own, "
-                        f"separate, still-forced-abstention job (XASSET-0008 SSE, supporting "
-                        f"artifact SS6) matching pattern {pattern.pattern!r}"
+                        f"historical_equity_drawdown_behavior.single_asset_disclosure: "
+                        f"asserts a whole-portfolio diversification-benefit or correlation-"
+                        f"to-the-current-portfolio claim not preceded, within the same "
+                        f"sentence, by a genuine disclaiming negation -- that remains "
+                        f"defensive_offset_interface's own, separate, still-forced-"
+                        f"abstention job (XASSET-0008 SSE, supporting artifact SS6) "
+                        f"matching pattern {pattern.pattern!r} in sentence {sentence!r}"
                     )
 
 
