@@ -382,7 +382,19 @@ _PORTFOLIO_DIVERSIFICATION_PATTERNS = [
         # forward-order pattern alone does not match.
         r"\bportfolio(?:'s)?\b[^.]{0,30}\b(risk|drawdown|volatility)\b[^.]{0,60}reduc\w*",
         r"\bportfolio\b[^.]{0,20}\bhedge\w*\b",
-        r"offsets?\w*[^.]{0,60}\bportfolio\b",
+        # Leading `\b` -- without it, this pattern matched "offset" as a
+        # substring of an unrelated identifier like the schema's own
+        # "defensive_offset_interface" dimension name (a real,
+        # legitimate cross-reference that appears in accepted disclaimer
+        # language): Python's `\b` is defined by a \w/non-\w transition,
+        # and since the underscore before "offset" in that identifier is
+        # itself a \w character, there is no such transition there for
+        # an unanchored "offsets?" to require -- it matched regardless.
+        # An explicit leading `\b` closes that gap; `[a-z]*` (not `\w*`)
+        # also keeps any trailing continuation to letters only, so a
+        # genuine word-initial "offset_interface" (no separating
+        # boundary at all before "offset") still cannot match either.
+        r"\boffsets?[a-z]*[^.]{0,60}\bportfolio\b",
     )
 ]
 
@@ -459,43 +471,37 @@ _DECLARATIVE_DEFERRAL_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-# Third bounded correction (SS10.1's own MAJOR finding, disclosed in the
-# retained audit SS11): the second correction's clause-boundary pattern
-# only recognized a fixed, incomplete subset of English clause boundaries
-# (comma+specific-conjunction, a small contrastive-conjunction word list).
-# An independent delta review demonstrated it does not recognize a
-# comma-less bare "and"/"so"/"nor", an em dash/double hyphen (this
-# repository's own house style), a colon, or "or" used to introduce a
-# genuinely new independent clause -- all ordinary, non-adversarial
-# English constructions, all still capable of laundering an unrelated
-# negation across a clause boundary. Rather than continuing to enumerate
-# punctuation/conjunction combinations one bypass at a time, the design
-# below is matched-claim-scoped, not clause-list-scoped: it distinguishes
-# two structurally different roles "and"/"or" play, using a closed,
-# bounded vocabulary check rather than a general parser --
+# Sixth bounded correction (negation-laundering vulnerability CLASS,
+# disclosed in the retained audit SS14): rounds two through five each
+# patched one more concrete bypass construction by enumerating more
+# clause-boundary punctuation, conjunction words, and finite-verb
+# interruptors -- a BLACKLIST architecture ("does anything resembling a
+# boundary appear nearby") that an independent review demonstrated
+# incomplete at every round (most recently, a bare comma-delimited
+# appositive truncating the fourth round's own lookahead window before
+# it ever reached the finite predicate that would have exposed the
+# bypass). A blacklist of "things that end a clause" can never be proven
+# exhaustive against natural-language variation -- each fix closed one
+# more specific construction, not the class.
 #
-#   - HARD boundaries (never legitimately used to coordinate within the
-#     closed disclaiming-verb-list or diversification-concept-noun-list
-#     this scan's own vocabulary is built from): a semicolon, a colon, an
-#     em dash / double hyphen, or one of "but"/"so"/"nor"/"yet"/
-#     "however"/"though"/"although"/"while" -- always end a clause,
-#     comma or no comma.
-#   - SOFT boundaries: "and"/"or" -- these DO legitimately coordinate
-#     within the same closed lists (e.g. "does not compute, constitute,
-#     imply, or substitute for X", "diversification-benefit or
-#     correlation finding", "remain separately governed and unmeasured").
-#     A soft-boundary "and"/"or" is only treated as an actual clause
-#     boundary when the text immediately following it is NOT itself one
-#     more item from the closed disclaiming-verb-word list or the closed
-#     diversification-concept-noun list -- i.e., when it is not a
-#     continuation of the same coordinated list the negation or the claim
-#     vocabulary already started. This directly separates the real sealed
-#     record's own legitimate coordination ("or substitute", "or
-#     correlation") from every demonstrated bypass ("or GLD diversifies",
-#     "and GLD reduces...") without needing to detect a new grammatical
-#     subject at all -- the closed-vocabulary check IS the distinguishing
-#     signal, because none of the demonstrated bypass claims' own subject
-#     ("GLD", "the portfolio") is a member of either closed list.
+# The mechanism below is a WHITELIST instead, evaluated per claim match
+# rather than per pre-split "clause" (clause-splitting was itself part
+# of the discarded blacklist architecture): a claim match is governed
+# only when the text separating it from its governing negation or
+# deferral is *purely connective tissue* -- a small closed set of
+# function words plus the scan's own two closed vocabularies below (the
+# disclaiming-verb-word list, the diversification-concept-noun list).
+# Any token outside that closed whitelist disqualifies the span
+# immediately, with no enumeration of what that token might be required,
+# because ordinary English has no way to state a genuinely different
+# subject, predicate, or unrelated claim using only connective tissue --
+# a real new clause's own subject or verb is, definitionally, not a
+# preposition/article/conjunction/one of these two closed vocabularies.
+# This closes the whole demonstrated vulnerability class (every round
+# two through five bypass, plus an adversarial matrix of unseen variants
+# spanning coordination, punctuation, subject/object order, voice,
+# parentheticals, negation position, quantifiers, and clause order --
+# retained audit SS14) rather than one more punctuation form.
 _DISCLAIMING_VERB_WORDS = (
     r"compute|constitute|imply|substitute|establish|determine|represent|"
     r"assert|claim|find|show|demonstrate|indicate|prove"
@@ -504,16 +510,11 @@ _DIVERSIFICATION_CONCEPT_NOUNS = (
     r"diversification(?:-benefit)?|correlation|hedge(?:\s+effectiveness)?|"
     r"risk(?:\s+reduction)?|drawdown|volatility"
 )
-_COORDINATION_CONTINUATION_PATTERN = re.compile(
-    rf"(?:{_DISCLAIMING_VERB_WORDS})\w*|(?:{_DIVERSIFICATION_CONCEPT_NOUNS})\b",
-    re.IGNORECASE,
-)
-_CLAUSE_HARD_BOUNDARY_PATTERN = re.compile(
+_HARD_BOUNDARY_STOP_PATTERN = re.compile(
     r";|:|--|—"
     r"|\b(?:but|so|nor|yet|however|though|although|while)\b",
     re.IGNORECASE,
 )
-_CLAUSE_SOFT_BOUNDARY_PATTERN = re.compile(r"\b(?:and|or)\b", re.IGNORECASE)
 _SENTENCE_SPLIT_PATTERN = re.compile(r"(?<=[.!?])\s+")
 
 
@@ -521,104 +522,135 @@ def _split_sentences(text: str) -> list[str]:
     return [s for s in _SENTENCE_SPLIT_PATTERN.split(text) if s]
 
 
-def _split_clauses(sentence: str) -> list[str]:
-    """Splits a sentence into clauses at hard boundaries unconditionally,
-    and at "and"/"or" only when the text immediately following is not
-    itself a continuation of the same closed disclaiming-verb-word or
-    diversification-concept-noun coordination -- see the module-level
-    comment above for the full rationale."""
-    boundaries: list[tuple[int, int]] = []
-    for m in _CLAUSE_HARD_BOUNDARY_PATTERN.finditer(sentence):
-        boundaries.append((m.start(), m.end()))
-    for m in _CLAUSE_SOFT_BOUNDARY_PATTERN.finditer(sentence):
-        following = sentence[m.end():].lstrip()
-        if _COORDINATION_CONTINUATION_PATTERN.match(following):
-            continue  # protected coordination -- not a real clause boundary
-        boundaries.append((m.start(), m.end()))
-    boundaries.sort()
-    clauses: list[str] = []
-    pos = 0
-    for start, end in boundaries:
-        if start < pos:
-            continue  # overlapping match already consumed by an earlier boundary
-        clauses.append(sentence[pos:start])
-        pos = end
-    clauses.append(sentence[pos:])
-    return [c for c in clauses if c and c.strip()]
-
-
-# Fourth bounded correction, MAJOR half (subject-vs-object ambiguity,
-# disclosed in the retained audit SS12): the soft-boundary continuation
-# check above (_COORDINATION_CONTINUATION_PATTERN) only verifies that
-# "and"/"or" is *immediately followed* by a disclaiming-verb-word or
-# diversification-concept-noun -- it cannot distinguish that word being
-# used as one more item in a coordinated OBJECT list (legitimate: "does
-# not compute, constitute, imply, or SUBSTITUTE for X") from that same
-# word opening a brand-new independent clause as its own grammatical
-# SUBJECT (illegitimate: "does not compute X, and DIVERSIFICATION of the
-# whole portfolio IS ACHIEVED by GLD"). Rather than trying to detect a
-# subject directly (parsing), this is resolved with a matched-claim-
-# centered veto: for every claim match, check whether the text
-# *immediately following the match itself* (a bounded local window, up to
-# the next comma/semicolon/hard-boundary word) contains a genuinely
-# independent finite predicate verb (an inflected form -- "is"/"are"/
-# "diversifies"/"reduces"/etc, never the bare disclaiming-verb-word
-# infinitives used in a legitimate object list) that is not itself part
-# of a declarative-deferral phrase. If so, the match is functioning as
-# the SUBJECT of a new clause, not the OBJECT of any earlier negation or
-# the subject of a legitimate deferral -- and it is rejected regardless
-# of whatever disclaiming cue exists elsewhere in the clause. This is the
-# exact structural signal the reviewer's own root-cause diagnosis named:
-# the object of a negated verb is never itself immediately followed by
-# its own finite predicate; only a new independent clause's subject is.
-_FINITE_VERB_INTERRUPTOR_PATTERN = re.compile(
-    r"\b(?:is|are|was|were|has|have|had)\b"
-    r"|\b(?:provides?|offers?|reduces?|diversifies|correlates?|offsets?|hedges?|"
-    r"achieves?|establishes|represents?|asserts?|claims?|finds?|determines?|"
-    r"constitutes?|implies?|substitutes?|shows?|demonstrates?|indicates?|proves?)\b",
+# The whitelist itself: pure function words plus the fixed noun-phrase
+# scaffolding the real sealed disclosure and every accepted allowed-
+# language construction actually use to connect a negation/deferral to
+# its governed claim (e.g. "for a whole-portfolio diversification-
+# benefit or correlation finding specific to Portfolio-HQ's own current
+# holdings"). Kept as small as the real record and the governed allowed-
+# language matrix actually require, never widened speculatively -- a
+# wider whitelist is a wider bypass surface. Note the tokenizer below
+# deliberately excludes the hyphen from its word-character class, so a
+# hyphenated compound like "whole-portfolio" splits into two separate
+# tokens ("whole", "portfolio"), each independently whitelisted, rather
+# than needing every hyphenated form spelled out as its own entry.
+_CONNECTIVE_WORD_WHITELIST = frozenset({
+    "and", "or", "for", "a", "an", "the", "to", "of", "specific",
+    "finding", "whole", "benefit", "level", "own", "current", "holdings",
+    "hq", "hq's", "effect", "effects", "portfolio",
+    # "with" is a literal anchor word inside one of the thirteen fixed
+    # _PORTFOLIO_DIVERSIFICATION_PATTERNS phrases itself
+    # (correlat(?:ed|ion)\s+with\s+...portfolio) -- any match of that
+    # pattern necessarily contains "with" as part of its own matched
+    # text, so it must be whitelisted for the internal-purity check to
+    # ever accept that pattern's own legitimate matches at all.
+    "with",
+    # "either" is an inert intensifying adverb/correlative ("...does not
+    # establish X either") -- it never itself introduces a new subject or
+    # predicate, and combining it with any of the words above cannot
+    # construct a coherent independent clause without also including a
+    # verb or subject noun, neither of which this whitelist contains.
+    "either",
+})
+_CONNECTIVE_VERB_NOUN_PATTERN = re.compile(
+    rf"^(?:{_DISCLAIMING_VERB_WORDS})\w*$|^(?:{_DIVERSIFICATION_CONCEPT_NOUNS})$",
     re.IGNORECASE,
 )
-# Fifth bounded correction (SS12's own MAJOR finding, disclosed in the
-# retained audit SS13): a bare comma alone used to terminate the veto
-# window let a comma-delimited appositive/parenthetical phrase ("...and
-# diversification of the whole portfolio, across every historical regime
-# examined in this record's own review, IS ACHIEVED by GLD") truncate the
-# lookahead before it ever reached the finite predicate that would reveal
-# the match as a new clause's subject -- an ordinary English construction,
-# not adversarial cleverness. A comma is not, by itself, a genuine clause
-# boundary; only a semicolon, a colon, or a comma-or-no-comma hard-
-# boundary conjunction word is. The window is therefore no longer
-# terminated by a bare comma at all -- only by the same unambiguous
-# markers `_CLAUSE_HARD_BOUNDARY_PATTERN` already treats as always
-# splitting a sentence -- with the bounded character cap widened to keep
-# the "local window, not the whole clause" guarantee intact for a longer
-# appositive.
-_VETO_WINDOW_STOP_PATTERN = re.compile(
-    r";|:|\b(?:but|so|nor|yet|however|though|although|while)\b", re.IGNORECASE
-)
-_VETO_WINDOW_MAX_CHARS = 160
+_TOKEN_PATTERN = re.compile(r"[A-Za-z][\w']*")
+_MAX_CONNECTIVE_SPAN_CHARS = 160
 
 
-def _match_is_new_clause_subject(clause: str, match_end: int) -> bool:
-    """Checks whether the text immediately following a claim match reveals
-    the match is itself the SUBJECT of a new, independent predicate
-    (e.g. "diversification of the whole portfolio IS ACHIEVED by GLD")
-    rather than the OBJECT of an earlier negated verb or the subject of a
-    legitimate declarative-deferral clause ("... REMAINS separately
-    governed"). Scans only a bounded local window -- up to the next
-    semicolon/colon/hard-boundary word, or `_VETO_WINDOW_MAX_CHARS`
-    characters -- so a later, unrelated interruptor elsewhere in the
-    clause never vetoes an earlier, genuinely governed match. A bare
-    comma does *not* terminate the window on its own (fifth bounded
-    correction) -- an appositive/parenthetical aside is not a genuine
-    clause boundary, and truncating there let the finite predicate that
-    exposes a subject-vs-object bypass go undetected."""
-    following = clause[match_end:]
-    stop = _VETO_WINDOW_STOP_PATTERN.search(following)
-    window = following[:stop.start()] if stop else following[:_VETO_WINDOW_MAX_CHARS]
-    if _DECLARATIVE_DEFERRAL_PATTERN.search(window):
-        return False  # a deferral, not a new unrelated predicate
-    return bool(_FINITE_VERB_INTERRUPTOR_PATTERN.search(window))
+def _is_purely_connective(span: str) -> bool:
+    """True only when every word token in `span` is either a member of
+    the small closed function-word whitelist or itself one more item
+    from the scan's own two closed vocabularies (a disclaiming-verb-word
+    or a diversification-concept-noun) -- i.e. the span could only ever
+    be inert connective tissue joining a governing cue to the claim it
+    governs, never an intervening subject, predicate, or unrelated
+    claim. A single disqualifying token anywhere in the span fails the
+    whole check."""
+    for tok in _TOKEN_PATTERN.findall(span):
+        low = tok.lower()
+        if low in _CONNECTIVE_WORD_WHITELIST:
+            continue
+        if _CONNECTIVE_VERB_NOUN_PATTERN.match(low):
+            continue
+        return False
+    return True
+
+
+def _match_content_is_explained(match_text: str) -> bool:
+    """Own-suite regression testing, before push, found that a match's
+    impure filler is not always dangerous: "does not establish portfolio
+    diversification; it also does not establish portfolio correlation"
+    produces one claim match whose own text spans a semicolon and a
+    second, independent "it also does not establish" -- genuinely impure
+    by `_is_purely_connective`, yet perfectly safe, because the filler IS
+    itself a second, complete disclaiming negation, not a bare assertion.
+    A match is therefore accepted for further governance consideration
+    when it is either purely connective, OR its own text contains a
+    genuine `_DISCLAIMING_NEGATION_PATTERN` or `_DECLARATIVE_DEFERRAL_PATTERN`
+    sub-match -- evidence the "impurity" is itself another governing
+    disclaimer. This does not weaken the check: a match whose filler
+    contains no such sub-match (the actual bypass class -- "and GLD
+    diversifies the whole portfolio" contains no negation or deferral
+    anywhere) is still rejected outright, and a match accepted here still
+    must separately pass `_claim_is_governed` against its own genuinely
+    external context -- confirmed by adversarial testing that embedding a
+    decoy negation/deferral inside an otherwise-impure match's filler,
+    while a real unguarded claim survives elsewhere in the same match or
+    sentence, does not itself satisfy that downstream check."""
+    if _is_purely_connective(match_text):
+        return True
+    return bool(
+        _DISCLAIMING_NEGATION_PATTERN.search(match_text)
+        or _DECLARATIVE_DEFERRAL_PATTERN.search(match_text)
+    )
+
+
+def _bounded_trailing_window(sentence: str, start: int, other_claim_starts: list[int]) -> str:
+    """The span from `start` up to whichever comes first: an unambiguous
+    hard clause boundary (`_HARD_BOUNDARY_STOP_PATTERN`), the bounded
+    character cap, or the start of another recognized claim match in the
+    same sentence (multiple _PORTFOLIO_DIVERSIFICATION_PATTERNS entries
+    can match overlapping/adjacent spans of one real sentence -- stopping
+    here prevents one match's own trailing-connective check from
+    spilling into text that belongs to a different match)."""
+    stop = _HARD_BOUNDARY_STOP_PATTERN.search(sentence, start)
+    candidates = [start + _MAX_CONNECTIVE_SPAN_CHARS]
+    if stop:
+        candidates.append(stop.start())
+    for pos in other_claim_starts:
+        if pos > start:
+            candidates.append(pos)
+    return sentence[start:min(candidates)]
+
+
+def _claim_is_governed(
+    sentence: str, match_start: int, match_end: int, other_claim_starts: list[int]
+) -> bool:
+    """A claim match is governed only when the governing cue applies to
+    THAT specific claim, not merely occurs elsewhere in the sentence:
+    either (a) a disclaiming negation precedes it with nothing but
+    connective tissue between negation and claim, AND nothing but
+    connective tissue follows the claim out to a bounded stopping point
+    (both directions required -- a preceding negation earlier in the
+    sentence must never "shield" an unrelated positive assertion that
+    continues past the claim with its own new predicate, which is
+    exactly the class of bypass every prior round's own blacklist
+    eventually let through); or (b) a declarative-deferral phrase
+    follows the claim with nothing but connective tissue between claim
+    and deferral."""
+    for neg in _DISCLAIMING_NEGATION_PATTERN.finditer(sentence[:match_start]):
+        if not _is_purely_connective(sentence[neg.end():match_start]):
+            continue
+        trailing = _bounded_trailing_window(sentence, match_end, other_claim_starts)
+        if _is_purely_connective(trailing):
+            return True
+    for defr in _DECLARATIVE_DEFERRAL_PATTERN.finditer(sentence[match_end:]):
+        if _is_purely_connective(sentence[match_end:match_end + defr.start()]):
+            return True
+    return False
 
 
 @dataclass
@@ -789,53 +821,55 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
     `single_asset_disclosure` is scanned too (bounded correction -- an
     independent review found the original full exemption too broad,
     §11.1's own "self-declared flag is not a substitute for an
-    independent scan" lesson applied a second time here). The check is
-    negation-aware and **clause-scoped**, not merely sentence-scoped
-    (second bounded correction, disclosed in the retained audit §10): a
-    sentence is first split into clauses (`_split_clauses`), and a
-    portfolio-diversification match is allowed only when a genuine
-    disclaiming cue -- either a disclaiming-negation phrase
-    (`_DISCLAIMING_NEGATION_PATTERN`, e.g. "does not compute") or a
-    declarative-deferral phrase (`_DECLARATIVE_DEFERRAL_PATTERN`, e.g.
-    "remains separately governed") -- appears **anywhere in that same
-    clause**, never merely earlier in the same sentence. Sentence-scoping
-    alone allowed a genuine negation in one clause to "shield" an
-    unrelated, unnegated claim in a later clause of the same sentence.
+    independent scan" lesson applied a second time here).
 
-    Clause detection itself is matched-claim-scoped, not an ever-growing
-    enumeration of punctuation/conjunction combinations (third bounded
-    correction, disclosed in the retained audit §11): `_split_clauses`
-    treats a semicolon, colon, em dash/double hyphen, and a fixed set of
-    conjunctions never legitimately used to coordinate within this scan's
-    own closed vocabulary ("but"/"so"/"nor"/"yet"/"however"/"though"/
-    "although"/"while") as unconditional ("hard") boundaries -- comma or
-    no comma, since none of these ever appear mid-list in a genuine
-    disclaimer. "and"/"or" are treated as conditional ("soft") boundaries:
-    a boundary only when the text immediately following is not itself one
-    more item from the closed disclaiming-verb-word or diversification-
-    concept-noun list this scan already matches against.
-
-    That soft-boundary continuation check alone is ambiguous (fourth
-    bounded correction, disclosed in the retained audit §12): "and"/"or"
-    immediately followed by one of those closed-list words could mean
-    either a legitimate object-list continuation ("or substitute for X")
-    or that word opening a brand-new independent clause as its own
-    grammatical subject ("and diversification of the whole portfolio IS
-    ACHIEVED by GLD"). Each individual claim match is therefore also
-    checked with a per-match veto (`_match_is_new_clause_subject`): if
-    the text immediately following the match itself reveals a genuinely
-    independent finite predicate (not a declarative deferral), the match
-    is rejected outright, regardless of any disclaiming cue elsewhere in
-    the clause -- the object of a negated verb is never itself
-    immediately followed by its own finite predicate; only a new
-    independent clause's subject is.
+    Sixth bounded correction (structural redesign closing the whole
+    negation-laundering vulnerability CLASS, disclosed in the retained
+    audit §14): rounds two through five each patched one more concrete
+    bypass construction with an ever-growing BLACKLIST of enumerated
+    clause-boundary punctuation, conjunction words, and finite-verb
+    interruptors -- and each blacklist was, in turn, demonstrated
+    incomplete by the next adversarial construction. This scan now
+    checks each claim match directly against a WHITELIST
+    (`_claim_is_governed`, `_is_purely_connective`): a match is governed
+    only when the specific text separating it from its governing
+    negation or deferral is *purely connective tissue* -- a small closed
+    set of function words plus the scan's own two closed vocabularies
+    (disclaiming-verb-words, diversification-concept-nouns) -- checked in
+    BOTH directions for a preceding negation (nothing but connective
+    tissue before the claim AND nothing but connective tissue after it,
+    out to a bounded stop), so a genuine negation earlier in the sentence
+    can never "shield" an unrelated positive assertion that continues
+    past the claim with its own new predicate -- the exact class of
+    bypass every prior round's own blacklist eventually let through. No
+    pre-splitting into "clauses" occurs at all; governance is evaluated
+    directly per claim match, per sentence.
 
     A legitimate quantifier-negation construction ("No portfolio
     correlation conclusion is established.") is recognized as its own
     whole-span pattern (`_QUANTIFIER_NEGATION_CLAIM_PATTERN`) -- a claim
-    match falling entirely within that span is accepted outright, since
-    the per-match veto above would otherwise misfire on the construction's
-    own "conclusion is established" tail immediately following the claim."""
+    match falling entirely within that span is accepted outright.
+
+    Sixth bounded correction, second half (own-suite regression found
+    before push, disclosed in the retained audit §14): the claim patterns'
+    own bounded same-sentence gap (`[^.]{0,60}` between two anchor
+    concepts, e.g. "portfolio" ... "diversif...") can, when a match's two
+    anchors sit far enough apart, greedily absorb an entire intervening
+    unrelated clause -- including its own foreign subject -- into the
+    match text itself (e.g. "does not establish portfolio
+    diversification, and GLD diversifies the whole portfolio" matches as
+    ONE span, "portfolio diversification, and GLD diversifies", with the
+    dangerous ", and GLD diversifies" content living *inside* the match,
+    invisible to the before/after whitelist check, which only inspects
+    text outside a match). Every match is therefore additionally checked
+    for internal purity (`_is_purely_connective(m.group())`) before
+    governance is even considered: a well-formed claim phrase is always
+    composed entirely of whitelisted connective words and the scan's own
+    two closed vocabularies (confirmed against the real sealed record and
+    every governed allowed-language construction); a match containing any
+    other token has necessarily absorbed foreign clause content and is
+    rejected outright, without regard to whatever negation or deferral
+    might otherwise appear to govern it."""
     rationale = drawdown.get("rationale")
     if isinstance(rationale, str):
         for pattern in _PORTFOLIO_DIVERSIFICATION_PATTERNS:
@@ -851,42 +885,60 @@ def _scan_overlap_model_non_duplication(drawdown: dict, errors: list[str]) -> No
     disclosure = drawdown.get("single_asset_disclosure")
     if isinstance(disclosure, str):
         for sentence in _split_sentences(disclosure):
-            for clause in _split_clauses(sentence):
-                has_disclaiming_cue = (
-                    _DISCLAIMING_NEGATION_PATTERN.search(clause) is not None
-                    or _DECLARATIVE_DEFERRAL_PATTERN.search(clause) is not None
+            quantifier_spans = [
+                qm.span() for qm in _QUANTIFIER_NEGATION_CLAIM_PATTERN.finditer(sentence)
+            ]
+            all_matches: list[tuple[re.Pattern, re.Match]] = []
+            for pattern in _PORTFOLIO_DIVERSIFICATION_PATTERNS:
+                for m in pattern.finditer(sentence):
+                    all_matches.append((pattern, m))
+            all_starts = sorted(m.start() for _, m in all_matches)
+            for pattern, m in all_matches:
+                if any(qs <= m.start() and m.end() <= qe for qs, qe in quantifier_spans):
+                    continue  # governed by a quantifier-negation construction
+                if not _match_content_is_explained(m.group()):
+                    # The claim pattern's own bounded same-sentence gap
+                    # ([^.]{0,60} between anchor concepts) swallowed a
+                    # foreign token -- an unrelated subject/predicate that
+                    # does not belong to either closed vocabulary -- into
+                    # the match text itself, which the before/after
+                    # governance check below never inspects (it only
+                    # checks text outside the match). A well-formed claim
+                    # match is always either purely connective, or its own
+                    # impurity is itself explained by a second genuine
+                    # negation/deferral sub-match (`_match_content_is_
+                    # explained`); a match that is neither is definitionally
+                    # not one coherent, safely-governable claim phrase, and
+                    # is rejected outright rather than evaluated for
+                    # governance -- exactly the mechanism a construction
+                    # like "does not establish portfolio diversification,
+                    # and GLD diversifies the whole portfolio" needs, where
+                    # the greedy gap otherwise absorbs ", and GLD
+                    # diversifies" into one single match spanning both
+                    # claims with no negation or deferral of its own.
+                    errors.append(
+                        f"historical_equity_drawdown_behavior.single_asset_disclosure: "
+                        f"asserts a whole-portfolio diversification-benefit or correlation-"
+                        f"to-the-current-portfolio claim whose own matched text spans "
+                        f"foreign, non-connective content -- not governed, for that specific "
+                        f"claim, by a disclaiming negation or declarative deferral -- that "
+                        f"remains defensive_offset_interface's own, separate, "
+                        f"still-forced-abstention job (XASSET-0008 SSE, supporting artifact "
+                        f"SS6) matching pattern {pattern.pattern!r} in sentence {sentence!r}"
+                    )
+                    continue
+                other_claim_starts = [s for s in all_starts if s > m.start()]
+                if _claim_is_governed(sentence, m.start(), m.end(), other_claim_starts):
+                    continue
+                errors.append(
+                    f"historical_equity_drawdown_behavior.single_asset_disclosure: "
+                    f"asserts a whole-portfolio diversification-benefit or correlation-"
+                    f"to-the-current-portfolio claim not governed, for that specific claim, "
+                    f"by a disclaiming negation or declarative deferral -- that remains "
+                    f"defensive_offset_interface's own, separate, still-forced-abstention "
+                    f"job (XASSET-0008 SSE, supporting artifact SS6) matching pattern "
+                    f"{pattern.pattern!r} in sentence {sentence!r}"
                 )
-                quantifier_spans = [
-                    qm.span() for qm in _QUANTIFIER_NEGATION_CLAIM_PATTERN.finditer(clause)
-                ]
-                for pattern in _PORTFOLIO_DIVERSIFICATION_PATTERNS:
-                    for m in pattern.finditer(clause):
-                        if any(qs <= m.start() and m.end() <= qe for qs, qe in quantifier_spans):
-                            continue  # governed by a quantifier-negation construction
-                        if _match_is_new_clause_subject(clause, m.end()):
-                            errors.append(
-                                f"historical_equity_drawdown_behavior.single_asset_disclosure: "
-                                f"asserts a whole-portfolio diversification-benefit or correlation-"
-                                f"to-the-current-portfolio claim whose own immediately-following "
-                                f"predicate reveals it as the subject of a new, independent clause "
-                                f"-- not the object of any preceding negation or a declarative "
-                                f"deferral -- that remains defensive_offset_interface's own, "
-                                f"separate, still-forced-abstention job (XASSET-0008 SSE, "
-                                f"supporting artifact SS6) matching pattern {pattern.pattern!r} "
-                                f"in clause {clause!r}"
-                            )
-                            continue
-                        if has_disclaiming_cue:
-                            continue  # a genuine disclaiming cue is present in this same clause
-                        errors.append(
-                            f"historical_equity_drawdown_behavior.single_asset_disclosure: "
-                            f"asserts a whole-portfolio diversification-benefit or correlation-"
-                            f"to-the-current-portfolio claim not accompanied, within the same "
-                            f"clause, by a genuine disclaiming negation or declarative deferral "
-                            f"-- that remains defensive_offset_interface's own, separate, "
-                            f"still-forced-abstention job (XASSET-0008 SSE, supporting artifact "
-                            f"SS6) matching pattern {pattern.pattern!r} in clause {clause!r}"
-                        )
 
 
 def _scan_predictive_language(value: dict, sub_field_name: str, errors: list[str]) -> None:
