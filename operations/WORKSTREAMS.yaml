@@ -10740,6 +10740,59 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-11"
+      - gate: xasset0013-level1-synthesis-bounded-same-class-audit
+        description: >
+          A same-account orchestration task requested this exact round-2
+          correction a second time, anchored to the pre-correction head
+          (e1d8f174d...) and citing the identical review
+          (pullrequestreview-4907960177) already resolved by commit
+          07cd955. Independently reverified live state before any action:
+          PR #303's head was already 07cd955 (not the task's assumed
+          pre-correction head), so the underlying MAJOR fix was not
+          reapplied — redoing it would have produced a duplicate,
+          conflicting mutation. Instead performed the deeper bounded
+          same-class audit the task's own step 8 requested, which the
+          round-2 commit had not yet explicitly disclosed: read every real
+          sealed record's full field set and abstention_index content
+          across all schemas each of the six coverage functions scopes
+          (valuation_evidence, valuation_archetype, valuation_results,
+          classification for equity; etf_classification, instrument_
+          economic_assessment for fund_broad_market/fund_gld_defensive/
+          crypto; functional_doctrine, economic_assessment for fund_gld_
+          defensive/cash_reserve/debt_reduction; crypto_classification for
+          crypto). Confirmed valuation_evidence's own abstention_reason-
+          bearing domains are exactly the three now fully scanned
+          (discount_rate_evidence, segment_evidence, market_observed_
+          evidence) — no fourth domain exists. Confirmed classification's
+          own only abstention-shaped field is capital_priority.status
+          (already scanned); economic_role never abstains and risk_
+          concentration.unmeasured_flag is a structural cluster/issuer-
+          lookthrough/relationship-coverage flag, not an evidence
+          abstention of the same kind, and is already the overlap-model
+          layer's own separate concern. Confirmed valuation_archetype
+          carries zero live abstentions (evidence_gap_statement empty on
+          all 27, no unable_to_determine_archetype anywhere) and
+          valuation_results' result_status is 18/9 completed/partial with
+          zero unable_to_determine — the existing == "partial" check is
+          already exhaustive against live data (widening it to
+          != "completed" would be a speculative robustness change with no
+          live behavioral effect, not a found defect, so left untouched
+          per the task's own scope-creep prohibition). Confirmed etf_
+          classification's, instrument_economic_assessment's, economic_
+          assessment's, and crypto_classification's own top-level
+          abstention_index fields are empty everywhere except DEBT_
+          REDUCTION (fixed round 1), RESERVE (already scanned), and SOL's
+          drawdown abstention (already scanned) — no further gap anywhere.
+          Verdict: zero additional same-class omissions found; no further
+          code change required. CI independently reconfirmed green at the
+          current head (07cd955, workflow run 31509105727, completed/
+          success). This is a disclosure-only entry — no functional code
+          change, no new profile/relationship, no re-derivation of any
+          already-corrected hash. This session does not review its own
+          PR, mark it ready, merge it, or post principal acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-11"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
