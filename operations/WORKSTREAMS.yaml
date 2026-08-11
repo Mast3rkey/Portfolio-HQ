@@ -10888,45 +10888,76 @@ workstreams:
           session discretion and no abstention path of its own), and
           Sizing Readiness (three-value, mechanically derived from the
           prior two axes plus each named relationship record's own
-          disposition/secondary conditions). A mechanical prohibition,
-          with a required counterfactual-masking non-influence test,
-          bars any axis from being driven by a stronger_evidence_
-          maturity finding. An illustrative, non-adopted mechanism trace
-          for debt_reduction (real role_preserving relationship finding
-          plus CLAUDE.md's own Portfolio Doctrine independently supports
-          Axis A, while its own forced_abstention evidence coverage
-          mechanically forces Axes B/C -- both facts stay visible,
-          neither forced into one answer) demonstrates why three axes,
-          not one collapsed verdict, are required. A ten-condition gate,
-          none satisfied by this filing, must hold before any future,
-          separate, explicit authorization for numeric Level 1 sleeve-
-          level sizing (XASSET-0001 SS J step 9) may even begin. Defines
-          the exact future Stage 4c deliverable (one
-          intelligence/level1_sleeve_synthesis/policy_adoption/
+          disposition/secondary conditions and, per the bounded
+          correction below, a per-sleeve relationship-coverage ledger).
+          A mechanical prohibition, with a required counterfactual-
+          masking non-influence test, bars any axis from being driven by
+          a stronger_evidence_maturity finding. Illustrative, non-
+          adopted mechanism traces for debt_reduction and (added by the
+          bounded correction below) fund_broad_market demonstrate why
+          three axes, not one collapsed verdict, are required. An
+          eleven-condition gate, none satisfied by this filing, must
+          hold before any future, separate, explicit authorization for
+          numeric Level 1 sleeve-level sizing (XASSET-0001 SS J step 9)
+          may even begin. Defines the exact future Stage 4c deliverable
+          (one intelligence/level1_sleeve_synthesis/policy_adoption/
           <SLEEVE_ID>.yaml record per sleeve, up to six, a new
           sub-namespace parallel to profiles/ and relationships/) and a
-          twenty-point future validator/test specification, including a
-          materially separate "bounded-conclusion" scan distinct from
-          Stage 1-3's own blanket XASSET-0012 SS8.1 eligibility-language
-          ban (Stage 4 is explicitly designed to represent a bounded,
-          closed-vocabulary role/eligibility/readiness judgment; what
-          remains barred is numeric magnitude, execution/trade
-          directives, and free text claiming more than the record's own
-          closed-vocabulary fields support). Restates, without
-          reopening, the allocation-check boundary (a real allocation
-          check remains downstream of Stage 4 adoption, Level 1/Level 2
-          sizing, and unlevered validation), the risk/backtest
-          sequencing already recorded in this workstream's own
-          roadmap_preservation field (targeted backtests occur after,
-          not before, provisional sizing), the chart/deployment boundary
-          (XASSET-0001 SS G/TIER-0003, unweakened), the margin/debt
-          boundary (unlevered testing first, then margin/leverage
-          research), and the contender/QQQ boundary (no reopening of
-          VRT/WMT, the remaining 82 contender-registry entries, or QQQ).
-          Explicitly does not authorize Stage 4b (content authorization),
-          Stage 4c (implementation), or numeric Level 1/Level 2 sizing of
-          any kind. This session does not review its own PR, mark it
-          ready, merge it, or post principal acceptance.
+          twenty-four-point future validator/test specification,
+          including a materially separate "bounded-conclusion" scan
+          distinct from Stage 1-3's own blanket XASSET-0012 SS8.1
+          eligibility-language ban (Stage 4 is explicitly designed to
+          represent a bounded, closed-vocabulary role/eligibility/
+          readiness judgment; what remains barred is numeric magnitude,
+          execution/trade directives, and free text claiming more than
+          the record's own closed-vocabulary fields support). Restates,
+          without reopening, the allocation-check boundary (a real
+          allocation check remains downstream of Stage 4 adoption,
+          Level 1/Level 2 sizing, and unlevered validation), the
+          risk/backtest sequencing already recorded in this workstream's
+          own roadmap_preservation field (targeted backtests occur
+          after, not before, provisional sizing), the chart/deployment
+          boundary (XASSET-0001 SS G/TIER-0003, unweakened), the
+          margin/debt boundary (unlevered testing first, then
+          margin/leverage research), and the contender/QQQ boundary (no
+          reopening of VRT/WMT, the remaining 82 contender-registry
+          entries, or QQQ). Explicitly does not authorize Stage 4b
+          (content authorization), Stage 4c (implementation), or numeric
+          Level 1/Level 2 sizing of any kind. This session does not
+          review its own PR, mark it ready, merge it, or post principal
+          acceptance.
+
+          Bounded correction, same day, this PR, independent exact-head
+          review pullrequestreview-4909703610 (anchored to head
+          e246ea77ae6292d5a1dcc4ce652885e93ec153c7), 0 BLOCKING / 1
+          MAJOR / 0 MINOR, CHANGES REQUIRED, resolved: the original
+          two-basis Axis A evidentiary rule left fund_broad_market with
+          zero lawful path to function_confirmed_distinct (its only
+          sealed relationship resolves stronger_evidence_maturity,
+          barred by construction; the doctrine-citation path was
+          debt_reduction-only), directly contradicting the original
+          SS10's own asserted outcome for that sleeve; and Axis C
+          treated a merely-unresearched relationship pair more
+          favorably than a sealed-but-unresolved one. Resolved without
+          weakening the stronger_evidence_maturity non-influence rule
+          anywhere: a new third Axis A basis (structural targets.yaml
+          destination-category membership, categorical/sleeve-level,
+          never an instrument weight, never a relationship record,
+          never an evidence-maturity value -- available to five of six
+          sleeves, not debt_reduction, which has no targets.yaml row);
+          a generalized (no longer debt_reduction-restricted) doctrine-
+          citation basis; a six-sleeve Axis A reachability audit; a
+          corrected SS10 outcome claim; a new per-sleeve relationship-
+          coverage-ledger mechanism (sealed_determined /
+          sealed_unresolved / deferred_disclosed, drawn only from the
+          sealed seven and XASSET-0013 SS E's own disclosed eight); a
+          new eleventh sizing-gate condition; a new axis-interaction
+          adversarial-case table; and thirteen internal cross-reference
+          corrections found during the same consistency pass. No
+          policy-adoption record, Axis A/B/C disposition, Stage 4b, or
+          Stage 4c work is populated or authorized by this correction.
+          This session does not review its own PR, mark it ready, merge
+          it, or post principal acceptance.
         pr: null
         status: in_progress
         date: "2026-08-11"

@@ -80,6 +80,68 @@ mirroring `XASSET-0012`'s own role as Stage 1 of the synthesis sequence.
   integration/audit) is read directly and cited by reference in the supporting artifact §17 — not
   edited by this filing.
 
+### Correction history (this filing, same PR)
+
+**Bounded correction, independent exact-head review `pullrequestreview-4909703610` (anchored to the
+original head `e246ea77ae6292d5a1dcc4ce652885e93ec153c7`, base unchanged), 0 BLOCKING / 1 MAJOR / 0
+MINOR / 4 non-actionable NOTE, CHANGES REQUIRED:**
+
+1. **MAJOR (two connected parts), resolved.** **Part A**: `fund_broad_market` could not reach Axis
+   A's `function_confirmed_distinct` value under the original evidentiary-basis rule — its only
+   sealed relationship record (`equity_fund_broad_market.yaml`) resolves `stronger_evidence_
+   maturity`, mechanically barred from supplying Axis A grounds, and the doctrine-citation path was
+   restricted, by the original §14, to `debt_reduction` alone — directly contradicting the original
+   §10's own asserted outcome that overlap disclosure "must never force `fund_broad_market`'s Axis A
+   below `function_confirmed_distinct`," a claim justified there by citing SPY's own `targets.yaml`
+   weight, an individual-instrument fact not among the design's own stated evidentiary bases.
+   **Resolved**: a new third Axis A evidentiary basis (structural `targets.yaml`-destination-category
+   membership — categorical, sleeve-level, mechanically-checkable, never an individual instrument's
+   weight, never a relationship record, never an evidence-maturity value), independently confirmed
+   available to `equity`, `fund_broad_market`, `fund_gld_defensive`, `crypto`, and `cash_reserve` (the
+   five sleeves with a live `targets.yaml` row per `XASSET-0012` §2), and unavailable to
+   `debt_reduction` (no `targets.yaml` row exists). The existing doctrine-citation basis is also
+   generalized — no longer restricted to `debt_reduction` alone, available to any sleeve with a
+   genuine, directly-quotable `CLAUDE.md` passage, never a fabricated one. §10's specific outcome
+   claim is corrected, not merely re-justified, to rely on the new structural basis rather than the
+   withdrawn instrument-weight citation. **Part B**: Axis C's original rule inspected only
+   relationship records that exist, with no mechanism distinguishing a sealed-but-unresolved pair
+   (which correctly blocks) from a pair that was simply never researched (which, under the original
+   rule, silently did not block) — inverting `XASSET-0012` §5.2's own "no absence of evidence may
+   silently become favorable" principle. **Resolved**: a new per-sleeve relationship-coverage-ledger
+   mechanism (supporting artifact §5.1) classifying every one of a sleeve's five possible relationship
+   pairs as `sealed_determined`, `sealed_unresolved`, or `deferred_disclosed` (the last drawn only
+   from `XASSET-0013` §E's own eight explicitly-named, closed deferred-pair set — never a silently
+   invented ninth category), with a `deferred_disclosed` pair capping Axis C at
+   `sizing_conditionally_ready` at most, strictly below what a `sealed_unresolved` pair forces
+   (`sizing_blocked`) but never treated as equivalent to a clean, fully-covered sleeve. A new eleventh
+   sizing-gate condition requires this ledger fully populated for every sleeve before numeric Level 1
+   sizing may even be authorized to begin. **Neither resolution weakens the `stronger_evidence_
+   maturity` non-influence rule anywhere** — the new structural basis reads no relationship record of
+   any kind and is trivially immune to the counterfactual-masking test; a defensive presence-
+   independent regression guard was added to the future validator specification per the review's own
+   non-blocking NOTE. Full correction narrative, with every affected subsection individually marked,
+   in the supporting artifact (preamble plus §§3.2, 3.3, 5.1, 6, 7.1, 7.2, 9, 10, 12, 14, 15, 16, 20,
+   21, 22 — the last two newly added, the old §22 "Sequence" renumbered to §23).
+2. **Internal-consistency pass, disclosed alongside the MAJOR, not itself a separate finding.** While
+   resolving the MAJOR, this session independently found and corrected thirteen pre-existing internal
+   cross-reference errors in the supporting artifact (section numbers that pointed to the wrong
+   section — e.g. "§12 item 5" where "§21 item 5" was meant, "§18" where "§17" was meant) — none of
+   these were part of the review's own stated finding, but each was a genuine defect a future reader
+   would have tripped over; fixed as part of the same bounded pass rather than left for a future
+   session to rediscover.
+
+All four non-actionable NOTEs (the `roadmap_preservation` field's own pre-existing, not-this-PR's-to-
+fix omission of item (10) from its sequencing chain; §7.1's imprecise "only sleeve today" framing,
+independently corrected above as part of Part A's own resolution since the same subsection was already
+being edited; the ten-condition-gate's own mild, harmless overlap between conditions 4 and 9; the
+counterfactual-masking proof's own defensive-strengthening suggestion, implemented above as new
+validator item 24) are addressed or carried forward exactly as the review itself characterized them —
+none required independent resolution beyond what Part A/B's own corrections already provided.
+
+Exact correction-delta file inventory: `governance/audits/WS0014_LEVEL1_POLICY_ADOPTION_
+METHODOLOGY_DESIGN_20260811.md` (substantive — the corrections above), `governance/decisions/
+XASSET-0014-*.md` (this section, plus §B/§D/§H/§J summary updates below to match).
+
 ## Decision
 
 ### A. What this filing does — Stage 4a methodology design only
@@ -100,7 +162,13 @@ supporting artifact.
   redundancy exists, because Stage 1–3's own closed `primary_disposition` vocabulary structurally
   cannot produce a redundancy finding today; inventing an unreachable fourth value would be the
   categorical-schema equivalent of `NUM-0001`'s "provisional guardrail no evidence supports"
-  anti-pattern. Full reasoning in supporting artifact §3/§3.1.
+  anti-pattern. `function_confirmed_distinct` requires one of **three** lawful evidentiary bases,
+  corrected and extended by this filing's own bounded correction: a sealed relationship-record
+  finding; a directly-quoted `CLAUDE.md` doctrine citation (now available to any sleeve with a
+  genuine passage, no longer `debt_reduction`-restricted); or a new structural
+  `targets.yaml`-destination-category-membership basis (categorical, sleeve-level, never an
+  individual instrument's own weight) — closing the gap that left `fund_broad_market` with zero
+  lawful basis under the original design. Full reasoning in supporting artifact §3/§3.1/§3.2/§3.3.
 - **Axis B — Capital Eligibility** (`capital_eligibility_status`): is the sleeve's own governed
   evidence base mature enough to be considered as a target-proposal candidate at all? Closed, two
   values, **mechanically derived, never authored**: `eligible_for_target_consideration` /
@@ -110,24 +178,32 @@ supporting artifact.
 - **Axis C — Sizing Readiness** (`sizing_readiness_status`): is the sleeve, and every relationship
   bearing on it, mature enough right now to proceed toward numeric Level 1 work? Closed, three
   values: `sizing_ready` / `sizing_conditionally_ready` / `sizing_blocked`, mechanically derived from
-  Axes A and B plus each named relationship record's own current disposition and secondary
-  conditions. Full reasoning in supporting artifact §5.
+  Axes A and B plus each named relationship record's own current disposition, secondary conditions,
+  and — added by this filing's own bounded correction — a per-sleeve relationship-coverage ledger
+  (§5.1) distinguishing a sealed-and-determined pair from a sealed-but-unresolved one from a
+  deferred-but-disclosed one, so a merely unresearched pair can never be treated more favorably than
+  an honestly-disclosed `unable_to_determine` finding. Full reasoning in supporting artifact §5/§5.1.
 
 These three axes are never collapsed into a single field. `debt_reduction`'s own live sealed evidence
 is the concrete case that demonstrates why: it can be simultaneously role-legitimate (Axis A) and
 sizing-blocked (Axis B/C) — a single verdict field could represent only one of those two true facts.
-Supporting artifact §7.1 traces this mechanism, illustratively only; no disposition is adopted by
-this filing for `debt_reduction` or any other sleeve.
+Supporting artifact §7.1 traces this mechanism, illustratively only; §7.2 (new) traces the identical
+demonstration for `fund_broad_market`; no disposition is adopted by this filing for either sleeve or
+any other.
 
 ### C. `stronger_evidence_maturity` boundary — mechanically prohibited from driving any axis
 
 Restated as an operative rule, not narrative: no Axis A, B, or C computation may read
-`favored_sleeve_id`. A lower-maturity sleeve (`debt_reduction`, `crypto`) may still reach
-`function_confirmed_distinct`; a higher-maturity sleeve (`equity`) may still fail Axis C under future
-evidence. The future implementation must build a counterfactual-masking non-influence proof — every
-sleeve's axis values recomputed with every `stronger_evidence_maturity` relationship record's
-`favored_sleeve_id` masked must be byte-identical to the unmasked computation. Full design in
-supporting artifact §6.
+`favored_sleeve_id`. A lower-maturity sleeve (`debt_reduction`, `fund_broad_market` after this
+correction) may still reach `function_confirmed_distinct`; a higher-maturity sleeve (`equity`) may
+still fail Axis C under future evidence. The future implementation must build a
+counterfactual-masking non-influence proof — every sleeve's axis values recomputed with every
+`stronger_evidence_maturity` relationship record's `favored_sleeve_id` masked must be byte-identical
+to the unmasked computation — plus, added by this filing's own bounded correction, a defensive
+regression guard proving the mere *presence* of a `stronger_evidence_maturity` disposition (not only
+its `favored_sleeve_id` value) cannot influence any axis. The new structural Axis A basis (§B above)
+reads no relationship record of any kind and is trivially immune to both tests by construction. Full
+design in supporting artifact §6.
 
 ### D. `role_preserving`/`coexistence_supported` boundary
 
@@ -135,24 +211,30 @@ May supply Axis A's evidentiary basis and contribute Axis C caveats. May never g
 target, determine target size, prevent future exclusion under later evidence, or imply equal
 weighting. Every Axis A/B/C value is a live-derived computation over currently-sealed evidence, never
 a permanent lock. Full detail, including the `fund_broad_market`/`equity` overlap-coordination
-treatment (a disclosed caveat only, never a silent subtraction) and the preserved `crypto`/
+treatment (a disclosed caveat only, never a silent subtraction — corrected by this filing's own
+bounded correction to rely on the new structural basis rather than an individual instrument's own
+`targets.yaml` weight, which was never a valid Axis A input) and the preserved `crypto`/
 `fund_gld_defensive` findings (unmodified, no crypto or GLD target inferred), in supporting artifact
-§7, §10, §11.
+§7, §7.1, §7.2, §10, §11.
 
 ### E. Abstention, `debt_reduction`, and `cash_reserve` — no answer forced merely because the schema requires one
 
 No Axis A/B/C value may ever be set to avoid an empty field. `unable_to_determine` relationship
 results, `forced_abstention` profile states, and every relationship-record secondary condition each
 propagate into required, non-empty disclosure fields (`abstention_reason`, `blocking_evidence[]`),
-never silently absorbed. `debt_reduction`'s illustrative mechanism trace (supporting artifact §7.1)
-shows it can independently reach `function_confirmed_distinct` on Axis A (via its sealed
-`role_preserving` relationship finding and `CLAUDE.md`'s own Portfolio Doctrine) while being
-mechanically forced to `not_yet_eligible`/`sizing_blocked` on Axes B/C (its own `forced_abstention`
-evidence coverage) — both facts stay visible; neither the schema nor this filing forces a single
-answer. `cash_reserve` is represented operationally as one combined family, reusing —
-not reopening — `XASSET-0008`'s own principal-directed provenance finding, with a mandatory rationale
-field explicitly preserving the underlying `CASH`/`RESERVE` consolidation question as still open.
-Full detail in supporting artifact §8, §9.
+never silently absorbed — and, added by this filing's own bounded correction, a merely-deferred
+(never-researched) relationship pair is likewise never silently treated as clean, per the new
+per-sleeve relationship-coverage ledger (§5.1). `debt_reduction`'s illustrative mechanism trace
+(supporting artifact §7.1) shows it can independently reach `function_confirmed_distinct` on Axis A
+(via its sealed `role_preserving` relationship finding alone — `CLAUDE.md`'s own Portfolio Doctrine
+supplies an independent, available-but-non-load-bearing second basis for it specifically, corrected
+per the review's own non-blocking NOTE) while being mechanically forced to
+`not_yet_eligible`/`sizing_blocked` on Axes B/C (its own `forced_abstention` evidence coverage) —
+both facts stay visible; neither the schema nor this filing forces a single answer. `cash_reserve` is
+represented operationally as one combined family, reusing — not reopening — `XASSET-0008`'s own
+principal-directed provenance finding, with a mandatory rationale field explicitly preserving the
+underlying `CASH`/`RESERVE` consolidation question as still open. Full detail in supporting artifact
+§8, §9.
 
 ### F. Level 1 / Level 2 boundary, zero numeric fields, no contender/QQQ reopening
 
@@ -177,15 +259,17 @@ to its own schema. Full field-by-field design in supporting artifact §14.
 
 ### H. Gate to numeric Level 1 sizing
 
-Ten explicit, none satisfied by this filing, conditions that must all hold before a future, wholly
-separate, explicitly authorized filing may begin numeric Level 1 sleeve-level sizing
+Eleven explicit, none satisfied by this filing, conditions that must all hold before a future,
+wholly separate, explicitly authorized filing may begin numeric Level 1 sleeve-level sizing
 (`XASSET-0001` §J step 9) — spanning this filing's own merge and independent review, a future Stage
 4b content-authorization filing, a future Stage 4c implementation covering every authorized sleeve,
-full disclosure of every blocking reason (including `debt_reduction`'s own eventual disposition and
-`cash_reserve`'s consolidation-non-settlement note), the counterfactual non-influence proof, and a
-reviewed, passing Stage 4 validator. Satisfying all ten is necessary, never sufficient, for that
+full disclosure of every blocking reason (including `debt_reduction`'s own eventual disposition,
+`cash_reserve`'s consolidation-non-settlement note, and — the eleventh condition, added by this
+filing's own bounded correction — every sleeve's own relationship-coverage ledger fully populated
+with zero deferred pair silently treated as clean), the counterfactual non-influence proof, and a
+reviewed, passing Stage 4 validator. Satisfying all eleven is necessary, never sufficient, for that
 future authorization — this filing does not itself authorize numeric sizing under any circumstance.
-Full ten-point list in supporting artifact §15.
+Full eleven-point list in supporting artifact §15.
 
 ### I. Allocation-check, risk/backtest, chart, and margin/debt sequencing — restated, not invented
 
@@ -208,20 +292,27 @@ A future, separately authorized Stage 4c implementation must build a dedicated v
 clearly separated Stage 4 section of the existing `level1_sleeve_synthesis_validator.py` module),
 with zero import coupling to `allocate.py`/`margin_state.py`, covering: closed schema with extra-key
 rejection at every level; live hash re-computation of every structural reference; mechanical Axis B
-re-derivation; the `stronger_evidence_maturity` counterfactual-masking non-influence proof; mechanical
-Axis C consistency checks; a zero-numeric-fields scan (digit and spelled-out-magnitude both); a
-zero-score/rank/composite-key scan; the Level 1/Level 2 leakage scan; a directive/trading-language
-scan; a chart-domain-terminology scan; the `CASH`/`RESERVE`-distinction-language scan; **Stage 4's own
-materially separate bounded-conclusion scan** (distinct from Stage 1–3's blanket `XASSET-0012` §8.1
-eligibility-language ban, since Stage 4 is explicitly designed to represent a bounded,
-closed-vocabulary role/eligibility/readiness judgment — what remains barred is numeric magnitude,
-execution/trade directives, over-strong free-text claims, and Level 2 leakage); the comparative-
-investment-superiority scan; adversarial test coverage for ordering, negation, punctuation,
-conjunction, active/passive voice, euphemistic paraphrase, hidden-sizing phrasing, and score/rank
-language, each with mandatory false-positive guards; a zero-contender/QQQ-citation scan; a protected-
-path/byte-identity test across all thirteen input layers plus the thirteen Stage 1–3 records
-themselves; manifest reconciliation; and non-cascading abstention discipline. Full twenty-point
-specification in supporting artifact §21.
+re-derivation; the `stronger_evidence_maturity` counterfactual-masking non-influence proof plus a
+defensive presence-independent regression guard (new); mechanical Axis C consistency checks,
+including relationship-coverage-ledger consistency; a zero-numeric-fields scan (digit and
+spelled-out-magnitude both); a zero-score/rank/composite-key scan; the Level 1/Level 2 leakage scan;
+a directive/trading-language scan; a chart-domain-terminology scan; the `CASH`/`RESERVE`-distinction-
+language scan; **Stage 4's own materially separate bounded-conclusion scan** (distinct from
+Stage 1–3's blanket `XASSET-0012` §8.1 eligibility-language ban, since Stage 4 is explicitly designed
+to represent a bounded, closed-vocabulary role/eligibility/readiness judgment — what remains barred
+is numeric magnitude, execution/trade directives, over-strong free-text claims, and Level 2 leakage);
+the comparative-investment-superiority scan; adversarial test coverage for ordering, negation,
+punctuation, conjunction, active/passive voice, euphemistic paraphrase, hidden-sizing phrasing, and
+score/rank language, each with mandatory false-positive guards; a zero-contender/QQQ-citation scan; a
+protected-path/byte-identity test across all thirteen input layers plus the thirteen Stage 1–3
+records themselves; manifest reconciliation; non-cascading abstention discipline; and, added by this
+filing's own bounded correction: a Basis 3 mechanical check (live `targets.yaml` cross-check, with
+rejection of any citation referencing evidence-maturity or per-instrument-weight fields); a
+generalized Basis 2 structural-non-emptiness check; and relationship-coverage-ledger completeness
+tests (exact five-pair enumeration per sleeve, live cross-reference against the sealed seven and
+`XASSET-0013` §E's own disclosed eight, and the `deferred_disclosed`-caps-at-`sizing_conditionally_
+ready` rule). Full twenty-four-point specification in supporting artifact §21, plus a new
+axis-interaction adversarial-case table in §22.
 
 ### K. Stage 4 sub-sequence — never collapsed
 
@@ -231,7 +322,7 @@ specification in supporting artifact §21.
 3. **Stage 4c — future implementation/population.** Builds the validator and populates exactly the
    records Stage 4b authorized.
 4. **Numeric Level 1 sizing — its own separate, later, wholly distinct future authorization**, gated
-   on §H's ten conditions, not a Stage 4 sub-step at all.
+   on §H's eleven conditions, not a Stage 4 sub-step at all.
 
 ### L. Register updates performed by this filing
 
@@ -349,13 +440,20 @@ directives, and free text claiming more than the record's own closed-vocabulary 
 
 **Changes as a direct result of this decision**: the existence of one retained Stage 4 methodology —
 three independent, non-collapsible axes (Portfolio Function Status, Capital Eligibility, Sizing
-Readiness), each with its own closed vocabulary and derivation rule; one retained future record
-schema (`intelligence/level1_sleeve_synthesis/policy_adoption/<SLEEVE_ID>.yaml`); one retained
-ten-condition gate that must hold before numeric Level 1 sizing may even be authorized to begin; one
-retained twenty-point future validator/test specification, including a materially separate
-bounded-conclusion scan distinct from Stage 1–3's own eligibility-language ban; one illustrative,
-non-adopted mechanism trace showing how `debt_reduction`'s own live evidence would be handled without
-forcing a premature answer; confirmation, via two additive `operations/WORKSTREAMS.yaml` gates, that
+Readiness), each with its own closed vocabulary and derivation rule, Axis A now supported by three
+lawful evidentiary bases (relationship-record finding, generalized doctrine citation, and a new
+structural `targets.yaml`-destination-category basis) and Axis C now incorporating a per-sleeve
+relationship-coverage ledger; one retained future record schema
+(`intelligence/level1_sleeve_synthesis/policy_adoption/<SLEEVE_ID>.yaml`, extended with a new
+`relationship_coverage_ledger[]` field); one retained, now eleven-condition gate that must hold
+before numeric Level 1 sizing may even be authorized to begin; one retained, now twenty-four-point
+future validator/test specification, including a materially separate bounded-conclusion scan
+distinct from Stage 1–3's own eligibility-language ban and a new axis-interaction adversarial-case
+table; two illustrative, non-adopted mechanism traces (`debt_reduction`, `fund_broad_market`) showing
+how each sleeve's own live evidence would be handled without forcing a premature answer; one bounded
+correction round resolving a single MAJOR finding (in two connected parts) from an independent
+exact-head review, plus thirteen internal cross-reference corrections found during the same
+consistency pass; confirmation, via two additive `operations/WORKSTREAMS.yaml` gates, that
 `XASSET-0013`'s own authorized implementation (`PR #303`) is fully merged and post-merge CI on `main`
 is green; four rejected alternatives recorded for future reference.
 

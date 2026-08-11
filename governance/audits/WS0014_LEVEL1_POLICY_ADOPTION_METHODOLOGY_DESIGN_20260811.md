@@ -6,6 +6,30 @@
 decision. No sleeve receives an actual role, eligibility, or sizing-readiness disposition. No
 numeric weight of any kind is created, implied, or authorized.
 
+**Bounded correction (same PR, same day), independent exact-head review `pullrequestreview-4909703610`
+(anchored to the original head `e246ea77ae6292d5a1dcc4ce652885e93ec153c7`), 0 BLOCKING / 1 MAJOR / 0
+MINOR, CHANGES REQUIRED — resolved by this correction**: the three-axis mechanism was internally
+inconsistent in two connected ways, both concretely provable against the real sealed data. **Part
+A**: `fund_broad_market` could not reach Axis A's `function_confirmed_distinct` value under the
+original two-basis evidentiary rule (its only sealed relationship record resolves
+`stronger_evidence_maturity`, mechanically barred from supplying Axis A grounds; the doctrine-citation
+path was restricted, by the original §14, to `debt_reduction` alone) — directly contradicting the
+original §10's own asserted outcome for that sleeve. **Part B**: Axis C penalized a sealed-but-
+unresolved relationship pair while treating an unresearched (deferred) pair as silently clean,
+inverting the design's own "no absence of evidence may silently become favorable" principle.
+**Resolved without weakening the `stronger_evidence_maturity` non-influence rule anywhere**: a new
+third Axis A evidentiary basis (§3.2, structural `targets.yaml`-destination-category membership,
+categorical and sleeve-level, never an instrument weight, never a relationship record, never an
+evidence-maturity value), a generalized (no longer `debt_reduction`-restricted) doctrine-citation
+basis (§3.2), a six-sleeve Axis A reachability audit (§3.3), a corrected §10 outcome claim, a new
+per-sleeve relationship-coverage-ledger mechanism distinguishing `sealed_determined`/
+`sealed_unresolved`/`deferred_disclosed` (§5.1), a new eleventh sizing gate condition (§15), thirteen
+internal cross-reference corrections found during the same consistency pass, and a new
+axis-interaction adversarial-case table (§22). Full correction narrative in each affected section
+below, each individually marked. No policy-adoption record, Axis A/B/C disposition, Stage 4b, or
+Stage 4c work is populated or authorized by this correction — the three-axis architecture itself is
+unchanged; only its evidentiary-basis and coverage-completeness rules are extended.
+
 ## 0. Purpose and where this sits in the sequence
 
 `XASSET-0012` §10 defined four stages for the Level 1 cross-asset sleeve-synthesis work:
@@ -93,24 +117,19 @@ and independently blocking.
 
 **Field**: `portfolio_function_status`, closed, exactly one of three values:
 
-1. **`function_confirmed_distinct`** — this sleeve's own governed evidence (its sealed profile plus
-   every currently-sealed `sleeve_relationship` record naming it) establishes that the sleeve serves
-   a portfolio function not already fully served by another sleeve, and that function should remain
-   part of the six-sleeve taxonomy going forward, eligible for later sizing consideration. Requires
-   at least one `role_preserving` or `coexistence_supported` relationship-record finding naming this
-   sleeve, **or** a directly cited passage from `CLAUDE.md`'s own Portfolio Doctrine establishing the
-   sleeve's function independent of any relationship record (the only sleeve today for which this
-   second path matters is `debt_reduction` — see §7).
-2. **`function_status_unresolved`** — governed evidence exists but does not yet cleanly establish
-   distinctness: e.g., every relationship record naming this sleeve carries
-   `stronger_evidence_maturity` against it with no offsetting `role_preserving`/
-   `coexistence_supported` finding anywhere, or the sleeve's own relationship coverage (per the
-   Stage 2 batch actually authorized — seven of fifteen possible pairs) is too thin to reach a
-   distinctness finding either way. This is **not** a demotion and must never be represented, in any
-   free text, as one — it means "not yet resolved," nothing more.
+1. **`function_confirmed_distinct`** — this sleeve's own governed evidence establishes that the
+   sleeve serves a portfolio function not already fully served by another sleeve, and that function
+   should remain part of the six-sleeve taxonomy going forward, eligible for later sizing
+   consideration. Requires at least one of three lawful evidentiary bases, defined exhaustively in
+   §3.2 below — **never** an evidence-maturity finding (§6).
+2. **`function_status_unresolved`** — none of §3.2's three bases is available: e.g., every
+   relationship record naming this sleeve carries `stronger_evidence_maturity` against it with no
+   offsetting finding anywhere, no doctrine citation exists, and the sleeve carries no live
+   `targets.yaml` destination-category membership either. This is **not** a demotion and must never
+   be represented, in any free text, as one — it means "not yet resolved," nothing more.
 3. **`unable_to_determine`** — every governed input this axis depends on is itself abstained or
-   forced-abstained (a live state for no sleeve today, since every sleeve has at least one relationship
-   record or doctrine citation available). Requires a non-empty `abstention_reason`.
+   forced-abstained (a live state for no sleeve today — see §3.3's reachability audit). Requires a
+   non-empty `abstention_reason`.
 
 ### 3.1 Deliberately three values, not four — no "function not confirmed" value exists yet
 
@@ -120,7 +139,7 @@ a structural reason, not a policy preference**: `XASSET-0012` §5.1's own closed
 `primary_disposition` vocabulary (`stronger_evidence_maturity` / `role_preserving` /
 `coexistence_supported` / `unable_to_determine`) contains **no value that asserts redundancy** —
 `stronger_evidence_maturity` is explicitly, mechanically restricted to an evidence-completeness
-finding only (§4 below), never an investment-merit or "should be sized larger" claim, and none of
+finding only (§6 below), never an investment-merit or "should be sized larger" claim, and none of
 the other three values asserts anything close to "sleeve X's function is fully subsumed by sleeve
 Y's." Since Stage 4 may only ever *derive* a disposition from Stage 1–3's own sealed evidence
 (§1), and no Stage 1–3 evidence token today, or reachable under the current Stage 1–3 methodology,
@@ -131,6 +150,94 @@ anti-pattern `NUM-0001` names for numeric parameters, generalized here to catego
 redundancy-capable value to Stage 1–3's own `primary_disposition` vocabulary, only then would a
 fourth Axis A value become well-founded** — recorded here as an explicit, disclosed future
 contingency, not designed now.
+
+### 3.2 Three lawful Axis A evidentiary bases, defined exhaustively
+
+**Bounded correction, independent exact-head review `pullrequestreview-4909703610` (anchored to the
+original head `e246ea77ae6292d5a1dcc4ce652885e93ec153c7`), MAJOR-1, resolved by this subsection**: the
+original design named only two evidentiary bases (relationship-record finding; a `CLAUDE.md`
+Portfolio Doctrine citation restricted, by §14's own field-design comment, to `debt_reduction`
+alone). The review independently confirmed, against the real sealed data, that `fund_broad_market`'s
+only sealed relationship record (`equity_fund_broad_market.yaml`) resolves `stronger_evidence_
+maturity` — mechanically barred from supplying Axis A grounds (§6) — and that no other sleeve
+currently has a sealed `role_preserving`/`coexistence_supported` finding naming it, so under the
+original two-basis rule `fund_broad_market` could never reach `function_confirmed_distinct`,
+directly contradicting the outcome the original §10 asserted for it. **Resolved by defining a third,
+structurally independent basis (Basis 3) rather than weakening the `stronger_evidence_maturity`
+non-influence rule** — the correction the review itself recommended as sound. All three bases:
+
+- **Basis 1 — relationship-record finding (unchanged).** At least one sealed `sleeve_relationship`
+  record naming this sleeve resolves `role_preserving` or `coexistence_supported` (§7). Never
+  `stronger_evidence_maturity`, by construction (§6).
+- **Basis 2 — `CLAUDE.md` doctrine citation (generalized, no longer sleeve-restricted).** A directly
+  cited, verbatim-quoted passage from `CLAUDE.md`'s own Portfolio Doctrine or Decisions Log
+  establishing this specific sleeve's distinct functional purpose, independent of any relationship
+  record. **Available to any of the six sleeves for which such a passage genuinely exists** — the
+  original restriction to `debt_reduction` alone was an unprincipled one-off with no doctrinal
+  grounding of its own; the same evidentiary logic ("a real, quoted, governed text passage
+  independently establishes a distinct function") applies identically regardless of which sleeve it
+  concerns. This does **not** lower the bar: a future Stage 4c drafting session may cite this basis
+  only where a genuine, directly-quotable passage exists — never an inferred, paraphrased, or
+  fabricated one, and never a passage merely restating the sleeve's own name or its `targets.yaml`
+  membership (that is Basis 3's job, not Basis 2's). Illustratively (not adopted — §3.3), real
+  candidate passages exist today for `debt_reduction` (the 1.8x leverage cap / 30% buffer floor /
+  forced-de-lever margin doctrine) and `fund_gld_defensive` (`CLAUDE.md`'s own "GLD does the ballast
+  job bonds would" framing, already independently cited by `XASSET-0013` §D); no equally clean,
+  dedicated passage is asserted here for `equity`, `fund_broad_market`, or `cash_reserve` — this
+  design manufactures no doctrine text that does not already exist.
+- **Basis 3 — structural sleeve-definition basis (new).** A sleeve may independently satisfy Axis
+  A's evidentiary requirement by citing `XASSET-0012` §2's own accepted, closed sleeve-taxonomy
+  table showing that the sleeve maps to at least one currently live `targets.yaml` destination row
+  under its own `asset_class` scope. This is a **categorical, sleeve-level, mechanically-checkable
+  structural fact** — never an individual instrument's own weight, target percentage, or size (which
+  would risk exactly the Level 1/Level 2 leakage §12 exists to prevent). A future Stage 4c drafting
+  session citing Basis 3 may name that the sleeve's `asset_class` category is populated in
+  `targets.yaml` today; it may **never** cite, quote, or rely on any individual destination row's own
+  `target_pct` value, weight, or rank within that category. **Basis 3 is available to `equity`,
+  `fund_broad_market`, `fund_gld_defensive`, `crypto`, and `cash_reserve`** — the five sleeves with a
+  live `targets.yaml` destination row per `XASSET-0012` §2's own table — and **is not available to
+  `debt_reduction`**, which `XASSET-0012` §2 itself records as having no `targets.yaml` row at all
+  ("none (margin lever)"); `debt_reduction` continues to rely on Basis 1/Basis 2 exactly as §7.1
+  already illustrates, unaffected by this addition.
+
+  **Structurally independent of evidence maturity, by design — verified, not merely asserted.** Basis
+  3 depends on exactly two facts: (a) the sleeve's own `asset_class` scope per `XASSET-0012` §2's
+  fixed, accepted table (a governance-document fact, never live-recomputed from any sealed record),
+  and (b) live confirmation that `targets.yaml` currently carries at least one destination row in
+  that scope (a binary existence check, not a completeness or quality measure). Basis 3 reads **no**
+  `sleeve_relationship` record of any kind (so it is trivially immune to §6's counterfactual-masking
+  test — masking every `favored_sleeve_id` field changes nothing Basis 3 depends on) and **no**
+  `evidence_coverage_profile` *value* (only that field's mere existence on a sealed profile, which
+  every one of the six profiles already independently guarantees) — so Basis 3 can never be
+  conflated with, or read as a proxy for, Axis B's own evidence-maturity-derived eligibility
+  determination. A future validator must enforce this mechanically: a Basis 3 citation is rejected
+  outright if it references any `evidence_coverage_profile` value, any `favored_sleeve_id`, or any
+  individual destination row's own `target_pct` (§21).
+
+### 3.3 Six-sleeve Axis A reachability audit — illustrative only, no disposition adopted
+
+A methodology-reachability check only, per the directive's own explicit instruction — **no Axis A
+value is adopted for any sleeve by this filing or by this audit**. For each of the six sleeves, the
+lawful evidentiary basis (or bases) currently available under §3.2, traced directly against the
+sealed data:
+
+| `sleeve_id` | Basis 1 available? | Basis 2 available? | Basis 3 available? |
+|---|---|---|---|
+| `equity` | Yes — 3 sealed `role_preserving` findings (`cash_reserve_equity`, `debt_reduction_equity`, `equity_fund_gld_defensive`) | Not asserted here (none needed) | Yes — live `targets.yaml` `equity` rows |
+| `fund_broad_market` | **No** — its one sealed relationship (`equity_fund_broad_market`) resolves `stronger_evidence_maturity`, barred by construction | Not asserted here (no dedicated passage identified) | **Yes** — live `targets.yaml` `fund` rows (SPY/VEA/VWO) |
+| `fund_gld_defensive` | Yes — 2 sealed findings (`crypto_fund_gld_defensive`: `coexistence_supported`; `equity_fund_gld_defensive`: `role_preserving`) | Yes — the "ballast" passage (illustrative) | Yes — live `targets.yaml` `fund` row (GLD) |
+| `crypto` | Yes — 1 sealed finding (`crypto_fund_gld_defensive`: `coexistence_supported`) | Not asserted here (a conviction-sizing passage may exist; not relied upon since Basis 1 already suffices) | Yes — live `targets.yaml` `crypto` rows |
+| `cash_reserve` | Yes — 1 sealed finding (`cash_reserve_equity`: `role_preserving`) | Not asserted here (none needed) | Yes — live `targets.yaml` `cash`/`reserve` rows |
+| `debt_reduction` | Yes — 1 sealed finding (`debt_reduction_equity`: `role_preserving`) | Yes — the leverage-cap/buffer-floor passage (illustrative, §7.1) | **No** — no `targets.yaml` row exists for this sleeve |
+
+**Before this correction, `fund_broad_market` was the only one of the six sleeves with zero lawful
+Axis A basis available under the design's own stated rules** — the exact defect the review's
+Finding MAJOR-1 identified. **After this correction, every one of the six sleeves has at least one
+lawful basis available**, closing the gap without weakening `stronger_evidence_maturity`'s
+non-influence rule anywhere (Basis 3 never reads it; Basis 1/Basis 2 already excluded it). This
+table is reachability analysis only — it does not itself populate `portfolio_function_status` for
+any sleeve, and a future Stage 4c drafting session must still independently verify, cite, and seal
+the actual evidentiary basis it relies on for each sleeve, per the field schema in §14.
 
 ## 4. Axis B — Capital Eligibility
 
@@ -157,26 +264,86 @@ its own input field.
 
 ## 5. Axis C — Sizing Readiness
 
-**Field**: `sizing_readiness_status`, closed, exactly one of three values:
+**Field**: `sizing_readiness_status`, closed, exactly one of three values, **now incorporating
+relationship-coverage completeness (§5.1) as well as relationship disposition**:
 
 1. **`sizing_ready`** — `portfolio_function_status == function_confirmed_distinct` **and**
    `capital_eligibility_status == eligible_for_target_consideration` **and** no relationship record
-   naming this sleeve resolves `unable_to_determine`.
+   naming this sleeve resolves `unable_to_determine` **and** every one of this sleeve's required
+   relationship pairs (§5.1) is in the `sealed_determined` coverage state — zero `deferred_disclosed`
+   pairs remaining.
 2. **`sizing_conditionally_ready`** — both prior axes clear (`function_confirmed_distinct` and
-   `eligible_for_target_consideration`), but at least one relationship record naming this sleeve
+   `eligible_for_target_consideration`), no relationship record naming this sleeve resolves
+   `unable_to_determine`, but at least one of: a sealed relationship record naming this sleeve
    carries `evidence_partial_present`, `forced_abstention_present`, or
-   `overlap_or_duplication_disclosed` — numeric sizing work could reasonably begin, but only with the
-   specific disclosed caveat(s) carried forward explicitly, never silently dropped.
+   `overlap_or_duplication_disclosed`; **or** at least one of this sleeve's required relationship
+   pairs (§5.1) is in the `deferred_disclosed` coverage state — numeric sizing work could reasonably
+   begin, but only with the specific disclosed caveat(s) and every deferred pair carried forward
+   explicitly, never silently dropped or silently treated as clean.
 3. **`sizing_blocked`** — either prior axis fails to clear (`portfolio_function_status !=
    function_confirmed_distinct`, or `capital_eligibility_status == not_yet_eligible`), **or** any
-   relationship record naming this sleeve resolves `unable_to_determine`.
+   relationship record naming this sleeve resolves `unable_to_determine` (a `sealed_unresolved`
+   coverage state, §5.1 — strictly more severe than a `deferred_disclosed` pair, never treated as
+   equal to or better than one).
 
 Every `sizing_blocked` or `sizing_conditionally_ready` disposition **requires** a non-empty
 `blocking_evidence[]` list — one entry per contributing reason (a failed axis, a specific
-`unable_to_determine` relationship, a specific secondary condition) — never a bare status with no
-supporting trail. This directly answers the directive's own instruction ("state exactly what must be
-true before... numeric target percentages" — §9 below) at the per-sleeve level: a reader can trace,
-sleeve by sleeve, exactly which fact is missing.
+`unable_to_determine` relationship, a specific secondary condition, a specific deferred pair) — never
+a bare status with no supporting trail. This directly answers the directive's own instruction ("state
+exactly what must be true before... numeric target percentages" — §15 below) at the per-sleeve level:
+a reader can trace, sleeve by sleeve, exactly which fact is missing.
+
+### 5.1 Relationship coverage completeness — required, deferred, and missing distinguished
+
+**Bounded correction, review `pullrequestreview-4909703610`, MAJOR-1 (second half), resolved by this
+subsection**: the original §5 rule inspected only relationship records that *exist* — it had no
+mechanism distinguishing a sealed-but-unresolved pair (which actively blocks, per §5 point 3) from a
+pair that was simply never sealed at all (which, under the original rule, blocked nothing). The
+review correctly identified this as inverting `XASSET-0012` §5.2's own stated principle, restated in
+this design's §2 ("no absence of evidence may silently become neutral, favorable, or unfavorable"):
+an honestly-disclosed `unable_to_determine` finding was treated strictly worse than a pair that was
+simply never researched. **Resolved** by defining, for every sleeve, a closed, exhaustive
+**relationship coverage ledger** covering all five of its theoretically possible pairs (against each
+of the other five sleeves) — never the hypothetical fifteen `C(6,2)` pairs at large, and never
+inventing a future pair beyond what `XASSET-0012`/`XASSET-0013` already authorized or explicitly
+deferred:
+
+- **`sealed_determined`** — the pair is one of the seven `XASSET-0013` §C sealed records, and its own
+  `primary_disposition != unable_to_determine`.
+- **`sealed_unresolved`** — the pair is one of the seven sealed records, and its own
+  `primary_disposition == unable_to_determine` (today: `cash_reserve` ↔ `debt_reduction` only).
+- **`deferred_disclosed`** — the pair is **not** one of the seven sealed records, but is one of the
+  eight pairs `XASSET-0013` §E explicitly named and classified by deferral class (never a pair
+  outside that named, closed set of eight — a pair absent from both the sealed seven and the
+  disclosed eight would be a hard schema failure for the future validator, not a fourth coverage
+  state, since no such pair exists under the current, fully-accounted-for Stage 2/3 population:
+  7 sealed + 8 disclosed-deferred = 15, the complete `C(6,2)` set, with zero gaps).
+
+**Per-sleeve coverage, traced against the real sealed data (illustrative only, no disposition
+adopted)**: `equity` — 5 of 5 pairs `sealed_determined` (the batch's own "hub," per `XASSET-0013`
+§D), zero deferred. `fund_broad_market` — 1 of 5 `sealed_determined` (against `equity`), 4 of 5
+`deferred_disclosed` (`XASSET-0013` §E class 1, against `fund_gld_defensive`/`crypto`/
+`cash_reserve`/`debt_reduction`). `fund_gld_defensive` — 2 of 5 `sealed_determined` (against
+`equity`, `crypto`), 3 of 5 `deferred_disclosed` (§E classes 1–2, against `fund_broad_market`/
+`cash_reserve`/`debt_reduction`). `crypto` — 2 of 5 `sealed_determined` (against `equity`,
+`fund_gld_defensive`), 3 of 5 `deferred_disclosed` (§E classes 1/3, against `fund_broad_market`/
+`cash_reserve`/`debt_reduction`). `cash_reserve` — 1 of 5 `sealed_determined` (against `equity`),
+1 of 5 `sealed_unresolved` (against `debt_reduction`), 3 of 5 `deferred_disclosed` (§E classes
+1–3, against `fund_broad_market`/`fund_gld_defensive`/`crypto`). `debt_reduction` — 1 of 5
+`sealed_determined` (against `equity`), 1 of 5 `sealed_unresolved` (against `cash_reserve`), 3 of 5
+`deferred_disclosed` (§E classes 1–3, against `fund_broad_market`/`fund_gld_defensive`/`crypto`).
+
+**Direct consequence, disclosed honestly, not smoothed over**: under this corrected rule, `equity` is
+the only one of the six sleeves with zero `deferred_disclosed` pairs today — every other sleeve, even
+where Axis A and Axis B both independently clear, is mechanically capped at
+`sizing_conditionally_ready` at best (never `sizing_ready`) until a future relationship batch closes
+its own remaining deferred pairs. This is not a defect in the mechanism; it is the honest, structural
+reflection of `XASSET-0013`'s own explicitly bounded seven-of-fifteen first coverage batch, and it is
+exactly the kind of disclosure this repository's own "no absence of evidence may silently become
+favorable" principle exists to force into the open rather than leave implicit. A future relationship
+batch that seals one of the eight currently-deferred pairs recomputes the affected sleeves'
+coverage ledgers and Axis C values from scratch, per the same live-derivation discipline the rest of
+this design already applies.
 
 ## 6. `stronger_evidence_maturity` — mechanically prohibited from driving any axis
 
@@ -186,24 +353,35 @@ field on any Axis A/B/C computation may read `favored_sleeve_id`, and no draftin
 sleeve's status as `favored_sleeve_id` in a `stronger_evidence_maturity` relationship as grounds for
 any of:
 
-- automatically larger allocation (no numeric field exists at Stage 4 at all — §11);
-- automatic Axis A inclusion (`function_confirmed_distinct` requires a `role_preserving`/
-  `coexistence_supported` finding or a doctrine citation — `stronger_evidence_maturity` supplies
-  neither, by construction);
-- automatic preference in Axis C (`sizing_ready` requires *all three* underlying conditions
-  independently, none of which reference `favored_sleeve_id`).
+- automatically larger allocation (no numeric field exists at Stage 4 at all — §13);
+- automatic Axis A inclusion (`function_confirmed_distinct` requires one of §3.2's three lawful
+  bases — `stronger_evidence_maturity` supplies none of them, by construction, including the new
+  Basis 3, which reads no relationship record of any kind);
+- automatic preference in Axis C (`sizing_ready` requires *all four* underlying conditions
+  independently — Axis A, Axis B, zero `sealed_unresolved` pairs, and zero `deferred_disclosed`
+  pairs, per §5/§5.1 — none of which reference `favored_sleeve_id`).
 
-**A lower-maturity sleeve may still reach `function_confirmed_distinct`** — `debt_reduction` and
-`crypto` both illustrate this live (§7, §10). **A higher-maturity sleeve may still fail Axis C** — a
-future re-population where `equity`'s own relationship coverage develops a fresh `unable_to_determine`
+**A lower-maturity sleeve may still reach `function_confirmed_distinct`** — `debt_reduction`
+(§7.1) and `fund_broad_market` (§7.2, only reachable via the new Basis 3 after this correction)
+both illustrate this live. **A higher-maturity sleeve may still fail Axis C** — a future
+re-population where `equity`'s own relationship coverage develops a fresh `unable_to_determine`
 finding would force `equity` itself to `sizing_blocked` regardless of its own `stronger_evidence_
 maturity` standing against `crypto`/`fund_broad_market` today.
 
-**Mechanical enforcement, required of the future validator** (folded into §12 item 5): a
+**Mechanical enforcement, required of the future validator** (folded into §21 item 5): a
 counterfactual-masking test — recompute every sleeve's three axis values with every
 `stronger_evidence_maturity` relationship record's `favored_sleeve_id` field masked (set to a
 sentinel) and confirm **zero** axis value differs from the unmasked computation. This is a
 structural non-influence proof, not a drafting convention a reviewer must remember to check by eye.
+**Defensive strengthening, per the review's own non-blocking NOTE**: the future validator must also
+prove that the mere *presence* of a `stronger_evidence_maturity` disposition — independent of its
+`favored_sleeve_id` value — cannot influence any axis, by additionally recomputing every sleeve's
+axis values with every `stronger_evidence_maturity` relationship record's `primary_disposition`
+itself swapped for a different allowed non-role disposition (e.g. `coexistence_supported`) and
+confirming the *other* sleeve's own axis values (the one not directly named by that swapped
+disposition's own new evidentiary content) do not change for reasons attributable to the swap alone
+— no field in the current schema provides such a hook, so this is a defensive regression guard, not
+a fix to a live gap.
 
 ## 7. `role_preserving` / `coexistence_supported` — what they authorize and what they do not
 
@@ -215,7 +393,7 @@ These two values **may**:
 
 They **may not**:
 
-- guarantee a positive numeric target — no numeric field exists anywhere in this schema (§11);
+- guarantee a positive numeric target — no numeric field exists anywhere in this schema (§13);
 - determine target size in any way — a `role_preserving` finding says nothing about *how much*
   capital either sleeve should receive, only that neither's evidence base displaces the other's;
 - prevent future exclusion if later evidence changes — every Axis A/B/C value is a **live-derived**
@@ -233,14 +411,19 @@ They **may not**:
 this filing performs no Stage 4b/4c population; no value below is adopted by this filing**):
 
 - `debt_reduction_equity.yaml` resolves `role_preserving` — an independent, sealed relationship
-  finding, entirely separate from `debt_reduction`'s own `functional_doctrine/DEBT_REDUCTION.yaml`
-  economic-assessment layer. Combined with `CLAUDE.md`'s own Portfolio Doctrine explicitly naming
-  margin paydown as a governed capital use (the 1.8x leverage cap, the 30% buffer floor, the
-  forced-de-lever guardrail), Axis A's evidentiary bar (§3, requiring a `role_preserving`/
-  `coexistence_supported` finding *or* a doctrine citation) is, on its face, met — a future Stage 4c
-  implementation would need to independently confirm this, but the mechanism does not structurally
-  block `debt_reduction` from `function_confirmed_distinct` merely because its own economic
-  assessment is thin.
+  finding (Basis 1, §3.2), entirely separate from `debt_reduction`'s own
+  `functional_doctrine/DEBT_REDUCTION.yaml` economic-assessment layer, and independently sufficient
+  on its own to satisfy Axis A's evidentiary bar. `CLAUDE.md`'s own Portfolio Doctrine explicitly
+  naming margin paydown as a governed capital use (the 1.8x leverage cap, the 30% buffer floor, the
+  forced-de-lever guardrail) also supplies a valid, independent Basis 2 citation for
+  `debt_reduction` — **available, but not load-bearing for it specifically**, since Basis 1 already
+  suffices on its own (corrected per the review's own non-blocking NOTE — the original text's claim
+  that `debt_reduction` is "the only sleeve today for which this... path matters" was imprecise:
+  `debt_reduction` clears via Basis 1 alone, and Basis 2 is now, after this correction, a generally
+  available basis for any sleeve with real, quotable doctrine text, not a `debt_reduction`-specific
+  exception). A future Stage 4c implementation would need to independently confirm and cite whichever
+  basis it actually relies on, but the mechanism does not structurally block `debt_reduction` from
+  `function_confirmed_distinct` merely because its own economic assessment is thin.
 - `debt_reduction.yaml`'s own `evidence_coverage_profile` is `forced_abstention` — Axis B's
   mechanical rule (§4) forces `capital_eligibility_status: not_yet_eligible`, with **zero override
   path**, regardless of Axis A's outcome.
@@ -257,6 +440,42 @@ this filing performs no Stage 4b/4c population; no value below is adopted by thi
   dependency the mechanism itself surfaces, matching the same "disclosed, not assumed" discipline
   `TIER-0009` §K already applied when it disclosed `target_and_range`/`maximum_position_size` as
   forced `valuation_required` for every equity.
+
+### 7.2 Worked illustration — `fund_broad_market`, mechanism trace only, no disposition adopted
+
+**Added by this bounded correction.** `fund_broad_market`'s live sealed evidence, traced through the
+corrected mechanism (**illustrative only — no value below is adopted by this filing**), directly
+demonstrating why Finding MAJOR-1's fix (§3.2's Basis 3) was required:
+
+- `equity_fund_broad_market.yaml`, `fund_broad_market`'s **only** sealed relationship record, resolves
+  `stronger_evidence_maturity` (favoring `equity`) — mechanically excluded from supplying Axis A
+  grounds (§6). No sealed relationship record anywhere names `fund_broad_market` with a
+  `role_preserving`/`coexistence_supported` finding — **Basis 1 is unavailable** for this sleeve
+  today, a genuinely different situation from every other of the six sleeves (§3.3).
+- No dedicated, directly-quotable `CLAUDE.md` doctrine passage specific to the ETF sleeve's own
+  distinct function (as opposed to GLD's or debt-reduction's own dedicated passages) is identified or
+  asserted by this design — **Basis 2 is not relied upon** for `fund_broad_market`, consistent with
+  §3.2's own refusal to manufacture doctrine text that does not exist.
+- `fund_broad_market`'s own live `targets.yaml` `asset_class: fund` scope (SPY, VEA, VWO), per
+  `XASSET-0012` §2's own accepted mapping table, is independently confirmed live-populated —
+  **Basis 3 is available**, on a purely categorical, sleeve-level basis, independent of any
+  relationship record's disposition and independent of `evidence_coverage_profile`'s own value. A
+  future Stage 4c implementation citing Basis 3 for `fund_broad_market` would name only the
+  category's live existence, never SPY's, VEA's, or VWO's own individual `target_pct` value.
+- With Basis 3 available, the mechanism no longer structurally forecloses
+  `function_confirmed_distinct` for `fund_broad_market` — but this filing does not itself determine
+  whether a future Stage 4c drafting session would actually reach that value, only that the
+  evidentiary path to do so now exists and is mechanically sound, closing the gap the review's Finding
+  MAJOR-1 identified.
+- Independently of Axis A, `fund_broad_market`'s own sealed profile carries
+  `evidence_coverage_profile: substantially_computed_with_disclosed_gaps` — Axis B (§4) would resolve
+  `eligible_for_target_consideration`.
+- On Axis C (§5/§5.1), `fund_broad_market` carries 4 of its 5 possible relationship pairs in the
+  `deferred_disclosed` coverage state (`XASSET-0013` §E class 1) and 1 `sealed_determined` (against
+  `equity`) — even with Axis A and Axis B both clearing, Axis C is mechanically capped at
+  `sizing_conditionally_ready` at best, never `sizing_ready`, until a future relationship batch closes
+  its remaining deferred pairs. Both facts — a now-reachable Axis A and a structurally capped Axis
+  C — stay independently visible, exactly the discipline three separate axes exist to preserve.
 
 ## 8. Abstention handling — no answer is forced merely because the schema requires one
 
@@ -300,9 +519,19 @@ underlying, still-open `CASH`/`RESERVE` consolidation question. The future Stage
 - be mechanically barred, by the same dedicated distinction-language scan `economic_assessment_
   validator.py`'s own `_contains_cash_reserve_distinction_claim()`-shaped check already implements
   for the economic-assessment layer, from ever asserting that `CASH` and `RESERVE` individually
-  warrant different Axis A/B/C treatment (§12 item 12).
+  warrant different Axis A/B/C treatment (§21 item 12).
 
 ## 10. `fund_broad_market` / `equity` overlap — disclosed coordination flag, not a subtraction
+
+**Bounded correction, review `pullrequestreview-4909703610`, MAJOR-1, resolved**: the original text
+below asserted that overlap disclosure "may never... force `fund_broad_market`'s Axis A below
+`function_confirmed_distinct`," justified by citing SPY's own `targets.yaml` weight (an
+*individual-instrument* fact, per `XASSET-0013` §D) — a fact the review correctly found was neither
+one of §3's then-stated evidentiary bases nor a citable source under §14's own field-design
+restriction, and which, worse, was never actually reachable for `fund_broad_market` under the
+original two-basis rule at all (§3.3). The specific instrument-weight justification is **withdrawn**
+and replaced below with the correct, sleeve-level Basis 3 (§3.2) — the outcome sentence is corrected,
+not merely re-justified, since there was no confirmed floor to protect until Basis 3 existed.
 
 `equity_fund_broad_market.yaml`'s own `stronger_evidence_maturity` (favoring `equity`) **must not**
 be read as evidence that SPY/VEA/VWO are unnecessary — restating §6's boundary at this specific,
@@ -313,10 +542,12 @@ eventual Level 1 numeric sizing (a future, separate stage entirely) should be co
 with `equity`'s own sizing rather than independently, given the disclosed overlap. It may **never**:
 
 - silently net or subtract capital from `fund_broad_market`'s own eventual sizing;
-- force `fund_broad_market`'s Axis A below `function_confirmed_distinct` — `fund_broad_market`'s own
-  governed evidence (SPY alone is `targets.yaml`'s single largest destination weight today, per
-  `XASSET-0013` §D) independently supports its own distinct-function reading, regardless of the
-  overlap disclosure;
+- force `fund_broad_market`'s Axis A below whatever value its own lawful evidentiary basis (or bases,
+  per §3.2) actually supports — the overlap disclosure is a Axis C caveat only and carries zero Axis
+  A authority of any kind. `fund_broad_market`'s own live `targets.yaml asset_class: fund` category
+  membership (Basis 3, §3.2/§7.2) — a categorical, sleeve-level structural fact, never an individual
+  instrument's own weight — is the evidentiary path available to it, independent of and unaffected by
+  the overlap disclosure;
 - imply any specific netting formula, ratio, or adjustment of any kind — the flag is descriptive
   only; any actual joint-sizing treatment is Level 1 numeric-sizing content, a wholly separate,
   unauthorized future stage (§15).
@@ -338,7 +569,7 @@ carries the same "no size, no guarantee, no permanence" restrictions.
 Stage 4 is sleeve-level only, exactly as Stage 1–3 already were. No Stage 4 record of any kind may
 name, weight, or size an individual equity ticker, ETF, or coin. The Level 1/Level 2 leakage scan
 `XASSET-0012` §9 item 9 already built for Stage 1–3 is reused, unmodified, against Stage 4's own
-free-text and structural fields (§12 item 9 below) — this design invents no new leakage-check logic,
+free-text and structural fields (§21 item 9 below) — this design invents no new leakage-check logic,
 it extends an existing one to a new schema.
 
 ## 13. Zero numeric fields — no carve-out, restated
@@ -373,20 +604,34 @@ profile_reference                # one hash pin into this sleeve's own sealed sl
 relationship_references[]        # hash pins into every sealed sleeve_relationship record naming
                                   #   this sleeve (0-5 today, depending on sleeve)
 portfolio_function_status        # closed, Axis A -- SS3
-function_rationale               # free text; may cite only the profile/relationship references
-                                  #   above plus, for debt_reduction only, a direct CLAUDE.md
-                                  #   Portfolio Doctrine citation -- no fabricated evidence
+function_rationale               # free text; may cite only: (a) the profile/relationship
+                                  #   references above; (b) a direct, verbatim-quoted CLAUDE.md
+                                  #   Portfolio Doctrine/Decisions Log citation, available to any
+                                  #   sleeve where a genuine passage exists (Basis 2, SS3.2 --
+                                  #   corrected by this filing's bounded correction; no longer
+                                  #   debt_reduction-only); or (c) this sleeve's own live
+                                  #   targets.yaml destination-category membership per XASSET-0012
+                                  #   SS2's fixed table (Basis 3, SS3.2, new) -- never an
+                                  #   individual instrument's own weight, target, or rank -- no
+                                  #   fabricated evidence
 abstention_index[]               # non-empty abstention_reason required wherever Axis A ==
                                   #   unable_to_determine
 capital_eligibility_status       # closed, Axis B -- SS4, mechanically re-derived at validation
                                   #   time from the cited profile's own live evidence_coverage_
                                   #   profile, never self-declared
-sizing_readiness_status          # closed, Axis C -- SS5
+sizing_readiness_status          # closed, Axis C -- SS5/SS5.1
 blocking_evidence[]              # non-empty wherever Axis C != sizing_ready -- one entry per
                                   #   contributing reason (failed axis / named unresolved
-                                  #   relationship / named secondary condition)
+                                  #   relationship / named deferred pair / named secondary
+                                  #   condition)
 unresolved_relationships[]       # every relationship_references[] entry whose own primary_
                                   #   disposition == unable_to_determine, named explicitly
+relationship_coverage_ledger[]   # new, this filing's bounded correction -- exactly five entries
+                                  #   (this sleeve's five possible pairs against every other
+                                  #   sleeve), each {other_sleeve_id, coverage_state:
+                                  #   sealed_determined | sealed_unresolved | deferred_disclosed,
+                                  #   reference} -- SS5.1; mechanically enumerated and
+                                  #   cross-checked, never self-declared or partially populated
 overlap_coordination_notes[]     # optional; disclosed-caveat-only entries per SS10, never a
                                   #   sizing formula
 cash_reserve_consolidation_note  # required, cash_reserve record only -- SS9
@@ -401,6 +646,12 @@ trusted from a stored value — the identical discipline every prior structural 
 repository already follows.
 
 ## 15. Gate to numeric Level 1 sizing — what must be true before a single percentage exists
+
+**Bounded correction, review `pullrequestreview-4909703610`, adopting its own suggested condition,
+resolved**: extended from ten to eleven conditions, adding relationship-coverage-ledger completeness
+(new condition 11) — the review's own recommended fix for the second half of Finding MAJOR-1, closing
+the same gap §5.1's new coverage-ledger mechanism closes at the per-sleeve level, restated here as a
+gate-level, whole-population completeness requirement.
 
 Numeric Level 1 sleeve-level sizing (`XASSET-0001` §J step 9, "sleeve-level candidate targets") may
 not be authorized to begin until **all** of the following hold, none of them satisfied by this
@@ -430,14 +681,23 @@ design filing:
    resolving the underlying `CASH`/`RESERVE` question.
 8. The counterfactual-masking non-influence proof (§6) passes for every sleeve — no axis value is
    traceable to a `stronger_evidence_maturity` finding alone.
-9. A dedicated future Stage 4 validator module (§16) exists, is independently reviewed, and passes —
+9. A dedicated future Stage 4 validator module (§21) exists, is independently reviewed, and passes —
    closed schema, mechanical Axis B re-derivation, the non-influence proof, every forbidden-language
-   scan (§17), and manifest reconciliation.
+   scan (§21), and manifest reconciliation.
 10. No sleeve's `sizing_readiness_status` was upgraded by anything other than the mechanical rule in
-    §5 — a dedicated audit trail (not a drafting-session assertion) proving every `sizing_ready`
-    disposition independently satisfies all three of §5's own stated conditions.
+    §5/§5.1 — a dedicated audit trail (not a drafting-session assertion) proving every `sizing_ready`
+    disposition independently satisfies all four of §5's own stated conditions (Axis A, Axis B, zero
+    `sealed_unresolved` pairs, zero `deferred_disclosed` pairs).
+11. **New, this filing's bounded correction.** For every sleeve, its own `relationship_coverage_
+    ledger[]` (§5.1/§14) is fully populated across all five of its possible relationship pairs, with
+    zero unaccounted-for pairs and zero pairs silently treated as clean — each pair correctly
+    classified `sealed_determined`, `sealed_unresolved`, or `deferred_disclosed` by live
+    cross-reference against the seven sealed `sleeve_relationship` records and `XASSET-0013` §E's own
+    eight explicitly-named deferred pairs. No sleeve reaches `sizing_ready` with any
+    `deferred_disclosed` pair still outstanding — a `deferred_disclosed` pair may support at most
+    `sizing_conditionally_ready`, per §5's own mechanical rule.
 
-**Even once all ten conditions hold, this design filing does not itself authorize numeric Level 1
+**Even once all eleven conditions hold, this design filing does not itself authorize numeric Level 1
 sizing** — it defines what must be true before a future, wholly separate, explicitly authorized
 governance filing (its own `XASSET-####` identifier, its own independent-review lifecycle) may begin
 that work. Satisfying this gate is necessary, never sufficient, for that future authorization.
@@ -449,7 +709,8 @@ a future Stage 4b content-authorization filing, or by a future Stage 4c implemen
 downstream of, in strict order: actual Stage 4 adoption (Stage 4b + Stage 4c, both separately
 authorized and completed); Level 1 numeric sleeve sizing (§15, its own separate future
 authorization); Level 2 instrument selection/sizing within each sleeve's approved budget; required
-risk/overlap validation (§18); and unlevered-portfolio validation (§19). `OPS-0007` §5's own narrow,
+risk/overlap validation and unlevered-portfolio validation (§17); with margin/leverage research
+following only after (§19). `OPS-0007` §5's own narrow,
 scenario-only, cash-only, zero-margin allocation-check display bridge is a **separate, already-bounded
 authorization** that this filing neither reactivates, expands, nor references as a shortcut around
 any of the above — it remains exactly as bounded as `OPS-0007` left it.
@@ -507,7 +768,7 @@ sealed. It does not reopen `VRT`/`WMT` (`CONTENDER-0003`), the remaining 82 cont
 entries, `QQQ`, or any broader ETF search — restating, not narrowing or widening,
 `XASSET-0012` §7's own contender/ETF/QQQ boundary at the Stage 4 layer. The future Stage 4c record
 schema (§14) includes no field naming a contender or a ticker outside the sealed six-sleeve
-population; a dedicated scan (§17 item 8) enforces this mechanically.
+population; a dedicated scan (§21 item 16) enforces this mechanically.
 
 **Forward-compatibility, not expansion**: `XASSET-0012` §7 already states that "a future, separately
 authorized synthesis *refresh* may incorporate contender-driven evidence once a capital-priority
@@ -529,8 +790,9 @@ implementing session's own choice to justify, mirroring `XASSET-0006` §A point 
 direction, at minimum:
 
 1. Closed schema at every nesting level (envelope, `abstention_index` entry, `blocking_evidence`
-   entry, `unresolved_relationships` entry, `overlap_coordination_notes` entry, manifest row) —
-   extra-key rejection, not merely missing-key checks.
+   entry, `unresolved_relationships` entry, `relationship_coverage_ledger` entry,
+   `overlap_coordination_notes` entry, manifest row) — extra-key rejection, not merely missing-key
+   checks.
 2. Exactly six `sleeve_id` values, closed, matching `XASSET-0012` §2 exactly; at most one Stage 4c
    record per sleeve.
 3. Live, independent recomputation of `profile_reference` and every `relationship_references[]`
@@ -546,8 +808,9 @@ direction, at minimum:
 6. **Axis C mechanical consistency** — a dedicated test proving a record claiming `sizing_ready`
    while `portfolio_function_status != function_confirmed_distinct`, or
    `capital_eligibility_status != eligible_for_target_consideration`, or
-   `unresolved_relationships[]` is non-empty, is rejected; and that every `sizing_blocked`/
-   `sizing_conditionally_ready` record carries a non-empty `blocking_evidence[]`.
+   `unresolved_relationships[]` is non-empty, or any `relationship_coverage_ledger[]` entry is
+   `deferred_disclosed`, is rejected; and that every `sizing_blocked`/`sizing_conditionally_ready`
+   record carries a non-empty `blocking_evidence[]`.
 7. Zero numeric fields anywhere — a bare-digit/percent/ratio scan **plus** a written-out
    magnitude-comparison-word scan (times/twice/doubled/tripled/-fold/halved), matching
    `XASSET-0012` §9 item 7 exactly.
@@ -606,7 +869,69 @@ direction, at minimum:
     self-triggering item 13's scan — the same governance-text-versus-populated-record distinction
     `XASSET-0012` §8.1's own false-positive guard already draws for its analogous boundary.
 
-## 22. Sequence — Stage 4 itself is not collapsed
+**Added by this bounded correction (review `pullrequestreview-4909703610`, resolving Finding
+MAJOR-1):**
+
+21. **Basis 3 mechanical check** (§3.2) — a dedicated test proving a `function_rationale` citing the
+    structural sleeve-definition basis is rejected unless the sleeve's own `targets.yaml
+    asset_class` scope, per `XASSET-0012` §2's fixed table, is independently, live-confirmed to
+    carry at least one current destination row — never self-declared; a dedicated test proving a
+    Basis 3 citation referencing any `evidence_coverage_profile` value, any `favored_sleeve_id`, or
+    any individual destination row's own `target_pct` is rejected outright (Basis 3 must never be
+    usable as an evidence-maturity or per-instrument-weight proxy); a dedicated test proving Basis 3
+    is unavailable for `debt_reduction` (no `targets.yaml` row exists per `XASSET-0012` §2).
+22. **Generalized Basis 2 structural requirement** (§3.2) — a dedicated test proving a doctrine
+    citation is structurally required to be non-empty and distinct from a generic or templated
+    placeholder string for whichever of the six sleeves it is claimed on (no longer
+    `debt_reduction`-restricted); the future validator cannot semantically verify `CLAUDE.md` prose
+    content, so the genuine correctness burden for a Basis 2 citation rests on Stage 4c's own
+    required independent-review process, matching how this repository's existing validators already
+    treat every other free-text citation field.
+23. **Relationship-coverage-ledger completeness** (§5.1) — a dedicated test proving every sleeve's
+    `relationship_coverage_ledger[]` enumerates exactly its own five possible pairs (never fewer,
+    never a duplicate, never a sixth); a dedicated test proving each entry's `coverage_state` is
+    correctly, live-derived by cross-reference against the seven sealed `sleeve_relationship`
+    records and `XASSET-0013` §E's own eight named, closed deferred-pair set (no future pair may be
+    silently added to "deferred" without its own governance citation — an unrecognized pair, present
+    in neither the sealed seven nor the disclosed eight, is a hard schema failure, not a fourth
+    coverage state); a dedicated test proving a sleeve with any `deferred_disclosed` entry cannot
+    reach `sizing_ready` (only `sizing_conditionally_ready` at best); a dedicated test proving a
+    sleeve with zero `deferred_disclosed` and zero `sealed_unresolved` entries and both prior axes
+    clear reaches `sizing_ready` (the `equity` case, illustrative per §5.1).
+24. **The `stronger_evidence_maturity` presence-independent non-influence regression guard** (§6) —
+    a defensive test, beyond the primary `favored_sleeve_id`-masking proof (item 5), proving that
+    swapping a `stronger_evidence_maturity` relationship record's own `primary_disposition` for a
+    different allowed non-role disposition does not change any *other* sleeve's axis values for
+    reasons attributable to the swap alone — a regression guard against a future schema change
+    accidentally introducing a presence-based influence hook, not a fix to any hook that exists
+    today.
+
+## 22. Axis-interaction adversarial cases — reachability audit, illustrative only
+
+**Added by this bounded correction, per the directive's own explicit adversarial-case requirement.**
+No disposition is adopted for any sleeve by this section — every result below is a methodology
+reachability determination only, most already independently verified by the review itself (its own
+§24), reproduced here as the design document's own explicit, auditable record so a future reader
+never has to re-derive it from the review comment alone.
+
+| Case | Scenario | Axis A | Axis B | Axis C |
+|---|---|---|---|---|
+| A | Role distinct (Basis 1/2/3) + evidence partial + all required pairs `sealed_determined`, no `unable_to_determine` | `function_confirmed_distinct` | `eligible_for_target_consideration` | `sizing_conditionally_ready` (evidence-partial caveat only) |
+| B | Role unresolved (no basis available) + evidence complete | `function_status_unresolved` | (irrelevant — Axis A gate fails) | `sizing_blocked` |
+| C | Role distinct + capital forced-abstained | `function_confirmed_distinct` | `not_yet_eligible` | `sizing_blocked` — matches `debt_reduction` exactly (§7.1) |
+| D | Role distinct + evidence complete + one required pair `sealed_unresolved` | `function_confirmed_distinct` | `eligible_for_target_consideration` | `sizing_blocked` — matches `cash_reserve`/`debt_reduction`'s own live pair exactly (§8) |
+| E | `stronger_evidence_maturity` only, no offsetting Basis 1/2/3 evidence | `function_status_unresolved` | (irrelevant) | `sizing_blocked` — was `fund_broad_market`'s exact pre-correction situation; Basis 3 now supplies an independent path (§7.2) |
+| F | Role-preserving + overlapping/duplicative sleeve | Axis A clears via Basis 1/3 independent of the overlap | (unaffected) | overlap surfaces only as an Axis C caveat, never a subtraction (§10) |
+| G | Role unresolved + zero evidence gaps otherwise | `function_status_unresolved` | `eligible_for_target_consideration` | `sizing_blocked` via the Axis A gate alone — `blocking_evidence` cites only the Axis A gap |
+| H | A required pair is `deferred_disclosed` (not in the sealed seven, but named in `XASSET-0013` §E's own eight) | (independent of this case) | (independent of this case) | `sizing_conditionally_ready` at best, never `sizing_ready` — the pair is disclosed, not silently treated as clean (§5.1) |
+
+No case above produces an ambiguous or underived result under the corrected methodology — every
+outcome is a deterministic function of the mechanical rules in §3.2/§4/§5/§5.1/§6. Case E is the
+concrete, real-data instance of Finding MAJOR-1 this correction resolves (§7.2); Case H is the
+concrete, real-data instance of Finding MAJOR-1's second half (every non-`equity` sleeve today, per
+§5.1's own per-sleeve table).
+
+## 23. Sequence — Stage 4 itself is not collapsed
 
 1. **Stage 4a — this design** (`XASSET-0014`). Methodology only.
 2. **Stage 4b — future content authorization.** A future, separate, bounded filing must name the
@@ -615,7 +940,7 @@ direction, at minimum:
 3. **Stage 4c — future implementation/population.** Builds the validator and populates exactly the
    records Stage 4b authorized.
 4. **Numeric Level 1 sizing (`XASSET-0001` §J step 9) — its own separate, later, wholly distinct
-   future authorization**, gated on §15's ten conditions, not a Stage 4 sub-step at all.
+   future authorization**, gated on §15's eleven conditions, not a Stage 4 sub-step at all.
 
 No sub-stage above may be collapsed into another by this design or by any future filing acting under
 it.
