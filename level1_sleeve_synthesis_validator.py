@@ -1015,6 +1015,45 @@ def _compute_equity_coverage(repo_root: Path) -> tuple[str, list[_AbstentionFind
             "carry a market-observed-evidence abstention rather than a fully populated market-price "
             "input, per that layer's own disclosed gap",
         ))
+    # Same evidence layer, three further domains its own schema (valuation_
+    # evidence_validator.py's own _FINANCIAL_EVIDENCE_ALLOWED_KEYS/_PEER_
+    # SET_EVIDENCE_ALLOWED_KEYS/_SCENARIO_EVIDENCE_ALLOWED_KEYS) permits an
+    # identical abstention_reason on, not previously scanned here -- closing
+    # the class this domain's own schema defines, not merely the specific
+    # domains a live record happened to already exercise.
+    financial_abstained = [
+        t for t, r in evidence.items()
+        if isinstance(r.get("financial_evidence"), dict) and r["financial_evidence"].get("abstention_reason")
+    ]
+    if financial_abstained:
+        findings.append(_AbstentionFinding(
+            "valuation_evidence", "financial_evidence",
+            "a disclosed minority of the equity sleeve's own sealed valuation-evidence records "
+            "carry a financial-evidence abstention rather than a fully populated financial-statement "
+            "history, per that layer's own disclosed gap",
+        ))
+    peer_set_abstained = [
+        t for t, r in evidence.items()
+        if isinstance(r.get("peer_set_evidence"), dict) and r["peer_set_evidence"].get("abstention_reason")
+    ]
+    if peer_set_abstained:
+        findings.append(_AbstentionFinding(
+            "valuation_evidence", "peer_set_evidence",
+            "a disclosed minority of the equity sleeve's own sealed valuation-evidence records "
+            "carry a peer-set-evidence abstention rather than a populated comparability candidate "
+            "set, per that layer's own disclosed gap",
+        ))
+    scenario_abstained = [
+        t for t, r in evidence.items()
+        if isinstance(r.get("scenario_evidence"), dict) and r["scenario_evidence"].get("abstention_reason")
+    ]
+    if scenario_abstained:
+        findings.append(_AbstentionFinding(
+            "valuation_evidence", "scenario_evidence",
+            "a disclosed minority of the equity sleeve's own sealed valuation-evidence records "
+            "carry a scenario-evidence abstention rather than a populated scenario-variable basis, "
+            "per that layer's own disclosed gap",
+        ))
     archetype_abstained = [
         t for t, r in _load_dir_records(repo_root, "intelligence/valuation_archetype").items()
         if r.get("primary_archetype") == "unable_to_determine_archetype"
@@ -1050,6 +1089,22 @@ def _compute_fund_broad_market_coverage(repo_root: Path) -> tuple[str, list[_Abs
             "every fund in the broad-market sleeve's own sealed instrument-economic-assessment "
             "cohort carries a disclosed partial evidence-quality status",
         ))
+    # Same layer, the fund-scoped sibling abstention-capable field
+    # (instrument_economic_assessment_validator.py's own
+    # _COST_TRACKING_ALLOWED_KEYS/abstention_reason pairing on
+    # cost_and_tracking_quality_economic_significance), not previously
+    # scanned.
+    cost_abstained = [
+        t for t, r in iea_scoped.items()
+        if isinstance(r.get("cost_and_tracking_quality_economic_significance"), dict)
+        and r["cost_and_tracking_quality_economic_significance"].get("significance_category") == "unable_to_determine"
+    ]
+    for t in cost_abstained:
+        findings.append(_AbstentionFinding(
+            "instrument_economic_assessment",
+            f"{t}.cost_and_tracking_quality_economic_significance",
+            "unable_to_determine",
+        ))
     return SUBSTANTIALLY_COMPUTED_WITH_DISCLOSED_GAPS, findings
 
 
@@ -1070,6 +1125,21 @@ def _compute_fund_gld_defensive_coverage(repo_root: Path) -> tuple[str, list[_Ab
             "GLD_DEFENSIVE_ROLE's own sealed functional-doctrine record carries a forced "
             "assessment-required abstention on its economic-assessment readiness",
         ))
+    # Three further functional_doctrine-schema abstention-capable fields,
+    # not previously scanned for GLD_DEFENSIVE_ROLE -- same class as the
+    # cash_reserve/debt_reduction extension above.
+    fr = fd.get("functional_role")
+    if isinstance(fr, dict) and fr.get("role_category") == "unable_to_determine":
+        findings.append(_AbstentionFinding("functional_doctrine", "functional_role", "unable_to_determine"))
+    lc = fd.get("liquidity_character")
+    if isinstance(lc, dict) and lc.get("liquidity_category") == "unable_to_determine":
+        findings.append(_AbstentionFinding("functional_doctrine", "liquidity_character", "unable_to_determine"))
+    cp = fd.get("capital_preservation_character")
+    if isinstance(cp, dict) and cp.get("capital_preservation_category") == "unable_to_determine":
+        findings.append(_AbstentionFinding("functional_doctrine", "capital_preservation_character", "unable_to_determine"))
+    fs = fd.get("freshness_state")
+    if isinstance(fs, dict) and fs.get("status") == "unable_to_determine_freshness":
+        findings.append(_AbstentionFinding("functional_doctrine", "freshness_state.status", "unable_to_determine_freshness"))
     ea = _load_dir_records(repo_root, "intelligence/economic_assessment").get("GLD", {})
     if ea.get("evidence_quality_status") == "partial":
         findings.append(_AbstentionFinding(
@@ -1108,6 +1178,23 @@ def _compute_crypto_coverage(repo_root: Path) -> tuple[str, list[_AbstentionFind
             f"{t}.macro_behavioral_characterization.historical_equity_market_drawdown_behavior",
             "unable_to_determine",
         ))
+    # Same layer, the crypto-scoped sibling abstention-capable field
+    # (instrument_economic_assessment_validator.py's own
+    # _INFLATION_SENSITIVITY_VALUES/abstention_reason pairing on
+    # macro_behavioral_characterization.historical_inflation_sensitivity_
+    # narrative), not previously scanned.
+    inflation_abstained = [
+        t for t, r in iea_scoped.items()
+        if isinstance(r.get("macro_behavioral_characterization"), dict)
+        and isinstance(r["macro_behavioral_characterization"].get("historical_inflation_sensitivity_narrative"), dict)
+        and r["macro_behavioral_characterization"]["historical_inflation_sensitivity_narrative"].get("sensitivity_category") == "unable_to_determine"
+    ]
+    for t in inflation_abstained:
+        findings.append(_AbstentionFinding(
+            "instrument_economic_assessment",
+            f"{t}.macro_behavioral_characterization.historical_inflation_sensitivity_narrative",
+            "unable_to_determine",
+        ))
     return SUBSTANTIALLY_COMPUTED_WITH_DISCLOSED_GAPS, findings
 
 
@@ -1122,6 +1209,20 @@ def _compute_cash_reserve_coverage(repo_root: Path) -> tuple[str, list[_Abstenti
         ear = rec.get("economic_assessment_readiness")
         if isinstance(ear, dict) and ear.get("status") == "assessment_required":
             findings.append(_AbstentionFinding("functional_doctrine", f"{t}.economic_assessment_readiness", "assessment_required"))
+        # Three further functional_doctrine-schema abstention-capable
+        # fields (functional_doctrine_validator.py's own
+        # _LIQUIDITY_CHARACTER_ALLOWED_KEYS/_CAPITAL_PRESERVATION_ALLOWED_
+        # KEYS/_FRESHNESS_STATUS_VALUES), not previously scanned for
+        # CASH/RESERVE.
+        lc = rec.get("liquidity_character")
+        if isinstance(lc, dict) and lc.get("liquidity_category") == "unable_to_determine":
+            findings.append(_AbstentionFinding("functional_doctrine", f"{t}.liquidity_character", "unable_to_determine"))
+        cp = rec.get("capital_preservation_character")
+        if isinstance(cp, dict) and cp.get("capital_preservation_category") == "unable_to_determine":
+            findings.append(_AbstentionFinding("functional_doctrine", f"{t}.capital_preservation_character", "unable_to_determine"))
+        fs = rec.get("freshness_state")
+        if isinstance(fs, dict) and fs.get("status") == "unable_to_determine_freshness":
+            findings.append(_AbstentionFinding("functional_doctrine", f"{t}.freshness_state.status", "unable_to_determine_freshness"))
     ea = _load_dir_records(repo_root, "intelligence/economic_assessment").get("CASH_LIKE_CAPITAL", {})
     if ea.get("evidence_quality_status") == "partial":
         findings.append(_AbstentionFinding(
@@ -1143,6 +1244,18 @@ def _compute_debt_reduction_coverage(repo_root: Path) -> tuple[str, list[_Absten
     fs = fd.get("freshness_state")
     if isinstance(fs, dict) and fs.get("status") == "unable_to_determine_freshness":
         findings.append(_AbstentionFinding("functional_doctrine", "freshness_state.status", "unable_to_determine_freshness"))
+    # Three further functional_doctrine-schema abstention-capable fields,
+    # not previously scanned for DEBT_REDUCTION -- same class as the
+    # cash_reserve/fund_gld_defensive extension above.
+    fr = fd.get("functional_role")
+    if isinstance(fr, dict) and fr.get("role_category") == "unable_to_determine":
+        findings.append(_AbstentionFinding("functional_doctrine", "functional_role", "unable_to_determine"))
+    lc = fd.get("liquidity_character")
+    if isinstance(lc, dict) and lc.get("liquidity_category") == "unable_to_determine":
+        findings.append(_AbstentionFinding("functional_doctrine", "liquidity_character", "unable_to_determine"))
+    cp = fd.get("capital_preservation_character")
+    if isinstance(cp, dict) and cp.get("capital_preservation_category") == "unable_to_determine":
+        findings.append(_AbstentionFinding("functional_doctrine", "capital_preservation_character", "unable_to_determine"))
     # debt_reduction carries no separate economic_assessment/<subject>.yaml
     # record at all (unlike fund_gld_defensive/cash_reserve) -- its entire
     # economic-assessment-equivalent layer is the functional_doctrine

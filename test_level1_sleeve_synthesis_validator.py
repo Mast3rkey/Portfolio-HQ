@@ -1183,6 +1183,162 @@ class TestLiveHashStalenessAgainstRealRepository:
 
 
 # ===========================================================================
+# Same-class child-abstention coverage extension (independent post-push
+# delta review round 2, pullrequestreview-4907960177 -- MINOR finding).
+#
+# The round-2 bounded-same-class-audit correctly found zero LIVE
+# discrepancy (every declared abstention_index was accurate), but its own
+# "no 4th domain"/"zero additional omissions" claim was inaccurate at the
+# SCHEMA level: several further abstention-capable fields, permitted by
+# their own source schema's own closed vocabulary
+# (valuation_evidence_validator.py's financial_evidence/peer_set_evidence/
+# scenario_evidence; functional_doctrine_validator.py's
+# liquidity_character/capital_preservation_character plus incomplete
+# per-record functional_role/freshness_state coverage;
+# instrument_economic_assessment_validator.py's
+# historical_inflation_sensitivity_narrative/cost_and_tracking_quality_
+# economic_significance), were never scanned by any Level 1 coverage
+# function -- currently 0/N live-abstained everywhere (independently
+# reconfirmed below), so no real record's declared abstention_index was
+# ever actually wrong, but the same latent-repeat risk the review named.
+#
+# Fixed the same way the prior two MAJOR findings were fixed: extend each
+# affected coverage function to also scan the field, using the exact same
+# per-record abstention_reason/closed-vocabulary-token presence check
+# already used for every sibling field. No hash cascade required -- every
+# newly-scanned field is 0/N live-abstained today, confirmed by both the
+# real-repository directory scan continuing to validate clean (no new
+# finding materializes for any real record) and the dedicated synthetic
+# tests below (each new scan positively detects an injected abstention it
+# would otherwise miss).
+# ===========================================================================
+
+class TestSameClassChildAbstentionCoverageExtension:
+    def test_equity_financial_evidence_abstention_detected_synthetic(self, tmp_path):
+        d = tmp_path / "intelligence" / "valuation_evidence"
+        d.mkdir(parents=True)
+        (d / "AAPL.yaml").write_text(yaml.dump({"financial_evidence": {"abstention_reason": "test"}}), encoding="utf-8")
+        _, findings = l1.compute_live_evidence_coverage(l1.EQUITY, tmp_path)
+        assert any(f.source_layer == "valuation_evidence" and f.field_path == "financial_evidence" for f in findings)
+
+    def test_equity_peer_set_evidence_abstention_detected_synthetic(self, tmp_path):
+        d = tmp_path / "intelligence" / "valuation_evidence"
+        d.mkdir(parents=True)
+        (d / "AAPL.yaml").write_text(yaml.dump({"peer_set_evidence": {"abstention_reason": "test"}}), encoding="utf-8")
+        _, findings = l1.compute_live_evidence_coverage(l1.EQUITY, tmp_path)
+        assert any(f.source_layer == "valuation_evidence" and f.field_path == "peer_set_evidence" for f in findings)
+
+    def test_equity_scenario_evidence_abstention_detected_synthetic(self, tmp_path):
+        d = tmp_path / "intelligence" / "valuation_evidence"
+        d.mkdir(parents=True)
+        (d / "AAPL.yaml").write_text(yaml.dump({"scenario_evidence": {"abstention_reason": "test"}}), encoding="utf-8")
+        _, findings = l1.compute_live_evidence_coverage(l1.EQUITY, tmp_path)
+        assert any(f.source_layer == "valuation_evidence" and f.field_path == "scenario_evidence" for f in findings)
+
+    def test_equity_no_abstention_produces_no_finding_for_new_domains(self, tmp_path):
+        d = tmp_path / "intelligence" / "valuation_evidence"
+        d.mkdir(parents=True)
+        (d / "AAPL.yaml").write_text(yaml.dump({"financial_evidence": {"periods": []}}), encoding="utf-8")
+        _, findings = l1.compute_live_evidence_coverage(l1.EQUITY, tmp_path)
+        assert not any(f.field_path in ("financial_evidence", "peer_set_evidence", "scenario_evidence") for f in findings)
+
+    def test_cash_reserve_liquidity_character_abstention_detected_synthetic(self, tmp_path):
+        d = tmp_path / "intelligence" / "functional_doctrine"
+        d.mkdir(parents=True)
+        (d / "CASH.yaml").write_text(yaml.dump({"liquidity_character": {"liquidity_category": "unable_to_determine"}}), encoding="utf-8")
+        (d / "RESERVE.yaml").write_text(yaml.dump({}), encoding="utf-8")
+        _, findings = l1.compute_live_evidence_coverage(l1.CASH_RESERVE, tmp_path)
+        assert any(f.source_layer == "functional_doctrine" and f.field_path == "CASH.liquidity_character" for f in findings)
+
+    def test_cash_reserve_capital_preservation_character_abstention_detected_synthetic(self, tmp_path):
+        d = tmp_path / "intelligence" / "functional_doctrine"
+        d.mkdir(parents=True)
+        (d / "RESERVE.yaml").write_text(yaml.dump({"capital_preservation_character": {"capital_preservation_category": "unable_to_determine"}}), encoding="utf-8")
+        (d / "CASH.yaml").write_text(yaml.dump({}), encoding="utf-8")
+        _, findings = l1.compute_live_evidence_coverage(l1.CASH_RESERVE, tmp_path)
+        assert any(f.source_layer == "functional_doctrine" and f.field_path == "RESERVE.capital_preservation_character" for f in findings)
+
+    def test_cash_reserve_freshness_state_abstention_detected_synthetic(self, tmp_path):
+        d = tmp_path / "intelligence" / "functional_doctrine"
+        d.mkdir(parents=True)
+        (d / "CASH.yaml").write_text(yaml.dump({"freshness_state": {"status": "unable_to_determine_freshness"}}), encoding="utf-8")
+        (d / "RESERVE.yaml").write_text(yaml.dump({}), encoding="utf-8")
+        _, findings = l1.compute_live_evidence_coverage(l1.CASH_RESERVE, tmp_path)
+        assert any(f.source_layer == "functional_doctrine" and f.field_path == "CASH.freshness_state.status" for f in findings)
+
+    def test_fund_gld_defensive_functional_role_abstention_detected_synthetic(self, tmp_path):
+        d = tmp_path / "intelligence" / "functional_doctrine"
+        d.mkdir(parents=True)
+        (d / "GLD_DEFENSIVE_ROLE.yaml").write_text(yaml.dump({"functional_role": {"role_category": "unable_to_determine"}}), encoding="utf-8")
+        _, findings = l1.compute_live_evidence_coverage(l1.FUND_GLD_DEFENSIVE, tmp_path)
+        assert any(f.source_layer == "functional_doctrine" and f.field_path == "functional_role" for f in findings)
+
+    def test_debt_reduction_liquidity_character_abstention_detected_synthetic(self, tmp_path):
+        d = tmp_path / "intelligence" / "functional_doctrine"
+        d.mkdir(parents=True)
+        (d / "DEBT_REDUCTION.yaml").write_text(yaml.dump({"liquidity_character": {"liquidity_category": "unable_to_determine"}}), encoding="utf-8")
+        _, findings = l1.compute_live_evidence_coverage(l1.DEBT_REDUCTION, tmp_path)
+        assert any(f.source_layer == "functional_doctrine" and f.field_path == "liquidity_character" for f in findings)
+
+    def test_crypto_inflation_sensitivity_abstention_detected_synthetic(self, tmp_path):
+        d = tmp_path / "intelligence" / "instrument_economic_assessment"
+        d.mkdir(parents=True)
+        (d / "BTC.yaml").write_text(yaml.dump({
+            "macro_behavioral_characterization": {
+                "historical_inflation_sensitivity_narrative": {"sensitivity_category": "unable_to_determine"},
+            },
+        }), encoding="utf-8")
+        _, findings = l1.compute_live_evidence_coverage(l1.CRYPTO, tmp_path)
+        assert any(
+            f.source_layer == "instrument_economic_assessment"
+            and f.field_path == "BTC.macro_behavioral_characterization.historical_inflation_sensitivity_narrative"
+            for f in findings
+        )
+
+    def test_fund_broad_market_cost_tracking_significance_abstention_detected_synthetic(self, tmp_path):
+        d = tmp_path / "intelligence" / "instrument_economic_assessment"
+        d.mkdir(parents=True)
+        (d / "SPY.yaml").write_text(yaml.dump({
+            "cost_and_tracking_quality_economic_significance": {"significance_category": "unable_to_determine"},
+        }), encoding="utf-8")
+        _, findings = l1.compute_live_evidence_coverage(l1.FUND_BROAD_MARKET, tmp_path)
+        assert any(
+            f.source_layer == "instrument_economic_assessment"
+            and f.field_path == "SPY.cost_and_tracking_quality_economic_significance"
+            for f in findings
+        )
+
+    def test_real_repository_currently_has_zero_population_for_every_new_domain(self):
+        # Positive confirmation, against the live corpus, that the review's
+        # "0/N live-abstained today" claim for every newly-scanned field
+        # holds -- and therefore that closing this class required no
+        # abstention_index update or hash cascade on any real sealed
+        # record.
+        for sleeve_id in l1.SLEEVE_IDS:
+            _, findings = l1.compute_live_evidence_coverage(sleeve_id, REPO_ROOT)
+            new_field_paths = {
+                "financial_evidence", "peer_set_evidence", "scenario_evidence",
+            }
+            hit = [
+                f for f in findings
+                if f.field_path in new_field_paths
+                or f.field_path.endswith("liquidity_character")
+                or f.field_path.endswith("capital_preservation_character")
+                or f.field_path.endswith("cost_and_tracking_quality_economic_significance")
+                or f.field_path.endswith("historical_inflation_sensitivity_narrative")
+            ]
+            assert hit == [], (sleeve_id, hit)
+
+    def test_real_repository_directory_scan_unaffected_by_extension(self):
+        # The extension must not introduce any new finding against the
+        # real, currently-sealed corpus -- re-running the full directory
+        # validation must remain exactly as clean as before this
+        # extension.
+        r = l1.validate_sleeve_profile_directory(_PROFILES_REAL_DIR, repo_root=REPO_ROOT)
+        assert r.valid, [e for res in r.results if not res.valid for e in res.errors]
+
+
+# ===========================================================================
 # Manifest bidirectional reconciliation -- synthetic, disposable
 # directories, matching every prior sealed-cohort validator's own
 # established test-fixture pattern.
