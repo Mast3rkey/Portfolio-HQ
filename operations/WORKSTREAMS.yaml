@@ -10686,6 +10686,60 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-11"
+      - gate: xasset0013-level1-synthesis-implementation-bounded-correction-round-2
+        description: >
+          A second bounded correction to PR #303, applied after an
+          independent exact-head delta review (posted as a PR comment,
+          same-account platform restriction) reproduced the first
+          correction's own MAJOR-1 fix as genuinely resolved, reproduced
+          MINOR-2/3/4 as resolved for their specific bypasses, and
+          reconfirmed MINOR-1 as correctly left uncorrected — but performed
+          the review's own mandated global child-abstention class check
+          across every sleeve and found one new MAJOR: equity's own scoped
+          valuation_evidence layer carries real, per-company segment_
+          evidence (13/27) and market_observed_evidence (3/27)
+          abstentions that _compute_equity_coverage() never scanned at
+          all — the identical XASSET-0012 SS4.2.1 failure mode as the
+          first MAJOR, found again at larger scale. Fixed the same way:
+          _compute_equity_coverage() now scans both domains' own
+          abstention_reason field per record and emits one aggregated
+          finding per domain (matching the function's own existing
+          aggregated-by-field-path style for its other three findings,
+          not a new per-record style — the review itself noted either
+          shape is consistent with SS4.2.1 as long as nothing silently
+          vanishes); the two matching abstention_index entries were added
+          to the real sealed equity.yaml record, and its content_sha256
+          (plus all five relationship records citing it and both
+          COHORT_MANIFEST.yaml files) were recomputed and propagated.
+          Also, while resolving the review's fresh MINOR-2 probe (five
+          further eligibility-language paraphrases not caught by the
+          round-3/4 scan — "belongs among portfolio holdings," "should
+          stay in the investable set," "ought to remain a holding,"
+          "remove...from holdings," "should no longer be held"), this
+          session's own adversarial probing of the new "remove...from
+          holdings" pattern discovered — before shipping it — that both it
+          and the pre-existing round-3 "exclude...from holdings" pattern
+          would misfire on a legitimate structural citation of this
+          repository's own central holdings.yaml filename ("removed from
+          holdings.yaml"); both patterns were given a (?!\.yaml) guard
+          before any test asserted them clean, with dedicated false-
+          positive-guard regression tests added. No methodology redesign,
+          no new sleeve, no new relationship pair, no sleeve weight,
+          instrument weight, portfolio in/out decision, or Stage 4 policy
+          adoption. Re-ran the full validation suite at the corrected
+          head: the dedicated validator (OK, 7 profile + 8 relationship
+          results), all 17 pre-existing repository validators (clean), 464
+          focused/adversarial tests (up from 442), the decision-catalog
+          test suite (95 passed, catalog unaffected), YAML/YML+JSON
+          parsing (0 errors across 274/178 files), git diff --check
+          (clean), an explicit confirmation that every changed intelligence/
+          file sits under intelligence/level1_sleeve_synthesis/ (no other
+          sealed record touched), and the full repository pytest suite
+          once. This session does not review its own PR, mark it ready,
+          merge it, or post principal acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-11"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

@@ -4,7 +4,7 @@ sleeve_pair:
   sleeve_b: fund_broad_market
 profile_references:
 - sleeve_id: equity
-  referenced_content_sha256: 087824b7b1004a6d7b06e3fdd4e499c7417ab55b36d8257c651ebe7f3d2f91d5
+  referenced_content_sha256: 1f44f44369a4c1fe9ea824d99e82539d96f9ccf6407a740ef93d182a8b64bedc
 - sleeve_id: fund_broad_market
   referenced_content_sha256: 2ed99d67847a9aea644be6867c53cac15b5870eff84ea759ab87a7a3a2d49de1
 primary_disposition: stronger_evidence_maturity
@@ -36,4 +36,4 @@ governing_decisions:
 - XASSET-0013
 drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
 cohort_manifest_entry: intelligence/level1_sleeve_synthesis/relationships/COHORT_MANIFEST.yaml#equity_fund_broad_market
-content_sha256: 28e8055fbac0991206c47790e3baaae4308e2b3e01f29f6e02fe4e5e8e278274
+content_sha256: 8667974b8e08926173ffb9819e4418a06fe2731b0983883fab062e8a272ed0f8

@@ -727,7 +727,14 @@ _ELIGIBILITY_PATTERNS = [
         # inventing a new mechanism.
         r"\bshould\s+remain\s+part\s+of\s+the\s+portfolio\b",
         r"\bdeserves?\s+to\s+remain\s+(in|part\s+of)\s+the\s+portfolio\b",
-        r"\bexclud(e|es|ed|ing)\b(?:[\s,;:]+[a-z][\w'-]*){0,4}[\s,;:]+\bfrom\s+holdings\b",
+        # (?!\.yaml) guards against "excluded/removed from holdings.yaml" --
+        # this repository's own central filename, a legitimate structural
+        # citation ordinary sealed content is likely to make, which the
+        # plain \b boundary alone does not distinguish from the portfolio-
+        # membership verdict this pattern targets (found and fixed for the
+        # sibling "remove...from holdings" round-5 pattern below, then
+        # applied here to the identical pre-existing shape).
+        r"\bexclud(e|es|ed|ing)\b(?:[\s,;:]+[a-z][\w'-]*){0,4}[\s,;:]+\bfrom\s+holdings\b(?!\.yaml)",
         r"\bought\s+to\s+be\s+(included|excluded)\b",
         r"\bwarranted\s+that\b(?:[\s,;:]+[a-z][\w'-]*){0,6}[\s,;:]+\binclusion\b",
         r"\binclusion\b(?:[\s,;:]+[a-z][\w'-]*){0,6}[\s,;:]+\bis\s+eligible\b",
@@ -757,6 +764,27 @@ _ELIGIBILITY_PATTERNS = [
         # positive risk the plain \b boundary alone would not exclude.
         r"\bthe\s+(cash\s+reserve|equity|crypto|fund\s+broad\s+market|fund\s+gld\s+defensive|debt\s+reduction)\s+sleeve\s+should\s+go(?=[.,;:]|\s*$)",
         r"\bno\s+case\s+for\s+keeping\b(?:[\s,;:]+[a-z][\w'-]*){0,4}[\s,;:]+\bin\s+the\s+portfolio\b",
+        # Round-5 additions (independent post-push delta review, round 1 of
+        # PR #303's second correction round): five further ordinary
+        # paraphrases the round-4 scan did not catch -- "belongs among
+        # portfolio holdings" (a different noun-object variant of the
+        # already-caught "belongs in the portfolio"), "should stay in the
+        # investable set" (the sibling of the already-caught "should
+        # remain in the portfolio"), "ought to remain a holding" (a
+        # holding-noun variant of the already-caught "ought to
+        # be/remain... the portfolio" family), an explicit "remove... from
+        # holdings" object (the sibling of the already-caught "exclude...
+        # from holdings"/"remove... from the investable set"), and a
+        # "should no longer be held" disposal verdict.
+        r"\bbelongs?\s+among\s+portfolio\s+holdings\b",
+        r"\bshould\s+stay\s+in\s+the\s+investable\s+set\b",
+        r"\bought\s+to\s+remain\s+a\s+holding\b",
+        # (?!\.yaml) guard -- see the round-3 "exclude...from holdings"
+        # pattern's own matching comment above; this session's own
+        # adversarial probe found the identical false-positive risk here
+        # before this pattern was ever shipped.
+        r"\bremov(e|es|ed|ing)\b(?:[\s,;:]+[a-z][\w'-]*){0,4}[\s,;:]+\bfrom\s+holdings\b(?!\.yaml)",
+        r"\bshould\s+no\s+longer\s+be\s+held\b",
     ]
 ]
 
@@ -959,6 +987,33 @@ def _compute_equity_coverage(repo_root: Path) -> tuple[str, list[_AbstentionFind
             "valuation_evidence", "discount_rate_evidence",
             "discount-rate evidence is abstained across the equity sleeve's entire sealed "
             "valuation-evidence corpus, per VALUATION-0004/VALUATION-0005's own disclosed gap",
+        ))
+    # Same evidence layer, two further domains that independently carry
+    # their own abstention_reason on a per-record basis (XASSET-0012
+    # SS4.2.1: a governed sub-field abstention must never silently
+    # disappear behind a sealed parent record -- these two domains were
+    # not previously scanned here at all).
+    segment_abstained = [
+        t for t, r in evidence.items()
+        if isinstance(r.get("segment_evidence"), dict) and r["segment_evidence"].get("abstention_reason")
+    ]
+    if segment_abstained:
+        findings.append(_AbstentionFinding(
+            "valuation_evidence", "segment_evidence",
+            "a disclosed minority of the equity sleeve's own sealed valuation-evidence records "
+            "carry a segment-evidence abstention rather than a fully populated segment breakdown, "
+            "per that layer's own disclosed gap",
+        ))
+    market_observed_abstained = [
+        t for t, r in evidence.items()
+        if isinstance(r.get("market_observed_evidence"), dict) and r["market_observed_evidence"].get("abstention_reason")
+    ]
+    if market_observed_abstained:
+        findings.append(_AbstentionFinding(
+            "valuation_evidence", "market_observed_evidence",
+            "a disclosed minority of the equity sleeve's own sealed valuation-evidence records "
+            "carry a market-observed-evidence abstention rather than a fully populated market-price "
+            "input, per that layer's own disclosed gap",
         ))
     archetype_abstained = [
         t for t, r in _load_dir_records(repo_root, "intelligence/valuation_archetype").items()

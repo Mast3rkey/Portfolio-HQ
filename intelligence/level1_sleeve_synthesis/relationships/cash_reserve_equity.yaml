@@ -6,7 +6,7 @@ profile_references:
 - sleeve_id: cash_reserve
   referenced_content_sha256: 387cb8943643af3538b6e36e733630438f35944c4365ea9a3fb7c7cd4c340c3e
 - sleeve_id: equity
-  referenced_content_sha256: 087824b7b1004a6d7b06e3fdd4e499c7417ab55b36d8257c651ebe7f3d2f91d5
+  referenced_content_sha256: 1f44f44369a4c1fe9ea824d99e82539d96f9ccf6407a740ef93d182a8b64bedc
 primary_disposition: role_preserving
 favored_sleeve_id: null
 secondary_conditions:
@@ -27,4 +27,4 @@ governing_decisions:
 - XASSET-0013
 drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
 cohort_manifest_entry: intelligence/level1_sleeve_synthesis/relationships/COHORT_MANIFEST.yaml#cash_reserve_equity
-content_sha256: 4d5fe6a83390bcfc99140d34ee029021afb4e94336ff908981580b3ab7ebf565
+content_sha256: 9f67ba0b83a92b1fe92ec6cfc3fe57f5140073f8a8037677343103687cd1898e

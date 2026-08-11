@@ -6,7 +6,7 @@ profile_references:
 - sleeve_id: crypto
   referenced_content_sha256: 3c0cfcd1e7fd61357e5507e23b460a3d63137b6b678815f194982588df683e31
 - sleeve_id: equity
-  referenced_content_sha256: 087824b7b1004a6d7b06e3fdd4e499c7417ab55b36d8257c651ebe7f3d2f91d5
+  referenced_content_sha256: 1f44f44369a4c1fe9ea824d99e82539d96f9ccf6407a740ef93d182a8b64bedc
 primary_disposition: stronger_evidence_maturity
 favored_sleeve_id: equity
 secondary_conditions:
@@ -28,4 +28,4 @@ governing_decisions:
 - XASSET-0013
 drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
 cohort_manifest_entry: intelligence/level1_sleeve_synthesis/relationships/COHORT_MANIFEST.yaml#crypto_equity
-content_sha256: 2f3529b380f674d792ba0a36ce1fab003b18c1b91f0875338960ac1817336b71
+content_sha256: 54fa83d59e761536fa332ef3eb23f8a995a5f2ce3a99acb2034fb90042aa7e9e

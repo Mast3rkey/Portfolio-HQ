@@ -1109,6 +1109,45 @@ class TestLiveHashStalenessAgainstRealRepository:
             for e in errs
         ), errs
 
+    def test_equity_segment_and_market_observed_abstentions_present_on_real_record(self):
+        # Regression for a real, independent post-push delta review finding
+        # (pullrequestreview on PR #303, round 1 of the second correction
+        # round, MAJOR): equity's own scoped valuation_evidence layer
+        # carries real, per-company segment_evidence and
+        # market_observed_evidence abstentions that were never scanned by
+        # _compute_equity_coverage() at all -- the identical failure mode
+        # already fixed once for debt_reduction's freshness_state, found
+        # again here at larger scale (13/27 and 3/27 companies). Proves the
+        # fix is present in the real sealed record.
+        d = self._load(_PROFILES_REAL_DIR / "equity.yaml")
+        pairs = {(e["source_layer"], e["field_path"]) for e in d["abstention_index"]}
+        assert ("valuation_evidence", "segment_evidence") in pairs
+        assert ("valuation_evidence", "market_observed_evidence") in pairs
+
+    def test_equity_segment_evidence_abstention_missing_rejected(self):
+        d = copy.deepcopy(self._load(_PROFILES_REAL_DIR / "equity.yaml"))
+        d["abstention_index"] = [
+            e for e in d["abstention_index"] if e["field_path"] != "segment_evidence"
+        ]
+        d["content_sha256"] = l1.canonical_record_hash(d)
+        errs = l1.validate_sleeve_profile_data(d, expected_sleeve_id="equity", repo_root=REPO_ROOT)
+        assert any(
+            "abstention_index is missing live-detected" in e and "segment_evidence" in e
+            for e in errs
+        ), errs
+
+    def test_equity_market_observed_evidence_abstention_missing_rejected(self):
+        d = copy.deepcopy(self._load(_PROFILES_REAL_DIR / "equity.yaml"))
+        d["abstention_index"] = [
+            e for e in d["abstention_index"] if e["field_path"] != "market_observed_evidence"
+        ]
+        d["content_sha256"] = l1.canonical_record_hash(d)
+        errs = l1.validate_sleeve_profile_data(d, expected_sleeve_id="equity", repo_root=REPO_ROOT)
+        assert any(
+            "abstention_index is missing live-detected" in e and "market_observed_evidence" in e
+            for e in errs
+        ), errs
+
     def test_stale_profile_reference_hash_on_real_relationship_rejected(self):
         d = copy.deepcopy(self._load(_RELATIONSHIPS_REAL_DIR / "cash_reserve_equity.yaml"))
         d["profile_references"][0]["referenced_content_sha256"] = "0" * 64
@@ -1441,6 +1480,15 @@ _ELIGIBILITY_MATRIX_MUST_CATCH = [
     "cash reserve: keep",
     "The crypto sleeve should go.",
     "There is no case for keeping this sleeve in the portfolio.",
+    # Round-5 additions (independent post-push delta review, round 1 of
+    # PR #303's second correction round, MINOR-2): five further ordinary
+    # paraphrases found via a fresh adversarial probe against the round-4
+    # scan.
+    "This sleeve belongs among portfolio holdings.",
+    "This sleeve should stay in the investable set.",
+    "This sleeve ought to remain a holding.",
+    "Remove the sleeve from holdings.",
+    "The sleeve should no longer be held.",
 ]
 
 _ELIGIBILITY_FALSE_POSITIVE_GUARDS = [
@@ -1461,6 +1509,14 @@ _ELIGIBILITY_FALSE_POSITIVE_GUARDS = [
     # not a portfolio-membership verdict.
     "the crypto sleeve should go through additional review before any future step",
     "this fund's place in the etf_classification manifest is well documented",
+    # Round-5 false-positive guards: this session's own adversarial probing
+    # found that the round-3 "exclude...from holdings" pattern and the
+    # round-5 "remove...from holdings" pattern would otherwise both
+    # misfire on a legitimate structural citation of this repository's
+    # own central holdings.yaml filename -- fixed with a (?!\.yaml)
+    # lookahead on both patterns before this test class was written.
+    "a ticker removed from holdings.yaml is not zeroed, per this repository's own convention",
+    "a position excluded from holdings.yaml reconciliation for a documented reason",
 ]
 
 

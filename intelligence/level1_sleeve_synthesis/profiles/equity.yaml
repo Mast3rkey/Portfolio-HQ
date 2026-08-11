@@ -58,10 +58,23 @@ abstention_index:
     abstention rather than a determined status. A single covered company's own qualitative review status
     could not be determined from the evidence available at the time its record was sealed, per its own
     governing decision -- disclosed rather than forced.
+- source_layer: valuation_evidence
+  field_path: segment_evidence
+  value: abstained
+  reason: A disclosed minority of the equity sleeve's own sealed valuation-evidence records carry a segment-evidence
+    abstention rather than a fully populated segment breakdown, per that layer's own disclosed gap. A
+    segment-evidence abstention reflects a genuine primary-source gap for the covered company's own reported
+    segment financials -- disclosed here rather than treated as equivalent to a fully populated record.
+- source_layer: valuation_evidence
+  field_path: market_observed_evidence
+  value: abstained
+  reason: A disclosed minority of the equity sleeve's own sealed valuation-evidence records carry a market-observed-evidence
+    abstention rather than a fully populated market-price input, per that layer's own disclosed gap. Disclosed
+    here rather than treated as equivalent to a fully populated record.
 record_status: sealed
 sealed_at: '2026-08-11T00:00:00Z'
 governing_decisions:
 - XASSET-0013
 drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
 cohort_manifest_entry: intelligence/level1_sleeve_synthesis/profiles/COHORT_MANIFEST.yaml#equity
-content_sha256: 087824b7b1004a6d7b06e3fdd4e499c7417ab55b36d8257c651ebe7f3d2f91d5
+content_sha256: 1f44f44369a4c1fe9ea824d99e82539d96f9ccf6407a740ef93d182a8b64bedc
