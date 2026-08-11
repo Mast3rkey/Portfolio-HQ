@@ -16,9 +16,9 @@ provenance:
       as_of_date: "2026-07-23"
       access_status: directly_inspected
       limitation: >-
-        Cited for process-only comparator context (WMT named alongside AMZN/BRK.B/V as one
-        of exactly four comparators in COST's own committee review) -- not itself a
-        capital-priority finding about WMT.
+        Cited for process-only comparator context (WMT named alongside AMZN/BRK.B/V as a
+        named comparator in COST's own committee review) -- not itself a capital-priority
+        finding about WMT.
     - source_identifier: governance/decisions/PI-0022-cost-intelligence-refresh-authorization.md
       source_type: secondary
       as_of_date: "2026-07-23"
@@ -44,7 +44,7 @@ archetype_assessment:
     recurring-revenue economic layer building on top of a structurally thin-margin core
     business, supporting a secondary archetype-A lens in addition to the primary
     mature-compounder characterization. A sum-of-the-parts secondary lens was considered
-    given Walmart's three reported operating segments, but the evidence base does not
+    given Walmart's multiple reported operating segments, but the evidence base does not
     disclose materially divergent segment-level profitability profiles the way a
     sum-of-the-parts framing would require -- each segment shows continued comparable-sales
     growth rather than a disclosed profit-versus-loss divergence -- so that lens is not
@@ -91,4 +91,4 @@ governing_decisions:
   - CONTENDER-0003
 drafting_session_or_shard_id: contender-0003-pilot-session
 cohort_manifest_entry: intelligence/contender_evaluation/COHORT_MANIFEST.yaml#WMT
-content_sha256: 972f4a4dc597f60779bbe9436682c06be666e2c2e15a3cc83c1bdbf39316f287
+content_sha256: 1197de473d694c360c44781c3e15cfa5acd23c7951b040222e5b9ca9b0ac19ca

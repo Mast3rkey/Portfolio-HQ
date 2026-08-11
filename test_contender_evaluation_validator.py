@@ -604,7 +604,7 @@ def test_written_out_magnitude_comparison_caught(text):
 
 
 @pytest.mark.parametrize("text", [
-    "Uncertainty remains about the precise scope of one disclosed item.",
+    "Uncertainty remains about the precise scope of a disclosed item.",
     "The evidence base discloses no margin or leverage figures at all.",
     "A materially deeper sourcing chain underlies this comparator's own record.",
 ])
@@ -614,6 +614,70 @@ def test_numeric_scan_false_positive_guards(text):
     on ordinary prose."""
     findings = cev._numeric_leakage_scan(text)
     assert findings == []
+
+
+# ── numeric leakage: spelled-out cardinal numbers (MAJOR-3) ────────────
+# Reviewer-found live violation: "three reported operating segments" in
+# WMT.yaml passed clean despite the schema's own zero-numeric-field,
+# no-carve-out rule -- the magnitude-comparison scan above catches
+# "three times" but not an ordinary spelled-out count.
+
+@pytest.mark.parametrize("word", [
+    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+    "nine", "ten", "dozen", "hundred", "thousand", "million", "billion",
+])
+def test_spelled_out_cardinal_standalone_caught(word):
+    findings = cev._numeric_leakage_scan(f"This record discloses {word} named risk items.")
+    assert "numeric-leakage:spelled-out-cardinal-number" in findings, word
+
+
+@pytest.mark.parametrize("text", [
+    "given Walmart's three reported operating segments",
+    "a metric-basis ambiguity in one segment's loss guidance",
+    "revenue exceeding one hundred million in the disclosed period",
+    "a dozen named risks were disclosed",
+    "Two comparators were named in the committee review.",
+    "three, four, or five named items were disclosed",  # punctuation/conjunction variant
+    "three-segment structure disclosed in the filing",  # hyphen/compound form
+])
+def test_spelled_out_cardinal_punctuation_conjunction_hyphen_variants_caught(text):
+    findings = cev._numeric_leakage_scan(text)
+    assert "numeric-leakage:spelled-out-cardinal-number" in findings, text
+
+
+def test_spelled_out_cardinal_caught_in_real_field_scan():
+    data = _valid_record("WMT")
+    data["archetype_assessment"]["rationale"] = "Walmart reports three operating segments."
+    data = _sealed(data)
+    errors = cev.validate_contender_evaluation_data(data, expected_ticker="WMT", repo_root=REPO_ROOT)
+    assert any("numeric-leakage:spelled-out-cardinal-number" in e for e in errors)
+
+
+@pytest.mark.parametrize("text", [
+    "given Walmart's multiple reported operating segments",
+    "an unquantified customer-concentration gap flagged by outside commentary",
+    "a named comparator in GEV's own committee review",
+    "several named risk items were disclosed",
+])
+def test_cardinal_scan_false_positive_guards_for_reworded_real_text(text):
+    """The exact reworded replacement phrases used in the real VRT/WMT
+    records (after this correction) must validate cleanly -- proving the
+    fix, not merely the mechanism."""
+    findings = cev._numeric_leakage_scan(text)
+    assert findings == [], text
+
+
+def test_cardinal_scan_bounded_vocabulary_documented_precision_tradeoff():
+    """A bounded closed vocabulary (not a general NLP number parser, per
+    the operator's own explicit instruction) necessarily accepts some
+    imprecision at its edges -- "one" as a non-numeric determiner inside
+    an idiom like "no one factor" is caught even though it isn't a
+    genuine numeric claim. Documented here as an accepted, disclosed
+    tradeoff (this schema's own narrow technical domain rarely needs
+    that construction; the real VRT/WMT records use neither), not
+    silently left for a future session to rediscover as a surprise."""
+    findings = cev._numeric_leakage_scan("no one factor drives this characterization")
+    assert "numeric-leakage:spelled-out-cardinal-number" in findings
 
 
 def test_date_fields_are_not_scanned_for_numeric_leakage():
@@ -793,6 +857,195 @@ def test_comparative_superiority_scan_not_applied_to_uncertainty_statement():
     assert not any("comparative-superiority" in e for e in errors)
 
 
+# ── comparative-superiority / promotion: broadened vulnerability-class ─
+# coverage (MAJOR-4). An independent exact-head review constructed fresh
+# adversarial variants not present in the original test suite and found
+# 6-10 of 11 comparative-superiority constructions, and all 8 promotion
+# constructions, returned []. These tests lock in the fix and probe
+# negation/punctuation/conjunction/active-passive/subject-object variants
+# beyond the review's own examples.
+
+@pytest.mark.parametrize("text", [
+    "more attractive investment", "less compelling investment",
+    "the best choice between the two", "should beat the comparator",
+    "the weaker long-term holding", "a higher-quality investment",
+    "a top pick", "the more compelling opportunity",
+    "the worse of the two options", "a more attractive holding",
+    "the smarter investment choice",
+])
+def test_comparative_superiority_broadened_review_examples_caught(text):
+    findings = cev._comparative_superiority_scan(text)
+    assert findings, f"expected a comparative-superiority finding for: {text!r}"
+
+
+@pytest.mark.parametrize("text", [
+    "GEV should be removed in favor of VRT", "VRT ought to take GEV's place",
+    "a better fit for the canonical roster", "deserves a spot among the canonical holdings",
+    "recommends adding VRT to the portfolio", "merits inclusion in the targets file",
+    "swapping GEV for VRT", "demoting GEV in favor of the contender",
+])
+def test_promotion_broadened_review_examples_caught(text):
+    findings = cev._promotion_language_scan(text)
+    assert findings, f"expected a promotion-language finding for: {text!r}"
+
+
+@pytest.mark.parametrize("text", [
+    # negation -- a bounded term-list match, not a sentiment classifier;
+    # a negated sentence still contains the same forbidden term.
+    "This is not the more attractive investment on a closer look.",
+    "VRT is not obviously the smarter investment choice here.",
+    "GEV was not swapped out for anything in this record.",
+    # punctuation variants
+    "the weaker, long-term holding, on balance",
+    "a higher-quality investment; disclosed only as a hypothetical",
+    "GEV should be removed, in favor of VRT, per this framing",
+    # conjunction variants
+    "VRT and GEV were compared, and VRT emerged as the more attractive holding",
+    "neither a top pick nor an obvious laggard, and yet described as such",
+    # active/passive variants
+    "the contender was described as a more attractive investment by the analysis",
+    "the analysis described the contender as a more attractive investment",
+    "GEV was removed from consideration in favor of the contender",
+    "the drafting removed GEV from consideration in favor of the contender",
+    # subject/object inversion
+    "compared to GEV, VRT is a more attractive holding",
+    "VRT, compared to GEV, is a more attractive holding",
+])
+def test_comparative_and_promotion_scans_catch_variant_phrasings(text):
+    findings = cev._comparative_superiority_scan(text) + cev._promotion_language_scan(text)
+    assert findings, f"expected a finding for: {text!r}"
+
+
+@pytest.mark.parametrize("text", [
+    # allowed evidence-completeness/archetype language, restated with the
+    # broadened vocabulary now active -- must still validate cleanly
+    "the contender's evidence base is materially less mature than the comparator's",
+    "both records share the same primary archetype",
+    "insufficient evidence exists to support a parity determination",
+    "the contender's evidence quality is limited relative to the comparator's comprehensive coverage",
+    "archetype B was assigned based on the disclosed reinvestment profile",
+    "the comparator's own record discloses a richer sourcing chain",
+])
+def test_broadened_scans_still_pass_legitimate_descriptive_language(text):
+    findings = cev._comparative_superiority_scan(text) + cev._promotion_language_scan(text)
+    assert findings == [], f"unexpected finding(s) for legitimate text: {text!r} -> {findings}"
+
+
+# ── provenance free-text scan coverage (MAJOR-2) ────────────────────────
+# An independent exact-head review found provenance.sources[].
+# source_identifier/.limitation received zero content-safety scanning of
+# any kind -- a real, populated schema field (both real records use
+# `limitation` substantively) where an injected capital-priority/
+# promotion/superiority/policy-leak sentence produced zero findings.
+
+def test_provenance_limitation_rejects_injected_promotion_and_superiority_sentence():
+    data = _valid_record("VRT")
+    data["provenance"]["sources"][0]["limitation"] = (
+        "VRT is the better investment and should be promoted into the canonical 27; "
+        "conviction is High per portfolio_role_ref."
+    )
+    data = _sealed(data)
+    errors = cev.validate_contender_evaluation_data(data, expected_ticker="VRT", repo_root=REPO_ROOT)
+    assert any("provenance.sources[0].limitation" in e for e in errors)
+    assert any("policy-leak" in e for e in errors)
+    assert any("promotion-language" in e for e in errors)
+    assert any("comparative-superiority" in e for e in errors)
+
+
+def test_provenance_source_identifier_rejects_injected_promotion_and_superiority_sentence():
+    data = _valid_record("VRT")
+    data["provenance"]["sources"][0]["source_identifier"] = (
+        "VRT is a top pick and deserves a spot among the canonical holdings"
+    )
+    data = _sealed(data)
+    errors = cev.validate_contender_evaluation_data(data, expected_ticker="VRT", repo_root=REPO_ROOT)
+    assert any("provenance.sources[0].source_identifier" in e for e in errors)
+
+
+@pytest.mark.parametrize("phrase", [
+    "conviction", "portfolio_role_ref", "target_pct", "targets.yaml", "primary_disposition",
+])
+def test_provenance_limitation_rejects_policy_leak(phrase):
+    data = _valid_record("WMT")
+    data["provenance"]["sources"][0]["limitation"] = f"This note mentions {phrase} directly."
+    data = _sealed(data)
+    errors = cev.validate_contender_evaluation_data(data, expected_ticker="WMT", repo_root=REPO_ROOT)
+    assert any("policy-leak" in e for e in errors)
+
+
+@pytest.mark.parametrize("phrase", [
+    "a support level near recent lows", "a bullish MACD signal", "considered oversold",
+])
+def test_provenance_limitation_rejects_chart_domain(phrase):
+    data = _valid_record("WMT")
+    data["provenance"]["sources"][0]["limitation"] = f"This does not rely on {phrase}."
+    data = _sealed(data)
+    errors = cev.validate_contender_evaluation_data(data, expected_ticker="WMT", repo_root=REPO_ROOT)
+    assert any("chart-domain" in e for e in errors)
+
+
+def test_provenance_limitation_rejects_numeric_leakage_no_carve_out():
+    """limitation is a narrative field -- numeric leakage applies with no
+    carve-out, unlike source_identifier (a legitimate path/ID field)."""
+    data = _valid_record("WMT")
+    data["provenance"]["sources"][0]["limitation"] = "Cited for three named comparators."
+    data = _sealed(data)
+    errors = cev.validate_contender_evaluation_data(data, expected_ticker="WMT", repo_root=REPO_ROOT)
+    assert any("numeric-leakage:spelled-out-cardinal-number" in e for e in errors)
+
+
+def test_provenance_source_identifier_exempt_from_numeric_leakage():
+    """A real repository path legitimately and unavoidably contains
+    digits (a decision ID like PI-0019) -- source_identifier is exempt
+    from the numeric-leakage scan specifically, unlike limitation."""
+    data = _valid_record("VRT")
+    data["provenance"]["sources"][0]["source_identifier"] = (
+        "governance/decisions/PI-0019-gev-committee-review-authorization.md"
+    )
+    data = _sealed(data)
+    errors = cev.validate_contender_evaluation_data(data, expected_ticker="VRT", repo_root=REPO_ROOT)
+    assert not any("numeric-leakage" in e for e in errors)
+
+
+def test_provenance_source_identifier_and_limitation_exempt_from_directive_word_scan():
+    """Citation-field exemption, matching the established repository
+    precedent (functional_doctrine_validator.py's _CITATION_FIELD_NAMES):
+    only the directive-word scan is exempted for these two fields -- a
+    legitimate path/note should never be penalized for an incidental
+    'add'/'hold'-shaped substring. Every other scan still applies."""
+    data = _valid_record("VRT")
+    data["provenance"]["sources"][0]["source_identifier"] = "intelligence/companies/VRT.yaml"
+    data["provenance"]["sources"][0]["limitation"] = (
+        "This source does not directly address the customer-concentration gap."
+    )
+    data = _sealed(data)
+    errors = cev.validate_contender_evaluation_data(data, expected_ticker="VRT", repo_root=REPO_ROOT)
+    assert not any("directive-word" in e for e in errors)
+
+
+def test_provenance_legitimate_source_identifier_and_limitation_false_positive_guards():
+    """Real, legitimate citation-shaped strings -- exactly the kind this
+    schema actually uses -- must validate cleanly."""
+    data = _valid_record("VRT")
+    data["provenance"]["sources"][0]["source_identifier"] = (
+        "governance/decisions/PI-0020-gev-intelligence-refresh-authorization.md"
+    )
+    data["provenance"]["sources"][0]["limitation"] = (
+        "Cited for process-only comparator context, not a capital-priority finding about VRT."
+    )
+    data = _sealed(data)
+    errors = cev.validate_contender_evaluation_data(data, expected_ticker="VRT", repo_root=REPO_ROOT)
+    assert errors == []
+
+
+def test_provenance_limitation_must_be_non_empty_string_when_present():
+    data = _valid_record("VRT")
+    data["provenance"]["sources"][0]["limitation"] = ""
+    data = _sealed(data)
+    errors = cev.validate_contender_evaluation_data(data, expected_ticker="VRT", repo_root=REPO_ROOT)
+    assert any("limitation must be a non-empty string" in e for e in errors)
+
+
 # ── chart-domain and policy-leak scans ──────────────────────────────────
 
 @pytest.mark.parametrize("phrase", [
@@ -912,42 +1165,155 @@ def test_non_cascading_archetype_abstention_does_not_force_evidence_parity_abste
 
 # ── protected records: byte-identity ────────────────────────────────────
 
+def _resolve_pr_base_sha() -> str | None:
+    """Resolve this branch's actual PR base commit from live repository
+    truth -- git merge-base HEAD origin/main -- rather than a hard-coded
+    SHA that goes stale the moment the branch is rebased or main moves
+    forward. Returns None (causing the calling test to skip, not fail)
+    if origin/main is not a resolvable ref in this environment -- e.g. a
+    detached clone with no remote configured -- since that is an
+    environment precondition this test suite does not manage, not a
+    content defect. Deliberately does NOT use local `main`: this
+    repository's own history discloses local `main` can diverge
+    substantially from `origin/main` (stale local branches, never
+    force-pushed), which would silently resolve to the wrong base."""
+    try:
+        subprocess.run(
+            ["git", "rev-parse", "--verify", "origin/main"],
+            cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+    result = subprocess.run(
+        ["git", "merge-base", "HEAD", "origin/main"],
+        cwd=REPO_ROOT, capture_output=True, text=True,
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+    return result.stdout.strip()
+
+
+_PROTECTED_INTELLIGENCE_AND_GOVERNANCE_PATHS = [
+    "intelligence/companies/GEV.yaml", "intelligence/companies/GEV.md",
+    "intelligence/companies/COST.yaml", "intelligence/companies/COST.md",
+    "intelligence/valuation_archetype/GEV.yaml", "intelligence/valuation_archetype/COST.yaml",
+    "intelligence/classification/GEV.yaml", "intelligence/classification/COST.yaml",
+    "governance/decisions/PI-0019-gev-committee-review-authorization.md",
+    "governance/decisions/PI-0020-gev-intelligence-refresh-authorization.md",
+    "governance/decisions/PI-0021-cost-committee-review-authorization.md",
+    "governance/decisions/PI-0022-cost-intelligence-refresh-authorization.md",
+]
+
+_PROTECTED_INTELLIGENCE_BROAD_PATHS = [
+    "intelligence/classification", "intelligence/companies", "intelligence/themes",
+    "intelligence/relationships", "intelligence/valuation_archetype",
+    "intelligence/valuation_evidence", "intelligence/valuation_results",
+    "intelligence/functional_doctrine", "intelligence/overlap_model",
+    "intelligence/economic_assessment", "intelligence/etf_classification",
+    "intelligence/crypto_classification", "intelligence/instrument_economic_assessment",
+    "intelligence/reconciliation", "intelligence/recommendations", "intelligence/contenders",
+]
+
+
+def _assert_no_base_to_head_diff(paths: list[str]) -> None:
+    """True PR-range comparison (base..HEAD), not a working-tree check --
+    a MINOR finding from an independent exact-head review: git status
+    --porcelain only ever compares the working tree to HEAD, so it would
+    show clean even for a protected file modified AND committed earlier
+    within this same PR's own commit history. git diff <base>..HEAD
+    catches that; git status never can, regardless of how carefully it
+    is invoked."""
+    base_sha = _resolve_pr_base_sha()
+    if base_sha is None:
+        pytest.skip("origin/main not resolvable in this environment -- cannot compute a true PR-base diff")
+    result = subprocess.run(
+        ["git", "diff", "--exit-code", f"{base_sha}..HEAD", "--", *paths],
+        cwd=REPO_ROOT, capture_output=True, text=True,
+    )
+    assert result.returncode == 0, (
+        f"unexpected changes under protected paths between base {base_sha} and HEAD:\n{result.stdout}"
+    )
+
+
 def test_protected_intelligence_and_governance_records_untouched():
     """Zero diff on GEV/COST Company Intelligence, their sealed
     valuation_archetype/classification records, and the four cited
-    PI-0019/0020/0021/0022 governance decisions -- checked via a live
-    git status, so a staged-but-uncommitted change would also be caught."""
-    result = subprocess.run(
-        ["git", "status", "--porcelain", "--",
-         "intelligence/companies/GEV.yaml", "intelligence/companies/GEV.md",
-         "intelligence/companies/COST.yaml", "intelligence/companies/COST.md",
-         "intelligence/valuation_archetype/GEV.yaml", "intelligence/valuation_archetype/COST.yaml",
-         "intelligence/classification/GEV.yaml", "intelligence/classification/COST.yaml",
-         "governance/decisions/PI-0019-gev-committee-review-authorization.md",
-         "governance/decisions/PI-0020-gev-intelligence-refresh-authorization.md",
-         "governance/decisions/PI-0021-cost-committee-review-authorization.md",
-         "governance/decisions/PI-0022-cost-intelligence-refresh-authorization.md"],
-        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
-    )
-    assert result.stdout.strip() == "", f"unexpected changes under protected paths:\n{result.stdout}"
+    PI-0019/0020/0021/0022 governance decisions, across this PR's entire
+    base..HEAD range -- not merely the current working tree."""
+    _assert_no_base_to_head_diff(_PROTECTED_INTELLIGENCE_AND_GOVERNANCE_PATHS)
 
 
 def test_protected_intelligence_records_broadly_untouched():
-    result = subprocess.run(
-        ["git", "status", "--porcelain", "--",
-         "intelligence/classification", "intelligence/companies", "intelligence/themes",
-         "intelligence/relationships", "intelligence/valuation_archetype",
-         "intelligence/valuation_evidence", "intelligence/valuation_results",
-         "intelligence/functional_doctrine", "intelligence/overlap_model",
-         "intelligence/economic_assessment", "intelligence/etf_classification",
-         "intelligence/crypto_classification", "intelligence/instrument_economic_assessment",
-         "intelligence/reconciliation", "intelligence/recommendations", "intelligence/contenders"],
-        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
-    )
     # only new, untracked contender_evaluation/ files may appear anywhere
     # under intelligence/ as a result of this implementation -- none of
     # these paths are contender_evaluation, so any hit here is a real defect.
-    assert result.stdout.strip() == "", f"unexpected changes under protected intelligence paths:\n{result.stdout}"
+    _assert_no_base_to_head_diff(_PROTECTED_INTELLIGENCE_BROAD_PATHS)
+
+
+def test_resolve_pr_base_sha_matches_known_contender_0003_merge_commit():
+    """A direct sanity check that the dynamic base-resolution mechanism
+    itself is correct in this environment, independent of the protected-
+    path tests above -- proves the mechanism, not merely its absence of
+    complaints. If this ever fails because CONTENDER-0003 merges and
+    main moves forward past it, the true PR base will have moved forward
+    too (git merge-base always returns *this branch's actual base*, not
+    a fixed historical commit) -- update the expected SHA only if a
+    direct investigation confirms the branch was legitimately rebased
+    onto a new base, never to silently un-skip this test."""
+    base_sha = _resolve_pr_base_sha()
+    if base_sha is None:
+        pytest.skip("origin/main not resolvable in this environment")
+    assert base_sha == "fea335dca89ff7f2e6006d29d26a613bf1b75c21"
+
+
+def test_base_to_head_diff_mechanism_detects_a_synthetic_protected_path_change(tmp_path):
+    """Proves the mechanism itself would catch a real base-vs-HEAD
+    difference, not merely that today's clean diff produces no output --
+    a synthetic-but-real two-commit repository stands in for this PR's
+    own history, since mutating the real repository's protected paths
+    even transiently is not an acceptable way to test this."""
+
+    def run(*args):
+        return subprocess.run(
+            ["git", *args], cwd=tmp_path, capture_output=True, text=True, check=True,
+        )
+
+    run("init", "-q")
+    run("config", "user.email", "test@example.com")
+    run("config", "user.name", "Test")
+    protected = tmp_path / "intelligence" / "companies" / "GEV.yaml"
+    protected.parent.mkdir(parents=True)
+    protected.write_text("original: true\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "base commit")
+    base_sha = run("rev-parse", "HEAD").stdout.strip()
+
+    # Simulate origin/main pointing at the base commit, matching this
+    # synthetic repo's own shape (no real 'origin' remote needed for the
+    # diff mechanism itself -- git diff <sha>..HEAD works on any two
+    # resolvable refs, which is exactly what _assert_no_base_to_head_diff
+    # relies on).
+    protected.write_text("original: true\nmutated: true\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "protected-path mutation, committed within the simulated PR")
+    head_sha = run("rev-parse", "HEAD").stdout.strip()
+
+    result = subprocess.run(
+        ["git", "diff", "--exit-code", f"{base_sha}..{head_sha}", "--",
+         "intelligence/companies/GEV.yaml"],
+        cwd=tmp_path, capture_output=True, text=True,
+    )
+    assert result.returncode != 0, "the base..HEAD diff mechanism failed to detect a real committed protected-path change"
+    assert "mutated" in result.stdout
+
+    # And the working-tree-only check this MINOR finding replaced would
+    # have missed it entirely, since both commits are already committed
+    # and the working tree is clean relative to HEAD -- demonstrating
+    # exactly why git status --porcelain was insufficient.
+    status = subprocess.run(
+        ["git", "status", "--porcelain"], cwd=tmp_path, capture_output=True, text=True, check=True,
+    )
+    assert status.stdout.strip() == "", "sanity check: working tree should be clean at HEAD"
 
 
 def test_protected_paths_untouched_by_this_module_import():

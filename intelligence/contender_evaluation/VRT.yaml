@@ -16,9 +16,9 @@ provenance:
       as_of_date: "2026-07-22"
       access_status: directly_inspected
       limitation: >-
-        Cited for process-only comparator context (VRT named alongside ETN/PWR as one of
-        exactly three comparators in GEV's own committee review) -- not itself a capital-
-        priority finding about VRT.
+        Cited for process-only comparator context (VRT named alongside ETN/PWR as a named
+        comparator in GEV's own committee review) -- not itself a capital-priority finding
+        about VRT.
     - source_identifier: governance/decisions/PI-0020-gev-intelligence-refresh-authorization.md
       source_type: secondary
       as_of_date: "2026-07-22"
@@ -52,10 +52,10 @@ evidence_quality_assessment:
     An external audit process independently inspected several of Vertiv's own official
     disclosures underlying this assessment, but this evaluation session did not itself open
     any primary document. Vertiv's own evidence base retains real, disclosed unresolved
-    items -- a metric-basis ambiguity in one segment's loss guidance, an unquantified
-    customer-concentration gap flagged by outside commentary, and a materially large backlog
-    figure the underlying audit could not substantiate against an official filing and which
-    is accordingly excluded from this assessment's reasoning -- placing overall coverage
+    items -- an unquantified customer-concentration gap flagged by outside commentary that
+    the underlying audit did not resolve, and a materially large backlog figure the
+    underlying audit could not substantiate against an official filing and which is
+    accordingly excluded from this assessment's reasoning -- placing overall coverage
     between the comprehensive and limited tiers.
 methodology_applicability_reference:
   archetype: B
@@ -70,15 +70,17 @@ evidence_parity_finding:
   finding: comparable_evidence_depth
   rationale: >-
     Vertiv's own evidence base and this comparator's own sealed evidence-quality state sit
-    at broadly comparable investigative maturity: both rest on evidence gathered by a party
-    other than this evaluation session (an independent audit process for the contender,
-    WebSearch-based synthesis for the comparator) rather than direct primary-document access
-    by this session, and both records openly disclose real, unresolved evidentiary items
-    rather than presenting an artificially clean picture. Neither evidence base is
-    meaningfully thinner or richer than the other for the purpose of supporting a future,
-    separately authorized capital-priority comparison -- both would need further evidentiary
-    work before such a comparison could proceed with confidence, a maturity gap that runs in
-    the same general direction for the contender as for the comparator.
+    at broadly comparable investigative maturity: an external audit process directly
+    inspected several of Vertiv's own official disclosures, a materially richer sourcing
+    chain than a pure WebSearch-synthesis record, but this evaluation session did not itself
+    open a primary document for either the contender or the comparator, and Vertiv's own
+    record retains real, disclosed unresolved items of its own -- an unquantified
+    customer-concentration gap and an unsubstantiated backlog figure explicitly excluded
+    from this assessment's own reasoning. Neither evidence base is meaningfully thinner or
+    richer than the other for the purpose of supporting a future, separately authorized
+    capital-priority comparison -- both would need further evidentiary work before such a
+    comparison could proceed with confidence, a maturity gap that runs in the same general
+    direction for the contender as for the comparator.
 abstention_index: []
 lifecycle_status: sealed
 sealed_at: "2026-08-10T23:00:00Z"
@@ -86,4 +88,4 @@ governing_decisions:
   - CONTENDER-0003
 drafting_session_or_shard_id: contender-0003-pilot-session
 cohort_manifest_entry: intelligence/contender_evaluation/COHORT_MANIFEST.yaml#VRT
-content_sha256: 084fb4d1bc727df4a4749efcffd53d2940884eabccbd7394cb774797af85ad82
+content_sha256: f4cdfabb63e0be238d0de51c2dd387b1d5254521d05ff4304729e2e6e1919c8f

@@ -227,7 +227,7 @@ _DIRECTIVE_PATTERNS = [re.compile(rf"\b{w}\b", re.IGNORECASE) for w in _DIRECTIV
 _STAGE_LEGITIMATE_USE_PATTERN = re.compile(r"[a-z]+-stage", re.IGNORECASE)
 
 
-def _prohibited_content_scan(text: str) -> list[str]:
+def _prohibited_content_scan(text: str, *, skip_directive: bool = False) -> list[str]:
     findings: list[str] = []
     for pat in _POLICY_LEAK_PATTERNS:
         if pat.search(text):
@@ -235,11 +235,12 @@ def _prohibited_content_scan(text: str) -> list[str]:
     for pat in _CHART_DOMAIN_PATTERNS:
         if pat.search(text):
             findings.append(f"chart-domain:{pat.pattern}")
-    stage_scrubbed = _STAGE_LEGITIMATE_USE_PATTERN.sub("", text)
-    for pat in _DIRECTIVE_PATTERNS:
-        haystack = stage_scrubbed if pat.pattern == r"\bstage\b" else text
-        if pat.search(haystack):
-            findings.append(f"directive-word:{pat.pattern}")
+    if not skip_directive:
+        stage_scrubbed = _STAGE_LEGITIMATE_USE_PATTERN.sub("", text)
+        for pat in _DIRECTIVE_PATTERNS:
+            haystack = stage_scrubbed if pat.pattern == r"\bstage\b" else text
+            if pat.search(haystack):
+                findings.append(f"directive-word:{pat.pattern}")
     if _gate_word_leak(text):
         findings.append("bare-gate-word")
     return findings
@@ -262,6 +263,18 @@ _MAGNITUDE_WORD_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
+# Spelled-out cardinal numbers -- a bounded reviewer-corrected finding
+# (a real, shipped "three reported operating segments" violation): the
+# magnitude-comparison scan above catches "three times" but not an
+# ordinary spelled-out count used as a factual claim. Bounded, closed
+# vocabulary (not a general NLP number parser), matching every other
+# scan in this module's own design discipline.
+_CARDINAL_WORDS = (
+    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+    "nine", "ten", "dozen", "hundred", "thousand", "million", "billion",
+)
+_CARDINAL_WORD_PATTERN = re.compile(r"\b(" + "|".join(_CARDINAL_WORDS) + r")\b", re.IGNORECASE)
+
 
 def _numeric_leakage_scan(text: str) -> list[str]:
     findings: list[str] = []
@@ -269,10 +282,18 @@ def _numeric_leakage_scan(text: str) -> list[str]:
         findings.append("numeric-leakage:bare-digit")
     if _MAGNITUDE_WORD_PATTERN.search(text):
         findings.append("numeric-leakage:written-out-magnitude-word")
+    if _CARDINAL_WORD_PATTERN.search(text):
+        findings.append("numeric-leakage:spelled-out-cardinal-number")
     return findings
 
 
 # -- forbidden-promotion-language scan (SS F, 4th bullet) ------------------
+# Broadened per an independent exact-head review's finding that the
+# original list caught only literal promote/replace/supersede/displace --
+# missing the comparator-directed half of SS G's dual-sided prohibition
+# ("remove, demote, or reclassify GEV or COST") and several common
+# paraphrases of "add"/"take X's place"/"deserves inclusion". Still a
+# bounded, closed pattern set, not a generic classifier.
 
 _PROMOTION_ACTION_PATTERNS = [
     re.compile(p, re.IGNORECASE)
@@ -281,8 +302,16 @@ _PROMOTION_ACTION_PATTERNS = [
         r"\breplac(e|es|ed|ing|ement)\b",
         r"\bsupersed(e|es|ed|ing)\b",
         r"\bdisplac(e|es|ed|ing)\b",
+        r"\bremov(e|es|ed|ing|al)\b",
+        r"\bdemot(e|es|ed|ing|ion)\b",
+        r"\bswap(s|ped|ping)?\b",
+        r"\btak(e|es|ing)\b(?:\s+[\w'-]+){0,4}\s+place\b",
+        r"\bdeserves?\s+a\s+spot\b",
+        r"\bmerits?\s+inclusion\b",
+        r"\badd(?:ing|ed|s)?\b(?:\s+[\w'-]+){0,3}\s+to\s+the\s+(?:canonical|portfolio|targets|holdings)\b",
+        r"\bfit\s+for\s+the\s+canonical\b",
         r"\bcanonical\s+27\b",
-        r"\bcanonical\s+(cohort|equity\s+cohort)\b",
+        r"\bcanonical\s+(cohort|equity\s+cohort|roster)\b",
         r"\bshould\s+be\s+added\b",
     ]
 ]
@@ -306,28 +335,59 @@ def _promotion_language_scan(text: str) -> list[str]:
 # performance judgment that never names an action (add/promote/replace)
 # or a score/rank. Deliberately a bounded, closed term/phrase list, not a
 # generic sentiment classifier (SS F's own explicit instruction).
+#
+# Broadened per an independent exact-head review's finding that the
+# original adjective/noun list and strict-adjacency regex protected
+# seven specific phrases rather than the vulnerability class: added
+# comparative/superlative modifiers (more/less attractive|compelling|
+# appealing, higher/lower-quality, top/best/worst/smarter), a bounded
+# 0-3-word intervening-modifier gap (so "the weaker long-term holding"
+# still matches despite "long-term" sitting between the adjective and
+# the noun), and standalone idioms (top pick, best choice, beat/edge out).
 # ---------------------------------------------------------------------------
 
 _COMPARATIVE_SUPERIORITY_NOUNS = (
     "investment", "compounder", "business", "company", "opportunity",
     "choice", "pick", "holding", "allocation", "quality", "thesis", "case",
+    "option", "options", "one",
 )
 _COMPARATIVE_SUPERIORITY_ADJECTIVES = (
     "stronger", "weaker", "superior", "inferior", "better", "worse",
-    "preferable", "preferred",
+    "preferable", "preferred", "best", "worst", "smarter",
+    "more attractive", "less attractive", "more compelling", "less compelling",
+    "more appealing", "less appealing", "higher-quality", "lower-quality",
+    "top-tier", "top-rated",
 )
 
+
+def _phrase_to_regex_alternative(phrase: str) -> str:
+    return re.escape(phrase).replace(r"\ ", r"\s+")
+
+
+_COMPARATIVE_SUPERIORITY_ADJ_ALTERNATION = "|".join(
+    _phrase_to_regex_alternative(a) for a in _COMPARATIVE_SUPERIORITY_ADJECTIVES
+)
+_COMPARATIVE_SUPERIORITY_NOUN_ALTERNATION = "|".join(_COMPARATIVE_SUPERIORITY_NOUNS)
+
 _COMPARATIVE_SUPERIORITY_PATTERNS = [
+    # comparative/superlative modifier ... (bounded 0-3-word intervening
+    # gap, tolerant of light punctuation -- e.g. "the weaker long-term
+    # holding" and "the weaker, long-term holding, on balance" both
+    # match) ... noun
     re.compile(
-        rf"\b({'|'.join(_COMPARATIVE_SUPERIORITY_ADJECTIVES)})\s+"
-        rf"({'|'.join(_COMPARATIVE_SUPERIORITY_NOUNS)})\b",
+        rf"\b(?:{_COMPARATIVE_SUPERIORITY_ADJ_ALTERNATION})\b"
+        rf"(?:[\s,;:]+[a-z][\w'-]*){{0,3}}[\s,;:]+\b(?:{_COMPARATIVE_SUPERIORITY_NOUN_ALTERNATION})\b",
         re.IGNORECASE,
     ),
     re.compile(r"\b(superior|inferior|preferable)\s+to\b", re.IGNORECASE),
     re.compile(r"\bbetter\s+positioned\b", re.IGNORECASE),
     re.compile(r"\boutperform(s|ed|ing)?\b", re.IGNORECASE),
     re.compile(r"\bunderperform(s|ed|ing)?\b", re.IGNORECASE),
-    re.compile(r"\bshould\s+(outperform|underperform)\b", re.IGNORECASE),
+    re.compile(r"\bshould\s+(outperform|underperform|beat)\b", re.IGNORECASE),
+    re.compile(r"\bbeat(s|ing)?\b", re.IGNORECASE),
+    re.compile(r"\bedge(s|d)?\s+out\b", re.IGNORECASE),
+    re.compile(r"\btop\s+pick\b", re.IGNORECASE),
+    re.compile(r"\bbest\s+choice\b", re.IGNORECASE),
 ]
 
 
@@ -342,7 +402,20 @@ def _comparative_superiority_scan(text: str) -> list[str]:
 def _scan_free_text(
     value: object, field_name: str, errors: list[str], *,
     include_numeric: bool = True, include_comparative_superiority: bool = False,
+    is_citation_field: bool = False,
 ) -> None:
+    """is_citation_field=True applies the citation-field exemption pattern
+    already established elsewhere in this repository (e.g.
+    functional_doctrine_validator.py's _CITATION_FIELD_NAMES): the
+    directive-word scan is skipped (a legitimate path/citation string
+    should never be penalized for incidentally containing a bare
+    "add"/"hold"-shaped word), and the numeric-leakage scan is skipped
+    for source_identifier specifically, since a real repository path
+    legitimately and unavoidably contains digits (e.g. a decision ID
+    like "PI-0019"). Every other scan -- policy-leak, chart-domain,
+    promotion-language, comparative-superiority -- still applies in
+    full, with no exemption, matching an independent exact-head review's
+    explicit finding that these fields must not be left wholly unguarded."""
     if value is None:
         return
     texts: list[str]
@@ -353,7 +426,7 @@ def _scan_free_text(
     else:
         return
     for text in texts:
-        for finding in _prohibited_content_scan(text):
+        for finding in _prohibited_content_scan(text, skip_directive=is_citation_field):
             errors.append(f"{field_name} contains prohibited content ({finding})")
         for finding in _promotion_language_scan(text):
             errors.append(f"{field_name} contains prohibited content ({finding})")
@@ -425,12 +498,39 @@ def _validate_provenance(value: object, errors: list[str]) -> None:
         _reject_unknown_keys(src, label, _SOURCE_ALLOWED_KEYS, errors)
         if not _non_empty_str(src.get("source_identifier")):
             errors.append(f"{label}.source_identifier must be a non-empty string")
+        else:
+            # Citation/path field -- policy-leak/chart-domain/promotion-
+            # language/comparative-superiority scans apply in full;
+            # directive-word and numeric-leakage are exempted, since a
+            # real repository path legitimately and unavoidably contains
+            # digits (e.g. a decision ID like "PI-0019") and incidental
+            # directive-shaped substrings (SS F, an independent review's
+            # own MAJOR-2 finding).
+            _scan_free_text(
+                src["source_identifier"], f"{label}.source_identifier", errors,
+                include_numeric=False, include_comparative_superiority=True,
+                is_citation_field=True,
+            )
         if src.get("source_type") not in _SOURCE_TYPE_VALUES:
             errors.append(f"{label}.source_type invalid: {src.get('source_type')!r}")
         if not _non_empty_str(src.get("as_of_date")):
             errors.append(f"{label}.as_of_date must be a non-empty string")
         if src.get("access_status") not in _ACCESS_STATUS_VALUES:
             errors.append(f"{label}.access_status invalid: {src.get('access_status')!r}")
+        if "limitation" in src:
+            if not _non_empty_str(src.get("limitation")):
+                errors.append(f"{label}.limitation must be a non-empty string when present")
+            else:
+                # A genuinely narrative field (a short prose note, not a
+                # path) -- numeric leakage applies with no carve-out,
+                # matching every other rationale-shaped field; only the
+                # directive-word scan is exempted, per the same citation-
+                # field precedent applied to source_identifier above.
+                _scan_free_text(
+                    src["limitation"], f"{label}.limitation", errors,
+                    include_numeric=True, include_comparative_superiority=True,
+                    is_citation_field=True,
+                )
 
 
 def _validate_comparator_structural_reference(

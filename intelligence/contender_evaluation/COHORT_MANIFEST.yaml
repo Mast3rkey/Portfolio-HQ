@@ -5,7 +5,7 @@ cohort:
     canonical_comparator_symbol: GEV
     shard_id: contender-0003-pilot-session
     sealed_at: "2026-08-10T23:00:00Z"
-    content_sha256: 084fb4d1bc727df4a4749efcffd53d2940884eabccbd7394cb774797af85ad82
+    content_sha256: f4cdfabb63e0be238d0de51c2dd387b1d5254521d05ff4304729e2e6e1919c8f
     schema_version: "1.0"
     governing_decision: CONTENDER-0003
     record_path: intelligence/contender_evaluation/VRT.yaml
@@ -13,7 +13,7 @@ cohort:
     canonical_comparator_symbol: COST
     shard_id: contender-0003-pilot-session
     sealed_at: "2026-08-10T23:00:00Z"
-    content_sha256: 972f4a4dc597f60779bbe9436682c06be666e2c2e15a3cc83c1bdbf39316f287
+    content_sha256: 1197de473d694c360c44781c3e15cfa5acd23c7951b040222e5b9ca9b0ac19ca
     schema_version: "1.0"
     governing_decision: CONTENDER-0003
     record_path: intelligence/contender_evaluation/WMT.yaml
