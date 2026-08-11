@@ -931,6 +931,124 @@ def test_broadened_scans_still_pass_legitimate_descriptive_language(text):
     assert findings == [], f"unexpected finding(s) for legitimate text: {text!r} -> {findings}"
 
 
+# ── comparative-superiority / promotion: residual bypass closure (round 2,
+# delta review MAJOR-4) ─────────────────────────────────────────────────
+# A delta review confirmed MAJOR-1/2/3 and the MINOR resolved but found
+# exactly two reproducible residual bypasses: "looks weaker on a relative
+# basis" (comparative-superiority, no trailing noun -- the round-1 fix's
+# adj-noun pattern never matches a bare verb+adjective+relative-suffix
+# construction) and "inclusion should be reconsidered in favor of"
+# (promotion-language, no promote/replace/remove/demote/swap/add verb --
+# the round-1 fix never covered inclusion/reconsideration/precedence
+# language). These tests lock in the closure of both, and the explicit
+# allowed/prohibited boundary the delta review required: comparative
+# EVIDENCE quality/maturity language stays allowed; comparative
+# INVESTMENT/PORTFOLIO quality or inclusion judgment is rejected.
+
+@pytest.mark.parametrize("text", [
+    "looks weaker on a relative basis",
+    "appears stronger relative to",
+    "seems weaker than",
+    "looks more attractive relative to",
+    "appears less compelling than",
+])
+def test_bypass_a_comparative_relative_construction_now_caught(text):
+    findings = cev._comparative_superiority_scan(text)
+    assert findings, f"expected a comparative-superiority finding for: {text!r}"
+
+
+@pytest.mark.parametrize("text", [
+    "inclusion should be reconsidered in favor of",
+    "inclusion should favor",
+    "reconsider inclusion in favor of",
+    "should be included instead of",
+    "should remain included over",
+    "inclusion is preferred over",
+    "should take precedence over",
+])
+def test_bypass_b_inclusion_precedence_construction_now_caught(text):
+    findings = cev._promotion_language_scan(text)
+    assert findings, f"expected a promotion-language finding for: {text!r}"
+
+
+@pytest.mark.parametrize("text", [
+    "GEV looks weaker on a relative basis compared to VRT",
+    "VRT appears stronger relative to GEV",
+    "WMT seems weaker than COST as an investment",
+    "the relatively weaker holding",
+    "a relatively superior investment",
+    "COST looks more attractive relative to WMT",
+    "GEV appears less compelling than VRT",
+])
+def test_round2_comparative_prohibited_adversarial_matrix_caught(text):
+    findings = cev._comparative_superiority_scan(text)
+    assert findings, f"expected a comparative-superiority finding for: {text!r}"
+
+
+@pytest.mark.parametrize("text", [
+    "inclusion should be reconsidered in favor of VRT",
+    "GEV's inclusion should be reconsidered in favor of VRT",
+    "VRT should be included instead of GEV",
+    "inclusion should favor WMT over COST",
+    "WMT should take precedence over COST in the portfolio",
+    "COST should remain excluded in favor of WMT",
+    "VRT is preferred for inclusion over GEV",
+    # reversed subject/object
+    "in favor of VRT, GEV's inclusion should be reconsidered",
+    "COST, not WMT, should remain excluded in favor of the contender",
+])
+def test_round2_promotion_inclusion_prohibited_adversarial_matrix_caught(text):
+    findings = cev._promotion_language_scan(text)
+    assert findings, f"expected a promotion-language finding for: {text!r}"
+
+
+@pytest.mark.parametrize("text", [
+    # comparative EVIDENCE quality/maturity language stays allowed -- the
+    # explicit distinguishing boundary the delta review required.
+    "evidence quality looks weaker because the source set is incomplete",
+    "evidence maturity is relatively weaker",
+    "the evidence quality is relatively stronger",
+    "this contender has weaker evidence coverage than the comparator",
+    "the evidence base is thinner for this contender",
+    "sourcing reliability is comparatively lower for this record",
+])
+def test_round2_evidence_quality_comparison_language_stays_allowed(text):
+    findings = cev._comparative_superiority_scan(text) + cev._promotion_language_scan(text)
+    assert findings == [], f"unexpected finding(s) for legitimate text: {text!r} -> {findings}"
+
+
+def test_round2_exclude_scope_does_not_false_positive_on_real_vrt_text():
+    # The exclude pattern is deliberately scoped to require a co-occurring
+    # "in favor of" -- an unscoped bare "exclude" pattern was found, during
+    # this fix's own design, to false-positive on VRT.yaml's legitimate
+    # "excluded from this assessment's reasoning" (excluded from the
+    # analysis, not a comparator-inclusion judgment). This test pins that
+    # scoping decision directly against the real record's own text.
+    texts = [
+        "and which is accordingly excluded from this assessment's reasoning "
+        "-- placing overall coverage between the comprehensive and limited tiers.",
+        "and an unsubstantiated backlog figure explicitly excluded from "
+        "this assessment's own reasoning.",
+    ]
+    for text in texts:
+        findings = cev._comparative_superiority_scan(text) + cev._promotion_language_scan(text)
+        assert findings == [], f"unexpected finding(s) for legitimate real-record text: {text!r} -> {findings}"
+
+
+def test_round2_comparative_and_promotion_scans_remain_materially_separate_mechanisms():
+    # A comparative-only construction must never trigger the promotion
+    # scan, and a promotion-only construction must never trigger the
+    # comparative scan -- proving the two round-2 extensions did not
+    # collapse the two scans into one shared mechanism.
+    comparative_only = "looks weaker on a relative basis"
+    assert cev._comparative_superiority_scan(comparative_only)
+    assert cev._promotion_language_scan(comparative_only) == []
+
+    promotion_only = "inclusion should be reconsidered in favor of the contender"
+    assert cev._promotion_language_scan(promotion_only)
+    assert cev._comparative_superiority_scan(promotion_only) == []
+
+
 # ── provenance free-text scan coverage (MAJOR-2) ────────────────────────
 # An independent exact-head review found provenance.sources[].
 # source_identifier/.limitation received zero content-safety scanning of

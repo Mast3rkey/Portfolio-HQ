@@ -313,6 +313,28 @@ _PROMOTION_ACTION_PATTERNS = [
         r"\bcanonical\s+27\b",
         r"\bcanonical\s+(cohort|equity\s+cohort|roster)\b",
         r"\bshould\s+be\s+added\b",
+        # Round-2 additions: an independent delta review found the
+        # inclusion/reconsideration/precedence half of the promotion class
+        # unguarded ("inclusion should be reconsidered in favor of").
+        # The exclude pattern is deliberately SCOPED to require a
+        # co-occurring "in favor of" within a bounded gap rather than a
+        # bare "exclude" match -- an unscoped bare pattern was found, by
+        # direct testing against this record set's own real text, to
+        # false-positive on VRT.yaml's legitimate "...explicitly excluded
+        # from this assessment's own reasoning" (excluded FROM THE
+        # ANALYSIS, not a comparator-inclusion judgment). Scoping to the
+        # co-occurring "in favor of" phrase preserves that legitimate use
+        # while still catching the actual prohibited construction.
+        r"\bexclud(e|es|ed|ing)\b(?:[\s,;:]+[a-z][\w'-]*){0,4}[\s,;:]+\bin\s+favor\s+of\b",
+        r"\binclusion\b(?:[\s,;:]+[a-z][\w'-]*){0,4}[\s,;:]+\b(?:in\s+favor\s+of|favors?|is\s+preferred\s+over|preferred\s+over)\b",
+        r"\breconsider(?:ed|ing|s)?\b(?:[\s,;:]+[a-z][\w'-]*){0,4}[\s,;:]+\b(?:inclusion|in\s+favor\s+of)\b",
+        r"\bshould\s+(?:be|remain)\s+included\b(?:[\s,;:]+[a-z][\w'-]*){0,3}[\s,;:]+\b(?:instead\s+of|over)\b",
+        r"\bshould\s+take\s+precedence\s+over\b",
+        r"\btakes?\s+precedence\s+over\b",
+        r"\bprefer(?:red|s)?\b(?:[\s,;:]+[a-z][\w'-]*){0,4}[\s,;:]+\b(?:over|to)\b",
+        # reversed subject/object ("in favor of X, Y's inclusion should be
+        # reconsidered")
+        r"\bin\s+favor\s+of\b(?:[\s,;:]+[a-z][\w'-]*){0,6}[\s,;:]+\b(?:inclusion|reconsider(?:ed|ing|s)?|exclud(?:e|es|ed|ing))\b",
     ]
 ]
 
@@ -357,6 +379,16 @@ _COMPARATIVE_SUPERIORITY_ADJECTIVES = (
     "more attractive", "less attractive", "more compelling", "less compelling",
     "more appealing", "less appealing", "higher-quality", "lower-quality",
     "top-tier", "top-rated",
+    # Round-2 additions: these require a TRAILING NOUN via the same
+    # adj-noun template below, so a bare fragment with no noun ("evidence
+    # maturity is relatively weaker") stays unmatched and allowed, while a
+    # noun-attached form ("relatively weaker holding") is caught -- the
+    # explicit allowed/prohibited distinction an independent delta review
+    # required (comparative EVIDENCE quality/maturity = allowed;
+    # comparative INVESTMENT/PORTFOLIO quality or inclusion judgment =
+    # reject).
+    "relatively stronger", "relatively weaker", "relatively superior",
+    "relatively inferior",
 )
 
 
@@ -388,6 +420,21 @@ _COMPARATIVE_SUPERIORITY_PATTERNS = [
     re.compile(r"\bedge(s|d)?\s+out\b", re.IGNORECASE),
     re.compile(r"\btop\s+pick\b", re.IGNORECASE),
     re.compile(r"\bbest\s+choice\b", re.IGNORECASE),
+    # Round-2 addition: catches "looks/appears/seems weaker on a relative
+    # basis"/"appears stronger relative to" -- a verb + comparative
+    # adjective + an explicit relative-comparison suffix marker, distinct
+    # from the adj-noun pattern above (this construction has no trailing
+    # noun at all). A bounded 0-2-word gap between the verb and the
+    # adjective, and a bounded 0-4-word gap between the adjective and the
+    # relative-suffix marker, keep this tolerant of short intervening
+    # modifiers without becoming unbounded.
+    re.compile(
+        rf"\b(?:looks?|appears?|seems?)\b(?:[\s,;:]+[a-z][\w'-]*){{0,2}}[\s,;:]+"
+        rf"\b(?:{_COMPARATIVE_SUPERIORITY_ADJ_ALTERNATION})\b"
+        rf"(?:[\s,;:]+[a-z][\w'-]*){{0,4}}[\s,;:]+"
+        rf"\b(?:relative\s+to|on\s+a\s+relative\s+basis|than)\b",
+        re.IGNORECASE,
+    ),
 ]
 
 
