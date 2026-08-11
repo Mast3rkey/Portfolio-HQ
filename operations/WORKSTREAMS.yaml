@@ -10492,6 +10492,90 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-11"
+      - gate: xasset0012-post-merge-verification
+        description: >
+          A new, separate session independently reconfirmed, via the
+          GitHub API, that PR #301 (the xasset0012-level1-sleeve-
+          synthesis-methodology-design gate above) is fully merged: head
+          bbfd60784a8dfdb7b4ec2e78b6e350d62a74c7aa, base
+          23b858441ffa822467e493f3328649d2475445c5, one independent exact-
+          head review round (pullrequestreview-4902959254, CHANGES
+          REQUIRED, 0 BLOCKING/3 MAJOR/3 MINOR/2 NOTE) and one delta
+          review (pullrequestreview-4906063644, 0 BLOCKING/0 MAJOR/2
+          MINOR/1 NOTE) both resolved by bounded corrections, merge
+          commit 79a611cf03350e5d0688eb6b0823f7c0f043b2fe (parents
+          independently re-confirmed via git log --pretty '%H %P', not
+          assumed). Merge-commit CI independently re-fetched via the
+          GitHub API and confirmed green (check run 93778105836, status
+          completed/conclusion success). XASSET-0012's own methodology is
+          therefore fully merged and effective — this workstream's own
+          next substantive step is a new, separate Stage 2 content-
+          authorization filing (the
+          xasset0013-level1-synthesis-content-authorization gate below),
+          not a continuation of the methodology-design step. Added by
+          XASSET-0013 (this session's own draft filing), independently
+          re-verified, not assumed.
+        pr: 301
+        status: complete
+        date: "2026-08-11"
+      - gate: xasset0013-level1-synthesis-content-authorization
+        description: >
+          Authorizes, as text only — not a population of any record, not
+          a comparative finding, not a sleeve weight, instrument weight,
+          or portfolio in/out decision of any kind — the exact first
+          population of Level 1 sleeve-allocation-synthesis content a
+          future, separate, bounded implementation PR may draft under
+          XASSET-0012's already-merged methodology: all six sleeve_
+          profile records (equity, fund_broad_market, fund_gld_defensive,
+          crypto, cash_reserve, debt_reduction) and exactly seven of the
+          fifteen possible sleeve_relationship pairs
+          (cash_reserve<->debt_reduction, equity<->cash_reserve,
+          equity<->crypto, crypto<->fund_gld_defensive,
+          equity<->debt_reduction, equity<->fund_broad_market,
+          equity<->fund_gld_defensive) — the five equity-anchored pairs
+          plus two independently-determined non-equity pairs (crypto vs.
+          fund_gld_defensive, closing the crypto-vs-gold shared
+          alternative-asset narrative no equity-anchored pair can answer;
+          cash_reserve vs. debt_reduction, the one non-equity pair with a
+          directly documented, live capital-competition question in this
+          repository's own governed margin doctrine), not the five
+          example pairs a directive floated adopted by default. The
+          remaining eight pairs are explicitly deferred by class (four
+          fund_broad_market pairings, redundant with equity's own
+          identical risk-capital-deployment role; two fund_gld_defensive
+          pairings among purely defensive sleeves, no live competing-
+          capital question; two crypto pairings with cash_reserve/
+          debt_reduction, no governed doctrine framing them as competing
+          for the same marginal dollar) — never silently dropped. Binds
+          every structural-reference, evidence-coverage, abstention-roll-
+          up, overlap-citation, and forbidden-language mechanism to
+          XASSET-0012's own already-accepted design by reference, with no
+          redesign, expansion, or narrowing of any field or vocabulary.
+          Requires the future implementation to adversarially probe the
+          carried-forward eligibility/inclusion-language paraphrase
+          vulnerability class XASSET-0012's own final delta review left
+          as a non-blocking NOTE, before any code is pushed. Explicitly
+          preserves every known evidence limitation already live in the
+          sealed evidence base (9/27 partial equity valuation results;
+          the universal discount-rate-evidence abstention; crypto's own
+          forced cross_coin_correlation_status abstention and SOL's own
+          sub-field-level historical_equity_market_drawdown_behavior
+          abstention; the four overlap_model dimensions forced not_yet_
+          computable_interface_only; DEBT_REDUCTION's own forced
+          assessment_required economic_assessment_readiness; the
+          unresolved CASH/RESERVE consolidation question) — none may be
+          treated as neutral or complete. Restates, unweakened, the
+          contender (VRT/WMT and the broader registry excluded), ETF/QQQ,
+          and Level-1-vs-Level-2 boundaries. Authorizes exactly one future
+          implementation PR unless a genuine integrity reason to split is
+          found at implementation time — still blocked only on its own
+          independent exact-head review, correction if needed, principal
+          acceptance, merge, and post-merge verification. This session
+          does not review its own PR, mark it ready, merge it, or post
+          principal acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-11"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -10519,6 +10603,7 @@ workstreams:
       - governance/decisions/CONTENDER-0003-vrt-wmt-contender-competition-pilot-authorization.md
       - governance/decisions/XASSET-0012-ws0014-level1-cross-asset-synthesis-methodology.md
       - governance/audits/WS0014_LEVEL1_CROSS_ASSET_SYNTHESIS_METHODOLOGY_DESIGN_20260811.md
+      - governance/decisions/XASSET-0013-ws0014-level1-synthesis-content-authorization.md
     next_action: >
       XASSET-0009 (PR #293) is independently confirmed merged — see the
       xasset0009-post-merge-verification gate above. Its authorization
@@ -10618,6 +10703,30 @@ workstreams:
       question (XASSET-0008 §N), QQQ/any other future ETF or crypto
       candidate expansion, a future cross-coin correlation study, and
       steps 8 through 13 remain wholly unauthorized, unchanged.
+
+
+      Update, a new session, 2026-08-11: XASSET-0012 (PR #301)
+      independently confirmed merged — see the
+      xasset0012-post-merge-verification gate above. Its own Level 1
+      cross-asset sleeve-allocation-synthesis methodology is therefore
+      merged and effective. This same session then filed XASSET-0013
+      (the xasset0013-level1-synthesis-content-authorization gate above,
+      draft, unmerged) — a bounded Stage 2 content-authorization filing
+      naming the exact first population a future implementation PR may
+      draft: all six sleeve_profile records, and exactly seven of fifteen
+      possible sleeve_relationship pairs (the five equity-anchored pairs
+      plus two independently-determined non-equity pairs, crypto vs.
+      fund_gld_defensive and cash_reserve vs. debt_reduction), with the
+      remaining eight pairs explicitly deferred by class, not silently
+      dropped — still blocked only on its own independent exact-head
+      review, correction if needed, principal acceptance, merge, and
+      post-merge verification. Populates no sleeve_profile or sleeve_
+      relationship record itself. Research on any contender-registry
+      entry, any QQQ/ETF-scope revisit, DEBT_REDUCTION's own economic-
+      assessment methodology, the CASH/RESERVE consolidation question,
+      a future cross-coin correlation study, any actual Level 1 sleeve-
+      synthesis content, Level 2 instrument-level design, and steps 9
+      through 13 remain wholly unauthorized, unchanged.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -10819,9 +10928,39 @@ workstreams:
       methodology, the CASH/RESERVE consolidation question, a future
       cross-coin correlation study, and steps 8 through 13 remain wholly
       unauthorized, unchanged.
-    active_branch: claude/level-1-cross-asset-synthesis-2m35pg
+
+
+      Update, a new session, 2026-08-11: CONTENDER-0003 (PR #298/PR #299/
+      PR #300) is independently confirmed complete and merged — see the
+      contender0003-vrt-wmt-implementation-post-merge-verification gate
+      above. XASSET-0012 (PR #301, step 8's own Level 1 sleeve-allocation-
+      synthesis methodology, this entry's own 0-13 numbering) is
+      independently confirmed complete and merged — see the
+      xasset0012-post-merge-verification gate above: a closed six-sleeve
+      taxonomy, two record types (sleeve_profile, sleeve_relationship),
+      a closed four-value primary_disposition vocabulary plus a closed
+      three-member secondary_conditions set, a zero-numeric-field posture,
+      and a nineteen-point future validator/test specification, all bound
+      for a future Stage 2 content authorization to draw on. This session
+      then filed XASSET-0013 (the
+      xasset0013-level1-synthesis-content-authorization gate above) — a
+      bounded Stage 2 content-authorization filing naming the exact first
+      population (all six sleeve profiles; seven of fifteen sleeve-
+      relationship pairs) a future implementation PR may draft, bound by
+      reference to XASSET-0012's own already-merged methodology with no
+      redesign — still blocked only on its own independent exact-head
+      review, correction if needed, principal acceptance, merge, and
+      post-merge verification. Step 8 itself remains blocked on that
+      future Stage 3 implementation's own eventual merge. Steps 9 through
+      13, any Level 2 instrument-level design, DEBT_REDUCTION's own
+      economic-assessment methodology, the CASH/RESERVE consolidation
+      question, a future cross-coin correlation study, and any broader
+      contender-registry sweep beyond CONTENDER-0003's own two-name pilot
+      all remain blocked on their own future, separate, explicit
+      principal authorization each.
+    active_branch: claude/xasset-0013-stage-2-auth-8al8kg
     active_pr: null
-    last_verified_main_sha: 23b858441ffa822467e493f3328649d2475445c5
+    last_verified_main_sha: 79a611cf03350e5d0688eb6b0823f7c0f043b2fe
     last_verified_date: "2026-08-11"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
@@ -11109,6 +11248,18 @@ workstreams:
       future cross-coin correlation study, any contender other than
       VRT/WMT, and the remaining roadmap_preservation items below all
       remain wholly unauthorized, unchanged.
+
+
+      Further controlling principal directive, a later session,
+      2026-08-11: "I explicitly authorize ONE bounded Stage-2 governance
+      filing that names the exact first population of Level-1
+      sleeve_profile and sleeve_relationship records that one future
+      implementation PR may populate under XASSET-0012. This filing must
+      remain authorization-only. It must NOT populate synthesis content
+      itself." Implemented by XASSET-0013 (draft, unmerged, this
+      session) — see that decision file for the full bounded
+      specification, including the exact seven-pair sleeve_relationship
+      selection and the reasoned deferral of the remaining eight pairs.
     roadmap_preservation: >
       Planning/coordination only, additively folded forward by the
       economic-assessment content-implementation session (2026-08-10,
