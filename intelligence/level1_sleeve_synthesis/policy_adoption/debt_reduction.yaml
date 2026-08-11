@@ -1,0 +1,123 @@
+schema_version: '1.0'
+sleeve_id: debt_reduction
+profile_reference:
+  record_path: intelligence/level1_sleeve_synthesis/profiles/debt_reduction.yaml
+  referenced_content_sha256: ab706eaa75425882e3e8970bc65c0a0693c9d7871234707fbdc644ce4cc1aa66
+relationship_references:
+- sleeve_pair:
+    sleeve_a: cash_reserve
+    sleeve_b: debt_reduction
+  record_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_debt_reduction.yaml
+  referenced_content_sha256: fc8ca7788747ff7b953c864fe1c27c42888717c60af22a94e00d33827a6148cd
+- sleeve_pair:
+    sleeve_a: debt_reduction
+    sleeve_b: equity
+  record_path: intelligence/level1_sleeve_synthesis/relationships/debt_reduction_equity.yaml
+  referenced_content_sha256: 39fdad3d0193bdba3cefe7438c72e69563eb172b7c2fc1780d30ff5847356e28
+portfolio_function_status: function_confirmed_distinct
+function_rationale: 'Reached on Basis 1 alone, independently sufficient on its own; Basis 2 is separately
+  available but not load-bearing given Basis 1 already suffices; Basis 3 is unavailable and not asserted.
+  Basis 1 (relationship-record finding): the sealed debt_reduction_equity relationship record resolves
+  role_preserving -- deploying capital into the equity sleeve and reducing margin debt through this sleeve
+  sit on different sides of this account''s own risk-and-survival governance domain, not on a shared evidence-maturity
+  spectrum, independent of how developed either sleeve''s own research base is. Basis 2 (CLAUDE.md doctrine
+  citation): this account''s own governing Portfolio Doctrine directly names a structural leverage ceiling
+  and a hard minimum margin-buffer threshold as binding guardrails, stating plainly that a breach of that
+  threshold is "treated as a forced de-lever signal, same severity as the cash-tight guardrail" -- an
+  independently available, verbatim-quoted passage confirming this sleeve''s own governed function, cited
+  here for completeness though not required to reach this finding. Basis 3 (structural sleeve-definition
+  basis) is unavailable for this sleeve: no destination-configuration row exists for it -- it is a margin-policy
+  lever, not a market-traded destination category, per the fixed sleeve-taxonomy table the governing methodology
+  cites -- and this filing does not treat that structural absence as evidence against this sleeve''s own
+  portfolio_function_status, since Basis 1 and Basis 2 both independently, sufficiently establish the
+  sleeve''s own distinct function regardless.'
+abstention_index: []
+capital_eligibility_status: not_yet_eligible
+sizing_readiness_status: sizing_blocked
+blocking_evidence:
+- reason_type: axis_b_not_eligible
+  other_sleeve_id: null
+  detail: This sleeve's own sealed sleeve_profile carries evidence_coverage_profile == forced_abstention,
+    mechanically forcing capital_eligibility_status to not_yet_eligible with no override path, independent
+    of this sleeve's own portfolio_function_status outcome -- this sleeve's entire opportunity-cost evidence
+    base (both its avoided-borrowing-cost readiness and its survivability-and-buffer-benefit readiness)
+    is presently forced-abstained at the functional-doctrine layer this profile cites, per that layer's
+    own sealed record.
+  reference: null
+- reason_type: sealed_unresolved_relationship
+  other_sleeve_id: cash_reserve
+  detail: The sealed cash_reserve_debt_reduction relationship record resolves unable_to_determine -- an
+    independently sufficient additional reason this sleeve's own sizing_readiness_status resolves sizing_blocked,
+    distinct from and additional to the capital-eligibility failure above.
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_debt_reduction.yaml
+    referenced_content_sha256: fc8ca7788747ff7b953c864fe1c27c42888717c60af22a94e00d33827a6148cd
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: crypto
+  detail: The crypto-debt_reduction pair is among the deferred pairs.
+  reference: null
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: fund_broad_market
+  detail: The debt_reduction-fund_broad_market pair is among the deferred pairs, part of fund_broad_market's
+    own deferred group.
+  reference: null
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: fund_gld_defensive
+  detail: The fund_gld_defensive-debt_reduction pair is among the deferred pairs.
+  reference: null
+- reason_type: secondary_condition_present
+  other_sleeve_id: equity
+  detail: The sealed debt_reduction_equity relationship record carries evidence_partial_present, forced_abstention_present,
+    and overlap_or_duplication_disclosed as secondary conditions alongside its role_preserving primary
+    disposition -- a genuine, disclosed caveat even though this specific pair is not itself the reason
+    sizing_readiness_status resolves sizing_blocked.
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/debt_reduction_equity.yaml
+    referenced_content_sha256: 39fdad3d0193bdba3cefe7438c72e69563eb172b7c2fc1780d30ff5847356e28
+unresolved_relationships:
+- other_sleeve_id: cash_reserve
+  record_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_debt_reduction.yaml
+  referenced_content_sha256: fc8ca7788747ff7b953c864fe1c27c42888717c60af22a94e00d33827a6148cd
+relationship_coverage_ledger:
+- other_sleeve_id: cash_reserve
+  coverage_state: sealed_unresolved
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_debt_reduction.yaml
+    referenced_content_sha256: fc8ca7788747ff7b953c864fe1c27c42888717c60af22a94e00d33827a6148cd
+- other_sleeve_id: crypto
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_3
+    governing_decision: XASSET-0013
+- other_sleeve_id: equity
+  coverage_state: sealed_determined
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/debt_reduction_equity.yaml
+    referenced_content_sha256: 39fdad3d0193bdba3cefe7438c72e69563eb172b7c2fc1780d30ff5847356e28
+- other_sleeve_id: fund_broad_market
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_1
+    governing_decision: XASSET-0013
+- other_sleeve_id: fund_gld_defensive
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_2
+    governing_decision: XASSET-0013
+overlap_coordination_notes:
+- other_sleeve_id: equity
+  dimension_ids:
+  - leverage_debt_interaction
+  note: The debt_reduction_equity relationship record discloses that deploying capital into the equity
+    sleeve and reducing margin debt through this sleeve sit on different sides of this account's own risk-and-survival
+    governance domain -- a disclosed coordination note only, never a sizing formula, netting ratio, or
+    deployment-policy conclusion of any kind.
+cash_reserve_consolidation_note: null
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0014
+- XASSET-0015
+drafting_session_or_shard_id: single-pass-level1-sleeve-policy-adoption-implementation
+record_status: sealed
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/policy_adoption/COHORT_MANIFEST.yaml#debt_reduction
+content_sha256: 82228f6bc48da3db861340caf27bb8cf2be8ce9160a3939e0e506e84dde2877f

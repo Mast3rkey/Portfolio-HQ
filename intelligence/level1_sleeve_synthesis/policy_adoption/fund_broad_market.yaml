@@ -1,0 +1,99 @@
+schema_version: '1.0'
+sleeve_id: fund_broad_market
+profile_reference:
+  record_path: intelligence/level1_sleeve_synthesis/profiles/fund_broad_market.yaml
+  referenced_content_sha256: 2ed99d67847a9aea644be6867c53cac15b5870eff84ea759ab87a7a3a2d49de1
+relationship_references:
+- sleeve_pair:
+    sleeve_a: equity
+    sleeve_b: fund_broad_market
+  record_path: intelligence/level1_sleeve_synthesis/relationships/equity_fund_broad_market.yaml
+  referenced_content_sha256: 8667974b8e08926173ffb9819e4418a06fe2731b0983883fab062e8a272ed0f8
+portfolio_function_status: function_status_unresolved
+function_rationale: 'None of the lawful evidentiary bases is currently available in a form sufficient
+  to reach function_confirmed_distinct, so this sleeve''s own portfolio_function_status determination
+  remains, honestly, function_status_unresolved -- not a demotion, a redundancy finding, or a negative
+  conclusion of any kind, only that the question is not yet resolved. Basis 1 (relationship-record finding)
+  is unavailable: this sleeve''s only sealed sleeve_relationship record, equity_fund_broad_market, resolves
+  stronger_evidence_maturity favoring equity -- mechanically barred from supplying Basis 1 grounds by
+  design, and no other sealed relationship record names this sleeve at all. Basis 2 (a directly quoted
+  CLAUDE.md doctrine passage establishing this specific sleeve''s own distinct functional purpose) is
+  not asserted: no genuine, directly-quotable passage naming the broad-market fund sleeve''s own distinct
+  function, independent of its constituent instruments'' own individual disclosures, was identified --
+  none is manufactured here to fill the gap. Basis 3 (structural sleeve-definition basis) is mechanically
+  available: this sleeve''s own asset_class scope (SPY, VEA, and VWO) is currently populated in a live
+  destination-configuration category, confirmed directly this session. That structural fact establishes
+  only that the evidentiary path to a future function_confirmed_distinct finding now exists -- the governing
+  methodology states explicitly that Basis 3''s own availability is never automatic and never presumptively
+  expected to be relied upon in the absence of corroborating evidence. For every other sleeve in this
+  population, Basis 3 is cited alongside an independently sufficient relationship-record or doctrine-citation
+  basis; this sleeve is the only sleeve for which the sole available path rests on Basis 3 in complete
+  isolation, with no relationship-based or doctrine-based corroboration of any kind. Treating that isolated,
+  purely categorical fact as sufficient on its own -- with no offsetting evidence anywhere in this sleeve''s
+  own sealed corpus -- would read Basis 3''s mere availability as a presumptive positive answer, exactly
+  the shortcut the governing methodology''s own text warns against. A future relationship batch closing
+  this sleeve''s own currently deferred relationship pairs, or a future session identifying a genuine,
+  directly-quotable doctrine passage, could supply the missing corroboration and resolve this determination
+  either way.'
+abstention_index: []
+capital_eligibility_status: eligible_for_target_consideration
+sizing_readiness_status: sizing_blocked
+blocking_evidence:
+- reason_type: axis_a_unresolved
+  other_sleeve_id: null
+  detail: 'This sleeve''s own portfolio_function_status resolves function_status_unresolved, mechanically
+    forcing sizing_readiness_status to sizing_blocked regardless of this sleeve''s own eligible_for_target_consideration
+    capital_eligibility_status value or the state of any individual relationship pair -- portfolio_function_status''s
+    own governing condition alone determines this outcome. This is the sole blocking_evidence entry for
+    this sleeve, per the governing methodology''s own explicit instruction for this exact case shape:
+    the sleeve''s own relationship-coverage ledger below discloses the underlying pair-by-pair detail
+    as structural data in its own right, independent of, and not duplicated into, this blocking_evidence
+    list.'
+  reference: null
+unresolved_relationships: []
+relationship_coverage_ledger:
+- other_sleeve_id: equity
+  coverage_state: sealed_determined
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/equity_fund_broad_market.yaml
+    referenced_content_sha256: 8667974b8e08926173ffb9819e4418a06fe2731b0983883fab062e8a272ed0f8
+- other_sleeve_id: fund_gld_defensive
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_1
+    governing_decision: XASSET-0013
+- other_sleeve_id: crypto
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_1
+    governing_decision: XASSET-0013
+- other_sleeve_id: cash_reserve
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_1
+    governing_decision: XASSET-0013
+- other_sleeve_id: debt_reduction
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_1
+    governing_decision: XASSET-0013
+overlap_coordination_notes:
+- other_sleeve_id: equity
+  dimension_ids:
+  - etf_direct_equity_duplication
+  - issuer_overlap_etf_lookthrough
+  note: The equity_fund_broad_market relationship record discloses a mechanically confirmed look-through
+    overlap between this sleeve's own covered index funds and names the account also holds directly as
+    individually researched equities. A disclosed coordination flag only -- it carries no portfolio_function_status
+    authority of any kind under the governing methodology and does not itself determine, or contribute
+    to, this sleeve's own function_status_unresolved finding above, which rests entirely on the absence
+    of a lawful Basis 1 or Basis 2 finding, not on this overlap.
+cash_reserve_consolidation_note: null
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0014
+- XASSET-0015
+drafting_session_or_shard_id: single-pass-level1-sleeve-policy-adoption-implementation
+record_status: sealed
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/policy_adoption/COHORT_MANIFEST.yaml#fund_broad_market
+content_sha256: b4c0e324ac32d59482a7b62a7783578ac6c4e5b9d232a27c25b56aea97d89df0

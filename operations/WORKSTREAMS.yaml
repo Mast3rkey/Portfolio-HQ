@@ -11043,6 +11043,147 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-11"
+      - gate: xasset0015-post-merge-verification
+        description: >
+          Lane M synchronization only -- does not edit the
+          xasset0015-stage4b-policy-adoption-content-authorization gate's
+          own text above. Independently re-confirmed via the GitHub API,
+          not assumed: PR #305 (XASSET-0015's own Stage 4b
+          content-authorization filing) is fully merged (merge commit
+          90e12b2ba3441c6b3602b0fd24bc0642a3aa6952, one commit, zero
+          bounded-correction rounds), and its own single check run
+          (93914433654) is status completed / conclusion success. Zero
+          open pull requests confirmed at this session's own start.
+          XASSET-0015's authorized Stage 4c population (all six sleeves,
+          none deferred) is therefore live, accepted authorization for
+          the implementation this session performs (the
+          stage4c-policy-adoption-implementation gate below).
+        pr: 305
+        status: complete
+        date: "2026-08-11"
+      - gate: stage4c-policy-adoption-implementation
+        description: >
+          This session's own Stage 4c implementation, performed under
+          XASSET-0015's already-merged Stage 4b authorization and bound
+          to XASSET-0014's already-accepted Stage 4a methodology with no
+          redesign of either. Sleeve by sleeve, independently derived --
+          never assumed favorable -- Axis A/Axis B/Axis C outcomes
+          strictly from the sealed Stage 1-3 evidence, using only the
+          three lawful Axis A evidentiary bases XASSET-0014 SS3.2
+          defines: equity (portfolio_function_status
+          function_confirmed_distinct, via Basis 1 -- three sealed
+          role_preserving findings -- and Basis 3; capital_eligibility_status
+          eligible_for_target_consideration; sizing_readiness_status
+          sizing_conditionally_ready, capped by disclosed secondary
+          conditions on every one of its five sealed relationships, per
+          XASSET-0014 SS22 Case A -- never sizing_ready);
+          fund_broad_market (portfolio_function_status
+          function_status_unresolved -- Basis 1 unavailable, Basis 2 not
+          asserted, Basis 3 mechanically available but deliberately not
+          treated as automatically sufficient on its own, per XASSET-0014
+          SS3.2's own explicit caution and this session's own extended
+          reasoning in the retained record's function_rationale field;
+          sizing_readiness_status sizing_blocked via the Axis A gate
+          alone, matching SS22 Case G); fund_gld_defensive
+          (function_confirmed_distinct via all three lawful bases, the
+          strongest evidentiary support of any non-equity sleeve;
+          sizing_conditionally_ready, capped by deferred pairs);
+          crypto (function_confirmed_distinct via Basis 1 and Basis 3;
+          sizing_conditionally_ready, capped by deferred pairs);
+          cash_reserve (function_confirmed_distinct via Basis 1 and
+          Basis 3; capital_eligibility_status eligible_for_target_consideration;
+          sizing_readiness_status sizing_blocked, forced by its own
+          sealed_unresolved relationship against debt_reduction, matching
+          SS22 Case D -- carries the required cash_reserve_consolidation_note
+          preserving the CASH/RESERVE question as still open, not
+          resolved by this record); debt_reduction (function_confirmed_distinct
+          via Basis 1 alone, independently sufficient, with Basis 2
+          available but not load-bearing; capital_eligibility_status
+          not_yet_eligible, mechanically forced by its own sealed
+          forced_abstention evidence-coverage profile; sizing_readiness_status
+          sizing_blocked via both the Axis B failure and its own
+          sealed_unresolved relationship against cash_reserve, matching
+          SS22 Case C combined with Case D). Independently re-verified the
+          closed 7 sealed + 8 XASSET-0013-SS-E-deferred = 15 C(6,2) pair
+          accounting has zero gap, and built each sleeve's own
+          five-entry relationship_coverage_ledger from that accounting.
+          Honest, disclosed, non-favorable-across-the-board finding: no
+          sleeve reaches sizing_ready today -- every sealed relationship
+          record in the current corpus carries at least one disclosed
+          secondary condition, mechanically capping even the cleanest
+          sleeve (equity, zero deferred pairs) at
+          sizing_conditionally_ready. Delivered six sealed
+          intelligence/level1_sleeve_synthesis/policy_adoption/<SLEEVE_ID>.yaml
+          records plus one COHORT_MANIFEST.yaml, and extended
+          level1_sleeve_synthesis_validator.py with a clearly separated
+          Stage 4 section (the implementing session's own choice,
+          justified per XASSET-0014 SS G.O/SS21's own preamble deferral)
+          implementing XASSET-0014 SS21's full validator/test
+          specification: closed schema with extra-key rejection at every
+          nesting level; exactly six closed sleeve_id values; live,
+          independent hash recomputation of every structural reference,
+          never trusted from a stored value; mechanical Axis B
+          re-derivation with zero drafting-session discretion; the
+          stronger_evidence_maturity counterfactual-masking non-influence
+          proof plus its presence-independent defensive regression guard;
+          mechanical Axis C consistency checks including full
+          relationship-coverage-ledger completeness (exact five-pair
+          enumeration per sleeve, live cross-reference against the sealed
+          seven and the disclosed eight); a zero-numeric-fields scan
+          (bare digit and spelled-out-magnitude both, with a narrowly
+          scoped, disclosed whitelist for "Basis N" and governance
+          decision-ID citations only -- no other carve-out); a
+          zero-score/rank/composite-key scan; the Level 1/Level 2
+          leakage scan; a directive/trading-language scan; a
+          chart-domain-terminology scan; the CASH/RESERVE-distinction-
+          language scan; Stage 4's own materially separate
+          bounded-conclusion scan (distinct from Stage 1-3's blanket
+          eligibility-language ban); the comparative-investment-
+          superiority scan; a zero-contender/QQQ-citation scan; the Basis
+          3 mechanical check (live targets.yaml cross-check, with
+          rejection of any function_rationale citation referencing
+          evidence_coverage_profile or favored_sleeve_id, and confirmed
+          unavailability for debt_reduction); the generalized Basis 2
+          structural-non-emptiness check; manifest bidirectional
+          reconciliation; non-cascading abstention discipline; and a
+          protected-path/byte-identity proof. 150 new focused/adversarial
+          test functions added to
+          test_level1_sleeve_synthesis_validator.py (664 collected test
+          items in that file after parametrization, up from an earlier
+          baseline), covering schema shape, hash staleness, Axis B
+          mechanical re-derivation in both directions, the full SS22
+          axis-interaction adversarial-case table (Cases A/B/C/D/E/G/H,
+          reproduced as direct unit tests against the pure derivation
+          function), the counterfactual-masking non-influence proof, the
+          presence-independent regression guard, every forbidden-content
+          scan with adversarial ordering/negation/punctuation/conjunction
+          variants and mandatory false-positive guards, manifest
+          reconciliation, protected-path isolation, and full real-corpus
+          validation. Two genuine implementation-time regex gaps found
+          and fixed during this session's own drafting (a Level 2
+          possessive-ticker gap -- "SPY's own weight" -- and a CASH/
+          RESERVE plural-noun gap -- "different purposes"), and one
+          genuine schema-completeness gap found and fixed (profile_reference
+          was missing its own extra-key rejection check) -- all three
+          disclosed here, not silently patched. One disclosed,
+          not-fabricated residual scan-coverage gap carried forward
+          unchanged from the reused XASSET-0012 SS9 item 7 magnitude-word
+          list: bare fraction nouns ("a third of the book", "roughly
+          half") carry no digit, cardinal word, or listed magnitude word
+          and are not caught -- neither phrase appears anywhere in the
+          real sealed corpus. All 17 repository validators (16
+          pre-existing plus this one) run standalone -- clean. Decision
+          catalog unchanged at 112 decisions, issues == () -- no new
+          governance decision filed by this implementation. Zero diff on
+          every protected path (targets.yaml, holdings.yaml, gates.yaml,
+          issuer_lookthrough.yaml, allocate.py, margin_state.py,
+          levels.py, every existing sleeve_profile/sleeve_relationship
+          record, every other pre-existing validator). This session does
+          not review its own PR, mark it ready, merge it, or post
+          principal acceptance -- awaiting independent exact-head review.
+        pr: null
+        status: in_progress
+        date: "2026-08-11"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11266,6 +11407,38 @@ workstreams:
       class), Level 2 instrument-level design, and every other item this
       entry's own roadmap_preservation field names remain wholly
       unauthorized, unchanged.
+
+
+      Update, a new session, 2026-08-11: PR #305 (XASSET-0015, Stage 4b
+      policy-adoption content authorization naming all six sleeves, none
+      deferred) independently confirmed merged — see the
+      xasset0015-post-merge-verification gate above. This same session
+      then performed the Stage 4c implementation it authorized (the
+      stage4c-policy-adoption-implementation gate above, draft, unmerged):
+      six sealed intelligence/level1_sleeve_synthesis/policy_adoption/
+      records (one per sleeve) plus COHORT_MANIFEST.yaml, and a new Stage
+      4 section of level1_sleeve_synthesis_validator.py implementing
+      XASSET-0014 SS21's full validator/test specification — requiring
+      its own full independent exact-head review, any required bounded
+      correction, principal acceptance, merge, and post-merge
+      verification before that gate may be marked complete; this session
+      does not review its own work, mark it ready, merge it, or post
+      principal acceptance. Every sleeve's Axis A/B/C outcome was
+      independently derived from the sealed Stage 1-3 evidence, never
+      assumed favorable — five of six sleeves reach
+      portfolio_function_status function_confirmed_distinct,
+      fund_broad_market reaches function_status_unresolved; no sleeve
+      reaches sizing_readiness_status sizing_ready today, an honest,
+      disclosed, non-favorable-across-the-board finding. Once this PR
+      merges, none of the eleven conditions XASSET-0014 SS15 requires
+      before a future, separate, wholly distinct numeric Level 1 sizing
+      authorization would yet be fully satisfied — this implementation
+      itself does not authorize, and does not claim to authorize, numeric
+      Level 1 or Level 2 sizing of any kind, and no allocation check, live
+      or scenario, was run by this session. An eighth sleeve_relationship
+      pair, Level 2 instrument-level design, and every other item this
+      entry's own roadmap_preservation field names remain wholly
+      unauthorized, unchanged.
     blocker: >
       Step 1 (contender normalization plus research-readiness screening,
       per XASSET-0001 §J's own step numbering — see this entry's
@@ -11452,9 +11625,38 @@ workstreams:
       contender-registry sweep beyond CONTENDER-0003's own two-name pilot
       all remain blocked on their own future, separate, explicit
       principal authorization each.
-    active_branch: claude/stage-4b-policy-adoption-auth-0wgz6j
+
+
+      Update, a new session, 2026-08-11: PR #302 (XASSET-0013) and its
+      own Stage 3 implementation, and PR #304 (XASSET-0014, Stage 4a
+      policy-adoption methodology) and PR #305 (XASSET-0015, Stage 4b
+      policy-adoption content authorization) are all independently
+      confirmed complete and merged — see the
+      xasset0013-implementation-post-merge-verification,
+      xasset0014-post-merge-verification, and
+      xasset0015-post-merge-verification gates above. This same session
+      then performed the Stage 4c implementation XASSET-0015 authorized
+      (the stage4c-policy-adoption-implementation gate above, draft,
+      unmerged) — six sealed policy_adoption records plus manifest, and a
+      new Stage 4 validator section — blocked only on its own independent
+      exact-head review, correction if needed, principal acceptance,
+      merge, and post-merge verification. Numeric Level 1 sizing
+      (XASSET-0001 §J step 9) remains blocked on its own separate future
+      authorization gated by XASSET-0014 SS15's own eleven conditions,
+      none of which this implementation alone satisfies in full (at most
+      conditions 1-3 of eleven are now live once this PR merges — the
+      methodology and content-authorization filings merged, and every
+      authorized sleeve populated — conditions 4 through 11 require
+      further review/acceptance/validator-passing steps this PR's own
+      future lifecycle has not yet completed). Steps 9 through 13, any
+      Level 2 instrument-level design, DEBT_REDUCTION's own
+      economic-assessment methodology, the CASH/RESERVE consolidation
+      question, a future cross-coin correlation study, and any broader
+      contender-registry sweep remain blocked on their own future,
+      separate, explicit principal authorization each.
+    active_branch: claude/xasset-0015-stage-4c-policy-wz38lj
     active_pr: null
-    last_verified_main_sha: f3e067fd217ef4ea4800951d663f7c89e0c7d257
+    last_verified_main_sha: 90e12b2ba3441c6b3602b0fd24bc0642a3aa6952
     last_verified_date: "2026-08-11"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
