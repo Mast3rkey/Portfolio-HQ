@@ -98,32 +98,94 @@ sequence the supporting artifact §10 defines.
   content filing's own restated non-authorization boundary) — none that designs it. This filing is
   the first.
 
-### Disclosed correction, unrelated to this filing's own content, found during validation
+### Correction history (this filing, same PR)
 
-A full local repository `pytest` run surfaced one genuine, pre-existing test defect in
-`test_overlap_model_validator.py::test_governance_decision_files_untouched` — added in the single
-commit that delivered `XASSET-0007`'s own overlap-model content implementation (`PR #292`, merged
-2026-08-10), asserting via a live `git status --porcelain -- governance/decisions` check that the
-working tree carries zero diff under `governance/decisions/`. That assertion was correct for that
-specific PR's own diff (a content-implementation PR should never touch a governance decision file)
-but is not, and cannot be, an evergreen repository invariant: it fails for *any* future
-governance-authoring session, since authoring a new decision file — the entire purpose of such a
-session — necessarily changes `git status` under that directory. This filing's own branch is based
-on a commit after `PR #292`'s merge and is, by direct git-log inspection, the first
-governance-authoring session to run the full suite since that test was added — the first
-opportunity for this always-latent defect to surface. Confirmed via full-repository grep that this
-one-off pattern exists nowhere else in the test suite (every other protected-path check is correctly
-scoped to specific, genuinely-static paths, e.g. `test_protected_intelligence_records_untouched`'s
-own live `git status` check against the specific Intelligence directories that legitimately should
-never change without their own dedicated content authorization). Resolved by removing the one
-over-broad test function — its real, one-time purpose (confirming `PR #292`'s own diff didn't touch
-governance decisions) was already served and closed at that PR's own merge; no ongoing protection is
-lost, since the genuinely reusable overlap-model protected-path checks in the same file are
-unaffected and still pass. Matches `PR #300`'s own immediately-preceding precedent for exactly this
-class of fix (a stale, PR-specific test assertion invalidated by a later, legitimate lifecycle
-transition) — not a contender/overlap-model content regression, not a weakening of any real
-protection, and not a governance-content change. Exact single file touched by this correction:
-`test_overlap_model_validator.py` (one function removed, nine lines).
+**Bounded correction, independent exact-head review `pullrequestreview-4902959254` (anchored to
+the original head `e063c35c1ae8d43db7da8893a409eb924b10f656`), zero BLOCKING / 3 MAJOR / 3 MINOR /
+2 non-actionable NOTE, CHANGES REQUIRED:**
+
+1. **MAJOR — a pre-existing test defect this filing found during validation should have been
+   repaired, not deleted, and the stated precedent for the fix was wrong.** This filing's own
+   original submission found `test_overlap_model_validator.py::test_governance_decision_files_
+   untouched` (added by `PR #292`, `XASSET-0007`'s own content implementation) asserting, via a raw
+   `git status --porcelain -- governance/decisions` check, that the working tree carries zero diff
+   under `governance/decisions/` — correct for that one PR's own zero-governance-touch scope, but
+   structurally incompatible with *any* future governance-authoring session, since authoring a new
+   decision file is the entire point of such a session. The original submission **deleted** the
+   test outright and claimed this "matches `PR #300`'s own... exact class of fix" — the review
+   independently confirmed that claim was **inaccurate**: `PR #300` *repaired* an analogous stale
+   assertion in `test_contender_evaluation_validator.py` (replacing a hard-coded SHA with a
+   dynamically-resolved `_resolve_pr_base_sha()`/base-diff mechanism), it did not remove the
+   protection. The review also found the sibling `test_protected_intelligence_records_untouched` —
+   claimed "genuinely reusable"/"unaffected" — shares the identical raw-`git-status` defect class
+   against directories (`intelligence/companies/`, `intelligence/relationships/`, etc.) that are not
+   permanently closed. **Resolved**: restored `test_governance_decision_files_untouched` and
+   repaired `test_protected_intelligence_records_untouched` in place, both now built on one shared,
+   locally-defined helper (`_assert_no_unauthorized_change_since_base`, reusing `PR #300`'s own
+   `_resolve_pr_base_sha` base-resolution pattern) that permits new files (a governance-authoring
+   session's own newly authored decision; a future equity-cohort session's own newly authored
+   Company Intelligence record) while still hard-failing on any modification, rename, or deletion of
+   a pre-existing file — proven by six new adversarial/synthetic tests (a new-file addition does not
+   fail; a synthetic modification is caught; a synthetic deletion is caught; an unresolvable
+   `origin/main` produces an explicit skip, never a silent pass; both resolver behavioral invariants
+   from `PR #300`'s own precedent re-proven locally; a real-repository proof that this PR's own
+   `base..working-tree` diff under `governance/decisions/` contains only the newly-added
+   `XASSET-0012` file). This paragraph above corrects the earlier, inaccurate characterization of
+   `PR #300` as having removed rather than repaired an equivalent protection.
+2. **MAJOR — the structural-reference design (artifact §4.1) did not specify how two sleeves
+   sharing one manifest are distinguished.** `fund_broad_market` (SPY, VEA, VWO) and
+   `fund_gld_defensive` (GLD) both draw from `intelligence/etf_classification/`, which has exactly
+   one shared `COHORT_MANIFEST.yaml` — a single layer-level hash pin, as originally specified,
+   cannot let a future validator determine which subset belongs to which sleeve. **Resolved**: a
+   new §4.1.1 defines a `sleeve_subject_scope` sub-object (a closed `referenced_subject_ids` list
+   plus one live-recomputed `canonical_record_hash()` pin per named subject), required whenever a
+   layer's own manifest spans more than one sleeve, cross-checked against both the source manifest's
+   own real population and §2's fixed sleeve-to-subject mapping — rejecting a cross-sleeve subject,
+   a missing subject, an extra/unknown subject (e.g. `QQQ`), or a stale hash. Folded into §9's
+   validator specification as new item 18.
+3. **MAJOR — no dedicated free-text scan enforced the filing's own central portfolio-selection
+   boundary.** §9's only comparative free-text scan (item 12) is scoped to investment-merit language
+   ("stronger investment," "superior"), not eligibility/membership language ("should remain in the
+   portfolio," "warrants inclusion") — the exact boundary an entire Alternatives Considered entry
+   argues for had no corresponding mechanical enforcement. **Resolved**: a new artifact §8.1 defines
+   a materially separate eligibility/inclusion-language scan (distinct from the numeric, directive/
+   trading, and comparative-investment-superiority scans), with a closed phrase list and mandatory
+   false-positive guards for legitimate evidence/process uses of "included"/"excluded." Folded into
+   §9 as new item 17.
+4. **MINOR — `stronger_priority_support` risked being mistaken for this repository's own
+   `capital_priority`/`capital_priority_comparison` vocabulary** (Milestone 7/8, a materially
+   different, investment-merit-bearing concept). **Resolved**: renamed to `stronger_evidence_
+   maturity` throughout the decision file, the supporting artifact, and `operations/WORKSTREAMS.yaml`
+   — grounded in language this exact repository's own `contender_evaluation_validator.py` already
+   treats as the legitimate, safe framing for comparing evidence bases without implying investment
+   merit ("evidence completeness/maturity... stays unmatched and allowed").
+5. **MINOR — artifact §4.2's mechanical roll-up did not specify sub-field-level abstentions**
+   (e.g. `crypto_classification`'s `cross_coin_correlation_status`, forced `not_yet_measured` on all
+   three sealed records while each record's own `record_status` remains `sealed`). **Resolved**: a
+   new artifact §4.2.1 requires every sub-field-level abstention to be independently scanned and
+   echoed into `abstention_index[]`, forcing `evidence_coverage_profile:
+   substantially_computed_with_disclosed_gaps` rather than letting a sealed parent record's own
+   top-level status silently absorb it — multiple abstentions stay individually visible, a completed
+   sibling never offsets an abstained one, and no numeric completeness percentage is invented.
+   Folded into §9 as new item 19.
+6. **MINOR — the disclosed test-suite correction was bundled into this design-only governance PR
+   rather than its own standalone PR**, unlike `PR #300`'s own precedent. Kept in this PR per the
+   review's own stated preference ("repair it narrowly in this PR if feasible with one small,
+   behavior-preserving test change") — the repair remained tightly bounded (one file,
+   `test_overlap_model_validator.py`) and was necessary for this governance-authoring PR to validate
+   correctly while preserving, not removing, the existing safety invariant; it does not modify any
+   synthesis methodology.
+
+Both non-actionable NOTEs (the `role_preserving`-vs-`coexistence_supported` edge softness; a future
+Stage-4 tournament-scoring risk one level removed from this filing) are carried forward unresolved,
+per the review's own explicit characterization as non-blocking and deferred to the review that
+implements the relevant future stage.
+
+Exact correction-delta file inventory: `test_overlap_model_validator.py` (repaired, not
+re-deleted — one shared helper plus eight tests, net +6 tests vs. the original submission's -1),
+`governance/decisions/XASSET-0012-*.md` (this section; §C/§E summaries updated to match), the
+supporting artifact (§4.1/§4.1.1/§4.2/§4.2.1/§8/§8.1/§9 revised), `operations/WORKSTREAMS.yaml`
+(the `xasset0012-...` gate's own description updated to match, no other gate touched).
 
 ## Decision
 
@@ -145,18 +207,28 @@ optional evidence rules in the supporting artifact §§1–2.
 ### C. Two record types, both reusing already-accepted repository patterns
 
 **Sleeve profile** (`intelligence/level1_sleeve_synthesis/profiles/<SLEEVE_ID>.yaml`, up to six) —
-non-comparative, descriptive: an `evidence_layer_references[]` list (layer-scoped, never
-per-instrument, keeping Level 1 genuinely sleeve-scoped rather than blurring into Level 2), an
+non-comparative, descriptive: an `evidence_layer_references[]` list (layer-scoped by default, never
+per-instrument, keeping Level 1 genuinely sleeve-scoped rather than blurring into Level 2 —
+**except** where a source layer's own manifest is shared across more than one sleeve, in which case
+a closed, deterministic `sleeve_subject_scope` sub-object identifies exactly which subjects belong
+to this sleeve, live-cross-checked against the source manifest and against §2's fixed
+sleeve-to-subject mapping; the only live example today is `intelligence/etf_classification/`,
+shared between `fund_broad_market` {SPY,VEA,VWO} and `fund_gld_defensive` {GLD}), an
 `economic_role_summary` citing only those references, a mechanically-derived, never
 self-declared `evidence_coverage_profile` (closed four values:
 `fully_computed`/`substantially_computed_with_disclosed_gaps`/`materially_incomplete`/
-`forced_abstention`), and a `functional_role_note` for sleeves carrying a functional-doctrine or
-economic-assessment layer. Full field design in supporting artifact §4.
+`forced_abstention`, with a dedicated mechanical roll-up rule for a forced abstention living at a
+*sub-field* level inside an otherwise-sealed record — e.g. crypto's own `cross_coin_correlation_
+status: not_yet_measured` — so it is echoed into `abstention_index[]` and never silently absorbed
+by its parent record's own top-level `sealed` status), and a `functional_role_note` for sleeves
+carrying a functional-doctrine or economic-assessment layer. Full field design, the shared-manifest
+sub-scoping mechanism, and the sub-field-abstention roll-up rule in supporting artifact §§4/4.1/
+4.1.1/4.2/4.2.1.
 
 **Sleeve relationship** (`intelligence/level1_sleeve_synthesis/relationships/<A>_<B>.yaml`,
 alphabetically ordered, up to fifteen pairs) — reuses `REL-0001`'s exact pairwise convention
 (deterministic-alphabetical filename, one-way authority, no stored graph). Carries a closed,
-four-value `primary_disposition` (`stronger_priority_support` + required `favored_sleeve_id` /
+four-value `primary_disposition` (`stronger_evidence_maturity` + required `favored_sleeve_id` /
 `role_preserving` / `coexistence_supported` / `unable_to_determine`) and a closed,
 zero-to-three-member `secondary_conditions` set (`overlap_or_duplication_disclosed` /
 `evidence_partial_present` / `forced_abstention_present`) — orthogonal to the primary value, so a
@@ -187,15 +259,20 @@ is a categorical identifier, never a magnitude. Full reasoning in supporting art
 - **Level 1 / Level 2 boundary**: neither record type may name an individual equity ticker's,
   fund's, or coin's own weight, target, or size — a dedicated leakage scan enforces this
   mechanically (supporting artifact §9 point 9).
-- **Portfolio-selection boundary — narrowest design chosen**: the methodology produces comparative
-  evidence findings only. No sleeve-level in/out, eligibility, or "should be part of the portfolio"
-  disposition is designed or authorized — an eligibility question is not even live for any of the
-  six sleeves today (five already exist as live `targets.yaml` rows; the sixth is an existing
-  margin-policy lever, not a candidate for admission). The wider alternative (a provisional
-  eligibility/inclusion disposition) was weighed and rejected — see Alternatives Considered.
+- **Portfolio-selection boundary — narrowest design chosen, now with a dedicated mechanical
+  scan**: the methodology produces comparative evidence findings only. No sleeve-level in/out,
+  eligibility, or "should be part of the portfolio" disposition is designed or authorized — an
+  eligibility question is not even live for any of the six sleeves today (five already exist as
+  live `targets.yaml` rows; the sixth is an existing margin-policy lever, not a candidate for
+  admission). The wider alternative (a provisional eligibility/inclusion disposition) was weighed
+  and rejected — see Alternatives Considered. This boundary now carries its own materially separate
+  future eligibility/inclusion-language scan (supporting artifact §8.1), distinct from the
+  comparative-investment-superiority scan (§8) — neither alone would catch the other's own
+  forbidden-phrase class.
 
-Full detail, including the forbidden-comparative-investment-superiority-language scan (§8) and the
-complete sixteen-point future validator/test specification (§9), in the supporting artifact.
+Full detail, including the forbidden-comparative-investment-superiority scan (§8), the dedicated
+eligibility/inclusion-language scan (§8.1), and the complete nineteen-point future validator/test
+specification (§9), in the supporting artifact.
 
 ### F. Register updates performed by this filing
 
@@ -312,12 +389,16 @@ Intelligence layer), one retained sleeve-profile schema design, one retained sle
 schema design (reusing `REL-0001`'s pairwise convention), one closed four-value primary-disposition
 vocabulary and one closed three-member secondary-conditions vocabulary, one zero-numeric-field
 posture with no carve-out, one overlap-citation rule restricting evidence to
-`computed_from_existing_mechanism` dimensions, and one sixteen-point future validator/test
-specification — all recorded in the supporting artifact for a future, separately authorized Stage 2
-content-authorization filing to draw on; five rejected alternatives recorded for the same future
-reference; confirmation, via two additive `operations/WORKSTREAMS.yaml` gates, that `CONTENDER-0003`'s
-own authorized implementation (`PR #299`, corrected by `PR #300`) is fully merged and post-merge CI
-on `main` is green.
+`computed_from_existing_mechanism` dimensions, one shared-manifest sleeve-subject-scoping mechanism,
+one sub-field-level abstention roll-up rule, one dedicated eligibility/inclusion-language forbidden-
+phrase boundary, and one nineteen-point future validator/test specification — all recorded in the
+supporting artifact for a future, separately authorized Stage 2 content-authorization filing to draw
+on; five rejected alternatives recorded for the same future reference; confirmation, via two
+additive `operations/WORKSTREAMS.yaml` gates, that `CONTENDER-0003`'s own authorized implementation
+(`PR #299`, corrected by `PR #300`) is fully merged and post-merge CI on `main` is green; one bounded
+correction round resolving three MAJOR and three MINOR findings from an independent exact-head
+review, repairing (not deleting) two test-suite protections and correcting an inaccurate stated
+precedent.
 
 **Does not change**: any tier, target, cap, cluster, gate, or holding; any allocator or margin
 behavior; the 1.8x leverage cap or 30% margin-buffer floor; any Company, Theme, relationship,

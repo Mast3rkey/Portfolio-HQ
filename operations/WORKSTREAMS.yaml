@@ -10396,7 +10396,7 @@ workstreams:
           up to fifteen, reusing REL-0001's exact alphabetical-pairwise
           convention, full coverage explicitly not required of the first
           implementation); a closed four-value primary_disposition
-          vocabulary (stronger_priority_support + required
+          vocabulary (stronger_evidence_maturity + required
           favored_sleeve_id / role_preserving / coexistence_supported /
           unable_to_determine) and a closed three-member, orthogonal
           secondary_conditions set (overlap_or_duplication_disclosed /
@@ -10413,7 +10413,7 @@ workstreams:
           registry excluded), ETF/QQQ, Level-1-vs-Level-2, and
           portfolio-selection boundaries (the narrowest reading chosen —
           comparative evidence findings only, no sleeve eligibility/
-          inclusion disposition of any kind); and a sixteen-point future
+          inclusion disposition of any kind); and a nineteen-point future
           validator/test specification for a later, separate implementing
           PR. Full field-by-field design in the supporting artifact
           (governance/audits/WS0014_LEVEL1_CROSS_ASSET_SYNTHESIS_
@@ -10425,22 +10425,45 @@ workstreams:
           review, correction if needed, principal acceptance, merge, and
           post-merge verification. This session does not review its own
           PR, mark it ready, merge it, or post principal acceptance.
-          Also disclosed and corrected, unrelated to this filing's own
-          content: a full local pytest run surfaced one pre-existing,
-          always-latent test defect in test_overlap_model_validator.py
-          (test_governance_decision_files_untouched, added by PR #292 —
-          XASSET-0007's own content implementation — asserting via a live
-          git status check that governance/decisions/ carries zero diff,
-          correct for that one PR's own scope but structurally
-          incompatible with any future governance-authoring session,
-          since authoring a new decision file is the entire point of
-          such a session; this filing's branch is the first governance
-          session to run since that test was added). Removed the one
-          over-broad test function — its real, one-time purpose was
-          already served at PR #292's own merge; no ongoing protection is
-          lost, matching PR #300's own immediately-preceding precedent
-          for exactly this class of fix. Full disclosure in XASSET-0012's
-          own decision file.
+
+
+          Bounded correction (same day, this PR): an independent exact-
+          head review (pullrequestreview-4902959254) returned CHANGES
+          REQUIRED — 0 BLOCKING / 3 MAJOR / 3 MINOR / 2 non-actionable
+          NOTE. Resolved: (1) MAJOR — a self-found, pre-existing test
+          defect in test_overlap_model_validator.py
+          (test_governance_decision_files_untouched, added by PR #292)
+          was originally deleted rather than repaired, with an inaccurate
+          claim that this matched PR #300's own precedent; repaired
+          instead (restored plus a sibling fix to
+          test_protected_intelligence_records_untouched) using one shared
+          helper reusing PR #300's own _resolve_pr_base_sha base-diff
+          pattern, permitting new files while still catching any
+          modification/rename/deletion of pre-existing content, proven by
+          six new adversarial/synthetic tests. (2) MAJOR — the structural-
+          reference design did not specify how fund_broad_market
+          (SPY/VEA/VWO) and fund_gld_defensive (GLD) are distinguished
+          when both share one etf_classification COHORT_MANIFEST.yaml;
+          resolved with a new sleeve_subject_scope sub-object
+          (artifact §4.1.1), live-cross-checked against both the source
+          manifest and the sleeve-to-subject mapping table. (3) MAJOR —
+          no dedicated scan enforced the portfolio-selection boundary
+          (in/out, eligible, "should be part of the portfolio"); resolved
+          with a new, materially separate eligibility/inclusion-language
+          scan (artifact §8.1) plus mandatory false-positive guards.
+          (4) MINOR — stronger_priority_support risked collision with
+          this repository's own capital_priority vocabulary; renamed to
+          stronger_evidence_maturity throughout. (5) MINOR — the
+          evidence_coverage_profile roll-up did not specify sub-field-
+          level abstentions (e.g. crypto's own cross_coin_correlation_
+          status); resolved with a new mechanical roll-up rule
+          (artifact §4.2.1) so a sub-field abstention is always echoed
+          into abstention_index[], never absorbed by a sealed parent
+          record. (6) MINOR — the test-suite correction was bundled into
+          this design-only PR; kept, per the review's own stated
+          preference, since it stayed tightly bounded to one file. Full
+          disclosure and the exact resolution of each finding in
+          XASSET-0012's own decision file Correction History section.
         pr: null
         status: in_progress
         date: "2026-08-11"
