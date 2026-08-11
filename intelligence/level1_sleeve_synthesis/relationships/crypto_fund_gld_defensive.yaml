@@ -1,0 +1,34 @@
+schema_version: '1.0'
+sleeve_pair:
+  sleeve_a: crypto
+  sleeve_b: fund_gld_defensive
+profile_references:
+- sleeve_id: crypto
+  referenced_content_sha256: 3c0cfcd1e7fd61357e5507e23b460a3d63137b6b678815f194982588df683e31
+- sleeve_id: fund_gld_defensive
+  referenced_content_sha256: 255c74fc9b3d901de1aa1418765aabcac6f995e62270cdc306dd1c07373a23e1
+primary_disposition: coexistence_supported
+favored_sleeve_id: null
+secondary_conditions:
+- evidence_partial_present
+- forced_abstention_present
+overlap_dimension_references: []
+rationale: 'No governed evidence identifies the crypto sleeve and the gold-defensive fund sleeve as competing
+  for the same marginal capital -- the crypto sleeve is populated through this account''s own deposit
+  and gap-filling workflow, never as a substitute for, or an alternative to, deploying capital into the
+  gold-defensive sleeve, and no governing text frames these sleeves as a choice against each other. Both
+  sleeves'' own governed evidence does carry a real, sourced alternative-asset narrative, but that narrative
+  match is not uniform across the crypto sleeve: the coin whose historical inflation-sensitivity characterization
+  matches the gold-defensive sleeve''s own finding is a single covered coin, while its sibling coins''
+  own sealed records independently reach a different characterization on that same sub-field. Generalizing
+  the matching coin''s own narrative to the crypto sleeve as a whole would misrepresent evidence that
+  is genuinely mixed within the sleeve, so this record discloses the split explicitly rather than smoothing
+  over it.'
+abstention_index: []
+record_status: sealed
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0013
+drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/relationships/COHORT_MANIFEST.yaml#crypto_fund_gld_defensive
+content_sha256: d939157d59d4d59fdab81d3d1a51900551dd6a69588c7198864c7608c33b8312

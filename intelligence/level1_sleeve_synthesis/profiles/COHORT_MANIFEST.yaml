@@ -1,0 +1,45 @@
+schema_version: '1.0'
+governing_decision: XASSET-0013
+cohort:
+- sleeve_id: cash_reserve
+  shard_id: single-pass-level1-sleeve-synthesis-implementation
+  sealed_at: '2026-08-11T00:00:00Z'
+  content_sha256: 387cb8943643af3538b6e36e733630438f35944c4365ea9a3fb7c7cd4c340c3e
+  schema_version: '1.0'
+  governing_decision: XASSET-0013
+  record_path: intelligence/level1_sleeve_synthesis/profiles/cash_reserve.yaml
+- sleeve_id: crypto
+  shard_id: single-pass-level1-sleeve-synthesis-implementation
+  sealed_at: '2026-08-11T00:00:00Z'
+  content_sha256: 3c0cfcd1e7fd61357e5507e23b460a3d63137b6b678815f194982588df683e31
+  schema_version: '1.0'
+  governing_decision: XASSET-0013
+  record_path: intelligence/level1_sleeve_synthesis/profiles/crypto.yaml
+- sleeve_id: debt_reduction
+  shard_id: single-pass-level1-sleeve-synthesis-implementation
+  sealed_at: '2026-08-11T00:00:00Z'
+  content_sha256: 489686c5404ba685953824e2e334ce1d74f7d3588c07689198ae8bfa619889d8
+  schema_version: '1.0'
+  governing_decision: XASSET-0013
+  record_path: intelligence/level1_sleeve_synthesis/profiles/debt_reduction.yaml
+- sleeve_id: equity
+  shard_id: single-pass-level1-sleeve-synthesis-implementation
+  sealed_at: '2026-08-11T00:00:00Z'
+  content_sha256: 087824b7b1004a6d7b06e3fdd4e499c7417ab55b36d8257c651ebe7f3d2f91d5
+  schema_version: '1.0'
+  governing_decision: XASSET-0013
+  record_path: intelligence/level1_sleeve_synthesis/profiles/equity.yaml
+- sleeve_id: fund_broad_market
+  shard_id: single-pass-level1-sleeve-synthesis-implementation
+  sealed_at: '2026-08-11T00:00:00Z'
+  content_sha256: 2ed99d67847a9aea644be6867c53cac15b5870eff84ea759ab87a7a3a2d49de1
+  schema_version: '1.0'
+  governing_decision: XASSET-0013
+  record_path: intelligence/level1_sleeve_synthesis/profiles/fund_broad_market.yaml
+- sleeve_id: fund_gld_defensive
+  shard_id: single-pass-level1-sleeve-synthesis-implementation
+  sealed_at: '2026-08-11T00:00:00Z'
+  content_sha256: 255c74fc9b3d901de1aa1418765aabcac6f995e62270cdc306dd1c07373a23e1
+  schema_version: '1.0'
+  governing_decision: XASSET-0013
+  record_path: intelligence/level1_sleeve_synthesis/profiles/fund_gld_defensive.yaml

@@ -1,0 +1,67 @@
+schema_version: '1.0'
+sleeve_id: equity
+evidence_layer_references:
+- layer_name: classification
+  module: classification_validator.py
+  directory: intelligence/classification
+  manifest_content_sha256: abca538f605a0ba3505d3addbe02a3bb334a047611ed18ca35f273ea6ee2bb77
+  as_of_note: Reflects classification's own currently sealed cohort state as of this record's own sealed_at
+    date; a validator independently re-derives every fact live rather than trusting this note.
+- layer_name: valuation_archetype
+  module: valuation_archetype_validator.py
+  directory: intelligence/valuation_archetype
+  manifest_content_sha256: f5626ad5b20366a4baff2879506b34f0cdaecd66a15b62d0143f8137b18b4c0c
+  as_of_note: Reflects valuation_archetype's own currently sealed cohort state as of this record's own
+    sealed_at date; a validator independently re-derives every fact live rather than trusting this note.
+- layer_name: valuation_evidence
+  module: valuation_evidence_validator.py
+  directory: intelligence/valuation_evidence
+  manifest_content_sha256: 08b21e67163f170f086d92cbb2a200ce66d9b75d10e344b9def02eda19ddc264
+  as_of_note: Reflects valuation_evidence's own currently sealed cohort state as of this record's own
+    sealed_at date; a validator independently re-derives every fact live rather than trusting this note.
+- layer_name: valuation_results
+  module: valuation_result_validator.py
+  directory: intelligence/valuation_results
+  manifest_content_sha256: 5956a37d0de87def2e94a62a80c87956bb0fc7e6bcc674812a556d0eabc89d11
+  as_of_note: Reflects valuation_results's own currently sealed cohort state as of this record's own sealed_at
+    date; a validator independently re-derives every fact live rather than trusting this note.
+economic_role_summary: The equity sleeve holds the account's individually researched common-stock positions,
+  each covered under a devoted, company-by-company research program spanning economic-role classification,
+  qualitative valuation-archetype judgment, structured valuation evidence, and a produced valuation-result
+  record. This is the only sleeve in this synthesis with a complete, multi-layer research stack behind
+  it; every other sleeve draws on a comparatively thinner governed evidence base. This summary describes
+  currently governed evidence only -- it is not a claim that the covered roster is an exhaustive investable
+  universe, and it does not name any covered company's own individual weight or size, which remains a
+  separate, still-unauthorized instrument-level question.
+evidence_coverage_profile: substantially_computed_with_disclosed_gaps
+functional_role_note: null
+abstention_index:
+- source_layer: valuation_results
+  field_path: result_status
+  value: partial
+  reason: A disclosed minority of the equity sleeve's own sealed valuation-result records remain partial
+    rather than completed, per that layer's own sealed corpus. A partial valuation-result reflects a genuinely
+    open evidence gap (an abstained discount-rate or peer-set input, for example), not a defect in the
+    covered company's own qualitative research -- disclosed here rather than rounded up to a fully computed
+    sleeve.
+- source_layer: valuation_evidence
+  field_path: discount_rate_evidence
+  value: abstained
+  reason: Discount-rate evidence is abstained across the equity sleeve's entire sealed valuation-evidence
+    corpus, per that layer's own disclosed gap. No governed methodology for sourcing a discount-rate input
+    exists anywhere in this repository yet; every covered company's own valuation-evidence record states
+    that absence plainly rather than inventing a figure.
+- source_layer: classification
+  field_path: capital_priority.status
+  value: no_assessment
+  reason: A disclosed minority of the equity sleeve's own sealed classification records carry a capital-allocation-review
+    abstention rather than a determined status. A single covered company's own qualitative review status
+    could not be determined from the evidence available at the time its record was sealed, per its own
+    governing decision -- disclosed rather than forced.
+record_status: sealed
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0013
+drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/profiles/COHORT_MANIFEST.yaml#equity
+content_sha256: 087824b7b1004a6d7b06e3fdd4e499c7417ab55b36d8257c651ebe7f3d2f91d5

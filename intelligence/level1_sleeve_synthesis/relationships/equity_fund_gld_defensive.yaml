@@ -1,0 +1,32 @@
+schema_version: '1.0'
+sleeve_pair:
+  sleeve_a: equity
+  sleeve_b: fund_gld_defensive
+profile_references:
+- sleeve_id: equity
+  referenced_content_sha256: 087824b7b1004a6d7b06e3fdd4e499c7417ab55b36d8257c651ebe7f3d2f91d5
+- sleeve_id: fund_gld_defensive
+  referenced_content_sha256: 255c74fc9b3d901de1aa1418765aabcac6f995e62270cdc306dd1c07373a23e1
+primary_disposition: role_preserving
+favored_sleeve_id: null
+secondary_conditions:
+- evidence_partial_present
+- forced_abstention_present
+overlap_dimension_references: []
+rationale: This account's own governing text describes the gold-defensive fund sleeve as serving a ballast
+  function distinct from growth-oriented deployment -- the same functional distinction its own sealed
+  functional-doctrine record independently confirms. The equity sleeve's own governed research base is
+  considerably more developed than the gold-defensive sleeve's, but that gap does not bear on whether
+  either sleeve belongs where it currently sits, since these sleeves serve genuinely different portfolio
+  functions -- growth-oriented deployment on the equity side, a defensive offset function on the gold-defensive
+  side. The gold-defensive fund's own already-sealed structural-classification record separately confirms
+  it carries no embedded look-through exposure to any equity the account holds directly, unlike the broad-market
+  fund sleeve.
+abstention_index: []
+record_status: sealed
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0013
+drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/relationships/COHORT_MANIFEST.yaml#equity_fund_gld_defensive
+content_sha256: e2cb18b74f3fdd52030af008bcb63fbea61b93927e22cecb4b369b3a2b3cd25f

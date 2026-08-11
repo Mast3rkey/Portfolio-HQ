@@ -1,0 +1,77 @@
+schema_version: '1.0'
+sleeve_id: fund_gld_defensive
+evidence_layer_references:
+- layer_name: etf_classification
+  module: etf_classification_validator.py
+  directory: intelligence/etf_classification
+  manifest_content_sha256: 8955ce87aec1df21133a632e00991599f15d1203db96dffdea130b5230973fce
+  sleeve_subject_scope:
+    referenced_subject_ids:
+    - GLD
+    referenced_record_content_sha256:
+      GLD: d3b58455193441ff492a86660e05a8b62500e5847f8699564c7f5f5ed4ad5888
+  as_of_note: Reflects etf_classification's own currently sealed cohort state as of this record's own
+    sealed_at date; a validator independently re-derives every fact live rather than trusting this note.
+- layer_name: functional_doctrine
+  module: functional_doctrine_validator.py
+  directory: intelligence/functional_doctrine
+  manifest_content_sha256: ea645f10873186d2e456b4f8dda7cdd8474a60bd248c25f3db4247fa0a34512a
+  sleeve_subject_scope:
+    referenced_subject_ids:
+    - GLD_DEFENSIVE_ROLE
+    referenced_record_content_sha256:
+      GLD_DEFENSIVE_ROLE: 52dd76614fab7e3a6ac33b9da6486ea2d485b935a8ab633cef88ba323c9a9b5e
+  as_of_note: Reflects functional_doctrine's own currently sealed cohort state as of this record's own
+    sealed_at date; a validator independently re-derives every fact live rather than trusting this note.
+- layer_name: economic_assessment
+  module: economic_assessment_validator.py
+  directory: intelligence/economic_assessment
+  manifest_content_sha256: ae60db29492146508defe0e2ef0314d4d875f4b1471dddc61db37b41740bee77
+  sleeve_subject_scope:
+    referenced_subject_ids:
+    - GLD
+    referenced_record_content_sha256:
+      GLD: 055d3e9abd270122c7120bbfd474b61a2282d7c0fd7803b82fe8ec1edfce5406
+  as_of_note: Reflects economic_assessment's own currently sealed cohort state as of this record's own
+    sealed_at date; a validator independently re-derives every fact live rather than trusting this note.
+economic_role_summary: The gold-defensive fund sleeve holds a single, sealed, physically backed gold-trust
+  instrument, covered under a structural classification record, a functional-doctrine record describing
+  its own defensive/ballast capital-use role, and a separate instrument-specific economic-assessment record
+  characterizing its own historical cost, inflation-sensitivity, and equity-drawdown behavior. The functional-doctrine
+  record's own economic-assessment-readiness sub-object remains forced to an abstention, since no governed
+  opportunity-cost methodology exists anywhere in this repository yet for any capital-use type -- disclosed
+  explicitly rather than left implicit. This summary describes currently governed evidence only; it makes
+  no claim about whether this instrument's own defensive role should expand, contract, or be joined by
+  a further defensive instrument in the future.
+evidence_coverage_profile: substantially_computed_with_disclosed_gaps
+functional_role_note: This sleeve's own functional-doctrine record characterizes its capital-use role
+  as a defensive offset or ballast function, distinct from the growth-oriented deployment role the equity
+  and broad-market fund sleeves each serve -- echoed here from that sealed record, never independently
+  re-derived.
+abstention_index:
+- source_layer: etf_classification
+  field_path: evidence_quality_status
+  value: partial
+  reason: GLD's own sealed structural-classification record carries a disclosed partial evidence-quality
+    status. GLD's own governed evidence was reached through search aggregation rather than direct primary-document
+    inspection, per the classification framework's own disclosed access limitation.
+- source_layer: functional_doctrine
+  field_path: economic_assessment_readiness
+  value: assessment_required
+  reason: GLD_DEFENSIVE_ROLE's own sealed functional-doctrine record carries a forced assessment-required
+    abstention on its economic-assessment readiness. No governed methodology exists anywhere in this repository
+    to compare this instrument's own opportunity cost against another capital-use type, sleeve, or instrument
+    -- the record states that absence plainly rather than inventing a figure, per its own governing decision.
+- source_layer: economic_assessment
+  field_path: evidence_quality_status
+  value: partial
+  reason: GLD's own sealed economic-assessment record carries a disclosed partial evidence-quality status.
+    The same disclosed access limitation named above also governs this instrument's own separate economic-assessment
+    record.
+record_status: sealed
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0013
+drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/profiles/COHORT_MANIFEST.yaml#fund_gld_defensive
+content_sha256: 255c74fc9b3d901de1aa1418765aabcac6f995e62270cdc306dd1c07373a23e1

@@ -1,0 +1,39 @@
+schema_version: '1.0'
+sleeve_pair:
+  sleeve_a: equity
+  sleeve_b: fund_broad_market
+profile_references:
+- sleeve_id: equity
+  referenced_content_sha256: 087824b7b1004a6d7b06e3fdd4e499c7417ab55b36d8257c651ebe7f3d2f91d5
+- sleeve_id: fund_broad_market
+  referenced_content_sha256: 2ed99d67847a9aea644be6867c53cac15b5870eff84ea759ab87a7a3a2d49de1
+primary_disposition: stronger_evidence_maturity
+favored_sleeve_id: equity
+secondary_conditions:
+- evidence_partial_present
+- forced_abstention_present
+- overlap_or_duplication_disclosed
+overlap_dimension_references:
+- dimension_id: etf_direct_equity_duplication
+  referenced_content_sha256: aae8dcc80b9a55741910abacad90dbbb6c7e27f0cacbd339d17b49d7c34c7b77
+- dimension_id: issuer_overlap_etf_lookthrough
+  referenced_content_sha256: 246bc77aaf831db1478884eb3eea831d3a1731ecf281b0ca20e0616643f81c12
+rationale: 'Both the equity sleeve and the broad-market fund sleeve deploy capital toward individual-name
+  or index-level equity risk, making this pair a genuine evidence-maturity comparison. The equity sleeve''s
+  own governed research base spans economic-role classification, a qualitative archetype judgment, structured
+  valuation evidence, and a produced valuation-result record for every covered company; the broad-market
+  fund sleeve carries only a structural classification and an instrument-level economic-assessment record
+  for each covered fund, with no archetype or valuation-evidence layer of any kind. These sleeves'' own
+  governed evidence also discloses a real, mechanically confirmed overlap: each broad-market fund''s own
+  already-sealed structural-classification record resolves an embedded look-through exposure to names
+  the account also holds directly as individually researched equities, per this account''s own issuer-concentration
+  mechanism. This finding describes evidence completeness and disclosed overlap only -- it makes no claim
+  about either sleeve''s own individual weight or size.'
+abstention_index: []
+record_status: sealed
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0013
+drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/relationships/COHORT_MANIFEST.yaml#equity_fund_broad_market
+content_sha256: 28e8055fbac0991206c47790e3baaae4308e2b3e01f29f6e02fe4e5e8e278274

@@ -10576,6 +10576,67 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-11"
+      - gate: xasset0013-post-merge-verification
+        description: >
+          A new, separate implementing session independently reconfirmed,
+          before beginning any Stage 3 work, that PR #302 (the
+          xasset0013-level1-synthesis-content-authorization gate above) is
+          fully merged: local HEAD, origin/main, and GitHub main all
+          confirmed identical at merge commit
+          cfea220c82bae310f2412804a204e85f257a2782 (commit message "Merge
+          pull request #302: XASSET-0013 WS-0014 Level 1 synthesis content
+          authorization"), zero open pull requests, decision catalog
+          independently rebuilt at 110 decisions/issues == (). XASSET-0013's
+          own Stage 2 content authorization is therefore fully merged and
+          effective — this workstream's own next substantive step is the
+          Stage 3 implementation the xasset0013-level1-synthesis-
+          implementation gate below records. Added by this session's own
+          Stage 3 implementation filing, independently re-verified, not
+          assumed.
+        pr: 302
+        status: complete
+        date: "2026-08-11"
+      - gate: xasset0013-level1-synthesis-implementation
+        description: >
+          The Stage 3 implementation XASSET-0013 authorized: populates
+          exactly the six sleeve_profile records and seven sleeve_
+          relationship records XASSET-0013 SS B/SS C name, plus both
+          COHORT_MANIFEST.yaml files, a single dedicated validator module
+          (level1_sleeve_synthesis_validator.py, covering both record
+          types — the implementing session's own justified choice per
+          XASSET-0012 SS9's explicit deferral, since the two schemas are
+          structurally coupled via profile-hash cross-references), and its
+          own focused/adversarial test suite
+          (test_level1_sleeve_synthesis_validator.py). Every evidence_
+          coverage_profile value and every abstention_index entry is
+          mechanically, live-derived from the sleeve's own currently
+          sealed source layers, never self-declared; every structural
+          reference hash (manifest-level, sleeve_subject_scope per-subject,
+          profile-to-profile, and overlap-model-dimension) is independently
+          recomputed at validation time. Performed XASSET-0013 SS H's own
+          mandatory pre-push eligibility-language-paraphrase adversarial
+          probe: found seven genuine ordinary-paraphrase gaps in the
+          carried-forward NOTE's own vulnerability class and closed them
+          with the smallest bounded correction (eight new patterns appended
+          to the existing closed SS8.1 phrase list, disclosed in the
+          validator module's own "Round-3 additions" comment and this
+          session's own test-suite docstring) — a probe result, not a
+          methodology redesign. Also disclosed and closed, within this
+          first implementation's own already-authorized scope of correctly
+          building XASSET-0012 SS9's own specified scans for the first
+          time (not a hardening of any prior accepted version): a "deserves
+          capital" gap in the same eligibility boundary, a sizing-
+          recommendation-shape gap ("the target... should be increased")
+          and a spelled-out "percent of the book/portfolio" gap, both in
+          the Level 1/Level 2 leakage (policy-leak) scan SS9 item 9 already
+          requires. No sleeve weight, instrument weight, portfolio in/out
+          decision, or Stage 4 policy adoption is produced by this filing —
+          descriptive, governed evidence findings only. This session does
+          not review its own PR, mark it ready, merge it, or post principal
+          acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-11"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -10772,6 +10833,30 @@ workstreams:
       consolidation question, a future cross-coin correlation study, any
       actual Level 1 sleeve-synthesis content, and steps 9 through 13
       remain wholly unauthorized, unchanged.
+
+
+      Update, a later session, 2026-08-11: XASSET-0013 (PR #302,
+      Stage 2 content authorization naming the exact first six-profile/
+      seven-relationship population) independently confirmed merged —
+      see the xasset0013-post-merge-verification gate above. This same
+      session then performed the Stage 3 implementation it authorized
+      (the xasset0013-level1-synthesis-implementation gate above, draft,
+      unmerged): all six sleeve_profile records and all seven authorized
+      sleeve_relationship records are now sealed, plus both
+      COHORT_MANIFEST.yaml files, level1_sleeve_synthesis_validator.py,
+      and its own focused/adversarial test suite — requiring its own full
+      independent exact-head review, any required bounded correction,
+      principal acceptance, merge, and post-merge verification before
+      that gate may be marked complete; this session does not review its
+      own work, mark it ready, merge it, or post principal acceptance.
+      Once this PR merges, XASSET-0012/XASSET-0013's own Level 1
+      sleeve-synthesis content step is complete for its own bounded first
+      population. No sleeve weight, instrument weight, portfolio in/out
+      decision, or Stage 4 policy adoption is produced. An eighth
+      sleeve_relationship pair (of the remaining eight deferred by
+      class), Level 2 instrument-level design, and every other item this
+      entry's own roadmap_preservation field names remain wholly
+      unauthorized, unchanged.
     blocker: >
       Step 1 (contender normalization plus research-readiness screening,
       per XASSET-0001 §J's own step numbering — see this entry's
@@ -10958,9 +11043,9 @@ workstreams:
       contender-registry sweep beyond CONTENDER-0003's own two-name pilot
       all remain blocked on their own future, separate, explicit
       principal authorization each.
-    active_branch: claude/xasset-0013-stage-2-auth-8al8kg
+    active_branch: claude/level1-synthesis-implementation-qzgpua
     active_pr: null
-    last_verified_main_sha: 79a611cf03350e5d0688eb6b0823f7c0f043b2fe
+    last_verified_main_sha: cfea220c82bae310f2412804a204e85f257a2782
     last_verified_date: "2026-08-11"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I

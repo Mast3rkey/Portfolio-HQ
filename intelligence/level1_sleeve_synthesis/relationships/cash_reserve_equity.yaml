@@ -1,0 +1,30 @@
+schema_version: '1.0'
+sleeve_pair:
+  sleeve_a: cash_reserve
+  sleeve_b: equity
+profile_references:
+- sleeve_id: cash_reserve
+  referenced_content_sha256: 387cb8943643af3538b6e36e733630438f35944c4365ea9a3fb7c7cd4c340c3e
+- sleeve_id: equity
+  referenced_content_sha256: 087824b7b1004a6d7b06e3fdd4e499c7417ab55b36d8257c651ebe7f3d2f91d5
+primary_disposition: role_preserving
+favored_sleeve_id: null
+secondary_conditions:
+- evidence_partial_present
+- forced_abstention_present
+overlap_dimension_references: []
+rationale: 'The equity sleeve deploys capital into individually researched growth positions, while the
+  cash-and-reserve sleeve preserves liquidity and optionality -- a survival/liquidity function this account''s
+  own governing text treats as a guardrail rather than as a return-seeking allocation choice (a cash-tight
+  condition triggers a recommended pause, never a redirection into equity). This is a functional distinction,
+  not an evidence-maturity comparison: even though the equity sleeve''s own governed research base is
+  considerably more developed than the cash-and-reserve sleeve''s, that gap does not bear on whether either
+  sleeve belongs where it currently sits, since these sleeves serve genuinely different portfolio purposes.'
+abstention_index: []
+record_status: sealed
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0013
+drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/relationships/COHORT_MANIFEST.yaml#cash_reserve_equity
+content_sha256: 4d5fe6a83390bcfc99140d34ee029021afb4e94336ff908981580b3ab7ebf565
