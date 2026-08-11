@@ -1283,7 +1283,7 @@ def test_non_cascading_archetype_abstention_does_not_force_evidence_parity_abste
 
 # ── protected records: byte-identity ────────────────────────────────────
 
-def _resolve_pr_base_sha() -> str | None:
+def _resolve_pr_base_sha(cwd: Path = REPO_ROOT) -> str | None:
     """Resolve this branch's actual PR base commit from live repository
     truth -- git merge-base HEAD origin/main -- rather than a hard-coded
     SHA that goes stale the moment the branch is rebased or main moves
@@ -1294,17 +1294,24 @@ def _resolve_pr_base_sha() -> str | None:
     content defect. Deliberately does NOT use local `main`: this
     repository's own history discloses local `main` can diverge
     substantially from `origin/main` (stale local branches, never
-    force-pushed), which would silently resolve to the wrong base."""
+    force-pushed), which would silently resolve to the wrong base.
+
+    `cwd` defaults to the real repository root but accepts any git
+    working directory -- exercised directly against synthetic,
+    disposable repositories by the lifecycle-invariant tests below, so
+    the actual resolution mechanism (not a reimplementation of it) is
+    what gets proven correct in both the active-feature-branch and
+    post-merge-main states."""
     try:
         subprocess.run(
             ["git", "rev-parse", "--verify", "origin/main"],
-            cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+            cwd=cwd, capture_output=True, text=True, check=True,
         )
     except (subprocess.CalledProcessError, FileNotFoundError):
         return None
     result = subprocess.run(
         ["git", "merge-base", "HEAD", "origin/main"],
-        cwd=REPO_ROOT, capture_output=True, text=True,
+        cwd=cwd, capture_output=True, text=True,
     )
     if result.returncode != 0 or not result.stdout.strip():
         return None
@@ -1368,20 +1375,66 @@ def test_protected_intelligence_records_broadly_untouched():
     _assert_no_base_to_head_diff(_PROTECTED_INTELLIGENCE_BROAD_PATHS)
 
 
-def test_resolve_pr_base_sha_matches_known_contender_0003_merge_commit():
-    """A direct sanity check that the dynamic base-resolution mechanism
-    itself is correct in this environment, independent of the protected-
-    path tests above -- proves the mechanism, not merely its absence of
-    complaints. If this ever fails because CONTENDER-0003 merges and
-    main moves forward past it, the true PR base will have moved forward
-    too (git merge-base always returns *this branch's actual base*, not
-    a fixed historical commit) -- update the expected SHA only if a
-    direct investigation confirms the branch was legitimately rebased
-    onto a new base, never to silently un-skip this test."""
-    base_sha = _resolve_pr_base_sha()
-    if base_sha is None:
-        pytest.skip("origin/main not resolvable in this environment")
-    assert base_sha == "fea335dca89ff7f2e6006d29d26a613bf1b75c21"
+def _init_synthetic_repo(tmp_path: Path):
+    """A minimal, disposable git repository used to prove
+    _resolve_pr_base_sha's actual behavioral invariant deterministically
+    -- independent of this real repository's own PR/merge lifecycle,
+    which is exactly the coupling that made the historical-SHA version
+    of this test go stale the moment PR #299 merged (main advanced past
+    the hard-coded base, so HEAD == origin/main and merge-base correctly
+    returned the new tip -- not a defect, the documented, anticipated
+    lifecycle transition). `refs/remotes/origin/main` is written
+    directly via `update-ref`, standing in for a real remote-tracking
+    ref without needing actual remote wiring."""
+    def run(*args):
+        return subprocess.run(
+            ["git", *args], cwd=tmp_path, capture_output=True, text=True, check=True,
+        )
+    run("init", "-q")
+    run("config", "user.email", "test@example.com")
+    run("config", "user.name", "Test")
+    return run
+
+
+def test_resolve_pr_base_sha_returns_true_divergence_point_on_diverged_branch(tmp_path):
+    """Behavioral invariant A -- active feature branch: when HEAD has
+    diverged from origin/main by one or more new commits, the resolver
+    must return the actual common ancestor (the true PR base), never
+    silently compare HEAD to itself. This is the safety property the
+    protected-path tests above depend on."""
+    run = _init_synthetic_repo(tmp_path)
+    (tmp_path / "file.txt").write_text("base\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "base commit")
+    base_sha = run("rev-parse", "HEAD").stdout.strip()
+    run("update-ref", "refs/remotes/origin/main", base_sha)
+
+    (tmp_path / "file.txt").write_text("base\nfeature work\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "feature-branch commit, diverged from origin/main")
+    head_sha = run("rev-parse", "HEAD").stdout.strip()
+
+    resolved = _resolve_pr_base_sha(cwd=tmp_path)
+    assert resolved == base_sha
+    assert resolved != head_sha
+
+
+def test_resolve_pr_base_sha_returns_head_when_head_equals_origin_main(tmp_path):
+    """Behavioral invariant B -- post-merge main: when HEAD and
+    origin/main point at the identical commit (no divergence -- exactly
+    the state this real repository is in immediately after a PR merges),
+    the resolver may legitimately return that same commit. Asserting
+    this directly, rather than against a fixed historical SHA, is what
+    keeps this test from going stale the next time main advances."""
+    run = _init_synthetic_repo(tmp_path)
+    (tmp_path / "file.txt").write_text("content\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "sole commit, HEAD and origin/main coincide")
+    sole_sha = run("rev-parse", "HEAD").stdout.strip()
+    run("update-ref", "refs/remotes/origin/main", sole_sha)
+
+    resolved = _resolve_pr_base_sha(cwd=tmp_path)
+    assert resolved == sole_sha
 
 
 def test_base_to_head_diff_mechanism_detects_a_synthetic_protected_path_change(tmp_path):
