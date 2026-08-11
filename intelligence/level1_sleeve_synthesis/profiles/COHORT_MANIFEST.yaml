@@ -18,7 +18,7 @@ cohort:
 - sleeve_id: debt_reduction
   shard_id: single-pass-level1-sleeve-synthesis-implementation
   sealed_at: '2026-08-11T00:00:00Z'
-  content_sha256: 489686c5404ba685953824e2e334ce1d74f7d3588c07689198ae8bfa619889d8
+  content_sha256: ab706eaa75425882e3e8970bc65c0a0693c9d7871234707fbdc644ce4cc1aa66
   schema_version: '1.0'
   governing_decision: XASSET-0013
   record_path: intelligence/level1_sleeve_synthesis/profiles/debt_reduction.yaml

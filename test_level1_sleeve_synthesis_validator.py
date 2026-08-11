@@ -602,6 +602,27 @@ class TestNumericLeakageScan:
         errs = l1.validate_sleeve_profile_data(d, repo_root=None)
         assert any("spelled-out-cardinal-number" in e for e in errs), (word, errs)
 
+    @pytest.mark.parametrize("word", [
+        # Regression for a real, independent post-push review finding
+        # (pullrequestreview on PR #303, MINOR-4): the original word list
+        # stopped at "ten", leaving eleven through ninety-nine uncaught.
+        "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
+        "seventeen", "eighteen", "nineteen", "twenty", "thirty", "forty",
+        "fifty", "sixty", "seventy", "eighty", "ninety",
+    ])
+    def test_spelled_out_cardinal_eleven_through_ninety_rejected(self, word):
+        d = _sealed_profile(economic_role_summary=f"This sleeve holds {word} covered instruments.")
+        errs = l1.validate_sleeve_profile_data(d, repo_root=None)
+        assert any("spelled-out-cardinal-number" in e for e in errs), (word, errs)
+
+    def test_hyphenated_compound_cardinal_rejected(self):
+        # "twenty-one" -- the tens word alone (\btwenty\b) already matches
+        # within a hyphenated compound, since a hyphen is a non-word
+        # character; this pins that behavior explicitly.
+        d = _sealed_profile(economic_role_summary="This sleeve holds twenty-one covered instruments.")
+        errs = l1.validate_sleeve_profile_data(d, repo_root=None)
+        assert any("spelled-out-cardinal-number" in e for e in errs), errs
+
     def test_hash_and_date_fields_not_scanned_for_digits(self):
         # content_sha256/sealed_at are structural, never scanned -- this
         # confirms the schema-level fields (not free-text fields) remain
@@ -623,6 +644,20 @@ class TestComparativeSuperiorityScan:
         d = _sealed_profile(economic_role_summary=f"This sleeve is {phrase} relative to its peer.")
         errs = l1.validate_sleeve_profile_data(d, repo_root=None)
         assert any("comparative-superiority" in e for e in errs), (phrase, errs)
+
+    @pytest.mark.parametrize("sentence", [
+        # Regression for a real, independent post-push review finding
+        # (pullrequestreview on PR #303, MINOR-3): three ordinary
+        # comparative-superiority idioms not covered by the original
+        # adjective+noun alternation or standalone-verb patterns.
+        "This sleeve has the edge over its peer, disclosed here plainly.",
+        "This sleeve wins out over its peer, disclosed here plainly.",
+        "This sleeve is the top choice among its peers, disclosed here plainly.",
+    ])
+    def test_comparative_superiority_idiom_rejected(self, sentence):
+        d = _sealed_profile(economic_role_summary=sentence)
+        errs = l1.validate_sleeve_profile_data(d, repo_root=None)
+        assert any("comparative-superiority" in e for e in errs), (sentence, errs)
 
     @pytest.mark.parametrize("safe", [
         "this sleeve's own evidence maturity is relatively weaker",
@@ -1043,6 +1078,37 @@ class TestLiveHashStalenessAgainstRealRepository:
         errs = l1.validate_sleeve_profile_data(d, expected_sleeve_id="equity", repo_root=REPO_ROOT)
         assert any("not genuinely abstained" in e for e in errs)
 
+    def test_debt_reduction_freshness_state_abstention_present_on_real_record(self):
+        # Regression for a real, independent post-push review finding
+        # (pullrequestreview on PR #303, MAJOR-1): DEBT_REDUCTION's own
+        # sealed functional_doctrine record separately abstains on
+        # freshness_state.status (unable_to_determine_freshness), and that
+        # sub-field abstention must never disappear behind this sleeve's
+        # own already-forced evidence_coverage_profile value, per XASSET-0012
+        # SS4.2.1. Proves the fix is present in the real sealed record, not
+        # merely in a synthetic fixture.
+        d = self._load(_PROFILES_REAL_DIR / "debt_reduction.yaml")
+        pairs = {(e["source_layer"], e["field_path"]) for e in d["abstention_index"]}
+        assert ("functional_doctrine", "freshness_state.status") in pairs
+
+    def test_debt_reduction_freshness_state_abstention_missing_rejected(self):
+        # The negative half of the same regression: removing that entry
+        # from an otherwise-real debt_reduction record must trip the
+        # "missing live-detected sub-field abstention" check, proving the
+        # live-vs-declared cross-check genuinely catches this defect class
+        # rather than merely agreeing with whatever the record happens to
+        # declare.
+        d = copy.deepcopy(self._load(_PROFILES_REAL_DIR / "debt_reduction.yaml"))
+        d["abstention_index"] = [
+            e for e in d["abstention_index"] if e["field_path"] != "freshness_state.status"
+        ]
+        d["content_sha256"] = l1.canonical_record_hash(d)
+        errs = l1.validate_sleeve_profile_data(d, expected_sleeve_id="debt_reduction", repo_root=REPO_ROOT)
+        assert any(
+            "abstention_index is missing live-detected" in e and "freshness_state.status" in e
+            for e in errs
+        ), errs
+
     def test_stale_profile_reference_hash_on_real_relationship_rejected(self):
         d = copy.deepcopy(self._load(_RELATIONSHIPS_REAL_DIR / "cash_reserve_equity.yaml"))
         d["profile_references"][0]["referenced_content_sha256"] = "0" * 64
@@ -1367,6 +1433,14 @@ _ELIGIBILITY_MATRIX_MUST_CATCH = [
     "This sleeve deserves to remain part of the portfolio.",
     "This sleeve ought to be excluded.",
     "This sleeve's continued membership is justified given the evidence.",
+    # Round-4 additions (independent post-push review, pullrequestreview on
+    # PR #303, MINOR-2): a softer no-object "has a place... going forward"
+    # variant, a colon-shorthand keep/go verdict shape, and an explicit
+    # "no case for keeping" negative-inclusion finding.
+    "This sleeve has a place in the portfolio going forward.",
+    "cash reserve: keep",
+    "The crypto sleeve should go.",
+    "There is no case for keeping this sleeve in the portfolio.",
 ]
 
 _ELIGIBILITY_FALSE_POSITIVE_GUARDS = [
@@ -1382,6 +1456,11 @@ _ELIGIBILITY_FALSE_POSITIVE_GUARDS = [
     "this dimension is excluded from the referenced layer's own population",
     "the inclusion boundary described here governs evidence scope only",
     "every fund is included in the shared manifest",
+    # Round-4 false-positive guards: legitimate continuations that share a
+    # word prefix with the round-4 "should go"/"place in" patterns but are
+    # not a portfolio-membership verdict.
+    "the crypto sleeve should go through additional review before any future step",
+    "this fund's place in the etf_classification manifest is well documented",
 ]
 
 

@@ -4,7 +4,7 @@ sleeve_pair:
   sleeve_b: equity
 profile_references:
 - sleeve_id: debt_reduction
-  referenced_content_sha256: 489686c5404ba685953824e2e334ce1d74f7d3588c07689198ae8bfa619889d8
+  referenced_content_sha256: ab706eaa75425882e3e8970bc65c0a0693c9d7871234707fbdc644ce4cc1aa66
 - sleeve_id: equity
   referenced_content_sha256: 087824b7b1004a6d7b06e3fdd4e499c7417ab55b36d8257c651ebe7f3d2f91d5
 primary_disposition: role_preserving
@@ -31,4 +31,4 @@ governing_decisions:
 - XASSET-0013
 drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
 cohort_manifest_entry: intelligence/level1_sleeve_synthesis/relationships/COHORT_MANIFEST.yaml#debt_reduction_equity
-content_sha256: 593ea9d83a0b18ecd7242974f0d41cc2beea87ae35c7904a3de89f2a63f3b4f4
+content_sha256: dc0889fa62a6add9ee6b4c344684aa061cbd88416bb04ca1bea52e9220a70882

@@ -539,8 +539,19 @@ _MAGNITUDE_WORD_PATTERN = re.compile(
 _CARDINAL_WORDS = (
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
     "nine", "ten", "dozen", "hundred", "thousand", "million", "billion",
+    # Round-2 addition (independent post-push review, pullrequestreview on
+    # PR #303): the original list stopped at "ten", missing eleven through
+    # ninety-nine -- a real numeric-leakage gap, not exploited by any real
+    # sealed content but present as a validator-completeness weakness.
+    "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
+    "seventeen", "eighteen", "nineteen", "twenty", "thirty", "forty",
+    "fifty", "sixty", "seventy", "eighty", "ninety",
 )
 _CARDINAL_WORD_PATTERN = re.compile(r"\b(" + "|".join(_CARDINAL_WORDS) + r")\b", re.IGNORECASE)
+# Note: a compound tens-plus-ones form ("twenty-one", "twenty one") is
+# already caught by the tens word alone -- \btwenty\b matches "twenty" in
+# "twenty-one" since a hyphen is a non-word character, so no separate
+# compound pattern is needed.
 
 
 def _numeric_leakage_scan(text: str) -> list[str]:
@@ -599,6 +610,14 @@ _COMPARATIVE_SUPERIORITY_PATTERNS = [
     re.compile(r"\bedge(s|d)?\s+out\b", re.IGNORECASE),
     re.compile(r"\btop\s+pick\b", re.IGNORECASE),
     re.compile(r"\bbest\s+choice\b", re.IGNORECASE),
+    # Round-2 additions (independent post-push review, pullrequestreview on
+    # PR #303): three further ordinary comparative-superiority idioms not
+    # covered by the adjective+noun alternation or the standalone-verb
+    # patterns above -- same closed-list-broadening discipline, not a new
+    # mechanism.
+    re.compile(r"\bhas\s+the\s+edge\s+over\b", re.IGNORECASE),
+    re.compile(r"\bwins?\s+out\s+over\b", re.IGNORECASE),
+    re.compile(r"\bthe\s+top\s+choice\s+among\b", re.IGNORECASE),
     re.compile(
         rf"\b(?:looks?|appears?|seems?)\b(?:[\s,;:]+[a-z][\w'-]*){{0,2}}[\s,;:]+"
         rf"\b(?:{_COMPARATIVE_SUPERIORITY_ADJ_ALTERNATION})\b"
@@ -721,6 +740,23 @@ _ELIGIBILITY_PATTERNS = [
         # adversarial probe found unguarded.
         r"\bdeserves?\s+(more\s+)?capital\b",
         r"\bwarrants?\s+(more\s+)?capital\b",
+        # Round-4 additions (independent post-push review, pullrequestreview
+        # on PR #303): three further ordinary paraphrases the round-3 scan
+        # did not catch -- "has a place... going forward" (a softer, no-
+        # "portfolio-noun-object" variant of the already-caught "merits/
+        # deserves a place in the portfolio" family), a colon-shorthand
+        # keep/go verdict shape (the direct sibling of the already-caught
+        # "sleeve: in"/"sleeve is out" shorthand), and an explicit "no case
+        # for keeping" negative-inclusion finding. Same closed-list-
+        # broadening discipline as rounds 2/3, not a new mechanism.
+        r"\bhas\s+a\s+place\s+in\s+the\s+portfolio\b",
+        r"\b(cash\s+reserve|equity|crypto|fund\s+broad\s+market|fund\s+gld\s+defensive|debt\s+reduction)\s*:\s*keep\b",
+        # Anchored to a sentence-final "should go" (an informal removal
+        # verdict), not "should go through"/"should go on to"/etc, which
+        # are legitimate process-continuation phrasing -- a real false-
+        # positive risk the plain \b boundary alone would not exclude.
+        r"\bthe\s+(cash\s+reserve|equity|crypto|fund\s+broad\s+market|fund\s+gld\s+defensive|debt\s+reduction)\s+sleeve\s+should\s+go(?=[.,;:]|\s*$)",
+        r"\bno\s+case\s+for\s+keeping\b(?:[\s,;:]+[a-z][\w'-]*){0,4}[\s,;:]+\bin\s+the\s+portfolio\b",
     ]
 ]
 
@@ -1049,12 +1085,19 @@ def _compute_debt_reduction_coverage(repo_root: Path) -> tuple[str, list[_Absten
         for sub in ("avoided_borrowing_cost_readiness", "survivability_and_buffer_benefit_readiness"):
             if isinstance(ear.get(sub), dict) and ear[sub].get("status") == "assessment_required":
                 findings.append(_AbstentionFinding("functional_doctrine", f"economic_assessment_readiness.{sub}", "assessment_required"))
+    fs = fd.get("freshness_state")
+    if isinstance(fs, dict) and fs.get("status") == "unable_to_determine_freshness":
+        findings.append(_AbstentionFinding("functional_doctrine", "freshness_state.status", "unable_to_determine_freshness"))
     # debt_reduction carries no separate economic_assessment/<subject>.yaml
     # record at all (unlike fund_gld_defensive/cash_reserve) -- its entire
     # economic-assessment-equivalent layer is the functional_doctrine
     # record's own economic_assessment_readiness sub-object, and that
     # sub-object is forced-abstained on both required sub-fields, per
-    # XASSET-0012 SS4.2's own named forced_abstention example.
+    # XASSET-0012 SS4.2's own named forced_abstention example. Its own
+    # freshness_state sub-field is independently abstained too (SS4.2.1: a
+    # sub-field abstention inside an otherwise-sealed source record must
+    # never disappear behind this sleeve's own forced_abstention coverage
+    # value) -- scanned here so it is never silently missed.
     return FORCED_ABSTENTION, findings
 
 

@@ -10637,6 +10637,55 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-11"
+      - gate: xasset0013-level1-synthesis-implementation-bounded-correction
+        description: >
+          A bounded correction to PR #303, applied after an independent
+          exact-head review (posted as a PR comment, same-account platform
+          restriction) found one MAJOR and three MINOR findings. MAJOR:
+          DEBT_REDUCTION's own sealed functional_doctrine record separately
+          abstains on freshness_state.status
+          (unable_to_determine_freshness), and that sub-field abstention
+          was silently missing from debt_reduction.yaml's own
+          abstention_index, contrary to XASSET-0012 SS4.2.1's "must never
+          disappear behind a sealed parent record" rule — the live
+          coverage-computation function itself never scanned this field
+          either, so the mechanical roll-up agreed with the omission
+          rather than catching it. Fixed at the root: _compute_debt_
+          reduction_coverage() now scans freshness_state.status, the
+          matching abstention_index entry was added to the real sealed
+          record, and its content_sha256 (plus the two relationship
+          records citing it and both COHORT_MANIFEST.yaml files) were
+          recomputed and propagated. MINOR-1 (etf_classification's own
+          not_yet_measured tracking_quality_category not disclosed in the
+          fund sleeves' abstention_index) was independently reconfirmed as
+          a disclosed, inherited upstream ambiguity already recorded in
+          etf_classification_validator.py's own docstring — not a defect
+          this implementation introduced, and not corrected here; flagged
+          for a possible future XASSET-0002 amendment instead. MINOR-2/3/4
+          (further eligibility-language paraphrases, comparative-
+          superiority idioms, and spelled-out cardinal numbers eleven
+          through ninety not caught by the pre-push scans) were each
+          closed with the same smallest-bounded-correction discipline
+          already used for the pre-push probe itself: new patterns
+          appended to the existing closed pattern lists, plus regression
+          tests (including two new tests pinning the MAJOR fix on the real
+          debt_reduction.yaml record, one asserting the entry is present,
+          one asserting its removal is caught). No methodology redesign,
+          no new sleeve, no new relationship pair, no sleeve weight,
+          instrument weight, portfolio in/out decision, or Stage 4 policy
+          adoption. Re-ran the full validation suite at the corrected head:
+          the dedicated validator (OK, 7 profile + 8 relationship
+          results), all 17 pre-existing repository validators (clean),
+          442 focused/adversarial tests (up from 403), the decision-
+          catalog test suite (95 passed, catalog unaffected — no new
+          governance decision filed by this correction), YAML/YML+JSON
+          parsing (0 errors across 274/178 files), git diff --check
+          (clean), and the full repository pytest suite once. This session
+          does not review its own PR, mark it ready, merge it, or post
+          principal acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-11"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
