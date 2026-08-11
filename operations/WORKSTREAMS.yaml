@@ -10847,6 +10847,120 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-11"
+      - gate: xasset0013-implementation-post-merge-verification
+        description: >
+          A new, separate session independently reconfirmed, via the
+          GitHub API, that PR #303 (the Stage 3 Level 1 sleeve-synthesis
+          implementation the xasset0013-level1-synthesis-implementation
+          and its four bounded-correction/audit gates above record) is
+          fully merged: head 0ebf7106fc13247d2d2952cebef253cbc946aa69,
+          base cfea220c82bae310f2412804a204e85f257a2782 (XASSET-0013's
+          own merge commit), merge commit
+          9d70f592939156e5418a8ae706854868775009a7 (parents
+          independently re-confirmed via git log --pretty '%H %P', not
+          assumed). Merge-commit CI independently re-fetched via the
+          GitHub API and confirmed green (check run 93857673735, status
+          completed/conclusion success). The Level 1 sleeve-synthesis
+          Stage 3 population -- six sealed sleeve_profile records, seven
+          sealed sleeve_relationship records, level1_sleeve_synthesis_
+          validator.py, and its focused/adversarial test suite -- is
+          therefore merged and effective. This same session then filed
+          XASSET-0014, a Stage 4a (policy-adoption methodology) design-
+          only governance filing -- see the
+          xasset0014-level1-policy-adoption-methodology-design gate
+          below.
+        pr: 303
+        status: complete
+        date: "2026-08-11"
+      - gate: xasset0014-level1-policy-adoption-methodology-design
+        description: >
+          A new, separate session, on explicit principal authorization,
+          designed -- as text only, no record populated, no sleeve
+          role/eligibility/sizing-readiness disposition assigned, no
+          numeric weight of any kind -- the methodology for Stage 4 of
+          XASSET-0012 SS10's own four-stage sequence ("future policy
+          adoption / portfolio selection, if separately authorized").
+          Three independent, non-collapsible axes: Portfolio Function
+          Status (three-value, no fourth "redundant" value since
+          Stage 1-3's own closed vocabulary cannot produce a redundancy
+          finding today), Capital Eligibility (two-value, mechanically
+          derived from evidence_coverage_profile with zero drafting-
+          session discretion and no abstention path of its own), and
+          Sizing Readiness (three-value, mechanically derived from the
+          prior two axes plus each named relationship record's own
+          disposition/secondary conditions and, per the bounded
+          correction below, a per-sleeve relationship-coverage ledger).
+          A mechanical prohibition, with a required counterfactual-
+          masking non-influence test, bars any axis from being driven by
+          a stronger_evidence_maturity finding. Illustrative, non-
+          adopted mechanism traces for debt_reduction and (added by the
+          bounded correction below) fund_broad_market demonstrate why
+          three axes, not one collapsed verdict, are required. An
+          eleven-condition gate, none satisfied by this filing, must
+          hold before any future, separate, explicit authorization for
+          numeric Level 1 sleeve-level sizing (XASSET-0001 SS J step 9)
+          may even begin. Defines the exact future Stage 4c deliverable
+          (one intelligence/level1_sleeve_synthesis/policy_adoption/
+          <SLEEVE_ID>.yaml record per sleeve, up to six, a new
+          sub-namespace parallel to profiles/ and relationships/) and a
+          twenty-four-point future validator/test specification,
+          including a materially separate "bounded-conclusion" scan
+          distinct from Stage 1-3's own blanket XASSET-0012 SS8.1
+          eligibility-language ban (Stage 4 is explicitly designed to
+          represent a bounded, closed-vocabulary role/eligibility/
+          readiness judgment; what remains barred is numeric magnitude,
+          execution/trade directives, and free text claiming more than
+          the record's own closed-vocabulary fields support). Restates,
+          without reopening, the allocation-check boundary (a real
+          allocation check remains downstream of Stage 4 adoption,
+          Level 1/Level 2 sizing, and unlevered validation), the
+          risk/backtest sequencing already recorded in this workstream's
+          own roadmap_preservation field (targeted backtests occur
+          after, not before, provisional sizing), the chart/deployment
+          boundary (XASSET-0001 SS G/TIER-0003, unweakened), the
+          margin/debt boundary (unlevered testing first, then
+          margin/leverage research), and the contender/QQQ boundary (no
+          reopening of VRT/WMT, the remaining 82 contender-registry
+          entries, or QQQ). Explicitly does not authorize Stage 4b
+          (content authorization), Stage 4c (implementation), or numeric
+          Level 1/Level 2 sizing of any kind. This session does not
+          review its own PR, mark it ready, merge it, or post principal
+          acceptance.
+
+          Bounded correction, same day, this PR, independent exact-head
+          review pullrequestreview-4909703610 (anchored to head
+          e246ea77ae6292d5a1dcc4ce652885e93ec153c7), 0 BLOCKING / 1
+          MAJOR / 0 MINOR, CHANGES REQUIRED, resolved: the original
+          two-basis Axis A evidentiary rule left fund_broad_market with
+          zero lawful path to function_confirmed_distinct (its only
+          sealed relationship resolves stronger_evidence_maturity,
+          barred by construction; the doctrine-citation path was
+          debt_reduction-only), directly contradicting the original
+          SS10's own asserted outcome for that sleeve; and Axis C
+          treated a merely-unresearched relationship pair more
+          favorably than a sealed-but-unresolved one. Resolved without
+          weakening the stronger_evidence_maturity non-influence rule
+          anywhere: a new third Axis A basis (structural targets.yaml
+          destination-category membership, categorical/sleeve-level,
+          never an instrument weight, never a relationship record,
+          never an evidence-maturity value -- available to five of six
+          sleeves, not debt_reduction, which has no targets.yaml row);
+          a generalized (no longer debt_reduction-restricted) doctrine-
+          citation basis; a six-sleeve Axis A reachability audit; a
+          corrected SS10 outcome claim; a new per-sleeve relationship-
+          coverage-ledger mechanism (sealed_determined /
+          sealed_unresolved / deferred_disclosed, drawn only from the
+          sealed seven and XASSET-0013 SS E's own disclosed eight); a
+          new eleventh sizing-gate condition; a new axis-interaction
+          adversarial-case table; and thirteen internal cross-reference
+          corrections found during the same consistency pass. No
+          policy-adoption record, Axis A/B/C disposition, Stage 4b, or
+          Stage 4c work is populated or authorized by this correction.
+          This session does not review its own PR, mark it ready, merge
+          it, or post principal acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-11"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -10875,6 +10989,8 @@ workstreams:
       - governance/decisions/XASSET-0012-ws0014-level1-cross-asset-synthesis-methodology.md
       - governance/audits/WS0014_LEVEL1_CROSS_ASSET_SYNTHESIS_METHODOLOGY_DESIGN_20260811.md
       - governance/decisions/XASSET-0013-ws0014-level1-synthesis-content-authorization.md
+      - governance/decisions/XASSET-0014-ws0014-level1-policy-adoption-methodology.md
+      - governance/audits/WS0014_LEVEL1_POLICY_ADOPTION_METHODOLOGY_DESIGN_20260811.md
     next_action: >
       XASSET-0009 (PR #293) is independently confirmed merged — see the
       xasset0009-post-merge-verification gate above. Its authorization
@@ -11253,9 +11369,9 @@ workstreams:
       contender-registry sweep beyond CONTENDER-0003's own two-name pilot
       all remain blocked on their own future, separate, explicit
       principal authorization each.
-    active_branch: claude/level1-synthesis-implementation-qzgpua
+    active_branch: claude/level-1-policy-adoption-design-9w9gvr
     active_pr: null
-    last_verified_main_sha: cfea220c82bae310f2412804a204e85f257a2782
+    last_verified_main_sha: 9d70f592939156e5418a8ae706854868775009a7
     last_verified_date: "2026-08-11"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
