@@ -769,32 +769,256 @@ def test_protected_paths_untouched_by_this_module_import():
 
 
 def test_protected_intelligence_records_untouched():
-    """Zero diff on every existing intelligence/classification|companies|
-    themes|relationships|etf_classification|crypto_classification|
-    functional_doctrine/ record and COHORT_MANIFEST.yaml -- checked via a
-    live git status, not merely a file-content snapshot, so a
-    staged-but-uncommitted change would also be caught."""
+    """No pre-existing record under any of these directories is modified,
+    renamed, or deleted -- new records (e.g. a future, separately
+    authorized WS-0005-successor equity/relationship cohort under
+    intelligence/companies|relationships/) are permitted, since these
+    directories are not permanently closed. Repaired from a raw `git
+    status --porcelain` check (XASSET-0012 bounded correction, MAJOR-1
+    item F): the raw form could not distinguish a legitimate future
+    addition from an unauthorized modification of existing content and
+    would false-fail the moment either directory legitimately grew, the
+    same defect class an independent exact-head review found in the
+    now-repaired governance/decisions check below."""
+    _assert_no_unauthorized_change_since_base([
+        "intelligence/etf_classification", "intelligence/crypto_classification",
+        "intelligence/classification", "intelligence/companies", "intelligence/themes",
+        "intelligence/relationships", "intelligence/functional_doctrine",
+    ])
+
+
+# ── PR-base-relative protected-path checks (additions permitted, existing
+#    content must never be modified/renamed/deleted) -- XASSET-0012 bounded
+#    correction, MAJOR-1: repairs (not deletes) the governance-decisions
+#    protection this file's own PR #292 commit originally added, reusing
+#    the base-diff resolution pattern PR #300 already established in
+#    test_contender_evaluation_validator.py rather than inventing a new
+#    one. A local copy is kept here, not imported cross-file, matching
+#    this repository's own established per-file helper convention (each
+#    validator's test suite owns its own copy of the constants/helpers it
+#    needs). ──────────────────────────────────────────────────────────
+
+def _resolve_pr_base_sha(cwd: Path = REPO_ROOT) -> str | None:
+    """Resolve this branch's actual PR base commit from live repository
+    truth -- git merge-base HEAD origin/main -- rather than a hard-coded
+    SHA that goes stale the moment the branch is rebased or main moves
+    forward. Returns None (causing the calling check to skip, not fail)
+    if origin/main is not a resolvable ref in this environment, since
+    that is an environment precondition this test suite does not manage,
+    not a content defect. Deliberately does NOT use local `main`, which
+    this repository's own history discloses can diverge from
+    `origin/main`. `cwd` defaults to the real repository root but accepts
+    any git working directory, exercised directly against synthetic,
+    disposable repositories by the behavioral-invariant tests below."""
+    try:
+        subprocess.run(
+            ["git", "rev-parse", "--verify", "origin/main"],
+            cwd=cwd, capture_output=True, text=True, check=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
     result = subprocess.run(
-        [
-            "git", "status", "--porcelain", "--",
-            "intelligence/etf_classification", "intelligence/crypto_classification",
-            "intelligence/classification", "intelligence/companies", "intelligence/themes",
-            "intelligence/relationships", "intelligence/functional_doctrine",
-        ],
-        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+        ["git", "merge-base", "HEAD", "origin/main"],
+        cwd=cwd, capture_output=True, text=True,
     )
-    assert result.stdout.strip() == "", f"unexpected changes under protected intelligence paths:\n{result.stdout}"
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+    return result.stdout.strip()
+
+
+def _assert_no_unauthorized_change_since_base(paths: list[str], repo_root: Path = REPO_ROOT) -> None:
+    """A file that already existed at this PR's base commit must never be
+    modified, renamed, copied, type-changed, or deleted between base and
+    the current working tree (covering both this PR's own committed
+    history and any not-yet-committed local change, so this still
+    functions as a local pre-commit check, not merely a post-commit-CI
+    one) -- but a file that did NOT exist at base (git diff status `A`,
+    added) is always permitted, since authoring new content under these
+    directories is the routine, expected, authorized behavior of a
+    correctly-scoped future session. Skips (never silently passes as a
+    false green) when origin/main is not resolvable in this environment."""
+    base_sha = _resolve_pr_base_sha(cwd=repo_root)
+    if base_sha is None:
+        pytest.skip("origin/main not resolvable in this environment -- cannot compute a true PR-base diff")
+    result = subprocess.run(
+        ["git", "diff", "--name-status", base_sha, "--", *paths],
+        cwd=repo_root, capture_output=True, text=True, check=True,
+    )
+    violations = [
+        line for line in result.stdout.splitlines()
+        if line.strip() and not line.split("\t", 1)[0].startswith("A")
+    ]
+    assert violations == [], (
+        f"unauthorized modification/rename/deletion of pre-existing content since base {base_sha}:\n"
+        + "\n".join(violations)
+    )
 
 
 def test_governance_decision_files_untouched():
-    """This implementation touches no governance/decisions/*.md file --
-    XASSET-0007 itself is already merged and effective; this PR is the
-    content implementation it authorized, not a further governance filing."""
+    """No pre-existing governance/decisions/*.md file is modified, renamed,
+    or deleted by this PR -- the newly authorized decision file(s) this PR
+    itself adds are permitted (git diff status `A`), since authoring a new
+    decision is the entire point of a governance-authoring session.
+    Repaired (not deleted) from a raw `git status --porcelain -- governance
+    /decisions` check originally added by PR #292 (XASSET-0007's own
+    content implementation), which was correct for that one PR's own
+    zero-governance-touch scope but structurally could not survive any
+    future governance-authoring session -- an independent exact-head
+    review of XASSET-0012 (pullrequestreview-4902959254, MAJOR finding)
+    found the original deletion unjustified and required a repair using
+    PR #300's own already-established base-diff resolution pattern
+    instead. This corrects XASSET-0012's own earlier, inaccurate claim
+    that deletion "matches PR #300's exact class of fix" -- PR #300
+    repaired an analogous stale assertion by resolving it dynamically
+    against live PR-base state, it did not remove the protection; this
+    correction now does the same."""
+    _assert_no_unauthorized_change_since_base(["governance/decisions"])
+
+
+def _init_synthetic_repo(tmp_path: Path):
+    """A minimal, disposable git repository used to prove
+    _resolve_pr_base_sha's and _assert_no_unauthorized_change_since_base's
+    own behavioral invariants deterministically -- independent of this
+    real repository's own PR/merge lifecycle, mirroring
+    test_contender_evaluation_validator.py's own identical fixture."""
+    def run(*args):
+        return subprocess.run(
+            ["git", *args], cwd=tmp_path, capture_output=True, text=True, check=True,
+        )
+    run("init", "-q")
+    run("config", "user.email", "test@example.com")
+    run("config", "user.name", "Test")
+    return run
+
+
+def test_resolve_pr_base_sha_returns_true_divergence_point_on_diverged_branch(tmp_path):
+    """When HEAD has diverged from origin/main by one or more new commits
+    (an active feature/governance branch), the resolver must return the
+    actual common ancestor, never silently compare HEAD to itself."""
+    run = _init_synthetic_repo(tmp_path)
+    (tmp_path / "file.txt").write_text("base\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "base commit")
+    base_sha = run("rev-parse", "HEAD").stdout.strip()
+    run("update-ref", "refs/remotes/origin/main", base_sha)
+
+    (tmp_path / "file.txt").write_text("base\nfeature work\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "feature-branch commit, diverged from origin/main")
+    head_sha = run("rev-parse", "HEAD").stdout.strip()
+
+    resolved = _resolve_pr_base_sha(cwd=tmp_path)
+    assert resolved == base_sha
+    assert resolved != head_sha
+
+
+def test_resolve_pr_base_sha_returns_head_when_head_equals_origin_main(tmp_path):
+    """When HEAD and origin/main coincide (no divergence -- immediately
+    after a PR merges), the resolver may legitimately return that same
+    commit, computed dynamically rather than against a fixed SHA."""
+    run = _init_synthetic_repo(tmp_path)
+    (tmp_path / "file.txt").write_text("content\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "sole commit, HEAD and origin/main coincide")
+    sole_sha = run("rev-parse", "HEAD").stdout.strip()
+    run("update-ref", "refs/remotes/origin/main", sole_sha)
+
+    resolved = _resolve_pr_base_sha(cwd=tmp_path)
+    assert resolved == sole_sha
+
+
+def test_unauthorized_change_since_base_permits_a_new_file_addition(tmp_path):
+    """Adversarial case (MAJOR-1 validation item, and the exact failure
+    mode being repaired): a new file added since base under a protected
+    directory -- e.g. this PR's own newly authored governance decision --
+    must never fail this check."""
+    run = _init_synthetic_repo(tmp_path)
+    (tmp_path / "protected").mkdir()
+    (tmp_path / "protected" / "EXISTING.md").write_text("original content\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "base commit")
+    base_sha = run("rev-parse", "HEAD").stdout.strip()
+    run("update-ref", "refs/remotes/origin/main", base_sha)
+
+    (tmp_path / "protected" / "NEW-0001.md").write_text("newly authorized content\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "add a new, authorized record")
+
+    _assert_no_unauthorized_change_since_base(["protected"], repo_root=tmp_path)  # must not raise
+
+
+def test_unauthorized_change_since_base_catches_a_synthetic_modification(tmp_path):
+    """Adversarial case: a pre-existing file's content is modified since
+    base -- must be caught, proving the mechanism itself (not merely
+    today's clean real-repository diff) actually detects the violation
+    class it exists to prevent."""
+    run = _init_synthetic_repo(tmp_path)
+    (tmp_path / "protected").mkdir()
+    (tmp_path / "protected" / "EXISTING.md").write_text("original content\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "base commit")
+    base_sha = run("rev-parse", "HEAD").stdout.strip()
+    run("update-ref", "refs/remotes/origin/main", base_sha)
+
+    (tmp_path / "protected" / "EXISTING.md").write_text("silently rewritten content\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "unauthorized modification of existing content")
+
+    with pytest.raises(AssertionError, match="unauthorized modification"):
+        _assert_no_unauthorized_change_since_base(["protected"], repo_root=tmp_path)
+
+
+def test_unauthorized_change_since_base_catches_a_synthetic_deletion(tmp_path):
+    """Adversarial case: a pre-existing file is deleted since base -- must
+    also be caught, not just modifications (git diff status `D`, not
+    `A`)."""
+    run = _init_synthetic_repo(tmp_path)
+    (tmp_path / "protected").mkdir()
+    (tmp_path / "protected" / "EXISTING.md").write_text("original content\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "base commit")
+    base_sha = run("rev-parse", "HEAD").stdout.strip()
+    run("update-ref", "refs/remotes/origin/main", base_sha)
+
+    (tmp_path / "protected" / "EXISTING.md").unlink()
+    run("add", "-A")
+    run("commit", "-q", "-m", "unauthorized deletion of existing content")
+
+    with pytest.raises(AssertionError, match="unauthorized modification"):
+        _assert_no_unauthorized_change_since_base(["protected"], repo_root=tmp_path)
+
+
+def test_unauthorized_change_since_base_skips_when_origin_main_unresolvable(tmp_path):
+    """No always-pass/blanket-skip masquerading as a real check: a genuine
+    environment precondition failure (no origin/main ref at all) must
+    produce an explicit pytest.skip, never a silent success."""
+    run = _init_synthetic_repo(tmp_path)
+    (tmp_path / "file.txt").write_text("content\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "sole commit, no origin/main ref configured")
+
+    with pytest.raises(pytest.skip.Exception):
+        _assert_no_unauthorized_change_since_base(["file.txt"], repo_root=tmp_path)
+
+
+def test_real_repository_governance_decisions_pass_the_repaired_check():
+    """Real-repository proof (not synthetic): this PR's own base..working-
+    tree diff under governance/decisions/ contains exactly the newly
+    authored XASSET-0012 decision file (status A) and no modification of
+    any pre-existing decision -- the exact scenario the repaired check
+    exists to permit."""
+    base_sha = _resolve_pr_base_sha()
+    if base_sha is None:
+        pytest.skip("origin/main not resolvable in this environment")
     result = subprocess.run(
-        ["git", "status", "--porcelain", "--", "governance/decisions"],
+        ["git", "diff", "--name-status", base_sha, "--", "governance/decisions"],
         cwd=REPO_ROOT, capture_output=True, text=True, check=True,
     )
-    assert result.stdout.strip() == "", f"unexpected changes under governance/decisions:\n{result.stdout}"
+    lines = [line for line in result.stdout.splitlines() if line.strip()]
+    for line in lines:
+        assert line.split("\t", 1)[0].startswith("A"), (
+            f"expected only newly-added governance decisions, found: {line}"
+        )
 
 
 # ── no dimension_type / source_mechanism confusion between mechanical and
