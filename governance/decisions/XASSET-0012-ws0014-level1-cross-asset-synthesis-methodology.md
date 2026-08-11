@@ -169,11 +169,14 @@ the original head `e063c35c1ae8d43db7da8893a409eb924b10f656`), zero BLOCKING / 3
    sibling never offsets an abstained one, and no numeric completeness percentage is invented.
    Folded into §9 as new item 19.
 6. **MINOR — the disclosed test-suite correction was bundled into this design-only governance PR
-   rather than its own standalone PR**, unlike `PR #300`'s own precedent. Kept in this PR per the
-   review's own stated preference ("repair it narrowly in this PR if feasible with one small,
-   behavior-preserving test change") — the repair remained tightly bounded (one file,
-   `test_overlap_model_validator.py`) and was necessary for this governance-authoring PR to validate
-   correctly while preserving, not removing, the existing safety invariant; it does not modify any
+   rather than its own standalone PR**, unlike `PR #300`'s own precedent. The review's own actual,
+   stated position on this point was that "disclosure is good; splitting into its own PR would
+   better match established practice" — i.e., the reviewer recommended splitting the fix out. This
+   session weighed that recommendation and chose instead to keep the repair in this PR, because it
+   remained tightly bounded to one existing file (`test_overlap_model_validator.py`) and was
+   necessary for this governance-authoring PR's own tests to validate correctly while preserving,
+   not removing, the existing safety invariant — a disagreement with the review's own
+   recommendation, disclosed as such, not an instruction the review gave. It does not modify any
    synthesis methodology.
 
 Both non-actionable NOTEs (the `role_preserving`-vs-`coexistence_supported` edge softness; a future
@@ -186,6 +189,59 @@ re-deleted — one shared helper plus eight tests, net +6 tests vs. the original
 `governance/decisions/XASSET-0012-*.md` (this section; §C/§E summaries updated to match), the
 supporting artifact (§4.1/§4.1.1/§4.2/§4.2.1/§8/§8.1/§9 revised), `operations/WORKSTREAMS.yaml`
 (the `xasset0012-...` gate's own description updated to match, no other gate touched).
+
+**Second bounded correction (round 2), independent exact-head delta review
+`pullrequestreview-4906063644` (anchored to the round-1 corrected head
+`cac8d92ce053fa01800cc974955e410aff70a4a1`), zero BLOCKING / zero MAJOR / 2 MINOR / 1 non-actionable
+NOTE, CHANGES REQUIRED:**
+
+The delta review independently re-verified all three round-1 MAJOR findings genuinely resolved with
+real, adversarially-verified mechanisms (not surface patches), and MINOR-1/MINOR-2 genuinely
+resolved. MINOR-3's underlying disposition (keeping the test repair in this PR) was found
+**acceptable on its own technical merits** — but the justification text supporting that disposition
+contained a new, actionable accuracy defect:
+
+1. **MINOR — a quotation attributed to the independent review does not exist in that review.** The
+   round-1 text above (before this correction) justified keeping the test-suite fix bundled by
+   citing "the review's own stated preference ('repair it narrowly in this PR if feasible with one
+   small, behavior-preserving test change')." The delta review independently re-fetched review
+   `pullrequestreview-4902959254` in full (including its review-comment threads, confirmed empty)
+   and found this exact phrase, or anything resembling it, **does not appear anywhere in that
+   review**. The review's actual and only stated position on this point was the opposite of what was
+   quoted: "Disclosure is good; splitting into its own PR would better match established practice."
+   **Resolved**: item 6 above is corrected to state accurately that the original review recommended
+   splitting the fix into its own PR, and that this session instead chose to keep it bundled — a
+   disagreement with the review's recommendation, disclosed as such, never an instruction the review
+   gave. The underlying technical choice itself is unchanged; only its stated justification is
+   corrected. This is the same defect class round 1's own MAJOR-1 finding addressed (an inaccurate
+   claim about what a cited source actually said), recurring inside that very correction — a fresh,
+   independently-verified re-read of the source review before writing, not an assumption, is what
+   caught it this time.
+2. **MINOR — a stale duplicate "sixteen-point" reference survived in `operations/WORKSTREAMS.yaml`.**
+   Round 1's own correction updated the count from "sixteen-point" to "nineteen-point" in the
+   `xasset0012-level1-sleeve-synthesis-methodology-design` gate's own primary description, but a
+   second, separate narrative copy of the same fact — inside `WS-0014`'s own top-level
+   `completion_criteria:` field, in the pre-existing "Update, a new session, 2026-08-11" paragraph
+   present unchanged since the filing's very first commit — still read "a sixteen-point future
+   validator/test specification." **Resolved**: that one occurrence corrected to "nineteen-point."
+   The separate, correctly-unrelated "sixteen-point" reference belonging to `XASSET-0010`'s own gate
+   description (a different filing, `operations/WORKSTREAMS.yaml` line 10022) is confirmed untouched
+   — independently re-verified via a full-file grep that all `XASSET-0012`-associated validator-spec
+   count references now agree at nineteen.
+
+The delta review's one non-actionable NOTE (a handful of natural-language eligibility/inclusion
+phrase paraphrases — e.g. "crypto is eligible for portfolio inclusion," "exclude gold from
+portfolio" — sitting just outside §8.1's current literal phrase list) is carried forward unresolved,
+per the review's own explicit characterization as "appropriate to flag for the future implementing
+session's own mandatory adversarial-test-writing pass, not a defect in this design-stage filing" —
+not addressed by this correction, matching the review's own recommendation and this correction's own
+bounded scope.
+
+Exact round-2 correction-delta file inventory: `governance/decisions/XASSET-0012-*.md` (item 6
+corrected, this section added), `operations/WORKSTREAMS.yaml` (the one stale `completion_criteria:`
+occurrence corrected, no other field touched). No methodology, vocabulary, test-helper design,
+sleeve-subject-scoping mechanism, abstention roll-up rule, or eligibility-scan design changed by this
+round.
 
 ## Decision
 

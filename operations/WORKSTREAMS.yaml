@@ -10460,10 +10460,35 @@ workstreams:
           (artifact §4.2.1) so a sub-field abstention is always echoed
           into abstention_index[], never absorbed by a sealed parent
           record. (6) MINOR — the test-suite correction was bundled into
-          this design-only PR; kept, per the review's own stated
-          preference, since it stayed tightly bounded to one file. Full
-          disclosure and the exact resolution of each finding in
-          XASSET-0012's own decision file Correction History section.
+          this design-only PR; the review actually recommended splitting
+          it into its own PR ("disclosure is good; splitting into its
+          own PR would better match established practice"), and this
+          session instead chose to keep it bundled since it stayed
+          tightly bounded to one file -- a disagreement with the
+          review's own recommendation, not an instruction the review
+          gave. Full disclosure and the exact resolution of each finding
+          in XASSET-0012's own decision file Correction History section.
+
+
+          Second bounded correction (round 2), independent exact-head
+          delta review pullrequestreview-4906063644: zero BLOCKING/MAJOR,
+          2 MINOR, 1 non-actionable NOTE. All three round-1 MAJOR
+          findings and MINOR-1/MINOR-2 independently reconfirmed genuinely
+          resolved; MINOR-3's disposition found acceptable on the merits.
+          New MINOR (1): the round-1 text above (and this decision file's
+          own Correction History) misattributed a fabricated quotation to
+          review pullrequestreview-4902959254 ("repair it narrowly in
+          this PR if feasible..." -- that phrase does not appear anywhere
+          in that review); corrected to state accurately that the review
+          recommended splitting the fix out and this session disagreed.
+          New MINOR (2): a stale duplicate "sixteen-point" reference
+          survived in this same completion_criteria field's own "Update,
+          a new session, 2026-08-11" paragraph, unedited by round 1;
+          corrected to "nineteen-point" -- the separate, correctly
+          unrelated XASSET-0010 "sixteen-point" reference elsewhere in
+          this file is untouched. Zero methodology, vocabulary, test-
+          helper, sleeve-subject-scoping, abstention-roll-up, or
+          eligibility-scan design change in this round.
         pr: null
         status: in_progress
         date: "2026-08-11"
@@ -10626,7 +10651,7 @@ workstreams:
       a comparative sleeve_relationship record type (reusing REL-0001's
       pairwise convention), a closed four-value primary_disposition
       vocabulary plus a closed three-member secondary_conditions set, a
-      zero-numeric-field posture with no carve-out, and a sixteen-point
+      zero-numeric-field posture with no carve-out, and a nineteen-point
       future validator/test specification — still blocked only on its
       own independent exact-head review, correction if needed, principal
       acceptance, merge, and post-merge verification. Populates no
