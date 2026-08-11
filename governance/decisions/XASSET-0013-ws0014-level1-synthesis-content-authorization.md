@@ -88,6 +88,42 @@ adoption, separately authorized).
   reserve | cash` — confirming the six-`sleeve_id` Level 1 taxonomy is a functional layer on top of
   `asset_class`, exactly as `XASSET-0012` §1 states, not re-derived differently here.
 
+### Correction history (this filing, same PR)
+
+**Bounded correction, independent exact-head review (posted as a `COMMENT`, same-account platform
+restriction, treated with the same weight as a formal review), anchored to the original head
+`0158f31c3465d658c89fdffa8a0f9a7840e0d7a5`, zero BLOCKING / zero MAJOR / 1 MINOR / 2 non-actionable
+NOTE, CHANGES REQUIRED:**
+
+1. **MINOR — §J's evidence-limitation disclosure checklist required SOL's own sub-field-level
+   drawdown abstention be individually disclosed, but did not carry a parallel requirement for a
+   real, independently-confirmed divergence on the sleeve's own inflation-narrative sub-field.**
+   The `crypto` ↔ `fund_gld_defensive` pair's own stated justification (§D) rests on a "near-identical
+   narrative" match between `GLD.yaml` and `BTC.yaml` — independently re-verified accurate for BTC
+   specifically (`GLD.yaml`/`BTC.yaml` both carry `historical_inflation_sensitivity`/`historical_
+   inflation_sensitivity_narrative: historically_mixed_or_inconsistent`) — but `ETH.yaml`'s and
+   `SOL.yaml`'s own `historical_inflation_sensitivity_narrative` sub-fields both independently
+   characterize as `historically_weakly_associated`, diverging from BTC's and GLD's own matching
+   value. Without an explicit disclosure requirement, a future Stage 3 drafting session could
+   generalize BTC's own narrative match to the whole `crypto` sleeve's rationale against
+   `fund_gld_defensive`, misrepresenting ETH's and SOL's own divergent evidence. **Resolved**: §D's
+   own `crypto`↔`fund_gld_defensive` bullet now states explicitly that the narrative match is
+   BTC-specific and requires the future relationship record's `rationale` to disclose ETH's and
+   SOL's own divergent `historically_weakly_associated` characterization; §J gains a parallel,
+   explicit checklist entry stating the same requirement, mirroring the treatment already given to
+   SOL's own drawdown-behavior abstention.
+
+Both non-actionable NOTEs (the unverified-but-hedged "very likely" transitive-redundancy framing for
+the four deferred `fund_broad_market` pairs in §E class 1; the disclosed, reasoned five-of-seven
+equity-hub batch concentration) are carried forward unresolved, per the review's own explicit
+characterization as non-blocking — the first because the filing's own text already treats the
+deferral as a disclosed batching choice with an explicit future-revisit escape hatch, never a claim
+that the omitted pairs' conclusions are logically settled; the second because batch composition is a
+disclosed design choice, not a defect.
+
+Exact correction-delta file inventory: this file only (§D's `crypto`↔`fund_gld_defensive` bullet,
+§J's new checklist entry, this section).
+
 ## Decision
 
 ### A. What this filing authorizes — content population, not implementation
@@ -176,12 +212,19 @@ capital use, not a repetition:
 - **`crypto` ↔ `fund_gld_defensive`** (row 4) — both sleeves carry a real, sourced "alternative/
   inflation-hedge" narrative in their own governed evidence (`GLD.yaml`'s own `historical_
   inflation_sensitivity`/`historical_equity_drawdown_behavior` sub-fields; `BTC.yaml`'s own near-
-  identical `historically_mixed` drawdown characterization and independently-disclosed "digital
-  gold" inflation-narrative discussion). Without a direct comparison, a reader would be left to
-  infer a crypto-versus-GLD relationship transitively through two separate equity-anchored pairs —
-  exactly the kind of unsupported inference a first synthesis should close directly rather than
-  leave open. This is not one of the three pairs the directive floated as an example; it was
-  selected independently because it answers a question the equity-anchored batch cannot.
+  identical `historically_mixed` drawdown characterization and matching `historically_mixed_or_
+  inconsistent` inflation-narrative characterization). Without a direct comparison, a reader would
+  be left to infer a crypto-versus-GLD relationship transitively through two separate equity-anchored
+  pairs — exactly the kind of unsupported inference a first synthesis should close directly rather
+  than leave open. This is not one of the three pairs the directive floated as an example; it was
+  selected independently because it answers a question the equity-anchored batch cannot. **This
+  narrative match is BTC-specific, not sleeve-wide, and the future implementation must disclose that
+  explicitly**: `ETH.yaml`'s and `SOL.yaml`'s own `historical_inflation_sensitivity_narrative` sub-
+  fields both independently characterize as `historically_weakly_associated` — diverging from BTC's
+  and GLD's own matching `historically_mixed_or_inconsistent` value — exactly the kind of sub-field-
+  level divergence §4.2.1's roll-up rule already requires be individually visible, restated here as
+  a binding disclosure requirement on this specific relationship record's own `rationale`, not merely
+  left to the general rule (§J below).
 - **`cash_reserve` ↔ `debt_reduction`** (row 1) — the one non-equity pair with a directly documented,
   live capital-competition question in this repository's own governed doctrine: un-deployed cash
   could instead pay down margin debt, or margin debt could be preserved specifically to sustain the
@@ -326,6 +369,12 @@ smoothed over or treated as neutral:
   (`unable_to_determine`, per `XASSET-0011`'s own sealed record) while BTC/ETH reach a determined
   `historically_mixed` finding — this sub-field-level split must remain individually visible per
   §4.2.1, never collapsed into one crypto-wide flag.
+- `crypto`'s own `historical_inflation_sensitivity_narrative` sub-field is **not** uniform across the
+  sleeve: BTC alone matches `fund_gld_defensive`'s own `GLD.yaml` characterization
+  (`historically_mixed_or_inconsistent`), while ETH and SOL both independently characterize as
+  `historically_weakly_associated` — the row-4 `crypto`↔`fund_gld_defensive` relationship's own
+  `rationale` must disclose this divergence explicitly (per §D's own restated requirement above),
+  never generalize BTC's own narrative match to the sleeve as a whole.
 - The four `overlap_model` dimensions forced `not_yet_computable_interface_only`
   (`crypto_correlation_interface`, `defensive_offset_interface`, `geographic_currency_exposure`,
   `whole_portfolio_volatility_drawdown_concentration`) may never back an
