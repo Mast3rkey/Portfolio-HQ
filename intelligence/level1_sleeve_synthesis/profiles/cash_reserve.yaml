@@ -1,0 +1,72 @@
+schema_version: '1.0'
+sleeve_id: cash_reserve
+evidence_layer_references:
+- layer_name: functional_doctrine
+  module: functional_doctrine_validator.py
+  directory: intelligence/functional_doctrine
+  manifest_content_sha256: ea645f10873186d2e456b4f8dda7cdd8474a60bd248c25f3db4247fa0a34512a
+  sleeve_subject_scope:
+    referenced_subject_ids:
+    - CASH
+    - RESERVE
+    referenced_record_content_sha256:
+      CASH: 165e2de8bba5017b2619b3a6affd2d22babb65adef68970981d85c2a367c20a7
+      RESERVE: a06e477ea3b66cdcd1da941fd00b112ca45667dd4acc3c221202dc5821a27db3
+  as_of_note: Reflects functional_doctrine's own currently sealed cohort state as of this record's own
+    sealed_at date; a validator independently re-derives every fact live rather than trusting this note.
+- layer_name: economic_assessment
+  module: economic_assessment_validator.py
+  directory: intelligence/economic_assessment
+  manifest_content_sha256: ae60db29492146508defe0e2ef0314d4d875f4b1471dddc61db37b41740bee77
+  sleeve_subject_scope:
+    referenced_subject_ids:
+    - CASH_LIKE_CAPITAL
+    referenced_record_content_sha256:
+      CASH_LIKE_CAPITAL: bf9abf8876e0a9c88599636c37fe5183963c6521bb42fd4dbff143e3bcaacaaa
+  as_of_note: Reflects economic_assessment's own currently sealed cohort state as of this record's own
+    sealed_at date; a validator independently re-derives every fact live rather than trusting this note.
+economic_role_summary: The cash-and-reserve sleeve combines the account's legacy CASH and RESERVE capital-use
+  identifiers, which this repository has never established as economically distinct -- per an earlier,
+  explicitly directed provenance review, both remain treated as a single undifferentiated family here
+  rather than reopened. The CASH identifier carries its own determined functional-doctrine role; the RESERVE
+  identifier's own functional role remains an unresolved abstention, since no governing narrative beyond
+  its own bare label and a mechanical allocator fact could be located at the time its record was sealed.
+  A separate, combined economic-assessment record covers the family as a whole and reaches a determined
+  finding on its own deployability, even though that same record's own evidence-quality status is disclosed
+  as partial. This summary describes currently governed evidence only.
+evidence_coverage_profile: substantially_computed_with_disclosed_gaps
+functional_role_note: The CASH identifier's own functional-doctrine record characterizes its role as an
+  operational-liquidity function; the sibling identifier's own functional role remains undetermined --
+  both echoed here from their own sealed records, never independently re-derived, and never treated as
+  evidence that these capital-use identifiers differ in purpose.
+abstention_index:
+- source_layer: functional_doctrine
+  field_path: RESERVE.functional_role
+  value: unable_to_determine
+  reason: No governing narrative beyond this identifier's own bare label and a mechanical allocator fact
+    it shares with its sibling identifier could be located at the time its own record was sealed -- forcing
+    a value would risk misrepresenting an absence of evidence as a determined finding.
+- source_layer: functional_doctrine
+  field_path: CASH.economic_assessment_readiness
+  value: assessment_required
+  reason: No governed methodology exists anywhere in this repository to compare this identifier's own
+    opportunity cost against another capital-use type, sleeve, or instrument -- its own record states
+    that absence plainly rather than inventing a figure.
+- source_layer: functional_doctrine
+  field_path: RESERVE.economic_assessment_readiness
+  value: assessment_required
+  reason: The same governed-methodology gap named for the sibling identifier above applies identically
+    here, per this identifier's own sealed record.
+- source_layer: economic_assessment
+  field_path: evidence_quality_status
+  value: partial
+  reason: The combined family's own sealed economic-assessment record carries a disclosed partial evidence-quality
+    status. That governed evidence was reached through search aggregation rather than direct primary-document
+    inspection, per the economic-assessment framework's own disclosed access limitation.
+record_status: sealed
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0013
+drafting_session_or_shard_id: single-pass-level1-sleeve-synthesis-implementation
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/profiles/COHORT_MANIFEST.yaml#cash_reserve
+content_sha256: 387cb8943643af3538b6e36e733630438f35944c4365ea9a3fb7c7cd4c340c3e

@@ -10576,6 +10576,277 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-11"
+      - gate: xasset0013-post-merge-verification
+        description: >
+          A new, separate implementing session independently reconfirmed,
+          before beginning any Stage 3 work, that PR #302 (the
+          xasset0013-level1-synthesis-content-authorization gate above) is
+          fully merged: local HEAD, origin/main, and GitHub main all
+          confirmed identical at merge commit
+          cfea220c82bae310f2412804a204e85f257a2782 (commit message "Merge
+          pull request #302: XASSET-0013 WS-0014 Level 1 synthesis content
+          authorization"), zero open pull requests, decision catalog
+          independently rebuilt at 110 decisions/issues == (). XASSET-0013's
+          own Stage 2 content authorization is therefore fully merged and
+          effective — this workstream's own next substantive step is the
+          Stage 3 implementation the xasset0013-level1-synthesis-
+          implementation gate below records. Added by this session's own
+          Stage 3 implementation filing, independently re-verified, not
+          assumed.
+        pr: 302
+        status: complete
+        date: "2026-08-11"
+      - gate: xasset0013-level1-synthesis-implementation
+        description: >
+          The Stage 3 implementation XASSET-0013 authorized: populates
+          exactly the six sleeve_profile records and seven sleeve_
+          relationship records XASSET-0013 SS B/SS C name, plus both
+          COHORT_MANIFEST.yaml files, a single dedicated validator module
+          (level1_sleeve_synthesis_validator.py, covering both record
+          types — the implementing session's own justified choice per
+          XASSET-0012 SS9's explicit deferral, since the two schemas are
+          structurally coupled via profile-hash cross-references), and its
+          own focused/adversarial test suite
+          (test_level1_sleeve_synthesis_validator.py). Every evidence_
+          coverage_profile value and every abstention_index entry is
+          mechanically, live-derived from the sleeve's own currently
+          sealed source layers, never self-declared; every structural
+          reference hash (manifest-level, sleeve_subject_scope per-subject,
+          profile-to-profile, and overlap-model-dimension) is independently
+          recomputed at validation time. Performed XASSET-0013 SS H's own
+          mandatory pre-push eligibility-language-paraphrase adversarial
+          probe: found seven genuine ordinary-paraphrase gaps in the
+          carried-forward NOTE's own vulnerability class and closed them
+          with the smallest bounded correction (eight new patterns appended
+          to the existing closed SS8.1 phrase list, disclosed in the
+          validator module's own "Round-3 additions" comment and this
+          session's own test-suite docstring) — a probe result, not a
+          methodology redesign. Also disclosed and closed, within this
+          first implementation's own already-authorized scope of correctly
+          building XASSET-0012 SS9's own specified scans for the first
+          time (not a hardening of any prior accepted version): a "deserves
+          capital" gap in the same eligibility boundary, a sizing-
+          recommendation-shape gap ("the target... should be increased")
+          and a spelled-out "percent of the book/portfolio" gap, both in
+          the Level 1/Level 2 leakage (policy-leak) scan SS9 item 9 already
+          requires. No sleeve weight, instrument weight, portfolio in/out
+          decision, or Stage 4 policy adoption is produced by this filing —
+          descriptive, governed evidence findings only. This session does
+          not review its own PR, mark it ready, merge it, or post principal
+          acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-11"
+      - gate: xasset0013-level1-synthesis-implementation-bounded-correction
+        description: >
+          A bounded correction to PR #303, applied after an independent
+          exact-head review (posted as a PR comment, same-account platform
+          restriction) found one MAJOR and three MINOR findings. MAJOR:
+          DEBT_REDUCTION's own sealed functional_doctrine record separately
+          abstains on freshness_state.status
+          (unable_to_determine_freshness), and that sub-field abstention
+          was silently missing from debt_reduction.yaml's own
+          abstention_index, contrary to XASSET-0012 SS4.2.1's "must never
+          disappear behind a sealed parent record" rule — the live
+          coverage-computation function itself never scanned this field
+          either, so the mechanical roll-up agreed with the omission
+          rather than catching it. Fixed at the root: _compute_debt_
+          reduction_coverage() now scans freshness_state.status, the
+          matching abstention_index entry was added to the real sealed
+          record, and its content_sha256 (plus the two relationship
+          records citing it and both COHORT_MANIFEST.yaml files) were
+          recomputed and propagated. MINOR-1 (etf_classification's own
+          not_yet_measured tracking_quality_category not disclosed in the
+          fund sleeves' abstention_index) was independently reconfirmed as
+          a disclosed, inherited upstream ambiguity already recorded in
+          etf_classification_validator.py's own docstring — not a defect
+          this implementation introduced, and not corrected here; flagged
+          for a possible future XASSET-0002 amendment instead. MINOR-2/3/4
+          (further eligibility-language paraphrases, comparative-
+          superiority idioms, and spelled-out cardinal numbers eleven
+          through ninety not caught by the pre-push scans) were each
+          closed with the same smallest-bounded-correction discipline
+          already used for the pre-push probe itself: new patterns
+          appended to the existing closed pattern lists, plus regression
+          tests (including two new tests pinning the MAJOR fix on the real
+          debt_reduction.yaml record, one asserting the entry is present,
+          one asserting its removal is caught). No methodology redesign,
+          no new sleeve, no new relationship pair, no sleeve weight,
+          instrument weight, portfolio in/out decision, or Stage 4 policy
+          adoption. Re-ran the full validation suite at the corrected head:
+          the dedicated validator (OK, 7 profile + 8 relationship
+          results), all 17 pre-existing repository validators (clean),
+          442 focused/adversarial tests (up from 403), the decision-
+          catalog test suite (95 passed, catalog unaffected — no new
+          governance decision filed by this correction), YAML/YML+JSON
+          parsing (0 errors across 274/178 files), git diff --check
+          (clean), and the full repository pytest suite once. This session
+          does not review its own PR, mark it ready, merge it, or post
+          principal acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-11"
+      - gate: xasset0013-level1-synthesis-implementation-bounded-correction-round-2
+        description: >
+          A second bounded correction to PR #303, applied after an
+          independent exact-head delta review (posted as a PR comment,
+          same-account platform restriction) reproduced the first
+          correction's own MAJOR-1 fix as genuinely resolved, reproduced
+          MINOR-2/3/4 as resolved for their specific bypasses, and
+          reconfirmed MINOR-1 as correctly left uncorrected — but performed
+          the review's own mandated global child-abstention class check
+          across every sleeve and found one new MAJOR: equity's own scoped
+          valuation_evidence layer carries real, per-company segment_
+          evidence (13/27) and market_observed_evidence (3/27)
+          abstentions that _compute_equity_coverage() never scanned at
+          all — the identical XASSET-0012 SS4.2.1 failure mode as the
+          first MAJOR, found again at larger scale. Fixed the same way:
+          _compute_equity_coverage() now scans both domains' own
+          abstention_reason field per record and emits one aggregated
+          finding per domain (matching the function's own existing
+          aggregated-by-field-path style for its other three findings,
+          not a new per-record style — the review itself noted either
+          shape is consistent with SS4.2.1 as long as nothing silently
+          vanishes); the two matching abstention_index entries were added
+          to the real sealed equity.yaml record, and its content_sha256
+          (plus all five relationship records citing it and both
+          COHORT_MANIFEST.yaml files) were recomputed and propagated.
+          Also, while resolving the review's fresh MINOR-2 probe (five
+          further eligibility-language paraphrases not caught by the
+          round-3/4 scan — "belongs among portfolio holdings," "should
+          stay in the investable set," "ought to remain a holding,"
+          "remove...from holdings," "should no longer be held"), this
+          session's own adversarial probing of the new "remove...from
+          holdings" pattern discovered — before shipping it — that both it
+          and the pre-existing round-3 "exclude...from holdings" pattern
+          would misfire on a legitimate structural citation of this
+          repository's own central holdings.yaml filename ("removed from
+          holdings.yaml"); both patterns were given a (?!\.yaml) guard
+          before any test asserted them clean, with dedicated false-
+          positive-guard regression tests added. No methodology redesign,
+          no new sleeve, no new relationship pair, no sleeve weight,
+          instrument weight, portfolio in/out decision, or Stage 4 policy
+          adoption. Re-ran the full validation suite at the corrected
+          head: the dedicated validator (OK, 7 profile + 8 relationship
+          results), all 17 pre-existing repository validators (clean), 464
+          focused/adversarial tests (up from 442), the decision-catalog
+          test suite (95 passed, catalog unaffected), YAML/YML+JSON
+          parsing (0 errors across 274/178 files), git diff --check
+          (clean), an explicit confirmation that every changed intelligence/
+          file sits under intelligence/level1_sleeve_synthesis/ (no other
+          sealed record touched), and the full repository pytest suite
+          once. This session does not review its own PR, mark it ready,
+          merge it, or post principal acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-11"
+      - gate: xasset0013-level1-synthesis-bounded-same-class-audit
+        description: >
+          A same-account orchestration task requested this exact round-2
+          correction a second time, anchored to the pre-correction head
+          (e1d8f174d...) and citing the identical review
+          (pullrequestreview-4907960177) already resolved by commit
+          07cd955. Independently reverified live state before any action:
+          PR #303's head was already 07cd955 (not the task's assumed
+          pre-correction head), so the underlying MAJOR fix was not
+          reapplied — redoing it would have produced a duplicate,
+          conflicting mutation. Instead performed the deeper bounded
+          same-class audit the task's own step 8 requested, which the
+          round-2 commit had not yet explicitly disclosed: read every real
+          sealed record's full field set and abstention_index content
+          across all schemas each of the six coverage functions scopes
+          (valuation_evidence, valuation_archetype, valuation_results,
+          classification for equity; etf_classification, instrument_
+          economic_assessment for fund_broad_market/fund_gld_defensive/
+          crypto; functional_doctrine, economic_assessment for fund_gld_
+          defensive/cash_reserve/debt_reduction; crypto_classification for
+          crypto). Confirmed valuation_evidence's own abstention_reason-
+          bearing domains are exactly the three now fully scanned
+          (discount_rate_evidence, segment_evidence, market_observed_
+          evidence) — no fourth domain exists. Confirmed classification's
+          own only abstention-shaped field is capital_priority.status
+          (already scanned); economic_role never abstains and risk_
+          concentration.unmeasured_flag is a structural cluster/issuer-
+          lookthrough/relationship-coverage flag, not an evidence
+          abstention of the same kind, and is already the overlap-model
+          layer's own separate concern. Confirmed valuation_archetype
+          carries zero live abstentions (evidence_gap_statement empty on
+          all 27, no unable_to_determine_archetype anywhere) and
+          valuation_results' result_status is 18/9 completed/partial with
+          zero unable_to_determine — the existing == "partial" check is
+          already exhaustive against live data (widening it to
+          != "completed" would be a speculative robustness change with no
+          live behavioral effect, not a found defect, so left untouched
+          per the task's own scope-creep prohibition). Confirmed etf_
+          classification's, instrument_economic_assessment's, economic_
+          assessment's, and crypto_classification's own top-level
+          abstention_index fields are empty everywhere except DEBT_
+          REDUCTION (fixed round 1), RESERVE (already scanned), and SOL's
+          drawdown abstention (already scanned) — no further gap anywhere.
+          Verdict: zero additional same-class omissions found; no further
+          code change required. CI independently reconfirmed green at the
+          current head (07cd955, workflow run 31509105727, completed/
+          success). This is a disclosure-only entry — no functional code
+          change, no new profile/relationship, no re-derivation of any
+          already-corrected hash. This session does not review its own
+          PR, mark it ready, merge it, or post principal acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-11"
+      - gate: xasset0013-level1-synthesis-schema-level-coverage-extension
+        description: >
+          A third independent exact-head delta review (pullrequestreview-
+          4907960177, round 2) found the prior round's own bounded-same-
+          class-audit disclosure inaccurate at the schema level, though
+          accurate against live data: valuation_evidence_validator.py's
+          own closed-vocabulary schema permits abstention_reason on six
+          domains, not the three the audit claimed exhaustive
+          (financial_evidence and peer_set_evidence and scenario_evidence
+          were never scanned); functional_doctrine_validator.py's own
+          schema permits an identical abstention on liquidity_character
+          and capital_preservation_character, and functional_role/
+          freshness_state were each only scanned for a subset of their
+          own four real records; instrument_economic_assessment_
+          validator.py's own schema permits an identical abstention on
+          historical_inflation_sensitivity_narrative and cost_and_
+          tracking_quality_economic_significance, neither scanned.
+          Independently reconfirmed every one of these fields is 0/N
+          live-abstained across the real corpus today (0/27, 0/4, 0/6 as
+          applicable) before making any change -- no sealed record's
+          declared abstention_index was ever actually wrong, and closing
+          this class required no hash cascade on any real profile or
+          relationship. Extended _compute_equity_coverage(),
+          _compute_cash_reserve_coverage(),
+          _compute_fund_gld_defensive_coverage(),
+          _compute_debt_reduction_coverage(), _compute_crypto_coverage(),
+          and _compute_fund_broad_market_coverage() to scan every one of
+          these fields, using the identical per-record abstention_reason/
+          closed-vocabulary-token presence pattern already used four times
+          in this PR -- not a hardcoded ticker list, not a hardcoded
+          count. Added 13 new focused/synthetic regression tests (one
+          positive-detection test per newly-scanned field via a disposable
+          tmp_path fixture, one confirming a determined field produces no
+          finding, one confirming the real repository's own directory
+          scan stays clean, and one confirming zero live population for
+          every new field across all six sleeves) -- 477 focused tests
+          total, up from 464. No abstention_index entry, hash, or
+          evidence_coverage_profile value changed on any real sealed
+          record; no methodology redesign; no new sleeve, relationship,
+          sleeve weight, or portfolio in/out decision. Re-ran the full
+          validation suite: the dedicated validator (OK, 7 profile + 8
+          relationship results, unchanged), all 17 pre-existing repository
+          validators (clean), 477 focused tests, the decision-catalog
+          test suite (95 passed, catalog unaffected), YAML/YML+JSON
+          parsing (0 errors across 274/178 files), git diff --check
+          (clean), an explicit confirmation that every changed
+          intelligence/ file still sits under intelligence/level1_sleeve_
+          synthesis/ with zero data-record byte change (only the
+          validator and test modules grew), and the full repository
+          pytest suite once. This session does not review its own PR,
+          mark it ready, merge it, or post principal acceptance.
+        pr: null
+        status: in_progress
+        date: "2026-08-11"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -10772,6 +11043,30 @@ workstreams:
       consolidation question, a future cross-coin correlation study, any
       actual Level 1 sleeve-synthesis content, and steps 9 through 13
       remain wholly unauthorized, unchanged.
+
+
+      Update, a later session, 2026-08-11: XASSET-0013 (PR #302,
+      Stage 2 content authorization naming the exact first six-profile/
+      seven-relationship population) independently confirmed merged —
+      see the xasset0013-post-merge-verification gate above. This same
+      session then performed the Stage 3 implementation it authorized
+      (the xasset0013-level1-synthesis-implementation gate above, draft,
+      unmerged): all six sleeve_profile records and all seven authorized
+      sleeve_relationship records are now sealed, plus both
+      COHORT_MANIFEST.yaml files, level1_sleeve_synthesis_validator.py,
+      and its own focused/adversarial test suite — requiring its own full
+      independent exact-head review, any required bounded correction,
+      principal acceptance, merge, and post-merge verification before
+      that gate may be marked complete; this session does not review its
+      own work, mark it ready, merge it, or post principal acceptance.
+      Once this PR merges, XASSET-0012/XASSET-0013's own Level 1
+      sleeve-synthesis content step is complete for its own bounded first
+      population. No sleeve weight, instrument weight, portfolio in/out
+      decision, or Stage 4 policy adoption is produced. An eighth
+      sleeve_relationship pair (of the remaining eight deferred by
+      class), Level 2 instrument-level design, and every other item this
+      entry's own roadmap_preservation field names remain wholly
+      unauthorized, unchanged.
     blocker: >
       Step 1 (contender normalization plus research-readiness screening,
       per XASSET-0001 §J's own step numbering — see this entry's
@@ -10958,9 +11253,9 @@ workstreams:
       contender-registry sweep beyond CONTENDER-0003's own two-name pilot
       all remain blocked on their own future, separate, explicit
       principal authorization each.
-    active_branch: claude/xasset-0013-stage-2-auth-8al8kg
+    active_branch: claude/level1-synthesis-implementation-qzgpua
     active_pr: null
-    last_verified_main_sha: 79a611cf03350e5d0688eb6b0823f7c0f043b2fe
+    last_verified_main_sha: cfea220c82bae310f2412804a204e85f257a2782
     last_verified_date: "2026-08-11"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
