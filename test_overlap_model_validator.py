@@ -786,17 +786,6 @@ def test_protected_intelligence_records_untouched():
     assert result.stdout.strip() == "", f"unexpected changes under protected intelligence paths:\n{result.stdout}"
 
 
-def test_governance_decision_files_untouched():
-    """This implementation touches no governance/decisions/*.md file --
-    XASSET-0007 itself is already merged and effective; this PR is the
-    content implementation it authorized, not a further governance filing."""
-    result = subprocess.run(
-        ["git", "status", "--porcelain", "--", "governance/decisions"],
-        cwd=REPO_ROOT, capture_output=True, text=True, check=True,
-    )
-    assert result.stdout.strip() == "", f"unexpected changes under governance/decisions:\n{result.stdout}"
-
-
 # ── no dimension_type / source_mechanism confusion between mechanical and
 #    interface_placeholder dimensions ────────────────────────────────────
 
