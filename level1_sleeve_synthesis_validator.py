@@ -2172,6 +2172,1408 @@ def validate_sleeve_relationship_directory(records_dir: Path, *, repo_root: Path
     return DirectoryValidationResult(valid=all(r.valid for r in results), results=results)
 
 
+# =============================================================================
+# STAGE 4 -- policy_adoption (XASSET-0014 Stage 4a policy-adoption
+# methodology, XASSET-0015 Stage 4b content authorization). This section is
+# a "clearly separated Stage 4 section of the existing
+# level1_sleeve_synthesis_validator.py module" -- the implementing session's
+# own choice, justified per XASSET-0014 SS G.O/SS21's own preamble deferral
+# (mirroring XASSET-0006 SS A point 3's and XASSET-0013 SS K's identical
+# deferral): the two record types already sharing this module (sleeve_
+# profile, sleeve_relationship) and policy_adoption records are tightly
+# coupled -- every policy_adoption record structurally references exactly
+# one sleeve_profile record and every sleeve_relationship record naming its
+# own sleeve, and reuses this module's own SLEEVE_IDS, AUTHORIZED_
+# RELATIONSHIP_PAIRS, canonical_record_hash(), _read_yaml(), _reject_
+# unknown_keys(), _prohibited_content_scan(), _numeric_leakage_scan(),
+# _comparative_superiority_scan(), _scan_key_names_recursive(), _scan_
+# contender_citation(), and _live_profile() helpers wholesale. Splitting
+# this into a fourth sibling module would either duplicate all of that
+# shared logic or force a cross-file import between two otherwise-sibling
+# modules over the same six-sleeve/seven-relationship population -- the
+# identical reasoning XASSET-0012's own module docstring already gives for
+# combining sleeve_profile and sleeve_relationship in one file, extended
+# here to the third, still more tightly coupled record type.
+#
+# Zero import relationship with allocate.py or margin_state.py in either
+# direction -- unchanged from the rest of this module.
+# =============================================================================
+
+_POLICY_ADOPTION_DIR = "intelligence/level1_sleeve_synthesis/policy_adoption"
+
+# XASSET-0014 SS3, closed three-value Axis A vocabulary.
+FUNCTION_CONFIRMED_DISTINCT = "function_confirmed_distinct"
+FUNCTION_STATUS_UNRESOLVED = "function_status_unresolved"
+AXIS_A_UNABLE_TO_DETERMINE = "unable_to_determine"
+
+_PORTFOLIO_FUNCTION_STATUS_VALUES = frozenset({
+    FUNCTION_CONFIRMED_DISTINCT, FUNCTION_STATUS_UNRESOLVED, AXIS_A_UNABLE_TO_DETERMINE,
+})
+
+# XASSET-0014 SS4, closed two-value Axis B vocabulary -- no abstention value
+# by design (SS4's own "a pure function of an already-fully-determined
+# input needs none" reasoning).
+ELIGIBLE_FOR_TARGET_CONSIDERATION = "eligible_for_target_consideration"
+NOT_YET_ELIGIBLE = "not_yet_eligible"
+
+_CAPITAL_ELIGIBILITY_VALUES = frozenset({ELIGIBLE_FOR_TARGET_CONSIDERATION, NOT_YET_ELIGIBLE})
+
+# XASSET-0014 SS5, closed three-value Axis C vocabulary.
+SIZING_READY = "sizing_ready"
+SIZING_CONDITIONALLY_READY = "sizing_conditionally_ready"
+SIZING_BLOCKED = "sizing_blocked"
+
+_SIZING_READINESS_VALUES = frozenset({SIZING_READY, SIZING_CONDITIONALLY_READY, SIZING_BLOCKED})
+
+# XASSET-0014 SS5.1, closed three-value relationship-coverage-ledger vocabulary.
+SEALED_DETERMINED = "sealed_determined"
+SEALED_UNRESOLVED = "sealed_unresolved"
+DEFERRED_DISCLOSED = "deferred_disclosed"
+
+_COVERAGE_STATE_VALUES = frozenset({SEALED_DETERMINED, SEALED_UNRESOLVED, DEFERRED_DISCLOSED})
+
+# XASSET-0013 SS E's own closed, three-class deferred-pair vocabulary.
+_DEFERRAL_CLASS_VALUES = frozenset({"class_1", "class_2", "class_3"})
+
+# XASSET-0014 SS14/SS21's own closed blocking_evidence reason-type vocabulary
+# -- "one entry per contributing reason (a failed axis, a specific unable_
+# to_determine relationship, a specific secondary condition, a specific
+# deferred pair)", mapped to five closed, machine-checkable tokens.
+_BLOCKING_REASON_TYPES = frozenset({
+    "axis_a_unresolved", "axis_b_not_eligible", "sealed_unresolved_relationship",
+    "deferred_relationship_pair", "secondary_condition_present",
+})
+
+# XASSET-0014 SS3.2 Basis 3 -- XASSET-0012 SS2's own fixed sleeve-to-asset_
+# class mapping table, reproduced here as a governance-document fact (never
+# live-recomputed from any sealed Intelligence record -- only its own live
+# targets.yaml existence is checked, per SS3.2's own "structurally
+# independent of evidence maturity" design). A sleeve mapped to () has no
+# targets.yaml row at all (debt_reduction) -- Basis 3 is unavailable for it,
+# by construction, not by any live-derived fact.
+_BASIS3_ASSET_CLASSES: dict[str, tuple[str, ...]] = {
+    EQUITY: ("equity",),
+    FUND_BROAD_MARKET: ("fund",),
+    FUND_GLD_DEFENSIVE: ("fund",),
+    CRYPTO: ("crypto",),
+    CASH_RESERVE: ("cash", "reserve"),
+    DEBT_REDUCTION: (),
+}
+
+# Basis 3 is additionally scoped to specific tickers for the two sleeves
+# that share the "fund" asset_class (fund_broad_market: SPY/VEA/VWO;
+# fund_gld_defensive: GLD) -- mirrors this module's own _LAYER_REGISTRY
+# sleeve_subjects scoping for etf_classification (SS4.1.1), reused here for
+# structural-basis scoping rather than invented fresh.
+_BASIS3_TICKER_SCOPE: dict[str, tuple[str, ...] | None] = {
+    EQUITY: None,
+    FUND_BROAD_MARKET: ("SPY", "VEA", "VWO"),
+    FUND_GLD_DEFENSIVE: ("GLD",),
+    CRYPTO: None,
+    CASH_RESERVE: None,
+    DEBT_REDUCTION: None,
+}
+
+# XASSET-0013 SS E's own exact, closed eight-pair deferred-relationship set,
+# by deferral class -- together with AUTHORIZED_RELATIONSHIP_PAIRS (the
+# sealed seven), this is the complete, closed C(6,2) = 15-pair population
+# with zero gap and zero overlap, independently asserted below.
+DEFERRED_PAIRS: dict[tuple[str, str], str] = {
+    (FUND_BROAD_MARKET, FUND_GLD_DEFENSIVE): "class_1",
+    (CRYPTO, FUND_BROAD_MARKET): "class_1",
+    (CASH_RESERVE, FUND_BROAD_MARKET): "class_1",
+    (DEBT_REDUCTION, FUND_BROAD_MARKET): "class_1",
+    (CASH_RESERVE, FUND_GLD_DEFENSIVE): "class_2",
+    (DEBT_REDUCTION, FUND_GLD_DEFENSIVE): "class_2",
+    (CASH_RESERVE, CRYPTO): "class_3",
+    (CRYPTO, DEBT_REDUCTION): "class_3",
+}
+for _a, _b in DEFERRED_PAIRS:
+    assert _a < _b, f"DEFERRED_PAIRS entry not alphabetical: {_a!r}, {_b!r}"
+del _a, _b
+
+_ALL_FIFTEEN_PAIRS = {
+    (a, b)
+    for a in sorted(SLEEVE_IDS)
+    for b in sorted(SLEEVE_IDS)
+    if a < b
+}
+assert len(_ALL_FIFTEEN_PAIRS) == 15, "C(6,2) must equal 15"
+assert set(AUTHORIZED_RELATIONSHIP_PAIRS) & set(DEFERRED_PAIRS) == set(), (
+    "sealed and deferred pairs must not overlap"
+)
+assert set(AUTHORIZED_RELATIONSHIP_PAIRS) | set(DEFERRED_PAIRS) == _ALL_FIFTEEN_PAIRS, (
+    "sealed (7) + deferred (8) must account for the full closed 15-pair population with zero gap"
+)
+
+
+def _all_pairs_touching(sleeve_id: str) -> list[tuple[str, str]]:
+    """The sleeve's own five possible pairs (sealed + deferred), sorted."""
+    return sorted(p for p in _ALL_FIFTEEN_PAIRS if sleeve_id in p)
+
+
+def _other_sleeve_in_pair(pair: tuple[str, str], sleeve_id: str) -> str:
+    a, b = pair
+    return b if a == sleeve_id else a
+
+
+# -- Basis 1 (relationship-record finding) -----------------------------------
+
+def compute_basis1_findings(
+    sleeve_id: str, repo_root: Path | None, *,
+    relationship_data: dict[tuple[str, str], dict] | None = None,
+) -> list[tuple[tuple[str, str], str]]:
+    """XASSET-0014 SS3.2 Basis 1 -- every sealed sleeve_relationship record
+    naming sleeve_id whose own primary_disposition is role_preserving or
+    coexistence_supported (never stronger_evidence_maturity, by
+    construction -- SS6). Reads primary_disposition only, NEVER favored_
+    sleeve_id -- trivially immune to a favored_sleeve_id-masking transform,
+    the structural guarantee behind the SS6/SS21 item 5 counterfactual-
+    masking non-influence proof.
+
+    relationship_data, when supplied, overrides live disk reads with an
+    in-memory dict[pair] -> parsed record data -- used only by the
+    counterfactual-masking / presence-independent regression-guard test
+    harness (SS21 items 5/24), never by ordinary validation, which always
+    reads live from repo_root."""
+    findings: list[tuple[tuple[str, str], str]] = []
+    for pair in AUTHORIZED_RELATIONSHIP_PAIRS:
+        if sleeve_id not in pair:
+            continue
+        if relationship_data is not None:
+            data = relationship_data.get(pair)
+        elif repo_root is not None:
+            a, b = pair
+            data, err = _read_yaml(repo_root / _RELATIONSHIPS_DIR / f"{a}_{b}.yaml")
+            if err or not isinstance(data, dict):
+                data = None
+        else:
+            data = None
+        if not isinstance(data, dict):
+            continue
+        disposition = data.get("primary_disposition")
+        if disposition in (ROLE_PRESERVING, COEXISTENCE_SUPPORTED):
+            findings.append((pair, disposition))
+    return findings
+
+
+# -- Basis 3 (structural sleeve-definition basis) -----------------------------
+
+def compute_basis3_available(sleeve_id: str, repo_root: Path | None) -> bool:
+    """XASSET-0014 SS3.2 Basis 3 -- a purely structural, categorical,
+    mechanically-checkable existence check against the live targets.yaml
+    destination list, scoped to this sleeve's own fixed asset_class/ticker
+    mapping (never an individual destination row's own target_pct, weight,
+    or rank). Reads NO sleeve_relationship record of any kind -- trivially
+    immune to a favored_sleeve_id-masking transform by construction, since
+    the function signature does not even accept relationship data."""
+    classes = _BASIS3_ASSET_CLASSES.get(sleeve_id, ())
+    if not classes or repo_root is None:
+        return False
+    data, err = _read_yaml(repo_root / "targets.yaml")
+    if err or not isinstance(data, dict):
+        return False
+    destinations = data.get("destination")
+    if not isinstance(destinations, list):
+        return False
+    scope = _BASIS3_TICKER_SCOPE.get(sleeve_id)
+    for row in destinations:
+        if not isinstance(row, dict):
+            continue
+        if row.get("asset_class") not in classes:
+            continue
+        if scope is not None and row.get("ticker") not in scope:
+            continue
+        return True
+    return False
+
+
+# -- Axis B (mechanical, zero drafting discretion) ----------------------------
+
+def compute_axis_b(evidence_coverage_profile: object) -> str | None:
+    """XASSET-0014 SS4 -- a pure, total function of evidence_coverage_
+    profile. Returns None only if the input itself is not one of the four
+    closed evidence_coverage_profile values (a hard schema failure
+    upstream, never silently mapped to a default)."""
+    if evidence_coverage_profile in (FULLY_COMPUTED, SUBSTANTIALLY_COMPUTED_WITH_DISCLOSED_GAPS):
+        return ELIGIBLE_FOR_TARGET_CONSIDERATION
+    if evidence_coverage_profile in (MATERIALLY_INCOMPLETE, FORCED_ABSTENTION):
+        return NOT_YET_ELIGIBLE
+    return None
+
+
+# -- Relationship-coverage ledger (Axis C input, SS5.1) -----------------------
+
+@dataclass(frozen=True)
+class _LedgerEntry:
+    other_sleeve_id: str
+    pair: tuple[str, str]
+    coverage_state: str
+    deferral_class: str | None
+    primary_disposition: str | None
+    has_secondary_conditions: bool
+
+
+def compute_live_relationship_ledger(
+    sleeve_id: str, repo_root: Path | None, *,
+    relationship_data: dict[tuple[str, str], dict] | None = None,
+) -> list[_LedgerEntry]:
+    """XASSET-0014 SS5.1 -- the sleeve's own exactly-five-pair coverage
+    ledger, mechanically cross-referenced against the closed sealed-seven /
+    deferred-eight population (never a sixth coverage state, never a pair
+    outside that closed 15-pair set -- DEFERRED_PAIRS/AUTHORIZED_
+    RELATIONSHIP_PAIRS's own module-load-time assertions already guarantee
+    there is no such pair to encounter)."""
+    entries: list[_LedgerEntry] = []
+    for pair in _all_pairs_touching(sleeve_id):
+        other = _other_sleeve_in_pair(pair, sleeve_id)
+        if pair in DEFERRED_PAIRS:
+            entries.append(_LedgerEntry(
+                other_sleeve_id=other, pair=pair, coverage_state=DEFERRED_DISCLOSED,
+                deferral_class=DEFERRED_PAIRS[pair], primary_disposition=None,
+                has_secondary_conditions=False,
+            ))
+            continue
+        # pair in AUTHORIZED_RELATIONSHIP_PAIRS (the module-load-time
+        # assertions above guarantee no third possibility exists).
+        if relationship_data is not None:
+            data = relationship_data.get(pair)
+        elif repo_root is not None:
+            a, b = pair
+            data, err = _read_yaml(repo_root / _RELATIONSHIPS_DIR / f"{a}_{b}.yaml")
+            if err or not isinstance(data, dict):
+                data = None
+        else:
+            data = None
+        if not isinstance(data, dict):
+            entries.append(_LedgerEntry(
+                other_sleeve_id=other, pair=pair, coverage_state=SEALED_DETERMINED,
+                deferral_class=None, primary_disposition=None, has_secondary_conditions=False,
+            ))
+            continue
+        disposition = data.get("primary_disposition")
+        secondary = data.get("secondary_conditions")
+        has_secondary = isinstance(secondary, list) and len(secondary) > 0
+        state = SEALED_UNRESOLVED if disposition == RELATIONSHIP_ABSTENTION else SEALED_DETERMINED
+        entries.append(_LedgerEntry(
+            other_sleeve_id=other, pair=pair, coverage_state=state,
+            deferral_class=None, primary_disposition=disposition,
+            has_secondary_conditions=has_secondary,
+        ))
+    return entries
+
+
+def compute_expected_sizing_readiness(
+    axis_a: str | None, axis_b: str | None, ledger: list[_LedgerEntry],
+) -> str:
+    """XASSET-0014 SS5's own three-way mechanical rule, exactly as
+    corrected by SS5.1, including the closed-vocabulary partition this
+    module treats as internally coherent (SS22 Case A: a sleeve with zero
+    deferred_disclosed pairs but at least one sealed_determined pair
+    carrying a disclosed secondary_conditions entry lands on sizing_
+    conditionally_ready, never sizing_ready -- a secondary condition on an
+    otherwise-fully-sealed ledger is itself one of sizing_conditionally_
+    ready's own three named triggering conditions, per SS5 point 2, so
+    sizing_ready's own point-1 conjunction is read as requiring, in
+    addition to its own explicitly stated four conditions, that no
+    sizing_conditionally_ready trigger condition is independently present
+    -- the only reading that makes the three-value vocabulary a coherent
+    partition rather than an overlapping ambiguity)."""
+    if axis_a != FUNCTION_CONFIRMED_DISTINCT or axis_b != ELIGIBLE_FOR_TARGET_CONSIDERATION:
+        return SIZING_BLOCKED
+    if any(e.coverage_state == SEALED_UNRESOLVED for e in ledger):
+        return SIZING_BLOCKED
+    if any(e.coverage_state == DEFERRED_DISCLOSED for e in ledger):
+        return SIZING_CONDITIONALLY_READY
+    if any(e.coverage_state == SEALED_DETERMINED and e.has_secondary_conditions for e in ledger):
+        return SIZING_CONDITIONALLY_READY
+    return SIZING_READY
+
+
+# -- Stage 4's own materially separate scans ----------------------------------
+#
+# XASSET-0014 SS21 item 13 -- "Stage 4's own bounded-conclusion scan,
+# materially different from Stage 1-3's SS8.1 blanket eligibility-language
+# ban": Stage 4's schema is explicitly designed to represent a bounded,
+# closed-vocabulary role/eligibility/readiness judgment (unlike Stage 1-3,
+# which decides no eligibility at all), so _eligibility_language_scan()
+# above is deliberately NOT reused against Stage 4 free text -- doing so
+# would make this schema's own boundary-disclosure prose ("this sleeve
+# remains eligible for target consideration") unusable in its own required
+# rationale fields. What remains barred, even in Stage 4 free text: (a) any
+# numeric magnitude (SS21 item 7, reused via _numeric_leakage_scan); (b)
+# trade/execution-directive language or a claim that a Stage 4 finding
+# alone triggers deployment/an allocation check/Level 2 selection; (c) free
+# text asserting a conclusion stronger than the record's own populated
+# closed-vocabulary fields support (a fabricated fourth Axis A value, a
+# permanent/irrevocable framing contradicting SS7's "never a permanent
+# lock" rule); (d) individual-instrument eligibility or target-weight
+# leakage (the Level 1/Level 2 boundary, SS12/SS21 item 9).
+
+# MINOR-4 correction (independent exact-head review pullrequestreview-
+# 4911497398): the original list caught only the forward word order
+# ("X triggers an allocation check") and only the qualified adjective
+# forms ("fully redundant", "fully subsumed by", "permanently"), missing
+# passive/reversed word order ("an allocation check is triggered by X")
+# and the bare, unqualified adjective forms ("this determination is
+# permanent", "this sleeve is redundant"). Both gaps are closed below
+# without weakening or removing any existing pattern -- purely additive.
+# The bare "\bis\s+permanent\b"/"\bis\s+redundant\b" additions are
+# deliberately narrower than a bare "\bpermanent\b"/"\bredundant\b" scan
+# would be: this module's own real sealed corpus and test suite both rely
+# on legitimate, boundary-preserving disclosure language that contains
+# the bare word without asserting it ("never a permanent lock -- a future
+# re-population would recompute this from scratch", SS7's own explicit
+# rule) -- a bare-word scan would flag that disclosure itself as an
+# overclaim, which is exactly backwards. Requiring the assertive verb
+# ("is permanent"/"is redundant") immediately adjacent keeps the existing
+# TestBoundedConclusionScan.test_never_a_permanent_lock_disclosure_
+# language_passes false-positive guard clean while still catching the
+# review's own literal bypass example.
+_STAGE4_OVERCLAIM_PATTERNS = [
+    re.compile(p, re.IGNORECASE)
+    for p in [
+        r"\bpermanently\b",
+        r"\birrevocable\b",
+        r"\birrevocably\b",
+        r"\blocked\s+in\b",
+        r"\bfixed\s+forever\b",
+        r"\bcan\s*not\s+(be\s+)?(revisited|reopened|reconsidered|changed)\b",
+        r"\bcannot\s+(be\s+)?(revisited|reopened|reconsidered|changed)\b",
+        r"\bfully\s+(redundant|subsumed\s+by|replaced\s+by)\b",
+        r"\bis\s+redundant\s+with\b",
+        r"\btriggers?\s+(an?\s+)?(allocation\s+check|deployment|level\s*2\s+(instrument\s+)?selection)\b",
+        r"\bautomatically\s+(deploys?|allocates?|triggers?)\b",
+        r"\bthis\s+(finding|record)\s+alone\s+(triggers?|authorizes?|deploys?)\b",
+        # -- MINOR-4 additions ------------------------------------------
+        r"\b(allocation\s+check|deployment|level\s*2\s+(instrument\s+)?selection)\s+(is|was|gets?|remains?)\s+triggered\s+by\b",
+        r"\btriggered\s+by\s+(this\s+)?(sleeve|finding|record)('s)?\s+own\s+finding\s+alone\b",
+        r"\bis\s+permanent\b",
+        r"\bis\s+redundant\b",
+        r"\bsubsumed\s+by\b",
+        # -- NEW-MINOR-B additions (independent exact-head delta review
+        # pullrequestreview-4912431420): four further real bypasses of
+        # the MINOR-4 fix immediately above, each its own distinct verb-
+        # form/construction gap, none a redesign of the scan's own
+        # bounded phrase-based mechanism.
+        #
+        # (1) "The sleeve remains redundant."/"The sleeve has been
+        # subsumed." -- MINOR-4's own bare-adjective additions
+        # ("is permanent"/"is redundant") and the original "subsumed by"
+        # pattern both required a specific single verb form ("is", or a
+        # trailing "by" clause). Broadened to the SAME closed verb
+        # alternation already used two patterns above for the passive
+        # allocation-trigger ban ((?:is|was|gets?|remains?)), applied
+        # uniformly to permanent/redundant/subsumed together, and made
+        # "subsumed" catchable without a trailing "by" clause at all.
+        # Additive, not a replacement of the bare MINOR-4 patterns above
+        # (which stay, for a stable diff and because narrower patterns
+        # matching a subset of this one are harmless).
+        r"\b(?:is|was|has\s+been|have\s+been|gets?|remains?)\s+(?:permanent|redundant|subsumed)\b",
+        # (2) "An allocation check would be triggered solely by this
+        # result." -- MINOR-4's own reversed-order pattern required
+        # exactly one of (is|was|gets?|remains?) as the passive verb and
+        # "triggered by" with nothing intervening. Neither "would be"/
+        # "could be"/"can be" (a materially different, equally passive
+        # verb form) nor an adverb between "triggered" and "by" ("solely
+        # by", "exclusively by", "entirely by") was covered. Both gaps
+        # closed together in one broadened pattern -- not a second,
+        # duplicated pattern -- since they are independent axes of the
+        # same construction and commonly co-occur in real prose.
+        r"\b(allocation\s+check|deployment|level\s*2\s+(instrument\s+)?selection)\s+"
+        r"(?:is|was|gets?|remains?|would\s+be|could\s+be|can\s+be)\s+triggered\s+"
+        r"(?:solely\s+|exclusively\s+|entirely\s+)?by\b",
+        # (3) "This result by itself is enough to trigger allocation
+        # checking." -- an entirely different construction from every
+        # existing "triggers"/"is triggered by" pattern above (no verb
+        # "trigger" governs a noun directly; "is enough to trigger" is
+        # itself the overclaim, regardless of what follows), so no
+        # broadening of an existing pattern could reach it. Bounded to
+        # this closed phrase, matching this scan's own established
+        # phrase-list design (e.g. the pre-existing bare "automatically
+        # (deploys?|allocates?|triggers?)" pattern, which likewise does
+        # not require a specific following noun).
+        r"\bis\s+enough\s+to\s+trigger\b",
+        r"\bsufficient\s+(?:on\s+its\s+own|by\s+itself|alone)\s+to\s+trigger\b",
+    ]
+]
+
+# MINOR-3 correction (independent exact-head review pullrequestreview-
+# 4911497398): three real, independently reproduced gaps, all fixed
+# without redesigning the scan's own bounded, phrase-based mechanism.
+#
+# (1) The ticker word-boundary construction \b{ticker}\b'?s? was broken:
+# \b{ticker}\b requires a word boundary IMMEDIATELY after the ticker's own
+# letters, so it never matches inside a no-apostrophe plural like "SPYs"
+# (no boundary exists between "Y" and the following "s" -- both are word
+# characters). Fixed by moving the optional possessive/plural suffix
+# INSIDE the boundary group -- \b{ticker}(?:'s|s)?\b -- so "SPY", "SPY's",
+# and "SPYs" are all recognized as the same ticker mention.
+#
+# (2) The trigger-word list was noun-only (weight/target percentage/own
+# size/own allocation), missing verb forms ("SPY is weighted at...",
+# "SPY should be allocated more capital") and bare comparative-capital
+# phrasing ("BTC warrants more capital"). Broadened to a trigger
+# alternation covering weight/weighted/weighting, target percentage/
+# weight, own size/allocation, allocate/allocated/allocating/allocation,
+# size/sized/sizing, and "more/less/greater/smaller/larger/higher/lower/
+# fewer capital" -- still a closed, bounded phrase list, not a redesign.
+#
+# (3) The ticker population (_STAGE4_LEVEL2_TICKERS, the seven fund/
+# crypto instruments) under-covered relative to this module's own
+# docstring claim ("no individual equity ticker, fund, or coin symbol")
+# and, more importantly, XASSET-0014 SS F's own controlling text: "no
+# individual equity, fund, or coin's own weight, target, or size may be
+# named by any Stage 4 record" -- equities are explicitly, textually in
+# scope, not only the seven fund/crypto instruments. Mechanically
+# extended via _stage4_level2_ticker_universe() below, which unions the
+# static seven with the live canonical equity roster read directly from
+# targets.yaml's own destination: list (mirroring compute_basis3_
+# available()'s own established direct-targets.yaml-read convention in
+# this same file, rather than hand-maintaining a second, duplicated
+# ticker list or adding this module's first cross-validator import for
+# one field lookup). A comparative cross-ticker pattern is added
+# separately below to catch ticker-vs-ticker sizing claims that use no
+# fixed trigger noun at all ("SPY should be sized larger than VEA," "BTC
+# warrants more capital than ETH").
+_STAGE4_LEVEL2_TICKERS = ("SPY", "VEA", "VWO", "GLD", "BTC", "ETH", "SOL")
+
+_STAGE4_LEVEL2_TRIGGER_ALTERNATION = (
+    r"weight(?:ed|ing)?|"
+    r"target\s+(?:percentage|weight)|"
+    r"own\s+(?:size|allocation)|"
+    r"alloca(?:te|ted|ting|tion)|"
+    r"siz(?:e|ed|ing)|"
+    r"(?:more|less|greater|smaller|larger|higher|lower|fewer)\s+capital"
+)
+_STAGE4_LEVEL2_COMPARATIVE_WORD = r"(?:more|less|greater|smaller|larger|higher|lower|fewer)"
+_STAGE4_LEVEL2_COMPARATIVE_NOUN = r"(?:capital|weight|allocation|size|shares?)"
+
+
+def _stage4_level2_ticker_universe(repo_root: Path | None) -> tuple[str, ...]:
+    """The seven fund/crypto Level 2 instruments unioned with the live
+    canonical equity roster (targets.yaml's own destination: list, rows
+    with asset_class == 'equity') -- see the MINOR-3 correction comment
+    above for why. Falls back to the static seven alone when repo_root is
+    unavailable (an isolated synthetic-data test with no real
+    targets.yaml to read) -- a narrower, never a wider, fallback, so no
+    existing caller silently gains equity-ticker coverage it did not ask
+    for."""
+    tickers = set(_STAGE4_LEVEL2_TICKERS)
+    if repo_root is not None:
+        data, errs = _read_yaml(repo_root / "targets.yaml")
+        if not errs and isinstance(data, dict):
+            destinations = data.get("destination")
+            if isinstance(destinations, list):
+                for row in destinations:
+                    if (
+                        isinstance(row, dict)
+                        and row.get("asset_class") == "equity"
+                        and isinstance(row.get("ticker"), str)
+                    ):
+                        tickers.add(row["ticker"])
+    return tuple(sorted(tickers))
+
+
+def _stage4_level2_weight_patterns(repo_root: Path | None) -> list["re.Pattern[str]"]:
+    tickers = _stage4_level2_ticker_universe(repo_root)
+    patterns = [
+        re.compile(
+            # \b{ticker}(?:'s|s)?\b -- the boundary now wraps the whole
+            # optional possessive/plural suffix (see correction comment
+            # above), matching "SPY", "SPY's own weight", and "SPYs
+            # weight" alike.
+            rf"\b{re.escape(ticker)}(?:'s|s)?\b(?:[\s,;:]+[a-z][\w'-]*){{0,4}}[\s,;:]+\b(?:{_STAGE4_LEVEL2_TRIGGER_ALTERNATION})\b",
+            re.IGNORECASE,
+        )
+        for ticker in tickers
+    ]
+    if tickers:
+        ticker_alt = "|".join(re.escape(t) for t in tickers)
+        patterns.append(re.compile(
+            rf"\b(?:{ticker_alt})(?:'s|s)?\b[^.]{{0,60}}\b{_STAGE4_LEVEL2_COMPARATIVE_WORD}\b"
+            rf"[^.]{{0,40}}\b{_STAGE4_LEVEL2_COMPARATIVE_NOUN}\b[^.]{{0,40}}\bthan\b[^.]{{0,30}}"
+            rf"\b(?:{ticker_alt})(?:'s|s)?\b",
+            re.IGNORECASE,
+        ))
+        # NEW-MINOR-B addition (independent exact-head delta review
+        # pullrequestreview-4912431420): the pattern immediately above
+        # only recognizes TICKER-FIRST ordering ({ticker} ... comparative
+        # ... noun ... than ... {ticker}). Two real bypasses use the
+        # inverted, passive construction instead -- the comparative
+        # phrase precedes the first ticker mention entirely ("More
+        # capital should be allocated to SPY than VEA", "A larger weight
+        # is assigned to BTC than ETH") -- neither ticker ever appears
+        # before the comparative word, so the ticker-first pattern above
+        # never even reaches its own anchor. A materially different word
+        # order, not a broadening of the existing pattern: comparative
+        # word, then comparative noun, then a preposition ("to"/"for")
+        # introducing the first ticker, then "than", then the second
+        # ticker.
+        patterns.append(re.compile(
+            rf"\b{_STAGE4_LEVEL2_COMPARATIVE_WORD}\b[^.]{{0,40}}\b{_STAGE4_LEVEL2_COMPARATIVE_NOUN}\b"
+            rf"[^.]{{0,40}}\b(?:to|for)\b[^.]{{0,30}}\b(?:{ticker_alt})(?:'s|s)?\b[^.]{{0,30}}\bthan\b"
+            rf"[^.]{{0,30}}\b(?:{ticker_alt})(?:'s|s)?\b",
+            re.IGNORECASE,
+        ))
+    return patterns
+
+
+# MINOR-5 correction (independent exact-head review pullrequestreview-
+# 4911497398): compiled without re.IGNORECASE, unlike every sibling
+# pattern list in this module -- "this mentions qqq only" (lowercase, no
+# uppercase occurrence anywhere) passed the scan undetected. Added for
+# consistency with _CONTENDER_CITATION_PATTERNS/_POLICY_LEAK_PATTERNS/
+# every other pattern list here.
+_STAGE4_QQQ_PATTERN = re.compile(r"\bQQQ\b", re.IGNORECASE)
+
+# XASSET-0014 SS21 item 21 -- a Basis 3 citation referencing evidence-
+# maturity or per-instrument-weight fields is a hard rejection, never a
+# drafting judgment call; distinct from (and in addition to) the general
+# policy-leak scan's own bare "target_pct"/"targets.yaml" patterns.
+# Deliberately scoped to function_rationale ONLY (the one field where a
+# Basis 1/2/3 citation is actually made) -- NOT part of the general
+# _stage4_bounded_conclusion_scan()/_scan_stage4_free_text() wrapper,
+# since evidence_coverage_profile is also the exact, legitimately-required
+# vocabulary blocking_evidence[] must use to disclose an Axis B failure
+# (SS14's own field-design comment) -- applying this ban universally would
+# make that mandatory disclosure impossible to write.
+_STAGE4_BASIS3_FORBIDDEN_FIELD_PATTERNS = [
+    re.compile(p, re.IGNORECASE)
+    for p in (r"\bevidence_coverage_profile\b", r"\bfavored_sleeve_id\b")
+]
+
+
+def _scan_basis3_forbidden_fields(text: str) -> list[str]:
+    findings: list[str] = []
+    for pat in _STAGE4_BASIS3_FORBIDDEN_FIELD_PATTERNS:
+        if pat.search(text):
+            findings.append(f"stage4-basis3-forbidden-field:{pat.pattern}")
+    return findings
+
+# "Basis 1"/"Basis 2"/"Basis 3" are XASSET-0014 SS3.2's own defined,
+# governance-vocabulary proper-noun labels for the three lawful Axis A
+# evidentiary bases -- SS14's own field-design comment REQUIRES
+# function_rationale to cite them by this exact name ("Basis 2", "Basis
+# 3"). Treated as legitimate defined-term references, exactly the same
+# whitelisting precedent this module's own _STAGE_LEGITIMATE_USE_PATTERNS
+# already establishes for "Stage 4"/"Stage N" -- without this scrub, the
+# schema's own required citation field would be unusable for its designed
+# purpose, since the bare-digit scan has no exception of any kind
+# otherwise. Scoped narrowly to "Basis 1/2/3" only -- never a general
+# digit exemption, and never applied to _numeric_leakage_scan() itself
+# (which remains fully strict for Stage 1-3 and for every other Stage 4
+# field/context).
+_BASIS_LEGITIMATE_USE_PATTERN = re.compile(r"\bbasis\s+[123]\b", re.IGNORECASE)
+
+# Governance decision-ID citations (e.g. "XASSET-0013") are likewise
+# legitimate, required, digit-bearing proper-noun references -- the
+# relationship-coverage ledger's own deferred-pair provenance is, by
+# design, attributed to XASSET-0013 (SS5.1/SS14), and this schema's own
+# governing_decisions field structurally requires citing XASSET-0014/
+# XASSET-0015. Scrubbed the same way as "Basis N" -- a named citation, not
+# a numeric magnitude, weight, score, or size claim.
+_DECISION_ID_LEGITIMATE_USE_PATTERN = re.compile(r"\b[A-Z]{2,}-\d{4}\b")
+
+
+def _stage4_numeric_leakage_scan(text: str) -> list[str]:
+    scrubbed = _BASIS_LEGITIMATE_USE_PATTERN.sub("", text)
+    scrubbed = _DECISION_ID_LEGITIMATE_USE_PATTERN.sub("", scrubbed)
+    return _numeric_leakage_scan(scrubbed)
+
+# CASH/RESERVE-distinction-language scan (SS9/SS21 item 12) -- reuses
+# economic_assessment_validator.py's own established mechanism DESIGN
+# (same pattern shapes), not its literal code, since that module's own
+# _DISTINCTION_PATTERNS is private to its file; ported here rather than
+# imported, matching this module's own existing local-helper convention.
+#
+# Split into two groups (NEW-MINOR-A correction, independent exact-head
+# delta review pullrequestreview-4912431420): the four "differ/distinct/
+# different (treatment|purpose|role|function)" patterns immediately
+# below are the ONLY patterns in this scan an independently-reproduced
+# false-positive class was found against (five natural, compliant
+# non-settlement/hedged sentences, all sharing "CASH ... RESERVE ...
+# differ/distinct" proximity with no assertion ever actually made -- see
+# _STAGE4_CASH_RESERVE_NONSETTLEMENT_LEADIN below) -- these four alone
+# are run through the negation/hedge guard. Every other pattern in this
+# scan (the idiom-class patterns, the MAJOR-2 non-fungibility patterns,
+# and the NEW-MINOR-B additions below) is NOT hedge-guarded: no false
+# positive was reproduced against any of them, and applying an unproven
+# guard to patterns that were never shown to need one would only widen
+# the surface for a future bypass with no offsetting benefit.
+_STAGE4_CASH_RESERVE_DIFFER_DISTINCT_PATTERNS = [
+    re.compile(p, re.IGNORECASE)
+    for p in (
+        r"\bCASH\b[^.]{0,120}\b(differ|distinct|different\s+(treatment|purpose|role|function)s?)\b[^.]{0,80}\bRESERVE\b",
+        r"\bRESERVE\b[^.]{0,120}\b(differ|distinct|different\s+(treatment|purpose|role|function)s?)\b[^.]{0,80}\bCASH\b",
+        r"\bCASH\b[^.]{0,30}\bRESERVE\b[^.]{0,60}\b(differ|distinct|different\s+(treatment|purpose|role|function)s?)\b",
+        r"\bRESERVE\b[^.]{0,30}\bCASH\b[^.]{0,60}\b(differ|distinct|different\s+(treatment|purpose|role|function)s?)\b",
+    )
+]
+
+# NEW-MINOR-A correction (independent exact-head delta review
+# pullrequestreview-4912431420): the four "differ/distinct" patterns
+# above have no way to distinguish a genuine assertion of distinctness
+# ("CASH and RESERVE differ in purpose") from an explicit, hedged
+# NON-settlement of the identical question ("It has not been established
+# that CASH and RESERVE differ in purpose.") -- five natural, compliant
+# sentences independently reproduced as false positives, all sharing one
+# shape: a small, closed set of assertion-negating lead-in phrases
+# ("whether", "does not assert that", "has not been established that",
+# "no evidence ... that", "no basis to conclude") sits IMMEDIATELY before
+# the leading CASH/RESERVE mention.
+#
+# Deliberately NOT a general "does a negation word appear somewhere
+# nearby" guard: this module's own sibling economic_assessment_
+# validator.py spent seven separate bounded-correction rounds
+# discovering that a blacklist-style "is there a negation/deferral word
+# somewhere nearby" check for a materially similar scan is unprovably
+# incomplete, and worse, becomes its own loophole -- a bare "not"
+# appearing anywhere in an earlier, unrelated clause ("It is not the
+# case that CASH and RESERVE are the same -- they are distinct.") would
+# wrongly suppress a genuine, later assertion. The guard here is instead
+# a small, CLOSED whitelist of specific, multi-word, assertion-negating
+# idioms, each required to sit IMMEDIATELY adjacent (allowing only an
+# optional "that ") to the leading entity mention the differ/distinct
+# match itself starts at -- not "a negation word appears somewhere in
+# the sentence." "not the case that" is deliberately absent from this
+# whitelist, so the loophole sentence above remains caught (verified in
+# the test suite, both for that literal sentence and for a same-shape
+# "is not the case that ... are identical; in fact, they are distinct"
+# variant). This is a narrow, purpose-built mechanism for this one
+# scan's own demonstrated vulnerability class, not a port of economic_
+# assessment_validator.py's own much larger general clause-whitelist
+# architecture -- reusing that architecture's full machinery here is out
+# of scope for this bounded correction (see the module comment above
+# this scan's own pattern list for the existing "reuses DESIGN, not
+# literal code" convention this follows).
+_STAGE4_CASH_RESERVE_NONSETTLEMENT_LEADIN = re.compile(
+    r"\b(?:"
+    r"whether"
+    r"|(?:does|do|did|is|are|has|have)\s+not\s+(?:been\s+)?"
+    r"(?:assert|claim|conclude|establish|state|find|show|determine)\w*(?:\s+that)?"
+    r"|no\s+(?:evidence|basis)(?:\s+\w+){0,4}?\s+(?:that|to\s+conclude|to\s+assert)"
+    r")\b\s*(?=(?:CASH|RESERVE)\b)",
+    re.IGNORECASE,
+)
+
+
+def _cash_reserve_differ_distinct_findings(text: str) -> list[str]:
+    """Applies _STAGE4_CASH_RESERVE_NONSETTLEMENT_LEADIN as a per-match
+    veto against _STAGE4_CASH_RESERVE_DIFFER_DISTINCT_PATTERNS only: a
+    match is suppressed only when a whitelisted non-settlement lead-in
+    phrase ends EXACTLY where that match's own leading CASH/RESERVE
+    mention begins. Both the lead-in pattern's own lookahead and every
+    differ/distinct pattern's own leading \\bCASH\\b/\\bRESERVE\\b anchor
+    are zero-width at that boundary, so hedge_match.end() ==
+    distinction_match.start() precisely when the hedge phrase is truly
+    adjacent to the claim it is hedging -- never merely somewhere earlier
+    in the same sentence."""
+    hedge_ends = {m.end() for m in _STAGE4_CASH_RESERVE_NONSETTLEMENT_LEADIN.finditer(text)}
+    findings: list[str] = []
+    for pat in _STAGE4_CASH_RESERVE_DIFFER_DISTINCT_PATTERNS:
+        for m in pat.finditer(text):
+            if m.start() in hedge_ends:
+                continue
+            findings.append(f"stage4-cash-reserve-distinction:{pat.pattern}")
+    return findings
+
+
+_STAGE4_CASH_RESERVE_OTHER_DISTINCTION_PATTERNS = [
+    re.compile(p, re.IGNORECASE)
+    for p in (
+        r"\bRESERVE\s+(functions|serves|acts)\s+as\b",
+        r"\bCASH\s+is\s+used\s+for\b",
+        r"\bRESERVE\s+is\s+(used|intended|held|meant)\s+for\b",
+        r"\b(CASH|RESERVE)\s+individually\s+warrants?\b",
+        r"\b(CASH|RESERVE)\s+(alone|specifically)\s+(is|represents|serves)\b",
+        r"\bthe\s+(reserve|cash)\s+(percentage|pct|weight|target)\s+(suggests|implies|indicates)\b",
+        # -- MAJOR-2 additions (independent exact-head review
+        # pullrequestreview-4911497398): the original ten patterns all
+        # required one of differ/distinct/different (treatment|purpose|
+        # role|function) as the connecting verb/adjective -- a plain-
+        # English non-fungibility assertion ("CASH and RESERVE are not
+        # interchangeable," "CASH accomplishes something RESERVE does
+        # not," "RESERVE cannot do what CASH does") states the identical
+        # forbidden claim (XASSET-0008 SS N / XASSET-0009's own boundary)
+        # without using any of those stem words, and evaded every
+        # existing pattern. Added as their own idiom class, both entity
+        # orders, alongside a false-positive guard requirement that
+        # ordinary non-settlement/abstention language (e.g. this record's
+        # own required cash_reserve_consolidation_note) stays clean --
+        # verified against the real sealed cash_reserve.yaml note and the
+        # adversarial matrix in test_level1_sleeve_synthesis_validator.py.
+        #
+        # NEW-MINOR-B correction (pullrequestreview-4912431420) broadened
+        # the "accomplish(es)/does/performs something" tail noun below
+        # from "something" alone to also include "a role"/"a function"/
+        # "the role"/"the function" -- "RESERVE performs a role CASH
+        # cannot perform" states the identical forbidden claim with a
+        # concrete noun in place of "something," and evaded the original,
+        # narrower alternative. "something" remains the first alternative
+        # (no existing MAJOR-2 match is lost).
+        r"\bCASH\b[^.]{0,60}\b(accomplish|accomplishes|does|performs)\s+(?:something|a\s+role|a\s+function|the\s+role|the\s+function)\b[^.]{0,60}\bRESERVE\b[^.]{0,30}\b(does\s+not|cannot|can\s*not)\b",
+        r"\bRESERVE\b[^.]{0,60}\b(accomplish|accomplishes|does|performs)\s+(?:something|a\s+role|a\s+function|the\s+role|the\s+function)\b[^.]{0,60}\bCASH\b[^.]{0,30}\b(does\s+not|cannot|can\s*not)\b",
+        r"\bCASH\b[^.]{0,30}\b(cannot|can\s*not)\s+do\s+what\b[^.]{0,30}\bRESERVE\b[^.]{0,20}\bdoes\b",
+        r"\bRESERVE\b[^.]{0,30}\b(cannot|can\s*not)\s+do\s+what\b[^.]{0,30}\bCASH\b[^.]{0,20}\bdoes\b",
+        r"\bCASH\b[^.]{0,120}\b(not\s+interchangeable|non-fungible|not\s+fungible)\b[^.]{0,80}\bRESERVE\b",
+        r"\bRESERVE\b[^.]{0,120}\b(not\s+interchangeable|non-fungible|not\s+fungible)\b[^.]{0,80}\bCASH\b",
+        r"\bCASH\b[^.]{0,120}\bRESERVE\b[^.]{0,60}\b(not\s+interchangeable|non-fungible|not\s+fungible)\b",
+        r"\bRESERVE\b[^.]{0,120}\bCASH\b[^.]{0,60}\b(not\s+interchangeable|non-fungible|not\s+fungible)\b",
+        # -- NEW-MINOR-B additions (pullrequestreview-4912431420): three
+        # further real bypasses, each its own distinct construction the
+        # existing idiom patterns above do not reach.
+        #
+        # "CASH cannot serve the function that RESERVE serves." -- a
+        # shared-function-denial idiom distinct from the "do what"
+        # construction two patterns above (no "do"/"does" verb at all).
+        r"\bCASH\b[^.]{0,30}\bcannot\s+(?:serve|perform|fulfill)\s+the\s+(?:function|role)\s+(?:that|which)\b[^.]{0,30}\bRESERVE\b[^.]{0,20}\b(?:serves|performs|fulfills)\b",
+        r"\bRESERVE\b[^.]{0,30}\bcannot\s+(?:serve|perform|fulfill)\s+the\s+(?:function|role)\s+(?:that|which)\b[^.]{0,30}\bCASH\b[^.]{0,20}\b(?:serves|performs|fulfills)\b",
+        # "What CASH accomplishes, RESERVE does not." -- a fronted/
+        # topicalized clause stating the same MAJOR-2 "accomplishes
+        # something ... does not" claim with the object clause moved to
+        # the front of the sentence, which the tight-proximity MAJOR-2
+        # pattern (anchored on CASH/RESERVE appearing in that fixed
+        # order) cannot reach.
+        r"\bWhat\s+CASH\s+(?:accomplish|accomplishes|does|performs)\b[^,]{0,30},?\s*\bRESERVE\s+(?:does\s+not|cannot|can\s*not)\b",
+        r"\bWhat\s+RESERVE\s+(?:accomplish|accomplishes|does|performs)\b[^,]{0,30},?\s*\bCASH\s+(?:does\s+not|cannot|can\s*not)\b",
+        # "Non-fungible: CASH and RESERVE." -- phrase-before-entities
+        # ordering; the existing non-fungibility patterns above only
+        # recognize entities-then-phrase.
+        r"\b(?:not\s+interchangeable|non-fungible|not\s+fungible)\b\s*[:.\-]{0,2}\s*\bCASH\b[^.]{0,30}\bRESERVE\b",
+        r"\b(?:not\s+interchangeable|non-fungible|not\s+fungible)\b\s*[:.\-]{0,2}\s*\bRESERVE\b[^.]{0,30}\bCASH\b",
+    )
+]
+
+
+def _stage4_bounded_conclusion_scan(text: str, repo_root: Path | None = None) -> list[str]:
+    findings: list[str] = []
+    for pat in _STAGE4_OVERCLAIM_PATTERNS:
+        if pat.search(text):
+            findings.append(f"stage4-overclaim:{pat.pattern}")
+    for pat in _stage4_level2_weight_patterns(repo_root):
+        if pat.search(text):
+            findings.append(f"stage4-level2-weight-leakage:{pat.pattern}")
+    if _STAGE4_QQQ_PATTERN.search(text):
+        findings.append("stage4-qqq-boundary")
+    findings.extend(_cash_reserve_differ_distinct_findings(text))
+    for pat in _STAGE4_CASH_RESERVE_OTHER_DISTINCTION_PATTERNS:
+        if pat.search(text):
+            findings.append(f"stage4-cash-reserve-distinction:{pat.pattern}")
+    return findings
+
+
+def _scan_stage4_free_text(value: object, field_name: str, errors: list[str], *, repo_root: Path | None = None) -> None:
+    """Reuses _prohibited_content_scan() (policy-leak, chart-domain,
+    directive-word, bare-gate-word -- all already Stage-4-appropriate
+    mechanisms, none redesigned) plus _numeric_leakage_scan() and _
+    comparative_superiority_scan() wholesale, and adds this section's own
+    materially separate bounded-conclusion / Level-2-weight / QQQ / CASH-
+    RESERVE-distinction scans -- deliberately does NOT call _eligibility_
+    language_scan() (Stage 1-3's blanket ban, inapplicable to Stage 4 by
+    design -- see the module comment above item 13)."""
+    if value is None:
+        return
+    texts: list[str]
+    if isinstance(value, str):
+        texts = [value]
+    elif isinstance(value, list):
+        texts = [v for v in value if isinstance(v, str)]
+    else:
+        return
+    for text in texts:
+        for finding in _prohibited_content_scan(text):
+            errors.append(f"{field_name} contains prohibited content ({finding})")
+        for finding in _stage4_numeric_leakage_scan(text):
+            errors.append(f"{field_name} contains prohibited content ({finding})")
+        for finding in _comparative_superiority_scan(text):
+            errors.append(f"{field_name} contains prohibited content ({finding})")
+        for finding in _stage4_bounded_conclusion_scan(text, repo_root=repo_root):
+            errors.append(f"{field_name} contains prohibited content ({finding})")
+        for finding in _scan_contender_citation(text):
+            errors.append(f"{field_name} contains prohibited content ({finding})")
+
+
+# -- Schema shapes -------------------------------------------------------------
+
+_POLICY_ADOPTION_TOP_KEYS = frozenset({
+    "schema_version", "sleeve_id", "profile_reference", "relationship_references",
+    "portfolio_function_status", "function_rationale", "abstention_index",
+    "capital_eligibility_status", "sizing_readiness_status", "blocking_evidence",
+    "unresolved_relationships", "relationship_coverage_ledger", "overlap_coordination_notes",
+    "cash_reserve_consolidation_note", "record_status",
+    *_SEAL_FIELDS,
+})
+
+_PROFILE_REF_KEYS = frozenset({"record_path", "referenced_content_sha256"})
+_REL_REF_KEYS = frozenset({"sleeve_pair", "record_path", "referenced_content_sha256"})
+_LEDGER_ENTRY_KEYS = frozenset({"other_sleeve_id", "coverage_state", "reference"})
+_LEDGER_REF_SEALED_KEYS = frozenset({"record_path", "referenced_content_sha256"})
+_LEDGER_REF_DEFERRED_KEYS = frozenset({"deferral_class", "governing_decision"})
+_BLOCKING_EVIDENCE_KEYS = frozenset({"reason_type", "other_sleeve_id", "detail", "reference"})
+_UNRESOLVED_REL_KEYS = frozenset({"other_sleeve_id", "record_path", "referenced_content_sha256"})
+_OVERLAP_NOTE_KEYS = frozenset({"other_sleeve_id", "dimension_ids", "note"})
+
+
+def _validate_hash_ref(
+    ref: dict, label: str, errors: list[str], *, repo_root: Path | None, record_dir: str,
+) -> None:
+    """Verifies exactly the record_path/referenced_content_sha256 pair --
+    deliberately does NOT reject-unknown-keys on the full ref dict, since
+    callers routinely pass a superset dict (e.g. a relationship_references[]
+    entry also carrying its own sleeve_pair key, or an unresolved_
+    relationships[] entry also carrying its own other_sleeve_id key) --
+    each caller performs its own full-shape _reject_unknown_keys check
+    separately, against its own correct key set."""
+    path_val = ref.get("record_path")
+    hash_val = ref.get("referenced_content_sha256")
+    if not _non_empty_str(path_val):
+        errors.append(f"{label}.record_path must be a non-empty string")
+        return
+    if not _non_empty_str(hash_val):
+        errors.append(f"{label}.referenced_content_sha256 must be a non-empty string")
+        return
+    if repo_root is None:
+        return
+    full = repo_root / path_val
+    if not full.is_file():
+        errors.append(f"{label} references missing file {full}")
+        return
+    data, errs = _read_yaml(full)
+    if errs or not isinstance(data, dict):
+        errors.append(f"{label} could not verify {full} -- unparseable")
+        return
+    live_hash = canonical_record_hash(data)
+    if hash_val != live_hash:
+        errors.append(
+            f"{label}.referenced_content_sha256 is stale -- recorded {hash_val!r}, "
+            f"live-recomputed {live_hash!r} against the current sealed {full}"
+        )
+
+
+def validate_policy_adoption_data(
+    data: object, expected_sleeve_id: str | None = None, *, repo_root: Path | None = None,
+) -> list[str]:
+    """Mirrors validate_sleeve_profile_data()'s/validate_sleeve_relationship_
+    data()'s own established convention exactly: a bare list[str] of errors
+    (empty == valid), never a ValidationResult -- that wrapping happens only
+    at the *_file() layer, matching every sibling record type in this
+    module."""
+    errors: list[str] = []
+    if not isinstance(data, dict):
+        return ["record must be a mapping"]
+
+    _reject_unknown_keys(data, "<record>", _POLICY_ADOPTION_TOP_KEYS, errors)
+    missing = _POLICY_ADOPTION_TOP_KEYS - data.keys()
+    if missing:
+        errors.append(f"record missing key(s): {sorted(missing)}")
+        return errors
+
+    if data.get("schema_version") != SCHEMA_VERSION:
+        errors.append(f"schema_version must be {SCHEMA_VERSION!r}")
+
+    sleeve_id = data.get("sleeve_id")
+    if sleeve_id not in SLEEVE_IDS:
+        errors.append(f"sleeve_id must be one of {sorted(SLEEVE_IDS)}, got {sleeve_id!r}")
+        return errors
+    if expected_sleeve_id is not None and sleeve_id != expected_sleeve_id:
+        errors.append(f"sleeve_id {sleeve_id!r} does not match filename stem {expected_sleeve_id!r}")
+
+    # -- profile_reference ----------------------------------------------
+    profile_ref = data.get("profile_reference")
+    if not isinstance(profile_ref, dict):
+        errors.append("profile_reference must be a mapping")
+    else:
+        _reject_unknown_keys(profile_ref, "profile_reference", _PROFILE_REF_KEYS, errors)
+        _validate_hash_ref(profile_ref, "profile_reference", errors, repo_root=repo_root, record_dir=_PROFILES_DIR)
+        expected_path = f"{_PROFILES_DIR}/{sleeve_id}.yaml"
+        if profile_ref.get("record_path") not in (None, expected_path):
+            errors.append(f"profile_reference.record_path must be {expected_path!r}")
+
+    # -- relationship_references[] ---------------------------------------
+    rel_refs = data.get("relationship_references")
+    declared_pairs: set[tuple[str, str]] = set()
+    if not isinstance(rel_refs, list):
+        errors.append("relationship_references must be a list")
+    else:
+        for i, entry in enumerate(rel_refs):
+            label = f"relationship_references[{i}]"
+            if not isinstance(entry, dict):
+                errors.append(f"{label} must be a mapping")
+                continue
+            _reject_unknown_keys(entry, label, _REL_REF_KEYS, errors)
+            missing_e = _REL_REF_KEYS - entry.keys()
+            if missing_e:
+                errors.append(f"{label} missing key(s): {sorted(missing_e)}")
+                continue
+            sp = entry.get("sleeve_pair")
+            if not isinstance(sp, dict) or set(sp.keys()) != {"sleeve_a", "sleeve_b"}:
+                errors.append(f"{label}.sleeve_pair must be a mapping with exactly sleeve_a/sleeve_b")
+                continue
+            pair = (sp.get("sleeve_a"), sp.get("sleeve_b"))
+            if pair not in AUTHORIZED_RELATIONSHIP_PAIRS:
+                errors.append(f"{label}.sleeve_pair {pair!r} is not one of the seven authorized sealed pairs")
+                continue
+            if sleeve_id not in pair:
+                errors.append(f"{label}.sleeve_pair {pair!r} does not name this record's own sleeve_id {sleeve_id!r}")
+            declared_pairs.add(pair)
+            _validate_hash_ref(entry, label, errors, repo_root=repo_root, record_dir=_RELATIONSHIPS_DIR)
+        expected_pairs = {p for p in AUTHORIZED_RELATIONSHIP_PAIRS if sleeve_id in p}
+        if declared_pairs != expected_pairs:
+            errors.append(
+                f"relationship_references must cite exactly the sealed pairs naming this sleeve "
+                f"{sorted(expected_pairs)}, got {sorted(declared_pairs)}"
+            )
+
+    # -- Axis A ------------------------------------------------------------
+    axis_a = data.get("portfolio_function_status")
+    if axis_a not in _PORTFOLIO_FUNCTION_STATUS_VALUES:
+        errors.append(f"portfolio_function_status must be one of {sorted(_PORTFOLIO_FUNCTION_STATUS_VALUES)}")
+
+    function_rationale = data.get("function_rationale")
+    if not _non_empty_str(function_rationale):
+        errors.append("function_rationale must be a non-empty string")
+    else:
+        _scan_stage4_free_text(function_rationale, "function_rationale", errors, repo_root=repo_root)
+        for finding in _scan_basis3_forbidden_fields(function_rationale):
+            errors.append(f"function_rationale contains prohibited content ({finding})")
+        # SS21 item 22 -- structurally required to be substantial, never a
+        # generic/templated placeholder; the validator cannot semantically
+        # verify CLAUDE.md prose content (SS21 item 22's own disclosed
+        # limit), so only a minimum-substance floor is mechanically
+        # enforced here.
+        if len(function_rationale.strip()) < 80:
+            errors.append("function_rationale is too short to be a substantial, non-templated citation")
+
+    if repo_root is not None and isinstance(sleeve_id, str) and sleeve_id in SLEEVE_IDS:
+        basis1 = compute_basis1_findings(sleeve_id, repo_root)
+        basis3 = compute_basis3_available(sleeve_id, repo_root)
+        if axis_a == FUNCTION_CONFIRMED_DISTINCT and not (basis1 or basis3):
+            errors.append(
+                "portfolio_function_status == function_confirmed_distinct requires at least one "
+                "live-verifiable lawful basis (Basis 1 or Basis 3) -- neither is available for this "
+                "sleeve; a citation resting on Basis 2 alone cannot be independently confirmed by this "
+                "validator and is not sufficient on its own to satisfy this mechanical gate"
+            )
+        if sleeve_id == DEBT_REDUCTION and basis3:
+            errors.append("Basis 3 must never resolve available for debt_reduction (no targets.yaml row exists)")
+
+    # -- abstention_index[] --------------------------------------------
+    abstention_index = data.get("abstention_index")
+    if not isinstance(abstention_index, list):
+        errors.append("abstention_index must be a list")
+    else:
+        for i, entry in enumerate(abstention_index):
+            label = f"abstention_index[{i}]"
+            if not isinstance(entry, dict) or set(entry.keys()) != {"axis", "value", "reason"}:
+                errors.append(f"{label} must be a mapping with exactly axis/value/reason")
+                continue
+            if entry.get("axis") != "portfolio_function_status":
+                errors.append(f"{label}.axis must be 'portfolio_function_status' -- the only axis with an abstention path")
+            if entry.get("value") != AXIS_A_UNABLE_TO_DETERMINE:
+                errors.append(f"{label}.value must be {AXIS_A_UNABLE_TO_DETERMINE!r}")
+            if not _non_empty_str(entry.get("reason")):
+                errors.append(f"{label}.reason must be a non-empty string")
+            else:
+                _scan_stage4_free_text(entry.get("reason"), label + ".reason", errors, repo_root=repo_root)
+        if axis_a == AXIS_A_UNABLE_TO_DETERMINE and not abstention_index:
+            errors.append("abstention_index must be non-empty when portfolio_function_status == unable_to_determine")
+        if axis_a != AXIS_A_UNABLE_TO_DETERMINE and abstention_index:
+            errors.append("abstention_index must be empty when portfolio_function_status != unable_to_determine")
+
+    # -- Axis B (mechanical re-derivation, zero drafting discretion) ----
+    axis_b = data.get("capital_eligibility_status")
+    if axis_b not in _CAPITAL_ELIGIBILITY_VALUES:
+        errors.append(f"capital_eligibility_status must be one of {sorted(_CAPITAL_ELIGIBILITY_VALUES)}")
+    live_profile = _live_profile(repo_root, sleeve_id) if isinstance(sleeve_id, str) else None
+    live_axis_b = None
+    if live_profile is not None:
+        live_axis_b = compute_axis_b(live_profile.get("evidence_coverage_profile"))
+        if live_axis_b is None:
+            errors.append("live sleeve_profile.evidence_coverage_profile is not one of the four closed values")
+        elif axis_b in _CAPITAL_ELIGIBILITY_VALUES and axis_b != live_axis_b:
+            errors.append(
+                f"capital_eligibility_status {axis_b!r} does not match the live-derived value "
+                f"{live_axis_b!r} mechanically re-derived from this sleeve's own sealed "
+                f"evidence_coverage_profile -- Axis B carries zero drafting-session discretion"
+            )
+
+    # -- relationship_coverage_ledger[] ----------------------------------
+    ledger = data.get("relationship_coverage_ledger")
+    live_ledger: list[_LedgerEntry] = []
+    if isinstance(sleeve_id, str) and sleeve_id in SLEEVE_IDS:
+        live_ledger = compute_live_relationship_ledger(sleeve_id, repo_root)
+    live_by_other = {e.other_sleeve_id: e for e in live_ledger}
+    if not isinstance(ledger, list):
+        errors.append("relationship_coverage_ledger must be a list")
+    else:
+        seen_others: set[str] = set()
+        for i, entry in enumerate(ledger):
+            label = f"relationship_coverage_ledger[{i}]"
+            if not isinstance(entry, dict):
+                errors.append(f"{label} must be a mapping")
+                continue
+            _reject_unknown_keys(entry, label, _LEDGER_ENTRY_KEYS, errors)
+            missing_e = _LEDGER_ENTRY_KEYS - entry.keys()
+            if missing_e:
+                errors.append(f"{label} missing key(s): {sorted(missing_e)}")
+                continue
+            other = entry.get("other_sleeve_id")
+            if other in seen_others:
+                errors.append(f"{label} duplicates other_sleeve_id {other!r}")
+            seen_others.add(other)
+            if other == sleeve_id or other not in SLEEVE_IDS:
+                errors.append(f"{label}.other_sleeve_id {other!r} is invalid for sleeve_id {sleeve_id!r}")
+                continue
+            coverage_state = entry.get("coverage_state")
+            if coverage_state not in _COVERAGE_STATE_VALUES:
+                errors.append(f"{label}.coverage_state must be one of {sorted(_COVERAGE_STATE_VALUES)}")
+                continue
+            reference = entry.get("reference")
+            if not isinstance(reference, dict):
+                errors.append(f"{label}.reference must be a mapping")
+                continue
+            live = live_by_other.get(other)
+            if coverage_state in (SEALED_DETERMINED, SEALED_UNRESOLVED):
+                _reject_unknown_keys(reference, f"{label}.reference", _LEDGER_REF_SEALED_KEYS, errors)
+                missing_r = _LEDGER_REF_SEALED_KEYS - reference.keys()
+                if missing_r:
+                    errors.append(f"{label}.reference missing key(s): {sorted(missing_r)}")
+                else:
+                    _validate_hash_ref(reference, f"{label}.reference", errors, repo_root=repo_root, record_dir=_RELATIONSHIPS_DIR)
+            elif coverage_state == DEFERRED_DISCLOSED:
+                _reject_unknown_keys(reference, f"{label}.reference", _LEDGER_REF_DEFERRED_KEYS, errors)
+                missing_r = _LEDGER_REF_DEFERRED_KEYS - reference.keys()
+                if missing_r:
+                    errors.append(f"{label}.reference missing key(s): {sorted(missing_r)}")
+                else:
+                    if reference.get("governing_decision") != "XASSET-0013":
+                        errors.append(f"{label}.reference.governing_decision must be 'XASSET-0013'")
+                    declared_class = reference.get("deferral_class")
+                    if declared_class not in _DEFERRAL_CLASS_VALUES:
+                        errors.append(f"{label}.reference.deferral_class must be one of {sorted(_DEFERRAL_CLASS_VALUES)}")
+                    if live is not None and live.deferral_class is not None and declared_class != live.deferral_class:
+                        errors.append(
+                            f"{label}.reference.deferral_class {declared_class!r} does not match the "
+                            f"live, closed XASSET-0013 SS E deferral class {live.deferral_class!r}"
+                        )
+            if live is not None and coverage_state != live.coverage_state:
+                errors.append(
+                    f"{label}.coverage_state {coverage_state!r} does not match the live, mechanically "
+                    f"cross-referenced coverage state {live.coverage_state!r} for the "
+                    f"{sleeve_id}-{other} pair"
+                )
+        expected_others = {_other_sleeve_in_pair(p, sleeve_id) for p in _all_pairs_touching(sleeve_id)} if isinstance(sleeve_id, str) and sleeve_id in SLEEVE_IDS else set()
+        if expected_others and seen_others != expected_others:
+            missing_others = expected_others - seen_others
+            extra_others = seen_others - expected_others
+            if missing_others:
+                errors.append(f"relationship_coverage_ledger missing entry(ies) for {sorted(missing_others)}")
+            if extra_others:
+                errors.append(f"relationship_coverage_ledger has non-authorized entry(ies) for {sorted(extra_others)}")
+        elif expected_others and len(ledger if isinstance(ledger, list) else []) != 5:
+            errors.append("relationship_coverage_ledger must have exactly five entries -- one per possible pair")
+
+    # -- Axis C mechanical consistency -----------------------------------
+    sizing = data.get("sizing_readiness_status")
+    if sizing not in _SIZING_READINESS_VALUES:
+        errors.append(f"sizing_readiness_status must be one of {sorted(_SIZING_READINESS_VALUES)}")
+    elif live_ledger and axis_a in _PORTFOLIO_FUNCTION_STATUS_VALUES and live_axis_b is not None:
+        expected_sizing = compute_expected_sizing_readiness(axis_a, live_axis_b, live_ledger)
+        if sizing != expected_sizing:
+            errors.append(
+                f"sizing_readiness_status {sizing!r} does not match the live, mechanically derived "
+                f"value {expected_sizing!r} (from portfolio_function_status={axis_a!r}, the live-"
+                f"derived capital_eligibility_status={live_axis_b!r}, and the live relationship-"
+                f"coverage ledger)"
+            )
+
+    # -- blocking_evidence[] ----------------------------------------------
+    blocking = data.get("blocking_evidence")
+    if not isinstance(blocking, list):
+        errors.append("blocking_evidence must be a list")
+    else:
+        if sizing in (SIZING_BLOCKED, SIZING_CONDITIONALLY_READY) and not blocking:
+            errors.append("blocking_evidence must be non-empty when sizing_readiness_status != sizing_ready")
+        if sizing == SIZING_READY and blocking:
+            errors.append("blocking_evidence must be empty when sizing_readiness_status == sizing_ready")
+        for i, entry in enumerate(blocking):
+            label = f"blocking_evidence[{i}]"
+            if not isinstance(entry, dict):
+                errors.append(f"{label} must be a mapping")
+                continue
+            _reject_unknown_keys(entry, label, _BLOCKING_EVIDENCE_KEYS, errors)
+            missing_e = _BLOCKING_EVIDENCE_KEYS - entry.keys()
+            if missing_e:
+                errors.append(f"{label} missing key(s): {sorted(missing_e)}")
+                continue
+            if entry.get("reason_type") not in _BLOCKING_REASON_TYPES:
+                errors.append(f"{label}.reason_type must be one of {sorted(_BLOCKING_REASON_TYPES)}")
+            if not _non_empty_str(entry.get("detail")):
+                errors.append(f"{label}.detail must be a non-empty string")
+            else:
+                _scan_stage4_free_text(entry.get("detail"), label + ".detail", errors, repo_root=repo_root)
+            ref = entry.get("reference")
+            if ref is not None:
+                if not isinstance(ref, dict):
+                    errors.append(f"{label}.reference must be a mapping or null")
+                else:
+                    # MAJOR-1 correction (independent exact-head review
+                    # pullrequestreview-4911497398): _validate_hash_ref()
+                    # deliberately performs no shape closure of its own (see
+                    # its own docstring) -- every OTHER caller in this
+                    # function closes its own reference shape before or via
+                    # _validate_hash_ref (profile_reference,
+                    # relationship_references[i], both
+                    # relationship_coverage_ledger[i].reference branches,
+                    # unresolved_relationships[i]); this call site was the
+                    # one place that check was missing, letting an
+                    # arbitrary extra key inside blocking_evidence[i].
+                    # reference validate cleanly -- the exact defect class
+                    # this PR's own commit message already disclosed fixing
+                    # once for profile_reference, not generalized to every
+                    # call site. blocking_evidence[i].reference shares the
+                    # identical record_path/referenced_content_sha256 shape
+                    # as relationship_coverage_ledger[i]'s own sealed-state
+                    # reference (confirmed against every real sealed
+                    # record), so the fix reuses _LEDGER_REF_SEALED_KEYS
+                    # rather than inventing a new, duplicate key set.
+                    _reject_unknown_keys(ref, f"{label}.reference", _LEDGER_REF_SEALED_KEYS, errors)
+                    missing_ref = _LEDGER_REF_SEALED_KEYS - ref.keys()
+                    if missing_ref:
+                        errors.append(f"{label}.reference missing key(s): {sorted(missing_ref)}")
+                    else:
+                        _validate_hash_ref(ref, f"{label}.reference", errors, repo_root=repo_root, record_dir=_RELATIONSHIPS_DIR)
+
+    # -- unresolved_relationships[] ----------------------------------------
+    unresolved = data.get("unresolved_relationships")
+    live_unresolved = {e.other_sleeve_id for e in live_ledger if e.coverage_state == SEALED_UNRESOLVED}
+    if not isinstance(unresolved, list):
+        errors.append("unresolved_relationships must be a list")
+    else:
+        declared_unresolved: set[str] = set()
+        for i, entry in enumerate(unresolved):
+            label = f"unresolved_relationships[{i}]"
+            if not isinstance(entry, dict):
+                errors.append(f"{label} must be a mapping")
+                continue
+            _reject_unknown_keys(entry, label, _UNRESOLVED_REL_KEYS, errors)
+            missing_e = _UNRESOLVED_REL_KEYS - entry.keys()
+            if missing_e:
+                errors.append(f"{label} missing key(s): {sorted(missing_e)}")
+                continue
+            declared_unresolved.add(entry.get("other_sleeve_id"))
+            _validate_hash_ref(entry, label, errors, repo_root=repo_root, record_dir=_RELATIONSHIPS_DIR)
+        if live_ledger and declared_unresolved != live_unresolved:
+            errors.append(
+                f"unresolved_relationships must name exactly the live sealed_unresolved pairs "
+                f"{sorted(live_unresolved)}, got {sorted(declared_unresolved)}"
+            )
+
+    # -- overlap_coordination_notes[] --------------------------------------
+    overlap_notes = data.get("overlap_coordination_notes")
+    if not isinstance(overlap_notes, list):
+        errors.append("overlap_coordination_notes must be a list")
+    else:
+        for i, entry in enumerate(overlap_notes):
+            label = f"overlap_coordination_notes[{i}]"
+            if not isinstance(entry, dict):
+                errors.append(f"{label} must be a mapping")
+                continue
+            _reject_unknown_keys(entry, label, _OVERLAP_NOTE_KEYS, errors)
+            missing_e = _OVERLAP_NOTE_KEYS - entry.keys()
+            if missing_e:
+                errors.append(f"{label} missing key(s): {sorted(missing_e)}")
+                continue
+            other = entry.get("other_sleeve_id")
+            if other not in SLEEVE_IDS or other == sleeve_id:
+                errors.append(f"{label}.other_sleeve_id {other!r} is invalid")
+            dim_ids = entry.get("dimension_ids")
+            if not isinstance(dim_ids, list) or not dim_ids:
+                errors.append(f"{label}.dimension_ids must be a non-empty list")
+            else:
+                for dim_id in dim_ids:
+                    if not _non_empty_str(dim_id):
+                        errors.append(f"{label}.dimension_ids has a non-string/empty entry")
+                        continue
+                    if repo_root is None:
+                        continue
+                    dim_path = repo_root / _OVERLAP_MODEL_DIR / f"{dim_id}.yaml"
+                    if not dim_path.is_file():
+                        errors.append(f"{label} references missing overlap-model dimension file {dim_path}")
+                        continue
+                    dim_data, dim_errs = _read_yaml(dim_path)
+                    if dim_errs or not isinstance(dim_data, dict):
+                        errors.append(f"{label} could not verify {dim_path} -- unparseable")
+                        continue
+                    if dim_data.get("computation_status") != _COMPUTED_FROM_EXISTING_MECHANISM:
+                        errors.append(
+                            f"{label} cites dimension_id {dim_id!r} whose own live computation_status "
+                            f"is not {_COMPUTED_FROM_EXISTING_MECHANISM!r}"
+                        )
+            if not _non_empty_str(entry.get("note")):
+                errors.append(f"{label}.note must be a non-empty string")
+            else:
+                _scan_stage4_free_text(entry.get("note"), label + ".note", errors, repo_root=repo_root)
+
+    # -- cash_reserve_consolidation_note ------------------------------------
+    note = data.get("cash_reserve_consolidation_note")
+    if sleeve_id == CASH_RESERVE:
+        if not _non_empty_str(note):
+            errors.append("cash_reserve_consolidation_note must be a non-empty string on the cash_reserve record")
+        else:
+            _scan_stage4_free_text(note, "cash_reserve_consolidation_note", errors, repo_root=repo_root)
+            if len(note.strip()) < 80:
+                errors.append("cash_reserve_consolidation_note is too short to be a substantial non-settlement statement")
+    else:
+        if note is not None:
+            errors.append("cash_reserve_consolidation_note must be null on every record except cash_reserve")
+
+    # -- record_status / seal -----------------------------------------------
+    if data.get("record_status") not in _LIFECYCLE_VALUES:
+        errors.append(f"record_status must be one of {sorted(_LIFECYCLE_VALUES)}")
+
+    governing = data.get("governing_decisions")
+    if not isinstance(governing, list) or set(governing) != {"XASSET-0014", "XASSET-0015"}:
+        errors.append("governing_decisions must be exactly ['XASSET-0014', 'XASSET-0015']")
+
+    if not _non_empty_str(data.get("sealed_at")):
+        errors.append("sealed_at must be a non-empty string")
+    if not _non_empty_str(data.get("drafting_session_or_shard_id")):
+        errors.append("drafting_session_or_shard_id must be a non-empty string")
+    expected_manifest_entry = f"{_POLICY_ADOPTION_DIR}/COHORT_MANIFEST.yaml#{sleeve_id}"
+    if data.get("cohort_manifest_entry") != expected_manifest_entry:
+        errors.append(f"cohort_manifest_entry must be {expected_manifest_entry!r}")
+
+    if data.get("record_status") == "sealed":
+        expected_hash = canonical_record_hash(data)
+        if data.get("content_sha256") != expected_hash:
+            errors.append(
+                f"content_sha256 does not match the live-recomputed canonical hash "
+                f"({data.get('content_sha256')!r} vs {expected_hash!r})"
+            )
+
+    # -- structural key-name / Level-2-leakage / contender-boundary scans --
+    _scan_key_names_recursive(data, "<record>", errors, allow_keys=frozenset({"reference"}))
+    _scan_all_strings_for_contender_citation(data, "<record>", errors)
+
+    return errors
+
+
+def validate_policy_adoption_file(path: Path, *, repo_root: Path | None = None) -> "ValidationResult":
+    data, read_errors = _read_yaml(path)
+    if read_errors:
+        return ValidationResult(valid=False, errors=read_errors, source=str(path))
+    errors = validate_policy_adoption_data(data, path.stem, repo_root=repo_root)
+    return ValidationResult(valid=not errors, errors=errors, source=str(path))
+
+
+# -- Manifest / directory validation ------------------------------------------
+
+_POLICY_ADOPTION_MANIFEST_ROW_KEYS = frozenset({
+    "sleeve_id", "shard_id", "sealed_at", "content_sha256", "schema_version",
+    "governing_decision", "record_path",
+})
+
+
+def validate_policy_adoption_cohort_manifest(manifest_path: Path, records_dir: Path) -> "ValidationResult":
+    errors: list[str] = []
+    data, read_errors = _read_yaml(manifest_path)
+    if read_errors:
+        return ValidationResult(valid=False, errors=read_errors, source=str(manifest_path))
+    if not isinstance(data, dict):
+        return ValidationResult(valid=False, errors=["manifest must be a mapping"], source=str(manifest_path))
+
+    _reject_unknown_keys(data, "<manifest>", _MANIFEST_TOP_KEYS, errors)
+    if data.get("schema_version") != SCHEMA_VERSION:
+        errors.append(f"manifest schema_version must be {SCHEMA_VERSION!r}")
+    if data.get("governing_decision") != "XASSET-0015":
+        errors.append("manifest governing_decision must be 'XASSET-0015'")
+
+    cohort = data.get("cohort")
+    if not isinstance(cohort, list):
+        errors.append("manifest cohort must be a list")
+        return ValidationResult(valid=not errors, errors=errors, source=str(manifest_path))
+
+    seen: set[str] = set()
+    for i, row in enumerate(cohort):
+        if not isinstance(row, dict):
+            errors.append(f"cohort[{i}] must be a mapping")
+            continue
+        _reject_unknown_keys(row, f"cohort[{i}]", _POLICY_ADOPTION_MANIFEST_ROW_KEYS, errors)
+        missing = _POLICY_ADOPTION_MANIFEST_ROW_KEYS - row.keys()
+        if missing:
+            errors.append(f"cohort[{i}] missing key(s): {sorted(missing)}")
+            continue
+        sleeve_id = row["sleeve_id"]
+        if sleeve_id in seen:
+            errors.append(f"cohort has duplicate sleeve_id: {sleeve_id!r}")
+        seen.add(sleeve_id)
+
+        expected_record_path = f"{_POLICY_ADOPTION_DIR}/{sleeve_id}.yaml"
+        if row["record_path"] != expected_record_path:
+            errors.append(f"cohort[{i}] ({sleeve_id!r}) record_path must be {expected_record_path!r}")
+
+        record_path = records_dir / f"{sleeve_id}.yaml"
+        if not record_path.is_file():
+            errors.append(f"cohort[{i}] ({sleeve_id!r}) references missing record file {record_path}")
+            continue
+        record_data, record_read_errors = _read_yaml(record_path)
+        if record_read_errors or not isinstance(record_data, dict):
+            errors.append(f"cohort[{i}] ({sleeve_id!r}) record file could not be parsed")
+            continue
+        expected_hash = canonical_record_hash(record_data)
+        if row["content_sha256"] != expected_hash:
+            errors.append(f"cohort[{i}] ({sleeve_id!r}) content_sha256 mismatch -- manifest {row['content_sha256']!r}, recomputed {expected_hash!r}")
+        if record_data.get("content_sha256") != row["content_sha256"]:
+            errors.append(f"cohort[{i}] ({sleeve_id!r}) manifest content_sha256 does not match the record's own recorded content_sha256")
+
+    missing_from_manifest = SLEEVE_IDS - seen
+    extra_in_manifest = seen - SLEEVE_IDS
+    if missing_from_manifest:
+        errors.append(f"manifest missing authorized sleeve_id(s): {sorted(missing_from_manifest)}")
+    if extra_in_manifest:
+        errors.append(f"manifest has non-authorized sleeve_id(s): {sorted(extra_in_manifest)}")
+
+    if records_dir.is_dir():
+        on_disk = {p.stem for p in records_dir.glob("*.yaml") if p.name != "COHORT_MANIFEST.yaml"}
+        orphans = on_disk - seen
+        if orphans:
+            errors.append(f"sealed record(s) on disk with no manifest entry: {sorted(orphans)}")
+
+    return ValidationResult(valid=not errors, errors=errors, source=str(manifest_path))
+
+
+def validate_policy_adoption_directory(records_dir: Path, *, repo_root: Path | None = None) -> "DirectoryValidationResult":
+    results: list[ValidationResult] = []
+    if not records_dir.is_dir():
+        return DirectoryValidationResult(valid=True, results=[])
+
+    for path in sorted(records_dir.glob("*.yaml")):
+        if path.name == "COHORT_MANIFEST.yaml":
+            continue
+        results.append(validate_policy_adoption_file(path, repo_root=repo_root))
+
+    manifest_path = records_dir / "COHORT_MANIFEST.yaml"
+    if manifest_path.is_file():
+        results.append(validate_policy_adoption_cohort_manifest(manifest_path, records_dir))
+    else:
+        results.append(ValidationResult(valid=False, errors=["COHORT_MANIFEST.yaml is missing"], source=str(manifest_path)))
+
+    on_disk = {p.stem for p in records_dir.glob("*.yaml") if p.name != "COHORT_MANIFEST.yaml"}
+    missing = SLEEVE_IDS - on_disk
+    extra = on_disk - SLEEVE_IDS
+    pop_errors = []
+    if missing:
+        pop_errors.append(f"missing sealed record(s) for authorized sleeve_id(s): {sorted(missing)}")
+    if extra:
+        pop_errors.append(f"sealed record(s) for non-authorized sleeve_id(s): {sorted(extra)}")
+    if pop_errors:
+        results.append(ValidationResult(valid=False, errors=pop_errors, source="<population>"))
+
+    return DirectoryValidationResult(valid=all(r.valid for r in results), results=results)
+
+
 if __name__ == "__main__":
     import sys
 
@@ -2182,17 +3584,21 @@ if __name__ == "__main__":
     _relationship_result = validate_sleeve_relationship_directory(
         _repo_root / _RELATIONSHIPS_DIR, repo_root=_repo_root,
     )
-    _all_valid = _profile_result.valid and _relationship_result.valid
+    _policy_adoption_result = validate_policy_adoption_directory(
+        _repo_root / _POLICY_ADOPTION_DIR, repo_root=_repo_root,
+    )
+    _all_valid = _profile_result.valid and _relationship_result.valid and _policy_adoption_result.valid
     if _all_valid:
         print(
             f"level1_sleeve_synthesis_validator: OK "
             f"({_profile_result.record_count} profile result(s), "
-            f"{_relationship_result.record_count} relationship result(s))"
+            f"{_relationship_result.record_count} relationship result(s), "
+            f"{_policy_adoption_result.record_count} policy_adoption result(s))"
         )
         sys.exit(0)
     else:
         print("level1_sleeve_synthesis_validator: FAILED")
-        for _r in (*_profile_result.results, *_relationship_result.results):
+        for _r in (*_profile_result.results, *_relationship_result.results, *_policy_adoption_result.results):
             if not _r.valid:
                 for _err in _r.errors:
                     print(f"  - [{_r.source}] {_err}")

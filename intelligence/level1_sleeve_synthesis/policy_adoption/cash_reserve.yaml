@@ -1,0 +1,112 @@
+schema_version: '1.0'
+sleeve_id: cash_reserve
+profile_reference:
+  record_path: intelligence/level1_sleeve_synthesis/profiles/cash_reserve.yaml
+  referenced_content_sha256: 387cb8943643af3538b6e36e733630438f35944c4365ea9a3fb7c7cd4c340c3e
+relationship_references:
+- sleeve_pair:
+    sleeve_a: cash_reserve
+    sleeve_b: debt_reduction
+  record_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_debt_reduction.yaml
+  referenced_content_sha256: fc8ca7788747ff7b953c864fe1c27c42888717c60af22a94e00d33827a6148cd
+- sleeve_pair:
+    sleeve_a: cash_reserve
+    sleeve_b: equity
+  record_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_equity.yaml
+  referenced_content_sha256: 9f67ba0b83a92b1fe92ec6cfc3fe57f5140073f8a8037677343103687cd1898e
+portfolio_function_status: function_confirmed_distinct
+function_rationale: 'Reached on independently available lawful bases. Basis 1 (relationship-record finding):
+  the sealed cash_reserve_equity relationship record resolves role_preserving -- a genuinely functional,
+  not evidence-maturity, distinction (this account''s own governing text treats a cash-tight condition
+  as a guardrail triggering a recommended pause, never a redirection into equity). Basis 3 (structural
+  sleeve-definition basis): this sleeve''s own asset_class scope (the combined cash and reserve destination
+  categories) is currently populated in a live destination-configuration category, confirmed directly
+  this session. This finding does not resolve, and is entirely independent of, this sleeve''s own still-open
+  CASH/RESERVE consolidation question -- see cash_reserve_consolidation_note below.'
+abstention_index: []
+capital_eligibility_status: eligible_for_target_consideration
+sizing_readiness_status: sizing_blocked
+blocking_evidence:
+- reason_type: sealed_unresolved_relationship
+  other_sleeve_id: debt_reduction
+  detail: 'The sealed cash_reserve_debt_reduction relationship record resolves unable_to_determine, forcing
+    sizing_readiness_status to sizing_blocked regardless of this sleeve''s own otherwise-clearing portfolio_function_status
+    and capital_eligibility_status values -- the governing methodology treats a sealed_unresolved pair
+    as strictly more severe than a deferred_disclosed pair, never equivalent to or better than that lesser
+    category. The abstention itself rests on independent gaps: the RESERVE identifier''s own unresolved
+    functional-role finding, and the debt-reduction sleeve''s own entirely forced-abstained opportunity-cost
+    evidence base -- both sit precisely on the question this comparison would need to answer.'
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_debt_reduction.yaml
+    referenced_content_sha256: fc8ca7788747ff7b953c864fe1c27c42888717c60af22a94e00d33827a6148cd
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: crypto
+  detail: The crypto-cash_reserve pair is among the deferred pairs.
+  reference: null
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: fund_broad_market
+  detail: The cash_reserve-fund_broad_market pair is among the deferred pairs, part of fund_broad_market's
+    own deferred group.
+  reference: null
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: fund_gld_defensive
+  detail: The cash_reserve-fund_gld_defensive pair is among the deferred pairs.
+  reference: null
+- reason_type: secondary_condition_present
+  other_sleeve_id: equity
+  detail: The sealed cash_reserve_equity relationship record carries evidence_partial_present and forced_abstention_present
+    as secondary conditions alongside its role_preserving primary disposition -- a genuine, disclosed
+    caveat even though this specific pair is not itself the reason sizing_readiness_status resolves sizing_blocked.
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_equity.yaml
+    referenced_content_sha256: 9f67ba0b83a92b1fe92ec6cfc3fe57f5140073f8a8037677343103687cd1898e
+unresolved_relationships:
+- other_sleeve_id: debt_reduction
+  record_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_debt_reduction.yaml
+  referenced_content_sha256: fc8ca7788747ff7b953c864fe1c27c42888717c60af22a94e00d33827a6148cd
+relationship_coverage_ledger:
+- other_sleeve_id: crypto
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_3
+    governing_decision: XASSET-0013
+- other_sleeve_id: debt_reduction
+  coverage_state: sealed_unresolved
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_debt_reduction.yaml
+    referenced_content_sha256: fc8ca7788747ff7b953c864fe1c27c42888717c60af22a94e00d33827a6148cd
+- other_sleeve_id: equity
+  coverage_state: sealed_determined
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/cash_reserve_equity.yaml
+    referenced_content_sha256: 9f67ba0b83a92b1fe92ec6cfc3fe57f5140073f8a8037677343103687cd1898e
+- other_sleeve_id: fund_broad_market
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_1
+    governing_decision: XASSET-0013
+- other_sleeve_id: fund_gld_defensive
+  coverage_state: deferred_disclosed
+  reference:
+    deferral_class: class_2
+    governing_decision: XASSET-0013
+overlap_coordination_notes: []
+cash_reserve_consolidation_note: 'This record''s combined treatment of the CASH and RESERVE legacy capital-use
+  identifiers as a single family does not resolve, and must never be read as resolving, the underlying
+  question of whether the CASH and RESERVE identifiers have ever been established as economically separate.
+  Per an earlier, explicitly principal-directed provenance review, the identifiers have never been shown
+  to be economically separate and remain an unresolved, undifferentiated combined family absent a future,
+  separately authorized decision -- this record reuses, and does not reopen, that finding. The sealed
+  functional-doctrine layer this sleeve''s own profile cites already reflects the same asymmetry this
+  note restates: the CASH identifier carries a determined functional-role finding, while the RESERVE identifier''s
+  own functional role remains an unresolved abstention -- neither fact is evidence that the identifiers
+  serve separate purposes, and this record''s own combined portfolio_function_status, capital_eligibility_status,
+  and sizing_readiness_status values apply identically and undifferentiated to both.'
+sealed_at: '2026-08-11T00:00:00Z'
+governing_decisions:
+- XASSET-0014
+- XASSET-0015
+drafting_session_or_shard_id: single-pass-level1-sleeve-policy-adoption-implementation
+record_status: sealed
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/policy_adoption/COHORT_MANIFEST.yaml#cash_reserve
+content_sha256: ea87b49ed060520e2d5e9ac5a5771dad45c3676693bf11bc8f87d1e6c073cefe

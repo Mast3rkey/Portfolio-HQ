@@ -1,0 +1,45 @@
+schema_version: '1.0'
+governing_decision: XASSET-0015
+cohort:
+- sleeve_id: equity
+  shard_id: single-pass-level1-sleeve-policy-adoption-implementation
+  sealed_at: '2026-08-11T00:00:00Z'
+  content_sha256: 7d7332653e2c6e6a3df931e71cafedc946f8fdf29696c1e4053edbb37ad6aabd
+  schema_version: '1.0'
+  governing_decision: XASSET-0015
+  record_path: intelligence/level1_sleeve_synthesis/policy_adoption/equity.yaml
+- sleeve_id: fund_broad_market
+  shard_id: single-pass-level1-sleeve-policy-adoption-implementation
+  sealed_at: '2026-08-11T00:00:00Z'
+  content_sha256: b922e68d769d6e3611ae6f3c59344816e7a28a13eca8624ac32dfc6aadd38788
+  schema_version: '1.0'
+  governing_decision: XASSET-0015
+  record_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_broad_market.yaml
+- sleeve_id: fund_gld_defensive
+  shard_id: single-pass-level1-sleeve-policy-adoption-implementation
+  sealed_at: '2026-08-11T00:00:00Z'
+  content_sha256: 9e7d68b5376d0345450fe68836616d2e4beebe006481c8dd710cc876307584b6
+  schema_version: '1.0'
+  governing_decision: XASSET-0015
+  record_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_gld_defensive.yaml
+- sleeve_id: crypto
+  shard_id: single-pass-level1-sleeve-policy-adoption-implementation
+  sealed_at: '2026-08-11T00:00:00Z'
+  content_sha256: 0288fb71c413805a776b2e209f94716ff18daf0f3095344f1bbf12bca6139f6b
+  schema_version: '1.0'
+  governing_decision: XASSET-0015
+  record_path: intelligence/level1_sleeve_synthesis/policy_adoption/crypto.yaml
+- sleeve_id: cash_reserve
+  shard_id: single-pass-level1-sleeve-policy-adoption-implementation
+  sealed_at: '2026-08-11T00:00:00Z'
+  content_sha256: ea87b49ed060520e2d5e9ac5a5771dad45c3676693bf11bc8f87d1e6c073cefe
+  schema_version: '1.0'
+  governing_decision: XASSET-0015
+  record_path: intelligence/level1_sleeve_synthesis/policy_adoption/cash_reserve.yaml
+- sleeve_id: debt_reduction
+  shard_id: single-pass-level1-sleeve-policy-adoption-implementation
+  sealed_at: '2026-08-11T00:00:00Z'
+  content_sha256: 82228f6bc48da3db861340caf27bb8cf2be8ce9160a3939e0e506e84dde2877f
+  schema_version: '1.0'
+  governing_decision: XASSET-0015
+  record_path: intelligence/level1_sleeve_synthesis/policy_adoption/debt_reduction.yaml
