@@ -6,6 +6,44 @@
 Level 1 target is computed, populated, or implied by this artifact or its governing decision. No
 `targets.yaml`, `holdings.yaml`, or allocator change of any kind. No allocation check.
 
+**Bounded correction (same PR, same day), independent exact-head review
+`pullrequestreview-4916420679` (anchored to the original head
+`f92be3fc3e66237f840e0c70baf156f56ba1d194`), 0 BLOCKING / 1 MAJOR / 1 MINOR / 3 non-actionable
+NOTE, CHANGES REQUIRED — resolved by this correction.** **MAJOR**: the original §9 defined a
+closed evidence category list and an explicit anti-formula prohibition, but left the actual
+transformation from evidence to a specific `provisional_target_pct` value entirely to undocumented
+"governance judgment... disclosed in free text" — no reproducible derivation mechanism existed, so
+two independent future implementation sessions given identical sealed evidence could reach
+materially different figures with no reconcilable reason. **Resolved**: §9 is replaced with a
+seven-step ordered, closed, deterministic derivation procedure (§§9.1-9.7) — a zero-based equal-
+share starting point over the full six-sleeve taxonomy (§9.2, never the eligible subset, never a
+historical `targets.yaml` anchor), three named, closed, evidence-triggered adjustment rules
+(§9.3, explicitly addressing Axis-A-completeness, relative relationship-coverage strength, and
+relative secondary-condition/overlap breadth, with valuation and crypto per-coin evidence
+explicitly excluded as disclosure-only), a single fixed `NUM-0001` class-5 increment applied per
+firing trigger rather than a tuned or continuously-variable formula (§9.4), a mandatory
+determinism and comparative-consistency check (§9.7), and a strengthened, self-contained
+justification for a single provisional point over a range (§9.9) — plus new output-schema
+provenance fields (§8: `starting_baseline_pct`, `applied_adjustments[]`, `governing_rule_ids[]`,
+`comparative_consistency_note`), eight new future-validator/test items (§19 items 17-24, including
+a full live-rederivation requirement and the review's own two named MINOR adversarial tests), and
+a fictional-constant synthetic walkthrough (§21) demonstrating the mechanism's determinism without
+computing, stating, or implying any real sleeve's actual figure. **MINOR**: the future validator
+spec did not explicitly name adversarial tests for a pre-floor `sum_of_assigned_targets_pct`
+exceeding `100.00` or a stored negative `unsized_reserved_capital_pct` — **resolved** by §19 items
+20-22, both now explicitly named alongside additional neighboring-arithmetic cases (exact `100.00`,
+`100.01`, zero residual, negative residual, excess precision, rounding drift). All three
+non-actionable NOTEs (the weight `unsized_reserved_capital_pct` may carry in practice; the
+single-point-vs-range justification resting on the class-5 label alone; an immaterial YAML-count
+discrepancy in the reviewing session's own reproduction) are carried forward exactly as the review
+itself characterized them — the first two are directly addressed as part of resolving the MAJOR
+(§9.9's strengthened, self-contained justification; §19's cash-conflation scan, unchanged in
+substance but now sitting alongside a materially stronger derivation mechanism for the reviewer's
+own next-round scrutiny); the third does not bear on this filing's own committed content. No Stage
+4 policy outcome, no eligibility determination, no `policy_adoption`/`sleeve_profile`/
+`sleeve_relationship` record, no Level 2 content, and no actual percentage for `equity`,
+`fund_gld_defensive`, or `crypto` is created, computed, or implied by this correction.
+
 ## 0. Purpose and where this sits in the sequence
 
 `XASSET-0014` §H/§15 defined an eleven-condition gate that must hold before numeric Level 1
@@ -220,7 +258,28 @@ numeric_target_status            # closed: provisional_target_assigned |
                                   #   mechanical-derivation precedent (XASSET-0014 SS4)
 provisional_target_pct           # nullable; populated only when numeric_target_status ==
                                   #   provisional_target_assigned; two decimal places (SS12);
-                                  #   never negative; never >= 100.00 for a single sleeve
+                                  #   never negative; never >= 100.00 for a single sleeve; MUST
+                                  #   equal, exactly, the value the SS9 derivation procedure
+                                  #   independently re-produces from this same record's own
+                                  #   starting_baseline_pct and applied_adjustments[] -- never
+                                  #   an independently-authored number (SS9.7)
+starting_baseline_pct            # required whenever provisional_target_pct is populated --
+                                  #   the SS9.2 equal-share baseline value (100.00 / 6, two
+                                  #   decimal places) BEFORE any adjustment; identical, fixed,
+                                  #   and mechanically derived for every sizing-eligible sleeve
+                                  #   -- never sleeve-specific, never self-declared
+applied_adjustments[]             # required whenever provisional_target_pct is populated --
+                                  #   zero or more entries, one per SS9.3 trigger that actually
+                                  #   fired for this sleeve, each {governing_rule_id: R1 | R2 |
+                                  #   R3, direction: up | down, magnitude_pct: the fixed SS9.4
+                                  #   increment, evidence_ref: a hash pin into the specific
+                                  #   sealed record(s) the trigger read}; empty list is valid
+                                  #   (a sleeve at its unadjusted baseline) and is not an error
+governing_rule_ids[]              # required whenever provisional_target_pct is populated --
+                                  #   the closed set of SS9.3 trigger identifiers this record's
+                                  #   own applied_adjustments[] actually invoke; derived from,
+                                  #   never independent of, applied_adjustments[] -- a
+                                  #   convenience index field, not an independent claim
 target_classification            # forced constant: provisional_governance_guardrail
                                   #   (NUM-0001 SS1 class 5) -- structurally rejected if any
                                   #   other class is cited (SS13); null when
@@ -234,8 +293,20 @@ uncertainty_disclosure           # required, non-empty, whenever provisional_tar
                                   #   cited policy_adoption record's blocking_evidence[] and
                                   #   relationship_coverage_ledger[] entries; (b) named
                                   #   secondary_conditions on its own sealed relationship
-                                  #   records; (c) disclosed valuation/evidence-coverage gaps
-                                  #   per SS11 -- never a fabricated caveat, never omitted
+                                  #   records not already consumed by a SS9.3 trigger; (c)
+                                  #   disclosed valuation/evidence-coverage gaps per SS11,
+                                  #   disclosure-only per SS9.3's own explicit exclusion; (d)
+                                  #   for crypto specifically, the sleeve-wide
+                                  #   cross_coin_correlation_status abstention and any
+                                  #   per-coin historical-behavior divergence, disclosure-only
+                                  #   per SS9.3's own explicit exclusion -- never a fabricated
+                                  #   caveat, never omitted
+comparative_consistency_note      # required whenever provisional_target_pct is populated --
+                                  #   one sentence per other sizing-eligible sleeve at a
+                                  #   materially different provisional_target_pct, naming the
+                                  #   specific governing_rule_id(s) responsible for the
+                                  #   difference (SS9.7); required to state "no material
+                                  #   difference" where two sleeves land on the same value
 blocking_rationale                # required, non-empty, whenever numeric_target_status ==
                                   #   no_provisional_target_pending_axis_c -- restates, does
                                   #   not re-derive, the cited policy_adoption record's own
@@ -253,31 +324,257 @@ carries individual-instrument (Level 2) content. `provisional_target_pct` is the
 field in the schema besides the structural `content_sha256`/manifest hash fields, which are not
 economic values.
 
-## 9. `stronger_evidence_maturity` and opportunity-cost evidence — extended prohibition, not a new rule
+## 9. Numeric derivation procedure — ordered, closed, auditable, reproducible
 
-`XASSET-0014` §6 already mechanically prohibits `stronger_evidence_maturity`/`favored_sleeve_id`
-from driving any of the three categorical axes. This filing extends the identical prohibition, by
-the same logic, one layer further: **no `provisional_target_pct` value or any formula computing
-one may read `favored_sleeve_id`, use it as a multiplier, a ranking input, or any other numeric
-influence.** If a categorical axis may not be moved by an evidence-maturity finding, a raw
-percentage — a strictly more consequential, more numerically legible output — certainly may not
-be either. A future implementation's `uncertainty_disclosure` field (§8) may *name* that a
-`stronger_evidence_maturity` finding exists and disclose what it says about relative evidence
-completeness, but the cited finding may never be converted into, or read as justifying, a specific
-number.
+**Bounded correction (this PR, resolving independent review `pullrequestreview-4916420679`'s
+MAJOR finding).** The original §9 defined a closed list of permitted evidence categories and an
+explicit prohibition on assembling them into a formula, but left the actual transformation from
+evidence to number entirely to undocumented, session-specific "governance judgment... disclosed
+in free text" — its own words. The review correctly found this insufficient: a future
+implementer given `equity`, `fund_gld_defensive`, and `crypto`'s identical sealed evidence would
+have no governed procedure telling them why a candidate figure should be 45%, 55%, or 65%, and no
+mechanism preventing two independent sessions from reaching materially different figures for the
+same sleeve with no reconcilable reason. This section replaces the original mechanism with a
+seven-step ordered procedure (§§9.1-9.7) that is deterministic given the same sealed evidence —
+not a continuously-tunable weighted formula (the review's own alternative concern, and the
+directive's own explicit "do not create a formula merely for the sake of determinism" instruction),
+but a small, closed table of fixed, named, class-5 adjustment increments applied to a zero-based
+starting point, with every application independently re-derivable and every difference between two
+sleeves' outputs traceable to a specific, named, governed rule.
 
-Permitted opportunity-cost inputs for a future implementation's own (categorical, not formulaic)
-judgment in choosing a `provisional_target_pct` value: the sleeve's own Axis A evidentiary
-strength (how many of the three lawful bases independently clear — `fund_gld_defensive`'s three
-versus `crypto`'s two is a real, disclosable distinction, cited descriptively, never converted
-into an arithmetic multiplier); the sleeve's own count and severity mix of `sealed_determined`
-versus `deferred_disclosed` relationship pairs; named secondary conditions on its own relationship
-records; and the six already-sealed `computed_from_existing_mechanism` overlap-model dimensions
-(never the four `not_yet_computable_interface_only` ones, restating `XASSET-0013` §G's own
-citation rule at this layer). None of these inputs may be assembled into a hidden weighted-sum
-score, an implicit ranking, or any mechanism a future reader could reconstruct as a formula — the
-governance judgment itself, disclosed in free text, is the mechanism; no numeric proxy for it may
-be smuggled into the schema.
+### 9.1 Step A — establish the allocable total
+
+Unlevered 100.00% conceptual accounting space, unchanged from the original design (§10 below).
+Only `sizing_conditionally_ready` sleeves (today: `equity`, `fund_gld_defensive`, `crypto`) may
+receive a `provisional_target_pct`. Blocked sleeves receive none (§6). `unsized_reserved_capital_pct`
+remains an explicit, mechanically computed reconciliation figure — never `cash_reserve`, never a
+policy redistribution.
+
+### 9.2 Step B — starting point: an equal share of the full, closed six-sleeve taxonomy
+
+**Rule**: every sizing-eligible sleeve's `starting_baseline_pct` is `100.00 / 6 = 16.67`
+(rounded per §17), identical for every eligible sleeve, before any adjustment.
+
+**Justification, from repository authority, not invented**: the denominator is **six** —
+`XASSET-0012` §2's own closed, accepted, whole sleeve taxonomy — never **three**, the count of
+sleeves currently eligible. Dividing by the full population, not the eligible subset, is the
+direct numeric extension of the same reasoning the original design's §10 already established and
+the review already found sound ("Correct choice among the alternatives... the identical
+numeric-leakage risk §6/condition 6 exist to prevent, reached indirectly"): if the three eligible
+sleeves' baseline were computed as an equal share of only themselves (100/3 = 33.33 each), the
+three currently-blocked sleeves' own notional share would already, silently, be zero at the very
+starting point — the same leakage the residual bucket was built to prevent, only moved one step
+earlier in the procedure. Dividing by six means each currently-blocked sleeve's own 16.67%
+notional share flows, undiminished and unadjusted, directly into `unsized_reserved_capital_pct` by
+construction, before any trigger is even evaluated — an honest, disclosed starting state, not
+one the eligible sleeves have to be prevented from silently absorbing.
+
+This is a **zero-based** starting point in the same sense `OPS-0006` §§2-3 established for
+`WS-0005`'s own equity review — a pure count of already-governed structure (the six-sleeve
+taxonomy), containing no invented judgment, no calibration, and no historical anchor. **No
+`targets.yaml` weight, current or historical, may be used as a starting point or an input to any
+step of this procedure.** `OPS-0006` §2's own restated rule — "current tier/target preserved as
+historical baseline only, never as research evidence" — is directly on point, one layer up: a
+`target_pct` value belongs to Level 2's own, entirely separate, still-unauthorized instrument-level
+sizing question (§15), and using it here would smuggle the exact pre-existing policy this
+zero-based undertaking exists to test from scratch back in through the starting point. A future
+Milestone-7-style **reconciliation** against current `targets.yaml` weights remains available as
+its own separate, later, explicitly authorized comparison step — never as an input to this
+derivation.
+
+### 9.3 Step C — allowed directional evidence: three named, closed triggers
+
+Each trigger is evaluated once per sizing-eligible sleeve, mechanically, from already-sealed
+evidence this repository's own prior stages already produced — no new research, no new evidence
+type, no citation of `favored_sleeve_id` under any framing.
+
+- **R1 — full Axis-A-basis coverage.** Fires **up** for a sleeve whose own sealed `policy_adoption`
+  record's `function_rationale` independently satisfies **all three** lawful Axis A bases
+  (`XASSET-0014` §3.2: Basis 1 relationship finding, Basis 2 doctrine citation, Basis 3 structural
+  `targets.yaml`-category membership) — not merely the minimum one basis Axis A itself requires to
+  reach `function_confirmed_distinct`. This measures evidentiary **completeness**, a category
+  `XASSET-0014` §3.2 already treats as meaningfully distinct from a bare pass/fail — never the
+  sleeve's own "defensive," "growth," or any other role *label*. A sleeve whose function happens to
+  be defensive gains nothing from that label alone; it gains only from independently, verifiably
+  clearing more of the same three lawful bases every sleeve is held to identically (directly
+  answering the directive's own "do not let 'defensive' automatically imply a target" instruction).
+- **R2 — relative relationship-coverage strength.** Fires **up** for the sleeve with the strict,
+  unique **fewest** `deferred_disclosed` entries in its own `relationship_coverage_ledger[]` among
+  the sizing-eligible population; fires **down** for the sleeve with the strict, unique **most**.
+  No adjustment fires for any sleeve on a tie (two or more eligible sleeves sharing the same count)
+  — a tie is not evidence of a difference, and this rule assigns none.
+- **R3 — relative secondary-condition breadth.** For each sizing-eligible sleeve, compute
+  `secondary_condition_breadth` = the count of **distinct** secondary-condition **types**
+  (`evidence_partial_present`, `forced_abstention_present`, `overlap_or_duplication_disclosed`) —
+  never distinct **occurrences** — appearing anywhere across that sleeve's own sealed
+  `sleeve_relationship` records. Counting distinct types, not raw occurrences, is a deliberate
+  design choice: a sleeve is not penalized merely for having more sealed relationship pairs to
+  begin with (a byproduct of coverage breadth R2 already measures separately), only for the
+  **variety** of distinct evidentiary gaps disclosed against it. Fires **up** for the sleeve with
+  the strict, unique fewest; fires **down** for the sleeve with the strict, unique most. No
+  adjustment on a tie. This is the mechanism's **overlap/concentration treatment**: a sleeve
+  carrying `overlap_or_duplication_disclosed` on any of its own relationship records — the one
+  concrete, sealed overlap signal presently available to any sizing-eligible sleeve — contributes
+  to this trigger as a **directional adjustment**, never a bare review condition and never a hard
+  ceiling on the sleeve's own maximum (directly answering the directive's own overlap-treatment
+  choice requirement).
+
+**Explicitly excluded from all three triggers — disclosure-only, never a numeric input:**
+
+- `stronger_evidence_maturity`/`favored_sleeve_id`, under any framing — restated, not weakened,
+  from the original §9: no trigger, no magnitude, and no future formula of any kind may read this
+  disposition. A future implementation's `uncertainty_disclosure` field may *name* that such a
+  finding exists and describe what it says about relative evidence maturity; it may never be
+  converted into, or read as justifying, a specific number or trigger.
+- **Level 2 equity-valuation evidence** (the 9 of 27 `partial` `valuation_results`, the universal
+  `discount_rate_evidence` abstention) — `equity`'s own Level 1 sizing eligibility and provisional
+  figure are governed by Axis A/B/C and the three triggers above, never by Level 2 instrument
+  valuation completeness (§11, unchanged). This partial evidence must be named in `equity`'s own
+  `uncertainty_disclosure`; it may never move `provisional_target_pct` or trigger a downward
+  adjustment, a maximum-value constraint, or any other numeric effect — **disclosure-only**,
+  directly answering the directive's own valuation-treatment choice requirement.
+- **`crypto`'s own sleeve-wide `cross_coin_correlation_status` abstention and any per-coin
+  (BTC/ETH/SOL) historical-behavior divergence** — a `sleeve_profile`-level abstention and Level 2
+  (per-instrument) fact, respectively, neither of which may enter a Level 1 trigger. Both are
+  **disclosure-only**, cited in `crypto`'s own `uncertainty_disclosure`, never a numeric adjustment
+  and never a basis for splitting `crypto`'s own single provisional figure across BTC/ETH/SOL —
+  directly answering the directive's own crypto-treatment choice requirement and restating the
+  Level 1/Level 2 boundary (§15) at this specific point.
+- The four `not_yet_computable_interface_only` overlap-model dimensions — restating `XASSET-0013`
+  §G's own citation rule, unweakened: never cited as though computed.
+- Any current or historical `targets.yaml` weight (§9.2).
+- Any chart, margin, leverage, or deployment-timing fact (§15, unchanged).
+
+### 9.4 Step D — adjustment magnitude: a fixed, class-5 increment, not a tuned coefficient
+
+Every trigger that fires moves the affected sleeve's provisional figure by exactly **±2.00
+percentage points** — one fixed, repository-declared constant, identical across all three
+triggers and all three sizing-eligible sleeves, never sleeve-specific, never scaled by how
+strongly a trigger fired (each trigger is binary: fired or did not fire). This is the smallest
+mechanism that is simultaneously closed, bounded, and auditable without inventing empirical
+precision: the **existence** of a governed evidentiary difference (R1/R2/R3, §9.3) is real and
+disclosed; the **size** of its effect on the provisional figure is not empirically calibrated
+(no backtest or sweep has evaluated any candidate increment) and is not claimed to be — it is
+itself a `NUM-0001` §1 class 5 provisional governance guardrail, the same class every resulting
+`provisional_target_pct` carries (§18), with its own review condition (§9.8). A future evidence-
+bounded or empirically-calibrated increment value would require its own separate, future,
+evidence-driven governance decision — this filing adopts the flat, fixed increment specifically
+because no such evidence exists yet, matching `NUM-0001` §8's own explicit warning against
+mislabeling an evidence-bounded or provisional value as calibrated.
+
+With exactly three triggers, each capable of firing at most once per sleeve in one direction,
+every sizing-eligible sleeve's total adjustment is bounded, by construction, to `[-6.00, +6.00]`
+percentage points from its `starting_baseline_pct` — no separate artificial cap is required.
+
+### 9.5 Step E — hard constraints
+
+Only already-governed constraints apply, none newly authored (§14, unchanged): the unlevered
+100.00% identity; individual-sleeve bounds `[0.00, 100.00)`; no citation of the 1.8x leverage cap
+or 30% buffer floor to enlarge any figure; the six `computed_from_existing_mechanism` overlap
+dimensions consulted only where they bear on a sizing-eligible sleeve, never the four uncomputed
+ones. Given §9.4's own bound, no sleeve can be pushed outside `[10.67, 22.67]` by this procedure
+alone — comfortably inside `[0.00, 100.00)` with no additional clamping needed.
+
+### 9.6 Step F — reconcile the residual
+
+Mechanically computed, unchanged from the original design (§10): `unsized_reserved_capital_pct =
+100.00 - sum_of_assigned_targets_pct` (floored at `0.00`, though §9.4's own bound makes a
+negative pre-floor value unreachable by this procedure — the floor and the reconciliation-identity
+check remain mandatory defensive requirements on the future validator regardless, since a stored
+record must never be trusted merely because the procedure that *should* have produced it is
+bounded — see §19's new items).
+
+### 9.7 Step G — consistency checks: identical evidence, identical output; every difference is traceable
+
+Two mandatory, mechanically-enforced properties, required of the future validator, not merely
+narrated:
+
+1. **Determinism.** Recomputing `starting_baseline_pct`, every `applied_adjustments[]` entry, and
+   the resulting `provisional_target_pct` twice from the same sealed evidence must produce
+   byte-identical results both times — the same discipline this repository already applies to
+   every structural hash and every mechanically-derived categorical field elsewhere in this exact
+   record chain (`canonical_record_hash()`, Axis B re-derivation, the counterfactual-masking
+   proof).
+2. **Comparative consistency.** Whenever two sizing-eligible sleeves' `provisional_target_pct`
+   values differ, at least one `applied_adjustments[]` entry must differ between them, and each
+   sleeve's own `comparative_consistency_note` (§8) must name the specific `governing_rule_id`(s)
+   responsible for the difference. Two sleeves with byte-identical trigger evaluations under
+   §9.3-§9.4 **must** receive byte-identical `provisional_target_pct` values — this is not a
+   drafting convention to remember but a direct, structural consequence of Step D's own fixed,
+   non-sleeve-specific increment: there is no remaining degree of freedom after the triggers are
+   evaluated, so no unexplained preference between two identically-evidenced sleeves is even
+   representable in the schema, let alone permitted.
+
+### 9.8 `NUM-0001` classification and review conditions — the procedure's own constants, not just its output
+
+Both class-5 constants this procedure introduces — the `100.00 / 6` starting-baseline formula
+(§9.2) and the `±2.00` percentage-point increment (§9.4) — are themselves `NUM-0001` class 5
+provisional governance guardrails, carrying the same "not empirically optimized, explicitly
+labeled, review-conditioned" treatment `NUM-0001` §6 requires of the 1.8x leverage cap and 30%
+buffer floor. Stated review condition for both: revisit upon the first descriptive risk analysis
+or targeted backtest performed under `roadmap_preservation` items (5)/(12) (explicitly scoped to
+challenge provisional sizing, not to gate it — §14, unchanged); upon a material change to the
+sealed six-sleeve population or the seven-sealed/eight-deferred relationship-pair accounting; or
+upon a future, separately authorized evidence-bounded or empirically-calibrated study of either
+constant specifically. A met review condition requires explicit future governance attention
+(`NUM-0001` §12) — it does not, by itself, automatically change either constant or any value this
+procedure has already produced.
+
+### 9.9 Why a single provisional point, not a range — strengthened, on its own merits
+
+The corrected procedure (§§9.1-9.7) is now fully deterministic: given the same sealed evidence,
+it produces exactly one number per sizing-eligible sleeve, not a distribution or an admissible
+set. Introducing a numeric range or band around that already-exact computation would misrepresent
+where this procedure's real uncertainty actually lives — not in the arithmetic (which is exact and
+reproducible by construction, §9.7), but in the two underlying class-5 constants themselves
+(§9.8), which are already carried as explicitly-labeled, review-conditioned provisional values
+rather than folded into a fabricated width around the output. A range would also blunt, rather
+than sharpen, the downstream challenge process `roadmap_preservation` already anticipates:
+descriptive risk analysis and targeted backtests (items (5)/(12)) are designed to test a concrete
+figure and either corroborate or revise it — a range gives that future work nothing precise to
+test against, and risks the range itself silently widening or narrowing across revisions with no
+governed tracking, exactly the kind of untracked-precision drift `NUM-0001` §9 warns against. This
+repository's own direct, load-bearing precedent — the 1.8x leverage cap and 30% buffer floor,
+both exact single points under comparable epistemic conditions, neither expressed as a range — is
+the closest analogue and is followed here deliberately, not merely cited as a label of
+convenience.
+
+### 9.10 Illustrative reachability table — categorical only, no percentage stated or adopted
+
+Matching `XASSET-0014` §3.3's own "illustrative only, no disposition adopted" precedent, but held
+to a stricter disclosure limit than that precedent used, for a reason specific to this section:
+`XASSET-0014` §3.3's own table disclosed only categorical basis reachability, with no numeric
+formula published anywhere nearby it. This section, by contrast, **also** publishes this
+procedure's own numeric constants (§9.2's `100.00 / 6` baseline, §9.4's `±2.00` increment) in the
+same document — so disclosing a **comparative** trigger's (R2/R3) directional outcome (up, down,
+or none) for a real sleeve here, even though the underlying counts it depends on are separately
+already public elsewhere in this repository, would let a reader mechanically combine that outcome
+with this section's own published constants and arrive at a specific `provisional_target_pct`
+value — precisely the "calculate actual percentages" outcome this filing's own authorizing
+instruction repeatedly, explicitly prohibits. **This table is therefore deliberately limited to
+R1 only** — a binary, non-comparative trigger whose reachability for each sleeve is already stated
+in plain prose in `XASSET-0015` §C (an already-merged, already-public filing this table adds no
+new information beyond restating under a label) — and explicitly does not resolve R2 or R3 for any
+real sleeve. **No starting baseline, no adjustment arithmetic, no R2/R3 directional outcome, and
+no resulting `provisional_target_pct` value is computed, stated, or implied for any real sleeve
+anywhere in this filing.** A future implementation session must independently perform, and
+disclose, the full application of §9.2-§9.7 (including R2 and R3) to real sealed evidence; this
+table exists only to demonstrate that R1's own reachability question is well-defined and
+auditable, not to pre-compute any sleeve's actual figure.
+
+| Sleeve | R1 (full Axis-A coverage) |
+|---|---|
+| `equity` | Not reachable — only 2 of 3 bases independently asserted (`XASSET-0015` §C: Basis 1 + Basis 3) |
+| `fund_gld_defensive` | Reachable — `XASSET-0015` §C: "all three independent bases available... the strongest evidentiary support of any non-equity sleeve" |
+| `crypto` | Not reachable — only 2 of 3 bases independently asserted (`XASSET-0015` §C: Basis 1 + Basis 3) |
+
+R2's and R3's own directional outcomes for `equity`, `fund_gld_defensive`, and `crypto` are left
+entirely to the future implementation session, which must compute and disclose them itself,
+directly from live sealed evidence, as part of its own required `applied_adjustments[]`/
+`comparative_consistency_note` fields (§8) — not pre-derived or hinted at here.
+
+A full synthetic (non-real-sleeve, fictional-constant) walkthrough demonstrating the procedure's
+determinism, including several adversarial and boundary configurations, is in §21.
 
 ## 10. Sum/reconciliation rule — no silent plug, cash included
 
@@ -357,7 +654,11 @@ one of the reasons its own provisional figure carries disclosed uncertainty — 
 full Level 2 valuation completeness before proceeding, matching `TIER-0009` §K's own established
 precedent of proceeding on disclosed partial equity-valuation evidence elsewhere in this
 repository. No future implementation may claim `equity`'s Level 1 sizing is validated by, or
-requires, Level 2 valuation completeness it does not have.
+requires, Level 2 valuation completeness it does not have. **Chosen treatment, stated explicitly
+(added by this bounded correction)**: valuation evidence is **disclosure-only** — it is not one of
+§9.3's three numeric triggers, it never constrains a maximum, and it never forces a downward
+adjustment; its sole effect is a mandatory citation inside `equity`'s own `uncertainty_disclosure`
+field (§8).
 
 ## 14. Minimum pre-sizing risk constraints
 
@@ -427,7 +728,11 @@ explicit, deterministic rounding rule (e.g., round-half-even) and apply it unifo
 computed field — any sub-cent residual from that rounding is absorbed into
 `unsized_reserved_capital_pct`, never silently distributed across the sized sleeves and never
 causing `reconciliation_identity_holds` to report `true` on a value that does not actually sum
-exactly.
+exactly. **Added by this bounded correction**: the future validator must reject, not silently
+tolerate, a stored `sum_of_assigned_targets_pct` that exceeds `100.00` before residual flooring
+and a stored literal negative `unsized_reserved_capital_pct` — named explicitly, and no longer
+left merely implicit in the exact-identity requirement above, as §19 items 20-22's own dedicated
+adversarial tests.
 
 ## 18. NUM-0001 classification — required on every populated value
 
@@ -490,6 +795,58 @@ zero import coupling with `allocate.py`/`margin_state.py`, covering at minimum:
 16. Non-cascading abstention discipline — a `no_provisional_target_pending_axis_c` disposition on
     one sleeve never forces or implies a value on another sleeve's own record.
 
+**Added by this bounded correction (resolving independent review `pullrequestreview-4916420679`'s
+MAJOR and MINOR findings):**
+
+17. **Full live re-derivation of `provisional_target_pct` — the central new requirement.** The
+    future validator must not merely check that a stored `provisional_target_pct` falls in
+    `[0.00, 100.00)`. For every populated record, it must independently recompute
+    `starting_baseline_pct` (§9.2), independently re-evaluate all three triggers R1/R2/R3 (§9.3)
+    against the sleeve's own cited, live-hash-verified `policy_adoption`/`sleeve_relationship`
+    evidence, independently apply §9.4's fixed increment for every trigger that actually fires,
+    and reject the record outright if the live-rederived value does not exactly match the stored
+    `provisional_target_pct`, the stored `starting_baseline_pct`, or the stored
+    `applied_adjustments[]`/`governing_rule_ids[]` — the same "mechanically re-derived, never
+    trusted from a stored value" discipline this exact record chain already applies to
+    `numeric_target_status` (§8) and `capital_eligibility_status` (`XASSET-0014` §4/§21 item 4),
+    generalized here to the numeric layer itself.
+18. **Comparative-consistency enforcement** — a dedicated test proving that any two sizing-eligible
+    sleeves sharing byte-identical R1/R2/R3 trigger outcomes are rejected if their stored
+    `provisional_target_pct` values differ, and that any two sleeves with differing
+    `provisional_target_pct` values are rejected unless at least one `applied_adjustments[]` entry
+    differs between them and each cites a matching `comparative_consistency_note` (§8, §9.7 item 2).
+19. **Determinism test** — a dedicated test running the full §9.1-§9.7 derivation twice against the
+    same synthetic sealed-evidence fixture and asserting byte-identical `starting_baseline_pct`,
+    `applied_adjustments[]`, and `provisional_target_pct` output both times (§9.7 item 1).
+20. **Pre-floor sum-overshoot rejection** — a dedicated adversarial test proving that a stored
+    (not live-computed) `sum_of_assigned_targets_pct` exceeding `100.00` **before** residual
+    flooring is rejected outright by the validator, never silently absorbed by a
+    `max(0, 100.00 - sum)`-style floor on `unsized_reserved_capital_pct` — the floor applies only
+    to the live-computed residual itself (§9.6), never as a mechanism for tolerating an
+    out-of-bounds stored sum. §9.4/§9.5's own bound makes this overshoot unreachable by a
+    correctly-implemented derivation (the maximum possible three-sleeve sum is `3 x 22.67 =
+    68.01`, well under `100.00`) — the test exists precisely because a stored record must never be
+    trusted merely because the procedure that *should* have produced it is bounded.
+21. **Negative stored-residual rejection** — a dedicated adversarial test proving that a manifest
+    submitting a literal negative `unsized_reserved_capital_pct` is rejected outright, even though
+    live computation (§9.6, floored at `0.00`) can never produce one — the same "never trust a
+    stored value" discipline as item 20, applied to the residual field specifically.
+22. **Neighboring-arithmetic adversarial cases** — dedicated tests for: `sum_of_assigned_targets_pct
+    == 100.00` exactly (residual `0.00`, valid); `sum == 100.01` (invalid, rejected per item 20);
+    `unsized_reserved_capital_pct == 0.00` (valid); `unsized_reserved_capital_pct` stored negative
+    (invalid, rejected per item 21); a `provisional_target_pct`/`starting_baseline_pct` stored at
+    excess precision (e.g. three or more decimal places — rejected, matching §17's two-decimal-
+    place requirement); and a sub-cent rounding-drift case where the live-computed sum and the
+    stored sum differ only in the last decimal place (rejected — item 17's exact-match requirement
+    admits no tolerance).
+23. **`starting_baseline_pct` uniformity check** — a dedicated test proving every populated
+    record's `starting_baseline_pct` equals the identical `100.00 / 6` constant (§9.2) — never
+    sleeve-specific, never self-declared at a different value.
+24. **`applied_adjustments[]` magnitude/direction check** — a dedicated test proving every entry's
+    `magnitude_pct` equals exactly `2.00` (§9.4, never a different value) and that no sleeve
+    carries more than one `applied_adjustments[]` entry per named `governing_rule_id` (each trigger
+    fires at most once per sleeve, §9.3).
+
 ## 20. Sequence — this filing does not collapse into the future implementation
 
 1. **This filing** — methodology design plus a bounded authorization for one future
@@ -502,3 +859,70 @@ zero import coupling with `allocate.py`/`margin_state.py`, covering at minimum:
 
 No sub-step above may be collapsed into another by this design or by any future filing acting
 under it.
+
+## 21. Synthetic procedure walkthrough — fictional labels, fictional constants, no real percentages
+
+**Added by this bounded correction.** Every value below uses **deliberately fictional** labels,
+population size, baseline, and increment — **`W`/`X`/`Y`/`Z`/`Q` are not any real sleeve, `20.00%`
+is not this filing's real `16.67%` baseline, and `5.00` is not this filing's real `2.00`
+increment.** This separation is intentional: reusing the real constants here, even with fictional
+sleeve labels, would let a reader mechanically combine an illustrated trigger pattern with this
+filing's own real, already-published baseline/increment and arrive at a real sleeve's actual
+figure — exactly the outcome §9.10 and this filing's own authorizing instruction prohibit. This
+section demonstrates only that §§9.1-9.7's *mechanism* is deterministic, bounded, and
+self-consistent — never that any real sleeve resolves to any particular value.
+
+**Fictional setup**: a closed, five-member taxonomy (`W`, `X`, `Y`, `Z`, `Q`); three members
+(`A`, `B`, `C` — standing in for whichever three happen to be sizing-eligible) are eligible;
+`Z`/`Q` are blocked. Fictional baseline = `100.00 / 5 = 20.00`. Fictional fixed increment =
+`±5.00` per firing trigger.
+
+**Case 1 — three identical eligible members (no trigger fires for any).** `A`, `B`, `C` each stay
+at the unadjusted baseline: `20.00` each. `sum_of_assigned_targets_pct = 60.00`.
+`unsized_reserved_capital_pct = 40.00`. Reconciliation: `20.00 + 20.00 + 20.00 + 40.00 = 100.00`
+exactly.
+
+**Case 2 — one member (`B`) with additional disclosed uncertainty (a strictly higher, unique
+secondary-condition-type breadth than `A`/`C`, which remain tied).** The R3-equivalent trigger
+fires **down** for `B` only (unique-most breadth); `A`/`C` are tied, so no R3-equivalent
+adjustment fires for either. Result: `A = 20.00`, `B = 20.00 - 5.00 = 15.00`, `C = 20.00`.
+`sum = 55.00`. `residual = 45.00`. Reconciliation: `20.00 + 15.00 + 20.00 + 45.00 = 100.00`
+exactly. This demonstrates a condition being carried into the number, not merely narrated in
+prose — directly answering the requirement that a disclosed condition must actually move the
+figure, not sit unused beside it.
+
+**Case 3 — one member (`C`) with a valid, disclosed overlap/concentration condition (the
+overlap-equivalent secondary condition raises `C`'s own breadth to a unique maximum).** The
+R3-equivalent trigger fires **down** for `C` only, by the identical mechanism as Case 2 —
+overlap disclosure is a **directional adjustment**, not a bare review condition and not a hard
+ceiling. Result: `A = 20.00`, `B = 20.00`, `C = 15.00`. `sum = 55.00`. `residual = 45.00`.
+Reconciliation holds exactly, as in every case.
+
+**Case 4 — two members (`A`, `B`) with byte-identical trigger-evaluation inputs, hypothetically
+stored with different targets.** Under §9.7 item 2, `A` and `B` sharing identical R1/R2/R3
+outcomes **must** receive identical `provisional_target_pct` values — there is no remaining
+discretion after the triggers are evaluated. A stored record claiming, hypothetically, `A =
+22.00`/`B = 18.00` despite provably identical inputs would be rejected by two independent future
+validator checks: item 17 (live re-derivation — `A`'s and `B`'s own live-rederived values would
+both equal the same baseline-plus-identical-adjustments figure, and at least one stored value
+would fail to match its own re-derivation) and item 18 (comparative-consistency — no
+`applied_adjustments[]` entry differs between `A` and `B`, so a stored difference between them is
+rejected outright regardless of any `comparative_consistency_note` text supplied).
+
+**Case 5 — an attempted total exceeding 100%.** With three fictional triggers bounded to `±5.00`
+each, the maximum possible net adjustment per member is `±15.00`, bounding any single member to
+`[5.00, 35.00]` and the maximum possible three-member sum to `105.00` in the fictional setup —
+already tight, and, in this filing's own **real** setup (§9.4), the real bound (`3 x 22.67 =
+68.01`) makes a sum anywhere near `100.00` structurally unreachable by a correctly-implemented
+derivation. A hypothetical corrupted or erroneous stored manifest claiming
+`sum_of_assigned_targets_pct = 105.00` regardless — pre-flooring — is rejected outright by item 20;
+the validator never silently computes `unsized_reserved_capital_pct = max(0, 100.00 - 105.00) =
+0.00` and lets the overshoot pass unflagged.
+
+**Case 6 — exact reconciliation.** Demonstrated in Cases 1-3 above: in every case,
+`sum_of_assigned_targets_pct + unsized_reserved_capital_pct` equals `100.00` exactly, by
+construction (§9.6), never approximately.
+
+Every case above is deterministic given its own stated inputs — two independent applications of
+§§9.1-9.7 to the same fictional evidence configuration produce the same fictional result each
+time, the property §9.7 item 1 requires of the real mechanism.

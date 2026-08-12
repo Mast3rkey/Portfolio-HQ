@@ -94,6 +94,46 @@ filing does not itself compute, populate, or authorize computing a single percen
   100 since `PHQ-2026-04`'s own unedited 0.75% removal) — the direct, live precedent this filing's
   sum/reconciliation rule (§D) draws on.
 
+### Correction history (this filing, same PR)
+
+**Bounded correction, independent exact-head review `pullrequestreview-4916420679` (anchored to
+the original head `f92be3fc3e66237f840e0c70baf156f56ba1d194`), 0 BLOCKING / 1 MAJOR / 1 MINOR / 3
+non-actionable NOTE, CHANGES REQUIRED:**
+
+1. **MAJOR, resolved.** The original methodology defined a closed evidence-category list and an
+   explicit prohibition on assembling it into a formula, but left the actual transformation from
+   permitted evidence to an actual `provisional_target_pct` value entirely to undocumented
+   "governance judgment... disclosed in free text" — its own original wording. The review correctly
+   found this left a future implementing session with no governed procedure for reaching a specific
+   figure, and no mechanism preventing two independent sessions from reaching materially different
+   figures for the same sleeve from identical sealed evidence. **Resolved**: a new seven-step
+   ordered, closed, deterministic derivation procedure (new §H below; supporting artifact
+   §§9.1-9.7) — a zero-based equal-share starting point over the full six-sleeve taxonomy, three
+   named closed evidence-triggered adjustment rules with a single fixed class-5 increment (never a
+   tuned formula), and a mandatory determinism/comparative-consistency check — plus new output-
+   schema provenance fields and a fictional-constant synthetic walkthrough demonstrating the
+   mechanism without computing, stating, or implying any real sleeve's actual figure. Full detail
+   in the supporting artifact's own correction banner and §§8, 9, 13, 17, 19, 21.
+2. **MINOR, resolved.** The future validator/test specification did not explicitly name adversarial
+   tests for a pre-floor `sum_of_assigned_targets_pct` exceeding `100.00` or a stored negative
+   `unsized_reserved_capital_pct`. **Resolved**: eight new validator/test items added (supporting
+   artifact §19 items 17-24), including both named tests plus additional neighboring-arithmetic
+   cases (exact `100.00`, `100.01`, zero residual, negative residual, excess precision, rounding
+   drift).
+
+All three non-actionable NOTEs (the weight `unsized_reserved_capital_pct` may carry in practice
+given three of six sleeves are currently blocked; the single-point-vs-range justification
+originally resting on the `NUM-0001` class-5 label alone; an immaterial YAML-file-count
+discrepancy in the reviewing session's own reproduction) are carried forward exactly as the review
+characterized them — the first two are substantively strengthened as a direct consequence of
+resolving the MAJOR (a materially more rigorous derivation mechanism for the residual to sit
+alongside; a self-contained, non-label-dependent single-point justification, artifact §9.9); the
+third does not bear on this filing's own committed content and requires no action here.
+
+Exact correction-delta file inventory: `governance/audits/WS0014_LEVEL1_NUMERIC_SIZING_
+METHODOLOGY_AND_AUTHORIZATION_20260812.md` (substantive — §§8, 9, 13, 17, 19, 21, plus this
+correction's own banner), `governance/decisions/XASSET-0016-*.md` (this section, plus new §H).
+
 ## Decision
 
 ### A. What this filing does — methodology design plus one bounded future authorization, no numeric content
@@ -200,6 +240,26 @@ It does not authorize:
 - adoption of any future `provisional_target_pct` as controlling policy — that remains its own,
   separate, later, explicit governance decision, not authorized, scheduled, or implied here.
 
+### H. Numeric derivation procedure — added by this filing's own bounded correction
+
+An independent exact-head review found the original filing's evidence-category list (§ prior D/E
+context) insufficient on its own — it named what evidence *may* inform a figure and what a figure
+*may not* do, but never defined how a specific number is actually produced, leaving that step to
+undocumented, session-specific discretion. This filing now defines a seven-step, ordered, closed,
+fully deterministic derivation procedure (supporting artifact §§9.1-9.7): a zero-based equal-share
+starting point computed over the full, closed six-sleeve taxonomy (never the eligible subset alone,
+never a `targets.yaml` historical anchor); three named, mechanically-evaluated adjustment triggers
+covering Axis A evidentiary completeness, relative relationship-coverage strength, and relative
+secondary-condition/overlap breadth — each explicitly excluding `stronger_evidence_maturity`,
+Level 2 valuation detail, and crypto per-coin divergence, all three treated as disclosure-only; a
+single fixed, `NUM-0001` class 5 adjustment increment per firing trigger, never a tuned or
+continuously-variable formula; and a mandatory determinism plus comparative-consistency check
+ensuring two identically-evidenced sleeves can never receive different figures, and any two
+differently-figured sleeves can always be traced to a specific named rule. **This filing still
+computes no percentage for any sleeve** — the procedure is methodology, applied only by the future
+implementation this filing authorizes (§A), to real sealed evidence that filing must itself
+independently gather and disclose.
+
 ## Rationale
 
 `XASSET-0014` §15 designed the gate but deliberately left "what must be true before a single
@@ -271,14 +331,19 @@ repository.
 ## Consequences
 
 **Changes as a direct result of this decision**: the existence of one retained numeric Level 1
-sleeve-sizing methodology (a closed `numeric_target_status` vocabulary, a `provisional_target_pct`
-field forced to `NUM-0001` class 5 whenever populated, a mandatory `unsized_reserved_capital_pct`
-reconciliation identity, an extended `stronger_evidence_maturity` non-influence prohibition, and a
-sixteen-point future validator/test specification); one retained, exact determination of which
-three of the six sleeves are eligible for a provisional numeric candidate under the already-sealed
-Axis C dispositions; confirmation, via two additive `operations/WORKSTREAMS.yaml` gates, that
-`XASSET-0015`'s own authorized Stage 4c implementation (`PR #306`) is fully merged and post-merge
-CI on `main` is green; six rejected alternatives recorded for future reference.
+sleeve-sizing methodology (a closed `numeric_target_status` vocabulary, a seven-step ordered,
+closed, deterministic numeric derivation procedure — a zero-based equal-share starting point over
+the full six-sleeve taxonomy, three named closed evidence-triggered adjustment rules with a single
+fixed `NUM-0001` class 5 increment, and a mandatory determinism/comparative-consistency check — a
+`provisional_target_pct` field forced to `NUM-0001` class 5 whenever populated, a mandatory
+`unsized_reserved_capital_pct` reconciliation identity, an extended `stronger_evidence_maturity`
+non-influence prohibition, and a twenty-four-point future validator/test specification); one
+retained, exact determination of which three of the six sleeves are eligible for a provisional
+numeric candidate under the already-sealed Axis C dispositions; confirmation, via two additive
+`operations/WORKSTREAMS.yaml` gates, that `XASSET-0015`'s own authorized Stage 4c implementation
+(`PR #306`) is fully merged and post-merge CI on `main` is green; six rejected alternatives
+recorded for future reference; one bounded correction round resolving a single MAJOR (in one
+connected part) and a single MINOR finding from an independent exact-head review.
 
 **Does not change**: any tier, target, cap, cluster, gate, or holding; any allocator or margin
 behavior; the 1.8x leverage cap or 30% margin-buffer floor; any Company, Theme, relationship,
