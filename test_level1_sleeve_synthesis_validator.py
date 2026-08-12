@@ -3712,13 +3712,18 @@ class TestNonCascadingAbstentionStage4:
             ledger = l1.compute_live_relationship_ledger(sid, REPO_ROOT)
             assert all(e.coverage_state != l1.SEALED_UNRESOLVED for e in ledger)
 
-    def test_fund_broad_market_axis_a_unresolved_does_not_touch_other_sleeves_axis_a(self):
+    def test_fund_broad_market_axis_a_does_not_touch_other_sleeves_axis_a(self):
+        """Renamed (XASSET-0017): fund_broad_market's own Axis A was
+        redetermined from function_status_unresolved to function_confirmed_
+        distinct, exercising the same delegated discretion XASSET-0015's own
+        SS E reserved for a future drafting session on unchanged evidence --
+        the test's own purpose (proving one sleeve's Axis A value cannot
+        cascade into another's) is unaffected by which value it holds, so
+        only the expected fixture value is updated here, not the assertion
+        shape."""
         real_records = {sid: _real_policy_adoption(sid) for sid in l1.SLEEVE_IDS}
         for sid, d in real_records.items():
-            if sid == "fund_broad_market":
-                assert d["portfolio_function_status"] == "function_status_unresolved"
-            else:
-                assert d["portfolio_function_status"] == "function_confirmed_distinct"
+            assert d["portfolio_function_status"] == "function_confirmed_distinct"
 
 
 # ===========================================================================
@@ -3734,9 +3739,15 @@ class TestRealPolicyAdoptionCorpus:
         assert result.valid, [e for r in result.results for e in r.errors]
 
     def test_axis_a_outcomes_exactly_as_derived(self):
+        # fund_broad_market updated (XASSET-0017): redetermined from
+        # function_status_unresolved to function_confirmed_distinct via
+        # Basis 3, exercising the same delegated discretion XASSET-0015's
+        # own SS E reserved for a future drafting session on unchanged
+        # evidence -- not a new grant of authority, not a schema/mechanism
+        # change.
         expected = {
             "equity": "function_confirmed_distinct",
-            "fund_broad_market": "function_status_unresolved",
+            "fund_broad_market": "function_confirmed_distinct",
             "fund_gld_defensive": "function_confirmed_distinct",
             "crypto": "function_confirmed_distinct",
             "cash_reserve": "function_confirmed_distinct",
@@ -3760,9 +3771,17 @@ class TestRealPolicyAdoptionCorpus:
             assert d["capital_eligibility_status"] == want, sid
 
     def test_axis_c_outcomes_exactly_as_derived(self):
+        # fund_broad_market updated (XASSET-0017): once Axis A clears
+        # (function_confirmed_distinct) and Axis B stays eligible_for_
+        # target_consideration, Axis C is mechanically recomputed from
+        # sizing_blocked to sizing_conditionally_ready -- its own
+        # relationship-coverage ledger still carries four deferred_
+        # disclosed pairs (unchanged, not researched or closed by this
+        # filing), which caps it below sizing_ready, per SS5/SS5.1's own
+        # unedited mechanical rule.
         expected = {
             "equity": "sizing_conditionally_ready",
-            "fund_broad_market": "sizing_blocked",
+            "fund_broad_market": "sizing_conditionally_ready",
             "fund_gld_defensive": "sizing_conditionally_ready",
             "crypto": "sizing_conditionally_ready",
             "cash_reserve": "sizing_blocked",
