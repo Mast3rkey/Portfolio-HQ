@@ -101,6 +101,49 @@ numeric trigger, so its own reachability fact no longer combines with any publis
 narrow anything; the former table is replaced with a disclosure-only paragraph in §9.10 below that
 publishes no comparative or numeric information at all.
 
+**Third bounded correction (same PR, same day), independent exact-head delta review
+`pullrequestreview-4917325267` (anchored to the second-correction head
+`95556d05d58e235643212c6f5a8814fa14d7fa82`), 0 BLOCKING / 1 fresh MAJOR / 0 fresh MINOR / 1
+non-blocking NOTE, CHANGES REQUIRED — confirmed the original MAJOR/MINOR and both round-1 new
+MAJOR findings genuinely resolved, and found one fresh MAJOR, resolved by this correction.**
+**Fresh MAJOR, described structurally — this banner deliberately does not restate the specific
+live counts or derived outcomes the review itself found, to avoid the exact self-defeating error
+of republishing leaked information inside its own correction record.** §3's own "Live sizing-status
+population" table stated each sizing-eligible sleeve's exact current relationship-coverage input
+count (the same field §9.3's own R2 rule reads). The review found that combining those live,
+per-sleeve counts with R2's own relative-extreme rule (fires up for the strict, unique fewest such
+count among the sizing-eligible population; fires down for the strict, unique most; no fire on a
+tie) let a reader of this document alone — no external repository access required — mechanically,
+certainly determine R2's real directional outcome for every sizing-eligible sleeve today, which,
+combined with this document's own published baseline/increment constants, narrowed each real
+sleeve's eventual `provisional_target_pct` from the full five-value reachable set to a real,
+certain three-value subset — the identical leakage class the withdrawal of R1's own reachability
+table already eliminated (round 2 above), left open here for R2's still-live sibling trigger.
+**Resolved**: §3's own table is redacted to categorical Axis A/B/C
+disposition plus a citation to the governing gate/case only — no exact pair count, no relative-
+extreme characterization, and no secondary-condition-type detail for any sleeve appears anywhere
+in the table any longer (§3). A new standing rule, §3.1, generalizes this beyond the one table:
+this governance filing must never publish current real trigger-input state for any sizing-eligible
+sleeve, on any trigger, anywhere in its own committed content — the future, separately authorized
+implementation must derive R2 and R3 live, itself, from the sealed source records. A full-document
+audit for the identical leakage class against R3 specifically (not flagged by the review, checked
+regardless per this correction's own standing discipline) found no comparable leak — no table or
+passage anywhere in this document states a real sleeve's own secondary-condition-type breadth or a
+relative-extreme comparison among real sleeves for R3; the only R3-adjacent fact in the former §3
+table (a vague, non-quantitative "at least one of two named types" statement for `equity`) has
+been removed in the same redaction, out of caution, though it was independently confirmed
+insufficient on its own to determine R3's outcome for any sleeve. The single non-blocking NOTE
+(the synthetic walkthrough's own seven cases don't include a literal worked "opposite-direction
+cancellation to zero" example, though the underlying arithmetic is already proven correct by
+§9.4's own nine-combination table) is disclosed, not corrected — it is walkthrough-completeness
+only, explicitly characterized by the review itself as non-actionable. No Stage 4 policy outcome,
+no eligibility determination, no sealed `policy_adoption`/`sleeve_profile`/`sleeve_relationship`
+record, no Level 2 content, and no actual percentage, trigger direction, or adjustment for
+`equity`, `fund_gld_defensive`, or `crypto` is created, computed, or implied by this third
+correction — this correction is text-removal-and-boundary-addition only, not a redesign of R2, R3,
+the baseline, the increment, or the `[12.67, 20.67]` generic theoretical range, all of which remain
+unedited and unaffected.
+
 ## 0. Purpose and where this sits in the sequence
 
 `XASSET-0014` §H/§15 defined an eleven-condition gate that must hold before numeric Level 1
@@ -182,20 +225,89 @@ authorize content in a wholly separate future filing) — §4 below explains whi
 
 ## 3. Live sizing-status population, independently re-derived
 
-| `sleeve_id` | Axis A | Axis B | Axis C | Secondary conditions bearing on it |
+**Table redacted by this document's own third bounded correction, resolving independent exact-head
+delta review `pullrequestreview-4917325267`'s fresh MAJOR finding — described structurally here,
+not by republishing the specific live counts or derived outcomes the review itself found, to avoid
+the exact self-defeating error of restating leaked information inside its own correction note.**
+The prior version of this table's own fifth column stated each sleeve's exact current
+relationship-coverage input count (the same field §9.3's own R2 rule reads). The review found that
+combining those live, per-sleeve counts with R2's own relative-extreme rule (fires up for the
+sizing-eligible sleeve with the strict, unique fewest such count; fires down for the strict, unique
+most; no fire on a tie) let a reader mechanically, certainly determine R2's real directional
+outcome for every sizing-eligible sleeve today, which, combined with this document's own published
+`starting_baseline_pct`/increment constants, narrowed each real sleeve's eventual
+`provisional_target_pct` from the full five-value reachable set to a real, certain three-value
+subset. This is the identical leakage class the withdrawal of R1's own reachability table (former
+§9.10) already eliminated, left open here for R2. **Resolved**: the
+table below states only the already-governing Axis A/B/C categorical disposition and a citation
+to the specific governing gate/case where a sleeve is blocked — no exact relationship-pair count,
+no relative-extreme ("fewest"/"most"/"strongest") characterization, and no secondary-condition-type
+enumeration for any sleeve, sizing-eligible or blocked, appears anywhere in this table. The
+underlying evidence remains fully available in the cited sealed records — this table simply no
+longer performs the arithmetic-enabling work of restating it next to the newly-defined R2/R3 rules
+and this document's own published constants (§3.1 below states this as a standing rule, not a
+one-time table fix).
+
+| `sleeve_id` | Axis A | Axis B | Axis C | Governing basis (categorical only) |
 |---|---|---|---|---|
-| `equity` | `function_confirmed_distinct` | `eligible_for_target_consideration` | `sizing_conditionally_ready` | Every one of its 5 sealed relationship pairs carries `evidence_partial_present`/`forced_abstention_present` (at least one); zero `deferred_disclosed` pairs — the only sleeve with a fully `sealed_determined` ledger. |
-| `fund_broad_market` | `function_status_unresolved` | `eligible_for_target_consideration` | `sizing_blocked` | Blocked via the Axis A gate alone (`XASSET-0014` §22 Case G) — Basis 1 unavailable, Basis 2 not asserted, Basis 3 available but this session's own drafting discretion (`XASSET-0015` §E) landed on the unresolved reading. 4 of 5 pairs `deferred_disclosed`. |
-| `fund_gld_defensive` | `function_confirmed_distinct` | `eligible_for_target_consideration` | `sizing_conditionally_ready` | All three lawful Axis A bases available — the strongest evidentiary support of any non-equity sleeve. 3 of 5 pairs `deferred_disclosed`. |
-| `crypto` | `function_confirmed_distinct` | `eligible_for_target_consideration` | `sizing_conditionally_ready` | Basis 1 + Basis 3. 3 of 5 pairs `deferred_disclosed`; sleeve-wide forced abstention on `cross_coin_correlation_status`. |
+| `equity` | `function_confirmed_distinct` | `eligible_for_target_consideration` | `sizing_conditionally_ready` | Sealed `policy_adoption`/`sleeve_relationship` evidence supports this disposition — see the cited sealed record; current relationship-coverage and secondary-condition detail is intentionally not restated here (§3.1). |
+| `fund_broad_market` | `function_status_unresolved` | `eligible_for_target_consideration` | `sizing_blocked` | Blocked via the Axis A gate alone (`XASSET-0014` §22 Case G) — Basis 1 unavailable, Basis 2 not asserted, Basis 3 available but this session's own drafting discretion (`XASSET-0015` §E) landed on the unresolved reading. |
+| `fund_gld_defensive` | `function_confirmed_distinct` | `eligible_for_target_consideration` | `sizing_conditionally_ready` | Sealed `policy_adoption`/`sleeve_relationship` evidence supports this disposition — see the cited sealed record; current relationship-coverage and secondary-condition detail is intentionally not restated here (§3.1). |
+| `crypto` | `function_confirmed_distinct` | `eligible_for_target_consideration` | `sizing_conditionally_ready` | Sealed `policy_adoption`/`sleeve_relationship` evidence supports this disposition — see the cited sealed record; current relationship-coverage and secondary-condition detail is intentionally not restated here (§3.1). |
 | `cash_reserve` | `function_confirmed_distinct` | `eligible_for_target_consideration` | `sizing_blocked` | Forced by its own `sealed_unresolved` pair against `debt_reduction` (`XASSET-0014` §22 Case D). Carries the mandatory `cash_reserve_consolidation_note`. |
 | `debt_reduction` | `function_confirmed_distinct` | `not_yet_eligible` | `sizing_blocked` | Axis B mechanically forced by `forced_abstention` evidence coverage; also its own `sealed_unresolved` pair against `cash_reserve`. No `targets.yaml` row exists for this sleeve at all. |
 
 **Zero sleeves reach `sizing_ready`.** Three (`equity`, `fund_gld_defensive`, `crypto`) reach
 `sizing_conditionally_ready`. Three (`fund_broad_market`, `cash_reserve`, `debt_reduction`) reach
 `sizing_blocked`. This split is not a judgment this filing makes — it is a mechanical fact already
-sealed in the six Stage 4c records, independently re-verified above, unchanged by anything in this
-filing.
+sealed in the six Stage 4c records, independently re-verified above (§1's own eleven-condition
+gate table, which discloses only population-level counts — e.g. "every one of the six records
+carries exactly 5 ledger entries" — never a per-sleeve relative ranking among the three
+sizing-eligible sleeves specifically, and is therefore not a leak of this same class), unchanged
+by anything in this filing. Every sleeve's own current `deferred_disclosed` count, secondary-
+condition-type breadth, and any other live relationship-coverage detail is available in its own
+cited sealed record (`intelligence/level1_sleeve_synthesis/policy_adoption/<sleeve_id>.yaml` and
+the sealed `sleeve_relationship` records it references) — deliberately not restated in this
+governance filing (§3.1).
+
+### 3.1 Implementation-time live-derivation boundary — added by this document's own third bounded correction
+
+**Rule, standing and general, not limited to §3's own table.** This governance filing defines R2's
+and R3's own algorithms, semantics, and constants (§9.3-§9.4) transparently and completely enough
+for independent review and for a future implementer to build a live-rederivation validator (§19
+item 17) — **but it must never itself publish the current real trigger-input state for any
+sizing-eligible sleeve**: no exact `deferred_disclosed`/`sealed_determined` pair count, no exact
+secondary-condition-type breadth or type enumeration tied to a real sleeve, no relative-extreme
+characterization ("fewest," "most," "strongest," "only sleeve with...") comparing real sleeves
+against each other, and no other live quantity or ranking that, combined with this document's own
+published `starting_baseline_pct`/increment constants, would let a reader mechanically derive or
+materially narrow any individual real sleeve's eventual `provisional_target_pct`. **The future,
+separately authorized implementation this filing authorizes must derive R2 and R3 live, itself,
+directly from the sealed source records at implementation time** — this design filing deliberately
+stops short of performing, or pre-disclosing the inputs to, that derivation.
+
+This is not security through obscurity: every constant, rule, tie condition, and boundary that
+defines R2/R3 remains fully disclosed (§9.3, §9.4, §9.7) — a reader can understand exactly *how*
+R2 and R3 work without this filing telling them *which* real sleeve currently fires which
+direction. The underlying sealed evidence itself is not hidden or newly restricted — it remains
+exactly as available in `intelligence/level1_sleeve_synthesis/policy_adoption/*.yaml` and the
+sealed `sleeve_relationship` records as it always was (the same posture `XASSET-0015` §C's own
+already-public Axis A disclosure already established for the withdrawn R1 fact) — only this
+specific governance filing declines to perform the arithmetic-enabling work of restating it next
+to the newly-defined trigger rules and constants in the same document.
+
+**Adversarial check, added as an explicit governance-level requirement, not merely a drafting
+intention.** Given only this filing's own committed content (this decision file and its
+supporting artifact), a reader must not be able to determine, for any real sizing-eligible sleeve:
+whether R2 fires up, down, or not at all; whether R3 fires up, down, or not at all; the resulting
+adjustment tuple; or a narrowed target-candidate subset caused specifically by this document's own
+disclosed current-evidence detail. The generic, methodology-derived range `[12.67, 20.67]` (§9.4,
+§9.5) is explicitly **not** a violation of this rule — it follows from the methodology's own fixed
+constants alone, identically for every sizing-eligible sleeve, and carries no information about
+any real sleeve's own current trigger state. A future implementation's own populated
+`numeric_sizing` records, by contrast, are exactly where real R2/R3 states and real provisional
+targets belong — computed, disclosed, and independently reviewed at that later, separately
+authorized stage (§20), never pre-computed or partially pre-disclosed here.
 
 ## 4. Minimality decision — Option A, with the reasoning made explicit and falsifiable
 

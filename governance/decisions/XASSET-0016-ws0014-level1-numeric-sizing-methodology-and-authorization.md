@@ -183,6 +183,49 @@ METHODOLOGY_AND_AUTHORIZATION_20260812.md` (substantive — second correction ba
 9.3, 9.4, 9.5, 9.10, 19 items 17/18/20/25, 21, schema `applied_adjustments[]` field), `governance/
 decisions/XASSET-0016-*.md` (this section, plus revised §H, revised Consequences).
 
+**Third bounded correction, independent exact-head delta review `pullrequestreview-4917325267`
+(anchored to the second-correction head `95556d05d58e235643212c6f5a8814fa14d7fa82`), 0 BLOCKING /
+1 fresh MAJOR / 0 fresh MINOR / 1 non-blocking NOTE, CHANGES REQUIRED — confirmed the original
+MAJOR/MINOR and both round-1 new MAJOR findings genuinely resolved, and found one fresh MAJOR,
+resolved by this correction:**
+
+5. **FRESH MAJOR ("R2-via-§3 leakage"), resolved — described structurally below, not by
+   republishing the specific live counts or derived outcomes the review itself found, to avoid the
+   exact self-defeating error of restating leaked information inside this correction record.** The
+   supporting artifact's own §3 table stated each sizing-eligible sleeve's exact current
+   relationship-coverage input count (the same field R2's own rule reads). Combined with R2's own
+   rule (fires up for the strict, unique fewest such count; down for the strict, unique most; no
+   fire on a tie), a reader of this document alone could mechanically, certainly determine R2's
+   real directional outcome for all three sizing-eligible sleeves today — narrowing, when combined
+   with this document's own published baseline/increment constants, each real sleeve's eventual
+   `provisional_target_pct` from the full five-value reachable set to a real, certain three-value
+   subset. The review
+   correctly classified this as the identical leakage class the withdrawal of R1's own
+   reachability table already eliminated (finding 3, above), left open for R2's still-live sibling
+   trigger. **Resolved**: §3's own table is redacted to categorical Axis A/B/C disposition plus a
+   governing gate/case citation only — no exact pair count, no relative-extreme characterization,
+   and no secondary-condition-type detail for any sleeve. A new standing rule (supporting artifact
+   §3.1) generalizes this beyond the one table: this governance filing must never publish current
+   real trigger-input state for any sizing-eligible sleeve, on either R2 or R3, anywhere in its own
+   committed content — the future, separately authorized implementation must derive both live,
+   itself, from the sealed source records. A full-document audit for the identical class against R3
+   specifically (not flagged by the review, checked regardless) found no comparable leak. The one
+   non-blocking NOTE (the synthetic walkthrough's own seven cases lack a literal worked opposite-
+   direction cancellation-to-zero example, though the underlying arithmetic is already proven
+   correct by §9.4's own nine-combination table) is disclosed, not corrected — explicitly
+   characterized by the review itself as walkthrough-completeness only, non-actionable.
+
+This third correction is text-removal-and-boundary-addition only — it does not redesign R2, R3,
+the equal-share baseline, the fixed `±2.00pp` increment, or the `[12.67, 20.67]` generic
+theoretical range, all of which remain unedited and unaffected. No Stage 4 policy outcome, no
+eligibility determination, no sealed `policy_adoption`/`sleeve_profile`/`sleeve_relationship`
+record, no Level 2 content, and no actual percentage, trigger direction, or adjustment for
+`equity`, `fund_gld_defensive`, or `crypto` is created, computed, or implied by this correction.
+
+Exact third-correction-delta file inventory: `governance/audits/WS0014_LEVEL1_NUMERIC_SIZING_
+METHODOLOGY_AND_AUTHORIZATION_20260812.md` (substantive — third correction banner, §3 table
+redaction, new §3.1), `governance/decisions/XASSET-0016-*.md` (this section, plus revised §H).
+
 ## Decision
 
 ### A. What this filing does — methodology design plus one bounded future authorization, no numeric content
@@ -289,7 +332,7 @@ It does not authorize:
 - adoption of any future `provisional_target_pct` as controlling policy — that remains its own,
   separate, later, explicit governance decision, not authorized, scheduled, or implied here.
 
-### H. Numeric derivation procedure — added by this filing's own bounded correction, revised by its second
+### H. Numeric derivation procedure — added by this filing's own bounded correction, revised by its second and third
 
 An independent exact-head review found the original filing's evidence-category list (§ prior D/E
 context) insufficient on its own — it named what evidence *may* inform a figure and what a figure
@@ -312,10 +355,20 @@ a larger provisional figure — the same fact is retained, unchanged in substanc
 disclosure-only item, matching the treatment already given to Level 2 valuation detail and crypto
 divergence; and mechanically re-enumerated the procedure's own reachable bound from a stated
 `[10.67, 22.67]` (arithmetically wrong even under the withdrawn design) to the correct, symmetric
-`[12.67, 20.67]` around the equal-share baseline (supporting artifact §§9.4-9.5, §21). **This
-filing still computes no percentage for any sleeve** — the procedure is methodology, applied only
-by the future implementation this filing authorizes (§A), to real sealed evidence that filing must
-itself independently gather and disclose.
+`[12.67, 20.67]` around the equal-share baseline (supporting artifact §§9.4-9.5, §21). **A third
+bounded correction, resolving a further exact-head delta review's own fresh MAJOR finding, removed
+this filing's own §3 restatement of each sizing-eligible sleeve's exact current relationship-
+coverage count** — that live count, combined with the (by then correctly defined) R2 rule and this
+document's own published constants, let a reader mechanically narrow a real sleeve's eventual
+figure from outside the future implementation this filing authorizes, the identical leakage class
+already eliminated for the withdrawn R1 trigger. A new standing rule (supporting artifact §3.1)
+generalizes the fix: this governance filing must never publish current real trigger-input state
+for any sizing-eligible sleeve, on any trigger, anywhere in its own committed content — the future
+implementation must derive R2 and R3 live, itself, from the sealed source records at
+implementation time, never from this design filing's own text. **This filing still computes no
+percentage for any sleeve** — the procedure is methodology, applied only by the future
+implementation this filing authorizes (§A), to real sealed evidence that filing must itself
+independently gather and disclose.
 
 ## Rationale
 
@@ -401,10 +454,15 @@ validator/test specification); one retained, exact determination of which three 
 are eligible for a provisional numeric candidate under the already-sealed Axis C dispositions;
 confirmation, via two additive `operations/WORKSTREAMS.yaml` gates, that `XASSET-0015`'s own
 authorized Stage 4c implementation (`PR #306`) is fully merged and post-merge CI on `main` is
-green; six rejected alternatives recorded for future reference; two bounded correction rounds —
-the first resolving a single MAJOR (in one connected part) and a single MINOR finding, the second
-resolving two further MAJOR findings (R1's own withdrawn directional validity; the corrected
-theoretical bound) — each from its own independent exact-head review.
+green; six rejected alternatives recorded for future reference; a standing implementation-time
+live-derivation boundary rule (supporting artifact §3.1) barring this filing from ever publishing
+current real trigger-input state for any sizing-eligible sleeve, on any trigger, anywhere in its
+own committed content; three bounded correction rounds — the first resolving a single MAJOR (in
+one connected part) and a single MINOR finding, the second resolving two further MAJOR findings
+(R1's own withdrawn directional validity; the corrected theoretical bound), the third resolving one
+further MAJOR finding (a live relationship-coverage count in §3 mechanically revealing R2's real
+directional outcome for every real sizing-eligible sleeve) — each from its own independent
+exact-head review.
 
 **Does not change**: any tier, target, cap, cluster, gate, or holding; any allocator or margin
 behavior; the 1.8x leverage cap or 30% margin-buffer floor; any Company, Theme, relationship,
