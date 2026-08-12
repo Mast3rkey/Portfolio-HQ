@@ -11184,6 +11184,113 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-11"
+      - gate: stage4c-policy-adoption-implementation-post-merge-verification
+        description: >
+          Lane M factual synchronization, folded into this session's own
+          XASSET-0016 filing. Independently re-confirmed via the GitHub
+          API, not assumed: PR #306 (the stage4c-policy-adoption-
+          implementation gate above, this repository's own Stage 4c
+          policy-adoption implementation) is fully merged. Three
+          independent review/correction rounds -- original review
+          pullrequestreview-4911497398 (2 MAJOR, 5 MINOR) resolved by a
+          bounded correction; delta review pullrequestreview-4912431420
+          (0 MAJOR, 2 new MINOR) resolved by a second bounded correction;
+          final delta review pullrequestreview-4914735841 (0 BLOCKING/0
+          MAJOR/0 MINOR/3 non-blocking NOTE) -- principal acceptance at
+          exact head 01c0c88c8e1c9b0b72ea48c14d728c9cde852ddb
+          (issuecomment-5265824236). Merged via merge commit
+          0dc3f33c5fa539b2d44fb1579ab23df8cb730a4a (parents
+          90e12b2ba3441c6b3602b0fd24bc0642a3aa6952 and the accepted
+          head). Merge-commit CI independently re-fetched: workflow run
+          31590077149, status completed / conclusion success. All six
+          sealed policy_adoption records (equity, fund_broad_market,
+          fund_gld_defensive, crypto, cash_reserve, debt_reduction)
+          independently re-opened and re-verified this session --
+          Axis A/B/C values, blocking_evidence counts, and
+          relationship_coverage_ledger entries all match the PR's own
+          final reported state exactly. level1_sleeve_synthesis_
+          validator.py run standalone this session: OK (7 profile
+          result(s), 8 relationship result(s), 7 policy_adoption
+          result(s)). test_level1_sleeve_synthesis_validator.py run in
+          full this session: 763 passed, 0 failed, matching PR #306's
+          own final reported count exactly. XASSET-0014 SS15's own
+          eleven-condition numeric-sizing gate independently
+          recomputed against this live state this same session (see
+          the xasset0016-... gate below) -- found all eleven satisfied.
+          The stage4c-policy-adoption-implementation gate's own text
+          above is left byte-unedited, per this repository's established
+          never-silently-rewrite-a-prior-gate convention.
+        pr: 306
+        status: complete
+        date: "2026-08-12"
+      - gate: xasset0016-level1-numeric-sizing-methodology-and-authorization
+        description: >
+          This session's own filing. Independently recomputed XASSET-0014
+          SS15's eleven-condition numeric-sizing gate against live
+          repository truth (not assumed from PR #306's own post-merge
+          narrative) and found all eleven genuinely satisfied -- full
+          per-condition evidence trail in the governing decision's own
+          supporting artifact SS1. Independently searched the full
+          repository for an existing numeric Level 1 sleeve-sizing
+          methodology and found none -- every TIER-####/VALUATION-####
+          decision governs equity instrument-level (Level 2) work, not
+          cross-sleeve allocation; NUM-0001 governs numeric-parameter
+          provenance classification, not derivation (supporting artifact
+          SS2). Designed, as text only -- no numeric content populated by
+          this filing -- the methodology for provisional numeric Level 1
+          sleeve sizing: a categorical numeric_target_status field
+          (provisional_target_assigned / no_provisional_target_pending_
+          axis_c, mechanically derived from each sleeve's own sealed
+          sizing_readiness_status, zero drafting discretion); a
+          provisional_target_pct field, nullable, populated only for the
+          three sleeves currently sizing_conditionally_ready (equity,
+          fund_gld_defensive, crypto), forced NUM-0001 class 5
+          (provisional governance guardrail) whenever populated, never
+          class 3 (empirically calibrated); explicit exclusion of a
+          0.00% placeholder for the three sizing_blocked sleeves
+          (fund_broad_market, cash_reserve, debt_reduction) -- a literal
+          zero would itself be an unauthorized policy assertion, not an
+          abstention; a mechanically computed unsized_reserved_capital_pct
+          reconciliation figure (100.00 minus the sum of populated
+          targets) reusing PHQ-2026-04's own live, accepted,
+          un-renormalized 99.25% targets.yaml precedent rather than
+          forcing a false 100% sum among only the three sizing-eligible
+          sleeves; cash_reserve explicitly barred from serving as an
+          implicit residual, since it is itself sizing_blocked today; an
+          extended stronger_evidence_maturity non-influence prohibition
+          (XASSET-0014 SS6, generalized from the three categorical axes to
+          any numeric value or formula); a sleeve-level (not
+          instrument-level) valuation-input rule permitting equity's own
+          Level 1 sizing to proceed on disclosed partial Level 2
+          valuation evidence; a restated Level 1/Level 2, margin, chart,
+          and allocation-check boundary; and a sixteen-point future
+          validator/test specification. Determined, and justified in the
+          decision file's own SS B / Alternatives Considered, that one
+          filing combining methodology design with a bounded future-
+          implementation authorization is the correct minimal path here
+          -- unlike every prior XASSET-0002-0015 stage, the population
+          question a separate content-authorization filing would
+          otherwise answer (which of the six sleeves is eligible for a
+          provisional numeric candidate) is already a mechanical
+          consequence of XASSET-0014's own accepted Axis C rule applied
+          to already-sealed evidence, not an independent scoping
+          judgment requiring its own authorization. Authorizes exactly
+          one future, separate, bounded implementation PR -- requiring
+          its own full independent-review/correction/re-review/
+          principal-acceptance/merge/post-merge-verification lifecycle --
+          to populate six intelligence/level1_sleeve_synthesis/
+          numeric_sizing/<SLEEVE_ID>.yaml records (never omitted, even
+          for the three blocked sleeves), one COHORT_MANIFEST.yaml
+          carrying the reconciliation block, a dedicated Stage 5
+          validator section/module, and its focused/adversarial test
+          suite. Populates no numeric_sizing record itself, computes no
+          percentage, and authorizes no Level 2 sizing, allocation check,
+          margin deployment, or chart evidence of any kind. This session
+          does not review its own PR, mark it ready, merge it, or post
+          principal acceptance -- awaiting independent exact-head review.
+        pr: null
+        status: in_progress
+        date: "2026-08-12"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11215,6 +11322,8 @@ workstreams:
       - governance/decisions/XASSET-0014-ws0014-level1-policy-adoption-methodology.md
       - governance/audits/WS0014_LEVEL1_POLICY_ADOPTION_METHODOLOGY_DESIGN_20260811.md
       - governance/decisions/XASSET-0015-ws0014-level1-policy-adoption-content-authorization.md
+      - governance/decisions/XASSET-0016-ws0014-level1-numeric-sizing-methodology-and-authorization.md
+      - governance/audits/WS0014_LEVEL1_NUMERIC_SIZING_METHODOLOGY_AND_AUTHORIZATION_20260812.md
     next_action: >
       XASSET-0009 (PR #293) is independently confirmed merged — see the
       xasset0009-post-merge-verification gate above. Its authorization
@@ -11654,10 +11763,10 @@ workstreams:
       question, a future cross-coin correlation study, and any broader
       contender-registry sweep remain blocked on their own future,
       separate, explicit principal authorization each.
-    active_branch: claude/xasset-0015-stage-4c-policy-wz38lj
+    active_branch: claude/xasset-0016-level1-sizing-q19xci
     active_pr: null
-    last_verified_main_sha: 90e12b2ba3441c6b3602b0fd24bc0642a3aa6952
-    last_verified_date: "2026-08-11"
+    last_verified_main_sha: 0dc3f33c5fa539b2d44fb1579ab23df8cb730a4a
+    last_verified_date: "2026-08-12"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively
