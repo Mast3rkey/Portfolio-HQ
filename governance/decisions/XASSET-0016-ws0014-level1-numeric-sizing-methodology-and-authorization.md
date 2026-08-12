@@ -134,6 +134,55 @@ Exact correction-delta file inventory: `governance/audits/WS0014_LEVEL1_NUMERIC_
 METHODOLOGY_AND_AUTHORIZATION_20260812.md` (substantive — §§8, 9, 13, 17, 19, 21, plus this
 correction's own banner), `governance/decisions/XASSET-0016-*.md` (this section, plus new §H).
 
+**Second bounded correction, independent exact-head delta review `pullrequestreview-4916848704`
+(anchored to the first-correction head `8b883689fa0599eb590953a21713ad0299b9939f`), 0 BLOCKING /
+2 new MAJOR / 0 new MINOR / 5 NOTE, CHANGES REQUIRED — confirmed the MAJOR and MINOR above
+genuinely resolved, and found two new MAJOR findings, both resolved by this correction:**
+
+3. **NEW MAJOR ("R1 directional validity"), resolved.** The three-trigger design's own R1 ("full
+   Axis-A-basis coverage") fired a positive numeric adjustment for a sleeve independently clearing
+   all three lawful Axis A evidentiary bases (`XASSET-0014` §3.2), rather than the single basis
+   Axis A itself requires. The review correctly found no governing text anywhere states or implies
+   that basis-completeness — a confidence-in-classification-finding measure — is itself an
+   economic or portfolio-risk reason to hold **more capital**, and that this concretely,
+   foreseeably favored only `fund_gld_defensive` today (the sole sleeve independently clearing all
+   three bases per `XASSET-0015` §C) for a reason unconnected to any governed risk/opportunity-cost
+   basis. **Resolved**: R1 is withdrawn as a numeric trigger. The procedure now defines exactly two
+   named, closed triggers (R2, R3, retained under their original identifiers). The underlying
+   Axis-A-basis-completeness fact is retained, unchanged in substance, as a disclosure-only item —
+   the same treatment already given to Level 2 valuation completeness and crypto per-coin
+   divergence — never a fourth numeric trigger under a different name. R2's and R3's own rationale
+   is strengthened, in the same correction, to state explicitly why each is a genuine
+   uncertainty/risk-discount signal (more disclosed, unresolved cross-sleeve evidence gaps
+   discount a provisional figure downward; their strict absence discounts it upward) rather than a
+   reward for documentation volume — and this same "no numeric reward for evidence quantity alone"
+   rule is stated as a standing constraint on any future candidate trigger. Full detail in the
+   supporting artifact's own second correction banner and §9.3.
+4. **NEW MAJOR ("theoretical bound arithmetic"), resolved.** The stated bound `[10.67, 22.67]` was
+   arithmetically inconsistent with R1's own up-only definition (R1 could only ever contribute
+   `{0, +2.00}`, never `{-2.00}`) — the true reachable minimum under the withdrawn three-trigger
+   design was `16.67 - 2.00 - 2.00 = 12.67`, not `10.67`. **Resolved, and simplified by the same
+   fix that resolved finding 3**: with R1 withdrawn, exactly two symmetric triggers remain, each
+   independently capable of firing `up`, `down`, or not at all; the corrected, mechanically
+   re-enumerated bound (all nine reachable `(R2, R3)` combinations independently checked) is
+   `[-4.00, +4.00]` percentage points around the `16.67` baseline, i.e. `[12.67, 20.67]` — every
+   stale reference to the prior bound (`[-6.00, +6.00]`, `[10.67, 22.67]`, `3 x 22.67 = 68.01`) is
+   corrected throughout the supporting artifact (§§9.4, 9.5, 19 item 20, 21).
+
+All five NOTEs from this review are dispositioned in the supporting artifact's own second
+correction banner: two (the §9.2 baseline-conflation clarity point; no stated rationale for
+exactly `2.00` versus a neighboring magnitude) are carried forward unchanged, non-actionable, and
+not materially affected by withdrawing R1; two (R2's/R3's own rationale "could be more explicit";
+R2/R3 non-orthogonality) are resolved by strengthened, explicit rationale text added to §9.3; one
+(the former R1-only reachability table, combined with this document's own published constants,
+let a reader derive a narrowed range) is now moot, since R1 no longer feeds this procedure's
+arithmetic and the table itself is removed (§9.10).
+
+Exact second-correction-delta file inventory: `governance/audits/WS0014_LEVEL1_NUMERIC_SIZING_
+METHODOLOGY_AND_AUTHORIZATION_20260812.md` (substantive — second correction banner, §§9 intro,
+9.3, 9.4, 9.5, 9.10, 19 items 17/18/20/25, 21, schema `applied_adjustments[]` field), `governance/
+decisions/XASSET-0016-*.md` (this section, plus revised §H, revised Consequences).
+
 ## Decision
 
 ### A. What this filing does — methodology design plus one bounded future authorization, no numeric content
@@ -240,7 +289,7 @@ It does not authorize:
 - adoption of any future `provisional_target_pct` as controlling policy — that remains its own,
   separate, later, explicit governance decision, not authorized, scheduled, or implied here.
 
-### H. Numeric derivation procedure — added by this filing's own bounded correction
+### H. Numeric derivation procedure — added by this filing's own bounded correction, revised by its second
 
 An independent exact-head review found the original filing's evidence-category list (§ prior D/E
 context) insufficient on its own — it named what evidence *may* inform a figure and what a figure
@@ -248,17 +297,25 @@ context) insufficient on its own — it named what evidence *may* inform a figur
 undocumented, session-specific discretion. This filing now defines a seven-step, ordered, closed,
 fully deterministic derivation procedure (supporting artifact §§9.1-9.7): a zero-based equal-share
 starting point computed over the full, closed six-sleeve taxonomy (never the eligible subset alone,
-never a `targets.yaml` historical anchor); three named, mechanically-evaluated adjustment triggers
-covering Axis A evidentiary completeness, relative relationship-coverage strength, and relative
-secondary-condition/overlap breadth — each explicitly excluding `stronger_evidence_maturity`,
-Level 2 valuation detail, and crypto per-coin divergence, all three treated as disclosure-only; a
-single fixed, `NUM-0001` class 5 adjustment increment per firing trigger, never a tuned or
-continuously-variable formula; and a mandatory determinism plus comparative-consistency check
-ensuring two identically-evidenced sleeves can never receive different figures, and any two
-differently-figured sleeves can always be traced to a specific named rule. **This filing still
-computes no percentage for any sleeve** — the procedure is methodology, applied only by the future
-implementation this filing authorizes (§A), to real sealed evidence that filing must itself
-independently gather and disclose.
+never a `targets.yaml` historical anchor); **two** named, mechanically-evaluated adjustment
+triggers — relative relationship-coverage strength and relative secondary-condition/overlap
+breadth — each explicitly excluding `stronger_evidence_maturity`, Level 2 valuation detail, and
+crypto per-coin divergence, all treated as disclosure-only; a single fixed, `NUM-0001` class 5
+adjustment increment per firing trigger, never a tuned or continuously-variable formula; and a
+mandatory determinism plus comparative-consistency check ensuring two identically-evidenced
+sleeves can never receive different figures, and any two differently-figured sleeves can always be
+traced to a specific named rule. **A second bounded correction, resolving a fresh exact-head
+delta review's own two new MAJOR findings, withdrew a third originally-defined trigger** (Axis A
+evidentiary-basis completeness) after independent scrutiny found no governing text connects
+clearing more of the three lawful Axis A bases to an argued economic or portfolio-risk reason for
+a larger provisional figure — the same fact is retained, unchanged in substance, as a
+disclosure-only item, matching the treatment already given to Level 2 valuation detail and crypto
+divergence; and mechanically re-enumerated the procedure's own reachable bound from a stated
+`[10.67, 22.67]` (arithmetically wrong even under the withdrawn design) to the correct, symmetric
+`[12.67, 20.67]` around the equal-share baseline (supporting artifact §§9.4-9.5, §21). **This
+filing still computes no percentage for any sleeve** — the procedure is methodology, applied only
+by the future implementation this filing authorizes (§A), to real sealed evidence that filing must
+itself independently gather and disclose.
 
 ## Rationale
 
@@ -333,17 +390,21 @@ repository.
 **Changes as a direct result of this decision**: the existence of one retained numeric Level 1
 sleeve-sizing methodology (a closed `numeric_target_status` vocabulary, a seven-step ordered,
 closed, deterministic numeric derivation procedure — a zero-based equal-share starting point over
-the full six-sleeve taxonomy, three named closed evidence-triggered adjustment rules with a single
-fixed `NUM-0001` class 5 increment, and a mandatory determinism/comparative-consistency check — a
-`provisional_target_pct` field forced to `NUM-0001` class 5 whenever populated, a mandatory
-`unsized_reserved_capital_pct` reconciliation identity, an extended `stronger_evidence_maturity`
-non-influence prohibition, and a twenty-four-point future validator/test specification); one
-retained, exact determination of which three of the six sleeves are eligible for a provisional
-numeric candidate under the already-sealed Axis C dispositions; confirmation, via two additive
-`operations/WORKSTREAMS.yaml` gates, that `XASSET-0015`'s own authorized Stage 4c implementation
-(`PR #306`) is fully merged and post-merge CI on `main` is green; six rejected alternatives
-recorded for future reference; one bounded correction round resolving a single MAJOR (in one
-connected part) and a single MINOR finding from an independent exact-head review.
+the full six-sleeve taxonomy, two named closed evidence-triggered adjustment rules (R2, R3; a
+third, R1, was considered, defined, and then withdrawn as a numeric trigger by this filing's own
+second bounded correction, retained only as a disclosure-only fact) with a single fixed `NUM-0001`
+class 5 increment, a mechanically re-enumerated `[12.67, 20.67]` reachable bound, and a mandatory
+determinism/comparative-consistency check — a `provisional_target_pct` field forced to `NUM-0001`
+class 5 whenever populated, a mandatory `unsized_reserved_capital_pct` reconciliation identity, an
+extended `stronger_evidence_maturity` non-influence prohibition, and a twenty-five-point future
+validator/test specification); one retained, exact determination of which three of the six sleeves
+are eligible for a provisional numeric candidate under the already-sealed Axis C dispositions;
+confirmation, via two additive `operations/WORKSTREAMS.yaml` gates, that `XASSET-0015`'s own
+authorized Stage 4c implementation (`PR #306`) is fully merged and post-merge CI on `main` is
+green; six rejected alternatives recorded for future reference; two bounded correction rounds —
+the first resolving a single MAJOR (in one connected part) and a single MINOR finding, the second
+resolving two further MAJOR findings (R1's own withdrawn directional validity; the corrected
+theoretical bound) — each from its own independent exact-head review.
 
 **Does not change**: any tier, target, cap, cluster, gate, or holding; any allocator or margin
 behavior; the 1.8x leverage cap or 30% margin-buffer floor; any Company, Theme, relationship,

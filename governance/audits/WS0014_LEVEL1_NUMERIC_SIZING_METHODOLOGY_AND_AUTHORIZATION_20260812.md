@@ -44,6 +44,63 @@ own next-round scrutiny); the third does not bear on this filing's own committed
 `sleeve_relationship` record, no Level 2 content, and no actual percentage for `equity`,
 `fund_gld_defensive`, or `crypto` is created, computed, or implied by this correction.
 
+**Second bounded correction (same PR, same day), independent exact-head delta review
+`pullrequestreview-4916848704` (anchored to the first-correction head
+`8b883689fa0599eb590953a21713ad0299b9939f`), 0 BLOCKING / 2 new MAJOR / 0 new MINOR / 5 NOTE,
+CHANGES REQUIRED — confirmed the original MAJOR and MINOR above genuinely resolved, and found two
+new MAJOR findings, both resolved by this correction.** **NEW MAJOR-A**: R1 ("full Axis-A-basis
+coverage") rewarded a sleeve for independently clearing more of the three lawful Axis A evidentiary
+bases with a positive numeric adjustment, but neither `XASSET-0014` §3.2 nor any other governing
+text ever states that basis-completeness is itself an economic or portfolio-risk reason to hold
+**more capital** — Axis A's own `function_confirmed_distinct` value requires only **one** basis to
+be fully satisfied (`XASSET-0014` §3, item 1); clearing two or three is evidentiary
+**completeness**, i.e. confidence in the classification finding itself, not a distinct, argued case
+for a larger provisional figure. The review found this concretely, foreseeably favored only
+`fund_gld_defensive` today (the sole sleeve independently clearing all three bases per
+`XASSET-0015` §C), for a reason unconnected to any governed risk/opportunity-cost rationale.
+**Resolved**: R1 is withdrawn as a numeric trigger. §9.3 now defines **two** named, closed triggers
+(R2, R3 — retained under their original identifiers, not renumbered, to minimize churn against
+every cross-reference elsewhere in this document and to leave an honest trace that a third trigger
+was considered and withdrawn); the Axis-A-basis-completeness fact is retained, unchanged in
+substance, as a **disclosure-only** item — the same treatment this procedure already gives
+`stronger_evidence_maturity`, Level 2 valuation completeness, and crypto per-coin divergence (§9.3's
+own pre-existing exclusion list) — cited in a future record's own `uncertainty_disclosure` field,
+never converted into, or read as justifying, a specific number or trigger. **NEW MAJOR-B**: with
+R1 withdrawn as a numeric trigger, and independently confirmed even under the original three-trigger
+design (R1 was up-only, `{0, +2.00}`, never `{-2.00}` — no governing text ever gave it a "down"
+case), the stated theoretical bound `[10.67, 22.67]` (§9.4/§9.5, before this correction) was
+arithmetically wrong: the true reachable minimum under the original design was `16.67 - 2.00 -
+2.00 = 12.67`, not `10.67`. **Resolved, and simplified by the same fix that resolved NEW MAJOR-A**:
+with exactly two symmetric triggers remaining (R2, R3 — each capable of firing `up`, `down`, or not
+at all), the corrected, mechanically re-enumerated bound is `[-4.00, +4.00]` percentage points
+around the `16.67` baseline, i.e. `[12.67, 20.67]` — independently verified below (§9.4, §9.5) by
+enumerating all nine reachable `(R2, R3)` combinations, not assumed or copied from the review.
+Every occurrence of the stale bound (`[-6.00, +6.00]`, `[10.67, 22.67]`, `3 x 22.67 = 68.01`) has
+been located and corrected throughout this document (§§9.4, 9.5, 19 item 20, 21). The illustrative
+R1-only reachability table (former §9.10) is replaced with a short disclosure-only paragraph, since
+R1 no longer feeds this procedure's arithmetic and a reachability table for a non-numeric fact
+serves no derivation purpose. §21's synthetic walkthrough is rewritten to exercise the corrected,
+two-trigger system directly (no-trigger, up/down R2-equivalent, up/down R3-equivalent, a tie, both
+triggers combined at the true synthetic minimum and true synthetic maximum) using the same
+deliberately fictional labels and constants as before. No Stage 4 policy outcome, no eligibility
+determination, no sealed `policy_adoption`/`sleeve_profile`/`sleeve_relationship` record, no Level 2
+content, and no actual percentage for `equity`, `fund_gld_defensive`, or `crypto` is created,
+computed, or implied by this second correction. **Disposition of all five NOTEs**: NOTE 1
+(§9.2's starting-baseline text could more clearly separate "why `targets.yaml` is barred as
+evidence" from "why equal-share is itself the right starting shape") and NOTE 2 (no stated
+rationale for exactly `2.00` versus a neighboring magnitude) are both **carried forward unchanged,
+non-actionable per the review's own characterization** — neither is materially affected by
+withdrawing R1. NOTE 3 (R2's and R3's own rationale "could be more explicit" about the risk/
+uncertainty logic connecting them to a numeric direction) is **resolved** by strengthened rationale
+text added to §9.3 below. NOTE 4 (R2 and R3 are not fully orthogonal — a sleeve's own disclosed
+gaps can influence both) is **resolved by explicit disclosure**, added to §9.3 below, that this is
+intentional, bounded, and does not read the same raw field twice. NOTE 5 (the R1-only reachability
+table, combined with this document's own published baseline/increment constants, let a reader
+derive a narrowed *range*, not a point, for a real sleeve) is now **moot** — R1 is no longer a
+numeric trigger, so its own reachability fact no longer combines with any published magnitude to
+narrow anything; the former table is replaced with a disclosure-only paragraph in §9.10 below that
+publishes no comparative or numeric information at all.
+
 ## 0. Purpose and where this sits in the sequence
 
 `XASSET-0014` §H/§15 defined an eleven-condition gate that must hold before numeric Level 1
@@ -270,9 +327,12 @@ starting_baseline_pct            # required whenever provisional_target_pct is p
                                   #   -- never sleeve-specific, never self-declared
 applied_adjustments[]             # required whenever provisional_target_pct is populated --
                                   #   zero or more entries, one per SS9.3 trigger that actually
-                                  #   fired for this sleeve, each {governing_rule_id: R1 | R2 |
-                                  #   R3, direction: up | down, magnitude_pct: the fixed SS9.4
-                                  #   increment, evidence_ref: a hash pin into the specific
+                                  #   fired for this sleeve, each {governing_rule_id: R2 | R3
+                                  #   -- R1 withdrawn as a numeric trigger by this document's own
+                                  #   second bounded correction, SS9.3; a governing_rule_id of R1
+                                  #   is structurally rejected, never a valid value, direction:
+                                  #   up | down, magnitude_pct: the fixed SS9.4 increment,
+                                  #   evidence_ref: a hash pin into the specific
                                   #   sealed record(s) the trigger read}; empty list is valid
                                   #   (a sleeve at its unadjusted baseline) and is not an error
 governing_rule_ids[]              # required whenever provisional_target_pct is populated --
@@ -340,7 +400,13 @@ not a continuously-tunable weighted formula (the review's own alternative concer
 directive's own explicit "do not create a formula merely for the sake of determinism" instruction),
 but a small, closed table of fixed, named, class-5 adjustment increments applied to a zero-based
 starting point, with every application independently re-derivable and every difference between two
-sleeves' outputs traceable to a specific, named, governed rule.
+sleeves' outputs traceable to a specific, named, governed rule. **Further corrected by this
+document's own second bounded correction**: the original seven-step procedure named three
+triggers; one (R1, "full Axis-A-basis coverage") was independently found, on a fresh exact-head
+review, to reward evidentiary completeness of the classification finding itself rather than any
+argued economic or risk-based reason to hold more capital — withdrawn as a numeric trigger and
+retained only as a disclosure-only fact (§9.3). The procedure below now defines exactly **two**
+named, closed, symmetric triggers (R2, R3).
 
 ### 9.1 Step A — establish the allocable total
 
@@ -382,27 +448,66 @@ Milestone-7-style **reconciliation** against current `targets.yaml` weights rema
 its own separate, later, explicitly authorized comparison step — never as an input to this
 derivation.
 
-### 9.3 Step C — allowed directional evidence: three named, closed triggers
+### 9.3 Step C — allowed directional evidence: two named, closed triggers
 
 Each trigger is evaluated once per sizing-eligible sleeve, mechanically, from already-sealed
 evidence this repository's own prior stages already produced — no new research, no new evidence
 type, no citation of `favored_sleeve_id` under any framing.
 
-- **R1 — full Axis-A-basis coverage.** Fires **up** for a sleeve whose own sealed `policy_adoption`
-  record's `function_rationale` independently satisfies **all three** lawful Axis A bases
-  (`XASSET-0014` §3.2: Basis 1 relationship finding, Basis 2 doctrine citation, Basis 3 structural
-  `targets.yaml`-category membership) — not merely the minimum one basis Axis A itself requires to
-  reach `function_confirmed_distinct`. This measures evidentiary **completeness**, a category
-  `XASSET-0014` §3.2 already treats as meaningfully distinct from a bare pass/fail — never the
-  sleeve's own "defensive," "growth," or any other role *label*. A sleeve whose function happens to
-  be defensive gains nothing from that label alone; it gains only from independently, verifiably
-  clearing more of the same three lawful bases every sleeve is held to identically (directly
-  answering the directive's own "do not let 'defensive' automatically imply a target" instruction).
+**Governing hard rule, added by this document's own second bounded correction, applied to every
+trigger below and to any future candidate trigger**: a numeric adjustment may exist only where the
+underlying evidentiary fact is itself an accepted, governed **uncertainty- or risk-discount**
+signal — more disclosed, unresolved cross-sleeve evidence gaps mean more provisional uncertainty
+about the sleeve's own eventual capital claim, which this procedure treats as grounds for a
+*smaller* provisional figure pending resolution, and the strict absence of such gaps (relative to
+the sizing-eligible population) as grounds for a comparatively larger one. **No numeric adjustment
+may exist merely because a sleeve carries more citations, more lawful evidentiary bases, more
+researched relationships, or more complete documentation, considered as evidence quantity or
+evidence-route multiplicity on its own** — documentation completeness is a confidence-in-
+classification measure, not a portfolio-risk or opportunity-cost signal, and rewarding it
+numerically would grant capital for how thoroughly a sleeve's own eligibility finding happens to be
+sourced rather than for any argued economic reason to hold more of it. This is exactly the defect
+an independent exact-head review (`pullrequestreview-4916848704`) found in this section's original
+third trigger, R1 ("full Axis-A-basis coverage" — a sleeve independently clearing all three lawful
+Axis A bases per `XASSET-0014` §3.2, rather than the single basis Axis A itself requires to reach
+`function_confirmed_distinct`, received a positive adjustment). Reviewed directly against
+`XASSET-0014` §3/§3.2's own controlling text: Axis A's threshold is binary (one basis suffices;
+`function_confirmed_distinct` does not distinguish a one-basis finding from a three-basis one), and
+no governing text anywhere states or implies that clearing additional bases is itself a reason to
+size a sleeve larger. The review further found this concretely, foreseeably favored only
+`fund_gld_defensive` today — the sole sleeve independently clearing all three bases per
+`XASSET-0015` §C — for a reason unconnected to any governed risk or opportunity-cost basis. **R1 is
+therefore withdrawn as a numeric trigger.** The underlying fact — whether a sleeve's own Axis A
+finding independently clears one, two, or all three lawful bases — is retained, unchanged in
+substance, as a **disclosure-only** item in a future record's own `uncertainty_disclosure` field:
+it may describe what basis-completeness the sleeve's own sealed finding rests on, exactly as
+`XASSET-0015` §C already discloses in plain prose, but it may never move `provisional_target_pct`,
+trigger an adjustment, or constrain a maximum — matching the identical disclosure-only treatment
+this section already gives `stronger_evidence_maturity`, Level 2 valuation completeness, and crypto
+per-coin divergence, immediately below. This is not a new, fourth numeric trigger under a different
+name — it is the same fact, now correctly labeled as confidence-in-classification context rather
+than a portfolio-risk or capital-allocation signal.
+
 - **R2 — relative relationship-coverage strength.** Fires **up** for the sleeve with the strict,
   unique **fewest** `deferred_disclosed` entries in its own `relationship_coverage_ledger[]` among
   the sizing-eligible population; fires **down** for the sleeve with the strict, unique **most**.
   No adjustment fires for any sleeve on a tie (two or more eligible sleeves sharing the same count)
-  — a tie is not evidence of a difference, and this rule assigns none.
+  — a tie is not evidence of a difference, and this rule assigns none. **Rationale, stated in
+  risk-discount terms, not documentation-volume terms**: a `deferred_disclosed` entry names a
+  relationship pair this repository has not yet resolved — real, disclosed, unresolved
+  cross-sleeve evidence about how this sleeve's own economic function interacts with, overlaps, or
+  duplicates another sleeve's. A sleeve carrying strictly more of these than every other
+  sizing-eligible sleeve carries a comparatively larger body of unresolved cross-sleeve
+  opportunity-cost evidence bearing on its own eventual capital claim — a smaller provisional
+  figure, pending that resolution, is the discount this repository already applies elsewhere to
+  disclosed-but-unresolved evidence (`NUM-0001`'s own provisional-guardrail treatment; `TIER-0009`
+  §K's proceeding-on-disclosed-partial-evidence precedent, applied here in the opposite direction —
+  proceeding, but discounted). The strict absence of such gaps, relative to the same population, is
+  the mirror-image case: comparatively less unresolved cross-sleeve evidence bearing against the
+  sleeve, not more evidence *for* it. This is a genuine risk/uncertainty signal, not a reward for
+  research effort — the direction fires against **unresolved** coverage specifically, never for raw
+  relationship-record volume (a sleeve named in more sealed pairs than another, with none of them
+  `deferred_disclosed`, gains nothing extra from R2 for the additional volume alone).
 - **R3 — relative secondary-condition breadth.** For each sizing-eligible sleeve, compute
   `secondary_condition_breadth` = the count of **distinct** secondary-condition **types**
   (`evidence_partial_present`, `forced_abstention_present`, `overlap_or_duplication_disclosed`) —
@@ -417,18 +522,46 @@ type, no citation of `favored_sleeve_id` under any framing.
   concrete, sealed overlap signal presently available to any sizing-eligible sleeve — contributes
   to this trigger as a **directional adjustment**, never a bare review condition and never a hard
   ceiling on the sleeve's own maximum (directly answering the directive's own overlap-treatment
-  choice requirement).
+  choice requirement). **Rationale, stated in risk-discount terms**: a broader distinct-type
+  breadth of secondary conditions is a broader, disclosed set of **kinds** of sizing caveat
+  bearing on this specific sleeve — partial evidence somewhere in its own coverage, a forced
+  abstention somewhere, a disclosed overlap with another sleeve's own function — each a genuinely
+  distinct category of uncertainty a provisional figure should discount against, not merely a
+  count of how thoroughly the sleeve's relationships happen to be documented. No individual
+  condition type is treated as more economically severe than another here; the trigger reads only
+  the **variety** of distinct types present, exactly as R2 reads only the count of unresolved
+  pairs, not any pair's own individual substance — extending beyond what governing methodology
+  supports (e.g. ranking one condition type as worse than another) is deliberately not attempted.
 
-**Explicitly excluded from all three triggers — disclosure-only, never a numeric input:**
+**R2 and R3 are not fully orthogonal, and this is disclosed rather than hidden.** R2 reads a
+sleeve's own count of `deferred_disclosed` (still-unresolved) relationship-coverage entries; R3
+reads the distinct-type breadth of `secondary_conditions` (evidence gaps already disclosed on
+*sealed*, determined pairs — `evidence_partial_present`, `forced_abstention_present`,
+`overlap_or_duplication_disclosed`). These read two structurally different fields on two different
+categories of relationship record (unresolved-coverage entries versus sealed-pair secondary
+conditions) and can co-occur or partially offset for the same sleeve without either trigger ever
+reading the other's own underlying field — no hidden double-weighting of a single disclosed fact
+exists, since R2's own deferred-coverage count and R3's own secondary-condition-type set are
+disjoint data. That the two triggers can both fire, or fire in opposite directions, for the same
+sleeve is intentional and bounded, not a design defect: a sleeve may simultaneously have
+comparatively little unresolved coverage (R2 up) while carrying a comparatively broad variety of
+disclosed caveats on the pairs it does have sealed (R3 down), and the resulting net adjustment
+(here, `0.00`, since the two `±2.00` effects cancel) is exactly the correct, traceable outcome of
+two genuinely distinct uncertainty signals pointing in different directions for the same sleeve —
+not evidence that either trigger is redundant with the other.
+
+**Explicitly excluded from both triggers — disclosure-only, never a numeric input:**
 
 - `stronger_evidence_maturity`/`favored_sleeve_id`, under any framing — restated, not weakened,
   from the original §9: no trigger, no magnitude, and no future formula of any kind may read this
   disposition. A future implementation's `uncertainty_disclosure` field may *name* that such a
   finding exists and describe what it says about relative evidence maturity; it may never be
   converted into, or read as justifying, a specific number or trigger.
+- **Axis-A basis-completeness** (the withdrawn R1 fact, above) — disclosure-only, per this
+  correction.
 - **Level 2 equity-valuation evidence** (the 9 of 27 `partial` `valuation_results`, the universal
   `discount_rate_evidence` abstention) — `equity`'s own Level 1 sizing eligibility and provisional
-  figure are governed by Axis A/B/C and the three triggers above, never by Level 2 instrument
+  figure are governed by Axis A/B/C and the two triggers above, never by Level 2 instrument
   valuation completeness (§11, unchanged). This partial evidence must be named in `equity`'s own
   `uncertainty_disclosure`; it may never move `provisional_target_pct` or trigger a downward
   adjustment, a maximum-value constraint, or any other numeric effect — **disclosure-only**,
@@ -448,23 +581,42 @@ type, no citation of `favored_sleeve_id` under any framing.
 ### 9.4 Step D — adjustment magnitude: a fixed, class-5 increment, not a tuned coefficient
 
 Every trigger that fires moves the affected sleeve's provisional figure by exactly **±2.00
-percentage points** — one fixed, repository-declared constant, identical across all three
-triggers and all three sizing-eligible sleeves, never sleeve-specific, never scaled by how
-strongly a trigger fired (each trigger is binary: fired or did not fire). This is the smallest
-mechanism that is simultaneously closed, bounded, and auditable without inventing empirical
-precision: the **existence** of a governed evidentiary difference (R1/R2/R3, §9.3) is real and
-disclosed; the **size** of its effect on the provisional figure is not empirically calibrated
-(no backtest or sweep has evaluated any candidate increment) and is not claimed to be — it is
-itself a `NUM-0001` §1 class 5 provisional governance guardrail, the same class every resulting
+percentage points** — one fixed, repository-declared constant, identical across both triggers and
+all three sizing-eligible sleeves, never sleeve-specific, never scaled by how strongly a trigger
+fired (each trigger is binary: fired or did not fire). This is the smallest mechanism that is
+simultaneously closed, bounded, and auditable without inventing empirical precision: the
+**existence** of a governed evidentiary difference (R2/R3, §9.3) is real and disclosed; the
+**size** of its effect on the provisional figure is not empirically calibrated (no backtest or
+sweep has evaluated any candidate increment) and is not claimed to be — it is itself a `NUM-0001`
+§1 class 5 provisional governance guardrail, the same class every resulting
 `provisional_target_pct` carries (§18), with its own review condition (§9.8). A future evidence-
 bounded or empirically-calibrated increment value would require its own separate, future,
 evidence-driven governance decision — this filing adopts the flat, fixed increment specifically
 because no such evidence exists yet, matching `NUM-0001` §8's own explicit warning against
 mislabeling an evidence-bounded or provisional value as calibrated.
 
-With exactly three triggers, each capable of firing at most once per sleeve in one direction,
-every sizing-eligible sleeve's total adjustment is bounded, by construction, to `[-6.00, +6.00]`
-percentage points from its `starting_baseline_pct` — no separate artificial cap is required.
+**Bound, mechanically re-enumerated by this document's own second bounded correction, not assumed
+or copied from any prior draft or review.** With R1 withdrawn (§9.3), exactly two triggers remain,
+each independently capable of firing `up` (`+2.00`), `down` (`-2.00`), or not at all (`0.00`) for
+any given sizing-eligible sleeve — nine reachable `(R2, R3)` combinations in total:
+
+| R2 | R3 | Net adjustment |
+|---|---|---|
+| up | up | `+4.00` |
+| up | none | `+2.00` |
+| up | down | `0.00` |
+| none | up | `+2.00` |
+| none | none | `0.00` |
+| none | down | `-2.00` |
+| down | up | `0.00` |
+| down | none | `-2.00` |
+| down | down | `-4.00` |
+
+The reachable net-adjustment set is exactly `{-4.00, -2.00, 0.00, +2.00, +4.00}` — the minimum
+reachable total is `-4.00` (both triggers fire down), the maximum is `+4.00` (both fire up). Every
+sizing-eligible sleeve's total adjustment is therefore bounded, by construction, to `[-4.00,
++4.00]` percentage points from its `starting_baseline_pct` — no separate artificial cap is
+required.
 
 ### 9.5 Step E — hard constraints
 
@@ -472,8 +624,9 @@ Only already-governed constraints apply, none newly authored (§14, unchanged): 
 100.00% identity; individual-sleeve bounds `[0.00, 100.00)`; no citation of the 1.8x leverage cap
 or 30% buffer floor to enlarge any figure; the six `computed_from_existing_mechanism` overlap
 dimensions consulted only where they bear on a sizing-eligible sleeve, never the four uncomputed
-ones. Given §9.4's own bound, no sleeve can be pushed outside `[10.67, 22.67]` by this procedure
-alone — comfortably inside `[0.00, 100.00)` with no additional clamping needed.
+ones. Given §9.4's own corrected, mechanically re-enumerated bound, no sleeve can be pushed
+outside **`[12.67, 20.67]`** (`16.67 - 4.00` to `16.67 + 4.00`) by this procedure alone —
+comfortably inside `[0.00, 100.00)` with no additional clamping needed.
 
 ### 9.6 Step F — reconcile the residual
 
@@ -539,39 +692,32 @@ both exact single points under comparable epistemic conditions, neither expresse
 the closest analogue and is followed here deliberately, not merely cited as a label of
 convenience.
 
-### 9.10 Illustrative reachability table — categorical only, no percentage stated or adopted
+### 9.10 No real-sleeve reachability table — disclosure-only fact, no longer part of the numeric procedure
 
-Matching `XASSET-0014` §3.3's own "illustrative only, no disposition adopted" precedent, but held
-to a stricter disclosure limit than that precedent used, for a reason specific to this section:
-`XASSET-0014` §3.3's own table disclosed only categorical basis reachability, with no numeric
-formula published anywhere nearby it. This section, by contrast, **also** publishes this
-procedure's own numeric constants (§9.2's `100.00 / 6` baseline, §9.4's `±2.00` increment) in the
-same document — so disclosing a **comparative** trigger's (R2/R3) directional outcome (up, down,
-or none) for a real sleeve here, even though the underlying counts it depends on are separately
-already public elsewhere in this repository, would let a reader mechanically combine that outcome
-with this section's own published constants and arrive at a specific `provisional_target_pct`
-value — precisely the "calculate actual percentages" outcome this filing's own authorizing
-instruction repeatedly, explicitly prohibits. **This table is therefore deliberately limited to
-R1 only** — a binary, non-comparative trigger whose reachability for each sleeve is already stated
-in plain prose in `XASSET-0015` §C (an already-merged, already-public filing this table adds no
-new information beyond restating under a label) — and explicitly does not resolve R2 or R3 for any
-real sleeve. **No starting baseline, no adjustment arithmetic, no R2/R3 directional outcome, and
-no resulting `provisional_target_pct` value is computed, stated, or implied for any real sleeve
-anywhere in this filing.** A future implementation session must independently perform, and
-disclose, the full application of §9.2-§9.7 (including R2 and R3) to real sealed evidence; this
-table exists only to demonstrate that R1's own reachability question is well-defined and
-auditable, not to pre-compute any sleeve's actual figure.
+**Superseded by this document's own second bounded correction.** The original version of this
+section published a table showing which sizing-eligible sleeve independently reached R1's ("full
+Axis-A-basis coverage") own reachability threshold, reasoning that R1 was a binary,
+non-comparative trigger whose reachability for each sleeve was already stated in plain prose in
+`XASSET-0015` §C, and that publishing it here therefore added no new numeric-leakage risk beyond
+what was already public. With R1 withdrawn as a numeric trigger (§9.3), that reasoning no longer
+applies to a *derivation-procedure* section: the Axis-A-basis-completeness fact no longer feeds
+this procedure's arithmetic at all, so a table of its reachability has nothing left to
+"demonstrate as well-defined and auditable" for the derivation itself — it would be pure
+restatement of an already-public fact (`XASSET-0015` §C), serving no purpose specific to this
+methodology document. **No table is published in this section.** The fact itself remains
+available, as it always was, in `XASSET-0015` §C directly, and a future implementation session's
+own `uncertainty_disclosure` field may cite it there (§9.3).
 
-| Sleeve | R1 (full Axis-A coverage) |
-|---|---|
-| `equity` | Not reachable — only 2 of 3 bases independently asserted (`XASSET-0015` §C: Basis 1 + Basis 3) |
-| `fund_gld_defensive` | Reachable — `XASSET-0015` §C: "all three independent bases available... the strongest evidentiary support of any non-equity sleeve" |
-| `crypto` | Not reachable — only 2 of 3 bases independently asserted (`XASSET-0015` §C: Basis 1 + Basis 3) |
-
-R2's and R3's own directional outcomes for `equity`, `fund_gld_defensive`, and `crypto` are left
-entirely to the future implementation session, which must compute and disclose them itself,
-directly from live sealed evidence, as part of its own required `applied_adjustments[]`/
-`comparative_consistency_note` fields (§8) — not pre-derived or hinted at here.
+The comparative triggers actually governing this procedure's arithmetic, R2 and R3, are — as
+before this correction — never disclosed here for any real sleeve: publishing either trigger's own
+directional outcome (up, down, or none) for `equity`, `fund_gld_defensive`, or `crypto`, combined
+with this document's own published `starting_baseline_pct` (§9.2) and increment (§9.4) constants,
+would let a reader mechanically derive a specific `provisional_target_pct` value — precisely the
+"calculate actual percentages" outcome this filing's own authorizing instruction repeatedly,
+explicitly prohibits. **No starting baseline, no adjustment arithmetic, no R2/R3 directional
+outcome, and no resulting `provisional_target_pct` value is computed, stated, or implied for any
+real sleeve anywhere in this filing.** A future implementation session must independently perform,
+and disclose, the full application of §9.2-§9.7 to real sealed evidence.
 
 A full synthetic (non-real-sleeve, fictional-constant) walkthrough demonstrating the procedure's
 determinism, including several adversarial and boundary configurations, is in §21.
@@ -795,13 +941,13 @@ zero import coupling with `allocate.py`/`margin_state.py`, covering at minimum:
 16. Non-cascading abstention discipline — a `no_provisional_target_pending_axis_c` disposition on
     one sleeve never forces or implies a value on another sleeve's own record.
 
-**Added by this bounded correction (resolving independent review `pullrequestreview-4916420679`'s
-MAJOR and MINOR findings):**
+**Added by the first bounded correction (resolving independent review
+`pullrequestreview-4916420679`'s MAJOR and MINOR findings):**
 
 17. **Full live re-derivation of `provisional_target_pct` — the central new requirement.** The
     future validator must not merely check that a stored `provisional_target_pct` falls in
     `[0.00, 100.00)`. For every populated record, it must independently recompute
-    `starting_baseline_pct` (§9.2), independently re-evaluate all three triggers R1/R2/R3 (§9.3)
+    `starting_baseline_pct` (§9.2), independently re-evaluate both triggers R2/R3 (§9.3)
     against the sleeve's own cited, live-hash-verified `policy_adoption`/`sleeve_relationship`
     evidence, independently apply §9.4's fixed increment for every trigger that actually fires,
     and reject the record outright if the live-rederived value does not exactly match the stored
@@ -811,7 +957,7 @@ MAJOR and MINOR findings):**
     `numeric_target_status` (§8) and `capital_eligibility_status` (`XASSET-0014` §4/§21 item 4),
     generalized here to the numeric layer itself.
 18. **Comparative-consistency enforcement** — a dedicated test proving that any two sizing-eligible
-    sleeves sharing byte-identical R1/R2/R3 trigger outcomes are rejected if their stored
+    sleeves sharing byte-identical R2/R3 trigger outcomes are rejected if their stored
     `provisional_target_pct` values differ, and that any two sleeves with differing
     `provisional_target_pct` values are rejected unless at least one `applied_adjustments[]` entry
     differs between them and each cites a matching `comparative_consistency_note` (§8, §9.7 item 2).
@@ -823,9 +969,9 @@ MAJOR and MINOR findings):**
     flooring is rejected outright by the validator, never silently absorbed by a
     `max(0, 100.00 - sum)`-style floor on `unsized_reserved_capital_pct` — the floor applies only
     to the live-computed residual itself (§9.6), never as a mechanism for tolerating an
-    out-of-bounds stored sum. §9.4/§9.5's own bound makes this overshoot unreachable by a
-    correctly-implemented derivation (the maximum possible three-sleeve sum is `3 x 22.67 =
-    68.01`, well under `100.00`) — the test exists precisely because a stored record must never be
+    out-of-bounds stored sum. §9.4/§9.5's own corrected bound makes this overshoot unreachable by a
+    correctly-implemented derivation (the maximum possible three-sleeve sum is `3 x 20.67 =
+    62.01`, well under `100.00`) — the test exists precisely because a stored record must never be
     trusted merely because the procedure that *should* have produced it is bounded.
 21. **Negative stored-residual rejection** — a dedicated adversarial test proving that a manifest
     submitting a literal negative `unsized_reserved_capital_pct` is rejected outright, even though
@@ -847,6 +993,21 @@ MAJOR and MINOR findings):**
     carries more than one `applied_adjustments[]` entry per named `governing_rule_id` (each trigger
     fires at most once per sleeve, §9.3).
 
+**Added by this second bounded correction (resolving independent review
+`pullrequestreview-4916848704`'s two new MAJOR findings):**
+
+25. **`R1`-retirement enforcement** — a dedicated adversarial test proving that any
+    `applied_adjustments[]` or `governing_rule_ids[]` entry citing `governing_rule_id: R1` is
+    rejected outright, regardless of its own stated `direction`/`magnitude_pct`/`evidence_ref` —
+    R1 is withdrawn as a numeric trigger by this document's own second bounded correction (§9.3)
+    and is structurally not a member of the closed `R2 | R3` enum; this test exists specifically so
+    a future implementation session cannot silently resurrect the withdrawn trigger by supplying an
+    otherwise well-formed entry under its old identifier. A companion test must independently
+    confirm that item 1's closed-schema/extra-key rejection alone is not being relied upon as the
+    only backstop — this item's own test constructs an entry that is otherwise fully schema-valid
+    except for the retired `governing_rule_id`, isolating the check from item 1's more general
+    coverage.
+
 ## 20. Sequence — this filing does not collapse into the future implementation
 
 1. **This filing** — methodology design plus a bounded authorization for one future
@@ -862,64 +1023,89 @@ under it.
 
 ## 21. Synthetic procedure walkthrough — fictional labels, fictional constants, no real percentages
 
-**Added by this bounded correction.** Every value below uses **deliberately fictional** labels,
-population size, baseline, and increment — **`W`/`X`/`Y`/`Z`/`Q` are not any real sleeve, `20.00%`
-is not this filing's real `16.67%` baseline, and `5.00` is not this filing's real `2.00`
-increment.** This separation is intentional: reusing the real constants here, even with fictional
-sleeve labels, would let a reader mechanically combine an illustrated trigger pattern with this
-filing's own real, already-published baseline/increment and arrive at a real sleeve's actual
-figure — exactly the outcome §9.10 and this filing's own authorizing instruction prohibit. This
-section demonstrates only that §§9.1-9.7's *mechanism* is deterministic, bounded, and
-self-consistent — never that any real sleeve resolves to any particular value.
+**Added by the first bounded correction; rewritten by this document's own second bounded
+correction to exercise the corrected two-trigger system directly.** Every value below uses
+**deliberately fictional** labels, population size, baseline, and increment — **`W`/`X`/`Y`/`Z`/`Q`
+are not any real sleeve, `20.00%` is not this filing's real `16.67%` baseline, and `5.00` is not
+this filing's real `2.00` increment.** This separation is intentional: reusing the real constants
+here, even with fictional sleeve labels, would let a reader mechanically combine an illustrated
+trigger pattern with this filing's own real, already-published baseline/increment and arrive at a
+real sleeve's actual figure — exactly the outcome §9.10 and this filing's own authorizing
+instruction prohibit. This section demonstrates only that §§9.1-9.7's *mechanism* is
+deterministic, bounded, and self-consistent — never that any real sleeve resolves to any
+particular value.
 
 **Fictional setup**: a closed, five-member taxonomy (`W`, `X`, `Y`, `Z`, `Q`); three members
 (`A`, `B`, `C` — standing in for whichever three happen to be sizing-eligible) are eligible;
 `Z`/`Q` are blocked. Fictional baseline = `100.00 / 5 = 20.00`. Fictional fixed increment =
-`±5.00` per firing trigger.
+`±5.00` per firing trigger. **Exactly two fictional triggers** — an "R2-equivalent" (relative
+relationship-coverage strength) and an "R3-equivalent" (relative secondary-condition breadth) —
+mirroring the real, corrected §9.3, since this document's own withdrawn third trigger (R1,
+retired to disclosure-only) is not part of the numeric procedure and has no fictional
+counterpart here.
 
-**Case 1 — three identical eligible members (no trigger fires for any).** `A`, `B`, `C` each stay
-at the unadjusted baseline: `20.00` each. `sum_of_assigned_targets_pct = 60.00`.
+**Case 1 — no trigger fires for any member (identical evidence).** `A`, `B`, `C` each stay at the
+unadjusted baseline: `20.00` each. `sum_of_assigned_targets_pct = 60.00`.
 `unsized_reserved_capital_pct = 40.00`. Reconciliation: `20.00 + 20.00 + 20.00 + 40.00 = 100.00`
 exactly.
 
-**Case 2 — one member (`B`) with additional disclosed uncertainty (a strictly higher, unique
-secondary-condition-type breadth than `A`/`C`, which remain tied).** The R3-equivalent trigger
-fires **down** for `B` only (unique-most breadth); `A`/`C` are tied, so no R3-equivalent
-adjustment fires for either. Result: `A = 20.00`, `B = 20.00 - 5.00 = 15.00`, `C = 20.00`.
-`sum = 55.00`. `residual = 45.00`. Reconciliation: `20.00 + 15.00 + 20.00 + 45.00 = 100.00`
-exactly. This demonstrates a condition being carried into the number, not merely narrated in
-prose — directly answering the requirement that a disclosed condition must actually move the
-figure, not sit unused beside it.
+**Case 2 — R2-equivalent trigger: up, a tie, and the tie's own non-fire.** `A` carries the strict,
+unique fewest count of the R2-equivalent measure — fires **up**. `B` and `C` are tied at the
+(shared) unique-most count — a tie is not evidence of a difference, so **no** R2-equivalent
+adjustment fires for either, even though both sit at the nominal "most" extreme. Result:
+`A = 20.00 + 5.00 = 25.00`, `B = 20.00`, `C = 20.00`. `sum = 65.00`. `residual = 35.00`.
+Reconciliation: `25.00 + 20.00 + 20.00 + 35.00 = 100.00` exactly. This demonstrates both the
+**up** direction and the **tie-suppresses-the-down-side** rule in one case — a condition that
+would fire under a naive "not-unique-fewest" reading is correctly withheld once the tie is
+recognized.
 
-**Case 3 — one member (`C`) with a valid, disclosed overlap/concentration condition (the
-overlap-equivalent secondary condition raises `C`'s own breadth to a unique maximum).** The
-R3-equivalent trigger fires **down** for `C` only, by the identical mechanism as Case 2 —
-overlap disclosure is a **directional adjustment**, not a bare review condition and not a hard
-ceiling. Result: `A = 20.00`, `B = 20.00`, `C = 15.00`. `sum = 55.00`. `residual = 45.00`.
-Reconciliation holds exactly, as in every case.
+**Case 3 — R3-equivalent trigger: up and down, no tie.** `A` carries the strict, unique fewest
+secondary-condition-type breadth — fires **up**. `B` sits at a middle breadth shared by no other
+member — no fire. `C` carries the strict, unique most breadth (the overlap-equivalent condition
+included) — fires **down**. Result: `A = 20.00 + 5.00 = 25.00`, `B = 20.00`,
+`C = 20.00 - 5.00 = 15.00`. `sum = 60.00`. `residual = 40.00`. Reconciliation holds exactly. This
+demonstrates a disclosed condition being carried into the number, not merely narrated in prose —
+directly answering the requirement that a disclosed condition must actually move the figure, not
+sit unused beside it — for both directions of the second trigger.
 
-**Case 4 — two members (`A`, `B`) with byte-identical trigger-evaluation inputs, hypothetically
-stored with different targets.** Under §9.7 item 2, `A` and `B` sharing identical R1/R2/R3
-outcomes **must** receive identical `provisional_target_pct` values — there is no remaining
-discretion after the triggers are evaluated. A stored record claiming, hypothetically, `A =
-22.00`/`B = 18.00` despite provably identical inputs would be rejected by two independent future
+**Case 4 — both triggers fire on the same member: the true synthetic minimum and maximum.**
+`A` independently clears both the R2-equivalent **up** condition and the R3-equivalent **up**
+condition — `20.00 + 5.00 + 5.00 = 30.00`, the true synthetic **maximum** reachable by this
+fictional setup. `B` independently clears both the R2-equivalent **down** condition and the
+R3-equivalent **down** condition — `20.00 - 5.00 - 5.00 = 10.00`, the true synthetic **minimum**.
+`C` is untouched by either trigger — `20.00`. Result: `sum = 30.00 + 10.00 + 20.00 = 60.00`.
+`residual = 40.00`. Reconciliation: `30.00 + 10.00 + 20.00 + 40.00 = 100.00` exactly. This is the
+fictional-setup analogue of §9.4's corrected real bound: with exactly two triggers, each
+independently capable of firing `up`/`down`/neither, the reachable per-member range is
+`[baseline - 2 x increment, baseline + 2 x increment]` — here `[10.00, 30.00]`, and, in the real
+setup (§9.4), `[12.67, 20.67]` — never a range built from three triggers, and never asymmetric,
+since both remaining triggers are structurally identical in shape (each can fire in either
+direction).
+
+**Case 5 — two members (`A`, `B`) with byte-identical trigger-evaluation inputs, hypothetically
+stored with different targets.** Under §9.7 item 2, `A` and `B` sharing identical R2/R3 outcomes
+**must** receive identical `provisional_target_pct` values — there is no remaining discretion
+after the triggers are evaluated. A stored record claiming, hypothetically, `A = 22.00`/
+`B = 18.00` despite provably identical inputs would be rejected by two independent future
 validator checks: item 17 (live re-derivation — `A`'s and `B`'s own live-rederived values would
 both equal the same baseline-plus-identical-adjustments figure, and at least one stored value
 would fail to match its own re-derivation) and item 18 (comparative-consistency — no
 `applied_adjustments[]` entry differs between `A` and `B`, so a stored difference between them is
 rejected outright regardless of any `comparative_consistency_note` text supplied).
 
-**Case 5 — an attempted total exceeding 100%.** With three fictional triggers bounded to `±5.00`
-each, the maximum possible net adjustment per member is `±15.00`, bounding any single member to
-`[5.00, 35.00]` and the maximum possible three-member sum to `105.00` in the fictional setup —
-already tight, and, in this filing's own **real** setup (§9.4), the real bound (`3 x 22.67 =
-68.01`) makes a sum anywhere near `100.00` structurally unreachable by a correctly-implemented
+**Case 6 — an attempted total exceeding 100%.** With exactly two fictional triggers bounded to
+`±5.00` each (Case 4's own corrected shape — never three, and never `±15.00` per member), the
+maximum possible net adjustment per member is `±10.00`, bounding any single member to `[10.00,
+30.00]` and the maximum possible three-member sum to `90.00` in the fictional setup — already
+tight, and, in this filing's own **real** setup (§9.4), the corrected real bound (`3 x 20.67 =
+62.01`) makes a sum anywhere near `100.00` structurally unreachable by a correctly-implemented
 derivation. A hypothetical corrupted or erroneous stored manifest claiming
-`sum_of_assigned_targets_pct = 105.00` regardless — pre-flooring — is rejected outright by item 20;
-the validator never silently computes `unsized_reserved_capital_pct = max(0, 100.00 - 105.00) =
-0.00` and lets the overshoot pass unflagged.
+`sum_of_assigned_targets_pct = 105.00` regardless — pre-flooring, and well beyond even the
+fictional fully-adjusted theoretical maximum of `90.00` — is rejected outright by item 20; the
+validator never silently computes `unsized_reserved_capital_pct = max(0, 100.00 - 105.00) = 0.00`
+and lets the overshoot pass unflagged.
 
-**Case 6 — exact reconciliation.** Demonstrated in Cases 1-3 above: in every case,
+**Case 7 — exact reconciliation.** Demonstrated in Cases 1-4 above: in every case,
 `sum_of_assigned_targets_pct + unsized_reserved_capital_pct` equals `100.00` exactly, by
 construction (§9.6), never approximately.
 
