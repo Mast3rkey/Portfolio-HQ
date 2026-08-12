@@ -3712,13 +3712,63 @@ class TestNonCascadingAbstentionStage4:
             ledger = l1.compute_live_relationship_ledger(sid, REPO_ROOT)
             assert all(e.coverage_state != l1.SEALED_UNRESOLVED for e in ledger)
 
-    def test_fund_broad_market_axis_a_unresolved_does_not_touch_other_sleeves_axis_a(self):
+    def test_fund_broad_market_axis_a_does_not_touch_other_sleeves_axis_a(self):
+        """Renamed (XASSET-0017): fund_broad_market's own Axis A was
+        redetermined from function_status_unresolved to function_confirmed_
+        distinct, exercising the same delegated discretion XASSET-0015's own
+        SS E reserved for a future drafting session on unchanged evidence.
+        Bounded correction (independent exact-head review, PR #308): the
+        original docstring here overclaimed that this plain real-corpus
+        equality check "proves one sleeve's Axis A value cannot cascade
+        into another's" regardless of which value it holds -- that claim
+        depended on the corpus containing at least one differently-valued
+        sleeve to expose a hypothetical coupling bug, which stopped being
+        true the moment this redetermination made all six sleeves uniform.
+        This check now records only the live, current fixture state; the
+        actual non-cascading *proof* lives in
+        test_mutating_one_sleeves_axis_a_does_not_change_a_different_
+        sleeves_validation below, a synthetic-fixture adversarial test that
+        does not depend on the real corpus happening to be non-uniform."""
         real_records = {sid: _real_policy_adoption(sid) for sid in l1.SLEEVE_IDS}
         for sid, d in real_records.items():
-            if sid == "fund_broad_market":
-                assert d["portfolio_function_status"] == "function_status_unresolved"
-            else:
-                assert d["portfolio_function_status"] == "function_confirmed_distinct"
+            assert d["portfolio_function_status"] == "function_confirmed_distinct"
+
+    def test_mutating_one_sleeves_axis_a_does_not_change_a_different_sleeves_validation(self):
+        """Restored adversarial non-cascading proof (independent exact-head
+        review, PR #308), mirroring TestStrongerEvidenceMaturityNonInfluence's
+        own masking-proof design one layer up: mutate one sleeve's own
+        portfolio_function_status to a different value in an in-memory copy
+        (never touching disk) and confirm every OTHER sleeve's own
+        validation errors -- computed by validate_policy_adoption_data(),
+        which reads only that sleeve's own cited profile/relationship/
+        targets.yaml state and never references another sleeve's own
+        policy_adoption file at all -- are byte-identical to a baseline run
+        with no mutation. Unlike the plain real-corpus equality check above,
+        this proof does not depend on the corpus containing a differently-
+        valued sleeve, so it remains meaningful regardless of future
+        redeterminations."""
+        baseline_errors = {
+            sid: l1.validate_policy_adoption_data(_real_policy_adoption(sid), sid, repo_root=REPO_ROOT)
+            for sid in l1.SLEEVE_IDS
+        }
+        for mutated_sid in l1.SLEEVE_IDS:
+            mutated = copy.deepcopy(_real_policy_adoption(mutated_sid))
+            mutated["portfolio_function_status"] = (
+                l1.FUNCTION_STATUS_UNRESOLVED
+                if mutated["portfolio_function_status"] != l1.FUNCTION_STATUS_UNRESOLVED
+                else l1.FUNCTION_CONFIRMED_DISTINCT
+            )
+            # The mutated sleeve's own errors are expected to change (or
+            # not) -- irrelevant to this proof, which concerns every OTHER
+            # sleeve only. Calling this validates the mutated dict has no
+            # side effect (e.g. no shared mutable default, no module-level
+            # cache) that could leak into the next call below.
+            l1.validate_policy_adoption_data(mutated, mutated_sid, repo_root=REPO_ROOT)
+            for other_sid in l1.SLEEVE_IDS - {mutated_sid}:
+                errors_after = l1.validate_policy_adoption_data(
+                    _real_policy_adoption(other_sid), other_sid, repo_root=REPO_ROOT,
+                )
+                assert errors_after == baseline_errors[other_sid], (mutated_sid, other_sid)
 
 
 # ===========================================================================
@@ -3734,9 +3784,15 @@ class TestRealPolicyAdoptionCorpus:
         assert result.valid, [e for r in result.results for e in r.errors]
 
     def test_axis_a_outcomes_exactly_as_derived(self):
+        # fund_broad_market updated (XASSET-0017): redetermined from
+        # function_status_unresolved to function_confirmed_distinct via
+        # Basis 3, exercising the same delegated discretion XASSET-0015's
+        # own SS E reserved for a future drafting session on unchanged
+        # evidence -- not a new grant of authority, not a schema/mechanism
+        # change.
         expected = {
             "equity": "function_confirmed_distinct",
-            "fund_broad_market": "function_status_unresolved",
+            "fund_broad_market": "function_confirmed_distinct",
             "fund_gld_defensive": "function_confirmed_distinct",
             "crypto": "function_confirmed_distinct",
             "cash_reserve": "function_confirmed_distinct",
@@ -3760,9 +3816,17 @@ class TestRealPolicyAdoptionCorpus:
             assert d["capital_eligibility_status"] == want, sid
 
     def test_axis_c_outcomes_exactly_as_derived(self):
+        # fund_broad_market updated (XASSET-0017): once Axis A clears
+        # (function_confirmed_distinct) and Axis B stays eligible_for_
+        # target_consideration, Axis C is mechanically recomputed from
+        # sizing_blocked to sizing_conditionally_ready -- its own
+        # relationship-coverage ledger still carries four deferred_
+        # disclosed pairs (unchanged, not researched or closed by this
+        # filing), which caps it below sizing_ready, per SS5/SS5.1's own
+        # unedited mechanical rule.
         expected = {
             "equity": "sizing_conditionally_ready",
-            "fund_broad_market": "sizing_blocked",
+            "fund_broad_market": "sizing_conditionally_ready",
             "fund_gld_defensive": "sizing_conditionally_ready",
             "crypto": "sizing_conditionally_ready",
             "cash_reserve": "sizing_blocked",

@@ -11291,6 +11291,91 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-12"
+      - gate: xasset0016-post-merge-verification
+        description: >
+          PR #307 (XASSET-0016) independently re-confirmed merged this
+          session via the GitHub API, not assumed: merged true, merged_by
+          Mast3rkey, base 0dc3f33c5fa539b2d44fb1579ab23df8cb730a4a
+          (XASSET-0015's own merge commit), four commits (one original
+          submission plus three bounded-correction rounds), merged via
+          merge commit 8886187d268bf1a7fede8ec5853cdcc32f24a020. Decision
+          catalog independently rebuilt this session: 113 decisions,
+          issues == (). The xasset0016-level1-numeric-sizing-methodology-
+          and-authorization gate's own text above is left byte-unedited,
+          per this repository's established never-silently-rewrite-a-
+          prior-gate convention.
+        pr: 307
+        status: complete
+        date: "2026-08-12"
+      - gate: xasset0017-broad-market-role-redetermination
+        description: >
+          This session's own filing. A bounded XASSET-0017 governance
+          filing that re-applies XASSET-0014's already-accepted Axis
+          A/B/C methodology to the already-sealed fund_broad_market
+          policy_adoption record, using only already-sealed evidence,
+          exercising the same delegated discretion XASSET-0015's own
+          field-design text explicitly reserved for a future drafting
+          session evaluating this sleeve. Redetermined fund_broad_
+          market's own Axis A from function_status_unresolved to
+          function_confirmed_distinct via Basis 3 (structural
+          targets.yaml destination-category membership), informed by
+          this sleeve's own already-sealed profile content -- not a new
+          evidentiary input, not a schema or methodology change, not a
+          new grant of authority. Axis B unchanged
+          (eligible_for_target_consideration). Axis C mechanically
+          recomputed from sizing_blocked to sizing_conditionally_ready
+          (four deferred_disclosed relationship pairs remain, capping it
+          below sizing_ready -- unchanged, not researched or closed by
+          this filing). governing_decisions on the resealed record
+          deliberately left as XASSET-0014/XASSET-0015 unchanged,
+          matching the existing validator's own hard-locked exact-set
+          check; XASSET-0017 is cited within the record's own
+          function_rationale free text instead (a decision-ID citation,
+          an already-permitted, whitelisted pattern), preserving
+          provenance without any validator change -- confirmed: zero
+          diff to level1_sleeve_synthesis_validator.py itself. No
+          numeric_sizing record, XASSET-0016 methodology text, Level 2
+          instrument selection, allocation check, or
+          targets.yaml/holdings.yaml/gates.yaml/issuer_lookthrough.yaml
+          change of any kind. Disclosed, not silently corrected:
+          XASSET-0016's own decision file states a now-stale
+          point-in-time fact (fund_broad_market named among "three...
+          sizing_blocked" sleeves as part of its own minimality
+          argument) -- left byte-unedited, per this repository's
+          established never-silently-rewrite convention; a future
+          numeric-sizing implementation session must read the live
+          sealed corpus, not that stale sentence, before populating any
+          numeric_sizing record. Three pre-existing tests in
+          test_level1_sleeve_synthesis_validator.py that hardcoded the
+          prior real-corpus fixture values for fund_broad_market were
+          updated (not weakened) to match the newly authorized live
+          state, following this repository's established
+          scaffold-superseded-by-authorized-content precedent.
+
+
+          Bounded correction, same PR, same day: an independent
+          exact-head review (posted via the PR-author's own account, the
+          disclosed same-account platform restriction) returned 0
+          BLOCKING / 0 MAJOR / 1 MINOR / 3 NOTE -- every substantive
+          finding in this filing independently re-derived and confirmed
+          accurate, zero content changed. Resolved the one MINOR: the
+          renamed non-cascading-abstention proof test lost its
+          discriminating power once this filing's own redetermination
+          made all six sleeves' Axis A uniformly function_confirmed_
+          distinct -- corrected its own docstring's overclaim and added a
+          new, genuinely adversarial synthetic-fixture test (mutating one
+          sleeve's own Axis A in an in-memory copy, confirming every
+          other sleeve's own independently-computed validation errors
+          stay byte-identical), mirroring
+          TestStrongerEvidenceMaturityNonInfluence's own established
+          masking-proof design one layer up -- net one new test (763 ->
+          764), no existing test weakened, no sealed record content
+          touched. This session does not review its own PR, mark it
+          ready, merge it, or post principal acceptance -- awaiting a
+          fresh independent exact-head delta review.
+        pr: null
+        status: in_progress
+        date: "2026-08-12"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11324,6 +11409,8 @@ workstreams:
       - governance/decisions/XASSET-0015-ws0014-level1-policy-adoption-content-authorization.md
       - governance/decisions/XASSET-0016-ws0014-level1-numeric-sizing-methodology-and-authorization.md
       - governance/audits/WS0014_LEVEL1_NUMERIC_SIZING_METHODOLOGY_AND_AUTHORIZATION_20260812.md
+      - governance/decisions/XASSET-0017-fund-broad-market-role-redetermination.md
+      - governance/audits/WS0014_FUND_BROAD_MARKET_ROLE_REDETERMINATION_20260812.md
     next_action: >
       XASSET-0009 (PR #293) is independently confirmed merged — see the
       xasset0009-post-merge-verification gate above. Its authorization
@@ -11447,6 +11534,36 @@ workstreams:
       a future cross-coin correlation study, any actual Level 1 sleeve-
       synthesis content, Level 2 instrument-level design, and steps 9
       through 13 remain wholly unauthorized, unchanged.
+
+
+      Update, a new session, 2026-08-12: PR #307 (XASSET-0016) is
+      independently confirmed complete and merged — see the
+      xasset0016-post-merge-verification gate above. This same session
+      then filed XASSET-0017 (the xasset0017-broad-market-role-
+      redetermination gate above, draft, unmerged) — a bounded,
+      evidence-only re-application of XASSET-0014's own already-accepted
+      Axis A/B/C methodology to the already-sealed fund_broad_market
+      policy_adoption record, redetermining its Axis A from
+      function_status_unresolved to function_confirmed_distinct and its
+      Axis C from sizing_blocked to sizing_conditionally_ready, before
+      any numeric Level 1 sizing work begins, per the controlling
+      principal's own explicit sequencing rationale (changing the
+      eligible-sleeve population after sizing would force unnecessary
+      re-derivation) — still blocked only on its own independent
+      exact-head review, correction if needed, principal acceptance,
+      merge, and post-merge verification. XASSET-0016's own numeric-
+      sizing methodology and future implementation remain wholly
+      unauthorized to begin by this filing; a future numeric-sizing
+      implementation session must independently re-read the live sealed
+      policy_adoption corpus (now four sizing_conditionally_ready
+      sleeves — equity, fund_gld_defensive, crypto, fund_broad_market —
+      and two sizing_blocked — cash_reserve, debt_reduction) rather than
+      XASSET-0016's own now-stale three/three point-in-time citation.
+      Research on any contender-registry entry, any QQQ/ETF-scope
+      revisit, DEBT_REDUCTION's own economic-assessment methodology, the
+      CASH/RESERVE consolidation question, a future cross-coin
+      correlation study, any Level 2 instrument-level design, and steps
+      9 through 13 remain wholly unauthorized, unchanged.
     completion_criteria: >
       Not applicable — no execution is authorized under this workstream by
       this entry. XASSET-0001 §J records the recommended dependency order a
@@ -11763,9 +11880,41 @@ workstreams:
       question, a future cross-coin correlation study, and any broader
       contender-registry sweep remain blocked on their own future,
       separate, explicit principal authorization each.
-    active_branch: claude/xasset-0016-level1-sizing-q19xci
+
+
+      Update, a new session, 2026-08-12: PR #307 (XASSET-0016, Stage 5
+      numeric-sizing methodology and bounded authorization) is
+      independently confirmed complete and merged — see the
+      xasset0016-post-merge-verification gate above: no numeric_sizing
+      record populated by that filing itself, six sleeves' worth of
+      future Stage 5 population authorized under an eleven-point
+      validator/test specification, gated on its own separate future
+      implementation PR. This same session then, on explicit principal
+      authorization and before any such future implementation begins,
+      filed XASSET-0017 (the xasset0017-broad-market-role-
+      redetermination gate above, draft, unmerged) — re-applying
+      XASSET-0014's own already-accepted, unedited Axis A/B/C
+      methodology to the fund_broad_market policy_adoption record using
+      only already-sealed evidence, exercising the same delegated
+      discretion XASSET-0015's own field-design text explicitly reserved
+      for a future drafting session, and reaching a different, equally
+      lawful judgment on the identical evidence: Axis A redetermined
+      from function_status_unresolved to function_confirmed_distinct
+      (Basis 3, informed by this sleeve's own already-sealed profile
+      content); Axis B unchanged; Axis C mechanically recomputed from
+      sizing_blocked to sizing_conditionally_ready (four
+      deferred_disclosed pairs remain, not researched or closed by this
+      filing, capping it below sizing_ready). Zero change to
+      XASSET-0014/XASSET-0015's own text, to level1_sleeve_synthesis_
+      validator.py's schema/scan logic, to any other sleeve's own sealed
+      record, or to any protected path — blocked only on its own
+      independent exact-head review, correction if needed, principal
+      acceptance, merge, and post-merge verification. XASSET-0016's own
+      numeric-sizing methodology/future implementation remain wholly
+      unauthorized to begin by this filing.
+    active_branch: claude/xasset-0017-broad-market-role-w3eoks
     active_pr: null
-    last_verified_main_sha: 0dc3f33c5fa539b2d44fb1579ab23df8cb730a4a
+    last_verified_main_sha: 8886187d268bf1a7fede8ec5853cdcc32f24a020
     last_verified_date: "2026-08-12"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
