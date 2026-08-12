@@ -1,0 +1,25 @@
+schema_version: '1.0'
+sleeve_id: fund_broad_market
+policy_adoption_reference: {record_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_broad_market.yaml, referenced_content_sha256: ea034151588a55d214f9564fcc01f489107744293cd50f1e29fa9289658e6315}
+numeric_target_status: provisional_target_assigned
+provisional_target_pct: '14.67'
+starting_baseline_pct: '16.67'
+applied_adjustments:
+- governing_rule_id: R2
+  direction: down
+  magnitude_pct: '2.00'
+  evidence_ref:
+  - {record_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_broad_market.yaml, referenced_content_sha256: ea034151588a55d214f9564fcc01f489107744293cd50f1e29fa9289658e6315}
+governing_rule_ids: [R2]
+target_classification: provisional_governance_guardrail
+review_condition: Revisit upon the first governed sizing-challenge risk analysis or targeted backtest, a material sealed-population or relationship-accounting change, or a separately authorized study of the baseline or increment.
+uncertainty_disclosure: The policy record carries disclosed deferred relationship coverage and sealed secondary-condition caveats including partial evidence, forced abstention, and overlap or duplication. Axis-A evidence-route completeness is disclosure-only and has no numeric influence.
+comparative_consistency_note: Fund_broad_market differs from equity only because R2 fires down here and up there; it differs from crypto and fund_gld_defensive only because R2 fires down here and does not fire for their tie. R3 fires for none of the four sleeves.
+blocking_rationale: null
+sizing_boundary_note: Provisional Level 1 sleeve sizing only; no Level 2 instrument selection or sizing, no adopted policy, and no allocation check is authorized by this record.
+record_status: sealed
+sealed_at: '2026-08-12T00:00:00Z'
+governing_decisions: [XASSET-0016, XASSET-0017]
+drafting_session_or_shard_id: xasset-0016-level1-numeric-sizing-implementation
+content_sha256: 1b68c14cea1aecd04b5c023265a1668a48f7fa5bec68fec61ae657158a818986
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/numeric_sizing/COHORT_MANIFEST.yaml#fund_broad_market

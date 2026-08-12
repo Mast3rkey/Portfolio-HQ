@@ -1,0 +1,14 @@
+schema_version: '1.0'
+governing_decision: XASSET-0016
+cohort:
+- {sleeve_id: cash_reserve, record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/cash_reserve.yaml, content_sha256: ee6839c299c841f898fe7d79c2b0083ae0d0518d42469f5d04a1ad92bcc6849d, schema_version: '1.0', governing_decision: XASSET-0016, shard_id: xasset-0016-level1-numeric-sizing-implementation, sealed_at: '2026-08-12T00:00:00Z'}
+- {sleeve_id: crypto, record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/crypto.yaml, content_sha256: 4f741cc9c22c780514a60b01042fa0f87d7eb3582365ef7afbab24d654040b10, schema_version: '1.0', governing_decision: XASSET-0016, shard_id: xasset-0016-level1-numeric-sizing-implementation, sealed_at: '2026-08-12T00:00:00Z'}
+- {sleeve_id: debt_reduction, record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/debt_reduction.yaml, content_sha256: 8edc5b9c37bd8fbae366b1713f798b069c34a6a516398a6bfed705ceaf2fe553, schema_version: '1.0', governing_decision: XASSET-0016, shard_id: xasset-0016-level1-numeric-sizing-implementation, sealed_at: '2026-08-12T00:00:00Z'}
+- {sleeve_id: equity, record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/equity.yaml, content_sha256: 8d535a4ffa97b6f6f50f974c31239c6f50ca1109129633935ad607a240a25553, schema_version: '1.0', governing_decision: XASSET-0016, shard_id: xasset-0016-level1-numeric-sizing-implementation, sealed_at: '2026-08-12T00:00:00Z'}
+- {sleeve_id: fund_broad_market, record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/fund_broad_market.yaml, content_sha256: 1b68c14cea1aecd04b5c023265a1668a48f7fa5bec68fec61ae657158a818986, schema_version: '1.0', governing_decision: XASSET-0016, shard_id: xasset-0016-level1-numeric-sizing-implementation, sealed_at: '2026-08-12T00:00:00Z'}
+- {sleeve_id: fund_gld_defensive, record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/fund_gld_defensive.yaml, content_sha256: 310d743454830eaaf53b9e629a7b3f40278ff9198e523d392fb75a3308a85151, schema_version: '1.0', governing_decision: XASSET-0016, shard_id: xasset-0016-level1-numeric-sizing-implementation, sealed_at: '2026-08-12T00:00:00Z'}
+portfolio_reconciliation:
+  sum_of_assigned_targets_pct: '66.68'
+  unsized_reserved_capital_pct: '33.32'
+  reconciliation_identity_holds: true
+  unsized_capital_disclosure: This residual is capital not yet assigned to any sleeve pending resolution of a blocked sleeve status or additional evidence; it is not the cash_reserve sleeve, not an automatically deployable cash allocation, and is never redistributed without a future governance act.

@@ -1,0 +1,20 @@
+schema_version: '1.0'
+sleeve_id: crypto
+policy_adoption_reference: {record_path: intelligence/level1_sleeve_synthesis/policy_adoption/crypto.yaml, referenced_content_sha256: 0288fb71c413805a776b2e209f94716ff18daf0f3095344f1bbf12bca6139f6b}
+numeric_target_status: provisional_target_assigned
+provisional_target_pct: '16.67'
+starting_baseline_pct: '16.67'
+applied_adjustments: []
+governing_rule_ids: []
+target_classification: provisional_governance_guardrail
+review_condition: Revisit upon the first governed sizing-challenge risk analysis or targeted backtest, a material sealed-population or relationship-accounting change, or a separately authorized study of the baseline or increment.
+uncertainty_disclosure: The policy record carries disclosed deferred relationship coverage and sealed partial-evidence and forced-abstention secondary conditions. Cross-coin correlation abstention, per-coin historical-behavior divergence, and Axis-A evidence-route completeness are disclosure-only and have no numeric influence.
+comparative_consistency_note: Crypto has no material difference from fund_gld_defensive because both have identical R2 and R3 no-fire states. It differs from equity and fund_broad_market only because R2 fires for those sleeves; R3 fires for none.
+blocking_rationale: null
+sizing_boundary_note: Provisional Level 1 sleeve sizing only; no Level 2 instrument selection or sizing, no adopted policy, and no allocation check is authorized by this record.
+record_status: sealed
+sealed_at: '2026-08-12T00:00:00Z'
+governing_decisions: [XASSET-0016, XASSET-0017]
+drafting_session_or_shard_id: xasset-0016-level1-numeric-sizing-implementation
+content_sha256: 4f741cc9c22c780514a60b01042fa0f87d7eb3582365ef7afbab24d654040b10
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/numeric_sizing/COHORT_MANIFEST.yaml#crypto

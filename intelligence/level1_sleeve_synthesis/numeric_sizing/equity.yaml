@@ -1,0 +1,25 @@
+schema_version: '1.0'
+sleeve_id: equity
+policy_adoption_reference: {record_path: intelligence/level1_sleeve_synthesis/policy_adoption/equity.yaml, referenced_content_sha256: 7d7332653e2c6e6a3df931e71cafedc946f8fdf29696c1e4053edbb37ad6aabd}
+numeric_target_status: provisional_target_assigned
+provisional_target_pct: '18.67'
+starting_baseline_pct: '16.67'
+applied_adjustments:
+- governing_rule_id: R2
+  direction: up
+  magnitude_pct: '2.00'
+  evidence_ref:
+  - {record_path: intelligence/level1_sleeve_synthesis/policy_adoption/equity.yaml, referenced_content_sha256: 7d7332653e2c6e6a3df931e71cafedc946f8fdf29696c1e4053edbb37ad6aabd}
+governing_rule_ids: [R2]
+target_classification: provisional_governance_guardrail
+review_condition: Revisit upon the first governed sizing-challenge risk analysis or targeted backtest, a material sealed-population or relationship-accounting change, or a separately authorized study of the baseline or increment.
+uncertainty_disclosure: The policy record carries secondary-condition caveats across its sealed relationships, including partial evidence, forced abstention, and disclosed overlap. Its Level 2 valuation corpus also remains partial, including partial valuation results and universal discount-rate abstention; those facts and Axis-A evidence-route completeness are disclosure-only and have no numeric influence.
+comparative_consistency_note: Equity differs from fund_broad_market only because R2 fires up here and down there; it differs from crypto and fund_gld_defensive only because R2 fires up here and does not fire for their tie. R3 fires for none of the four sleeves.
+blocking_rationale: null
+sizing_boundary_note: Provisional Level 1 sleeve sizing only; no Level 2 instrument selection or sizing, no adopted policy, and no allocation check is authorized by this record.
+record_status: sealed
+sealed_at: '2026-08-12T00:00:00Z'
+governing_decisions: [XASSET-0016, XASSET-0017]
+drafting_session_or_shard_id: xasset-0016-level1-numeric-sizing-implementation
+content_sha256: 8d535a4ffa97b6f6f50f974c31239c6f50ca1109129633935ad607a240a25553
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/numeric_sizing/COHORT_MANIFEST.yaml#equity

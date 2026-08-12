@@ -11376,6 +11376,29 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-12"
+      - gate: xasset0017-post-merge-verification
+        description: >
+          PR #308 (XASSET-0017) is merged into live main at merge commit
+          993b677275bfe37eaeb49b9e0ab5b9efebbfa4ca. The exact live Stage-4
+          corpus was re-read from that commit before numeric-sizing work;
+          fund_broad_market is sizing_conditionally_ready. The preceding
+          historical gate text remains byte-unchanged.
+        pr: 308
+        status: complete
+        date: "2026-08-12"
+      - gate: xasset0016-level1-numeric-sizing-implementation
+        description: >
+          One bounded implementation under XASSET-0016 authority is in
+          progress on agent/xasset-0016-level1-numeric-sizing from exact
+          live-main base 993b677275bfe37eaeb49b9e0ab5b9efebbfa4ca.
+          It populates the exact six-record numeric_sizing cohort, its
+          reconciliation manifest, an independently live-rederiving
+          validator, and focused adversarial tests. It changes no Level-2,
+          allocator, holdings, target, gate, margin, or allocation-check
+          behavior and awaits independent review after draft-PR CI.
+        pr: null
+        status: in_progress
+        date: "2026-08-12"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

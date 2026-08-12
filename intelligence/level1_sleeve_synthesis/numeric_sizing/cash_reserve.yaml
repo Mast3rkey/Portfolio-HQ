@@ -1,0 +1,20 @@
+schema_version: '1.0'
+sleeve_id: cash_reserve
+policy_adoption_reference: {record_path: intelligence/level1_sleeve_synthesis/policy_adoption/cash_reserve.yaml, referenced_content_sha256: ea87b49ed060520e2d5e9ac5a5771dad45c3676693bf11bc8f87d1e6c073cefe}
+numeric_target_status: no_provisional_target_pending_axis_c
+provisional_target_pct: null
+starting_baseline_pct: null
+applied_adjustments: []
+governing_rule_ids: []
+target_classification: null
+review_condition: null
+uncertainty_disclosure: null
+comparative_consistency_note: null
+blocking_rationale: The cited policy record is sizing_blocked because its sealed relationship evidence carries secondary conditions and its CASH/RESERVE consolidation evidence remains partial with forced abstentions; no numeric target is permitted pending Axis C resolution.
+sizing_boundary_note: Provisional Level 1 sleeve sizing only; no Level 2 instrument selection or sizing, no adopted policy, and no allocation check is authorized by this record.
+record_status: sealed
+sealed_at: '2026-08-12T00:00:00Z'
+governing_decisions: [XASSET-0016, XASSET-0017]
+drafting_session_or_shard_id: xasset-0016-level1-numeric-sizing-implementation
+content_sha256: ee6839c299c841f898fe7d79c2b0083ae0d0518d42469f5d04a1ad92bcc6849d
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/numeric_sizing/COHORT_MANIFEST.yaml#cash_reserve

@@ -1,0 +1,20 @@
+schema_version: '1.0'
+sleeve_id: debt_reduction
+policy_adoption_reference: {record_path: intelligence/level1_sleeve_synthesis/policy_adoption/debt_reduction.yaml, referenced_content_sha256: 82228f6bc48da3db861340caf27bb8cf2be8ce9160a3939e0e506e84dde2877f}
+numeric_target_status: no_provisional_target_pending_axis_c
+provisional_target_pct: null
+starting_baseline_pct: null
+applied_adjustments: []
+governing_rule_ids: []
+target_classification: null
+review_condition: null
+uncertainty_disclosure: null
+comparative_consistency_note: null
+blocking_rationale: The cited policy record is sizing_blocked and not_yet_eligible because the required debt-reduction economic assessment is absent and its sealed relationship evidence carries secondary-condition caveats; no numeric target is permitted pending Axis B and Axis C resolution.
+sizing_boundary_note: Provisional Level 1 sleeve sizing only; no Level 2 instrument selection or sizing, no adopted policy, and no allocation check is authorized by this record.
+record_status: sealed
+sealed_at: '2026-08-12T00:00:00Z'
+governing_decisions: [XASSET-0016, XASSET-0017]
+drafting_session_or_shard_id: xasset-0016-level1-numeric-sizing-implementation
+content_sha256: 8edc5b9c37bd8fbae366b1713f798b069c34a6a516398a6bfed705ceaf2fe553
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/numeric_sizing/COHORT_MANIFEST.yaml#debt_reduction

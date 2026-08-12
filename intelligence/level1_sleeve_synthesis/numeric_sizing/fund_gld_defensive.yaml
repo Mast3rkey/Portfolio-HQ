@@ -1,0 +1,20 @@
+schema_version: '1.0'
+sleeve_id: fund_gld_defensive
+policy_adoption_reference: {record_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_gld_defensive.yaml, referenced_content_sha256: 9e7d68b5376d0345450fe68836616d2e4beebe006481c8dd710cc876307584b6}
+numeric_target_status: provisional_target_assigned
+provisional_target_pct: '16.67'
+starting_baseline_pct: '16.67'
+applied_adjustments: []
+governing_rule_ids: []
+target_classification: provisional_governance_guardrail
+review_condition: Revisit upon the first governed sizing-challenge risk analysis or targeted backtest, a material sealed-population or relationship-accounting change, or a separately authorized study of the baseline or increment.
+uncertainty_disclosure: The policy record carries disclosed deferred relationship coverage and sealed partial-evidence and forced-abstention secondary conditions. Axis-A evidence-route completeness is disclosure-only and has no numeric influence.
+comparative_consistency_note: Fund_gld_defensive has no material difference from crypto because both have identical R2 and R3 no-fire states. It differs from equity and fund_broad_market only because R2 fires for those sleeves; R3 fires for none.
+blocking_rationale: null
+sizing_boundary_note: Provisional Level 1 sleeve sizing only; no Level 2 instrument selection or sizing, no adopted policy, and no allocation check is authorized by this record.
+record_status: sealed
+sealed_at: '2026-08-12T00:00:00Z'
+governing_decisions: [XASSET-0016, XASSET-0017]
+drafting_session_or_shard_id: xasset-0016-level1-numeric-sizing-implementation
+content_sha256: 310d743454830eaaf53b9e629a7b3f40278ff9198e523d392fb75a3308a85151
+cohort_manifest_entry: intelligence/level1_sleeve_synthesis/numeric_sizing/COHORT_MANIFEST.yaml#fund_gld_defensive
