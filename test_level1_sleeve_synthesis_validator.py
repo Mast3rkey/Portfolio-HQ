@@ -3018,6 +3018,37 @@ class TestLevel2LeakageScan:
             leakage = [e for e in errs if "stage4-level2-weight-leakage" in e]
             assert leakage == [], f"{sleeve_id}: {leakage}"
 
+    # -- NEW-MINOR-B correction (independent exact-head delta review
+    # pullrequestreview-4912431420) -- two real bypasses of the MINOR-3
+    # comparative-ticker pattern: the existing pattern only recognizes
+    # TICKER-FIRST ordering ({ticker} ... comparative ... noun ... than
+    # ... {ticker}); both reproduced bypasses use the inverted, passive
+    # construction instead, where the comparative phrase precedes the
+    # first ticker mention entirely.
+    @pytest.mark.parametrize("text", [
+        "More capital should be allocated to SPY than VEA",
+        "A larger weight is assigned to BTC than ETH",
+        "Less capital was allocated for VWO than SPY.",
+        "A smaller weight is given to GLD than BTC.",
+    ])
+    def test_phrase_first_comparative_leakage_rejected(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "x", found)
+        assert any("stage4-level2-weight-leakage" in e for e in found), f"failed to catch: {text!r}"
+
+    def test_phrase_first_comparative_leakage_false_positive_guard(self):
+        """A comparative-shaped sentence that never actually names two
+        Level 2 instruments must stay clean -- confirms the new pattern
+        still requires both a real ticker after the preposition and a
+        second real ticker after 'than', not just the comparative/noun/
+        preposition shape alone."""
+        found = []
+        l1._scan_stage4_free_text(
+            "More attention should be given to the evidence review than to speed.",
+            "x", found,
+        )
+        assert not any("stage4-level2-weight-leakage" in e for e in found)
+
 
 # ===========================================================================
 # Directive/trading-language scan, chart-domain scan (reused wholesale).
@@ -3142,6 +3173,46 @@ class TestBoundedConclusionScan:
         l1._scan_stage4_free_text(text, "x", found)
         assert not any("stage4-overclaim" in e for e in found), f"false positive on: {text!r}"
 
+    # -- NEW-MINOR-B correction (independent exact-head delta review
+    # pullrequestreview-4912431420) -- four further real bypasses of the
+    # MINOR-4 fix immediately above, each independently reproduced as
+    # failing before the fix: "remains"/"has been" verb forms the MINOR-4
+    # bare-adjective patterns did not cover, a "would be"/"could be"
+    # passive-trigger verb form, an adverb ("solely"/"exclusively")
+    # interrupting "triggered by", and an entirely different "is enough
+    # to trigger" construction using no "trigger(s)"-governs-a-noun shape
+    # at all.
+    @pytest.mark.parametrize("text", [
+        "The sleeve remains redundant.",
+        "The sleeve has been subsumed.",
+        "This finding remains permanent regardless of future evidence.",
+        "An allocation check would be triggered solely by this result.",
+        "Deployment could be triggered exclusively by this record's own conclusion.",
+        "Level 2 selection can be triggered entirely by this finding.",
+        "This result by itself is enough to trigger allocation checking.",
+        "This finding is sufficient on its own to trigger a deployment decision.",
+    ])
+    def test_new_minor_b_overclaim_bypasses_rejected(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "x", found)
+        assert any("stage4-overclaim" in e for e in found), f"failed to catch: {text!r}"
+
+    @pytest.mark.parametrize("text", [
+        # False-positive guards for the NEW-MINOR-B additions specifically
+        # -- legitimate disclosure language using the same bare words
+        # (remains/subsumed/enough) without asserting the forbidden claim
+        # must stay clean.
+        "This scan's own coverage remains bounded and disclosed, not exhaustive.",
+        "The relationship-coverage ledger remains a live, re-derivable computation, "
+        "never a permanent lock.",
+        "This finding is not enough, on its own, to establish a conclusion about the "
+        "other sleeve's own evidence base.",
+    ])
+    def test_new_minor_b_overclaim_false_positive_guards(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "x", found)
+        assert not any("stage4-overclaim" in e for e in found), f"false positive on: {text!r}"
+
     def test_qqq_reference_rejected(self):
         found = []
         l1._scan_stage4_free_text("This is unlike QQQ, which remains out of scope.", "x", found)
@@ -3252,6 +3323,160 @@ class TestCashReserveDistinctionScan:
         _reseal(d)
         errs = l1.validate_policy_adoption_data(d, "equity", repo_root=REPO_ROOT)
         assert any("must be null on every record except cash_reserve" in e for e in errs)
+
+
+# ===========================================================================
+# NEW-MINOR-A/B correction (independent exact-head delta review
+# pullrequestreview-4912431420): a negation/hedge false-positive class
+# against the differ/distinct patterns, plus three further real
+# non-fungibility bypasses -- both against the CASH/RESERVE distinction
+# scan specifically.
+# ===========================================================================
+
+class TestCashReserveNonSettlementHedgeGuard:
+    """NEW-MINOR-A: five natural, compliant, HEDGED/non-settlement
+    sentences -- each independently reproduced as a false positive against
+    the differ/distinct patterns before this correction -- must now
+    validate cleanly. Each is tested in both entity orders (CASH-first
+    and RESERVE-first) to confirm the guard is symmetric, not a one-
+    direction patch."""
+
+    @pytest.mark.parametrize("text", [
+        "Whether CASH and RESERVE warrant different treatment remains an open, "
+        "unresolved question -- this record does not settle it.",
+        "This record does not assert that CASH and RESERVE serve different functions; "
+        "the question remains open pending future governance.",
+        "It has not been established that CASH and RESERVE differ in purpose.",
+        "No evidence shows that CASH and RESERVE differ.",
+        "Prior review found no basis to conclude CASH and RESERVE are distinct.",
+        # Same five, entities reversed -- the guard must be symmetric.
+        "Whether RESERVE and CASH warrant different treatment remains an open, "
+        "unresolved question -- this record does not settle it.",
+        "This record does not assert that RESERVE and CASH serve different functions; "
+        "the question remains open pending future governance.",
+        "It has not been established that RESERVE and CASH differ in purpose.",
+        "No evidence shows that RESERVE and CASH differ.",
+        "Prior review found no basis to conclude RESERVE and CASH are distinct.",
+    ])
+    def test_hedged_non_settlement_language_stays_clean(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "x", found)
+        assert not any("stage4-cash-reserve-distinction" in e for e in found), f"false positive on: {text!r}"
+
+    def test_loophole_fake_negation_hiding_real_assertion_still_caught(self):
+        """The guard is a small, closed whitelist of specific
+        assertion-negating idioms, never a generic 'a negation word
+        appears somewhere nearby' check -- a genuinely prohibited
+        assertion hidden behind an unrelated negated clause earlier in
+        the same sentence must still be caught."""
+        for text in (
+            "It is not the case that CASH and RESERVE are the same -- they are distinct.",
+            "It is not the case that CASH and RESERVE are identical; in fact, they are distinct.",
+        ):
+            found = []
+            l1._scan_stage4_free_text(text, "x", found)
+            assert any("stage4-cash-reserve-distinction" in e for e in found), f"loophole exploited: {text!r}"
+
+    def test_hedge_earlier_in_text_does_not_suppress_a_later_unrelated_assertion(self):
+        """The guard is scoped per-match (via exact adjacency), not per
+        whole field -- a genuine hedge sentence must not launder an
+        entirely separate, later, unhedged assertion in the same free-
+        text field."""
+        found = []
+        l1._scan_stage4_free_text(
+            "Whether CASH and RESERVE warrant different treatment remains open. "
+            "Separately, CASH accomplishes something RESERVE does not.",
+            "x", found,
+        )
+        assert any("stage4-cash-reserve-distinction" in e for e in found)
+
+    def test_real_cash_reserve_consolidation_note_stays_clean_after_guard(self):
+        """Regression: the guard must not change the real sealed record's
+        own already-passing status."""
+        d = _real_policy_adoption("cash_reserve")
+        found = []
+        l1._scan_stage4_free_text(d["cash_reserve_consolidation_note"], "cash_reserve_consolidation_note", found)
+        assert not any("stage4-cash-reserve-distinction" in e for e in found)
+
+    @pytest.mark.parametrize("text", [
+        # Positive regression: every pre-existing differ/distinct catch
+        # (both the original ten and the MAJOR-2 idiom-class patterns,
+        # none of which route through the hedge guard) must remain
+        # caught after this correction.
+        "CASH and RESERVE serve different purposes within this account.",
+        "RESERVE functions as a distinct buffer from CASH.",
+        "CASH is used for near-term liquidity, unlike RESERVE.",
+        "RESERVE is intended for a separate purpose than CASH.",
+        "CASH alone represents the account's true liquidity position.",
+        "CASH accomplishes something RESERVE does not.",
+        "CASH does something that RESERVE cannot.",
+        "RESERVE cannot do what CASH does.",
+        "CASH and RESERVE are not interchangeable.",
+        "RESERVE accomplishes something CASH does not.",
+        "RESERVE does something that CASH cannot.",
+        "CASH cannot do what RESERVE does.",
+        "RESERVE and CASH are not interchangeable.",
+        "CASH is non-fungible with RESERVE.",
+        "RESERVE is not fungible with CASH.",
+    ])
+    def test_all_prior_catches_remain_caught(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "x", found)
+        assert any("stage4-cash-reserve-distinction" in e for e in found), f"regression: no longer caught: {text!r}"
+
+
+class TestCashReserveNonFungibilityResidualBypasses:
+    """NEW-MINOR-B: three further real bypasses of the MAJOR-2
+    non-fungibility patterns -- each its own distinct construction
+    ('cannot serve the function that', a fronted 'What X, Y does not'
+    clause, and phrase-before-entities ordering) -- plus one confirmed,
+    deliberately non-actionable case the review explicitly excluded."""
+
+    @pytest.mark.parametrize("text", [
+        "CASH cannot serve the function that RESERVE serves.",
+        "RESERVE cannot serve the function that CASH serves.",
+        "CASH cannot perform the role that RESERVE performs.",
+        "What CASH accomplishes, RESERVE does not.",
+        "What RESERVE accomplishes, CASH does not.",
+        "What CASH does, RESERVE cannot.",
+        "RESERVE performs a role CASH cannot perform.",
+        "CASH performs a function RESERVE cannot perform.",
+        "Non-fungible: CASH and RESERVE.",
+        "Non-fungible: RESERVE and CASH.",
+        "Non-fungible -- CASH and RESERVE.",
+    ])
+    def test_residual_non_fungibility_bypasses_now_rejected(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "x", found)
+        assert any("stage4-cash-reserve-distinction" in e for e in found), f"failed to catch: {text!r}"
+
+    def test_affirmative_equivalence_deliberately_not_flagged(self):
+        """CASH is interchangeable with RESERVE.' asserts equivalence,
+        not distinctness -- the independent delta review explicitly
+        determined this is NOT an actionable gap, since XASSET-0008
+        itself instructs treating CASH and RESERVE 'as semantically
+        equivalent,' and this scan's own purpose (XASSET-0008/XASSET-0009)
+        is preventing an assertion of DISTINCTNESS specifically. Documents
+        the deliberate, disclosed non-catch rather than silently adding an
+        unrequested, doctrine-inconsistent pattern."""
+        found = []
+        l1._scan_stage4_free_text("CASH is interchangeable with RESERVE.", "x", found)
+        assert not any("stage4-cash-reserve-distinction" in e for e in found)
+
+    @pytest.mark.parametrize("text", [
+        # False-positive guards for the residual-bypass additions
+        # specifically -- ordinary text using "function"/"role"/"serves"
+        # near CASH or RESERVE without asserting the forbidden claim must
+        # stay clean.
+        "The functional_doctrine layer's own CASH record cites its role via a "
+        "structural-reference hash pin, not a free-text claim.",
+        "This record's own relationship_references list serves as the coverage "
+        "ledger's evidentiary basis.",
+    ])
+    def test_residual_bypass_false_positive_guards(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "x", found)
+        assert not any("stage4-cash-reserve-distinction" in e for e in found), f"false positive on: {text!r}"
 
 
 # ===========================================================================

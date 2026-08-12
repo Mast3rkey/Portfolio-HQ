@@ -2551,6 +2551,50 @@ _STAGE4_OVERCLAIM_PATTERNS = [
         r"\bis\s+permanent\b",
         r"\bis\s+redundant\b",
         r"\bsubsumed\s+by\b",
+        # -- NEW-MINOR-B additions (independent exact-head delta review
+        # pullrequestreview-4912431420): four further real bypasses of
+        # the MINOR-4 fix immediately above, each its own distinct verb-
+        # form/construction gap, none a redesign of the scan's own
+        # bounded phrase-based mechanism.
+        #
+        # (1) "The sleeve remains redundant."/"The sleeve has been
+        # subsumed." -- MINOR-4's own bare-adjective additions
+        # ("is permanent"/"is redundant") and the original "subsumed by"
+        # pattern both required a specific single verb form ("is", or a
+        # trailing "by" clause). Broadened to the SAME closed verb
+        # alternation already used two patterns above for the passive
+        # allocation-trigger ban ((?:is|was|gets?|remains?)), applied
+        # uniformly to permanent/redundant/subsumed together, and made
+        # "subsumed" catchable without a trailing "by" clause at all.
+        # Additive, not a replacement of the bare MINOR-4 patterns above
+        # (which stay, for a stable diff and because narrower patterns
+        # matching a subset of this one are harmless).
+        r"\b(?:is|was|has\s+been|have\s+been|gets?|remains?)\s+(?:permanent|redundant|subsumed)\b",
+        # (2) "An allocation check would be triggered solely by this
+        # result." -- MINOR-4's own reversed-order pattern required
+        # exactly one of (is|was|gets?|remains?) as the passive verb and
+        # "triggered by" with nothing intervening. Neither "would be"/
+        # "could be"/"can be" (a materially different, equally passive
+        # verb form) nor an adverb between "triggered" and "by" ("solely
+        # by", "exclusively by", "entirely by") was covered. Both gaps
+        # closed together in one broadened pattern -- not a second,
+        # duplicated pattern -- since they are independent axes of the
+        # same construction and commonly co-occur in real prose.
+        r"\b(allocation\s+check|deployment|level\s*2\s+(instrument\s+)?selection)\s+"
+        r"(?:is|was|gets?|remains?|would\s+be|could\s+be|can\s+be)\s+triggered\s+"
+        r"(?:solely\s+|exclusively\s+|entirely\s+)?by\b",
+        # (3) "This result by itself is enough to trigger allocation
+        # checking." -- an entirely different construction from every
+        # existing "triggers"/"is triggered by" pattern above (no verb
+        # "trigger" governs a noun directly; "is enough to trigger" is
+        # itself the overclaim, regardless of what follows), so no
+        # broadening of an existing pattern could reach it. Bounded to
+        # this closed phrase, matching this scan's own established
+        # phrase-list design (e.g. the pre-existing bare "automatically
+        # (deploys?|allocates?|triggers?)" pattern, which likewise does
+        # not require a specific following noun).
+        r"\bis\s+enough\s+to\s+trigger\b",
+        r"\bsufficient\s+(?:on\s+its\s+own|by\s+itself|alone)\s+to\s+trigger\b",
     ]
 ]
 
@@ -2652,6 +2696,26 @@ def _stage4_level2_weight_patterns(repo_root: Path | None) -> list["re.Pattern[s
             rf"\b(?:{ticker_alt})(?:'s|s)?\b",
             re.IGNORECASE,
         ))
+        # NEW-MINOR-B addition (independent exact-head delta review
+        # pullrequestreview-4912431420): the pattern immediately above
+        # only recognizes TICKER-FIRST ordering ({ticker} ... comparative
+        # ... noun ... than ... {ticker}). Two real bypasses use the
+        # inverted, passive construction instead -- the comparative
+        # phrase precedes the first ticker mention entirely ("More
+        # capital should be allocated to SPY than VEA", "A larger weight
+        # is assigned to BTC than ETH") -- neither ticker ever appears
+        # before the comparative word, so the ticker-first pattern above
+        # never even reaches its own anchor. A materially different word
+        # order, not a broadening of the existing pattern: comparative
+        # word, then comparative noun, then a preposition ("to"/"for")
+        # introducing the first ticker, then "than", then the second
+        # ticker.
+        patterns.append(re.compile(
+            rf"\b{_STAGE4_LEVEL2_COMPARATIVE_WORD}\b[^.]{{0,40}}\b{_STAGE4_LEVEL2_COMPARATIVE_NOUN}\b"
+            rf"[^.]{{0,40}}\b(?:to|for)\b[^.]{{0,30}}\b(?:{ticker_alt})(?:'s|s)?\b[^.]{{0,30}}\bthan\b"
+            rf"[^.]{{0,30}}\b(?:{ticker_alt})(?:'s|s)?\b",
+            re.IGNORECASE,
+        ))
     return patterns
 
 
@@ -2722,13 +2786,102 @@ def _stage4_numeric_leakage_scan(text: str) -> list[str]:
 # (same pattern shapes), not its literal code, since that module's own
 # _DISTINCTION_PATTERNS is private to its file; ported here rather than
 # imported, matching this module's own existing local-helper convention.
-_STAGE4_CASH_RESERVE_DISTINCTION_PATTERNS = [
+#
+# Split into two groups (NEW-MINOR-A correction, independent exact-head
+# delta review pullrequestreview-4912431420): the four "differ/distinct/
+# different (treatment|purpose|role|function)" patterns immediately
+# below are the ONLY patterns in this scan an independently-reproduced
+# false-positive class was found against (five natural, compliant
+# non-settlement/hedged sentences, all sharing "CASH ... RESERVE ...
+# differ/distinct" proximity with no assertion ever actually made -- see
+# _STAGE4_CASH_RESERVE_NONSETTLEMENT_LEADIN below) -- these four alone
+# are run through the negation/hedge guard. Every other pattern in this
+# scan (the idiom-class patterns, the MAJOR-2 non-fungibility patterns,
+# and the NEW-MINOR-B additions below) is NOT hedge-guarded: no false
+# positive was reproduced against any of them, and applying an unproven
+# guard to patterns that were never shown to need one would only widen
+# the surface for a future bypass with no offsetting benefit.
+_STAGE4_CASH_RESERVE_DIFFER_DISTINCT_PATTERNS = [
     re.compile(p, re.IGNORECASE)
     for p in (
         r"\bCASH\b[^.]{0,120}\b(differ|distinct|different\s+(treatment|purpose|role|function)s?)\b[^.]{0,80}\bRESERVE\b",
         r"\bRESERVE\b[^.]{0,120}\b(differ|distinct|different\s+(treatment|purpose|role|function)s?)\b[^.]{0,80}\bCASH\b",
         r"\bCASH\b[^.]{0,30}\bRESERVE\b[^.]{0,60}\b(differ|distinct|different\s+(treatment|purpose|role|function)s?)\b",
         r"\bRESERVE\b[^.]{0,30}\bCASH\b[^.]{0,60}\b(differ|distinct|different\s+(treatment|purpose|role|function)s?)\b",
+    )
+]
+
+# NEW-MINOR-A correction (independent exact-head delta review
+# pullrequestreview-4912431420): the four "differ/distinct" patterns
+# above have no way to distinguish a genuine assertion of distinctness
+# ("CASH and RESERVE differ in purpose") from an explicit, hedged
+# NON-settlement of the identical question ("It has not been established
+# that CASH and RESERVE differ in purpose.") -- five natural, compliant
+# sentences independently reproduced as false positives, all sharing one
+# shape: a small, closed set of assertion-negating lead-in phrases
+# ("whether", "does not assert that", "has not been established that",
+# "no evidence ... that", "no basis to conclude") sits IMMEDIATELY before
+# the leading CASH/RESERVE mention.
+#
+# Deliberately NOT a general "does a negation word appear somewhere
+# nearby" guard: this module's own sibling economic_assessment_
+# validator.py spent seven separate bounded-correction rounds
+# discovering that a blacklist-style "is there a negation/deferral word
+# somewhere nearby" check for a materially similar scan is unprovably
+# incomplete, and worse, becomes its own loophole -- a bare "not"
+# appearing anywhere in an earlier, unrelated clause ("It is not the
+# case that CASH and RESERVE are the same -- they are distinct.") would
+# wrongly suppress a genuine, later assertion. The guard here is instead
+# a small, CLOSED whitelist of specific, multi-word, assertion-negating
+# idioms, each required to sit IMMEDIATELY adjacent (allowing only an
+# optional "that ") to the leading entity mention the differ/distinct
+# match itself starts at -- not "a negation word appears somewhere in
+# the sentence." "not the case that" is deliberately absent from this
+# whitelist, so the loophole sentence above remains caught (verified in
+# the test suite, both for that literal sentence and for a same-shape
+# "is not the case that ... are identical; in fact, they are distinct"
+# variant). This is a narrow, purpose-built mechanism for this one
+# scan's own demonstrated vulnerability class, not a port of economic_
+# assessment_validator.py's own much larger general clause-whitelist
+# architecture -- reusing that architecture's full machinery here is out
+# of scope for this bounded correction (see the module comment above
+# this scan's own pattern list for the existing "reuses DESIGN, not
+# literal code" convention this follows).
+_STAGE4_CASH_RESERVE_NONSETTLEMENT_LEADIN = re.compile(
+    r"\b(?:"
+    r"whether"
+    r"|(?:does|do|did|is|are|has|have)\s+not\s+(?:been\s+)?"
+    r"(?:assert|claim|conclude|establish|state|find|show|determine)\w*(?:\s+that)?"
+    r"|no\s+(?:evidence|basis)(?:\s+\w+){0,4}?\s+(?:that|to\s+conclude|to\s+assert)"
+    r")\b\s*(?=(?:CASH|RESERVE)\b)",
+    re.IGNORECASE,
+)
+
+
+def _cash_reserve_differ_distinct_findings(text: str) -> list[str]:
+    """Applies _STAGE4_CASH_RESERVE_NONSETTLEMENT_LEADIN as a per-match
+    veto against _STAGE4_CASH_RESERVE_DIFFER_DISTINCT_PATTERNS only: a
+    match is suppressed only when a whitelisted non-settlement lead-in
+    phrase ends EXACTLY where that match's own leading CASH/RESERVE
+    mention begins. Both the lead-in pattern's own lookahead and every
+    differ/distinct pattern's own leading \\bCASH\\b/\\bRESERVE\\b anchor
+    are zero-width at that boundary, so hedge_match.end() ==
+    distinction_match.start() precisely when the hedge phrase is truly
+    adjacent to the claim it is hedging -- never merely somewhere earlier
+    in the same sentence."""
+    hedge_ends = {m.end() for m in _STAGE4_CASH_RESERVE_NONSETTLEMENT_LEADIN.finditer(text)}
+    findings: list[str] = []
+    for pat in _STAGE4_CASH_RESERVE_DIFFER_DISTINCT_PATTERNS:
+        for m in pat.finditer(text):
+            if m.start() in hedge_ends:
+                continue
+            findings.append(f"stage4-cash-reserve-distinction:{pat.pattern}")
+    return findings
+
+
+_STAGE4_CASH_RESERVE_OTHER_DISTINCTION_PATTERNS = [
+    re.compile(p, re.IGNORECASE)
+    for p in (
         r"\bRESERVE\s+(functions|serves|acts)\s+as\b",
         r"\bCASH\s+is\s+used\s+for\b",
         r"\bRESERVE\s+is\s+(used|intended|held|meant)\s+for\b",
@@ -2750,14 +2903,45 @@ _STAGE4_CASH_RESERVE_DISTINCTION_PATTERNS = [
         # own required cash_reserve_consolidation_note) stays clean --
         # verified against the real sealed cash_reserve.yaml note and the
         # adversarial matrix in test_level1_sleeve_synthesis_validator.py.
-        r"\bCASH\b[^.]{0,60}\b(accomplish|accomplishes|does|performs)\s+something\b[^.]{0,60}\bRESERVE\b[^.]{0,30}\b(does\s+not|cannot|can\s*not)\b",
-        r"\bRESERVE\b[^.]{0,60}\b(accomplish|accomplishes|does|performs)\s+something\b[^.]{0,60}\bCASH\b[^.]{0,30}\b(does\s+not|cannot|can\s*not)\b",
+        #
+        # NEW-MINOR-B correction (pullrequestreview-4912431420) broadened
+        # the "accomplish(es)/does/performs something" tail noun below
+        # from "something" alone to also include "a role"/"a function"/
+        # "the role"/"the function" -- "RESERVE performs a role CASH
+        # cannot perform" states the identical forbidden claim with a
+        # concrete noun in place of "something," and evaded the original,
+        # narrower alternative. "something" remains the first alternative
+        # (no existing MAJOR-2 match is lost).
+        r"\bCASH\b[^.]{0,60}\b(accomplish|accomplishes|does|performs)\s+(?:something|a\s+role|a\s+function|the\s+role|the\s+function)\b[^.]{0,60}\bRESERVE\b[^.]{0,30}\b(does\s+not|cannot|can\s*not)\b",
+        r"\bRESERVE\b[^.]{0,60}\b(accomplish|accomplishes|does|performs)\s+(?:something|a\s+role|a\s+function|the\s+role|the\s+function)\b[^.]{0,60}\bCASH\b[^.]{0,30}\b(does\s+not|cannot|can\s*not)\b",
         r"\bCASH\b[^.]{0,30}\b(cannot|can\s*not)\s+do\s+what\b[^.]{0,30}\bRESERVE\b[^.]{0,20}\bdoes\b",
         r"\bRESERVE\b[^.]{0,30}\b(cannot|can\s*not)\s+do\s+what\b[^.]{0,30}\bCASH\b[^.]{0,20}\bdoes\b",
         r"\bCASH\b[^.]{0,120}\b(not\s+interchangeable|non-fungible|not\s+fungible)\b[^.]{0,80}\bRESERVE\b",
         r"\bRESERVE\b[^.]{0,120}\b(not\s+interchangeable|non-fungible|not\s+fungible)\b[^.]{0,80}\bCASH\b",
         r"\bCASH\b[^.]{0,120}\bRESERVE\b[^.]{0,60}\b(not\s+interchangeable|non-fungible|not\s+fungible)\b",
         r"\bRESERVE\b[^.]{0,120}\bCASH\b[^.]{0,60}\b(not\s+interchangeable|non-fungible|not\s+fungible)\b",
+        # -- NEW-MINOR-B additions (pullrequestreview-4912431420): three
+        # further real bypasses, each its own distinct construction the
+        # existing idiom patterns above do not reach.
+        #
+        # "CASH cannot serve the function that RESERVE serves." -- a
+        # shared-function-denial idiom distinct from the "do what"
+        # construction two patterns above (no "do"/"does" verb at all).
+        r"\bCASH\b[^.]{0,30}\bcannot\s+(?:serve|perform|fulfill)\s+the\s+(?:function|role)\s+(?:that|which)\b[^.]{0,30}\bRESERVE\b[^.]{0,20}\b(?:serves|performs|fulfills)\b",
+        r"\bRESERVE\b[^.]{0,30}\bcannot\s+(?:serve|perform|fulfill)\s+the\s+(?:function|role)\s+(?:that|which)\b[^.]{0,30}\bCASH\b[^.]{0,20}\b(?:serves|performs|fulfills)\b",
+        # "What CASH accomplishes, RESERVE does not." -- a fronted/
+        # topicalized clause stating the same MAJOR-2 "accomplishes
+        # something ... does not" claim with the object clause moved to
+        # the front of the sentence, which the tight-proximity MAJOR-2
+        # pattern (anchored on CASH/RESERVE appearing in that fixed
+        # order) cannot reach.
+        r"\bWhat\s+CASH\s+(?:accomplish|accomplishes|does|performs)\b[^,]{0,30},?\s*\bRESERVE\s+(?:does\s+not|cannot|can\s*not)\b",
+        r"\bWhat\s+RESERVE\s+(?:accomplish|accomplishes|does|performs)\b[^,]{0,30},?\s*\bCASH\s+(?:does\s+not|cannot|can\s*not)\b",
+        # "Non-fungible: CASH and RESERVE." -- phrase-before-entities
+        # ordering; the existing non-fungibility patterns above only
+        # recognize entities-then-phrase.
+        r"\b(?:not\s+interchangeable|non-fungible|not\s+fungible)\b\s*[:.\-]{0,2}\s*\bCASH\b[^.]{0,30}\bRESERVE\b",
+        r"\b(?:not\s+interchangeable|non-fungible|not\s+fungible)\b\s*[:.\-]{0,2}\s*\bRESERVE\b[^.]{0,30}\bCASH\b",
     )
 ]
 
@@ -2772,7 +2956,8 @@ def _stage4_bounded_conclusion_scan(text: str, repo_root: Path | None = None) ->
             findings.append(f"stage4-level2-weight-leakage:{pat.pattern}")
     if _STAGE4_QQQ_PATTERN.search(text):
         findings.append("stage4-qqq-boundary")
-    for pat in _STAGE4_CASH_RESERVE_DISTINCTION_PATTERNS:
+    findings.extend(_cash_reserve_differ_distinct_findings(text))
+    for pat in _STAGE4_CASH_RESERVE_OTHER_DISTINCTION_PATTERNS:
         if pat.search(text):
             findings.append(f"stage4-cash-reserve-distinction:{pat.pattern}")
     return findings
