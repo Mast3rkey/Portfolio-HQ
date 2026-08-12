@@ -11,7 +11,7 @@ cohort:
 - sleeve_id: fund_broad_market
   shard_id: single-pass-level1-sleeve-policy-adoption-implementation
   sealed_at: '2026-08-11T00:00:00Z'
-  content_sha256: b4c0e324ac32d59482a7b62a7783578ac6c4e5b9d232a27c25b56aea97d89df0
+  content_sha256: b922e68d769d6e3611ae6f3c59344816e7a28a13eca8624ac32dfc6aadd38788
   schema_version: '1.0'
   governing_decision: XASSET-0015
   record_path: intelligence/level1_sleeve_synthesis/policy_adoption/fund_broad_market.yaml

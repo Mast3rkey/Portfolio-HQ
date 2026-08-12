@@ -23,18 +23,25 @@ function_rationale: 'None of the lawful evidentiary bases is currently available
   none is manufactured here to fill the gap. Basis 3 (structural sleeve-definition basis) is mechanically
   available: this sleeve''s own asset_class scope (SPY, VEA, and VWO) is currently populated in a live
   destination-configuration category, confirmed directly this session. That structural fact establishes
-  only that the evidentiary path to a future function_confirmed_distinct finding now exists -- the governing
-  methodology states explicitly that Basis 3''s own availability is never automatic and never presumptively
-  expected to be relied upon in the absence of corroborating evidence. For every other sleeve in this
+  only that the evidentiary path to a future function_confirmed_distinct finding now exists -- XASSET-0015
+  SS E states explicitly that a future drafting session evaluating this sleeve is not thereby required,
+  or even presumptively expected, to reach that value, and explicitly, deliberately delegates full discretion
+  to this drafting session to independently judge the available evidence and reach function_confirmed_distinct,
+  function_status_unresolved, or unable_to_determine, exactly as the sealed evidence and the mechanism''s
+  own rules dictate -- nothing in XASSET-0015 SS E narrows that discretion or pre-selects an outcome.
+  This determination is this drafting session''s own reasoned, conservative exercise of that delegated
+  discretion, not a restatement of a formal corroboration requirement the governing methodology itself
+  states -- no such requirement is stated anywhere in the governing text. For every other sleeve in this
   population, Basis 3 is cited alongside an independently sufficient relationship-record or doctrine-citation
   basis; this sleeve is the only sleeve for which the sole available path rests on Basis 3 in complete
-  isolation, with no relationship-based or doctrine-based corroboration of any kind. Treating that isolated,
-  purely categorical fact as sufficient on its own -- with no offsetting evidence anywhere in this sleeve''s
-  own sealed corpus -- would read Basis 3''s mere availability as a presumptive positive answer, exactly
-  the shortcut the governing methodology''s own text warns against. A future relationship batch closing
-  this sleeve''s own currently deferred relationship pairs, or a future session identifying a genuine,
-  directly-quotable doctrine passage, could supply the missing corroboration and resolve this determination
-  either way.'
+  isolation, with no relationship-based or doctrine-based support of any kind. This session judges that
+  isolated, purely categorical fact insufficient on its own -- with no offsetting evidence anywhere in
+  this sleeve''s own sealed corpus -- rather than reading Basis 3''s mere availability as a presumptive
+  positive answer. A future relationship batch closing this sleeve''s own currently deferred relationship
+  pairs, or a future session identifying a genuine, directly-quotable doctrine passage, could supply
+  further evidence and resolve this determination either way; a future drafting session could also reach
+  a different judgment on today''s identical evidence base within that same delegated discretion, since
+  XASSET-0015 SS E''s own text does not pre-select an outcome.'
 abstention_index: []
 capital_eligibility_status: eligible_for_target_consideration
 sizing_readiness_status: sizing_blocked
@@ -44,11 +51,45 @@ blocking_evidence:
   detail: 'This sleeve''s own portfolio_function_status resolves function_status_unresolved, mechanically
     forcing sizing_readiness_status to sizing_blocked regardless of this sleeve''s own eligible_for_target_consideration
     capital_eligibility_status value or the state of any individual relationship pair -- portfolio_function_status''s
-    own governing condition alone determines this outcome. This is the sole blocking_evidence entry for
-    this sleeve, per the governing methodology''s own explicit instruction for this exact case shape:
-    the sleeve''s own relationship-coverage ledger below discloses the underlying pair-by-pair detail
-    as structural data in its own right, independent of, and not duplicated into, this blocking_evidence
-    list.'
+    own governing condition alone determines this outcome. This is the axis-level blocking reason;
+    the entries below separately disclose this sleeve''s own relationship-coverage detail (the sole
+    sealed pair carrying disclosed secondary conditions, plus every other pair still deferred under
+    XASSET-0013 SS E), each its own contributing reason, per the governing methodology''s own field-design rule that
+    blocking_evidence carries a dedicated entry per contributing reason -- no caveat silently folded into
+    another, matching every other sleeve''s own established disclosure pattern in this corpus.'
+  reference: null
+- reason_type: secondary_condition_present
+  other_sleeve_id: equity
+  detail: 'The sealed equity_fund_broad_market relationship record carries evidence_partial_present,
+    forced_abstention_present, and overlap_or_duplication_disclosed as secondary conditions alongside
+    its stronger_evidence_maturity primary disposition (favoring equity, not this sleeve) -- a disclosed
+    evidentiary limitation on the comparison, not itself the reason this sleeve''s own sizing_readiness_status
+    resolves sizing_blocked (that reason is the axis_a_unresolved entry above), but a caveat this sleeve''s
+    own relationship-coverage ledger must carry forward rather than silently drop. The overlap flag
+    cites the etf_direct_equity_duplication and issuer_overlap_etf_lookthrough overlap-model dimensions
+    -- a disclosed coordination note only (see overlap_coordination_notes below).'
+  reference:
+    record_path: intelligence/level1_sleeve_synthesis/relationships/equity_fund_broad_market.yaml
+    referenced_content_sha256: 8667974b8e08926173ffb9819e4418a06fe2731b0983883fab062e8a272ed0f8
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: fund_gld_defensive
+  detail: The fund_broad_market-fund_gld_defensive pair is among the deferred pairs, part of fund_broad_market's
+    own deferred group.
+  reference: null
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: crypto
+  detail: The crypto-fund_broad_market pair is among the deferred pairs, part of fund_broad_market's
+    own deferred group.
+  reference: null
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: cash_reserve
+  detail: The cash_reserve-fund_broad_market pair is among the deferred pairs, part of fund_broad_market's
+    own deferred group.
+  reference: null
+- reason_type: deferred_relationship_pair
+  other_sleeve_id: debt_reduction
+  detail: The debt_reduction-fund_broad_market pair is among the deferred pairs, part of fund_broad_market's
+    own deferred group.
   reference: null
 unresolved_relationships: []
 relationship_coverage_ledger:
@@ -96,4 +137,4 @@ governing_decisions:
 drafting_session_or_shard_id: single-pass-level1-sleeve-policy-adoption-implementation
 record_status: sealed
 cohort_manifest_entry: intelligence/level1_sleeve_synthesis/policy_adoption/COHORT_MANIFEST.yaml#fund_broad_market
-content_sha256: b4c0e324ac32d59482a7b62a7783578ac6c4e5b9d232a27c25b56aea97d89df0
+content_sha256: b922e68d769d6e3611ae6f3c59344816e7a28a13eca8624ac32dfc6aadd38788

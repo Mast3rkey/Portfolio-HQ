@@ -2407,6 +2407,72 @@ class TestPolicyAdoptionSchemaShapeSynthetic:
         assert any("unrecognized key" in e for e in errs)
 
 
+class TestValidateHashRefCallSiteClosureAudit:
+    """MAJOR-1 correction (independent exact-head review
+    pullrequestreview-4911497398): _validate_hash_ref() deliberately
+    performs no shape closure of its own (see its own docstring) -- every
+    caller is individually responsible for closing its own reference
+    shape. This class is the global audit the review's own fix
+    instruction required: every one of the five _validate_hash_ref() call
+    sites in validate_policy_adoption_data() gets its own dedicated
+    extra-key-rejection test here (some already existed elsewhere in this
+    file under a different name; both genuinely missing cases --
+    relationship_references[i] had no dedicated extra-key test at all,
+    and blocking_evidence[i].reference had neither a test nor a working
+    closure check -- are added below). The five call sites, and where
+    each one's own coverage lives:
+      1. profile_reference -- TestPolicyAdoptionSchemaShapeSynthetic.
+         test_extra_key_rejected_at_every_nesting_level (existing)
+      2. relationship_references[i] -- test_relationship_reference_
+         entry_extra_key_rejected (new, below -- previously untested)
+      3. relationship_coverage_ledger[i].reference (sealed) --
+         TestPolicyAdoptionSchemaShapeSynthetic.
+         test_ledger_extra_reference_key_rejected (existing)
+      4. relationship_coverage_ledger[i].reference (deferred_disclosed) --
+         TestPolicyAdoptionSchemaShapeSynthetic.
+         test_deferred_ledger_reference_extra_key_rejected (existing)
+      5. blocking_evidence[i].reference -- test_blocking_evidence_
+         reference_extra_key_rejected (new, below -- this was the one
+         genuine defect: no _reject_unknown_keys call existed at this
+         site at all, so the injected key validated cleanly before this
+         correction)."""
+
+    def test_relationship_reference_entry_extra_key_rejected(self):
+        d = _real_policy_adoption("equity")
+        d["relationship_references"][0]["bogus"] = "leak"
+        errs = l1.validate_policy_adoption_data(d, "equity", repo_root=REPO_ROOT)
+        assert any("unrecognized key" in e for e in errs)
+
+    def test_blocking_evidence_reference_extra_key_rejected(self):
+        """Independently reproduces the review's own literal example
+        before the fix: injecting an unrecognized key into a real
+        blocking_evidence[i].reference sub-object validated cleanly with
+        zero 'unrecognized key' error. Must now be rejected."""
+        d = _real_policy_adoption("equity")
+        entry = next(e for e in d["blocking_evidence"] if e.get("reference"))
+        entry["reference"]["totally_bogus_extra_key_xyz"] = "leak"
+        errs = l1.validate_policy_adoption_data(d, "equity", repo_root=REPO_ROOT)
+        assert any("unrecognized key" in e and "totally_bogus_extra_key_xyz" in e for e in errs)
+
+    def test_blocking_evidence_reference_missing_key_rejected(self):
+        d = _real_policy_adoption("equity")
+        entry = next(e for e in d["blocking_evidence"] if e.get("reference"))
+        del entry["reference"]["referenced_content_sha256"]
+        errs = l1.validate_policy_adoption_data(d, "equity", repo_root=REPO_ROOT)
+        assert any("reference missing key(s)" in e and "referenced_content_sha256" in e for e in errs)
+
+    def test_blocking_evidence_reference_valid_shape_still_clean(self):
+        """False-positive guard: a real, unmutated blocking_evidence[i].
+        reference (record_path + referenced_content_sha256 only) must
+        still validate with zero errors after the MAJOR-1 correction --
+        every real sealed policy_adoption record already carries this
+        exact shape, confirmed corpus-wide via TestRealPolicyAdoptionCorpus
+        elsewhere in this file."""
+        d = _real_policy_adoption("equity")
+        errs = l1.validate_policy_adoption_data(d, "equity", repo_root=REPO_ROOT)
+        assert errs == []
+
+
 # ===========================================================================
 # Exactly six sleeve_id values; at most one Stage 4c record per sleeve
 # (SS21 item 2).
@@ -2895,6 +2961,63 @@ class TestLevel2LeakageScan:
         errs = l1.validate_policy_adoption_data(d, "equity", repo_root=REPO_ROOT)
         assert any("forbidden cross-schema/Level-2-leakage key name" in e for e in errs)
 
+    # -- MINOR-3 correction (independent exact-head review
+    # pullrequestreview-4911497398) -- verb forms, no-apostrophe plurals,
+    # and comparative ticker-vs-ticker sizing claims that evaded the
+    # original noun-only trigger list and the broken \b{ticker}\b'?s?
+    # boundary. All four use only the base seven fund/crypto tickers, so
+    # (matching the pre-existing tests in this class) no repo_root is
+    # needed to exercise them.
+    @pytest.mark.parametrize("text", [
+        "SPY is weighted at some level.",
+        "SPY should be allocated more capital.",
+        "SPYs weight is concerning.",
+        "SPY should be sized larger than VEA.",
+        "BTC warrants more capital than ETH.",
+        "VEA is being sized up within this sleeve.",
+        "GLDs allocation deserves scrutiny.",
+    ])
+    def test_verb_form_and_plural_and_comparative_leakage_rejected(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "function_rationale", found)
+        assert any("stage4-level2-weight-leakage" in e for e in found), f"failed to catch: {text!r}"
+
+    def test_equity_ticker_weight_language_rejected_when_repo_root_available(self):
+        """XASSET-0014 SS F's own controlling text ('no individual equity,
+        fund, or coin's own weight, target, or size may be named by any
+        Stage 4 record') is not limited to the seven fund/crypto
+        instruments -- the scan must cover the live canonical equity
+        roster too, mechanically derived from targets.yaml, when
+        repo_root is available (as it always is in real production
+        validation via validate_policy_adoption_data's own repo_root
+        parameter)."""
+        found = []
+        l1._scan_stage4_free_text("NVDA is weighted at a concerning level.", "x", found, repo_root=REPO_ROOT)
+        assert any("stage4-level2-weight-leakage" in e for e in found)
+
+    def test_equity_ticker_weight_language_not_caught_without_repo_root(self):
+        """Documents the deliberate, narrower (never wider) fallback: with
+        no repo_root to read targets.yaml from, only the static seven
+        fund/crypto tickers are recognized -- an isolated synthetic-data
+        caller never silently gains equity-ticker coverage it did not ask
+        for."""
+        found = []
+        l1._scan_stage4_free_text("NVDA is weighted at a concerning level.", "x", found, repo_root=None)
+        assert not any("stage4-level2-weight-leakage" in e for e in found)
+
+    def test_real_corpus_stays_clean_against_full_equity_ticker_universe(self):
+        """False-positive guard, run against the full, live, real
+        canonical-equity-plus-fund/crypto ticker universe (repo_root=
+        REPO_ROOT): none of the six real sealed policy_adoption records
+        names an individual equity ticker in any weight/allocation/size
+        context (confirmed by direct inspection: no equity ticker symbol
+        appears anywhere in the real corpus today)."""
+        for sleeve_id in sorted(l1.SLEEVE_IDS):
+            d = _real_policy_adoption(sleeve_id)
+            errs = l1.validate_policy_adoption_data(d, sleeve_id, repo_root=REPO_ROOT)
+            leakage = [e for e in errs if "stage4-level2-weight-leakage" in e]
+            assert leakage == [], f"{sleeve_id}: {leakage}"
+
 
 # ===========================================================================
 # Directive/trading-language scan, chart-domain scan (reused wholesale).
@@ -2988,10 +3111,55 @@ class TestBoundedConclusionScan:
         )
         assert not any("stage4-overclaim" in e for e in found)
 
+    @pytest.mark.parametrize("text", [
+        # MINOR-4 correction (independent exact-head review
+        # pullrequestreview-4911497398) -- passive/reversed word order for
+        # the allocation-trigger ban, and bare (unqualified) permanent/
+        # redundant/subsumed adjective forms, all independently reproduced
+        # as failing before the fix.
+        "An allocation check is triggered by this sleeve's own finding alone.",
+        "Deployment is triggered by this finding's own conclusion alone.",
+        "This determination is permanent.",
+        "This sleeve is redundant.",
+        "This sleeve's function is subsumed by equity's own function.",
+    ])
+    def test_reversed_and_bare_overclaim_language_rejected(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "x", found)
+        assert any("stage4-overclaim" in e for e in found), f"failed to catch: {text!r}"
+
+    @pytest.mark.parametrize("text", [
+        # False-positive guards for the MINOR-4 bare-adjective additions
+        # specifically -- must not fire on legitimate disclosure language
+        # that merely contains the bare word without asserting it.
+        "Every value here is a live-derived computation over currently-sealed evidence, "
+        "never a permanent lock -- a future re-population would recompute this from scratch.",
+        "This determination is not permanent.",
+        "This finding is neither permanent nor redundant on its own.",
+    ])
+    def test_reversed_and_bare_overclaim_false_positive_guards(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "x", found)
+        assert not any("stage4-overclaim" in e for e in found), f"false positive on: {text!r}"
+
     def test_qqq_reference_rejected(self):
         found = []
         l1._scan_stage4_free_text("This is unlike QQQ, which remains out of scope.", "x", found)
         assert any("stage4-qqq-boundary" in e for e in found)
+
+    @pytest.mark.parametrize("text", [
+        # MINOR-5 correction (independent exact-head review
+        # pullrequestreview-4911497398) -- the QQQ pattern was compiled
+        # without re.IGNORECASE, unlike every sibling pattern list in this
+        # module; a lowercase-only mention passed the scan undetected.
+        "this mentions qqq only",
+        "this mentions Qqq only",
+        "this mentions qQQ only",
+    ])
+    def test_qqq_reference_rejected_case_insensitive(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "x", found)
+        assert any("stage4-qqq-boundary" in e for e in found), f"failed to catch: {text!r}"
 
     def test_contender_citation_rejected(self):
         found = []
@@ -3024,6 +3192,53 @@ class TestCashReserveDistinctionScan:
         errs = l1.validate_policy_adoption_data(d, "cash_reserve", repo_root=REPO_ROOT)
         assert not any("stage4-cash-reserve-distinction" in e for e in errs)
 
+    @pytest.mark.parametrize("text", [
+        # MAJOR-2 correction (independent exact-head review
+        # pullrequestreview-4911497398) -- the review's own four literal
+        # bypass examples, independently reproduced as failing before the
+        # fix, plus reversed-entity-order and non-fungible-idiom variants.
+        "CASH accomplishes something RESERVE does not.",
+        "CASH does something that RESERVE cannot.",
+        "RESERVE cannot do what CASH does.",
+        "CASH and RESERVE are not interchangeable.",
+        "RESERVE accomplishes something CASH does not.",
+        "RESERVE does something that CASH cannot.",
+        "CASH cannot do what RESERVE does.",
+        "RESERVE and CASH are not interchangeable.",
+        "CASH is non-fungible with RESERVE.",
+        "RESERVE is not fungible with CASH.",
+    ])
+    def test_non_fungibility_language_rejected(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "x", found)
+        assert any("stage4-cash-reserve-distinction" in e for e in found), f"failed to catch: {text!r}"
+
+    @pytest.mark.parametrize("text", [
+        # False-positive guards for the MAJOR-2 non-fungibility patterns
+        # specifically -- ordinary non-settlement/abstention prose that
+        # merely names the CASH/RESERVE boundary, or cites the governing
+        # decisions by ID, must stay clean.
+        "The CASH/RESERVE consolidation question remains unresolved.",
+        "This record does not settle whether CASH and RESERVE should be treated separately.",
+        "The evidence is insufficient to determine whether the labels represent distinct functions.",
+        "Per XASSET-0008 and XASSET-0009, the CASH and RESERVE identifiers remain an unresolved family.",
+        "Neither fact is evidence that the CASH and RESERVE identifiers serve separate purposes.",
+    ])
+    def test_non_fungibility_false_positive_guards(self, text):
+        found = []
+        l1._scan_stage4_free_text(text, "x", found)
+        assert not any("stage4-cash-reserve-distinction" in e for e in found), f"false positive on: {text!r}"
+
+    def test_real_cash_reserve_consolidation_note_clean_against_non_fungibility_patterns(self):
+        """The real, sealed cash_reserve_consolidation_note is the exact
+        production text these new patterns must never fire against --
+        checked directly, not merely via the pre-existing whitelist test
+        above (which predates this correction)."""
+        d = _real_policy_adoption("cash_reserve")
+        found = []
+        l1._scan_stage4_free_text(d["cash_reserve_consolidation_note"], "cash_reserve_consolidation_note", found)
+        assert not any("stage4-cash-reserve-distinction" in e for e in found)
+
     def test_cash_reserve_consolidation_note_required_and_nonempty(self):
         d = _real_policy_adoption("cash_reserve")
         d["cash_reserve_consolidation_note"] = None
@@ -3047,13 +3262,19 @@ class TestCashReserveDistinctionScan:
 
 class TestAdversarialOrderingNegationPunctuation:
     def test_word_order_reversed_still_caught(self):
+        """MINOR-4 correction (independent exact-head review
+        pullrequestreview-4911497398): this test's own name always claimed
+        both the forward and reversed word order were verified caught, but
+        the original body computed found_b and then never asserted on it,
+        ending in an unconditional `assert True` -- a real bypass (the
+        reversed form was NOT caught at the time) went undetected by a
+        test whose name implied the opposite. Both directions are now
+        genuinely, independently asserted."""
         found_a, found_b = [], []
         l1._scan_stage4_free_text("This sleeve triggers an allocation check on its own.", "x", found_a)
         l1._scan_stage4_free_text("An allocation check is triggered by this sleeve's own finding alone.", "x", found_b)
-        assert any("stage4-overclaim" in e for e in found_a)
-        # documents whether the reversed-order phrasing is independently
-        # caught by a different pattern within the same closed list.
-        assert True
+        assert any("stage4-overclaim" in e for e in found_a), "forward word order must be caught"
+        assert any("stage4-overclaim" in e for e in found_b), "reversed/passive word order must be caught too"
 
     def test_punctuation_variants_do_not_evade_directive_scan(self):
         for text in ("buy.", "Buy!", "  buy  ", "(buy)", "buy,sell,trim"):

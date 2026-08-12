@@ -2510,6 +2510,26 @@ def compute_expected_sizing_readiness(
 # lock" rule); (d) individual-instrument eligibility or target-weight
 # leakage (the Level 1/Level 2 boundary, SS12/SS21 item 9).
 
+# MINOR-4 correction (independent exact-head review pullrequestreview-
+# 4911497398): the original list caught only the forward word order
+# ("X triggers an allocation check") and only the qualified adjective
+# forms ("fully redundant", "fully subsumed by", "permanently"), missing
+# passive/reversed word order ("an allocation check is triggered by X")
+# and the bare, unqualified adjective forms ("this determination is
+# permanent", "this sleeve is redundant"). Both gaps are closed below
+# without weakening or removing any existing pattern -- purely additive.
+# The bare "\bis\s+permanent\b"/"\bis\s+redundant\b" additions are
+# deliberately narrower than a bare "\bpermanent\b"/"\bredundant\b" scan
+# would be: this module's own real sealed corpus and test suite both rely
+# on legitimate, boundary-preserving disclosure language that contains
+# the bare word without asserting it ("never a permanent lock -- a future
+# re-population would recompute this from scratch", SS7's own explicit
+# rule) -- a bare-word scan would flag that disclosure itself as an
+# overclaim, which is exactly backwards. Requiring the assertive verb
+# ("is permanent"/"is redundant") immediately adjacent keeps the existing
+# TestBoundedConclusionScan.test_never_a_permanent_lock_disclosure_
+# language_passes false-positive guard clean while still catching the
+# review's own literal bypass example.
 _STAGE4_OVERCLAIM_PATTERNS = [
     re.compile(p, re.IGNORECASE)
     for p in [
@@ -2525,23 +2545,123 @@ _STAGE4_OVERCLAIM_PATTERNS = [
         r"\btriggers?\s+(an?\s+)?(allocation\s+check|deployment|level\s*2\s+(instrument\s+)?selection)\b",
         r"\bautomatically\s+(deploys?|allocates?|triggers?)\b",
         r"\bthis\s+(finding|record)\s+alone\s+(triggers?|authorizes?|deploys?)\b",
+        # -- MINOR-4 additions ------------------------------------------
+        r"\b(allocation\s+check|deployment|level\s*2\s+(instrument\s+)?selection)\s+(is|was|gets?|remains?)\s+triggered\s+by\b",
+        r"\btriggered\s+by\s+(this\s+)?(sleeve|finding|record)('s)?\s+own\s+finding\s+alone\b",
+        r"\bis\s+permanent\b",
+        r"\bis\s+redundant\b",
+        r"\bsubsumed\s+by\b",
     ]
 ]
 
+# MINOR-3 correction (independent exact-head review pullrequestreview-
+# 4911497398): three real, independently reproduced gaps, all fixed
+# without redesigning the scan's own bounded, phrase-based mechanism.
+#
+# (1) The ticker word-boundary construction \b{ticker}\b'?s? was broken:
+# \b{ticker}\b requires a word boundary IMMEDIATELY after the ticker's own
+# letters, so it never matches inside a no-apostrophe plural like "SPYs"
+# (no boundary exists between "Y" and the following "s" -- both are word
+# characters). Fixed by moving the optional possessive/plural suffix
+# INSIDE the boundary group -- \b{ticker}(?:'s|s)?\b -- so "SPY", "SPY's",
+# and "SPYs" are all recognized as the same ticker mention.
+#
+# (2) The trigger-word list was noun-only (weight/target percentage/own
+# size/own allocation), missing verb forms ("SPY is weighted at...",
+# "SPY should be allocated more capital") and bare comparative-capital
+# phrasing ("BTC warrants more capital"). Broadened to a trigger
+# alternation covering weight/weighted/weighting, target percentage/
+# weight, own size/allocation, allocate/allocated/allocating/allocation,
+# size/sized/sizing, and "more/less/greater/smaller/larger/higher/lower/
+# fewer capital" -- still a closed, bounded phrase list, not a redesign.
+#
+# (3) The ticker population (_STAGE4_LEVEL2_TICKERS, the seven fund/
+# crypto instruments) under-covered relative to this module's own
+# docstring claim ("no individual equity ticker, fund, or coin symbol")
+# and, more importantly, XASSET-0014 SS F's own controlling text: "no
+# individual equity, fund, or coin's own weight, target, or size may be
+# named by any Stage 4 record" -- equities are explicitly, textually in
+# scope, not only the seven fund/crypto instruments. Mechanically
+# extended via _stage4_level2_ticker_universe() below, which unions the
+# static seven with the live canonical equity roster read directly from
+# targets.yaml's own destination: list (mirroring compute_basis3_
+# available()'s own established direct-targets.yaml-read convention in
+# this same file, rather than hand-maintaining a second, duplicated
+# ticker list or adding this module's first cross-validator import for
+# one field lookup). A comparative cross-ticker pattern is added
+# separately below to catch ticker-vs-ticker sizing claims that use no
+# fixed trigger noun at all ("SPY should be sized larger than VEA," "BTC
+# warrants more capital than ETH").
 _STAGE4_LEVEL2_TICKERS = ("SPY", "VEA", "VWO", "GLD", "BTC", "ETH", "SOL")
-_STAGE4_LEVEL2_WEIGHT_PATTERNS = [
-    re.compile(
-        # \b{ticker}\b'?s? -- allows an optional possessive ("SPY's own
-        # weight"), since a plain \s boundary alone does not span the
-        # apostrophe in "SPY's".
-        rf"\b{ticker}\b'?s?(?:[\s,;:]+[a-z][\w'-]*){{0,4}}[\s,;:]+\b(weight|target\s+percentage|"
-        rf"own\s+size|own\s+allocation)\b",
-        re.IGNORECASE,
-    )
-    for ticker in _STAGE4_LEVEL2_TICKERS
-]
 
-_STAGE4_QQQ_PATTERN = re.compile(r"\bQQQ\b")
+_STAGE4_LEVEL2_TRIGGER_ALTERNATION = (
+    r"weight(?:ed|ing)?|"
+    r"target\s+(?:percentage|weight)|"
+    r"own\s+(?:size|allocation)|"
+    r"alloca(?:te|ted|ting|tion)|"
+    r"siz(?:e|ed|ing)|"
+    r"(?:more|less|greater|smaller|larger|higher|lower|fewer)\s+capital"
+)
+_STAGE4_LEVEL2_COMPARATIVE_WORD = r"(?:more|less|greater|smaller|larger|higher|lower|fewer)"
+_STAGE4_LEVEL2_COMPARATIVE_NOUN = r"(?:capital|weight|allocation|size|shares?)"
+
+
+def _stage4_level2_ticker_universe(repo_root: Path | None) -> tuple[str, ...]:
+    """The seven fund/crypto Level 2 instruments unioned with the live
+    canonical equity roster (targets.yaml's own destination: list, rows
+    with asset_class == 'equity') -- see the MINOR-3 correction comment
+    above for why. Falls back to the static seven alone when repo_root is
+    unavailable (an isolated synthetic-data test with no real
+    targets.yaml to read) -- a narrower, never a wider, fallback, so no
+    existing caller silently gains equity-ticker coverage it did not ask
+    for."""
+    tickers = set(_STAGE4_LEVEL2_TICKERS)
+    if repo_root is not None:
+        data, errs = _read_yaml(repo_root / "targets.yaml")
+        if not errs and isinstance(data, dict):
+            destinations = data.get("destination")
+            if isinstance(destinations, list):
+                for row in destinations:
+                    if (
+                        isinstance(row, dict)
+                        and row.get("asset_class") == "equity"
+                        and isinstance(row.get("ticker"), str)
+                    ):
+                        tickers.add(row["ticker"])
+    return tuple(sorted(tickers))
+
+
+def _stage4_level2_weight_patterns(repo_root: Path | None) -> list["re.Pattern[str]"]:
+    tickers = _stage4_level2_ticker_universe(repo_root)
+    patterns = [
+        re.compile(
+            # \b{ticker}(?:'s|s)?\b -- the boundary now wraps the whole
+            # optional possessive/plural suffix (see correction comment
+            # above), matching "SPY", "SPY's own weight", and "SPYs
+            # weight" alike.
+            rf"\b{re.escape(ticker)}(?:'s|s)?\b(?:[\s,;:]+[a-z][\w'-]*){{0,4}}[\s,;:]+\b(?:{_STAGE4_LEVEL2_TRIGGER_ALTERNATION})\b",
+            re.IGNORECASE,
+        )
+        for ticker in tickers
+    ]
+    if tickers:
+        ticker_alt = "|".join(re.escape(t) for t in tickers)
+        patterns.append(re.compile(
+            rf"\b(?:{ticker_alt})(?:'s|s)?\b[^.]{{0,60}}\b{_STAGE4_LEVEL2_COMPARATIVE_WORD}\b"
+            rf"[^.]{{0,40}}\b{_STAGE4_LEVEL2_COMPARATIVE_NOUN}\b[^.]{{0,40}}\bthan\b[^.]{{0,30}}"
+            rf"\b(?:{ticker_alt})(?:'s|s)?\b",
+            re.IGNORECASE,
+        ))
+    return patterns
+
+
+# MINOR-5 correction (independent exact-head review pullrequestreview-
+# 4911497398): compiled without re.IGNORECASE, unlike every sibling
+# pattern list in this module -- "this mentions qqq only" (lowercase, no
+# uppercase occurrence anywhere) passed the scan undetected. Added for
+# consistency with _CONTENDER_CITATION_PATTERNS/_POLICY_LEAK_PATTERNS/
+# every other pattern list here.
+_STAGE4_QQQ_PATTERN = re.compile(r"\bQQQ\b", re.IGNORECASE)
 
 # XASSET-0014 SS21 item 21 -- a Basis 3 citation referencing evidence-
 # maturity or per-instrument-weight fields is a hard rejection, never a
@@ -2615,16 +2735,39 @@ _STAGE4_CASH_RESERVE_DISTINCTION_PATTERNS = [
         r"\b(CASH|RESERVE)\s+individually\s+warrants?\b",
         r"\b(CASH|RESERVE)\s+(alone|specifically)\s+(is|represents|serves)\b",
         r"\bthe\s+(reserve|cash)\s+(percentage|pct|weight|target)\s+(suggests|implies|indicates)\b",
+        # -- MAJOR-2 additions (independent exact-head review
+        # pullrequestreview-4911497398): the original ten patterns all
+        # required one of differ/distinct/different (treatment|purpose|
+        # role|function) as the connecting verb/adjective -- a plain-
+        # English non-fungibility assertion ("CASH and RESERVE are not
+        # interchangeable," "CASH accomplishes something RESERVE does
+        # not," "RESERVE cannot do what CASH does") states the identical
+        # forbidden claim (XASSET-0008 SS N / XASSET-0009's own boundary)
+        # without using any of those stem words, and evaded every
+        # existing pattern. Added as their own idiom class, both entity
+        # orders, alongside a false-positive guard requirement that
+        # ordinary non-settlement/abstention language (e.g. this record's
+        # own required cash_reserve_consolidation_note) stays clean --
+        # verified against the real sealed cash_reserve.yaml note and the
+        # adversarial matrix in test_level1_sleeve_synthesis_validator.py.
+        r"\bCASH\b[^.]{0,60}\b(accomplish|accomplishes|does|performs)\s+something\b[^.]{0,60}\bRESERVE\b[^.]{0,30}\b(does\s+not|cannot|can\s*not)\b",
+        r"\bRESERVE\b[^.]{0,60}\b(accomplish|accomplishes|does|performs)\s+something\b[^.]{0,60}\bCASH\b[^.]{0,30}\b(does\s+not|cannot|can\s*not)\b",
+        r"\bCASH\b[^.]{0,30}\b(cannot|can\s*not)\s+do\s+what\b[^.]{0,30}\bRESERVE\b[^.]{0,20}\bdoes\b",
+        r"\bRESERVE\b[^.]{0,30}\b(cannot|can\s*not)\s+do\s+what\b[^.]{0,30}\bCASH\b[^.]{0,20}\bdoes\b",
+        r"\bCASH\b[^.]{0,120}\b(not\s+interchangeable|non-fungible|not\s+fungible)\b[^.]{0,80}\bRESERVE\b",
+        r"\bRESERVE\b[^.]{0,120}\b(not\s+interchangeable|non-fungible|not\s+fungible)\b[^.]{0,80}\bCASH\b",
+        r"\bCASH\b[^.]{0,120}\bRESERVE\b[^.]{0,60}\b(not\s+interchangeable|non-fungible|not\s+fungible)\b",
+        r"\bRESERVE\b[^.]{0,120}\bCASH\b[^.]{0,60}\b(not\s+interchangeable|non-fungible|not\s+fungible)\b",
     )
 ]
 
 
-def _stage4_bounded_conclusion_scan(text: str) -> list[str]:
+def _stage4_bounded_conclusion_scan(text: str, repo_root: Path | None = None) -> list[str]:
     findings: list[str] = []
     for pat in _STAGE4_OVERCLAIM_PATTERNS:
         if pat.search(text):
             findings.append(f"stage4-overclaim:{pat.pattern}")
-    for pat in _STAGE4_LEVEL2_WEIGHT_PATTERNS:
+    for pat in _stage4_level2_weight_patterns(repo_root):
         if pat.search(text):
             findings.append(f"stage4-level2-weight-leakage:{pat.pattern}")
     if _STAGE4_QQQ_PATTERN.search(text):
@@ -2635,7 +2778,7 @@ def _stage4_bounded_conclusion_scan(text: str) -> list[str]:
     return findings
 
 
-def _scan_stage4_free_text(value: object, field_name: str, errors: list[str]) -> None:
+def _scan_stage4_free_text(value: object, field_name: str, errors: list[str], *, repo_root: Path | None = None) -> None:
     """Reuses _prohibited_content_scan() (policy-leak, chart-domain,
     directive-word, bare-gate-word -- all already Stage-4-appropriate
     mechanisms, none redesigned) plus _numeric_leakage_scan() and _
@@ -2660,7 +2803,7 @@ def _scan_stage4_free_text(value: object, field_name: str, errors: list[str]) ->
             errors.append(f"{field_name} contains prohibited content ({finding})")
         for finding in _comparative_superiority_scan(text):
             errors.append(f"{field_name} contains prohibited content ({finding})")
-        for finding in _stage4_bounded_conclusion_scan(text):
+        for finding in _stage4_bounded_conclusion_scan(text, repo_root=repo_root):
             errors.append(f"{field_name} contains prohibited content ({finding})")
         for finding in _scan_contender_citation(text):
             errors.append(f"{field_name} contains prohibited content ({finding})")
@@ -2806,7 +2949,7 @@ def validate_policy_adoption_data(
     if not _non_empty_str(function_rationale):
         errors.append("function_rationale must be a non-empty string")
     else:
-        _scan_stage4_free_text(function_rationale, "function_rationale", errors)
+        _scan_stage4_free_text(function_rationale, "function_rationale", errors, repo_root=repo_root)
         for finding in _scan_basis3_forbidden_fields(function_rationale):
             errors.append(f"function_rationale contains prohibited content ({finding})")
         # SS21 item 22 -- structurally required to be substantial, never a
@@ -2847,7 +2990,7 @@ def validate_policy_adoption_data(
             if not _non_empty_str(entry.get("reason")):
                 errors.append(f"{label}.reason must be a non-empty string")
             else:
-                _scan_stage4_free_text(entry.get("reason"), label + ".reason", errors)
+                _scan_stage4_free_text(entry.get("reason"), label + ".reason", errors, repo_root=repo_root)
         if axis_a == AXIS_A_UNABLE_TO_DETERMINE and not abstention_index:
             errors.append("abstention_index must be non-empty when portfolio_function_status == unable_to_determine")
         if axis_a != AXIS_A_UNABLE_TO_DETERMINE and abstention_index:
@@ -2984,13 +3127,38 @@ def validate_policy_adoption_data(
             if not _non_empty_str(entry.get("detail")):
                 errors.append(f"{label}.detail must be a non-empty string")
             else:
-                _scan_stage4_free_text(entry.get("detail"), label + ".detail", errors)
+                _scan_stage4_free_text(entry.get("detail"), label + ".detail", errors, repo_root=repo_root)
             ref = entry.get("reference")
             if ref is not None:
                 if not isinstance(ref, dict):
                     errors.append(f"{label}.reference must be a mapping or null")
                 else:
-                    _validate_hash_ref(ref, f"{label}.reference", errors, repo_root=repo_root, record_dir=_RELATIONSHIPS_DIR)
+                    # MAJOR-1 correction (independent exact-head review
+                    # pullrequestreview-4911497398): _validate_hash_ref()
+                    # deliberately performs no shape closure of its own (see
+                    # its own docstring) -- every OTHER caller in this
+                    # function closes its own reference shape before or via
+                    # _validate_hash_ref (profile_reference,
+                    # relationship_references[i], both
+                    # relationship_coverage_ledger[i].reference branches,
+                    # unresolved_relationships[i]); this call site was the
+                    # one place that check was missing, letting an
+                    # arbitrary extra key inside blocking_evidence[i].
+                    # reference validate cleanly -- the exact defect class
+                    # this PR's own commit message already disclosed fixing
+                    # once for profile_reference, not generalized to every
+                    # call site. blocking_evidence[i].reference shares the
+                    # identical record_path/referenced_content_sha256 shape
+                    # as relationship_coverage_ledger[i]'s own sealed-state
+                    # reference (confirmed against every real sealed
+                    # record), so the fix reuses _LEDGER_REF_SEALED_KEYS
+                    # rather than inventing a new, duplicate key set.
+                    _reject_unknown_keys(ref, f"{label}.reference", _LEDGER_REF_SEALED_KEYS, errors)
+                    missing_ref = _LEDGER_REF_SEALED_KEYS - ref.keys()
+                    if missing_ref:
+                        errors.append(f"{label}.reference missing key(s): {sorted(missing_ref)}")
+                    else:
+                        _validate_hash_ref(ref, f"{label}.reference", errors, repo_root=repo_root, record_dir=_RELATIONSHIPS_DIR)
 
     # -- unresolved_relationships[] ----------------------------------------
     unresolved = data.get("unresolved_relationships")
@@ -3061,7 +3229,7 @@ def validate_policy_adoption_data(
             if not _non_empty_str(entry.get("note")):
                 errors.append(f"{label}.note must be a non-empty string")
             else:
-                _scan_stage4_free_text(entry.get("note"), label + ".note", errors)
+                _scan_stage4_free_text(entry.get("note"), label + ".note", errors, repo_root=repo_root)
 
     # -- cash_reserve_consolidation_note ------------------------------------
     note = data.get("cash_reserve_consolidation_note")
@@ -3069,7 +3237,7 @@ def validate_policy_adoption_data(
         if not _non_empty_str(note):
             errors.append("cash_reserve_consolidation_note must be a non-empty string on the cash_reserve record")
         else:
-            _scan_stage4_free_text(note, "cash_reserve_consolidation_note", errors)
+            _scan_stage4_free_text(note, "cash_reserve_consolidation_note", errors, repo_root=repo_root)
             if len(note.strip()) < 80:
                 errors.append("cash_reserve_consolidation_note is too short to be a substantial non-settlement statement")
     else:
