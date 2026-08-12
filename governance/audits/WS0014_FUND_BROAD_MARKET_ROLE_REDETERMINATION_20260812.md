@@ -201,3 +201,16 @@ remains entirely unauthorized, unaddressed, and out of scope for this filing —
 later, Level 2 question. This redetermination establishes only that the sleeve has a legitimate Level 1
 role; it says nothing about how any future Level 2 sizing decision should treat any of the three
 instruments individually.
+
+## 11. Bounded correction (same PR, same day)
+
+An independent exact-head review (posted via the PR-author's own account, the disclosed same-account
+platform restriction) returned 0 BLOCKING / 0 MAJOR / 1 MINOR / 3 NOTE against the original head. Every
+evidentiary claim in §§1–10 above was independently re-derived by that review directly against the live
+sealed records and confirmed accurate — no correction to this artifact's own factual content was
+required. The one MINOR finding concerned `test_level1_sleeve_synthesis_validator.py`'s own renamed
+non-cascading-abstention proof test, whose discriminating power was lost once this filing's own
+redetermination made all six sleeves' `portfolio_function_status` uniformly `function_confirmed_
+distinct` — resolved by correcting that test's own docstring and adding a genuinely adversarial
+synthetic-fixture test, full detail in the governing decision's own Bounded Correction section. No
+change to §§1–10 of this artifact.

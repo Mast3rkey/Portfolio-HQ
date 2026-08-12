@@ -90,6 +90,45 @@ it, making this the correct, and only, moment to perform this redetermination cl
   downstream numeric-sizing work exists to be disturbed, exactly the timing the principal's own
   authorizing directive named as the reason for doing this now.
 
+### Bounded correction (same PR, same day)
+
+An independent exact-head review (posted as a PR comment, `Mast3rkey`'s own account, the disclosed
+same-account platform restriction — no distinct reviewer identity is available, treated with the same
+weight as a formal review, matching this repository's established convention), anchored to the original
+head `4fc3b21b2082aad99d9584875e362019dfe01f1c`, returned 0 BLOCKING / 0 MAJOR / 1 MINOR / 3 NOTE. Every
+substantive finding in this filing — the reopenability of `XASSET-0015` §E's own discretion grant, the
+Basis 3 availability/sufficiency distinction, the `SPY`/`VEA`/`VWO` evidence walk-through, the Axis A/B/C
+redetermination itself, the reseal-in-place supersession mechanism, and the full validation suite — was
+independently re-derived and confirmed accurate; zero content changed as a result of this correction.
+
+**MINOR, resolved**: `test_level1_sleeve_synthesis_validator.py`'s own renamed non-cascading-abstention
+proof test (`test_fund_broad_market_axis_a_does_not_touch_other_sleeves_axis_a`) lost its discriminating
+power the moment this filing's own redetermination made all six sleeves' `portfolio_function_status`
+uniformly `function_confirmed_distinct` — its plain real-corpus equality check no longer demonstrates
+isolation against a hypothetical cross-sleeve coupling bug, since no differently-valued sleeve remains
+in the corpus to expose one, and its own docstring's claim that the test's purpose "is unaffected by
+which value it holds" was, on reflection, inaccurate. **Resolved**: the docstring is corrected to state
+this precisely, and a new, genuinely adversarial synthetic-fixture test is added
+(`test_mutating_one_sleeves_axis_a_does_not_change_a_different_sleeves_validation`), mirroring
+`TestStrongerEvidenceMaturityNonInfluence`'s own established masking-proof design — mutating one
+sleeve's own `portfolio_function_status` in an in-memory copy and confirming every other sleeve's own
+independently-computed validation errors are byte-identical to an unmutated baseline. This proof does
+not depend on the real corpus containing a differently-valued sleeve, so it remains meaningful
+regardless of any future redetermination. Net one new test (763 → 764); no existing test weakened, no
+sealed record content touched. The three NOTE items (a pre-existing, disclosed architectural property of
+Basis 3's own availability-versus-sufficiency distinction, unchanged by this PR; `XASSET-0016`'s own now-
+stale point-in-time citation, already disclosed in this filing's own §G/§I and the supporting artifact's
+§9, substantially mitigated by `XASSET-0016` §H's own pre-existing "derive live, never from this filing's
+text" rule; and the new decision-category choice, a defensible judgment call) require no action and are
+carried forward as disclosed.
+
+Full validation re-run clean at the corrected head: `level1_sleeve_synthesis_validator.py` unchanged,
+still `OK (7 profile result(s), 8 relationship result(s), 7 policy_adoption result(s))`;
+`test_level1_sleeve_synthesis_validator.py` **764 passed** (up from 763); full repository `pytest`
+**6151 passed, 0 failed** (6150 + 1, exact match); decision catalog unchanged at **114 decisions,
+`issues == ()`**; `git diff --check` clean; zero diff on the resealed record or any protected path.
+Requires its own fresh independent exact-head delta review before this PR may be considered ready.
+
 ## Decision
 
 ### A. What this filing does — a bounded Axis A/B/C redetermination for one sleeve, using existing evidence only
