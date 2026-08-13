@@ -13,7 +13,27 @@ preregistration. It exists only to detect protocol/preregistration drift; it can
 schema_version: "1.0"
 study_id: RISK-0001
 scenario_states: [LOWER, HISTORICAL_REFERENCE, HIGHER]
-relative_perturbation: "0.20"
+consequential_parameter_values:
+  RELATIVE_PERTURBATION: "0.20"
+  SCENARIO_DECIMAL_PLACES: 2
+  SCENARIO_ROUNDING_MODE: ROUND_HALF_UP
+  DFF_DAY_COUNT_DENOMINATOR: 360
+  DFF_AVAILABILITY_LAG_BUSINESS_DAYS: 1
+  DFF_MISSING_DAYS_ALLOWED: 0
+  MINIMUM_IMPROVEMENT_FAMILIES: 2
+  LOSS_CONTRIBUTION_TOLERANCE_PP: "1.00"
+  RECOVERY_BURDEN_TOLERANCE_PPDAYS: "30.00"
+  OPPORTUNITY_CONTRIBUTION_TOLERANCE_PP: "1.00"
+  EQUITY_MINIMUM_ELIGIBLE: 21
+  EQUITY_DIRECTIONAL_BREADTH: "0.75"
+  GOLD_PARITY_CORRELATION_MIN: "0.995"
+  GOLD_PARITY_RETURN_MAX_PP: "0.50"
+  GOLD_PARITY_DRAWDOWN_MAX_PP: "2.00"
+  GOLD_UNRESOLVED_SESSION_GAPS_ALLOWED: 0
+  CRYPTO_DUPLICATE_TIMESTAMPS_ALLOWED: 0
+  CRYPTO_MISSING_DAYS_ALLOWED: 0
+  CRYPTO_MAX_CONTIGUOUS_GAP_DAYS: 0
+  FORMULA_INTEGRITY_ABSOLUTE_TOLERANCE: "0.000001"
 scenario_magnitudes:
   EQUITY: {LOWER: "14.94", HISTORICAL_REFERENCE: "18.67", HIGHER: "22.40"}
   FUND_BROAD_MARKET: {LOWER: "11.74", HISTORICAL_REFERENCE: "14.67", HIGHER: "17.60"}
@@ -292,10 +312,14 @@ return.
 ## 13. Analytical comparator
 
 DFF is analytical opportunity cost only—not strategic cash, residual, a funding destination, a fifth
-sleeve, or policy. It is treated as an annual percent rate, with a one-U.S.-business-day availability
-lag. The daily factor is `1 + (lagged DFF / 100) / 360`, compounded by calendar day. Weekends and
-holidays use the most recently lawfully available lagged rate. The former arbitrary seven-day
-tolerance is removed: zero missing required lawfully lagged DFF observations are allowed. Any missing
+sleeve, or policy. It is treated as an annual percent rate. The registered one-business-day lag is
+measured from the DFF observation date on the U.S. Federal Reserve Bank business-day calendar; the
+observation becomes lawful at 23:59:59 America/New_York on the business date one registered lag day
+after that observation date. At an evaluation timestamp the lookup takes the latest observation whose
+lawful availability timestamp is at or before the evaluation timestamp. The daily factor is
+`1 + (lagged DFF / 100) / 360`, compounded by calendar day. Weekends and holidays use that same
+latest lawfully available observation and never perform a forward lookup. The former arbitrary
+seven-day tolerance is removed: zero missing required lawfully lagged DFF observations are allowed. Any missing
 required observation makes the affected opportunity-cost metric unavailable; no rate is inferred
 from future data.
 
@@ -341,9 +365,13 @@ create a new dominance family or a whole-portfolio diversification claim.
 ### Equity
 
 Every return, drawdown, recovery, volatility, stress loss, opportunity-cost, and contribution result
-is computed per constituent. Family direction requires at least 21 eligible constituents, at least
-75% directional breadth, an agreeing cross-sectional median, and direction stable under every
-leave-one-out diagnostic. No aggregate path is lawful.
+is computed per constituent. The authoritative reducer accepts the exact frozen 27 identities in
+canonical order and derives the eligible set, eligibility count, categorical median, and directional
+breadth from those constituent states; caller summaries cannot control the result. It then requires
+one leave-one-out state for each eligible omitted identity, in canonical order, with no empty,
+truncated, duplicate, unknown, or omitted identity set. Family direction requires at least 21 eligible
+constituents, at least 75% directional breadth, an agreeing derived median, and direction stable under
+every required leave-one-out diagnostic. No aggregate path is lawful.
 
 ### Broad market
 
@@ -355,7 +383,10 @@ difference or conflict makes the family `unable_to_determine`; there is no blend
 GLD may be evaluated standalone for total return behavior, drawdown, recovery, fixed stress,
 opportunity cost, and exposure-scaled loss contribution. It supports no whole-portfolio
 diversification claim, final vehicle selection, or final weight. IAU/SGOL/GLDM enter only after the
-conditional parity gates pass; any material conflict then makes the family unable to determine.
+conditional identity, gap, action, correlation, return-parity, and drawdown-parity evidence is supplied
+and independently checked against the registry. They are the only permitted peers; duplicate,
+out-of-order, or arbitrary identities are rejected. A failed peer is excluded, while an admitted peer
+must be available and agree with GLD or the result becomes unavailable/conflict.
 
 ### Crypto
 
@@ -378,15 +409,23 @@ remain available and match GLD or the result is unavailable/conflict. Equity req
 constituents, 75% breadth for one state, an agreeing median, and every leave-one-out result unchanged;
 failure is unavailable or conflict, never an aggregate return calculation.
 
+The production mapper validates exact closed family, metric, representation, scenario, window,
+missingness, directional, and point-state vocabularies before reduction. It obtains every threshold
+from the validated canonical preregistration; its public APIs accept evidence, not governance values.
 The exact loss and opportunity contribution tolerance is 1.00 percentage point; exposure-scaled
 underwater burden uses 30.00 percentage-point-days. Equality at a tolerance is equivalence, and only
 a difference strictly beyond it changes direction. The registry also freezes the 21/75% equity gate,
-zero crypto gaps, gold parity thresholds, DFF actual/360 convention, zero DFF missing observations,
-and minimum two improvement families. Every selected constant is separately classified under
-`NUM-0001`, records basis/scope/lapse/reuse, and is explicitly uncalibrated; mathematical counts are
+zero crypto missing days, contiguous gaps, and duplicate UTC timestamps, gold parity thresholds and
+zero unresolved gold-peer session gaps, DFF actual/360 convention, zero DFF missing observations,
+the registered one-business-day DFF lag, two-decimal `ROUND_HALF_UP` scenario convention, the exact
+absolute formula-integrity tolerance of 0.000001 output units, and minimum two improvement families.
+Every selected constant is separately classified under `NUM-0001` and records supporting evidence,
+canonical source, duplicate and fallback locations, hardcoded/config-editable status, binding status,
+basis/scope/lapse/reuse, and calibration/evidence status; mathematical counts are
 separately identified as derived rather than free parameters.
 
-Monotonicity/formula integrity is recomputed with decimal arithmetic to six places for all
+Monotonicity/formula integrity is recomputed from raw metric values and registered LOWER/reference/
+HIGHER exposure values with Decimal arithmetic for all
 exposure-scaled voting metrics. A failure makes the direction unable to determine; it is never
 repaired after results are visible.
 

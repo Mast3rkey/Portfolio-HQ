@@ -93,15 +93,15 @@ over raw file bytes exactly as committed:
 
 <!-- RISK-0001-HASH-PINS-V1
 protocol_path: research/level1_sleeve_robustness/PROTOCOL_V1.md
-protocol_sha256: 6858257d2230e37f7ce51841d27a993b66c4803792bd3cf77727561034fc7941
+protocol_sha256: 90277ad4767e4766d7a38c1199affde66f44e55ff16fd7f73e0894380cf8a425
 preregistration_path: research/level1_sleeve_robustness/pre_registration.yaml
-preregistration_sha256: 7203c78cc0d0e951c833a201f5798f4e01817e561ca2dcb170da04d6fbb5de58
+preregistration_sha256: 8da1697456e8a8f4a168c99ae8387c77cd023e0e615cf51c78110165223d3c5a
 -->
 
 - `research/level1_sleeve_robustness/PROTOCOL_V1.md`:
-  `6858257d2230e37f7ce51841d27a993b66c4803792bd3cf77727561034fc7941`
+  `90277ad4767e4766d7a38c1199affde66f44e55ff16fd7f73e0894380cf8a425`
 - `research/level1_sleeve_robustness/pre_registration.yaml`:
-  `7203c78cc0d0e951c833a201f5798f4e01817e561ca2dcb170da04d6fbb5de58`
+  `8da1697456e8a8f4a168c99ae8387c77cd023e0e615cf51c78110165223d3c5a`
 
 The structured preregistration is canonical for all closed identities, sources, fallbacks, windows,
 thresholds, vocabularies, metrics, and counts. The protocol explains the design but cannot enlarge or
@@ -246,8 +246,12 @@ change, spin-off, merger, entitlement, and legal-entity continuity require expli
 affected period is unresolved/null.
 
 DFF is analytical opportunity cost only—not cash, residual, a destination, a fifth sleeve, or policy.
-It uses a one-U.S.-business-day availability lag and simple actual/360 daily accrual compounded over
-calendar days. The prior seven-day tolerance is removed. Zero missing required lawfully lagged DFF
+Its registered one-business-day lag is measured from the observation date on the U.S. Federal
+Reserve Bank business-day calendar; lawful availability is 23:59:59 America/New_York on the business
+date one lag day later, and lookup uses only the latest observation lawfully available at or before
+the evaluation timestamp. Weekends and holidays reuse that latest lawful observation without forward
+lookup. DFF uses simple actual/360 daily accrual compounded over calendar days. The prior seven-day
+tolerance is removed. Zero missing required lawfully lagged DFF
 observations are allowed; any missing required observation makes the affected opportunity-cost
 metric unavailable, without creating strategic cash or a fifth sleeve.
 
@@ -303,18 +307,33 @@ SPY/VEA/VWO and BTC/ETH/SOL are all mandatory and must agree; unavailable mandat
 make the family unavailable and lawful disagreement is conflict. GLD controls unless a conditional
 peer passes every admission gate, after which that peer must remain available and agree or veto.
 Equity requires 21 eligible constituents, 75% breadth, agreeing median, and stable leave-one-out
-direction without ever constructing an aggregate path.
+direction without ever constructing an aggregate path. The authoritative mapper accepts the exact
+frozen 27 identities, derives eligibility, count, breadth, and categorical median from constituent
+states, and requires one ordered leave-one-out state per mechanically derived eligible omitted name.
+It rejects empty, truncated, duplicate, unknown, omitted, or reordered leave-one-out populations.
+Only IAU, SGOL, and GLDM may be considered as conditional GLD peers, and admission is independently
+derived from their registered identity, gap, action, correlation, return-parity, and drawdown-parity
+evidence; arbitrary or duplicate peers are rejected.
 
 The canonical NUM-0001 registry contains every consequential constant with exact value/unit,
-classification, selection basis, evidence status, scope, study, lapse, reuse rule, canonical source,
-and calibration/evidence-bounded flags. It includes the 20% perturbation, DFF actual/360 and zero-day
-missing rule, two-family trigger, each voting tolerance, 21/75% equity gates, gold parity thresholds,
-and zero crypto-gap thresholds. These are uncalibrated one-study guardrails except the externally
+classification, selection basis, evidence status, supporting evidence, canonical source, duplicate
+and fallback locations, hardcoded/config-editable status, binding status, scope, study, lapse, reuse
+rule, and calibration/evidence-bounded flags. It includes the 20% perturbation, two-decimal
+`ROUND_HALF_UP` scenario convention, DFF actual/360, the one-business-day DFF lag and zero-day
+missing rule, two-family trigger, each voting tolerance, 21/75% equity gates, gold parity thresholds
+and zero unresolved gold-peer session gaps, zero crypto missing-day, contiguous-gap, and duplicate-
+timestamp thresholds, and exact 0.000001-output-unit formula-integrity tolerance. These are
+uncalibrated one-study guardrails except the externally
 imposed actual/360 convention. Representation/scenario/window counts and 777 are separately recorded
 as mathematical derivations, not selected parameters. Equality at a tolerance is equivalence.
 
-Exposure-scaled formulas are rederived with decimal arithmetic to six places; integrity failure is
-unable to determine. The nine-row directional and 16-row point-evidence tables cover lower-only
+The production mapper accepts observations/evidence only and binds every consequential value from the
+validated canonical registry. It rejects unknown or extra family, metric, representation, scenario,
+window, missingness, directional, or point states before reduction. Exposure-scaled formulas and
+monotonicity are rederived from raw metric values and the registered LOWER/reference/HIGHER exposures
+with Decimal arithmetic; absolute deviation above 0.000001 output units makes the direction unable to
+determine. Caller claims or booleans cannot override that result. The nine-row directional and 16-row
+point-evidence tables cover lower-only
 review, higher-only review, neither, both, every insufficient-evidence combination, and point-target/
 method fields. No discretionary mixed-direction or point-target judgment remains.
 

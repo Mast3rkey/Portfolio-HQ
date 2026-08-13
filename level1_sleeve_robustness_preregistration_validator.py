@@ -54,10 +54,20 @@ FAMILY_STATES = ("IMPROVES", "EQUIVALENT", "WORSENS", "UNAVAILABLE", "CONFLICT")
 DIRECTIONAL_STATES = ("POLICY_REVIEW_REQUIRED", "CENTER_NOT_REJECTED", "UNABLE_TO_DETERMINE")
 POINT_EVIDENCE_STATES = ("DISPLACES_REFERENCE", "ADJACENT_MATERIALLY_WORSE", "NOT_DISTINGUISHED", "UNAVAILABLE")
 
-PARAMETER_KEYS = ("parameter_id", "value", "unit", "num_0001_class", "contextual_class", "selection_basis", "evidence_status", "binding_scope", "valid_for_study_id", "lapse_condition", "reuse_rule", "canonical_source", "calibrated", "evidence_bounded")
+PARAMETER_KEYS = (
+    "parameter_id", "value", "unit", "num_0001_class", "contextual_class",
+    "selection_basis", "evidence_status", "supporting_evidence",
+    "canonical_source", "duplicate_locations", "fallback_locations",
+    "hardcoded_or_config_editable", "binding_status", "binding_scope",
+    "valid_for_study_id", "lapse_condition", "reuse_rule", "calibrated",
+    "evidence_bounded",
+)
 PARAMETER_SPECS = {
     "RELATIVE_PERTURBATION": ("0.20", "PROPORTION", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
+    "SCENARIO_DECIMAL_PLACES": (2, "DECIMAL_PLACES", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
+    "SCENARIO_ROUNDING_MODE": ("ROUND_HALF_UP", "DECIMAL_ROUNDING_MODE", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
     "DFF_DAY_COUNT_DENOMINATOR": (360, "DAYS", "EXTERNALLY_IMPOSED"),
+    "DFF_AVAILABILITY_LAG_BUSINESS_DAYS": (1, "US_FEDERAL_RESERVE_BANK_BUSINESS_DAYS", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
     "DFF_MISSING_DAYS_ALLOWED": (0, "CALENDAR_DAYS", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
     "MINIMUM_IMPROVEMENT_FAMILIES": (2, "INDEPENDENT_FAMILIES", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
     "LOSS_CONTRIBUTION_TOLERANCE_PP": ("1.00", "PERCENTAGE_POINTS_OF_UNSPECIFIED_ASSET_STATE", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
@@ -68,14 +78,20 @@ PARAMETER_SPECS = {
     "GOLD_PARITY_CORRELATION_MIN": ("0.995", "PEARSON_CORRELATION", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
     "GOLD_PARITY_RETURN_MAX_PP": ("0.50", "ANNUALIZED_RETURN_PERCENTAGE_POINTS", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
     "GOLD_PARITY_DRAWDOWN_MAX_PP": ("2.00", "MAX_DRAWDOWN_PERCENTAGE_POINTS", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
+    "GOLD_UNRESOLVED_SESSION_GAPS_ALLOWED": (0, "REQUIRED_XNYS_SESSIONS_PER_REGISTERED_WINDOW", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
+    "CRYPTO_DUPLICATE_TIMESTAMPS_ALLOWED": (0, "DUPLICATE_UTC_TIMESTAMPS_PER_REGISTERED_WINDOW", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
     "CRYPTO_MISSING_DAYS_ALLOWED": (0, "UTC_DAYS_PER_REGISTERED_WINDOW", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
     "CRYPTO_MAX_CONTIGUOUS_GAP_DAYS": (0, "UTC_DAYS", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
+    "FORMULA_INTEGRITY_ABSOLUTE_TOLERANCE": ("0.000001", "ABSOLUTE_OUTPUT_UNITS", "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
 }
 PARAMETER_GOVERNANCE = {
     "RELATIVE_PERTURBATION": ("SYMMETRIC_COARSE_SENSITIVITY_WITHOUT_GRID_SEARCH", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "SCENARIO_CONSTRUCTION", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
+    "SCENARIO_DECIMAL_PLACES": ("DETERMINISTIC_PERCENTAGE_POINT_REPORTING_PRECISION", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "SCENARIO_MAGNITUDE_DERIVATION", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
+    "SCENARIO_ROUNDING_MODE": ("DETERMINISTIC_TIE_BREAKING_FOR_DECIMAL_PERCENTAGE_POINTS", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "SCENARIO_MAGNITUDE_DERIVATION", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
     "DFF_DAY_COUNT_DENOMINATOR": ("DFF_MONEY_MARKET_ACTUAL_360_QUOTATION_CONVENTION", "CONVENTION_NOT_CALIBRATION", "DFF_DAILY_ACCRUAL", "REVALIDATE_CONVENTION_UNDER_NEW_AUTHORITY"),
+    "DFF_AVAILABILITY_LAG_BUSINESS_DAYS": ("CONSERVATIVE_NO_LOOKAHEAD_AVAILABILITY_GUARDRAIL", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "DFF_LAWFUL_AVAILABILITY_TIMESTAMP", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
     "DFF_MISSING_DAYS_ALLOWED": ("NO_IMPUTATION_OF_MISSING_COMPARATOR_OBSERVATIONS", "CONSERVATIVE_INTEGRITY_GUARDRAIL", "AFFECTED_OPPORTUNITY_COST_METRIC_WINDOWS", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
-    "MINIMUM_IMPROVEMENT_FAMILIES": ("MULTIDIMENSION_CONFIRMATION_WITHOUT_METRIC_WEIGHTING", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "DIRECTIONAL_POLICY_REVIEW_TRIGGER", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
+    "MINIMUM_IMPROVEMENT_FAMILIES": ("MULTIDIMENSION_CONFIRMATION_WITHOUT_METRIC_WEIGHTING", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "DIRECTIONAL_AND_POINT_EVIDENCE_REDUCTION", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
     "LOSS_CONTRIBUTION_TOLERANCE_PP": ("MATERIAL_DIFFERENCE_GUARDRAIL_FOR_EXPOSURE_SCALED_LOSS", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "PATH_RISK_METRICS", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
     "RECOVERY_BURDEN_TOLERANCE_PPDAYS": ("MATERIAL_DIFFERENCE_GUARDRAIL_FOR_EXPOSURE_SCALED_UNDERWATER_BURDEN", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "RECOVERY_METRICS", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
     "OPPORTUNITY_CONTRIBUTION_TOLERANCE_PP": ("MATERIAL_DIFFERENCE_GUARDRAIL_FOR_EXPOSURE_SCALED_EXCESS_RETURN", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "OPPORTUNITY_COST_METRICS", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
@@ -84,9 +100,40 @@ PARAMETER_GOVERNANCE = {
     "GOLD_PARITY_CORRELATION_MIN": ("STRICT_SAME_EXPOSURE_REPRESENTATION_PARITY_GUARDRAIL", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "CONDITIONAL_GOLD_PEER_ADMISSION", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
     "GOLD_PARITY_RETURN_MAX_PP": ("STRICT_SAME_EXPOSURE_RETURN_PARITY_GUARDRAIL", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "CONDITIONAL_GOLD_PEER_ADMISSION", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
     "GOLD_PARITY_DRAWDOWN_MAX_PP": ("STRICT_SAME_EXPOSURE_PATH_PARITY_GUARDRAIL", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "CONDITIONAL_GOLD_PEER_ADMISSION", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
+    "GOLD_UNRESOLVED_SESSION_GAPS_ALLOWED": ("COMPLETE_CONDITIONAL_GOLD_PEER_PATH_WITHOUT_IMPUTATION", "CONSERVATIVE_INTEGRITY_GUARDRAIL", "CONDITIONAL_GOLD_PEER_ADMISSION", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
+    "CRYPTO_DUPLICATE_TIMESTAMPS_ALLOWED": ("UNIQUE_UTC_DAILY_PATH_IDENTITY_REQUIRED", "CONSERVATIVE_INTEGRITY_GUARDRAIL", "CRYPTO_CELL_ELIGIBILITY", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
     "CRYPTO_MISSING_DAYS_ALLOWED": ("COMPLETE_24_7_PATH_REQUIRED_WITHOUT_IMPUTATION", "CONSERVATIVE_INTEGRITY_GUARDRAIL", "CRYPTO_CELL_ELIGIBILITY", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
     "CRYPTO_MAX_CONTIGUOUS_GAP_DAYS": ("COMPLETE_24_7_PATH_REQUIRED_WITHOUT_IMPUTATION", "CONSERVATIVE_INTEGRITY_GUARDRAIL", "CRYPTO_CELL_ELIGIBILITY", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
+    "FORMULA_INTEGRITY_ABSOLUTE_TOLERANCE": ("SIX_DECIMAL_EXACTNESS_CHECK_WITHOUT_MASKING_MATERIAL_FORMULA_ERROR", "NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED", "EXPOSURE_SCALED_FORMULA_IDENTITY_CHECKS", "NEW_GOVERNANCE_AUTHORITY_REQUIRED"),
 }
+
+PARAMETER_SUPPORT = {
+    "RELATIVE_PERTURBATION": "NONE_DOCTRINE_ONE_STUDY_SENSITIVITY",
+    "SCENARIO_DECIMAL_PLACES": "NONE_DOCTRINE_DETERMINISTIC_DECIMAL_CONVENTION",
+    "SCENARIO_ROUNDING_MODE": "NONE_DOCTRINE_DETERMINISTIC_DECIMAL_CONVENTION",
+    "DFF_DAY_COUNT_DENOMINATOR": "FRED_DFF_SERIES_QUOTATION_CONVENTION",
+    "DFF_AVAILABILITY_LAG_BUSINESS_DAYS": "MARGIN_0005_NO_LOOKAHEAD_PRECEDENT",
+    "DFF_MISSING_DAYS_ALLOWED": "NONE_DOCTRINE_NO_IMPUTATION",
+    "MINIMUM_IMPROVEMENT_FAMILIES": "NONE_DOCTRINE_MULTIFAMILY_CONFIRMATION",
+    "LOSS_CONTRIBUTION_TOLERANCE_PP": "NONE_DOCTRINE_ONE_STUDY_MATERIALITY",
+    "RECOVERY_BURDEN_TOLERANCE_PPDAYS": "NONE_DOCTRINE_ONE_STUDY_MATERIALITY",
+    "OPPORTUNITY_CONTRIBUTION_TOLERANCE_PP": "NONE_DOCTRINE_ONE_STUDY_MATERIALITY",
+    "EQUITY_MINIMUM_ELIGIBLE": "NONE_DOCTRINE_COHORT_COVERAGE_GATE",
+    "EQUITY_DIRECTIONAL_BREADTH": "NONE_DOCTRINE_CROSS_SECTIONAL_SUPERMAJORITY",
+    "GOLD_PARITY_CORRELATION_MIN": "NONE_DOCTRINE_CONDITIONAL_REPRESENTATION_PARITY",
+    "GOLD_PARITY_RETURN_MAX_PP": "NONE_DOCTRINE_CONDITIONAL_REPRESENTATION_PARITY",
+    "GOLD_PARITY_DRAWDOWN_MAX_PP": "NONE_DOCTRINE_CONDITIONAL_REPRESENTATION_PARITY",
+    "GOLD_UNRESOLVED_SESSION_GAPS_ALLOWED": "NONE_DOCTRINE_CONDITIONAL_REPRESENTATION_PARITY",
+    "CRYPTO_DUPLICATE_TIMESTAMPS_ALLOWED": "NONE_DOCTRINE_COMPLETE_CRYPTO_PATH",
+    "CRYPTO_MISSING_DAYS_ALLOWED": "NONE_DOCTRINE_COMPLETE_CRYPTO_PATH",
+    "CRYPTO_MAX_CONTIGUOUS_GAP_DAYS": "NONE_DOCTRINE_COMPLETE_CRYPTO_PATH",
+    "FORMULA_INTEGRITY_ABSOLUTE_TOLERANCE": "NONE_DOCTRINE_DETERMINISTIC_DECIMAL_INTEGRITY",
+}
+PARAMETER_DUPLICATES = (
+    "level1_sleeve_robustness_preregistration_validator.py::PARAMETER_SPECS_AND_MECHANICAL_VALIDATION",
+    "research/level1_sleeve_robustness/PROTOCOL_V1.md::RISK-0001-PROTOCOL-MIRROR-V1",
+    "governance/decisions/RISK-0001-level1-investable-sleeve-robustness-charter.md::NUM-0001_PROVENANCE_NARRATIVE",
+)
 
 METRIC_KEYS = ("metric_id", "family", "formula", "direction_of_preference", "unit", "materiality_parameter_id", "equivalence_parameter_id", "applicable_research_units", "applicable_windows", "voting_status", "missing_result_behavior")
 METRIC_SPECS = {
@@ -240,7 +287,7 @@ def _validate_structural_closure(data: dict[str, Any], errors: list[str]) -> Non
         "missingness_states": ("vocabulary", "zero_return_standin", "result_table_requirements"),
         "alignment_rules": ("equity_etf_calendar", "equity_etf_observation", "crypto_calendar", "common_evaluation_timestamp", "crypto_mapping", "weekend_crypto_rule", "comparator_interval", "future_observation_mapped_backward", "missing_observation_as_zero", "native_path_reporting"),
         "corporate_action_rules": ("equities_etfs_total_return_method", "total_return_series_combined_with_explicit_dividends", "dividends", "splits", "spin_offs", "ticker_changes", "mergers", "legal_entity_continuity", "listing_inception", "synthetic_predecessor_stitching", "known_boundaries", "unresolved_period", "gold_fund_expense_treatment", "crypto_yield"),
-        "comparator": ("series", "role", "strategic_cash", "residual", "funding_destination", "fifth_sleeve", "portfolio_policy", "annual_rate_unit", "accrual_convention", "day_count_parameter_id", "daily_factor", "availability_lag", "calendar_day_rule", "missing_rate_parameter_id", "missing_rate_rule", "evaluation_alignment"),
+        "comparator": ("series", "role", "strategic_cash", "residual", "funding_destination", "fifth_sleeve", "portfolio_policy", "annual_rate_unit", "accrual_convention", "day_count_parameter_id", "daily_factor", "availability_lag_parameter_id", "availability_origin", "business_calendar", "lawful_availability_timestamp", "lookup_rule", "calendar_day_rule", "missing_rate_parameter_id", "missing_rate_rule", "evaluation_alignment"),
         "metric_families": ("family_order", "voting_families", "non_voting_families", "metrics", "composite_score"),
         "result_reduction": ("canonical_states", "observation_rule", "metric_window_reduction", "family_metric_reduction", "representation_reduction", "monotonicity", "directional_policy_review", "point_evidence_rule", "total_state_table", "point_state_table"),
         "trial_inventory": ("representation_count", "representation_derivation", "scenario_count", "window_class_count", "derived_registered_cell_ceiling", "formula", "cell_identity", "metrics_from_same_path_are_new_trials", "failed_discarded_ineligible_attempts_remain_accounted", "reserve_trials", "unused_capacity_reallocation", "new_cells_after_results", "conditional_gld_cells_count_inside_ceiling"),
@@ -259,15 +306,17 @@ def _validate_structural_closure(data: dict[str, Any], errors: list[str]) -> Non
         (data["data_gate"]["GLOBAL_STUDY_INTEGRITY"], ("failure_effect", "gates"), "data_gate.GLOBAL_STUDY_INTEGRITY"),
         (data["data_gate"]["CELL_DATA_ELIGIBILITY"], ("failure_effect", "gates", "propagation"), "data_gate.CELL_DATA_ELIGIBILITY"),
         (data["data_gate"]["integrity_rules"], ("no_lookahead", "no_interpolation", "no_forward_fill_prices", "no_zero_return_standins", "no_silent_universe_reduction", "no_unregistered_substitute"), "data_gate.integrity_rules"),
-        (data["data_gate"]["gld_conditional_peer_gate"], ("required", "requirements", "failure_state"), "data_gate.gld_conditional_peer_gate"),
-        (data["data_gate"]["crypto_gate"], ("utc_normalization", "expected_calendar", "duplicate_timestamps_allowed", "missing_days_parameter_id", "maximum_contiguous_gap_parameter_id", "ohlc_rules", "pagination_completeness", "interpolation", "forward_fill", "fabricated_pre_inception", "undisclosed_alternate_source_stitching", "known_sol_gap_rule"), "data_gate.crypto_gate"),
+        (data["data_gate"]["gld_conditional_peer_gate"], ("required", "unresolved_required_session_gaps_parameter_id", "requirements", "failure_state"), "data_gate.gld_conditional_peer_gate"),
+        (data["data_gate"]["crypto_gate"], ("utc_normalization", "expected_calendar", "duplicate_timestamps_parameter_id", "missing_days_parameter_id", "maximum_contiguous_gap_parameter_id", "ohlc_rules", "pagination_completeness", "interpolation", "forward_fill", "fabricated_pre_inception", "undisclosed_alternate_source_stitching", "known_sol_gap_rule"), "data_gate.crypto_gate"),
         (data["result_reduction"]["canonical_states"], ("observation", "family", "directional", "point_evidence"), "result_reduction.canonical_states"),
         (data["result_reduction"]["observation_rule"], ("HIGHER", "LOWER", "missing_state"), "result_reduction.observation_rule"),
         (data["result_reduction"]["metric_window_reduction"], ("ordered_precedence", "NOT_APPLICABLE", "zero_applicable_observations", "mandatory_window_unavailable", "conditional_window_missing_data_or_quality_failure"), "result_reduction.metric_window_reduction"),
         (data["result_reduction"]["family_metric_reduction"], ("ordered_precedence", "mandatory_voting_metric_unavailable", "conditional_voting_metric_not_applicable_for_all_lawful_representations", "zero_applicable_voting_metrics", "non_voting_metrics"), "result_reduction.family_metric_reduction"),
         (data["result_reduction"]["representation_reduction"], ("FUND_BROAD_MARKET", "CRYPTO", "FUND_GLD_DEFENSIVE", "EQUITY"), "result_reduction.representation_reduction"),
-        (data["result_reduction"]["monotonicity"], ("designated_metrics", "rule", "tolerance", "failure_effect"), "result_reduction.monotonicity"),
+        (data["scenario_provenance"]["rounding"], ("decimal_places_parameter_id", "mode_parameter_id"), "scenario_provenance.rounding"),
+        (data["result_reduction"]["monotonicity"], ("designated_metrics", "rule", "tolerance_parameter_id", "failure_effect"), "result_reduction.monotonicity"),
         (data["result_reduction"]["directional_policy_review"], ("mandatory_veto_families", "minimum_improvement_parameter_id", "policy_review_required", "center_not_rejected", "unable_to_determine", "no_metric_weighting", "representation_conflict_veto"), "result_reduction.directional_policy_review"),
+        (data["result_reduction"]["point_evidence_rule"], ("minimum_worsening_parameter_id", "DISPLACES_REFERENCE", "ADJACENT_MATERIALLY_WORSE", "NOT_DISTINGUISHED", "UNAVAILABLE"), "result_reduction.point_evidence_rule"),
     )
     for value, keys, where in nested_keys:
         _keys(value, keys, where, errors)
@@ -348,7 +397,8 @@ def _validate_scenarios_registry(data: dict[str, Any], errors: list[str]) -> Non
     _exact(provenance["method"], "SYMMETRIC_RELATIVE_PERTURBATION", "scenario provenance method", errors)
     _exact(provenance["relative_perturbation_parameter_id"], "RELATIVE_PERTURBATION", "scenario provenance parameter", errors)
     _exact(provenance["formula"], {"LOWER": "REFERENCE_TIMES_ONE_MINUS_PERTURBATION", "HISTORICAL_REFERENCE": "REFERENCE_UNCHANGED", "HIGHER": "REFERENCE_TIMES_ONE_PLUS_PERTURBATION"}, "scenario formula", errors)
-    _exact((provenance["rounding"], provenance["lapse"], provenance["reuse"]), ("ROUND_HALF_UP_TO_TWO_DECIMAL_PERCENTAGE_POINTS", "AUTOMATIC_ON_AUTHORIZED_STUDY_COMPLETION", "REQUIRES_NEW_GOVERNANCE_AUTHORITY"), "scenario governance", errors)
+    _exact(provenance["rounding"], {"decimal_places_parameter_id": "SCENARIO_DECIMAL_PLACES", "mode_parameter_id": "SCENARIO_ROUNDING_MODE"}, "scenario rounding authority", errors)
+    _exact((provenance["lapse"], provenance["reuse"]), ("AUTOMATIC_ON_AUTHORIZED_STUDY_COMPLETION", "REQUIRES_NEW_GOVERNANCE_AUTHORITY"), "scenario governance", errors)
     for field in ("calibrated", "evidence_bounded", "optimized", "inherited_from_xasset_0016_r2_r3"):
         _exact(provenance[field], False, f"scenario_provenance.{field}", errors)
     registry = data["consequential_parameter_registry"]
@@ -361,26 +411,36 @@ def _validate_scenarios_registry(data: dict[str, Any], errors: list[str]) -> Non
         _exact(record["value"], value, f"{pid}.value", errors)
         _exact(record["unit"], unit, f"{pid}.unit", errors)
         _exact(record["num_0001_class"], classification, f"{pid}.num_0001_class", errors)
-        _exact(record["contextual_class"], "RESEARCH_ASSUMPTION", f"{pid}.contextual_class", errors)
+        expected_context = "ENGINEERING_CONSTANT" if pid == "FORMULA_INTEGRITY_ABSOLUTE_TOLERANCE" else "RESEARCH_ASSUMPTION"
+        _exact(record["contextual_class"], expected_context, f"{pid}.contextual_class", errors)
         _exact(record["valid_for_study_id"], "RISK-0001", f"{pid}.valid_for_study_id", errors)
         _exact(record["lapse_condition"], "AUTHORIZED_STUDY_COMPLETION", f"{pid}.lapse_condition", errors)
         _exact(record["calibrated"], False, f"{pid}.calibrated", errors)
         _exact(record["evidence_bounded"], False, f"{pid}.evidence_bounded", errors)
         basis, evidence, scope, reuse = PARAMETER_GOVERNANCE[pid]
         _exact((record["selection_basis"], record["evidence_status"], record["binding_scope"], record["reuse_rule"]), (basis, evidence, scope, reuse), f"{pid}.governance", errors)
-        _exact(record["canonical_source"], f"consequential_parameter_registry.{pid}", f"{pid}.canonical_source", errors)
+        _exact(record["supporting_evidence"], PARAMETER_SUPPORT[pid], f"{pid}.supporting_evidence", errors)
+        _exact(record["canonical_source"], f"research/level1_sleeve_robustness/pre_registration.yaml::consequential_parameter_registry.parameters[{pid}]", f"{pid}.canonical_source", errors)
+        _exact(tuple(record["duplicate_locations"]), PARAMETER_DUPLICATES, f"{pid}.duplicate_locations", errors)
+        _exact(record["fallback_locations"], [], f"{pid}.fallback_locations", errors)
+        _exact(record["hardcoded_or_config_editable"], "CONFIG_EDITABLE_ONLY_THROUGH_SEPARATE_GOVERNANCE", f"{pid}.hardcoded_or_config_editable", errors)
+        _exact(record["binding_status"], "BINDING_FOR_AUTHORIZED_RISK_0001_STUDY", f"{pid}.binding_status", errors)
     perturbation = Decimal(str(_param(data, "RELATIVE_PERTURBATION")))
+    decimal_places = _param(data, "SCENARIO_DECIMAL_PLACES")
+    rounding_mode = _param(data, "SCENARIO_ROUNDING_MODE")
+    _exact(rounding_mode, "ROUND_HALF_UP", "scenario rounding mode", errors)
+    quantum = Decimal(1).scaleb(-decimal_places)
     for family, ref_text in refs.items():
         ref = Decimal(ref_text)
         expected = {
-            "LOWER": (ref * (Decimal(1) - perturbation)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+            "LOWER": (ref * (Decimal(1) - perturbation)).quantize(quantum, rounding=ROUND_HALF_UP),
             "HISTORICAL_REFERENCE": ref,
-            "HIGHER": (ref * (Decimal(1) + perturbation)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+            "HIGHER": (ref * (Decimal(1) + perturbation)).quantize(quantum, rounding=ROUND_HALF_UP),
         }
         actual = data["scenario_magnitudes"]["values_pct"][family]
         for state in SCENARIOS:
-            if not isinstance(actual[state], str) or not re.fullmatch(r"\d+\.\d{2}", actual[state]):
-                errors.append(f"scenario_magnitudes.{family}.{state}: exact two-decimal string required")
+            if not isinstance(actual[state], str) or not re.fullmatch(rf"\d+\.\d{{{decimal_places}}}", actual[state]):
+                errors.append(f"scenario_magnitudes.{family}.{state}: exact registered-decimal string required")
             else:
                 _exact(Decimal(actual[state]), expected[state], f"scenario_magnitudes.{family}.{state} derived", errors)
     _exact(tuple(data["scenario_magnitudes"]["values_pct"]), FAMILIES, "scenario magnitude families/order", errors)
@@ -445,13 +505,13 @@ def _validate_windows_metrics_results(data: dict[str, Any], errors: list[str]) -
         "EQUITY": {"minimum_eligible_parameter_id": "EQUITY_MINIMUM_ELIGIBLE", "breadth_parameter_id": "EQUITY_DIRECTIONAL_BREADTH", "required_median_state": "SAME_AS_REDUCED_STATE", "leave_one_out_rule": "EVERY_OMISSION_REMAINS_SAME_STATE", "below_minimum_rule": "UNAVAILABLE", "failed_breadth_median_or_leave_one_out_rule": "CONFLICT", "aggregate_path": "PROHIBITED"},
     }, "representation reduction", errors)
     _closed(rr["directional_policy_review"], {"mandatory_veto_families": ["PATH_RISK", "RECOVERY", "OPPORTUNITY_COST"], "minimum_improvement_parameter_id": "MINIMUM_IMPROVEMENT_FAMILIES", "policy_review_required": "NO_WORSENS_NO_UNAVAILABLE_NO_CONFLICT_AND_MINIMUM_DISTINCT_IMPROVING_FAMILIES_MET", "center_not_rejected": "ALL_MANDATORY_FAMILIES_AVAILABLE_NOT_MIXED_IMPROVES_AND_WORSENS_AND_POLICY_REVIEW_RULE_NOT_MET", "unable_to_determine": "ANY_MANDATORY_FAMILY_UNAVAILABLE_OR_CONFLICT_OR_MONOTONICITY_FAILURE_OR_MIXED_IMPROVES_AND_WORSENS", "no_metric_weighting": True, "representation_conflict_veto": True}, "directional policy review", errors)
-    _closed(rr["point_evidence_rule"], {"DISPLACES_REFERENCE": "DIRECTIONAL_STATE_POLICY_REVIEW_REQUIRED", "ADJACENT_MATERIALLY_WORSE": "DIRECTIONAL_STATE_CENTER_NOT_REJECTED_AND_AT_LEAST_MINIMUM_IMPROVEMENT_FAMILIES_COUNT_WORSENS_AND_ZERO_IMPROVES", "NOT_DISTINGUISHED": "DIRECTIONAL_STATE_CENTER_NOT_REJECTED_AND_ADJACENT_MATERIALLY_WORSE_RULE_NOT_MET", "UNAVAILABLE": "DIRECTIONAL_STATE_UNABLE_TO_DETERMINE"}, "point evidence rule", errors)
+    _closed(rr["point_evidence_rule"], {"minimum_worsening_parameter_id": "MINIMUM_IMPROVEMENT_FAMILIES", "DISPLACES_REFERENCE": "DIRECTIONAL_STATE_POLICY_REVIEW_REQUIRED", "ADJACENT_MATERIALLY_WORSE": "DIRECTIONAL_STATE_CENTER_NOT_REJECTED_AND_AT_LEAST_MINIMUM_IMPROVEMENT_FAMILIES_COUNT_WORSENS_AND_ZERO_IMPROVES", "NOT_DISTINGUISHED": "DIRECTIONAL_STATE_CENTER_NOT_REJECTED_AND_ADJACENT_MATERIALLY_WORSE_RULE_NOT_MET", "UNAVAILABLE": "DIRECTIONAL_STATE_UNABLE_TO_DETERMINE"}, "point evidence rule", errors)
     actual_table = tuple((r["lower"], r["higher"], r["result"], r["review_direction"]) for r in rr["total_state_table"])
     _exact(actual_table, TOTAL_STATE_TABLE, "total state table", errors)
     actual_point_table = tuple((r["lower"], r["higher"], r["point_target_assessment"], r["method_review_direction"]) for r in rr["point_state_table"])
     _exact(actual_point_table, POINT_STATE_TABLE, "point state table", errors)
     _closed(rr["observation_rule"], {"HIGHER": {"IMPROVES": "CANDIDATE_MINUS_REFERENCE_GREATER_THAN_TOLERANCE", "EQUIVALENT": "ABS_CANDIDATE_MINUS_REFERENCE_LESS_THAN_OR_EQUAL_TO_TOLERANCE", "WORSENS": "CANDIDATE_MINUS_REFERENCE_LESS_THAN_NEGATIVE_TOLERANCE"}, "LOWER": {"IMPROVES": "REFERENCE_MINUS_CANDIDATE_GREATER_THAN_TOLERANCE", "EQUIVALENT": "ABS_CANDIDATE_MINUS_REFERENCE_LESS_THAN_OR_EQUAL_TO_TOLERANCE", "WORSENS": "REFERENCE_MINUS_CANDIDATE_LESS_THAN_NEGATIVE_TOLERANCE"}, "missing_state": "UNAVAILABLE_UNLESS_CONDITIONAL_WINDOW_IS_NOT_APPLICABLE_PRE_INCEPTION"}, "observation rule", errors)
-    _closed(rr["monotonicity"], {"designated_metrics": ["EXPOSURE_SCALED_DRAWDOWN_LOSS", "EXPOSURE_SCALED_STRESS_LOSS", "EXPOSURE_SCALED_UNDERWATER_BURDEN", "EXPOSURE_SCALED_EXCESS_CONTRIBUTION"], "rule": "RECOMPUTE_EACH_VALUE_FROM_RAW_METRIC_AND_REGISTERED_EXPOSURE_WITH_DECIMAL_ARITHMETIC_AND_VERIFY_FORMULA_IDENTITY", "tolerance": "EXACT_TO_SIX_DECIMAL_PLACES", "failure_effect": "DIRECTIONAL_UNABLE_TO_DETERMINE"}, "monotonicity", errors)
+    _closed(rr["monotonicity"], {"designated_metrics": ["EXPOSURE_SCALED_DRAWDOWN_LOSS", "EXPOSURE_SCALED_STRESS_LOSS", "EXPOSURE_SCALED_UNDERWATER_BURDEN", "EXPOSURE_SCALED_EXCESS_CONTRIBUTION"], "rule": "RECOMPUTE_EACH_VALUE_FROM_RAW_METRIC_AND_REGISTERED_EXPOSURE_WITH_DECIMAL_ARITHMETIC_AND_VERIFY_FORMULA_IDENTITY", "tolerance_parameter_id": "FORMULA_INTEGRITY_ABSOLUTE_TOLERANCE", "failure_effect": "DIRECTIONAL_UNABLE_TO_DETERMINE"}, "monotonicity", errors)
     _exact(metrics["composite_score"], "PROHIBITED", "composite score", errors)
 
 
@@ -473,8 +533,10 @@ def _validate_gates_rules_inventory(data: dict[str, Any], errors: list[str]) -> 
     _exact(gate["crypto_gate"]["fabricated_pre_inception"], "PROHIBITED", "crypto pre-inception fabrication", errors)
     _exact(gate["crypto_gate"]["undisclosed_alternate_source_stitching"], "PROHIBITED", "crypto source stitching", errors)
     _exact(gate["crypto_gate"]["known_sol_gap_rule"], "REINVENTORY_418_DAY_AGGREGATE_GAP_AND_MARK_EVERY_INTERSECTING_WINDOW_INELIGIBLE", "known SOL rule", errors)
-    _closed(gate["crypto_gate"], {"utc_normalization": "REQUIRED", "expected_calendar": "EVERY_UTC_DAY_IN_REGISTERED_WINDOW", "duplicate_timestamps_allowed": 0, "missing_days_parameter_id": "CRYPTO_MISSING_DAYS_ALLOWED", "maximum_contiguous_gap_parameter_id": "CRYPTO_MAX_CONTIGUOUS_GAP_DAYS", "ohlc_rules": ["FINITE", "POSITIVE", "LOW_LE_MIN_OPEN_CLOSE", "HIGH_GE_MAX_OPEN_CLOSE", "HIGH_GE_LOW"], "pagination_completeness": "REQUIRED", "interpolation": "PROHIBITED", "forward_fill": "PROHIBITED", "fabricated_pre_inception": "PROHIBITED", "undisclosed_alternate_source_stitching": "PROHIBITED", "known_sol_gap_rule": "REINVENTORY_418_DAY_AGGREGATE_GAP_AND_MARK_EVERY_INTERSECTING_WINDOW_INELIGIBLE"}, "crypto gate", errors)
-    _exact(gate["gld_conditional_peer_gate"], {"required": False, "requirements": ["COMPLETE_IDENTITY_AND_INCEPTION", "ZERO_UNRESOLVED_REQUIRED_SESSION_GAPS", "COMPLETE_DIVIDEND_SPLIT_ACTION_TREATMENT", "OVERLAP_TOTAL_RETURN_CORRELATION_AT_LEAST_GOLD_PARITY_CORRELATION_MIN", "OVERLAP_ANNUALIZED_RETURN_DIFFERENCE_AT_MOST_GOLD_PARITY_RETURN_MAX_PP", "OVERLAP_MAX_DRAWDOWN_DIFFERENCE_AT_MOST_GOLD_PARITY_DRAWDOWN_MAX_PP"], "failure_state": "CONDITIONAL_ASSET_NOT_ACQUIRED"}, "gold conditional peer gate", errors)
+    _closed(gate["crypto_gate"], {"utc_normalization": "REQUIRED", "expected_calendar": "EVERY_UTC_DAY_IN_REGISTERED_WINDOW", "duplicate_timestamps_parameter_id": "CRYPTO_DUPLICATE_TIMESTAMPS_ALLOWED", "missing_days_parameter_id": "CRYPTO_MISSING_DAYS_ALLOWED", "maximum_contiguous_gap_parameter_id": "CRYPTO_MAX_CONTIGUOUS_GAP_DAYS", "ohlc_rules": ["FINITE", "POSITIVE", "LOW_LE_MIN_OPEN_CLOSE", "HIGH_GE_MAX_OPEN_CLOSE", "HIGH_GE_LOW"], "pagination_completeness": "REQUIRED", "interpolation": "PROHIBITED", "forward_fill": "PROHIBITED", "fabricated_pre_inception": "PROHIBITED", "undisclosed_alternate_source_stitching": "PROHIBITED", "known_sol_gap_rule": "REINVENTORY_418_DAY_AGGREGATE_GAP_AND_MARK_EVERY_INTERSECTING_WINDOW_INELIGIBLE"}, "crypto gate", errors)
+    _exact(gate["gld_conditional_peer_gate"], {"required": False, "unresolved_required_session_gaps_parameter_id": "GOLD_UNRESOLVED_SESSION_GAPS_ALLOWED", "requirements": ["COMPLETE_IDENTITY_AND_INCEPTION", "ZERO_UNRESOLVED_REQUIRED_SESSION_GAPS", "COMPLETE_DIVIDEND_SPLIT_ACTION_TREATMENT", "OVERLAP_TOTAL_RETURN_CORRELATION_AT_LEAST_GOLD_PARITY_CORRELATION_MIN", "OVERLAP_ANNUALIZED_RETURN_DIFFERENCE_AT_MOST_GOLD_PARITY_RETURN_MAX_PP", "OVERLAP_MAX_DRAWDOWN_DIFFERENCE_AT_MOST_GOLD_PARITY_DRAWDOWN_MAX_PP"], "failure_state": "CONDITIONAL_ASSET_NOT_ACQUIRED"}, "gold conditional peer gate", errors)
+    _exact(_param(data, "GOLD_UNRESOLVED_SESSION_GAPS_ALLOWED"), 0, "gold unresolved gaps", errors)
+    _exact(_param(data, "CRYPTO_DUPLICATE_TIMESTAMPS_ALLOWED"), 0, "crypto duplicate timestamps", errors)
     _exact(_param(data, "CRYPTO_MISSING_DAYS_ALLOWED"), 0, "crypto missing days", errors)
     _exact(_param(data, "CRYPTO_MAX_CONTIGUOUS_GAP_DAYS"), 0, "crypto max gap", errors)
     corp = data["corporate_action_rules"]
@@ -488,7 +550,8 @@ def _validate_gates_rules_inventory(data: dict[str, Any], errors: list[str]) -> 
     for field in ("strategic_cash", "residual", "funding_destination", "fifth_sleeve", "portfolio_policy"):
         _exact(comparator[field], False, f"comparator.{field}", errors)
     _exact(comparator["missing_rate_parameter_id"], "DFF_MISSING_DAYS_ALLOWED", "DFF missing parameter", errors)
-    _closed(comparator, {"series": "DFF", "role": "ANALYTICAL_OPPORTUNITY_COST_ONLY", "strategic_cash": False, "residual": False, "funding_destination": False, "fifth_sleeve": False, "portfolio_policy": False, "annual_rate_unit": "PERCENT", "accrual_convention": "SIMPLE_ACTUAL_360_COMPOUNDED_BY_CALENDAR_DAY", "day_count_parameter_id": "DFF_DAY_COUNT_DENOMINATOR", "daily_factor": "ONE_PLUS_LAWFULLY_AVAILABLE_LAGGED_DFF_PERCENT_DIVIDED_BY_100_DIVIDED_BY_DAY_COUNT_DENOMINATOR", "availability_lag": "ONE_US_BUSINESS_DAY_AFTER_OBSERVATION_DATE", "calendar_day_rule": "USE_MOST_RECENT_LAWFULLY_AVAILABLE_LAGGED_DFF_FOR_WEEKENDS_AND_HOLIDAYS", "missing_rate_parameter_id": "DFF_MISSING_DAYS_ALLOWED", "missing_rate_rule": "ANY_MISSING_REQUIRED_LAGGED_OBSERVATION_MAKES_AFFECTED_OPPORTUNITY_COST_METRIC_UNAVAILABLE", "evaluation_alignment": "ACCRUE_EXACT_CALENDAR_DAYS_BETWEEN_COMMON_EVALUATION_TIMESTAMPS"}, "comparator", errors)
+    _closed(comparator, {"series": "DFF", "role": "ANALYTICAL_OPPORTUNITY_COST_ONLY", "strategic_cash": False, "residual": False, "funding_destination": False, "fifth_sleeve": False, "portfolio_policy": False, "annual_rate_unit": "PERCENT", "accrual_convention": "SIMPLE_ACTUAL_360_COMPOUNDED_BY_CALENDAR_DAY", "day_count_parameter_id": "DFF_DAY_COUNT_DENOMINATOR", "daily_factor": "ONE_PLUS_LAWFULLY_AVAILABLE_LAGGED_DFF_PERCENT_DIVIDED_BY_100_DIVIDED_BY_DAY_COUNT_DENOMINATOR", "availability_lag_parameter_id": "DFF_AVAILABILITY_LAG_BUSINESS_DAYS", "availability_origin": "DFF_OBSERVATION_DATE", "business_calendar": "US_FEDERAL_RESERVE_BANK_BUSINESS_DAYS", "lawful_availability_timestamp": "23:59:59_AMERICA_NEW_YORK_ON_THE_BUSINESS_DATE_ONE_REGISTERED_LAG_AFTER_OBSERVATION_DATE", "lookup_rule": "LATEST_DFF_OBSERVATION_WHOSE_LAWFUL_AVAILABILITY_TIMESTAMP_IS_AT_OR_BEFORE_EVALUATION_TIMESTAMP", "calendar_day_rule": "WEEKENDS_AND_HOLIDAYS_USE_LATEST_LAWFULLY_AVAILABLE_LAGGED_DFF_WITH_NO_FORWARD_LOOKUP", "missing_rate_parameter_id": "DFF_MISSING_DAYS_ALLOWED", "missing_rate_rule": "ANY_MISSING_REQUIRED_LAGGED_OBSERVATION_MAKES_AFFECTED_OPPORTUNITY_COST_METRIC_UNAVAILABLE", "evaluation_alignment": "ACCRUE_EXACT_CALENDAR_DAYS_BETWEEN_COMMON_EVALUATION_TIMESTAMPS"}, "comparator", errors)
+    _exact(_param(data, "DFF_AVAILABILITY_LAG_BUSINESS_DAYS"), 1, "DFF availability lag", errors)
     _exact(_param(data, "DFF_MISSING_DAYS_ALLOWED"), 0, "DFF missing days", errors)
     inventory = data["trial_inventory"]
     rep_count = len(EQUITIES) + len(BROAD) + len(GOLD) + len(CRYPTO)
@@ -575,7 +638,10 @@ def protocol_mirror_expected(data: Mapping[str, Any]) -> dict[str, Any]:
         "schema_version": "1.0",
         "study_id": data["study_id"],
         "scenario_states": data["scenario_states"],
-        "relative_perturbation": _param(data, "RELATIVE_PERTURBATION"),
+        "consequential_parameter_values": {
+            record["parameter_id"]: record["value"]
+            for record in data["consequential_parameter_registry"]["parameters"]
+        },
         "scenario_magnitudes": data["scenario_magnitudes"]["values_pct"],
         "window_ids": [w["id"] for w in data["scenario_windows"]["windows"]],
         "window_voting_roles": {w["id"]: w["voting_role"] for w in data["scenario_windows"]["windows"]},
@@ -633,95 +699,288 @@ def validate_repository(prereg_path: Path = PREREG_PATH, protocol_path: Path = P
     return ValidationResult(tuple(errors))
 
 
-def classify_observation(candidate: Decimal | None, reference: Decimal | None, tolerance: Decimal, direction: str, not_applicable: bool = False) -> str:
-    if not_applicable:
+class RuntimeAuthorityError(ValueError):
+    """A runtime observation does not conform to frozen canonical authority."""
+
+
+def _runtime_authority() -> dict[str, Any]:
+    result = validate_repository()
+    if result.errors:
+        raise RuntimeAuthorityError("canonical RISK-0001 authority is invalid: " + "; ".join(result.errors))
+    loaded = yaml.safe_load(PREREG_PATH.read_text(encoding="utf-8"))
+    if type(loaded) is not dict:
+        raise RuntimeAuthorityError("canonical preregistration is not a mapping")
+    return loaded
+
+
+def _runtime_decimal(value: Any, where: str) -> Decimal:
+    if isinstance(value, bool) or not isinstance(value, (str, int, Decimal)):
+        raise RuntimeAuthorityError(f"{where}: exact decimal-compatible scalar required")
+    try:
+        return Decimal(str(value))
+    except ArithmeticError as exc:
+        raise RuntimeAuthorityError(f"{where}: invalid decimal") from exc
+
+
+def _runtime_mapping(value: Any, keys: Sequence[str], where: str) -> Mapping[str, Any]:
+    if type(value) is not dict or tuple(value) != tuple(keys):
+        raise RuntimeAuthorityError(f"{where}: exact keys/order {tuple(keys)!r} required")
+    return value
+
+
+def _runtime_state(value: Any, vocabulary: Sequence[str], where: str) -> str:
+    if type(value) is not str or value not in vocabulary:
+        raise RuntimeAuthorityError(f"{where}: unknown state {value!r}")
+    return value
+
+
+def classify_observation(
+    metric_id: str,
+    candidate: Decimal | str | int | None,
+    reference: Decimal | str | int | None,
+    missingness_state: str = "ELIGIBLE",
+) -> str:
+    data = _runtime_authority()
+    _runtime_state(missingness_state, MISSINGNESS, "missingness_state")
+    if missingness_state == "NOT_APPLICABLE_PRE_INCEPTION":
         return "NOT_APPLICABLE"
-    if candidate is None or reference is None:
+    if missingness_state != "ELIGIBLE" or candidate is None or reference is None:
         return "UNAVAILABLE"
-    delta = candidate - reference
+    metrics = {record["metric_id"]: record for record in data["metric_families"]["metrics"]}
+    if metric_id not in metrics:
+        raise RuntimeAuthorityError(f"unknown metric_id {metric_id!r}")
+    metric = metrics[metric_id]
+    parameter_id = metric["equivalence_parameter_id"]
+    if parameter_id is None or metric["direction_of_preference"] not in ("HIGHER", "LOWER"):
+        raise RuntimeAuthorityError(f"metric {metric_id} is not a classified voting metric")
+    tolerance = _runtime_decimal(_param(data, parameter_id), parameter_id)
+    delta = _runtime_decimal(candidate, "candidate") - _runtime_decimal(reference, "reference")
     if abs(delta) <= tolerance:
         return "EQUIVALENT"
-    if direction == "HIGHER":
+    if metric["direction_of_preference"] == "HIGHER":
         return "IMPROVES" if delta > tolerance else "WORSENS"
-    if direction == "LOWER":
-        return "IMPROVES" if -delta > tolerance else "WORSENS"
-    raise ValueError("direction must be HIGHER or LOWER")
+    return "IMPROVES" if -delta > tolerance else "WORSENS"
 
 
 def reduce_states(states: Iterable[str]) -> str:
-    applicable = [state for state in states if state != "NOT_APPLICABLE"]
+    values = list(states)
+    for index, state in enumerate(values):
+        _runtime_state(state, OBSERVATION_STATES, f"states[{index}]")
+    applicable = [state for state in values if state != "NOT_APPLICABLE"]
     if not applicable:
         return "UNAVAILABLE"
     for state in ("WORSENS", "UNAVAILABLE", "IMPROVES", "EQUIVALENT"):
         if state in applicable:
             return state
-    raise ValueError(f"unknown state in {applicable!r}")
+    raise RuntimeAuthorityError("closed observation reduction has no state")
 
 
-def reduce_representations(family: str, states: Mapping[str, str], admitted_gold: Sequence[str] = ()) -> str:
+def _admitted_gold_peers(data: Mapping[str, Any], evidence: Sequence[Mapping[str, Any]]) -> tuple[str, ...]:
+    expected_keys = (
+        "peer_id", "identity_and_inception", "unresolved_required_session_gaps",
+        "dividend_split_action_treatment", "overlap_total_return_correlation",
+        "overlap_annualized_return_difference_pp", "overlap_max_drawdown_difference_pp",
+    )
+    canonical_peers = tuple(data["representations"]["FUND_GLD_DEFENSIVE"]["conditional_ids"])
+    seen: list[str] = []
+    admitted: list[str] = []
+    for index, raw in enumerate(evidence):
+        record = _runtime_mapping(raw, expected_keys, f"gold_peer_evidence[{index}]")
+        peer = record["peer_id"]
+        if peer not in canonical_peers or peer in seen:
+            raise RuntimeAuthorityError(f"gold_peer_evidence[{index}]: unknown or duplicate peer {peer!r}")
+        if canonical_peers.index(peer) < len(seen) or (seen and canonical_peers.index(peer) <= canonical_peers.index(seen[-1])):
+            raise RuntimeAuthorityError("gold peer evidence must use canonical IAU, SGOL, GLDM order")
+        seen.append(peer)
+        if record["identity_and_inception"] not in ("COMPLETE", "INCOMPLETE"):
+            raise RuntimeAuthorityError("gold identity/inception status is outside closed vocabulary")
+        if record["dividend_split_action_treatment"] not in ("COMPLETE", "INCOMPLETE"):
+            raise RuntimeAuthorityError("gold action-treatment status is outside closed vocabulary")
+        gaps = record["unresolved_required_session_gaps"]
+        if type(gaps) is not int or gaps < 0:
+            raise RuntimeAuthorityError("gold unresolved gap count must be a nonnegative integer")
+        passes = (
+            record["identity_and_inception"] == "COMPLETE"
+            and gaps == int(_param(data, "GOLD_UNRESOLVED_SESSION_GAPS_ALLOWED"))
+            and record["dividend_split_action_treatment"] == "COMPLETE"
+            and _runtime_decimal(record["overlap_total_return_correlation"], "gold correlation") >= _runtime_decimal(_param(data, "GOLD_PARITY_CORRELATION_MIN"), "gold correlation minimum")
+            and abs(_runtime_decimal(record["overlap_annualized_return_difference_pp"], "gold return difference")) <= _runtime_decimal(_param(data, "GOLD_PARITY_RETURN_MAX_PP"), "gold return maximum")
+            and abs(_runtime_decimal(record["overlap_max_drawdown_difference_pp"], "gold drawdown difference")) <= _runtime_decimal(_param(data, "GOLD_PARITY_DRAWDOWN_MAX_PP"), "gold drawdown maximum")
+        )
+        if passes:
+            admitted.append(peer)
+    return tuple(admitted)
+
+
+def reduce_representations(
+    family: str,
+    states: Mapping[str, str],
+    gold_peer_evidence: Sequence[Mapping[str, Any]] = (),
+) -> str:
+    data = _runtime_authority()
     if family == "FUND_BROAD_MARKET":
-        required = BROAD
+        required = tuple(data["representations"][family]["ids"])
+        if gold_peer_evidence:
+            raise RuntimeAuthorityError("gold peer evidence is invalid for broad market")
     elif family == "CRYPTO":
-        required = CRYPTO
+        required = tuple(data["representations"][family]["ids"])
+        if gold_peer_evidence:
+            raise RuntimeAuthorityError("gold peer evidence is invalid for crypto")
     elif family == "FUND_GLD_DEFENSIVE":
-        required = ("GLD",) + tuple(admitted_gold)
+        required = ("GLD",) + _admitted_gold_peers(data, gold_peer_evidence)
     else:
-        raise ValueError("family requires equity-specific or supported representation reducer")
-    values = [states.get(rep, "UNAVAILABLE") for rep in required]
-    if "UNAVAILABLE" in values:
-        return "UNAVAILABLE"
-    if any(value not in FAMILY_STATES for value in values):
-        raise ValueError("unknown family state")
+        raise RuntimeAuthorityError(f"unsupported representation family {family!r}")
+    mapping = _runtime_mapping(states, required, f"{family}.states")
+    values = [_runtime_state(mapping[rep], FAMILY_STATES, f"{family}.{rep}") for rep in required]
+    if any(value in ("UNAVAILABLE", "CONFLICT") for value in values):
+        return "UNAVAILABLE" if "UNAVAILABLE" in values else "CONFLICT"
     return values[0] if len(set(values)) == 1 else "CONFLICT"
 
 
-def reduce_equity(states: Sequence[str], median_state: str, leave_one_out_states: Sequence[str], minimum_eligible: int = 21, breadth: Decimal = Decimal("0.75")) -> str:
-    eligible = [state for state in states if state != "UNAVAILABLE"]
-    if len(eligible) < minimum_eligible:
+def reduce_equity(
+    constituent_states: Sequence[tuple[str, str]],
+    leave_one_out_states: Sequence[tuple[str, str]],
+) -> str:
+    data = _runtime_authority()
+    if type(constituent_states) not in (list, tuple) or type(leave_one_out_states) not in (list, tuple):
+        raise RuntimeAuthorityError("equity inputs must be ordered sequences")
+    identities = [item[0] for item in constituent_states if type(item) in (list, tuple) and len(item) == 2]
+    if len(identities) != len(constituent_states) or tuple(identities) != tuple(data["frozen_cohort"]["equity_ids"]):
+        raise RuntimeAuthorityError("constituent states must contain the exact frozen 27-name cohort in canonical order")
+    values: list[str] = []
+    for ticker, state in constituent_states:
+        values.append(_runtime_state(state, ("IMPROVES", "EQUIVALENT", "WORSENS", "UNAVAILABLE"), f"equity.{ticker}"))
+    eligible = [(ticker, state) for (ticker, _), state in zip(constituent_states, values) if state != "UNAVAILABLE"]
+    eligible_ids = tuple(ticker for ticker, _ in eligible)
+    loo_ids = [item[0] for item in leave_one_out_states if type(item) in (list, tuple) and len(item) == 2]
+    if len(loo_ids) != len(leave_one_out_states) or tuple(loo_ids) != eligible_ids:
+        raise RuntimeAuthorityError("leave-one-out states must contain each eligible omitted identity exactly once in canonical order")
+    loo_values = [_runtime_state(state, ("IMPROVES", "EQUIVALENT", "WORSENS", "UNAVAILABLE"), f"equity_loo.{ticker}") for ticker, state in leave_one_out_states]
+    minimum = int(_param(data, "EQUITY_MINIMUM_ELIGIBLE"))
+    if len(eligible) < minimum:
         return "UNAVAILABLE"
-    counts = {state: eligible.count(state) for state in ("IMPROVES", "EQUIVALENT", "WORSENS")}
-    winner = max(counts, key=counts.get)
-    if Decimal(counts[winner]) / Decimal(len(eligible)) < breadth:
+    ordered_states = ("WORSENS", "EQUIVALENT", "IMPROVES")
+    ordered_values = sorted((state for _, state in eligible), key=ordered_states.index)
+    center_left = ordered_values[(len(ordered_values) - 1) // 2]
+    center_right = ordered_values[len(ordered_values) // 2]
+    if center_left != center_right:
         return "CONFLICT"
-    if median_state != winner or any(state != winner for state in leave_one_out_states):
+    median_state = center_left
+    counts = {state: ordered_values.count(state) for state in ordered_states}
+    max_count = max(counts.values())
+    winners = [state for state, count in counts.items() if count == max_count]
+    if len(winners) != 1:
+        return "CONFLICT"
+    winner = winners[0]
+    breadth = Decimal(counts[winner]) / Decimal(len(eligible))
+    if breadth < _runtime_decimal(_param(data, "EQUITY_DIRECTIONAL_BREADTH"), "equity breadth"):
+        return "CONFLICT"
+    if median_state != winner or any(state != winner for state in loo_values):
         return "CONFLICT"
     return winner
 
 
-def directional_disposition(family_states: Mapping[str, str], minimum_improvements: int = 2, monotonicity_ok: bool = True, representation_conflict: bool = False) -> str:
-    values = [family_states.get(family, "UNAVAILABLE") for family in VOTING_FAMILIES]
-    if not monotonicity_ok or representation_conflict or any(value in ("UNAVAILABLE", "CONFLICT") for value in values):
+def validate_formula_integrity(observations: Sequence[Mapping[str, Any]]) -> bool:
+    data = _runtime_authority()
+    designated = tuple(data["result_reduction"]["monotonicity"]["designated_metrics"])
+    keys = ("metric_id", "family", "representation_id", "window_id", "raw_metric_value", "scenario_values")
+    if type(observations) not in (list, tuple) or not observations:
+        raise RuntimeAuthorityError("formula observations must be a nonempty ordered sequence")
+    seen: set[tuple[str, str, str, str]] = set()
+    observed_metrics: list[str] = []
+    tolerance = _runtime_decimal(_param(data, "FORMULA_INTEGRITY_ABSOLUTE_TOLERANCE"), "formula tolerance")
+    all_representations = set(EQUITIES + BROAD + GOLD + CRYPTO)
+    for index, raw in enumerate(observations):
+        record = _runtime_mapping(raw, keys, f"formula_observations[{index}]")
+        metric_id = record["metric_id"]
+        if metric_id not in designated:
+            raise RuntimeAuthorityError(f"formula_observations[{index}]: undesignated metric")
+        family = record["family"]
+        if family not in FAMILIES or record["representation_id"] not in all_representations:
+            raise RuntimeAuthorityError(f"formula_observations[{index}]: unknown family or representation")
+        if family == "EQUITY" and record["representation_id"] not in EQUITIES:
+            raise RuntimeAuthorityError("formula representation is outside its family")
+        if family == "FUND_BROAD_MARKET" and record["representation_id"] not in BROAD:
+            raise RuntimeAuthorityError("formula representation is outside its family")
+        if family == "FUND_GLD_DEFENSIVE" and record["representation_id"] not in GOLD:
+            raise RuntimeAuthorityError("formula representation is outside its family")
+        if family == "CRYPTO" and record["representation_id"] not in CRYPTO:
+            raise RuntimeAuthorityError("formula representation is outside its family")
+        if record["window_id"] not in WINDOWS:
+            raise RuntimeAuthorityError("formula observation has unknown window")
+        identity = (metric_id, family, record["representation_id"], record["window_id"])
+        if identity in seen:
+            raise RuntimeAuthorityError("duplicate formula observation identity")
+        seen.add(identity)
+        observed_metrics.append(metric_id)
+        scenario_values = _runtime_mapping(record["scenario_values"], SCENARIOS, "formula scenario_values")
+        raw_value = _runtime_decimal(record["raw_metric_value"], "raw metric value")
+        if metric_id != "EXPOSURE_SCALED_EXCESS_CONTRIBUTION" and raw_value < 0:
+            raise RuntimeAuthorityError(f"{metric_id}: loss/burden raw metric must be nonnegative")
+        for scenario in SCENARIOS:
+            exposure_pct = _runtime_decimal(data["scenario_magnitudes"]["values_pct"][family][scenario], "scenario exposure")
+            expected = exposure_pct * raw_value
+            actual = _runtime_decimal(scenario_values[scenario], "scenario formula value")
+            if abs(actual - expected) > tolerance:
+                return False
+    if tuple(dict.fromkeys(observed_metrics)) != designated:
+        raise RuntimeAuthorityError("formula observations must cover every designated metric in canonical order")
+    return True
+
+
+def directional_disposition(
+    family_states: Mapping[str, str],
+    formula_observations: Sequence[Mapping[str, Any]],
+) -> str:
+    data = _runtime_authority()
+    mapping = _runtime_mapping(family_states, VOTING_FAMILIES, "mandatory family states")
+    values = [_runtime_state(mapping[family], FAMILY_STATES, f"family_states.{family}") for family in VOTING_FAMILIES]
+    if not validate_formula_integrity(formula_observations):
+        return "UNABLE_TO_DETERMINE"
+    if any(value in ("UNAVAILABLE", "CONFLICT") for value in values):
         return "UNABLE_TO_DETERMINE"
     if "IMPROVES" in values and "WORSENS" in values:
         return "UNABLE_TO_DETERMINE"
-    if "WORSENS" not in values and values.count("IMPROVES") >= minimum_improvements:
+    minimum = int(_param(data, "MINIMUM_IMPROVEMENT_FAMILIES"))
+    if "WORSENS" not in values and values.count("IMPROVES") >= minimum:
         return "POLICY_REVIEW_REQUIRED"
     return "CENTER_NOT_REJECTED"
 
 
-def point_evidence(family_states: Mapping[str, str], directional_state: str, minimum_worsening: int = 2) -> str:
+def point_evidence(
+    family_states: Mapping[str, str],
+    formula_observations: Sequence[Mapping[str, Any]],
+) -> str:
+    data = _runtime_authority()
+    mapping = _runtime_mapping(family_states, VOTING_FAMILIES, "mandatory family states")
+    values = [_runtime_state(mapping[family], FAMILY_STATES, f"family_states.{family}") for family in VOTING_FAMILIES]
+    directional_state = directional_disposition(family_states, formula_observations)
     if directional_state == "POLICY_REVIEW_REQUIRED":
         return "DISPLACES_REFERENCE"
     if directional_state == "UNABLE_TO_DETERMINE":
         return "UNAVAILABLE"
-    values = [family_states.get(family, "UNAVAILABLE") for family in VOTING_FAMILIES]
+    minimum_worsening = int(_param(data, data["result_reduction"]["point_evidence_rule"]["minimum_worsening_parameter_id"]))
     if values.count("WORSENS") >= minimum_worsening and "IMPROVES" not in values:
         return "ADJACENT_MATERIALLY_WORSE"
     return "NOT_DISTINGUISHED"
 
 
 def final_disposition(lower: str, higher: str, lower_point: str, higher_point: str) -> dict[str, str | None]:
-    result_row = None
-    for row in TOTAL_STATE_TABLE:
-        if row[0] == lower and row[1] == higher:
-            result_row = row
-            break
-    if result_row is None:
-        raise ValueError("directional states must use the closed vocabulary")
-    for row in POINT_STATE_TABLE:
-        if row[0] == lower_point and row[1] == higher_point:
-            return {"result": result_row[2], "review_direction": result_row[3], "point_target_assessment": row[2], "method_review_direction": row[3]}
-    raise ValueError("point evidence states must use the closed vocabulary")
+    data = _runtime_authority()
+    _runtime_state(lower, DIRECTIONAL_STATES, "lower directional state")
+    _runtime_state(higher, DIRECTIONAL_STATES, "higher directional state")
+    _runtime_state(lower_point, POINT_EVIDENCE_STATES, "lower point state")
+    _runtime_state(higher_point, POINT_EVIDENCE_STATES, "higher point state")
+    result_rows = data["result_reduction"]["total_state_table"]
+    point_rows = data["result_reduction"]["point_state_table"]
+    result_row = next(row for row in result_rows if row["lower"] == lower and row["higher"] == higher)
+    point_row = next(row for row in point_rows if row["lower"] == lower_point and row["higher"] == higher_point)
+    return {
+        "result": result_row["result"],
+        "review_direction": result_row["review_direction"],
+        "point_target_assessment": point_row["point_target_assessment"],
+        "method_review_direction": point_row["method_review_direction"],
+    }
 
 
 def main() -> int:
