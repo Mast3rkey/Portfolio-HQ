@@ -1,0 +1,512 @@
+schema_version: "1.0"
+study_id: RISK-0001
+authority:
+  decision: RISK-0001
+  architecture: XASSET-0019
+  cohort: LEVEL2-0001
+  numeric_provenance: NUM-0001
+  lifecycle: OPS-0009_LANE_G
+  execution_authority: ONE_LATER_IMPLEMENTATION_RESULTS_PR_ONLY
+  charter_pr_data_acquisition: PROHIBITED
+  charter_pr_study_execution: PROHIBITED
+  policy_adoption: PROHIBITED
+  question: >-
+    Does preregistered historical evidence reject the continued plausibility of any
+    historical/provisional Level-1 investable-sleeve scenario strongly enough to
+    require a separate policy review before replacement sizing, or is the evidence
+    insufficient?
+
+frozen_cohort:
+  source: governance/evidence/LEVEL2-0001/RESEARCH_COHORT_FREEZE.yaml
+  scope: RESEARCH_ONLY_NOT_FINAL_MEMBERSHIP
+  expected_core_count: 34
+  equity_count: 27
+  equity_ids: [AMZN, ASML, AVGO, CEG, COST, ETN, GEV, GNRC, GOOGL, ICE, ISRG, KLAC, LLY, META, MSFT, NVDA, PANW, PWR, RKLB, RTX, SNPS, SPGI, TMO, TSLA, TSM, V, WM]
+  broad_market_ids: [SPY, VEA, VWO]
+  defensive_core_ids: [GLD]
+  crypto_ids: [BTC, ETH, SOL]
+  final_membership_authority: PROHIBITED
+  level2_sizing_authority: PROHIBITED
+
+representations:
+  EQUITY:
+    research_unit: CONSTITUENT_DIAGNOSTICS_ONLY
+    ids: [AMZN, ASML, AVGO, CEG, COST, ETN, GEV, GNRC, GOOGL, ICE, ISRG, KLAC, LLY, META, MSFT, NVDA, PANW, PWR, RKLB, RTX, SNPS, SPGI, TMO, TSLA, TSM, V, WM]
+    aggregate_return_series: PROHIBITED
+    weighting_methods_prohibited: [EQUAL_WEIGHT, MARKET_CAP_WEIGHT, CURRENT_WEIGHT, SYNTHETIC_REPRESENTATIVE_PATH]
+  FUND_BROAD_MARKET:
+    research_unit: SEPARATE_REPRESENTATIONS
+    ids: [SPY, VEA, VWO]
+    combined_return_series: PROHIBITED
+  FUND_GLD_DEFENSIVE:
+    research_unit: CORE_PLUS_CONDITIONAL_SENSITIVITY
+    core_ids: [GLD]
+    conditional_ids: [IAU, SGOL, GLDM]
+    conditional_use: REPRESENTATION_SENSITIVITY_ONLY
+    peer_ranking: PROHIBITED
+    final_vehicle_selection: PROHIBITED
+  CRYPTO:
+    research_unit: SEPARATE_REPRESENTATIONS
+    ids: [BTC, ETH, SOL]
+    composites_prohibited: [EQUAL_WEIGHT, MARKET_CAP, CONVICTION, CANONICAL]
+  excluded: [CASH, RESERVE, cash_reserve, debt_reduction, residual, unassigned_capital, margin, leverage]
+
+historical_reference_scenarios:
+  classification: historical_provisional_reference
+  semantics:
+    - HISTORICAL
+    - COMPUTATIONALLY_DERIVED_UNDER_SUPERSEDED_MECHANICS
+    - PROVISIONAL
+    - ECONOMICALLY_UNVALIDATED
+    - NOT_ADOPTED
+    - NOT_BASELINE_POLICY
+    - NOT_A_TARGET
+    - NOT_AN_OPTIMIZATION_ANCHOR
+    - NO_RESIDUAL_ASSIGNMENT
+  values_pct:
+    EQUITY: "18.67"
+    FUND_BROAD_MARKET: "14.67"
+    FUND_GLD_DEFENSIVE: "16.67"
+    CRYPTO: "16.67"
+
+scenario_states: [LOWER, HISTORICAL_REFERENCE, HIGHER]
+
+scenario_magnitudes:
+  unit: PERCENT_OF_UNSPECIFIED_ASSET_STATE_EXPOSURE
+  values_pct:
+    EQUITY:
+      LOWER: "14.94"
+      HISTORICAL_REFERENCE: "18.67"
+      HIGHER: "22.40"
+    FUND_BROAD_MARKET:
+      LOWER: "11.74"
+      HISTORICAL_REFERENCE: "14.67"
+      HIGHER: "17.60"
+    FUND_GLD_DEFENSIVE:
+      LOWER: "13.34"
+      HISTORICAL_REFERENCE: "16.67"
+      HIGHER: "20.00"
+    CRYPTO:
+      LOWER: "13.34"
+      HISTORICAL_REFERENCE: "16.67"
+      HIGHER: "20.00"
+  freeze_status: IMMUTABLE_AFTER_CHARTER_MERGE
+  portfolio_reconciliation: NOT_PERFORMED
+  residual_assignment: PROHIBITED
+
+scenario_provenance:
+  method: SYMMETRIC_RELATIVE_PERTURBATION
+  relative_perturbation: "0.20"
+  formula:
+    LOWER: historical_reference_times_0.80
+    HISTORICAL_REFERENCE: historical_reference_unchanged
+    HIGHER: historical_reference_times_1.20
+  rounding: ROUND_HALF_UP_TO_TWO_DECIMAL_PERCENTAGE_POINTS
+  num_0001_classification: PROVISIONAL_GOVERNANCE_GUARDRAIL_FOR_ONE_STUDY
+  calibrated: false
+  evidence_bounded: false
+  optimized: false
+  inherited_from_xasset_0016_r2_r3: false
+  rationale: >-
+    A common proportional perturbation challenges each historical reference on
+    the same relative scale, avoids inheriting the superseded fixed +/-2pp
+    mechanic, and creates distinct exposure states without searching a grid.
+  lapse: AUTOMATIC_ON_AUTHORIZED_STUDY_COMPLETION
+  reuse: REQUIRES_NEW_GOVERNANCE_AUTHORITY
+
+data_sources:
+  equities_etfs:
+    primary:
+      provider: ALPACA_MARKET_DATA
+      endpoint: "https://data.alpaca.markets/v2/stocks/{symbol}/bars"
+      parameters: "timeframe=1Day&adjustment=split&feed=sip&limit=10000"
+      return_input: SPLIT_ADJUSTED_NON_TOTAL_RETURN_OHLC
+      commit_rule: COMMIT_IF_LICENSE_AND_SIZE_ALLOW_OTHERWISE_QUARANTINE_WITH_HASH
+    fallback:
+      provider: YAHOO_FINANCE_CHART
+      endpoint: "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+      parameters: "interval=1d&events=div%2Csplits%2CcapitalGains"
+      return_input: SPLIT_ADJUSTED_NON_TOTAL_RETURN_CLOSE_PLUS_EXPLICIT_ACTIONS
+      disposition: QUARANTINE_NOT_COMMITTED
+      whole_path_rule: ONE_PROVIDER_PER_REPRESENTATION_WINDOW_NO_UNDISCLOSED_STITCHING
+  crypto:
+    primary:
+      provider: ALPACA_CRYPTO
+      endpoint: "https://data.alpaca.markets/v1beta3/crypto/us/bars"
+      parameters: "symbols={symbol}/USD&timeframe=1Day&limit=10000"
+      market: SPOT
+      commit_rule: COMMIT_IF_LICENSE_AND_SIZE_ALLOW_OTHERWISE_QUARANTINE_WITH_HASH
+    fallback:
+      provider: COINBASE_EXCHANGE
+      endpoint: "https://api.exchange.coinbase.com/products/{product}-USD/candles"
+      parameters: "granularity=86400&start={start}&end={end}"
+      market: SPOT
+      disposition: QUARANTINE_NOT_COMMITTED
+      whole_path_rule: ONE_PROVIDER_PER_REPRESENTATION_WINDOW_NO_UNDISCLOSED_STITCHING
+  comparator:
+    primary:
+      provider: FRED
+      series: DFF
+      endpoint: "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF"
+      disposition: COMMIT_OFFICIAL_PUBLIC_DOMAIN_SOURCE_OR_HASH_PINNED_RECEIPT
+    analytical_fallback: NONE
+  corporate_actions:
+    primary:
+      provider: ALPACA_CORPORATE_ACTIONS
+      endpoint: "https://data.alpaca.markets/v1/corporate-actions"
+      types: [cash_dividend, stock_dividend, split, spin_off, merger]
+    identity_resolution:
+      providers: [SEC_EDGAR, PRIMARY_ISSUER_INVESTOR_RELATIONS]
+      use: LEGAL_ENTITY_AND_ACTION_RESOLUTION_ONLY
+  secondary_reconciliation:
+    providers: [YAHOO_FINANCE_ADJCLOSE, ISSUER_FILINGS, COINBASE_EXCHANGE_OR_ALPACA_OPPOSITE_SOURCE]
+    use: RECONCILIATION_ONLY_NOT_SILENT_INPUT_SUBSTITUTION
+
+fallback_order:
+  equities_etfs: [ALPACA_MARKET_DATA, YAHOO_FINANCE_CHART, ABSTAIN]
+  crypto: [ALPACA_CRYPTO, COINBASE_EXCHANGE, ABSTAIN]
+  comparator: [FRED_DFF, ABSTAIN_OPPORTUNITY_COST_CELLS]
+  corporate_actions: [ALPACA_CORPORATE_ACTIONS, SEC_EDGAR_OR_ISSUER, ABSTAIN_AFFECTED_CELLS]
+  provider_change_after_result_inspection: PROHIBITED
+  fallback_retry_before_registered_execution: PERMITTED_AND_LOGGED
+
+data_gate:
+  execution_gate: ALL_REQUIRED_DATASETS_PASS_BEFORE_ANY_REGISTERED_CELL_EXECUTES
+  required_receipts:
+    - REQUEST_URL_WITH_SECRETS_REDACTED
+    - REQUEST_TIMESTAMP_UTC
+    - RESPONSE_STATUS
+    - PAGE_OR_CURSOR_ID
+    - NEXT_PAGE_OR_TERMINAL_MARKER
+    - RAW_SHA256
+    - TRANSFORMED_SHA256
+    - COVERAGE_START_END
+    - EXPECTED_AND_OBSERVED_COUNTS
+    - GAP_INVENTORY
+    - IDENTITY_LINEAGE
+    - CORPORATE_ACTION_DISPOSITION
+    - PROVIDER_AND_ENDPOINT
+    - LICENSE_AND_COMMIT_OR_QUARANTINE_DISPOSITION
+  no_lookahead: true
+  no_interpolation: true
+  no_forward_fill_prices: true
+  no_zero_return_standins: true
+  no_silent_universe_reduction: true
+  no_unregistered_substitute: true
+  failed_required_dataset: AFFECTED_CELLS_INELIGIBLE_AND_FAMILY_MAY_ABSTAIN
+  gld_conditional_peer_gate:
+    required: false
+    requirements:
+      - COMPLETE_IDENTITY_AND_INCEPTION
+      - ZERO_UNRESOLVED_REQUIRED_SESSION_GAPS
+      - COMPLETE_DIVIDEND_SPLIT_ACTION_TREATMENT
+      - OVERLAP_TOTAL_RETURN_CORRELATION_AT_LEAST_0_995
+      - OVERLAP_ANNUALIZED_RETURN_DIFFERENCE_AT_MOST_0_50_PP
+      - OVERLAP_MAX_DRAWDOWN_DIFFERENCE_AT_MOST_2_00_PP
+    failure_state: CONDITIONAL_ASSET_NOT_ACQUIRED
+    num_0001_classification: UNCALIBRATED_ONE_STUDY_DATA_PARITY_GUARDRAIL
+  crypto_gate:
+    utc_normalization: REQUIRED
+    expected_calendar: EVERY_UTC_DAY_IN_REGISTERED_WINDOW
+    duplicate_timestamps_allowed: 0
+    missing_days_allowed_per_registered_window: 0
+    maximum_contiguous_gap_days: 0
+    ohlc_rules: [FINITE, POSITIVE, LOW_LE_MIN_OPEN_CLOSE, HIGH_GE_MAX_OPEN_CLOSE, HIGH_GE_LOW]
+    pagination_completeness: REQUIRED
+    interpolation: PROHIBITED
+    forward_fill: PROHIBITED
+    fabricated_pre_inception: PROHIBITED
+    undisclosed_alternate_source_stitching: PROHIBITED
+    known_sol_gap: >-
+      The existing aggregate 418-day SOL gap must be re-inventoried. Every
+      registered window intersecting any unresolved SOL day is ineligible;
+      the gap may not be averaged away or represented as zero return.
+
+scenario_windows:
+  count: 7
+  evaluation_end: "2026-07-31"
+  windows:
+    - id: ASSET_AVAILABLE_HISTORY
+      class: ASSET_AVAILABLE
+      start: "2004-11-18"
+      end: "2026-07-31"
+      rule: INTERSECT_WITH_LAWFUL_LISTING_INCEPTION_AND_VALIDATED_COVERAGE
+      criterion: GLD_FIRST_TRADING_DATE_AS_CROSS_FAMILY_MODERN_HISTORY_FLOOR
+    - id: FAMILY_COMMON_OVERLAP
+      class: FAMILY_COMMON
+      start_by_family:
+        EQUITY: "2024-04-02"
+        FUND_BROAD_MARKET: "2007-07-20"
+        FUND_GLD_DEFENSIVE: "2018-06-26"
+        CRYPTO: "2021-06-01"
+      end: "2026-07-31"
+      criterion: LATEST_KNOWN_LAWFUL_CORE_OR_CONDITIONAL_INCEPTION_WITHIN_FAMILY
+    - id: GFC_2008
+      class: FIXED_STRESS
+      start: "2007-12-01"
+      end: "2009-06-30"
+      criterion: NBER_RECESSION_MONTH_BOUNDARIES_NOT_ASSET_PEAK_TROUGH
+    - id: Q4_2018
+      class: FIXED_STRESS
+      start: "2018-10-01"
+      end: "2018-12-31"
+      criterion: CALENDAR_QUARTER
+    - id: COVID_2020
+      class: FIXED_STRESS
+      start: "2020-02-01"
+      end: "2020-04-30"
+      criterion: PREDECLARED_PUBLIC_HEALTH_SHOCK_WINDOW_NOT_ASSET_PEAK_TROUGH
+    - id: RATE_INFLATION_2022
+      class: FIXED_STRESS
+      start: "2022-01-01"
+      end: "2022-12-31"
+      criterion: CALENDAR_YEAR_RATE_AND_INFLATION_SHOCK
+    - id: CRYPTO_STRESS_2022
+      class: FIXED_STRESS
+      start: "2022-05-01"
+      end: "2022-12-31"
+      criterion: PREDECLARED_TERRA_CELSIUS_FTX_EVENT_INTERVAL_NOT_ASSET_PEAK_TROUGH
+  asset_specific_peak_trough_selection: PROHIBITED
+
+missingness_states:
+  vocabulary:
+    - ELIGIBLE
+    - NOT_APPLICABLE_PRE_INCEPTION
+    - MISSING_SOURCE_DATA
+    - KNOWN_DATA_GAP
+    - CORPORATE_ACTION_UNRESOLVED
+    - CONDITIONAL_ASSET_NOT_ACQUIRED
+    - QUALITY_GATE_FAILED
+  zero_return_standin: PROHIBITED
+  result_table_requirements:
+    - ELIGIBLE_COUNT
+    - EXPECTED_FROZEN_COUNT
+    - MISSING_NAMES
+    - PRE_INCEPTION_NAMES
+    - CENSORED_RECOVERIES
+    - SELECTION_CONDITIONED_COHORT_WARNING
+    - CORPORATE_ACTION_TRUNCATIONS
+
+alignment_rules:
+  equity_etf_calendar: XNYS_OFFICIAL_SESSIONS
+  equity_etf_observation: OFFICIAL_SESSION_CLOSE
+  crypto_calendar: UTC_24_7
+  common_evaluation_timestamp: EACH_XNYS_OFFICIAL_CLOSE_IN_AMERICA_NEW_YORK
+  crypto_mapping: LATEST_COMPLETED_UTC_DAILY_CLOSE_AT_OR_BEFORE_EVALUATION_TIMESTAMP
+  weekend_crypto_rule: COMPOUND_ALL_UNMAPPED_COMPLETED_UTC_DAILY_RETURNS_INTO_NEXT_XNYS_INTERVAL
+  comparator_interval: ACTUAL_CALENDAR_DAYS_BETWEEN_XNYS_EVALUATION_TIMESTAMPS
+  future_observation_mapped_backward: PROHIBITED
+  missing_observation_as_zero: PROHIBITED
+  native_path_reporting: RETAIN_NATIVE_SESSION_OR_UTC_DAY_SERIES_SEPARATELY
+
+corporate_action_rules:
+  equities_etfs_total_return_method: SPLIT_ADJUSTED_PRICES_PLUS_EXPLICIT_DIVIDENDS_AND_ACTIONS
+  total_return_series_combined_with_explicit_dividends: PROHIBITED
+  dividends: GROSS_DECLARED_CASH_CREDITED_ON_EX_DATE_PRIMARY_PAY_DATE_SENSITIVITY_DISCLOSED
+  splits: APPLY_GOVERNED_SPLIT_FACTOR_AND_VERIFY_RETURN_CONTINUITY
+  spin_offs: REQUIRE_PRIMARY_IDENTITY_RATIO_AND_ENTITLEMENT_EVIDENCE_OR_MARK_UNRESOLVED
+  ticker_changes: CONTINUE_ONLY_WITH_PROVED_SAME_LEGAL_ENTITY_LINEAGE
+  mergers: CONTINUE_ONLY_THROUGH_EXPLICIT_GOVERNED_CONSIDERATION_AND_ENTITY_RULE
+  legal_entity_continuity: REQUIRED
+  listing_inception: NO_FABRICATED_PRE_INCEPTION_HISTORY
+  synthetic_predecessor_stitching: PROHIBITED
+  known_boundaries:
+    CEG: PRE_STANDALONE_HISTORY_UNAVAILABLE
+    GEV: PRE_SPIN_HISTORY_UNAVAILABLE
+    RKLB: PRE_2021_08_25_NOT_RKLB_HISTORY
+    RTX: PREDECESSOR_HISTORY_NOT_SILENTLY_STITCHED
+  unresolved_period: CORPORATE_ACTION_UNRESOLVED
+  gold_fund_expense_treatment: OBSERVED_FUND_PATH_ALREADY_INCLUDES_EXPENSE_DRAG_NO_SECOND_SUBTRACTION
+  crypto_yield: SPOT_ONLY_NO_STAKING_LENDING_OR_YIELD
+
+comparator:
+  series: DFF
+  role: ANALYTICAL_OPPORTUNITY_COST_ONLY
+  strategic_cash: false
+  residual: false
+  funding_destination: false
+  fifth_sleeve: false
+  portfolio_policy: false
+  annual_rate_unit: PERCENT
+  accrual_convention: SIMPLE_ACTUAL_360_COMPOUNDED_BY_CALENDAR_DAY
+  daily_factor: "1 + (lagged_DFF_percent / 100) / 360"
+  availability_lag: ONE_US_BUSINESS_DAY_AFTER_OBSERVATION_DATE
+  calendar_day_rule: USE_MOST_RECENT_LAWFULLY_AVAILABLE_LAGGED_DFF_FOR_WEEKENDS_AND_HOLIDAYS
+  missing_rate_rule: GAP_OVER_SEVEN_CALENDAR_DAYS_FAILS_AFFECTED_OPPORTUNITY_COST_CELLS
+  evaluation_alignment: ACCRUE_EXACT_CALENDAR_DAYS_BETWEEN_COMMON_EVALUATION_TIMESTAMPS
+
+metric_families:
+  PATH_RISK:
+    independent_family: DOWNSIDE_PATH
+    metrics:
+      max_drawdown: "min_t(index_t / running_peak_t - 1)"
+      worst_month: LOWEST_CALENDAR_MONTH_COMPOUNDED_TOTAL_RETURN
+      worst_quarter: LOWEST_CALENDAR_QUARTER_COMPOUNDED_TOTAL_RETURN
+      stress_window_loss: COMPOUNDED_TOTAL_RETURN_OVER_FIXED_STRESS_WINDOW
+      volatility: SAMPLE_STANDARD_DEVIATION_OF_NATIVE_SIMPLE_RETURNS_ANNUALIZED_252_EQUITY_ETF_365_CRYPTO
+  RECOVERY:
+    independent_family: RECOVERY_BURDEN
+    metrics:
+      recovery_duration_days: CALENDAR_DAYS_FROM_DRAWDOWN_PEAK_TO_FIRST_INDEX_AT_OR_ABOVE_PRIOR_PEAK
+      censor_status: RECOVERED_OR_CENSORED_AT_WINDOW_END
+      time_underwater_area: SUM_OF_MAX_0_ONE_MINUS_INDEX_OVER_RUNNING_PEAK_TIMES_INTERVAL_DAYS
+  OPPORTUNITY_COST:
+    independent_family: OPPORTUNITY_COST
+    metrics:
+      excess_total_return: ASSET_TOTAL_RETURN_MINUS_COMPOUNDED_DFF_TOTAL_RETURN
+      exposure_scaled_excess_contribution: SCENARIO_EXPOSURE_TIMES_EXCESS_TOTAL_RETURN
+  CONTRIBUTION:
+    independent_family: DOWNSIDE_PATH
+    metrics:
+      exposure_scaled_drawdown_loss: SCENARIO_EXPOSURE_TIMES_ABSOLUTE_MAX_DRAWDOWN
+      exposure_scaled_stress_loss: SCENARIO_EXPOSURE_TIMES_ABSOLUTE_NEGATIVE_STRESS_RETURN
+      constituent_loss_envelope: PER_CONSTITUENT_SCENARIO_EXPOSURE_TIMES_LOSS_NO_AGGREGATE_PATH
+  CROSS_SECTIONAL_EQUITY:
+    independent_family: DIAGNOSTIC_NOT_EXTRA_DOMINANCE_FAMILY
+    metrics: [ELIGIBLE_BREADTH_COUNT_AND_PROPORTION, MEDIAN, P10, P25, P75, P90, MIN, MAX, IQR, RANGE, CLUSTER_DISPERSION, LEAVE_ONE_OUT_SENSITIVITY]
+  REPRESENTATION:
+    independent_family: CONSISTENCY_VETO_NOT_IMPROVEMENT_COUNT
+    metrics: [PER_REPRESENTATION_DIRECTION, MATERIAL_CONFLICT, CONDITIONAL_GOLD_PEER_CONFLICT]
+  CORRELATION_COBEHAVIOR:
+    independent_family: DIAGNOSTIC_ONLY
+    metrics: [PAIRWISE_PEARSON_DAILY_RETURN_CORRELATION, JOINT_NEGATIVE_INTERVAL_FREQUENCY]
+  composite_score: PROHIBITED
+
+dominance_rule:
+  comparison: LOWER_OR_HIGHER_VERSUS_HISTORICAL_REFERENCE_WITHIN_FAMILY
+  mandatory_independent_families: [DOWNSIDE_PATH, RECOVERY_BURDEN, OPPORTUNITY_COST]
+  minimum_distinct_families_with_strict_improvement: 2
+  no_material_worsening_across_all_applicable_mandatory_families: true
+  correlated_metrics_within_one_family_count: 1
+  representation_consistency_veto: true
+  conflict_result: unable_to_determine
+  monotonicity_required_only_for: [EXPOSURE_SCALED_LOSS_CONTRIBUTION, EXPOSURE_SCALED_OPPORTUNITY_CONTRIBUTION]
+  materiality_tolerances:
+    opportunity_cost_contribution_pp: "1.00"
+    downside_contribution_pp: "1.00"
+    underwater_area_contribution_pp: "1.00"
+    recovery_duration_days: 30
+    volatility_contribution_pp: "1.00"
+    equity_breadth_delta_pp: "10.00"
+  equivalence: ABSOLUTE_DIFFERENCE_AT_OR_BELOW_APPLICABLE_TOLERANCE
+  num_0001_classification: UNCALIBRATED_ONE_STUDY_PROVISIONAL_GOVERNANCE_GUARDRAILS
+  family_rules:
+    EQUITY:
+      aggregate_path: PROHIBITED
+      minimum_eligible_constituents: 21
+      directional_breadth_required: "0.75"
+      median_must_agree: true
+      leave_one_out_direction_must_be_stable: true
+      cluster_diagnostics_cannot_override_family_rule: true
+    FUND_BROAD_MARKET:
+      required_representations: [SPY, VEA, VWO]
+      all_eligible_directions_must_agree: true
+      material_difference_or_conflict: unable_to_determine
+    FUND_GLD_DEFENSIVE:
+      core_required: GLD
+      conditional_peer_conflict_if_gate_passes: unable_to_determine
+    CRYPTO:
+      required_representations: [BTC, ETH, SOL]
+      asset_available_and_common_window_eligibility_required: true
+      all_eligible_directions_must_agree: true
+      material_difference_or_gap_conflict: unable_to_determine
+  policy_review_trigger: CANDIDATE_SCENARIO_DOMINATES_HISTORICAL_REFERENCE_UNDER_ALL_RULES
+  automatic_policy_change: PROHIBITED
+
+point_target_rule:
+  not_supported: >-
+    The historical reference is not rejected but both adjacent registered
+    scenarios are equivalent to it, materially conflicting, or otherwise fail
+    to establish unique point precision while required data remain eligible.
+  not_rejected: >-
+    The historical reference is not dominated, at least one adjacent scenario
+    is materially worse across at least two independent families with no
+    opposite-direction representation conflict, and the evidence is eligible;
+    this is not validation or adoption.
+  unable_to_determine: >-
+    Mandatory data, representation consistency, breadth, or corporate-action
+    gates prevent the point premise from being assessed.
+  method_review_direction:
+    range_or_nonpoint: POINT_TARGET_NOT_SUPPORTED
+    null: OTHERWISE
+  replacement_method_creation: PROHIBITED
+
+trial_inventory:
+  representation_count: 37
+  representation_derivation:
+    equity_constituents: 27
+    broad_market: 3
+    gld_core_and_conditional: 4
+    crypto: 3
+  scenario_count: 3
+  window_class_count: 7
+  derived_registered_cell_ceiling: 777
+  formula: 37_TIMES_3_TIMES_7
+  cell_identity: REPRESENTATION_TIMES_SCENARIO_TIMES_WINDOW_TIMES_EXACT_CONFIG_HASH_TIMES_DATA_HASH_BUNDLE
+  metrics_from_same_path_are_new_trials: false
+  failed_discarded_ineligible_attempts_remain_accounted: true
+  reserve_trials: 0
+  unused_capacity_reallocation: PROHIBITED
+  new_cells_after_results: REQUIRES_CHARTER_AMENDMENT
+  conditional_gld_cells_count_inside_ceiling: true
+
+rerun_rule:
+  after_results_observed: PROHIBITED
+  required_authority: SEPARATELY_ACCEPTED_CHARTER_AMENDMENT_OR_NEW_RISK_STUDY
+  allowed_basis: [MATERIAL_NEW_EVIDENCE_REGIME, SEPARATELY_GOVERNED_INTEGRITY_CORRECTION]
+  discovered_defect_automatic_rerun: PROHIBITED
+  preregistered_fallback_retries_before_execution: PERMITTED_IF_LOGGED
+  known_historical_windows_held_out_claim: PROHIBITED
+  terminology: PREREGISTERED_HISTORICAL_REPLAY
+  protocol_held_out: ONLY_IF_GENUINELY_SEQUESTERED_AND_HASH_PROVED
+  prospective_evidence: ONLY_FUTURE_OBSERVATIONS_NOT_AVAILABLE_AT_CHARTER_FREEZE
+
+result_vocabulary:
+  result_states:
+    provisional_scenario_not_rejected: >-
+      The dominance rule did not reject the historical provisional reference;
+      non-rejection is not validation, calibration, adoption, or policy support.
+    policy_review_required: >-
+      A registered adjacent scenario dominates the historical reference under
+      the preregistered rule; this requires a separate policy review and causes
+      no automatic weight or method change.
+    unable_to_determine: >-
+      Data, eligibility, breadth, corporate-action, or representation-conflict
+      gates prevent a directional disposition.
+  review_direction: [lower_exposure, higher_exposure, null]
+  point_target_assessment: [not_supported, not_rejected, unable_to_determine]
+  method_review_direction: [range_or_nonpoint, null]
+  non_rejection_equals_validation: false
+  policy_review_equals_automatic_change: false
+
+prohibited_scope:
+  - FINAL_LEVEL1_TARGETS
+  - FINAL_LEVEL2_MEMBERSHIP
+  - LEVEL2_WEIGHTS
+  - OPTIMIZER_OR_WEIGHT_GRID_SEARCH
+  - COMPOSITE_SCORE
+  - RESIDUAL_REDISTRIBUTION
+  - STRATEGIC_CASH_POLICY
+  - CASH_OR_RESERVE_AS_RESEARCH_SLEEVE
+  - DEBT_OR_MARGIN_ANALYSIS
+  - LEVERAGE
+  - CHART_OR_TECHNICAL_SIGNALS
+  - TRADES_OR_ORDERS
+  - ALLOCATOR_MUTATION
+  - TARGETS_YAML_MUTATION
+  - HOLDINGS_MUTATION
+  - AUTOMATIC_ADOPTION
+  - UNREGISTERED_TRIALS
+  - AUTOMATIC_RERUNS
+  - WHOLE_PORTFOLIO_CONSTRUCTION
+  - WHOLE_100_PERCENT_RECONCILIATION
+  - RESIDUAL_PROXY_OR_RETURN_SERIES
+
+hash_version:
+  algorithm: SHA256
+  canonical_bytes: RAW_FILE_BYTES_AS_COMMITTED
+  authority_pin_location: governance/decisions/RISK-0001-level1-investable-sleeve-robustness-charter.md
+  embedded_self_hash: false
+  protocol_path: research/level1_sleeve_robustness/PROTOCOL_V1.md
+  preregistration_path: research/level1_sleeve_robustness/pre_registration.yaml
+  content_change_after_merge: REQUIRES_SEPARATE_GOVERNANCE
