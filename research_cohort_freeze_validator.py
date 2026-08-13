@@ -167,6 +167,102 @@ CONDITIONAL = {
     "VWO_PEER_SCHWAB_EMERGING_MARKETS_EQUITY_ETF": (None, "Schwab Emerging Markets Equity ETF", "BROAD_MARKET_FUND_REFERENCE", "NAMED_CATEGORY_PEER_LACKS_GOVERNED_PARITY"),
 }
 
+EQUITY_CAVEATS = (
+    "CURRENT_MEMBERSHIP_NOT_EVIDENCE",
+    "CURRENT_HOLDING_NOT_EVIDENCE",
+    "CURRENT_CONFIGURATION_NOT_EVIDENCE",
+    "PARTIAL_VALUATION_GAPS_PRESERVED",
+    "FRESHNESS_AND_ACCESS_GAPS_PRESERVED",
+)
+EQUITY_EVIDENCE_REFS = (
+    "equity_classification_manifest",
+    "equity_valuation_archetype_manifest",
+    "equity_valuation_evidence_manifest",
+    "equity_valuation_results_manifest",
+)
+BROAD_MARKET_EVIDENCE_REFS = (
+    "etf_classification_manifest",
+    "instrument_economic_assessment_manifest",
+)
+CRYPTO_CAVEATS = (
+    "CROSS_COIN_CORRELATION_UNRESOLVED",
+    "INTERNAL_WEIGHTING_METHOD_UNRESOLVED",
+)
+CRYPTO_EVIDENCE_REFS = (
+    "crypto_classification_manifest",
+    "instrument_economic_assessment_manifest",
+)
+
+# Exact row-level authority is expressed through the smallest governed
+# archetypes, then expanded across every identity.  This is intentionally not a
+# copy of the artifact: the checked-in YAML must reconcile to these independent
+# deterministic expectations before it can act as closed authority.
+CORE_ROW_AUTHORITY = {
+    **{ticker: (EQUITY_CAVEATS, EQUITY_EVIDENCE_REFS) for ticker in EQUITIES if ticker != "SPGI"},
+    "SPGI": (
+        EQUITY_CAVEATS + ("SPGI_NO_POLICY_CONCLUSION_PRESERVED",),
+        EQUITY_EVIDENCE_REFS + ("equity_recommendation_package",),
+    ),
+    "SPY": (
+        ("DOMESTIC_BETA_DUPLICATION_DISCLOSED", "FINAL_VEHICLE_UNRESOLVED"),
+        BROAD_MARKET_EVIDENCE_REFS,
+    ),
+    "VEA": (
+        ("DEVELOPED_EX_US_DISTINCTION_DISCLOSED", "FINAL_VEHICLE_UNRESOLVED"),
+        BROAD_MARKET_EVIDENCE_REFS,
+    ),
+    "VWO": (
+        ("EMERGING_MARKET_DISTINCTION_DISCLOSED", "FINAL_VEHICLE_UNRESOLVED"),
+        BROAD_MARKET_EVIDENCE_REFS,
+    ),
+    "GLD": (
+        (
+            "MIXED_HISTORICAL_PROTECTION_EVIDENCE",
+            "ELEVATED_COST_VS_NAMED_PEERS",
+            "FINAL_VEHICLE_UNRESOLVED",
+        ),
+        (
+            "etf_classification_manifest",
+            "functional_doctrine_manifest",
+            "gld_economic_assessment_manifest",
+        ),
+    ),
+    "BTC": (CRYPTO_CAVEATS, CRYPTO_EVIDENCE_REFS),
+    "ETH": (CRYPTO_CAVEATS, CRYPTO_EVIDENCE_REFS),
+    "SOL": (
+        (
+            "CROSS_COIN_CORRELATION_UNRESOLVED",
+            "SOL_DRAWDOWN_EVIDENCE_ABSTENTION",
+            "INTERNAL_WEIGHTING_METHOD_UNRESOLVED",
+        ),
+        CRYPTO_EVIDENCE_REFS,
+    ),
+}
+
+CONDITIONAL_ROW_AUTHORITY = {
+    **{
+        candidate: (
+            ("PILOT_NOT_CAPITAL_PRIORITY_AUTHORITY",),
+            ("contender_evaluation_manifest",),
+        )
+        for candidate in ("VRT", "WMT")
+    },
+    **{
+        candidate: (
+            ("FINAL_VEHICLE_UNRESOLVED",),
+            ("gld_economic_assessment_manifest",),
+        )
+        for candidate in ("IAU", "SGOL", "GLDM")
+    },
+    **{
+        candidate: (
+            ("NORMALIZED_IDENTITY_UNRESOLVED", "FINAL_VEHICLE_UNRESOLVED"),
+            ("instrument_economic_assessment_manifest",),
+        )
+        for candidate in tuple(CONDITIONAL)[5:]
+    },
+}
+
 SOURCE_PINS = {
     "equity_classification_manifest": ("intelligence/classification/COHORT_MANIFEST.yaml", "c6fa21b25ff0b45d3f0ed578cd003fc679ff0f216b97f126498594b0cbca2e79"),
     "equity_valuation_archetype_manifest": ("intelligence/valuation_archetype/COHORT_MANIFEST.yaml", "754821895934a956633022014054a8e7f0355c4adc91ca3aadeb8d5bce438da3"),
@@ -214,7 +310,7 @@ class ValidationResult:
 
 
 def _ids(rows: list[dict[str, Any]], key: str) -> list[str]:
-    return [row.get(key) for row in rows if isinstance(row, dict)]
+    return [row[key] for row in rows if isinstance(row, dict) and isinstance(row.get(key), str)]
 
 
 def _check_exact_keys(value: Any, expected: set[str], label: str, errors: list[str]) -> None:
@@ -224,6 +320,32 @@ def _check_exact_keys(value: Any, expected: set[str], label: str, errors: list[s
     actual = set(value)
     if actual != expected:
         errors.append(f"{label} keys mismatch: expected {sorted(expected)}, got {sorted(actual)}")
+
+
+def _check_canonical_list(
+    value: Any,
+    expected: tuple[str, ...],
+    allowed: tuple[str, ...] | dict[str, Any],
+    label: str,
+    errors: list[str],
+) -> None:
+    """Enforce type, closure, cardinality, uniqueness, values, and order."""
+    if not isinstance(value, list):
+        errors.append(f"{label} must be a list")
+        return
+    all_strings = all(isinstance(item, str) for item in value)
+    if not all_strings:
+        errors.append(f"{label} must contain only string values")
+    else:
+        unknown = [item for item in value if item not in allowed]
+        if unknown:
+            errors.append(f"{label} contains values outside the closed vocabulary: {unknown}")
+        if len(value) != len(set(value)):
+            errors.append(f"{label} contains duplicate values")
+    if len(value) != len(expected):
+        errors.append(f"{label} cardinality must equal {len(expected)}")
+    if value != list(expected):
+        errors.append(f"{label} must equal the exact canonical values and order")
 
 
 def _walk(value: Any, path: str = ""):
@@ -283,14 +405,18 @@ def validate_data(data: Any, *, repo_root: Path = REPO_ROOT, verify_sources: boo
         core = []
     for idx, row in enumerate(core):
         _check_exact_keys(row, CORE_ROW_KEYS, f"core_cohort[{idx}]", errors)
+    core_rows = [row for row in core if isinstance(row, dict)]
     core_ids = _ids(core, "instrument_id")
     if core_ids != list(CORE):
         errors.append("core_cohort must contain the exact 34 identities in canonical order")
     if len(core_ids) != len(set(core_ids)):
         errors.append("core_cohort contains duplicate identities")
     expected_sleeves = {**{x: "EQUITY" for x in EQUITIES}, **{x: "BROAD_MARKET" for x in BROAD_MARKET}, "GLD": "DEFENSIVE", **{x: "CRYPTO" for x in CRYPTO}}
-    for row in core:
+    for row in core_rows:
         ticker = row.get("instrument_id")
+        if not isinstance(ticker, str):
+            errors.append("core row instrument_id must be a string")
+            continue
         if row.get("sleeve") != expected_sleeves.get(ticker):
             errors.append(f"{ticker}: incorrect sleeve")
         if row.get("disposition") != "RESEARCH_COHORT_INCLUDED":
@@ -298,18 +424,30 @@ def validate_data(data: Any, *, repo_root: Path = REPO_ROOT, verify_sources: boo
         expected_reason = "CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION" if ticker in EQUITIES else "ASSET_APPROPRIATE_GOVERNED_EVIDENCE_AVAILABLE"
         if row.get("reason_code") != expected_reason:
             errors.append(f"{ticker}: incorrect inclusion reason")
-        if not isinstance(row.get("caveat_codes"), list) or not set(row["caveat_codes"]).issubset(CAVEAT_CODES):
-            errors.append(f"{ticker}: caveat_codes are not closed")
-        if not isinstance(row.get("evidence_refs"), list) or not set(row["evidence_refs"]).issubset(SOURCE_PINS):
-            errors.append(f"{ticker}: evidence_refs are not closed source pins")
-    by_core = {row.get("instrument_id"): row for row in core}
-    if "SPGI_NO_POLICY_CONCLUSION_PRESERVED" not in by_core.get("SPGI", {}).get("caveat_codes", []):
+        authority = CORE_ROW_AUTHORITY.get(ticker)
+        if authority is None:
+            errors.append(f"{ticker}: no canonical row authority exists")
+        else:
+            expected_caveats, expected_refs = authority
+            _check_canonical_list(
+                row.get("caveat_codes"), expected_caveats, CAVEAT_CODES,
+                f"{ticker}: caveat_codes", errors,
+            )
+            _check_canonical_list(
+                row.get("evidence_refs"), expected_refs, SOURCE_PINS,
+                f"{ticker}: evidence_refs", errors,
+            )
+    by_core = {row["instrument_id"]: row for row in core_rows if isinstance(row.get("instrument_id"), str)}
+    spgi_caveats = by_core.get("SPGI", {}).get("caveat_codes")
+    if not isinstance(spgi_caveats, list) or "SPGI_NO_POLICY_CONCLUSION_PRESERVED" not in spgi_caveats:
         errors.append("SPGI must preserve its no_policy_conclusion caveat")
-    if "SOL_DRAWDOWN_EVIDENCE_ABSTENTION" not in by_core.get("SOL", {}).get("caveat_codes", []):
+    sol_caveats = by_core.get("SOL", {}).get("caveat_codes")
+    if not isinstance(sol_caveats, list) or "SOL_DRAWDOWN_EVIDENCE_ABSTENTION" not in sol_caveats:
         errors.append("SOL must preserve its drawdown-evidence abstention")
     for ticker in CRYPTO:
-        caveats = set(by_core.get(ticker, {}).get("caveat_codes", []))
-        if not {"CROSS_COIN_CORRELATION_UNRESOLVED", "INTERNAL_WEIGHTING_METHOD_UNRESOLVED"}.issubset(caveats):
+        caveats = by_core.get(ticker, {}).get("caveat_codes")
+        required = ("CROSS_COIN_CORRELATION_UNRESOLVED", "INTERNAL_WEIGHTING_METHOD_UNRESOLVED")
+        if not isinstance(caveats, list) or any(caveat not in caveats for caveat in required):
             errors.append(f"{ticker}: unresolved crypto correlation/internal weighting caveats missing")
 
     conditional = data.get("conditional_sidecar")
@@ -318,31 +456,51 @@ def validate_data(data: Any, *, repo_root: Path = REPO_ROOT, verify_sources: boo
         conditional = []
     for idx, row in enumerate(conditional):
         _check_exact_keys(row, CONDITIONAL_ROW_KEYS, f"conditional_sidecar[{idx}]", errors)
+    conditional_rows = [row for row in conditional if isinstance(row, dict)]
     conditional_ids = _ids(conditional, "candidate_id")
     if conditional_ids != list(CONDITIONAL):
         errors.append("conditional_sidecar must contain the exact 11 candidates in canonical order")
-    for row in conditional:
+    for row in conditional_rows:
         cid = row.get("candidate_id")
+        if not isinstance(cid, str):
+            errors.append("conditional row candidate_id must be a string")
+            continue
         expected = CONDITIONAL.get(cid)
         observed = (row.get("normalized_instrument_id"), row.get("source_label"), row.get("asset_type"), row.get("reason_code"))
         if observed != expected:
             errors.append(f"{cid}: conditional identity/type/reason does not match the governed source representation")
         if row.get("disposition") != "CONDITIONAL":
             errors.append(f"{cid}: disposition must remain CONDITIONAL")
-        if not isinstance(row.get("caveat_codes"), list) or not set(row["caveat_codes"]).issubset(CAVEAT_CODES):
-            errors.append(f"{cid}: conditional caveat_codes are not closed")
-        if not isinstance(row.get("evidence_refs"), list) or not set(row["evidence_refs"]).issubset(SOURCE_PINS):
-            errors.append(f"{cid}: conditional evidence_refs are not closed")
+        authority = CONDITIONAL_ROW_AUTHORITY.get(cid)
+        if authority is None:
+            errors.append(f"{cid}: no canonical conditional row authority exists")
+        else:
+            expected_caveats, expected_refs = authority
+            _check_canonical_list(
+                row.get("caveat_codes"), expected_caveats, CAVEAT_CODES,
+                f"{cid}: conditional caveat_codes", errors,
+            )
+            _check_canonical_list(
+                row.get("evidence_refs"), expected_refs, SOURCE_PINS,
+                f"{cid}: conditional evidence_refs", errors,
+            )
 
     abstained = data.get("abstained_population")
     _check_exact_keys(abstained, {"named_instruments", "legacy_population"}, "abstained_population", errors)
     named = abstained.get("named_instruments", []) if isinstance(abstained, dict) else []
+    if not isinstance(named, list):
+        errors.append("abstained_population.named_instruments must be a list")
+        named = []
     for idx, row in enumerate(named):
         _check_exact_keys(row, REGISTRY_ROW_KEYS, f"abstained_population.named_instruments[{idx}]", errors)
+    named_rows = [row for row in named if isinstance(row, dict)]
     if _ids(named, "instrument_id") != list(ABSTAINED):
         errors.append("named abstentions must contain the exact 25 identities in canonical order")
-    for row in named:
+    for row in named_rows:
         ticker = row.get("instrument_id")
+        if not isinstance(ticker, str):
+            errors.append("named abstention instrument_id must be a string")
+            continue
         if (row.get("reason_code"), row.get("source_registry_disposition")) != ABSTAINED.get(ticker):
             errors.append(f"{ticker}: abstention reason/source disposition mismatch")
         if row.get("disposition") != "ABSTAIN_INSUFFICIENT_EVIDENCE" or row.get("evidence_refs") != ["contender_registry"]:
@@ -364,10 +522,14 @@ def validate_data(data: Any, *, repo_root: Path = REPO_ROOT, verify_sources: boo
         excluded = []
     for idx, row in enumerate(excluded):
         _check_exact_keys(row, REGISTRY_ROW_KEYS, f"excluded_population[{idx}]", errors)
+    excluded_rows = [row for row in excluded if isinstance(row, dict)]
     if _ids(excluded, "instrument_id") != list(EXCLUDED):
         errors.append("excluded_population must contain the exact 23 identities in canonical order")
-    for row in excluded:
+    for row in excluded_rows:
         ticker = row.get("instrument_id")
+        if not isinstance(ticker, str):
+            errors.append("excluded instrument_id must be a string")
+            continue
         if (row.get("reason_code"), row.get("source_registry_disposition")) != EXCLUDED.get(ticker):
             errors.append(f"{ticker}: exclusion reason/source disposition mismatch")
         if row.get("disposition") != "EXCLUDED_FROM_CURRENT_RESEARCH_COHORT" or row.get("evidence_refs") != ["contender_registry"]:
@@ -387,10 +549,14 @@ def validate_data(data: Any, *, repo_root: Path = REPO_ROOT, verify_sources: boo
         pins = []
     for idx, row in enumerate(pins):
         _check_exact_keys(row, PIN_KEYS, f"source_pins[{idx}]", errors)
+    pin_rows = [row for row in pins if isinstance(row, dict)]
     if _ids(pins, "pin_id") != list(SOURCE_PINS):
         errors.append("source_pins must contain the exact canonical pin set and order")
-    for row in pins:
+    for row in pin_rows:
         pin_id = row.get("pin_id")
+        if not isinstance(pin_id, str):
+            errors.append("source pin pin_id must be a string")
+            continue
         expected = SOURCE_PINS.get(pin_id)
         if expected and (row.get("source_path"), row.get("sha256")) != expected:
             errors.append(f"{pin_id}: source path/hash pin mismatch")

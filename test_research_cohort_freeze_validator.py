@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
+import pytest
 import yaml
 
 import research_cohort_freeze_validator as rcfv
@@ -19,6 +20,17 @@ def _artifact() -> dict:
 
 def _errors(data: dict) -> tuple[str, ...]:
     return rcfv.validate_data(data, repo_root=REPO_ROOT, verify_sources=True).errors
+
+
+def _row(data: dict, section: str, id_key: str, identity: str) -> dict:
+    return next(row for row in data[section] if row[id_key] == identity)
+
+
+def _replace_governed_row(data: dict, collection: str, replacement: object) -> None:
+    if collection == "named_abstentions":
+        data["abstained_population"]["named_instruments"][0] = replacement
+    else:
+        data[collection][0] = replacement
 
 
 def test_real_freeze_validates():
@@ -106,6 +118,167 @@ def test_crypto_internal_weighting_assumption_rejected_by_missing_caveat():
     row = next(row for row in data["core_cohort"] if row["instrument_id"] == "BTC")
     row["caveat_codes"].remove("INTERNAL_WEIGHTING_METHOD_UNRESOLVED")
     assert any("internal weighting" in error for error in _errors(data))
+
+
+@pytest.mark.parametrize(
+    ("section", "id_key", "identity"),
+    [
+        ("core_cohort", "instrument_id", "AMZN"),
+        ("core_cohort", "instrument_id", "SPY"),
+        ("core_cohort", "instrument_id", "GLD"),
+        ("core_cohort", "instrument_id", "BTC"),
+        ("conditional_sidecar", "candidate_id", "VRT"),
+        ("conditional_sidecar", "candidate_id", "SPY_PEER_VANGUARD_SP500_ETF"),
+    ],
+)
+def test_required_caveat_removal_rejected_across_row_archetypes(section, id_key, identity):
+    data = _artifact()
+    _row(data, section, id_key, identity)["caveat_codes"].pop()
+    assert any("caveat_codes must equal the exact canonical" in error for error in _errors(data))
+
+
+@pytest.mark.parametrize(
+    ("section", "id_key", "identity"),
+    [
+        ("core_cohort", "instrument_id", "SPY"),
+        ("core_cohort", "instrument_id", "GLD"),
+        ("conditional_sidecar", "candidate_id", "VRT"),
+    ],
+)
+def test_required_caveat_list_cannot_be_empty(section, id_key, identity):
+    data = _artifact()
+    _row(data, section, id_key, identity)["caveat_codes"] = []
+    errors = _errors(data)
+    assert any("caveat_codes cardinality" in error for error in errors)
+    assert any("caveat_codes must equal the exact canonical" in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    ("section", "id_key", "identity", "foreign_caveat"),
+    [
+        ("core_cohort", "instrument_id", "AMZN", "FINAL_VEHICLE_UNRESOLVED"),
+        ("core_cohort", "instrument_id", "GLD", "PILOT_NOT_CAPITAL_PRIORITY_AUTHORITY"),
+        ("core_cohort", "instrument_id", "BTC", "DOMESTIC_BETA_DUPLICATION_DISCLOSED"),
+        ("conditional_sidecar", "candidate_id", "VRT", "NORMALIZED_IDENTITY_UNRESOLVED"),
+    ],
+)
+def test_globally_valid_but_misassigned_caveat_rejected(section, id_key, identity, foreign_caveat):
+    data = _artifact()
+    row = _row(data, section, id_key, identity)
+    row["caveat_codes"][0] = foreign_caveat
+    assert any("caveat_codes must equal the exact canonical" in error for error in _errors(data))
+
+
+def test_duplicate_caveat_rejected():
+    data = _artifact()
+    row = _row(data, "core_cohort", "instrument_id", "GLD")
+    row["caveat_codes"].append(row["caveat_codes"][0])
+    errors = _errors(data)
+    assert any("caveat_codes contains duplicate values" in error for error in errors)
+    assert any("caveat_codes cardinality" in error for error in errors)
+
+
+def test_wrong_caveat_order_rejected():
+    data = _artifact()
+    _row(data, "core_cohort", "instrument_id", "SPY")["caveat_codes"].reverse()
+    assert any("caveat_codes must equal the exact canonical" in error for error in _errors(data))
+
+
+@pytest.mark.parametrize(
+    ("section", "id_key", "identity"),
+    [
+        ("core_cohort", "instrument_id", "AMZN"),
+        ("core_cohort", "instrument_id", "SPGI"),
+        ("core_cohort", "instrument_id", "SPY"),
+        ("core_cohort", "instrument_id", "GLD"),
+        ("core_cohort", "instrument_id", "BTC"),
+        ("conditional_sidecar", "candidate_id", "VRT"),
+        ("conditional_sidecar", "candidate_id", "IAU"),
+        ("conditional_sidecar", "candidate_id", "SPY_PEER_VANGUARD_SP500_ETF"),
+    ],
+)
+def test_required_evidence_reference_removal_rejected_across_row_archetypes(section, id_key, identity):
+    data = _artifact()
+    _row(data, section, id_key, identity)["evidence_refs"].pop()
+    assert any("evidence_refs must equal the exact canonical" in error for error in _errors(data))
+
+
+@pytest.mark.parametrize(
+    ("section", "id_key", "identity"),
+    [
+        ("core_cohort", "instrument_id", "SPY"),
+        ("conditional_sidecar", "candidate_id", "VRT"),
+    ],
+)
+def test_required_evidence_reference_list_cannot_be_empty(section, id_key, identity):
+    data = _artifact()
+    _row(data, section, id_key, identity)["evidence_refs"] = []
+    errors = _errors(data)
+    assert any("evidence_refs cardinality" in error for error in errors)
+    assert any("evidence_refs must equal the exact canonical" in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    ("section", "id_key", "identity", "foreign_ref"),
+    [
+        ("core_cohort", "instrument_id", "SPY", "contender_registry"),
+        ("core_cohort", "instrument_id", "GLD", "crypto_classification_manifest"),
+        ("conditional_sidecar", "candidate_id", "VRT", "gld_economic_assessment_manifest"),
+        ("conditional_sidecar", "candidate_id", "IAU", "contender_evaluation_manifest"),
+    ],
+)
+def test_globally_valid_but_misassigned_evidence_reference_rejected(
+    section, id_key, identity, foreign_ref
+):
+    data = _artifact()
+    row = _row(data, section, id_key, identity)
+    row["evidence_refs"] = [foreign_ref]
+    assert any("evidence_refs must equal the exact canonical" in error for error in _errors(data))
+
+
+def test_duplicate_evidence_reference_rejected():
+    data = _artifact()
+    row = _row(data, "core_cohort", "instrument_id", "SPY")
+    row["evidence_refs"].append(row["evidence_refs"][0])
+    errors = _errors(data)
+    assert any("evidence_refs contains duplicate values" in error for error in errors)
+    assert any("evidence_refs cardinality" in error for error in errors)
+
+
+def test_extra_globally_valid_evidence_reference_rejected():
+    data = _artifact()
+    _row(data, "core_cohort", "instrument_id", "SPY")["evidence_refs"].append("contender_registry")
+    assert any("evidence_refs must equal the exact canonical" in error for error in _errors(data))
+
+
+@pytest.mark.parametrize("identity", ["AMZN", "SPY", "GLD", "BTC"])
+def test_wrong_evidence_reference_order_rejected(identity):
+    data = _artifact()
+    _row(data, "core_cohort", "instrument_id", identity)["evidence_refs"].reverse()
+    assert any("evidence_refs must equal the exact canonical" in error for error in _errors(data))
+
+
+@pytest.mark.parametrize(
+    "collection",
+    ["core_cohort", "conditional_sidecar", "named_abstentions", "excluded_population", "source_pins"],
+)
+@pytest.mark.parametrize("replacement", ["scalar", None, ["list-row"]])
+def test_malformed_mapping_rows_return_closed_validation_result(collection, replacement):
+    data = _artifact()
+    _replace_governed_row(data, collection, copy.deepcopy(replacement))
+    result = rcfv.validate_data(data, repo_root=REPO_ROOT, verify_sources=True)
+    assert not result.valid
+    assert any("must be a mapping" in error for error in result.errors)
+
+
+@pytest.mark.parametrize("field", ["caveat_codes", "evidence_refs"])
+@pytest.mark.parametrize("replacement", [None, "scalar", {"bad": "shape"}, [["nested"]]])
+def test_malformed_nested_authority_values_return_closed_validation_result(field, replacement):
+    data = _artifact()
+    _row(data, "core_cohort", "instrument_id", "AMZN")[field] = copy.deepcopy(replacement)
+    result = rcfv.validate_data(data, repo_root=REPO_ROOT, verify_sources=True)
+    assert not result.valid
+    assert result.errors
 
 
 def test_legacy_gap_cannot_be_silently_omitted():
