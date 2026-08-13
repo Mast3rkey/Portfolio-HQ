@@ -11580,7 +11580,7 @@ workstreams:
           no target or Level 2 sizing, constructs no portfolio, assigns no
           residual, and touches no margin/debt policy. It must stop at a draft
           PR for independent full exact-head review.
-        pr: null
+        pr: 314
         status: in_progress
         date: "2026-08-13"
     evidence_refs:
@@ -12186,7 +12186,7 @@ workstreams:
       Level 2, policy-adoption, allocation-check, deployment, or completion
       claim and must stop at a draft PR for independent full exact-head review.
     active_branch: codex/risk-0001-level1-robustness-charter
-    active_pr: null
+    active_pr: 314
     last_verified_main_sha: 0962385bf6b1b72cebe8b326da49927977db2912
     last_verified_date: "2026-08-13"
     authorized_by: >
