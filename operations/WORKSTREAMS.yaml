@@ -11433,6 +11433,41 @@ workstreams:
         pr: 310
         status: in_progress
         date: "2026-08-12"
+      - gate: xasset0018-post-merge-verification
+        description: >
+          Lane M factual synchronization, independently reverified from
+          live GitHub state. PR #310 completed a fresh full corrected-head
+          independent review with 0 BLOCKING / 0 MAJOR / 0 MINOR at exact
+          head 15e06584b718a912c543d84a43e557638c3bfecc; principal exact-head
+          acceptance is retained at issuecomment-5279583728. PR #310 merged
+          as ff7300a402230a54eb42147dd1df04d095019b96, and immediate
+          post-merge verification is retained at issuecomment-5279649213.
+          Merged-head CI run 31693995965 completed successfully with full
+          pytest 6151 passed. XASSET-0018's one future schema-2.0 replacement
+          implementation authorization is therefore effective. The prior
+          xasset0018-numeric-sizing-structural-authority gate remains
+          byte-unedited as historical filing-state text.
+        pr: 310
+        status: complete
+        date: "2026-08-13"
+      - gate: xasset0018-schema2-numeric-sizing-replacement-implementation
+        description: >
+          The one bounded replacement implementation XASSET-0018 authorizes
+          is in progress on branch codex/xasset-0018-schema2-numeric-sizing,
+          directly from exact main ff7300a402230a54eb42147dd1df04d095019b96.
+          Scope is limited to six schema-2.0 numeric-sizing records, their
+          schema-2.0 cohort manifest, the dedicated read-only numeric-sizing
+          validator and focused adversarial tests, plus this factual register
+          synchronization. Live validated sources rederive four assigned
+          sleeves and two blocked sleeves and reproduce XASSET-0018's numeric
+          preservation fence. No Level 2 work, policy adoption, allocation
+          check, target/configuration change, or brokerage action is included.
+          This gate makes no completion, acceptance, readiness, or merge
+          claim; the implementation must stop at a draft PR for independent
+          full exact-head review.
+        pr: null
+        status: in_progress
+        date: "2026-08-13"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11987,10 +12022,21 @@ workstreams:
       XASSET-0016 methodology and numeric outputs using only closed
       structured numeric authority. Level 2 work, policy adoption, and
       any allocation check remain separately unauthorized.
-    active_branch: codex/xasset-0018-structured-numeric-authority
-    active_pr: 310
-    last_verified_main_sha: 993b677275bfe37eaeb49b9e0ab5b9efebbfa4ca
-    last_verified_date: "2026-08-12"
+
+
+      Update, a new session, 2026-08-13: XASSET-0018's full lifecycle is
+      independently confirmed complete through PR #310's corrected-head
+      review, principal acceptance, merge, immediate post-merge verification,
+      and successful merged-head CI. The one authorized schema-2.0 replacement
+      implementation is now in progress on the branch recorded below. It is
+      limited to the Level 1 numeric-sizing records, manifest, dedicated
+      validator/tests, and factual register synchronization; it makes no
+      Level 2, policy-adoption, allocation-check, deployment, or completion
+      claim and must stop at a draft PR for independent full exact-head review.
+    active_branch: codex/xasset-0018-schema2-numeric-sizing
+    active_pr: null
+    last_verified_main_sha: ff7300a402230a54eb42147dd1df04d095019b96
+    last_verified_date: "2026-08-13"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively
