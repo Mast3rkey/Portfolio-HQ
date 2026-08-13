@@ -835,3 +835,11 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, XASSET-0012, XASSET-0013, XASSET-0014, XASSET-0015, XASSET-0016, XASSET-0017, NUM-0001]
     supporting_artifact: null
     file: governance/decisions/XASSET-0018-numeric-sizing-structural-authority.md
+
+  - decision_id: LEVEL2-0001
+    date: 2026-08-13
+    status: Proposed
+    category: level2_selection_governance
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, CONTENDER-0001, CONTENDER-0002, CONTENDER-0003, TIER-0004, TIER-0005, TIER-0008, TIER-0010, TIER-0012, TIER-0013, VALUATION-0003, VALUATION-0005, VALUATION-0007, XASSET-0001, XASSET-0002, XASSET-0003, XASSET-0004, XASSET-0008, XASSET-0009, XASSET-0010, XASSET-0011, XASSET-0014, XASSET-0015, XASSET-0016, XASSET-0017, XASSET-0018]
+    supporting_artifact: governance/evidence/LEVEL2-0001/RESEARCH_COHORT_FREEZE.yaml
+    file: governance/decisions/LEVEL2-0001-selection-only-research-cohort-freeze.md

@@ -1,0 +1,442 @@
+schema_version: "1.0"
+decision_id: LEVEL2-0001
+freeze_status: RESEARCH_COHORT_FROZEN
+authority_scope: SELECTION_ONLY_RESEARCH_COHORT
+source_commit_sha: 013c7ab5e10c8007af0d47822c6888771b594f2e
+authority_boundary:
+  research_examination: PERMITTED
+  final_portfolio_membership: NOT_ESTABLISHED
+  level2_selection_policy: NOT_ESTABLISHED
+  instrument_sizing: NOT_ESTABLISHED
+  capital_priority: NOT_ESTABLISHED
+  current_portfolio_configuration: UNCHANGED
+  transaction_authority: PROHIBITED
+  backtest_authority: SEPARATE_AUTHORIZATION_REQUIRED
+  portfolio_adoption: PROHIBITED
+disposition_vocabulary:
+  - RESEARCH_COHORT_INCLUDED
+  - CONDITIONAL
+  - ABSTAIN_INSUFFICIENT_EVIDENCE
+  - EXCLUDED_FROM_CURRENT_RESEARCH_COHORT
+reason_code_vocabulary:
+  - CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+  - ASSET_APPROPRIATE_GOVERNED_EVIDENCE_AVAILABLE
+  - CONTENDER_PILOT_ONLY
+  - NAMED_CATEGORY_PEER_LACKS_GOVERNED_PARITY
+  - FRESHNESS_REVIEW_REQUIRED
+  - GOVERNED_PARITY_NOT_REACHED
+  - RESEARCH_NOT_YET_AUTHORIZED
+  - GOVERNED_DEFERMENT_OR_EXCLUSION
+  - BENCHMARK_ONLY
+  - NON_INVESTABLE_ACCOUNTING_ROW
+  - UNIDENTIFIED_LEGACY_POPULATION
+caveat_code_vocabulary:
+  - CURRENT_MEMBERSHIP_NOT_EVIDENCE
+  - CURRENT_HOLDING_NOT_EVIDENCE
+  - CURRENT_CONFIGURATION_NOT_EVIDENCE
+  - PARTIAL_VALUATION_GAPS_PRESERVED
+  - FRESHNESS_AND_ACCESS_GAPS_PRESERVED
+  - SPGI_NO_POLICY_CONCLUSION_PRESERVED
+  - LEGACY_COMPLETENESS_GAP_PRESERVED
+  - NONCANONICAL_POPULATION_PRESERVED
+  - DOMESTIC_BETA_DUPLICATION_DISCLOSED
+  - DEVELOPED_EX_US_DISTINCTION_DISCLOSED
+  - EMERGING_MARKET_DISTINCTION_DISCLOSED
+  - FINAL_VEHICLE_UNRESOLVED
+  - MIXED_HISTORICAL_PROTECTION_EVIDENCE
+  - ELEVATED_COST_VS_NAMED_PEERS
+  - CROSS_COIN_CORRELATION_UNRESOLVED
+  - SOL_DRAWDOWN_EVIDENCE_ABSTENTION
+  - INTERNAL_WEIGHTING_METHOD_UNRESOLVED
+  - PILOT_NOT_CAPITAL_PRIORITY_AUTHORITY
+  - NORMALIZED_IDENTITY_UNRESOLVED
+preservation_assertions:
+  - CURRENT_MEMBERSHIP_NOT_EVIDENCE
+  - CURRENT_HOLDING_NOT_EVIDENCE
+  - CURRENT_CONFIGURATION_NOT_EVIDENCE
+  - PARTIAL_VALUATION_GAPS_PRESERVED
+  - FRESHNESS_AND_ACCESS_GAPS_PRESERVED
+  - SPGI_NO_POLICY_CONCLUSION_PRESERVED
+  - LEGACY_COMPLETENESS_GAP_PRESERVED
+  - NONCANONICAL_POPULATION_PRESERVED
+cohort_summary:
+  core_total: 34
+  equity_total: 27
+  broad_market_total: 3
+  defensive_total: 1
+  crypto_total: 3
+  conditional_total: 11
+  named_abstention_total: 25
+  excluded_total: 23
+core_cohort:
+  - instrument_id: AMZN
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: ASML
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: AVGO
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: CEG
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: COST
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: ETN
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: GEV
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: GNRC
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: GOOGL
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: ICE
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: ISRG
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: KLAC
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: LLY
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: META
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: MSFT
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: NVDA
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: PANW
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: PWR
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: RKLB
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: RTX
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: SNPS
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: SPGI
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED, SPGI_NO_POLICY_CONCLUSION_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest, equity_recommendation_package]
+  - instrument_id: TMO
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: TSLA
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: TSM
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: V
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: WM
+    sleeve: EQUITY
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: CLOSED_GOVERNED_EQUITY_EVIDENCE_POPULATION
+    caveat_codes: [CURRENT_MEMBERSHIP_NOT_EVIDENCE, CURRENT_HOLDING_NOT_EVIDENCE, CURRENT_CONFIGURATION_NOT_EVIDENCE, PARTIAL_VALUATION_GAPS_PRESERVED, FRESHNESS_AND_ACCESS_GAPS_PRESERVED]
+    evidence_refs: [equity_classification_manifest, equity_valuation_archetype_manifest, equity_valuation_evidence_manifest, equity_valuation_results_manifest]
+  - instrument_id: SPY
+    sleeve: BROAD_MARKET
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: ASSET_APPROPRIATE_GOVERNED_EVIDENCE_AVAILABLE
+    caveat_codes: [DOMESTIC_BETA_DUPLICATION_DISCLOSED, FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [etf_classification_manifest, instrument_economic_assessment_manifest]
+  - instrument_id: VEA
+    sleeve: BROAD_MARKET
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: ASSET_APPROPRIATE_GOVERNED_EVIDENCE_AVAILABLE
+    caveat_codes: [DEVELOPED_EX_US_DISTINCTION_DISCLOSED, FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [etf_classification_manifest, instrument_economic_assessment_manifest]
+  - instrument_id: VWO
+    sleeve: BROAD_MARKET
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: ASSET_APPROPRIATE_GOVERNED_EVIDENCE_AVAILABLE
+    caveat_codes: [EMERGING_MARKET_DISTINCTION_DISCLOSED, FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [etf_classification_manifest, instrument_economic_assessment_manifest]
+  - instrument_id: GLD
+    sleeve: DEFENSIVE
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: ASSET_APPROPRIATE_GOVERNED_EVIDENCE_AVAILABLE
+    caveat_codes: [MIXED_HISTORICAL_PROTECTION_EVIDENCE, ELEVATED_COST_VS_NAMED_PEERS, FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [etf_classification_manifest, functional_doctrine_manifest, gld_economic_assessment_manifest]
+  - instrument_id: BTC
+    sleeve: CRYPTO
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: ASSET_APPROPRIATE_GOVERNED_EVIDENCE_AVAILABLE
+    caveat_codes: [CROSS_COIN_CORRELATION_UNRESOLVED, INTERNAL_WEIGHTING_METHOD_UNRESOLVED]
+    evidence_refs: [crypto_classification_manifest, instrument_economic_assessment_manifest]
+  - instrument_id: ETH
+    sleeve: CRYPTO
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: ASSET_APPROPRIATE_GOVERNED_EVIDENCE_AVAILABLE
+    caveat_codes: [CROSS_COIN_CORRELATION_UNRESOLVED, INTERNAL_WEIGHTING_METHOD_UNRESOLVED]
+    evidence_refs: [crypto_classification_manifest, instrument_economic_assessment_manifest]
+  - instrument_id: SOL
+    sleeve: CRYPTO
+    disposition: RESEARCH_COHORT_INCLUDED
+    reason_code: ASSET_APPROPRIATE_GOVERNED_EVIDENCE_AVAILABLE
+    caveat_codes: [CROSS_COIN_CORRELATION_UNRESOLVED, SOL_DRAWDOWN_EVIDENCE_ABSTENTION, INTERNAL_WEIGHTING_METHOD_UNRESOLVED]
+    evidence_refs: [crypto_classification_manifest, instrument_economic_assessment_manifest]
+conditional_sidecar:
+  - candidate_id: VRT
+    normalized_instrument_id: VRT
+    source_label: null
+    asset_type: EQUITY
+    disposition: CONDITIONAL
+    reason_code: CONTENDER_PILOT_ONLY
+    caveat_codes: [PILOT_NOT_CAPITAL_PRIORITY_AUTHORITY]
+    evidence_refs: [contender_evaluation_manifest]
+  - candidate_id: WMT
+    normalized_instrument_id: WMT
+    source_label: null
+    asset_type: EQUITY
+    disposition: CONDITIONAL
+    reason_code: CONTENDER_PILOT_ONLY
+    caveat_codes: [PILOT_NOT_CAPITAL_PRIORITY_AUTHORITY]
+    evidence_refs: [contender_evaluation_manifest]
+  - candidate_id: IAU
+    normalized_instrument_id: IAU
+    source_label: null
+    asset_type: DEFENSIVE_FUND
+    disposition: CONDITIONAL
+    reason_code: NAMED_CATEGORY_PEER_LACKS_GOVERNED_PARITY
+    caveat_codes: [FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [gld_economic_assessment_manifest]
+  - candidate_id: SGOL
+    normalized_instrument_id: SGOL
+    source_label: null
+    asset_type: DEFENSIVE_FUND
+    disposition: CONDITIONAL
+    reason_code: NAMED_CATEGORY_PEER_LACKS_GOVERNED_PARITY
+    caveat_codes: [FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [gld_economic_assessment_manifest]
+  - candidate_id: GLDM
+    normalized_instrument_id: GLDM
+    source_label: null
+    asset_type: DEFENSIVE_FUND
+    disposition: CONDITIONAL
+    reason_code: NAMED_CATEGORY_PEER_LACKS_GOVERNED_PARITY
+    caveat_codes: [FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [gld_economic_assessment_manifest]
+  - candidate_id: SPY_PEER_VANGUARD_SP500_ETF
+    normalized_instrument_id: null
+    source_label: Vanguard's S&P 500 ETF
+    asset_type: BROAD_MARKET_FUND_REFERENCE
+    disposition: CONDITIONAL
+    reason_code: NAMED_CATEGORY_PEER_LACKS_GOVERNED_PARITY
+    caveat_codes: [NORMALIZED_IDENTITY_UNRESOLVED, FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [instrument_economic_assessment_manifest]
+  - candidate_id: SPY_PEER_ISHARES_CORE_SP500_ETF
+    normalized_instrument_id: null
+    source_label: iShares Core S&P 500 ETF
+    asset_type: BROAD_MARKET_FUND_REFERENCE
+    disposition: CONDITIONAL
+    reason_code: NAMED_CATEGORY_PEER_LACKS_GOVERNED_PARITY
+    caveat_codes: [NORMALIZED_IDENTITY_UNRESOLVED, FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [instrument_economic_assessment_manifest]
+  - candidate_id: VEA_PEER_ISHARES_CORE_MSCI_EAFE_ETF
+    normalized_instrument_id: null
+    source_label: iShares Core MSCI EAFE ETF
+    asset_type: BROAD_MARKET_FUND_REFERENCE
+    disposition: CONDITIONAL
+    reason_code: NAMED_CATEGORY_PEER_LACKS_GOVERNED_PARITY
+    caveat_codes: [NORMALIZED_IDENTITY_UNRESOLVED, FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [instrument_economic_assessment_manifest]
+  - candidate_id: VEA_PEER_SCHWAB_INTERNATIONAL_EQUITY_ETF
+    normalized_instrument_id: null
+    source_label: Schwab International Equity ETF
+    asset_type: BROAD_MARKET_FUND_REFERENCE
+    disposition: CONDITIONAL
+    reason_code: NAMED_CATEGORY_PEER_LACKS_GOVERNED_PARITY
+    caveat_codes: [NORMALIZED_IDENTITY_UNRESOLVED, FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [instrument_economic_assessment_manifest]
+  - candidate_id: VWO_PEER_ISHARES_CORE_MSCI_EMERGING_MARKETS_ETF
+    normalized_instrument_id: null
+    source_label: iShares Core MSCI Emerging Markets ETF
+    asset_type: BROAD_MARKET_FUND_REFERENCE
+    disposition: CONDITIONAL
+    reason_code: NAMED_CATEGORY_PEER_LACKS_GOVERNED_PARITY
+    caveat_codes: [NORMALIZED_IDENTITY_UNRESOLVED, FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [instrument_economic_assessment_manifest]
+  - candidate_id: VWO_PEER_SCHWAB_EMERGING_MARKETS_EQUITY_ETF
+    normalized_instrument_id: null
+    source_label: Schwab Emerging Markets Equity ETF
+    asset_type: BROAD_MARKET_FUND_REFERENCE
+    disposition: CONDITIONAL
+    reason_code: NAMED_CATEGORY_PEER_LACKS_GOVERNED_PARITY
+    caveat_codes: [NORMALIZED_IDENTITY_UNRESOLVED, FINAL_VEHICLE_UNRESOLVED]
+    evidence_refs: [instrument_economic_assessment_manifest]
+abstained_population:
+  named_instruments:
+    - {instrument_id: AAPL, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: FRESHNESS_REVIEW_REQUIRED, source_registry_disposition: requires_freshness_review, evidence_refs: [contender_registry]}
+    - {instrument_id: ABBV, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: FRESHNESS_REVIEW_REQUIRED, source_registry_disposition: requires_freshness_review, evidence_refs: [contender_registry]}
+    - {instrument_id: AMAT, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: AMD, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: BRK.B, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: FRESHNESS_REVIEW_REQUIRED, source_registry_disposition: requires_freshness_review, evidence_refs: [contender_registry]}
+    - {instrument_id: CRM, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: CRWD, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: CVX, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: FRESHNESS_REVIEW_REQUIRED, source_registry_disposition: requires_freshness_review, evidence_refs: [contender_registry]}
+    - {instrument_id: GILD, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: IBM, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: INTC, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: JNJ, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: JPM, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: LRCX, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: FRESHNESS_REVIEW_REQUIRED, source_registry_disposition: requires_freshness_review, evidence_refs: [contender_registry]}
+    - {instrument_id: MA, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: FRESHNESS_REVIEW_REQUIRED, source_registry_disposition: requires_freshness_review, evidence_refs: [contender_registry]}
+    - {instrument_id: MLM, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: MRK, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: FRESHNESS_REVIEW_REQUIRED, source_registry_disposition: requires_freshness_review, evidence_refs: [contender_registry]}
+    - {instrument_id: MRVL, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: MU, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: NOW, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: ORCL, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: SKHY, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: SNDK, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: RESEARCH_NOT_YET_AUTHORIZED, source_registry_disposition: requires_research, evidence_refs: [contender_registry]}
+    - {instrument_id: WDC, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+    - {instrument_id: XOM, disposition: ABSTAIN_INSUFFICIENT_EVIDENCE, reason_code: GOVERNED_PARITY_NOT_REACHED, source_registry_disposition: evaluation_ready, evidence_refs: [contender_registry]}
+  legacy_population:
+    population_id: PRE_PHQ_2026_02_UNIDENTIFIED_LEGACY
+    disposition: ABSTAIN_INSUFFICIENT_EVIDENCE
+    reason_code: UNIDENTIFIED_LEGACY_POPULATION
+    reported_count_class: APPROXIMATELY_41
+    recovery_status: UNAVAILABLE_IN_CURRENT_CLONE
+    evidence_refs: [contender_registry]
+excluded_population:
+  - {instrument_id: BABA, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: BONK, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: CAT, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: CASH, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: NON_INVESTABLE_ACCOUNTING_ROW, source_registry_disposition: synthetic_or_test_fixture, evidence_refs: [contender_registry]}
+  - {instrument_id: DELL, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: DHR, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: EQIX, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: HOOD, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: HYPE, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: LHX, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: NFLX, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: PEPE, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: PLTR, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: QQQ, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: BENCHMARK_ONLY, source_registry_disposition: benchmark_or_index, evidence_refs: [contender_registry]}
+  - {instrument_id: RESERVE, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: NON_INVESTABLE_ACCOUNTING_ROW, source_registry_disposition: synthetic_or_test_fixture, evidence_refs: [contender_registry]}
+  - {instrument_id: SHOP, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: SPCX, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: SYK, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: UBER, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: UNH, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: VMC, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: WIF, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+  - {instrument_id: ZORA, disposition: EXCLUDED_FROM_CURRENT_RESEARCH_COHORT, reason_code: GOVERNED_DEFERMENT_OR_EXCLUSION, source_registry_disposition: explicitly_deferred_or_excluded, evidence_refs: [contender_registry]}
+source_pins:
+  - {pin_id: equity_classification_manifest, source_path: intelligence/classification/COHORT_MANIFEST.yaml, hash_method: SHA256_FILE_BYTES, sha256: c6fa21b25ff0b45d3f0ed578cd003fc679ff0f216b97f126498594b0cbca2e79}
+  - {pin_id: equity_valuation_archetype_manifest, source_path: intelligence/valuation_archetype/COHORT_MANIFEST.yaml, hash_method: SHA256_FILE_BYTES, sha256: 754821895934a956633022014054a8e7f0355c4adc91ca3aadeb8d5bce438da3}
+  - {pin_id: equity_valuation_evidence_manifest, source_path: intelligence/valuation_evidence/COHORT_MANIFEST.yaml, hash_method: SHA256_FILE_BYTES, sha256: 2498650ac6c671b418a566c1692e99a2cbe2306703d2c2427ad9df06a8c1926b}
+  - {pin_id: equity_valuation_results_manifest, source_path: intelligence/valuation_results/COHORT_MANIFEST.yaml, hash_method: SHA256_FILE_BYTES, sha256: 2f402e3c20b4ecc83d30cae2eb389c82ccba4c2a5ebf1a0d00e8cb15cf8be85f}
+  - {pin_id: equity_recommendation_package, source_path: intelligence/recommendations/MILESTONE8_POLICY_RECOMMENDATION_PACKAGE.yaml, hash_method: SHA256_FILE_BYTES, sha256: 84e65c40065cf678ad373d899014fddc0737fdba3b4c915a6f3cab7f28fc7752}
+  - {pin_id: etf_classification_manifest, source_path: intelligence/etf_classification/COHORT_MANIFEST.yaml, hash_method: SHA256_FILE_BYTES, sha256: d82238d80533a554f080aee6523f6d10ebb65baadd9fb0af5f16ffac0a06144c}
+  - {pin_id: crypto_classification_manifest, source_path: intelligence/crypto_classification/COHORT_MANIFEST.yaml, hash_method: SHA256_FILE_BYTES, sha256: 332ba25c5d6ad06bc9180a38b98fa762379f784bb5fe3f58b1f57d872715139b}
+  - {pin_id: gld_economic_assessment_manifest, source_path: intelligence/economic_assessment/COHORT_MANIFEST.yaml, hash_method: SHA256_FILE_BYTES, sha256: 6a46b40ca0287c1a2ebe56725ab64fb13af3fd5f184015dd005400be060dfc58}
+  - {pin_id: instrument_economic_assessment_manifest, source_path: intelligence/instrument_economic_assessment/COHORT_MANIFEST.yaml, hash_method: SHA256_FILE_BYTES, sha256: 50646995bc0062ef41c3222f2f23df7b5b41141fa21cf00c31a642caeddc6826}
+  - {pin_id: contender_evaluation_manifest, source_path: intelligence/contender_evaluation/COHORT_MANIFEST.yaml, hash_method: SHA256_FILE_BYTES, sha256: 5b5c5cbec2d9506cbeaa1320fef3f69a6632217b528b0ab68a1dffa9d466822b}
+  - {pin_id: contender_registry, source_path: intelligence/contenders/registry.yaml, hash_method: SHA256_FILE_BYTES, sha256: e534989e100c881213548331dae820172b513b2016db20d8df0a23c799c75c9a}
+  - {pin_id: functional_doctrine_manifest, source_path: intelligence/functional_doctrine/COHORT_MANIFEST.yaml, hash_method: SHA256_FILE_BYTES, sha256: ae2573c98f4b24ff5a9d9e4d869b1a253aef979626a75269a80adc7abb2e79bf}
+refreeze_triggers:
+  - MATERIAL_POPULATION_CHANGE
+  - NORMALIZED_SAME_ROLE_ALTERNATIVE_REACHES_EQUIVALENT_EVIDENCE
+  - MATERIAL_FRESHNESS_OR_ACCESS_CORRECTION
+  - CANDIDATE_REACHES_GOVERNED_PARITY
+  - PINNED_SOURCE_HASH_CHANGE
+  - FINAL_LEVEL2_MEMBERSHIP_DECISION

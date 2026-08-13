@@ -11468,6 +11468,44 @@ workstreams:
         pr: 311
         status: in_progress
         date: "2026-08-13"
+      - gate: xasset0018-schema2-numeric-sizing-replacement-post-merge-verification
+        description: >
+          Lane M factual synchronization, independently reverified from live
+          GitHub state. PR #311 is closed and merged from exact head
+          0cd8e88f560ff1115caded91158695bfe537046f into main as merge commit
+          013c7ab5e10c8007af0d47822c6888771b594f2e. Exact-head CI run
+          31701117009 completed successfully. Main contains the six closed
+          schema-2.0 Level 1 numeric-sizing records, closed cohort manifest,
+          dedicated validator/tests, and factual register synchronization.
+          Those outputs remain provisional and not adopted and create no
+          Level 2 selection, sizing, portfolio-policy, allocation-check,
+          deployment, or brokerage authority. The prior implementation gate
+          remains byte-unedited as historical in-progress filing-state text.
+        pr: 311
+        status: complete
+        date: "2026-08-13"
+      - gate: level2-0001-selection-only-research-cohort-freeze
+        description: >
+          Current governance-only Lane G filing. LEVEL2-0001 freezes exactly
+          34 unique instruments for future research examination: 27 equities,
+          SPY/VEA/VWO, GLD, and BTC/ETH/SOL. It separately preserves an
+          11-reference conditional sidecar (VRT, WMT, IAU, SGOL, GLDM, and six
+          exact but deliberately unnormalized broad-market peer labels), 25
+          named abstentions, the approximately 41-name unidentified legacy
+          abstention, and 23 current-freeze exclusions. The sole
+          authority-bearing artifact uses closed dispositions, typed reason
+          and caveat codes, exact source paths/hashes, and closed refreeze
+          triggers, enforced by a dedicated read-only validator and focused
+          adversarial tests. Research-cohort inclusion is not final portfolio
+          membership, Level 2 selection policy, sizing, rank, capital
+          priority, target/configuration change, trade authority, automatic
+          backtest authority, or portfolio adoption. No robustness study,
+          XASSET-0019 protocol, market-data collection, stress test, or
+          protected-path mutation is included. This filing must stop at a
+          draft PR for independent full exact-head review.
+        pr: null
+        status: in_progress
+        date: "2026-08-13"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11504,7 +11542,22 @@ workstreams:
       - governance/decisions/XASSET-0017-fund-broad-market-role-redetermination.md
       - governance/audits/WS0014_FUND_BROAD_MARKET_ROLE_REDETERMINATION_20260812.md
       - governance/decisions/XASSET-0018-numeric-sizing-structural-authority.md
+      - governance/decisions/LEVEL2-0001-selection-only-research-cohort-freeze.md
+      - governance/evidence/LEVEL2-0001/RESEARCH_COHORT_FREEZE.yaml
     next_action: >
+      Update, 2026-08-13: PR #311's schema-2.0 Level 1 numeric-sizing
+      replacement lifecycle is complete and verified by the additive gate
+      above. The current authorized governance unit is LEVEL2-0001's
+      selection-only research-cohort freeze. It must complete its own draft
+      PR, independent full exact-head review, any bounded correction and
+      re-review, principal exact-head acceptance, merge, and post-merge
+      verification before the frozen cohort becomes effective. The Level 1
+      figures remain provisional and not adopted. A Level 1 robustness study,
+      XASSET-0019, Level 2 final selection or sizing, backtesting, stress
+      testing, policy adoption, allocation check, deployment, and brokerage
+      action all remain future and separately unauthorized.
+
+
       XASSET-0009 (PR #293) is independently confirmed merged — see the
       xasset0009-post-merge-verification gate above. Its authorization
       (one future economic-assessment content implementation PR covering
@@ -12033,9 +12086,9 @@ workstreams:
       validator/tests, and factual register synchronization; it makes no
       Level 2, policy-adoption, allocation-check, deployment, or completion
       claim and must stop at a draft PR for independent full exact-head review.
-    active_branch: codex/xasset-0018-schema2-numeric-sizing
-    active_pr: 311
-    last_verified_main_sha: ff7300a402230a54eb42147dd1df04d095019b96
+    active_branch: codex/level2-0001-selection-cohort
+    active_pr: null
+    last_verified_main_sha: 013c7ab5e10c8007af0d47822c6888771b594f2e
     last_verified_date: "2026-08-13"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
@@ -12335,6 +12388,18 @@ workstreams:
       session) — see that decision file for the full bounded
       specification, including the exact seven-pair sleeve_relationship
       selection and the reasoned deferral of the remaining eight pairs.
+
+
+      Further controlling principal directive, this session, 2026-08-13:
+      create one bounded governance-only selection-only research-cohort
+      freeze before any Level 1 robustness study or Level 2 sizing; determine
+      the identifier from live convention; freeze exactly the 34-instrument
+      core while preserving conditional, abstained, excluded, legacy-gap,
+      provenance, and refreeze states; use closed structured authority;
+      change no Level 1 value or protected portfolio path; validate, commit,
+      push, and open exactly one draft PR; then stop for independent full
+      exact-head review. Implemented by LEVEL2-0001 and its structured
+      supporting artifact in this current filing.
     roadmap_preservation: >
       Planning/coordination only, additively folded forward by the
       economic-assessment content-implementation session (2026-08-10,
