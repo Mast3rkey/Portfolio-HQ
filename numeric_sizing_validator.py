@@ -60,11 +60,6 @@ _NUMERIC_SPECIFIC_TEXT_PATTERNS = tuple(re.compile(p, re.IGNORECASE) for p in (
     # Level-2 amount/percentage in both ordinary and passive/reversed order.
     r"\b[A-Z]{2,5}(?:'s|s)?\b[^.]{0,60}\b(?:receives?|gets?|is\s+assigned|was\s+assigned|should\s+receive|should\s+get)\b[^.]{0,40}(?:\d+(?:\.\d+)?\s*%|more\s+capital)",
     r"(?:\d+(?:\.\d+)?\s*%|more\s+capital)[^.]{0,60}\b(?:is|was|should\s+be)\s+(?:assigned|allocated|given)\b[^.]{0,40}\b[A-Z]{2,5}(?:'s|s)?\b",
-    # Rank/preference/conviction and capital-priority assertions.
-    r"\b(?:top[-\s]?ranked|highest[-\s]?ranked|preferred|highest\s+conviction)\b[^.]{0,40}\b(?:instrument|ticker|fund|coin|holding|sleeve)\b",
-    r"\b(?:instrument|ticker|fund|coin|holding|sleeve)\b[^.]{0,40}\b(?:is|was|remains?|ranks?)\b[^.]{0,20}\b(?:top[-\s]?ranked|preferred|highest\s+conviction)\b",
-    r"\b(?:composite\s+)?(?:score[sd]?|ranking|ranked|capital\s+priority)\b",
-    r"\b(?:deserves?|warrants?|merits?|should\s+receive|should\s+get)\b[^.]{0,30}\b(?:more|less|greater|larger|smaller|higher|lower)\s+capital\b",
     # Withdrawn-R1/evidence-quantity reward under forward or reversed order.
     r"\b(?:more|additional|greater)\s+(?:citations?|evidence\s+bases?|documentation|evidence\s+routes?)\b[^.]{0,80}\b(?:deserves?|warrants?|justif(?:y|ies)|earns?|receives?|gets?)\b[^.]{0,30}\b(?:more|larger|higher|additional)\s+(?:capital|target|allocation)\b",
     r"\b(?:more|larger|higher|additional)\s+(?:capital|target|allocation)\b[^.]{0,80}\b(?:because|due\s+to|for)\b[^.]{0,30}\b(?:more|additional|greater)\s+(?:citations?|evidence\s+bases?|documentation|evidence\s+routes?)\b",
@@ -82,41 +77,110 @@ _NUMERIC_SIZING_STRUCTURAL_TERM_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-_NUMERIC_SIZING_SEMANTIC_PATTERNS = tuple(
-    (re.compile(pattern, re.IGNORECASE), negation_permitted)
-    for pattern, negation_permitted in (
-        # Capital preference/share assertions, including noun/verb variants.
-        (r"\b(?:capital|allocation|weight|weighting|share|exposure)\b[^.;]{0,40}\b(?:should|must|would|will|can|is|was|remains?)?(?:\s+not)?\s*(?:favor(?:s|ed|able)?|favour(?:s|ed|able)?|prefer(?:s|red|ence)?)\b[^.;]{0,50}\b[A-Z]{2,5}(?:'s|s)?\b", True),
-        (r"\b[A-Z]{2,5}(?:'s|s)?\b[^.;]{0,40}\b(?:does\s+)?(?:not\s+)?(?:deserves?|warrants?|merits?|earns?)\b[^.;]{0,30}\b(?:a\s+)?(?:more|less|greater|larger|smaller|higher|lower|bigger)\s+(?:capital|allocation|weight|weighting|share|exposure)\b", True),
-        (r"\b[A-Z]{2,5}(?:'s|s)?\b[^.;]{0,35}\b(?:is|was|remains?|should\s+be|must\s+be|can\s+be)(?:\s+not)?\s+(?:favor(?:ed|able)|favour(?:ed|able)|preferred)\b[^.;]{0,35}\b(?:capital|allocation|weight|weighting|share|exposure)\b", True),
-        (r"\b[A-Z]{2,5}(?:'s|s)?\b[^.;]{0,35}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+)?(?:receives?|gets?|has|carries|takes|is\s+assigned|is\s+allocated|is\s+weighted)\b[^.;]{0,30}\b(?:a\s+)?(?:more|less|greater|larger|smaller|higher|lower|bigger)\s+(?:capital|allocation|weight|weighting|share|exposure)\b", True),
-        (r"\b(?:more|less|greater|larger|smaller|higher|lower|bigger)\s+(?:capital|allocation|weight|weighting|share|exposure)\b[^.;]{0,45}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+)?(?:goes?|flows?|is\s+assigned|is\s+allocated|is\s+given|favors?|favours?)\b[^.;]{0,30}\b[A-Z]{2,5}(?:'s|s)?\b", True),
-        # Chart/technical-input causality.  A mere process statement or an
-        # explicit denial of sizing influence is not a forbidden inference.
-        (r"\b(?:use|follow|read|consult|apply)(?:s|d|ing)?\b[^.;]{0,35}\b(?:chart|technical\s+picture|price\s+structure)\b[^.;]{0,35}\b(?:to|for)\s+(?:size|sizing|weight|weighting|allocate|allocation)\b", True),
-        (r"\b(?:chart|technical\s+picture|price\s+structure)\b[^.;]{0,45}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+|cannot\s+)?(?:drives?|determines?|supports?|warrants?|justif(?:y|ies)|calls?\s+for|says?\s+to)\b[^.;]{0,45}\b(?:siz(?:e|ed|ing)|weight(?:ed|ing)?|allocat(?:e|ed|ion)|capital|share|exposure|more|larger|bigger|higher)\b", True),
-        (r"\b(?:siz(?:e|ed|ing)|weight(?:ed|ing)?|allocat(?:e|ed|ion))\b[^.;]{0,55}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+|cannot\s+)?(?:follows?|tracks?|uses?|reflects?|is\s+based\s+on|according\s+to|from)\b[^.;]{0,35}\b(?:chart|technical\s+picture|price\s+structure)\b", True),
-        # The residual is a reconciliation value, never cash or a destination
-        # for deployment.  Negated/non-settlement explanations remain lawful.
-        (r"\b(?:residual|reserved\s+capital|unsized\s+capital)\b[^.;]{0,55}\b(?:is|equals?|represents?|becomes?|remains?|should|must|would|will|can)(?:\s+not)?\b[^.;]{0,30}\b(?:deployable\s+)?cash(?:\s+(?:target|allocation|sleeve))?\b", True),
-        (r"\b(?:residual|reserved\s+capital|unsized\s+capital)\b[^.;]{0,55}\b(?:should|must|would|will|can|does)(?:\s+not)?\s+(?:flow|go|move|settle|convert|deploy)\b[^.;]{0,30}\b(?:to|into|as)\s+(?:deployable\s+)?cash\b", True),
-        (r"\b(?:deploy|allocate|move|flow|convert)(?:s|d|ing)?\b[^.;]{0,40}\b(?:the\s+)?(?:residual|reserved\s+capital|unsized\s+capital)\b[^.;]{0,25}\b(?:to|into|as)\s+(?:deployable\s+)?cash\b", True),
-        (r"\b(?:(?:do|does|should|must)\s+not\s+|never\s+)?(?:treat|classify|count|book)(?:s|ed|ing)?\b[^.;]{0,30}\b(?:the\s+)?(?:residual|reserved\s+capital|unsized\s+capital)\b[^.;]{0,20}\bas\s+(?:deployable\s+)?cash\b", True),
-        (r"\bcash\b[^.;]{0,40}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+)?(?:is|equals?|represents?|receives?|gets?|absorbs?|takes?)\b[^.;]{0,35}\b(?:the\s+)?(?:residual|reserved\s+capital|unsized\s+capital)\b", True),
-        # Withdrawn R1: evidence quantity/completeness cannot imply size.
-        (r"\b(?:more|broader|greater|additional|stronger)\s+(?:evidence|evidence\s+bases?|bases?|citations?|documentation|evidence\s+routes?)\b[^.;]{0,70}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+|cannot\s+)?(?:supports?|deserves?|warrants?|justif(?:y|ies)|earns?|receives?|gets?|implies?)\b[^.;]{0,35}\b(?:a\s+)?(?:more|less|greater|larger|smaller|higher|lower|bigger|additional)\s+(?:capital|target|allocation|weight|weighting|share|exposure)\b", True),
-        (r"\b(?:more|less|greater|larger|smaller|higher|lower|bigger|additional)\s+(?:capital|target|allocation|weight|weighting|share|exposure)\b[^.;]{0,70}\b(?:because|due\s+to|from|for)\b[^.;]{0,35}\b(?:more|broader|greater|additional|stronger)\s+(?:evidence|evidence\s+bases?|bases?|citations?|documentation|evidence\s+routes?)\b", True),
-        (r"\b(?:evidence|documentation)\s+(?:breadth|completeness|quantity|count|maturity)\b[^.;]{0,55}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+|cannot\s+)?(?:drives?|determines?|influences?|supports?|warrants?|justif(?:y|ies)|sets?)\b[^.;]{0,35}\b(?:capital|target|allocation|weight|weighting|share|exposure|siz(?:e|ed|ing))\b", True),
-        (r"\b(?:capital|target|allocation|weight|weighting|share|exposure|siz(?:e|ed|ing))\b[^.;]{0,55}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+|cannot\s+)?(?:rises?|falls?|increases?|decreases?|follows?|tracks?|depends?\s+on|reflects?|is\s+based\s+on|is\s+determined\s+by)\b[^.;]{0,35}\b(?:evidence|documentation)\s+(?:breadth|completeness|quantity|count|maturity)\b", True),
-        (r"\b(?:more|less|greater|larger|smaller|higher|lower|bigger|additional)\s+(?:capital|target|allocation|weight|weighting|share|exposure)\b[^.;]{0,50}\b(?:follows?|tracks?|reflects?)\b[^.;]{0,30}\b(?:more|broader|greater|additional|stronger)\s+(?:evidence|documentation|bases?|citations?)\b", True),
-    )
+_TICKER_TERM = r"[A-Z]{2,5}(?:'s|s)?"
+_AMOUNT_TERM = (
+    r"(?:more|most|greater|greatest|larger|largest|smaller|smallest|higher|"
+    r"highest|lower|lowest|bigger|biggest|additional|extra|priority|first|top|"
+    r"dominant|heavier|lighter)"
 )
+_CAPITAL_TERM = (
+    r"(?:capital\s+(?:favorite|preferred|priority)\s+position|"
+    r"(?:(?:sleeve|portfolio)\s+)?(?:capital|allocation|weight|weighting|"
+    r"share|stake|exposure|slice|portion|position|room|priority)"
+    r")"
+)
+_CHART_TERM = (
+    r"(?:chart|technical\s+(?:structure|picture|setup|signal|pattern)|"
+    r"price\s+(?:structure|setup|signal|pattern))"
+)
+_EVIDENCE_TERM = (
+    r"(?:(?:more|broader|greater|additional|stronger)\s+(?:evidence|"
+    r"evidentiary\s+support|documentation|support|bases?|citations?)|"
+    r"(?:evidence|documentation)\s+(?:breadth|completeness|quantity|count|"
+    r"maturity)|(?:more|better)[-\s]+documented\s+sleeve)"
+)
+_RESIDUAL_TERM = (
+    r"(?:residual|remainder|unused\s+(?:capital|reserve|remainder)|remaining\s+"
+    r"(?:capital|reserve|remainder)|reserved\s+capital|unsized\s+capital)"
+)
+_SEMANTIC_GAP = r"[^.;:!?—()]{0,55}"
 
-_NEGATION_PATTERN = re.compile(
-    r"\b(?:no|not|never|cannot|can't|does\s+not|doesn't|do\s+not|don't|"
-    r"should\s+not|shouldn't|must\s+not|mustn't|is\s+not|isn't|are\s+not|aren't)\b",
+# Every pattern names the actual prohibited predicate.  Negation is checked
+# only at that predicate's own boundary by _semantic_match_is_negated(),
+# following the repository's hardened per-claim design: a bare "not"
+# elsewhere in a wide natural-language match never shields the assertion.
+_NUMERIC_SIZING_SEMANTIC_PATTERNS = tuple(re.compile(p, re.IGNORECASE) for p in (
+    # Instrument-first active/passive allocations and relative amounts.
+    rf"\b(?:no\s+)?{_TICKER_TERM}\b{_SEMANTIC_GAP}\b(?P<predicate>assigned|allocated|given|awarded|weighted|sized|receives?|gets?|takes?|deserves?|earns?|warrants?|carries?|holds?)\b[^.;:!?—()]{{0,35}}\b(?:the\s+|a\s+|our\s+)?(?:{_AMOUNT_TERM}\s+)?{_CAPITAL_TERM}\b",
+    # Amount/allocation first, then destination instrument.
+    rf"\b(?:no\s+)?(?:the\s+|a\s+|our\s+)?{_AMOUNT_TERM}\s+{_CAPITAL_TERM}\b{_SEMANTIC_GAP}\b(?P<predicate>belongs?|goes?|flows?|settles?|moves?|allocated|assigned|given|awarded|directed)\b[^.;:!?—()]{{0,30}}\b(?:to\s+|into\s+)?{_TICKER_TERM}\b",
+    # Preference, conviction, ranking, and priority assertions.
+    rf"\b(?:no\s+)?{_TICKER_TERM}\b{_SEMANTIC_GAP}\b(?P<predicate>favou?red|favorites?|preferred|ranked|ranks?|placed|prioritized)\b[^.;:!?—()]{{0,40}}\b(?:fund|instrument|ticker|coin|holding|sleeve|first|top|highest\s+conviction|for\s+(?:sizing|capital))\b",
+    rf"\b(?:no\s+)?(?:instrument|ticker|fund|coin|holding|sleeve)\b{_SEMANTIC_GAP}\b(?P<predicate>favou?red|preferred|ranked|prioritized)\b",
+    rf"\b(?:capital|allocation|weight|weighting|share|stake|exposure|sizing\s+preference)\b{_SEMANTIC_GAP}\b(?P<predicate>favors?|favours?|prefers?|prioritizes?)\b[^.;:!?—()]{{0,35}}\b{_TICKER_TERM}\b",
+    rf"\b(?:our\s+|the\s+)?(?:capital\s+preference|preferred\s+allocation|favou?red\s+allocation|favorite\s+allocation)\b{_SEMANTIC_GAP}\b(?P<predicate>is|becomes?|remains?)\b\s+(?:not\s+)?(?:the\s+)?{_TICKER_TERM}(?:-heavy)?\b",
+    rf"\b(?:no\s+)?(?:the\s+)?(?:ranking|rank|capital[-\s]+priority|sizing\s+preference|composite\s+score)\b{_SEMANTIC_GAP}\b(?P<predicate>places?|puts?|assigns?|gives?|is|follows?|made|drawn|established|reached|asserted)\b[^.;:!?—()]{{0,35}}\b(?:{_TICKER_TERM}|first|top|highest|lowest|price\s+(?:setup|structure))\b",
+    # Chart/technical causality, forward and reversed/passive.
+    rf"\b(?P<predicate>use|follow|read|consult|apply)(?:s|d|ing)?\b[^.;:!?—()]{{0,35}}\b{_CHART_TERM}\b[^.;:!?—()]{{0,30}}\b(?:to|for)\s+(?:size|sizing|weight|weighting|allocate|allocation)\b[^.;:!?—()]{{0,20}}\b{_TICKER_TERM}\b",
+    rf"\b{_CHART_TERM}\b{_SEMANTIC_GAP}\b(?P<predicate>used|followed|read|consulted|applied)\b[^.;:!?—()]{{0,30}}\b(?:to|for)\s+(?:size|sizing|weight|weighting|allocate|allocation)\b[^.;:!?—()]{{0,20}}\b{_TICKER_TERM}\b",
+    rf"\b{_CHART_TERM}\b{_SEMANTIC_GAP}\b(?P<predicate>supports?|warrants?|argues?|calls?|drives?|determines?|dictates?|makes?|sets?|guides?|favors?)\b[^.;:!?—()]{{0,45}}\b(?:{_AMOUNT_TERM}|increas\w*|decreas\w*|siz\w*|allocat\w*|weight\w*|capital|crypto|{_TICKER_TERM})\b",
+    rf"\b(?:{_AMOUNT_TERM}\s+)?(?:{_TICKER_TERM}\s+)?(?:allocation|weight|share|stake|exposure|position|sizing\s+preference)\b{_SEMANTIC_GAP}\b(?P<predicate>supported|warranted|driven|determined|guided|favou?red|based|follows?|tracks?|reflects?|uses?|grows?|increases?|decreases?)\b[^.;:!?—()]{{0,30}}\b(?:(?:because\s+of|by|on|from)\s+)?{_CHART_TERM}\b",
+    # Withdrawn R1 evidence-quantity/completeness reward.
+    rf"\b{_EVIDENCE_TERM}\b{_SEMANTIC_GAP}\b(?P<predicate>warrants?|earns?|supports?|justif(?:y|ies)|deserves?|receives?|gets?|determines?|drives?|gives?|confers?|awards?)\b[^.;:!?—()]{{0,40}}\b(?:the\s+|a\s+)?(?:(?:{_AMOUNT_TERM}\s+)?{_CAPITAL_TERM}|{_TICKER_TERM}\s+(?:{_AMOUNT_TERM}\s+)?{_CAPITAL_TERM})\b",
+    rf"\b(?:{_AMOUNT_TERM}\s+){_CAPITAL_TERM}\b{_SEMANTIC_GAP}\b(?P<predicate>follows?|tracks?|reflects?|results?|comes?)\b[^.;:!?—()]{{0,30}}\b{_EVIDENCE_TERM}\b",
+    # Residual/remainder settlement and its reversed cash-destination form.
+    rf"\b{_RESIDUAL_TERM}\b\s+(?P<predicate>is|equals?|represents?|becomes?|remains?)\s+(?:not\s+)?(?:a\s+|the\s+)?(?:deployable\s+)?cash(?:\s+(?:target|allocation|sleeve))?\b",
+    rf"\b{_RESIDUAL_TERM}\b{_SEMANTIC_GAP}\b(?P<predicate>settles?|flows?|goes?|moves?|converts?|deploys?|allocated|assigned|directed)\b[^.;:!?—()]{{0,30}}\b(?:to|into|as)\s+(?:the\s+)?(?:deployable\s+)?cash(?:_reserve|\s+(?:target|allocation|sleeve))?\b",
+    rf"\bcash(?:_reserve|\s+(?:target|allocation|sleeve))?\b{_SEMANTIC_GAP}\b(?P<predicate>receives?|gets?|absorbs?|takes?|is|equals?|represents?)\b[^.;:!?—()]{{0,30}}\b(?:the\s+)?{_RESIDUAL_TERM}\b",
+    rf"\b(?P<predicate>treat|classify|count|book|deploy|allocate|assign|move|convert)(?:s|ed|ing)?\b[^.;:!?—()]{{0,35}}\b(?:the\s+)?{_RESIDUAL_TERM}\b[^.;:!?—()]{{0,20}}\b(?:to|into|as)\s+(?:deployable\s+)?cash\b",
+))
+
+_LOCAL_PREDICATE_NEGATION = re.compile(
+    r"(?:\b(?:does|do|did|is|are|was|were|has|have|had|should|must|would|"
+    r"will|can|could|may|might)\s+not\s+(?:be\s+)?|\bcannot\s+(?:be\s+)?|"
+    r"\bcan't\s+(?:be\s+)?|\bnever\s+(?:be\s+)?)$",
     re.IGNORECASE,
 )
+_COPULA_PREDICATES = frozenset({"is", "are", "was", "were", "equals", "equal", "represents", "represent", "becomes", "become", "remains", "remain"})
+
+
+def _semantic_match_is_negated(match: re.Match) -> bool:
+    """True only when negation grammatically binds this match's predicate.
+
+    This deliberately mirrors the hardened repository precedent of checking
+    each recognized claim, not granting a sentence/match-wide "not" waiver.
+    Subject quantifier negation is accepted only when the matched proposition
+    itself starts with ``no``; auxiliary negation must end immediately at the
+    predicate; copular equivalence also recognizes ``is not ...`` immediately
+    after the copula.
+    """
+    predicate_start, predicate_end = match.span("predicate")
+    before = match.string[match.start():predicate_start]
+    if re.match(r"^\s*no\b", before, re.IGNORECASE):
+        return True
+    if _LOCAL_PREDICATE_NEGATION.search(before):
+        return True
+    predicate = match.group("predicate").lower()
+    after = match.string[predicate_end:match.end()]
+    return predicate in _COPULA_PREDICATES and bool(re.match(r"\s+not\b", after, re.IGNORECASE))
+
+
+def _scrub_locally_negated_semantic_claims(text: str) -> str:
+    """Blank only fully recognized claims whose own predicate is negated.
+
+    The reused Stage-4 bounded scan predates numeric sizing's governed need
+    to permit explicit non-influence/non-settlement statements.  Scrubbing
+    these exact, predicate-local spans before that reused semantic scan keeps
+    the older helper from false-rejecting a lawful denial, while the original
+    text still goes through strict numeric leakage and every affirmative
+    numeric-sizing semantic pattern below.
+    """
+    chars = list(text)
+    for pattern in _NUMERIC_SIZING_SEMANTIC_PATTERNS:
+        for match in pattern.finditer(text):
+            if _semantic_match_is_negated(match):
+                chars[match.start():match.end()] = " " * (match.end() - match.start())
+    return "".join(chars)
 
 
 class SourceValidationError(ValueError):
@@ -249,11 +313,12 @@ def derive(repo_root: Path):
 def _scan_numeric_free_text(text, where, errors, repo_root):
     if not isinstance(text, str):
         return
+    semantic_scrubbed = _scrub_locally_negated_semantic_claims(text)
     for finding in _prohibited_content_scan(text):
         errors.append(f"{where} contains prohibited content ({finding})")
-    for finding in _comparative_superiority_scan(text):
+    for finding in _comparative_superiority_scan(semantic_scrubbed):
         errors.append(f"{where} contains prohibited content ({finding})")
-    for finding in _stage4_bounded_conclusion_scan(text, repo_root=repo_root):
+    for finding in _stage4_bounded_conclusion_scan(semantic_scrubbed, repo_root=repo_root):
         errors.append(f"{where} contains prohibited content ({finding})")
     for finding in _scan_contender_citation(text):
         errors.append(f"{where} contains prohibited content ({finding})")
@@ -263,14 +328,67 @@ def _scan_numeric_free_text(text, where, errors, repo_root):
     for pattern in _NUMERIC_SPECIFIC_TEXT_PATTERNS:
         if pattern.search(text):
             errors.append(f"{where} contains prohibited numeric-sizing content ({pattern.pattern})")
-    for pattern, negation_permitted in _NUMERIC_SIZING_SEMANTIC_PATTERNS:
+    for pattern in _NUMERIC_SIZING_SEMANTIC_PATTERNS:
         for match in pattern.finditer(text):
-            # Negation must occur inside the matched causal/settlement
-            # expression itself.  An unrelated denial earlier in the clause
-            # cannot mask a later affirmative sizing assertion.
-            if negation_permitted and _NEGATION_PATTERN.search(match.group(0)):
+            if _semantic_match_is_negated(match):
                 continue
             errors.append(f"{where} contains prohibited numeric-sizing semantics ({pattern.pattern})")
+
+
+def _rule_no_fire_described(text: str, rule: str) -> bool:
+    return bool(
+        re.search(
+            rf"\b{rule}\b[^.;]{{0,55}}\b(?:does\s+not\s+fire|no[-\s]?fire|tie|none)\b",
+            text,
+            re.IGNORECASE,
+        )
+        or re.search(
+            rf"\bR2\b\s+(?:and|/)\s*\bR3\b[^.;]{{0,20}}\bno[-\s]?fire\b",
+            text,
+            re.IGNORECASE,
+        )
+    )
+
+
+def _rule_direction_described(text: str, rule: str, direction: str) -> bool:
+    return bool(re.search(rf"\b{rule}\b[^.;]{{0,55}}\b{direction}\b", text, re.IGNORECASE))
+
+
+def _rule_state_contrast_described(note, clauses, rule, self_state, other_state):
+    """Verify that prose describes the live trigger-state contrast.
+
+    A bare rule citation (``R2 exists/applies``) is never evidence.  When one
+    peer is no-fire and the other fires, the note must establish both sides;
+    the sealed grouped form ``R2 fires for those sleeves`` is accepted only
+    when the same note also establishes the current sleeve's R2 no-fire state.
+    When both fire in opposite directions, both directions must be present.
+    """
+    joined = " ".join(clauses)
+    if self_state == other_state:
+        if self_state is None:
+            return _rule_no_fire_described(joined, rule)
+        return _rule_direction_described(joined, rule, self_state)
+    if self_state is not None and other_state is not None:
+        return (
+            _rule_direction_described(joined, rule, self_state)
+            and _rule_direction_described(joined, rule, other_state)
+        )
+    if self_state is None:
+        other_fires = (
+            _rule_direction_described(joined, rule, other_state)
+            or bool(
+                re.search(
+                    rf"\b{rule}\b[^.;]{{0,35}}\bfires?\s+for\s+(?:that|the|those|other)\s+sleeves?\b",
+                    joined,
+                    re.IGNORECASE,
+                )
+            )
+        )
+        return _rule_no_fire_described(note, rule) and other_fires
+    return (
+        _rule_direction_described(joined, rule, self_state)
+        and _rule_no_fire_described(joined, rule)
+    )
 
 
 def _validate_comparative_consistency(sid, note, expected, errors):
@@ -302,13 +420,35 @@ def _validate_comparative_consistency(sid, note, expected, errors):
                 if expected[sid]["state"][rule] != expected[other]["state"][rule]
             ]
             for rule in differing_rules:
-                if not any(re.search(rf"\b{rule}\b", clause, re.IGNORECASE) for clause in equal_clauses):
-                    errors.append(f"{sid}.comparative_consistency_note must identify {rule} state difference from {other}")
+                if not _rule_state_contrast_described(
+                    note,
+                    equal_clauses,
+                    rule,
+                    expected[sid]["state"][rule],
+                    expected[other]["state"][rule],
+                ):
+                    errors.append(f"{sid}.comparative_consistency_note must identify the live {rule} state difference from {other}")
+            if not differing_rules:
+                for rule in ("R2", "R3"):
+                    if not _rule_state_contrast_described(
+                        note,
+                        equal_clauses,
+                        rule,
+                        expected[sid]["state"][rule],
+                        expected[other]["state"][rule],
+                    ):
+                        errors.append(f"{sid}.comparative_consistency_note must identify the shared live {rule} state with {other}")
         else:
             differing_rules = [
                 rule for rule in ("R2", "R3")
                 if expected[sid]["state"][rule] != expected[other]["state"][rule]
             ]
+            if not differing_rules:
+                errors.append(
+                    f"{sid}.comparative_consistency_note cannot reconcile different targets "
+                    f"with identical live R2/R3 states for {other}"
+                )
+                continue
             difference_clauses = [
                 clause for clause in matching
                 if re.search(r"\bdiffer(?:s|ed|ent|ence)?\b", clause, re.IGNORECASE)
@@ -317,8 +457,14 @@ def _validate_comparative_consistency(sid, note, expected, errors):
                 errors.append(f"{sid}.comparative_consistency_note must identify its difference from {other}")
                 continue
             for rule in differing_rules:
-                if not any(re.search(rf"\b{rule}\b", clause, re.IGNORECASE) for clause in difference_clauses):
-                    errors.append(f"{sid}.comparative_consistency_note must identify {rule} as a difference from {other}")
+                if not _rule_state_contrast_described(
+                    note,
+                    difference_clauses,
+                    rule,
+                    expected[sid]["state"][rule],
+                    expected[other]["state"][rule],
+                ):
+                    errors.append(f"{sid}.comparative_consistency_note must identify the live {rule} state contrast from {other}")
 
 
 def _validate_reconciliation(reconciliation, live_sum: Decimal, errors: list[str]):

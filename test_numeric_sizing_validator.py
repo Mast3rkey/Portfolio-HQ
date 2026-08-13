@@ -578,6 +578,44 @@ def test_residual_disguised_as_cash_allocation(repo):
     "Unsized capital is a cash target.",
     "Broader evidence supports a larger weight.",
     "More bases justify a bigger allocation.",
+    # Exact round-3 review reproducers: passive/noun/alias and unrelated
+    # negation must not conceal the affirmative predicate.
+    "a larger sleeve share belongs to BTC",
+    "technical structure argues for more crypto",
+    "the remaining reserve should settle into cash",
+    "SPY is our favored fund for sizing",
+    "BTC ranks first for sleeve capital",
+    "ETH receives the greater portion of sleeve capital.",
+    "The evidence count earns ETH extra room.",
+    "Capital is not scarce and favors BTC here.",
+    "The chart is not stale and supports increasing ETH's share.",
+    "Broader evidence is not absent and warrants a larger allocation.",
+    "The residual is not disputed and should settle into cash.",
+    # Round-3 vulnerability-class matrix.
+    "SPY was assigned a larger allocation.",
+    "More capital is allocated to BTC.",
+    "ETH is given the largest share.",
+    "The preferred allocation is SPY-heavy.",
+    "Our capital preference is BTC.",
+    "The ranking places ETH first.",
+    "SPY gets a bigger slice.",
+    "BTC receives the most sleeve capital.",
+    "ETH gets priority for capital.",
+    "A larger ETH allocation is supported by the chart.",
+    "Technical structure makes BTC the larger position.",
+    "Sizing preference follows the price setup.",
+    "Greater evidentiary support warrants greater capital.",
+    "The more documented sleeve receives the larger allocation.",
+    "Broader evidence earns a bigger share.",
+    "The remainder becomes cash.",
+    "Unused capital settles into the cash sleeve.",
+    "Reserved capital is assigned to cash.",
+    # Conjunction/punctuation/parenthetical negation laundering.
+    "This is not a recommendation, but SPY deserves more capital.",
+    "Although the chart is not dispositive, a larger allocation belongs to BTC.",
+    "We do not rank instruments; however ETH is preferred for sizing.",
+    "Sizing is not authorized — BTC receives the larger sleeve share.",
+    "This filing is not a recommendation (SPY gets a bigger slice).",
 ])
 def test_forbidden_free_text_matrix_via_validate(repo, text):
     mutate(numeric_record(repo, "equity"), lambda data: data.update(uncertainty_disclosure=text))
@@ -598,6 +636,13 @@ def test_forbidden_free_text_matrix_via_validate(repo, text):
     "Capital should not favor BTC.",
     "SPY is cited as a structural ticker reference; no weight is assigned.",
     "This process does not authorize instrument sizing.",
+    "SPY is not assigned a larger allocation.",
+    "Broader evidence does not warrant more capital.",
+    "Reserved capital is not a cash allocation.",
+    "No instrument is ranked or preferred.",
+    "No ranking or capital-priority conclusion is made.",
+    "Ticker references to SPY/VEA/VWO/BTC/ETH/SOL are structural only.",
+    "The validation process discusses allocation language but asserts no instrument conclusion.",
 ])
 def test_legitimate_citation_and_boundary_prose_allowed(repo, text):
     mutate(numeric_record(repo, "equity"), lambda data: data.update(uncertainty_disclosure=text))
@@ -765,4 +810,88 @@ def test_different_output_peer_requires_live_rule_provenance(repo):
         ),
     )
     reseal_numeric(repo, "equity")
-    assert_bad(repo, "must identify R2 as a difference")
+    assert_bad(repo, "live R2 state contrast")
+
+
+@pytest.mark.parametrize("vacuous", [
+    "R2 exists",
+    "R2 applies",
+    "Different",
+    "See rule",
+    "The values differ",
+])
+def test_vacuous_rule_token_or_difference_language_rejected_via_validate(repo, vacuous):
+    note = (
+        f"Equity differs from fund_broad_market, crypto, and fund_gld_defensive because {vacuous}; "
+        "R3 fires for none of the four sleeves."
+    )
+    mutate(
+        numeric_record(repo, "equity"),
+        lambda data: data.update(comparative_consistency_note=note),
+    )
+    reseal_numeric(repo, "equity")
+    assert_bad(repo, "live R2 state contrast")
+
+
+def _synthetic_comparison(target_a, state_a, target_b, state_b):
+    return {
+        "a": {"target": target_a, "state": state_a},
+        "b": {"target": target_b, "state": state_b},
+    }
+
+
+def test_identical_live_states_cannot_explain_unequal_outputs():
+    expected = _synthetic_comparison(
+        "18.67", {"R2": None, "R3": None},
+        "16.67", {"R2": None, "R3": None},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a", "A differs from b because R2 fires.", expected, errors
+    )
+    assert any("different targets with identical live R2/R3 states" in error for error in errors)
+
+
+def test_correct_r3_state_contrast_is_accepted():
+    expected = _synthetic_comparison(
+        "18.67", {"R2": None, "R3": "up"},
+        "16.67", {"R2": None, "R3": None},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A differs from b because R3 fires up here and does not fire there.",
+        expected,
+        errors,
+    )
+    assert errors == []
+
+
+def test_wrong_rule_cannot_substitute_for_live_r3_state_contrast():
+    expected = _synthetic_comparison(
+        "18.67", {"R2": None, "R3": "up"},
+        "16.67", {"R2": None, "R3": None},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A differs from b because R2 fires up here and does not fire there.",
+        expected,
+        errors,
+    )
+    assert any("live R3 state contrast" in error for error in errors)
+
+
+def test_equal_outputs_accept_harmless_narrative_when_states_are_explicit():
+    expected = _synthetic_comparison(
+        "16.67", {"R2": None, "R3": None},
+        "16.67", {"R2": None, "R3": None},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A has no material difference from b because both share identical R2 and R3 no-fire states. Additional harmless narrative.",
+        expected,
+        errors,
+    )
+    assert errors == []
