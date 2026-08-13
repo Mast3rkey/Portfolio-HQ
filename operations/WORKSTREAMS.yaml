@@ -11506,6 +11506,43 @@ workstreams:
         pr: 312
         status: in_progress
         date: "2026-08-13"
+      - gate: level2-0001-post-merge-verification
+        description: >
+          Lane M factual synchronization, independently reverified from live
+          GitHub state. PR #312 is closed and merged from exact head
+          bd6ed8c94c90ac75257195f8484c624a206c0563 into main as merge commit
+          36a31ebc7a8997d59a427174420cb9b7eb670a82. Exact-head CI run
+          31712925221 / job 94490265355 completed successfully. LEVEL2-0001's
+          34-instrument population is therefore frozen for research only; it
+          remains neither final membership nor Level 2 sizing authority. The
+          prior gate remains byte-unedited as historical in-progress
+          filing-state text.
+        pr: 312
+        status: complete
+        date: "2026-08-13"
+      - gate: xasset0019-level1-architecture-amendment
+        description: >
+          Current governance-only Lane G filing. XASSET-0019 records the
+          verified Level 1 architecture review and amends future methodology:
+          equity, broad-market funds, GLD defensive, and crypto are investable
+          asset sleeves; debt_reduction is a state-dependent liability-flow
+          control outside the asset-allocation denominator; the legacy
+          cash_reserve family requires later liquidity-role separation; and
+          unsized unassigned capital remains neither cash, reserve, debt
+          repayment, deployable capital, nor an automatic redistribution pool.
+          The six-way equal baseline, R2/R3 numeric effect, and current
+          schema-2.0 figures remain historically reproducible but economically
+          unvalidated and barred from final Level 1 or Level 2 downstream use.
+          The amendment adds marginal-capital, whole-100% reconciliation,
+          bounded-revision, and early empirical-risk requirements while
+          preserving all strong controls and current margin hard limits. It
+          changes no percentage, numeric record, portfolio configuration,
+          Level 2 membership/weight, margin parameter, allocation output, or
+          brokerage behavior. This filing must stop at a draft PR for
+          independent full exact-head review.
+        pr: null
+        status: in_progress
+        date: "2026-08-13"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11544,7 +11581,27 @@ workstreams:
       - governance/decisions/XASSET-0018-numeric-sizing-structural-authority.md
       - governance/decisions/LEVEL2-0001-selection-only-research-cohort-freeze.md
       - governance/evidence/LEVEL2-0001/RESEARCH_COHORT_FREEZE.yaml
+      - governance/decisions/XASSET-0019-level1-architecture-amendment.md
+      - governance/audits/WS0014_LEVEL1_ARCHITECTURE_AMENDMENT_DESIGN_20260813.md
     next_action: >
+      Update, 2026-08-13: PR #311 and PR #312 have completed their full
+      lifecycles and are verified by the additive gates above; current main is
+      36a31ebc7a8997d59a427174420cb9b7eb670a82. LEVEL2-0001's research cohort
+      is frozen, but final Level 2 selection and sizing remain paused.
+      XASSET-0019 is the current architecture-only amendment. The verified
+      Level 1 figures remain historical, provisional, economically unvalidated,
+      and not adopted portfolio policy. After XASSET-0019's own independent
+      exact-head review, correction if required, principal acceptance, merge,
+      and post-merge verification, a separately authorized early RISK
+      methodology must challenge those provisional magnitudes and whether
+      point targets are justified. A replacement economic numeric method
+      follows that evidence; final Level 2 membership/sizing and full-portfolio
+      stress follow the new provisional Level 1 method; margin numeric policy
+      remains downstream of unlevered construction; and explicit whole-100%
+      economic reconciliation is required before portfolio-policy adoption.
+      No stage is authorized merely by this coordination text.
+
+
       Update, 2026-08-13: PR #311's schema-2.0 Level 1 numeric-sizing
       replacement lifecycle is complete and verified by the additive gate
       above. The current authorized governance unit is LEVEL2-0001's
@@ -12086,9 +12143,9 @@ workstreams:
       validator/tests, and factual register synchronization; it makes no
       Level 2, policy-adoption, allocation-check, deployment, or completion
       claim and must stop at a draft PR for independent full exact-head review.
-    active_branch: codex/level2-0001-selection-cohort
-    active_pr: 312
-    last_verified_main_sha: 013c7ab5e10c8007af0d47822c6888771b594f2e
+    active_branch: codex/xasset-0019-level1-architecture-amendment
+    active_pr: null
+    last_verified_main_sha: 36a31ebc7a8997d59a427174420cb9b7eb670a82
     last_verified_date: "2026-08-13"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
