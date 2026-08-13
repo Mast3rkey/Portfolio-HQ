@@ -154,8 +154,31 @@ destination.
 
 ### H. Asset-state and flow ledgers
 
-Before portfolio-policy adoption, a final economic reconciliation must cover the whole `100%` asset
-state. Its asset-state ledger must separately identify:
+Two distinct whole-`100%` reconciliations are required. Neither one adopts portfolio policy.
+
+**Non-adopted candidate whole-100% reconciliation.** After provisional Level 1 sizing/ranges and
+Level 2 membership/sizing, but before full-portfolio stress, a research/policy candidate must provide
+a complete, internally reconciled asset-state representation. It is not adopted policy and has no
+production authority. Every asset-side percentage point must have an explicitly modeled candidate
+treatment supported by the marginal-capital comparison in §G. No amount may be assigned merely as a
+balancing plug, automatically redistributed, or anchored to a historical target. Any strategic-cash
+candidate treatment must itself be separately justified under this architecture. Liability-flow
+controls remain outside the asset denominator.
+
+Full-portfolio stress may run only on that fully specified, internally reconciled, non-adopted
+candidate asset-state representation. It may not normalize incomplete assigned sleeves to `100%`,
+silently allocate a residual, assume a residual is cash, reserve, or debt reduction, apply a
+synthetic zero-return series, use a benchmark or other proxy as filler, or assign capital merely to
+make a portfolio curve possible. Unresolved or unassigned capital receives no invented cash,
+zero-risk, benchmark, or other return/risk proxy. If no complete lawful candidate can be formed,
+full-portfolio stress must abstain and remain blocked while the work returns to the appropriate
+preregistered checkpoint in §I.
+
+**Final whole-100% reconciliation.** After full-portfolio unlevered stress and any permitted bounded,
+preregistered revision, a final economically reconciled candidate must cover the whole `100%`
+asset state before it may proceed to a separate portfolio-policy-adoption lifecycle. It incorporates
+only lawful bounded revisions, remains non-adopted until that later lifecycle completes, and must
+separately identify:
 
 - investable asset sleeves;
 - governed strategic cash, if any is later adopted; and
@@ -173,9 +196,11 @@ repayment, deployable capital, or an automatic redistribution pool.
 
 Future portfolio construction follows this sequence:
 
-`roles/constraints → frozen research cohort → empirical diagnostics → provisional Level 1
-sizing/ranges → Level 2 membership/sizing → full-portfolio stress → bounded revision → whole-100%
-reconciliation → policy adoption`.
+`roles/constraints → frozen research cohort → early empirical diagnostics → provisional Level 1
+sizing/ranges → Level 2 membership/sizing → non-adopted candidate whole-100% reconciliation →
+full-portfolio unlevered stress → bounded preregistered revision → final whole-100% reconciliation →
+separate portfolio-policy adoption → post-adoption unlevered implementation validation → margin/debt
+research and policy → monitoring/deployment`.
 
 Every authorized study or construction filing must preregister which of these reopen classes its
 evidence may affect:
@@ -188,10 +213,15 @@ evidence may affect:
 | `LEVEL2_SIZING` | Instrument-level or full-portfolio stress failure | Only preregistered instruments/assumptions may be revised |
 | `CONSTRAINTS` | Evidence that a constraint is insufficient, contradictory, or infeasible | Tightening may be proposed separately; loosening requires separate high-authority review |
 
-Each revision must cite the triggering evidence, remain inside the preregistered class and protected
-scope, and return to the next affected checkpoint. Repeated cycling, retrospective objective changes,
-and a post-hoc best-weight optimizer are prohibited. Further iteration after the preregistered bounded
-revision requires a new explicit authorization.
+Failure to form the non-adopted candidate reconciliation returns the work to the appropriate
+preregistered `ONTOLOGY`, `MEMBERSHIP`, `LEVEL1_SIZING`, `LEVEL2_SIZING`, or `CONSTRAINTS` checkpoint;
+it does not authorize a plug or proxy. A stress finding may reopen only its preregistered class. Any
+revised candidate must complete the non-adopted candidate reconciliation again before stress may be
+rerun, and only to the extent that the preregistered protocol permits that rerun. Each revision must
+cite the triggering evidence, remain inside the preregistered class and protected scope, and return
+to the next affected checkpoint. Repeated cycling, retrospective objective changes, and a post-hoc
+best-weight optimizer are prohibited. Further iteration after the preregistered bounded revision
+requires a new explicit authorization.
 
 ### J. Early empirical-risk checkpoint
 
@@ -199,6 +229,11 @@ The next separately authorized RISK study must challenge rather than ratify the 
 or point-target premise for equity, broad-market funds, GLD, and crypto before final Level 2 sizing.
 It may examine ranges, representation sensitivity, honest null/inconclusive results, drawdown,
 recovery, diversification, and liquidity evidence.
+
+This early empirical checkpoint may challenge individual investable-sleeve scenarios without first
+constructing a whole-`100%` portfolio. It does not assign residual capital, perform the non-adopted
+candidate reconciliation, or select final Level 2 weights. Later full-portfolio unlevered stress is a
+different checkpoint and requires the complete candidate representation in §H.
 
 It may not search for the best historical weight, hide optimization inside a score or sweep, select
 final membership, assign final Level 2 weights, manufacture a debt return series, change margin
@@ -261,9 +296,9 @@ Equal treatment was useful for avoiding inherited-target anchoring, but equality
 objects is not an economic conclusion. Relationship completeness and disclosed uncertainty are
 important governance signals, but they do not explain the opportunity cost of allocating the next
 dollar. Separating asset states from liability flows prevents denominator distortion and double
-counting. Requiring early empirical challenge, bounded revisions, and final whole-portfolio
-reconciliation closes those gaps while preserving every strong control and every reproducible
-historical artifact.
+counting. Requiring early empirical challenge, a complete non-adopted candidate before stress,
+bounded revisions, and final whole-portfolio reconciliation closes those gaps while preserving every
+strong control and every reproducible historical artifact.
 
 ## Alternatives Considered
 
@@ -288,8 +323,9 @@ authority during the transition.
 After this decision’s independent exact-head review, principal acceptance, merge, and post-merge
 verification, future work must use the typed ontology and revised sequence above. The next eligible
 unit is a separately governed early RISK methodology; it must not ratify or optimize the old figures.
-A replacement economic sizing method follows evidence, then final Level 2 work and full-portfolio
-stress, then bounded revision and whole-100% reconciliation before any portfolio-policy adoption.
+A replacement economic sizing method follows evidence, then final Level 2 work, non-adopted candidate
+whole-100% reconciliation, and full-portfolio unlevered stress, then bounded revision and final
+whole-100% reconciliation before any separate portfolio-policy adoption.
 
 The historical files, current portfolio configuration, allocator, holdings, gates, margin settings,
 and execution model do not change.

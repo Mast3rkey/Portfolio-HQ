@@ -125,29 +125,44 @@ evidence uncertainty, and avoided financing cost when debt exists. Drivers expla
 constraints bound the feasible set; disclosures communicate uncertainty. They are not blended into a
 composite score.
 
-The final asset-state ledger accounts for investable sleeves, separately adopted strategic cash, and
-explicit unassigned capital. The separate flow ledger accounts for contributions/proceeds, debt
-repayment, retained liquidity, and asset deployment. The ledgers reconcile but do not collapse asset
-states into flow actions. An unexplained residual fails; an explicitly governed residual may remain
-with a status, rationale, review trigger, and no automatic deployment.
+Before full-portfolio stress, a non-adopted candidate asset-state ledger must account for every
+asset-side percentage point using an explicitly justified candidate treatment. It may not normalize
+an incomplete candidate, use unassigned capital as a balancing plug, or invent a cash, zero-risk,
+benchmark, debt-reduction, or other return/risk proxy to complete a portfolio curve. If a complete
+lawful candidate cannot be formed, full-portfolio stress remains blocked and the work returns to the
+appropriate preregistered checkpoint.
+
+After full-portfolio unlevered stress and any permitted bounded revision, a distinct final
+whole-`100%` reconciliation accounts for investable sleeves, separately justified strategic cash,
+and any explicitly governed unassigned capital before a separate policy-adoption lifecycle. Both
+reconciliations remain non-adopted. The separate flow ledger accounts for contributions/proceeds,
+debt repayment, retained liquidity, and asset deployment. The ledgers reconcile but do not collapse
+asset states into flow actions. An unexplained residual fails; an explicitly governed residual may
+remain only with a status, rationale, review trigger, and no automatic deployment.
 
 ## Iteration and downstream sequence
 
 The bounded sequence is:
 
-`roles/constraints → frozen research cohort → empirical diagnostics → provisional Level 1
-sizing/ranges → Level 2 membership/sizing → full-portfolio stress → bounded revision → whole-100%
-reconciliation → policy adoption`.
+`roles/constraints → frozen research cohort → early empirical diagnostics → provisional Level 1
+sizing/ranges → Level 2 membership/sizing → non-adopted candidate whole-100% reconciliation →
+full-portfolio unlevered stress → bounded preregistered revision → final whole-100% reconciliation →
+separate portfolio-policy adoption → post-adoption unlevered implementation validation → margin/debt
+research and policy → monitoring/deployment`.
 
 Ontology, membership, Level 1 sizing, Level 2 sizing, and constraints are separate reopen classes.
 Every later study must declare in advance which class it may reopen. A triggered revision stays within
-that class and returns to the next affected checkpoint. Further cycling requires new authority;
-constraint loosening requires separate high-authority review.
+that class and returns to the next affected checkpoint. Candidate-reconciliation failure returns to
+the applicable preregistered class. A stress-triggered revision must reconcile the revised candidate
+again before any protocol-permitted stress rerun. Further cycling requires new authority; constraint
+loosening requires separate high-authority review.
 
 The next RISK methodology is early evidence, not a ratification step. It must challenge all four
 historical magnitudes and whether point targets are warranted; allow ranges, representation
 sensitivity, and nulls; and prohibit best-weight search, hidden optimization, final selection/sizing,
-debt return series, margin policy, and automatic adoption.
+debt return series, margin policy, and automatic adoption. It may examine individual sleeve scenarios
+without constructing a whole-`100%` portfolio, assigning residual capital, or selecting final Level 2
+weights; that early checkpoint is distinct from later full-portfolio stress.
 
 ## Supersession and preservation audit
 
@@ -220,5 +235,6 @@ not cash; debt reduction is not an investable sleeve; R2/R3 do not remain future
 
 This audit authorizes nothing. After XASSET-0019 becomes effective, the next separately governed work
 is the early RISK methodology. Replacement economic sizing follows that evidence. Final Level 2
-selection/sizing remains paused; margin numeric policy remains downstream; whole-100% reconciliation
-is mandatory before any portfolio-policy adoption.
+selection/sizing remains paused; a complete non-adopted candidate reconciliation is mandatory before
+full-portfolio stress; final reconciliation remains mandatory after bounded revision and before any
+portfolio-policy adoption; and margin numeric policy remains downstream.

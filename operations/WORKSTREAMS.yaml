@@ -11533,13 +11533,17 @@ workstreams:
           The six-way equal baseline, R2/R3 numeric effect, and current
           schema-2.0 figures remain historically reproducible but economically
           unvalidated and barred from final Level 1 or Level 2 downstream use.
-          The amendment adds marginal-capital, whole-100% reconciliation,
-          bounded-revision, and early empirical-risk requirements while
-          preserving all strong controls and current margin hard limits. It
-          changes no percentage, numeric record, portfolio configuration,
-          Level 2 membership/weight, margin parameter, allocation output, or
-          brokerage behavior. This filing must stop at a draft PR for
-          independent full exact-head review.
+          The amendment adds marginal-capital, distinct pre-stress non-adopted
+          candidate and post-revision final whole-100% reconciliations,
+          bounded-revision, and early empirical-risk requirements. A complete
+          candidate is mandatory before full-portfolio unlevered stress, and
+          unresolved capital receives no cash, reserve, debt, zero-return,
+          benchmark, or other filler proxy. All strong controls and current
+          margin hard limits remain preserved. It changes no percentage,
+          numeric record, portfolio configuration, Level 2 membership/weight,
+          margin parameter, allocation output, or brokerage behavior. This
+          filing must stop at a draft PR for independent full exact-head
+          review.
         pr: 313
         status: in_progress
         date: "2026-08-13"
@@ -11594,12 +11598,17 @@ workstreams:
       exact-head review, correction if required, principal acceptance, merge,
       and post-merge verification, a separately authorized early RISK
       methodology must challenge those provisional magnitudes and whether
-      point targets are justified. A replacement economic numeric method
-      follows that evidence; final Level 2 membership/sizing and full-portfolio
-      stress follow the new provisional Level 1 method; margin numeric policy
-      remains downstream of unlevered construction; and explicit whole-100%
-      economic reconciliation is required before portfolio-policy adoption.
-      No stage is authorized merely by this coordination text.
+      point targets are justified without constructing a whole-100% portfolio.
+      A replacement economic numeric method and candidate Level 1 sizing follow
+      that evidence; final Level 2 membership/sizing then precedes a complete
+      non-adopted candidate whole-100% reconciliation. Only that reconciled
+      candidate may undergo full-portfolio unlevered stress, followed by any
+      bounded preregistered revision, a final whole-100% reconciliation, and a
+      separate portfolio-policy-adoption lifecycle. Post-adoption unlevered
+      implementation validation, margin/debt research and policy, monitoring,
+      and deployment remain downstream. No stage is authorized merely by this
+      coordination text, and unresolved capital receives no balancing-plug or
+      return/risk-proxy treatment.
 
 
       Update, 2026-08-13: PR #311's schema-2.0 Level 1 numeric-sizing
