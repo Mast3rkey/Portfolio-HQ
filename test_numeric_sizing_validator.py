@@ -15,7 +15,7 @@ _SOURCE_VALIDATION_CACHE = {}
 
 def _cached_source_errors(root):
     digest = sha256()
-    for namespace in (nsv.POLICY_DIR, nsv.REL_DIR):
+    for namespace in (nsv.PROFILE_DIR, nsv.POLICY_DIR, nsv.REL_DIR):
         for path in sorted((root / namespace).glob("*.yaml")):
             digest.update(path.name.encode())
             digest.update(path.read_bytes())
@@ -28,7 +28,7 @@ def _cached_source_errors(root):
 @pytest.fixture(autouse=True)
 def cache_unchanged_authoritative_sources(monkeypatch):
     """Keep the large adversarial matrix fast without bypassing validation:
-    every distinct policy/relationship source corpus is still run once
+    every distinct profile/policy/relationship source corpus is still run once
     through the real authoritative validators."""
     monkeypatch.setattr(nsv, "_source_errors", _cached_source_errors)
 
@@ -53,7 +53,7 @@ def repo(tmp_path):
         level1.mkdir()
         for namespace in child.iterdir():
             destination = level1 / namespace.name
-            if namespace.name in {"numeric_sizing", "policy_adoption", "relationships"}:
+            if namespace.name in {"numeric_sizing", "profiles", "policy_adoption", "relationships"}:
                 shutil.copytree(namespace, destination)
             else:
                 destination.symlink_to(namespace, target_is_directory=namespace.is_dir())
@@ -107,6 +107,94 @@ def coordinate_policy_hash(repo, sid):
             adjustment["evidence_ref"][0]["referenced_content_sha256"] = new_hash
     write(numeric_record(repo, sid), data)
     reseal_numeric(repo, sid)
+
+
+def coordinate_profile_hash(repo, sid, *, align_axis=False):
+    """Legitimately propagate one changed profile hash through every sealed
+    source/reference layer consumed by numeric sizing.  This intentionally
+    models the review's strongest coordinated-rehash attack rather than
+    leaving a stale dependent reference to trigger an incidental failure."""
+    profile_hash = reseal_source(
+        repo, "profiles", f"{sid}.yaml", lambda row: row["sleeve_id"] == sid
+    )
+
+    relationship_hashes = {}
+    relationship_manifest = repo / nsv.REL_DIR / "COHORT_MANIFEST.yaml"
+    rel_manifest = load(relationship_manifest)
+    for path in sorted((repo / nsv.REL_DIR).glob("*.yaml")):
+        if path.name == "COHORT_MANIFEST.yaml":
+            continue
+        data = load(path)
+        changed = False
+        for reference in data["profile_references"]:
+            if reference["sleeve_id"] == sid:
+                reference["referenced_content_sha256"] = profile_hash
+                changed = True
+        if not changed:
+            continue
+        data["content_sha256"] = canonical_record_hash(data)
+        write(path, data)
+        pair = data["sleeve_pair"]
+        row = next(
+            row for row in rel_manifest["cohort"]
+            if row["sleeve_a"] == pair["sleeve_a"] and row["sleeve_b"] == pair["sleeve_b"]
+        )
+        row["content_sha256"] = data["content_sha256"]
+        relationship_hashes[str(path.relative_to(repo))] = data["content_sha256"]
+    write(relationship_manifest, rel_manifest)
+
+    policy_hashes = {}
+    policy_manifest_path = repo / nsv.POLICY_DIR / "COHORT_MANIFEST.yaml"
+    policy_manifest = load(policy_manifest_path)
+    for path in sorted((repo / nsv.POLICY_DIR).glob("*.yaml")):
+        if path.name == "COHORT_MANIFEST.yaml":
+            continue
+        data = load(path)
+        changed = False
+        if data["sleeve_id"] == sid:
+            data["profile_reference"]["referenced_content_sha256"] = profile_hash
+            changed = True
+            if align_axis:
+                profile = load(repo / nsv.PROFILE_DIR / f"{sid}.yaml")
+                axis_b = nsv.compute_axis_b(profile["evidence_coverage_profile"])
+                data["capital_eligibility_status"] = axis_b
+                data["sizing_readiness_status"] = nsv.compute_expected_sizing_readiness(
+                    data["portfolio_function_status"],
+                    axis_b,
+                    nsv.compute_live_relationship_ledger(sid, repo),
+                )
+        reference_groups = [
+            data["relationship_references"],
+            data["relationship_coverage_ledger"],
+            data["blocking_evidence"],
+            data["unresolved_relationships"],
+        ]
+        for group in reference_groups:
+            for entry in group:
+                reference = entry.get("reference", entry)
+                if not isinstance(reference, dict):
+                    continue
+                record_path = reference.get("record_path")
+                if record_path in relationship_hashes:
+                    reference["referenced_content_sha256"] = relationship_hashes[record_path]
+                    changed = True
+        if not changed:
+            continue
+        data["content_sha256"] = canonical_record_hash(data)
+        write(path, data)
+        row = next(row for row in policy_manifest["cohort"] if row["sleeve_id"] == data["sleeve_id"])
+        row["content_sha256"] = data["content_sha256"]
+        policy_hashes[data["sleeve_id"]] = data["content_sha256"]
+    write(policy_manifest_path, policy_manifest)
+
+    for policy_sid, policy_hash in policy_hashes.items():
+        data = load(numeric_record(repo, policy_sid))
+        data["policy_adoption_reference"]["referenced_content_sha256"] = policy_hash
+        for adjustment in data["applied_adjustments"]:
+            if adjustment["governing_rule_id"] == "R2":
+                adjustment["evidence_ref"][0]["referenced_content_sha256"] = policy_hash
+        write(numeric_record(repo, policy_sid), data)
+        reseal_numeric(repo, policy_sid)
 
 
 def assert_bad(repo, needle=None):
@@ -203,6 +291,93 @@ def test_duplicate_or_orphan_relationship_record_rejected(repo):
     assert_bad(repo, "relationship source")
 
 
+# Round-2 MAJOR: the source chain starts with authoritative profile validity,
+# before relationships, policy adoption, Axis B/C, and numeric derivation.
+def test_invalid_profile_with_old_hash_rejected(repo):
+    mutate(
+        repo / nsv.PROFILE_DIR / "equity.yaml",
+        lambda data: data.update(evidence_coverage_profile="forced_abstention"),
+    )
+    assert_bad(repo, "profile source")
+
+
+def test_coordinated_invalid_profile_rehash_cannot_change_eligibility(repo):
+    mutate(
+        repo / nsv.PROFILE_DIR / "equity.yaml",
+        lambda data: data.update(evidence_coverage_profile="forced_abstention"),
+    )
+    coordinate_profile_hash(repo, "equity", align_axis=True)
+
+    # Every downstream class has been legitimately resealed and is valid;
+    # the profile's internally false live-coverage declaration is the sole
+    # authority failure and can no longer influence derive().
+    assert nsv.validate_sleeve_relationship_directory(
+        repo / nsv.REL_DIR, repo_root=repo
+    ).valid
+    assert nsv.validate_policy_adoption_directory(
+        repo / nsv.POLICY_DIR, repo_root=repo
+    ).valid
+    profile_result = nsv.validate_sleeve_profile_directory(
+        repo / nsv.PROFILE_DIR, repo_root=repo
+    )
+    assert not profile_result.valid
+    assert any("evidence_coverage_profile does not reproduce" in error for result in profile_result.results for error in result.errors)
+    with pytest.raises(nsv.SourceValidationError, match="profile source"):
+        nsv.derive(repo)
+
+
+def test_substituted_profile_rejected(repo):
+    substituted = load(repo / nsv.PROFILE_DIR / "crypto.yaml")
+    substituted["cohort_manifest_entry"] = (
+        "intelligence/level1_sleeve_synthesis/profiles/COHORT_MANIFEST.yaml#equity"
+    )
+    write(repo / nsv.PROFILE_DIR / "equity.yaml", substituted)
+    reseal_source(repo, "profiles", "equity.yaml", lambda row: row["sleeve_id"] == "equity")
+    assert_bad(repo, "profile source")
+
+
+def test_missing_profile_rejected(repo):
+    (repo / nsv.PROFILE_DIR / "equity.yaml").unlink()
+    assert_bad(repo, "profile source")
+
+
+def test_duplicate_or_orphan_profile_rejected(repo):
+    shutil.copy2(
+        repo / nsv.PROFILE_DIR / "equity.yaml",
+        repo / nsv.PROFILE_DIR / "equity_duplicate.yaml",
+    )
+    assert_bad(repo, "profile source")
+
+
+def test_wrong_profile_identity_rejected_after_rehash(repo):
+    mutate(
+        repo / nsv.PROFILE_DIR / "equity.yaml",
+        lambda data: data.update(sleeve_id="crypto"),
+    )
+    reseal_source(repo, "profiles", "equity.yaml", lambda row: row["sleeve_id"] == "equity")
+    assert_bad(repo, "profile source")
+
+
+def test_invalid_profile_evidence_coverage_state_rejected_after_rehash(repo):
+    mutate(
+        repo / nsv.PROFILE_DIR / "equity.yaml",
+        lambda data: data.update(evidence_coverage_profile="invented"),
+    )
+    reseal_source(repo, "profiles", "equity.yaml", lambda row: row["sleeve_id"] == "equity")
+    assert_bad(repo, "profile source")
+
+
+def test_valid_cosmetic_profile_change_survives_full_reference_reseal(repo):
+    mutate(
+        repo / nsv.PROFILE_DIR / "equity.yaml",
+        lambda data: data.update(
+            drafting_session_or_shard_id="synthetic-valid-cosmetic-profile-change"
+        ),
+    )
+    coordinate_profile_hash(repo, "equity")
+    assert nsv.validate(repo) == []
+
+
 # MAJOR-4: R2 through the real derive() path, with source validation isolated.
 @pytest.mark.parametrize("counts,expected", [
     ({"equity": 0, "fund_broad_market": 4, "crypto": 3, "fund_gld_defensive": 3}, {"equity": "up", "fund_broad_market": "down", "crypto": None, "fund_gld_defensive": None}),
@@ -294,6 +469,34 @@ def test_bad_adjustment_via_validate(repo, field, value):
     assert_bad(repo, "adjustments do not match")
 
 
+def test_retired_r1_adjustment_rejected_with_otherwise_closed_schema(repo):
+    mutate(
+        numeric_record(repo, "equity"),
+        lambda data: (
+            data["applied_adjustments"][0].update(governing_rule_id="R1"),
+            data.update(governing_rule_ids=["R1"]),
+        ),
+    )
+    reseal_numeric(repo, "equity")
+    errors = nsv.validate(repo)
+    assert any("applied_adjustments[0]: retired/unknown rule" in error for error in errors)
+    assert any("governing_rule_ids contains retired/unknown rule" in error for error in errors)
+
+
+def test_retired_r1_is_not_only_rejected_by_extra_key_closure(repo):
+    mutate(
+        numeric_record(repo, "equity"),
+        lambda data: data["applied_adjustments"][0].update(
+            governing_rule_id="R1", withdrawn_trigger="evidence_quantity"
+        ),
+    )
+    reseal_numeric(repo, "equity")
+    errors = nsv.validate(repo)
+    assert any("extra keys" in error for error in errors)
+    # The companion schema-valid test above separately proves that removing
+    # this extra key cannot make the retired rule admissible.
+
+
 @pytest.mark.parametrize("sum_value,residual", [("100.01", "0.00"), ("66.67", "33.33")])
 def test_overshoot_and_rounding_drift_via_validate(repo, sum_value, residual):
     mutate(numeric_manifest(repo), lambda data: data["portfolio_reconciliation"].update(sum_of_assigned_targets_pct=sum_value, unsized_reserved_capital_pct=residual))
@@ -352,6 +555,29 @@ def test_residual_disguised_as_cash_allocation(repo):
     "CASH and RESERVE serve distinct functions.",
     "The chart shows a breakout above resistance level.",
     "Buy SPY and trim VEA.",
+    # Exact fresh round-2 reviewer reproducers.
+    "allocate 25 percent to SPY",
+    "SPY deserves a larger share",
+    "capital should favor BTC",
+    "use the chart to size ETH",
+    "reserved capital is deployable cash",
+    "residual should flow to cash",
+    "More evidence supports a larger weight.",
+    "SPY should not receive 25 percent.",
+    "SPY, and VEA, receive 25 percent.",
+    "sPy'S receive 25 percent.",
+    # Vulnerability-class coverage: order, voice, punctuation, word forms,
+    # numeric forms, chart causality, residual settlement, and withdrawn R1.
+    "SPY: allocate twenty-five percent.",
+    "Twenty-five percent was allocated to BTC.",
+    "ETH warrants a smaller exposure.",
+    "The allocation favors SPY while VEA remains secondary.",
+    "The technical picture warrants more capital.",
+    "Price structure supports a larger weight.",
+    "Deploy the residual as cash.",
+    "Unsized capital is a cash target.",
+    "Broader evidence supports a larger weight.",
+    "More bases justify a bigger allocation.",
 ])
 def test_forbidden_free_text_matrix_via_validate(repo, text):
     mutate(numeric_record(repo, "equity"), lambda data: data.update(uncertainty_disclosure=text))
@@ -363,6 +589,15 @@ def test_forbidden_free_text_matrix_via_validate(repo, text):
     "The policy record cites intelligence/level1_sleeve_synthesis/policy_adoption/equity.yaml.",
     "XASSET-0016 governs this provisional Level 1 record; no individual instrument allocation is stated.",
     "Evidence is preferred only as a citation-source description, not as an instrument preference.",
+    "The chart does not determine sizing.",
+    "The technical picture does not warrant a larger weight.",
+    "The residual remains unsized and is not a cash allocation.",
+    "Reserved capital should not flow to cash.",
+    "More evidence does not support a larger weight.",
+    "Broader evidence cannot justify a bigger allocation.",
+    "Capital should not favor BTC.",
+    "SPY is cited as a structural ticker reference; no weight is assigned.",
+    "This process does not authorize instrument sizing.",
 ])
 def test_legitimate_citation_and_boundary_prose_allowed(repo, text):
     mutate(numeric_record(repo, "equity"), lambda data: data.update(uncertainty_disclosure=text))
@@ -494,3 +729,40 @@ def test_comparative_consistency_live():
     output = nsv.derive(ROOT)[2]
     assert output["crypto"]["state"] == output["fund_gld_defensive"]["state"]
     assert output["crypto"]["target"] == output["fund_gld_defensive"]["target"] == "16.67"
+
+
+def test_vacuous_comparative_consistency_note_rejected(repo):
+    mutate(
+        numeric_record(repo, "equity"),
+        lambda data: data.update(comparative_consistency_note="No comment."),
+    )
+    reseal_numeric(repo, "equity")
+    assert_bad(repo, "comparative_consistency_note must identify")
+
+
+def test_equal_output_peer_requires_no_material_difference_provenance(repo):
+    mutate(
+        numeric_record(repo, "crypto"),
+        lambda data: data.update(
+            comparative_consistency_note=(
+                "Crypto differs from equity and fund_broad_market only because R2 fires "
+                "for those sleeves; fund_gld_defensive is another eligible sleeve."
+            )
+        ),
+    )
+    reseal_numeric(repo, "crypto")
+    assert_bad(repo, "no material difference from equal-output sleeve fund_gld_defensive")
+
+
+def test_different_output_peer_requires_live_rule_provenance(repo):
+    mutate(
+        numeric_record(repo, "equity"),
+        lambda data: data.update(
+            comparative_consistency_note=(
+                "Equity differs from fund_broad_market, crypto, and fund_gld_defensive. "
+                "R3 fires for none of the four sleeves."
+            )
+        ),
+    )
+    reseal_numeric(repo, "equity")
+    assert_bad(repo, "must identify R2 as a difference")

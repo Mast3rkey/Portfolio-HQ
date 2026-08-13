@@ -19,12 +19,14 @@ from level1_sleeve_synthesis_validator import (
     compute_expected_sizing_readiness,
     compute_live_relationship_ledger,
     validate_policy_adoption_directory,
+    validate_sleeve_profile_directory,
     validate_sleeve_relationship_directory,
     _comparative_superiority_scan,
     _prohibited_content_scan,
     _scan_contender_citation,
     _scan_key_names_recursive,
     _stage4_bounded_conclusion_scan,
+    _stage4_numeric_leakage_scan,
 )
 
 SCHEMA_VERSION = "1.0"
@@ -70,6 +72,52 @@ _NUMERIC_SPECIFIC_TEXT_PATTERNS = tuple(re.compile(p, re.IGNORECASE) for p in (
     r"\b(?:stronger_evidence_maturity|favored_sleeve_id)\b[^.]{0,80}\b(?:increase|decrease|adjust|move|raise|lower|capital|target|allocation)\b",
 ))
 
+# Numeric sizing legitimately cites its own R2/R3 rule IDs and Level 1/2
+# boundary labels.  Those are governed proper nouns rather than amounts, so
+# scrub only those exact structural forms before reusing Stage 4's otherwise
+# strict numeric-leakage helper.  The fixed four-sleeve comparison-population
+# label is likewise schema-required explanatory provenance, not a magnitude.
+_NUMERIC_SIZING_STRUCTURAL_TERM_PATTERN = re.compile(
+    r"\b(?:Level\s+[12]|R[23]|the\s+four\s+sleeves|level1_sleeve_synthesis)\b",
+    re.IGNORECASE,
+)
+
+_NUMERIC_SIZING_SEMANTIC_PATTERNS = tuple(
+    (re.compile(pattern, re.IGNORECASE), negation_permitted)
+    for pattern, negation_permitted in (
+        # Capital preference/share assertions, including noun/verb variants.
+        (r"\b(?:capital|allocation|weight|weighting|share|exposure)\b[^.;]{0,40}\b(?:should|must|would|will|can|is|was|remains?)?(?:\s+not)?\s*(?:favor(?:s|ed|able)?|favour(?:s|ed|able)?|prefer(?:s|red|ence)?)\b[^.;]{0,50}\b[A-Z]{2,5}(?:'s|s)?\b", True),
+        (r"\b[A-Z]{2,5}(?:'s|s)?\b[^.;]{0,40}\b(?:does\s+)?(?:not\s+)?(?:deserves?|warrants?|merits?|earns?)\b[^.;]{0,30}\b(?:a\s+)?(?:more|less|greater|larger|smaller|higher|lower|bigger)\s+(?:capital|allocation|weight|weighting|share|exposure)\b", True),
+        (r"\b[A-Z]{2,5}(?:'s|s)?\b[^.;]{0,35}\b(?:is|was|remains?|should\s+be|must\s+be|can\s+be)(?:\s+not)?\s+(?:favor(?:ed|able)|favour(?:ed|able)|preferred)\b[^.;]{0,35}\b(?:capital|allocation|weight|weighting|share|exposure)\b", True),
+        (r"\b[A-Z]{2,5}(?:'s|s)?\b[^.;]{0,35}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+)?(?:receives?|gets?|has|carries|takes|is\s+assigned|is\s+allocated|is\s+weighted)\b[^.;]{0,30}\b(?:a\s+)?(?:more|less|greater|larger|smaller|higher|lower|bigger)\s+(?:capital|allocation|weight|weighting|share|exposure)\b", True),
+        (r"\b(?:more|less|greater|larger|smaller|higher|lower|bigger)\s+(?:capital|allocation|weight|weighting|share|exposure)\b[^.;]{0,45}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+)?(?:goes?|flows?|is\s+assigned|is\s+allocated|is\s+given|favors?|favours?)\b[^.;]{0,30}\b[A-Z]{2,5}(?:'s|s)?\b", True),
+        # Chart/technical-input causality.  A mere process statement or an
+        # explicit denial of sizing influence is not a forbidden inference.
+        (r"\b(?:use|follow|read|consult|apply)(?:s|d|ing)?\b[^.;]{0,35}\b(?:chart|technical\s+picture|price\s+structure)\b[^.;]{0,35}\b(?:to|for)\s+(?:size|sizing|weight|weighting|allocate|allocation)\b", True),
+        (r"\b(?:chart|technical\s+picture|price\s+structure)\b[^.;]{0,45}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+|cannot\s+)?(?:drives?|determines?|supports?|warrants?|justif(?:y|ies)|calls?\s+for|says?\s+to)\b[^.;]{0,45}\b(?:siz(?:e|ed|ing)|weight(?:ed|ing)?|allocat(?:e|ed|ion)|capital|share|exposure|more|larger|bigger|higher)\b", True),
+        (r"\b(?:siz(?:e|ed|ing)|weight(?:ed|ing)?|allocat(?:e|ed|ion))\b[^.;]{0,55}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+|cannot\s+)?(?:follows?|tracks?|uses?|reflects?|is\s+based\s+on|according\s+to|from)\b[^.;]{0,35}\b(?:chart|technical\s+picture|price\s+structure)\b", True),
+        # The residual is a reconciliation value, never cash or a destination
+        # for deployment.  Negated/non-settlement explanations remain lawful.
+        (r"\b(?:residual|reserved\s+capital|unsized\s+capital)\b[^.;]{0,55}\b(?:is|equals?|represents?|becomes?|remains?|should|must|would|will|can)(?:\s+not)?\b[^.;]{0,30}\b(?:deployable\s+)?cash(?:\s+(?:target|allocation|sleeve))?\b", True),
+        (r"\b(?:residual|reserved\s+capital|unsized\s+capital)\b[^.;]{0,55}\b(?:should|must|would|will|can|does)(?:\s+not)?\s+(?:flow|go|move|settle|convert|deploy)\b[^.;]{0,30}\b(?:to|into|as)\s+(?:deployable\s+)?cash\b", True),
+        (r"\b(?:deploy|allocate|move|flow|convert)(?:s|d|ing)?\b[^.;]{0,40}\b(?:the\s+)?(?:residual|reserved\s+capital|unsized\s+capital)\b[^.;]{0,25}\b(?:to|into|as)\s+(?:deployable\s+)?cash\b", True),
+        (r"\b(?:(?:do|does|should|must)\s+not\s+|never\s+)?(?:treat|classify|count|book)(?:s|ed|ing)?\b[^.;]{0,30}\b(?:the\s+)?(?:residual|reserved\s+capital|unsized\s+capital)\b[^.;]{0,20}\bas\s+(?:deployable\s+)?cash\b", True),
+        (r"\bcash\b[^.;]{0,40}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+)?(?:is|equals?|represents?|receives?|gets?|absorbs?|takes?)\b[^.;]{0,35}\b(?:the\s+)?(?:residual|reserved\s+capital|unsized\s+capital)\b", True),
+        # Withdrawn R1: evidence quantity/completeness cannot imply size.
+        (r"\b(?:more|broader|greater|additional|stronger)\s+(?:evidence|evidence\s+bases?|bases?|citations?|documentation|evidence\s+routes?)\b[^.;]{0,70}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+|cannot\s+)?(?:supports?|deserves?|warrants?|justif(?:y|ies)|earns?|receives?|gets?|implies?)\b[^.;]{0,35}\b(?:a\s+)?(?:more|less|greater|larger|smaller|higher|lower|bigger|additional)\s+(?:capital|target|allocation|weight|weighting|share|exposure)\b", True),
+        (r"\b(?:more|less|greater|larger|smaller|higher|lower|bigger|additional)\s+(?:capital|target|allocation|weight|weighting|share|exposure)\b[^.;]{0,70}\b(?:because|due\s+to|from|for)\b[^.;]{0,35}\b(?:more|broader|greater|additional|stronger)\s+(?:evidence|evidence\s+bases?|bases?|citations?|documentation|evidence\s+routes?)\b", True),
+        (r"\b(?:evidence|documentation)\s+(?:breadth|completeness|quantity|count|maturity)\b[^.;]{0,55}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+|cannot\s+)?(?:drives?|determines?|influences?|supports?|warrants?|justif(?:y|ies)|sets?)\b[^.;]{0,35}\b(?:capital|target|allocation|weight|weighting|share|exposure|siz(?:e|ed|ing))\b", True),
+        (r"\b(?:capital|target|allocation|weight|weighting|share|exposure|siz(?:e|ed|ing))\b[^.;]{0,55}\b(?:does\s+not\s+|do\s+not\s+|should\s+not\s+|must\s+not\s+|cannot\s+)?(?:rises?|falls?|increases?|decreases?|follows?|tracks?|depends?\s+on|reflects?|is\s+based\s+on|is\s+determined\s+by)\b[^.;]{0,35}\b(?:evidence|documentation)\s+(?:breadth|completeness|quantity|count|maturity)\b", True),
+        (r"\b(?:more|less|greater|larger|smaller|higher|lower|bigger|additional)\s+(?:capital|target|allocation|weight|weighting|share|exposure)\b[^.;]{0,50}\b(?:follows?|tracks?|reflects?)\b[^.;]{0,30}\b(?:more|broader|greater|additional|stronger)\s+(?:evidence|documentation|bases?|citations?)\b", True),
+    )
+)
+
+_NEGATION_PATTERN = re.compile(
+    r"\b(?:no|not|never|cannot|can't|does\s+not|doesn't|do\s+not|don't|"
+    r"should\s+not|shouldn't|must\s+not|mustn't|is\s+not|isn't|are\s+not|aren't)\b",
+    re.IGNORECASE,
+)
+
 
 class SourceValidationError(ValueError):
     """Authoritative Stage-4 source corpus is invalid or incomplete."""
@@ -100,6 +148,7 @@ def _closed(obj, keys, where, errors):
 
 def _source_errors(repo_root: Path) -> list[str]:
     checks = (
+        ("profile", validate_sleeve_profile_directory(repo_root / PROFILE_DIR, repo_root=repo_root)),
         ("relationship", validate_sleeve_relationship_directory(repo_root / REL_DIR, repo_root=repo_root)),
         ("policy_adoption", validate_policy_adoption_directory(repo_root / POLICY_DIR, repo_root=repo_root)),
     )
@@ -208,9 +257,68 @@ def _scan_numeric_free_text(text, where, errors, repo_root):
         errors.append(f"{where} contains prohibited content ({finding})")
     for finding in _scan_contender_citation(text):
         errors.append(f"{where} contains prohibited content ({finding})")
+    scrubbed = _NUMERIC_SIZING_STRUCTURAL_TERM_PATTERN.sub("", text)
+    for finding in _stage4_numeric_leakage_scan(scrubbed):
+        errors.append(f"{where} contains prohibited content ({finding})")
     for pattern in _NUMERIC_SPECIFIC_TEXT_PATTERNS:
         if pattern.search(text):
             errors.append(f"{where} contains prohibited numeric-sizing content ({pattern.pattern})")
+    for pattern, negation_permitted in _NUMERIC_SIZING_SEMANTIC_PATTERNS:
+        for match in pattern.finditer(text):
+            # Negation must occur inside the matched causal/settlement
+            # expression itself.  An unrelated denial earlier in the clause
+            # cannot mask a later affirmative sizing assertion.
+            if negation_permitted and _NEGATION_PATTERN.search(match.group(0)):
+                continue
+            errors.append(f"{where} contains prohibited numeric-sizing semantics ({pattern.pattern})")
+
+
+def _validate_comparative_consistency(sid, note, expected, errors):
+    """Require every live comparison assertion to be mechanically auditable.
+
+    Equal-output peers must be named in a no-material-difference clause.  A
+    differing peer must be named in a difference clause that cites every R2/R3
+    state difference responsible for the output.  This validates provenance;
+    it does not infer or trust a stored target.
+    """
+    if not isinstance(note, str):
+        return
+    clauses = [clause.strip() for clause in re.split(r"[.;]", note) if clause.strip()]
+    for other in sorted(expected):
+        if other == sid:
+            continue
+        other_pattern = re.compile(rf"\b{re.escape(other)}\b", re.IGNORECASE)
+        matching = [clause for clause in clauses if other_pattern.search(clause)]
+        if expected[sid]["target"] == expected[other]["target"]:
+            equal_clauses = [
+                clause for clause in matching
+                if re.search(r"\bno\s+material\s+difference\b", clause, re.IGNORECASE)
+            ]
+            if not equal_clauses:
+                errors.append(f"{sid}.comparative_consistency_note must state no material difference from equal-output sleeve {other}")
+                continue
+            differing_rules = [
+                rule for rule in ("R2", "R3")
+                if expected[sid]["state"][rule] != expected[other]["state"][rule]
+            ]
+            for rule in differing_rules:
+                if not any(re.search(rf"\b{rule}\b", clause, re.IGNORECASE) for clause in equal_clauses):
+                    errors.append(f"{sid}.comparative_consistency_note must identify {rule} state difference from {other}")
+        else:
+            differing_rules = [
+                rule for rule in ("R2", "R3")
+                if expected[sid]["state"][rule] != expected[other]["state"][rule]
+            ]
+            difference_clauses = [
+                clause for clause in matching
+                if re.search(r"\bdiffer(?:s|ed|ent|ence)?\b", clause, re.IGNORECASE)
+            ]
+            if not difference_clauses:
+                errors.append(f"{sid}.comparative_consistency_note must identify its difference from {other}")
+                continue
+            for rule in differing_rules:
+                if not any(re.search(rf"\b{rule}\b", clause, re.IGNORECASE) for clause in difference_clauses):
+                    errors.append(f"{sid}.comparative_consistency_note must identify {rule} as a difference from {other}")
 
 
 def _validate_reconciliation(reconciliation, live_sum: Decimal, errors: list[str]):
@@ -299,6 +407,11 @@ def validate(repo_root: Path) -> list[str]:
                 errors.append(f"{sid}: adjustments do not match live R2/R3 derivation")
             if data["governing_rule_ids"] != exp["rules"]:
                 errors.append(f"{sid}: governing_rule_ids mismatch")
+            if (
+                not isinstance(data["governing_rule_ids"], list)
+                or any(rule not in {"R2", "R3"} for rule in data["governing_rule_ids"])
+            ):
+                errors.append(f"{sid}: governing_rule_ids contains retired/unknown rule")
             if not isinstance(data["applied_adjustments"], list):
                 errors.append(f"{sid}: applied_adjustments must be a list")
             else:
@@ -330,6 +443,9 @@ def validate(repo_root: Path) -> list[str]:
                     errors.append(f"{sid}: {field} must be non-empty")
                 else:
                     _scan_numeric_free_text(data[field], f"{sid}.{field}", errors, repo_root)
+            _validate_comparative_consistency(
+                sid, data["comparative_consistency_note"], expected, errors
+            )
             if data["blocking_rationale"] is not None:
                 errors.append(f"{sid}: blocking_rationale must be null")
         else:
