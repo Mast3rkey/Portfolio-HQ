@@ -616,6 +616,42 @@ def test_residual_disguised_as_cash_allocation(repo):
     "We do not rank instruments; however ETH is preferred for sizing.",
     "Sizing is not authorized — BTC receives the larger sleeve share.",
     "This filing is not a recommendation (SPY gets a bigger slice).",
+    # Exact round-4 review reproducers: nominal/reversed/elliptical roles,
+    # bare chart aliases, residual aliases, and composed evidence causality.
+    "The preferred weighting belongs to ETH.",
+    "Our allocation preference is SPY.",
+    "Exposure should be larger for ETH.",
+    "SPY gets more of the sleeve.",
+    "The setup justifies increasing SPY exposure.",
+    "Sizing follows the chart.",
+    "The leftover amount is assigned to cash.",
+    "Broader evidence favors ETH and gives it more of the sleeve.",
+    # Fresh round-4 class matrix (not reviewer strings).
+    "The heavier exposure goes to VEA.",
+    "SOL is awarded the larger stake.",
+    "Portfolio capital priority points toward BTC.",
+    "A bigger sleeve portion is directed to VWO.",
+    "ETH takes the extra allocation.",
+    "The signal warrants a heavier VEA position.",
+    "BTC exposure increases because the setup supports it.",
+    "The technical pattern guides SOL sizing.",
+    "Allocation tracks the chart for SPY.",
+    "Additional citations drive a larger VWO share.",
+    "Documentation breadth confers extra room on BTC.",
+    "The better documented fund gets the heavier weight.",
+    "Evidence maturity favors ETH for capital.",
+    "Leftover funds flow into the cash sleeve.",
+    "The unused amount converts into cash.",
+    "Cash absorbs the unsized remainder.",
+    "Remaining funds are directed to the cash target.",
+    "The capital ranking puts SOL first.",
+    "VEA is the favorite recipient for sleeve weight.",
+    "Top sizing priority belongs to SPY.",
+    "SPY is the favorite.",
+    # Double-negation / not-only composition remains affirmative.
+    "The chart does not fail to justify a larger allocation.",
+    "Not only the chart but also the setup supports a larger allocation.",
+    "BTC does not fail to receive more capital.",
 ])
 def test_forbidden_free_text_matrix_via_validate(repo, text):
     mutate(numeric_record(repo, "equity"), lambda data: data.update(uncertainty_disclosure=text))
@@ -643,6 +679,24 @@ def test_forbidden_free_text_matrix_via_validate(repo, text):
     "No ranking or capital-priority conclusion is made.",
     "Ticker references to SPY/VEA/VWO/BTC/ETH/SOL are structural only.",
     "The validation process discusses allocation language but asserts no instrument conclusion.",
+    # Round-4 normalized-layer false-positive guards.
+    "BTC does not receive more capital.",
+    "The setup does not justify increased SPY exposure.",
+    "Sizing does not follow the chart.",
+    "The leftover amount is not assigned to cash.",
+    "No ranking is produced.",
+    "Chart evidence is execution-only.",
+    "Evidence quantity has zero sizing influence.",
+    "Evidence count is recorded but has no sizing influence.",
+    "Historical descriptions are context only and do not authorize current sizing.",
+    "Historical chart data is described without use in current sizing.",
+    "Residual and cash are separate accounting labels.",
+    "The portfolio weighting does not favor SPY.",
+    "Allocation preference does not point to BTC.",
+    "No instrument receives a greater sleeve share.",
+    "No ticker is first in a capital ranking.",
+    "Reserved capital cannot become cash.",
+    "SPY is not the favorite.",
 ])
 def test_legitimate_citation_and_boundary_prose_allowed(repo, text):
     mutate(numeric_record(repo, "equity"), lambda data: data.update(uncertainty_disclosure=text))
@@ -865,6 +919,156 @@ def test_correct_r3_state_contrast_is_accepted():
         errors,
     )
     assert errors == []
+
+
+def test_reversed_r2_directions_are_rejected():
+    expected = _synthetic_comparison(
+        "18.67", {"R2": "up", "R3": None},
+        "14.67", {"R2": "down", "R3": None},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A differs from b because R2 fires down here and up there; R3 has no-fire for both.",
+        expected,
+        errors,
+    )
+    assert any("live R2 state contrast" in error for error in errors)
+
+
+def test_correct_r2_directions_are_bound_to_each_peer():
+    expected = _synthetic_comparison(
+        "18.67", {"R2": "up", "R3": None},
+        "14.67", {"R2": "down", "R3": None},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A differs from b because R2 fires up here and down there; R3 has no-fire for both.",
+        expected,
+        errors,
+    )
+    assert errors == []
+
+
+def test_reversed_r3_directions_are_rejected():
+    expected = _synthetic_comparison(
+        "18.67", {"R2": None, "R3": "up"},
+        "14.67", {"R2": None, "R3": "down"},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A differs from b because R3 fires down here and up there; R2 has no-fire for both.",
+        expected,
+        errors,
+    )
+    assert any("live R3 state contrast" in error for error in errors)
+
+
+def test_correct_combined_r2_r3_directions_are_accepted():
+    expected = _synthetic_comparison(
+        "20.67", {"R2": "up", "R3": "up"},
+        "12.67", {"R2": "down", "R3": "down"},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A differs from b because R2 fires up here and down there while R3 fires up here and down there.",
+        expected,
+        errors,
+    )
+    assert errors == []
+
+
+def test_equal_target_cancellation_rejects_reversed_direction_attribution():
+    expected = _synthetic_comparison(
+        "16.67", {"R2": "up", "R3": "down"},
+        "16.67", {"R2": "down", "R3": "up"},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A has no material difference from b because R2 fires up here and down there while R3 fires up here and down there.",
+        expected,
+        errors,
+    )
+    assert any("live R3 state difference" in error for error in errors)
+
+
+def test_equal_target_cancellation_accepts_correct_bound_directions():
+    expected = _synthetic_comparison(
+        "16.67", {"R2": "up", "R3": "down"},
+        "16.67", {"R2": "down", "R3": "up"},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A has no material difference from b because R2 fires up here and down there while R3 fires down here and up there.",
+        expected,
+        errors,
+    )
+    assert errors == []
+
+
+def test_named_peer_reversed_direction_is_rejected():
+    expected = _synthetic_comparison(
+        "18.67", {"R2": "up", "R3": None},
+        "14.67", {"R2": "down", "R3": None},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A differs from b because R2 fires up for b and down for a; R3 has no-fire for both.",
+        expected,
+        errors,
+    )
+    assert any("live R2 state contrast" in error for error in errors)
+
+
+def test_fire_vs_no_fire_requires_correct_sleeve_attribution():
+    expected = _synthetic_comparison(
+        "18.67", {"R2": "up", "R3": None},
+        "16.67", {"R2": None, "R3": None},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A differs from b because R2 does not fire here and fires up there; R3 has no-fire for both.",
+        expected,
+        errors,
+    )
+    assert any("live R2 state contrast" in error for error in errors)
+
+
+def test_correct_fire_vs_no_fire_attribution_is_accepted():
+    expected = _synthetic_comparison(
+        "18.67", {"R2": "up", "R3": None},
+        "16.67", {"R2": None, "R3": None},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A differs from b because R2 fires up here and does not fire there; R3 has no-fire for both.",
+        expected,
+        errors,
+    )
+    assert errors == []
+
+
+def test_comparative_expected_target_must_match_deterministic_state_arithmetic():
+    expected = _synthetic_comparison(
+        "16.67", {"R2": "up", "R3": None},
+        "16.67", {"R2": None, "R3": None},
+    )
+    errors = []
+    nsv._validate_comparative_consistency(
+        "a",
+        "A has no material difference from b because both have identical R2 and R3 no-fire states.",
+        expected,
+        errors,
+    )
+    assert any("deterministic live R2/R3 arithmetic" in error for error in errors)
 
 
 def test_wrong_rule_cannot_substitute_for_live_r3_state_contrast():

@@ -58,7 +58,7 @@ REC_KEYS = frozenset({"sum_of_assigned_targets_pct","unsized_reserved_capital_pc
 
 _NUMERIC_SPECIFIC_TEXT_PATTERNS = tuple(re.compile(p, re.IGNORECASE) for p in (
     # Level-2 amount/percentage in both ordinary and passive/reversed order.
-    r"\b[A-Z]{2,5}(?:'s|s)?\b[^.]{0,60}\b(?:receives?|gets?|is\s+assigned|was\s+assigned|should\s+receive|should\s+get)\b[^.]{0,40}(?:\d+(?:\.\d+)?\s*%|more\s+capital)",
+    r"\b[A-Z]{2,5}(?:'s|s)?\b[^.]{0,60}\b(?<!not\s)(?<!never\s)(?<!cannot\s)(?:receives?|gets?|is\s+assigned|was\s+assigned|should\s+receive|should\s+get)\b[^.]{0,40}(?:\d+(?:\.\d+)?\s*%|more\s+capital)",
     r"(?:\d+(?:\.\d+)?\s*%|more\s+capital)[^.]{0,60}\b(?:is|was|should\s+be)\s+(?:assigned|allocated|given)\b[^.]{0,40}\b[A-Z]{2,5}(?:'s|s)?\b",
     # Withdrawn-R1/evidence-quantity reward under forward or reversed order.
     r"\b(?:more|additional|greater)\s+(?:citations?|evidence\s+bases?|documentation|evidence\s+routes?)\b[^.]{0,80}\b(?:deserves?|warrants?|justif(?:y|ies)|earns?|receives?|gets?)\b[^.]{0,30}\b(?:more|larger|higher|additional)\s+(?:capital|target|allocation)\b",
@@ -76,6 +76,10 @@ _NUMERIC_SIZING_STRUCTURAL_TERM_PATTERN = re.compile(
     r"\b(?:Level\s+[12]|R[23]|the\s+four\s+sleeves|level1_sleeve_synthesis)\b",
     re.IGNORECASE,
 )
+_ZERO_SIZING_INFLUENCE_PATTERN = re.compile(
+    r"\bzero\s+(?:numeric\s+)?(?:sizing\s+influence|influence\s+on\s+sizing)\b",
+    re.IGNORECASE,
+)
 
 _TICKER_TERM = r"[A-Z]{2,5}(?:'s|s)?"
 _AMOUNT_TERM = (
@@ -90,7 +94,7 @@ _CAPITAL_TERM = (
     r")"
 )
 _CHART_TERM = (
-    r"(?:chart|technical\s+(?:structure|picture|setup|signal|pattern)|"
+    r"(?:chart|setup|signal|pattern|technical\s+(?:structure|picture|setup|signal|pattern)|"
     r"price\s+(?:structure|setup|signal|pattern))"
 )
 _EVIDENCE_TERM = (
@@ -142,6 +146,353 @@ _LOCAL_PREDICATE_NEGATION = re.compile(
     re.IGNORECASE,
 )
 _COPULA_PREDICATES = frozenset({"is", "are", "was", "were", "equals", "equal", "represents", "represent", "becomes", "become", "remains", "remain"})
+
+# Round-4 semantic normalization.  The regex families above remain as a
+# conservative compatibility layer for the already-governed corpus.  This
+# layer closes the more general composition problem exposed by independent
+# review: prohibited meaning may be distributed across nominal, passive, or
+# reversed word order even when no single surface-form regex spans it.  It
+# therefore normalizes bounded clauses into closed subject/action/object role
+# families and applies negation to each candidate predicate, never to the
+# sentence as a whole.
+_SEMANTIC_TOKEN_PATTERN = re.compile(r"[A-Za-z][A-Za-z0-9_]*(?:'[A-Za-z]+)?")
+_SEMANTIC_HARD_BOUNDARY = re.compile(r"\s*(?:;|:|—|\(|\))\s*")
+_SEMANTIC_SOFT_BOUNDARY = re.compile(
+    r"\b(?:but|however|although|while|whereas|yet)\b", re.IGNORECASE
+)
+_SEMANTIC_CONTRACTIONS = {
+    "can't": "can not",
+    "cannot": "can not",
+    "couldn't": "could not",
+    "didn't": "did not",
+    "doesn't": "does not",
+    "don't": "do not",
+    "hadn't": "had not",
+    "hasn't": "has not",
+    "haven't": "have not",
+    "isn't": "is not",
+    "mustn't": "must not",
+    "shouldn't": "should not",
+    "wasn't": "was not",
+    "weren't": "were not",
+    "won't": "will not",
+    "wouldn't": "would not",
+}
+_KNOWN_LEVEL2_INSTRUMENTS = frozenset({"spy", "vea", "vwo", "btc", "eth", "sol"})
+_GENERIC_INSTRUMENT_TERMS = frozenset({"instrument", "ticker", "fund", "coin", "holding"})
+_CAPITAL_ROLE_TERMS = frozenset({
+    "capital", "allocation", "weight", "share", "stake", "exposure", "slice",
+    "portion", "position", "room", "size", "sizing", "sleeve",
+})
+_RELATIVE_TERMS = frozenset({
+    "more", "most", "greater", "greatest", "larger", "largest", "smaller",
+    "smallest", "higher", "highest", "lower", "lowest", "bigger", "biggest",
+    "additional", "extra", "dominant", "heavier", "lighter", "first", "top",
+})
+_PREFERENCE_TERMS = frozenset({"prefer", "preference", "favor", "favorite", "priority", "rank", "best"})
+_ALLOCATION_PREDICATES = frozenset({
+    "allocate", "assign", "give", "receive", "get", "deserve",
+    "earn", "warrant", "carry", "hold", "take", "award", "direct", "belong",
+    "go", "flow", "settle", "move", "point", "prioritize", "accrue",
+})
+_CAUSAL_PREDICATES = frozenset({
+    "support", "warrant", "argue", "call", "drive", "determine", "dictate",
+    "make", "set", "guide", "favor", "prefer", "justify", "earn", "deserve",
+    "give", "confer", "award", "follow", "track", "reflect", "use", "base",
+    "grow", "influence", "allocate", "assign",
+    "receive", "get", "point",
+})
+_RESIDUAL_PREDICATES = frozenset({
+    "be", "equal", "represent", "become", "flow", "settle", "go", "assign",
+    "allocate", "deploy", "convert", "move", "direct", "absorb", "receive", "get",
+    "take", "book", "classify", "count", "treat",
+})
+_AUXILIARIES = frozenset({
+    "do", "be", "have", "should", "must", "would", "will", "can", "could",
+    "may", "might",
+})
+
+
+def _canonical_semantic_token(raw: str) -> str:
+    token = raw.lower().replace("’", "'")
+    if token.endswith("'s"):
+        token = token[:-2]
+    families = (
+        (r"allocations?", "allocation"),
+        (r"allocat(?:e|es|ed|ing)", "allocate"),
+        (r"assign\w*", "assign"),
+        (r"giv(?:e|es|en|ing)", "give"),
+        (r"receiv\w*", "receive"),
+        (r"(?:get|gets|got|getting)", "get"),
+        (r"(?:weight|weights|weighting)", "weight"),
+        (r"weighted", "weight"),
+        (r"sizing", "sizing"),
+        (r"(?:size|sizes|sized)", "size"),
+        (r"deserv\w*", "deserve"),
+        (r"earn\w*", "earn"),
+        (r"warrant\w*", "warrant"),
+        (r"carr(?:y|ies|ied|ying)", "carry"),
+        (r"hold\w*", "hold"),
+        (r"tak(?:e|es|en|ing)", "take"),
+        (r"award\w*", "award"),
+        (r"direct\w*", "direct"),
+        (r"belong\w*", "belong"),
+        (r"(?:go|goes|went|going)", "go"),
+        (r"flow\w*", "flow"),
+        (r"settl\w*", "settle"),
+        (r"mov\w*", "move"),
+        (r"point\w*", "point"),
+        (r"favorites?", "favorite"),
+        (r"favou?r(?:s|ed|ing)?", "favor"),
+        (r"preferences?", "preference"),
+        (r"prefer(?:s|red|ring)?", "prefer"),
+        (r"priorit\w*", "prioritize"),
+        (r"rank\w*", "rank"),
+        (r"accru\w*", "accrue"),
+        (r"support\w*", "support"),
+        (r"argu\w*", "argue"),
+        (r"call\w*", "call"),
+        (r"driv\w*", "drive"),
+        (r"determin\w*", "determine"),
+        (r"dictat\w*", "dictate"),
+        (r"(?:make|makes|making|made)", "make"),
+        (r"(?:set|sets|setting)", "set"),
+        (r"guid\w*", "guide"),
+        (r"justif\w*", "justify"),
+        (r"confer\w*", "confer"),
+        (r"follow\w*", "follow"),
+        (r"track\w*", "track"),
+        (r"reflect\w*", "reflect"),
+        (r"us(?:e|es|ed|ing)", "use"),
+        (r"bas(?:e|es|ed|ing)", "base"),
+        (r"grow\w*", "grow"),
+        (r"increas\w*", "increase"),
+        (r"decreas\w*", "decrease"),
+        (r"chang\w*", "change"),
+        (r"influenc\w*", "influence"),
+        (r"equal\w*", "equal"),
+        (r"represent\w*", "represent"),
+        (r"becom\w*", "become"),
+        (r"deploy\w*", "deploy"),
+        (r"convert\w*", "convert"),
+        (r"absorb\w*", "absorb"),
+        (r"book\w*", "book"),
+        (r"classif\w*", "classify"),
+        (r"count\w*", "count"),
+        (r"treat\w*", "treat"),
+        (r"(?:is|are|was|were|be|been|being)", "be"),
+        (r"(?:has|have|had)", "have"),
+        (r"(?:does|do|did)", "do"),
+    )
+    for pattern, replacement in families:
+        if re.fullmatch(pattern, token):
+            return replacement
+    return token
+
+
+def _semantic_units(text: str) -> list[str]:
+    normalized = text.replace("’", "'")
+    for contraction, expanded in _SEMANTIC_CONTRACTIONS.items():
+        normalized = re.sub(rf"\b{re.escape(contraction)}\b", expanded, normalized, flags=re.IGNORECASE)
+    units: list[str] = []
+    for sentence in re.split(r"(?<=[.!?])\s+", normalized):
+        for hard_clause in _SEMANTIC_HARD_BOUNDARY.split(sentence):
+            hard_clause = hard_clause.strip(" \t\r\n,.-")
+            if not hard_clause:
+                continue
+            units.append(hard_clause)
+            units.extend(
+                part.strip(" \t\r\n,.-")
+                for part in _SEMANTIC_SOFT_BOUNDARY.split(hard_clause)
+                if part.strip(" \t\r\n,.-") and part.strip(" \t\r\n,.-") != hard_clause
+            )
+    return list(dict.fromkeys(units))
+
+
+def _semantic_tokens(unit: str) -> tuple[list[str], list[str]]:
+    raw = _SEMANTIC_TOKEN_PATTERN.findall(unit)
+    return raw, [_canonical_semantic_token(token) for token in raw]
+
+
+def _instrument_positions(raw: list[str], tokens: list[str]) -> list[int]:
+    positions = []
+    for index, (surface, token) in enumerate(zip(raw, tokens)):
+        bare = surface.replace("’", "'")
+        if bare.lower().endswith("'s"):
+            bare = bare[:-2]
+        if (
+            token in _KNOWN_LEVEL2_INSTRUMENTS
+            or token in _GENERIC_INSTRUMENT_TERMS
+            or (bare.isupper() and 2 <= len(bare) <= 5 and bare not in {"CASH", "LEVEL"})
+        ):
+            positions.append(index)
+    return positions
+
+
+def _nearest(position: int, candidates: list[int]) -> int | None:
+    return min(candidates, key=lambda candidate: abs(candidate - position)) if candidates else None
+
+
+def _predicate_is_locally_negated(tokens: list[str], predicate: int, subject: int | None = None) -> bool:
+    """Bounded compositional negation for normalized propositions.
+
+    Only immediately governed auxiliary/coplanar negation, ``without VERB``,
+    an adjacent ``no SUBJECT`` quantifier, or an explicit zero/no outcome can
+    suppress a candidate.  ``not only`` and ``not fail to VERB`` therefore do
+    not create a waiver, and an unrelated earlier ``not`` is invisible here.
+    """
+    if subject is not None and subject > 0 and tokens[subject - 1] == "no":
+        return True
+    if predicate > 0 and tokens[predicate - 1] in {"not", "never", "without"}:
+        return not (tokens[predicate - 1] == "not" and predicate < len(tokens) and tokens[predicate] == "only")
+    if predicate > 1 and tokens[predicate - 2] in _AUXILIARIES and tokens[predicate - 1] == "not":
+        return True
+    if (
+        predicate > 2
+        and tokens[predicate - 3] in _AUXILIARIES
+        and tokens[predicate - 2] == "not"
+        and tokens[predicate - 1] == "be"
+    ):
+        return True
+    if tokens[predicate] == "be" and predicate + 1 < len(tokens) and tokens[predicate + 1] == "not":
+        return True
+    if predicate + 1 < len(tokens) and tokens[predicate + 1] in {"no", "zero"}:
+        return True
+    if tokens[predicate] == "influence" and any(
+        token in {"no", "zero"} for token in tokens[max(0, predicate - 3):predicate]
+    ):
+        return True
+    return False
+
+
+def _evidence_quantity_positions(tokens: list[str]) -> list[int]:
+    quantity = {"more", "broader", "greater", "additional", "stronger", "wider", "better"}
+    evidence = {"evidence", "documentation", "support", "basis", "bases", "citation", "citations"}
+    measures = {"breadth", "completeness", "quantity", "count", "maturity", "volume"}
+    positions = []
+    for index, token in enumerate(tokens):
+        if token in evidence:
+            if (index > 0 and tokens[index - 1] in quantity) or (index + 1 < len(tokens) and tokens[index + 1] in measures):
+                positions.append(index)
+        if token in {"documented", "document"} and index > 0 and tokens[index - 1] in {"more", "better"}:
+            positions.append(index)
+    return positions
+
+
+def _chart_positions(tokens: list[str]) -> list[int]:
+    positions = [
+        index for index, token in enumerate(tokens)
+        if token in {"chart", "technical", "setup", "signal", "pattern"}
+    ]
+    positions.extend(
+        index for index in range(len(tokens) - 1)
+        if tokens[index] == "price" and tokens[index + 1] in {"structure", "setup", "signal", "pattern"}
+    )
+    return sorted(set(positions))
+
+
+def _residual_positions(tokens: list[str]) -> list[int]:
+    positions = []
+    residual_heads = {"residual", "remainder"}
+    modifiers = {"unused", "remaining", "reserved", "unsized", "leftover"}
+    objects = {"capital", "reserve", "remainder", "amount", "fund", "funds"}
+    for index, token in enumerate(tokens):
+        if token in residual_heads:
+            positions.append(index)
+        elif token in modifiers and index + 1 < len(tokens) and tokens[index + 1] in objects:
+            positions.append(index)
+    return positions
+
+
+def _affirmative_candidate(
+    tokens: list[str], candidates: list[int], subjects: list[int]
+) -> bool:
+    for predicate in candidates:
+        if not _predicate_is_locally_negated(tokens, predicate, _nearest(predicate, subjects)):
+            return True
+    return False
+
+
+def _normalized_semantic_findings(text: str) -> list[str]:
+    findings: set[str] = set()
+    for unit in _semantic_units(text):
+        raw, tokens = _semantic_tokens(unit)
+        instruments = _instrument_positions(raw, tokens)
+        capital = [i for i, token in enumerate(tokens) if token in _CAPITAL_ROLE_TERMS]
+        relative = [i for i, token in enumerate(tokens) if token in _RELATIVE_TERMS]
+        preference = [i for i, token in enumerate(tokens) if token in _PREFERENCE_TERMS]
+        actions = [i for i, token in enumerate(tokens) if token in _ALLOCATION_PREDICATES]
+
+        if instruments:
+            allocation_candidates = list(actions)
+            if capital and relative and not actions:
+                allocation_candidates.extend(relative)
+            if capital and preference:
+                allocation_candidates.extend(
+                    i for i, token in enumerate(tokens) if token in {"be", "belong", "point"}
+                )
+            if preference:
+                allocation_candidates.extend(
+                    copula
+                    for copula, token in enumerate(tokens)
+                    if token == "be"
+                    and any(
+                        min(subject, nominal) < copula < max(subject, nominal)
+                        and abs(subject - nominal) <= 4
+                        for subject in instruments
+                        for nominal in preference
+                    )
+                )
+            # A preference/rank verb applied directly to an instrument is
+            # prohibited even without an explicit capital noun.  Nominal
+            # mentions still require a copular/destination predicate.
+            allocation_candidates.extend(
+                i for i in preference
+                if tokens[i] in {"prefer", "favor", "rank"}
+                and (any(subject <= i for subject in instruments) or bool(capital))
+            )
+            if (
+                (capital or preference)
+                and _affirmative_candidate(tokens, sorted(set(allocation_candidates)), instruments)
+            ):
+                findings.add("instrument-allocation-or-ranking")
+
+        charts = _chart_positions(tokens)
+        chart_candidates = [i for i, token in enumerate(tokens) if token in _CAUSAL_PREDICATES]
+        if charts and (capital or instruments) and _affirmative_candidate(tokens, chart_candidates, charts):
+            findings.add("chart-driven-sizing")
+
+        evidence = _evidence_quantity_positions(tokens)
+        evidence_candidates = [i for i, token in enumerate(tokens) if token in _CAUSAL_PREDICATES]
+        if evidence and (capital or instruments) and _affirmative_candidate(tokens, evidence_candidates, evidence):
+            # Explicit zero influence is a disclosure, not a causal claim.
+            zero_influence = any(
+                tokens[i] == "influence" and "zero" in tokens[max(0, i - 3):i]
+                for i in evidence_candidates
+            )
+            if not zero_influence:
+                findings.add("evidence-quantity-sizing")
+
+        residual = _residual_positions(tokens)
+        cash = [i for i, token in enumerate(tokens) if token in {"cash", "cash_reserve"}]
+        residual_candidates = []
+        if residual and cash:
+            for index, token in enumerate(tokens):
+                if token not in _RESIDUAL_PREDICATES:
+                    continue
+                if token == "be":
+                    # Copular equivalence must connect the two roles; do not
+                    # reject lawful "residual and cash are distinct" prose.
+                    if not any(
+                        min(r, c) < index < max(r, c) for r in residual for c in cash
+                    ):
+                        continue
+                    if any(term in tokens for term in {"distinct", "different", "separate"}):
+                        continue
+                residual_candidates.append(index)
+            if _affirmative_candidate(tokens, residual_candidates, residual + cash):
+                findings.add("residual-cash-conflation")
+    return sorted(findings)
 
 
 def _semantic_match_is_negated(match: re.Match) -> bool:
@@ -323,6 +674,10 @@ def _scan_numeric_free_text(text, where, errors, repo_root):
     for finding in _scan_contender_citation(text):
         errors.append(f"{where} contains prohibited content ({finding})")
     scrubbed = _NUMERIC_SIZING_STRUCTURAL_TERM_PATTERN.sub("", text)
+    # "zero sizing influence" is a categorical non-influence disclosure,
+    # not a governed amount.  Scrub only that closed phrase; every other
+    # digit/spelled-cardinal remains subject to Stage-4 numeric leakage.
+    scrubbed = _ZERO_SIZING_INFLUENCE_PATTERN.sub("", scrubbed)
     for finding in _stage4_numeric_leakage_scan(scrubbed):
         errors.append(f"{where} contains prohibited content ({finding})")
     for pattern in _NUMERIC_SPECIFIC_TEXT_PATTERNS:
@@ -333,6 +688,8 @@ def _scan_numeric_free_text(text, where, errors, repo_root):
             if _semantic_match_is_negated(match):
                 continue
             errors.append(f"{where} contains prohibited numeric-sizing semantics ({pattern.pattern})")
+    for finding in _normalized_semantic_findings(text):
+        errors.append(f"{where} contains prohibited numeric-sizing semantics ({finding})")
 
 
 def _rule_no_fire_described(text: str, rule: str) -> bool:
@@ -354,40 +711,118 @@ def _rule_direction_described(text: str, rule: str, direction: str) -> bool:
     return bool(re.search(rf"\b{rule}\b[^.;]{{0,55}}\b{direction}\b", text, re.IGNORECASE))
 
 
-def _rule_state_contrast_described(note, clauses, rule, self_state, other_state):
+def _rule_bound_directions(text: str, rule: str, sid: str, other: str) -> dict[str, set[str]]:
+    """Extract only directions explicitly bound to this sleeve or its peer.
+
+    The accepted disclosure syntax is intentionally small: ``up/down
+    here/there``, ``up/down for <named sleeve>``, and their named-sleeve-first
+    inversion.  Direction words that merely occur somewhere after a rule ID
+    are not authority and are not returned.
+    """
+    bound = {"self": set(), "other": set()}
+    self_names = rf"(?:here|self|{re.escape(sid)}|this\s+sleeve|current\s+sleeve)"
+    other_names = rf"(?:there|{re.escape(other)}|that\s+sleeve|other\s+sleeve|their\s+tie)"
+    for match in re.finditer(
+        rf"\b{rule}\b(?:(?!\bR[23]\b)[^.;]){{0,100}}", text, re.IGNORECASE
+    ):
+        region = match.group(0)
+        for direction_match in re.finditer(
+            rf"\b(?P<direction>up|down)\b\s+(?:for\s+)?(?P<location>{self_names}|{other_names})\b",
+            region,
+            re.IGNORECASE,
+        ):
+            location = direction_match.group("location")
+            key = "self" if re.fullmatch(self_names, location, re.IGNORECASE) else "other"
+            bound[key].add(direction_match.group("direction").lower())
+    # Named-sleeve-first syntax can place the name before the rule token and
+    # therefore outside the rule-forward region above.
+    for key, name_pattern in (("self", self_names), ("other", other_names)):
+        for match in re.finditer(
+            rf"\b{name_pattern}\b\s+(?:has|is|shows?)\s+\b{rule}\b"
+            rf"(?:\s+fires?)?\s+(?P<direction>up|down)\b",
+            text,
+            re.IGNORECASE,
+        ):
+            bound[key].add(match.group("direction").lower())
+    return bound
+
+
+def _rule_bound_no_fire(text: str, rule: str, sid: str, other: str) -> set[str]:
+    bound: set[str] = set()
+    self_names = rf"(?:here|self|{re.escape(sid)}|this\s+sleeve|current\s+sleeve)"
+    other_names = rf"(?:there|{re.escape(other)}|that\s+sleeve|other\s+sleeve|their\s+tie)"
+    for match in re.finditer(
+        rf"\b{rule}\b(?:(?!\bR[23]\b)[^.;]){{0,100}}", text, re.IGNORECASE
+    ):
+        region = match.group(0)
+        for state_match in re.finditer(
+            rf"\b(?:does\s+not\s+fire|no[-\s]?fire|none)\b(?:\s+for)?\s+(?P<location>{self_names}|{other_names})\b",
+            region,
+            re.IGNORECASE,
+        ):
+            location = state_match.group("location")
+            bound.add("self" if re.fullmatch(self_names, location, re.IGNORECASE) else "other")
+    return bound
+
+
+def _rule_both_no_fire_described(text: str, rule: str) -> bool:
+    return bool(
+        re.search(
+            rf"\bboth\b[^.;]{{0,55}}\b{rule}\b[^.;]{{0,35}}\b(?:no[-\s]?fire|does\s+not\s+fire|none)\b",
+            text,
+            re.IGNORECASE,
+        )
+        or re.search(
+            rf"\b{rule}\b[^.;]{{0,45}}\b(?:no[-\s]?fire|does\s+not\s+fire|none)\b[^.;]{{0,20}}\bboth\b",
+            text,
+            re.IGNORECASE,
+        )
+    )
+
+
+def _rule_state_contrast_described(note, clauses, rule, self_state, other_state, sid, other):
     """Verify that prose describes the live trigger-state contrast.
 
     A bare rule citation (``R2 exists/applies``) is never evidence.  When one
     peer is no-fire and the other fires, the note must establish both sides;
     the sealed grouped form ``R2 fires for those sleeves`` is accepted only
     when the same note also establishes the current sleeve's R2 no-fire state.
-    When both fire in opposite directions, both directions must be present.
+    When both fire, each direction must be explicitly bound to the correct
+    sleeve; mere co-occurrence of both direction words is insufficient.
     """
     joined = " ".join(clauses)
+    directions = _rule_bound_directions(joined, rule, sid, other)
+    no_fire = _rule_bound_no_fire(joined, rule, sid, other)
     if self_state == other_state:
         if self_state is None:
-            return _rule_no_fire_described(joined, rule)
-        return _rule_direction_described(joined, rule, self_state)
+            return _rule_both_no_fire_described(joined, rule) and not any(directions.values())
+        return directions["self"] == {self_state} and directions["other"] == {other_state}
     if self_state is not None and other_state is not None:
         return (
-            _rule_direction_described(joined, rule, self_state)
-            and _rule_direction_described(joined, rule, other_state)
+            directions["self"] == {self_state}
+            and directions["other"] == {other_state}
         )
     if self_state is None:
-        other_fires = (
-            _rule_direction_described(joined, rule, other_state)
-            or bool(
-                re.search(
-                    rf"\b{rule}\b[^.;]{{0,35}}\bfires?\s+for\s+(?:that|the|those|other)\s+sleeves?\b",
-                    joined,
-                    re.IGNORECASE,
-                )
+        grouped_other_fire = bool(
+            re.search(
+                rf"\b{rule}\b[^.;]{{0,35}}\bfires?\s+for\s+(?:that|the|those|other)\s+sleeves?\b",
+                joined,
+                re.IGNORECASE,
             )
         )
+        if any(directions.values()):
+            other_fires = (
+                directions["other"] == {other_state}
+                and not directions["self"]
+                and "self" in no_fire
+            )
+        else:
+            other_fires = grouped_other_fire
         return _rule_no_fire_described(note, rule) and other_fires
     return (
-        _rule_direction_described(joined, rule, self_state)
-        and _rule_no_fire_described(joined, rule)
+        directions["self"] == {self_state}
+        and not directions["other"]
+        and "other" in no_fire
     )
 
 
@@ -401,6 +836,17 @@ def _validate_comparative_consistency(sid, note, expected, errors):
     """
     if not isinstance(note, str):
         return
+    for sleeve, row in expected.items():
+        deterministic_target = BASELINE + sum(
+            INCREMENT if row["state"][rule] == "up"
+            else -INCREMENT if row["state"][rule] == "down"
+            else Decimal("0.00")
+            for rule in ("R2", "R3")
+        )
+        if Decimal(row["target"]) != deterministic_target:
+            errors.append(
+                f"{sleeve}: comparative input target does not match deterministic live R2/R3 arithmetic"
+            )
     clauses = [clause.strip() for clause in re.split(r"[.;]", note) if clause.strip()]
     for other in sorted(expected):
         if other == sid:
@@ -426,6 +872,8 @@ def _validate_comparative_consistency(sid, note, expected, errors):
                     rule,
                     expected[sid]["state"][rule],
                     expected[other]["state"][rule],
+                    sid,
+                    other,
                 ):
                     errors.append(f"{sid}.comparative_consistency_note must identify the live {rule} state difference from {other}")
             if not differing_rules:
@@ -436,6 +884,8 @@ def _validate_comparative_consistency(sid, note, expected, errors):
                         rule,
                         expected[sid]["state"][rule],
                         expected[other]["state"][rule],
+                        sid,
+                        other,
                     ):
                         errors.append(f"{sid}.comparative_consistency_note must identify the shared live {rule} state with {other}")
         else:
@@ -463,6 +913,8 @@ def _validate_comparative_consistency(sid, note, expected, errors):
                     rule,
                     expected[sid]["state"][rule],
                     expected[other]["state"][rule],
+                    sid,
+                    other,
                 ):
                     errors.append(f"{sid}.comparative_consistency_note must identify the live {rule} state contrast from {other}")
 
