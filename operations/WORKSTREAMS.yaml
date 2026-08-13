@@ -11376,6 +11376,63 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-12"
+      - gate: xasset0017-post-merge-verification
+        description: >
+          Lane M factual synchronization folded into XASSET-0018.
+          Independently re-confirmed from live GitHub state: PR #308
+          (XASSET-0017) is closed and merged, with accepted head
+          79f2584b38ba976ee24c5229fa23ff2e86a8107f and merge commit
+          993b677275bfe37eaeb49b9e0ab5b9efebbfa4ca. Exact PR-head CI run
+          31618741472 completed successfully. The live sealed corpus on
+          main therefore contains four sizing_conditionally_ready sleeves
+          (equity, fund_broad_market, fund_gld_defensive, crypto) and two
+          sizing_blocked sleeves (cash_reserve, debt_reduction). The prior
+          xasset0017-broad-market-role-redetermination gate remains
+          byte-unedited as historical filing-state text.
+        pr: 308
+        status: complete
+        date: "2026-08-12"
+      - gate: xasset0016-numeric-sizing-pr309-preserved-closure
+        description: >
+          Authorized prerequisite transition for XASSET-0018, verified
+          live rather than assumed. PR #309 was the sole open mutation
+          lane and remained draft, unmerged, mergeable, at exact head
+          252777014790d452948b051c3e3cb458dd16d347 on base
+          993b677275bfe37eaeb49b9e0ab5b9efebbfa4ca; exact-head CI run
+          31662773072 completed successfully. Its latest controlling
+          review, pullrequestreview-4923106083, reported 0 BLOCKING / 1
+          MAJOR / 0 MINOR: authoritative unrestricted prose remained
+          impossible to close exhaustively with finite semantic scanners.
+          PR #309 was therefore closed without merge. Branch
+          agent/xasset-0016-level1-numeric-sizing and its exact head remain
+          preserved; neither branch nor history was deleted or rewritten.
+        pr: 309
+        status: complete
+        date: "2026-08-12"
+      - gate: xasset0018-numeric-sizing-structural-authority
+        description: >
+          This session's governance-only Lane G amendment. XASSET-0018
+          amends only XASSET-0016's numeric-sizing schema, free-text, and
+          validator-authority provisions so that only recursively closed
+          structured fields carry numeric-sizing authority. It replaces
+          authoritative unrestricted prose with closed review-condition
+          enums, typed disclosure-only assertions, structured comparative
+          provenance, structured blocking-reason references, forced
+          authority-boundary constants, and a closed residual
+          classification. Human-readable explanation is permitted only as
+          deterministic generated display or separate derived_non_
+          authoritative material. Source-chain validation, recursive
+          schema closure, hash/manifest reconciliation, exact live
+          rederivation, the six-sleeve population mechanics, Axis B/C
+          eligibility, R2/R3, 16.67 baseline, fixed +/-2.00pp increment,
+          tie rules, arithmetic, null-not-zero blocked semantics, and
+          residual treatment remain unchanged. This filing implements no
+          schema-2.0 record or validator code and authorizes exactly one
+          future replacement implementation only after its own review,
+          acceptance, merge, and post-merge verification.
+        pr: 310
+        status: in_progress
+        date: "2026-08-12"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11411,6 +11468,7 @@ workstreams:
       - governance/audits/WS0014_LEVEL1_NUMERIC_SIZING_METHODOLOGY_AND_AUTHORIZATION_20260812.md
       - governance/decisions/XASSET-0017-fund-broad-market-role-redetermination.md
       - governance/audits/WS0014_FUND_BROAD_MARKET_ROLE_REDETERMINATION_20260812.md
+      - governance/decisions/XASSET-0018-numeric-sizing-structural-authority.md
     next_action: >
       XASSET-0009 (PR #293) is independently confirmed merged — see the
       xasset0009-post-merge-verification gate above. Its authorization
@@ -11912,9 +11970,26 @@ workstreams:
       acceptance, merge, and post-merge verification. XASSET-0016's own
       numeric-sizing methodology/future implementation remain wholly
       unauthorized to begin by this filing.
-    active_branch: claude/xasset-0017-broad-market-role-w3eoks
-    active_pr: null
-    last_verified_main_sha: 8886187d268bf1a7fede8ec5853cdcc32f24a020
+
+
+      Update, a later session, 2026-08-12: PR #308 (XASSET-0017) is
+      independently confirmed merged; PR #309's first numeric-sizing
+      implementation attempt is independently confirmed closed without
+      merge at preserved exact head
+      252777014790d452948b051c3e3cb458dd16d347 after repeated reviews
+      established that unrestricted authoritative prose cannot be
+      exhaustively policed by finite semantic scanners. XASSET-0018 is
+      now the sole active Lane G filing. Until it completes independent
+      exact-head review, principal acceptance, merge, and post-merge
+      verification, no replacement numeric-sizing implementation is
+      authorized to begin. After that lifecycle, exactly one future
+      schema-2.0 replacement implementation may reproduce the unchanged
+      XASSET-0016 methodology and numeric outputs using only closed
+      structured numeric authority. Level 2 work, policy adoption, and
+      any allocation check remain separately unauthorized.
+    active_branch: codex/xasset-0018-structured-numeric-authority
+    active_pr: 310
+    last_verified_main_sha: 993b677275bfe37eaeb49b9e0ab5b9efebbfa4ca
     last_verified_date: "2026-08-12"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
