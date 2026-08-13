@@ -369,7 +369,7 @@ uncertainty_assertions:
     source_record_id: equity
     source_path: intelligence/level1_sleeve_synthesis/profiles/equity.yaml
     source_content_sha256: 1f44f44369a4c1fe9ea824d99e82539d96f9ccf6407a740ef93d182a8b64bedc
-    selector: profile.abstention.equity_valuation_result_partial
+    selector: profile.abstention.equity_discount_rate_abstained
     projection: presence_only
     selector_key: null
     counterpart_sleeve_id: null
@@ -380,7 +380,7 @@ uncertainty_assertions:
     source_record_id: equity
     source_path: intelligence/level1_sleeve_synthesis/profiles/equity.yaml
     source_content_sha256: 1f44f44369a4c1fe9ea824d99e82539d96f9ccf6407a740ef93d182a8b64bedc
-    selector: profile.abstention.equity_discount_rate_abstained
+    selector: profile.abstention.equity_valuation_result_partial
     projection: presence_only
     selector_key: null
     counterpart_sleeve_id: null
@@ -436,5 +436,5 @@ governing_decisions:
 - XASSET-0017
 - XASSET-0018
 drafting_session_or_shard_id: xasset-0018-numeric-sizing-structural-replacement
-content_sha256: 97f517e2ae2f198ad0d8f9ea222812979ff4aa2acabc65d9a1ad4765fd5a83b1
+content_sha256: bda02626e3830024a318cbcbe148b1eaa8046da092ecbb5ed213f8573bf960c2
 cohort_manifest_entry: intelligence/level1_sleeve_synthesis/numeric_sizing/COHORT_MANIFEST.yaml#equity

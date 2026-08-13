@@ -165,15 +165,120 @@ PRESERVED_TARGETS = {
 }
 PERCENT_RE = re.compile(r"^[0-9]+\.[0-9]{2}$")
 HASH_RE = re.compile(r"^[0-9a-f]{64}$")
+UTC_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+ASSERTION_TYPE_ORDER = (
+    "policy_blocking_evidence",
+    "relationship_secondary_condition",
+    "stronger_evidence_maturity",
+    "level2_valuation_coverage_gap",
+    "crypto_cross_coin_correlation_abstention",
+    "crypto_per_coin_historical_divergence",
+)
 
 
 class SourceValidationError(ValueError):
     """The upstream authority chain is invalid or outside the preservation fence."""
 
 
+class _UniqueKeySafeLoader(yaml.SafeLoader):
+    """Safe YAML loader that treats repeated mapping keys as malformed input."""
+
+
+def _construct_unique_mapping(
+    loader: _UniqueKeySafeLoader, node: yaml.MappingNode, deep: bool = False
+) -> dict:
+    loader.flatten_mapping(node)
+    mapping: dict[Any, Any] = {}
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        try:
+            duplicate = key in mapping
+        except TypeError as exc:
+            raise yaml.constructor.ConstructorError(
+                "while constructing a mapping",
+                node.start_mark,
+                "found an unhashable mapping key",
+                key_node.start_mark,
+            ) from exc
+        if duplicate:
+            raise yaml.constructor.ConstructorError(
+                "while constructing a mapping",
+                node.start_mark,
+                f"found duplicate key {key!r}",
+                key_node.start_mark,
+            )
+        mapping[key] = loader.construct_object(value_node, deep=deep)
+    return mapping
+
+
+_UniqueKeySafeLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+    _construct_unique_mapping,
+)
+
+
 def _load(path: Path) -> Any:
     with path.open(encoding="utf-8") as handle:
-        return yaml.safe_load(handle)
+        return yaml.load(handle, Loader=_UniqueKeySafeLoader)
+
+
+def _require_unique_identities(entries: list, identity, where: str) -> None:
+    seen: dict[Any, int] = {}
+    for index, entry in enumerate(entries):
+        governed_identity = identity(entry)
+        if governed_identity in seen:
+            raise SourceValidationError(
+                f"{where}: duplicate governed projection identity {governed_identity!r} "
+                f"at indexes {seen[governed_identity]} and {index}"
+            )
+        seen[governed_identity] = index
+
+
+def _blocking_selector_identity(entry: dict) -> tuple:
+    reference = entry.get("reference")
+    if reference is None:
+        reference_mode = "none"
+        relationship_record_id = None
+    else:
+        reference_mode = "sealed_relationship_hash_pin"
+        record_path = reference.get("record_path")
+        relationship_record_id = (
+            record_path.rsplit("/", 1)[-1].removesuffix(".yaml")
+            if isinstance(record_path, str) else None
+        )
+    return (
+        entry.get("reason_type"),
+        entry.get("other_sleeve_id"),
+        reference_mode,
+        relationship_record_id,
+    )
+
+
+def _validate_projection_identities(sources: dict[str, dict[str, dict]]) -> None:
+    """Reject malformed source multiplicity before any row becomes authority."""
+    for sleeve_id, policy in sources["policy_adoption"].items():
+        blocking = policy["blocking_evidence"]
+        _require_unique_identities(
+            blocking,
+            lambda entry: (entry.get("reason_type"), entry.get("other_sleeve_id")),
+            f"policy_adoption/{sleeve_id}.blocking_evidence assertion projection",
+        )
+        _require_unique_identities(
+            blocking,
+            _blocking_selector_identity,
+            f"policy_adoption/{sleeve_id}.blocking_evidence blocking projection",
+        )
+        _require_unique_identities(
+            policy["relationship_coverage_ledger"],
+            lambda entry: entry.get("other_sleeve_id"),
+            f"policy_adoption/{sleeve_id}.relationship_coverage_ledger R2 projection",
+        )
+    for relation_id, relation in sources["sleeve_relationship"].items():
+        _require_unique_identities(
+            relation["secondary_conditions"],
+            lambda condition_type: condition_type,
+            f"sleeve_relationship/{relation_id}.secondary_conditions R3/assertion projection",
+        )
 
 
 def _source_path(kind: str, record_id: str) -> str:
@@ -213,6 +318,7 @@ def _load_exact_sources(repo_root: Path) -> dict[str, dict[str, dict]]:
         if derived_id != relation_id:
             raise SourceValidationError(f"relationship identity mismatch: {relation_id} != {derived_id}")
         sources["sleeve_relationship"][relation_id] = relation
+    _validate_projection_identities(sources)
     return sources
 
 
@@ -248,6 +354,37 @@ def _uncertainty_ref(
         "selector_key": selector_key,
         "counterpart_sleeve_id": counterpart_sleeve_id,
     }
+
+
+def _assertion_sort_key(assertion: dict) -> tuple:
+    source_ref = assertion["source_ref"]
+    source_order = {
+        "sleeve_profile": SLEEVE_ORDER,
+        "policy_adoption": SLEEVE_ORDER,
+        "sleeve_relationship": RELATIONSHIP_ORDER,
+    }[source_ref["source_kind"]]
+    selector_key = source_ref["selector_key"]
+    if selector_key is None:
+        selector_key_order = (-1, -1)
+    elif "reason_code" in selector_key:
+        other = selector_key["other_sleeve_id"]
+        selector_key_order = (
+            BLOCKING_REASON_ORDER[selector_key["reason_code"]],
+            SLEEVE_ORDER.index(other) if other is not None else -1,
+        )
+    else:
+        selector_key_order = (
+            CONDITION_TYPE_ORDER.index(selector_key["condition_type"]),
+            -1,
+        )
+    counterpart = source_ref["counterpart_sleeve_id"]
+    return (
+        ASSERTION_TYPE_ORDER.index(assertion["assertion_type"]),
+        source_order.index(source_ref["source_record_id"]),
+        source_ref["selector"],
+        selector_key_order,
+        SLEEVE_ORDER.index(counterpart) if counterpart is not None else -1,
+    )
 
 
 def _other_endpoint(relation: dict, sleeve_id: str) -> str:
@@ -505,11 +642,25 @@ def _profile_assertions(state: dict, sleeve_id: str) -> list[dict]:
 
 
 def _uncertainty_assertions(state: dict, sleeve_id: str) -> list[dict]:
-    return (
+    assertions = (
         _policy_assertions(state, sleeve_id)
         + _relationship_assertions(state, sleeve_id)
         + _profile_assertions(state, sleeve_id)
     )
+    _require_unique_identities(
+        assertions,
+        lambda assertion: (
+            assertion["assertion_type"],
+            assertion["source_ref"]["source_kind"],
+            assertion["source_ref"]["source_record_id"],
+            assertion["source_ref"]["selector"],
+            tuple((assertion["source_ref"]["selector_key"] or {}).items()),
+            assertion["source_ref"]["counterpart_sleeve_id"],
+        ),
+        f"numeric_sizing/{sleeve_id}.uncertainty_assertions",
+    )
+
+    return sorted(assertions, key=_assertion_sort_key)
 
 
 def _blocking_reason_refs(state: dict, sleeve_id: str) -> list[dict]:
@@ -659,10 +810,10 @@ def build_expected_records(repo_root: Path, sealed_at: str) -> tuple[dict[str, d
 
 
 def _valid_utc_timestamp(value: Any) -> bool:
-    if not isinstance(value, str) or not value.endswith("Z"):
+    if not isinstance(value, str) or UTC_TIMESTAMP_RE.fullmatch(value) is None:
         return False
     try:
-        datetime.fromisoformat(value[:-1] + "+00:00")
+        datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
     except ValueError:
         return False
     return True

@@ -30,7 +30,7 @@ cohort:
   sealed_at: '2026-08-13T00:00:00Z'
 - sleeve_id: equity
   record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/equity.yaml
-  content_sha256: 97f517e2ae2f198ad0d8f9ea222812979ff4aa2acabc65d9a1ad4765fd5a83b1
+  content_sha256: bda02626e3830024a318cbcbe148b1eaa8046da092ecbb5ed213f8573bf960c2
   schema_version: '2.0'
   governing_decisions: *id001
   numeric_target_status: provisional_target_assigned

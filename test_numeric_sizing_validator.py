@@ -115,6 +115,44 @@ def reseal_source(repo: Path, namespace: Path, filename: str) -> None:
     write(path.parent / "COHORT_MANIFEST.yaml", manifest)
 
 
+def duplicate_source_projection(
+    repo: Path, namespace: Path, filename: str, field: str, index: int = 0
+) -> None:
+    path = repo / namespace / filename
+    data = load(path)
+    data[field].append(deepcopy(data[field][index]))
+    write(path, data)
+    reseal_source(repo, namespace, filename)
+
+
+def rebuild_and_reseal_numeric_corpus(repo: Path) -> None:
+    sealed_at = load(record_path(repo, "equity"))["sealed_at"]
+    records, manifest = nsv.build_expected_records(repo, sealed_at)
+    for sleeve_id, record in records.items():
+        write(record_path(repo, sleeve_id), record)
+    write(manifest_path(repo), manifest)
+
+
+def set_all_sealed_at(repo: Path, value: str) -> None:
+    manifest = load(manifest_path(repo))
+    for sleeve_id in nsv.SLEEVE_ORDER:
+        path = record_path(repo, sleeve_id)
+        record = load(path)
+        record["sealed_at"] = value
+        record["content_sha256"] = canonical_record_hash(record)
+        write(path, record)
+        row = next(row for row in manifest["cohort"] if row["sleeve_id"] == sleeve_id)
+        row["content_sha256"] = record["content_sha256"]
+        row["sealed_at"] = value
+    write(manifest_path(repo), manifest)
+
+
+def inject_duplicate_yaml_key(path: Path, anchor: str, duplicate: str | None = None) -> None:
+    source = path.read_text(encoding="utf-8")
+    assert source.count(anchor) >= 1
+    path.write_text(source.replace(anchor, anchor + (duplicate or anchor), 1), encoding="utf-8")
+
+
 def assert_bad(repo: Path, needle: str | None = None) -> list[str]:
     errors = nsv.validate(repo)
     assert errors
@@ -144,6 +182,77 @@ def test_live_schema2_corpus_passes_production_validator():
     assert nsv.validate(ROOT) == []
 
 
+@pytest.mark.parametrize(
+    "relative_path,anchor,duplicate",
+    [
+        (nsv.NUMERIC_DIR / "equity.yaml", "schema_version: '2.0'\n", None),
+        (
+            nsv.NUMERIC_DIR / "equity.yaml",
+            "  scope_level: level_1_sleeve_only\n",
+            None,
+        ),
+        (
+            nsv.NUMERIC_DIR / "COHORT_MANIFEST.yaml",
+            "- sleeve_id: cash_reserve\n",
+            "  sleeve_id: cash_reserve\n",
+        ),
+        (
+            nsv.NUMERIC_DIR / "equity.yaml",
+            "  - source_kind: sleeve_profile\n",
+            "    source_kind: sleeve_profile\n",
+        ),
+        (
+            nsv.NUMERIC_DIR / "cash_reserve.yaml",
+            "- reason_code: sealed_unresolved_relationship\n",
+            "  reason_code: sealed_unresolved_relationship\n",
+        ),
+        (
+            nsv.NUMERIC_DIR / "equity.yaml",
+            "- counterpart_sleeve_id: crypto\n",
+            "  counterpart_sleeve_id: crypto\n",
+        ),
+    ],
+)
+def test_duplicate_yaml_mapping_keys_rejected_at_authoritative_load(
+    repo, relative_path, anchor, duplicate
+):
+    inject_duplicate_yaml_key(repo / relative_path, anchor, duplicate)
+    assert_bad(repo, "duplicate key")
+
+
+def test_duplicate_yaml_key_in_exact_source_rejected_after_valid_value_shadow(repo):
+    path = repo / nsv.POLICY_DIR / "equity.yaml"
+    inject_duplicate_yaml_key(
+        path,
+        "sleeve_id: equity\n",
+        "sleeve_id: equity\n",
+    )
+    assert_bad(repo, "duplicate key")
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "2026-08-13Z",
+        "2026-08-13T12Z",
+        "2026-08-13T12:30Z",
+        "2026-08-13 12:30:00Z",
+        "2026-08-13T12:30:00+00:00",
+        "2026-08-13T12:30:00.000Z",
+        "2026-02-30T12:30:00Z",
+        "2026-08-13T24:00:00Z",
+    ],
+)
+def test_noncanonical_or_invalid_sealed_at_rejected_by_production_validation(repo, value):
+    set_all_sealed_at(repo, value)
+    assert_bad(repo, "RFC-3339 UTC")
+
+
+def test_canonical_whole_second_utc_timestamp_is_accepted():
+    assert nsv._valid_utc_timestamp("2026-08-13T12:30:00Z")
+    assert nsv.validate(ROOT) == []
+
+
 def test_source_authority_is_exact_common_nineteen_row_snapshot():
     records, _ = nsv.build_expected_records(ROOT, "2026-08-13T00:00:00Z")
     snapshots = [record["source_authority"] for record in records.values()]
@@ -168,6 +277,43 @@ def test_invalid_upstream_record_rejected_even_after_own_rehash(repo, namespace,
     write(path, data)
     reseal_source(repo, namespace, filename)
     assert_bad(repo, "source")
+
+
+@pytest.mark.parametrize(
+    "namespace,filename,field",
+    [
+        (nsv.POLICY_DIR, "equity.yaml", "blocking_evidence"),
+        (nsv.POLICY_DIR, "cash_reserve.yaml", "blocking_evidence"),
+        (nsv.POLICY_DIR, "equity.yaml", "relationship_coverage_ledger"),
+        (nsv.RELATIONSHIP_DIR, "crypto_equity.yaml", "secondary_conditions"),
+    ],
+)
+def test_duplicate_projected_source_identity_rejected_after_source_rehash(
+    repo, namespace, filename, field
+):
+    duplicate_source_projection(repo, namespace, filename, field)
+    assert_bad(repo)
+
+
+def test_coordinated_duplicate_policy_attack_rejected_after_all_numeric_resealed(repo, monkeypatch):
+    duplicate_source_projection(
+        repo, nsv.POLICY_DIR, "cash_reserve.yaml", "blocking_evidence"
+    )
+    with monkeypatch.context() as bypass:
+        bypass.setattr(nsv, "_validate_projection_identities", lambda sources: None)
+        rebuild_and_reseal_numeric_corpus(repo)
+    assert_bad(repo, "duplicate governed projection identity")
+
+
+def test_same_reason_rows_with_distinct_governed_counterparts_remain_valid():
+    policy = load(ROOT / nsv.POLICY_DIR / "equity.yaml")
+    secondary_rows = [
+        row for row in policy["blocking_evidence"]
+        if row["reason_type"] == "secondary_condition_present"
+    ]
+    assert len(secondary_rows) > 1
+    assert len({row["other_sleeve_id"] for row in secondary_rows}) == len(secondary_rows)
+    assert nsv.validate(ROOT) == []
 
 
 @pytest.mark.parametrize("namespace", [nsv.PROFILE_DIR, nsv.POLICY_DIR, nsv.RELATIONSHIP_DIR])
@@ -335,6 +481,26 @@ def test_uncertainty_assertion_missing_extra_duplicate_and_order_rejected(repo):
         mutate_record(repo, "equity", mutate)
         assert_bad(repo)
     assert original
+
+
+def test_all_builder_assertions_follow_xasset0018_canonical_order():
+    records, _ = nsv.build_expected_records(ROOT, "2026-08-13T00:00:00Z")
+    for sleeve_id in nsv.PRESERVED_ASSIGNED:
+        assertions = records[sleeve_id]["uncertainty_assertions"]
+        assert assertions == sorted(assertions, key=nsv._assertion_sort_key)
+
+
+def test_equity_same_type_profile_assertions_sort_by_selector_string():
+    records, _ = nsv.build_expected_records(ROOT, "2026-08-13T00:00:00Z")
+    selectors = [
+        row["source_ref"]["selector"]
+        for row in records["equity"]["uncertainty_assertions"]
+        if row["assertion_type"] == "level2_valuation_coverage_gap"
+    ]
+    assert selectors == [
+        "profile.abstention.equity_discount_rate_abstained",
+        "profile.abstention.equity_valuation_result_partial",
+    ]
 
 
 def test_blocked_records_have_exact_reason_population_and_no_comparisons():
@@ -557,6 +723,29 @@ def test_manifest_bidirectional_stale_hash_and_status_rejected(repo):
 def test_coordinated_rehash_cannot_legitimize_invalid_structured_content(repo):
     mutate_record(repo, "equity", lambda data: data["authority_boundaries"].__setitem__("allocation_check_authority", "allowed"))
     assert_bad(repo, "allocation_check_authority")
+
+
+@pytest.mark.parametrize("attack", ["level2_selector", "cash_residual", "comparative_reversal"])
+def test_correction_matrix_fresh_structural_attacks_remain_rejected(repo, attack):
+    if attack == "level2_selector":
+        def change(data):
+            data["applied_adjustments"][0]["evidence_refs"][0]["selector"] = "instrument.weight"
+        mutate_record(repo, "equity", change)
+    elif attack == "cash_residual":
+        mutate_manifest(
+            repo,
+            lambda data: data["portfolio_reconciliation"]["residual_classification"].__setitem__(
+                "cash_reserve_equivalence", "cash_reserve"
+            ),
+        )
+    else:
+        def change(data):
+            relation = data["comparative_provenance"][0]["target_relation"]
+            data["comparative_provenance"][0]["target_relation"] = (
+                "lower" if relation != "lower" else "higher"
+            )
+        mutate_record(repo, "equity", change)
+    assert_bad(repo)
 
 
 def test_targets_history_holdings_and_chart_state_have_no_numeric_influence(repo):
