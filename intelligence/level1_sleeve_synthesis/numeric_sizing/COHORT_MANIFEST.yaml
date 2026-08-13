@@ -1,0 +1,67 @@
+schema_version: '2.0'
+governing_decisions: &id001
+- XASSET-0016
+- XASSET-0017
+- XASSET-0018
+cohort:
+- sleeve_id: cash_reserve
+  record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/cash_reserve.yaml
+  content_sha256: ce2000f1b38cece1750d231091bc4698df5beec51b81790aa7c9394ef4f517e8
+  schema_version: '2.0'
+  governing_decisions: *id001
+  numeric_target_status: no_provisional_target_pending_axis_c
+  drafting_session_or_shard_id: xasset-0018-numeric-sizing-structural-replacement
+  sealed_at: '2026-08-13T00:00:00Z'
+- sleeve_id: crypto
+  record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/crypto.yaml
+  content_sha256: 58d9ad35a30a095b5f01406faff13b868fabbe6e926f8d4d287c93fcf4014aab
+  schema_version: '2.0'
+  governing_decisions: *id001
+  numeric_target_status: provisional_target_assigned
+  drafting_session_or_shard_id: xasset-0018-numeric-sizing-structural-replacement
+  sealed_at: '2026-08-13T00:00:00Z'
+- sleeve_id: debt_reduction
+  record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/debt_reduction.yaml
+  content_sha256: c69fae5876928e4c8f58ad17406cda2924d00d4c08bb25660b5716f846f712f1
+  schema_version: '2.0'
+  governing_decisions: *id001
+  numeric_target_status: no_provisional_target_pending_axis_c
+  drafting_session_or_shard_id: xasset-0018-numeric-sizing-structural-replacement
+  sealed_at: '2026-08-13T00:00:00Z'
+- sleeve_id: equity
+  record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/equity.yaml
+  content_sha256: bda02626e3830024a318cbcbe148b1eaa8046da092ecbb5ed213f8573bf960c2
+  schema_version: '2.0'
+  governing_decisions: *id001
+  numeric_target_status: provisional_target_assigned
+  drafting_session_or_shard_id: xasset-0018-numeric-sizing-structural-replacement
+  sealed_at: '2026-08-13T00:00:00Z'
+- sleeve_id: fund_broad_market
+  record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/fund_broad_market.yaml
+  content_sha256: 5d5d573efd83e6a095d258dc3dcdb00ac464882bfd5d0014df0b9559f8e901d5
+  schema_version: '2.0'
+  governing_decisions: *id001
+  numeric_target_status: provisional_target_assigned
+  drafting_session_or_shard_id: xasset-0018-numeric-sizing-structural-replacement
+  sealed_at: '2026-08-13T00:00:00Z'
+- sleeve_id: fund_gld_defensive
+  record_path: intelligence/level1_sleeve_synthesis/numeric_sizing/fund_gld_defensive.yaml
+  content_sha256: 885c8130fa5657161295918fb545549eb59d1baa78ff718b20498bfed3bd48df
+  schema_version: '2.0'
+  governing_decisions: *id001
+  numeric_target_status: provisional_target_assigned
+  drafting_session_or_shard_id: xasset-0018-numeric-sizing-structural-replacement
+  sealed_at: '2026-08-13T00:00:00Z'
+portfolio_reconciliation:
+  sum_of_assigned_targets_pct: '66.68'
+  unsized_reserved_capital_pct: '33.32'
+  portfolio_total_pct: '100.00'
+  reconciliation_identity_holds: true
+  assigned_record_count: 4
+  blocked_record_count: 2
+  residual_classification:
+    residual_type: unsized_unassigned_capital
+    sleeve_id: null
+    cash_reserve_equivalence: prohibited
+    redistribution_status: prohibited_without_future_governance
+    policy_target_status: not_a_target
