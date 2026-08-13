@@ -91,10 +91,17 @@ cell, inspects no study result, and produces no research result.
 The canonical files were finalized before the following hashes were computed. SHA-256 is computed
 over raw file bytes exactly as committed:
 
+<!-- RISK-0001-HASH-PINS-V1
+protocol_path: research/level1_sleeve_robustness/PROTOCOL_V1.md
+protocol_sha256: 6858257d2230e37f7ce51841d27a993b66c4803792bd3cf77727561034fc7941
+preregistration_path: research/level1_sleeve_robustness/pre_registration.yaml
+preregistration_sha256: 7203c78cc0d0e951c833a201f5798f4e01817e561ca2dcb170da04d6fbb5de58
+-->
+
 - `research/level1_sleeve_robustness/PROTOCOL_V1.md`:
-  `f4c08e66ca0f38affb3fddcd0fbe8ac0a095b9756648f87d626f419dcbc7a925`
+  `6858257d2230e37f7ce51841d27a993b66c4803792bd3cf77727561034fc7941`
 - `research/level1_sleeve_robustness/pre_registration.yaml`:
-  `fd7fcf47bab02366a5804aa5546caee8907ad177e62c353775989c333a11b59f`
+  `7203c78cc0d0e951c833a201f5798f4e01817e561ca2dcb170da04d6fbb5de58`
 
 The structured preregistration is canonical for all closed identities, sources, fallbacks, windows,
 thresholds, vocabularies, metrics, and counts. The protocol explains the design but cannot enlarge or
@@ -162,6 +169,27 @@ The only result states are:
 `method_review_direction` is `range_or_nonpoint` or `null`. The study may suggest that a future method
 consider a range/nonpoint representation but may not create that replacement method.
 
+The preregistration fully determines the result. Every registered metric maps once to one of
+`PATH_RISK`, `RECOVERY`, `OPPORTUNITY_COST`, `CONTRIBUTION`, `EQUITY_CROSS_SECTION`,
+`REPRESENTATION`, or `CO_BEHAVIOR`; only the first three vote. Each metric has a formula, preference
+direction, unit, tolerance reference, applicability, voting status, and missing-result rule. The two
+history windows are mandatory voting evidence and the five fixed stresses are conditional voting
+evidence when lawfully applicable. Metric/window and family reduction use the fixed precedence
+`WORSENS`, `UNAVAILABLE`, `IMPROVES`, `EQUIVALENT`; pre-inception `NOT_APPLICABLE` evidence is
+excluded, never imputed.
+
+A LOWER or HIGHER direction is `POLICY_REVIEW_REQUIRED` only with no mandatory worsening,
+unavailability, or conflict and strict improvement in at least two independent families. Complete
+available evidence that does not mix improving and worsening families and does not satisfy that rule
+is `CENTER_NOT_REJECTED`; missing, mixed, conflicted, or formula-integrity evidence is
+`UNABLE_TO_DETERMINE`. A closed nine-row table reduces both directions to the published result and
+review direction. A separate exhaustive 16-row point-evidence table reduces each direction as
+displacing the reference, an adjacent materially worse state, not distinguished, or unavailable.
+Any unavailable point evidence is unable to determine; displacement makes the point not supported;
+at least one materially worse adjacent state with no displacement leaves the point not rejected;
+and two undistinguished adjacent states make point precision not supported with a range/nonpoint
+review direction. Thus non-rejection is never the fallback for insufficient evidence.
+
 ### 7. Data sources, fallbacks, receipts, and disposition
 
 The exact source hierarchy is frozen in the preregistration:
@@ -179,12 +207,22 @@ corporate-action treatment, provenance/licensing, and commit/quarantine disposit
 licensing policy is unchanged. Fallback retries are allowed only before registered execution and must
 be logged; no source may be changed after results are seen.
 
-### 8. Data and crypto gates
+### 8. Two-stage data and crypto gates
 
-No registered cell executes until all required data gates pass. A failure makes affected cells
-ineligible, preserves null/abstention, and never authorizes substitute data, a silent universe
-reduction, interpolation, forward fill, zero-return treatment, or a future observation mapped
-backward.
+Stage A is a global study-integrity gate. Hash identity, schema closure, trial inventory, runner/config
+identity, source hierarchy, global code/version identity, study-wide provenance, and the complete
+pre-execution eligibility matrix must all pass or the entire study halts and zero cells execute.
+
+Stage B is deterministic cell/data eligibility. Source/receipt, coverage/gap, identity/action,
+total-return, representation/window-quality, and comparator failures make only dependent registered
+cells or metrics ineligible unless the structured authority declares the input globally mandatory.
+All acquisition, validation, and eligibility states freeze before the first cell. An intersecting SOL
+gap affects SOL cells; VEA acquisition failure affects VEA cells and then the mandatory broad-market
+reducer; an unresolved CEG action affects intersecting CEG cells and then the equity breadth reducer;
+a missing DFF day affects opportunity-cost metrics; a failed conditional gold admission excludes the
+peer. Propagation is closed and permits no runtime discretion. Neither stage authorizes substitute
+data, silent universe reduction, interpolation, forward fill, zero-return treatment, or future data
+mapped backward.
 
 Crypto requires complete page receipts, terminal pagination, UTC normalization, daily expected-day
 inventory, zero duplicates, positive/internal OHLC validity, and zero missing expected UTC days in an
@@ -209,7 +247,9 @@ affected period is unresolved/null.
 
 DFF is analytical opportunity cost only—not cash, residual, a destination, a fifth sleeve, or policy.
 It uses a one-U.S.-business-day availability lag and simple actual/360 daily accrual compounded over
-calendar days. Gaps over seven calendar days fail affected comparator cells.
+calendar days. The prior seven-day tolerance is removed. Zero missing required lawfully lagged DFF
+observations are allowed; any missing required observation makes the affected opportunity-cost
+metric unavailable, without creating strategic cash or a fifth sleeve.
 
 Equity/ETF observations use official XNYS sessions and closes. Crypto remains 24/7 UTC; at each XNYS
 close only the latest completed UTC daily close at or before that timestamp may map. Weekend crypto
@@ -251,18 +291,32 @@ SPY/VEA/VWO and BTC/ETH/SOL remain separate. Material directional differences ma
 `unable_to_determine`. GLD may be studied standalone; conditional peers may only test representation
 sensitivity after their gates pass. No conflict is averaged away.
 
-### 12. Dominance and policy-review rule
+### 12. Metric, representation, dominance, and point-target reduction
 
-LOWER or HIGHER is compared only with the same family's historical reference. Mandatory independent
-families are downside path, recovery burden, and opportunity cost. A candidate dominates only when it
-is no materially worse across every applicable family and strictly improves at least two distinct
-families. Correlated metrics inside one family count once. Representation consistency is a veto, not
-an extra improvement count. Monotonicity is required only for mathematically exposure-scaled loss and
-opportunity contribution.
+LOWER or HIGHER is compared only with the same family's historical reference. The defined voting
+metrics are exposure-scaled drawdown loss, stress loss, underwater burden, and excess-return
+contribution; their formulas and signs are closed in the YAML. Raw return/path, recovery-duration,
+constituent-envelope, cross-sectional, representation, and co-behavior metrics are diagnostic or veto
+gates and cannot add votes.
 
-The 1.00pp contribution/equivalence tolerances, 30-day recovery tolerance, 10pp equity-breadth
-tolerance, 75% equity directional breadth, and 21-constituent minimum are uncalibrated one-study
-`NUM-0001` provisional governance guardrails. Conflict produces `unable_to_determine`.
+SPY/VEA/VWO and BTC/ETH/SOL are all mandatory and must agree; unavailable mandatory representations
+make the family unavailable and lawful disagreement is conflict. GLD controls unless a conditional
+peer passes every admission gate, after which that peer must remain available and agree or veto.
+Equity requires 21 eligible constituents, 75% breadth, agreeing median, and stable leave-one-out
+direction without ever constructing an aggregate path.
+
+The canonical NUM-0001 registry contains every consequential constant with exact value/unit,
+classification, selection basis, evidence status, scope, study, lapse, reuse rule, canonical source,
+and calibration/evidence-bounded flags. It includes the 20% perturbation, DFF actual/360 and zero-day
+missing rule, two-family trigger, each voting tolerance, 21/75% equity gates, gold parity thresholds,
+and zero crypto-gap thresholds. These are uncalibrated one-study guardrails except the externally
+imposed actual/360 convention. Representation/scenario/window counts and 777 are separately recorded
+as mathematical derivations, not selected parameters. Equality at a tolerance is equivalence.
+
+Exposure-scaled formulas are rederived with decimal arithmetic to six places; integrity failure is
+unable to determine. The nine-row directional and 16-row point-evidence tables cover lower-only
+review, higher-only review, neither, both, every insufficient-evidence combination, and point-target/
+method fields. No discretionary mixed-direction or point-target judgment remains.
 
 ### 13. Trial inventory
 

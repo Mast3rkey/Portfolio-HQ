@@ -6,6 +6,67 @@ structured preregistration is canonical for every closed value, vocabulary, thre
 window, and trial count. If this narrative and the structured file differ, execution must stop and a
 separate governance correction is required.
 
+The following block is a mechanically checked, non-independent mirror of the canonical
+preregistration. It exists only to detect protocol/preregistration drift; it cannot amend the YAML.
+
+<!-- RISK-0001-PROTOCOL-MIRROR-V1
+schema_version: "1.0"
+study_id: RISK-0001
+scenario_states: [LOWER, HISTORICAL_REFERENCE, HIGHER]
+relative_perturbation: "0.20"
+scenario_magnitudes:
+  EQUITY: {LOWER: "14.94", HISTORICAL_REFERENCE: "18.67", HIGHER: "22.40"}
+  FUND_BROAD_MARKET: {LOWER: "11.74", HISTORICAL_REFERENCE: "14.67", HIGHER: "17.60"}
+  FUND_GLD_DEFENSIVE: {LOWER: "13.34", HISTORICAL_REFERENCE: "16.67", HIGHER: "20.00"}
+  CRYPTO: {LOWER: "13.34", HISTORICAL_REFERENCE: "16.67", HIGHER: "20.00"}
+window_ids: [ASSET_AVAILABLE_HISTORY, FAMILY_COMMON_OVERLAP, GFC_2008, Q4_2018, COVID_2020, RATE_INFLATION_2022, CRYPTO_STRESS_2022]
+window_voting_roles:
+  ASSET_AVAILABLE_HISTORY: MANDATORY_VOTING
+  FAMILY_COMMON_OVERLAP: MANDATORY_VOTING
+  GFC_2008: CONDITIONAL_VOTING
+  Q4_2018: CONDITIONAL_VOTING
+  COVID_2020: CONDITIONAL_VOTING
+  RATE_INFLATION_2022: CONDITIONAL_VOTING
+  CRYPTO_STRESS_2022: CONDITIONAL_VOTING
+source_fallbacks:
+  equities_etfs: [ALPACA_MARKET_DATA, YAHOO_FINANCE_CHART, ABSTAIN]
+  crypto: [ALPACA_CRYPTO, COINBASE_EXCHANGE, ABSTAIN]
+  comparator: [FRED_DFF, ABSTAIN_OPPORTUNITY_COST_CELLS]
+  corporate_actions: [ALPACA_CORPORATE_ACTIONS, SEC_EDGAR_OR_ISSUER, ABSTAIN_AFFECTED_CELLS]
+data_gate_stages: [GLOBAL_STUDY_INTEGRITY, CELL_DATA_ELIGIBILITY]
+voting_families: [PATH_RISK, RECOVERY, OPPORTUNITY_COST]
+minimum_improvement_families: 2
+total_state_table:
+  - {lower: POLICY_REVIEW_REQUIRED, higher: POLICY_REVIEW_REQUIRED, result: unable_to_determine, review_direction: null}
+  - {lower: POLICY_REVIEW_REQUIRED, higher: CENTER_NOT_REJECTED, result: policy_review_required, review_direction: lower_exposure}
+  - {lower: POLICY_REVIEW_REQUIRED, higher: UNABLE_TO_DETERMINE, result: unable_to_determine, review_direction: null}
+  - {lower: CENTER_NOT_REJECTED, higher: POLICY_REVIEW_REQUIRED, result: policy_review_required, review_direction: higher_exposure}
+  - {lower: CENTER_NOT_REJECTED, higher: CENTER_NOT_REJECTED, result: provisional_scenario_not_rejected, review_direction: null}
+  - {lower: CENTER_NOT_REJECTED, higher: UNABLE_TO_DETERMINE, result: unable_to_determine, review_direction: null}
+  - {lower: UNABLE_TO_DETERMINE, higher: POLICY_REVIEW_REQUIRED, result: unable_to_determine, review_direction: null}
+  - {lower: UNABLE_TO_DETERMINE, higher: CENTER_NOT_REJECTED, result: unable_to_determine, review_direction: null}
+  - {lower: UNABLE_TO_DETERMINE, higher: UNABLE_TO_DETERMINE, result: unable_to_determine, review_direction: null}
+point_state_table:
+  - {lower: DISPLACES_REFERENCE, higher: DISPLACES_REFERENCE, point_target_assessment: not_supported, method_review_direction: range_or_nonpoint}
+  - {lower: DISPLACES_REFERENCE, higher: ADJACENT_MATERIALLY_WORSE, point_target_assessment: not_supported, method_review_direction: range_or_nonpoint}
+  - {lower: DISPLACES_REFERENCE, higher: NOT_DISTINGUISHED, point_target_assessment: not_supported, method_review_direction: range_or_nonpoint}
+  - {lower: DISPLACES_REFERENCE, higher: UNAVAILABLE, point_target_assessment: unable_to_determine, method_review_direction: null}
+  - {lower: ADJACENT_MATERIALLY_WORSE, higher: DISPLACES_REFERENCE, point_target_assessment: not_supported, method_review_direction: range_or_nonpoint}
+  - {lower: ADJACENT_MATERIALLY_WORSE, higher: ADJACENT_MATERIALLY_WORSE, point_target_assessment: not_rejected, method_review_direction: null}
+  - {lower: ADJACENT_MATERIALLY_WORSE, higher: NOT_DISTINGUISHED, point_target_assessment: not_rejected, method_review_direction: null}
+  - {lower: ADJACENT_MATERIALLY_WORSE, higher: UNAVAILABLE, point_target_assessment: unable_to_determine, method_review_direction: null}
+  - {lower: NOT_DISTINGUISHED, higher: DISPLACES_REFERENCE, point_target_assessment: not_supported, method_review_direction: range_or_nonpoint}
+  - {lower: NOT_DISTINGUISHED, higher: ADJACENT_MATERIALLY_WORSE, point_target_assessment: not_rejected, method_review_direction: null}
+  - {lower: NOT_DISTINGUISHED, higher: NOT_DISTINGUISHED, point_target_assessment: not_supported, method_review_direction: range_or_nonpoint}
+  - {lower: NOT_DISTINGUISHED, higher: UNAVAILABLE, point_target_assessment: unable_to_determine, method_review_direction: null}
+  - {lower: UNAVAILABLE, higher: DISPLACES_REFERENCE, point_target_assessment: unable_to_determine, method_review_direction: null}
+  - {lower: UNAVAILABLE, higher: ADJACENT_MATERIALLY_WORSE, point_target_assessment: unable_to_determine, method_review_direction: null}
+  - {lower: UNAVAILABLE, higher: NOT_DISTINGUISHED, point_target_assessment: unable_to_determine, method_review_direction: null}
+  - {lower: UNAVAILABLE, higher: UNAVAILABLE, point_target_assessment: unable_to_determine, method_review_direction: null}
+maximum_registered_cells: 777
+rerun_after_results: PROHIBITED
+-->
+
 No data is acquired and no study is executed in the charter PR. Execution may begin only after the
 charter merges, the charter-pinned SHA-256 values verify against committed raw file bytes, and all
 required pre-execution data gates pass.
@@ -91,7 +152,7 @@ No scenario is a portfolio target. “Percent exposure” is an analytical scale
 each representation or constituent diagnostic; the study does not say what occupies the rest of an
 asset state.
 
-## 6. Result vocabulary
+## 6. Result vocabulary and total reduction
 
 Only these family result states exist:
 
@@ -106,6 +167,21 @@ Where valid, `review_direction` is `lower_exposure`, `higher_exposure`, or `null
 `point_target_assessment` is `not_supported`, `not_rejected`, or `unable_to_determine`.
 `method_review_direction` is `range_or_nonpoint` or `null`. Representation conflict is never averaged
 away.
+
+For each candidate direction, every registered voting metric is classified against the historical
+reference as `IMPROVES`, `EQUIVALENT`, `WORSENS`, or `UNAVAILABLE`; a lawful pre-inception
+conditional window is `NOT_APPLICABLE` and is excluded. Direction and exact metric-specific
+tolerances come from the closed registry. Within a metric and then within a family, precedence is
+`WORSENS`, `UNAVAILABLE`, `IMPROVES`, `EQUIVALENT`. Thus one worsening vetoes an otherwise favorable
+family, and missing mandatory evidence can never become non-rejection.
+
+The three voting families are exactly `PATH_RISK`, `RECOVERY`, and `OPPORTUNITY_COST`. A direction is
+`POLICY_REVIEW_REQUIRED` only when none worsens or is unavailable/conflicted and at least two improve.
+If all three are available, improvement and worsening are not mixed, and that rule is not met, the
+direction is `CENTER_NOT_REJECTED`. Missing, mixed, conflicted, or formula-integrity evidence is
+`UNABLE_TO_DETERMINE`. The nine-row directional table reduces LOWER and HIGHER to the published
+result and review direction. A separate exhaustive 16-row point-evidence table reduces whether each
+adjacent state displaces the reference, is materially worse, is not distinguished, or is unavailable.
 
 ## 7. Data-acquisition authority and chronology
 
@@ -158,12 +234,24 @@ No synthetic predecessor history is stitched. Specifically: CEG has no pre-stand
 has no pre-spin history; RKLB before 2021-08-25 is not RKLB history; RTX predecessor history is not
 silently stitched. Unresolved identity/action periods are `CORPORATE_ACTION_UNRESOLVED`.
 
-## 10. Data gate and missingness
+## 10. Two-stage data gate and missingness
 
-No registered study cell executes until every required core dataset has passed its gates. Failure
-makes affected cells ineligible, preserves null/abstention, and may force a family result to
-`unable_to_determine`. The runner may not invent a substitute, silently reduce the universe, treat a
-missing observation as zero, interpolate prices, or forward-fill prices.
+Stage A is the global study-integrity gate. A charter/protocol/preregistration hash mismatch, schema
+failure, trial-inventory defect, runner/config identity failure, source-hierarchy drift, global
+code/version failure, incomplete study-wide provenance, or incomplete pre-execution eligibility
+matrix halts the study and permits zero cells to execute.
+
+Stage B is cell/data eligibility. Source, receipt, coverage/gap, identity/action, total-return,
+representation/window-quality, or comparator failures mark only the deterministic cells or metrics
+that depend on that input ineligible. All acquisition, validation, and eligibility states are frozen
+before the first cell. A SOL gap affects intersecting SOL cells; VEA acquisition failure affects all
+VEA cells; an unresolved CEG action affects intersecting CEG cells; a missing required DFF observation
+makes affected opportunity-cost metrics unavailable. A conditional gold peer failing admission is
+excluded, while an admitted peer that later becomes unavailable propagates `UNAVAILABLE`. No runtime
+discretion may promote a cell failure into a global halt or conceal it as sufficient evidence.
+
+The runner may not invent a substitute, silently reduce the universe, treat a missing observation as
+zero, interpolate prices, or forward-fill prices.
 
 The closed cell states are `ELIGIBLE`, `NOT_APPLICABLE_PRE_INCEPTION`, `MISSING_SOURCE_DATA`,
 `KNOWN_DATA_GAP`, `CORPORATE_ACTION_UNRESOLVED`, `CONDITIONAL_ASSET_NOT_ACQUIRED`, and
@@ -206,8 +294,10 @@ return.
 DFF is analytical opportunity cost only—not strategic cash, residual, a funding destination, a fifth
 sleeve, or policy. It is treated as an annual percent rate, with a one-U.S.-business-day availability
 lag. The daily factor is `1 + (lagged DFF / 100) / 360`, compounded by calendar day. Weekends and
-holidays use the most recently lawfully available lagged rate. A source gap over seven calendar days
-fails affected opportunity-cost cells; no rate is inferred from future data.
+holidays use the most recently lawfully available lagged rate. The former arbitrary seven-day
+tolerance is removed: zero missing required lawfully lagged DFF observations are allowed. Any missing
+required observation makes the affected opportunity-cost metric unavailable; no rate is inferred
+from future data.
 
 ## 14. Windows and held-out language
 
@@ -222,15 +312,22 @@ No asset-specific ex-post peak/trough window may be selected. These known events
 permitted only for genuinely sequestered bytes proven by hash. “Prospective” applies only to future
 observations unavailable at freeze.
 
-## 15. Metrics
+## 15. Closed metric-to-family map
 
-The study reports no composite score. Exact formulas and annualization conventions are closed in the
-preregistration.
+The study reports no composite score. Every metric has exactly one canonical family, formula,
+preference direction, unit, tolerance reference, research-unit/window applicability, voting status,
+and missing-result rule in the preregistration. No metric can migrate between families or vote twice.
 
 Path/risk includes maximum drawdown, worst calendar month, worst calendar quarter, fixed stress-window
 loss, and annualized volatility. Recovery includes calendar-day recovery duration, recovery/censor
 status, and time-underwater area. Opportunity cost is total return relative to compounded lagged DFF.
-Contribution metrics scale losses or excess return by the registered analytical exposure.
+The three voting paths are defined rather than merely referenced: exposure-scaled drawdown loss is
+scenario exposure × absolute max drawdown × 100 percentage points; exposure-scaled stress loss is
+scenario exposure × max(0, −stress return) × 100; exposure-scaled underwater burden is scenario
+exposure × underwater-area days × 100; and exposure-scaled excess contribution is scenario exposure
+× (asset total return − DFF total return) × 100. These formulas fix sign and unit. Raw path metrics,
+constituent envelopes, representation checks, and co-behavior remain diagnostic or veto gates, not
+extra improvement votes.
 
 Equity adds only cross-sectional diagnostics: eligible breadth counts/proportions, median, P10/P25/
 P75/P90, range and dispersion, governed-cluster dispersion, pairwise co-behavior, leave-one-out
@@ -266,29 +363,47 @@ BTC/ETH/SOL remain separate. Both asset-available and family-common evidence mus
 family direction. All representation directions must agree. Gap or directional conflict makes the
 family unable to determine.
 
-## 17. Dominance and policy-review rule
+## 17. Family, representation, and policy-review reduction
 
-Candidate LOWER or HIGHER is compared only with the same family's historical reference. Three
-independent mandatory families exist: downside path, recovery burden, and opportunity cost. A
-candidate dominates only if it is not materially worse in every applicable mandatory family and is
-strictly better in at least two distinct families. Multiple correlated metrics inside one family
-count once. Representation consistency is a veto, not a fourth improvement count.
+Candidate LOWER or HIGHER is compared only with the same family's historical reference. The two
+history windows are mandatory voting evidence; fixed stresses are conditional voting evidence where
+lawfully applicable. Within each metric and family the closed precedence rule above applies. Multiple
+correlated metrics inside one family count once. A candidate dominates only if no mandatory family
+worsens, conflicts, or is unavailable and at least two distinct families strictly improve.
 
-The exact 1.00pp contribution tolerances, 30-day recovery tolerance, 10pp equity-breadth tolerance,
-and other closed thresholds are uncalibrated one-study `NUM-0001` provisional guardrails. Equality
-inside a tolerance is equivalence, not improvement. Monotonicity is required only where exposure
-scaling makes it mathematical—loss and opportunity contributions—not for raw return paths.
+SPY/VEA/VWO and BTC/ETH/SOL are all mandatory: any unavailable representation makes that family
+unavailable, and non-identical lawful states are conflict. GLD controls the gold-family result until a
+peer passes every admission gate; a failed conditional peer is excluded, but every admitted peer must
+remain available and match GLD or the result is unavailable/conflict. Equity requires 21 eligible
+constituents, 75% breadth for one state, an agreeing median, and every leave-one-out result unchanged;
+failure is unavailable or conflict, never an aggregate return calculation.
+
+The exact loss and opportunity contribution tolerance is 1.00 percentage point; exposure-scaled
+underwater burden uses 30.00 percentage-point-days. Equality at a tolerance is equivalence, and only
+a difference strictly beyond it changes direction. The registry also freezes the 21/75% equity gate,
+zero crypto gaps, gold parity thresholds, DFF actual/360 convention, zero DFF missing observations,
+and minimum two improvement families. Every selected constant is separately classified under
+`NUM-0001`, records basis/scope/lapse/reuse, and is explicitly uncalibrated; mathematical counts are
+separately identified as derived rather than free parameters.
+
+Monotonicity/formula integrity is recomputed with decimal arithmetic to six places for all
+exposure-scaled voting metrics. A failure makes the direction unable to determine; it is never
+repaired after results are visible.
 
 Conflict produces `unable_to_determine`. A `policy_review_required` result initiates only a separate
 future review; it never changes policy automatically.
 
-## 18. Point-target challenge
+## 18. Closed point-target challenge
 
-The study separately asks whether history supports point precision. `not_supported` means eligible
-evidence cannot distinguish the reference from both adjacent states or indicates a range/nonpoint
-method should be considered. `not_rejected` means the point premise survives the closed rule and at
-least one adjacent state is materially worse without conflict; it is not validation. Failed gates or
-conflicts produce `unable_to_determine`.
+The nine-row directional table covers every LOWER/HIGHER directional pair. Exactly one direction
+requiring review produces `policy_review_required` in that direction; both directions requiring
+review produce `unable_to_determine`, with no selector. Separately, each direction becomes point
+evidence `DISPLACES_REFERENCE`, `ADJACENT_MATERIALLY_WORSE` (at least two worsening families and no
+improvement), `NOT_DISTINGUISHED`, or `UNAVAILABLE`. The exhaustive 16-row point table makes any
+unavailability unable to determine; any displacement makes the point not supported; at least one
+materially worse adjacent state with no displacement leaves the point not rejected; and two
+undistinguished adjacent states make point precision not supported with `range_or_nonpoint`. This
+exhausts the lawful state space and prevents a discretionary fallback.
 
 The study may emit `range_or_nonpoint` as a future method-review direction. It may not create the
 replacement method.
