@@ -278,25 +278,6 @@ def test_protocol_preregistration_mirror_mismatch_rejects_even_with_rehashed_pin
     assert "protocol mirror" in "\n".join(v.validate_repository(prereg, protocol, decision).errors)
 
 
-def formula_observations(*, corrupt: bool = False) -> list[dict]:
-    data = good()
-    rows = []
-    windows = ("ASSET_AVAILABLE_HISTORY", "Q4_2018", "ASSET_AVAILABLE_HISTORY", "FAMILY_COMMON_OVERLAP")
-    for metric_id, window_id in zip(data["result_reduction"]["monotonicity"]["designated_metrics"], windows):
-        values = dict(data["scenario_magnitudes"]["values_pct"]["EQUITY"])
-        rows.append({
-            "metric_id": metric_id,
-            "family": "EQUITY",
-            "representation_id": "AMZN",
-            "window_id": window_id,
-            "raw_metric_value": "1",
-            "scenario_values": values,
-        })
-    if corrupt:
-        rows[0]["scenario_values"]["LOWER"] = "14.940002"
-    return rows
-
-
 def equity_inputs(state: str = "IMPROVES", unavailable: int = 0):
     states = [(ticker, "UNAVAILABLE" if index < unavailable else state) for index, ticker in enumerate(v.EQUITIES)]
     eligible = [(ticker, state) for ticker, observed in states if observed != "UNAVAILABLE"]
@@ -318,12 +299,8 @@ def passing_gold(peer: str) -> dict:
 def raw_study_evidence(
     research_family: str = "FUND_BROAD_MARKET",
     *,
-    lower: tuple[str, str, str] = ("IMPROVES", "IMPROVES", "EQUIVALENT"),
-    higher: tuple[str, str, str] = ("EQUIVALENT", "EQUIVALENT", "EQUIVALENT"),
-    lower_overrides: dict[tuple[str, str], str] | None = None,
-    higher_overrides: dict[tuple[str, str], str] | None = None,
+    overrides: dict[tuple[str, str], str] | None = None,
     gold_peer_evidence: list[dict] | None = None,
-    formula_failure: str | None = None,
 ) -> dict:
     data = good()
     peers = copy.deepcopy(gold_peer_evidence or [])
@@ -333,26 +310,40 @@ def raw_study_evidence(
     else:
         representations = v._registered_representations(data, research_family)
     metric_lookup = {metric["metric_id"]: metric for metric in data["metric_families"]["metrics"]}
-    mode_by_family = {
-        scenario: dict(zip(v.VOTING_FAMILIES, modes))
-        for scenario, modes in (("LOWER", lower), ("HIGHER", higher))
-    }
-    overrides = {
-        "LOWER": lower_overrides or {},
-        "HIGHER": higher_overrides or {},
-    }
+    overrides = overrides or {}
 
-    def values_for(metric_id: str, state: str):
-        direction = metric_lookup[metric_id]["direction_of_preference"]
-        if state == "UNAVAILABLE":
-            return None, None, "MISSING_SOURCE_DATA"
-        if state == "NOT_APPLICABLE":
-            return None, None, "NOT_APPLICABLE_PRE_INCEPTION"
-        if state == "EQUIVALENT":
-            return "100", "100", "ELIGIBLE"
-        if (state == "IMPROVES" and direction == "LOWER") or (state == "WORSENS" and direction == "HIGHER"):
-            return "0", "100", "ELIGIBLE"
-        return "100", "0", "ELIGIBLE"
+    def operands_for(metric_id: str, profile: str):
+        if profile == "UNAVAILABLE":
+            return None, "MISSING_SOURCE_DATA"
+        if profile == "PRE_INCEPTION":
+            return None, "NOT_APPLICABLE_PRE_INCEPTION"
+        if metric_id == "EXPOSURE_SCALED_DRAWDOWN_LOSS":
+            return {"drawdown": "-0.10" if profile == "EQUIVALENT" else "-0.50"}, "ELIGIBLE"
+        if metric_id == "EXPOSURE_SCALED_STRESS_LOSS":
+            return {"stress_return": "-0.10" if profile == "EQUIVALENT" else "-0.50"}, "ELIGIBLE"
+        if metric_id == "EXPOSURE_SCALED_UNDERWATER_BURDEN":
+            return {"underwater_area_days": "1" if profile == "EQUIVALENT" else "20"}, "ELIGIBLE"
+        if metric_id == "EXPOSURE_SCALED_EXCESS_CONTRIBUTION":
+            if profile == "OPPORTUNITY_POSITIVE":
+                return {"asset_total_return": "1", "comparator_total_return": "0"}, "ELIGIBLE"
+            if profile == "OPPORTUNITY_NEGATIVE":
+                return {"asset_total_return": "-1", "comparator_total_return": "0"}, "ELIGIBLE"
+            return {"asset_total_return": "0", "comparator_total_return": "0"}, "ELIGIBLE"
+        raise AssertionError(metric_id)
+
+    def reported_values(scenario: str, metric_id: str, operands: dict | None, missingness: str):
+        if missingness != "ELIGIBLE":
+            return None, None
+        if metric_id == "EXPOSURE_SCALED_DRAWDOWN_LOSS":
+            raw_value = abs(Decimal(operands["drawdown"]))
+        elif metric_id == "EXPOSURE_SCALED_STRESS_LOSS":
+            raw_value = max(Decimal("0"), -Decimal(operands["stress_return"]))
+        elif metric_id == "EXPOSURE_SCALED_UNDERWATER_BURDEN":
+            raw_value = Decimal(operands["underwater_area_days"])
+        else:
+            raw_value = Decimal(operands["asset_total_return"]) - Decimal(operands["comparator_total_return"])
+        exposures = data["scenario_magnitudes"]["values_pct"][research_family]
+        return str(Decimal(exposures[scenario]) * raw_value), str(Decimal(exposures["HISTORICAL_REFERENCE"]) * raw_value)
 
     directions = {}
     for scenario in ("LOWER", "HIGHER"):
@@ -361,20 +352,20 @@ def raw_study_evidence(
         for representation in representations:
             for metric_id, window_id in v._observation_plan(data):
                 voting_family = metric_lookup[metric_id]["family"]
-                state = overrides[scenario].get(
-                    (representation, voting_family), mode_by_family[scenario][voting_family]
-                )
-                state_for[(representation, voting_family)] = state
-                observation_state = "NOT_APPLICABLE" if metric_id == "EXPOSURE_SCALED_STRESS_LOSS" else state
-                candidate, reference, missingness = values_for(metric_id, observation_state)
+                default_profile = "EQUIVALENT" if voting_family == "OPPORTUNITY_COST" else "MATERIAL"
+                profile = overrides.get((representation, voting_family), default_profile)
+                state_for[(representation, voting_family)] = profile
+                operands, missingness = operands_for(metric_id, profile)
+                candidate, reference = reported_values(scenario, metric_id, operands, missingness)
                 observations.append({
                     "scenario_id": scenario,
                     "research_family": research_family,
                     "representation_id": representation,
                     "metric_id": metric_id,
                     "window_id": window_id,
-                    "candidate": candidate,
-                    "reference": reference,
+                    "raw_operands": operands,
+                    "reported_candidate": candidate,
+                    "reported_reference": reference,
                     "missingness_state": missingness,
                 })
         loo = []
@@ -382,37 +373,25 @@ def raw_study_evidence(
             for voting_family in v.VOTING_FAMILIES:
                 metric_id, window_id = v._mandatory_metric_for_family(data, voting_family)
                 for ticker in representations:
-                    state = state_for[(ticker, voting_family)]
-                    if state == "UNAVAILABLE":
+                    profile = state_for[(ticker, voting_family)]
+                    if profile == "UNAVAILABLE":
                         continue
-                    candidate, reference, missingness = values_for(metric_id, state)
+                    operands, missingness = operands_for(metric_id, profile)
+                    candidate, reference = reported_values(scenario, metric_id, operands, missingness)
                     loo.append({
                         "scenario_id": scenario,
                         "research_family": research_family,
                         "omitted_id": ticker,
                         "metric_id": metric_id,
                         "window_id": window_id,
-                        "candidate": candidate,
-                        "reference": reference,
+                        "raw_operands": operands,
+                        "reported_candidate": candidate,
+                        "reported_reference": reference,
                         "missingness_state": missingness,
                     })
-        formula_rows = []
-        formula_windows = ("ASSET_AVAILABLE_HISTORY", "Q4_2018", "ASSET_AVAILABLE_HISTORY", "FAMILY_COMMON_OVERLAP")
-        for metric_id, window_id in zip(data["result_reduction"]["monotonicity"]["designated_metrics"], formula_windows):
-            formula_rows.append({
-                "metric_id": metric_id,
-                "family": research_family,
-                "representation_id": representations[0],
-                "window_id": window_id,
-                "raw_metric_value": "1",
-                "scenario_values": dict(data["scenario_magnitudes"]["values_pct"][research_family]),
-            })
-        if formula_failure == scenario:
-            formula_rows[0]["scenario_values"]["LOWER"] = "999.000000"
         directions[scenario] = {
             "observations": observations,
             "equity_leave_one_out": loo,
-            "formula_observations": formula_rows,
         }
     return {
         "study_id": "RISK-0001",
@@ -422,11 +401,20 @@ def raw_study_evidence(
     }
 
 
+def observation(evidence: dict, scenario: str, representation: str, metric: str, window: str) -> dict:
+    return next(
+        row for row in evidence["directions"][scenario]["observations"]
+        if row["representation_id"] == representation
+        and row["metric_id"] == metric
+        and row["window_id"] == window
+    )
+
+
 @pytest.mark.parametrize("evidence,expected", [
     (raw_study_evidence(), ("policy_review_required", "lower_exposure")),
-    (raw_study_evidence(lower=("EQUIVALENT",) * 3, higher=("IMPROVES", "IMPROVES", "EQUIVALENT")), ("policy_review_required", "higher_exposure")),
-    (raw_study_evidence(higher=("IMPROVES", "IMPROVES", "EQUIVALENT")), ("unable_to_determine", None)),
-    (raw_study_evidence(lower=("EQUIVALENT",) * 3), ("provisional_scenario_not_rejected", None)),
+    (raw_study_evidence(overrides={(rep, family): "EQUIVALENT" for rep in v.BROAD for family in v.VOTING_FAMILIES}), ("provisional_scenario_not_rejected", None)),
+    (raw_study_evidence(overrides={(rep, "OPPORTUNITY_COST"): "OPPORTUNITY_POSITIVE" for rep in v.BROAD}), ("unable_to_determine", None)),
+    (raw_study_evidence(overrides={(rep, "OPPORTUNITY_COST"): "OPPORTUNITY_NEGATIVE" for rep in v.BROAD}), ("policy_review_required", "lower_exposure")),
 ])
 def test_authoritative_raw_evidence_directional_outcomes(evidence, expected):
     result = v.evaluate_study_evidence(evidence)
@@ -434,9 +422,9 @@ def test_authoritative_raw_evidence_directional_outcomes(evidence, expected):
 
 
 def test_authoritative_raw_evidence_representation_unavailable_and_worsening_vetoes():
-    conflict = raw_study_evidence(lower_overrides={("VEA", "PATH_RISK"): "WORSENS"})
-    unavailable = raw_study_evidence(lower=("IMPROVES", "IMPROVES", "UNAVAILABLE"))
-    mixed = raw_study_evidence(lower=("IMPROVES", "IMPROVES", "WORSENS"))
+    conflict = raw_study_evidence(overrides={("VEA", "PATH_RISK"): "EQUIVALENT"})
+    unavailable = raw_study_evidence(overrides={(rep, "OPPORTUNITY_COST"): "UNAVAILABLE" for rep in v.BROAD})
+    mixed = raw_study_evidence(overrides={(rep, "OPPORTUNITY_COST"): "OPPORTUNITY_POSITIVE" for rep in v.BROAD})
     for evidence in (conflict, unavailable, mixed):
         result = v.evaluate_study_evidence(evidence)
         assert result["directional_states"]["LOWER"] == "UNABLE_TO_DETERMINE"
@@ -446,9 +434,9 @@ def test_authoritative_raw_evidence_representation_unavailable_and_worsening_vet
 
 def test_authoritative_raw_evidence_equity_count_and_breadth_controls():
     unavailable = {(ticker, family): "UNAVAILABLE" for ticker in v.EQUITIES[:7] for family in v.VOTING_FAMILIES}
-    insufficient = raw_study_evidence("EQUITY", lower_overrides=unavailable)
+    insufficient = raw_study_evidence("EQUITY", overrides=unavailable)
     breadth = {(ticker, "PATH_RISK"): "EQUIVALENT" for ticker in v.EQUITIES[-7:]}
-    breadth_conflict = raw_study_evidence("EQUITY", lower_overrides=breadth)
+    breadth_conflict = raw_study_evidence("EQUITY", overrides=breadth)
     for evidence in (insufficient, breadth_conflict):
         result = v.evaluate_study_evidence(evidence)
         assert result["directional_states"]["LOWER"] == "UNABLE_TO_DETERMINE"
@@ -459,7 +447,7 @@ def test_authoritative_raw_evidence_gld_admission_and_peer_veto():
     veto = raw_study_evidence(
         "FUND_GLD_DEFENSIVE",
         gold_peer_evidence=admitted,
-        lower_overrides={("IAU", "PATH_RISK"): "WORSENS"},
+        overrides={("IAU", "PATH_RISK"): "EQUIVALENT"},
     )
     assert v.evaluate_study_evidence(veto)["result"] == "unable_to_determine"
     failed = passing_gold("IAU")
@@ -469,16 +457,195 @@ def test_authoritative_raw_evidence_gld_admission_and_peer_veto():
 
 
 def test_authoritative_raw_evidence_crypto_representation_conflict():
-    evidence = raw_study_evidence("CRYPTO", lower_overrides={("SOL", "PATH_RISK"): "WORSENS"})
+    evidence = raw_study_evidence("CRYPTO", overrides={("SOL", "PATH_RISK"): "EQUIVALENT"})
     assert v.evaluate_study_evidence(evidence)["result"] == "unable_to_determine"
 
 
-@pytest.mark.parametrize("failure", ["LOWER", "HIGHER"])
-def test_authoritative_raw_evidence_formula_and_monotonicity_failure(failure):
-    evidence = raw_study_evidence(formula_failure=failure)
+def test_authoritative_raw_evidence_formula_reconciliation_and_cross_direction_consistency():
+    evidence = raw_study_evidence()
+    evidence["directions"]["LOWER"]["observations"][0]["reported_candidate"] = "999"
+    with pytest.raises(v.RuntimeAuthorityError, match="does not reconcile"):
+        v.evaluate_study_evidence(evidence)
+
+    evidence = raw_study_evidence()
+    evidence["directions"]["HIGHER"]["observations"][0]["raw_operands"]["drawdown"] = "-0.25"
+    higher = evidence["directions"]["HIGHER"]["observations"][0]
+    higher["reported_candidate"] = "4.4000"
+    higher["reported_reference"] = "3.6675"
+    with pytest.raises(v.RuntimeAuthorityError, match="same canonical primitive path"):
+        v.evaluate_study_evidence(evidence)
+
+
+def test_reviewer_contradictory_observation_and_formula_chain_rejects():
+    evidence = raw_study_evidence()
+    row = observation(
+        evidence, "LOWER", "SPY", "EXPOSURE_SCALED_DRAWDOWN_LOSS", "ASSET_AVAILABLE_HISTORY"
+    )
+    row["reported_candidate"] = "0"
+    row["reported_reference"] = "100"
+    with pytest.raises(v.RuntimeAuthorityError, match="does not reconcile"):
+        v.evaluate_study_evidence(evidence)
+
+    detached = raw_study_evidence()
+    detached["directions"]["LOWER"]["formula_observations"] = [{"raw_metric_value": "1"}]
+    with pytest.raises(v.RuntimeAuthorityError, match="exact keys/order"):
+        v.evaluate_study_evidence(detached)
+
+
+@pytest.mark.parametrize("factor", [Decimal("2"), Decimal("0.5")])
+def test_changed_formula_operands_cannot_leave_reporting_chain_fixed(factor):
+    evidence = raw_study_evidence()
+    row = observation(
+        evidence, "LOWER", "SPY", "EXPOSURE_SCALED_DRAWDOWN_LOSS", "ASSET_AVAILABLE_HISTORY"
+    )
+    row["raw_operands"]["drawdown"] = str(Decimal(row["raw_operands"]["drawdown"]) * factor)
+    with pytest.raises(v.RuntimeAuthorityError, match="does not reconcile"):
+        v.evaluate_study_evidence(evidence)
+
+
+def test_canonical_formula_operands_not_reporting_fields_drive_the_final_result():
+    material = v.evaluate_study_evidence(raw_study_evidence())
+    small_path = raw_study_evidence(
+        overrides={(representation, "PATH_RISK"): "EQUIVALENT" for representation in v.BROAD}
+    )
+    equivalent = v.evaluate_study_evidence(small_path)
+    assert material["result"] == "policy_review_required"
+    assert equivalent["result"] == "provisional_scenario_not_rejected"
+
+
+@pytest.mark.parametrize("metric,window,bad_operands", [
+    ("EXPOSURE_SCALED_DRAWDOWN_LOSS", "ASSET_AVAILABLE_HISTORY", {"stress_return": "-0.50"}),
+    ("EXPOSURE_SCALED_STRESS_LOSS", "Q4_2018", {"drawdown": "-0.50"}),
+    ("EXPOSURE_SCALED_UNDERWATER_BURDEN", "ASSET_AVAILABLE_HISTORY", {"underwater_area_days": "20", "extra": "0"}),
+    ("EXPOSURE_SCALED_EXCESS_CONTRIBUTION", "ASSET_AVAILABLE_HISTORY", {"asset_total_return": "0"}),
+])
+def test_each_formula_metric_has_one_exact_primitive_operand_contract(metric, window, bad_operands):
+    evidence = raw_study_evidence()
+    row = observation(evidence, "LOWER", "SPY", metric, window)
+    row["raw_operands"] = bad_operands
+    with pytest.raises(v.RuntimeAuthorityError, match="exact keys/order"):
+        v.evaluate_study_evidence(evidence)
+
+
+@pytest.mark.parametrize("metric,window", [
+    ("EXPOSURE_SCALED_DRAWDOWN_LOSS", "ASSET_AVAILABLE_HISTORY"),
+    ("EXPOSURE_SCALED_STRESS_LOSS", "Q4_2018"),
+    ("EXPOSURE_SCALED_UNDERWATER_BURDEN", "ASSET_AVAILABLE_HISTORY"),
+    ("EXPOSURE_SCALED_EXCESS_CONTRIBUTION", "ASSET_AVAILABLE_HISTORY"),
+])
+def test_each_formula_metric_reporting_value_is_reconciled_before_classification(metric, window):
+    evidence = raw_study_evidence()
+    row = observation(evidence, "LOWER", "SPY", metric, window)
+    row["reported_candidate"] = str(Decimal(row["reported_candidate"]) + Decimal("0.01"))
+    with pytest.raises(v.RuntimeAuthorityError, match="does not reconcile"):
+        v.evaluate_study_evidence(evidence)
+
+
+@pytest.mark.parametrize("family,peers,scenario,representation,metric,window,location", [
+    ("FUND_BROAD_MARKET", None, "LOWER", "VEA", "EXPOSURE_SCALED_DRAWDOWN_LOSS", "ASSET_AVAILABLE_HISTORY", "observations"),
+    ("FUND_BROAD_MARKET", None, "HIGHER", "VWO", "EXPOSURE_SCALED_STRESS_LOSS", "Q4_2018", "observations"),
+    ("CRYPTO", None, "LOWER", "ETH", "EXPOSURE_SCALED_UNDERWATER_BURDEN", "ASSET_AVAILABLE_HISTORY", "observations"),
+    ("CRYPTO", None, "HIGHER", "SOL", "EXPOSURE_SCALED_EXCESS_CONTRIBUTION", "FAMILY_COMMON_OVERLAP", "observations"),
+    ("FUND_GLD_DEFENSIVE", [passing_gold("IAU")], "LOWER", "IAU", "EXPOSURE_SCALED_DRAWDOWN_LOSS", "FAMILY_COMMON_OVERLAP", "observations"),
+    ("EQUITY", None, "HIGHER", "AMZN", "EXPOSURE_SCALED_UNDERWATER_BURDEN", "ASSET_AVAILABLE_HISTORY", "observations"),
+    ("EQUITY", None, "LOWER", "AMZN", "EXPOSURE_SCALED_DRAWDOWN_LOSS", "ASSET_AVAILABLE_HISTORY", "equity_leave_one_out"),
+])
+def test_formula_operand_coverage_is_required_for_every_registered_identity(
+    family, peers, scenario, representation, metric, window, location
+):
+    evidence = raw_study_evidence(family, gold_peer_evidence=peers)
+    if location == "observations":
+        row = observation(evidence, scenario, representation, metric, window)
+    else:
+        row = next(
+            item for item in evidence["directions"][scenario][location]
+            if item["omitted_id"] == representation and item["metric_id"] == metric and item["window_id"] == window
+        )
+    row.pop("raw_operands")
+    with pytest.raises(v.RuntimeAuthorityError, match="exact keys/order"):
+        v.evaluate_study_evidence(evidence)
+
+
+def test_historical_reference_and_direction_formula_coverage_cannot_be_omitted_or_added():
+    evidence = raw_study_evidence()
+    row = evidence["directions"]["LOWER"]["observations"][0]
+    row.pop("reported_reference")
+    with pytest.raises(v.RuntimeAuthorityError, match="exact keys/order"):
+        v.evaluate_study_evidence(evidence)
+
+    evidence = raw_study_evidence()
+    evidence["directions"].pop("HIGHER")
+    with pytest.raises(v.RuntimeAuthorityError, match="exact keys/order"):
+        v.evaluate_study_evidence(evidence)
+
+    evidence = raw_study_evidence()
+    evidence["directions"]["HISTORICAL_REFERENCE"] = copy.deepcopy(evidence["directions"]["LOWER"])
+    with pytest.raises(v.RuntimeAuthorityError, match="exact keys/order"):
+        v.evaluate_study_evidence(evidence)
+
+
+@pytest.mark.parametrize("attack", [
+    "wrong_broad_representation",
+    "wrong_crypto_representation",
+    "wrong_scenario",
+    "wrong_window",
+    "wrong_metric",
+    "duplicate_record",
+    "extra_unreferenced_record",
+])
+def test_formula_identity_population_attacks_reject_through_public_evaluator(attack):
+    family = "CRYPTO" if attack == "wrong_crypto_representation" else "FUND_BROAD_MARKET"
+    evidence = raw_study_evidence(family)
+    rows = evidence["directions"]["LOWER"]["observations"]
+    row = rows[0]
+    if attack == "wrong_broad_representation":
+        row["representation_id"] = "VEA"
+    elif attack == "wrong_crypto_representation":
+        row["representation_id"] = "ETH"
+    elif attack == "wrong_scenario":
+        row["scenario_id"] = "HIGHER"
+    elif attack == "wrong_window":
+        row["window_id"] = "Q4_2018"
+    elif attack == "wrong_metric":
+        row["metric_id"] = "EXPOSURE_SCALED_UNDERWATER_BURDEN"
+        row["raw_operands"] = {"underwater_area_days": "20"}
+    elif attack == "duplicate_record":
+        rows.insert(1, copy.deepcopy(row))
+    else:
+        extra = copy.deepcopy(row)
+        extra["window_id"] = "COVID_2020"
+        rows.append(extra)
+    with pytest.raises(v.RuntimeAuthorityError):
+        v.evaluate_study_evidence(evidence)
+
+
+@pytest.mark.parametrize("missingness", [
+    "NOT_APPLICABLE_PRE_INCEPTION",
+    "MISSING_SOURCE_DATA",
+    "QUALITY_GATE_FAILED",
+    "CORPORATE_ACTION_UNRESOLVED",
+])
+def test_formula_operands_are_absent_only_for_canonical_ineligible_observations(missingness):
+    evidence = raw_study_evidence()
+    for scenario in ("LOWER", "HIGHER"):
+        row = observation(evidence, scenario, "SPY", "EXPOSURE_SCALED_STRESS_LOSS", "GFC_2008")
+        row["raw_operands"] = None
+        row["reported_candidate"] = None
+        row["reported_reference"] = None
+        row["missingness_state"] = missingness
     result = v.evaluate_study_evidence(evidence)
-    assert result["directional_states"][failure] == "UNABLE_TO_DETERMINE"
-    assert result["point_states"][failure] == "UNAVAILABLE"
+    assert result["result"] in ("policy_review_required", "unable_to_determine")
+
+
+def test_ineligible_formula_observation_rejects_retained_operands_or_values():
+    evidence = raw_study_evidence()
+    for scenario in ("LOWER", "HIGHER"):
+        row = observation(evidence, scenario, "SPY", "EXPOSURE_SCALED_STRESS_LOSS", "GFC_2008")
+        row["missingness_state"] = "MISSING_SOURCE_DATA"
+        row["reported_candidate"] = None
+        row["reported_reference"] = None
+    with pytest.raises(v.RuntimeAuthorityError, match="requires null operands"):
+        v.evaluate_study_evidence(evidence)
 
 
 def test_authoritative_evaluator_does_not_accept_derived_state_authority():
@@ -537,8 +704,9 @@ def test_authoritative_identity_validation_precedes_missingness(field, value, mi
     evidence = raw_study_evidence()
     record = evidence["directions"]["LOWER"]["observations"][0]
     record[field] = value
-    record["candidate"] = None
-    record["reference"] = None
+    record["raw_operands"] = None
+    record["reported_candidate"] = None
+    record["reported_reference"] = None
     record["missingness_state"] = missingness
     with pytest.raises(v.RuntimeAuthorityError):
         v.evaluate_study_evidence(evidence)
@@ -673,21 +841,23 @@ def test_equity_constituent_population_identity_and_order_are_closed():
     ({"PATH_RISK": "IMPROVES", "RECOVERY": "IMPROVES", "OPPORTUNITY_COST": "UNAVAILABLE"}, "UNABLE_TO_DETERMINE"),
 ])
 def test_directional_policy_review_matrix(states, expected):
-    assert v._directional_disposition(good(), states, formula_observations()) == expected
+    assert v._directional_disposition(good(), states) == expected
 
 
-def test_formula_integrity_is_derived_not_caller_asserted():
-    assert v._validate_formula_integrity(good(), formula_observations())
-    assert not v._validate_formula_integrity(good(), formula_observations(corrupt=True))
-    states = {"PATH_RISK": "IMPROVES", "RECOVERY": "IMPROVES", "OPPORTUNITY_COST": "EQUIVALENT"}
-    assert v._directional_disposition(good(), states, formula_observations(corrupt=True)) == "UNABLE_TO_DETERMINE"
-
-
-def test_formula_integrity_failure_does_not_short_circuit_later_identity_validation():
-    rows = formula_observations(corrupt=True)
-    rows[-1]["metric_id"] = "UNKNOWN_METRIC"
-    with pytest.raises(v.RuntimeAuthorityError):
-        v._validate_formula_integrity(good(), rows)
+@pytest.mark.parametrize("offset,accepts", [
+    (Decimal("0"), True),
+    (Decimal("0.000001"), True),
+    (Decimal("0.0000011"), False),
+])
+def test_formula_reporting_tolerance_boundary_is_canonical(offset, accepts):
+    evidence = raw_study_evidence()
+    record = evidence["directions"]["LOWER"]["observations"][0]
+    record["reported_candidate"] = str(Decimal(record["reported_candidate"]) + offset)
+    if accepts:
+        assert v.evaluate_study_evidence(evidence)["review_direction"] == "lower_exposure"
+    else:
+        with pytest.raises(v.RuntimeAuthorityError, match="does not reconcile"):
+            v.evaluate_study_evidence(evidence)
 
 
 @pytest.mark.parametrize("states", [
@@ -697,7 +867,7 @@ def test_formula_integrity_failure_does_not_short_circuit_later_identity_validat
 ])
 def test_mandatory_family_population_and_states_fail_closed(states):
     with pytest.raises(v.RuntimeAuthorityError):
-        v._directional_disposition(good(), states, formula_observations())
+        v._directional_disposition(good(), states)
 
 
 def test_public_mapper_has_no_governance_override_parameters():
@@ -750,18 +920,17 @@ def test_private_table_helper_maps_every_canonical_point_row(row):
     assert (result["point_target_assessment"], result["method_review_direction"]) == (row[2], row[3])
 
 
-@pytest.mark.parametrize("mutation", [
-    lambda rows: rows[0].__setitem__("window_id", "UNKNOWN_WINDOW"),
-    lambda rows: rows[0].__setitem__("family", "CASH"),
-    lambda rows: rows[0].__setitem__("representation_id", "SPY"),
-    lambda rows: rows[0]["scenario_values"].__setitem__("FOURTH_SCENARIO", "1"),
-    lambda rows: rows[0].__setitem__("metric_id", "UNKNOWN_METRIC"),
+@pytest.mark.parametrize("replacement", [
+    {},
+    {"drawdown": "-0.50", "extra": "0"},
+    {"wrong_operand": "-0.50"},
+    {"drawdown": ["-0.50"]},
 ])
-def test_formula_evidence_vocabularies_are_closed(mutation):
-    rows = formula_observations()
-    mutation(rows)
+def test_formula_operand_schema_is_exact_and_closed(replacement):
+    evidence = raw_study_evidence()
+    evidence["directions"]["LOWER"]["observations"][0]["raw_operands"] = replacement
     with pytest.raises(v.RuntimeAuthorityError):
-        v._validate_formula_integrity(good(), rows)
+        v.evaluate_study_evidence(evidence)
 
 
 def test_point_evidence_reduction_distinguishes_worse_from_indistinguishable():
@@ -769,10 +938,10 @@ def test_point_evidence_reduction_distinguishes_worse_from_indistinguishable():
     equivalent = {family: "EQUIVALENT" for family in v.VOTING_FAMILIES}
     improving = {"PATH_RISK": "IMPROVES", "RECOVERY": "IMPROVES", "OPPORTUNITY_COST": "EQUIVALENT"}
     unavailable = {"PATH_RISK": "UNAVAILABLE", "RECOVERY": "EQUIVALENT", "OPPORTUNITY_COST": "EQUIVALENT"}
-    assert v._point_evidence(good(), worse, formula_observations()) == "ADJACENT_MATERIALLY_WORSE"
-    assert v._point_evidence(good(), equivalent, formula_observations()) == "NOT_DISTINGUISHED"
-    assert v._point_evidence(good(), improving, formula_observations()) == "DISPLACES_REFERENCE"
-    assert v._point_evidence(good(), unavailable, formula_observations()) == "UNAVAILABLE"
+    assert v._point_evidence(good(), worse) == "ADJACENT_MATERIALLY_WORSE"
+    assert v._point_evidence(good(), equivalent) == "NOT_DISTINGUISHED"
+    assert v._point_evidence(good(), improving) == "DISPLACES_REFERENCE"
+    assert v._point_evidence(good(), unavailable) == "UNAVAILABLE"
 
 
 def test_validation_does_not_mutate_input():
