@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import inspect
 import json
 from datetime import date, timedelta
 from decimal import Decimal
@@ -10,6 +11,7 @@ import pytest
 
 import level1_sleeve_robustness_preregistration_validator as authority
 import risk_level1_acquisition as acquisition
+import risk_level1_attempt2_attestation as attempt2_attestation
 import risk_level1_core as core
 import risk_level1_data_manifest_validator as manifest_validator
 import risk_level1_runner as runner
@@ -443,6 +445,39 @@ def test_attempt_2_fixture_validation_creates_no_execution_marker_or_results():
     assert not core.RESULTS.exists()
 
 
+def review_receipt_fixture(**overrides):
+    current_head = __import__("subprocess").run(
+        ["git", "rev-parse", "HEAD"], cwd=core.ROOT, check=True,
+        capture_output=True, text=True,
+    ).stdout.strip()
+    review_id = 9999999999
+    receipt = {
+        "schema_version": "2.0",
+        "repository": attempt2_attestation.REPOSITORY_IDENTITY,
+        "pull_request_number": attempt2_attestation.IMPLEMENTATION_PR_NUMBER,
+        "study_id": "RISK-0001",
+        "attempt_id": core.ATTEMPT_2_ID,
+        "authority_decision_id": "RISK-0002",
+        "authority_decision_sha256": attempt2_attestation.RISK_0002_SHA256,
+        "review_type": "MANDATORY_INDEPENDENT_PREEXECUTION_EXACT_HEAD",
+        "review_reference_kind": "GITHUB_PULL_REQUEST_REVIEW",
+        "review_id": review_id,
+        "reviewed_head": current_head,
+        "stage_a_attestation_sha256": core.sha256_file(core.FREEZE_PATH),
+        "preexecution_metadata_sha256": core.sha256_file(core.ATTEMPT_2_METADATA_PATH),
+        "reviewer_github_login": "independent-review-fixture",
+        "reviewer_identity": "INDEPENDENT_SESSION:fixture-reviewer",
+        "implementation_author_identity": attempt2_attestation.IMPLEMENTATION_AUTHOR_IDENTITY,
+        "independence_basis": "DISTINCT_SESSION_IDENTITIES_BOUND_TO_DURABLE_GITHUB_REVIEW",
+        "disposition": "PASS",
+        "github_review_state": "COMMENTED",
+        "review_url": f"https://github.com/{attempt2_attestation.REPOSITORY_IDENTITY}/pull/{attempt2_attestation.IMPLEMENTATION_PR_NUMBER}#pullrequestreview-{review_id}",
+        "reviewed_at_utc": "2026-08-14T00:00:00Z",
+    }
+    receipt.update(overrides)
+    return receipt
+
+
 def test_attempt_2_prepare_and_review_gate_are_fail_closed_before_review():
     with pytest.raises(core.IntegrityError, match="prepare/reacquisition is prohibited"):
         runner.prepare()
@@ -453,19 +488,246 @@ def test_attempt_2_prepare_and_review_gate_are_fail_closed_before_review():
 
 def test_preexecution_review_receipt_rejects_wrong_exact_head(tmp_path, monkeypatch):
     receipt_path = tmp_path / "independent_preexecution_review.json"
-    core.write_schema_json(receipt_path, {
-        "schema_version": "1.0",
-        "study_id": "RISK-0001",
-        "attempt_id": core.ATTEMPT_2_ID,
-        "review_type": "MANDATORY_INDEPENDENT_PREEXECUTION_EXACT_HEAD",
-        "reviewed_head": "0" * 40,
-        "stage_a_attestation_sha256": core.sha256_file(core.FREEZE_PATH),
-        "reviewer_identity": "independent-review-fixture",
-        "reviewer_independence": True,
-        "disposition": "PASS",
-        "review_url": "https://example.invalid/review-fixture",
-        "reviewed_at_utc": "2026-08-14T00:00:00Z",
-    })
+    core.write_schema_json(receipt_path, review_receipt_fixture(reviewed_head="0" * 40))
     monkeypatch.setattr(core, "ATTEMPT_2_REVIEW_RECEIPT_PATH", receipt_path)
     with pytest.raises(core.IntegrityError, match="current exact head"):
         runner._verify_independent_preexecution_review()
+
+
+def test_runtime_freeze_gate_rejects_changed_protocol_before_execution(tmp_path, monkeypatch):
+    changed_protocol = tmp_path / "PROTOCOL_V1.md"
+    changed_protocol.write_bytes(core.PROTOCOL_PATH.read_bytes() + b"\nTAMPER\n")
+    monkeypatch.setattr(core, "PROTOCOL_PATH", changed_protocol)
+    with pytest.raises(core.IntegrityError, match="protocol"):
+        runner._verify_freeze()
+
+
+def test_runtime_freeze_gate_requires_preexecution_metadata(tmp_path, monkeypatch):
+    monkeypatch.setattr(core, "ATTEMPT_2_METADATA_PATH", tmp_path / "absent.json")
+    with pytest.raises(core.IntegrityError, match="metadata"):
+        runner._verify_freeze()
+
+
+def test_review_receipt_rejects_arbitrary_url_and_implementation_author(tmp_path, monkeypatch):
+    receipt_path = tmp_path / "independent_preexecution_review.json"
+    core.write_schema_json(receipt_path, review_receipt_fixture(
+        reviewer_identity=attempt2_attestation.IMPLEMENTATION_AUTHOR_IDENTITY,
+        review_url="https://example.invalid/not-pr-316",
+    ))
+    monkeypatch.setattr(core, "ATTEMPT_2_REVIEW_RECEIPT_PATH", receipt_path)
+    with pytest.raises(core.IntegrityError, match="repository|pull request|review|independent"):
+        runner._verify_independent_preexecution_review()
+
+
+def test_execution_marker_transition_follows_all_pre_cell_loading():
+    source = inspect.getsource(runner.execute)
+    assert source.index("_load_verified_execution_inputs") < source.index("_verify_independent_preexecution_review")
+    assert source.index("_verify_independent_preexecution_review") < source.index("_resolve_first_eligible_registered_cell")
+    assert source.index("_resolve_first_eligible_registered_cell") < source.index("_consume_attempt_2_authorization")
+    assert source.index("_consume_attempt_2_authorization") < source.index("_cell_index")
+
+
+@pytest.mark.parametrize(("field", "value"), [
+    ("repository", "someone/else"),
+    ("pull_request_number", 315),
+    ("attempt_id", core.ATTEMPT_1_ID),
+    ("authority_decision_id", "RISK-0001"),
+    ("authority_decision_sha256", "0" * 64),
+    ("review_reference_kind", "ARBITRARY_URL"),
+    ("review_id", 0),
+    ("reviewed_head", "0" * 40),
+    ("stage_a_attestation_sha256", "0" * 64),
+    ("preexecution_metadata_sha256", "0" * 64),
+    ("reviewer_identity", attempt2_attestation.IMPLEMENTATION_AUTHOR_IDENTITY),
+    ("reviewer_identity", "self-asserted-reviewer"),
+    ("implementation_author_identity", "wrong-author"),
+    ("independence_basis", "SELF_ASSERTED_TRUE"),
+    ("disposition", "CHANGES_REQUIRED"),
+    ("github_review_state", "DISMISSED"),
+    ("review_url", "https://example.invalid/not-a-review"),
+    ("reviewed_at_utc", "not-a-timestamp"),
+])
+def test_preexecution_review_binding_adversarial_matrix(field, value, tmp_path, monkeypatch):
+    receipt_path = tmp_path / "independent_preexecution_review.json"
+    receipt = review_receipt_fixture()
+    receipt[field] = value
+    core.write_schema_json(receipt_path, receipt)
+    monkeypatch.setattr(core, "ATTEMPT_2_REVIEW_RECEIPT_PATH", receipt_path)
+    with pytest.raises(core.IntegrityError):
+        runner._verify_independent_preexecution_review()
+    assert not runner.EXECUTION_RECEIPT.exists()
+
+
+def test_preexecution_review_missing_binding_field_fails_closed(tmp_path, monkeypatch):
+    receipt_path = tmp_path / "independent_preexecution_review.json"
+    receipt = review_receipt_fixture()
+    del receipt["repository"]
+    core.write_schema_json(receipt_path, receipt)
+    monkeypatch.setattr(core, "ATTEMPT_2_REVIEW_RECEIPT_PATH", receipt_path)
+    with pytest.raises(core.IntegrityError, match="exact keys/order"):
+        runner._verify_independent_preexecution_review()
+
+
+@pytest.mark.parametrize(("path_attribute", "label"), [
+    ("PROTOCOL_PATH", "protocol"),
+    ("PREREG_PATH", "preregistration"),
+    ("CONFIG_PATH", "implementation_config"),
+    ("ELIGIBILITY_PATH", "eligibility"),
+    ("TRIAL_REGISTRY_PATH", "trial_registry"),
+])
+def test_runtime_gate_rejects_changed_governed_file(path_attribute, label, tmp_path, monkeypatch):
+    original = getattr(core, path_attribute)
+    changed = tmp_path / original.name
+    changed.write_bytes(original.read_bytes() + b"\nTAMPER\n")
+    monkeypatch.setattr(core, path_attribute, changed)
+    with pytest.raises(core.IntegrityError, match=label.replace("_", " ") + "|" + label):
+        runner._verify_freeze()
+    assert not runner.EXECUTION_RECEIPT.exists()
+
+
+def test_runtime_gate_rejects_changed_risk_0002_authority(tmp_path, monkeypatch):
+    changed = tmp_path / "RISK-0002.md"
+    changed.write_bytes(attempt2_attestation.RISK_0002_PATH.read_bytes() + b"\nTAMPER\n")
+    monkeypatch.setattr(attempt2_attestation, "RISK_0002_PATH", changed)
+    with pytest.raises(core.IntegrityError, match="RISK-0002 authority"):
+        runner._verify_freeze()
+    assert not runner.EXECUTION_RECEIPT.exists()
+
+
+def _runtime_stage_contract():
+    prereg, eligibility, registry = attempt2_attestation._verify_frozen_repository_inputs()
+    provider = attempt2_attestation._verify_provider_identity(prereg)
+    transplant = attempt2_attestation._verify_transplant_destinations()
+    stage_a = core.load_schema_json(core.ATTEMPT_2_STAGE_A_PATH)
+    return stage_a, prereg, eligibility, registry, provider, transplant
+
+
+def _set_nested(value, path, replacement):
+    target = value
+    for key in path[:-1]:
+        target = target[key]
+    target[path[-1]] = replacement
+
+
+@pytest.mark.parametrize(("path", "replacement"), [
+    (("authority", "decision_sha256"), "0" * 64),
+    (("authority_hashes", "protocol"), "0" * 64),
+    (("authority_hashes", "preregistration"), "0" * 64),
+    (("implementation_config_sha256",), "0" * 64),
+    (("eligibility_matrix_sha256",), "0" * 64),
+    (("trial_registry_sha256",), "0" * 64),
+    (("forensic_identity", "material_aggregate_sha256"), "0" * 64),
+    (("frozen_input_aggregates", "raw"), "0" * 64),
+    (("frozen_input_aggregates", "receipts"), "0" * 64),
+    (("frozen_input_aggregates", "transformed"), "0" * 64),
+    (("frozen_input_aggregates", "quarantine"), "0" * 64),
+    (("transplant_manifest", "sha256"), "0" * 64),
+    (("calendar_sha256",), "0" * 64),
+    (("provider_fallback_identity", "provider_selection_sha256"), "0" * 64),
+    (("stage_a", "status"), "FAIL"),
+    (("drift_confirmations", "no_provider_or_fallback_drift"), False),
+    (("attempt_authorization_consumed",), True),
+])
+def test_runtime_stage_a_contract_rejects_tampered_identity_or_assertion(path, replacement):
+    stage_a, prereg, eligibility, registry, provider, transplant = _runtime_stage_contract()
+    _set_nested(stage_a, path, replacement)
+    with pytest.raises(core.IntegrityError):
+        attempt2_attestation._verify_runtime_stage_a(
+            stage_a, prereg, eligibility, registry, provider, transplant,
+        )
+    assert not runner.EXECUTION_RECEIPT.exists()
+
+
+def test_runtime_gate_rejects_tampered_preexecution_metadata(tmp_path, monkeypatch):
+    metadata = core.load_schema_json(core.ATTEMPT_2_METADATA_PATH)
+    metadata["raw_aggregate_sha256"] = "0" * 64
+    path = tmp_path / "preexecution_metadata.json"
+    core.write_schema_json(path, metadata)
+    monkeypatch.setattr(core, "ATTEMPT_2_METADATA_PATH", path)
+    with pytest.raises(core.IntegrityError, match="metadata"):
+        runner._verify_freeze()
+    assert not runner.EXECUTION_RECEIPT.exists()
+
+
+def test_runtime_transplant_gate_rejects_changed_manifest_identity(tmp_path, monkeypatch):
+    changed = tmp_path / "frozen_artifact_transplant_manifest.json"
+    changed.write_bytes(core.ATTEMPT_2_TRANSPLANT_MANIFEST_PATH.read_bytes() + b"\n")
+    monkeypatch.setattr(core, "ATTEMPT_2_TRANSPLANT_MANIFEST_PATH", changed)
+    with pytest.raises(core.IntegrityError, match="transplant manifest identity"):
+        attempt2_attestation._verify_transplant_destinations()
+
+
+def test_runtime_provider_and_fallback_identity_mismatches_fail_closed(tmp_path, monkeypatch):
+    prereg = core.load_yaml(core.PREREG_PATH)
+    source = core.load_schema_json(core.SOURCE_INVENTORY_PATH)
+    source["stock_and_etf_datasets"][0]["selected_provider"] = "WRONG_PROVIDER"
+    source_path = tmp_path / "source_inventory.json"
+    core.write_schema_json(source_path, source)
+    monkeypatch.setattr(core, "SOURCE_INVENTORY_PATH", source_path)
+    with pytest.raises(core.IntegrityError, match="provider drift"):
+        attempt2_attestation._verify_provider_identity(prereg)
+
+    monkeypatch.setattr(core, "SOURCE_INVENTORY_PATH", core.ROOT / "research/level1_sleeve_robustness/data/source_inventory.json")
+    manifest = core.load_yaml(core.MANIFEST_PATH)
+    manifest["provider_fallback_hierarchy"]["crypto"] = ["COINBASE_EXCHANGE", "ABSTAIN"]
+    manifest_path = tmp_path / "data_manifest.yaml"
+    manifest_path.write_text(__import__("yaml").safe_dump(manifest, sort_keys=False), encoding="utf-8")
+    monkeypatch.setattr(core, "MANIFEST_PATH", manifest_path)
+    with pytest.raises(core.IntegrityError, match="fallback hierarchy"):
+        attempt2_attestation._verify_provider_identity(prereg)
+
+
+def test_pre_cell_calendar_and_dff_load_failures_leave_authorization_unconsumed(tmp_path, monkeypatch):
+    config = core.load_yaml(core.CONFIG_PATH)
+    prereg = core.load_yaml(core.PREREG_PATH)
+    eligibility = core.load_schema_json(core.ELIGIBILITY_PATH)
+
+    fake_data = tmp_path / "data"
+    calendar_path = fake_data / "transformed/XNYS_sessions.json"
+    calendar_path.parent.mkdir(parents=True)
+    calendar_path.write_bytes((core.DATA / "transformed/XNYS_sessions.json").read_bytes() + b"\n")
+    monkeypatch.setattr(core, "DATA", fake_data)
+    with pytest.raises(core.IntegrityError, match="calendar identity"):
+        runner._load_verified_execution_inputs(config, prereg, eligibility)
+    assert not runner.EXECUTION_RECEIPT.exists()
+
+    monkeypatch.setattr(core, "DATA", core.ROOT / "research/level1_sleeve_robustness/data")
+    source = core.load_schema_json(core.SOURCE_INVENTORY_PATH)
+    source["comparator_dataset"]["selected_transformed_sha256"] = "0" * 64
+    source_path = tmp_path / "source_inventory.json"
+    core.write_schema_json(source_path, source)
+    monkeypatch.setattr(core, "SOURCE_INVENTORY_PATH", source_path)
+    with pytest.raises(core.IntegrityError, match="DFF identity"):
+        runner._load_verified_execution_inputs(config, prereg, eligibility)
+    assert not runner.EXECUTION_RECEIPT.exists()
+
+
+def test_all_pre_cell_inputs_load_and_first_eligible_registry_resolves_without_consumption():
+    config = core.load_yaml(core.CONFIG_PATH)
+    prereg = core.load_yaml(core.PREREG_PATH)
+    eligibility = core.load_schema_json(core.ELIGIBILITY_PATH)
+    inputs = runner._load_verified_execution_inputs(config, prereg, eligibility)
+    first_eligible = runner._resolve_first_eligible_registered_cell(inputs)
+    assert first_eligible["preexecution_missingness_state"] == "ELIGIBLE"
+    assert first_eligible is inputs["registry"]["records"][0]
+    assert len(inputs["registry_lookup"]) == 777
+    assert not runner.EXECUTION_RECEIPT.exists()
+
+
+def test_atomic_first_cell_boundary_consumes_once_and_post_start_failure_cannot_rerun(tmp_path):
+    marker = tmp_path / "results/execution_receipt.json"
+    review = review_receipt_fixture()
+    assert not marker.exists()
+    runner._consume_attempt_2_authorization(
+        "RISK-0001|FIXTURE-FIRST-ELIGIBLE-CELL", review, marker,
+        started_at_utc="2026-08-14T00:00:00Z",
+    )
+    written = core.load_schema_json(marker)
+    assert written["status"] == "FIRST_REGISTERED_ELIGIBLE_CELL_COMMENCING_NO_RERUN_PERMITTED"
+    assert written["first_registered_cell_id"] == "RISK-0001|FIXTURE-FIRST-ELIGIBLE-CELL"
+    with pytest.raises(core.IntegrityError, match="rerun prohibited"):
+        runner._consume_attempt_2_authorization(
+            "RISK-0001|FIXTURE-FIRST-ELIGIBLE-CELL", review, marker,
+        )
+    assert marker.exists()
+    assert not runner.EXECUTION_RECEIPT.exists()

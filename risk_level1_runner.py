@@ -6,6 +6,7 @@ import argparse
 import copy
 import json
 import math
+import os
 import statistics
 import subprocess
 from datetime import datetime, timezone
@@ -16,6 +17,7 @@ from typing import Any, Mapping
 import yaml
 
 import level1_sleeve_robustness_preregistration_validator as authority
+import risk_level1_attempt2_attestation as attempt2_attestation
 import risk_level1_core as core
 
 
@@ -244,61 +246,75 @@ def _historical_attempt_1_prepare_procedure() -> None:
 
 
 def _verify_freeze() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
-    freeze = core.load_json(core.FREEZE_PATH)
-    if freeze.get("attempt_id") != core.ATTEMPT_2_ID:
-        raise core.IntegrityError("attempt-2 Stage-A identity mismatch")
-    if freeze.get("attempt_authorization_consumed") is not False:
-        raise core.IntegrityError("attempt-2 Stage-A must precede authorization consumption")
-    if freeze.get("registered_cells_executed") != 0:
-        raise core.IntegrityError("attempt-2 Stage-A must attest zero registered cells executed")
-    config = core.load_yaml(core.CONFIG_PATH)
-    prereg = core.load_yaml(core.PREREG_PATH)
-    eligibility = core.load_json(core.ELIGIBILITY_PATH)
-    checks = {
-        core.MANIFEST_PATH: freeze["manifest_sha256"], core.ELIGIBILITY_PATH: freeze["eligibility_matrix_sha256"],
-        core.TRIAL_REGISTRY_PATH: freeze["trial_registry_sha256"], core.SOURCE_INVENTORY_PATH: freeze["source_inventory_sha256"],
-        core.DATA / "acquisition_receipt_inventory.json": freeze["acquisition_receipt_inventory_sha256"],
-    }
-    for path, expected in checks.items():
-        if core.sha256_file(path) != expected:
-            raise core.IntegrityError(f"frozen input hash mismatch: {path}")
-    for name, expected in freeze["implementation_code_hashes"].items():
-        if core.sha256_file(core.ROOT / name) != expected:
-            raise core.IntegrityError(f"frozen implementation hash mismatch: {name}")
-    if eligibility["registered_cell_count"] != 777:
-        raise core.IntegrityError("frozen eligibility count mismatch")
-    return freeze, config, prereg, eligibility
+    return attempt2_attestation.verify_runtime_preexecution_state()
 
 
-def _verify_independent_preexecution_review() -> None:
+def _verify_independent_preexecution_review() -> dict[str, Any]:
     if not core.ATTEMPT_2_REVIEW_RECEIPT_PATH.is_file():
         raise core.IntegrityError(
             "mandatory independent exact-head preexecution review receipt is absent"
         )
     review = core.load_schema_json(core.ATTEMPT_2_REVIEW_RECEIPT_PATH)
     expected_keys = (
-        "schema_version", "study_id", "attempt_id", "review_type",
-        "reviewed_head", "stage_a_attestation_sha256", "reviewer_identity",
-        "reviewer_independence", "disposition", "review_url", "reviewed_at_utc",
+        "schema_version", "repository", "pull_request_number", "study_id", "attempt_id",
+        "authority_decision_id", "authority_decision_sha256", "review_type",
+        "review_reference_kind", "review_id", "reviewed_head",
+        "stage_a_attestation_sha256", "preexecution_metadata_sha256",
+        "reviewer_github_login", "reviewer_identity", "implementation_author_identity",
+        "independence_basis", "disposition", "github_review_state", "review_url",
+        "reviewed_at_utc",
     )
     if tuple(review) != expected_keys:
         raise core.IntegrityError("preexecution review receipt exact keys/order mismatch")
+    if review["schema_version"] != "2.0":
+        raise core.IntegrityError("preexecution review receipt schema version mismatch")
+    if review["repository"] != attempt2_attestation.REPOSITORY_IDENTITY:
+        raise core.IntegrityError("preexecution review receipt repository identity mismatch")
+    if review["pull_request_number"] != attempt2_attestation.IMPLEMENTATION_PR_NUMBER:
+        raise core.IntegrityError("preexecution review receipt pull request identity mismatch")
     if review["study_id"] != "RISK-0001" or review["attempt_id"] != core.ATTEMPT_2_ID:
         raise core.IntegrityError("preexecution review receipt attempt identity mismatch")
+    if review["authority_decision_id"] != "RISK-0002" or review["authority_decision_sha256"] != attempt2_attestation.RISK_0002_SHA256:
+        raise core.IntegrityError("preexecution review receipt RISK-0002 authority mismatch")
     if review["review_type"] != "MANDATORY_INDEPENDENT_PREEXECUTION_EXACT_HEAD":
         raise core.IntegrityError("preexecution review receipt type mismatch")
-    if review["reviewer_independence"] is not True or review["disposition"] != "PASS":
+    if review["review_reference_kind"] != "GITHUB_PULL_REQUEST_REVIEW":
+        raise core.IntegrityError("preexecution review receipt durable reference type mismatch")
+    review_id = review["review_id"]
+    if type(review_id) is not int or review_id <= 0:
+        raise core.IntegrityError("preexecution review receipt review identity malformed")
+    if review["disposition"] != "PASS" or review["github_review_state"] != "COMMENTED":
         raise core.IntegrityError("independent preexecution review has not passed")
     if review["stage_a_attestation_sha256"] != core.sha256_file(core.FREEZE_PATH):
         raise core.IntegrityError("preexecution review is not bound to the Stage-A attestation")
-    if not all(type(review[key]) is str and review[key] for key in ("reviewed_head", "reviewer_identity", "review_url", "reviewed_at_utc")):
+    if review["preexecution_metadata_sha256"] != core.sha256_file(core.ATTEMPT_2_METADATA_PATH):
+        raise core.IntegrityError("preexecution review is not bound to preexecution metadata")
+    identity_fields = ("reviewed_head", "reviewer_github_login", "reviewer_identity", "implementation_author_identity", "review_url", "reviewed_at_utc")
+    if not all(type(review[key]) is str and review[key] for key in identity_fields):
         raise core.IntegrityError("preexecution review receipt identity fields are incomplete")
+    if review["implementation_author_identity"] != attempt2_attestation.IMPLEMENTATION_AUTHOR_IDENTITY:
+        raise core.IntegrityError("preexecution review implementation author identity mismatch")
+    if review["reviewer_identity"] == review["implementation_author_identity"]:
+        raise core.IntegrityError("implementation author cannot be the independent reviewer")
+    if not review["reviewer_identity"].startswith("INDEPENDENT_SESSION:"):
+        raise core.IntegrityError("independent reviewer session identity is malformed")
+    if review["independence_basis"] != "DISTINCT_SESSION_IDENTITIES_BOUND_TO_DURABLE_GITHUB_REVIEW":
+        raise core.IntegrityError("preexecution review independence proof is missing")
+    expected_url = (
+        f"https://github.com/{attempt2_attestation.REPOSITORY_IDENTITY}/pull/"
+        f"{attempt2_attestation.IMPLEMENTATION_PR_NUMBER}#pullrequestreview-{review_id}"
+    )
+    if review["review_url"] != expected_url:
+        raise core.IntegrityError("preexecution review URL is not the bound GitHub PR review")
+    if not attempt2_attestation._valid_utc_timestamp(review["reviewed_at_utc"]):
+        raise core.IntegrityError("preexecution review timestamp is malformed")
     current_head = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=core.ROOT, check=True,
         capture_output=True, text=True,
     ).stdout.strip()
     if review["reviewed_head"] != current_head:
         raise core.IntegrityError("preexecution review is not bound to the current exact head")
+    return review
 
 
 def _cell_index(document: Mapping[str, Any], family: str, start: str, end: str, schedule: list[Mapping[str, str]]) -> list[tuple[str, float]]:
@@ -319,23 +335,139 @@ def _raw_operands(metric: str, metrics: Mapping[str, Any], comparator_return: fl
     return None
 
 
+def _load_verified_execution_inputs(
+    config: Mapping[str, Any], prereg: Mapping[str, Any], eligibility: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Load every frozen execution input before the one-shot authority boundary."""
+    source_inventory = core.load_schema_json(core.SOURCE_INVENTORY_PATH)
+    calendar_path = core.DATA / "transformed/XNYS_sessions.json"
+    if core.sha256_file(calendar_path) != attempt2_attestation.FROZEN_STAGE_A_IDENTITIES["calendar"]:
+        raise core.IntegrityError("frozen XNYS calendar identity mismatch")
+    calendar = core.load_schema_json(calendar_path)
+    if calendar.get("calendar") != "XNYS" or calendar.get("provider") != "exchange_calendars":
+        raise core.IntegrityError("frozen XNYS calendar provider identity mismatch")
+    if calendar.get("package_version") != config["calendar"]["package_version"]:
+        raise core.IntegrityError("frozen XNYS calendar package version mismatch")
+    schedule = calendar.get("sessions")
+    if type(schedule) is not list or not schedule:
+        raise core.IntegrityError("frozen XNYS calendar sessions are missing")
+
+    representation_families = core.representation_family(prereg)
+    documents: dict[str, Any] = {}
+    for representation in representation_families:
+        record = core.selected_record(source_inventory, representation)
+        document = core.selected_document(record)
+        if document is None and any(
+            row["representation_id"] == representation and row["cell_missingness_state"] == "ELIGIBLE"
+            for row in eligibility["records"]
+        ):
+            raise core.IntegrityError(f"eligible representation has no frozen document: {representation}")
+        documents[representation] = document
+
+    comparator = source_inventory.get("comparator_dataset")
+    if type(comparator) is not dict or comparator.get("selected_provider") != "FRED":
+        raise core.IntegrityError("frozen DFF provider identity mismatch")
+    dff_path_text = comparator.get("selected_path")
+    if type(dff_path_text) is not str or not dff_path_text:
+        raise core.IntegrityError("frozen DFF path is missing")
+    dff_path = core.ROOT / dff_path_text
+    if core.sha256_file(dff_path) != comparator.get("selected_transformed_sha256"):
+        raise core.IntegrityError("frozen DFF identity mismatch")
+    dff = core.load_schema_json(dff_path)
+
+    lookup = core.eligibility_lookup(eligibility)
+    registry = core.load_schema_json(core.TRIAL_REGISTRY_PATH)
+    records = registry.get("records")
+    if type(records) is not list or len(records) != 777:
+        raise core.IntegrityError("frozen ordered trial registry is not exact 777")
+    registry_lookup: dict[tuple[str, str, str], Mapping[str, Any]] = {}
+    for row in records:
+        key = (row["representation_id"], row["scenario_id"], row["window_id"])
+        if key in registry_lookup or key not in lookup:
+            raise core.IntegrityError("frozen trial registry identity collision or orphan")
+        if row["preexecution_missingness_state"] != lookup[key]["cell_missingness_state"]:
+            raise core.IntegrityError("frozen trial/eligibility missingness identity mismatch")
+        registry_lookup[key] = row
+    if len(registry_lookup) != 777:
+        raise core.IntegrityError("frozen trial registry lookup is not exact 777")
+    return {
+        "source_inventory": source_inventory,
+        "schedule": schedule,
+        "documents": documents,
+        "dff": dff,
+        "eligibility_lookup": lookup,
+        "registry": registry,
+        "registry_lookup": registry_lookup,
+    }
+
+
+def _resolve_first_eligible_registered_cell(inputs: Mapping[str, Any]) -> Mapping[str, Any]:
+    first_eligible = next(
+        (
+            row for row in inputs["registry"]["records"]
+            if row["preexecution_missingness_state"] == "ELIGIBLE"
+        ),
+        None,
+    )
+    if first_eligible is None:
+        raise core.IntegrityError("frozen trial registry has no eligible registered cell")
+    return first_eligible
+
+
+def _consume_attempt_2_authorization(
+    first_registered_cell_id: str,
+    review: Mapping[str, Any],
+    receipt_path: Path = EXECUTION_RECEIPT,
+    started_at_utc: str | None = None,
+) -> None:
+    """Atomically consume the one-shot authority at the first eligible-cell boundary."""
+    if type(first_registered_cell_id) is not str or not first_registered_cell_id:
+        raise core.IntegrityError("first registered eligible cell identity is missing")
+    receipt = {
+        "schema_version": "2.0",
+        "repository": attempt2_attestation.REPOSITORY_IDENTITY,
+        "pull_request_number": attempt2_attestation.IMPLEMENTATION_PR_NUMBER,
+        "study_id": "RISK-0001",
+        "attempt_id": core.ATTEMPT_2_ID,
+        "authority": "RISK-0002",
+        "started_at_utc": started_at_utc or now_utc(),
+        "status": "FIRST_REGISTERED_ELIGIBLE_CELL_COMMENCING_NO_RERUN_PERMITTED",
+        "first_registered_cell_id": first_registered_cell_id,
+        "data_gate_freeze_sha256": core.sha256_file(core.FREEZE_PATH),
+        "preexecution_metadata_sha256": core.sha256_file(core.ATTEMPT_2_METADATA_PATH),
+        "independent_review_id": review["review_id"],
+        "independent_review_url": review["review_url"],
+        "reviewed_head": review["reviewed_head"],
+        "rerun_after_this_marker": "PROHIBITED",
+    }
+    receipt_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        descriptor = os.open(receipt_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError as exc:
+        raise core.IntegrityError("RISK-0001 attempt-2 execution marker exists: rerun prohibited") from exc
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(core.schema_json_bytes(receipt))
+            handle.flush()
+            os.fsync(handle.fileno())
+    except BaseException:
+        # Marker existence itself is the irreversible authorization boundary.
+        raise
+
+
 def execute() -> None:
     if EXECUTION_RECEIPT.exists():
         raise core.IntegrityError("RISK-0001 execution receipt exists: rerun prohibited")
     freeze, config, prereg, eligibility = _verify_freeze()
-    _verify_independent_preexecution_review()
-    core.RESULTS.mkdir(parents=True, exist_ok=True)
-    core.write_json(EXECUTION_RECEIPT, {"schema_version": "1.0", "study_id": "RISK-0001", "attempt_id": core.ATTEMPT_2_ID, "started_at_utc": now_utc(),
-                                       "status": "EXECUTION_STARTED_NO_RERUN_PERMITTED", "data_gate_freeze_sha256": core.sha256_file(core.FREEZE_PATH),
-                                       "rerun_after_this_marker": "PROHIBITED"})
-    source_inventory = core.load_json(core.SOURCE_INVENTORY_PATH)
-    schedule = core.load_json(core.DATA / "transformed/XNYS_sessions.json")["sessions"]
-    documents = {rep: core.selected_document(core.selected_record(source_inventory, rep)) for rep in core.representation_family(prereg)}
-    dff_path = source_inventory["comparator_dataset"].get("selected_path")
-    dff = core.load_json(core.ROOT / dff_path) if dff_path else None
-    lookup = core.eligibility_lookup(eligibility)
-    registry = core.load_json(core.TRIAL_REGISTRY_PATH)
-    registry_lookup = {(row["representation_id"], row["scenario_id"], row["window_id"]): row for row in registry["records"]}
+    inputs = _load_verified_execution_inputs(config, prereg, eligibility)
+    review = _verify_independent_preexecution_review()
+    first_eligible = _resolve_first_eligible_registered_cell(inputs)
+    schedule = inputs["schedule"]
+    documents = inputs["documents"]
+    dff = inputs["dff"]
+    lookup = inputs["eligibility_lookup"]
+    registry_lookup = inputs["registry_lookup"]
+    authorization_consumed = False
     computed: dict[tuple[str, str], dict[str, Any]] = {}
     cell_results = []
     for rep, family in core.representation_family(prereg).items():
@@ -346,6 +478,12 @@ def execute() -> None:
             comparator_return = None
             comparator_missing: list[str] = []
             if state == "ELIGIBLE":
+                if not authorization_consumed:
+                    first_trial_here = registry_lookup[(rep, "LOWER", window)]
+                    if first_trial_here["cell_id"] != first_eligible["cell_id"]:
+                        raise core.IntegrityError("execution order does not match first frozen eligible cell")
+                    _consume_attempt_2_authorization(first_eligible["cell_id"], review)
+                    authorization_consumed = True
                 try:
                     index = _cell_index(documents[rep], family, base["effective_start"], base["effective_end"], schedule)
                     metrics = core.path_metrics(index, 365 if family == "CRYPTO" else 252)
