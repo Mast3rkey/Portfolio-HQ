@@ -859,3 +859,11 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, GOV-0003, OPS-0009, OPS-0014, NUM-0001, XASSET-0016, XASSET-0018, XASSET-0019, LEVEL2-0001, MARGIN-0005, LADDER-0001]
     supporting_artifact: research/level1_sleeve_robustness/PROTOCOL_V1.md
     file: governance/decisions/RISK-0001-level1-investable-sleeve-robustness-charter.md
+
+  - decision_id: RISK-0002
+    date: 2026-08-14
+    status: Proposed
+    category: research_charter_amendment
+    related_decisions: [GOV-0001, GOV-0002, GOV-0003, OPS-0009, OPS-0014, NUM-0001, XASSET-0019, LEVEL2-0001, RISK-0001, MARGIN-0005, LADDER-0001]
+    supporting_artifact: null
+    file: governance/decisions/RISK-0002-separately-authorized-integrity-reexecution-amendment.md
