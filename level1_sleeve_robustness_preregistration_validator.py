@@ -960,23 +960,44 @@ def _reduce_representations(
 def _reduce_equity(
     data: Mapping[str, Any],
     constituent_states: Sequence[tuple[str, str]],
-    leave_one_out_states: Sequence[tuple[str, str]],
 ) -> str:
-    """Private cross-sectional reducer; all summaries are derived here."""
-    if type(constituent_states) not in (list, tuple) or type(leave_one_out_states) not in (list, tuple):
-        raise RuntimeAuthorityError("equity inputs must be ordered sequences")
+    """Private cross-sectional reducer with internally derived leave-one-out runs."""
+    normalized = _validated_equity_constituent_states(data, constituent_states)
+    full_state = _equity_cross_section_state(data, normalized)
+    leave_one_out_states = _derive_equity_leave_one_out_from_normalized(data, normalized)
+    if full_state in ("UNAVAILABLE", "CONFLICT"):
+        return full_state
+    if any(state != full_state for _, state in leave_one_out_states):
+        return "CONFLICT"
+    return full_state
+
+
+def _validated_equity_constituent_states(
+    data: Mapping[str, Any],
+    constituent_states: Sequence[tuple[str, str]],
+) -> tuple[tuple[str, str], ...]:
+    """Validate and normalize the one canonical frozen-cohort state population."""
+    if type(constituent_states) not in (list, tuple):
+        raise RuntimeAuthorityError("equity constituent states must be an ordered sequence")
     identities = [item[0] for item in constituent_states if type(item) in (list, tuple) and len(item) == 2]
     if len(identities) != len(constituent_states) or tuple(identities) != tuple(data["frozen_cohort"]["equity_ids"]):
         raise RuntimeAuthorityError("constituent states must contain the exact frozen 27-name cohort in canonical order")
-    values: list[str] = []
+    normalized: list[tuple[str, str]] = []
     for ticker, state in constituent_states:
-        values.append(_runtime_state(state, ("IMPROVES", "EQUIVALENT", "WORSENS", "UNAVAILABLE"), f"equity.{ticker}"))
-    eligible = [(ticker, state) for (ticker, _), state in zip(constituent_states, values) if state != "UNAVAILABLE"]
-    eligible_ids = tuple(ticker for ticker, _ in eligible)
-    loo_ids = [item[0] for item in leave_one_out_states if type(item) in (list, tuple) and len(item) == 2]
-    if len(loo_ids) != len(leave_one_out_states) or tuple(loo_ids) != eligible_ids:
-        raise RuntimeAuthorityError("leave-one-out states must contain each eligible omitted identity exactly once in canonical order")
-    loo_values = [_runtime_state(state, ("IMPROVES", "EQUIVALENT", "WORSENS", "UNAVAILABLE"), f"equity_loo.{ticker}") for ticker, state in leave_one_out_states]
+        normalized.append((ticker, _runtime_state(
+            state,
+            ("IMPROVES", "EQUIVALENT", "WORSENS", "UNAVAILABLE"),
+            f"equity.{ticker}",
+        )))
+    return tuple(normalized)
+
+
+def _equity_cross_section_state(
+    data: Mapping[str, Any],
+    constituent_states: Sequence[tuple[str, str]],
+) -> str:
+    """Reduce one already-validated full or mechanically omitted population."""
+    eligible = [(ticker, state) for ticker, state in constituent_states if state != "UNAVAILABLE"]
     minimum = int(_param(data, "EQUITY_MINIMUM_ELIGIBLE"))
     if len(eligible) < minimum:
         return "UNAVAILABLE"
@@ -996,9 +1017,40 @@ def _reduce_equity(
     breadth = Decimal(counts[winner]) / Decimal(len(eligible))
     if breadth < _runtime_decimal(_param(data, "EQUITY_DIRECTIONAL_BREADTH"), "equity breadth"):
         return "CONFLICT"
-    if median_state != winner or any(state != winner for state in loo_values):
+    if median_state != winner:
         return "CONFLICT"
     return winner
+
+
+def _derive_equity_leave_one_out(
+    data: Mapping[str, Any],
+    constituent_states: Sequence[tuple[str, str]],
+) -> tuple[tuple[str, str], ...]:
+    """Derive every omission from the same canonical constituent state objects.
+
+    This private diagnostic accepts no LOO values, operands, summaries, or caller-selected
+    omission set.  Direct helper calls validate the complete canonical population.
+    """
+    normalized = _validated_equity_constituent_states(data, constituent_states)
+    return _derive_equity_leave_one_out_from_normalized(data, normalized)
+
+
+def _derive_equity_leave_one_out_from_normalized(
+    data: Mapping[str, Any],
+    normalized: tuple[tuple[str, str], ...],
+) -> tuple[tuple[str, str], ...]:
+    """Private composition step used only after frozen-population validation."""
+    eligible_ids = tuple(ticker for ticker, state in normalized if state != "UNAVAILABLE")
+    return tuple(
+        (
+            omitted_id,
+            _equity_cross_section_state(
+                data,
+                tuple(item for item in normalized if item[0] != omitted_id),
+            ),
+        )
+        for omitted_id in eligible_ids
+    )
 
 
 def _directional_disposition(
@@ -1077,13 +1129,6 @@ def _observation_plan(data: Mapping[str, Any]) -> tuple[tuple[str, str], ...]:
     return tuple(plan)
 
 
-def _mandatory_metric_for_family(data: Mapping[str, Any], voting_family: str) -> tuple[str, str]:
-    for metric in data["metric_families"]["metrics"]:
-        if metric["family"] == voting_family and metric["voting_status"] == "MANDATORY_VOTING":
-            return metric["metric_id"], metric["applicable_windows"][0]
-    raise RuntimeAuthorityError(f"no mandatory metric for voting family {voting_family}")
-
-
 def _derive_direction(
     data: Mapping[str, Any],
     research_family: str,
@@ -1094,13 +1139,11 @@ def _derive_direction(
 ) -> tuple[str, str, dict[tuple[str, str, str, str, str], tuple[str, tuple[Decimal, ...] | None]]]:
     block = _runtime_mapping(
         block,
-        ("observations", "equity_leave_one_out"),
+        ("observations",),
         f"directions.{scenario_id}",
     )
     if type(block["observations"]) is not list:
         raise RuntimeAuthorityError(f"directions.{scenario_id}.observations must be a list")
-    if type(block["equity_leave_one_out"]) is not list:
-        raise RuntimeAuthorityError(f"directions.{scenario_id}.equity_leave_one_out must be a list")
     if research_family == "FUND_GLD_DEFENSIVE":
         representations = ("GLD",) + tuple(admitted_gold)
     else:
@@ -1193,17 +1236,8 @@ def _derive_direction(
             for family, states in voting.items()
         }
 
-    if research_family != "EQUITY" and block["equity_leave_one_out"]:
-        raise RuntimeAuthorityError("equity leave-one-out evidence is prohibited outside EQUITY")
-
     family_states: dict[str, str] = {}
     if research_family == "EQUITY":
-        loo_keys = (
-            "scenario_id", "research_family", "omitted_id", "metric_id",
-            "window_id", "raw_operands", "reported_candidate", "reported_reference",
-            "missingness_state",
-        )
-        expected_loo: list[tuple[str, str, str, str, str]] = []
         constituent_by_family: dict[str, list[tuple[str, str]]] = {}
         for voting_family in VOTING_FAMILIES:
             constituent_states = [
@@ -1211,58 +1245,8 @@ def _derive_direction(
                 for ticker in representations
             ]
             constituent_by_family[voting_family] = constituent_states
-            metric_id, window_id = _mandatory_metric_for_family(data, voting_family)
-            expected_loo.extend(
-                (scenario_id, research_family, ticker, metric_id, window_id)
-                for ticker, state in constituent_states if state != "UNAVAILABLE"
-            )
-        loo_by_family: dict[str, list[tuple[str, str]]] = {family: [] for family in VOTING_FAMILIES}
-        actual_loo: list[tuple[str, str, str, str, str]] = []
-        for index, raw in enumerate(block["equity_leave_one_out"]):
-            record = _runtime_mapping(raw, loo_keys, f"directions.{scenario_id}.equity_leave_one_out[{index}]")
-            identity = (
-                record["scenario_id"], record["research_family"], record["omitted_id"],
-                record["metric_id"], record["window_id"],
-            )
-            actual_loo.append(identity)
-            candidate, reference, normalized_operands = _derive_formula_values(
-                data,
-                record["research_family"],
-                record["omitted_id"],
-                record["scenario_id"],
-                record["metric_id"],
-                record["window_id"],
-                record["raw_operands"],
-                record["reported_candidate"],
-                record["reported_reference"],
-                record["missingness_state"],
-            )
-            state = _classify_observation(
-                data,
-                record["research_family"],
-                record["omitted_id"],
-                record["scenario_id"],
-                record["metric_id"],
-                record["window_id"],
-                candidate,
-                reference,
-                record["missingness_state"],
-            )
-            chain_identity = (
-                "EQUITY_LEAVE_ONE_OUT", record["research_family"], record["omitted_id"],
-                record["metric_id"], record["window_id"],
-            )
-            if chain_identity in primitive_chain:
-                raise RuntimeAuthorityError("duplicate equity leave-one-out formula identity")
-            primitive_chain[chain_identity] = (record["missingness_state"], normalized_operands)
-            voting_family = metric_lookup[record["metric_id"]]["family"]
-            loo_by_family[voting_family].append((record["omitted_id"], state))
-        if tuple(actual_loo) != tuple(expected_loo):
-            raise RuntimeAuthorityError(
-                f"directions.{scenario_id}.equity_leave_one_out must contain the exact derived population/order"
-            )
         family_states = {
-            family: _reduce_equity(data, constituent_by_family[family], loo_by_family[family])
+            family: _reduce_equity(data, constituent_by_family[family])
             for family in VOTING_FAMILIES
         }
     else:

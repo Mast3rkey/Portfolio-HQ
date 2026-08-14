@@ -279,9 +279,10 @@ def test_protocol_preregistration_mirror_mismatch_rejects_even_with_rehashed_pin
 
 
 def equity_inputs(state: str = "IMPROVES", unavailable: int = 0):
-    states = [(ticker, "UNAVAILABLE" if index < unavailable else state) for index, ticker in enumerate(v.EQUITIES)]
-    eligible = [(ticker, state) for ticker, observed in states if observed != "UNAVAILABLE"]
-    return states, eligible
+    return [
+        (ticker, "UNAVAILABLE" if index < unavailable else state)
+        for index, ticker in enumerate(v.EQUITIES)
+    ]
 
 
 def passing_gold(peer: str) -> dict:
@@ -348,13 +349,11 @@ def raw_study_evidence(
     directions = {}
     for scenario in ("LOWER", "HIGHER"):
         observations = []
-        state_for: dict[tuple[str, str], str] = {}
         for representation in representations:
             for metric_id, window_id in v._observation_plan(data):
                 voting_family = metric_lookup[metric_id]["family"]
                 default_profile = "EQUIVALENT" if voting_family == "OPPORTUNITY_COST" else "MATERIAL"
                 profile = overrides.get((representation, voting_family), default_profile)
-                state_for[(representation, voting_family)] = profile
                 operands, missingness = operands_for(metric_id, profile)
                 candidate, reference = reported_values(scenario, metric_id, operands, missingness)
                 observations.append({
@@ -368,30 +367,8 @@ def raw_study_evidence(
                     "reported_reference": reference,
                     "missingness_state": missingness,
                 })
-        loo = []
-        if research_family == "EQUITY":
-            for voting_family in v.VOTING_FAMILIES:
-                metric_id, window_id = v._mandatory_metric_for_family(data, voting_family)
-                for ticker in representations:
-                    profile = state_for[(ticker, voting_family)]
-                    if profile == "UNAVAILABLE":
-                        continue
-                    operands, missingness = operands_for(metric_id, profile)
-                    candidate, reference = reported_values(scenario, metric_id, operands, missingness)
-                    loo.append({
-                        "scenario_id": scenario,
-                        "research_family": research_family,
-                        "omitted_id": ticker,
-                        "metric_id": metric_id,
-                        "window_id": window_id,
-                        "raw_operands": operands,
-                        "reported_candidate": candidate,
-                        "reported_reference": reference,
-                        "missingness_state": missingness,
-                    })
         directions[scenario] = {
             "observations": observations,
-            "equity_leave_one_out": loo,
         }
     return {
         "study_id": "RISK-0001",
@@ -440,6 +417,83 @@ def test_authoritative_raw_evidence_equity_count_and_breadth_controls():
     for evidence in (insufficient, breadth_conflict):
         result = v.evaluate_study_evidence(evidence)
         assert result["directional_states"]["LOWER"] == "UNABLE_TO_DETERMINE"
+
+
+def test_authoritative_equity_leave_one_out_is_stable_when_all_constituents_agree():
+    result = v.evaluate_study_evidence(raw_study_evidence("EQUITY"))
+    assert result["directional_states"] == {
+        "LOWER": "POLICY_REVIEW_REQUIRED",
+        "HIGHER": "CENTER_NOT_REJECTED",
+    }
+    assert result["result"] == "policy_review_required"
+
+
+def test_authoritative_equity_leave_one_out_detects_breadth_flip_after_one_omission():
+    overrides = {
+        **{(ticker, "PATH_RISK"): "UNAVAILABLE" for ticker in v.EQUITIES[:3]},
+        **{(ticker, "PATH_RISK"): "EQUIVALENT" for ticker in v.EQUITIES[3:9]},
+    }
+    result = v.evaluate_study_evidence(raw_study_evidence("EQUITY", overrides=overrides))
+    assert result["directional_states"]["LOWER"] == "UNABLE_TO_DETERMINE"
+    assert result["point_states"]["LOWER"] == "UNAVAILABLE"
+
+
+def test_authoritative_equity_leave_one_out_detects_minimum_count_drop():
+    overrides = {
+        (ticker, "PATH_RISK"): "UNAVAILABLE"
+        for ticker in v.EQUITIES[:6]
+    }
+    result = v.evaluate_study_evidence(raw_study_evidence("EQUITY", overrides=overrides))
+    assert result["directional_states"]["LOWER"] == "UNABLE_TO_DETERMINE"
+
+
+def test_reviewer_leave_one_out_formula_chain_attack_is_structurally_rejected():
+    evidence = raw_study_evidence("EQUITY")
+    ordinary = copy.deepcopy({
+        scenario: evidence["directions"][scenario]["observations"]
+        for scenario in ("LOWER", "HIGHER")
+    })
+    data = good()
+    for scenario in ("LOWER", "HIGHER"):
+        candidate_exposure = Decimal(data["scenario_magnitudes"]["values_pct"]["EQUITY"][scenario])
+        reference_exposure = Decimal(
+            data["scenario_magnitudes"]["values_pct"]["EQUITY"]["HISTORICAL_REFERENCE"]
+        )
+        evidence["directions"][scenario]["equity_leave_one_out"] = [
+            {
+                "scenario_id": scenario,
+                "research_family": "EQUITY",
+                "omitted_id": ticker,
+                "metric_id": "EXPOSURE_SCALED_DRAWDOWN_LOSS",
+                "window_id": "ASSET_AVAILABLE_HISTORY",
+                "raw_operands": {"drawdown": "-0.01"},
+                "reported_candidate": str(candidate_exposure * Decimal("0.01")),
+                "reported_reference": str(reference_exposure * Decimal("0.01")),
+                "missingness_state": "ELIGIBLE",
+            }
+            for ticker in v.EQUITIES
+        ]
+    assert ordinary == {
+        scenario: evidence["directions"][scenario]["observations"]
+        for scenario in ("LOWER", "HIGHER")
+    }
+    with pytest.raises(v.RuntimeAuthorityError, match="exact keys/order"):
+        v.evaluate_study_evidence(evidence)
+
+
+def test_canonical_constituent_change_controls_full_and_derived_loo_result():
+    stable_overrides = {
+        (ticker, "PATH_RISK"): "EQUIVALENT"
+        for ticker in v.EQUITIES[-6:]
+    }
+    changed_overrides = {
+        **stable_overrides,
+        (v.EQUITIES[-7], "PATH_RISK"): "EQUIVALENT",
+    }
+    stable = v.evaluate_study_evidence(raw_study_evidence("EQUITY", overrides=stable_overrides))
+    changed = v.evaluate_study_evidence(raw_study_evidence("EQUITY", overrides=changed_overrides))
+    assert stable["result"] == "policy_review_required"
+    assert changed["result"] == "unable_to_determine"
 
 
 def test_authoritative_raw_evidence_gld_admission_and_peer_veto():
@@ -541,26 +595,19 @@ def test_each_formula_metric_reporting_value_is_reconciled_before_classification
         v.evaluate_study_evidence(evidence)
 
 
-@pytest.mark.parametrize("family,peers,scenario,representation,metric,window,location", [
-    ("FUND_BROAD_MARKET", None, "LOWER", "VEA", "EXPOSURE_SCALED_DRAWDOWN_LOSS", "ASSET_AVAILABLE_HISTORY", "observations"),
-    ("FUND_BROAD_MARKET", None, "HIGHER", "VWO", "EXPOSURE_SCALED_STRESS_LOSS", "Q4_2018", "observations"),
-    ("CRYPTO", None, "LOWER", "ETH", "EXPOSURE_SCALED_UNDERWATER_BURDEN", "ASSET_AVAILABLE_HISTORY", "observations"),
-    ("CRYPTO", None, "HIGHER", "SOL", "EXPOSURE_SCALED_EXCESS_CONTRIBUTION", "FAMILY_COMMON_OVERLAP", "observations"),
-    ("FUND_GLD_DEFENSIVE", [passing_gold("IAU")], "LOWER", "IAU", "EXPOSURE_SCALED_DRAWDOWN_LOSS", "FAMILY_COMMON_OVERLAP", "observations"),
-    ("EQUITY", None, "HIGHER", "AMZN", "EXPOSURE_SCALED_UNDERWATER_BURDEN", "ASSET_AVAILABLE_HISTORY", "observations"),
-    ("EQUITY", None, "LOWER", "AMZN", "EXPOSURE_SCALED_DRAWDOWN_LOSS", "ASSET_AVAILABLE_HISTORY", "equity_leave_one_out"),
+@pytest.mark.parametrize("family,peers,scenario,representation,metric,window", [
+    ("FUND_BROAD_MARKET", None, "LOWER", "VEA", "EXPOSURE_SCALED_DRAWDOWN_LOSS", "ASSET_AVAILABLE_HISTORY"),
+    ("FUND_BROAD_MARKET", None, "HIGHER", "VWO", "EXPOSURE_SCALED_STRESS_LOSS", "Q4_2018"),
+    ("CRYPTO", None, "LOWER", "ETH", "EXPOSURE_SCALED_UNDERWATER_BURDEN", "ASSET_AVAILABLE_HISTORY"),
+    ("CRYPTO", None, "HIGHER", "SOL", "EXPOSURE_SCALED_EXCESS_CONTRIBUTION", "FAMILY_COMMON_OVERLAP"),
+    ("FUND_GLD_DEFENSIVE", [passing_gold("IAU")], "LOWER", "IAU", "EXPOSURE_SCALED_DRAWDOWN_LOSS", "FAMILY_COMMON_OVERLAP"),
+    ("EQUITY", None, "HIGHER", "AMZN", "EXPOSURE_SCALED_UNDERWATER_BURDEN", "ASSET_AVAILABLE_HISTORY"),
 ])
 def test_formula_operand_coverage_is_required_for_every_registered_identity(
-    family, peers, scenario, representation, metric, window, location
+    family, peers, scenario, representation, metric, window
 ):
     evidence = raw_study_evidence(family, gold_peer_evidence=peers)
-    if location == "observations":
-        row = observation(evidence, scenario, representation, metric, window)
-    else:
-        row = next(
-            item for item in evidence["directions"][scenario][location]
-            if item["omitted_id"] == representation and item["metric_id"] == metric and item["window_id"] == window
-        )
+    row = observation(evidence, scenario, representation, metric, window)
     row.pop("raw_operands")
     with pytest.raises(v.RuntimeAuthorityError, match="exact keys/order"):
         v.evaluate_study_evidence(evidence)
@@ -797,40 +844,100 @@ def test_failed_gold_parity_gate_excludes_peer_but_cannot_admit_state():
 
 def test_equity_minimum_breadth_median_and_leave_one_out_are_deterministic():
     data = good()
-    states, loo = equity_inputs()
-    assert v._reduce_equity(data, states, loo) == "IMPROVES"
-    states, loo = equity_inputs(unavailable=7)
-    assert v._reduce_equity(data, states, loo) == "UNAVAILABLE"
+    states = equity_inputs()
+    assert v._reduce_equity(data, states) == "IMPROVES"
+    assert v._derive_equity_leave_one_out(data, states) == tuple(
+        (ticker, "IMPROVES") for ticker in v.EQUITIES
+    )
+    assert v._reduce_equity(data, equity_inputs(unavailable=7)) == "UNAVAILABLE"
     mixed = [(ticker, "IMPROVES" if index < 20 else "EQUIVALENT") for index, ticker in enumerate(v.EQUITIES)]
-    assert v._reduce_equity(data, mixed, [(ticker, "IMPROVES") for ticker in v.EQUITIES]) == "CONFLICT"
-    bad_loo = list(loo)
-    bad_loo[-1] = (bad_loo[-1][0], "EQUIVALENT")
-    assert v._reduce_equity(data, states, bad_loo) == "UNAVAILABLE"
+    assert v._reduce_equity(data, mixed) == "CONFLICT"
 
 
-@pytest.mark.parametrize("mutator", [
-    lambda loo: loo.clear(),
-    lambda loo: loo.__setitem__(slice(None), loo[:1]),
-    lambda loo: loo.__setitem__(1, loo[0]),
-    lambda loo: loo.__setitem__(0, ("UNKNOWN", "IMPROVES")),
-    lambda loo: loo.pop(),
+@pytest.mark.parametrize("injected", [
+    [{"raw_metric": "1"}],
+    [{"raw_operands": {"drawdown": "-0.01"}}],
+    [{"median": "IMPROVES"}],
+    [{"breadth": "1.00"}],
+    [{"direction": "IMPROVES"}],
+    [{"family_state": "IMPROVES"}],
+    [{"final_state": "IMPROVES"}],
+    [{"omitted_id": v.EQUITIES[0]}, {"omitted_id": v.EQUITIES[0]}],
+    [{"omitted_id": ticker} for ticker in v.EQUITIES[:-1]],
+    [{"omitted_id": "UNKNOWN"}],
 ])
-def test_equity_leave_one_out_population_attacks_reject(mutator):
-    states, loo = equity_inputs()
-    mutator(loo)
-    with pytest.raises(v.RuntimeAuthorityError):
-        v._reduce_equity(good(), states, loo)
+def test_public_evaluator_rejects_every_legacy_leave_one_out_authority_shape(injected):
+    evidence = raw_study_evidence("EQUITY")
+    evidence["directions"]["LOWER"]["equity_leave_one_out"] = injected
+    with pytest.raises(v.RuntimeAuthorityError, match="exact keys/order"):
+        v.evaluate_study_evidence(evidence)
 
 
 def test_equity_constituent_population_identity_and_order_are_closed():
-    states, loo = equity_inputs()
+    states = equity_inputs()
     states[0] = ("UNKNOWN", "IMPROVES")
     with pytest.raises(v.RuntimeAuthorityError):
-        v._reduce_equity(good(), states, loo)
-    states, loo = equity_inputs()
+        v._reduce_equity(good(), states)
+    states = equity_inputs()
     states.reverse()
     with pytest.raises(v.RuntimeAuthorityError):
-        v._reduce_equity(good(), states, loo)
+        v._reduce_equity(good(), states)
+
+
+def test_equity_leave_one_out_population_is_derived_from_canonical_eligibility():
+    states = equity_inputs(unavailable=3)
+    expected_ids = tuple(v.EQUITIES[3:])
+    derived = v._derive_equity_leave_one_out(good(), states)
+    assert tuple(omitted for omitted, _ in derived) == expected_ids
+    assert len(derived) == len(expected_ids)
+    assert len(set(omitted for omitted, _ in derived)) == len(derived)
+
+
+def test_equity_leave_one_out_recomputes_minimum_count_boundary():
+    states = equity_inputs(unavailable=6)
+    assert v._equity_cross_section_state(good(), states) == "IMPROVES"
+    derived = v._derive_equity_leave_one_out(good(), states)
+    assert len(derived) == 21
+    assert {state for _, state in derived} == {"UNAVAILABLE"}
+    assert v._reduce_equity(good(), states) == "CONFLICT"
+
+
+def test_equity_leave_one_out_recomputes_breadth_at_and_below_threshold():
+    states = [
+        (ticker, "IMPROVES" if index < 18 else "EQUIVALENT" if index < 24 else "UNAVAILABLE")
+        for index, ticker in enumerate(v.EQUITIES)
+    ]
+    assert v._equity_cross_section_state(good(), states) == "IMPROVES"  # 18/24 = 75%
+    derived = dict(v._derive_equity_leave_one_out(good(), states))
+    assert derived[v.EQUITIES[0]] == "CONFLICT"  # 17/23 is below 75%
+    assert derived[v.EQUITIES[18]] == "IMPROVES"  # 18/23 remains above 75%
+    assert v._reduce_equity(good(), states) == "CONFLICT"
+
+
+def test_equity_leave_one_out_recomputes_median_and_conflict_from_remaining_states():
+    def categorical_median(states):
+        ordered = sorted(
+            (state for _, state in states if state != "UNAVAILABLE"),
+            key=("WORSENS", "EQUIVALENT", "IMPROVES").index,
+        )
+        left = ordered[(len(ordered) - 1) // 2]
+        right = ordered[len(ordered) // 2]
+        return left if left == right else None
+
+    states = [
+        (ticker, "EQUIVALENT" if index < 11 else "IMPROVES" if index < 23 else "UNAVAILABLE")
+        for index, ticker in enumerate(v.EQUITIES)
+    ]
+    assert categorical_median(states) == "IMPROVES"
+    omitted_id = v.EQUITIES[11]
+    omitted = [item for item in states if item[0] != omitted_id]
+    assert categorical_median(omitted) is None
+    assert dict(v._derive_equity_leave_one_out(good(), states))[omitted_id] == "CONFLICT"
+
+    preserved = equity_inputs()
+    assert categorical_median(preserved) == "IMPROVES"
+    assert categorical_median(preserved[1:]) == "IMPROVES"
+    assert dict(v._derive_equity_leave_one_out(good(), preserved))[v.EQUITIES[0]] == "IMPROVES"
 
 
 @pytest.mark.parametrize("states,expected", [
