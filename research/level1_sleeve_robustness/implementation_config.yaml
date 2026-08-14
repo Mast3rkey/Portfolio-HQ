@@ -1,0 +1,103 @@
+schema_version: "1.0"
+study_id: RISK-0001
+implementation_id: RISK-0001-IMPLEMENTATION-V1
+authority:
+  merged_main_sha: 028ec2e9f2a4c74753414842e3dcc55b11134fff
+  accepted_charter_head: 985a315c353250bc330b95593d454d42b1ceaa65
+  protocol_sha256: 90277ad4767e4766d7a38c1199affde66f44e55ff16fd7f73e0894380cf8a425
+  preregistration_sha256: 8da1697456e8a8f4a168c99ae8387c77cd023e0e615cf51c78110165223d3c5a
+  preregistration_schema_version: "2.0"
+  canonical_evaluator: level1_sleeve_robustness_preregistration_validator.evaluate_study_evidence
+  no_rerun_after_results: true
+calendar:
+  provider: exchange_calendars
+  package_version: 4.13.2
+  calendar_id: XNYS
+  timezone: America/New_York
+  evaluation_end: "2026-07-31"
+acquisition:
+  start: "2004-11-18"
+  end: "2026-07-31"
+  equities_etfs:
+    primary_provider: ALPACA_MARKET_DATA
+    endpoint: https://data.alpaca.markets/v2/stocks/{symbol}/bars
+    parameters:
+      timeframe: 1Day
+      adjustment: split
+      feed: sip
+      limit: 10000
+    fallback_provider: YAHOO_FINANCE_CHART
+    fallback_endpoint: https://query1.finance.yahoo.com/v8/finance/chart/{symbol}
+    fallback_parameters:
+      interval: 1d
+      events: div,splits,capitalGains
+    whole_path_only: true
+  crypto:
+    primary_provider: ALPACA_CRYPTO
+    endpoint: https://data.alpaca.markets/v1beta3/crypto/us/bars
+    parameters:
+      timeframe: 1Day
+      limit: 10000
+    fallback_provider: COINBASE_EXCHANGE
+    fallback_endpoint: https://api.exchange.coinbase.com/products/{product}-USD/candles
+    fallback_parameters:
+      granularity: 86400
+      maximum_days_per_request: 250
+    whole_path_only: true
+  comparator:
+    provider: FRED
+    series: DFF
+    endpoint: https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF
+  corporate_actions:
+    primary_provider: ALPACA_CORPORATE_ACTIONS
+    endpoint: https://data.alpaca.markets/v1/corporate-actions
+    provider_request_types: [cash_dividend, stock_dividend, forward_split, reverse_split, spin_off, cash_merger, stock_merger]
+    registered_categories: [cash_dividend, stock_dividend, split, spin_off, merger]
+    identity_fallback: [SEC_EDGAR, PRIMARY_ISSUER_INVESTOR_RELATIONS]
+storage:
+  committed_raw_root: research/level1_sleeve_robustness/data/raw
+  committed_transformed_root: research/level1_sleeve_robustness/data/transformed
+  quarantine_root: research/level1_sleeve_robustness/data/quarantine
+  receipts_root: research/level1_sleeve_robustness/data/receipts
+  yahoo_and_coinbase_payloads: QUARANTINE_NOT_COMMITTED
+  alpaca_payloads: COMMIT_UNDER_EXISTING_REPOSITORY_PRECEDENT_IF_USED
+  fred_payloads: COMMIT_OFFICIAL_PUBLIC_DOMAIN
+identity_boundaries:
+  CEG:
+    lawful_inception: "2022-02-02"
+    rule: PRE_STANDALONE_HISTORY_UNAVAILABLE
+  GEV:
+    lawful_inception: "2024-04-02"
+    rule: PRE_SPIN_HISTORY_UNAVAILABLE
+  RKLB:
+    lawful_inception: "2021-08-25"
+    rule: PRE_2021_08_25_NOT_RKLB_HISTORY
+  RTX:
+    lawful_inception: "2020-04-03"
+    rule: PREDECESSOR_HISTORY_NOT_SILENTLY_STITCHED
+  META:
+    lawful_inception: "2012-05-18"
+    rule: FB_TO_META_SAME_LEGAL_ENTITY_TICKER_LINEAGE_REQUIRES_PRIMARY_EVIDENCE
+known_action_boundaries:
+  SPGI:
+    event_date: "2026-07-01"
+    event: MOBILITY_GLOBAL_SPIN_OFF
+    treatment: UNRESOLVED_UNLESS_EXPLICIT_GOVERNED_ENTITLEMENT_VALUE_IS_AVAILABLE
+execution:
+  network_after_data_gate_freeze: PROHIBITED
+  exact_registered_cell_count: 777
+  reserve_trials: 0
+  runner_entrypoint: risk_level1_runner.py
+  result_validator_entrypoint: risk_level1_result_validator.py
+protected_scope:
+  - targets.yaml
+  - holdings.yaml
+  - gates.yaml
+  - issuer_lookthrough.yaml
+  - allocate.py
+  - alpaca_client.py
+  - margin_state.py
+  - levels.py
+  - numeric_sizing_validator.py
+  - governance/evidence/LEVEL2-0001
+  - intelligence/level1_sleeve_synthesis/numeric_sizing
