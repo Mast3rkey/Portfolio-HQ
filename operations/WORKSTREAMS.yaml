@@ -11626,6 +11626,34 @@ workstreams:
         pr: 315
         status: in_progress
         date: "2026-08-14"
+      - gate: risk0003-postexecution-test-harness-lifecycle-correction-authorization
+        description: >
+          Current governance-only Lane G filing. Attempt 2 completed exactly
+          once as RISK-0001-EXECUTION-ATTEMPT-002: 777 registered cells,
+          609 executed, 168 preexecution-ineligible/null, zero reserve, and
+          zero duplicate/missing/extra cells. Canonical result validation
+          passed and every family disposition is unable_to_determine. The
+          RISK-0002 attempt authority is consumed; no third attempt, retry,
+          restart, continuation, recomputation, regeneration, or policy
+          adoption is authorized. Publication stopped at full pytest with
+          58 failed / 6663 passed because preexecution-only assertions in
+          test_risk_level1_implementation.py required the now-lawful approval
+          receipt, consumed/completed execution receipt, and completed result
+          namespace to remain absent. RISK-0003 authorizes no correction in
+          this PR. If independently reviewed, principal-accepted, merged, and
+          post-merge verified, it permits exactly one later postexecution-only
+          fixture-based test-harness correction on the existing PR #316
+          branch, with preserved artifact bytes and historical preexecution
+          identity. PR #316 is temporarily parked closed/draft/unmerged at
+          ffb314bb56dc8eacd946cd6cbaf650e710130710; its remote branch is
+          preserved at that exact head and the same PR must later be reopened.
+          Results remain completed but unpublished and unaccepted. This
+          filing changes no portfolio policy, production RISK code, protocol,
+          preregistration, study identity, target, sizing, margin, debt,
+          allocation, deployment, or brokerage behavior.
+        pr: null
+        status: in_progress
+        date: "2026-08-14"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11668,9 +11696,29 @@ workstreams:
       - governance/audits/WS0014_LEVEL1_ARCHITECTURE_AMENDMENT_DESIGN_20260813.md
       - governance/decisions/RISK-0001-level1-investable-sleeve-robustness-charter.md
       - governance/decisions/RISK-0002-separately-authorized-integrity-reexecution-amendment.md
+      - governance/decisions/RISK-0003-postexecution-test-harness-lifecycle-correction-authorization.md
       - research/level1_sleeve_robustness/PROTOCOL_V1.md
       - research/level1_sleeve_robustness/pre_registration.yaml
     next_action: >
+      Update, 2026-08-14: RISK-0001-EXECUTION-ATTEMPT-002 completed exactly
+      once and canonical result validation passed. RISK-0002 execution
+      authority is consumed; no third attempt or recomputation is authorized.
+      The four family dispositions are unable_to_determine, but the result
+      package remains unpublished and unaccepted because mandatory full pytest
+      stopped at 58 failed / 6663 passed on preexecution-only lifecycle
+      assertions. PR #316 is temporarily parked closed, draft, and unmerged at
+      exact head ffb314bb56dc8eacd946cd6cbaf650e710130710 with its remote
+      branch preserved. The current authorized unit is this RISK-0003
+      governance-only filing. It must complete independent full exact-head
+      review, principal acceptance, merge, and immediate post-merge
+      verification before the same PR #316 may be reopened for one bounded
+      postexecution-only fixture-based test-harness correction. No execution,
+      retry, recomputation, result mutation, production-code change, or
+      portfolio-policy effect is authorized. RISK remains the critical path;
+      replacement Level 1 sizing, final Level 2 membership/sizing, margin/debt
+      work, and portfolio adoption remain downstream and blocked.
+
+
       Update, 2026-08-14: PR #314 is merged and RISK-0001 is effective, but
       RISK-0001-EXECUTION-ATTEMPT-001 stopped after the execution marker on an
       implementation-integrity-only ordered-JSON defect. The exact observation
@@ -12246,9 +12294,9 @@ workstreams:
       validator/tests, and factual register synchronization; it makes no
       Level 2, policy-adoption, allocation-check, deployment, or completion
       claim and must stop at a draft PR for independent full exact-head review.
-    active_branch: codex/risk-0002-integrity-reexecution-amendment
-    active_pr: 315
-    last_verified_main_sha: 028ec2e9f2a4c74753414842e3dcc55b11134fff
+    active_branch: agent/risk-0003-postexecution-test-harness-authority
+    active_pr: null
+    last_verified_main_sha: e4d9fd69467755b7aa974c39dcb107e388910c52
     last_verified_date: "2026-08-14"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
