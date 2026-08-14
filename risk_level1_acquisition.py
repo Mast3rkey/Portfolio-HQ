@@ -41,6 +41,10 @@ START = "2004-11-18"
 END = "2026-07-31"
 USER_AGENT = "Portfolio-HQ-RISK-0001/1.0 research-acquisition"
 RUN_ID = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+RISK_0002_ACQUISITION_BLOCK = (
+    "RISK-0002 requires exact frozen attempt-1 input reuse; "
+    "attempt-2 acquisition, reacquisition, refresh, and fallback re-resolution are prohibited"
+)
 
 
 class AcquisitionError(RuntimeError):
@@ -122,6 +126,8 @@ def fetch_bytes(
 
     Header values are never serialized. URLs contain no credentials.
     """
+    raise AcquisitionError(RISK_0002_ACQUISITION_BLOCK)
+    # Unreachable historical attempt-1 network implementation retained below.
     last: Exception | None = None
     context = __import__("ssl").create_default_context(cafile=certifi.where())
     for attempt in range(1, retries + 1):
@@ -547,6 +553,14 @@ def action_signature(events: list[dict[str, Any]]) -> set[tuple[str, str]]:
 
 
 def acquisition_main(env_file: Path) -> None:
+    """Fail closed: attempt 2 has no acquisition authority."""
+    raise AcquisitionError(RISK_0002_ACQUISITION_BLOCK)
+
+
+def _historical_attempt_1_acquisition_procedure(env_file: Path) -> None:
+    """Retained as audit context only; no current-lane caller may execute it."""
+    raise AcquisitionError(RISK_0002_ACQUISITION_BLOCK)
+    # Unreachable historical attempt-1 implementation retained below for auditability.
     config = load_yaml(CONFIG_PATH)
     prereg = load_yaml(PREREG_PATH)
     if config["study_id"] != prereg["study_id"]:
@@ -739,9 +753,8 @@ def acquisition_main(env_file: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--env-file", type=Path, required=True)
-    args = parser.parse_args()
-    acquisition_main(args.env_file.resolve())
-    return 0
+    parser.parse_args()
+    raise AcquisitionError(RISK_0002_ACQUISITION_BLOCK)
 
 
 if __name__ == "__main__":

@@ -739,3 +739,282 @@ def test_atomic_first_cell_boundary_consumes_once_and_post_start_failure_cannot_
         )
     assert marker.exists()
     assert not runner.EXECUTION_RECEIPT.exists()
+
+
+def _durable_review_fixture(receipt, **overrides):
+    review = {
+        "id": receipt["review_id"],
+        "html_url": receipt["review_url"],
+        "pull_request_url": (
+            "https://api.github.com/repos/Mast3rkey/Portfolio-HQ/pulls/316"
+        ),
+        "commit_id": receipt["reviewed_head"],
+        "user": {"login": receipt["reviewer_github_login"]},
+        "state": receipt["github_review_state"],
+        "submitted_at": receipt["reviewed_at_utc"],
+        "body": "\n".join((
+            "PREEXECUTION APPROVAL",
+            "Repository: `Mast3rkey/Portfolio-HQ`",
+            "PR: `316`",
+            f"Exact reviewed head: `{receipt['reviewed_head']}`",
+            "Attempt: `RISK-0001-EXECUTION-ATTEMPT-002`",
+            "Authority: `RISK-0002`",
+            f"Stage-A SHA-256: `{receipt['stage_a_attestation_sha256']}`",
+            f"Preexecution metadata SHA-256: `{receipt['preexecution_metadata_sha256']}`",
+            f"Reviewer GitHub login: `{receipt['reviewer_github_login']}`",
+            f"Reviewer session: `{receipt['reviewer_identity']}`",
+            f"Implementation-author session: `{receipt['implementation_author_identity']}`",
+            "Independence basis: `DISTINCT_SESSION_IDENTITIES_BOUND_TO_DURABLE_GITHUB_REVIEW`",
+            "Disposition: `PASS`",
+        )),
+    }
+    review.update(overrides)
+    pull_request = {
+        "number": 316,
+        "html_url": "https://github.com/Mast3rkey/Portfolio-HQ/pull/316",
+        "state": "open",
+        "head": {
+            "sha": receipt["reviewed_head"],
+            "repo": {"full_name": "Mast3rkey/Portfolio-HQ"},
+        },
+        "base": {"repo": {"full_name": "Mast3rkey/Portfolio-HQ"}},
+    }
+    return {"review": review, "pull_request": pull_request}
+
+
+def test_nonexistent_durable_github_review_cannot_be_self_asserted_as_pass(tmp_path, monkeypatch):
+    receipt = review_receipt_fixture(review_id=9999999999)
+    receipt_path = tmp_path / "independent_preexecution_review.json"
+    core.write_schema_json(receipt_path, receipt)
+    monkeypatch.setattr(core, "ATTEMPT_2_REVIEW_RECEIPT_PATH", receipt_path)
+    monkeypatch.setattr(
+        runner,
+        "_load_durable_github_review",
+        lambda review_id: (_ for _ in ()).throw(core.IntegrityError("durable GitHub review does not exist")),
+        raising=False,
+    )
+    with pytest.raises(core.IntegrityError, match="durable GitHub review"):
+        runner._verify_independent_preexecution_review()
+
+
+def test_old_changes_required_review_cannot_be_represented_as_current_pass(tmp_path, monkeypatch):
+    receipt = review_receipt_fixture(review_id=4939150168)
+    receipt["review_url"] = (
+        "https://github.com/Mast3rkey/Portfolio-HQ/pull/316"
+        "#pullrequestreview-4939150168"
+    )
+    receipt_path = tmp_path / "independent_preexecution_review.json"
+    core.write_schema_json(receipt_path, receipt)
+    monkeypatch.setattr(core, "ATTEMPT_2_REVIEW_RECEIPT_PATH", receipt_path)
+    monkeypatch.setattr(
+        runner,
+        "_load_durable_github_review",
+        lambda review_id: _durable_review_fixture(
+            receipt,
+            commit_id="1e9fc181a5250080215450ced2660b57adb4ddcd",
+            body="CHANGES REQUIRED",
+            state="COMMENTED",
+        ),
+        raising=False,
+    )
+    with pytest.raises(core.IntegrityError, match="durable GitHub review"):
+        runner._verify_independent_preexecution_review()
+
+
+def test_result_emission_traverses_the_frozen_registry_not_competing_nested_loops():
+    source = inspect.getsource(runner.execute)
+    assert 'for trial in inputs["registry"]["records"]' in source
+    assert "for rep, family in core.representation_family(prereg).items()" not in source
+
+
+def test_attempt_2_acquisition_cli_cannot_reach_acquisition_main(monkeypatch, tmp_path):
+    reached = []
+    monkeypatch.setattr(acquisition, "acquisition_main", lambda env_file: reached.append(env_file))
+    monkeypatch.setattr(
+        __import__("sys"), "argv",
+        ["risk_level1_acquisition.py", "--env-file", str(tmp_path / ".env")],
+    )
+    with pytest.raises(acquisition.AcquisitionError, match="RISK-0002|reacquisition"):
+        acquisition.main()
+    assert reached == []
+
+
+def test_clean_durable_github_review_record_is_required_and_accepted(tmp_path, monkeypatch):
+    receipt = review_receipt_fixture()
+    receipt_path = tmp_path / "independent_preexecution_review.json"
+    core.write_schema_json(receipt_path, receipt)
+    monkeypatch.setattr(core, "ATTEMPT_2_REVIEW_RECEIPT_PATH", receipt_path)
+    monkeypatch.setattr(
+        runner, "_load_durable_github_review",
+        lambda review_id: _durable_review_fixture(receipt),
+    )
+    assert runner._verify_independent_preexecution_review() == receipt
+
+
+@pytest.mark.parametrize(("field", "replacement"), [
+    ("id", 9999999998),
+    ("html_url", "https://example.invalid/fabricated-review"),
+    ("pull_request_url", "https://api.github.com/repos/wrong/repository/pulls/316"),
+    ("pull_request_url", "https://api.github.com/repos/Mast3rkey/Portfolio-HQ/pulls/315"),
+    ("commit_id", "1e9fc181a5250080215450ced2660b57adb4ddcd"),
+    ("user", {"login": "wrong-reviewer"}),
+    ("state", "CHANGES_REQUESTED"),
+    ("submitted_at", "2026-08-13T00:00:00Z"),
+    ("body", "CHANGES REQUIRED"),
+    ("body", "PREEXECUTION APPROVAL\nDisposition: `PASS`"),
+])
+def test_durable_github_review_evidence_disagreement_fails_closed(
+    field, replacement, tmp_path, monkeypatch,
+):
+    receipt = review_receipt_fixture()
+    receipt_path = tmp_path / "independent_preexecution_review.json"
+    core.write_schema_json(receipt_path, receipt)
+    durable = _durable_review_fixture(receipt)
+    durable["review"][field] = replacement
+    monkeypatch.setattr(core, "ATTEMPT_2_REVIEW_RECEIPT_PATH", receipt_path)
+    monkeypatch.setattr(runner, "_load_durable_github_review", lambda review_id: durable)
+    with pytest.raises(core.IntegrityError, match="durable GitHub review"):
+        runner._verify_independent_preexecution_review()
+    assert not runner.EXECUTION_RECEIPT.exists()
+
+
+@pytest.mark.parametrize(("path", "replacement"), [
+    (("number",), 315),
+    (("html_url",), "https://github.com/wrong/repository/pull/316"),
+    (("state",), "closed"),
+    (("head", "sha"), "1e9fc181a5250080215450ced2660b57adb4ddcd"),
+    (("head", "repo", "full_name"), "wrong/repository"),
+    (("base", "repo", "full_name"), "wrong/repository"),
+])
+def test_current_github_pr_identity_and_post_review_head_drift_fail_closed(
+    path, replacement, tmp_path, monkeypatch,
+):
+    receipt = review_receipt_fixture()
+    receipt_path = tmp_path / "independent_preexecution_review.json"
+    core.write_schema_json(receipt_path, receipt)
+    durable = _durable_review_fixture(receipt)
+    _set_nested(durable["pull_request"], path, replacement)
+    monkeypatch.setattr(core, "ATTEMPT_2_REVIEW_RECEIPT_PATH", receipt_path)
+    monkeypatch.setattr(runner, "_load_durable_github_review", lambda review_id: durable)
+    with pytest.raises(core.IntegrityError, match="pull request.*drifted"):
+        runner._verify_independent_preexecution_review()
+
+
+def _frozen_result_order_fixture():
+    registry = core.load_schema_json(core.TRIAL_REGISTRY_PATH)
+    results = [
+        {
+            "cell_id": row["cell_id"],
+            "representation_id": row["representation_id"],
+            "research_family": row["research_family"],
+            "scenario_id": row["scenario_id"],
+            "window_id": row["window_id"],
+            "execution_state": row["preexecution_missingness_state"],
+        }
+        for row in registry["records"]
+    ]
+    return registry, results
+
+
+def test_result_emission_order_equals_exact_frozen_registry_id_for_id():
+    registry, results = _frozen_result_order_fixture()
+    runner._assert_canonical_result_order(results, registry)
+    registry_ids = [row["cell_id"] for row in registry["records"]]
+    result_ids = [row["cell_id"] for row in results]
+    assert result_ids == registry_ids
+    stage_a = core.load_schema_json(core.ATTEMPT_2_STAGE_A_PATH)
+    assert core.canonical_hash(result_ids) == stage_a["registered_cell_identity_sha256"]
+    assert sum(row["execution_state"] == "ELIGIBLE" for row in results) == 609
+    assert sum(row["execution_state"] != "ELIGIBLE" for row in results) == 168
+
+
+def test_representation_window_scenario_result_order_fails_closed():
+    registry, results = _frozen_result_order_fixture()
+    scenario_order = {value: index for index, value in enumerate(core.SCENARIOS)}
+    window_order = {value: index for index, value in enumerate(core.WINDOWS)}
+    wrong = sorted(
+        results,
+        key=lambda row: (
+            row["representation_id"],
+            window_order[row["window_id"]],
+            scenario_order[row["scenario_id"]],
+        ),
+    )
+    assert [row["cell_id"] for row in wrong] != [row["cell_id"] for row in registry["records"]]
+    with pytest.raises(core.IntegrityError, match="registry order"):
+        runner._assert_canonical_result_order(wrong, registry)
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda rows: rows[7:21] + rows[:7] + rows[21:],
+    lambda rows: rows[1:7] + rows[:1] + rows[7:],
+    lambda rows: [copy.deepcopy(rows[0]), *rows[1:-1], copy.deepcopy(rows[0])],
+    lambda rows: rows[:-1],
+    lambda rows: [*rows, {**copy.deepcopy(rows[-1]), "cell_id": "RISK-0001|EXTRA"}],
+])
+def test_reordered_duplicate_missing_or_extra_result_trials_fail_closed(mutation):
+    registry, results = _frozen_result_order_fixture()
+    with pytest.raises(core.IntegrityError):
+        runner._assert_canonical_result_order(mutation(results), registry)
+
+
+def test_dropped_or_reclassified_frozen_ineligible_trial_fails_closed():
+    registry, results = _frozen_result_order_fixture()
+    index = next(i for i, row in enumerate(results) if row["execution_state"] != "ELIGIBLE")
+    dropped = results[:index] + results[index + 1:]
+    with pytest.raises(core.IntegrityError):
+        runner._assert_canonical_result_order(dropped, registry)
+    altered = copy.deepcopy(results)
+    altered[index]["execution_state"] = "ELIGIBLE"
+    with pytest.raises(core.IntegrityError, match="ineligible/null"):
+        runner._assert_canonical_result_order(altered, registry)
+
+
+def test_all_attempt_2_acquisition_routes_fail_before_any_filesystem_write(tmp_path, monkeypatch):
+    blocked_data = tmp_path / "blocked-data"
+    for name in ("DATA", "RAW", "TRANSFORMED", "QUARANTINE", "RECEIPTS"):
+        monkeypatch.setattr(acquisition, name, blocked_data / name.lower())
+    with pytest.raises(acquisition.AcquisitionError, match="RISK-0002"):
+        acquisition.acquisition_main(tmp_path / ".env")
+    with pytest.raises(acquisition.AcquisitionError, match="RISK-0002"):
+        acquisition._historical_attempt_1_acquisition_procedure(tmp_path / ".env")
+    with pytest.raises(acquisition.AcquisitionError, match="RISK-0002"):
+        acquisition.fetch_bytes(
+            dataset_id="fixture",
+            provider="FIXTURE",
+            url="https://example.invalid/prohibited",
+            headers=None,
+            raw_path=blocked_data / "raw.json",
+            page=0,
+            cursor_in=None,
+        )
+    assert not blocked_data.exists()
+
+
+def test_historical_acquisition_transplant_identity_and_current_code_bundle_are_separate():
+    transplant = core.load_schema_json(core.ATTEMPT_2_TRANSPLANT_MANIFEST_PATH)
+    record = next(
+        row for row in transplant["records"]
+        if row["destination_relative_path"] == "risk_level1_acquisition.py"
+    )
+    assert record["sha256"] == attempt2_attestation.ATTEMPT_1_IMPLEMENTATION_HASHES["risk_level1_acquisition.py"]
+    assert core.sha256_file(core.ROOT / "risk_level1_acquisition.py") != record["sha256"]
+    assert attempt2_attestation._verify_transplant_destinations() == transplant
+
+
+def test_direct_acquisition_module_process_fails_closed_without_network(tmp_path):
+    completed = __import__("subprocess").run(
+        [
+            __import__("sys").executable,
+            str(core.ROOT / "risk_level1_acquisition.py"),
+            "--env-file",
+            str(tmp_path / ".env"),
+        ],
+        cwd=core.ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode != 0
+    assert "RISK-0002 requires exact frozen attempt-1 input reuse" in completed.stderr
+    assert not tmp_path.joinpath(".env").exists()

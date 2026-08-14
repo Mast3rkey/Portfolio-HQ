@@ -249,6 +249,108 @@ def _verify_freeze() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], di
     return attempt2_attestation.verify_runtime_preexecution_state()
 
 
+def _load_durable_github_review(review_id: int) -> dict[str, Any]:
+    """Retrieve the immutable GitHub review record; local receipt claims are insufficient."""
+    review_endpoint = (
+        f"repos/{attempt2_attestation.REPOSITORY_IDENTITY}/pulls/"
+        f"{attempt2_attestation.IMPLEMENTATION_PR_NUMBER}/reviews/{review_id}"
+    )
+    pull_endpoint = (
+        f"repos/{attempt2_attestation.REPOSITORY_IDENTITY}/pulls/"
+        f"{attempt2_attestation.IMPLEMENTATION_PR_NUMBER}"
+    )
+
+    def load(endpoint: str) -> dict[str, Any]:
+        try:
+            completed = subprocess.run(
+                ["gh", "api", endpoint, "--method", "GET"],
+                cwd=core.ROOT,
+                capture_output=True,
+                check=False,
+                timeout=30,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise core.IntegrityError("durable GitHub review verification unavailable") from exc
+        if completed.returncode != 0:
+            raise core.IntegrityError("durable GitHub review does not exist or cannot be verified")
+        try:
+            return core.load_schema_json_bytes(completed.stdout)
+        except (UnicodeDecodeError, json.JSONDecodeError, core.IntegrityError) as exc:
+            raise core.IntegrityError("durable GitHub review response is malformed") from exc
+
+    return {"review": load(review_endpoint), "pull_request": load(pull_endpoint)}
+
+
+def _verify_durable_github_review(
+    review: Mapping[str, Any], durable: Mapping[str, Any]
+) -> None:
+    durable_review = durable.get("review")
+    durable_pull = durable.get("pull_request")
+    if type(durable_review) is not dict or type(durable_pull) is not dict:
+        raise core.IntegrityError("durable GitHub review evidence envelope is malformed")
+    expected_api_url = (
+        f"https://api.github.com/repos/{attempt2_attestation.REPOSITORY_IDENTITY}/pulls/"
+        f"{attempt2_attestation.IMPLEMENTATION_PR_NUMBER}"
+    )
+    exact_fields = {
+        "id": review["review_id"],
+        "html_url": review["review_url"],
+        "pull_request_url": expected_api_url,
+        "commit_id": review["reviewed_head"],
+        "state": review["github_review_state"],
+        "submitted_at": review["reviewed_at_utc"],
+    }
+    if any(durable_review.get(key) != value for key, value in exact_fields.items()):
+        raise core.IntegrityError("durable GitHub review identity or exact-head binding mismatch")
+    durable_user = durable_review.get("user")
+    if type(durable_user) is not dict or durable_user.get("login") != review["reviewer_github_login"]:
+        raise core.IntegrityError("durable GitHub review reviewer identity mismatch")
+    if durable_review.get("state") not in ("COMMENTED", "APPROVED"):
+        raise core.IntegrityError("durable GitHub review state is not eligible for preexecution approval")
+    expected_pull_url = (
+        f"https://github.com/{attempt2_attestation.REPOSITORY_IDENTITY}/pull/"
+        f"{attempt2_attestation.IMPLEMENTATION_PR_NUMBER}"
+    )
+    pull_head = durable_pull.get("head")
+    pull_base = durable_pull.get("base")
+    if (
+        durable_pull.get("number") != attempt2_attestation.IMPLEMENTATION_PR_NUMBER
+        or durable_pull.get("html_url") != expected_pull_url
+        or durable_pull.get("state") != "open"
+        or type(pull_head) is not dict
+        or pull_head.get("sha") != review["reviewed_head"]
+        or type(pull_head.get("repo")) is not dict
+        or pull_head["repo"].get("full_name") != attempt2_attestation.REPOSITORY_IDENTITY
+        or type(pull_base) is not dict
+        or type(pull_base.get("repo")) is not dict
+        or pull_base["repo"].get("full_name") != attempt2_attestation.REPOSITORY_IDENTITY
+    ):
+        raise core.IntegrityError("durable GitHub pull request has drifted from the exact reviewed head")
+    body = durable_review.get("body")
+    if type(body) is not str or not body.strip():
+        raise core.IntegrityError("durable GitHub review approval body is missing")
+    body_lines = {line.strip() for line in body.splitlines() if line.strip()}
+    required_lines = {
+        "PREEXECUTION APPROVAL",
+        f"Repository: `{attempt2_attestation.REPOSITORY_IDENTITY}`",
+        f"PR: `{attempt2_attestation.IMPLEMENTATION_PR_NUMBER}`",
+        f"Exact reviewed head: `{review['reviewed_head']}`",
+        f"Attempt: `{core.ATTEMPT_2_ID}`",
+        "Authority: `RISK-0002`",
+        f"Stage-A SHA-256: `{review['stage_a_attestation_sha256']}`",
+        f"Preexecution metadata SHA-256: `{review['preexecution_metadata_sha256']}`",
+        f"Reviewer GitHub login: `{review['reviewer_github_login']}`",
+        f"Reviewer session: `{review['reviewer_identity']}`",
+        f"Implementation-author session: `{review['implementation_author_identity']}`",
+        "Independence basis: `DISTINCT_SESSION_IDENTITIES_BOUND_TO_DURABLE_GITHUB_REVIEW`",
+        "Disposition: `PASS`",
+    }
+    if not required_lines.issubset(body_lines):
+        raise core.IntegrityError("durable GitHub review lacks exact clean preexecution approval semantics")
+    if "CHANGES REQUIRED" in body.upper():
+        raise core.IntegrityError("durable GitHub review contains an adverse disposition")
+
+
 def _verify_independent_preexecution_review() -> dict[str, Any]:
     if not core.ATTEMPT_2_REVIEW_RECEIPT_PATH.is_file():
         raise core.IntegrityError(
@@ -283,7 +385,7 @@ def _verify_independent_preexecution_review() -> dict[str, Any]:
     review_id = review["review_id"]
     if type(review_id) is not int or review_id <= 0:
         raise core.IntegrityError("preexecution review receipt review identity malformed")
-    if review["disposition"] != "PASS" or review["github_review_state"] != "COMMENTED":
+    if review["disposition"] != "PASS" or review["github_review_state"] not in ("COMMENTED", "APPROVED"):
         raise core.IntegrityError("independent preexecution review has not passed")
     if review["stage_a_attestation_sha256"] != core.sha256_file(core.FREEZE_PATH):
         raise core.IntegrityError("preexecution review is not bound to the Stage-A attestation")
@@ -314,6 +416,8 @@ def _verify_independent_preexecution_review() -> dict[str, Any]:
     ).stdout.strip()
     if review["reviewed_head"] != current_head:
         raise core.IntegrityError("preexecution review is not bound to the current exact head")
+    durable = _load_durable_github_review(review_id)
+    _verify_durable_github_review(review, durable)
     return review
 
 
@@ -381,12 +485,27 @@ def _load_verified_execution_inputs(
     if type(records) is not list or len(records) != 777:
         raise core.IntegrityError("frozen ordered trial registry is not exact 777")
     registry_lookup: dict[tuple[str, str, str], Mapping[str, Any]] = {}
+    path_eligibility: dict[tuple[str, str], tuple[str, str | None, str | None]] = {}
     for row in records:
         key = (row["representation_id"], row["scenario_id"], row["window_id"])
         if key in registry_lookup or key not in lookup:
             raise core.IntegrityError("frozen trial registry identity collision or orphan")
-        if row["preexecution_missingness_state"] != lookup[key]["cell_missingness_state"]:
+        eligible = lookup[key]
+        if (
+            row["research_family"] != representation_families.get(row["representation_id"])
+            or row["research_family"] != eligible["research_family"]
+            or row["preexecution_missingness_state"] != eligible["cell_missingness_state"]
+        ):
             raise core.IntegrityError("frozen trial/eligibility missingness identity mismatch")
+        path_key = (row["representation_id"], row["window_id"])
+        signature = (
+            eligible["cell_missingness_state"],
+            eligible.get("effective_start"),
+            eligible.get("effective_end"),
+        )
+        if path_key in path_eligibility and path_eligibility[path_key] != signature:
+            raise core.IntegrityError("frozen scenario eligibility differs within one path")
+        path_eligibility[path_key] = signature
         registry_lookup[key] = row
     if len(registry_lookup) != 777:
         raise core.IntegrityError("frozen trial registry lookup is not exact 777")
@@ -412,6 +531,33 @@ def _resolve_first_eligible_registered_cell(inputs: Mapping[str, Any]) -> Mappin
     if first_eligible is None:
         raise core.IntegrityError("frozen trial registry has no eligible registered cell")
     return first_eligible
+
+
+def _assert_canonical_result_order(
+    cell_results: list[Mapping[str, Any]], registry: Mapping[str, Any]
+) -> None:
+    """Prove persisted result traversal is exactly the frozen ordered registry."""
+    registry_records = registry.get("records")
+    if type(registry_records) is not list or len(registry_records) != 777:
+        raise core.IntegrityError("frozen ordered trial registry is not exact 777")
+    if len(cell_results) != 777:
+        raise core.IntegrityError("result traversal is not exact 777")
+    registry_ids = [row.get("cell_id") for row in registry_records]
+    result_ids = [row.get("cell_id") for row in cell_results]
+    if len(set(registry_ids)) != 777 or len(set(result_ids)) != 777:
+        raise core.IntegrityError("duplicate trial identity in registry or result traversal")
+    if result_ids != registry_ids:
+        raise core.IntegrityError("result traversal does not match frozen registry order")
+    eligible_count = sum(row.get("preexecution_missingness_state") == "ELIGIBLE" for row in registry_records)
+    if eligible_count != 609 or len(registry_records) - eligible_count != 168:
+        raise core.IntegrityError("frozen eligible/ineligible trial identity count mismatch")
+    identity_fields = ("representation_id", "research_family", "scenario_id", "window_id")
+    for trial, result in zip(registry_records, cell_results, strict=True):
+        if any(result.get(field) != trial.get(field) for field in identity_fields):
+            raise core.IntegrityError("result trial fields do not match frozen registry identity")
+        frozen_state = trial.get("preexecution_missingness_state")
+        if frozen_state != "ELIGIBLE" and result.get("execution_state") != frozen_state:
+            raise core.IntegrityError("frozen ineligible/null trial identity was altered")
 
 
 def _consume_attempt_2_authorization(
@@ -466,21 +612,24 @@ def execute() -> None:
     documents = inputs["documents"]
     dff = inputs["dff"]
     lookup = inputs["eligibility_lookup"]
-    registry_lookup = inputs["registry_lookup"]
     authorization_consumed = False
     computed: dict[tuple[str, str], dict[str, Any]] = {}
     cell_results = []
-    for rep, family in core.representation_family(prereg).items():
-        for window in core.WINDOWS:
-            base = lookup[(rep, "HISTORICAL_REFERENCE", window)]
+    for trial in inputs["registry"]["records"]:
+        rep = trial["representation_id"]
+        family = trial["research_family"]
+        scenario = trial["scenario_id"]
+        window = trial["window_id"]
+        base = lookup[(rep, scenario, window)]
+        path_key = (rep, window)
+        if path_key not in computed:
             state = base["cell_missingness_state"]
             metrics = None
             comparator_return = None
             comparator_missing: list[str] = []
             if state == "ELIGIBLE":
                 if not authorization_consumed:
-                    first_trial_here = registry_lookup[(rep, "LOWER", window)]
-                    if first_trial_here["cell_id"] != first_eligible["cell_id"]:
+                    if trial["cell_id"] != first_eligible["cell_id"]:
                         raise core.IntegrityError("execution order does not match first frozen eligible cell")
                     _consume_attempt_2_authorization(first_eligible["cell_id"], review)
                     authorization_consumed = True
@@ -495,22 +644,47 @@ def execute() -> None:
                     state = "QUALITY_GATE_FAILED"
                     metrics = None
                     comparator_missing = [f"runtime_integrity:{type(exc).__name__}:{exc}"]
-            computed[(rep, window)] = {"missingness_state": state, "metrics": metrics, "comparator_missing": comparator_missing,
-                                       "effective_start": base["effective_start"], "effective_end": base["effective_end"]}
-            for scenario in core.SCENARIOS:
-                trial = registry_lookup[(rep, scenario, window)]
-                scaled = None
-                if metrics is not None:
-                    exposure = Decimal(prereg["scenario_magnitudes"]["values_pct"][family][scenario])
-                    scaled = {"drawdown_loss_pp": core.decimal_text(exposure * abs(Decimal(str(metrics["max_drawdown"])))),
-                              "stress_loss_pp": core.decimal_text(exposure * max(Decimal("0"), -Decimal(str(metrics["asset_total_return"])))),
-                              "underwater_burden_ppdays": core.decimal_text(exposure * Decimal(str(metrics["underwater_area_days"]))),
-                              "excess_contribution_pp": None if comparator_return is None else core.decimal_text(exposure * (Decimal(str(metrics["asset_total_return"])) - Decimal(str(comparator_return))))}
-                cell_results.append({"cell_id": trial["cell_id"], "representation_id": rep, "research_family": family,
-                                     "scenario_id": scenario, "window_id": window, "execution_state": state,
-                                     "effective_start": base["effective_start"], "effective_end": base["effective_end"],
-                                     "metrics": metrics, "exposure_scaled_metrics": scaled,
-                                     "comparator_missing_required_observations": comparator_missing})
+            computed[path_key] = {
+                "missingness_state": state,
+                "metrics": metrics,
+                "comparator_missing": comparator_missing,
+                "effective_start": base["effective_start"],
+                "effective_end": base["effective_end"],
+            }
+        path = computed[path_key]
+        state = (
+            path["missingness_state"]
+            if base["cell_missingness_state"] == "ELIGIBLE"
+            else base["cell_missingness_state"]
+        )
+        metrics = path["metrics"] if state == "ELIGIBLE" else None
+        comparator_return = None if metrics is None else metrics["comparator_total_return"]
+        comparator_missing = path["comparator_missing"]
+        scaled = None
+        if metrics is not None:
+            exposure = Decimal(prereg["scenario_magnitudes"]["values_pct"][family][scenario])
+            scaled = {
+                "drawdown_loss_pp": core.decimal_text(exposure * abs(Decimal(str(metrics["max_drawdown"])))),
+                "stress_loss_pp": core.decimal_text(exposure * max(Decimal("0"), -Decimal(str(metrics["asset_total_return"])))),
+                "underwater_burden_ppdays": core.decimal_text(exposure * Decimal(str(metrics["underwater_area_days"]))),
+                "excess_contribution_pp": None if comparator_return is None else core.decimal_text(
+                    exposure * (Decimal(str(metrics["asset_total_return"])) - Decimal(str(comparator_return)))
+                ),
+            }
+        cell_results.append({
+            "cell_id": trial["cell_id"],
+            "representation_id": rep,
+            "research_family": family,
+            "scenario_id": scenario,
+            "window_id": window,
+            "execution_state": state,
+            "effective_start": base["effective_start"],
+            "effective_end": base["effective_end"],
+            "metrics": metrics,
+            "exposure_scaled_metrics": scaled,
+            "comparator_missing_required_observations": comparator_missing,
+        })
+    _assert_canonical_result_order(cell_results, inputs["registry"])
     raw_by_family = {}
     final_by_family = {}
     gold_evidence = freeze["gold_peer_evidence"]

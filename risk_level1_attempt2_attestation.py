@@ -155,7 +155,13 @@ def _verify_transplant_destinations() -> dict[str, Any]:
         destination = (core.ROOT / destination_relative).resolve()
         _require(destination.is_relative_to(core.ROOT.resolve()), f"transplant destination escapes repository: {destination_relative}")
         _require(destination.is_file(), f"transplant destination missing: {destination_relative}")
-        _require(core.sha256_file(destination) == digest, f"transplant destination hash mismatch: {destination_relative}")
+        if destination_relative == "risk_level1_acquisition.py":
+            _require(
+                digest == ATTEMPT_1_IMPLEMENTATION_HASHES["risk_level1_acquisition.py"],
+                "historical attempt-1 acquisition transplant identity mismatch",
+            )
+        else:
+            _require(core.sha256_file(destination) == digest, f"transplant destination hash mismatch: {destination_relative}")
         seen_source.add(source_relative)
         seen_destination.add(destination_relative)
         source_rows.append((digest, source_relative))
@@ -456,7 +462,7 @@ def _verify_runtime_stage_a(
         "ready_for",
     )
     _require(tuple(stage_a) == expected_keys, "attempt-2 Stage-A exact keys/order mismatch")
-    _require(stage_a["schema_version"] == "3.0", "attempt-2 Stage-A schema version mismatch")
+    _require(stage_a["schema_version"] == "4.0", "attempt-2 Stage-A schema version mismatch")
     _require(stage_a["repository"] == REPOSITORY_IDENTITY and stage_a["pull_request_number"] == IMPLEMENTATION_PR_NUMBER, "attempt-2 repository or PR identity mismatch")
     _require(stage_a["study_id"] == "RISK-0001" and stage_a["attempt_id"] == core.ATTEMPT_2_ID, "attempt-2 Stage-A study/attempt identity mismatch")
     _require(stage_a["implementation_author_identity"] == IMPLEMENTATION_AUTHOR_IDENTITY, "attempt-2 implementation author identity mismatch")
@@ -533,10 +539,13 @@ def _verify_runtime_stage_a(
     _require(stage_a["gold_peer_evidence_integrity"] == gold_identity, "attempt-2 gold evidence identity mismatch")
     _require(stage_a["gold_peer_evidence"] == corrected_gold and stage_a["admitted_gold_peers"] == list(historical["admitted_gold_peers"]), "attempt-2 gold evidence content mismatch")
     _require(stage_a["integrity_correction"] == {
-        "scope": "ORDER_SENSITIVE_SCHEMA_JSON_PERSISTENCE_ONLY",
+        "scope": "ORDERED_SCHEMA_PERSISTENCE_AND_RISK_0002_PREEXECUTION_GATE_INTEGRITY",
         "schema_serializer": "INSERTION_ORDER_PRESERVING_DETERMINISTIC_JSON",
         "schema_loader": "INSERTION_ORDER_PRESERVING_DUPLICATE_KEY_REJECTING_JSON",
         "canonical_hash_serializer": "SORT_KEYS_TRUE_UNCHANGED",
+        "durable_review_verification": "LIVE_GITHUB_REVIEW_AND_CURRENT_PR_EXACT_HEAD",
+        "result_emission_order": "DIRECT_FROZEN_ORDERED_TRIAL_REGISTRY_TRAVERSAL",
+        "attempt_2_acquisition_entrypoints": "FAIL_CLOSED_BEFORE_IO_OR_NETWORK",
         "semantic_or_numeric_change": False,
     }, "attempt-2 integrity correction scope drift")
     _require(stage_a["drift_confirmations"] == {
@@ -545,7 +554,10 @@ def _verify_runtime_stage_a(
         "no_eligibility_or_missingness_drift": True, "no_trial_registry_drift": True,
         "no_scenario_window_metric_threshold_formula_or_result_rule_drift": True,
     }, "attempt-2 drift assertions mismatch")
-    _require(stage_a["network_after_freeze"] == "PROHIBITED", "attempt-2 network prohibition mismatch")
+    _require(stage_a["network_after_freeze"] == (
+        "MARKET_DATA_PROVIDER_AND_FALLBACK_NETWORK_PROHIBITED;"
+        "GITHUB_REVIEW_METADATA_VERIFICATION_REQUIRED_PREEXECUTION"
+    ), "attempt-2 network prohibition mismatch")
     _require(stage_a["registered_cells_executed"] == 0 and stage_a["execution_marker_created"] is False and stage_a["result_artifacts_created"] is False, "attempt-2 Stage-A is not preexecution")
     _require(stage_a["attempt_authorization_consumed"] is False and stage_a["execution_permitted"] is False, "attempt-2 authorization state mismatch")
     _require(stage_a["ready_for"] == "MANDATORY_INDEPENDENT_PREEXECUTION_EXACT_HEAD_REVIEW_ONLY", "attempt-2 Stage-A lifecycle state mismatch")
@@ -588,7 +600,7 @@ def build_attestation(forensic_root: Path | None, generated_at_utc: str, focused
     implementation_hashes = _implementation_hashes()
     focused_test_hash = core.sha256_file(core.ROOT / "test_risk_level1_implementation.py")
     attestation = {
-        "schema_version": "3.0",
+        "schema_version": "4.0",
         "repository": REPOSITORY_IDENTITY,
         "pull_request_number": IMPLEMENTATION_PR_NUMBER,
         "study_id": "RISK-0001",
@@ -654,10 +666,13 @@ def build_attestation(forensic_root: Path | None, generated_at_utc: str, focused
         "gold_peer_evidence": corrected_gold,
         "admitted_gold_peers": list(historical["admitted_gold_peers"]),
         "integrity_correction": {
-            "scope": "ORDER_SENSITIVE_SCHEMA_JSON_PERSISTENCE_ONLY",
+            "scope": "ORDERED_SCHEMA_PERSISTENCE_AND_RISK_0002_PREEXECUTION_GATE_INTEGRITY",
             "schema_serializer": "INSERTION_ORDER_PRESERVING_DETERMINISTIC_JSON",
             "schema_loader": "INSERTION_ORDER_PRESERVING_DUPLICATE_KEY_REJECTING_JSON",
             "canonical_hash_serializer": "SORT_KEYS_TRUE_UNCHANGED",
+            "durable_review_verification": "LIVE_GITHUB_REVIEW_AND_CURRENT_PR_EXACT_HEAD",
+            "result_emission_order": "DIRECT_FROZEN_ORDERED_TRIAL_REGISTRY_TRAVERSAL",
+            "attempt_2_acquisition_entrypoints": "FAIL_CLOSED_BEFORE_IO_OR_NETWORK",
             "semantic_or_numeric_change": False,
         },
         "drift_confirmations": {
@@ -669,7 +684,10 @@ def build_attestation(forensic_root: Path | None, generated_at_utc: str, focused
             "no_trial_registry_drift": True,
             "no_scenario_window_metric_threshold_formula_or_result_rule_drift": True,
         },
-        "network_after_freeze": "PROHIBITED",
+        "network_after_freeze": (
+            "MARKET_DATA_PROVIDER_AND_FALLBACK_NETWORK_PROHIBITED;"
+            "GITHUB_REVIEW_METADATA_VERIFICATION_REQUIRED_PREEXECUTION"
+        ),
         "registered_cells_executed": 0,
         "execution_marker_created": False,
         "result_artifacts_created": False,
