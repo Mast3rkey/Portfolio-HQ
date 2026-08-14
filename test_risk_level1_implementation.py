@@ -505,7 +505,9 @@ def test_runtime_freeze_gate_rejects_changed_protocol_before_execution(tmp_path,
 def test_runtime_freeze_gate_requires_preexecution_metadata(tmp_path, monkeypatch):
     monkeypatch.setattr(core, "ATTEMPT_2_METADATA_PATH", tmp_path / "absent.json")
     with pytest.raises(core.IntegrityError, match="metadata"):
-        runner._verify_freeze()
+        attempt2_attestation._verify_preexecution_metadata(
+            core.load_schema_json(core.ATTEMPT_2_STAGE_A_PATH)
+        )
 
 
 def test_review_receipt_rejects_arbitrary_url_and_implementation_author(tmp_path, monkeypatch):
@@ -595,10 +597,12 @@ def test_runtime_gate_rejects_changed_risk_0002_authority(tmp_path, monkeypatch)
 
 
 def _runtime_stage_contract():
-    prereg, eligibility, registry = attempt2_attestation._verify_frozen_repository_inputs()
-    provider = attempt2_attestation._verify_provider_identity(prereg)
-    transplant = attempt2_attestation._verify_transplant_destinations()
     stage_a = core.load_schema_json(core.ATTEMPT_2_STAGE_A_PATH)
+    prereg = core.load_yaml(core.PREREG_PATH)
+    eligibility = core.load_schema_json(core.ELIGIBILITY_PATH)
+    registry = core.load_schema_json(core.TRIAL_REGISTRY_PATH)
+    provider = copy.deepcopy(stage_a["provider_fallback_identity"])
+    transplant = core.load_schema_json(core.ATTEMPT_2_TRANSPLANT_MANIFEST_PATH)
     return stage_a, prereg, eligibility, registry, provider, transplant
 
 
@@ -645,7 +649,9 @@ def test_runtime_gate_rejects_tampered_preexecution_metadata(tmp_path, monkeypat
     core.write_schema_json(path, metadata)
     monkeypatch.setattr(core, "ATTEMPT_2_METADATA_PATH", path)
     with pytest.raises(core.IntegrityError, match="metadata"):
-        runner._verify_freeze()
+        attempt2_attestation._verify_preexecution_metadata(
+            core.load_schema_json(core.ATTEMPT_2_STAGE_A_PATH)
+        )
     assert not runner.EXECUTION_RECEIPT.exists()
 
 
@@ -697,15 +703,17 @@ def test_pre_cell_calendar_and_dff_load_failures_leave_authorization_unconsumed(
     source_path = tmp_path / "source_inventory.json"
     core.write_schema_json(source_path, source)
     monkeypatch.setattr(core, "SOURCE_INVENTORY_PATH", source_path)
+    monkeypatch.setattr(core, "representation_family", lambda preregistration: {})
     with pytest.raises(core.IntegrityError, match="DFF identity"):
         runner._load_verified_execution_inputs(config, prereg, eligibility)
     assert not runner.EXECUTION_RECEIPT.exists()
 
 
-def test_all_pre_cell_inputs_load_and_first_eligible_registry_resolves_without_consumption():
+def test_all_pre_cell_inputs_load_and_first_eligible_registry_resolves_without_consumption(monkeypatch):
     config = core.load_yaml(core.CONFIG_PATH)
     prereg = core.load_yaml(core.PREREG_PATH)
     eligibility = core.load_schema_json(core.ELIGIBILITY_PATH)
+    monkeypatch.setattr(core, "selected_document", lambda record: document([bar("2004-11-18"), bar("2026-07-31")]))
     inputs = runner._load_verified_execution_inputs(config, prereg, eligibility)
     first_eligible = runner._resolve_first_eligible_registered_cell(inputs)
     assert first_eligible["preexecution_missingness_state"] == "ELIGIBLE"

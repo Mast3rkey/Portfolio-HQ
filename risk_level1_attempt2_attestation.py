@@ -422,6 +422,15 @@ def _expected_metadata(stage_a: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _verify_preexecution_metadata(stage_a: Mapping[str, Any]) -> dict[str, Any]:
+    _require(core.ATTEMPT_2_METADATA_PATH.is_file(), "attempt-2 preexecution metadata is absent")
+    metadata = core.load_schema_json(core.ATTEMPT_2_METADATA_PATH)
+    expected_metadata = _expected_metadata(stage_a)
+    _require(tuple(metadata) == tuple(expected_metadata), "attempt-2 preexecution metadata exact keys/order mismatch")
+    _require(metadata == expected_metadata, "attempt-2 preexecution metadata identity/content mismatch")
+    return metadata
+
+
 def _verify_runtime_stage_a(
     stage_a: Mapping[str, Any],
     prereg: Mapping[str, Any],
@@ -550,13 +559,9 @@ def verify_runtime_preexecution_state() -> tuple[dict[str, Any], dict[str, Any],
     provider_identity = _verify_provider_identity(prereg)
     transplant = _verify_transplant_destinations()
     _require(core.ATTEMPT_2_STAGE_A_PATH.is_file(), "attempt-2 Stage-A attestation is absent")
-    _require(core.ATTEMPT_2_METADATA_PATH.is_file(), "attempt-2 preexecution metadata is absent")
     stage_a = core.load_schema_json(core.ATTEMPT_2_STAGE_A_PATH)
     _verify_runtime_stage_a(stage_a, prereg, eligibility, registry, provider_identity, transplant)
-    metadata = core.load_schema_json(core.ATTEMPT_2_METADATA_PATH)
-    expected_metadata = _expected_metadata(stage_a)
-    _require(tuple(metadata) == tuple(expected_metadata), "attempt-2 preexecution metadata exact keys/order mismatch")
-    _require(metadata == expected_metadata, "attempt-2 preexecution metadata identity/content mismatch")
+    _verify_preexecution_metadata(stage_a)
     return stage_a, core.load_yaml(core.CONFIG_PATH), prereg, eligibility
 
 
