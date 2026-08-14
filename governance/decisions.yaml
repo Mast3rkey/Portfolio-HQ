@@ -851,3 +851,11 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, GOV-0003, OPS-0009, OPS-0014, NUM-0001, MARGIN-0001, MARGIN-0004, MARGIN-0005, XASSET-0001, XASSET-0012, XASSET-0013, XASSET-0014, XASSET-0015, XASSET-0016, XASSET-0017, XASSET-0018, LEVEL2-0001]
     supporting_artifact: governance/audits/WS0014_LEVEL1_ARCHITECTURE_AMENDMENT_DESIGN_20260813.md
     file: governance/decisions/XASSET-0019-level1-architecture-amendment.md
+
+  - decision_id: RISK-0001
+    date: 2026-08-13
+    status: Proposed
+    category: research_charter
+    related_decisions: [GOV-0001, GOV-0002, GOV-0003, OPS-0009, OPS-0014, NUM-0001, XASSET-0016, XASSET-0018, XASSET-0019, LEVEL2-0001, MARGIN-0005, LADDER-0001]
+    supporting_artifact: research/level1_sleeve_robustness/PROTOCOL_V1.md
+    file: governance/decisions/RISK-0001-level1-investable-sleeve-robustness-charter.md

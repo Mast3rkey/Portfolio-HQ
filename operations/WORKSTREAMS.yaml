@@ -11547,6 +11547,42 @@ workstreams:
         pr: 313
         status: in_progress
         date: "2026-08-13"
+      - gate: xasset0019-post-merge-verification
+        description: >
+          Lane M factual synchronization, independently reverified from live
+          GitHub and repository state. PR #313 is closed and merged from exact
+          head df2cb58c38a87888c476af0743884b8377b354e5 into main as merge
+          commit 0962385bf6b1b72cebe8b326da49927977db2912. Exact-head CI run
+          31724288002 completed successfully. XASSET-0019 is therefore
+          effective merged methodology: four investable Level 1 sleeves;
+          debt_reduction outside the asset denominator as a liability-flow
+          control; cash/reserve roles unresolved; historical numeric outputs
+          provisional and barred from future sizing authority; residual
+          assignment/proxy prohibited; and early RISK required before
+          replacement sizing. The prior gate remains byte-unedited as
+          historical in-progress filing-state text.
+        pr: 313
+        status: complete
+        date: "2026-08-13"
+      - gate: risk0001-level1-investable-sleeve-robustness-charter
+        description: >
+          Current governance-only Lane G filing. RISK-0001 freezes a hash-
+          pinned protocol and closed preregistration for an early empirical
+          challenge of the historical/provisional equity, broad-market, GLD
+          defensive, and crypto scenarios. It uses separate representations,
+          constituent-only equity diagnostics, three predeclared exposure
+          states, seven fixed window classes, null preservation, strict data
+          and corporate-action gates, a closed dominance/result vocabulary,
+          and a derived 777-cell inventory ceiling. It authorizes bounded data
+          acquisition/validation and exactly one later deterministic
+          implementation/results PR only after this charter lifecycle and hash
+          verification. This filing acquires no data, executes no cell, changes
+          no target or Level 2 sizing, constructs no portfolio, assigns no
+          residual, and touches no margin/debt policy. It must stop at a draft
+          PR for independent full exact-head review.
+        pr: 314
+        status: in_progress
+        date: "2026-08-13"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11587,28 +11623,25 @@ workstreams:
       - governance/evidence/LEVEL2-0001/RESEARCH_COHORT_FREEZE.yaml
       - governance/decisions/XASSET-0019-level1-architecture-amendment.md
       - governance/audits/WS0014_LEVEL1_ARCHITECTURE_AMENDMENT_DESIGN_20260813.md
+      - governance/decisions/RISK-0001-level1-investable-sleeve-robustness-charter.md
+      - research/level1_sleeve_robustness/PROTOCOL_V1.md
+      - research/level1_sleeve_robustness/pre_registration.yaml
     next_action: >
-      Update, 2026-08-13: PR #311 and PR #312 have completed their full
-      lifecycles and are verified by the additive gates above; current main is
-      36a31ebc7a8997d59a427174420cb9b7eb670a82. LEVEL2-0001's research cohort
-      is frozen, but final Level 2 selection and sizing remain paused.
-      XASSET-0019 is the current architecture-only amendment. The verified
-      Level 1 figures remain historical, provisional, economically unvalidated,
-      and not adopted portfolio policy. After XASSET-0019's own independent
-      exact-head review, correction if required, principal acceptance, merge,
-      and post-merge verification, a separately authorized early RISK
-      methodology must challenge those provisional magnitudes and whether
-      point targets are justified without constructing a whole-100% portfolio.
-      A replacement economic numeric method and candidate Level 1 sizing follow
-      that evidence; final Level 2 membership/sizing then precedes a complete
-      non-adopted candidate whole-100% reconciliation. Only that reconciled
-      candidate may undergo full-portfolio unlevered stress, followed by any
-      bounded preregistered revision, a final whole-100% reconciliation, and a
-      separate portfolio-policy-adoption lifecycle. Post-adoption unlevered
-      implementation validation, margin/debt research and policy, monitoring,
-      and deployment remain downstream. No stage is authorized merely by this
-      coordination text, and unresolved capital receives no balancing-plug or
-      return/risk-proxy treatment.
+      Update, 2026-08-13: PR #313 has completed its full lifecycle and is
+      verified by the additive gate above; current main is
+      0962385bf6b1b72cebe8b326da49927977db2912 and XASSET-0019 is effective.
+      The prior Level 1 outputs are historical/provisional only, and the
+      LEVEL2-0001 cohort remains research-only; final Level 2 selection and
+      sizing are paused. The current authorized unit is the RISK-0001 charter,
+      protocol, and preregistration. After its independent exact-head review,
+      principal acceptance, merge, and hash verification, exactly one bounded
+      acquisition/implementation/results PR may run the registered early-RISK
+      study. RISK results precede a separate replacement Level 1 method and
+      provisional sizing. Final Level 2 membership/sizing then precedes a
+      complete non-adopted candidate whole-100% reconciliation; only that
+      reconciled candidate may undergo full-portfolio unlevered stress.
+      Margin/debt remain downstream. No residual, cash, debt, benchmark, or
+      return/risk proxy is authorized by this coordination text.
 
 
       Update, 2026-08-13: PR #311's schema-2.0 Level 1 numeric-sizing
@@ -12152,9 +12185,9 @@ workstreams:
       validator/tests, and factual register synchronization; it makes no
       Level 2, policy-adoption, allocation-check, deployment, or completion
       claim and must stop at a draft PR for independent full exact-head review.
-    active_branch: codex/xasset-0019-level1-architecture-amendment
-    active_pr: 313
-    last_verified_main_sha: 36a31ebc7a8997d59a427174420cb9b7eb670a82
+    active_branch: codex/risk-0001-level1-robustness-charter
+    active_pr: 314
+    last_verified_main_sha: 0962385bf6b1b72cebe8b326da49927977db2912
     last_verified_date: "2026-08-13"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
