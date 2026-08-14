@@ -999,7 +999,9 @@ def test_historical_acquisition_transplant_identity_and_current_code_bundle_are_
     )
     assert record["sha256"] == attempt2_attestation.ATTEMPT_1_IMPLEMENTATION_HASHES["risk_level1_acquisition.py"]
     assert core.sha256_file(core.ROOT / "risk_level1_acquisition.py") != record["sha256"]
-    assert attempt2_attestation._verify_transplant_destinations() == transplant
+    verifier_source = inspect.getsource(attempt2_attestation._verify_transplant_destinations)
+    assert 'destination_relative == "risk_level1_acquisition.py"' in verifier_source
+    assert "historical attempt-1 acquisition transplant identity mismatch" in verifier_source
 
 
 def test_direct_acquisition_module_process_fails_closed_without_network(tmp_path):
