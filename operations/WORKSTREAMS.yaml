@@ -11623,7 +11623,7 @@ workstreams:
           conclusion, and changes no target, Level 1 or Level 2 sizing, residual,
           cash, margin, debt, leverage, allocator, policy, or execution behavior.
           It must stop at a draft PR for independent full exact-head review.
-        pr: null
+        pr: 315
         status: in_progress
         date: "2026-08-14"
     evidence_refs:
@@ -12247,7 +12247,7 @@ workstreams:
       Level 2, policy-adoption, allocation-check, deployment, or completion
       claim and must stop at a draft PR for independent full exact-head review.
     active_branch: codex/risk-0002-integrity-reexecution-amendment
-    active_pr: null
+    active_pr: 315
     last_verified_main_sha: 028ec2e9f2a4c74753414842e3dcc55b11134fff
     last_verified_date: "2026-08-14"
     authorized_by: >
