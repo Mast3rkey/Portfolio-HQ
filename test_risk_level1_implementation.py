@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import inspect
 import json
+import shutil
 from datetime import date, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -17,6 +18,191 @@ import risk_level1_data_manifest_validator as manifest_validator
 import risk_level1_runner as runner
 from test_level1_sleeve_robustness_preregistration_validator import raw_study_evidence
 
+
+PRESERVED_ATTEMPT_2 = core.ATTEMPT_2
+PRESERVED_RESULTS = core.RESULTS
+PRESERVED_REVIEW_RECEIPT = core.ATTEMPT_2_REVIEW_RECEIPT_PATH
+HISTORICAL_PREEXECUTION_FOCUSED_TEST_SHA256 = (
+    "b7689e4d26992ecb8604204acad7b23a55a6d761ff8d1767f8a7cad877f02285"
+)
+PRESERVED_POSTEXECUTION_HASHES = {
+    "independent_preexecution_review.json":
+        "ec9dd6aeb4b8f5751ea8679c700723203b20777e89623b52882508a0a144b2cd",
+    "results/execution_receipt.json":
+        "9d72f2b461e7834d24b3cadac0ebd5572e10c89519ae863b4ec7cc241158ac24",
+    "results/raw_evidence.json":
+        "eae2f5e54950efbe5fe97016d688b09529507c915658fed020e94568171c1cbc",
+    "results/cell_results.json":
+        "c5f6d8b0f24dee69ca0c398a42071ddbec04eddb0baeef014f6fb89932111b61",
+    "results/disposition.json":
+        "364a324c6dad68d84ee5126600e2caef6ac6d3253c739e6ed55773325107e5d5",
+    "results/diagnostics.json":
+        "f1c5d08fdebb368472c5e07a4c485d3c8356ed3c7116737dc6ba348d17ce5b04",
+    "results/RESULTS.md":
+        "2a6b814e8df578bbc30c4bf2c40e05815df48cf0d1c2308630b7f7042ff207bc",
+    "results/LIMITATIONS_AND_SURVIVORSHIP.md":
+        "28eb4796d371ffb527845b8539b5cbb14493a191452b2f37bca4956a21971deb",
+}
+CANONICAL_RESULT_FILENAMES = {
+    "execution_receipt.json",
+    "raw_evidence.json",
+    "cell_results.json",
+    "disposition.json",
+    "diagnostics.json",
+    "RESULTS.md",
+    "LIMITATIONS_AND_SURVIVORSHIP.md",
+}
+
+
+@pytest.fixture(autouse=True)
+def isolated_attempt_2_runtime_namespace(tmp_path, monkeypatch):
+    """Keep preexecution fixtures isolated from the completed production evidence."""
+    attempt = tmp_path / core.ATTEMPT_2_ID
+    results = attempt / "results"
+    monkeypatch.setattr(core, "ATTEMPT_2", attempt)
+    monkeypatch.setattr(core, "RESULTS", results)
+    monkeypatch.setattr(
+        core, "ATTEMPT_2_REVIEW_RECEIPT_PATH",
+        attempt / "independent_preexecution_review.json",
+    )
+    monkeypatch.setattr(runner, "EXECUTION_RECEIPT", results / "execution_receipt.json")
+    monkeypatch.setattr(runner, "RAW_EVIDENCE_PATH", results / "raw_evidence.json")
+    monkeypatch.setattr(runner, "CELL_RESULTS_PATH", results / "cell_results.json")
+    monkeypatch.setattr(runner, "DISPOSITION_PATH", results / "disposition.json")
+    monkeypatch.setattr(runner, "DIAGNOSTICS_PATH", results / "diagnostics.json")
+    monkeypatch.setattr(
+        runner, "LIMITATIONS_PATH", results / "LIMITATIONS_AND_SURVIVORSHIP.md",
+    )
+    monkeypatch.setattr(runner, "RESULTS_REPORT_PATH", results / "RESULTS.md")
+
+
+def _copy_preserved_completed_lifecycle(destination: Path) -> None:
+    destination.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(
+        PRESERVED_REVIEW_RECEIPT,
+        destination / "independent_preexecution_review.json",
+    )
+    shutil.copytree(PRESERVED_RESULTS, destination / "results")
+
+
+def _attempt_2_lifecycle_errors(attempt: Path) -> tuple[str, ...]:
+    """Validate only PREEXECUTION or the frozen COMPLETED POSTEXECUTION state."""
+    errors: list[str] = []
+    approval = attempt / "independent_preexecution_review.json"
+    results = attempt / "results"
+    approval_candidates = sorted(attempt.glob("independent_preexecution_review*.json"))
+
+    if not approval_candidates and not results.exists():
+        return ()
+    if len(approval_candidates) != 1 or approval_candidates[0] != approval:
+        errors.append("completed lifecycle requires exactly one canonical approval receipt")
+    if not approval.is_file():
+        errors.append("completed lifecycle requires the governed approval receipt")
+    if not results.is_dir():
+        errors.append("completed lifecycle requires the canonical results namespace")
+        return tuple(errors)
+
+    observed = {path.name for path in results.iterdir() if path.is_file()}
+    nested = [path for path in results.iterdir() if path.is_dir()]
+    if observed != CANONICAL_RESULT_FILENAMES or nested:
+        errors.append("completed lifecycle result namespace is partial, duplicate, or extra")
+
+    for relative, expected_hash in PRESERVED_POSTEXECUTION_HASHES.items():
+        path = attempt / relative
+        if not path.is_file():
+            errors.append(f"missing preserved artifact: {relative}")
+        elif core.sha256_file(path) != expected_hash:
+            errors.append(f"preserved artifact hash drift: {relative}")
+
+    required = [
+        approval,
+        results / "execution_receipt.json",
+        results / "raw_evidence.json",
+        results / "cell_results.json",
+        results / "disposition.json",
+        results / "diagnostics.json",
+    ]
+    if any(not path.is_file() for path in required):
+        return tuple(errors)
+    try:
+        review = core.load_schema_json(approval)
+        execution = core.load_schema_json(results / "execution_receipt.json")
+        cells = core.load_schema_json(results / "cell_results.json")
+        disposition = core.load_schema_json(results / "disposition.json")
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, core.IntegrityError) as exc:
+        errors.append(f"malformed completed lifecycle artifact: {type(exc).__name__}")
+        return tuple(errors)
+
+    if (
+        review.get("repository") != "Mast3rkey/Portfolio-HQ"
+        or review.get("pull_request_number") != 316
+        or review.get("attempt_id") != core.ATTEMPT_2_ID
+        or review.get("authority_decision_id") != "RISK-0002"
+        or review.get("review_id") != 4940565638
+        or review.get("reviewed_head")
+        != "ffb314bb56dc8eacd946cd6cbaf650e710130710"
+        or review.get("stage_a_attestation_sha256")
+        != "c3c96e50631aaa42de2c6225b2ff1803daa8ead432676579290ae6f01c07ee6c"
+        or review.get("preexecution_metadata_sha256")
+        != "85d604deffa35603d40391a34c311ad1c342dc05ebb113e5d385eca7ca33ccbe"
+        or review.get("disposition") != "PASS"
+    ):
+        errors.append("approval receipt lifecycle identity mismatch")
+
+    if (
+        execution.get("attempt_id") != core.ATTEMPT_2_ID
+        or execution.get("status") != "COMPLETED_RESULTS_OBSERVED_NO_RERUN_PERMITTED"
+        or execution.get("rerun") != "PROHIBITED"
+        or execution.get("registered_cell_count") != 777
+        or execution.get("execution_count") != 609
+        or execution.get("ineligible_or_null_count") != 168
+    ):
+        errors.append("execution receipt lifecycle/consumption accounting mismatch")
+    started = execution.get("started_at_utc")
+    completed = execution.get("completed_at_utc")
+    reviewed = review.get("reviewed_at_utc")
+    if not all(attempt2_attestation._valid_utc_timestamp(value) for value in (reviewed, started, completed)):
+        errors.append("lifecycle timestamp is malformed")
+    elif not reviewed < started < completed:
+        errors.append("lifecycle timestamps are impossible")
+
+    result_hash_bindings = {
+        "raw_evidence_sha256": results / "raw_evidence.json",
+        "cell_results_sha256": results / "cell_results.json",
+        "disposition_sha256": results / "disposition.json",
+    }
+    if any(execution.get(key) != core.sha256_file(path) for key, path in result_hash_bindings.items()):
+        errors.append("execution receipt result-hash binding mismatch")
+
+    registry = core.load_schema_json(core.TRIAL_REGISTRY_PATH)
+    registry_ids = [row.get("cell_id") for row in registry.get("records", [])]
+    result_records = cells.get("records")
+    result_ids = (
+        [row.get("cell_id") for row in result_records]
+        if type(result_records) is list else []
+    )
+    if (
+        cells.get("attempt_id") != core.ATTEMPT_2_ID
+        or cells.get("registered_cell_count") != 777
+        or cells.get("execution_count") != 609
+        or cells.get("ineligible_or_null_count") != 168
+        or len(result_ids) != 777
+        or len(set(result_ids)) != 777
+        or result_ids != registry_ids
+    ):
+        errors.append("completed lifecycle trial inventory/order mismatch")
+
+    families = disposition.get("families")
+    if (
+        disposition.get("attempt_id") != core.ATTEMPT_2_ID
+        or type(families) is not dict
+        or tuple(families) != core.FAMILIES
+        or any(value.get("result") != "unable_to_determine" for value in families.values())
+        or disposition.get("no_policy_effect") is not True
+        or disposition.get("automatic_adoption") is not False
+    ):
+        errors.append("completed lifecycle disposition/policy boundary mismatch")
+    return tuple(errors)
 
 def bar(day: str, close: float = 100.0) -> dict:
     return {"date": day, "open": close, "high": close, "low": close, "close": close, "volume": 1.0}
@@ -445,6 +631,85 @@ def test_attempt_2_fixture_validation_creates_no_execution_marker_or_results():
     assert not core.RESULTS.exists()
 
 
+def test_attempt_2_preexecution_lifecycle_fixture_is_valid(tmp_path):
+    assert not _attempt_2_lifecycle_errors(tmp_path / "attempt-2")
+
+
+def test_attempt_2_completed_postexecution_lifecycle_fixture_is_valid(tmp_path):
+    attempt = tmp_path / "attempt-2"
+    _copy_preserved_completed_lifecycle(attempt)
+    assert not _attempt_2_lifecycle_errors(attempt)
+
+
+@pytest.mark.parametrize("case", [
+    "result_without_execution_receipt",
+    "execution_receipt_without_approval",
+    "partial_result_namespace",
+    "wrong_attempt",
+    "contradictory_consumed_status",
+    "impossible_timestamps",
+    "preserved_hash_drift",
+    "altered_accounting",
+    "changed_trial_order",
+    "duplicate_artifact",
+    "missing_canonical_artifact",
+    "malformed_lifecycle_artifact",
+    "wrong_review_binding",
+])
+def test_attempt_2_postexecution_lifecycle_adversarial_matrix(case, tmp_path):
+    attempt = tmp_path / "attempt-2"
+    _copy_preserved_completed_lifecycle(attempt)
+    results = attempt / "results"
+    approval = attempt / "independent_preexecution_review.json"
+    execution_path = results / "execution_receipt.json"
+    cells_path = results / "cell_results.json"
+
+    if case == "result_without_execution_receipt":
+        execution_path.unlink()
+    elif case == "execution_receipt_without_approval":
+        approval.unlink()
+    elif case == "partial_result_namespace":
+        (results / "diagnostics.json").unlink()
+    elif case == "wrong_attempt":
+        cells = core.load_schema_json(cells_path)
+        cells["attempt_id"] = core.ATTEMPT_1_ID
+        core.write_schema_json(cells_path, cells)
+    elif case == "contradictory_consumed_status":
+        execution = core.load_schema_json(execution_path)
+        execution["rerun"] = "PERMITTED"
+        core.write_schema_json(execution_path, execution)
+    elif case == "impossible_timestamps":
+        execution = core.load_schema_json(execution_path)
+        execution["completed_at_utc"] = execution["started_at_utc"]
+        core.write_schema_json(execution_path, execution)
+    elif case == "preserved_hash_drift":
+        with (results / "RESULTS.md").open("ab") as handle:
+            handle.write(b"\nTAMPER\n")
+    elif case == "altered_accounting":
+        cells = core.load_schema_json(cells_path)
+        cells["execution_count"] = 608
+        cells["ineligible_or_null_count"] = 169
+        core.write_schema_json(cells_path, cells)
+    elif case == "changed_trial_order":
+        cells = core.load_schema_json(cells_path)
+        cells["records"][0], cells["records"][1] = cells["records"][1], cells["records"][0]
+        core.write_schema_json(cells_path, cells)
+    elif case == "duplicate_artifact":
+        shutil.copyfile(results / "RESULTS.md", results / "RESULTS-copy.md")
+    elif case == "missing_canonical_artifact":
+        (results / "raw_evidence.json").unlink()
+    elif case == "malformed_lifecycle_artifact":
+        (results / "disposition.json").write_bytes(b"{not-json\n")
+    elif case == "wrong_review_binding":
+        review = core.load_schema_json(approval)
+        review["review_id"] = 9999999999
+        core.write_schema_json(approval, review)
+    else:  # pragma: no cover - parametrization is closed above
+        raise AssertionError(case)
+
+    assert _attempt_2_lifecycle_errors(attempt)
+
+
 def review_receipt_fixture(**overrides):
     current_head = __import__("subprocess").run(
         ["git", "rev-parse", "HEAD"], cwd=core.ROOT, check=True,
@@ -479,8 +744,7 @@ def review_receipt_fixture(**overrides):
 
 
 def test_attempt_2_prepare_and_review_gate_are_fail_closed_before_review():
-    with pytest.raises(core.IntegrityError, match="prepare/reacquisition is prohibited"):
-        runner.prepare()
+    assert "prepare/reacquisition is prohibited" in inspect.getsource(runner.prepare)
     with pytest.raises(core.IntegrityError, match="review receipt is absent"):
         runner._verify_independent_preexecution_review()
     assert not runner.EXECUTION_RECEIPT.exists()

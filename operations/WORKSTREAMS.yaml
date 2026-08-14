@@ -11654,6 +11654,26 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-14"
+      - gate: risk0003-effective-risk0001-attempt2-result-publication
+        description: >
+          Additive factual synchronization under effective RISK-0003. PR #317
+          merged accepted head ff13ea03ef3cfe46eaf7571031cc986fd2acfde0
+          into main as b8b7bb715c5ef5e53ed05bfcdedf9750f3e715bf and
+          merge-commit CI run 31841880985 passed. The same draft PR #316 is
+          reopened, and current main was merged normally into its preserved
+          branch without rebase or history rewrite. Attempt 2 remains completed
+          exactly once at 777 registered / 609 executed / 168 governed null,
+          all four family dispositions remain unable_to_determine, and its
+          authorization remains consumed with no retry or third attempt. The
+          RISK-0003-authorized postexecution-only fixture harness correction
+          passes its focused lifecycle/adversarial suite while every approval,
+          execution, and result artifact remains byte-identical. Results remain
+          research evidence only, unpublished and unaccepted until this exact
+          PR #316 result head passes CI, receives a new independent full
+          exact-head RESULTS review, and later receives principal acceptance.
+        pr: 316
+        status: in_progress
+        date: "2026-08-14"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11700,6 +11720,20 @@ workstreams:
       - research/level1_sleeve_robustness/PROTOCOL_V1.md
       - research/level1_sleeve_robustness/pre_registration.yaml
     next_action: >
+      Update, 2026-08-14: RISK-0003 is effective after independent review,
+      principal exact-head acceptance, merge, and successful merge-commit CI.
+      PR #316 is reopened and current main is merged into its preserved branch
+      without rebase. The one authorized postexecution-only test-harness
+      correction now uses isolated fixture namespaces and validates both lawful
+      PREEXECUTION and COMPLETED POSTEXECUTION states; focused validation passes
+      and every completed attempt-2 artifact remains byte-identical. The next
+      gate is publication of the preserved 777 / 609 / 168 result package to
+      the same draft PR, exact-head CI, and a new independent full exact-head
+      RESULTS review. Attempt-2 authority remains consumed; no execution,
+      retry, recomputation, third attempt, result mutation, or policy adoption
+      is authorized.
+
+
       Update, 2026-08-14: RISK-0001-EXECUTION-ATTEMPT-002 completed exactly
       once and canonical result validation passed. RISK-0002 execution
       authority is consumed; no third attempt or recomputation is authorized.
