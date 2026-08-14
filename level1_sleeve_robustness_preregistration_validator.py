@@ -734,27 +734,57 @@ def _runtime_state(value: Any, vocabulary: Sequence[str], where: str) -> str:
     return value
 
 
-def classify_observation(
+def _registered_representations(data: Mapping[str, Any], family: str) -> tuple[str, ...]:
+    if family == "EQUITY":
+        return tuple(data["representations"][family]["ids"])
+    if family in ("FUND_BROAD_MARKET", "CRYPTO"):
+        return tuple(data["representations"][family]["ids"])
+    if family == "FUND_GLD_DEFENSIVE":
+        section = data["representations"][family]
+        return tuple(section["core_ids"] + section["conditional_ids"])
+    raise RuntimeAuthorityError(f"unknown research family {family!r}")
+
+
+def _classify_observation(
+    data: Mapping[str, Any],
+    research_family: str,
+    representation_id: str,
+    scenario_id: str,
     metric_id: str,
+    window_id: str,
     candidate: Decimal | str | int | None,
     reference: Decimal | str | int | None,
-    missingness_state: str = "ELIGIBLE",
+    missingness_state: str,
 ) -> str:
-    data = _runtime_authority()
-    _runtime_state(missingness_state, MISSINGNESS, "missingness_state")
-    if missingness_state == "NOT_APPLICABLE_PRE_INCEPTION":
-        return "NOT_APPLICABLE"
-    if missingness_state != "ELIGIBLE" or candidate is None or reference is None:
-        return "UNAVAILABLE"
+    """Private state classifier; authoritative use is through evaluate_study_evidence."""
     metrics = {record["metric_id"]: record for record in data["metric_families"]["metrics"]}
     if metric_id not in metrics:
         raise RuntimeAuthorityError(f"unknown metric_id {metric_id!r}")
+    if research_family not in FAMILIES:
+        raise RuntimeAuthorityError(f"unknown research_family {research_family!r}")
+    if representation_id not in _registered_representations(data, research_family):
+        raise RuntimeAuthorityError(f"unknown representation_id {representation_id!r} for {research_family}")
+    if scenario_id not in ("LOWER", "HIGHER"):
+        raise RuntimeAuthorityError(f"unknown comparison scenario_id {scenario_id!r}")
+    if window_id not in WINDOWS:
+        raise RuntimeAuthorityError(f"unknown window_id {window_id!r}")
+    _runtime_state(missingness_state, MISSINGNESS, "missingness_state")
+    candidate_value = None if candidate is None else _runtime_decimal(candidate, "candidate")
+    reference_value = None if reference is None else _runtime_decimal(reference, "reference")
+    if missingness_state == "ELIGIBLE" and (candidate_value is None or reference_value is None):
+        raise RuntimeAuthorityError("eligible observation requires candidate and reference values")
+    if missingness_state != "ELIGIBLE" and (candidate_value is not None or reference_value is not None):
+        raise RuntimeAuthorityError("ineligible observation values must be null")
     metric = metrics[metric_id]
     parameter_id = metric["equivalence_parameter_id"]
     if parameter_id is None or metric["direction_of_preference"] not in ("HIGHER", "LOWER"):
         raise RuntimeAuthorityError(f"metric {metric_id} is not a classified voting metric")
+    if missingness_state == "NOT_APPLICABLE_PRE_INCEPTION":
+        return "NOT_APPLICABLE"
+    if missingness_state != "ELIGIBLE":
+        return "UNAVAILABLE"
     tolerance = _runtime_decimal(_param(data, parameter_id), parameter_id)
-    delta = _runtime_decimal(candidate, "candidate") - _runtime_decimal(reference, "reference")
+    delta = candidate_value - reference_value
     if abs(delta) <= tolerance:
         return "EQUIVALENT"
     if metric["direction_of_preference"] == "HIGHER":
@@ -762,7 +792,8 @@ def classify_observation(
     return "IMPROVES" if -delta > tolerance else "WORSENS"
 
 
-def reduce_states(states: Iterable[str]) -> str:
+def _reduce_states(states: Iterable[str]) -> str:
+    """Private precedence helper for already-validated observation states."""
     values = list(states)
     for index, state in enumerate(values):
         _runtime_state(state, OBSERVATION_STATES, f"states[{index}]")
@@ -812,12 +843,13 @@ def _admitted_gold_peers(data: Mapping[str, Any], evidence: Sequence[Mapping[str
     return tuple(admitted)
 
 
-def reduce_representations(
+def _reduce_representations(
+    data: Mapping[str, Any],
     family: str,
     states: Mapping[str, str],
     gold_peer_evidence: Sequence[Mapping[str, Any]] = (),
 ) -> str:
-    data = _runtime_authority()
+    """Private representation reducer; it is not an authoritative entry point."""
     if family == "FUND_BROAD_MARKET":
         required = tuple(data["representations"][family]["ids"])
         if gold_peer_evidence:
@@ -837,11 +869,12 @@ def reduce_representations(
     return values[0] if len(set(values)) == 1 else "CONFLICT"
 
 
-def reduce_equity(
+def _reduce_equity(
+    data: Mapping[str, Any],
     constituent_states: Sequence[tuple[str, str]],
     leave_one_out_states: Sequence[tuple[str, str]],
 ) -> str:
-    data = _runtime_authority()
+    """Private cross-sectional reducer; all summaries are derived here."""
     if type(constituent_states) not in (list, tuple) or type(leave_one_out_states) not in (list, tuple):
         raise RuntimeAuthorityError("equity inputs must be ordered sequences")
     identities = [item[0] for item in constituent_states if type(item) in (list, tuple) and len(item) == 2]
@@ -880,14 +913,15 @@ def reduce_equity(
     return winner
 
 
-def validate_formula_integrity(observations: Sequence[Mapping[str, Any]]) -> bool:
-    data = _runtime_authority()
+def _validate_formula_integrity(data: Mapping[str, Any], observations: Sequence[Mapping[str, Any]]) -> bool:
+    """Private formula/monotonicity derivation from primitive operands."""
     designated = tuple(data["result_reduction"]["monotonicity"]["designated_metrics"])
     keys = ("metric_id", "family", "representation_id", "window_id", "raw_metric_value", "scenario_values")
     if type(observations) not in (list, tuple) or not observations:
         raise RuntimeAuthorityError("formula observations must be a nonempty ordered sequence")
     seen: set[tuple[str, str, str, str]] = set()
     observed_metrics: list[str] = []
+    integrity_ok = True
     tolerance = _runtime_decimal(_param(data, "FORMULA_INTEGRITY_ABSOLUTE_TOLERANCE"), "formula tolerance")
     all_representations = set(EQUITIES + BROAD + GOLD + CRYPTO)
     for index, raw in enumerate(observations):
@@ -922,20 +956,21 @@ def validate_formula_integrity(observations: Sequence[Mapping[str, Any]]) -> boo
             expected = exposure_pct * raw_value
             actual = _runtime_decimal(scenario_values[scenario], "scenario formula value")
             if abs(actual - expected) > tolerance:
-                return False
+                integrity_ok = False
     if tuple(dict.fromkeys(observed_metrics)) != designated:
         raise RuntimeAuthorityError("formula observations must cover every designated metric in canonical order")
-    return True
+    return integrity_ok
 
 
-def directional_disposition(
+def _directional_disposition(
+    data: Mapping[str, Any],
     family_states: Mapping[str, str],
     formula_observations: Sequence[Mapping[str, Any]],
 ) -> str:
-    data = _runtime_authority()
+    """Private directional reducer for internally derived family states."""
     mapping = _runtime_mapping(family_states, VOTING_FAMILIES, "mandatory family states")
     values = [_runtime_state(mapping[family], FAMILY_STATES, f"family_states.{family}") for family in VOTING_FAMILIES]
-    if not validate_formula_integrity(formula_observations):
+    if not _validate_formula_integrity(data, formula_observations):
         return "UNABLE_TO_DETERMINE"
     if any(value in ("UNAVAILABLE", "CONFLICT") for value in values):
         return "UNABLE_TO_DETERMINE"
@@ -947,14 +982,15 @@ def directional_disposition(
     return "CENTER_NOT_REJECTED"
 
 
-def point_evidence(
+def _point_evidence(
+    data: Mapping[str, Any],
     family_states: Mapping[str, str],
     formula_observations: Sequence[Mapping[str, Any]],
 ) -> str:
-    data = _runtime_authority()
+    """Private point-state reducer using the same evidence as direction."""
     mapping = _runtime_mapping(family_states, VOTING_FAMILIES, "mandatory family states")
     values = [_runtime_state(mapping[family], FAMILY_STATES, f"family_states.{family}") for family in VOTING_FAMILIES]
-    directional_state = directional_disposition(family_states, formula_observations)
+    directional_state = _directional_disposition(data, family_states, formula_observations)
     if directional_state == "POLICY_REVIEW_REQUIRED":
         return "DISPLACES_REFERENCE"
     if directional_state == "UNABLE_TO_DETERMINE":
@@ -965,8 +1001,14 @@ def point_evidence(
     return "NOT_DISTINGUISHED"
 
 
-def final_disposition(lower: str, higher: str, lower_point: str, higher_point: str) -> dict[str, str | None]:
-    data = _runtime_authority()
+def _final_disposition(
+    data: Mapping[str, Any],
+    lower: str,
+    higher: str,
+    lower_point: str,
+    higher_point: str,
+) -> dict[str, str | None]:
+    """Private pure table lookup for canonical states derived by the evaluator."""
     _runtime_state(lower, DIRECTIONAL_STATES, "lower directional state")
     _runtime_state(higher, DIRECTIONAL_STATES, "higher directional state")
     _runtime_state(lower_point, POINT_EVIDENCE_STATES, "lower point state")
@@ -980,6 +1022,249 @@ def final_disposition(lower: str, higher: str, lower_point: str, higher_point: s
         "review_direction": result_row["review_direction"],
         "point_target_assessment": point_row["point_target_assessment"],
         "method_review_direction": point_row["method_review_direction"],
+    }
+
+
+def _observation_plan(data: Mapping[str, Any]) -> tuple[tuple[str, str], ...]:
+    stress_windows = tuple(
+        window["id"] for window in data["scenario_windows"]["windows"]
+        if window["class"] == "FIXED_STRESS"
+    )
+    plan: list[tuple[str, str]] = []
+    for metric in data["metric_families"]["metrics"]:
+        if metric["voting_status"] not in ("MANDATORY_VOTING", "CONDITIONAL_VOTING"):
+            continue
+        for window in metric["applicable_windows"]:
+            if window == "FIXED_STRESS":
+                plan.extend((metric["metric_id"], window_id) for window_id in stress_windows)
+            else:
+                plan.append((metric["metric_id"], window))
+    return tuple(plan)
+
+
+def _mandatory_metric_for_family(data: Mapping[str, Any], voting_family: str) -> tuple[str, str]:
+    for metric in data["metric_families"]["metrics"]:
+        if metric["family"] == voting_family and metric["voting_status"] == "MANDATORY_VOTING":
+            return metric["metric_id"], metric["applicable_windows"][0]
+    raise RuntimeAuthorityError(f"no mandatory metric for voting family {voting_family}")
+
+
+def _derive_direction(
+    data: Mapping[str, Any],
+    research_family: str,
+    scenario_id: str,
+    block: Mapping[str, Any],
+    gold_peer_evidence: Sequence[Mapping[str, Any]],
+    admitted_gold: Sequence[str],
+) -> tuple[str, str]:
+    block = _runtime_mapping(
+        block,
+        ("observations", "equity_leave_one_out", "formula_observations"),
+        f"directions.{scenario_id}",
+    )
+    if type(block["observations"]) is not list:
+        raise RuntimeAuthorityError(f"directions.{scenario_id}.observations must be a list")
+    if type(block["equity_leave_one_out"]) is not list:
+        raise RuntimeAuthorityError(f"directions.{scenario_id}.equity_leave_one_out must be a list")
+    if type(block["formula_observations"]) is not list:
+        raise RuntimeAuthorityError(f"directions.{scenario_id}.formula_observations must be a list")
+
+    if research_family == "FUND_GLD_DEFENSIVE":
+        representations = ("GLD",) + tuple(admitted_gold)
+    else:
+        representations = _registered_representations(data, research_family)
+    plan = _observation_plan(data)
+    expected_identities = tuple(
+        (scenario_id, research_family, representation, metric_id, window_id)
+        for representation in representations
+        for metric_id, window_id in plan
+    )
+    observation_keys = (
+        "scenario_id", "research_family", "representation_id", "metric_id",
+        "window_id", "candidate", "reference", "missingness_state",
+    )
+    actual_identities: list[tuple[str, str, str, str, str]] = []
+    metric_states: dict[str, dict[str, list[str]]] = {
+        representation: {} for representation in representations
+    }
+    metric_lookup = {metric["metric_id"]: metric for metric in data["metric_families"]["metrics"]}
+    for index, raw in enumerate(block["observations"]):
+        record = _runtime_mapping(raw, observation_keys, f"directions.{scenario_id}.observations[{index}]")
+        identity = (
+            record["scenario_id"], record["research_family"], record["representation_id"],
+            record["metric_id"], record["window_id"],
+        )
+        actual_identities.append(identity)
+        state = _classify_observation(
+            data,
+            record["research_family"],
+            record["representation_id"],
+            record["scenario_id"],
+            record["metric_id"],
+            record["window_id"],
+            record["candidate"],
+            record["reference"],
+            record["missingness_state"],
+        )
+        if record["research_family"] != research_family:
+            raise RuntimeAuthorityError(
+                f"directions.{scenario_id}.observations[{index}] research family mismatch"
+            )
+        if record["scenario_id"] != scenario_id:
+            raise RuntimeAuthorityError(
+                f"directions.{scenario_id}.observations[{index}] scenario mismatch"
+            )
+        if record["representation_id"] not in representations:
+            raise RuntimeAuthorityError(
+                f"directions.{scenario_id}.observations[{index}] uses an inactive representation"
+            )
+        metric_states[record["representation_id"]].setdefault(record["metric_id"], []).append(state)
+    if tuple(actual_identities) != expected_identities:
+        raise RuntimeAuthorityError(
+            f"directions.{scenario_id}.observations must contain the exact canonical identity population/order"
+        )
+
+    representation_family_states: dict[str, dict[str, str]] = {}
+    for representation in representations:
+        voting: dict[str, list[str]] = {family: [] for family in VOTING_FAMILIES}
+        for metric_id, states in metric_states[representation].items():
+            applicable = [state for state in states if state != "NOT_APPLICABLE"]
+            if not applicable:
+                continue
+            metric_state = _reduce_states(states)
+            voting[metric_lookup[metric_id]["family"]].append(metric_state)
+        representation_family_states[representation] = {
+            family: _reduce_states(states) if states else "UNAVAILABLE"
+            for family, states in voting.items()
+        }
+
+    if research_family != "EQUITY" and block["equity_leave_one_out"]:
+        raise RuntimeAuthorityError("equity leave-one-out evidence is prohibited outside EQUITY")
+
+    family_states: dict[str, str] = {}
+    if research_family == "EQUITY":
+        loo_keys = (
+            "scenario_id", "research_family", "omitted_id", "metric_id",
+            "window_id", "candidate", "reference", "missingness_state",
+        )
+        expected_loo: list[tuple[str, str, str, str, str]] = []
+        constituent_by_family: dict[str, list[tuple[str, str]]] = {}
+        for voting_family in VOTING_FAMILIES:
+            constituent_states = [
+                (ticker, representation_family_states[ticker][voting_family])
+                for ticker in representations
+            ]
+            constituent_by_family[voting_family] = constituent_states
+            metric_id, window_id = _mandatory_metric_for_family(data, voting_family)
+            expected_loo.extend(
+                (scenario_id, research_family, ticker, metric_id, window_id)
+                for ticker, state in constituent_states if state != "UNAVAILABLE"
+            )
+        loo_by_family: dict[str, list[tuple[str, str]]] = {family: [] for family in VOTING_FAMILIES}
+        actual_loo: list[tuple[str, str, str, str, str]] = []
+        for index, raw in enumerate(block["equity_leave_one_out"]):
+            record = _runtime_mapping(raw, loo_keys, f"directions.{scenario_id}.equity_leave_one_out[{index}]")
+            identity = (
+                record["scenario_id"], record["research_family"], record["omitted_id"],
+                record["metric_id"], record["window_id"],
+            )
+            actual_loo.append(identity)
+            state = _classify_observation(
+                data,
+                record["research_family"],
+                record["omitted_id"],
+                record["scenario_id"],
+                record["metric_id"],
+                record["window_id"],
+                record["candidate"],
+                record["reference"],
+                record["missingness_state"],
+            )
+            voting_family = metric_lookup[record["metric_id"]]["family"]
+            loo_by_family[voting_family].append((record["omitted_id"], state))
+        if tuple(actual_loo) != tuple(expected_loo):
+            raise RuntimeAuthorityError(
+                f"directions.{scenario_id}.equity_leave_one_out must contain the exact derived population/order"
+            )
+        family_states = {
+            family: _reduce_equity(data, constituent_by_family[family], loo_by_family[family])
+            for family in VOTING_FAMILIES
+        }
+    else:
+        for voting_family in VOTING_FAMILIES:
+            states = {
+                representation: representation_family_states[representation][voting_family]
+                for representation in representations
+            }
+            family_states[voting_family] = _reduce_representations(
+                data,
+                research_family,
+                states,
+                gold_peer_evidence if research_family == "FUND_GLD_DEFENSIVE" else (),
+            )
+
+    for index, record in enumerate(block["formula_observations"]):
+        if type(record) is not dict:
+            raise RuntimeAuthorityError(f"formula_observations[{index}] must be a mapping")
+        if record.get("family") != research_family:
+            raise RuntimeAuthorityError(f"formula_observations[{index}] research family mismatch")
+        if record.get("representation_id") not in representations:
+            raise RuntimeAuthorityError(f"formula_observations[{index}] uses an inactive representation")
+    directional = _directional_disposition(data, family_states, block["formula_observations"])
+    point = _point_evidence(data, family_states, block["formula_observations"])
+    return directional, point
+
+
+def evaluate_study_evidence(raw_evidence: Mapping[str, Any]) -> dict[str, Any]:
+    """Authoritative RISK-0001 evidence-to-final-result production entry point.
+
+    The exact caller contract contains primitive observations only.  Derived family,
+    directional, point, admission, breadth, median, monotonicity, integrity, and
+    final states are intentionally absent and are recomputed under pinned authority.
+    """
+    data = _runtime_authority()
+    root = _runtime_mapping(
+        raw_evidence,
+        ("study_id", "research_family", "gold_peer_evidence", "directions"),
+        "raw_evidence",
+    )
+    if root["study_id"] != data["study_id"]:
+        raise RuntimeAuthorityError(f"unknown study_id {root['study_id']!r}")
+    research_family = root["research_family"]
+    if research_family not in FAMILIES:
+        raise RuntimeAuthorityError(f"unknown research_family {research_family!r}")
+    if type(root["gold_peer_evidence"]) is not list:
+        raise RuntimeAuthorityError("gold_peer_evidence must be a list")
+    if research_family != "FUND_GLD_DEFENSIVE" and root["gold_peer_evidence"]:
+        raise RuntimeAuthorityError("gold_peer_evidence is prohibited outside FUND_GLD_DEFENSIVE")
+    admitted_gold = _admitted_gold_peers(data, root["gold_peer_evidence"])
+    directions = _runtime_mapping(root["directions"], ("LOWER", "HIGHER"), "directions")
+    derived = {
+        scenario: _derive_direction(
+            data,
+            research_family,
+            scenario,
+            directions[scenario],
+            root["gold_peer_evidence"],
+            admitted_gold,
+        )
+        for scenario in ("LOWER", "HIGHER")
+    }
+    lower_direction, lower_point = derived["LOWER"]
+    higher_direction, higher_point = derived["HIGHER"]
+    final = _final_disposition(
+        data,
+        lower_direction,
+        higher_direction,
+        lower_point,
+        higher_point,
+    )
+    return {
+        "study_id": data["study_id"],
+        "research_family": research_family,
+        "directional_states": {"LOWER": lower_direction, "HIGHER": higher_direction},
+        "point_states": {"LOWER": lower_point, "HIGHER": higher_point},
+        **final,
     }
 
 
