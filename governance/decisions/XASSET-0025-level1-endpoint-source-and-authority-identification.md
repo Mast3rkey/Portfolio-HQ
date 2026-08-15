@@ -132,10 +132,13 @@ sleeve share to be present in a form matching none of the following.
    `targets.yaml`, and every `target_pct` occurrence repository-wide were inspected.
 6. **Authority sweep.** Every occurrence of "endpoint authority" across `governance/decisions/` was read.
 
-**Result of step 2, stated exactly because it is the single most decisive fact in this filing.** Across all
-21 §C.2 sources there are **21 numeric scalars in total, one per file, and every one is that file's own
-`schema_version`.** Excluding schema, version, hash, and count fields, the frozen non-RISK snapshot
-contains **zero numeric scalars of any kind.** Step 3 returned four percent-like prose hits, all in
+**Result of step 2, stated exactly because it is the single most decisive fact in this filing.** Across the
+21 frozen §C.2 sources there are **zero true numeric scalars**. There are **48 numeric-valued strings,
+every one a `schema_version` value (`'1.0'`); 28 of those occur in
+`intelligence/valuation_results/COHORT_MANIFEST.yaml`**, which carries its own plus one for each of its 27
+cohort entries, the remaining 20 sources carrying exactly one each. Excluding schema, version, hash, and
+count metadata, the frozen non-RISK snapshot contains **zero numeric endpoint-bearing values of any
+kind.** Step 3 returned four percent-like prose hits, all in
 `GLD_DEFENSIVE_ROLE.yaml`, all inside evidence-gap and provenance narrative — one of them a quotation of
 CLAUDE.md's own "~5% margin cost" sector-audit remark — and none a statement of any share.
 
@@ -163,7 +166,7 @@ so that "rejected" is verifiable rather than assumed.
 | Freshly recomputed equal split (one quarter across four sleeves) | Constructible | Not present in the corpus | **T3** (XASSET-0021 §F equal division; XASSET-0024 §F Limb 2 reaches constructions no literal scan matches) | T1 origin, T2 |
 | Fixed adjustment increment `2.00` | **Yes** | `numeric_sizing/{equity,fund_broad_market}.yaml` `magnitude_pct` | **T3** (§M fixed adjustment increment) | T1, T2, T5, T8 |
 | RISK LOWER / HIGHER scenario magnitudes | **Yes** | `pre_registration.yaml` `scenario_magnitudes.values_pct`; source-declared `unit: PERCENT_OF_UNSPECIFIED_ASSET_STATE_EXPOSURE`, `portfolio_reconciliation: NOT_PERFORMED`, `residual_assignment: PROHIBITED` | **T1** (denominator is unspecified **by the source itself**) | T3 (`SYMMETRIC_RELATIVE_PERTURBATION` off a barred anchor), T4, T5, T7 |
-| `RELATIVE_PERTURBATION` and the other 19 consequential parameters | **Yes** | `pre_registration.yaml` `consequential_parameter_registry`, all 20 read individually | **T5** (every row `valid_for_study_id: RISK-0001`; **no row's `binding_scope` is sleeve-share sizing**) | T7 (`lapse_condition: AUTHORIZED_STUDY_COMPLETION`, met; `reuse_rule: NEW_GOVERNANCE_AUTHORITY_REQUIRED`), T1, T2 |
+| `RELATIVE_PERTURBATION` and the other 19 consequential parameters | **Yes** | `pre_registration.yaml` `consequential_parameter_registry`, all 20 read individually | **T5** (every row `valid_for_study_id: RISK-0001`; **no row's `binding_scope` is sleeve-share sizing**) | T7 (all 20 `lapse_condition: AUTHORIZED_STUDY_COMPLETION`, met, and all 20 reuse-barred absent new authority — `reuse_rule: NEW_GOVERNANCE_AUTHORITY_REQUIRED` on nineteen, `REVALIDATE_CONVENTION_UNDER_NEW_AUTHORITY` on `DFF_DAY_COUNT_DENOMINATOR`), T1, T2 |
 | Gold peer-admission thresholds `0.995` / `0.50` / `2.00` | **Yes** | Same registry; `binding_scope: CONDITIONAL_GOLD_PEER_ADMISSION`, `evidence_status: NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED` | **T5** (admission question, not share) | T1, T4, T7 — the three-way failure XASSET-0023 §H.4 item 5 records |
 | Study tolerances in `PERCENTAGE_POINTS_OF_UNSPECIFIED_ASSET_STATE` (`LOSS_CONTRIBUTION_TOLERANCE_PP` `1.00`, `OPPORTUNITY_CONTRIBUTION_TOLERANCE_PP` `1.00`, `RECOVERY_BURDEN_TOLERANCE_PPDAYS` `30.00`) | **Yes** | Same registry | **T1** (unspecified asset state; metric tolerances, not shares) | T5, T7 |
 | R2 / R3 historical constructs | Referenced | Barred by name at XASSET-0020 §M; `pre_registration.yaml` records `inherited_from_xasset_0016_r2_r3: False` | **T3** (N7) | T2, T5 |
@@ -238,8 +241,9 @@ No accepted source presently supplies a qualifying Level-1 sleeve-share LOWER or
 sleeve. The determination rests on five independently sufficient grounds, each verified directly this
 session rather than cited from a prior filing:
 
-1. **No candidate value exists in the frozen non-RISK snapshot.** All 21 §C.2 sources contain zero
-   non-schema numeric scalars and no percent-bearing prose stating a share (§E).
+1. **No candidate value exists in the frozen non-RISK snapshot.** All 21 §C.2 sources contain zero true
+   numeric scalars; their 48 numeric-valued strings are `schema_version` values without exception; and no
+   percent-bearing prose states a share (§E).
 2. **The snapshot's classifications forbid it independently.** XASSET-0021 §C.2 marks every non-RISK row
    DISCLOSURE-only for current preference or an uncomputed interface, and XASSET-0020 §F.2's
    forbidden-implication column bars the DRIVER-capable classes from implying "size or preference," "a
@@ -263,8 +267,10 @@ rehabilitation XASSET-0024 §F Limb 2 exists to prevent. **D** would be abstenti
 searching; the corpus was searched and the finding is definite.
 
 This is the consequential null the program needed. It converts the next step from "find the authority for
-evidence we have" into "produce evidence that does not yet exist, then separately obtain authority over
-it" — two filings, in that order, neither of which is this one.
+evidence we have" into "produce evidence that does not yet exist, and obtain competent authority over it."
+Both are missing, and they are **distinct requirements** rather than one. **Accepted authority does not
+settle their mandatory ordering or packaging**, and this filing does not settle it either — see §O.5.
+Neither is performed or authorized here.
 
 ### J. Whether the next research question can remain sleeve-agnostic
 
@@ -407,6 +413,30 @@ filing takes no position on whether that question is answerable, cheaply or at a
 strict-conjunction tension; §J.2's gold-representation labelling difference; and XASSET-0024 §K.2's
 circularity discussion. None bears on any determination above, and none is resolved.
 
+**O.5 — The ordering and packaging of the next lifecycle is UNRESOLVED, and is not settled here.** This
+filing determines that two things are missing — qualifying endpoint evidence and competent Level-1
+endpoint authority — and that they are **distinct requirements**. It does **not** determine which must be
+acquired first, nor whether they must always be obtained through separate filings or lifecycles.
+
+Accepted authority does not fix either point. XASSET-0024 §J is titled "Minimum evidence properties for
+the next research **or authority** unit," expressly contemplating either as next. XASSET-0024 §I states
+the gap conjunctively — "a qualifying source **and** a competent authority" — and describes the next
+unit's work as "sourcing and authority," without ordering them. XASSET-0021 §O lists evidence admission
+and endpoint authority together and fixes no sequence between them. And XASSET-0024 §K.2 draws its
+distinction between **governance-time and application-time** discretion, not between one filing and two;
+its NUM-0001 class-4 and class-5 route expressly contemplates a competent authority's own governed record
+being the thing an application later reads, which is why §M item 2 lists that possibility rather than
+excluding it.
+
+Accordingly: the two requirements **may** ultimately need separate lifecycles, **or** may lawfully be
+combined if a future, explicit authority permits a single governance record both to carry qualifying
+governed content and to supply competent endpoint authority — provided that record independently satisfies
+NUM-0001 provenance, evidence admission under XASSET-0020 §F.1, XASSET-0024 §J.1–§J.12, the §E.3
+anti-discretion test, and every independence and scope requirement those impose. **No such combination is
+authorized by this filing, and no packaging is preferred, recommended, or prescribed by it.** The exact
+sequence and packaging must be determined by the next explicitly authorized governance unit, on its own
+authority.
+
 ### P. Governance package and WORKSTREAMS synchronization
 
 This filing touches exactly four tracked files: this decision; `governance/decisions.yaml` (one catalog
@@ -486,9 +516,13 @@ looking for evidence and one that goes looking for a signature.
 
 Stating the competent-authority finding separately, at §G, was a deliberate structural choice. T5 fails
 universally and for a reason no research can fix, so a reader who takes away only that "the evidence is
-missing" would under-scope the next lifecycle by exactly one filing. Evidence and authority are two
-acquisitions, not one, and they cannot be combined into a single act without collapsing the reviewability
-that XASSET-0024 §K.2 identified as the whole point of relocating discretion upstream.
+missing" would under-scope the next lifecycle. Evidence and authority are two distinct requirements, not
+one. How they must be packaged is a different question, and one this filing deliberately does not answer:
+XASSET-0024 §K.2 draws its line between governance-time and application-time discretion, not between one
+filing and two, and its class-4 route expressly contemplates an authority's own record carrying the
+governed content an application later reads. §O.5 records the packaging as unresolved rather than
+resolving it, because a filing that disclaims creating anything should not narrow a future unit's lawful
+option set as a side effect of describing a gap.
 
 Finally, the sleeve-agnosticism question had a real answer rather than a procedural one. Every one of
 XASSET-0020 §E.1's six DRIVER classes is defined on a sleeve or a pair, so admissible evidence is
@@ -534,10 +568,12 @@ cannot establish an endpoint.
 ## Consequences
 
 The next unit now knows, before spending anything, that the accepted corpus contains no qualifying Level-1
-endpoint source for any sleeve, on either bound; that the frozen non-RISK snapshot contains no numeric
-value at all, so no authority-granting filing could unlock it; that every right-quantity value in the wider
-corpus is barred by origin rather than held back by a closeable gap; and that no competent Level-1 endpoint
-authority exists anywhere, so evidence and authority are two separate future acquisitions rather than one.
+endpoint source for any sleeve, on either bound; that the frozen non-RISK snapshot contains no
+endpoint-bearing numeric value at all, so no authority-granting filing could unlock it; that every
+right-quantity value in the wider corpus is barred by origin rather than held back by a closeable gap; and
+that no competent Level-1 endpoint authority exists anywhere, so qualifying evidence and competent
+authority are two distinct requirements — whose mandatory ordering and packaging accepted authority does
+not settle, and which this filing leaves expressly unresolved at §O.5.
 
 It knows the exact question new evidence would have to answer (§K), why that question cannot be answered
 sleeve-agnostically even though it can be stated that way (§J), which four representation gaps would block
