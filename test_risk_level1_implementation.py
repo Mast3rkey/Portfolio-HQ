@@ -43,6 +43,9 @@ PRESERVED_POSTEXECUTION_HASHES = {
     "results/LIMITATIONS_AND_SURVIVORSHIP.md":
         "28eb4796d371ffb527845b8539b5cbb14493a191452b2f37bca4956a21971deb",
 }
+DISCLOSURE_SUPPLEMENT_SHA256 = (
+    "8013f376a0ad08bbbdffe7e6481d8d3e40b993b98515f6f3a9b7c445d49ded45"
+)
 CANONICAL_RESULT_FILENAMES = {
     "execution_receipt.json",
     "raw_evidence.json",
@@ -51,6 +54,7 @@ CANONICAL_RESULT_FILENAMES = {
     "diagnostics.json",
     "RESULTS.md",
     "LIMITATIONS_AND_SURVIVORSHIP.md",
+    "RESULTS_DISCLOSURE_SUPPLEMENT.md",
 }
 
 
@@ -113,6 +117,12 @@ def _attempt_2_lifecycle_errors(attempt: Path) -> tuple[str, ...]:
             errors.append(f"missing preserved artifact: {relative}")
         elif core.sha256_file(path) != expected_hash:
             errors.append(f"preserved artifact hash drift: {relative}")
+
+    supplement = results / "RESULTS_DISCLOSURE_SUPPLEMENT.md"
+    if not supplement.is_file():
+        errors.append("missing RISK-0004 disclosure supplement")
+    elif core.sha256_file(supplement) != DISCLOSURE_SUPPLEMENT_SHA256:
+        errors.append("RISK-0004 disclosure supplement hash drift")
 
     required = [
         approval,
@@ -655,6 +665,8 @@ def test_attempt_2_completed_postexecution_lifecycle_fixture_is_valid(tmp_path):
     "missing_canonical_artifact",
     "malformed_lifecycle_artifact",
     "wrong_review_binding",
+    "missing_disclosure_supplement",
+    "disclosure_supplement_hash_drift",
 ])
 def test_attempt_2_postexecution_lifecycle_adversarial_matrix(case, tmp_path):
     attempt = tmp_path / "attempt-2"
@@ -704,6 +716,11 @@ def test_attempt_2_postexecution_lifecycle_adversarial_matrix(case, tmp_path):
         review = core.load_schema_json(approval)
         review["review_id"] = 9999999999
         core.write_schema_json(approval, review)
+    elif case == "missing_disclosure_supplement":
+        (results / "RESULTS_DISCLOSURE_SUPPLEMENT.md").unlink()
+    elif case == "disclosure_supplement_hash_drift":
+        with (results / "RESULTS_DISCLOSURE_SUPPLEMENT.md").open("ab") as handle:
+            handle.write(b"\nTAMPER\n")
     else:  # pragma: no cover - parametrization is closed above
         raise AssertionError(case)
 

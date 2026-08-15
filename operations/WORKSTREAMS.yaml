@@ -11703,6 +11703,25 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-14"
+      - gate: risk0004-effective-risk0001-attempt2-disclosure-supplement
+        description: >
+          Additive factual synchronization under effective RISK-0004. PR #318
+          merged accepted head b187bfc121e43c71f78ce43d187ff439f6bd507d
+          into main as ad261a52c4f03cef121930e83d5df4ed894c637f after
+          independent review 4942148395 and principal acceptance 5299581190.
+          The same draft PR #316 is reopened, current main was merged normally
+          into its preserved branch without rebase or history rewrite, and the
+          new RESULTS_DISCLOSURE_SUPPLEMENT.md addresses review 4941983592's
+          two MAJOR disclosure findings using only frozen evidence. All eight
+          approval, execution, and historical result/report artifacts remain
+          byte-identical. Attempt 2 remains completed and consumed, no retry or
+          third attempt is authorized, all four dispositions remain
+          unable_to_determine, and results remain unaccepted research evidence
+          with no policy effect. A new independent full exact-head RESULTS
+          review is required before acceptance or merge.
+        pr: 316
+        status: in_progress
+        date: "2026-08-14"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11750,6 +11769,19 @@ workstreams:
       - research/level1_sleeve_robustness/PROTOCOL_V1.md
       - research/level1_sleeve_robustness/pre_registration.yaml
     next_action: >
+      Update, 2026-08-14: RISK-0004 is effective after independent review
+      4942148395, principal acceptance 5299581190, and merge to main as
+      ad261a52c4f03cef121930e83d5df4ed894c637f. The same draft PR #316 is
+      reactivated and carries one additive, byte-preserving disclosure
+      supplement addressing full RESULTS review 4941983592's two MAJOR
+      reporting findings. All eight frozen artifacts remain unchanged; the
+      four family dispositions remain unable_to_determine; attempt-2 authority
+      remains consumed; and no rerun, third attempt, recomputation,
+      reacquisition, or policy effect is authorized. The next gate is exact-
+      head CI followed by a new independent full exact-head RESULTS review.
+      Replacement Level 1 methodology remains downstream and blocked.
+
+
       Update, 2026-08-14: attempt 2 is complete, its authority is consumed,
       canonical machine results and four unable_to_determine dispositions are
       independently reconciled, and no retry, third attempt, recomputation, or
@@ -12102,6 +12134,15 @@ workstreams:
       entry's own roadmap_preservation field names remain wholly
       unauthorized, unchanged.
     blocker: >
+      Current critical-path blocker, 2026-08-14: the RISK-0004-authorized
+      additive disclosure supplement is present on reactivated draft PR #316,
+      but the supplemented result package remains unaccepted pending exact-head
+      CI and a new independent full exact-head RESULTS review. Attempt 2
+      remains completed and consumed; no retry, third attempt, recomputation,
+      result mutation, policy effect, or replacement Level 1 work is
+      authorized.
+
+
       Current critical-path blocker, 2026-08-14: review 4941983592's two
       MAJOR reporting/disclosure findings remain unresolved. PR #316 is parked
       at exact reviewed RESULTS head
@@ -12387,9 +12428,9 @@ workstreams:
       validator/tests, and factual register synchronization; it makes no
       Level 2, policy-adoption, allocation-check, deployment, or completion
       claim and must stop at a draft PR for independent full exact-head review.
-    active_branch: agent/risk-0004-results-disclosure-supplement-authority
-    active_pr: null
-    last_verified_main_sha: b8b7bb715c5ef5e53ed05bfcdedf9750f3e715bf
+    active_branch: codex/risk-0001-attempt2-integrity-correction
+    active_pr: 316
+    last_verified_main_sha: ad261a52c4f03cef121930e83d5df4ed894c637f
     last_verified_date: "2026-08-14"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
