@@ -11770,6 +11770,55 @@ workstreams:
         pr: 320
         status: in_progress
         date: "2026-08-15"
+      - gate: xasset0021-post-merge-verification
+        description: >
+          Additive factual closeout, recorded without editing the prior
+          in_progress gate's own text. XASSET-0021 accepted head
+          afc3eef410dd3748c209053bdb8de7dd09c273bf received independent full
+          exact-head review 4943931318 (BLOCKING 0 / MAJOR 0 / MINOR 0, NOTE 2)
+          and principal exact-head acceptance 5302485718, then merged as
+          5f94634bdfd0ff8ab603b8dd6ece2921033191df with post-merge verification
+          5302525526 and successful merge-commit CI run 31887814190.
+          XASSET-0021 is therefore effective. Its closure matrix stands at 30
+          rows / 14 CLOSED_DETERMINISTICALLY / 14 APPLICATION_MUST_ABSTAIN / 2
+          SEPARATE_PREREQUISITE_REQUIRED. CM-27 application_schema and CM-28
+          deterministic_trace_and_repeatability remain the two active
+          mechanical prerequisites, so application authority remains WITHHELD
+          and no Level-1 application may begin. No point, range, weight,
+          target, liquidity amount, application record, Level-2 selection, or
+          policy exists.
+        pr: 320
+        status: complete
+        date: "2026-08-15"
+      - gate: xasset0022-level1-application-artifact-schema-and-deterministic-generation-authority
+        description: >
+          Current Lane G filing, and the one mechanical prerequisite unit named
+          by XASSET-0021 §L. It closes the exact application artifact identity,
+          the one canonical serialization, the complete recursively closed field
+          set, the closed state vocabularies, the deterministic-trace contract,
+          the reopen-trigger contract, and the non-circular lifecycle binding,
+          and supplies the minimal generator, fail-closed validator, and
+          adversarial rejection fixtures required to prove that identical frozen
+          inputs necessarily produce identical canonical bytes. It reuses this
+          repository's already-accepted canonical serialization convention
+          rather than introducing a second one. It adopts the reading the
+          XASSET-0021 corrected review's NOTE-2 identified: the self-referential
+          exact_head value is removed from the artifact entirely while the
+          application identity survives as external Git/GitHub lifecycle
+          metadata. CM-27 and CM-28 may be reclassified
+          CLOSED_DETERMINISTICALLY only upon this decision becoming effective.
+          Application authority nevertheless remains WITHHELD per XASSET-0021
+          §O's double gate, enforced mechanically by an empty application
+          authorization registry that both the generator and the validator
+          independently refuse to bypass. This filing applies no methodology and
+          creates no point, range, weight, target, allocation, application
+          record, liquidity amount, Level-2 selection, or policy. Liquidity
+          remains unresolved and null; all four RISK dispositions remain
+          unable_to_determine; Level-1 economic sizing is not complete; Level-2
+          remains blocked.
+        pr: null
+        status: in_progress
+        date: "2026-08-15"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11819,6 +11868,30 @@ workstreams:
       - research/level1_sleeve_robustness/PROTOCOL_V1.md
       - research/level1_sleeve_robustness/pre_registration.yaml
     next_action: >
+      Update, 2026-08-15: XASSET-0021 is effective after accepted head
+      afc3eef410dd3748c209053bdb8de7dd09c273bf received independent full
+      exact-head review 4943931318, principal exact-head acceptance 5302485718,
+      merge to main as 5f94634bdfd0ff8ab603b8dd6ece2921033191df, post-merge
+      verification 5302525526, and successful merge-commit CI run 31887814190.
+      Its matrix stands at 30 rows / 14 CLOSED_DETERMINISTICALLY / 14
+      APPLICATION_MUST_ABSTAIN / 2 SEPARATE_PREREQUISITE_REQUIRED, so
+      application authority remains WITHHELD. The single remaining prerequisite
+      is XASSET-0022, the one mechanical Lane G unit XASSET-0021 §L names:
+      Level-1 Application Artifact Schema and Deterministic Generation
+      Authority. XASSET-0022 is this session's own draft filing. It closes the
+      exact artifact identity, canonical serialization, complete closed field
+      set, closed vocabularies, deterministic-trace and reopen-trigger
+      contracts, and non-circular lifecycle binding, and supplies the minimal
+      generator, fail-closed validator, and adversarial rejection fixtures
+      proving identical frozen inputs yield identical canonical bytes. CM-27
+      and CM-28 may be reclassified CLOSED_DETERMINISTICALLY only upon
+      XASSET-0022 becoming effective through its own independent full exact-head
+      review, principal acceptance, merge, post-merge verification, and CI.
+      Even then application authority stays WITHHELD: XASSET-0021 §O's double
+      gate requires a later separate governance decision, enforced mechanically
+      by an empty application-authorization registry. No application, sizing,
+      liquidity resolution, Level-2 outcome, or policy exists or is authorized.
+
       Update, 2026-08-15: XASSET-0020 is effective methodology after accepted
       head d2c0ce84f1922bc606c3de6983eb47266dbe4d72 received independent review
       4943427551, principal acceptance 5301699393, merge to main as
@@ -12209,6 +12282,18 @@ workstreams:
       entry's own roadmap_preservation field names remain wholly
       unauthorized, unchanged.
     blocker: >
+      Current critical path, 2026-08-15: XASSET-0022 is the sole active lane and
+      the last mechanical prerequisite standing between the effective
+      XASSET-0020 methodology plus XASSET-0021 closure and any future
+      application-authorization question. It must complete independent full
+      exact-head review, principal exact-head acceptance, merge, immediate
+      post-merge verification, and successful exact-head CI before CM-27 and
+      CM-28 may be reclassified. It authorizes no application by itself.
+      Application authority remains WITHHELD and no Level-1 application may
+      begin. Actual Level-1 sizing, liquidity architecture, Level-2 work,
+      whole-portfolio stress, charts, ladders, and margin remain downstream and
+      unperformed.
+
       Current critical path, 2026-08-14: XASSET-0020 is the sole active
       methodology-design lane. It must complete independent full exact-head
       review, principal acceptance, merge, and post-merge verification before
@@ -12511,9 +12596,9 @@ workstreams:
       validator/tests, and factual register synchronization; it makes no
       Level 2, policy-adoption, allocation-check, deployment, or completion
       claim and must stop at a draft PR for independent full exact-head review.
-    active_branch: codex/xasset-0021-level1-economic-sizing-application-prerequisite-closure
-    active_pr: 320
-    last_verified_main_sha: e7d66d93b5f7ab2ecd985a7a4bf680a118df6b0e
+    active_branch: claude/xasset-0022-schema-mk3l93
+    active_pr: null
+    last_verified_main_sha: 5f94634bdfd0ff8ab603b8dd6ece2921033191df
     last_verified_date: "2026-08-15"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I

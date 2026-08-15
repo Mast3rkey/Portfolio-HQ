@@ -868,6 +868,14 @@ decisions:
     supporting_artifact: null
     file: governance/decisions/XASSET-0021-level1-economic-sizing-application-prerequisite-closure.md
 
+  - decision_id: XASSET-0022
+    date: 2026-08-15
+    status: Proposed
+    category: cross_asset_allocation_architecture
+    related_decisions: [GOV-0001, GOV-0002, OPS-0009, OPS-0014, NUM-0001, XASSET-0019, XASSET-0020, XASSET-0021, LEVEL2-0001]
+    supporting_artifact: null
+    file: governance/decisions/XASSET-0022-level1-application-artifact-schema-and-deterministic-generation-authority.md
+
   - decision_id: RISK-0001
     date: 2026-08-13
     status: Proposed
