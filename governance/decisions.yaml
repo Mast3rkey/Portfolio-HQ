@@ -931,3 +931,11 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0009, OPS-0014, NUM-0001, XASSET-0016, XASSET-0018, XASSET-0019, XASSET-0020, XASSET-0021, XASSET-0022, XASSET-0023, XASSET-0024, LEVEL2-0001, RISK-0001, RISK-0002, RISK-0003, RISK-0004]
     supporting_artifact: null
     file: governance/decisions/XASSET-0025-level1-endpoint-source-and-authority-identification.md
+
+  - decision_id: XASSET-0026
+    date: 2026-08-15
+    status: Proposed
+    category: cross_asset_allocation_architecture
+    related_decisions: [GOV-0001, GOV-0002, OPS-0009, OPS-0014, NUM-0001, XASSET-0016, XASSET-0018, XASSET-0019, XASSET-0020, XASSET-0021, XASSET-0022, XASSET-0023, XASSET-0024, XASSET-0025, LEVEL2-0001, RISK-0001, RISK-0002, RISK-0003, RISK-0004]
+    supporting_artifact: null
+    file: governance/decisions/XASSET-0026-level1-endpoint-evidence-program-shape-and-sleeve-selection-basis.md
