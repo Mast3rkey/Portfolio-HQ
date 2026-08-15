@@ -39,6 +39,18 @@ Every determination below is therefore grounded in this decision's own reading o
 text, cited section by section, and on no unverified audit. Where accepted text does not resolve a
 question, this decision says so rather than closing the gap by assertion.
 
+**Supplemental accepted-evidence findings.** A separate read-only inventory later supplied factual
+findings about the accepted RISK corpus bearing on §§D and H. Each was independently re-verified
+against the committed files before use, per this repository's standing rule that an outside review's
+specific values are assumed wrong until checked: the single study-level question and its exclusions
+in `PROTOCOL_V1.md` §1; the four families' dispositions, `point_states`, and `review_direction` in
+`disposition.json`; the gold-peer admission evidence and `censored_recovery_count` in
+`diagnostics.json`; the representation framings in `diagnostics.json` and `pre_registration.yaml`;
+and the `lapse_condition`, `reuse_rule`, and `evidence_status` fields on the study's consequential
+parameters. All matched. Their effect is recorded at §D.6, §H.4 item 5, §H.5, and §J.2. They correct
+no statement in this decision — they close scoping gaps in it, and none of them enlarges its
+authority.
+
 ## Decision
 
 ### A. Lifecycle, authority, and controlling identity
@@ -154,6 +166,39 @@ would have to change for it not to; it reclassifies nothing and leaves XASSET-00
 Level-1 *range* need not obtain determinate RISK outcomes. A successor unit seeking a Level-1 *point*
 must, and RISK-0001's attempt authority is `CONSUMED` with no retry or third attempt, so any such
 evidence would require a new separately chartered study. This decision authorizes neither.
+
+**D.6 — "RISK evidence exists" is not "RISK evidence can currently supply an endpoint."** Three
+verified properties of the accepted study bound what D.5 can mean, and a successor unit must not be
+scoped as though any of them were absent.
+
+1. **One study-level question, not four.** `PROTOCOL_V1.md` §1 states "The sole question is" and then
+   poses a single question about whether preregistered historical evidence rejects the continued
+   plausibility of any historical/provisional Level-1 scenario strongly enough to require separate
+   policy review, or is insufficient. The four families are reduction and reporting units inside that
+   one preregistered question — `disposition.json` carries them under a single `families` object with
+   a fixed `family_order` — not four independently authorized research questions. **No authority
+   exists to re-question an individual family**, and no successor may be scoped as "re-run RISK for
+   whichever family needs it." The same section expressly excludes asking which weight maximizes
+   return, which sleeve should automatically receive capital, or what any final portfolio weight
+   should be.
+2. **The accepted outcome is uncertainty, at every level.** All four families are
+   `unable_to_determine`; every family's `point_states` are `UNAVAILABLE` for both directions; and
+   every family's `review_direction` is `null`. Preserve those strictly as uncertainty — never as
+   neutrality, acceptance, rejection, or direction, per XASSET-0021 §K and §D.3 above.
+3. **The study's consequential parameters have lapsed.** Each records
+   `binding_status: BINDING_FOR_AUTHORIZED_RISK_0001_STUDY`, `valid_for_study_id: RISK-0001`,
+   `lapse_condition: AUTHORIZED_STUDY_COMPLETION`, `reuse_rule: NEW_GOVERNANCE_AUTHORITY_REQUIRED`,
+   and `evidence_status: NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED`. The study is complete, so the lapse
+   condition is met. Reuse posture is re-verify, never refresh: identity and hashes may be
+   re-verified where the evidence is reused as evidence, but no source or data refresh is permitted
+   and the window is fixed.
+
+Therefore the completed study remains **existing accepted result evidence whose current outcome is
+`unable_to_determine`**, and its identity may be re-verified — but its parameters and results are
+**not automatically reusable inputs to a new non-abstaining sizing endpoint**, because their own
+recorded reuse rule requires new governance authority. **This decision grants no such authority**, does
+not itself authorize reuse, and does not authorize a new question, a new study, or a family-level
+re-question. Any of those is its own separate future governance decision.
 
 ### E. XASSET-0019 §J is a different requirement from CM-25, and is already satisfied
 
@@ -363,6 +408,19 @@ For the endpoint value itself:
    uniquely favors that number over real tested alternatives; a sweep that merely fails to disprove a
    value establishes at most §7's evidence-bounded governance selection. NUM-0001 §11's false-precision
    prohibition applies in full.
+5. **A study-internal threshold is not an endpoint template.** That a governed numeric threshold
+   exists somewhere in admitted evidence does not make it, or its derivation pattern, available for a
+   Level-1 endpoint. The accepted RISK gold-parity admission gate is the worked counter-example: it
+   is a real, committed, NUM-0001-classed parameter, and it still fails this test three separate
+   ways — its class is provisional governance guardrail with
+   `evidence_status: NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED`, so item 4 forbids describing it as
+   calibrated; its `binding_scope` is conditional gold-peer admission and its `valid_for_study_id` is
+   RISK-0001, so it answers a representation-admission question rather than the endpoint quantity
+   defined above and fails §H.2 item 1; and its `reuse_rule` requires new governance authority while
+   its `lapse_condition` is already met per §D.6, so it fails item 3's competent-authority
+   requirement. It is cited here solely to fix the boundary. **It is not a template, precedent, or
+   permitted derivation pattern for any Level-1 endpoint**, and this decision authorizes no reuse of
+   it.
 
 #### H.5 Representation closure that must exist
 
@@ -379,6 +437,19 @@ Per XASSET-0021 §E:
 4. **Additionally, for a range under any unresolved pair** — both endpoints independently and directly
    governed, and valid under *every possible direction* of that pair, per XASSET-0020 §I and §D.3
    above.
+
+**What is missing here is a rule, not the evidence.** Executed representation-sensitivity evidence
+does exist and is numerically recorded inside the accepted RISK corpus — the gold family's admission
+evidence tests three named peers against the parity gate and records each one's correlation, session-
+gap state, and admission outcome, admitting exactly one. Nothing in this section should be read as
+saying representation sensitivity was never examined. Three separate things must be kept apart:
+executed representation evidence, which exists; an accepted cross-representation **aggregation or
+selection** rule, which does not exist anywhere at Level 1 — the reason XASSET-0021 §C.2 keeps the
+instrument records DISCLOSURE-only and XASSET-0021 §E operates as an eligibility gate rather than a
+combining rule; and the **lapsed** status of the study's own parameters per §D.6, which prevents that
+executed evidence from being lifted into a Level-1 endpoint. A successor unit must therefore be
+scoped to supply the missing rule under its own authority, not to re-discover evidence that already
+exists.
 
 #### H.6 How conflicting admissible evidence is handled
 
@@ -435,17 +506,22 @@ XASSET-0021 §E; conflict handling
 to XASSET-0021 §H; constraint non-creation to XASSET-0020 §E.2 and XASSET-0021 §F; determinism to
 XASSET-0020 §J.3 and §Q item 13; the range survival rule to XASSET-0020 §I and §J.2; the sequence and
 completeness placement to XASSET-0019 §§H–I; and the RISK checkpoint to XASSET-0019 §J with RISK-0001's
-own charter statement of its role.
+own charter statement of its role. §D.6, §H.4 item 5, and §H.5 additionally trace to
+independently re-verified fields of the accepted RISK corpus itself — `PROTOCOL_V1.md` §1,
+`disposition.json`, `diagnostics.json`, and `pre_registration.yaml` — which XASSET-0021 §C.3 already
+freezes as admitted evidence. Reading a frozen source's own recorded scope, lapse, and reuse fields
+is evidence-reading, not amendment, and it narrows rather than widens what a successor may do.
 
 No element loosens a bound, creates an origination route, admits a source class, relaxes a
 prohibition, or supplies a value. Where this decision could not clarify without amending, it stopped
 and recorded the gap instead — see §G and §J.
 
-### J. One interpretive tension recorded rather than resolved by assertion
+### J. Two tensions recorded rather than resolved by assertion
 
-XASSET-0021 §O states that "To seek any future non-abstaining result, separate governance would
-additionally have to admit question-matched evidence that actually closes the affected missing direct
-pair(s), representation rule(s), and endpoint authority." Read as a strict conjunction, that would
+**J.1 — XASSET-0021 §O's conjunction.** XASSET-0021 §O states that "To seek any future
+non-abstaining result, separate governance would additionally have to admit question-matched evidence
+that actually closes the affected missing direct pair(s), representation rule(s), and endpoint
+authority." Read as a strict conjunction, that would
 require closing a missing pair even for a range, which would contradict XASSET-0020 §I's express
 range-survival path and §J.2's omission of any pair-determinacy condition.
 
@@ -459,6 +535,29 @@ Recorded honestly: this is the one place where a reviewer could reasonably reach
 If the strict-conjunction reading is preferred, the smallest corrective is a narrowly scoped amendment
 to **XASSET-0021 §O's wording alone** — not to XASSET-0020 §I or §J.2, which are unambiguous. This
 decision does not make that amendment and does not presume it unnecessary.
+
+**J.2 — A gold-representation labeling difference inside the accepted RISK corpus.** The study's
+`diagnostics.json` records the gold family's representation set under a `mandatory_representations`
+key listing all four of GLD, IAU, SGOL, and GLDM, using the same key name it uses for the other three
+families. Its `pre_registration.yaml` instead frames that family as one `core_representation`, GLD,
+plus `conditional_representations` IAU, SGOL, and GLDM governed by a
+`conditional_failed_gate_rule: EXCLUDE_NOT_VETO` — a materially different structure from the
+`ANY_UNAVAILABLE_MAKES_FAMILY_UNAVAILABLE` rule the other families carry.
+
+**This decision does not resolve that difference and does not designate either file as controlling.**
+Doing so would be a correction to accepted research semantics inside the RISK domain, which is neither
+this decision's subject nor within its authority.
+
+What it does determine is the **materiality question actually before it**: the difference does not
+affect any of §§D, F, or H. None of the three determinations turns on whether the gold peers were
+mandatory or conditional. §D reasons from the family-level dispositions, which are
+`unable_to_determine` on either framing; §F concerns Level-2 sequencing and touches representation not
+at all; and §H treats representation as XASSET-0021 §E's eligibility gate, which fails on a missing,
+unavailable, conflicted, or disagreeing required representation under either reading. The minimum
+lawful consequence is therefore **disclosure and no reliance** — no determination here rests on the
+gold family's internal representation structure. Should a future unit need that structure settled,
+that is its own separate RISK-domain governance decision, not a step this decision has taken or may
+be read to have taken.
 
 ### K. Effect on the closure matrix, and application authority
 
@@ -516,7 +615,11 @@ extended; a new evidence class, direct pair, representation rule, endpoint autho
 rule is proposed for use; an accepted RISK identity or disposition changes, or a new RISK study is
 separately chartered; the liquidity or Level-2 architecture changes a boundary relied on here; a
 partially non-abstaining Level-1 record becomes lawfully possible, making §G's deferred question
-reachable; or a reviewer establishes the strict-conjunction reading of XASSET-0021 §O discussed in §J.
+reachable; a reviewer establishes the strict-conjunction reading of XASSET-0021 §O discussed in §J.1;
+separate governance grants reuse authority over the lapsed RISK parameters described in §D.6, or
+supplies the missing cross-representation aggregation or selection rule described in §H.5; or the
+gold-representation labeling difference recorded at §J.2 is separately resolved and that resolution
+turns out to bear on a determination here.
 
 ### O. Absolute non-authorization
 
@@ -528,7 +631,9 @@ sizing and no Level-2 membership or sizing; makes no liquidity determination; ch
 `targets.yaml`, `holdings.yaml`, `gates.yaml`, `issuer_lookthrough.yaml`, allocator, tier, cluster,
 cap, or margin state; authorizes no chart, ladder, backtest, optimizer, deployment, trade, order, or
 brokerage action; adopts no portfolio policy; creates no XASSET-0021 snapshot successor and no
-XASSET-0022 schema or version successor; and rewrites no accepted history.
+XASSET-0022 schema or version successor; grants no reuse authority over any lapsed RISK parameter
+or result, no authority to re-question any RISK family, and no resolution of the gold-representation
+labeling difference at §J.2; and rewrites no accepted history.
 
 ## Rationale
 

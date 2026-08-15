@@ -11892,6 +11892,27 @@ workstreams:
           makes no snapshot or schema successor. It also discloses that the
           read-only L1-SIZING audit referenced by its authorizing session has no
           retained repository artifact, so no determination relies on it.
+          Supplemental accepted-evidence findings from a separate read-only
+          inventory were independently re-verified against the committed RISK
+          corpus before use and recorded at the decision's own D.6, H.4 item 5,
+          H.5, and J.2: the study poses one study-level question with the four
+          families as reduction units rather than separately re-questionable
+          research questions; every consequential study parameter carries
+          lapse_condition AUTHORIZED_STUDY_COMPLETION and reuse_rule
+          NEW_GOVERNANCE_AUTHORITY_REQUIRED and has therefore lapsed on study
+          completion, so existing RISK evidence may be re-verified but is not an
+          automatically reusable input to a new non-abstaining endpoint;
+          executed representation-sensitivity evidence does exist and is
+          numerically recorded, what is absent is an accepted cross-
+          representation aggregation or selection rule; the study's own
+          representation-admission threshold is expressly not a template,
+          precedent, or permitted derivation pattern for a Level-1 endpoint; and
+          a gold-representation labeling difference between the study's
+          diagnostics and pre-registration files is disclosed, deliberately left
+          unresolved with neither file designated controlling, and determined
+          not to affect any of the three determinations. The filing grants no
+          reuse authority, no authority to re-question any family, and no
+          resolution of that labeling difference.
         pr: null
         status: in_progress
         date: "2026-08-15"
