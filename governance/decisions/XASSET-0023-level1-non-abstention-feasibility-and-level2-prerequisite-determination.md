@@ -47,9 +47,17 @@ in `PROTOCOL_V1.md` §1; the four families' dispositions, `point_states`, and `r
 `disposition.json`; the gold-peer admission evidence and `censored_recovery_count` in
 `diagnostics.json`; the representation framings in `diagnostics.json` and `pre_registration.yaml`;
 and the `lapse_condition`, `reuse_rule`, and `evidence_status` fields on the study's consequential
-parameters. All matched. Their effect is recorded at §D.6, §H.4 item 5, §H.5, and §J.2. They correct
-no statement in this decision — they close scoping gaps in it, and none of them enlarges its
-authority.
+parameters. Their effect is recorded at §D.6, §H.4 item 5, §H.5, and §J.2.
+
+One qualification belongs here rather than in a footnote, because it bears on how far that
+re-verification went. The findings as supplied described the `reuse_rule` and `evidence_status`
+fields as uniform across the parameters. That was checked against a sample and initially recorded as
+uniform; a later full-corpus tally of all twenty parameters established that it is not. The exact
+distribution now appears at §D.6 item 3, and the lapse conclusion it supports is unchanged, because
+the fields that *are* uniform across all twenty — binding status, study binding, and lapse condition
+— are the ones the conclusion rests on. Everything else in the list above matched as supplied. None
+of these findings corrects a determination in this decision; they close scoping gaps in it, and none
+enlarges its authority.
 
 ## Decision
 
@@ -185,13 +193,19 @@ scoped as though any of them were absent.
    `unable_to_determine`; every family's `point_states` are `UNAVAILABLE` for both directions; and
    every family's `review_direction` is `null`. Preserve those strictly as uncertainty — never as
    neutrality, acceptance, rejection, or direction, per XASSET-0021 §K and §D.3 above.
-3. **The study's consequential parameters have lapsed.** Each records
-   `binding_status: BINDING_FOR_AUTHORIZED_RISK_0001_STUDY`, `valid_for_study_id: RISK-0001`,
-   `lapse_condition: AUTHORIZED_STUDY_COMPLETION`, `reuse_rule: NEW_GOVERNANCE_AUTHORITY_REQUIRED`,
-   and `evidence_status: NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED`. The study is complete, so the lapse
-   condition is met. Reuse posture is re-verify, never refresh: identity and hashes may be
-   re-verified where the evidence is reused as evidence, but no source or data refresh is permitted
-   and the window is fixed.
+3. **The study's consequential parameters have lapsed.** All twenty record
+   `binding_status: BINDING_FOR_AUTHORIZED_RISK_0001_STUDY`, `valid_for_study_id: RISK-0001`, and
+   `lapse_condition: AUTHORIZED_STUDY_COMPLETION`. The remaining two fields are **not** uniform, and
+   the exact distribution is stated here rather than generalized: `reuse_rule` is
+   `NEW_GOVERNANCE_AUTHORITY_REQUIRED` on nineteen and
+   `REVALIDATE_CONVENTION_UNDER_NEW_AUTHORITY` on one, `DFF_DAY_COUNT_DENOMINATOR`; and
+   `evidence_status` is `NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED` on fourteen,
+   `CONSERVATIVE_INTEGRITY_GUARDRAIL` on five, and `CONVENTION_NOT_CALIBRATION` on one. The study is
+   complete, so the lapse condition is met for all twenty, and **every one requires new governance
+   authority in its own recorded form before reuse** — a revalidation requirement is still a new-
+   authority requirement, not an exemption. Reuse posture is re-verify, never refresh: identity and
+   hashes may be re-verified where the evidence is reused as evidence, but no source or data refresh
+   is permitted and the window is fixed.
 
 Therefore the completed study remains **existing accepted result evidence whose current outcome is
 `unable_to_determine`**, and its identity may be re-verified — but its parameters and results are
@@ -401,9 +415,9 @@ For the endpoint value itself:
    provisional governance guardrail. Class 6, unsupported/unclassified, is disqualifying.
 3. **Route-class coherence.** A §H.3 derivation is NUM-0001 class 2. A §H.2 statement may carry class
    1, 3, 4, or 5 — but a class 4 or class 5 value must have been selected by an effective governance
-   authority competent for Level-1 endpoints, never by the application author, since XASSET-0021 §L
-   forbids an application author from choosing a value and XASSET-0021 §F bars undocumented
-   judgment.
+   authority competent for Level-1 endpoints, never by the application author or a reviewer, since
+   XASSET-0021 §F bars "analyst or reviewer preference" and "undocumented judgment" as endpoint
+   origins. That bar is unconditional and is the whole basis for this item.
 4. **Honest labeling.** NUM-0001 §8 permits "empirically calibrated" only where evidence directly and
    uniquely favors that number over real tested alternatives; a sweep that merely fails to disprove a
    value establishes at most §7's evidence-bounded governance selection. NUM-0001 §11's false-precision

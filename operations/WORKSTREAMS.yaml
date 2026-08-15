@@ -11897,11 +11897,20 @@ workstreams:
           corpus before use and recorded at the decision's own D.6, H.4 item 5,
           H.5, and J.2: the study poses one study-level question with the four
           families as reduction units rather than separately re-questionable
-          research questions; every consequential study parameter carries
-          lapse_condition AUTHORIZED_STUDY_COMPLETION and reuse_rule
-          NEW_GOVERNANCE_AUTHORITY_REQUIRED and has therefore lapsed on study
-          completion, so existing RISK evidence may be re-verified but is not an
-          automatically reusable input to a new non-abstaining endpoint;
+          research questions; all twenty consequential study parameters carry
+          binding_status BINDING_FOR_AUTHORIZED_RISK_0001_STUDY,
+          valid_for_study_id RISK-0001, and lapse_condition
+          AUTHORIZED_STUDY_COMPLETION and have therefore lapsed on study
+          completion, while the remaining two fields are not uniform - reuse_rule
+          is NEW_GOVERNANCE_AUTHORITY_REQUIRED on nineteen and
+          REVALIDATE_CONVENTION_UNDER_NEW_AUTHORITY on one
+          (DFF_DAY_COUNT_DENOMINATOR), and evidence_status is
+          NOT_CALIBRATED_NOT_EVIDENCE_BOUNDED on fourteen,
+          CONSERVATIVE_INTEGRITY_GUARDRAIL on five, and CONVENTION_NOT_CALIBRATION
+          on one - with every parameter nonetheless requiring new governance
+          authority in its own recorded form before reuse, so existing RISK
+          evidence may be re-verified but is not an automatically reusable input
+          to a new non-abstaining endpoint;
           executed representation-sensitivity evidence does exist and is
           numerically recorded, what is absent is an accepted cross-
           representation aggregation or selection rule; the study's own
