@@ -11674,6 +11674,35 @@ workstreams:
         pr: 316
         status: in_progress
         date: "2026-08-14"
+      - gate: risk0004-attempt2-results-disclosure-supplement-authorization
+        description: >
+          Current governance-only Lane G filing. RISK-0003 merged through PR
+          #317 from accepted head ff13ea03ef3cfe46eaf7571031cc986fd2acfde0
+          into main as b8b7bb715c5ef5e53ed05bfcdedf9750f3e715bf. Its
+          bounded correction was then published on the same PR #316 at exact
+          RESULTS head ffbe4d5bebf8fa9c5354c230f41c2bf7f82f065a.
+          Independent full RESULTS review 4941983592 reconciled the execution,
+          canonical result validation, 777 registered / 609 executed / 168
+          governed null-ineligible accounting, zero reserve and zero
+          duplicate/missing/extra cells, every frozen result byte, and all four
+          unable_to_determine dispositions. Attempt-2 authority remains
+          CONSUMED and no retry or third attempt is authorized. The review
+          returned CHANGES REQUIRED with zero BLOCKING, two MAJOR, zero MINOR,
+          and one NOTE: mandatory RESULTS disclosure is incomplete, and the
+          limitations report understates actual fallback reliance and related
+          SOL/gold-peer/representation sensitivity. The exact defect class is
+          RESULTS_REPORTING_DISCLOSURE_SUPPLEMENT_ONLY. PR #316 is temporarily
+          parked closed/draft/unmerged at that unchanged reviewed head, with
+          its remote branch preserved. RISK-0004 authorizes no correction in
+          this governance PR. If independently reviewed, principal-accepted,
+          merged, and post-merge verified, it permits exactly one later
+          additive, byte-preserving reporting/disclosure supplement on the
+          same PR #316 while all eight frozen artifact hashes remain identical.
+          Results remain unpublished and unaccepted for governance purposes,
+          and this filing has no portfolio-policy effect.
+        pr: null
+        status: in_progress
+        date: "2026-08-14"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -11717,9 +11746,28 @@ workstreams:
       - governance/decisions/RISK-0001-level1-investable-sleeve-robustness-charter.md
       - governance/decisions/RISK-0002-separately-authorized-integrity-reexecution-amendment.md
       - governance/decisions/RISK-0003-postexecution-test-harness-lifecycle-correction-authorization.md
+      - governance/decisions/RISK-0004-attempt2-results-disclosure-supplement-authorization.md
       - research/level1_sleeve_robustness/PROTOCOL_V1.md
       - research/level1_sleeve_robustness/pre_registration.yaml
     next_action: >
+      Update, 2026-08-14: attempt 2 is complete, its authority is consumed,
+      canonical machine results and four unable_to_determine dispositions are
+      independently reconciled, and no retry, third attempt, recomputation, or
+      policy effect is authorized. Independent full RESULTS review 4941983592
+      found two MAJOR reporting/disclosure deficiencies and no machine/economic
+      artifact defect. PR #316 is temporarily parked closed, draft, and
+      unmerged at unchanged exact reviewed head
+      ffbe4d5bebf8fa9c5354c230f41c2bf7f82f065a with its remote branch
+      preserved. Results remain unpublished and unaccepted for governance
+      purposes. The current unit is this RISK-0004 governance-only filing. It
+      must complete independent full exact-head review, principal acceptance,
+      merge, and immediate post-merge verification before the same PR #316 may
+      reopen for exactly one additive, byte-preserving reporting supplement.
+      No result byte, execution state, disposition, policy, target, sizing,
+      margin, debt, allocation, or brokerage authority changes. Replacement
+      Level 1 methodology remains downstream and blocked.
+
+
       Update, 2026-08-14: RISK-0003 is effective after independent review,
       principal exact-head acceptance, merge, and successful merge-commit CI.
       PR #316 is reopened and current main is merged into its preserved branch
@@ -12054,6 +12102,17 @@ workstreams:
       entry's own roadmap_preservation field names remain wholly
       unauthorized, unchanged.
     blocker: >
+      Current critical-path blocker, 2026-08-14: review 4941983592's two
+      MAJOR reporting/disclosure findings remain unresolved. PR #316 is parked
+      at exact reviewed RESULTS head
+      ffbe4d5bebf8fa9c5354c230f41c2bf7f82f065a while RISK-0004 proceeds
+      through independent full exact-head governance review, principal
+      acceptance, merge, and immediate post-merge verification. Until then,
+      no reporting supplement may be added and PR #316 may not be reopened.
+      Attempt 2 remains complete and consumed; no retry, third attempt,
+      recomputation, result mutation, or policy effect is authorized.
+
+
       Step 1 (contender normalization plus research-readiness screening,
       per XASSET-0001 §J's own step numbering — see this entry's
       completion_criteria field for the full 0-13 step list) is complete
@@ -12328,9 +12387,9 @@ workstreams:
       validator/tests, and factual register synchronization; it makes no
       Level 2, policy-adoption, allocation-check, deployment, or completion
       claim and must stop at a draft PR for independent full exact-head review.
-    active_branch: agent/risk-0003-postexecution-test-harness-authority
+    active_branch: agent/risk-0004-results-disclosure-supplement-authority
     active_pr: null
-    last_verified_main_sha: e4d9fd69467755b7aa974c39dcb107e388910c52
+    last_verified_main_sha: b8b7bb715c5ef5e53ed05bfcdedf9750f3e715bf
     last_verified_date: "2026-08-14"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
