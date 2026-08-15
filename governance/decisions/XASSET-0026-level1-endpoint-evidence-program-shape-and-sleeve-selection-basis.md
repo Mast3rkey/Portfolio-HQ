@@ -66,7 +66,7 @@ In scope: determining, from accepted authority alone, (i) what the lawful *unit*
 evidence actually is; (ii) whether any accepted, non-convenience basis lawfully selects a sleeve or a
 proper subset of sleeves today; (iii) the coverage shape of the first purpose-built endpoint-evidence
 program; (iv) whether accepted authority fixes an ordering or a packaging between evidence and
-authority, resolving XASSET-0025 §O.5 as far as that authority permits; (v) whether a representation
+authority, addressing XASSET-0025 §O.5 as far as that authority permits; (v) whether a representation
 rule must precede purpose-built endpoint evidence; (vi) the architectural constraints the smallest
 lawful successor program must carry; and (vii) the exact next authorized successor action.
 
@@ -98,40 +98,53 @@ named sleeve*. Evidence whose subject matter is a pair may support such a bound;
 relative ranking, a comparative score, or a split between two sleeves in place of a bound. A relative
 statement is not an endpoint.
 
-### D. Determination A — the lawful unit of endpoint evidence is class-determined, not a sleeve count
+### D. Determination A — evidence-item scope and endpoint/output coverage are different questions
 
 XASSET-0025 §J determined that the future research question can be *stated* sleeve-agnostically but
 its *evidence* cannot be, because "There is no sleeve-independent DRIVER class." That is correct and
-was re-verified directly this session against XASSET-0020 §E.1. It is also incomplete in a way that
-matters here, because the six classes do not all have the same scope shape.
+was re-verified directly this session against XASSET-0020 §E.1. What that observation governs, and
+what it does not, has to be stated carefully, because the two are easy to run together and running
+them together would impose a research-design constraint accepted authority does not supply.
 
-Read exactly as XASSET-0020 §E.1 states them:
+**The two questions.** (a) The minimum *subject-matter scope of an individual DRIVER evidence item* —
+what a single admissible item must be about. (b) The *endpoint/output coverage of a program* — for how
+many sleeves a program is attempting to produce bounds. These are independent, and §C already fixes
+the bridge between them: a bound always states the §C quantity **for one named sleeve**, and evidence
+whose subject matter is a comparison or a pair may support such a bound.
 
-| # | DRIVER class | §E.1's own scope language | Minimum lawful evidence unit |
+Read exactly as XASSET-0020 §E.1 states them, and recording only what its own words fix:
+
+| # | DRIVER class | §E.1's own scope language | Minimum evidence-item subject-matter scope |
 |---|---|---|---|
 | 1 | `portfolio_function` | "**the sleeve's** directly evidenced job in the prospective portfolio" | **One sleeve** |
-| 2 | `valuation_opportunity_cost` | "the cost of assigning the marginal dollar **here rather than to the direct alternative**" | **Two sleeves** (a comparison) |
-| 3 | `downside_path_risk` | "**directly comparable** loss shape, depth, or path evidence" | **Two sleeves** (a comparison) |
-| 4 | `recovery` | "**directly comparable** recovery or time-underwater evidence" | **Two sleeves** (a comparison) |
-| 5 | `diversification_cobehavior` | "**direct pair evidence** about duplication, shared loss mechanisms, or offset behavior" | **One unordered pair** |
+| 2 | `valuation_opportunity_cost` | "the cost of assigning the marginal dollar **here rather than to the direct alternative**" | **Comparison-scoped**; the lawful comparator is *not* fixed to a second sleeve by §E.1 |
+| 3 | `downside_path_risk` | "**directly comparable** loss shape, depth, or path evidence" | **Comparison-scoped**; comparator not fixed by §E.1 |
+| 4 | `recovery` | "**directly comparable** recovery or time-underwater evidence" | **Comparison-scoped**; comparator not fixed by §E.1 |
+| 5 | `diversification_cobehavior` | "**direct pair evidence** about duplication, shared loss mechanisms, or offset behavior" | **One unordered pair** — the only class §E.1 expressly fixes to a pair |
 | 6 | `sleeve_deployability` | "**sleeve-level** convertibility, lockup, or implementation friction" | **One sleeve** |
 
-**Two of the six classes are single-sleeve-scoped; four require at least two sleeves.** This is a
-property of the accepted methodology, not a design preference, and it has a direct consequence the
-next unit must know before it scopes anything:
+**Why the comparator is left unresolved rather than assumed to be a second sleeve.** XASSET-0020 §H
+provides that "Each of the four sleeves must also be compared directly with
+`UNSIZED_UNASSIGNED_CAPITAL`," which is a direct alternative that is not a sleeve. "The direct
+alternative" and "directly comparable" are therefore not textually synonymous with "a second
+investable sleeve," and this filing does not make them so. What the lawful comparator may be for a
+given item is a property of an evidence design that does not exist; **no comparator rule is supplied,
+narrowed, or implied here.**
 
-> A genuinely one-sleeve evidence program could draw on **only two of the six lawful DRIVER classes**.
-> It would not merely be a narrower program; it would be a program operating inside a structurally
-> narrowed evidence space, with four of the six admissible routes closed to it by construction.
+**Two consequences, both stated so a successor does not infer a third.**
 
-That narrowing is a real cost, and no accepted authority imposes it. It is recorded here as a
-consequence of one-sleeve scope, not as the reason one-sleeve scope fails — §E supplies that reason
-independently.
+1. **Comparative or pair-subject evidence does not oblige a program to produce a bound for the other
+   side of the comparison.** A program whose output target is one sleeve may lawfully gather direct
+   comparisons between that sleeve and its alternatives; using such evidence creates no second sleeve
+   output. This follows from §C and is stated here because the contrary reading is the natural one.
+2. **No DRIVER class is closed to a program by its output coverage alone.** This filing determines no
+   restriction of the admissible class set based on how many sleeves a program targets, and none
+   should be read into the table above — it records evidence-item subject matter only.
 
-**The unit question is therefore prior to the count question.** "How many sleeves" is not the
-primitive; the primitive is which DRIVER class admits the evidence, and that determines whether the
-lawful evidence unit is one sleeve or one pair. The DRIVER class cannot be fixed before the evidence
-design exists, and no accepted authority fixes it now.
+**What remains genuinely open.** Which DRIVER class will admit any future endpoint-supporting evidence
+is a property of an evidence design that does not yet exist, and no accepted authority fixes it now.
+Program *coverage*, by contrast, is answerable today, because it turns on selection authority rather
+than on evidence design — which is §E's question, not this one's.
 
 ### E. Determination B — no accepted, non-convenience basis selects a sleeve or a subset today
 
@@ -147,18 +160,26 @@ sleeve is selected here, and none is compelled**," and its Alternatives Consider
 first sleeve because "No accepted evidence compels one." No accepted decision anywhere selects,
 prefers, ranks, or sequences a sleeve.
 
-**E.2 — Evidence coverage, maturity, availability, or tractability. Affirmatively barred, not merely
-disfavoured.** This is the class of basis a successor is most likely to reach for, and it fails on
-express text rather than on prudence. XASSET-0020 §D provides that "research volume, evidence
-maturity, or a need to make totals balance is **never an answer**" to the marginal-capital question,
-and §F.2's sleeve-function row provides that "Evidence coverage, maturity, `sizing_readiness`, and
-capital eligibility **may not imply size or preference**." A program that selected its first sleeve
-because that sleeve's evidence was more available, more mature, more tractable, or cheaper to obtain
-would be resting the selection on exactly the properties those clauses bar from carrying preference.
-Research sequencing is not itself sizing, and this filing does not claim otherwise — but the program
-has no mechanism that would quarantine a coverage-based selection from the preference inference §F.2
-forbids, and the honest treatment is to decline the basis rather than to rely on a separation the
-methodology does not provide.
+**E.2 — Evidence coverage, maturity, availability, or tractability. Not an accepted economic selection
+basis.** This is the class of basis a successor is most likely to reach for, and what accepted text
+establishes about it must be stated exactly, without extension. XASSET-0020 §D provides that "research
+volume, evidence maturity, or a need to make totals balance is **never an answer**" to the
+marginal-capital question, and §F.2's sleeve-function row provides that "Evidence coverage, maturity,
+`sizing_readiness`, and capital eligibility **may not imply size or preference**."
+
+Those clauses bar **economic allocation inference**. Their consequence here is therefore precise and
+limited: none of these properties supplies an accepted economic basis for preferring one sleeve, and
+none may be permitted to imply size or preference. A subset selection resting on them would have no
+accepted economic basis today, which is sufficient for this filing's question.
+
+**What this filing does not determine, and expressly declines to.** It does not determine that these
+properties are categorically unlawful grounds on which a future, separately authorized governance act
+could sequence or scope research for operational reasons — cost, availability, tractability, or
+currentness — while expressly quarantining that sequencing from any economic preference or sizing
+inference. Research sequencing is not itself sizing, and no accepted text this filing located converts
+operational sequencing into economic preference. Whether such an act is sound, and what non-preference
+firewall it would need, are questions for that act on its own stated terms and its own review. Nothing
+here forecloses it; see §E.8.
 
 **E.3 — Canonical sleeve order. Expressly foreclosed.** XASSET-0020 §L classifies "Canonical pair and
 sleeve orders" as an "Engineering/procedural constant over the closed ontology," binding "for
@@ -174,12 +195,15 @@ pair-incomplete, and does **not** select it, for three independent reasons: the 
 governs *pair conclusions in a future application*, not endpoint admissibility; XASSET-0024 §H.4 and
 §J.10 require an endpoint to be **pair-independent** — not to consume an unresolved pair as an input
 at all — so pair completeness does not bear on endpoint qualification either way; and selecting on
-"most gaps" is selection on evidence coverage, already barred at §E.2.
+"most gaps" would rest on evidence coverage, which supplies no accepted economic selection basis
+(§E.2).
 
 **E.5 — Representation tractability.** The planning material described to this session observed that a
 self-contained source may be structurally easier for one sleeve and structurally hardest for another,
-and expressly flagged that this is not authority to select. That is correct, and it is also §E.2's bar
-in another form: tractability is a property of evidence availability. Rejected.
+and expressly flagged that this is not authority to select. That is correct, and it is §E.2's point
+in another form: tractability is a property of evidence availability, which supplies no accepted
+economic selection basis. Rejected as a basis for this filing's determination; §E.2's second paragraph
+governs what a future authorized act may separately consider.
 
 **E.6 — DRIVER-class asymmetry across sleeves.** Tested directly rather than assumed: all four sleeves
 carry a profile record in the frozen snapshot under XASSET-0020 §F.2's sleeve-function row, so the two
@@ -191,8 +215,9 @@ that `GLD_FUNCTION` is the only §C.2 row whose source-owned currentness state i
 row lacking a governed currentness rule. That finding is accurate and is not reopened. It again does
 not select, for the reasons XASSET-0025 gave — the same row states the source "cannot establish
 relative preference or an endpoint," XASSET-0020 §F.2 forbids it from proving a sleeve weight, and it
-carries no numeric value of any kind — and additionally for the reason at §E.2: currentness is an
-evidence-quality property, and evidence quality may not imply preference.
+carries no numeric value of any kind. Those reasons are sufficient on their own. §E.2 adds only that
+currentness, being an evidence-quality property, supplies no accepted economic selection basis
+either.
 
 **E.8 — Principal or governance selection.** A future, explicit, separately filed and separately
 reviewed governance act *could* select a sleeve on a stated basis, and XASSET-0025 §J expressly
@@ -200,11 +225,15 @@ preserves sleeve selection as "a separate, later, explicitly authorized act." No
 this filing is not one. This is the only route by which a proper subset could lawfully arise, and it is
 recorded as available rather than exercised.
 
-**Disposition.** **No accepted, non-convenience basis lawfully selects any sleeve or any proper subset
-of sleeves today.** Every basis reachable from accepted authority is either expressly foreclosed
-(§§E.1, E.3), affirmatively barred as evidence-quality-derived preference (§§E.2, E.5, E.7),
-structurally irrelevant to endpoint admissibility (§E.4), or absent (§E.6). The one lawful route to a
-subset (§E.8) requires an authority that does not exist.
+**Disposition.** **No accepted basis lawfully selects any sleeve or any proper subset of sleeves
+today.** Every basis reachable from accepted authority is either expressly foreclosed (§§E.1, E.3),
+without any accepted economic selection basis (§§E.2, E.5, E.7), structurally irrelevant to endpoint
+admissibility (§E.4), or absent (§E.6). The one lawful route to a subset (§E.8) requires an act that
+does not exist.
+
+**This is a present-tense determination about the accepted corpus, not a permanent bar.** It records
+that nothing today supplies a basis, and expressly not that nothing ever could. §E.8 remains open, and
+§E.2's second paragraph preserves a distinct question this filing does not reach.
 
 ### F. Determination C — program shape
 
@@ -224,8 +253,8 @@ The first purpose-built Level-1 endpoint-evidence program must be scoped across 
 determination rests on three grounds, each independently sufficient:
 
 1. **Narrowing requires an authority that does not exist.** Every proper subset — one sleeve or
-   several — is reachable only through a selection act, and §E establishes that no accepted,
-   non-convenience basis supplies one. A program scoped to a subset today would be carrying an
+   several — is reachable only through a selection act, and §E establishes that no accepted basis
+   supplies one today. A program scoped to a subset today would be carrying an
    unauthorized selection inside a research design, where it would be far harder to see and refuse than
    in a governance filing.
 2. **All-four coverage is the unique selection-free coverage.** Covering XASSET-0020 §B's complete
@@ -260,44 +289,71 @@ outputs are not required to exhaust the unit, §K makes the complement `UNSIZED_
 by name. Each sleeve's each bound must be independently governed, per XASSET-0021 §E.2 and §F and
 XASSET-0024 §J's express answer that endpoint independence "is affirmatively required."
 
-### G. Determination D — ordering and packaging, resolving XASSET-0025 §O.5 as far as authority permits
+### G. Determination D — ordering and packaging under XASSET-0025 §O.5
 
-XASSET-0025 §O.5 recorded both ordering and packaging as unresolved. This filing resolves the
-**ordering** question and preserves the **packaging** question, and states each disposition separately
-because they have different answers for different reasons.
+XASSET-0025 §O.5 recorded both ordering and packaging as unresolved. This filing **preserves both**,
+and adds what accepted authority does fix: a set of ordering constraints anchored on the
+endpoint-stating source rather than on the sequence between the two missing requirements.
 
-**G.1 — Ordering: `NO_MANDATORY_GLOBAL_ORDERING`. Resolved.** No mandatory global sequence between
-producing qualifying evidence and constituting competent Level-1 endpoint authority exists, and this is
-a determination rather than a continued abstention. The reason is that the two lawful route families
-impose ordering constraints in **opposite directions**, so no single order can be mandatory:
+**G.1 — Ordering between evidence production and authority constitution: `REMAINS_UNRESOLVED`.**
+Accepted authority does not fix which of the two missing requirements must come first, and this filing
+does not fix it either. XASSET-0025 §O.5's posture is preserved, not closed.
 
-- **On every route**, XASSET-0023 §H.2 item 3 and XASSET-0024 §J.5 require the *stating source's*
-  accepted/effective authority to extend to fixing a Level-1 sleeve share. That is a condition tested at
-  **admission**, not at production. Work may therefore lawfully be performed first and admitted later
-  under an authority constituted in the interim; equally, authority may be constituted first and the
-  work performed under it. Accepted authority distinguishes neither.
-- **For NUM-0001 class 4 and class 5 specifically**, XASSET-0024 §E.3 item 3 requires the record to
-  state "the defensible range or constraint **the evidence established**" together with which value
-  governance chose and the economic reason for that specific value. A selection cannot reference a range
-  the evidence has not yet established. Here the evidence must exist at selection time — which pushes
-  evidence earlier.
-- **For a route-R1 statement of class 1 or 3, and for a route-R2 derivation of class 2**, the value is
-  stated or source-prescribed by the source itself, and its competence is a property of the authority
-  governing that source at admission — which pushes competence toward the source's own admission.
+The reason is that the accepted ordering constraints attach to a *third* thing — the endpoint-stating
+or endpoint-prescribing governed source — rather than to the sequence between evidence and authority:
 
-Because the route and NUM-0001 class cannot be fixed before the evidence design exists (§D), the
-ordering they would imply cannot be fixed now either. A filing that mandated one global order would
-foreclose one of the two lawful route families as a side effect.
+- **The endpoint-stating source must itself be under competent Level-1 authority.** XASSET-0023 §H.2
+  item 3 requires that "the stating source's accepted/effective authority must extend to fixing a
+  Level-1 sleeve share," and XASSET-0024 §J.5 repeats that the stating authority's accepted/effective
+  scope must so extend. This is a requirement on the source that states or prescribes the endpoint, not
+  merely a condition satisfied by whichever authority later admits a pre-existing document. A bound
+  stated under an incompetent scope is not cured by later admission.
+- **Underlying research and evidence production are a different act.** Nothing in accepted authority
+  requires the underlying study, data, or analysis to have been performed under Level-1 endpoint
+  authority. What must be under competent authority is the governed source that states or prescribes
+  the endpoint. Underlying work may therefore precede the constitution of that authority; it is the
+  endpoint-stating step that may not.
+- **For NUM-0001 class 4, the value selection must follow the evidence.** XASSET-0024 §E.3 item 3
+  requires the record to state "the defensible range or constraint **the evidence established**,"
+  together with the chosen value and the economic reason for it. A selection cannot reference a range
+  the evidence has not yet established. This constrains when the **selection** happens — not when the
+  **authority** is constituted.
+
+Those constraints all order other acts *relative to the endpoint-stating source*. None of them orders
+**authority constitution relative to evidence production**, which is the question XASSET-0025 §O.5
+actually left open. The texts XASSET-0025 cited for that proposition were re-read this session and
+still do not fix it: XASSET-0024 §J is titled "Minimum evidence properties for the next research **or
+authority** unit," expressly contemplating either as next; XASSET-0024 §I states the gap
+conjunctively without ordering; and XASSET-0021 §O lists evidence admission and endpoint authority
+together and fixes no sequence.
+
+**This filing therefore declines to close that gap by inference.** An earlier draft of this decision
+determined `NO_MANDATORY_GLOBAL_ORDERING` on the reasoning that the two route families constrain the
+order in opposite directions. That reasoning does not hold: it treated the competence requirement as
+attaching at admission rather than to the stating source, and it applied class 4's evidence-first
+requirement to class 5 as well. Both premises are corrected above and at §G.2, and the determination
+they supported is withdrawn rather than re-derived on other grounds. Whether some future filing can
+affirmatively resolve the ordering is left exactly where XASSET-0025 left it.
 
 **G.2 — Four ordering constraints that do bind, on every packaging.** These are derived from accepted
 authority and hold regardless of how the successor packages its work:
 
-1. **Evidence before selection, for class 4 and class 5.** The evidence establishing the defensible
-   range must exist and be identified at the time a competent authority records its NUM-0001 §7 triple.
-   (XASSET-0024 §E.3 item 3; NUM-0001 §7, §8.)
-2. **Competence at admission.** Competent Level-1 endpoint authority must be in force at the time the
-   source is admitted as endpoint-stating or endpoint-prescribing — not necessarily at the time the
-   underlying work was performed. (XASSET-0023 §H.2 item 3; XASSET-0024 §J.5.)
+1. **Evidence before selection, for NUM-0001 class 4 only.** The evidence establishing the defensible
+   range must exist and be identified at the time a competent authority records NUM-0001 §7's triple —
+   the evidence-established range, the chosen value, and the stated economic reason for that value.
+   (XASSET-0024 §E.3 item 3; NUM-0001 §7, §8.) **This constraint does not extend to class 5.** NUM-0001
+   §1 defines class 5 as a *provisional governance guardrail*, and NUM-0001 §6 states its own
+   requirements: an explicit "provisional, not empirically calibrated" label and a stated review
+   condition, which may be calendar-based, event-driven, or evidence-driven. NUM-0001 §7 is the
+   class-4 requirement and is not imposed on class 5. XASSET-0023 §H.4 item 3 requires a class-4 **or**
+   class-5 value to have been selected by an effective governance authority competent for Level-1
+   endpoints; that shared requirement does not make class 5 evidence-bounded, and no evidence-established
+   range is required for it.
+2. **Competent authority no later than the endpoint-stating source.** Competent Level-1 endpoint
+   authority must extend to the source that states or prescribes the endpoint, at that source's own
+   creation or adoption. (XASSET-0023 §H.2 item 3; XASSET-0024 §J.5.) Underlying research or analysis
+   may precede that authority; the endpoint-stating step may not, and later admission does not cure a
+   source stated under an incompetent scope.
 3. **Snapshot successor after evidence, before any application.** Newly produced evidence is admissible
    only from XASSET-0021 §§C.2–C.3 or from "a snapshot lawfully replaced or extended by a separate
    future authorization"; XASSET-0021 §C.1 forbids an application from silently adding a later file,
@@ -311,7 +367,8 @@ authority and hold regardless of how the successor packages its work:
 does not cover.** XASSET-0025 §I states the gap as evidence and authority; XASSET-0025 §M item 4
 separately lists a lawful snapshot successor. Both are right, and the successor unit needs them read
 together: there are **three** structurally distinct missing pieces, not two, and unlike the first two,
-the third's position in the sequence *is* fixed.
+the third's position in the sequence *is* fixed — unlike the ordering between evidence production and
+authority constitution, which §G.1 leaves unresolved.
 
 **G.3 — Packaging: `PACKAGING_REMAINS_AT_SUCCESSOR_ELECTION`. Preserved, not narrowed.** Whether
 qualifying evidence and competent authority are obtained through one lifecycle or through separate
@@ -414,23 +471,20 @@ and XASSET-0025 §K each took toward the unit they identified.
 > **One explicitly authorized Lane G governance unit whose scope is to constitute competent Level-1
 > endpoint authority, to charter the all-four-sleeve endpoint-evidence program against XASSET-0025
 > §K's question, or to do both — its packaging and internal ordering at its own lawful election under
-> §G.3, subject to §G.2's four binding constraints and §I's twelve architectural constraints.**
+> §G.3, subject to §G.2's four binding constraints and §I's twelve architectural constraints. The
+> ordering between the two, per §G.1, is not fixed by accepted authority and is not fixed here.**
 
 A charter, if that is the election, additionally requires what XASSET-0025 §K already names and this
 filing does not supply: a justified research design, a protocol, pre-registration, provenance rules,
 trial bounds, and its own authorization. An authority-constituting filing, if that is the election,
-must define the competence it confers in terms of the §C quantity and must not exercise it in the same
-breath on evidence that does not yet exist (§G.2 constraint 1).
+must define the competence it confers in terms of the §C quantity; it may constitute that competence
+without exercising it, and for a NUM-0001 class-4 bound it may not record a value selection before the
+evidence establishing the range exists (§G.2 constraint 1).
 
-**J.1 — One non-binding sequencing observation, offered on the same footing as XASSET-0024 §H.3 and
-authorizing nothing.** Of the two requirements, constituting competent authority is a governance
-filing and producing qualifying evidence is a research program; their costs differ by roughly the
-margin XASSET-0024's own Context describes when it records that PR #309's implementation cycle was lost
-by pursuing an expensive step before establishing it could be made lawful. If competent Level-1
-endpoint authority proves impossible to constitute, evidence produced first is wasted; the converse
-failure is cheaper. This is an observation about which order risks less, not a determination, not a
-recommendation this filing has authority to make binding, and expressly not a reason the successor must
-prefer either election. §G.1 stands: no ordering is mandatory.
+**J.1 — No sequencing preference is offered, and none should be inferred.** §G.1 leaves the ordering
+between evidence production and authority constitution unresolved, and this filing supplies no
+observation, recommendation, or cost comparison that would favour either election. Any view about
+which order risks or costs less is for the successor to form and justify on its own evidence.
 
 ### K. Recorded rather than resolved
 
@@ -544,25 +598,34 @@ successor might want from a one-sleeve scope is available through an evidence-de
 outcome, without the selection act. The two look similar from the outside and are entirely different in
 provenance, which is precisely the distinction this program exists to preserve.
 
-The §E.2 finding is the one most likely to be needed and least likely to be anticipated. XASSET-0025
-declined the `GLD_FUNCTION` asymmetry as "selection by convenience," which is right but prudential, and
-a successor could reasonably read it as a judgment call it might make differently on better evidence.
-It is not a judgment call. XASSET-0020 §D bars research volume and evidence maturity from answering the
-marginal-capital question, and §F.2 bars evidence coverage and maturity from implying size or
-preference. Every convenience basis a successor would reach for — availability, tractability,
-currentness, pair completeness — is an evidence-quality property, and those clauses bar exactly that
-family from carrying preference. Converting a prudential decline into a doctrinal bar is the difference
-between a boundary that holds under pressure and one that does not.
+§E.2 required care in the opposite direction from the one first attempted. XASSET-0020 §D bars research
+volume and evidence maturity from answering the marginal-capital question, and §F.2 bars evidence
+coverage and maturity from implying size or preference — so every convenience basis a successor might
+reach for is an evidence-quality property that supplies no accepted *economic* selection basis. An
+earlier draft of this filing went a step further and treated those clauses as an affirmative doctrinal
+bar on choosing research order or scope for operational reasons, bridging the gap with the assertion
+that the program has no mechanism to quarantine such sequencing from preference. That bridge was this
+filing's own, not accepted authority's, and it would have created a new prohibition by extension —
+narrowing a future governance act's option set on reasoning the upstream methodology does not supply.
+The corrected §E.2 states only what the clauses establish and expressly leaves the sequencing question
+to a future act on its own terms. The determination does not depend on the stronger reading: what
+carries §F is the absence of any accepted basis today, not a permanent bar.
 
-The ordering resolution at §G.1 was the hardest part and initially looked like it would have to remain
-open. It resolved once the two route families were read against each other rather than separately. The
-competence requirement is tested at admission, not at production, which means work may lawfully precede
-the authority that admits it; but a class-4 or class-5 selection must reference a range the evidence
-established, which means evidence must precede that selection. Those pull in opposite directions, and
-since the route cannot be fixed before the evidence design exists, neither can the order. That is a
-determination — no ordering is mandatory — rather than a continued abstention, and it is stronger than
-leaving the question open, because it tells the successor why any filing purporting to mandate an order
-would be foreclosing a lawful route rather than tidying a sequence. Packaging stayed open for the
+The ordering question at §G.1 was the hardest part, and an earlier draft of this filing got it wrong in
+a way worth recording. It determined that no global ordering is mandatory, reasoning that the two route
+families constrain the order in opposite directions: competence tested at admission rather than
+production, so work may precede its authority; but a class-4 or class-5 selection must reference an
+evidence-established range, so evidence must precede that selection. Both premises were defective.
+XASSET-0023 §H.2 item 3 and XASSET-0024 §J.5 require the *stating source's* authority to be competent —
+a requirement on the source that states the endpoint, not a condition curable by later admission — and
+NUM-0001 §7's evidence-established-range triple is the class-4 requirement, which NUM-0001 §6 does not
+impose on class 5's provisional guardrail. Corrected, the constraints all order other acts relative to
+the endpoint-stating source and none orders authority constitution against evidence production, which
+is the question actually left open. The right move was therefore to withdraw the determination rather
+than re-derive it on other grounds: XASSET-0025 read the same texts and found they fix nothing here,
+and closing that gap by inference is exactly what a filing that creates nothing should not do. What
+survives is more useful than the withdrawn conclusion — the constraints that genuinely bind, stated
+precisely, with the open question left visibly open. Packaging stayed open for the
 reason XASSET-0025 gave and this filing had no better one: nothing fixes it, and narrowing a lawful
 option set as a side effect of describing a gap is exactly what a filing that creates nothing should
 not do.
@@ -642,14 +705,18 @@ canonical order — is barred by express clauses rather than merely disfavoured.
 
 It knows that all-four coverage costs it nothing it would otherwise have kept, because a narrow
 *outcome* remains available through evidence rather than through scope, and a null for three sleeves is
-a complete governed result. It knows the lawful evidence unit is class-determined — two of the six
-DRIVER classes single-sleeve-scoped, four requiring at least two sleeves — and that a one-sleeve
-program would have operated inside four-sixths less of the admissible evidence space.
+a complete governed result. It knows that an individual DRIVER item's minimum subject-matter scope and a
+program's endpoint/output coverage are different questions, that comparative or pair-subject evidence
+may support a bound for one named sleeve without obliging a second sleeve output, and that no DRIVER
+class is closed to a program by its output coverage alone.
 
-It knows that no global ordering between evidence and authority is mandatory, and why: the two route
-families constrain the order in opposite directions. It knows the four ordering constraints that bind
-regardless, including the one XASSET-0025's two-requirement framing does not surface — that a lawful
-snapshot successor must follow the evidence and precede any application. It knows packaging remains its
+It knows that the ordering between evidence production and authority constitution remains unresolved,
+and why: every accepted ordering constraint attaches to the endpoint-stating source rather than to the
+sequence between those two acts. It knows the four constraints that do bind regardless — including that
+competent authority must extend to the endpoint-stating source at its own creation or adoption, that
+NUM-0001 §7's evidence-first requirement is class-4 only, and the one XASSET-0025's two-requirement
+framing does not surface: a lawful snapshot successor must follow the evidence and precede any
+application. It knows packaging remains its
 own lawful election, that a combined lifecycle is permitted but escapes no review, and that no
 representation rule is required before evidence exists because the self-contained path remains open.
 
