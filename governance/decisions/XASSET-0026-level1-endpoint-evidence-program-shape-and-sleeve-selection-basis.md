@@ -353,14 +353,14 @@ re-discover evidence that already exists." XASSET-0024 §G leaves that rule's cr
 for it" and does not authorize it.
 
 **Disposition: `SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED`.** A Level-1 representation rule becomes
-*required* only if and when a candidate source is not self-contained under §G path 1. Its necessity,
-its scope, and the representations it would have to map are all properties of a source that does not
-yet exist. Creating one now would be a Level-1 methodology amendment performed inside a shape
-determination, without its own authorization or review.
+*required* only if and when a candidate source is not self-contained under XASSET-0024 §G path 1.
+Its necessity, its scope, and the representations it would have to map are all properties of a source
+that does not yet exist. Creating one now would be a Level-1 methodology amendment performed inside
+a shape determination, without its own authorization or review.
 
-**H.1 — The self-contained path is preserved wherever lawful.** §G path 1 is not narrowed, disfavoured,
-or made conditional by this filing, and a successor program is not required to plan around its
-unavailability.
+**H.1 — The self-contained path is preserved wherever lawful.** XASSET-0024 §G path 1 is not
+narrowed, disfavoured, or made conditional by this filing, and a successor program is not required to
+plan around its unavailability.
 
 **H.2 — CM-14 through CM-17 are untouched.** This filing designates no representation membership for
 `equity`, `fund_broad_market`, `fund_gld_defensive`, or `crypto`; chooses among no instruments; builds
@@ -439,11 +439,11 @@ prefer either election. §G.1 stands: no ordering is mandatory.
 that does not exist. This filing determines coverage, which is answerable now because it turns on
 selection authority rather than on evidence design. It does not determine the evidence design.
 
-**K.2 — XASSET-0024 §K.1's open reading is neither resolved nor relied upon.** Whether §E.1's six
-classes house a magnitude statement remains open. This filing's determinations are stable under both
-readings: the absence of a selection basis (§E), the ordering analysis (§G), and the representation
-disposition (§H) are each independent of whether any class can carry a magnitude. §D's scope table
-reads only the classes' *scope* language, not their capacity to carry a magnitude.
+**K.2 — XASSET-0024 §K.1's open reading is neither resolved nor relied upon.** Whether XASSET-0020
+§E.1's six classes house a magnitude statement remains open. This filing's determinations are stable
+under both readings: the absence of a selection basis (§E), the ordering analysis (§G), and the
+representation disposition (§H) are each independent of whether any class can carry a magnitude. §D's
+scope table reads only the classes' *scope* language, not their capacity to carry a magnitude.
 
 **K.3 — Whether the two currently absent direct pairs bear on a pair-scoped endpoint route.** If future
 evidence were admitted under one of §D's four comparative classes for a pair with no direct record, it
