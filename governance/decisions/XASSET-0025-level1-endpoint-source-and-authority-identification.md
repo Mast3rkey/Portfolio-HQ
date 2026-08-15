@@ -499,9 +499,10 @@ The single most useful finding is the one that required actually parsing the sou
 their classifications. XASSET-0023 §H.8 concluded the test fails for the snapshot on classification
 grounds — every row is DISCLOSURE-only. That is correct and sufficient for its purpose, but it leaves open
 a reading in which the snapshot is full of usable numbers held back by a labelling decision that a future
-authority might revisit. It is not. All 21 non-RISK snapshot sources contain, between them, twenty-one
-numeric scalars, and every one is a `schema_version`. There is nothing behind the classification. A future
-unit hoping to unlock the snapshot by supplying an authority would find nothing to authorize.
+authority might revisit. It is not. All 21 non-RISK snapshot sources contain, between them, **zero true
+numeric scalars**; their 48 numeric-valued strings are `schema_version` values without exception. There is
+nothing behind the classification. A future unit hoping to unlock the snapshot by supplying an authority
+would find nothing to authorize.
 
 The distinction between Outcome B and Outcome C carried the whole filing and deserved the care it got. B is
 the comfortable answer: the corpus does contain sleeve shares of the normalized whole in exactly the right
