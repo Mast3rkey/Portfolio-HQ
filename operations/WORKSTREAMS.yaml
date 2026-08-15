@@ -11654,6 +11654,26 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-14"
+      - gate: risk0003-effective-risk0001-attempt2-result-publication
+        description: >
+          Additive factual synchronization under effective RISK-0003. PR #317
+          merged accepted head ff13ea03ef3cfe46eaf7571031cc986fd2acfde0
+          into main as b8b7bb715c5ef5e53ed05bfcdedf9750f3e715bf and
+          merge-commit CI run 31841880985 passed. The same draft PR #316 is
+          reopened, and current main was merged normally into its preserved
+          branch without rebase or history rewrite. Attempt 2 remains completed
+          exactly once at 777 registered / 609 executed / 168 governed null,
+          all four family dispositions remain unable_to_determine, and its
+          authorization remains consumed with no retry or third attempt. The
+          RISK-0003-authorized postexecution-only fixture harness correction
+          passes its focused lifecycle/adversarial suite while every approval,
+          execution, and result artifact remains byte-identical. Results remain
+          research evidence only, unpublished and unaccepted until this exact
+          PR #316 result head passes CI, receives a new independent full
+          exact-head RESULTS review, and later receives principal acceptance.
+        pr: 316
+        status: in_progress
+        date: "2026-08-14"
       - gate: risk0004-attempt2-results-disclosure-supplement-authorization
         description: >
           Current governance-only Lane G filing. RISK-0003 merged through PR
@@ -11681,6 +11701,25 @@ workstreams:
           Results remain unpublished and unaccepted for governance purposes,
           and this filing has no portfolio-policy effect.
         pr: null
+        status: in_progress
+        date: "2026-08-14"
+      - gate: risk0004-effective-risk0001-attempt2-disclosure-supplement
+        description: >
+          Additive factual synchronization under effective RISK-0004. PR #318
+          merged accepted head b187bfc121e43c71f78ce43d187ff439f6bd507d
+          into main as ad261a52c4f03cef121930e83d5df4ed894c637f after
+          independent review 4942148395 and principal acceptance 5299581190.
+          The same draft PR #316 is reopened, current main was merged normally
+          into its preserved branch without rebase or history rewrite, and the
+          new RESULTS_DISCLOSURE_SUPPLEMENT.md addresses review 4941983592's
+          two MAJOR disclosure findings using only frozen evidence. All eight
+          approval, execution, and historical result/report artifacts remain
+          byte-identical. Attempt 2 remains completed and consumed, no retry or
+          third attempt is authorized, all four dispositions remain
+          unable_to_determine, and results remain unaccepted research evidence
+          with no policy effect. A new independent full exact-head RESULTS
+          review is required before acceptance or merge.
+        pr: 316
         status: in_progress
         date: "2026-08-14"
     evidence_refs:
@@ -11730,6 +11769,19 @@ workstreams:
       - research/level1_sleeve_robustness/PROTOCOL_V1.md
       - research/level1_sleeve_robustness/pre_registration.yaml
     next_action: >
+      Update, 2026-08-14: RISK-0004 is effective after independent review
+      4942148395, principal acceptance 5299581190, and merge to main as
+      ad261a52c4f03cef121930e83d5df4ed894c637f. The same draft PR #316 is
+      reactivated and carries one additive, byte-preserving disclosure
+      supplement addressing full RESULTS review 4941983592's two MAJOR
+      reporting findings. All eight frozen artifacts remain unchanged; the
+      four family dispositions remain unable_to_determine; attempt-2 authority
+      remains consumed; and no rerun, third attempt, recomputation,
+      reacquisition, or policy effect is authorized. The next gate is exact-
+      head CI followed by a new independent full exact-head RESULTS review.
+      Replacement Level 1 methodology remains downstream and blocked.
+
+
       Update, 2026-08-14: attempt 2 is complete, its authority is consumed,
       canonical machine results and four unable_to_determine dispositions are
       independently reconciled, and no retry, third attempt, recomputation, or
@@ -11746,6 +11798,20 @@ workstreams:
       No result byte, execution state, disposition, policy, target, sizing,
       margin, debt, allocation, or brokerage authority changes. Replacement
       Level 1 methodology remains downstream and blocked.
+
+
+      Update, 2026-08-14: RISK-0003 is effective after independent review,
+      principal exact-head acceptance, merge, and successful merge-commit CI.
+      PR #316 is reopened and current main is merged into its preserved branch
+      without rebase. The one authorized postexecution-only test-harness
+      correction now uses isolated fixture namespaces and validates both lawful
+      PREEXECUTION and COMPLETED POSTEXECUTION states; focused validation passes
+      and every completed attempt-2 artifact remains byte-identical. The next
+      gate is publication of the preserved 777 / 609 / 168 result package to
+      the same draft PR, exact-head CI, and a new independent full exact-head
+      RESULTS review. Attempt-2 authority remains consumed; no execution,
+      retry, recomputation, third attempt, result mutation, or policy adoption
+      is authorized.
 
 
       Update, 2026-08-14: RISK-0001-EXECUTION-ATTEMPT-002 completed exactly
@@ -12068,6 +12134,15 @@ workstreams:
       entry's own roadmap_preservation field names remain wholly
       unauthorized, unchanged.
     blocker: >
+      Current critical-path blocker, 2026-08-14: the RISK-0004-authorized
+      additive disclosure supplement is present on reactivated draft PR #316,
+      but the supplemented result package remains unaccepted pending exact-head
+      CI and a new independent full exact-head RESULTS review. Attempt 2
+      remains completed and consumed; no retry, third attempt, recomputation,
+      result mutation, policy effect, or replacement Level 1 work is
+      authorized.
+
+
       Current critical-path blocker, 2026-08-14: review 4941983592's two
       MAJOR reporting/disclosure findings remain unresolved. PR #316 is parked
       at exact reviewed RESULTS head
@@ -12353,9 +12428,9 @@ workstreams:
       validator/tests, and factual register synchronization; it makes no
       Level 2, policy-adoption, allocation-check, deployment, or completion
       claim and must stop at a draft PR for independent full exact-head review.
-    active_branch: agent/risk-0004-results-disclosure-supplement-authority
-    active_pr: null
-    last_verified_main_sha: b8b7bb715c5ef5e53ed05bfcdedf9750f3e715bf
+    active_branch: codex/risk-0001-attempt2-integrity-correction
+    active_pr: 316
+    last_verified_main_sha: ad261a52c4f03cef121930e83d5df4ed894c637f
     last_verified_date: "2026-08-14"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I

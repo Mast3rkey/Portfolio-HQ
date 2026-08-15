@@ -1,0 +1,51 @@
+schema_version: "1.0"
+study_id: RISK-0001
+records:
+  - instrument: CEG
+    legal_identity: Constellation Energy Corporation
+    lawful_inception: "2022-02-02"
+    predecessor_stitching: PROHIBITED
+    status: COMPLETE_BOUNDARY_ONLY
+    primary_evidence:
+      - https://www.sec.gov/Archives/edgar/data/1868275/000110465922010603/tm224960d4_8k.htm
+    limitation: Pre-standalone Exelon history is unavailable for CEG cells.
+  - instrument: GEV
+    legal_identity: GE Vernova Inc.
+    lawful_inception: "2024-04-02"
+    predecessor_stitching: PROHIBITED
+    status: COMPLETE_BOUNDARY_ONLY
+    primary_evidence:
+      - https://www.gevernova.com/news/press-releases/ge-vernova-completes-spin-off-begins-trading-new-york-stock-exchange
+    limitation: Pre-spin GE history is unavailable for GEV cells.
+  - instrument: RKLB
+    legal_identity: Rocket Lab USA, Inc.
+    lawful_inception: "2021-08-25"
+    predecessor_stitching: PROHIBITED
+    status: COMPLETE_BOUNDARY_ONLY
+    primary_evidence:
+      - https://www.sec.gov/Archives/edgar/data/1819994/000119312521262190/d175539d8k.htm
+    limitation: Vector Acquisition history before the business combination is not RKLB history.
+  - instrument: RTX
+    legal_identity: RTX Corporation
+    lawful_inception: "2020-04-03"
+    predecessor_stitching: PROHIBITED
+    status: COMPLETE_BOUNDARY_ONLY
+    primary_evidence:
+      - https://www.rtx.com/news/news-center/2020/04/03/raytheon-technologies-corporation-successfully-completes-merger-of-equals
+    limitation: Pre-merger United Technologies/Raytheon predecessor history is not silently stitched.
+  - instrument: META
+    legal_identity: Meta Platforms, Inc.
+    lawful_inception: "2012-05-18"
+    predecessor_stitching: NOT_APPLICABLE_SAME_ENTITY_TICKER_CHANGE
+    status: COMPLETE_SAME_ENTITY_LINEAGE
+    primary_evidence:
+      - https://www.sec.gov/Archives/edgar/data/1326801/000132680123000013/meta-20221231.htm
+    limitation: FB-to-META is treated only as a proved ticker change of the same issuer.
+  - instrument: SPGI
+    legal_identity: S&P Global Inc.
+    lawful_inception: null
+    predecessor_stitching: NOT_APPLICABLE
+    status: ACTION_UNRESOLVED
+    primary_evidence:
+      - https://www.sec.gov/Archives/edgar/data/64040/000110465926080005/tm2619099d1_8k.htm
+    limitation: The 2026-07-01 Mobility Global distribution has no preregistered valuation convention; intersecting cells abstain unless exact entitlement value is resolved before the data gate freezes.
