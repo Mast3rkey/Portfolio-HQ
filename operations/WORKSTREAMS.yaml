@@ -11758,8 +11758,11 @@ workstreams:
       - gate: xasset0021-level1-economic-sizing-application-prerequisite-closure
         description: >
           Current governance-only Lane G filing. XASSET-0021 freezes the exact
-          XASSET-0020 evidence snapshot and closes every application-time
-          discretion as deterministic treatment or mandatory abstention. It
+          XASSET-0020 evidence snapshot and closes the economic application-time
+          discretion as deterministic treatment or mandatory abstention.
+          Independent review 4943819420 identified CM-27 application schema and
+          CM-28 deterministic trace/repeatability as two separate mechanical
+          prerequisites. Application authority therefore remains withheld. It
           does not apply the methodology or create a point, range, weight,
           target, application record, liquidity amount, Level-2 selection, or
           policy. Actual Level-1 sizing/application remains downstream and
@@ -11822,11 +11825,14 @@ workstreams:
       e7d66d93b5f7ab2ecd985a7a4bf680a118df6b0e, post-merge verification
       5301728726, and successful merge-commit CI run 31878188273. XASSET-0020
       intentionally withheld application authority. XASSET-0021 is the sole
-      active prerequisite-closure Lane G unit. It freezes evidence and closes
-      application-time discretion without applying the method. No sizing,
-      application record, liquidity resolution, Level-2 change, or policy
-      adoption has occurred. A later bounded application remains downstream
-      and may begin only if XASSET-0021 completes its own full lifecycle.
+      active prerequisite-classification Lane G unit. It freezes evidence and
+      closes economic application-time discretion without applying the method.
+      Independent review 4943819420 requires CM-27 application schema and CM-28
+      deterministic trace/repeatability to be treated as two separate
+      prerequisites. No sizing, application record, liquidity resolution,
+      Level-2 change, or policy adoption has occurred. No application may begin
+      until one separate mechanical schema/deterministic-generation prerequisite
+      becomes effective and new application authority is granted.
 
 
       Update, 2026-08-14: PR #316's RISK-0001 attempt-2 results lifecycle is

@@ -17,9 +17,11 @@ precision, conflict handling, freshness, liquidity, unassigned capital, and the 
 uncertainty states. Leaving any of those choices to an application author would permit the author to
 create allocation meaning that the methodology itself did not authorize.
 
-This decision closes every such choice. It does not apply XASSET-0020, populate an application
-record, produce a sleeve point or range, choose any target or weight, resolve liquidity, select a
-Level-2 instrument, or adopt portfolio policy.
+This decision classifies every such choice. It closes the economic choices deterministically or by
+mandatory abstention, and it identifies the application artifact schema and deterministic generation
+contract as two unresolved mechanical prerequisites that may not be originated during application.
+It does not apply XASSET-0020, populate an application record, produce a sleeve point or range, choose
+any target or weight, resolve liquidity, select a Level-2 instrument, or adopt portfolio policy.
 
 ## Decision
 
@@ -190,8 +192,9 @@ XASSET-0020 permits an affected sleeve range to survive only if both endpoints a
 governed and remain valid under every possible direction of the unresolved pair. This snapshot has no
 lawful endpoints under §F. Therefore the missing-pair rows are `APPLICATION_MUST_ABSTAIN`, not
 `SEPARATE_PREREQUISITE_REQUIRED`. New direct-pair evidence would be required only to seek a later
-non-abstaining result; it is not required to execute the presently authorized abstention-capable
-application.
+non-abstaining result; it is not one of the prerequisites preventing an abstention-capable application.
+That application nevertheless remains unauthorized until the separate mechanical prerequisite in §O
+becomes effective.
 
 ### E. Representation sensitivity
 
@@ -302,8 +305,10 @@ Therefore liquidity is `CLOSED_DETERMINISTICALLY` for this application boundary:
 - the unresolved state remains a reopen trigger and blocks the later complete candidate/stress/adoption
   sequence where XASSET-0019 requires a fully specified asset state.
 
-Liquidity resolution is not a prerequisite to the bounded four-sleeve abstention-capable application.
-It remains a separate prerequisite for later work that requires an economically complete candidate.
+Liquidity resolution is not one of the prerequisites preventing a bounded four-sleeve
+abstention-capable application. The application remains unauthorized for the separate mechanical
+reason in §O. Liquidity remains a separate prerequisite for later work that requires an economically
+complete candidate.
 
 ### J. Unassigned-capital reconciliation
 
@@ -334,104 +339,46 @@ indistinguishable, non-rejection, a directional lean, a target anchor, a range a
 Because no independent endpoint survives, each state makes the affected sleeve's point/range eligibility
 `APPLICATION_MUST_ABSTAIN` under this snapshot.
 
-### L. Closed future application contract
+### L. Application contract remains a separate prerequisite
 
-Exactly one future XASSET-0020 methodology-application PR may populate a record conforming to this
-contract after this decision becomes effective. The authoritative representation must be recursively
-closed structured data with at least:
+This decision does not define or authorize an application artifact schema, generator, serializer,
+validator, fixture, or populated record. The prior application-contract sketch was not an exact schema:
+it did not close the field set, types, vocabularies, ordering, metadata derivation, canonical bytes, or
+trace content, and therefore cannot support application authority.
 
-```
-methodology_identity:
-  decision_id
-  accepted_head
-  decision_file_sha256
-  schema_version
-application_identity:
-  authorization_decision
-  authorization_accepted_head
-  application_exact_head
-  frozen_at
-evidence_snapshot:
-  snapshot_id
-  source_tree_identity
-  items[]:
-    evidence_id
-    canonical_path
-    whole_file_sha256
-    content_sha256_or_manifest_identity
-    governing_authority
-    authority_lifecycle
-    permitted_question
-    classification
-    source_owned_freshness_rule
-    observed_freshness_state
-    representation_scope
-    missingness_state
-    conflict_state
-    forbidden_implications[]
-normalized_asset_state:
-  denominator_identity
-  separately_governed_liquidity_state
-  debt_excluded
-sleeves[exactly_four]:
-  sleeve_id
-  admitted_drivers[closed_six_driver_classes]
-  applicable_constraints[]
-  disclosures[]
-  representation_sensitivity
-  uncertainty_state
-  sleeve_vs_unassigned
-  conflict_missingness_state
-  point_eligibility
-  range_eligibility
-  outcome_type
-  point_or_range_or_null
-  num_0001_provenance
-  deterministic_derivation_trace[]
-pairs[exactly_six]:
-  canonical_pair_id
-  self_sleeve
-  counterpart_sleeve
-  direct_evidence[]
-  driver_ledger[exactly_six_driver_classes]
-  missing_conflicting_stale_evidence[]
-  representation_sensitivity
-  constraint_effects[]
-  conclusion
-sleeve_vs_unassigned[exactly_four]:
-  sleeve_id
-  direct_positive_authority
-  blocking_state
-  conclusion
-portfolio_reconciliation:
-  exact_canonical_representation
-  admitted_sleeve_assignments
-  unsized_unassigned_capital
-  constraint_clipping_to_unassigned
-  reconciliation_identity
-  display_only_rendering
-reopen_triggers[]
-authority_boundary:
-  provisional_not_adopted
-  no_policy_effect
-  no_level2_effect
-  no_liquidity_or_debt_effect
-  no_deployment_or_brokerage_effect
-```
+The smallest required future unit is one separate Lane G governance unit titled, by scope,
+`Level-1 Application Artifact Schema and Deterministic Generation Authority`. It must remain purely
+mechanical and must not add economic evidence, parameters, endpoints, portfolio rules, or policy. To
+close CM-27 and CM-28, that unit must define all of the following as one reviewable contract:
 
-The record must use XASSET-0020's canonical sleeve/pair orders and closed vocabularies. It must carry
-all six pair ledgers, including the two governed missing pairs, and all four sleeve-versus-unassigned
-comparisons. Under this snapshot, each pair conclusion is mechanically `unable_to_determine`; each
-sleeve has `point_eligibility: ineligible`, `range_eligibility: ineligible`,
-`outcome_type: abstention`, and `point_or_range_or_null: null`; and each sleeve-versus-unassigned
-comparison is `unassigned_preserved` because `direct_positive_authority` is absent and the blocking
-state is `missing_endpoint_authority`. These are schema-population rules, not a populated application
-record or a sleeve size. The application may not create new evidence, parameters, interpretations, or
-policy.
+1. one exact schema name and version, canonical artifact path, file format, and encoding;
+2. one canonical serialization, including newline, key/field order, whitespace, numeric, null, list,
+   duplicate-field, and extra-field rules sufficient for byte-identical reproduction;
+3. the complete allowed top-level and nested field set, with every field's required/forbidden/nullable
+   status, exact type, enum vocabulary, canonical order, and fixed or mechanical value derivation;
+4. closed vocabularies for every evidence, freshness, missingness, conflict, representation, driver,
+   constraint, pair, sleeve, endpoint, reconciliation, provisional/adoption, and reopen-trigger state;
+5. fixed or mechanically derived schema, methodology, prerequisite, snapshot, source-tree, and
+   application identities, with no wall-clock or author-chosen metadata in canonical bytes;
+6. one exact deterministic derivation-trace structure, required step identifiers, contents, and order;
+7. one exact reopen-trigger identifier set, contents, and order;
+8. a non-self-referential lifecycle binding: the committed artifact must not contain the SHA of the
+   commit that contains itself; exact application PR/head identity must instead be external Git/GitHub
+   lifecycle metadata verified by independent review and later acceptance records, and must not alter
+   the canonical artifact bytes;
+9. the smallest generator/validator/fixture mechanism necessary to prove that identical frozen inputs
+   necessarily produce identical canonical bytes; and
+10. exact rejection fixtures covering every adversarial case in §M.
 
-### M. Static and adversarial application checks
+Until that separate unit becomes effective, no application author may choose a record shape, field,
+value vocabulary, metadata value, trace, reopen-trigger list, serialization, or lifecycle binding.
+The economic population consequences already closed by §§C-K remain unchanged, but they do not by
+themselves define lawful artifact bytes.
 
-The future application PR must fail validation for any of the following:
+### M. Required static and adversarial proof for the separate prerequisite
+
+The separate unit named in §L must supply a closed validator/generator/fixture contract that rejects
+each of the following before any application may be authorized:
 
 1. methodology, lifecycle, path, file-hash, content-hash, or RISK identity drift;
 2. any evidence class not frozen in §C;
@@ -452,7 +399,20 @@ The future application PR must fail validation for any of the following:
 17. score, confidence percentage, tally, utility, optimizer, solver, grid, sweep, or hidden weighting;
 18. Level-2 membership/refreeze or instrument sizing;
 19. policy/adoption/deployment/trading language; or
-20. non-byte-identical repeated output from identical frozen inputs.
+20. any extra field or omitted required field;
+21. any wrong field type, invalid enum, or free-text substitution for a governed enum;
+22. any alternate canonical semantic-list or field ordering;
+23. any alternate encoding, newline, whitespace, key ordering, or other serialization;
+24. any noncanonical null or numeric representation;
+25. any altered, omitted, added, reordered, or free-text deterministic-trace step;
+26. any altered, omitted, added, reordered, or free-text reopen trigger;
+27. any schema-name or schema-version drift;
+28. any committed artifact field that purports to contain the SHA of its own containing commit; or
+29. non-byte-identical repeated output from identical frozen inputs.
+
+This section requires future mechanical proof; it does not authorize that subsystem or an application
+inside this filing. This filing's own validation must instead prove the §N reclassification, failed
+authorization gate, unchanged 35-source snapshot, and unchanged economic closures.
 
 ### N. Complete machine-reviewable closure matrix
 
@@ -489,41 +449,41 @@ rows:
   - {id: CM-24, issue: unassigned_capital_reconciliation, state: CLOSED_DETERMINISTICALLY}
   - {id: CM-25, issue: accepted_risk_uncertainty_treatment, state: APPLICATION_MUST_ABSTAIN}
   - {id: CM-26, issue: sleeve_vs_unassigned_positive_endpoint_requirement, state: APPLICATION_MUST_ABSTAIN}
-  - {id: CM-27, issue: application_schema, state: CLOSED_DETERMINISTICALLY}
-  - {id: CM-28, issue: deterministic_trace_and_repeatability, state: CLOSED_DETERMINISTICALLY}
+  - {id: CM-27, issue: application_schema, state: SEPARATE_PREREQUISITE_REQUIRED}
+  - {id: CM-28, issue: deterministic_trace_and_repeatability, state: SEPARATE_PREREQUISITE_REQUIRED}
   - {id: CM-29, issue: legacy_and_current_allocation_anchor_exclusion, state: CLOSED_DETERMINISTICALLY}
   - {id: CM-30, issue: provisional_nonadopted_authority_boundary, state: CLOSED_DETERMINISTICALLY}
 summary:
   substantive_row_count: 30
-  closed_deterministically: 16
+  closed_deterministically: 14
   application_must_abstain: 14
-  separate_prerequisite_required: 0
-  application_time_author_or_reviewer_judgment_remaining: 0
+  separate_prerequisite_required: 2
+  application_time_author_or_reviewer_judgment_remaining: 2
 ```
 
-The matrix is normative. If the structured counts do not reconcile, or any future interpretation
-would move a row to `SEPARATE_PREREQUISITE_REQUIRED`, application authority is withheld until a new
-accepted governance decision resolves the mismatch.
+The matrix is normative. If the structured counts do not reconcile, application authority is withheld.
+Any `SEPARATE_PREREQUISITE_REQUIRED` row withholds authority until a new accepted governance decision
+resolves it.
+`application_time_author_or_reviewer_judgment_remaining` counts unresolved substantive rows, not the
+individual design choices inside them; application is prohibited from resolving either row.
 
 ### O. Application-authority determination
 
-The §N gate passes: all substantive rows are closed deterministically or force abstention; none requires
-a separate prerequisite for an abstention-capable application; and no application-time author/reviewer
-judgment remains.
+The §N gate fails because CM-27 and CM-28 are `SEPARATE_PREREQUISITE_REQUIRED`. XASSET-0021 therefore
+authorizes no XASSET-0020 methodology application, including an abstention-only application.
+XASSET-0020 remains methodology authority only.
 
-After XASSET-0021 becomes effective, exactly one later application PR is authorized to apply
-XASSET-0020 to the frozen §C snapshot under §§D-N. That PR must be a mechanical, governance-only,
-provisional application record. It may record only the point/range ineligibility, governed uncertainty,
-pair missingness, abstention, and unassigned-capital consequences required by the closed rules. It may
-not refresh evidence, add endpoints, conduct research, select a representation, resolve liquidity, or
-adopt policy.
+The smallest prerequisite is the one mechanical Lane G unit named in §L. It must become effective
+through its own independent exact-head review, principal exact-head acceptance, merge, immediate
+post-merge verification, and successful exact-head CI before any application may start. Only after
+that effectivity may a later governance decision determine whether one application PR can be
+authorized. Neither this decision nor the future prerequisite may silently treat application authority
+as automatic.
 
-There is no separate prerequisite unit required before that bounded application. To seek any future
-non-abstaining result, however, separate governance would have to admit question-matched evidence that
-actually closes the affected missing direct pair(s), representation rule(s), and endpoint authority.
-Those are reopen paths, not prerequisites to the presently authorized abstention-only application.
-Liquidity migration remains separately required before later complete-candidate/stress/adoption work,
-not before this application.
+To seek any future non-abstaining result, separate governance would additionally have to admit
+question-matched evidence that actually closes the affected missing direct pair(s), representation
+rule(s), and endpoint authority. Those are later reopen paths, not part of the mechanical prerequisite.
+Liquidity migration remains separately required before later complete-candidate/stress/adoption work.
 
 ### P. Governance package and WORKSTREAMS synchronization
 
@@ -539,9 +499,10 @@ closure matrix are contained here. No Intelligence, research-result, production,
 allocator, target, holding, gate, margin, chart, ladder, or protected portfolio file is changed.
 
 WORKSTREAMS records that XASSET-0020 is effective, XASSET-0020 withheld application authority,
-XASSET-0021 prerequisite closure is active, no sizing/application has occurred, and liquidity/Level-2
-boundaries remain unchanged. The later bounded application remains downstream until this decision's own
-full lifecycle completes.
+XASSET-0021 prerequisite classification is active, CM-27/CM-28 remain separate prerequisites, no
+sizing/application has occurred, and liquidity/Level-2 boundaries remain unchanged. No later
+application may begin until the separate mechanical unit in §L becomes effective and new application
+authority is granted.
 
 ### Q. Reopen triggers
 
@@ -569,12 +530,12 @@ portfolio configuration.
 
 ## Rationale
 
-XASSET-0020 is deliberately abstention-capable. The honest way to close application discretion is not
-to manufacture the missing evidence or endpoints, but to make their consequence mechanical. Freezing
-the exact evidence, excluding historical or unaggregated sources from current positive preference,
+XASSET-0020 is deliberately abstention-capable. The honest way to close economic discretion is not to
+manufacture the missing evidence or endpoints, but to make their consequence mechanical. Freezing the
+exact evidence, excluding historical or unaggregated sources from current positive preference,
 propagating every accepted uncertainty state, eliminating rounding and materiality judgment, and keeping
-unassigned capital explicit leaves the later application with a complete record to produce but no
-economic choice to make.
+unassigned capital explicit leaves no economic choice. It does not, however, supply the exact artifact
+and deterministic-generation authority needed to produce one lawful application record.
 
 Liquidity does not need to be mislabeled as a prerequisite to this bounded step. XASSET-0020 expressly
 permits unresolved liquidity to remain outside the application ledger while unsupported capital stays
@@ -598,15 +559,17 @@ categorical fail-closed rule is deterministic and does not disguise conflict as 
 **Treat unresolved liquidity as numeric zero.** Rejected: that would silently size liquidity. The exact
 state is null and not entered; unsupported capital remains unassigned.
 
-**Withhold even an abstention-only application.** Rejected: every application-time choice is now closed,
-and XASSET-0020 recognizes abstention as a complete governed outcome. Withholding would add no control
-once substantive discretion is zero.
+**Close the exact schema and deterministic generator inside this correction.** Rejected: doing so would
+originate a new schema, canonical serializer, generator/validator, and fixture subsystem rather than
+correct the two false matrix classifications. That work is mechanical rather than economic, but still
+requires its own bounded authority and exact-head review.
 
 ## Consequences
 
-If this decision completes its full lifecycle, one later governance-only methodology application may
-mechanically populate the closed XASSET-0020 schema using only the frozen snapshot. Under the current
-evidence boundary it cannot lawfully create a point or range and must preserve abstention and unassigned
-capital. Any non-abstaining result requires later, separately accepted evidence/parameter authority and
-a reopen of this prerequisite closure. Portfolio policy, liquidity, Level 2, targets, holdings, and
-execution remain unchanged.
+If this decision completes its full lifecycle, application authority remains withheld. One separate
+mechanical Lane G prerequisite must close the exact artifact schema and deterministic generation
+contract before a later governance decision may consider authorizing an application. Under the current
+evidence boundary, any eventual compliant application still could not lawfully create a point or range
+and would have to preserve abstention and unassigned capital. Any non-abstaining result requires later,
+separately accepted evidence/parameter authority and a reopen of this prerequisite closure. Portfolio
+policy, liquidity, Level 2, targets, holdings, and execution remain unchanged.
