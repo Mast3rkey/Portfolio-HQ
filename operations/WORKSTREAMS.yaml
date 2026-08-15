@@ -11925,6 +11925,93 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-15"
+      - gate: xasset0023-post-merge-verification
+        description: >
+          Additive factual closeout, recorded without editing the prior
+          in_progress gate's own text. XASSET-0023 accepted head
+          4e6c97cbefe5a5cf305bbd878276552d2e206f7b was merged via PR #322 as
+          merge commit 3050bcb72738da76dbfcb8f00a1935a83e9a85d2, independently
+          confirmed live this session against origin/main and the GitHub API
+          (4 files, 4 commits, base 8f4da01cb2dfe020bb56335db7858c3c97ff0fdf),
+          with zero open pull requests at verification time. XASSET-0023 is
+          therefore effective: the CM-25 RISK coupling is determined asymmetric
+          (independent bar for a POINT, conditional for a RANGE); XASSET-0019
+          §J is determined already satisfied; no whole-Level-1 completeness
+          precondition exists for entering Level-2 work; and §H's endpoint
+          admissibility test is in force. Independently re-verified at that
+          merged tree: the production APPLICATION_AUTHORIZATION_REGISTRY is
+          empty, no intelligence/level1_application/ directory or artifact
+          exists, and XASSET-0021's accepted closure matrix is unchanged at
+          14 CLOSED_DETERMINISTICALLY / 14 APPLICATION_MUST_ABSTAIN / 2
+          SEPARATE_PREREQUISITE_REQUIRED. Application authority remains
+          WITHHELD. No Level-1 sizing, endpoint, liquidity value, Level-2
+          decision, or policy adoption exists. The active-branch and
+          in-progress facts recorded against the prior gate and in this
+          entry's self-reference fields before this closeout are no longer
+          current and are superseded by the values recorded below; that
+          gate's own historical text is preserved byte-unchanged.
+        pr: 322
+        status: complete
+        date: "2026-08-15"
+      - gate: xasset0024-level1-endpoint-basis-feasibility-determination
+        description: >
+          Current Lane G filing. Governance-only feasibility determination
+          answering the question XASSET-0023 deliberately left open: its §H
+          fixed the endpoint admissibility test and its §H.8 applied that test
+          to the frozen XASSET-0021 §C snapshot, but neither determined whether
+          any source could satisfy §H in principle. Outcome: A —
+          ENDPOINT_BASIS_EXISTS_UNDER_CURRENT_METHODOLOGY. At least one lawful
+          endpoint-origin route is constructible with no amendment required,
+          resting on four express provisions rather than on absence of
+          prohibition: XASSET-0020 §L's endpoint row contemplating a value
+          supplied "under a later exact record"; XASSET-0023 §H.4 items 2-3
+          mapping five NUM-0001 classes onto the two routes and expressly
+          permitting class 4 and class 5 values selected by an effective
+          governance authority competent for Level-1 endpoints; §H.1 item 2's
+          lawfully extendable snapshot; and XASSET-0021 §O naming endpoint
+          authority as a reopen path. What is missing is a qualifying source
+          and a competent authority, not a permission — an evidence-and-
+          authority gap, not a methodological defect, redirecting the next unit
+          away from methodology reform. The filing defines the exact endpoint
+          quantity (share of one normalized unit of prospective unlevered
+          asset-side capital, asset-side only, complement is
+          UNSIZED_UNASSIGNED_CAPITAL, a governed bound and not a target,
+          allocation, or CONSTRAINT); a closed feasibility table over the two
+          origination routes and eight named non-routes; an eight-item
+          anti-discretion test for NUM-0001 class 4 establishing that
+          evidence-bounded governance selection is a provenance class carried
+          by a "uniquely stated" statement and never an application-time act,
+          the selection having to be made upstream by a competent authority and
+          already closed in the source; a four-limb contamination firewall
+          whose second limb records the finding least likely to be anticipated
+          — that the historical provisional_target_pct values 18.67 / 14.67 /
+          16.67 and the 33.32 residual, verified directly from
+          intelligence/level1_sleeve_synthesis/numeric_sizing/, are the right
+          quantity in the right units barred by origin rather than by
+          arithmetic, so a units-only test would admit them; a representation
+          interface stating what future evidence must do without resolving
+          CM-14 through CM-17 or inventing any aggregation rule; and a
+          RANGE-first sequencing determination, since the POINT route's
+          additional blocker is RISK pair determinacy, which no endpoint work
+          can address. Twelve minimum evidence properties are enumerated for
+          the next unit, together with the determinations that LOWER and UPPER
+          bounds must be independently governed and may carry different classes
+          and sources, and that classes 1-5 may support a bound while class 6
+          is disqualifying. Recorded rather than resolved: whether XASSET-0020
+          §E.1's six DRIVER classes house a magnitude statement, on which
+          Outcome A is expressly conditional and whose contrary reading would
+          make Outcome B correct with a narrowly scoped §E.1 clarification as
+          the smallest corrective. Creates no endpoint, bound, percentage,
+          range, or sizing; selects no sleeve; commissions no research or
+          charter; amends no methodology; supplies no representation rule;
+          grants no application authority including for an abstention-only
+          application; and changes no closure-matrix row. Blocked on its own
+          independent full exact-head review, principal exact-head acceptance,
+          merge, immediate post-merge verification, and successful exact-head
+          CI.
+        pr: null
+        status: in_progress
+        date: "2026-08-15"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -12740,9 +12827,34 @@ workstreams:
       validator/tests, and factual register synchronization; it makes no
       Level 2, policy-adoption, allocation-check, deployment, or completion
       claim and must stop at a draft PR for independent full exact-head review.
-    active_branch: claude/xasset-0023-level1-feasibility-ce62pl
+
+
+      Update, a new session, 2026-08-15: XASSET-0023's full lifecycle is
+      independently confirmed complete through PR #322's merge at
+      3050bcb72738da76dbfcb8f00a1935a83e9a85d2, and XASSET-0023 is effective.
+      The prior narrative above describes the numeric-sizing and XASSET-0023
+      lanes as active; both are closed, and the branch and verified-SHA facts
+      recorded in the fields below now refer to the XASSET-0024 lane instead.
+      That lane is a governance-only Lane G feasibility determination reaching
+      Outcome A, ENDPOINT_BASIS_EXISTS_UNDER_CURRENT_METHODOLOGY: the accepted
+      methodology already permits a Level-1 sleeve-share endpoint to exist
+      through a later exact record, so no amendment is required to allow one,
+      and the gap is a qualifying source plus a competent Level-1 endpoint
+      authority rather than a methodological defect. It creates no endpoint,
+      bound, percentage, range, or sizing, selects no sleeve, commissions no
+      research or charter, amends no methodology, supplies no representation
+      rule, and grants no application authority — including for an
+      abstention-only application, which is expressly barred because it would
+      exercise XASSET-0022's mechanism without closing CM-19 or CM-26.
+      Application authority remains WITHHELD, the closure matrix stands
+      unchanged at 14 / 14 / 2, the authorization registry remains empty, and
+      no intelligence/level1_application/ artifact exists. Endpoint research,
+      any representation-aggregation rule, RISK parameter reuse, Level-2 work,
+      liquidity determination, and policy adoption all remain separately
+      unauthorized.
+    active_branch: claude/xasset-0024-endpoint-basis-0uk38w
     active_pr: null
-    last_verified_main_sha: 8f4da01cb2dfe020bb56335db7858c3c97ff0fdf
+    last_verified_main_sha: 3050bcb72738da76dbfcb8f00a1935a83e9a85d2
     last_verified_date: "2026-08-15"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
