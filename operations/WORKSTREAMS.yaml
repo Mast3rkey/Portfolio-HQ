@@ -12012,6 +12012,115 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-15"
+      - gate: xasset0024-post-merge-verification
+        description: >
+          XASSET-0024 is effective. Accepted head
+          964474c79911088932243ea8225968dce334e715 merged via PR #323 as
+          4ec64c13552c101e6e132c295617789926b5066a, independently re-confirmed
+          live this session via the GitHub API together with merge-commit CI
+          run 31903743866 (completed / success at that exact head_sha), zero
+          open pull requests, a clean working tree, and a 126-row decision
+          catalog with issues == (). Independent full exact-head review
+          pullrequestreview-4944538757 (0 BLOCKING / 0 MAJOR / 0 MINOR /
+          2 non-actionable NOTE); principal exact-head acceptance
+          issuecomment-5303842145. Its accepted outcome is A —
+          ENDPOINT_BASIS_EXISTS_UNDER_CURRENT_METHODOLOGY: a lawful
+          endpoint-origin route is constructible in principle with no
+          methodology amendment required, so the next unit's work is sourcing
+          and authority rather than methodology reform. Recorded additively;
+          the xasset0024-level1-endpoint-basis-feasibility-determination gate's
+          own text is byte-unchanged.
+        pr: 323
+        status: complete
+        date: "2026-08-15"
+      - gate: xasset0025-level1-endpoint-source-and-authority-identification
+        description: >
+          Current Lane G filing. Governance/evidence-identification unit
+          answering the question XASSET-0024 expressly left open when it
+          recorded that feasibility in principle "is a much weaker claim than
+          availability in fact": does any currently accepted source actually
+          satisfy the endpoint-admissibility test for a Level-1 sleeve-share
+          bound, with existing authority competent for that exact purpose?
+          Outcome: C — NO_QUALIFYING_ENDPOINT_SOURCE_IN_ACCEPTED_CORPUS, with
+          all eight sleeve/bound cells (equity, fund_broad_market,
+          fund_gld_defensive, crypto x LOWER/UPPER) returning
+          NO_CANDIDATE_FOUND. The filing builds a ten-criterion deterministic
+          candidate test assembled from accepted authority (right quantity;
+          DRIVER subject matter under one of XASSET-0020 SSE.1's six closed
+          classes; R1 or R2 origin route with no third route; NUM-0001
+          provenance classes 1-5 with class 6 disqualifying; competent existing
+          authority; uniqueness and zero author discretion; freshness and
+          effectivity; XASSET-0021 SSC snapshot position; representation;
+          unresolved-pair independence), plus XASSET-0024 SSF's four-limb
+          firewall. Five independently sufficient grounds support the outcome,
+          each verified directly rather than cited: all 21 XASSET-0021 SSC.2
+          sources were parsed and contain, between them, zero true numeric
+          scalars and 48 numeric-valued strings, every one a schema_version
+          value ('1.0'), 28 of them in valuation_results/COHORT_MANIFEST.yaml
+          (its own plus one per each of 27 cohort entries) and exactly one in
+          each of the other 20 sources, so that excluding schema, version,
+          hash, and count metadata the frozen non-RISK snapshot holds no
+          endpoint-bearing numeric value at all and no authority-granting
+          filing could unlock it; the snapshot's own
+          classifications independently forbid a magnitude, XASSET-0020 SSF.2's
+          forbidden-implication column barring even the DRIVER-capable classes
+          from implying "size or preference," "a sleeve weight," or "a target
+          anchor, increment, weight, or automatic preference"; the RISK corpus's
+          numbers fail on their own governed terms, with all four family results
+          unable_to_determine, the only sleeve-share-shaped values self-declared
+          NOT_A_TARGET / NOT_ADOPTED / PROVISIONAL, the scenario magnitudes'
+          own declared unit PERCENT_OF_UNSPECIFIED_ASSET_STATE_EXPOSURE, and all
+          20 consequential parameters read individually showing no sleeve-share
+          binding_scope, every row valid_for_study_id RISK-0001 with a met
+          lapse_condition and a reuse rule barring reuse absent new governance
+          authority (NEW_GOVERNANCE_AUTHORITY_REQUIRED on nineteen,
+          REVALIDATE_CONVENTION_UNDER_NEW_AUTHORITY on DFF_DAY_COUNT_DENOMINATOR);
+          every right-quantity value in the wider corpus barred by origin and
+          outside the snapshot besides; and no accepted decision anywhere
+          granting Level-1 endpoint authority, every occurrence of the phrase
+          being a statement of its absence or withholding. Outcome B was tested
+          and rejected as the substantive call: the corpus does contain sleeve
+          shares of the normalized whole in the right units, and treating them
+          as candidates blocked by a closeable governance gap would invite the
+          rehabilitation XASSET-0024 SSF Limb 2 exists to prevent, since an
+          origin bar is a conclusion rather than a gap. Also determined: the
+          future research question can be stated sleeve-agnostically but its
+          evidence cannot be, because every one of XASSET-0020 SSE.1's six
+          DRIVER classes is defined on a sleeve or a sleeve pair; and the one
+          genuine asymmetry found (GLD_DEFENSIVE_ROLE.yaml being the only
+          SSC.2 row whose source-owned currentness is current) is recorded but
+          expressly declined as a sleeve selection, since the same row states
+          the source cannot establish an endpoint. The smallest exact future
+          research question is identified, shaped so that wrong denominators,
+          historical anchors, optimizer or score construction, arbitrary
+          diversification convention, current incumbency, lapsed RISK
+          parameters, and hidden analyst preference cannot answer it — as a
+          question only, not a charter. Qualifying endpoint evidence and
+          competent Level-1 endpoint authority are recorded as two distinct
+          requirements, both missing; their mandatory ordering and packaging is
+          expressly left UNRESOLVED at SSO.5, accepted authority settling
+          neither, so they may ultimately require separate lifecycles or may be
+          lawfully combined if a future explicit authority permits one
+          governance record to satisfy both without violating provenance,
+          evidence-admission, independence, scope, or anti-discretion rules —
+          no such combination and no packaging preference is authorized by this
+          filing, and the sequence must be determined by the next explicitly
+          authorized governance unit. Verified this session: all 21 SSC.2
+          rows and the five SSC.3 configuration files re-hashed with every
+          SHA-256 matching the frozen snapshot exactly; APPLICATION_AUTHORIZATION_REGISTRY
+          empty; no intelligence/level1_application/ artifact; matrix unchanged
+          at 14 / 14 / 2. Creates no endpoint, bound, percentage, range, or
+          sizing; selects no sleeve; commissions no research or charter; grants
+          no endpoint, evidence-admission, or application authority; extends no
+          snapshot; supplies no representation rule; resolves no CM-14 through
+          CM-17; and changes no closure-matrix row. RISK-0001 was neither
+          accessed, rerun, refreshed, nor reused. Blocked on its own
+          independent full exact-head review, principal exact-head acceptance,
+          merge, immediate post-merge verification, and successful exact-head
+          CI.
+        pr: null
+        status: in_progress
+        date: "2026-08-15"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -12061,26 +12170,34 @@ workstreams:
       - research/level1_sleeve_robustness/PROTOCOL_V1.md
       - research/level1_sleeve_robustness/pre_registration.yaml
     next_action: >
-      Update, 2026-08-15 (later, post-XASSET-0022 merge): XASSET-0022 is
-      effective. Accepted head 85a39e2dadb4fce27c285dc978bf648fef21c9df merged
-      via PR #321 as 8f4da01cb2dfe020bb56335db7858c3c97ff0fdf, independently
-      re-confirmed live this session. CM-27 and CM-28 are substantively
-      satisfied, so no mechanical prerequisite remains. Application authority is
-      nevertheless still WITHHELD under XASSET-0021 §O's double gate, verified
-      mechanically at the merged tree: the production
-      APPLICATION_AUTHORIZATION_REGISTRY is empty and no
-      intelligence/level1_application/ artifact exists. The next unit is
-      XASSET-0023, this session's own draft filing: a governance-only Lane G
-      determination resolving the three interpretation questions that blocked
-      scoping the next economic-evidence unit — whether CM-25's RISK-driven
-      abstention is endpoint-conditioned or independent, what Level-1 result
-      accepted authority requires before Level-2 work, and what a lawful
-      endpoint must satisfy under XASSET-0020 §J.1 item 6. It supplies no
-      economic answer, creates no endpoint or sizing, and grants no application
-      authority. After it becomes effective, a successor economic-evidence unit
-      can for the first time be scoped against a known target; that unit remains
-      separately unauthorized, as do liquidity architecture, Level-2 work,
-      whole-portfolio stress, charts, ladders, and margin.
+      Update, 2026-08-15 (later, post-XASSET-0024 merge): XASSET-0024 is
+      effective. Accepted head 964474c79911088932243ea8225968dce334e715 merged
+      via PR #323 as 4ec64c13552c101e6e132c295617789926b5066a, independently
+      re-confirmed live this session together with merge-commit CI run
+      31903743866 (completed / success). Its Outcome A —
+      ENDPOINT_BASIS_EXISTS_UNDER_CURRENT_METHODOLOGY — stands unedited and is
+      complementary to, not contradicted by, XASSET-0025's Outcome C: the route
+      exists in principle, and nothing is currently on it. The immediate next
+      action is XASSET-0025's own lifecycle (independent full exact-head review,
+      principal exact-head acceptance, merge, post-merge verification, exact-head
+      CI). Nothing beyond that is authorized. After XASSET-0025 merges, two
+      things remain missing and are distinct requirements, each needing its own
+      explicit principal authorization: qualifying endpoint evidence answering
+      XASSET-0025 SSK's identified question for one named sleeve (which would
+      require a research design, protocol, pre-registration, provenance rules,
+      and trial bounds, none of which XASSET-0025 supplies), and a competent
+      Level-1 endpoint authority over whatever such evidence establishes. Their
+      mandatory ordering and packaging is expressly UNRESOLVED per XASSET-0025
+      SSO.5 — accepted authority settles neither, they may ultimately require
+      separate lifecycles or may be lawfully combined under a future explicit
+      authority, and no packaging is preferred or authorized here; the next
+      explicitly authorized governance unit determines it. Sleeve selection
+      is a separate, later, explicitly authorized act; XASSET-0025 selects none
+      and records that no accepted evidence compels one. A future non-null
+      application additionally requires representation closure, a lawful
+      XASSET-0021 snapshot successor, an endpoint-capable XASSET-0022 schema and
+      generator successor, an application authorization, and the application
+      itself — none authorized, scheduled, or partially granted.
 
       Update, 2026-08-15: XASSET-0021 is effective after accepted head
       afc3eef410dd3748c209053bdb8de7dd09c273bf received independent full
@@ -12496,22 +12613,28 @@ workstreams:
       entry's own roadmap_preservation field names remain wholly
       unauthorized, unchanged.
     blocker: >
-      Current critical path, 2026-08-15 (later, post-XASSET-0022 merge):
-      XASSET-0023 is the sole active lane. It is governance-only interpretation
-      of already accepted authority and must complete independent full
-      exact-head review, principal exact-head acceptance, merge, immediate
-      post-merge verification, and successful exact-head CI before its
-      determinations take effect. It resolves what future evidence or authority
-      would have to prove; it supplies no part of the economic answer, creates
-      no endpoint, point, range, or sizing, reclassifies no closure-matrix row,
-      and grants no application authority. Application authority remains
-      WITHHELD with an empty authorization registry, and no Level-1 application
-      may begin. Two questions are deliberately left open and recorded rather
-      than closed by invention: whether Level-2 sizing may proceed for a subset
-      of non-abstaining sleeves, which is currently unreachable; and one
-      interpretive tension in XASSET-0021 §O's wording. Actual Level-1 sizing,
-      liquidity architecture, Level-2 work, whole-portfolio stress, charts,
-      ladders, and margin remain downstream and unperformed.
+      Current critical path, 2026-08-15 (later, post-XASSET-0024 merge):
+      XASSET-0025 is the sole active lane and the sole mutation lane. It is a
+      governance/evidence-identification unit over already accepted authority
+      and accepted evidence, and must complete independent full exact-head
+      review, principal exact-head acceptance, merge, immediate post-merge
+      verification, and successful exact-head CI before it determines anything.
+      Its accepted outcome will be C —
+      NO_QUALIFYING_ENDPOINT_SOURCE_IN_ACCEPTED_CORPUS: no accepted source
+      presently supplies a qualifying Level-1 sleeve-share LOWER or UPPER bound
+      for any sleeve, the frozen non-RISK snapshot contains no endpoint-bearing
+      numeric value at all (zero true numeric scalars; its 48 numeric-valued
+      strings are schema_version values without exception), every right-quantity
+      value in the wider corpus is barred by origin rather than by a closeable
+      gap, and no accepted decision anywhere grants Level-1 endpoint authority.
+      Level-1 application authority therefore remains WITHHELD on the unchanged
+      XASSET-0021 SSO double gate, the closure matrix stands at 14 / 14 / 2,
+      APPLICATION_AUTHORIZATION_REGISTRY remains empty, and no
+      intelligence/level1_application/ artifact exists or is authorized.
+      Qualifying evidence and competent authority are two distinct requirements,
+      both missing; their mandatory ordering and packaging is expressly
+      UNRESOLVED per XASSET-0025 SSO.5, and neither is performed or authorized
+      by this filing.
 
       Current critical path, 2026-08-15: XASSET-0022 is the sole active lane and
       the last mechanical prerequisite standing between the effective
@@ -12852,9 +12975,9 @@ workstreams:
       any representation-aggregation rule, RISK parameter reuse, Level-2 work,
       liquidity determination, and policy adoption all remain separately
       unauthorized.
-    active_branch: claude/xasset-0024-endpoint-basis-0uk38w
+    active_branch: claude/xasset-0025-endpoint-source-tfs6kh
     active_pr: null
-    last_verified_main_sha: 3050bcb72738da76dbfcb8f00a1935a83e9a85d2
+    last_verified_main_sha: 4ec64c13552c101e6e132c295617789926b5066a
     last_verified_date: "2026-08-15"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I

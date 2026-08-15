@@ -923,3 +923,11 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, GOV-0003, OPS-0009, OPS-0014, NUM-0001, XASSET-0019, LEVEL2-0001, RISK-0001, RISK-0002, RISK-0003]
     supporting_artifact: null
     file: governance/decisions/RISK-0004-attempt2-results-disclosure-supplement-authorization.md
+
+  - decision_id: XASSET-0025
+    date: 2026-08-15
+    status: Proposed
+    category: cross_asset_allocation_architecture
+    related_decisions: [GOV-0001, GOV-0002, OPS-0009, OPS-0014, NUM-0001, XASSET-0016, XASSET-0018, XASSET-0019, XASSET-0020, XASSET-0021, XASSET-0022, XASSET-0023, XASSET-0024, LEVEL2-0001, RISK-0001, RISK-0002, RISK-0003, RISK-0004]
+    supporting_artifact: null
+    file: governance/decisions/XASSET-0025-level1-endpoint-source-and-authority-identification.md
