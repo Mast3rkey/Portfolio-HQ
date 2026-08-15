@@ -30,6 +30,14 @@ import level1_application_schema as S
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
+
+class _NonStandardConstant(ValueError):
+    """Raised when JSON input carries NaN / Infinity / -Infinity."""
+
+    def __init__(self, name: str) -> None:
+        super().__init__(name)
+        self.name = name
+
 # ── Independent adversarial scans ────────────────────────────────────────
 #
 # These are a second, materially different mechanism from the structural
@@ -288,8 +296,19 @@ def _require_enum(
 
 
 def _require_exact(value: object, where: str, expected: object, errors: list[str]) -> None:
-    if value != expected:
-        errors.append(f"{where}: must be exactly {expected!r}, got {value!r}")
+    """Type-strict exact comparison.
+
+    Python equality alone is unsafe here: `False == 0` and `True == 1`, so a
+    plain `!=` would accept byte-distinct encodings of a governed boolean or
+    integer. Requiring identical concrete types first makes bool and int
+    mutually unsatisfiable, so each governed value has exactly one lawful
+    encoding.
+    """
+    if type(value) is not type(expected) or value != expected:
+        errors.append(
+            f"{where}: must be exactly {expected!r} ({type(expected).__name__}), "
+            f"got {value!r} ({type(value).__name__})"
+        )
 
 
 def _require_str_list(value: object, where: str, errors: list[str]) -> None:
@@ -396,6 +415,31 @@ def _validate_application_authorization(data: object, errors: list[str]) -> None
         )
 
 
+def _validate_authorization_head_binding(data: dict, errors: list[str]) -> None:
+    """Bind the registered authorization to the exact XASSET-0022 accepted head.
+
+    Registry membership alone is insufficient: the artifact's
+    `prerequisite_identity.schema_accepted_head` must equal the head the
+    registry binds to that decision, so no arbitrary 40-hex value validates.
+    """
+    authorization = data.get("application_authorization")
+    prerequisite = data.get("prerequisite_identity")
+    if not isinstance(authorization, dict) or not isinstance(prerequisite, dict):
+        return
+    decision_id = authorization.get("decision_id")
+    if not isinstance(decision_id, str):
+        return
+    expected_head = S.APPLICATION_AUTHORIZATION_REGISTRY.get(decision_id)
+    if expected_head is None:
+        return  # already reported by the registry gate above
+    if prerequisite.get("schema_accepted_head") != expected_head:
+        errors.append(
+            "$.prerequisite_identity.schema_accepted_head: does not match the "
+            f"head bound to '{decision_id}' by the application-authorization "
+            "registry"
+        )
+
+
 def _validate_evidence_snapshot_identity(data: object, errors: list[str]) -> None:
     if not _require_mapping(data, "$.evidence_snapshot_identity", errors):
         return
@@ -469,7 +513,7 @@ def _validate_evidence_snapshot(data: object, errors: list[str]) -> None:
             f"$.evidence_snapshot: must contain exactly {S.FROZEN_EVIDENCE_COUNT} "
             f"entries, got {len(data)}"
         )
-    expected_order = [row[0] for row in sorted(S.FROZEN_EVIDENCE)]
+    expected_order = [e["evidence_id"] for e in S.FROZEN_EVIDENCE_LEDGER]
     seen: list[str] = []
     for index, entry in enumerate(data):
         where = f"$.evidence_snapshot[{index}]"
@@ -481,48 +525,19 @@ def _validate_evidence_snapshot(data: object, errors: list[str]) -> None:
             errors.append(f"{where}.evidence_id: must be a string")
             continue
         seen.append(evidence_id)
-        frozen = S.FROZEN_EVIDENCE_BY_ID.get(evidence_id)
+        frozen = S.FROZEN_EVIDENCE_LEDGER_BY_ID.get(evidence_id)
         if frozen is None:
             errors.append(
                 f"{where}.evidence_id: '{evidence_id}' is not in the frozen "
                 "XASSET-0021 §C snapshot"
             )
             continue
-        _, path, sha, content = frozen
-        _require_exact(entry.get("path"), f"{where}.path", path, errors)
-        _require_exact(entry.get("sha256"), f"{where}.sha256", sha, errors)
-        _require_exact(
-            entry.get("source_content_sha256"),
-            f"{where}.source_content_sha256",
-            content,
-            errors,
-        )
-        _require_enum(
-            entry.get("classification"),
-            f"{where}.classification",
-            S.EVIDENCE_CLASSIFICATION,
-            errors,
-        )
-        _require_enum(
-            entry.get("admission"), f"{where}.admission", S.EVIDENCE_ADMISSION, errors
-        )
-        _require_enum(
-            entry.get("freshness_state"),
-            f"{where}.freshness_state",
-            S.FRESHNESS_STATE,
-            errors,
-        )
-        for key in ("governing_authority", "authority_lifecycle", "permitted_question",
-                    "representation_scope"):
-            if not isinstance(entry.get(key), str) or not entry.get(key, "").strip():
-                errors.append(f"{where}.{key}: must be a non-empty string")
-        _require_str_list(
-            entry.get("forbidden_implications"), f"{where}.forbidden_implications", errors
-        )
+        # Every field is frozen or mechanically derived, so exact equality is
+        # required on all of them. Nothing here is caller discretion.
+        for key in sorted(S.EVIDENCE_ENTRY_KEYS):
+            _require_exact(entry.get(key), f"{where}.{key}", frozen[key], errors)
     if len(set(seen)) != len(seen):
         errors.append("$.evidence_snapshot: duplicate evidence_id")
-    if seen and seen != expected_order[: len(seen)] and sorted(seen) == seen:
-        pass
     if seen != expected_order:
         errors.append(
             "$.evidence_snapshot: entries must appear in canonical evidence_id order"
@@ -866,6 +881,7 @@ def validate_application_document(data: object) -> ValidationResult:
     _validate_portfolio_reconciliation(data.get("portfolio_reconciliation"), errors)
     _validate_reopen_triggers(data.get("reopen_triggers"), errors)
     _validate_authority_boundary(data.get("authority_boundary"), errors)
+    _validate_authorization_head_binding(data, errors)
     _validate_frozen_snapshot_abstention(data, errors)
 
     return ValidationResult(source="<document>", valid=not errors, errors=errors)
@@ -899,8 +915,24 @@ def validate_application_bytes(raw: bytes, source: str = "<bytes>") -> Validatio
             duplicate_keys.append(str(sorted(keys)))
         return dict(pairs)
 
+    def _reject_constant(name: str):
+        # `json.loads` accepts the non-standard NaN/Infinity/-Infinity literals
+        # by default. Rejecting them at parse time keeps them a structured
+        # validation failure rather than an uncaught serializer crash later.
+        raise _NonStandardConstant(name)
+
     try:
-        data = json.loads(text, object_pairs_hook=_object_pairs_hook)
+        data = json.loads(
+            text,
+            object_pairs_hook=_object_pairs_hook,
+            parse_constant=_reject_constant,
+        )
+    except _NonStandardConstant as exc:
+        return ValidationResult(
+            source=source,
+            valid=False,
+            errors=[f"$: non-standard JSON constant '{exc.name}' is barred"],
+        )
     except json.JSONDecodeError as exc:
         return ValidationResult(source=source, valid=False, errors=[f"$: invalid JSON: {exc}"])
     if duplicate_keys:
@@ -909,7 +941,15 @@ def validate_application_bytes(raw: bytes, source: str = "<bytes>") -> Validatio
     result = validate_application_document(data)
     errors.extend(result.errors)
 
-    if raw != S.canonical_bytes(data):
+    try:
+        canonical = S.canonical_bytes(data)
+    except ValueError as exc:
+        return ValidationResult(
+            source=source,
+            valid=False,
+            errors=errors + [f"$: content is not canonically serializable: {exc}"],
+        )
+    if raw != canonical:
         errors.append(
             "$: bytes are not the canonical serialization of their own content "
             "(ordering, whitespace, encoding, newline, or numeric/null form)"

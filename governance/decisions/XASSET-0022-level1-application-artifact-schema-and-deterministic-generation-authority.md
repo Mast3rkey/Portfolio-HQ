@@ -131,8 +131,13 @@ nullable as a whole:
 
 Canonical list orders, all fixed and none author-chosen:
 
-- `evidence_snapshot` — exactly 35 entries, ascending `evidence_id`, matching the XASSET-0021 §C
-  frozen snapshot entry-for-entry on `path`, `sha256`, and `source_content_sha256`;
+- `evidence_snapshot` — exactly 35 entries, ascending `evidence_id`, each entry carrying exactly
+  `evidence_id`, `path`, `sha256`, `source_content_sha256`, `source_class`, `governing_authority`,
+  and `authority_lifecycle`, every one of which is frozen or mechanically derived and enforced by
+  exact equality. `source_class` is derived from the evidence identifier and partitions the 35 items
+  into exactly the six XASSET-0021 §C.1 classes (8/6/2/4/1/14); `governing_authority` and
+  `authority_lifecycle` are verbatim transcriptions of that §C.1 enumeration, which also requires
+  that "a future application must store the applicable lifecycle identity on every item";
 - `sleeves` — exactly four, in canonical order `equity`, `fund_broad_market`, `fund_gld_defensive`,
   `crypto`;
 - `pairs` — exactly six, in canonical order derived from the sleeve order. Each pair's `self_sleeve`
@@ -143,10 +148,18 @@ Canonical list orders, all fixed and none author-chosen:
 - `reopen_triggers` — exactly the seven identifiers of §I, in order.
 
 Every field is economically non-authoritative. The artifact records governed states; it originates
-none. No field is free text that controls behaviour: the only free-text fields
-(`governing_authority`, `authority_lifecycle`, `permitted_question`, `representation_scope`,
-`forbidden_implications`) are descriptive provenance carried from governed sources and are scanned
-for forbidden content rather than interpreted.
+none. **No field anywhere in the artifact is author-supplied free text.** Every value is either a
+fixed constant, a closed-vocabulary value, or mechanically derived from the frozen snapshot, so one
+governed state has exactly one lawful byte sequence.
+
+`permitted_question`, `representation_scope`, `forbidden_implications`, `classification`,
+`admission`, and `freshness_state` are deliberately **absent** from the evidence entry. No accepted
+authority fixes an exact per-item value for any of them: they occur only in XASSET-0020 §O's
+illustrative sketch, which XASSET-0021 §L expressly withdrew as authority. Carrying them as prose or
+as caller-selected enum values would let one governed state have many lawful byte sequences, and
+supplying values for them would require inventing content this unit is barred from inventing. They
+are therefore removed rather than fabricated. Their governed content is unchanged and remains in
+XASSET-0021 §§C.2-C.3, pinned by the snapshot identity and by all 35 per-file hashes.
 
 ### F. Closed vocabularies
 
@@ -220,10 +233,12 @@ prose-selected list; any addition, omission, reordering, or free-text substituti
 
 ### K. Generation contract and implementation
 
-`level1_application_generator.py` consumes a closed three-key frozen input
-(`application_authorization`, `schema_accepted_head`, `evidence_attributes` covering exactly the 35
-frozen evidence identities) and refuses any missing, extra, or invalid input rather than filling a
-gap with a default. It queries no market, network, or provider data; reads no current holdings,
+`level1_application_generator.py` consumes a closed two-key frozen input
+(`application_authorization`, `schema_accepted_head`) and refuses any missing, extra, or invalid
+input rather than filling a gap with a default. There is deliberately no per-evidence input: the
+entire evidence ledger is derived from the frozen snapshot, so a caller cannot phrase, select,
+reorder, or omit any part of it. It queries no market, network, or provider data; reads no current
+holdings,
 targets, gates, or weights; chooses no economic value and no endpoint; and makes no abstain-versus-
 point/range judgment of its own — every economic state it writes is a transcription of a closure
 already fixed by XASSET-0020/XASSET-0021 under the frozen snapshot. Identical frozen inputs produce
@@ -299,11 +314,14 @@ Closing CM-27 and CM-28 removes the mechanical obstacle; it does not grant autho
 prerequisite closure is not application authorization.
 
 That boundary is enforced mechanically, not merely stated. `APPLICATION_AUTHORIZATION_REGISTRY` in
-the schema module is **empty**. A lawful artifact must name an application-authorization decision
-that appears in that registry and must carry `authorization_status: granted`. Both the generator and
-the validator refuse otherwise, independently. Consequently no artifact can be generated or validated
-today, and a future separate governance decision must both grant authority and be recorded in the
-registry before any application may begin. A test asserts the registry is empty.
+the schema module is **empty**. It maps an application-authorization decision id to the exact
+XASSET-0022 accepted head that decision authorizes against, so a lawful artifact must name a
+registered decision, carry `authorization_status: granted`, **and** carry exactly the head bound to
+that decision — registry membership alone is insufficient, and no arbitrary 40-hex value can pass.
+Both the generator and the validator enforce all three independently. Consequently no artifact can
+be generated or validated today, and a future separate governance decision must grant authority and
+record both the decision id and its bound head before any application may begin. A test asserts the
+production registry is empty.
 
 ### Q. Economic freeze
 
@@ -357,6 +375,45 @@ allocation, example portfolio, application record, Level-2 membership or sizing,
 amount, reserve amount, debt-reduction amount, margin or leverage rule, chart, ladder, deployment,
 optimizer, backtest, trade, order, brokerage action, or portfolio-policy adoption. It changes no
 current portfolio configuration and grants no application authority.
+
+### V. Bounded correction following independent review 4944055540
+
+Independent full exact-head review `4944055540` of head `de6b5aa9e303b3e39d7024387332d046910af9f5`
+returned CHANGES REQUIRED — 0 BLOCKING / 2 MAJOR / 2 MINOR / 2 non-actionable NOTE. All four
+actionable findings were reproduced before any change and are resolved:
+
+**MAJOR-1 — author-discretionary evidence provenance.** Reproduced: five per-evidence fields accepted
+arbitrary content, and one governed state yielded **nine** distinct valid canonical byte sequences.
+Resolved by eliminating the discretion rather than constraining it: `governing_authority` and
+`authority_lifecycle` are now frozen per source class as verbatim §C.1 transcriptions and enforced by
+exact equality; `source_class` is derived mechanically; and `permitted_question`,
+`representation_scope`, `forbidden_implications`, `classification`, `admission`, and
+`freshness_state` are removed for the reasons in §E. The generator's per-evidence input is deleted
+entirely, so its input contract is two keys. One governed state now yields exactly **one** lawful
+byte sequence.
+
+**MAJOR-2 — bool/int type confusion.** Reproduced: because `False == 0` and `True == 1`,
+`debt_excluded`, every `authority_boundary` boolean, `source_count`, and `step_index` each accepted a
+byte-distinct invalid encoding. `_require_exact` is now type-strict, requiring identical concrete
+types before equality, which makes bool and int mutually unsatisfiable. All 25 call sites were
+audited; no other exact-value comparison carried the same ambiguity.
+
+**MINOR-1 — NaN/Infinity crash path.** Reproduced: `json.loads` accepted the non-standard constants
+and canonical re-serialization then raised an uncaught `ValueError`. Parsing now rejects them via
+`parse_constant`, and canonical serialization is additionally guarded, so all three return an
+ordinary structured validation failure.
+
+**MINOR-2 — `schema_accepted_head` unbound.** Reproduced: any 40-hex value validated. The
+authorization registry is now a mapping from decision id to the exact bound accepted head, and both
+the generator and the validator independently require the artifact's head to equal it.
+
+NOTE-1 (a dead no-op branch, since removed with the code it sat in) and NOTE-2 (a docstring wording
+point) were non-actionable; scope was not expanded to polish them.
+
+The correction changes no economic rule, evidence conclusion, sleeve allocation, endpoint, or policy.
+The 35 frozen source identities are byte-unchanged and still reconcile 35/35 against the repository
+tree; the evidence-manifest identity is unchanged; application authority remains WITHHELD with an
+empty production registry; and XASSET-0021's accepted matrix is untouched.
 
 ## Rationale
 

@@ -28,23 +28,14 @@ _COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
 # The closed input contract. Any missing or extra top-level input key is a
 # hard error -- the generator never fills a gap with a default.
+#
+# There is deliberately no per-evidence input. Every evidence field is frozen
+# or mechanically derived in `level1_application_schema`, so a caller cannot
+# phrase, select, reorder, or omit any of it. That is what makes one governed
+# state produce exactly one lawful byte sequence.
 GENERATOR_INPUT_KEYS = frozenset({
     "application_authorization",
     "schema_accepted_head",
-    "evidence_attributes",
-})
-
-# Per-evidence attributes the caller must supply from governed sources. The
-# generator validates their shape but never invents or infers them.
-EVIDENCE_ATTRIBUTE_KEYS = frozenset({
-    "governing_authority",
-    "authority_lifecycle",
-    "permitted_question",
-    "classification",
-    "admission",
-    "freshness_state",
-    "representation_scope",
-    "forbidden_implications",
 })
 
 
@@ -78,55 +69,25 @@ def _check_inputs(frozen_inputs: object) -> dict:
             "application_authorization.authorization_status must be 'granted'; "
             "application authority is WITHHELD"
         )
-    # THE HARD GATE, enforced at generation as well as at validation.
-    if decision_id not in S.APPLICATION_AUTHORIZATION_REGISTRY:
-        raise GeneratorInputError(
-            f"application-authorization decision '{decision_id}' is not registered; "
-            "application authority is WITHHELD (XASSET-0021 §O double gate)"
-        )
-
     head = frozen_inputs["schema_accepted_head"]
     if not isinstance(head, str) or not _COMMIT_RE.match(head):
         raise GeneratorInputError("schema_accepted_head must be a 40-hex commit SHA")
 
-    attributes = frozen_inputs["evidence_attributes"]
-    if not isinstance(attributes, dict):
-        raise GeneratorInputError("evidence_attributes must be a mapping")
-    expected_ids = set(S.FROZEN_EVIDENCE_BY_ID)
-    supplied_ids = set(attributes)
-    if supplied_ids != expected_ids:
+    # THE HARD GATE, enforced at generation as well as at validation. The
+    # decision must be registered AND the supplied schema head must be exactly
+    # the head that decision authorizes against -- membership alone is
+    # insufficient, so no arbitrary 40-hex value can pass.
+    expected_head = S.APPLICATION_AUTHORIZATION_REGISTRY.get(decision_id)
+    if expected_head is None:
         raise GeneratorInputError(
-            "evidence_attributes must cover exactly the frozen snapshot; "
-            f"missing={sorted(expected_ids - supplied_ids)} "
-            f"extra={sorted(supplied_ids - expected_ids)}"
+            f"application-authorization decision '{decision_id}' is not registered; "
+            "application authority is WITHHELD (XASSET-0021 §O double gate)"
         )
-    for evidence_id, attrs in attributes.items():
-        if not isinstance(attrs, dict):
-            raise GeneratorInputError(f"evidence_attributes[{evidence_id}] must be a mapping")
-        if set(attrs) != EVIDENCE_ATTRIBUTE_KEYS:
-            raise GeneratorInputError(
-                f"evidence_attributes[{evidence_id}] keys must be exactly "
-                f"{sorted(EVIDENCE_ATTRIBUTE_KEYS)}"
-            )
-        if attrs["classification"] not in S.EVIDENCE_CLASSIFICATION:
-            raise GeneratorInputError(
-                f"evidence_attributes[{evidence_id}].classification outside vocabulary"
-            )
-        if attrs["admission"] not in S.EVIDENCE_ADMISSION:
-            raise GeneratorInputError(
-                f"evidence_attributes[{evidence_id}].admission outside vocabulary"
-            )
-        if attrs["freshness_state"] not in S.FRESHNESS_STATE:
-            raise GeneratorInputError(
-                f"evidence_attributes[{evidence_id}].freshness_state outside vocabulary"
-            )
-        if not isinstance(attrs["forbidden_implications"], list) or not all(
-            isinstance(item, str) for item in attrs["forbidden_implications"]
-        ):
-            raise GeneratorInputError(
-                f"evidence_attributes[{evidence_id}].forbidden_implications must be "
-                "a list of strings"
-            )
+    if head != expected_head:
+        raise GeneratorInputError(
+            f"schema_accepted_head does not match the head bound to "
+            f"'{decision_id}' by the application-authorization registry"
+        )
     return frozen_inputs
 
 
@@ -146,28 +107,10 @@ def _build_trace(evidence_ids: list[str]) -> list[dict]:
 def generate_application_document(frozen_inputs: dict) -> dict:
     """Build the artifact document deterministically from frozen inputs."""
     inputs = _check_inputs(frozen_inputs)
-    attributes = inputs["evidence_attributes"]
 
-    evidence_rows = sorted(S.FROZEN_EVIDENCE)
-    evidence_ids = [row[0] for row in evidence_rows]
-
-    evidence_snapshot = []
-    for evidence_id, path, sha, content in evidence_rows:
-        attrs = attributes[evidence_id]
-        evidence_snapshot.append({
-            "evidence_id": evidence_id,
-            "path": path,
-            "sha256": sha,
-            "source_content_sha256": content,
-            "governing_authority": attrs["governing_authority"],
-            "authority_lifecycle": attrs["authority_lifecycle"],
-            "permitted_question": attrs["permitted_question"],
-            "classification": attrs["classification"],
-            "admission": attrs["admission"],
-            "freshness_state": attrs["freshness_state"],
-            "representation_scope": attrs["representation_scope"],
-            "forbidden_implications": list(attrs["forbidden_implications"]),
-        })
+    # Wholly derived from the frozen ledger; the caller contributes nothing.
+    evidence_snapshot = [dict(entry) for entry in S.FROZEN_EVIDENCE_LEDGER]
+    evidence_ids = [entry["evidence_id"] for entry in S.FROZEN_EVIDENCE_LEDGER]
 
     # Every sleeve abstains. This is XASSET-0021 §F's already-closed
     # consequence, consumed, not decided here.

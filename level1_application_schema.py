@@ -22,6 +22,8 @@ from __future__ import annotations
 
 import json
 from hashlib import sha256
+from types import MappingProxyType
+from typing import Mapping
 
 # ---------------------------------------------------------------------------
 # 1. Exact artifact identity (XASSET-0022 §C; XASSET-0021 §L item 1)
@@ -350,6 +352,100 @@ FROZEN_EVIDENCE_COUNT = len(FROZEN_EVIDENCE)
 
 FROZEN_EVIDENCE_BY_ID = {row[0]: row for row in FROZEN_EVIDENCE}
 
+# ---------------------------------------------------------------------------
+# 6a. Source class, governing authority, and accepted lifecycle.
+#
+# XASSET-0021 §C.1 fixes accepted/effective lifecycle identity "by source class
+# exactly as XASSET-0020 §F.2 records" and enumerates exactly six classes. It
+# further requires that "A future application must store the applicable
+# lifecycle identity on every item rather than merely naming a decision ID."
+#
+# The authority and lifecycle strings below are verbatim transcriptions of that
+# accepted enumeration -- not authored prose. Each evidence item's class is
+# derived mechanically from its own frozen identifier, so no caller supplies,
+# selects, or phrases any of it.
+# ---------------------------------------------------------------------------
+
+SOURCE_CLASS_PROFILES_AND_RELATIONSHIPS = "profiles_and_direct_relationships"
+SOURCE_CLASS_INSTRUMENT_ECONOMICS = "broad_market_and_crypto_instrument_economics"
+SOURCE_CLASS_GLD = "gld_function_economics"
+SOURCE_CLASS_OVERLAP = "overlap_cobehavior"
+SOURCE_CLASS_EQUITY_VALUATION = "equity_valuation"
+SOURCE_CLASS_RISK = "risk"
+
+SOURCE_CLASS_AUTHORITY = {
+    SOURCE_CLASS_PROFILES_AND_RELATIONSHIPS: (
+        "XASSET-0012, XASSET-0013",
+        "XASSET-0012 effective through PR #301, XASSET-0013 effective through "
+        "PR #302, content merged through PR #303",
+    ),
+    SOURCE_CLASS_INSTRUMENT_ECONOMICS: (
+        "XASSET-0010, XASSET-0011",
+        "XASSET-0010 effective through PR #295 and XASSET-0011 effective "
+        "through PR #296, with their validated content merged on the frozen tree",
+    ),
+    SOURCE_CLASS_GLD: (
+        "XASSET-0005, XASSET-0008, XASSET-0009",
+        "XASSET-0005 through PR #273, XASSET-0008 through PR #287, XASSET-0009 "
+        "through PR #293, content through PR #294",
+    ),
+    SOURCE_CLASS_OVERLAP: (
+        "XASSET-0005, XASSET-0007",
+        "XASSET-0005 through PR #273, XASSET-0007 through PR #286, content "
+        "through PR #292",
+    ),
+    SOURCE_CLASS_EQUITY_VALUATION: (
+        "VALUATION-0002, VALUATION-0005, VALUATION-0006, VALUATION-0007",
+        "VALUATION-0002/0005/0006/0007 through PRs #276/#282/#288/#290",
+    ),
+    SOURCE_CLASS_RISK: (
+        "RISK-0001, RISK-0002, RISK-0003, RISK-0004",
+        "accepted through RISK-0001/0002/0003/0004 and PR #316; RESULTS head "
+        "1bf550c5ca5278ff0cbedc498decbf760bb4c8a0; independent full RESULTS "
+        "review 4942378204; principal exact-head acceptance 5299933404; merge "
+        "a13d9b5053ab3fce74e577ab6efcd930ee3910fd; post-merge verification "
+        "5299981108; merge-commit CI run 31857856905",
+    ),
+}
+
+
+def source_class_for(evidence_id: str) -> str:
+    """Derive an evidence item's §C.1 source class from its frozen identifier."""
+    if evidence_id.startswith(("PROFILE_", "REL_")):
+        return SOURCE_CLASS_PROFILES_AND_RELATIONSHIPS
+    if evidence_id.startswith(("ETF_ECON_", "CRYPTO_ECON_")):
+        return SOURCE_CLASS_INSTRUMENT_ECONOMICS
+    if evidence_id in ("GLD_FUNCTION", "GLD_ECON"):
+        return SOURCE_CLASS_GLD
+    if evidence_id.startswith("OVERLAP_"):
+        return SOURCE_CLASS_OVERLAP
+    if evidence_id == "EQUITY_VALUATION_MANIFEST":
+        return SOURCE_CLASS_EQUITY_VALUATION
+    if evidence_id.startswith("RISK_"):
+        return SOURCE_CLASS_RISK
+    raise KeyError(f"no §C.1 source class for evidence_id {evidence_id!r}")
+
+
+# The exact, fully derived evidence ledger. Every field is frozen or
+# mechanically derived; none is caller-supplied, so one governed state has
+# exactly one lawful byte representation.
+FROZEN_EVIDENCE_LEDGER = tuple(
+    {
+        "evidence_id": evidence_id,
+        "path": path,
+        "sha256": sha,
+        "source_content_sha256": content,
+        "source_class": source_class_for(evidence_id),
+        "governing_authority": SOURCE_CLASS_AUTHORITY[source_class_for(evidence_id)][0],
+        "authority_lifecycle": SOURCE_CLASS_AUTHORITY[source_class_for(evidence_id)][1],
+    }
+    for evidence_id, path, sha, content in sorted(FROZEN_EVIDENCE)
+)
+
+FROZEN_EVIDENCE_LEDGER_BY_ID = {
+    entry["evidence_id"]: entry for entry in FROZEN_EVIDENCE_LEDGER
+}
+
 
 def evidence_manifest_sha256() -> str:
     """Mechanically derived identity of the frozen evidence manifest.
@@ -376,7 +472,12 @@ EVIDENCE_MANIFEST_SHA256 = evidence_manifest_sha256()
 # independently reviewed, principal-accepted governance decision.
 # ---------------------------------------------------------------------------
 
-APPLICATION_AUTHORIZATION_REGISTRY: frozenset[str] = frozenset()
+#
+# The registry maps an application-authorization decision id to the EXACT
+# XASSET-0022 accepted head that decision authorizes against. Membership alone
+# is insufficient: a lawful artifact must also carry exactly that head, so no
+# arbitrary 40-hex value can validate even once an entry exists.
+APPLICATION_AUTHORIZATION_REGISTRY: Mapping[str, str] = MappingProxyType({})
 
 # ---------------------------------------------------------------------------
 # 8. Complete closed field sets (XASSET-0021 §L item 3)
@@ -430,19 +531,24 @@ NORMALIZED_ASSET_STATE_KEYS = frozenset({
 
 LIQUIDITY_STATE_KEYS = frozenset({"status", "numeric_value"})
 
+# Exactly the fields accepted authority fixes. `permitted_question`,
+# `representation_scope`, `forbidden_implications`, `classification`,
+# `admission`, and `freshness_state` are deliberately absent: no accepted
+# authority fixes an exact per-item value for any of them (they occur only in
+# XASSET-0020 §O's illustrative sketch, which XASSET-0021 §L withdrew as
+# authority). Carrying them as caller-supplied prose or as caller-selected enum
+# values is precisely what allowed one governed state to have many lawful byte
+# sequences, so they are removed rather than invented. Their governed content
+# remains in XASSET-0021 §§C.2-C.3, pinned here by snapshot identity and by all
+# 35 per-file hashes.
 EVIDENCE_ENTRY_KEYS = frozenset({
     "evidence_id",
     "path",
     "sha256",
     "source_content_sha256",
+    "source_class",
     "governing_authority",
     "authority_lifecycle",
-    "permitted_question",
-    "classification",
-    "admission",
-    "freshness_state",
-    "representation_scope",
-    "forbidden_implications",
 })
 
 SLEEVE_KEYS = frozenset({
@@ -542,6 +648,9 @@ def _governed_identifiers() -> frozenset[str]:
     values |= {row[3] for row in FROZEN_EVIDENCE if row[3]}
     values |= set(METHODOLOGY_IDENTITY.values())
     values |= set(CLOSURE_IDENTITY.values())
+    values |= set(SOURCE_CLASS_AUTHORITY)
+    for authority, lifecycle in SOURCE_CLASS_AUTHORITY.values():
+        values |= {authority, lifecycle}
     values |= {SOURCE_TREE_IDENTITY, SNAPSHOT_ID, EVIDENCE_MANIFEST_SHA256}
     return frozenset(values)
 
