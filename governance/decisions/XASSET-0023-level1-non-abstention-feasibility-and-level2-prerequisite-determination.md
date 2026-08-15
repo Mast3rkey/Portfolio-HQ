@@ -117,8 +117,8 @@ missingness ... or other unclosed state" to `unable_to_determine`.
 Composing those three: while any RISK family disposition remains `unable_to_determine`, the
 `downside_path_risk` and `recovery` ledger cells of every pair bearing on that sleeve remain
 unclosed, so no such pair can reach a determinate conclusion, so XASSET-0020 §J.1 item 3 cannot be
-satisfied.
-This holds **even if every other driver class became determinate and a lawful endpoint existed**.
+satisfied. This holds **even if every other driver class became determinate and a lawful endpoint
+existed**.
 For a point, therefore, CM-25 is an independent bar, not merely an endpoint-conditioned one.
 
 **D.2 — RISK does not independently bar a RANGE.** XASSET-0020 §J.2 deliberately omits any
@@ -129,24 +129,24 @@ and remain valid under every possible direction of the unresolved pair. That is 
 intersection of already-authorized bounds, not a derived relationship."
 
 XASSET-0020 §J.2's phrase is "unresolved pair evidence," which is broader than XASSET-0020 §I's own
-heading case of a structurally absent record and reaches a pair left `unable_to_determine` for any reason, RISK
-included. A range is therefore eligible notwithstanding RISK's `unable_to_determine` states, provided
+heading case of a structurally absent record and reaches a pair left `unable_to_determine` for any
+reason, RISK included. A range is therefore eligible notwithstanding RISK's `unable_to_determine`
+states, provided
 both endpoints independently satisfy §H below and remain valid under every possible direction of each
 unresolved pair.
 
-**D.3 — This is not neutrality, and may never be read as neutrality.** XASSET-0020 §I's survival test is
-strictly stronger than treating an unresolved pair as neutral. Neutrality would let an unresolved
-pair contribute nothing and leave a candidate bound standing by default; XASSET-0020 §I instead requires
-each endpoint to hold under *every* possible direction the unresolved pair could take, so an endpoint that
-survives only under some directions is defeated. XASSET-0021 §K's prohibition is preserved in full and
-restated here as operative text: no RISK `unable_to_determine` state may be recoded as neutral,
+**D.3 — This is not neutrality, and may never be read as neutrality.** XASSET-0020 §I's survival
+test is strictly stronger than treating an unresolved pair as neutral. Neutrality would let an
+unresolved pair contribute nothing and leave a candidate bound standing by default; XASSET-0020 §I
+instead requires each endpoint to hold under *every* possible direction the unresolved pair could
+take, so an endpoint that survives only under some directions is defeated. XASSET-0021 §K's
+prohibition is preserved in full and restated here as operative text: no RISK `unable_to_determine` state may be recoded as neutral,
 indistinguishable, non-rejection, a directional lean, a target anchor, a range anchor, or an
 adjustment, and none may contribute positive preference to any sleeve under any framing.
 
 **D.4 — CM-25's classification does not change.** `CM-25` remains `APPLICATION_MUST_ABSTAIN` on the
 XASSET-0021 §C snapshot, because XASSET-0021 §F's endpoint finding independently forces abstention
-for every
-sleeve regardless of D.2. This determination states the *reason* CM-25 abstains and therefore what
+for every sleeve regardless of D.2. This determination states the *reason* CM-25 abstains and therefore what
 would have to change for it not to; it reclassifies nothing and leaves XASSET-0021 §N's counts —
 14 / 14 / 2 — exactly as accepted.
 
@@ -224,8 +224,8 @@ reopened by its `unable_to_determine` outcome.
 accepted authority requires: (i) a lawful completed Level-1 application record, under an application
 authority that does not yet exist (§F.2); (ii) for *sizing* of any given sleeve, a non-null Level-1
 outcome for that sleeve (§F.3); (iii) for *membership*, its own separate authorization plus a
-LEVEL2-0001 §J refreeze (§F.4); and (iv) the already-satisfied XASSET-0019 §J RISK checkpoint (§F.5). It does
-**not** require non-null outcomes for all four sleeves as a condition of entry, and it does **not**
+LEVEL2-0001 §J refreeze (§F.4); and (iv) the already-satisfied XASSET-0019 §J RISK checkpoint
+(§F.5). It does **not** require non-null outcomes for all four sleeves as a condition of entry, and it does **not**
 relocate XASSET-0019 §H's whole-100% completeness gate, which remains exactly where §H puts it and
 remains independently blocked by unresolved liquidity under XASSET-0021 §I.
 
