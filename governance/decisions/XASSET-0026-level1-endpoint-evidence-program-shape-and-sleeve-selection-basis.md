@@ -500,7 +500,8 @@ representation disposition (§H) are each independent of whether any class can c
 scope table reads only the classes' *scope* language, not their capacity to carry a magnitude.
 
 **K.3 — Whether the two currently absent direct pairs bear on a pair-scoped endpoint route.** If future
-evidence were admitted under one of §D's four comparative classes for a pair with no direct record, it
+evidence were admitted under one of §D's comparison-scoped or pair-scoped classes for a pair with no
+direct record, it
 would face XASSET-0020 §I's bar on transitive fill and §G.2 constraint 3's snapshot requirement
 together. Nothing here determines how that interacts, because no such candidate exists. Recorded so it
 is not discovered late.
@@ -616,8 +617,9 @@ a way worth recording. It determined that no global ordering is mandatory, reaso
 families constrain the order in opposite directions: competence tested at admission rather than
 production, so work may precede its authority; but a class-4 or class-5 selection must reference an
 evidence-established range, so evidence must precede that selection. Both premises were defective.
-XASSET-0023 §H.2 item 3 and XASSET-0024 §J.5 require the *stating source's* authority to be competent —
-a requirement on the source that states the endpoint, not a condition curable by later admission — and
+XASSET-0023 §H.2 item 3 and XASSET-0024 §J.5 require the *stating source's* authority to be competent
+— a requirement on the source that states the endpoint, not a condition curable by later admission —
+and
 NUM-0001 §7's evidence-established-range triple is the class-4 requirement, which NUM-0001 §6 does not
 impose on class 5's provisional guardrail. Corrected, the constraints all order other acts relative to
 the endpoint-stating source and none orders authority constitution against evidence production, which
@@ -647,37 +649,50 @@ left it: with a unit scoped for it, under its own authority.
 ## Alternatives Considered
 
 - **Determine `PREREQUISITE_REQUIRED_BEFORE_PROGRAM_SHAPE_DETERMINABLE`, on the ground that shape is
-  evidence-design-dependent.** Rejected, and this was the substantive call. §D does establish that the
-  lawful evidence *unit* is class-determined and that the class cannot be fixed yet — but *coverage*
-  does not turn on the class. It turns on whether a lawful selection basis exists, which is a question
+  evidence-design-dependent.** Rejected, and this was the substantive call. §D does establish that an
+  individual evidence item's minimum subject-matter scope varies by DRIVER class and that the class
+  cannot be fixed yet — but endpoint/output *coverage* is a different question and does not turn on the
+  class at all. It turns on whether a lawful selection basis exists, which is a question
   about accepted authority and is fully answerable today. Abstaining would have left a successor free to
   read narrowing as available, when narrowing in fact requires an authority that does not exist. That is
   the more dangerous error, and it is abstention as a substitute for analysis of exactly the kind
   XASSET-0024 and XASSET-0025 each rejected in their own contexts.
 - **Select one sleeve, on the `GLD_FUNCTION` currentness asymmetry.** Rejected. XASSET-0025 §J already
   declined it, the same snapshot row states the source "cannot establish relative preference or an
-  endpoint," and §E.2 establishes independently that currentness is an evidence-quality property that
-  XASSET-0020 §F.2 bars from implying preference. It would also have been the second filing in a row to
+  endpoint," and §E.2 establishes independently that currentness is an evidence-quality property
+  supplying no accepted economic selection basis, which XASSET-0020 §F.2 separately bars from implying
+  size or preference. It would also have been the second filing in a row to
   identify the asymmetry and the first to act on it, without any new authority in between.
 - **Select one sleeve on representation tractability, since a self-contained source is structurally
   easier for some sleeves than others.** Rejected. This is the planning material's own observation,
-  which expressly flagged that it is not authority to select, and it is §E.2's bar in another form.
-  Choosing the sleeve whose evidence is easiest to obtain is choosing on evidence availability.
+  which expressly flagged that it is not authority to select, and it is §E.2's point in another form:
+  choosing the sleeve whose evidence is easiest to obtain is choosing on evidence availability, which
+  supplies no accepted economic selection basis today. Rejected as a basis for this filing's
+  determination only; §E.2's second paragraph governs what a future explicitly authorized act may
+  separately consider on its own terms.
 - **Select one sleeve by canonical order, as a neutral tie-break.** Rejected, and expressly foreclosed:
   XASSET-0020 §L classifies canonical sleeve order as a determinism constant with "no economic effect."
   A neutral-looking tie-break that assigns economic consequence to a procedural constant is not neutral.
-- **Scope the program to one pair rather than one sleeve, since four of six DRIVER classes are
-  pair-scoped.** Rejected. It has the identical defect one step over: selecting which of the six
-  canonical pairs to cover requires a basis, and none exists. It would additionally have foreclosed the
-  two single-sleeve classes for any sleeve outside the chosen pair.
+- **Scope the program to one canonical pair rather than one sleeve.** Rejected, and on one ground only:
+  it has the identical defect one step over, because selecting *which* of the six canonical pairs to
+  cover would itself require a lawful selection basis, and §E establishes that none exists today. It is
+  **not** rejected on any claim that pair or comparison-scoped evidence classes would be unavailable
+  to a differently scoped program — §D determines the opposite, that no DRIVER class is closed to a
+  program by its output coverage alone.
 - **Mandate separate lifecycles for evidence and authority, as the conservative default.** Rejected.
   "Conservative" here means narrowing a successor's lawful option set without authority to do so, and
-  §G.1 establishes that mandating either order would foreclose one of the two lawful route families.
-  XASSET-0025 §O.5 declined to narrow for the same reason and this filing found no better one.
+  §G.1 determines that accepted authority does not presently fix the order between evidence production
+  and authority constitution — a question it preserves as unresolved rather than closing by inference.
+  Mandating an order would therefore assert what accepted text does not supply. XASSET-0025 §O.5
+  declined to narrow for the same reason and this filing found no better one.
 - **Mandate evidence-first, since a class-4 selection cannot reference a range that does not exist.**
-  Rejected. That constraint is real and is recorded at §G.2 constraint 1, but it binds class 4 and class
-  5 only. Generalizing it would have foreclosed the class-1, class-2, and class-3 routes, where the
-  competence requirement attaches to the source's admission instead.
+  Rejected. That constraint is real and is recorded at §G.2 constraint 1, but it binds **NUM-0001 class 4
+  only** — class 5's own requirements under NUM-0001 §6 are a provisional label and a stated review
+  condition, with no evidence-established range — and it constrains when the *value selection* happens,
+  not when competent authority is constituted. Generalizing it into a global evidence-first order would
+  assert an ordering accepted authority does not fix (§G.1), while leaving §G.2 constraint 2 untouched:
+  competent Level-1 authority must extend to the endpoint-stating source at that source's own creation
+  or adoption, and later admission cures nothing.
 - **Supply the missing Level-1 representation rule now, since XASSET-0023 §H.5 identifies it as the
   missing piece.** Rejected. It is a Level-1 methodology amendment requiring its own authorization and
   review, XASSET-0024 §G expressly leaves it to a unit scoped for it, and creating it here would
@@ -699,9 +714,12 @@ left it: with a unit scoped for it, under its own authority.
 The next unit now knows, before spending anything, that the first purpose-built Level-1
 endpoint-evidence program must be scoped across all four sleeves; that this is not a preference for
 breadth but the absence of an authority to narrow; that narrowing requires a separate filed and
-reviewed selection decision under §E.8 and is available on no other basis; and that every convenience
-basis it might reach for — availability, maturity, tractability, currentness, pair completeness,
-canonical order — is barred by express clauses rather than merely disfavoured.
+reviewed selection decision under §E.8 and is available on no other basis today; and that every
+convenience basis it might reach for — availability, maturity, tractability, currentness, pair
+completeness — supplies no accepted economic selection basis and may not imply size or preference,
+while canonical order is separately and expressly foreclosed by XASSET-0020 §L's "no economic effect"
+classification. That is a present-tense determination about the accepted corpus, not a permanent bar on
+how a future explicitly authorized act might sequence or scope research on its own stated terms.
 
 It knows that all-four coverage costs it nothing it would otherwise have kept, because a narrow
 *outcome* remains available through evidence rather than through scope, and a null for three sleeves is
