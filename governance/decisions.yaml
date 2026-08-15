@@ -875,3 +875,11 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, GOV-0003, OPS-0009, OPS-0014, NUM-0001, XASSET-0019, LEVEL2-0001, RISK-0001, RISK-0002]
     supporting_artifact: null
     file: governance/decisions/RISK-0003-postexecution-test-harness-lifecycle-correction-authorization.md
+
+  - decision_id: RISK-0004
+    date: 2026-08-14
+    status: Proposed
+    category: research_charter_amendment
+    related_decisions: [GOV-0001, GOV-0002, GOV-0003, OPS-0009, OPS-0014, NUM-0001, XASSET-0019, LEVEL2-0001, RISK-0001, RISK-0002, RISK-0003]
+    supporting_artifact: null
+    file: governance/decisions/RISK-0004-attempt2-results-disclosure-supplement-authorization.md
