@@ -11764,7 +11764,7 @@ workstreams:
           target, application record, liquidity amount, Level-2 selection, or
           policy. Actual Level-1 sizing/application remains downstream and
           unperformed; liquidity and Level-2 boundaries remain unchanged.
-        pr: null
+        pr: 320
         status: in_progress
         date: "2026-08-15"
     evidence_refs:
@@ -12506,7 +12506,7 @@ workstreams:
       Level 2, policy-adoption, allocation-check, deployment, or completion
       claim and must stop at a draft PR for independent full exact-head review.
     active_branch: codex/xasset-0021-level1-economic-sizing-application-prerequisite-closure
-    active_pr: null
+    active_pr: 320
     last_verified_main_sha: e7d66d93b5f7ab2ecd985a7a4bf680a118df6b0e
     last_verified_date: "2026-08-15"
     authorized_by: >
