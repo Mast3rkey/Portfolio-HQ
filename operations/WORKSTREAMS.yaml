@@ -12828,6 +12828,71 @@ workstreams:
           still NOT EXECUTED and NOT EXECUTABLE; no attestation, claim, completion or
           ledger record exists. Requires another NEW independent FULL exact-head
           review, not a DELTA.
+      - gate: xasset0029-post-merge-verification
+        status: complete
+        pr: 328
+        description: >-
+          Lane M factual synchronization, recorded by the XASSET-0030 filing rather
+          than by editing any prior gate's own text. PR #328 independently reconfirmed
+          merged: accepted head 49609c3ff9befe1ba8d0b296da421337b5a425a0, merge commit
+          3cc15d58a42e6d56fbe702ccf4f377b60fbb8b0c with parents
+          c51e94609eff7ede2bdfa084844d59b8347561e5 (reviewed base) and the accepted
+          head (normal merge, no squash). Final independent review 4946790220 anchored
+          to the accepted head returned APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE
+          (0 BLOCKING / 0 MAJOR / 0 MINOR / 1 NOTE). Principal acceptance 5308731970,
+          post-merge verification 5308740682, lifecycle closure 5308784921, and
+          merge-commit CI run 31962008857 / job 95201259559 completed/success at the
+          exact merge SHA. Canonical pins verified from observed bytes
+          (6c34cbbc...64cb, 6e0c07a8...337c); universe regenerated live at 680 / 48 /
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224. The
+          XASSET-0029 lifecycle is CLOSED. Stage 1 remains NOT EXECUTABLE and the
+          authorization lane directory remains ABSENT.
+      - gate: xasset0030-stage1-gate-evaluation-method-determination
+        status: in_progress
+        pr: null
+        description: >-
+          XASSET-0030, Lane G, bounded governance-only unit filed before any Stage-1
+          arming. Question: can the per-construction gate-evaluation method be made
+          deterministic enough that two conforming executors must produce the same
+          twelve gate results and SS-K.1 per-reading fields without inventing economic
+          judgment. DETERMINATION: NEGATIVE - GATE_EVALUATION_METHOD_NOT_CLOSABLE.
+          Seven gates are closable now and are recorded so a successor need not
+          re-derive them: G2 (readings fixed at PASSES/FAILS by XASSET-0024 SS-D and
+          SS-K.1 plus PROTOCOL SS7, hence reading-dependent and UNABLE_TO_DETERMINE for
+          all 680), G4, G5, G6, G7, G11 (each satisfiable by the frozen specification),
+          and G12 (no lawful XASSET-0021 snapshot successor exists or is authorized, so
+          FAIL as a prerequisite with the dependency named). Five are not closable.
+          FINDING 1, the severe one: pre_registration.yaml
+          g2_reading_mapping.reading_dependent_end_to_end_note and PROTOCOL_V1.md SS7.1
+          BOTH state that a reading-dependent candidate disposes to UNABLE_TO_DETERMINE
+          "unless some categorical gate independently fails", while
+          level1_endpoint_evidence_preregistration_validator.py lines 2505-2509 forbid
+          recording BLOCKED_CATEGORICALLY for a reading-dependent candidate outright.
+          Reproduced adversarially: with the reading pair held at PASSES/FAILS, a FAIL
+          on ANY of the nine other categorical gates derives BLOCKED_CATEGORICALLY and
+          the structural validator then rejects the document, so the entire categorical
+          branch - and with it XASSET-0027 SS-J.2's "recorded honestly", SS-I.2's cell
+          rule, derive_cell_outcome's ALL_CANDIDATES_BLOCKED_CATEGORICALLY branch and
+          derive_roll_up_outcome's NO_CONSTRUCTIBLE_CANDIDATE - is unreachable. That is
+          worse than an open question: implementation currently forecloses one lawful
+          answer in one direction. FINDING 2: G3's share-of-the-whole question is
+          expressly reserved by XASSET-0027 SS-J.3 to "what G3 tests" and answered
+          nowhere; SS-J.1 is diagnostic and XASSET-0024 SS-D settles magnitude
+          capability but not share denomination ("none is 'sleeve share'"). G1, G8, G9
+          and G10 carry their own recorded blockers. Successor prerequisites, in
+          dependency order: (1) determine in governance whether the canonical clause or
+          the validator prohibition governs; (2) resolve or structurally accommodate the
+          SS-J.3 question, whose smallest corrective SS-K.1 itself names as "a narrowly
+          scoped clarification of XASSET-0020 SS-E.1 alone"; (3) separately, G1's
+          reading treatment, G8's uniqueness over an empty admitted set, G9's
+          abstention-versus-prerequisite mapping, and G10's unresolved-pair question
+          within the RISK boundary. Governance-only: no canonical byte, hash pin,
+          universe, cardinality or construction identity changed; SS-K.1 preserved and
+          resolved neither way; no gate evaluated for any construction. Stage 1 remains
+          UNARMED and ATTEMPT_1 intact, unclaimed and unconsumed. Ships one adversarial
+          module, test_level1_stage1_gate_evaluation_determinism.py (29 tests), pinning
+          both findings mechanically. Draft PR; not merged, not independently reviewed,
+          not principal-accepted in this session - effective only on merge.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -13887,9 +13952,9 @@ workstreams:
       representation-aggregation rule, any snapshot successor, RISK parameter
       reuse, Level-2 work, liquidity determination, and policy adoption all
       remain separately unauthorized.
-    active_branch: claude/xasset-0029-stage1-auth-d0vp7f
-    active_pr: 328
-    last_verified_main_sha: c51e94609eff7ede2bdfa084844d59b8347561e5
+    active_branch: claude/endpoint-0001-stage1-execution-results-a4z0x3
+    active_pr: null
+    last_verified_main_sha: 3cc15d58a42e6d56fbe702ccf4f377b60fbb8b0c
     last_verified_date: "2026-08-16"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
