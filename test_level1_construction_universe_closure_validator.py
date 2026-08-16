@@ -1,558 +1,587 @@
-"""Focused and adversarial tests for the ENDPOINT-0001 construction-universe closure determination.
+"""Focused and adversarial tests for the XASSET-0028 construction-universe closure.
 
-Authorized by governance/decisions/XASSET-0028-concrete-construction-universe-closure-determination.md
+Covers the deterministic generator, the closed identity schema, the canonical serialization and
+aggregate hash, the determination artifact's structural validation, the predecessor/successor pin
+lineage, the preserved postures, and the contamination firewall.
 
-The determination is negative, so these tests are the mirror image of a closure test suite. They
-prove that the artifact cannot be mutated into a closure claim, that the family-slot grid cannot be
-promoted into the construction universe, that the negative is not overstated as permanent
-impossibility, and that both prerequisites survive intact -- plus the twenty-two adversarial failure
-classes the authorizing unit was required to test against.
+Every mutation test asserts that a *corrupted* universe or determination is REJECTED, not merely that
+the clean one passes.
 """
 
 from __future__ import annotations
 
-import ast
 import copy
+import hashlib
+import json
+import re
 from pathlib import Path
 
 import pytest
 import yaml
 
 import level1_construction_universe_closure_validator as V
+import level1_endpoint_evidence_preregistration_validator as PREREG
 
-ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parent
+DETERMINATION = REPO_ROOT / "research/level1_construction_universe/CLOSURE_DETERMINATION_V1.yaml"
 
 
 @pytest.fixture(scope="module")
-def real() -> dict:
-    return yaml.safe_load(V.DETERMINATION_PATH.read_text(encoding="utf-8"))
+def universe():
+    return V.generate_construction_universe()
 
 
 @pytest.fixture
-def doc(real: dict) -> dict:
-    return copy.deepcopy(real)
+def determination():
+    return yaml.safe_load(DETERMINATION.read_text(encoding="utf-8"))
 
 
-def find(errors: list[str], needle: str) -> bool:
-    return any(needle in error for error in errors)
+# =============================================================================================
+# 1-7  Cardinality, determinism, identity, ordering, coverage
+# =============================================================================================
+class TestUniverseShape:
+    def test_1_cardinality_is_independently_derived_not_a_literal(self, universe):
+        """Recompute the cardinality from the closed dimensions without reading any literal."""
+        expected = 0
+        for sleeve in V.SLEEVES:
+            for _bound in V.BOUNDS:
+                for driver_class in V.DRIVER_CLASSES:
+                    for _family in V.FAMILY_IDS:
+                        expected += len(V.comparator_architectures(sleeve, driver_class))
+        assert len(universe) == expected
+        assert V.derived_cardinality() == expected
+        assert expected == 680
 
+    def test_1b_formula_matches_accepted_closed_dimensions(self):
+        per = sum(len(V.comparator_architectures(V.SLEEVES[0], d)) for d in V.DRIVER_CLASSES)
+        assert per == 17
+        assert len(V.SLEEVES) * len(V.BOUNDS) * len(V.FAMILY_IDS) * per == 680
 
-# ==================================================================================================
-# Baseline
-# ==================================================================================================
+    def test_2_repeated_generation_is_byte_identical(self):
+        a = V.canonical_universe_json(V.generate_construction_universe())
+        b = V.canonical_universe_json(V.generate_construction_universe())
+        assert a == b
 
+    def test_3_aggregate_hash_is_stable_across_calls(self):
+        assert V.universe_aggregate_sha256() == V.universe_aggregate_sha256()
 
-class TestBaseline:
-    def test_real_determination_validates_clean(self):
-        assert V.validate_determination_file() == []
-
-    def test_real_determination_records_the_negative(self, real):
-        assert real["determination"]["status"] == "NOT_CLOSED_PREREQUISITE_REQUIRED"
-        assert real["determination"]["stage_1_executable"] is False
-        assert real["determination"]["a_concrete_construction_universe_was_frozen"] is False
-
-    def test_real_determination_answers_p_0(self, real):
-        assert real["answers"] == "XASSET_0027_SECTION_P_0"
-        assert real["governing_decision"] == "XASSET-0028"
-
-    def test_main_returns_zero(self, capsys):
-        assert V.main() == 0
-        out = capsys.readouterr().out
-        assert "NOT CLOSED" in out
-        assert "NOT EXECUTABLE" in out
-
-
-# ==================================================================================================
-# 1-6, 15  Universe integrity: no construction may be registered, invented, or promoted
-# ==================================================================================================
-
-
-class TestUniverseIntegrity:
-    def test_status_cannot_be_upgraded_to_closed(self, doc):
-        doc["determination"]["status"] = "CLOSED"
-        assert find(V.validate_determination_data(doc), "determination.status")
-
-    def test_stage_1_cannot_be_marked_executable(self, doc):
-        doc["determination"]["stage_1_executable"] = True
-        assert find(V.validate_determination_data(doc), "determination.stage_1_executable")
-
-    def test_universe_cannot_be_marked_frozen(self, doc):
-        doc["determination"]["a_concrete_construction_universe_was_frozen"] = True
-        assert find(
-            V.validate_determination_data(doc),
-            "a_concrete_construction_universe_was_frozen",
+    def test_3b_aggregate_hash_independently_recomputed(self, universe):
+        blob = json.dumps(universe, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+        assert hashlib.sha256(blob.encode("utf-8")).hexdigest() == V.universe_aggregate_sha256(
+            universe
         )
 
-    def test_outcome_class_cannot_be_flipped_positive(self, doc):
-        doc["determination"]["outcome_class"] = "POSITIVE_UNIVERSE_CLOSED"
-        assert find(V.validate_determination_data(doc), "determination.outcome_class")
+    def test_4_construction_ids_are_unique(self, universe):
+        ids = [r["construction_id"] for r in universe]
+        assert len(set(ids)) == len(ids)
 
-    def test_no_construction_registry_exists_in_the_artifact(self, real):
-        """The artifact registers no construction -- there is nothing an executor could run.
+    def test_5_ordering_is_deterministic_and_ordinals_are_dense(self, universe):
+        assert [r["ordinal"] for r in universe] == list(range(1, len(universe) + 1))
+        again = V.generate_construction_universe()
+        assert [r["construction_id"] for r in again] == [r["construction_id"] for r in universe]
 
-        Checked against parsed keys rather than raw substrings, so that ordinary prose using the
-        word "constructions" cannot mask, or be mistaken for, an actual registry key.
-        """
-        forbidden = {
-            "construction_id",
-            "constructions",
-            "registered_constructions",
-            "construction_registry",
-            "closed_construction_universe",
+    def test_5b_ordering_follows_the_declared_key_order(self, universe):
+        seen = [
+            (
+                V.SLEEVES.index(r["sleeve"]),
+                V.BOUNDS.index(r["bound"]),
+                V.DRIVER_CLASSES.index(r["driver_class"]),
+                V.FAMILY_IDS.index(r["family_id"]),
+            )
+            for r in universe
+        ]
+        assert seen == sorted(seen)
+
+    def test_6_exactly_48_cells_all_covered(self, universe):
+        cells = {r["cell_id"] for r in universe}
+        assert len(cells) == 48
+        expected = {
+            V.cell_id(s, b, d) for s in V.SLEEVES for b in V.BOUNDS for d in V.DRIVER_CLASSES
         }
+        assert cells == expected
 
-        def keys_of(node):
-            found = set()
-            if isinstance(node, dict):
-                for key, value in node.items():
-                    found.add(str(key))
-                    found |= keys_of(value)
-            elif isinstance(node, list):
-                for item in node:
-                    found |= keys_of(item)
-            return found
+    def test_7_per_driver_and_per_cell_cardinalities_exact(self, universe):
+        per_driver: dict[str, int] = {}
+        for r in universe:
+            per_driver[r["driver_class"]] = per_driver.get(r["driver_class"], 0) + 1
+        assert per_driver == {
+            "portfolio_function": 40,
+            "valuation_opportunity_cost": 160,
+            "downside_path_risk": 160,
+            "recovery": 160,
+            "diversification_cobehavior": 120,
+            "sleeve_deployability": 40,
+        }
+        assert sum(per_driver.values()) == 680
+        assert set(V.per_cell_cardinality().values()) == {5, 15, 20}
 
-        assert keys_of(real) & forbidden == set()
-
-    def test_family_slot_grid_status_cannot_be_promoted_to_the_universe(self, doc):
-        doc["preserved"]["family_slot_grid_status"] = "THE_CONSTRUCTION_UNIVERSE"
-        assert find(V.validate_determination_data(doc), "preserved.family_slot_grid_status")
-
-    def test_family_slot_grid_cannot_become_a_trial_ceiling(self, doc):
-        doc["preserved"]["family_slot_grid_is_a_trial_ceiling"] = True
-        assert find(
-            V.validate_determination_data(doc), "preserved.family_slot_grid_is_a_trial_ceiling"
-        )
-
-    @pytest.mark.parametrize("claim", list(V.BANNED_CLOSURE_CLAIMS))
-    def test_every_closure_claim_is_rejected(self, doc, claim):
-        doc["determination"]["statement"] = f"The {claim} and Stage 1 may proceed."
-        assert find(V.validate_determination_data(doc), "would let a reader treat")
+    def test_7b_every_construction_belongs_to_a_valid_cell_and_family(self, universe):
+        for r in universe:
+            assert r["sleeve"] in V.SLEEVES
+            assert r["bound"] in V.BOUNDS
+            assert r["driver_class"] in V.DRIVER_CLASSES
+            assert r["family_id"] in V.FAMILY_IDS
+            assert r["cell_id"] == V.cell_id(r["sleeve"], r["bound"], r["driver_class"])
+            assert r["construction_id"].startswith(r["cell_id"] + V.ID_SEPARATOR)
 
 
-# ==================================================================================================
-# 7-8  Frozen provenance: canonical identity cannot be substituted or faked
-# ==================================================================================================
+# =============================================================================================
+# 8-19  Mutation rejection
+# =============================================================================================
+def _identity_hash(universe) -> str:
+    return V.universe_aggregate_sha256(universe)
 
 
-class TestCanonicalProvenance:
-    def test_recorded_hash_must_match_the_accepted_pin(self, doc):
-        doc["canonical_files_verified"]["files"][0]["sha256"] = "0" * 64
-        assert find(V.validate_determination_data(doc), "does not match the XASSET-0027 pin")
+class TestMutationRejected:
+    def test_8_duplicate_construction_changes_identity(self, universe):
+        mutated = list(universe) + [copy.deepcopy(universe[0])]
+        assert _identity_hash(mutated) != _identity_hash(universe)
+        ids = [r["construction_id"] for r in mutated]
+        assert len(set(ids)) != len(ids)
 
-    def test_substituted_source_path_is_rejected(self, doc):
-        doc["canonical_files_verified"]["files"][0]["path"] = "research/elsewhere/PROTOCOL_V1.md"
-        assert find(V.validate_determination_data(doc), "missing entry for")
+    def test_9_missing_construction_changes_identity(self, universe):
+        mutated = list(universe)[1:]
+        assert len(mutated) == len(universe) - 1
+        assert _identity_hash(mutated) != _identity_hash(universe)
 
-    def test_correct_looking_but_wrong_hash_is_rejected(self, doc):
-        """A plausible 64-hex string that is not the pinned digest must still fail."""
-        doc["canonical_files_verified"]["files"][1]["sha256"] = "a1b2c3d4" * 8
-        assert find(V.validate_determination_data(doc), "does not match the XASSET-0027 pin")
+    def test_10_extra_unregistered_construction_changes_identity(self, universe):
+        extra = copy.deepcopy(universe[0])
+        extra["construction_id"] = "equity::LOWER::portfolio_function::R1_C1::INVENTED"
+        assert _identity_hash(list(universe) + [extra]) != _identity_hash(universe)
 
-    def test_claiming_canonical_files_were_modified_is_rejected(self, doc):
-        doc["canonical_files_verified"]["modified_by_this_determination"] = True
-        assert find(V.validate_determination_data(doc), "modified_by_this_determination")
+    def test_11_reordering_changes_identity_because_order_is_binding(self, universe):
+        mutated = list(universe)
+        mutated[0], mutated[1] = mutated[1], mutated[0]
+        assert _identity_hash(mutated) != _identity_hash(universe)
 
-    def test_observed_bytes_are_recomputed_not_trusted(self):
-        """The pins are verified against the files on disk, not merely against the document."""
-        for path, pin in V.CANONICAL_PINS.items():
-            assert V.sha256_file(ROOT / path) == pin
-
-    def test_canonical_files_are_byte_unchanged_by_this_unit(self):
-        assert V.validate_determination_file() == []
-        for path, pin in V.CANONICAL_PINS.items():
-            assert V.sha256_file(ROOT / path) == pin
-
-
-# ==================================================================================================
-# 9-11, 16  Prerequisite integrity and the slot arithmetic
-# ==================================================================================================
-
-
-class TestPrerequisites:
-    @pytest.mark.parametrize("prereq_id", list(V.REQUIRED_PREREQUISITE_IDS))
-    def test_neither_prerequisite_may_be_dropped(self, doc, prereq_id):
-        doc["blocking_prerequisites"]["prerequisites"] = [
-            p for p in doc["blocking_prerequisites"]["prerequisites"] if p["id"] != prereq_id
-        ]
-        assert find(V.validate_determination_data(doc), f"missing {prereq_id}")
-
-    def test_independence_note_is_required(self, doc):
-        doc["blocking_prerequisites"]["independence_note"] = ""
-        assert find(V.validate_determination_data(doc), "independence_note")
-
-    def test_prereq_1_slot_count_is_verified_against_the_real_generator(self, doc):
-        p1 = doc["blocking_prerequisites"]["prerequisites"][0]
-        p1["blocks_slots"] = 999
-        assert find(V.validate_determination_data(doc), "verified against the accepted family-slot")
-
-    def test_generator_derived_counts_are_what_the_artifact_claims(self, real):
-        p1 = real["blocking_prerequisites"]["prerequisites"][0]
-        assert p1["blocks_slots"] == V.comparison_scoped_slot_count()
-        assert p1["blocks_slots_of"] == V.total_slot_count()
-
-    def test_comparison_scoped_count_is_one_half_of_the_grid(self):
-        """Three of six DRIVER classes are comparison-scoped, so exactly half the slots."""
-        assert V.comparison_scoped_slot_count() * 2 == V.total_slot_count()
-
-    def test_prereq_1_affected_classes_must_be_exactly_the_three_comparison_scoped(self, doc):
-        p1 = doc["blocking_prerequisites"]["prerequisites"][0]
-        p1["affected_driver_classes"] = ["valuation_opportunity_cost"]
-        assert find(V.validate_determination_data(doc), "affected_driver_classes")
-
-    def test_diversification_cobehavior_must_stay_unaffected(self, doc):
-        """XASSET-0020 closes its comparator space at six unordered pairs; it is not blocked."""
-        p1 = doc["blocking_prerequisites"]["prerequisites"][0]
-        p1["unaffected_driver_classes"] = ["portfolio_function"]
-        assert find(V.validate_determination_data(doc), "diversification_cobehavior")
-
-    def test_prereq_2_must_block_every_slot(self, doc):
-        p2 = doc["blocking_prerequisites"]["prerequisites"][1]
-        p2["blocks_slots"] = 120
-        assert find(V.validate_determination_data(doc), "PREREQ_2.blocks_slots")
-
-    def test_prerequisites_state_why_this_unit_cannot_supply_them(self, real):
-        for entry in real["blocking_prerequisites"]["prerequisites"]:
-            assert entry["why_this_unit_cannot_supply_it"].strip()
-
-    def test_no_comparator_rule_is_supplied(self, real):
-        assert real["non_authorization"]["supplies_a_comparator_rule"] is False
-
-
-# ==================================================================================================
-# 12-14  Contamination: representation, anchors, equal-split and residual leakage
-# ==================================================================================================
-
-
-class TestContamination:
-    def test_representation_dependency_cannot_be_silently_solved(self, doc):
-        doc["preserved"]["representation_posture"] = "AGGREGATION_RULE_SUPPLIED"
-        assert find(V.validate_determination_data(doc), "preserved.representation_posture")
-
-    def test_no_representation_rule_is_created(self, doc):
-        doc["preserved"]["representation_rule_created"] = True
-        assert find(V.validate_determination_data(doc), "representation_rule_created")
-
-    def test_cm_membership_is_not_designated(self, doc):
-        doc["preserved"]["cm_14_through_cm_17_designated"] = True
-        assert find(V.validate_determination_data(doc), "cm_14_through_cm_17_designated")
-
-    @pytest.mark.parametrize("numeral", list(V.BARRED_HISTORICAL_NUMERALS))
-    def test_barred_historical_anchors_are_rejected(self, doc, numeral):
-        doc["determination"]["statement"] = f"A prior output of {numeral} is noted."
-        assert find(V.validate_determination_data(doc), "barred historical output")
-
-    @pytest.mark.parametrize("value", ["25%", "12.5 %", "3.75 percent"])
-    def test_endpoint_shaped_percentages_are_rejected(self, doc, value):
-        doc["determination"]["statement"] = f"The endpoint would be {value}."
-        assert find(V.validate_determination_data(doc), "endpoint-shaped percentage")
-
-    def test_real_artifact_contains_no_percentage_or_barred_anchor(self, real):
-        assert not find(V.validate_determination_data(real), "endpoint-shaped percentage")
-        assert not find(V.validate_determination_data(real), "barred historical output")
-
-
-# ==================================================================================================
-# 18-19  Neither overstated closure nor overstated impossibility
-# ==================================================================================================
-
-
-class TestNoOverclaim:
-    @pytest.mark.parametrize("phrase", list(V.BANNED_PERMANENCE_PHRASES))
-    def test_permanent_impossibility_phrasing_is_rejected(self, doc, phrase):
-        doc["determination"]["statement"] = f"Closure {phrase} be achieved."
-        assert find(V.validate_determination_data(doc), "asserts a permanent impossibility")
-
-    def test_present_authority_bound_cannot_be_dropped(self, doc):
-        doc["determination"]["determination_is_present_authority_bounded"] = False
-        assert find(V.validate_determination_data(doc), "present_authority_bounded")
-
-    def test_non_permanence_flag_cannot_be_dropped(self, doc):
-        doc["determination"]["determination_is_not_permanent_impossibility"] = False
-        assert find(V.validate_determination_data(doc), "not_permanent_impossibility")
-
-    def test_negative_does_not_rest_on_lack_of_imagination(self, real):
-        """The artifact must state why more imagination would not produce exhaustiveness."""
-        reason = real["specification_analysis"]["why_this_is_not_a_failure_of_imagination"]
-        assert "closure principle" in reason
-        assert "exhaustiveness" in reason
-
-    def test_dissolution_path_keeps_the_blocker_non_permanent(self, real):
-        assert real["non_governance_dissolution_path"]["exists"] is True
-
-    def test_partial_closure_is_recorded_as_achievable_but_not_shipped(self, real):
-        assert real["partial_closure"]["achievable"] is True
-        assert real["partial_closure"]["shipped"] is False
-
-
-# ==================================================================================================
-# The disclosed-quotation exemption is narrow
-# ==================================================================================================
-
-
-class TestQuotationExemptionIsNarrow:
-    def test_exemption_matches_only_the_observed_text_field(self):
-        assert V._is_disclosed_quotation("disclosed_findings[0].observed_text")
-        assert V._is_disclosed_quotation("disclosed_findings[7].observed_text")
+    def test_12_id_collision_detectable(self, universe):
+        mutated = copy.deepcopy(list(universe))
+        mutated[1]["construction_id"] = mutated[0]["construction_id"]
+        ids = [r["construction_id"] for r in mutated]
+        assert len(set(ids)) < len(ids)
 
     @pytest.mark.parametrize(
-        "where",
+        "field,value",
         [
-            "disclosed_findings[0].why_it_is_a_finding",
-            "disclosed_findings[0].enforcement_response",
-            "disclosed_findings[0].observed_text.nested",
-            "determination.statement",
-            "observed_text",
-            "routes_examined[0].observed_text",
+            ("sleeve", "crypto"),
+            ("bound", "UPPER"),
+            ("driver_class", "recovery"),
+            ("family_id", "R2_C2"),
+            ("counterpart", "crypto"),
+            ("comparator_architecture", "ALT__crypto"),
+            ("source_architecture_scope", "EXISTING_SOURCE_ARCHITECTURE"),
+            ("evidence_proposition", "a different hypothesis entirely"),
+            ("source_requirement", "the executor may compose the derivation"),
+            ("representation_posture", "A_PRIOR_RULE"),
         ],
     )
-    def test_exemption_does_not_extend_anywhere_else(self, where):
-        assert not V._is_disclosed_quotation(where)
+    def test_13_to_19_any_hypothesis_defining_mutation_changes_identity(
+        self, universe, field, value
+    ):
+        mutated = copy.deepcopy(list(universe))
+        mutated[0][field] = value
+        assert _identity_hash(mutated) != _identity_hash(universe)
 
-    def test_same_phrase_outside_the_quotation_field_is_still_rejected(self, doc):
-        doc["disclosed_findings"][0]["why_it_is_a_finding"] = "the search surface is closed"
-        assert find(V.validate_determination_data(doc), "would let a reader treat")
-
-    def test_permanence_scan_still_applies_inside_the_quotation_field(self, doc):
-        """The exemption covers closure claims only, never permanence overclaim."""
-        doc["disclosed_findings"][0]["observed_text"] = "closure can never be achieved"
-        assert find(V.validate_determination_data(doc), "asserts a permanent impossibility")
-
-    def test_percentage_scan_still_applies_inside_the_quotation_field(self, doc):
-        doc["disclosed_findings"][0]["observed_text"] = "the endpoint is 25%"
-        assert find(V.validate_determination_data(doc), "endpoint-shaped percentage")
+    def test_17b_route_and_class_always_match_the_family(self, universe):
+        for r in universe:
+            assert r["route"] == V.FAMILY_ROUTE[r["family_id"]]
+            assert r["num_0001_class"] == V.FAMILY_NUM_0001_CLASS[r["family_id"]]
 
 
-# ==================================================================================================
-# 17  A construction family is not a concrete construction
-# ==================================================================================================
+# =============================================================================================
+# 20-23  Comparator grammar
+# =============================================================================================
+class TestComparatorGrammar:
+    def test_20_uac_is_never_a_diversification_cobehavior_comparator(self, universe):
+        for r in universe:
+            if r["driver_class"] == "diversification_cobehavior":
+                assert r["counterpart"] != V.UNASSIGNED
+                assert V.UNASSIGNED not in r["comparator_architecture"]
+
+    def test_20b_uac_is_present_for_every_comparison_scoped_class(self, universe):
+        for driver_class in ("valuation_opportunity_cost", "downside_path_risk", "recovery"):
+            for sleeve in V.SLEEVES:
+                arch = V.comparator_architectures(sleeve, driver_class)
+                assert (f"ALT__{V.UNASSIGNED}", V.UNASSIGNED) in arch
+                assert len(arch) == 4
+
+    @pytest.mark.parametrize("driver_class", ["portfolio_function", "sleeve_deployability"])
+    def test_21_22_self_only_for_one_sleeve_scoped_classes(self, universe, driver_class):
+        arch = V.comparator_architectures(V.SLEEVES[0], driver_class)
+        assert arch == (("SELF", None),)
+        for r in universe:
+            if r["driver_class"] == driver_class:
+                assert r["counterpart"] is None
+                assert r["comparator_architecture"] == "SELF"
+                assert r["comparison_subject_kind"] == V.SUBJECT_SLEEVE_SELF
+
+    def test_23_pair_identity_is_canonical_and_unordered(self, universe):
+        pairs = set()
+        for r in universe:
+            if r["driver_class"] == "diversification_cobehavior":
+                pid = r["unordered_pair_id"]
+                assert pid is not None
+                pairs.add(pid)
+                # canonical: reversing the arguments yields the same id
+                assert V.unordered_pair_id(r["sleeve"], r["counterpart"]) == pid
+                assert V.unordered_pair_id(r["counterpart"], r["sleeve"]) == pid
+        assert len(pairs) == 6  # 4 choose 2, XASSET-0020 SS-H
+
+    def test_23b_never_self_paired(self, universe):
+        for r in universe:
+            if r["counterpart"] is not None and r["counterpart"] != V.UNASSIGNED:
+                assert r["counterpart"] != r["sleeve"]
+
+    def test_23c_scope_partition_matches_canonical_bytes(self):
+        assert V.check_scope_partition_matches_canonical() == ()
+
+    def test_23d_unknown_sleeve_or_driver_rejected(self):
+        with pytest.raises(ValueError):
+            V.comparator_architectures("not_a_sleeve", "recovery")
+        with pytest.raises(ValueError):
+            V.comparator_architectures("equity", "not_a_driver")
 
 
-class TestFamilyIsNotAConstruction:
-    def test_grid_remains_a_classification_scaffold(self, real):
+# =============================================================================================
+# 24-27  R2, source architecture, free text, representation
+# =============================================================================================
+class TestHypothesisIntegrity:
+    def test_24_r2_states_a_source_requirement_and_composes_nothing(self, universe):
+        r2 = [r for r in universe if r["family_id"] == V.R2_FAMILY_ID]
+        assert len(r2) == 136  # 680 / 5 families
+        for r in r2:
+            req = r["source_requirement"]
+            assert "source must itself prescribe" in req
+            assert "composes, selects among, or invents no derivation" in req
+        # No arithmetic operator is ever emitted into a hypothesis field.
+        for r in universe:
+            assert not re.search(r"[=+*/]|\bsum\b|\bmean\b", r["source_requirement"])
+
+    def test_24b_r1_states_a_stating_requirement(self, universe):
+        for r in universe:
+            if r["family_id"] != V.R2_FAMILY_ID:
+                assert "uniquely state the bound" in r["source_requirement"]
+                assert "originates no value" in r["source_requirement"]
+
+    def test_25_source_architecture_spans_both_and_is_uniform(self, universe):
+        scopes = {r["source_architecture_scope"] for r in universe}
+        assert len(scopes) == 1
+        only = scopes.pop()
+        for accepted in PREREG.SOURCE_ARCHITECTURES:
+            assert accepted in only
+
+    def test_26_no_result_author_free_text_field_exists(self, universe):
+        """Descriptive fields must be regenerable from closed identity alone."""
+        for r in universe[:40] + universe[-40:]:
+            regenerated = V._evidence_proposition(
+                r["sleeve"], r["bound"], r["driver_class"], r["family_id"], r["counterpart"]
+            )
+            assert regenerated == r["evidence_proposition"]
+
+    def test_26b_evidence_proposition_is_unique_per_construction(self, universe):
+        props = [r["evidence_proposition"] for r in universe]
+        assert len(set(props)) == len(props)
+
+    def test_27_representation_is_a_posture_not_a_solved_rule(self, universe):
+        for r in universe:
+            assert r["representation_posture"] == "SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED"
+        blob = V.canonical_universe_json(universe)
+        for banned in ("CM-14", "CM-15", "CM-16", "CM-17", "representation_rule"):
+            assert banned not in blob
+
+
+# =============================================================================================
+# 28-31  Preserved postures
+# =============================================================================================
+class TestPreservedPostures:
+    def test_28_k1_remains_unresolved(self, determination):
         assert (
-            real["preserved"]["family_slot_grid_status"]
-            == "CLASSIFICATION_SCAFFOLD_NOT_A_CONSTRUCTION_UNIVERSE"
+            determination["preserved_postures"]["xasset_0024_section_k1"]
+            == "UNRESOLVED_BOTH_READINGS_PRESERVED"
         )
 
-    def test_grammar_route_records_the_relabelling_trap(self, real):
-        grammar = next(
-            r for r in real["routes_examined"] if r["route"] == "DETERMINISTIC_CONSTRUCTION_GRAMMAR"
+    def test_28b_no_construction_assumes_a_k1_reading(self, universe):
+        blob = V.canonical_universe_json(universe)
+        for banned in ("subject_matter_reading", "preference_only_reading", "k1_resolved"):
+            assert banned not in blob
+
+    def test_29_j12_remains_deferred(self, determination):
+        assert determination["preserved_postures"]["section_j12"] == "DEFERRED"
+
+    def test_29b_no_whole_candidate_reconciliation_in_identity(self, universe):
+        blob = V.canonical_universe_json(universe)
+        for banned in ("reconciliation", "whole_candidate"):
+            assert banned not in blob
+
+    def test_30_stage_2_unauthorized(self, determination):
+        assert determination["preserved_postures"]["stage_2"] == "NOT_AUTHORIZED"
+        assert "STAGE_2_AUTHORIZATION" in determination["prohibited_scope"]
+
+    def test_31_application_authority_withheld(self, determination):
+        assert determination["preserved_postures"]["application_authority"] == "WITHHELD"
+        assert "APPLICATION_AUTHORITY" in determination["prohibited_scope"]
+
+
+# =============================================================================================
+# 32-37  Firewalls
+# =============================================================================================
+class TestFirewalls:
+    def test_32_no_endpoint_shaped_value_in_universe_or_determination(self, universe):
+        blob = V.canonical_universe_json(universe)
+        assert PREREG.ENDPOINT_SHAPED_TOKEN.search(blob) is None
+        text = DETERMINATION.read_text(encoding="utf-8")
+        assert PREREG.ENDPOINT_SHAPED_TOKEN.search(text) is None
+
+    def test_33_contamination_firewall_is_the_full_predecessor_one(self):
+        """MINOR 2: the successor must never protect fewer values than its predecessor."""
+        assert len(PREREG.BARRED_NUMERAL_PATTERNS) == 5
+        for pattern in PREREG.BARRED_NUMERAL_PATTERNS:
+            probe = pattern.replace("\\", "")
+            findings = V.scan_for_barred_content(f"value {probe} here", "probe")
+            assert findings, f"barred numeral {probe} was not caught"
+
+    def test_33b_scan_delegates_rather_than_duplicating(self):
+        assert V.scan_for_barred_content.__doc__
+        assert V.scan_for_barred_content("clean text", "w") == PREREG.scan_for_barred_content(
+            "clean text", "w"
         )
-        assert "relabel the five provenance families" in grammar["unavailable_because"]
+        assert not hasattr(V, "BARRED_HISTORICAL_NUMERALS")
 
-    def test_accepted_grid_is_not_exhaustive_over_constructions(self):
-        """Cross-check against the accepted preregistration rather than restating it."""
-        prereg = yaml.safe_load(V.PREREG.PREREG_PATH.read_text(encoding="utf-8"))
-        assert prereg["family_slot_grid"]["exhaustive_over_constructions"] is False
-        assert prereg["construction_universe_closure"]["status"] == "NOT_CLOSED"
+    def test_33c_universe_and_determination_are_contamination_free(self, universe):
+        assert V.scan_for_barred_content(V.canonical_universe_json(universe), "universe") == ()
+        assert (
+            V.scan_for_barred_content(DETERMINATION.read_text(encoding="utf-8"), "determination")
+            == ()
+        )
 
+    def test_34_no_equal_split_midpoint_or_residual_leakage(self, universe):
+        blob = V.canonical_universe_json(universe).lower()
+        for banned in ("equal split", "midpoint", "residual", "pro-rata", "pro rata", "optimizer"):
+            assert banned not in blob
 
-# ==================================================================================================
-# 20-22  K.1, J.12, and RISK boundaries
-# ==================================================================================================
+    def test_35_zero_consequential_numeric_free_parameters(self, universe):
+        """Every number in a construction is an index or a derived class label, never a parameter."""
+        for r in universe:
+            for key, value in r.items():
+                if isinstance(value, (int, float)) and not isinstance(value, bool):
+                    assert key in ("ordinal", "num_0001_class")
 
+    def test_36_universe_is_not_outcome_aware(self, universe):
+        blob = V.canonical_universe_json(universe).lower()
+        for banned in ("blocked_categorically", "disposition", "pass", "fail", "outcome"):
+            assert banned not in blob
 
-class TestPreservedOpenQuestions:
-    def test_k_1_cannot_be_implicitly_resolved(self, doc):
-        doc["preserved"]["xasset_0024_section_k_1_reading"] = "RESOLVED_SUBJECT_MATTER_READING"
-        assert find(V.validate_determination_data(doc), "section_k_1_reading")
-
-    def test_j_12_cannot_be_prematurely_reconciled(self, doc):
-        doc["preserved"]["xasset_0024_section_j_12"] = "RECONCILED"
-        assert find(V.validate_determination_data(doc), "section_j_12")
-
-    def test_risk_artifacts_recorded_as_not_accessed(self, doc):
-        doc["preserved"]["risk_0001_artifacts_accessed"] = True
-        assert find(V.validate_determination_data(doc), "risk_0001_artifacts_accessed")
-
-    def test_risk_reuse_cannot_be_authorized(self, doc):
-        doc["preserved"]["risk_reuse_authorized"] = True
-        assert find(V.validate_determination_data(doc), "risk_reuse_authorized")
-
-    def test_no_risk_result_path_is_referenced_anywhere(self):
-        for path in (V.DETERMINATION_PATH, ROOT / V.__name__.replace(".", "/")):
-            pass
-        text = V.DETERMINATION_PATH.read_text(encoding="utf-8")
-        assert "phq-risk0001-results" not in text
-        module = Path(V.__file__).read_text(encoding="utf-8")
-        assert "phq-risk0001-results" not in module
-
-    def test_stage_2_cannot_be_authorized(self, doc):
-        doc["preserved"]["stage_2_authorized"] = True
-        assert find(V.validate_determination_data(doc), "stage_2_authorized")
-
-    def test_endpoint_authority_remains_unexercised(self, doc):
-        doc["preserved"]["level1_endpoint_authority_exercised"] = True
-        assert find(V.validate_determination_data(doc), "level1_endpoint_authority_exercised")
-
-    def test_application_authority_remains_withheld(self, doc):
-        doc["preserved"]["application_authority"] = "GRANTED"
-        assert find(V.validate_determination_data(doc), "application_authority")
+    def test_37_no_reserve_or_unregistered_construction_path(self, universe):
+        blob = V.canonical_universe_json(universe).lower()
+        for banned in ("reserve_construction", "unregistered", "ad_hoc", "discretionary"):
+            assert banned not in blob
 
 
-# ==================================================================================================
-# Closure test and route completeness
-# ==================================================================================================
+# =============================================================================================
+# 38-42  Canonical lineage, Stage-1 gating, artifacts
+# =============================================================================================
+class TestCanonicalLineageAndStage1:
+    def test_38_predecessor_hashes_preserved_as_history(self, determination):
+        pred = determination["canonical_amendment"]["predecessor_pins"]
+        assert (
+            pred["research/level1_endpoint_evidence/PROTOCOL_V1.md"]
+            == "1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b"
+        )
+        assert (
+            pred["research/level1_endpoint_evidence/pre_registration.yaml"]
+            == "bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f"
+        )
+        assert determination["canonical_amendment"]["rewrites_accepted_history"] is False
+
+    def test_38b_xasset_0027_record_preserved_inside_the_canonical_file(self):
+        data = yaml.safe_load(
+            (REPO_ROOT / "research/level1_endpoint_evidence/pre_registration.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        pred = data["construction_universe_closure"]["xasset_0027_predecessor_record"]
+        assert pred["status"] == "NOT_CLOSED"
+        assert pred["preserved_verbatim"] is True
+        assert len(pred["routes_considered_and_unavailable_to_this_filing"]) == 2
+
+    def test_39_successor_pins_verify_observed_final_bytes(self, determination):
+        for rel, digest in determination["canonical_amendment"]["successor_pins"].items():
+            assert V.sha256_file(REPO_ROOT / rel) == digest
+
+    def test_39b_successor_pins_differ_from_predecessor(self, determination):
+        amendment = determination["canonical_amendment"]
+        for rel, digest in amendment["successor_pins"].items():
+            assert digest != amendment["predecessor_pins"][rel]
+
+    def test_40_stale_contradictory_sentence_is_superseded(self):
+        data = yaml.safe_load(
+            (REPO_ROOT / "research/level1_endpoint_evidence/pre_registration.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        decl = data["consequential_parameter_registry"]["zero_parameter_declaration"]
+        assert "candidate universe now closed" not in decl["design_consequence"]
+        assert "XASSET-0028" in decl["design_consequence"]
+        assert "design_consequence_amendment_note" in decl
+        # And no operative field simultaneously says NOT_CLOSED.
+        assert data["construction_universe_closure"]["status"] == "CLOSED"
+
+    def test_40b_protocol_mirror_agrees_with_preregistration(self):
+        protocol = (REPO_ROOT / "research/level1_endpoint_evidence/PROTOCOL_V1.md").read_text(
+            encoding="utf-8"
+        )
+        assert PREREG.validate_protocol_mirror(protocol).ok
+
+    def test_41_pre_lifecycle_execution_remains_blocked(self, determination):
+        stage_1 = determination["stage_1"]
+        assert stage_1["construction_universe_structurally_closed"] is True
+        assert stage_1["operationally_authorized"] is False
+        assert stage_1["executed_by_this_unit"] is False
+        assert stage_1["no_merge_to_execution_gap"] is True
+        data = yaml.safe_load(
+            (REPO_ROOT / "research/level1_endpoint_evidence/pre_registration.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        assert data["stage_1_executability"]["executable"] is False
+        assert data["stage_1_executability"]["authorized_by_xasset_0028"] is False
+
+    def test_42_no_stage1_result_or_application_artifact_exists(self):
+        assert not (REPO_ROOT / "research/level1_endpoint_evidence/stage1_results.yaml").exists()
+        assert not (REPO_ROOT / "intelligence/level1_application").exists()
+        assert list(REPO_ROOT.glob("**/stage1_results.yaml")) == []
+
+    def test_42b_risk_results_path_never_referenced_as_an_input(self):
+        text = Path(V.__file__).read_text(encoding="utf-8")
+        assert "/private/tmp/phq-risk0001-results" not in text
 
 
-class TestClosureTestAndRoutes:
-    @pytest.mark.parametrize("criterion", list(V.REQUIRED_CLOSURE_CRITERIA))
-    def test_no_closure_criterion_may_be_dropped(self, doc, criterion):
-        doc["closure_test"]["criteria"] = [
-            c for c in doc["closure_test"]["criteria"] if c["id"] != criterion
-        ]
-        assert find(V.validate_determination_data(doc), f"missing {criterion}")
+# =============================================================================================
+# Determination-artifact structural validation
+# =============================================================================================
+class TestDeterminationValidation:
+    def test_clean_artifact_validates(self):
+        assert V.validate_file().ok
 
-    def test_c3_cannot_be_marked_satisfiable(self, doc):
-        for entry in doc["closure_test"]["criteria"]:
-            if entry["id"] == "C3_EXHAUSTIVE_OVER_CONSTRUCTIONS":
-                entry["satisfiable_under_this_authority"] = True
-        assert find(V.validate_determination_data(doc), "C3].satisfiable_under_this_authority")
+    def test_status_must_be_closed(self, determination):
+        determination["status"] = "NOT_CLOSED"
+        assert not V.validate(determination).ok
 
-    def test_c3_must_remain_decisive(self, doc):
-        for entry in doc["closure_test"]["criteria"]:
-            if entry["id"] == "C3_EXHAUSTIVE_OVER_CONSTRUCTIONS":
-                entry["decisive"] = False
-        assert find(V.validate_determination_data(doc), "C3].decisive")
+    def test_wrong_cardinality_rejected(self, determination):
+        determination["universe_identity"]["registered_construction_count"] = 679
+        result = V.validate(determination)
+        assert not result.ok
+        assert any("registered_construction_count" in e for e in result.errors)
 
-    @pytest.mark.parametrize("route", list(V.REQUIRED_ROUTES))
-    def test_no_route_may_be_dropped(self, doc, route):
-        doc["routes_examined"] = [r for r in doc["routes_examined"] if r["route"] != route]
-        assert find(V.validate_determination_data(doc), f"missing {route}")
+    def test_wrong_aggregate_hash_rejected(self, determination):
+        determination["universe_identity"]["aggregate_sha256"] = "0" * 64
+        result = V.validate(determination)
+        assert any("aggregate_sha256" in e for e in result.errors)
 
-    def test_a_rejected_route_cannot_be_marked_taken(self, doc):
-        doc["routes_examined"][0]["taken"] = True
-        assert find(V.validate_determination_data(doc), "must be marked")
+    def test_wrong_per_cell_rejected(self, determination):
+        key = next(iter(determination["per_cell_cardinality"]))
+        determination["per_cell_cardinality"][key] = 99
+        assert not V.validate(determination).ok
 
-    def test_registry_route_cannot_be_marked_available(self, doc):
-        doc["routes_examined"][0]["available_under_this_authority"] = True
-        assert find(V.validate_determination_data(doc), "available_under_this_authority")
+    def test_claiming_uac_as_pair_comparator_rejected(self, determination):
+        determination["comparator_contract"][
+            "unassigned_capital_is_a_diversification_cobehavior_comparator"
+        ] = True
+        assert not V.validate(determination).ok
 
-    def test_both_dominance_and_quotient_routes_were_examined(self, real):
-        names = {r["route"] for r in real["routes_examined"]}
-        assert "DOMINANCE_OVER_A_MAXIMALLY_PERMISSIVE_CONSTRUCTION" in names
-        assert "FINITE_QUOTIENT_OVER_GATE_OUTCOME_VECTORS" in names
+    def test_claiming_a_new_comparator_rule_rejected(self, determination):
+        determination["comparator_contract"]["supplies_a_new_comparator_rule"] = True
+        assert not V.validate(determination).ok
 
+    def test_mutated_scope_partition_rejected(self, determination):
+        determination["comparator_contract"]["driver_class_scope"][
+            "diversification_cobehavior"
+        ] = "COMPARISON_SCOPED_COMPARATOR_NOT_FIXED"
+        assert not V.validate(determination).ok
 
-# ==================================================================================================
-# Parameters, non-authorization, findings, and malformed input
-# ==================================================================================================
+    def test_operational_authorization_claim_rejected(self, determination):
+        determination["stage_1"]["operationally_authorized"] = True
+        assert not V.validate(determination).ok
 
+    def test_missing_effectivity_gate_rejected(self, determination):
+        determination["stage_1"]["effectivity_gates"] = ["MERGE"]
+        assert not V.validate(determination).ok
 
-class TestParametersAndNonAuthorization:
-    def test_a_consequential_parameter_cannot_be_introduced(self, doc):
-        doc["consequential_parameter_registry"]["parameters"] = [{"parameter_id": "X"}]
-        assert find(V.validate_determination_data(doc), "must be empty")
+    def test_unknown_top_level_key_rejected(self, determination):
+        determination["smuggled"] = "value"
+        assert not V.validate(determination).ok
 
-    def test_zero_parameter_declaration_cannot_be_dropped(self, doc):
-        doc["consequential_parameter_registry"]["zero_parameter_declaration"][
-            "introduces_zero_consequential_numeric_parameters"
-        ] = False
-        assert find(V.validate_determination_data(doc), "introduces_zero_consequential")
+    def test_missing_top_level_key_rejected(self, determination):
+        del determination["universe_identity"]
+        assert not V.validate(determination).ok
 
-    @pytest.mark.parametrize(
-        "key",
-        [
-            "closes_a_construction_universe",
-            "makes_stage_1_executable",
-            "authorizes_stage_2",
-            "supplies_a_comparator_rule",
-            "resolves_xasset_0024_section_k_1",
-            "amends_any_canonical_hash_pinned_file",
-            "authorizes_chart_ladder_optimizer_deployment_trade_or_order",
-        ],
-    )
-    def test_no_non_authorization_may_be_flipped_true(self, doc, key):
-        doc["non_authorization"][key] = True
-        assert find(V.validate_determination_data(doc), f"non_authorization.{key}")
+    def test_successor_pin_equal_to_predecessor_rejected(self, determination):
+        amendment = determination["canonical_amendment"]
+        rel = "research/level1_endpoint_evidence/PROTOCOL_V1.md"
+        amendment["successor_pins"][rel] = amendment["predecessor_pins"][rel]
+        result = V.validate(determination)
+        assert any("unchanged from the predecessor pin" in e for e in result.errors)
 
-    def test_non_authorization_cannot_be_emptied(self, doc):
-        doc["non_authorization"] = {}
-        assert find(V.validate_determination_data(doc), "must not be empty")
+    def test_rewritten_predecessor_pin_rejected(self, determination):
+        determination["canonical_amendment"]["predecessor_pins"][
+            "research/level1_endpoint_evidence/PROTOCOL_V1.md"
+        ] = "0" * 64
+        result = V.validate(determination)
+        assert any("predecessor_pins" in e for e in result.errors)
 
+    @pytest.mark.parametrize("phrase", list(V.BANNED_PERMANENCE_PHRASES))
+    def test_permanence_overclaim_rejected(self, determination, phrase):
+        determination["closure_basis"] = f"this route {phrase} be revisited"
+        result = V.validate(determination)
+        assert any(phrase in e for e in result.errors)
 
-class TestFindings:
-    def test_stale_sentence_finding_must_remain_disclosed(self, doc):
-        doc["disclosed_findings"] = []
-        assert find(V.validate_determination_data(doc), "must remain disclosed")
+    @pytest.mark.parametrize("phrase", list(V.BANNED_EXECUTION_CLAIMS))
+    def test_execution_authorization_claim_rejected(self, determination, phrase):
+        determination["closure_basis"] = f"note: {phrase} now"
+        result = V.validate(determination)
+        assert any(phrase in e for e in result.errors)
 
-    def test_a_finding_must_say_why_it_was_not_corrected(self, doc):
-        doc["disclosed_findings"][0]["not_corrected_because"] = ""
-        assert find(V.validate_determination_data(doc), "not_corrected_because")
+    def test_endpoint_shaped_token_in_artifact_rejected(self, determination):
+        determination["closure_basis"] = "the sleeve receives 12.5% of the unit"
+        assert not V.validate(determination).ok
 
-    def test_finding_1_points_at_the_real_stale_text(self, real):
-        """The disclosure must be verifiable against the canonical file it names."""
-        finding = real["disclosed_findings"][0]
-        assert "pre_registration.yaml" in finding["location"]
-        prereg_text = V.PREREG.PREREG_PATH.read_text(encoding="utf-8")
-        assert "the qualitative" in prereg_text and "search surface is closed" in prereg_text
+    def test_barred_historical_numeral_in_artifact_rejected(self, determination):
+        determination["closure_basis"] = "prior output was 66.68 here"
+        result = V.validate(determination)
+        assert any("barred historical" in e for e in result.errors)
 
-    def test_finding_1_is_not_claimed_to_be_an_enforcement_gap(self, real):
-        assert real["disclosed_findings"][0]["is_an_enforcement_gap"] is False
+    def test_missing_prohibited_scope_entry_rejected(self, determination):
+        determination["prohibited_scope"] = ["STAGE_1_EXECUTION"]
+        assert not V.validate(determination).ok
 
+    def test_non_mapping_rejected(self):
+        assert not V.validate([]).ok
 
-class TestMalformedInput:
-    def test_non_mapping_top_level_is_rejected(self):
-        assert V.validate_determination_data(["not", "a", "mapping"]) != []
-
-    def test_missing_file_is_reported(self, tmp_path):
-        errors = V.validate_determination_file(tmp_path / "absent.yaml")
-        assert find(errors, "missing")
-
-    def test_malformed_yaml_is_reported(self, tmp_path):
+    def test_unparseable_file_rejected(self, tmp_path):
         bad = tmp_path / "bad.yaml"
-        bad.write_text("determination: [unclosed\n", encoding="utf-8")
-        assert find(V.validate_determination_file(bad), "could not be parsed")
+        bad.write_text("::: not yaml :::", encoding="utf-8")
+        assert not V.validate_file(bad).ok
 
-    def test_empty_document_is_rejected(self, tmp_path):
-        empty = tmp_path / "empty.yaml"
-        empty.write_text("", encoding="utf-8")
-        assert V.validate_determination_file(empty) != []
+    def test_missing_file_rejected(self, tmp_path):
+        assert not V.validate_file(tmp_path / "absent.yaml").ok
 
 
-# ==================================================================================================
-# Repository invariants and isolation
-# ==================================================================================================
+# =============================================================================================
+# Coupling and isolation
+# =============================================================================================
+class TestCoupling:
+    def test_zero_allocator_and_margin_import_coupling(self):
+        text = Path(V.__file__).read_text(encoding="utf-8")
+        for banned in ("import allocate", "import margin_state", "from allocate", "from margin_state"):
+            assert banned not in text
+        for other in ("allocate.py", "margin_state.py", "levels.py"):
+            src = (REPO_ROOT / other).read_text(encoding="utf-8")
+            assert "level1_construction_universe_closure_validator" not in src
 
+    def test_generator_is_pure_no_clock_or_randomness(self):
+        text = Path(V.__file__).read_text(encoding="utf-8")
+        for banned in ("random.", "datetime.now", "time.time", "os.environ", "date.today"):
+            assert banned not in text
 
-class TestRepositoryInvariants:
-    def test_no_stage_1_results_artifact_exists(self):
-        assert not (ROOT / "research/level1_endpoint_evidence/stage1_results.yaml").exists()
-
-    def test_no_application_directory_exists(self):
-        assert not (ROOT / "intelligence/level1_application").exists()
-
-    def test_endpoint_evidence_directory_still_holds_exactly_its_two_canonical_files(self):
-        """This unit sited its artifact elsewhere precisely so this invariant stays untouched."""
-        research_dir = ROOT / "research/level1_endpoint_evidence"
-        assert sorted(p.name for p in research_dir.iterdir()) == [
-            "PROTOCOL_V1.md",
-            "pre_registration.yaml",
-        ]
-
-    def test_determination_directory_holds_only_the_determination(self):
-        directory = ROOT / "research/level1_construction_universe"
-        assert sorted(p.name for p in directory.iterdir()) == ["CLOSURE_DETERMINATION_V1.yaml"]
-
-    def test_zero_import_coupling_with_allocator_and_margin(self):
-        tree = ast.parse(Path(V.__file__).read_text(encoding="utf-8"))
-        imported: set[str] = set()
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Import):
-                imported.update(alias.name.split(".")[0] for alias in node.names)
-            elif isinstance(node, ast.ImportFrom) and node.module:
-                imported.add(node.module.split(".")[0])
-        assert "allocate" not in imported
-        assert "margin_state" not in imported
-        assert "levels" not in imported
-
-    def test_only_read_only_generator_is_borrowed_from_the_charter_validator(self):
-        """The single cross-module dependency exists so slot counts are derived, not asserted."""
-        assert V.PREREG.generate_family_slot_grid() == V.PREREG.generate_family_slot_grid()
-        assert len(V.PREREG.generate_family_slot_grid()) == V.total_slot_count()
-
-    def test_decision_file_exists_and_is_lane_g_proposed(self):
-        text = V.DECISION_PATH.read_text(encoding="utf-8")
-        assert "decision_id: XASSET-0028" in text
-        assert "status: Proposed" in text
+    def test_prereg_validator_still_passes_with_amended_canonical_bytes(self):
+        assert PREREG.validate_file().ok

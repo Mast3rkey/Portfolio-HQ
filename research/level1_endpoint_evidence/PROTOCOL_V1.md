@@ -504,6 +504,32 @@ new evidence → **lawful snapshot successor** → endpoint-capable downstream c
 `intelligence/level1_application/` artifact exists or is authorized, and **application authority
 remains WITHHELD**.
 
+## Amendment — `XASSET-0028` successor identity
+
+**Amended by `XASSET-0028`.** `XASSET-0027` recorded that the concrete construction universe was
+`NOT_CLOSED` and that Stage 1 was therefore not executable. `XASSET-0028` is the separately accepted
+amendment `XASSET-0027`'s own pin rule requires, and it **closes that universe**: a deterministic,
+finite, preregistered, grammar-derived universe of **680 registered constructions** across the 48
+cells, with exact identity, ordering, cardinality, and an aggregate integrity hash.
+
+The closure basis supplies **no new comparator rule**. It enumerates `XASSET-0020` §H's already-closed
+direct-comparison contract — six unordered sleeve-sleeve pairs, plus a mandated direct comparison of
+each sleeve with `UNSIZED_UNASSIGNED_CAPITAL` — crossed with the pre-registration's own canonical
+`driver_class_scope` partition. Nothing is selected, ranked, preferred, invented, or excluded.
+
+**Structural closure is not operational authorization.** Stage 1 is **NOT EXECUTED** by `XASSET-0028`
+and remains **NOT EXECUTABLE** until `XASSET-0028`'s own lifecycle closes in full — independent full
+exact-head review, principal exact-head acceptance, merge, post-merge verification, merge-commit CI
+success, and verification of the merged successor hashes and universe hash. There is no
+merge-to-execution gap.
+
+Predecessor canonical identity remains auditable and is never rewritten. Until `XASSET-0028` is
+effective, the `XASSET-0027` predecessor identity governs; after it, the successor identity governs.
+
+`XASSET-0024` §K.1 remains **unresolved** with both readings preserved, §J.12 remains **deferred**,
+representation remains `SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED`, Stage 2 remains **unauthorized**,
+and application authority remains **WITHHELD**.
+
 <!-- ENDPOINT-0001-PROTOCOL-MIRROR-V1
 study_id: ENDPOINT-0001
 sleeve_count: 4
@@ -516,8 +542,13 @@ roll_up_unit_count: 8
 gate_count: 12
 consequential_parameter_count: 0
 stage_1_executable: false
-construction_universe_closed: false
+construction_universe_closed: true
+registered_construction_count: 680
+construction_universe_sha256: 97d0bc865500892cef648895b97208b1e8cf381993192b74ea86335ba457f6ce
+stage_1_structurally_closed: true
+stage_1_operationally_authorized: false
 stage_2_authorized: false
 j12_deferred: true
-hash_version: ENDPOINT-0001-PREREG-V3
+hash_version: ENDPOINT-0001-PREREG-V4
+predecessor_hash_version: ENDPOINT-0001-PREREG-V3
 -->

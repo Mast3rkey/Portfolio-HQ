@@ -12,358 +12,253 @@ supporting_artifact: research/level1_construction_universe/CLOSURE_DETERMINATION
 ### Live preflight
 
 Verified independently before any file was touched, against live GitHub and the local checkout rather
-than against the authorizing brief: `main` and `origin/main` both at
-`e4b6f0b810884fcb73d1b8ee053d8005db532f3e`; working tree clean; no stash; a single worktree; **zero**
-open pull requests. `XASSET-0027` merged via PR #326 — accepted head
-`6d6a5190a682fa4eb30d4abee70a836c24194fe1`, base `e7e9e53dbcdcaaa0ff71f128694028650500c323`, merge
-commit parents re-derived from `git log` and matching exactly; final independent review `4945377387`
-(APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR / 1 NOTE); principal
-acceptance `issuecomment-5305685656`; merge-commit CI run `31926322438` / job `95114383877`, event
-`push`, branch `main`, `head_sha` `e4b6f0b8…`, completed / success. `XASSET-0028` was unused in both
-repository content and PR search. Both canonical `ENDPOINT-0001` hashes were recomputed from observed
-bytes and match their accepted pins. No `stage1_results.yaml` and no `intelligence/level1_application/`
+than against any brief: `origin/main` at `e4b6f0b810884fcb73d1b8ee053d8005db532f3e`; working tree
+clean; no stash; a single worktree; PR #327 the sole open pull request, at head
+`6fc32e184e77f2bc7371f8f73d2818b5a3f4eeb6`, base `e4b6f0b8…`, open / draft / unmerged / mergeable.
+Both canonical `ENDPOINT-0001` hashes were recomputed from observed bytes and matched their accepted
+`XASSET-0027` pins before amendment. No `stage1_results.yaml` and no `intelligence/level1_application/`
 exist.
 
 ### The question this unit answers
 
 `XASSET-0027` §P.0, verbatim: **one governance unit whose scope is to determine whether a concrete
-construction universe can be closed at all and, if so, to freeze it**
-(`CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION`) — confronting directly that constructions built on
-sources which do not yet exist are not enumerated by any accepted decision, and stating its own
-answer, **including that its answer may itself be negative**.
+construction universe can be closed at all and, if so, to freeze it** — *"including the possibility
+that its own answer is negative."*
 
-`XASSET-0027` deliberately did not pre-decide it. Its own final correction, under independent review,
-replaced a permanent-impossibility claim with a present-authority claim and renamed its route keys to
-`routes_considered_and_unavailable_to_this_filing`, expressly leaving open whether this unit could
-preregister a finite hypothetical-architecture registry. This filing therefore begins with the
-question genuinely open in both directions, and neither route was presumed unavailable.
+### The correction this filing makes
 
-### The gap, reproduced rather than inherited
+A first attempt at this unit answered §P.0 in the **negative**. Independent full exact-head review
+`4945473310` returned **CHANGES REQUIRED — 1 BLOCKING / 2 MAJOR / 2 MINOR / 1 NOTE**, finding that the
+negative rested on a **stronger closure standard than `XASSET-0027` established**: it required the
+registry to contain *every conceivable future source architecture*, when `XASSET-0027` §I.2 ties a
+categorical cell negative to **every *registered* construction for that cell**. The review also found
+that the filing had discarded the positive research-design authority this unit exists to exercise, and
+that `PREREQ-1` had converted `XASSET-0026`'s deliberate evidence-design openness into a requirement
+for a separate global comparator ontology without an accepted-text bridge.
 
-Four classifying dimensions are closed by accepted authority — 4 sleeves, 2 bounds, 6 DRIVER classes,
-5 `(route, NUM-0001 class)` provenance families — yielding 240 family slots over 48 cells. That grid
-is **exhaustive over provenance families and not over constructions**. `XASSET-0023` §H.2 and §H.3 are
-**constraint sets, not generators**: satisfying a constraint set does not enumerate the objects that
-satisfy it. The existing-source corpus is exactly `XASSET-0021`'s frozen snapshot, which
-`XASSET-0025` Outcome C already searched exhaustively. What remains is constructions whose sources do
-not yet exist.
+**That finding is correct.** The determination has been re-derived from primary authority, and it
+**flips**. The negative is not preserved merely because a validator and test suite encoded it.
 
 ## Decision
 
-### A. Determination
+### A. Determination — `CONSTRUCTION_UNIVERSE_CLOSED`
 
-**`CONSTRUCTION_UNIVERSE_NOT_CLOSED`.** Under the authority available to `XASSET-0028`, a concrete
-construction universe for `ENDPOINT-0001` Stage 1 **cannot be closed**. Two independent prerequisites
-block it, and neither can be supplied here without performing a methodology amendment reserved to
-separate authority. Stage 1 remains **NOT EXECUTABLE**.
+The concrete `ENDPOINT-0001` Stage-1 construction universe **is closed**: a deterministic, finite,
+preregistered, grammar-derived universe of **680 registered constructions** across the 48 cells, with
+exact identity, binding ordering, derived cardinality, and an aggregate integrity hash.
 
-The determination is recorded machine-readably at
-`research/level1_construction_universe/CLOSURE_DETERMINATION_V1.yaml` and enforced by
-`level1_construction_universe_closure_validator.py`.
+**Stage 1 is NOT EXECUTED by this filing and remains NOT EXECUTABLE.**
 
-**The negative is bounded to present authority and is expressly not a claim of permanent
-impossibility.** That distinction is not decorative: it is the exact overclaim `XASSET-0027`'s own
-independent review caught, and this filing's validator inherits its banned-phrase discipline and
-applies it to this decision's own artifact.
+### B. The closure standard actually in force
 
-### B. The closure test applied
+A finite preregistered study universe is normatively closed by this explicitly authorized governance
+act when it is finite, exact-cardinality, completely generated under a **stated governed closure
+basis**, frozen before Stage-1 outcomes, deterministic in identity and ordering, byte-identically
+reproducible, non-outcome-aware, non-economic in its enumeration mechanism, free of endpoint values
+and portfolio-policy choices, complete under its explicit governed study basis, and incapable of
+executor additions, omissions, substitutions, or hypothesis mutation.
 
-A universe closes only if all five hold. Criteria 2, 4, and 5 were achievable. **Criterion 3 is
-decisive** — it is what makes a negative Stage-1 result mean anything, because `XASSET-0027` §I.2
-permits `BLOCKED_CATEGORICALLY` only where *every registered construction* for a cell was evaluated
-and every one was blocked.
+It is **not** required to exhaust the metaphysical set of every imaginable future source. Governance
+preregistration necessarily authors hypotheses; the integrity test is completeness **under a stated
+basis**, not omniscience.
 
-| | Criterion | Satisfiable here |
+### C. The closure basis, derived rather than invented
+
+`XASSET-0027` §I.1 names the dimensions that can inhabit one provenance family. Taken in turn:
+
+| Dimension | Disposition |
+|---|---|
+| external impositions, calibrations, governance selections, provisional guardrails, prescribed derivations | **already closed** — these *are* the five `(route, NUM-0001 class)` families |
+| evidence form | **representation** — preserved as a downstream gate (`G9`), never an identity dimension |
+| source identity | what Stage 1 **searches for**; fixing it would require enumerating every institution in existence |
+| source architecture | **spans both** accepted values rather than fixing one — see §F |
+| **comparator architecture** | the one genuinely open dimension — **and accepted authority already closes it** |
+
+`XASSET-0020` §H closes the direct-comparison contract in two parts: exactly **six unordered
+sleeve-sleeve pair records** ("`4 choose 2`", binding), and — separately — *"Each of the four sleeves
+must **also** be compared directly with `UNSIZED_UNASSIGNED_CAPITAL`."*
+
+The pre-registration's own canonical `driver_class_scope` block already partitions the six `XASSET-0020`
+§E.1 DRIVER classes by evidence-item scope. **This filing reads that partition out of the accepted
+bytes; it does not author one.**
+
+| DRIVER class | Canonical scope | Comparator architectures |
 |---|---|---|
-| C1 | Finite, with an exact stated cardinality | **No** |
-| C2 | Frozen before any Stage-1 outcome is observed | Yes |
-| C3 | **Exhaustive over constructions** — a negative means every construction was tested | **No — decisive** |
-| C4 | No executor may invent, omit, substitute, or mutate a construction at result time | Yes |
-| C5 | Each construction reproducible from frozen identity | Yes |
+| `portfolio_function` | `ONE_SLEEVE` | 1 — `SELF` |
+| `sleeve_deployability` | `ONE_SLEEVE` | 1 — `SELF` |
+| `diversification_cobehavior` | `ONE_UNORDERED_PAIR` | 3 — the three other sleeves |
+| `valuation_opportunity_cost` | `COMPARISON_SCOPED_COMPARATOR_NOT_FIXED` | 4 — three other sleeves + UAC |
+| `downside_path_risk` | `COMPARISON_SCOPED_COMPARATOR_NOT_FIXED` | 4 |
+| `recovery` | `COMPARISON_SCOPED_COMPARATOR_NOT_FIXED` | 4 |
 
-### C. Route A — a concrete finite registry
+**`4 × 2 × 5 × (1 + 4 + 4 + 4 + 3 + 1) = 4 × 2 × 5 × 17 = 680`**
 
-The construction space partitions in two, and the halves fail for **different** reasons. Collapsing
-them would have hidden that.
+`UNSIZED_UNASSIGNED_CAPITAL` is deliberately **not** a `diversification_cobehavior` comparator: §H's
+UAC comparison is not a pair record and carries its own separate conclusion vocabulary, and that
+class's canonical scope is `ONE_UNORDERED_PAIR`. Registering it would be *inventing* a construction
+rather than enumerating one. The alternative — registering 40 `NOT_APPLICABLE` rows for grid symmetry,
+giving 720 — was considered and declined for exactly that reason, and is recorded so the judgment is
+checkable rather than silent.
 
-**Existing-source partition — closes, and adds nothing.** Finite, frozen, exactly `XASSET-0021`'s
-snapshot. But `XASSET-0025` Outcome C already searched precisely that corpus and found no qualifying
-source, and `XASSET-0027` §I.1.1 records as an accepted determination that a Stage 1 restricted to it
-would re-run that result. Closing only this half would additionally leave every hypothetical
-construction unregistered, so §I.2's negative rule would range over a set that excludes the live
-possibility by construction.
+**This answers MAJOR 1.** No comparator rule is supplied. `XASSET-0026` §D said no comparator rule was
+supplied *by `XASSET-0026`*; it did not repeal `XASSET-0020` §H's comparison contract, and its own
+scope note says comparators "are not fixed **here**." Enumerating §H's mandated comparisons is study
+enumeration, not an economic judgment, and no comparator ordering implies sleeve preference.
 
-**Hypothetical-source partition — does not close**, blocked independently by both §E prerequisites.
+### D. Construction identity — smallest sufficient
 
-### D. Why cleverer specification does not rescue it
+Each construction carries: `construction_id`, `cell_id`, `sleeve`, `bound`, `driver_class`,
+`driver_class_scope`, `family_id`, `route`, `num_0001_class`, `comparison_subject_kind`,
+`comparator_architecture`, `counterpart`, `unordered_pair_id` (pair-scoped only),
+`source_architecture_scope`, `evidence_proposition`, `source_requirement`, `representation_posture`,
+`governing_authority_refs`, and `ordinal`.
 
-This is the reason `PREREQ-2` is a genuine prerequisite and not an implementation inconvenience.
+Every descriptive field is **generated deterministically from closed identity**. No result-author free
+text exists, so two independent executors handed the same `construction_id` necessarily evaluate the
+same hypothesis.
 
-- **Under-specify** — a construction stating less than what determines its own gate outcomes leaves
-  the remainder to the executor at evaluation time. That violates C4 and merely *relocates* the
-  unbounded qualitative search from results time to freeze time.
-- **Over-specify** — a construction stating exactly what determines its gate outcomes fixes its own
-  disposition analytically at freeze. Stage 1 becomes vacuous, and the question that matters — whether
-  the world admits such a source — goes untested.
-- **The middle ground is real.** A stated institutional source type paired with a stated content
-  requirement is concrete, non-tautological, and genuinely forces `G2`, `G3`, and `G5` to be
-  evaluated. This filing does not pretend otherwise. But the set of such pairs is *exactly* the space
-  `PREREQ-2` concerns, and accepted authority supplies no principle from which it could be derived.
+**Deliberately excluded from per-construction identity**: admitted/prohibited input classes and the
+twelve applicable gate ids. Both are **constant across all 680** and therefore discriminate no
+hypothesis; duplicating them into each record would be noise, not identity. They are recorded once, at
+universe level, in the determination artifact.
 
-**This is not a failure of imagination.** More architectures can plainly be imagined. Completeness,
-however, requires a closure *principle*, and no accepted decision supplies one for source
-architectures. Absent one, further imagination lengthens a list without ever making it demonstrably
-exhaustive — and C3 is a claim about exhaustiveness, not about length.
+### E. `R2_C2` — a source requirement, never a composed derivation
 
-### E. The two blocking prerequisites — independent, and both required
+`XASSET-0023` §H.3 item 3 bars **an application** from composing a derivation the sources do not
+prescribe — *"composing one is authorship, not derivation."* It does not bar preregistering the
+hypothesis that a **qualifying source must itself prescribe one**. Every `R2_C2` construction therefore
+carries exactly that requirement and composes nothing. The generator produces no arithmetic.
 
-**They are not alternatives.** Satisfying `PREREQ-1` alone does not enable closure, because
-`PREREQ-2` blocks every slot. Satisfying `PREREQ-2` alone does not enable closure for the
-comparison-scoped slots. This is stated explicitly so a successor cannot satisfy the narrower one and
-report the universe closeable.
+### F. Source architecture — spanned, not fixed
 
-**`PREREQ-1` — a comparator admissibility rule. Blocks 120 of 240 slots.** Three DRIVER classes —
-`valuation_opportunity_cost`, `downside_path_risk`, `recovery` — are comparison-scoped with **no
-comparator fixed**. `XASSET-0026` §D states it in terms: *"What the lawful comparator may be for a
-given item is a property of an evidence design that does not exist; no comparator rule is supplied,
-narrowed, or implied here."* A concrete construction in those cells must fix a comparator. Supplying
-one here would furnish precisely the rule `XASSET-0026` declined to supply — a methodology amendment
-to `XASSET-0020` §E.1's scope language — and is substantively an **economic judgment**, since choosing
-what the marginal dollar is measured against determines what opportunity cost means. That is the
-arbitrary economic assumption this unit is barred from smuggling in.
+Every construction spans both accepted values rather than fixing one. Making it an identity dimension
+would either double the universe with a hypothetical twin of every construction whose existing-source
+answer `XASSET-0025` Outcome C already settled, or force enumeration of arbitrary institution names —
+the unbounded qualitative search this unit exists to remove. Whether a qualifying source already exists
+or comes to exist later is what Stage 1 evaluates, and it is precisely what `XASSET-0027` §I.3's
+**categorical vs. prerequisite** distinction separates. Stage 1 is therefore not vacuous: it separates
+*"no source yet"* from *"no lawful source could qualify."*
 
-The blast radius is stated precisely rather than blanket-claimed: `portfolio_function` and
-`sleeve_deployability` are sleeve-scoped, and `diversification_cobehavior`'s comparator space is
-**already closed** by `XASSET-0020` at exactly six unordered pairs derived as `4 choose 2` and
-recorded as binding. Only three of six classes lack a comparator. The 120 figure is
-**validator-computed from the accepted family-slot generator**, not asserted.
+### G. Canonical amendment — lockstep, with preserved lineage
 
-**`PREREQ-2` — an enumeration principle for hypothetical source architectures. Blocks all 240 slots.**
-A separately accepted basis by which the admissible set can be **derived rather than authored**.
-Without it, "every registered construction" means only "every construction the registry's author
-thought of," and the resulting negative would establish the author's imagination rather than
-non-constructibility — the overstated-exhaustiveness failure `XASSET-0027` §L exists to prevent.
+Both canonical files are amended under this decision's successor authority.
 
-### F. Route B — a deterministic construction grammar
+**Historical predecessor identity, preserved and never rewritten:**
 
-Also unavailable. A grammar needs primitives and composition rules. The already-closed dimensions
-generate exactly the 240 family slots, which accepted authority records as a classification scaffold
-and expressly not a construction universe — **a grammar over only those would relabel the five
-provenance families and close nothing**, the precise trap this unit was warned against. Generating
-constructions additionally needs primitives for the open dimensions, and accepted authority supplies
-none: the comparator is expressly not supplied, and source architecture is a two-value
-*provenance-type* vocabulary rather than a set of architectural primitives.
+- `PROTOCOL_V1.md` — `1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b`
+- `pre_registration.yaml` — `bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f`
 
-For `R2_C2` the bar is stronger and textual. `XASSET-0023` §H.3 item 3: *"An application may not
-compose, select among, or invent a derivation the sources do not prescribe; composing one is
-authorship, not derivation."* A grammar that composed derivations would be exactly that barred
-authorship.
+<!-- XASSET-0028-HASH-PINS-V1
+protocol_path: research/level1_endpoint_evidence/PROTOCOL_V1.md
+protocol_sha256: 847aee6d777dc70ef7fad958dd3cfc34a2b9d6ea95cce9d5195f9822a080b491
+preregistration_path: research/level1_endpoint_evidence/pre_registration.yaml
+preregistration_sha256: 3a11f38dfe8e593336acba7642c0cfa37775838db143a461abae8ef7cf1b1f0e
+predecessor_protocol_sha256: 1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b
+predecessor_preregistration_sha256: bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f
+-->
 
-### G. Two further routes, tested rather than dismissed
+- `PROTOCOL_V1.md`: `847aee6d777dc70ef7fad958dd3cfc34a2b9d6ea95cce9d5195f9822a080b491`
+- `pre_registration.yaml`: `3a11f38dfe8e593336acba7642c0cfa37775838db143a461abae8ef7cf1b1f0e`
 
-**Dominance over a maximally permissive construction.** If one maximal construction per slot dominated
-every other, exhaustiveness would follow without enumeration. It fails twice: the gates are not
-monotone under any single permissiveness ordering — a source stating more may clear `G2` more readily
-while becoming more exposed to `G4`'s barred origins — and, decisively, the maximal element is the
-construction *defined* as satisfying every gate, so it passes analytically and cannot establish a
-categorical block.
+Version identity moves `ENDPOINT-0001-PREREG-V3` → `V4`, with the predecessor recorded. The
+`XASSET-0027` record inside `construction_universe_closure` is retained **verbatim** under
+`xasset_0027_predecessor_record` — including its own discipline that neither route was permanently
+foreclosed, which `XASSET-0028` now vindicates: one of those very routes was available to a later unit.
 
-**A finite quotient over gate-outcome vectors.** If constructions partitioned into finitely many
-gate-outcome classes, one representative each would suffice. But a logically consistent vector is not
-evidence that any source could realize it, and realizability is the question Stage 1 exists to ask.
-`G2`, `G3`, and `G5` — the gates `XASSET-0027` §K identifies as binding — turn on what a specific
-source would actually state, so the quotient is strictly finer than 240 and depends on the same open
-dimensions.
+**Effectivity.** Until this decision's lifecycle closes, the `XASSET-0027` predecessor identity governs.
+The successor identity becomes effective only after independent full exact-head review, principal
+exact-head acceptance, merge, post-merge verification, merge-commit CI success, and verification of the
+merged successor hashes and universe hash. **There is no merge-to-execution gap.**
 
-### H. Partial closure — achievable, and expressly not shipped
+### H. The stale contradiction — corrected, answering MAJOR 2
 
-A registry restricted to the existing-source corpus, or to the three classes with closed comparator
-spaces, could be frozen and would satisfy C1, C2, C4, and C5. It still fails C3: the unregistered
-remainder would be excluded **by construction rather than evaluated**, so under §I.2 those cells could
-not be determined negatively at all. Labelling such a registry a closed construction universe would be
-the overstated exhaustiveness §L names. **A determination that closure is unavailable is preferable to
-a restricted registry presented as closure.**
+`pre_registration.yaml`'s `zero_parameter_declaration.design_consequence` asserted a closed candidate
+universe while the same file recorded `NOT_CLOSED`. The prior filing disclosed it but declined to fix
+it, reasoning that the hash pin forbade edits. **The pin rule requires a separately accepted amendment;
+it does not prohibit one** — and this is that amendment. The sentence is now **true** rather than
+merely tolerated. No operative text anywhere says both `NOT_CLOSED` and `CLOSED`; the protocol mirror
+agrees with the pre-registration, mechanically enforced.
 
-### I. The path that requires neither prerequisite
+### I. Structural closure is not authorization
 
-`PREREQ-2` exists only because the relevant sources do not yet exist. If a qualifying source comes into
-existence and is lawfully admitted through an `XASSET-0021` snapshot successor, the construction built
-on it becomes `EXISTING_SOURCE_ARCHITECTURE` carrying exact path and SHA-256 identity — closed by
-**observation rather than enumeration**, and `PREREQ-2` does not arise for it.
+| | |
+|---|---|
+| Construction universe | **CLOSED** — structural |
+| Stage 1 | **NOT EXECUTED**, **NOT EXECUTABLE** — operational |
+| Stage 2 | **NOT AUTHORIZED** |
+| Application authority | **WITHHELD** |
 
-This is **not** a prediction that such a source will appear, not a schedule, and not authority to seek,
-solicit, or commission one. It does not dissolve `PREREQ-1`, which would still bind a
-comparison-scoped construction. It is recorded so the blocker is not mistaken for one that only
-governance work can remove.
+No `stage1_results.yaml`, execution receipt, acquisition output, or candidate gate result is created.
+`stage_1_executability.executable` remains `false` and the validator fails closed on lifecycle
+authorization regardless of structural readability.
 
-### J. Disclosed finding — recorded, not corrected
+### J. Preserved unchanged
 
-`research/level1_endpoint_evidence/pre_registration.yaml` lines 895–896
-(`consequential_parameter_registry.zero_parameter_declaration.design_consequence`) assert that the
-candidate universe is closed by a deterministic generator and that the executor selects neither which
-constructions to try nor when to stop. That **contradicts the same file** at lines 286–287
-(`status: NOT_CLOSED`, `stage_1_executable: false`) and contradicts `XASSET-0027` §I.1.1 and §L. It
-appears to be wording that survived `XASSET-0027`'s corrections at a site those corrections did not
-reach. The claim does not appear in `PROTOCOL_V1.md`, so the inconsistency is **single-site**.
+`XASSET-0024` §K.1 remains **unresolved** with both readings preserved, and no construction identity
+assumes either. §J.12 remains **deferred**; no whole-candidate reconciliation enters any construction
+identity. Representation remains `SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED` — no aggregation rule, no
+`CM-14`–`CM-17` designation.
 
-**Not corrected here.** The file is hash-pinned by `XASSET-0027`; editing it would invalidate an
-accepted pin and requires an amendment decision that expressly governs the change. This unit's
-authority is to determine closure, not to amend `XASSET-0027`'s canonical files.
+### K. Firewalls
 
-**Not an enforcement gap.** The existing preregistration validator independently enforces
-`NOT_CLOSED` and `stage_1_executable: false`, and `validate_stage1_results()` fails closed on an empty
-closed construction universe, so no execution path is opened. This filing's own validator additionally
-rejects any claim of closure over the construction universe or the qualitative search surface, so a
-reader acting on the stale sentence is blocked **mechanically**, not merely textually.
+**Magnitude.** No endpoint, bound value, range, point, percentage, target or current allocation, equal
+split, residual, midpoint, optimizer output, score, confidence weight, or preferred sleeve. Zero
+consequential numeric free parameters under `NUM-0001` §18 — every count is a cardinality derived from
+a closed population.
 
-### K. Packaging — why no canonical file changed
+**RISK.** No substantive reuse; `/private/tmp/phq-risk0001-results` not accessed.
 
-The determination is **consistent with the accepted canonical bytes**. `pre_registration.yaml` already
-records `construction_universe_closure.status: NOT_CLOSED` and `stage_1_executable: false`, and the
-existing validator requires `status` to be exactly `NOT_CLOSED`. A negative therefore requires **no
-amendment and no re-pinning**; both pins remain valid and are verified from observed bytes by this
-unit's validator and tests. A positive determination would have required amending those files and
-governing the re-pin explicitly — an asymmetry recorded so a successor does not read this filing as
-establishing that closure work never touches canonical bytes.
+**Contamination — answering MINOR 2.** The prior module re-declared a barred-numeral tuple carrying
+**four** values where the accepted predecessor protects **five**, with a narrower percentage regex. It
+now **delegates to the accepted `scan_for_barred_content`**, so it can never again be weaker than its
+predecessor.
 
-The determination artifact is sited at `research/level1_construction_universe/` rather than beside the
-canonical files, specifically so that `XASSET-0027`'s existing invariant test — that
-`research/level1_endpoint_evidence/` contains exactly its two canonical files — **remains true and
-unweakened**. No existing test was relaxed.
+**Dashboard — answering MINOR 1.** The unjustified `6_000_000` → `9_000_000` relaxation is **reverted**.
+A structural once-per-decision invariant replaces it, parsing the renderer's stable
+`data-decision-detail` / `data-decision-id` attributes — not source-Markdown lines.
 
-### L. Adversarial review
+### L. Absolute non-authorization
 
-Each failure class was tested against the artifact and validator rather than assumed absent: duplicate
-or colliding identity; executor-authored free text changing a construction; omitted, duplicated,
-extra, or reordered constructions; substituted source path; correct-looking but wrong hash; changed
-comparator; route/class and DRIVER-class mismatch; silently solved representation dependency;
-historical-anchor contamination; equal-split, residual, and midpoint leakage; result-aware expansion;
-hidden consequential parameter; family mistaken for a concrete construction; positive closure claimed
-without finite exhaustiveness; **negative closure resting only on lack of imagination**; implicit
-§K.1 resolution; premature §J.12 reconciliation; and RISK substantive reuse.
-
-Two controls deserve naming. The **120-slot figure is computed from the accepted generator**, so
-PREREQ-1's blast radius cannot drift from the real grid. And the **quotation exemption is narrow**:
-disclosing defective text requires reproducing it, so exactly one field path
-(`disclosed_findings[N].observed_text`) is exempt from the closure-claim scan — never from the
-permanence, percentage, or barred-numeral scans, and never anywhere else. Tests prove both directions.
-
-### M. Preserved, unresolved, and untouched
-
-`XASSET-0024` §K.1 remains **unresolved**, neither resolved nor relied upon; no construction assumes
-the subject-matter reading. §J.12 remains **`NOT_YET_DETERMINABLE_DEFERRED`** — no whole-portfolio
-reconciliation was inserted to make anything look complete. Representation stays
-`SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED`; no aggregation or selection rule is supplied and no
-CM-14–CM-17 membership is designated. The family-slot grid remains a classification scaffold and not a
-trial ceiling. `RISK-0001` Attempt 2 is untouched: no retry, no Attempt 3, no family re-question, no
-scenario, threshold, window, representation-value, or parameter-pattern reuse, and
-`/private/tmp/phq-risk0001-results` was never accessed, listed, or read.
-
-### N. Zero consequential numeric parameters
-
-This determination introduces none as `NUM-0001` §18 defines the term — no threshold, tolerance,
-cutoff, materiality level, window, weight, coefficient, or score. Every count (240, 120, 48, 6, 5, 4,
-3, 2) is a cardinality **derived** from an already-closed population by multiplication or counting,
-not a value selected here; changing one would be an arithmetic error rather than a re-tuning. No count
-was chosen by searching historical outcomes. The validator asserts the parameter registry is empty.
-
-### O. What comes next
-
-1. Independent **full exact-head review** of this PR. Nothing below may begin before this decision's
-   own complete lifecycle closes.
-2. Neither prerequisite is authorized, scoped, or scheduled here. Each requires its own separately
-   accepted governance decision, and `PREREQ-1` is a methodology amendment touching `XASSET-0020`
-   §E.1's scope language.
-3. Stage 1 remains **NOT EXECUTABLE**. `XASSET-0027` §P.1's two preconditions are unchanged, and this
-   filing satisfies neither — it determines that the second cannot presently be satisfied at all.
-4. Every successor `XASSET-0027` §P.2 named remains unauthorized and separately required.
-
-### P. Reopen triggers
-
-Reopen `XASSET-0028` if: a comparator admissibility rule is accepted; any principle from which
-hypothetical source architectures could be derived is accepted; a qualifying endpoint-stating source
-comes into existence and a lawful `XASSET-0021` snapshot successor admits it; either pinned canonical
-hash changes or the canonical files are lawfully amended; `XASSET-0020` §E.1's driver classes or
-`XASSET-0023` §H's routes are amended; `NUM-0001`'s classes change; `XASSET-0024` §K.1's reading is
-established either way; or the disclosed §J stale-text finding is corrected by an amendment decision.
-
-Independently: `XASSET-0027` §Q is triggered by this filing's acceptance, since it reopens on **a §P.0
-unit being accepted, whether its answer is that a universe can be closed or that it cannot**.
-
-### Q. Absolute non-authorization
-
-This decision **closes no construction universe**, freezes and registers no construction, and supplies
-no comparator rule or enumeration principle; makes Stage 1 no more executable than it already was;
-authorizes no Stage 2, no empirical work, no data acquisition, no backtest, no trial, and no candidate
-evaluation; produces no endpoint, bound, point, range, percentage, weight, target, or allocation, and
-selects, prefers, ranks, sequences, or budgets no sleeve; **exercises no endpoint authority**; grants
-no evidence-admission or application authority and creates no application artifact; amends, extends,
-or re-pins no canonical file and edits no accepted decision; resolves `XASSET-0024` §K.1 neither way
-and decides §J.12 neither way; supplies no representation rule and designates no CM-14 through CM-17;
-performs no Level-1 sizing and no Level-2 membership or sizing; makes no liquidity determination;
+Executes no Stage 1 and creates no result artifact; authorizes no Stage 2, empirical work, data
+acquisition, backtest, or candidate evaluation; produces no endpoint, bound, point, range, percentage,
+weight, target, or allocation and selects, prefers, ranks, sequences, or budgets no sleeve; exercises no
+endpoint authority; grants no evidence-admission or application authority; resolves §K.1 neither way and
+decides §J.12 neither way; supplies no representation rule; performs no Level-1 or Level-2 sizing;
 changes no `targets.yaml`, `holdings.yaml`, `gates.yaml`, `issuer_lookthrough.yaml`, allocator, tier,
 cluster, cap, or margin state; authorizes no chart, ladder, optimizer, deployment, trade, order, or
-brokerage action; adopts no portfolio policy; grants no RISK reuse authority and accesses no RISK
-execution artifact; and rewrites no accepted history.
+brokerage action; and rewrites no accepted history.
 
 ## Rationale
 
-`XASSET-0027` left §P.0 genuinely open after its own review corrected an overclaim in the opposite
-direction. The honest way to answer it was to attempt closure seriously and report what actually
-blocked it — not to inherit a conclusion. Four routes were built out far enough to fail on their
-merits, including two the authorizing brief did not name.
+The prior negative was not wrong to be cautious — it was wrong about which standard applies. Its own
+decisive argument was that an authored registry would "relocate the unbounded qualitative search from
+results time to freeze time." That argument holds only if the registry's contents are *chosen*. They
+are not: every one of the 680 constructions is **generated** by crossing already-closed accepted
+vocabularies with an already-closed comparison contract. There is nothing for an author to select, and
+nothing for an executor to add, omit, or mutate. The search is not relocated; it is removed.
 
-The decisive finding is that **exhaustiveness, not finiteness, is the binding constraint**. A finite
-registry is easy to write; a registry whose negative *means something* is not. `XASSET-0027` §I.2 ties
-`BLOCKED_CATEGORICALLY` to "every registered construction," so a registry assembled from imagined
-architectures would convert an unbounded qualitative search into a bounded-looking one without
-removing the arbitrariness — it would relocate the defect from results time to freeze time and make it
-harder to see. Recording that is more useful than shipping it.
-
-Naming **two independent** prerequisites, rather than one aggregate blocker, is what makes the
-negative actionable. `PREREQ-1` is narrow, textual, and directly citable to `XASSET-0026` §D, which
-declines to supply the rule in terms. `PREREQ-2` is deeper and applies everywhere. A successor that
-solved only the citable one and declared the universe closeable would be wrong, and the decision says
-so before that can happen.
-
-The §I dissolution path matters for the same reason the §A permanence bound does: this negative
-describes present authority and a present state of the world, and the most likely way it is removed is
-not a governance act at all.
+The clinching evidence is that the accepted pre-registration **already contained** the partition this
+closure needs, and said comparators were "not fixed **here**" — leaving them for exactly this unit.
 
 ## Alternatives Considered
 
-**Ship a restricted registry and call it closure.** Rejected — §H. It would satisfy four of five
-criteria and fail the one that matters, and its negative would be unusable for the cells it silently
-excluded.
+**Preserve the negative.** Rejected: it rests on a standard `XASSET-0027` §I.2 does not set.
 
-**Fix the comparator myself and close 120 slots.** Rejected — §E. `XASSET-0026` §D expressly declines
-to supply, narrow, or imply a comparator rule; supplying one is a methodology amendment and an
-economic judgment about what opportunity cost is measured against.
+**Register 720 with 40 `NOT_APPLICABLE` rows.** Rejected: §H's UAC comparison is not a pair record.
 
-**Restrict comparators to the four sleeves.** Rejected as a narrowing masquerading as a closure.
-`XASSET-0026` §D records that `XASSET-0020` §H compares each sleeve with
-`UNSIZED_UNASSIGNED_CAPITAL`, "a direct alternative that is not a sleeve," so a sleeve-only comparator
-set would exclude constructions accepted authority permits — and a negative over it would be false.
+**Make source architecture an identity dimension (1,360).** Rejected: doubles the universe with
+constructions whose existing-source answer is already accepted, or forces arbitrary institution names.
 
-**Declare the hypothetical space empty and close the universe on the existing corpus.** Rejected — it
-asserts that no future source could qualify, precisely the permanent-impossibility overclaim
-`XASSET-0027`'s review removed, and §Q preserves the openness.
+**Put input classes and gate ids in each construction.** Rejected: constant across all 680; they
+discriminate no hypothesis.
 
-**Correct the §J stale sentence while here.** Rejected — it is hash-pinned by `XASSET-0027`. Disclosed
-instead, with a mechanical block against acting on it.
-
-**Amend `pre_registration.yaml` to carry the determination.** Rejected — it would break an accepted
-pin for no benefit, since the canonical file already records `NOT_CLOSED`. A separate artifact
-verifying the pins is smaller and safer (§K).
-
-**Build a Stage-1 runner interface.** Rejected — the brief permits it only if strictly necessary and
-prefers it not be built, and with the universe unclosed there is nothing for a runner to range over.
+**Hand-author a 680-row registry.** Rejected: a pure generator is the canonical source of identity, and
+a duplicated list could drift from it.
 
 ## Consequences
 
-Stage 1 remains **NOT EXECUTABLE**, now for a determined reason rather than an open one, with two
-named prerequisites and one non-governance dissolution path. `ENDPOINT-0001`'s canonical files are
-byte-unchanged and their pins remain valid. `XASSET-0027` §Q is triggered by acceptance. The stale
-sentence at `pre_registration.yaml:895-896` stands uncorrected and disclosed, mechanically blocked
-from being acted on, and available to a future amendment decision. `LEVEL1_ENDPOINT_AUTHORITY` remains
-constituted and unexercised; Stage 2 remains unauthorized; application authority remains **WITHHELD**.
+Stage 1 gains a registered set to range over, so `XASSET-0027` §I.2's completeness rule becomes
+meaningful and the family-slot grid is finally distinguishable from the universe it classified. Stage 1
+remains blocked on this decision's lifecycle. Because the central outcome flips and the canonical
+architecture materially expands, the pushed head requires a **new independent full exact-head review**,
+not a delta.

@@ -1,406 +1,208 @@
-# ==================================================================================================
-# ENDPOINT-0001 — Concrete construction universe closure determination
+# ENDPOINT-0001 concrete construction universe — closure determination
 #
-# Governing decision : XASSET-0028
-# Question answered  : XASSET-0027 SSP.0
-# Determination      : NOT_CLOSED_PREREQUISITE_REQUIRED
+# Authorized by XASSET-0028. Read-only research-design artifact. Contains no endpoint, bound,
+# point, range, percentage, target, weight, score, or sleeve preference, and executes nothing.
 #
-# This file is NOT a pre-registration, NOT an amendment to ENDPOINT-0001's canonical files, and NOT
-# an execution artifact. It records one governance determination and the analysis supporting it.
-#
-# It does not modify research/level1_endpoint_evidence/PROTOCOL_V1.md or pre_registration.yaml. Both
-# remain byte-unchanged and their XASSET-0027 hash pins remain valid; this file verifies them rather
-# than replacing them. The canonical pre_registration already records
-# construction_universe_closure.status: NOT_CLOSED and stage_1_executable: false, so this
-# determination is consistent with the accepted canonical bytes and requires no amendment to them.
-# ==================================================================================================
+# Every count and hash below is RECOMPUTED from the deterministic generator by
+# level1_construction_universe_closure_validator; none is hand-authored.
 
-schema_version: '1.0'
 determination_id: ENDPOINT-0001-CONSTRUCTION-UNIVERSE-CLOSURE-V1
-study_id: ENDPOINT-0001
-governing_decision: XASSET-0028
-answers: XASSET_0027_SECTION_P_0
+authorizing_decision: XASSET-0028
+status: CLOSED
 
-question_verbatim: >-
-  Determine whether a concrete construction universe can be closed at all and, if so, freeze it
-  (CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION). It must confront the open-hypothetical problem
-  directly — that constructions built on sources which do not yet exist are not enumerated by any
-  accepted decision — and must state its own answer, including that its answer may itself be
-  negative.
+closure_basis: >-
+  XASSET-0027 SS-I.1 records that a provenance family is a classification of provenance, not a
+  hypothesis, and names the dimensions that can inhabit one family: source identities, source
+  architectures, comparator architectures, evidence forms, external impositions, calibrations,
+  governance selections, provisional guardrails, and prescribed derivations. Five of those are
+  exactly the already-closed (route, NUM-0001 class) families. Evidence form is representation,
+  preserved as a downstream gate rather than an identity dimension. Source identity is what Stage
+  1 searches for, not something a registry could fix without enumerating every institution in
+  existence. That leaves comparator architecture as the one open identity dimension, and accepted
+  authority already closes it: XASSET-0020 SS-H fixes exactly six unordered sleeve-sleeve pair
+  records and additionally requires each of the four sleeves to be compared directly with
+  UNSIZED_UNASSIGNED_CAPITAL. Crossing that closed contract with the canonical driver_class_scope
+  partition fixes every DRIVER class's comparator architecture set exactly. No comparator rule is
+  supplied; SS-H's own mandated comparisons are enumerated.
 
-# --------------------------------------------------------------------------------------------------
-# Determination
-# --------------------------------------------------------------------------------------------------
+closed_dimensions:
+  sleeves:
+  - equity
+  - fund_broad_market
+  - fund_gld_defensive
+  - crypto
+  bounds:
+  - LOWER
+  - UPPER
+  driver_classes:
+  - portfolio_function
+  - valuation_opportunity_cost
+  - downside_path_risk
+  - recovery
+  - diversification_cobehavior
+  - sleeve_deployability
+  provenance_families:
+  - R1_C1
+  - R1_C3
+  - R1_C4
+  - R1_C5
+  - R2_C2
 
-determination:
-  status: NOT_CLOSED_PREREQUISITE_REQUIRED
-  stage_1_executable: false
-  a_concrete_construction_universe_was_frozen: false
-  outcome_class: NEGATIVE_PREREQUISITE_REQUIRED
+comparator_contract:
+  enumerates_xasset_0020_section_h_only: true
+  supplies_a_new_comparator_rule: false
+  unassigned_capital_is_a_diversification_cobehavior_comparator: false
+  unassigned_capital_exclusion_reason: >-
+    XASSET-0020 SS-H's UNSIZED_UNASSIGNED_CAPITAL comparison is not a pair record and carries its
+    own separate conclusion vocabulary, and diversification_cobehavior's canonical scope is
+    ONE_UNORDERED_PAIR. Registering a comparator the accepted contract does not admit would be
+    inventing a construction rather than enumerating one. The alternative -- registering it as a
+    NOT_APPLICABLE row for grid symmetry -- was considered and declined for that reason.
+  driver_class_scope:
+    portfolio_function: ONE_SLEEVE
+    valuation_opportunity_cost: COMPARISON_SCOPED_COMPARATOR_NOT_FIXED
+    downside_path_risk: COMPARISON_SCOPED_COMPARATOR_NOT_FIXED
+    recovery: COMPARISON_SCOPED_COMPARATOR_NOT_FIXED
+    diversification_cobehavior: ONE_UNORDERED_PAIR
+    sleeve_deployability: ONE_SLEEVE
+  architectures_per_driver_class:
+    portfolio_function: 1
+    valuation_opportunity_cost: 4
+    downside_path_risk: 4
+    recovery: 4
+    diversification_cobehavior: 3
+    sleeve_deployability: 1
 
-  # The negative is bounded to present authority. It is NOT a claim of permanent impossibility, and
-  # this file is validator-checked against permanent-impossibility phrasing for exactly that reason —
-  # the same discipline XASSET-0027 adopted after its own independent review found that overclaim.
-  determination_is_present_authority_bounded: true
-  determination_is_not_permanent_impossibility: true
+universe_identity:
+  registered_construction_count: 680
+  derived_cardinality: 680
+  derived_expression: 4_SLEEVES_X_2_BOUNDS_X_5_PROVENANCE_FAMILIES_X_17_ARCHITECTURES
+  aggregate_sha256: 97d0bc865500892cef648895b97208b1e8cf381993192b74ea86335ba457f6ce
+  generator: level1_construction_universe_closure_validator.generate_construction_universe
+  canonical_serialization: JSON_SORT_KEYS_TRUE_SEPARATORS_COMMA_COLON_ENSURE_ASCII_TRUE
+  deterministic: true
+  byte_identically_reproducible: true
+  frozen_before_stage_1_outcomes: true
+  executor_may_add_or_omit_a_construction: false
+  ordering: SLEEVE_THEN_BOUND_THEN_DRIVER_CLASS_THEN_FAMILY_THEN_COMPARATOR_ARCHITECTURE
+  ordering_is_binding: true
+  universe_level_contract:
+    admitted_input_classes: ADMITTED_DRIVER_INPUTS_ONLY_PER_XASSET_0023_SECTION_H_1
+    prohibited_input_classes: >-
+      Any non-DRIVER input, any arithmetic outside XASSET-0020 SS-M's closed set, any RISK-0001
+      substantive reuse, and any executor-composed derivation.
+    applicable_gate_ids_note: >-
+      All twelve XASSET-0027 SS-I.3 gates apply to every registered construction, so gate identity
+      and input classes are constant across the universe and are recorded here at universe level
+      rather than duplicated into each construction's identity. They discriminate no hypothesis,
+      which is why the smallest sufficient per-construction identity omits them.
+    applicable_gate_ids:
+    - G1_DRIVER_SUBJECT_MATTER
+    - G2_MAGNITUDE_INTRINSICALITY
+    - G3_NORMALIZATION
+    - G4_ORIGIN
+    - G5_CONSTRAINT_SHAPE
+    - G6_ROUTE_COMPLIANCE
+    - G7_DISCRETION_AND_PROVENANCE
+    - G8_UNIQUENESS
+    - G9_REPRESENTATION
+    - G10_PAIR_INDEPENDENCE
+    - G11_EXACTNESS_AND_DETERMINISM
+    - G12_SNAPSHOT_ADMISSIBILITY_PATH
 
-  statement: >-
-    Under the authority available to XASSET-0028, a concrete construction universe for ENDPOINT-0001
-    Stage 1 cannot be closed. Two independent prerequisites block it, and neither can be supplied by
-    this unit without performing a methodology amendment reserved to separate authority. A negative
-    determination is recorded rather than a partial or authored universe presented as a closed one.
-    Whether a future, separately authorized unit can close it — after either prerequisite is
-    satisfied, or after the space changes by observation rather than by governance — is expressly not
-    determined here.
+per_cell_cardinality:
+  'crypto::LOWER::diversification_cobehavior': 15
+  'crypto::LOWER::downside_path_risk': 20
+  'crypto::LOWER::portfolio_function': 5
+  'crypto::LOWER::recovery': 20
+  'crypto::LOWER::sleeve_deployability': 5
+  'crypto::LOWER::valuation_opportunity_cost': 20
+  'crypto::UPPER::diversification_cobehavior': 15
+  'crypto::UPPER::downside_path_risk': 20
+  'crypto::UPPER::portfolio_function': 5
+  'crypto::UPPER::recovery': 20
+  'crypto::UPPER::sleeve_deployability': 5
+  'crypto::UPPER::valuation_opportunity_cost': 20
+  'equity::LOWER::diversification_cobehavior': 15
+  'equity::LOWER::downside_path_risk': 20
+  'equity::LOWER::portfolio_function': 5
+  'equity::LOWER::recovery': 20
+  'equity::LOWER::sleeve_deployability': 5
+  'equity::LOWER::valuation_opportunity_cost': 20
+  'equity::UPPER::diversification_cobehavior': 15
+  'equity::UPPER::downside_path_risk': 20
+  'equity::UPPER::portfolio_function': 5
+  'equity::UPPER::recovery': 20
+  'equity::UPPER::sleeve_deployability': 5
+  'equity::UPPER::valuation_opportunity_cost': 20
+  'fund_broad_market::LOWER::diversification_cobehavior': 15
+  'fund_broad_market::LOWER::downside_path_risk': 20
+  'fund_broad_market::LOWER::portfolio_function': 5
+  'fund_broad_market::LOWER::recovery': 20
+  'fund_broad_market::LOWER::sleeve_deployability': 5
+  'fund_broad_market::LOWER::valuation_opportunity_cost': 20
+  'fund_broad_market::UPPER::diversification_cobehavior': 15
+  'fund_broad_market::UPPER::downside_path_risk': 20
+  'fund_broad_market::UPPER::portfolio_function': 5
+  'fund_broad_market::UPPER::recovery': 20
+  'fund_broad_market::UPPER::sleeve_deployability': 5
+  'fund_broad_market::UPPER::valuation_opportunity_cost': 20
+  'fund_gld_defensive::LOWER::diversification_cobehavior': 15
+  'fund_gld_defensive::LOWER::downside_path_risk': 20
+  'fund_gld_defensive::LOWER::portfolio_function': 5
+  'fund_gld_defensive::LOWER::recovery': 20
+  'fund_gld_defensive::LOWER::sleeve_deployability': 5
+  'fund_gld_defensive::LOWER::valuation_opportunity_cost': 20
+  'fund_gld_defensive::UPPER::diversification_cobehavior': 15
+  'fund_gld_defensive::UPPER::downside_path_risk': 20
+  'fund_gld_defensive::UPPER::portfolio_function': 5
+  'fund_gld_defensive::UPPER::recovery': 20
+  'fund_gld_defensive::UPPER::sleeve_deployability': 5
+  'fund_gld_defensive::UPPER::valuation_opportunity_cost': 20
 
-# --------------------------------------------------------------------------------------------------
-# Canonical files this determination was made against — verified, not modified
-# --------------------------------------------------------------------------------------------------
+canonical_amendment:
+  predecessor_authority: XASSET-0027
+  successor_authority: XASSET-0028
+  historical_predecessor_identity_preserved: true
+  rewrites_accepted_history: false
+  predecessor_pins:
+    research/level1_endpoint_evidence/PROTOCOL_V1.md: 1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b
+    research/level1_endpoint_evidence/pre_registration.yaml: bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f
+  successor_pins:
+    research/level1_endpoint_evidence/PROTOCOL_V1.md: 847aee6d777dc70ef7fad958dd3cfc34a2b9d6ea95cce9d5195f9822a080b491
+    research/level1_endpoint_evidence/pre_registration.yaml: 3a11f38dfe8e593336acba7642c0cfa37775838db143a461abae8ef7cf1b1f0e
+  corrected_stale_text: >-
+    pre_registration.yaml zero_parameter_declaration.design_consequence previously asserted a
+    closed candidate universe while the same file recorded NOT_CLOSED. That contradiction was
+    disclosed by PR #327 independent review 4945473310 as MAJOR 2 and left uncorrected because the
+    file was hash-pinned. XASSET-0028 is the separately accepted amendment the pin rule requires,
+    and the sentence is now true rather than merely tolerated.
 
-canonical_files_verified:
-  verification_method: SHA256_RECOMPUTED_FROM_OBSERVED_BYTES
-  modified_by_this_determination: false
-  files:
-  - path: research/level1_endpoint_evidence/PROTOCOL_V1.md
-    sha256: 1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b
-    pinned_by: XASSET-0027
-  - path: research/level1_endpoint_evidence/pre_registration.yaml
-    sha256: bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f
-    pinned_by: XASSET-0027
+stage_1:
+  construction_universe_structurally_closed: true
+  operationally_authorized: false
+  executed_by_this_unit: false
+  no_merge_to_execution_gap: true
+  effectivity_gates:
+  - INDEPENDENT_FULL_EXACT_HEAD_REVIEW
+  - PRINCIPAL_EXACT_HEAD_ACCEPTANCE
+  - MERGE
+  - POST_MERGE_VERIFICATION
+  - MERGE_COMMIT_CI_SUCCESS
+  - MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
 
-# --------------------------------------------------------------------------------------------------
-# The closure test applied
-# --------------------------------------------------------------------------------------------------
-
-closure_test:
-  note: >-
-    A construction universe closes only if every criterion below holds. Criteria 2, 4, and 5 are
-    mechanical and were achievable. Criteria 1 and 3 were not, and criterion 3 is decisive: it is the
-    criterion that makes a negative Stage-1 result mean anything at all, per XASSET-0027 SSI.2.
-  criteria:
-  - id: C1_FINITE
-    requirement: The registered set is finite with an exact stated cardinality.
-    satisfiable_under_this_authority: false
-  - id: C2_FROZEN_BEFORE_OUTCOME
-    requirement: The set is frozen before any Stage-1 outcome is observed.
-    satisfiable_under_this_authority: true
-  - id: C3_EXHAUSTIVE_OVER_CONSTRUCTIONS
-    requirement: >-
-      A negative genuinely means every construction was tested, not merely every construction some
-      author happened to register. Required by XASSET-0027 SSI.2, which permits BLOCKED_CATEGORICALLY
-      only where every registered construction for a cell was evaluated and every one was blocked.
-    satisfiable_under_this_authority: false
-    decisive: true
-  - id: C4_NO_EXECUTOR_DISCRETION
-    requirement: No executor may invent, omit, substitute, or mutate a construction at result time.
-    satisfiable_under_this_authority: true
-  - id: C5_REPRODUCIBLE_IDENTITY
-    requirement: Each construction carries identity and provenance sufficient for independent reproduction.
-    satisfiable_under_this_authority: true
-
-# --------------------------------------------------------------------------------------------------
-# Routes examined
-# --------------------------------------------------------------------------------------------------
-
-routes_examined:
-- route: CONCRETE_FINITE_REGISTRY
-  available_under_this_authority: false
-  partition_note: >-
-    The construction space partitions into constructions over sources that already exist and
-    constructions over sources that do not. The two partitions fail for different reasons and are
-    recorded separately rather than collapsed.
-  existing_source_partition:
-    finite: true
-    frozen: true
-    corpus: XASSET-0021 frozen snapshot
-    already_exhausted_by: XASSET-0025 Outcome C
-    closes: true
-    but: >-
-      Closure over this partition is real but adds nothing. XASSET-0025 Outcome C already searched
-      precisely this corpus exhaustively and found no qualifying source, and XASSET-0027 SSI.1.1
-      records as an accepted determination that a Stage 1 restricted to it would re-run that result.
-      Closing only this partition would also leave every hypothetical construction unregistered, so
-      SSI.2's negative rule would range over a set that deliberately excludes the live possibility.
-  hypothetical_source_partition:
-    closes: false
-    blocked_by:
-    - PREREQ_1_COMPARATOR_ADMISSIBILITY_RULE
-    - PREREQ_2_HYPOTHETICAL_SOURCE_ARCHITECTURE_ENUMERATION_PRINCIPLE
-
-- route: DETERMINISTIC_CONSTRUCTION_GRAMMAR
-  available_under_this_authority: false
-  unavailable_because: >-
-    A grammar requires primitives and composition rules. The dimensions already closed by accepted
-    authority — sleeve, bound, DRIVER class, route, NUM-0001 class — generate exactly the 240 family
-    slots, which accepted authority already records as a classification scaffold and expressly not a
-    construction universe; a grammar over only those would relabel the five provenance families and
-    close nothing. Generating constructions additionally requires primitives for the open dimensions,
-    and accepted authority supplies primitives for none of them: the comparator is expressly not
-    supplied (XASSET-0026 SSD), and source architecture is a two-value provenance-type vocabulary
-    rather than a set of architectural primitives.
-  additional_r2_specific_bar: >-
-    For R2_C2 the bar is stronger and textual. XASSET-0023 SSH.3 item 3 requires that the admitted
-    source itself prescribe the derivation, and states that "An application may not compose, select
-    among, or invent a derivation the sources do not prescribe; composing one is authorship, not
-    derivation." A grammar that composed derivations would be precisely that barred authorship, so
-    the grammar route fails for R2_C2 on accepted text and not merely on missing primitives.
-
-- route: DOMINANCE_OVER_A_MAXIMALLY_PERMISSIVE_CONSTRUCTION
-  available_under_this_authority: false
-  examined_because: >-
-    If a single maximally permissive construction per slot could be shown to dominate every other
-    construction in that slot, exhaustiveness would follow without enumeration. This was tested
-    rather than dismissed.
-  unavailable_because: >-
-    The gates are not monotone under any single permissiveness ordering — a source stating more may
-    clear G2 more readily while becoming more exposed to G4's barred origins — so no dominance
-    relation holds across the gate set. More decisively, the maximally permissive element is the
-    construction defined as satisfying every gate, so it passes analytically and therefore cannot
-    establish a categorical block. The route yields no usable negative in the direction the program needs.
-
-- route: FINITE_QUOTIENT_OVER_GATE_OUTCOME_VECTORS
-  available_under_this_authority: false
-  examined_because: >-
-    If constructions were partitioned into finitely many gate-outcome equivalence classes, evaluating
-    one representative per class would be exhaustive without enumerating instances.
-  unavailable_because: >-
-    A logically consistent gate-outcome vector is not evidence that any source could realize it, and
-    realizability is the question Stage 1 exists to ask. Evaluating a vector answers only whether a
-    source with that profile would qualify, which is analytic. G2, G3, and G5 — the gates
-    XASSET-0027 SSK identifies as the binding ones — turn on what a specific source would actually
-    state, so the quotient is strictly finer than the 240 slots and its cardinality depends on the
-    same open dimensions the other routes fail on.
-
-- route: HONEST_NEGATIVE_WITH_NAMED_PREREQUISITES
-  available_under_this_authority: true
-  taken: true
-
-# --------------------------------------------------------------------------------------------------
-# Why a hypothetical construction cannot be specified into closure
-# --------------------------------------------------------------------------------------------------
-
-specification_analysis:
-  name: THE_SPECIFICATION_DILEMMA
-  note: >-
-    This records why cleverer drafting of individual hypothetical constructions does not rescue
-    closure. It is the reason PREREQ-2 is a genuine prerequisite rather than an implementation
-    inconvenience.
-  horn_1_under_specified:
-    shape: >-
-      A construction specifying less than what determines its own gate outcomes leaves the remainder
-      to the executor at evaluation time.
-    consequence: >-
-      Violates C4. The universe is not in fact frozen, and a negative over it is not exhaustive — it
-      relocates the unbounded qualitative search from results time to freeze time rather than
-      removing it.
-  horn_2_over_specified:
-    shape: >-
-      A construction specifying exactly what determines its gate outcomes fixes its own disposition
-      analytically at freeze time.
-    consequence: >-
-      Stage 1 becomes vacuous — it re-reads the freeze — and the question that matters, whether the
-      world admits such a source, goes untested.
-  middle_ground_exists:
-    shape: >-
-      Between the horns sit genuinely evaluable constructions: a stated institutional source type
-      paired with a stated content requirement, concrete enough to be non-tautological and open
-      enough that G2, G3, and G5 must actually be evaluated.
-    why_it_does_not_rescue_closure: >-
-      These are real constructions, and this determination does not claim otherwise. The set of them
-      is exactly the space PREREQ-2 concerns. Accepted authority supplies no principle by which that
-      set could be derived, so any registry of them would be authored. Adding further architectures
-      lengthens such a list without ever making it demonstrably complete.
-  why_this_is_not_a_failure_of_imagination: >-
-    The obstacle is not that additional architectures cannot be imagined — they plainly can be. It is
-    that completeness requires a closure principle, and no accepted decision supplies one for source
-    architectures. Absent such a principle, no quantity of further imagination converts a longer list
-    into an exhaustive one, and C3 is a claim about exhaustiveness rather than about length.
-
-# --------------------------------------------------------------------------------------------------
-# Blocking prerequisites — independent, and both required
-# --------------------------------------------------------------------------------------------------
-
-blocking_prerequisites:
-  independence_note: >-
-    The two prerequisites are independent and are not alternatives. Satisfying PREREQ-1 alone does
-    not enable closure, because PREREQ-2 blocks every slot. Satisfying PREREQ-2 alone does not enable
-    closure for the comparison-scoped slots. This is recorded explicitly so that a successor does not
-    satisfy the narrower one and report the universe as closeable.
-
-  prerequisites:
-  - id: PREREQ_1_COMPARATOR_ADMISSIBILITY_RULE
-    blocks_slots: 120
-    blocks_slots_of: 240
-    what_is_missing: >-
-      A separately accepted governance decision fixing what the lawful comparator set is for the
-      comparison-scoped DRIVER classes.
-    affected_driver_classes:
-    - valuation_opportunity_cost
-    - downside_path_risk
-    - recovery
-    unaffected_driver_classes:
-    - portfolio_function
-    - sleeve_deployability
-    - diversification_cobehavior
-    unaffected_because: >-
-      portfolio_function and sleeve_deployability are sleeve-scoped, and diversification_cobehavior
-      is fixed by XASSET-0020 to exactly six unordered pairs derived as 4 choose 2 and recorded as
-      binding, so its comparator space is already closed by accepted authority. Only the three
-      comparison-scoped classes lack a comparator.
-    authority_basis_verbatim: >-
-      XASSET-0026 SSD: "What the lawful comparator may be for a given item is a property of an
-      evidence design that does not exist; no comparator rule is supplied, narrowed, or implied
-      here."
-    why_this_unit_cannot_supply_it: >-
-      Supplying it would furnish the rule XASSET-0026 expressly declined to supply, which is a
-      methodology amendment to XASSET-0020 SSE.1's scope language and requires its own authority.
-      It is also substantively an economic judgment: choosing what the marginal dollar is measured
-      against determines what opportunity cost means, and selecting among candidate comparators
-      without a derived basis would introduce exactly the arbitrary economic assumption this unit is
-      barred from smuggling in.
-    slot_arithmetic: 3 comparison-scoped DRIVER classes x 4 sleeves x 2 bounds x 5 provenance families
-
-  - id: PREREQ_2_HYPOTHETICAL_SOURCE_ARCHITECTURE_ENUMERATION_PRINCIPLE
-    blocks_slots: 240
-    blocks_slots_of: 240
-    what_is_missing: >-
-      A separately accepted basis by which the set of admissible hypothetical source architectures
-      can be derived rather than authored — a closure principle over source architectures.
-    why_it_is_required: >-
-      XASSET-0027 SSI.2 permits a categorical negative only where every registered construction for a
-      cell was evaluated. Without a closure principle, "every registered construction" means only
-      "every construction the registry's author thought of," and the resulting negative would
-      establish the author's imagination rather than non-constructibility — the overstated
-      exhaustiveness failure XASSET-0027 SSL exists to prevent.
-    why_this_unit_cannot_supply_it: >-
-      Accepted authority does not enumerate hypothetical source or construction architectures and
-      supplies no principle from which such an enumeration follows. Authoring one and asserting its
-      completeness would be unsupported methodology, and its exhaustiveness would rest on assertion
-      rather than derivation.
-
-# --------------------------------------------------------------------------------------------------
-# The path that does not require either prerequisite
-# --------------------------------------------------------------------------------------------------
-
-non_governance_dissolution_path:
-  exists: true
-  description: >-
-    PREREQ-2 exists only because the relevant sources do not yet exist. If a qualifying source comes
-    into existence and is lawfully admitted through an XASSET-0021 snapshot successor, the
-    construction built on it becomes EXISTING_SOURCE_ARCHITECTURE, carrying exact path and SHA-256
-    identity. Its construction is then closed by observation rather than by enumeration, and PREREQ-2
-    does not arise for it.
-  what_this_does_not_mean: >-
-    This is not a prediction that such a source will appear, not a schedule, and not authority to
-    seek, solicit, or commission one. It also does not dissolve PREREQ-1, which would still bind a
-    comparison-scoped construction. It is recorded so that the blocker is not mistaken for one only
-    governance work can remove.
-  requires: XASSET-0021 snapshot successor, separately authorized and not authorized here
-
-# --------------------------------------------------------------------------------------------------
-# Partial closure — achievable, and expressly not shipped as closure
-# --------------------------------------------------------------------------------------------------
-
-partial_closure:
-  achievable: true
-  shipped: false
-  why_not: >-
-    A registry restricted to the existing-source corpus, or to the three DRIVER classes with closed
-    comparator spaces, could be frozen and would satisfy C1, C2, C4, and C5. It would still fail C3,
-    because the unregistered remainder would be excluded by construction rather than evaluated. Under
-    XASSET-0027 SSI.2 the cells whose constructions went unregistered cannot be determined
-    negatively, and labelling such a registry a closed construction universe would be the overstated
-    exhaustiveness XASSET-0027 SSL names. A determination that closure is unavailable is preferable
-    to a restricted registry presented as closure.
-
-# --------------------------------------------------------------------------------------------------
-# Preserved, unresolved, and untouched
-# --------------------------------------------------------------------------------------------------
-
-preserved:
-  xasset_0024_section_k_1_reading: UNRESOLVED_NEITHER_RESOLVED_NOR_RELIED_UPON
-  xasset_0024_section_j_12: NOT_YET_DETERMINABLE_DEFERRED
-  representation_posture: SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED
-  representation_rule_created: false
-  cm_14_through_cm_17_designated: false
-  family_slot_grid_status: CLASSIFICATION_SCAFFOLD_NOT_A_CONSTRUCTION_UNIVERSE
-  family_slot_grid_is_a_trial_ceiling: false
-  stage_2_authorized: false
+preserved_postures:
+  xasset_0024_section_k1: UNRESOLVED_BOTH_READINGS_PRESERVED
+  section_j12: DEFERRED
+  representation: SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED
+  stage_2: NOT_AUTHORIZED
   application_authority: WITHHELD
-  level1_endpoint_authority_exercised: false
-  risk_0001_artifacts_accessed: false
-  risk_reuse_authorized: false
+  risk_0001_reuse: PROHIBITED_NOT_ACCESSED
 
-# --------------------------------------------------------------------------------------------------
-# Consequential numeric parameters
-# --------------------------------------------------------------------------------------------------
-
-consequential_parameter_registry:
-  parameters: []
-  zero_parameter_declaration:
-    introduces_zero_consequential_numeric_parameters: true
-    statement: >-
-      This determination introduces no consequential numeric parameter as NUM-0001 SS18 defines the
-      term. It applies no threshold, tolerance, cutoff, materiality level, window, weight,
-      coefficient, or score. Every count appearing in this file — 240, 120, 48, 6, 5, 4, 3, 2 — is a
-      cardinality derived from an already-closed population by multiplication or by counting, not a
-      value selected by this unit, and changing one would be an arithmetic error rather than a
-      re-tuning. No count was chosen by searching historical outcomes.
-
-# --------------------------------------------------------------------------------------------------
-# Disclosed findings — recorded, not corrected
-# --------------------------------------------------------------------------------------------------
-
-disclosed_findings:
-- id: FINDING_1_STALE_SEARCH_SURFACE_SENTENCE_IN_CANONICAL_PREREGISTRATION
-  severity: DISCLOSED_NOT_CORRECTED
-  location: research/level1_endpoint_evidence/pre_registration.yaml lines 895-896
-  field: consequential_parameter_registry.zero_parameter_declaration.design_consequence
-  observed_text: >-
-    "With the candidate universe now closed by a deterministic generator, the qualitative search
-    surface is closed as well: the executor selects neither which constructions to try nor when to
-    stop."
-  why_it_is_a_finding: >-
-    It contradicts the same file's construction_universe_closure.status: NOT_CLOSED at line 286 and
-    stage_1_executable: false at line 287, and contradicts XASSET-0027 SSI.1.1 and SSL, which record
-    that the qualitative search surface is expressly NOT closed. It appears to be wording that
-    survived XASSET-0027's own corrections at a site those corrections did not reach. The same claim
-    does not appear in PROTOCOL_V1.md, so the inconsistency is single-site.
-  not_corrected_because: >-
-    The file is hash-pinned by XASSET-0027. Editing it would invalidate an accepted pin and requires
-    an amendment decision that expressly governs the change; XASSET-0028's authority is to determine
-    closure, not to amend XASSET-0027's canonical files.
-  enforcement_response: >-
-    The dedicated validator for this determination rejects any claim of closure over the
-    qualitative search surface or the construction universe, so a downstream reader acting on the stale
-    sentence is blocked mechanically rather than only textually.
-  is_an_enforcement_gap: false
-  is_an_enforcement_gap_reason: >-
-    The existing preregistration validator independently enforces status NOT_CLOSED and
-    stage_1_executable false, and validate_stage1_results() fails closed on an empty closed
-    construction universe, so no execution path is opened by the stale sentence.
-
-# --------------------------------------------------------------------------------------------------
-# What this determination does not do
-# --------------------------------------------------------------------------------------------------
-
-non_authorization:
-  closes_a_construction_universe: false
-  freezes_any_concrete_construction: false
-  registers_any_construction: false
-  supplies_a_comparator_rule: false
-  enumerates_hypothetical_source_architectures: false
-  makes_stage_1_executable: false
-  authorizes_stage_2: false
-  authorizes_any_empirical_research_or_data_acquisition: false
-  produces_any_endpoint_value_bound_point_range_or_percentage: false
-  produces_any_target_weight_or_allocation: false
-  selects_prefers_ranks_sequences_or_budgets_any_sleeve: false
-  resolves_xasset_0024_section_k_1: false
-  decides_xasset_0024_section_j_12: false
-  amends_any_canonical_hash_pinned_file: false
-  amends_any_accepted_decision: false
-  authorizes_application_or_evidence_admission: false
-  performs_level_1_or_level_2_sizing: false
-  changes_targets_holdings_gates_issuer_lookthrough_allocator_or_margin_state: false
-  authorizes_chart_ladder_optimizer_deployment_trade_or_order: false
+prohibited_scope:
+- STAGE_1_EXECUTION
+- STAGE_2_AUTHORIZATION
+- ENDPOINT_VALUE_OF_ANY_KIND
+- SLEEVE_PREFERENCE_OR_RANKING
+- APPLICATION_AUTHORITY
+- RISK_0001_REUSE

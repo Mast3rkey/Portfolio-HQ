@@ -46,8 +46,19 @@ DECISION_PATH = (
     / "XASSET-0027-level1-endpoint-authority-and-all-four-sleeve-evidence-program-charter.md"
 )
 
+SUCCESSOR_DECISION_PATH = (
+    ROOT
+    / "governance/decisions"
+    / "XASSET-0028-concrete-construction-universe-closure-determination.md"
+)
+
 STUDY_ID = "ENDPOINT-0001"
-HASH_VERSION = "ENDPOINT-0001-PREREG-V3"
+HASH_VERSION = "ENDPOINT-0001-PREREG-V4"
+PREDECESSOR_HASH_VERSION = "ENDPOINT-0001-PREREG-V3"
+
+# XASSET-0028 closes the construction universe. Cardinality and integrity hash are recomputed
+# from the real generator at validation time, never trusted as literals here.
+REGISTERED_CONSTRUCTION_COUNT = 680
 
 TOP_KEYS = (
     "schema_version",
@@ -93,6 +104,7 @@ TOP_KEYS = (
     "prohibited_scope",
     "protected_paths",
     "hash_version",
+    "predecessor_hash_version",
 )
 
 SLEEVES = ("equity", "fund_broad_market", "fund_gld_defensive", "crypto")
@@ -684,16 +696,19 @@ def _validate_stage_1_executability(data: Mapping[str, Any], errors: list[str]) 
     if not isinstance(block, Mapping):
         errors.append("stage_1_executability: expected a mapping")
         return
+    # Stage 1 is STRUCTURALLY unblocked by XASSET-0028's closed universe and remains OPERATIONALLY
+    # unauthorized until that decision's own lifecycle closes. Both facts must be stated, and
+    # `executable` must stay false so no runner can read structural closure as authorization.
     _false(block.get("executable"), "stage_1_executability.executable", errors)
     _exact(
         block.get("status"),
-        "NOT_YET_EXECUTABLE_CONSTRUCTION_UNIVERSE_NOT_CLOSED",
+        "STRUCTURALLY_CLOSED_NOT_OPERATIONALLY_AUTHORIZED",
         "stage_1_executability.status",
         errors,
     )
     _exact(
         block.get("blocking_prerequisite"),
-        "CONCRETE_CONSTRUCTION_UNIVERSE_CLOSURE",
+        "XASSET_0028_LIFECYCLE_CLOSURE",
         "stage_1_executability.blocking_prerequisite",
         errors,
     )
@@ -702,6 +717,36 @@ def _validate_stage_1_executability(data: Mapping[str, Any], errors: list[str]) 
         "stage_1_executability.authorized_by_xasset_0027",
         errors,
     )
+    _false(
+        block.get("authorized_by_xasset_0028"),
+        "stage_1_executability.authorized_by_xasset_0028",
+        errors,
+    )
+    _true(
+        block.get("construction_universe_structurally_closed"),
+        "stage_1_executability.construction_universe_structurally_closed",
+        errors,
+    )
+    _true(
+        block.get("no_merge_to_execution_gap"),
+        "stage_1_executability.no_merge_to_execution_gap",
+        errors,
+    )
+    required_gates = (
+        "INDEPENDENT_FULL_EXACT_HEAD_REVIEW",
+        "PRINCIPAL_EXACT_HEAD_ACCEPTANCE",
+        "MERGE",
+        "POST_MERGE_VERIFICATION",
+        "MERGE_COMMIT_CI_SUCCESS",
+        "MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION",
+    )
+    declared = block.get("operational_authorization_requires_all_of") or ()
+    for gate in required_gates:
+        if gate not in declared:
+            errors.append(
+                "stage_1_executability.operational_authorization_requires_all_of: must include "
+                f"{gate!r}"
+            )
 
 
 def _validate_stages(data: Mapping[str, Any], errors: list[str]) -> None:
@@ -855,32 +900,46 @@ def _validate_family_slot_grid(data: Mapping[str, Any], errors: list[str]) -> No
 
 
 def _validate_construction_universe_closure(data: Mapping[str, Any], errors: list[str]) -> None:
-    """The construction universe is not closed, and this charter does not close it.
+    """The construction universe is CLOSED by XASSET-0028, and predecessor identity is preserved.
 
-    A negative outcome is preferable to invented completeness, so the YAML must record NOT_CLOSED
-    rather than manufacture a registry it cannot support.
+    Amended by XASSET-0028. Under XASSET-0027 this block recorded NOT_CLOSED and a named prerequisite.
+    XASSET-0028 is the separately accepted amendment that pin rule requires; it closes the universe
+    over a stated basis and supplies the count and integrity hash. The XASSET-0027 record is retained
+    verbatim as historical predecessor identity and is checked here so it can never be quietly
+    rewritten -- including its own discipline that neither route was permanently foreclosed.
     """
     block = data.get("construction_universe_closure")
     if not isinstance(block, Mapping):
         errors.append("construction_universe_closure: expected a mapping")
         return
-    _exact(block.get("status"), "NOT_CLOSED", "construction_universe_closure.status", errors)
-    _false(block.get("stage_1_executable"), "construction_universe_closure.stage_1_executable", errors)
+
+    _exact(block.get("status"), "CLOSED", "construction_universe_closure.status", errors)
+    _exact(block.get("amended_by"), "XASSET-0028",
+           "construction_universe_closure.amended_by", errors)
+    _exact(block.get("predecessor_authority"), "XASSET-0027",
+           "construction_universe_closure.predecessor_authority", errors)
+    _exact(block.get("successor_authority"), "XASSET-0028",
+           "construction_universe_closure.successor_authority", errors)
+    _exact(block.get("predecessor_status"), "NOT_CLOSED",
+           "construction_universe_closure.predecessor_status", errors)
+
+    # Structural closure is not operational authorization.
+    _false(block.get("stage_1_executable"),
+           "construction_universe_closure.stage_1_executable", errors)
+    _true(block.get("stage_1_structurally_closed"),
+          "construction_universe_closure.stage_1_structurally_closed", errors)
+    _false(block.get("stage_1_operationally_authorized"),
+           "construction_universe_closure.stage_1_operationally_authorized", errors)
+    _false(block.get("executor_may_add_omit_substitute_or_mutate_a_construction"),
+           "construction_universe_closure.executor_may_add_omit_substitute_or_mutate_a_construction",
+           errors)
+    _true(block.get("generator_is_canonical_source_of_construction_identity"),
+          "construction_universe_closure.generator_is_canonical_source_of_construction_identity",
+          errors)
     _exact(
-        block.get("route_taken"),
-        "HONEST_PREREQUISITE",
-        "construction_universe_closure.route_taken",
-        errors,
-    )
-    _exact(
-        block.get("next_required_prerequisite"),
-        "CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION",
-        "construction_universe_closure.next_required_prerequisite",
-        errors,
-    )
-    _false(
-        block.get("authorized_by_xasset_0027"),
-        "construction_universe_closure.authorized_by_xasset_0027",
+        block.get("generator"),
+        "level1_construction_universe_closure_validator.generate_construction_universe",
+        "construction_universe_closure.generator",
         errors,
     )
     _exact(
@@ -889,37 +948,104 @@ def _validate_construction_universe_closure(data: Mapping[str, Any], errors: lis
         "construction_universe_closure.invented_completeness",
         errors,
     )
-    # The two routes are recorded as unavailable TO THIS FILING, never as permanently foreclosed.
-    # XASSET-0027 has no authority to determine that a future closure unit could not preregister a
-    # finite hypothetical-architecture registry, and must not be citable as having done so.
-    _true(
-        block.get("routes_are_unavailable_now_not_permanently_foreclosed"),
-        "construction_universe_closure.routes_are_unavailable_now_not_permanently_foreclosed",
+
+    # Cardinality and integrity hash are recomputed from the real generator, never trusted as
+    # written numbers.
+    try:
+        import level1_construction_universe_closure_validator as CU
+
+        universe = CU.generate_construction_universe()
+        if block.get("registered_construction_count") != len(universe):
+            errors.append(
+                "construction_universe_closure.registered_construction_count: must equal the "
+                f"generated cardinality {len(universe)}"
+            )
+        if block.get("construction_universe_sha256") != CU.universe_aggregate_sha256(universe):
+            errors.append(
+                "construction_universe_closure.construction_universe_sha256: must equal the "
+                "aggregate hash of the canonical serialization of the generated universe"
+            )
+    except ImportError as exc:  # pragma: no cover - defensive
+        errors.append(f"construction_universe_closure: generator module unavailable: {exc}")
+
+    props = block.get("closure_basis_properties")
+    if not isinstance(props, Mapping):
+        errors.append("construction_universe_closure.closure_basis_properties: expected a mapping")
+    else:
+        for flag in (
+            "stated",
+            "non_outcome_aware",
+            "non_economic",
+            "deterministic",
+            "byte_identically_reproducible",
+            "frozen_before_stage_1_outcomes",
+            "contains_no_endpoint_value",
+        ):
+            _true(props.get(flag), f"construction_universe_closure.closure_basis_properties.{flag}",
+                  errors)
+        _false(
+            props.get("selects_ranks_or_prefers_no_sleeve_or_comparator"),
+            "construction_universe_closure.closure_basis_properties."
+            "selects_ranks_or_prefers_no_sleeve_or_comparator",
+            errors,
+        )
+
+    # ---- Historical predecessor identity, preserved verbatim ----
+    pred = block.get("xasset_0027_predecessor_record")
+    if not isinstance(pred, Mapping):
+        errors.append(
+            "construction_universe_closure.xasset_0027_predecessor_record: the XASSET-0027 record "
+            "must be preserved as historical predecessor identity"
+        )
+        return
+    _true(pred.get("preserved_verbatim"),
+          "construction_universe_closure.xasset_0027_predecessor_record.preserved_verbatim", errors)
+    _exact(pred.get("status"), "NOT_CLOSED",
+           "construction_universe_closure.xasset_0027_predecessor_record.status", errors)
+    _exact(
+        pred.get("route_taken"),
+        "HONEST_PREREQUISITE",
+        "construction_universe_closure.xasset_0027_predecessor_record.route_taken",
         errors,
     )
-    unavailable = block.get("routes_considered_and_unavailable_to_this_filing")
+    _exact(
+        pred.get("next_required_prerequisite"),
+        "CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION",
+        "construction_universe_closure.xasset_0027_predecessor_record.next_required_prerequisite",
+        errors,
+    )
+    _true(
+        pred.get("routes_are_unavailable_now_not_permanently_foreclosed"),
+        "construction_universe_closure.xasset_0027_predecessor_record."
+        "routes_are_unavailable_now_not_permanently_foreclosed",
+        errors,
+    )
+    unavailable = pred.get("routes_considered_and_unavailable_to_this_filing")
     if not isinstance(unavailable, list) or len(unavailable) != 2:
         errors.append(
-            "construction_universe_closure.routes_considered_and_unavailable_to_this_filing: expected "
-            "both routes (CONCRETE_FINITE_REGISTRY, DETERMINISTIC_CONSTRUCTION_GRAMMAR) with reasons"
+            "construction_universe_closure.xasset_0027_predecessor_record."
+            "routes_considered_and_unavailable_to_this_filing: expected both routes "
+            "(CONCRETE_FINITE_REGISTRY, DETERMINISTIC_CONSTRUCTION_GRAMMAR) with reasons"
         )
     else:
         _exact(
             [r.get("route") if isinstance(r, Mapping) else None for r in unavailable],
             ["CONCRETE_FINITE_REGISTRY", "DETERMINISTIC_CONSTRUCTION_GRAMMAR"],
-            "construction_universe_closure.routes_considered_and_unavailable_to_this_filing[].route",
+            "construction_universe_closure.xasset_0027_predecessor_record."
+            "routes_considered_and_unavailable_to_this_filing[].route",
             errors,
         )
         for position, row in enumerate(unavailable):
             where = (
-                "construction_universe_closure."
+                "construction_universe_closure.xasset_0027_predecessor_record."
                 f"routes_considered_and_unavailable_to_this_filing[{position}]"
             )
             reason = row.get("unavailable_to_this_filing_because") if isinstance(row, Mapping) else None
             if not isinstance(reason, str) or not reason.strip():
                 errors.append(f"{where}.unavailable_to_this_filing_because: expected a non-empty reason")
             elif isinstance(row, Mapping):
-                # A route reason may not assert permanent impossibility.
+                # A route reason may not assert permanent impossibility. XASSET-0028 proves the
+                # point: one of these very routes was in fact available to a later unit.
                 for banned in (
                     "closeable only",
                     "can never",
@@ -931,12 +1057,12 @@ def _validate_construction_universe_closure(data: Mapping[str, Any], errors: lis
                     if banned in reason.lower():
                         errors.append(
                             f"{where}.unavailable_to_this_filing_because: {banned!r} asserts a "
-                            "permanent impossibility this filing has no authority to determine; "
-                            "record what XASSET-0027 cannot do from present authority instead"
+                            "permanent impossibility XASSET-0027 had no authority to determine; "
+                            "record what it could not do from present authority instead"
                         )
             if isinstance(row, Mapping) and "rejected_because" in row:
                 errors.append(
-                    f"{where}.rejected_because: a route is recorded as unavailable to this filing, "
+                    f"{where}.rejected_because: a route is recorded as unavailable to that filing, "
                     "not rejected; 'rejected' reads as permanently foreclosed"
                 )
 
@@ -946,6 +1072,14 @@ def _validate_construction_universe_closure(data: Mapping[str, Any], errors: lis
             completeness.get("applies_only_after_construction_universe_closure"),
             "completeness_rule.applies_only_after_construction_universe_closure",
             errors,
+        )
+        _true(
+            completeness.get("construction_universe_closure_now_exists"),
+            "completeness_rule.construction_universe_closure_now_exists",
+            errors,
+        )
+        _exact(
+            completeness.get("closed_by"), "XASSET-0028", "completeness_rule.closed_by", errors
         )
         _true(
             completeness.get("cell_negative_requires_all_registered_constructions_evaluated"),
@@ -974,13 +1108,33 @@ def _validate_construction_universe_closure(data: Mapping[str, Any], errors: lis
 def _validate_counts(data: Mapping[str, Any], errors: list[str]) -> None:
     inventory = data.get("trial_inventory")
     if isinstance(inventory, Mapping):
-        # A trial ceiling bounds hypotheses. The construction universe is not closed, so the number
-        # of constructions is undefined and no honest ceiling can be stated.
-        _exact(inventory.get("status"), "NOT_YET_DEFINABLE", "trial_inventory.status", errors)
+        # A trial ceiling bounds hypotheses. AMENDED BY XASSET-0028: the construction universe IS
+        # now closed, so the number of constructions is defined and an honest ceiling exists. It is
+        # the registered construction count, recomputed from the real generator -- never the 240
+        # family slots, which remain a classification grid and not a ceiling.
+        _exact(inventory.get("status"), "DEFINED", "trial_inventory.status", errors)
+        _exact(inventory.get("defined_by"), "XASSET-0028", "trial_inventory.defined_by", errors)
         _exact(
-            inventory.get("defined_by"),
-            "THE_FUTURE_SEPARATELY_AUTHORIZED_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT",
-            "trial_inventory.defined_by",
+            inventory.get("predecessor_status_xasset_0027"),
+            "NOT_YET_DEFINABLE",
+            "trial_inventory.predecessor_status_xasset_0027",
+            errors,
+        )
+        try:
+            import level1_construction_universe_closure_validator as CU
+
+            _exact(
+                inventory.get("registered_constructions"),
+                len(CU.generate_construction_universe()),
+                "trial_inventory.registered_constructions",
+                errors,
+            )
+        except ImportError as exc:  # pragma: no cover - defensive
+            errors.append(f"trial_inventory: generator module unavailable: {exc}")
+        _exact(
+            inventory.get("unit_of_trial"),
+            "ONE_CONSTRUCTION_EVALUATION",
+            "trial_inventory.unit_of_trial",
             errors,
         )
         _exact(
@@ -1008,12 +1162,14 @@ def _validate_counts(data: Mapping[str, Any], errors: list[str]) -> None:
             "trial_inventory.every_registered_construction_must_be_recorded",
             errors,
         )
-        # A trial ceiling must not be smuggled back in under the old key names.
-        for banned in ("unit_of_trial", "derived_candidate_ceiling", "candidates_per_cell"):
+        # The family-slot grid must not be smuggled back in as a candidate ceiling. `unit_of_trial`
+        # is no longer banned -- XASSET-0028 closes the universe, so a lawful unit of trial exists --
+        # but a ceiling derived from the 240 slots still is.
+        for banned in ("derived_candidate_ceiling", "candidates_per_cell"):
             if banned in inventory:
                 errors.append(
-                    f"trial_inventory.{banned}: a trial ceiling may not be stated while the "
-                    "construction universe is not closed"
+                    f"trial_inventory.{banned}: the 240 family slots are a classification grid and "
+                    "may never be restated as a candidate ceiling"
                 )
     else:
         errors.append("trial_inventory: expected a mapping")
@@ -1528,9 +1684,16 @@ def _validate_execution(data: Mapping[str, Any], errors: list[str]) -> None:
             "execution.stopping_rules.terminates_when",
             errors,
         )
-        _true(
+        # AMENDED BY XASSET-0028: the rule now ranges over the closed registered set.
+        _false(
             stopping.get("stopping_rule_currently_has_no_registered_set"),
             "execution.stopping_rules.stopping_rule_currently_has_no_registered_set",
+            errors,
+        )
+        _exact(
+            stopping.get("stopping_rule_amended_by"),
+            "XASSET-0028",
+            "execution.stopping_rules.stopping_rule_amended_by",
             errors,
         )
         _exact(
@@ -2047,11 +2210,28 @@ def protocol_mirror_expected() -> dict[str, str]:
         "gate_count": str(len(GATE_IDS)),
         "consequential_parameter_count": "0",
         "stage_1_executable": "false",
-        "construction_universe_closed": "false",
+        "construction_universe_closed": "true",
+        "registered_construction_count": str(REGISTERED_CONSTRUCTION_COUNT),
+        "construction_universe_sha256": _universe_sha256(),
+        "stage_1_structurally_closed": "true",
+        "stage_1_operationally_authorized": "false",
         "stage_2_authorized": "false",
         "j12_deferred": "true",
         "hash_version": HASH_VERSION,
+        "predecessor_hash_version": PREDECESSOR_HASH_VERSION,
     }
+
+
+def _universe_sha256() -> str:
+    """Aggregate identity hash of the XASSET-0028 construction universe, recomputed live.
+
+    Imported lazily so this accepted validator keeps zero import-time dependency on the XASSET-0028
+    module, and so a missing successor module surfaces as an explicit error rather than an import
+    crash.
+    """
+    import level1_construction_universe_closure_validator as CU
+
+    return CU.universe_aggregate_sha256()
 
 
 def extract_block(text: str, pattern: re.Pattern[str]) -> dict[str, str] | None:
@@ -2087,10 +2267,75 @@ def validate_protocol_mirror(protocol_text: str) -> ValidationResult:
     return ValidationResult(not errors, tuple(errors))
 
 
+# XASSET-0027's accepted pins, retained as HISTORICAL predecessor identity. XASSET-0028 amends the
+# canonical bytes under successor authority, so these no longer describe the current files -- and must
+# not be rewritten to pretend otherwise. They are asserted verbatim so accepted history stays auditable.
+PREDECESSOR_PINS = {
+    "protocol_sha256": "1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b",
+    "preregistration_sha256": "bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f",
+}
+
+SUCCESSOR_HASH_BLOCK_RE = re.compile(
+    r"<!-- XASSET-0028-HASH-PINS-V1\n(?P<body>.*?)\n-->", re.DOTALL
+)
+
+
+def validate_successor_hash_pins(
+    decision_text: str, prereg_path: Path = PREREG_PATH, protocol_path: Path = PROTOCOL_PATH
+) -> ValidationResult:
+    """Validate XASSET-0028's successor pins against the canonical files as committed.
+
+    The successor pins are the EFFECTIVE ones once XASSET-0028's lifecycle closes. They are verified
+    against observed bytes, and they must differ from the predecessor pins -- an amendment that left
+    the bytes unchanged would not be an amendment.
+    """
+    errors: list[str] = []
+    pins = extract_block(decision_text, SUCCESSOR_HASH_BLOCK_RE)
+    if pins is None:
+        return ValidationResult(False, ("XASSET-0028: XASSET-0028-HASH-PINS-V1 block absent",))
+    expected_paths = {
+        "protocol_path": "research/level1_endpoint_evidence/PROTOCOL_V1.md",
+        "preregistration_path": "research/level1_endpoint_evidence/pre_registration.yaml",
+    }
+    for key, want in expected_paths.items():
+        if pins.get(key) != want:
+            errors.append(f"successor pins: {key} expected {want!r}, got {pins.get(key)!r}")
+    for key, path in (("protocol_sha256", protocol_path), ("preregistration_sha256", prereg_path)):
+        pinned = pins.get(key)
+        if not pinned:
+            errors.append(f"successor pins: {key} is absent")
+            continue
+        actual = sha256_file(path)
+        if pinned != actual:
+            errors.append(
+                f"successor pins: {key} mismatch -- XASSET-0028 pins {pinned}, file is {actual}"
+            )
+        if pinned == PREDECESSOR_PINS[key]:
+            errors.append(
+                f"successor pins: {key} equals the predecessor pin; the amendment must change the "
+                "canonical bytes it re-pins"
+            )
+    for key, want in PREDECESSOR_PINS.items():
+        got = pins.get(f"predecessor_{key}")
+        if got != want:
+            errors.append(
+                f"successor pins: predecessor_{key} must retain the XASSET-0027 value {want!r}, "
+                f"got {got!r}"
+            )
+    return ValidationResult(not errors, tuple(errors))
+
+
 def validate_charter_hash_pins(
     decision_text: str, prereg_path: Path = PREREG_PATH, protocol_path: Path = PROTOCOL_PATH
 ) -> ValidationResult:
-    """Validate that the charter's pinned hashes match the canonical files as committed."""
+    """Validate that the XASSET-0027 charter retains its historical pins verbatim.
+
+    AMENDED BY XASSET-0028. This previously asserted that the pinned digests still matched the live
+    canonical files. XASSET-0028 amends those files under successor authority, so that assertion
+    would now force either a false failure or a rewrite of accepted history. It instead asserts the
+    charter still records exactly the digests it accepted -- history preserved, not restated as
+    current fact. Current-byte verification moved to validate_successor_hash_pins().
+    """
     errors: list[str] = []
     pins = extract_block(decision_text, HASH_BLOCK_RE)
     if pins is None:
@@ -2102,16 +2347,14 @@ def validate_charter_hash_pins(
     for key, want in expected_paths.items():
         if pins.get(key) != want:
             errors.append(f"hash pins: {key} expected {want!r}, got {pins.get(key)!r}")
-    for key, path in (("protocol_sha256", protocol_path), ("preregistration_sha256", prereg_path)):
+    for key, want in PREDECESSOR_PINS.items():
         pinned = pins.get(key)
         if not pinned:
             errors.append(f"hash pins: {key} is absent")
-            continue
-        actual = sha256_file(path)
-        if pinned != actual:
+        elif pinned != want:
             errors.append(
-                f"hash pins: {key} mismatch — charter pins {pinned}, file is {actual}; "
-                "a mismatch voids execution authority"
+                f"hash pins: {key} is {pinned}, but XASSET-0027's accepted historical pin is {want}; "
+                "accepted history may not be rewritten"
             )
     return ValidationResult(not errors, tuple(errors))
 
@@ -2144,6 +2387,16 @@ def validate_file(path: Path = PREREG_PATH) -> ValidationResult:
     else:
         errors.append(f"{DECISION_PATH}: file not found")
 
+    # XASSET-0028 successor pins are the EFFECTIVE ones for the amended canonical bytes.
+    if SUCCESSOR_DECISION_PATH.exists():
+        errors.extend(
+            validate_successor_hash_pins(
+                SUCCESSOR_DECISION_PATH.read_text(encoding="utf-8")
+            ).errors
+        )
+    else:
+        errors.append(f"{SUCCESSOR_DECISION_PATH}: file not found")
+
     return ValidationResult(not errors, tuple(errors))
 
 
@@ -2153,7 +2406,8 @@ def main() -> int:  # pragma: no cover - CLI
         print(
             f"level1_endpoint_evidence_preregistration_validator: OK ({STUDY_ID}; "
             f"{len(generate_family_slot_grid())} family slots over {len(generate_cell_universe())} "
-            "cells; construction universe NOT CLOSED; Stage 1 NOT EXECUTABLE)"
+            f"cells; construction universe CLOSED at {REGISTERED_CONSTRUCTION_COUNT} registered "
+            "constructions; Stage 1 NOT EXECUTABLE)"
         )
         return 0
     print(f"level1_endpoint_evidence_preregistration_validator: {len(result.errors)} error(s)")

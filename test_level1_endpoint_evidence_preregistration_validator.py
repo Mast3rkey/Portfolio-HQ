@@ -290,24 +290,63 @@ class TestFamilySlotGrid:
         _assert_rejected(data, "family_slot_grid.slot_count")
 
 
-class TestConstructionUniverseIsNotClosed:
-    def test_closure_status_is_not_closed(self, base_data: dict):
-        block = base_data["construction_universe_closure"]
-        assert block["status"] == "NOT_CLOSED"
-        assert block["stage_1_executable"] is False
-        assert block["route_taken"] == "HONEST_PREREQUISITE"
-        assert block["authorized_by_xasset_0027"] is False
+class TestConstructionUniverseIsClosed:
+    """AMENDED BY XASSET-0028. The universe is CLOSED; the XASSET-0027 record is preserved."""
 
-    def test_claiming_the_universe_is_closed_rejected(self, data: dict):
-        data["construction_universe_closure"]["status"] = "CLOSED"
+    def test_closure_status_is_closed_under_the_successor(self, base_data: dict):
+        block = base_data["construction_universe_closure"]
+        assert block["status"] == "CLOSED"
+        assert block["amended_by"] == "XASSET-0028"
+        assert block["predecessor_status"] == "NOT_CLOSED"
+        # Structural closure is not operational authorization.
+        assert block["stage_1_executable"] is False
+        assert block["stage_1_structurally_closed"] is True
+        assert block["stage_1_operationally_authorized"] is False
+
+    def test_cardinality_and_hash_match_the_real_generator(self, base_data: dict):
+        import level1_construction_universe_closure_validator as CU
+
+        universe = CU.generate_construction_universe()
+        block = base_data["construction_universe_closure"]
+        assert block["registered_construction_count"] == len(universe)
+        assert block["construction_universe_sha256"] == CU.universe_aggregate_sha256(universe)
+
+    def test_reverting_to_not_closed_rejected(self, data: dict):
+        data["construction_universe_closure"]["status"] = "NOT_CLOSED"
         _assert_rejected(data, "construction_universe_closure.status")
+
+    def test_wrong_registered_count_rejected(self, data: dict):
+        data["construction_universe_closure"]["registered_construction_count"] = 240
+        _assert_rejected(data, "registered_construction_count")
+
+    def test_wrong_universe_hash_rejected(self, data: dict):
+        data["construction_universe_closure"]["construction_universe_sha256"] = "0" * 64
+        _assert_rejected(data, "construction_universe_sha256")
+
+    def test_claiming_operational_authorization_rejected(self, data: dict):
+        data["construction_universe_closure"]["stage_1_operationally_authorized"] = True
+        _assert_rejected(data, "stage_1_operationally_authorized")
+
+    def test_permitting_executor_mutation_rejected(self, data: dict):
+        data["construction_universe_closure"][
+            "executor_may_add_omit_substitute_or_mutate_a_construction"
+        ] = True
+        _assert_rejected(data, "executor_may_add_omit_substitute_or_mutate_a_construction")
+
+    def test_dropping_the_predecessor_record_rejected(self, data: dict):
+        del data["construction_universe_closure"]["xasset_0027_predecessor_record"]
+        _assert_rejected(data, "xasset_0027_predecessor_record")
+
+    def test_rewriting_predecessor_status_rejected(self, data: dict):
+        data["construction_universe_closure"]["xasset_0027_predecessor_record"]["status"] = "CLOSED"
+        _assert_rejected(data, "xasset_0027_predecessor_record.status")
 
     def test_claiming_stage_1_is_executable_rejected(self, data: dict):
         data["construction_universe_closure"]["stage_1_executable"] = True
         _assert_rejected(data, "construction_universe_closure.stage_1_executable")
 
     def test_both_unavailable_routes_recorded_with_reasons(self, base_data: dict):
-        unavailable = base_data["construction_universe_closure"][
+        unavailable = base_data["construction_universe_closure"]["xasset_0027_predecessor_record"][
             "routes_considered_and_unavailable_to_this_filing"
         ]
         assert [r["route"] for r in unavailable] == [
@@ -318,19 +357,21 @@ class TestConstructionUniverseIsNotClosed:
             assert row["unavailable_to_this_filing_because"].strip()
 
     def test_dropping_an_unavailable_route_rejected(self, data: dict):
-        data["construction_universe_closure"][
+        data["construction_universe_closure"]["xasset_0027_predecessor_record"][
             "routes_considered_and_unavailable_to_this_filing"
         ].pop()
         _assert_rejected(data, "routes_considered_and_unavailable_to_this_filing")
 
     def test_empty_unavailability_reason_rejected(self, data: dict):
-        data["construction_universe_closure"]["routes_considered_and_unavailable_to_this_filing"][0][
-            "unavailable_to_this_filing_because"
-        ] = "   "
+        data["construction_universe_closure"]["xasset_0027_predecessor_record"][
+            "routes_considered_and_unavailable_to_this_filing"
+        ][0]["unavailable_to_this_filing_because"] = "   "
         _assert_rejected(data, "unavailable_to_this_filing_because")
 
     def test_next_prerequisite_is_named(self, data: dict):
-        data["construction_universe_closure"]["next_required_prerequisite"] = "TBD"
+        data["construction_universe_closure"]["xasset_0027_predecessor_record"][
+            "next_required_prerequisite"
+        ] = "TBD"
         _assert_rejected(data, "next_required_prerequisite")
 
     def test_invented_completeness_must_stay_prohibited(self, data: dict):
@@ -353,14 +394,14 @@ class TestRouteUnavailabilityDoesNotForecloseTheFutureUnit:
 
     def test_non_foreclosure_flag_is_recorded(self, base_data: dict):
         assert (
-            base_data["construction_universe_closure"][
+            base_data["construction_universe_closure"]["xasset_0027_predecessor_record"][
                 "routes_are_unavailable_now_not_permanently_foreclosed"
             ]
             is True
         )
 
     def test_dropping_the_non_foreclosure_flag_rejected(self, data: dict):
-        data["construction_universe_closure"][
+        data["construction_universe_closure"]["xasset_0027_predecessor_record"][
             "routes_are_unavailable_now_not_permanently_foreclosed"
         ] = False
         _assert_rejected(data, "routes_are_unavailable_now_not_permanently_foreclosed")
@@ -376,13 +417,13 @@ class TestRouteUnavailabilityDoesNotForecloseTheFutureUnit:
         ],
     )
     def test_permanent_impossibility_claims_rejected(self, data: dict, phrase: str):
-        data["construction_universe_closure"]["routes_considered_and_unavailable_to_this_filing"][0][
-            "unavailable_to_this_filing_because"
-        ] = phrase
+        data["construction_universe_closure"]["xasset_0027_predecessor_record"][
+            "routes_considered_and_unavailable_to_this_filing"
+        ][0]["unavailable_to_this_filing_because"] = phrase
         _assert_rejected(data, "permanent impossibility")
 
     def test_reverting_to_the_rejected_because_key_is_rejected(self, data: dict):
-        row = data["construction_universe_closure"][
+        row = data["construction_universe_closure"]["xasset_0027_predecessor_record"][
             "routes_considered_and_unavailable_to_this_filing"
         ][0]
         row["rejected_because"] = row["unavailable_to_this_filing_because"]
@@ -394,7 +435,7 @@ class TestRouteUnavailabilityDoesNotForecloseTheFutureUnit:
         assert "closeable only over sources" not in lowered
 
     def test_prereg_states_the_present_authority_scope(self, base_data: dict):
-        reason = base_data["construction_universe_closure"][
+        reason = base_data["construction_universe_closure"]["xasset_0027_predecessor_record"][
             "routes_considered_and_unavailable_to_this_filing"
         ][0]["unavailable_to_this_filing_because"]
         assert "cannot be closed by XASSET-0027 from the currently accepted corpus alone" in reason
@@ -421,20 +462,33 @@ class TestRouteUnavailabilityDoesNotForecloseTheFutureUnit:
         assert "does not determine whether that unit can" in text
         assert "finite hypothetical-architecture registry" in text
 
-    def test_p0_remains_open_and_unscoped(self, base_data: dict):
-        note = base_data["construction_universe_closure"]["next_required_prerequisite_note"]
+    def test_p0_predecessor_note_preserved_verbatim(self, base_data: dict):
+        pred = base_data["construction_universe_closure"]["xasset_0027_predecessor_record"]
+        note = pred["next_required_prerequisite_note"]
         assert "does not pre-decide it" in note
         assert "does not choose among the possibilities that unit may consider" in note
-        assert base_data["construction_universe_closure"]["authorized_by_xasset_0027"] is False
+        assert pred["authorized_by_xasset_0027"] is False
+        assert pred["preserved_verbatim"] is True
 
 
 class TestStage1IsNotExecutable:
     def test_stage_1_executability_block_says_not_executable(self, base_data: dict):
         block = base_data["stage_1_executability"]
         assert block["executable"] is False
-        assert block["status"] == "NOT_YET_EXECUTABLE_CONSTRUCTION_UNIVERSE_NOT_CLOSED"
-        assert block["blocking_prerequisite"] == "CONCRETE_CONSTRUCTION_UNIVERSE_CLOSURE"
+        assert block["status"] == "STRUCTURALLY_CLOSED_NOT_OPERATIONALLY_AUTHORIZED"
+        assert block["blocking_prerequisite"] == "XASSET_0028_LIFECYCLE_CLOSURE"
         assert block["authorized_by_xasset_0027"] is False
+        assert block["authorized_by_xasset_0028"] is False
+        assert block["construction_universe_structurally_closed"] is True
+        assert block["no_merge_to_execution_gap"] is True
+
+    def test_claiming_xasset_0028_authorizes_stage_1_rejected(self, data: dict):
+        data["stage_1_executability"]["authorized_by_xasset_0028"] = True
+        _assert_rejected(data, "stage_1_executability.authorized_by_xasset_0028")
+
+    def test_dropping_an_operational_authorization_gate_rejected(self, data: dict):
+        data["stage_1_executability"]["operational_authorization_requires_all_of"] = ["MERGE"]
+        _assert_rejected(data, "operational_authorization_requires_all_of")
 
     def test_claiming_stage_1_executable_rejected(self, data: dict):
         data["stage_1_executability"]["executable"] = True
@@ -492,26 +546,37 @@ class TestCompletenessRule:
         _assert_rejected(data, "family_slot_negative_does_not_establish_non_constructibility")
 
 
-class TestTrialInventoryIsNotYetDefinable:
-    def test_trial_inventory_status_is_not_yet_definable(self, base_data: dict):
+class TestTrialInventoryIsDefined:
+    def test_trial_inventory_status_is_defined(self, base_data: dict):
         inventory = base_data["trial_inventory"]
-        assert inventory["status"] == "NOT_YET_DEFINABLE"
+        assert inventory["status"] == "DEFINED"
         assert inventory["unit_of_trial_once_defined"] == "ONE_CONSTRUCTION_EVALUATION"
-        assert inventory["defined_by"] == (
-            "THE_FUTURE_SEPARATELY_AUTHORIZED_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT"
+        assert inventory["unit_of_trial"] == "ONE_CONSTRUCTION_EVALUATION"
+        assert inventory["defined_by"] == "XASSET-0028"
+        assert inventory["predecessor_status_xasset_0027"] == "NOT_YET_DEFINABLE"
+
+    def test_registered_constructions_match_the_generator(self, base_data: dict):
+        import level1_construction_universe_closure_validator as CU
+
+        assert base_data["trial_inventory"]["registered_constructions"] == len(
+            CU.generate_construction_universe()
         )
+
+    def test_wrong_registered_construction_count_rejected(self, data: dict):
+        data["trial_inventory"]["registered_constructions"] = 240
+        _assert_rejected(data, "trial_inventory.registered_constructions")
 
     def test_family_slot_arithmetic_still_recorded(self, base_data: dict):
         assert base_data["trial_inventory"]["derived_family_slots"] == 240
         assert base_data["trial_inventory"]["family_slots_per_cell"] == 5
 
-    def test_declaring_a_trial_ceiling_now_rejected(self, data: dict):
-        data["trial_inventory"]["status"] = "DEFINED"
+    def test_reverting_to_not_yet_definable_rejected(self, data: dict):
+        data["trial_inventory"]["status"] = "NOT_YET_DEFINABLE"
         _assert_rejected(data, "trial_inventory.status")
 
     @pytest.mark.parametrize(
         "banned_key",
-        ("unit_of_trial", "derived_candidate_ceiling", "candidates_per_cell"),
+        ("derived_candidate_ceiling", "candidates_per_cell"),
     )
     def test_smuggling_back_an_old_ceiling_key_rejected(self, data: dict, banned_key: str):
         data["trial_inventory"][banned_key] = 240
@@ -1640,7 +1705,9 @@ class TestStageBoundary:
             "EVERY_REGISTERED_CONSTRUCTION_IN_THE_CLOSED_CONSTRUCTION_UNIVERSE_"
             "CARRIES_A_RECORDED_DISPOSITION"
         )
-        assert stopping["stopping_rule_currently_has_no_registered_set"] is True
+        # AMENDED BY XASSET-0028: the rule now ranges over the closed registered set.
+        assert stopping["stopping_rule_currently_has_no_registered_set"] is False
+        assert stopping["stopping_rule_amended_by"] == "XASSET-0028"
 
     def test_pinning_the_stopping_rule_to_the_family_slot_count_rejected(self, data: dict):
         data["execution"]["stopping_rules"]["terminates_when"] = (
@@ -1975,8 +2042,13 @@ class TestMirrorAndPins:
     def test_mirror_reports_stage_1_not_executable(self):
         mirror = V.extract_block(V.PROTOCOL_PATH.read_text(encoding="utf-8"), V.MIRROR_BLOCK_RE)
         assert mirror is not None
+        # Structurally closed, operationally unauthorized -- both stated, neither conflated.
         assert mirror["stage_1_executable"] == "false"
-        assert mirror["construction_universe_closed"] == "false"
+        assert mirror["construction_universe_closed"] == "true"
+        assert mirror["stage_1_structurally_closed"] == "true"
+        assert mirror["stage_1_operationally_authorized"] == "false"
+        assert mirror["registered_construction_count"] == "680"
+        assert mirror["predecessor_hash_version"] == V.PREDECESSOR_HASH_VERSION
 
     def test_mirror_claiming_stage_1_executable_rejected(self):
         text = V.PROTOCOL_PATH.read_text(encoding="utf-8").replace(
@@ -1985,22 +2057,75 @@ class TestMirrorAndPins:
         result = V.validate_protocol_mirror(text)
         assert not result.ok and any("stage_1_executable" in e for e in result.errors)
 
-    def test_mirror_claiming_a_closed_construction_universe_rejected(self):
+    def test_mirror_reverting_to_an_unclosed_universe_rejected(self):
         text = V.PROTOCOL_PATH.read_text(encoding="utf-8").replace(
-            "construction_universe_closed: false", "construction_universe_closed: true"
+            "construction_universe_closed: true", "construction_universe_closed: false"
         )
         result = V.validate_protocol_mirror(text)
         assert not result.ok and any("construction_universe_closed" in e for e in result.errors)
+
+    def test_mirror_claiming_operational_authorization_rejected(self):
+        text = V.PROTOCOL_PATH.read_text(encoding="utf-8").replace(
+            "stage_1_operationally_authorized: false", "stage_1_operationally_authorized: true"
+        )
+        result = V.validate_protocol_mirror(text)
+        assert not result.ok and any(
+            "stage_1_operationally_authorized" in e for e in result.errors
+        )
+
+    def test_mirror_wrong_universe_hash_rejected(self):
+        import level1_construction_universe_closure_validator as CU
+
+        text = V.PROTOCOL_PATH.read_text(encoding="utf-8").replace(
+            CU.universe_aggregate_sha256(), "0" * 64
+        )
+        result = V.validate_protocol_mirror(text)
+        assert not result.ok and any("construction_universe_sha256" in e for e in result.errors)
 
     def test_missing_hash_block_rejected(self):
         result = V.validate_charter_hash_pins("## decision with no pins\n")
         assert not result.ok and any("HASH-PINS" in e for e in result.errors)
 
-    def test_hash_mismatch_voids_execution_authority(self):
+    def test_rewriting_the_historical_predecessor_pin_rejected(self):
+        """XASSET-0027's accepted pins are HISTORY and may never be restated."""
         text = V.DECISION_PATH.read_text(encoding="utf-8")
-        tampered = text.replace(V.sha256_file(V.PREREG_PATH), "0" * 64)
+        tampered = text.replace(V.PREDECESSOR_PINS["preregistration_sha256"], "0" * 64)
         result = V.validate_charter_hash_pins(tampered)
-        assert not result.ok and any("voids execution authority" in e for e in result.errors)
+        assert not result.ok
+        assert any("accepted historical pin" in e for e in result.errors)
+
+    def test_successor_pins_verify_the_live_canonical_bytes(self):
+        text = V.SUCCESSOR_DECISION_PATH.read_text(encoding="utf-8")
+        assert V.validate_successor_hash_pins(text).ok
+
+    def test_successor_pin_mismatch_rejected(self):
+        text = V.SUCCESSOR_DECISION_PATH.read_text(encoding="utf-8").replace(
+            V.sha256_file(V.PREREG_PATH), "0" * 64
+        )
+        result = V.validate_successor_hash_pins(text)
+        assert not result.ok and any("preregistration_sha256 mismatch" in e for e in result.errors)
+
+    def test_successor_pin_equal_to_predecessor_rejected(self):
+        text = V.SUCCESSOR_DECISION_PATH.read_text(encoding="utf-8").replace(
+            f"protocol_sha256: {V.sha256_file(V.PROTOCOL_PATH)}",
+            f"protocol_sha256: {V.PREDECESSOR_PINS['protocol_sha256']}",
+        )
+        result = V.validate_successor_hash_pins(text)
+        assert not result.ok
+        assert any("equals the predecessor pin" in e for e in result.errors)
+
+    def test_missing_successor_block_rejected(self):
+        result = V.validate_successor_hash_pins("## no pins here\n")
+        assert not result.ok and any("XASSET-0028-HASH-PINS-V1" in e for e in result.errors)
+
+    def test_successor_must_retain_predecessor_lineage(self):
+        text = V.SUCCESSOR_DECISION_PATH.read_text(encoding="utf-8").replace(
+            f"predecessor_protocol_sha256: {V.PREDECESSOR_PINS['protocol_sha256']}",
+            "predecessor_protocol_sha256: " + "0" * 64,
+        )
+        result = V.validate_successor_hash_pins(text)
+        assert not result.ok
+        assert any("must retain the XASSET-0027 value" in e for e in result.errors)
 
     def test_wrong_pinned_path_rejected(self):
         text = V.DECISION_PATH.read_text(encoding="utf-8").replace(

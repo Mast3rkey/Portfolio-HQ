@@ -54,14 +54,34 @@ lifecycle_effectivity:
 
 stage_1_executability:
   executable: false
-  status: NOT_YET_EXECUTABLE_CONSTRUCTION_UNIVERSE_NOT_CLOSED
-  blocking_prerequisite: CONCRETE_CONSTRUCTION_UNIVERSE_CLOSURE
+  status: STRUCTURALLY_CLOSED_NOT_OPERATIONALLY_AUTHORIZED
+  blocking_prerequisite: XASSET_0028_LIFECYCLE_CLOSURE
   authorized_by_xasset_0027: false
+  authorized_by_xasset_0028: false
+  construction_universe_structurally_closed: true
+  amended_by: XASSET-0028
+  predecessor_status_xasset_0027: NOT_YET_EXECUTABLE_CONSTRUCTION_UNIVERSE_NOT_CLOSED
+  predecessor_blocking_prerequisite_xasset_0027: CONCRETE_CONSTRUCTION_UNIVERSE_CLOSURE
   statement: >-
     XASSET-0027 charters this programme's architecture — its families, gates, disposition rules,
     reading map, deferrals, provenance requirements, and firewall — and does NOT authorize Stage 1
-    execution. Executing Stage 1 requires a concrete construction universe that does not yet exist
-    and that XASSET-0027 does not create.
+    execution. XASSET-0027's own blocking prerequisite was that a concrete construction universe did
+    not exist. XASSET-0028 closes that universe structurally, which retires the PREDECESSOR blocker
+    and replaces it with a strictly narrower one: Stage 1 remains NOT EXECUTABLE until XASSET-0028's
+    own lifecycle closes in full. Structural closure is not operational authorization, and no reader
+    may treat the two as the same fact.
+  operational_authorization_requires_all_of:
+  - INDEPENDENT_FULL_EXACT_HEAD_REVIEW
+  - PRINCIPAL_EXACT_HEAD_ACCEPTANCE
+  - MERGE
+  - POST_MERGE_VERIFICATION
+  - MERGE_COMMIT_CI_SUCCESS
+  - MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
+  no_merge_to_execution_gap: true
+  no_merge_to_execution_gap_note: >-
+    Every gate above must be satisfied and verified against the merged bytes before any Stage-1 lane
+    opens. A validator that can structurally read the closed universe must still fail closed on
+    lifecycle authorization until every gate is met.
 
 stages:
   stage_1:
@@ -275,6 +295,14 @@ family_slot_grid:
   slot_addition_or_removal: PROHIBITED
   exhaustive_over_families: true
   exhaustive_over_constructions: false
+  closed_construction_universe_exists: true
+  closed_construction_universe_closed_by: XASSET-0028
+  closed_construction_universe_note: >-
+    UNCHANGED BY XASSET-0028. The 240-slot grid is still exhaustive over provenance families and
+    still NOT exhaustive over constructions; it remains a classification scaffold and is still not a
+    trial ceiling. What changed is that the construction universe the scaffold classified now exists
+    and is closed separately, at 680 registered constructions. A slot still does not name a
+    hypothesis; a registered construction does.
   exhaustiveness_statement: >-
     This grid is exhaustive over the four closed dimensions — sleeve, bound, DRIVER class, and
     provenance family — and is NOT exhaustive over concrete constructions. A slot names a lawful
@@ -283,67 +311,128 @@ family_slot_grid:
     classification scaffold for a future construction universe, not that universe.
 
 construction_universe_closure:
-  status: NOT_CLOSED
+  # AMENDED BY XASSET-0028 under successor authority. The XASSET-0027 record is preserved verbatim
+  # below as historical predecessor identity and is never rewritten.
+  status: CLOSED
+  amended_by: XASSET-0028
+  predecessor_authority: XASSET-0027
+  successor_authority: XASSET-0028
+  predecessor_status: NOT_CLOSED
   stage_1_executable: false
-  route_taken: HONEST_PREREQUISITE
-  routes_considered_and_unavailable_to_this_filing:
-  - route: CONCRETE_FINITE_REGISTRY
-    unavailable_to_this_filing_because: >-
-      A concrete registry cannot be closed by XASSET-0027 from the currently accepted corpus alone. The
-      set of existing admitted sources is exactly XASSET-0021's frozen snapshot, and XASSET-0025
-      Outcome C already searched precisely that corpus exhaustively and found no qualifying source, so
-      a Stage 1 restricted to it would re-run an accepted determination and add nothing. The remaining
-      space is constructions whose sources do not yet exist, and accepted authority does not enumerate
-      the concrete hypothetical source or construction architectures such a registry would need.
-      Designing and freezing those hypothetical architectures would itself be substantive
-      research-design work, reserved to the separately authorized construction-universe closure unit.
-      This filing therefore does not determine whether that future unit can or cannot successfully
-      preregister a finite hypothetical-architecture registry.
-  - route: DETERMINISTIC_CONSTRUCTION_GRAMMAR
-    unavailable_to_this_filing_because: >-
-      XASSET-0023 SSH.2 and SSH.3 state the conditions a qualifying statement or derivation must meet.
-      They are constraint sets, not generators, and satisfying a constraint set does not enumerate the
-      objects satisfying it. No accepted decision supplies a finite grammar producing concrete source
-      or derivation architectures, and the (route, class) product is a provenance classification
-      rather than a construction grammar. Whether a lawful grammar could be designed is likewise left
-      to the future closure unit and is not determined here.
-  routes_are_unavailable_now_not_permanently_foreclosed: true
-  routes_note: >-
-    Both entries record what XASSET-0027 cannot do from present authority. Neither is a determination
-    that the route is permanently unavailable, and neither may be cited as having foreclosed any option
-    for the future closure unit.
-  verified_this_session:
-  - NO_ACCEPTED_DECISION_ENUMERATES_CONCRETE_SOURCE_OR_CONSTRUCTION_ARCHITECTURES
-  - XASSET_0023_H_2_AND_H_3_ARE_CONSTRAINT_SETS_NOT_GENERATORS
-  - XASSET_0025_OUTCOME_C_ALREADY_EXHAUSTED_THE_FROZEN_EXISTING_SOURCE_CORPUS
-  consequence: >-
-    Stage 1 is NOT EXECUTABLE. No 240-slot run may be performed, and no such run could establish
-    exhaustive non-constructibility, because the slots bound provenance families rather than
-    hypotheses. A negative slot result would mean only that no construction the executor considered
-    within that family qualified.
-  next_required_prerequisite: CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION
-  next_required_prerequisite_note: >-
-    The smallest separately authorized next step is one governance unit whose scope is to determine
-    whether a concrete construction universe can be closed at all and, if so, to freeze it. That unit
-    must confront the open-hypothetical problem directly and must state its own answer; this charter
-    does not pre-decide it, does not choose among the possibilities that unit may consider, and does
-    not schedule it.
-  authorized_by_xasset_0027: false
+  stage_1_structurally_closed: true
+  stage_1_operationally_authorized: false
+  closure_basis: XASSET_0020_SECTION_H_COMPARISON_CONTRACT_CROSSED_WITH_CANONICAL_DRIVER_CLASS_SCOPE
+  closure_basis_statement: >-
+    XASSET-0027 SS-I.1 records that a provenance family is a classification of provenance, not a
+    hypothesis, and names the dimensions that can inhabit one family. Of those, external impositions,
+    calibrations, governance selections, provisional guardrails, and prescribed derivations are
+    exactly the five already-closed (route, NUM-0001 class) families; evidence form is representation,
+    preserved as a downstream gate rather than an identity dimension; and source identity is what
+    Stage 1 searches for rather than something a registry could fix without enumerating every
+    institution in existence. That leaves comparator architecture as the one open identity dimension,
+    and it is NOT open in accepted authority: XASSET-0020 SS-H already closes the direct-comparison
+    contract at exactly six unordered sleeve-sleeve pair records plus a mandated direct comparison of
+    each of the four sleeves with UNSIZED_UNASSIGNED_CAPITAL. Crossing that closed contract with this
+    file's own driver_class_scope partition fixes each DRIVER class's comparator architecture set
+    exactly, supplying no new comparator rule and enumerating only what SS-H already mandates.
+  closure_basis_properties:
+    stated: true
+    non_outcome_aware: true
+    non_economic: true
+    deterministic: true
+    byte_identically_reproducible: true
+    frozen_before_stage_1_outcomes: true
+    contains_no_endpoint_value: true
+    selects_ranks_or_prefers_no_sleeve_or_comparator: false
+  registered_construction_count: 680
+  derived_construction_expression: 4_SLEEVES_X_2_BOUNDS_X_5_PROVENANCE_FAMILIES_X_17_ARCHITECTURES
+  architectures_per_sleeve_bound_family: 17
+  construction_universe_sha256: 97d0bc865500892cef648895b97208b1e8cf381993192b74ea86335ba457f6ce
+  generator: level1_construction_universe_closure_validator.generate_construction_universe
+  generator_is_canonical_source_of_construction_identity: true
+  executor_may_add_omit_substitute_or_mutate_a_construction: false
+  what_closure_means: >-
+    The registered study universe is complete under the stated closure basis. It is not, and does not
+    claim to be, an enumeration of every conceivable future source architecture in existence; that
+    standard is not what XASSET-0027 SS-I.2 sets, which ties a categorical cell negative to every
+    REGISTERED construction for that cell.
+  xasset_0027_predecessor_record:
+    preserved_verbatim: true
+    note: >-
+      Historical predecessor identity. These are the facts XASSET-0027 recorded from its own
+      authority and they remain true of XASSET-0027. They are retained unedited for audit and are
+      superseded as OPERATIVE state by the successor fields above.
+    status: NOT_CLOSED
+    stage_1_executable: false
+    route_taken: HONEST_PREREQUISITE
+    routes_considered_and_unavailable_to_this_filing:
+    - route: CONCRETE_FINITE_REGISTRY
+      unavailable_to_this_filing_because: >-
+        A concrete registry cannot be closed by XASSET-0027 from the currently accepted corpus alone. The
+        set of existing admitted sources is exactly XASSET-0021's frozen snapshot, and XASSET-0025
+        Outcome C already searched precisely that corpus exhaustively and found no qualifying source, so
+        a Stage 1 restricted to it would re-run an accepted determination and add nothing. The remaining
+        space is constructions whose sources do not yet exist, and accepted authority does not enumerate
+        the concrete hypothetical source or construction architectures such a registry would need.
+        Designing and freezing those hypothetical architectures would itself be substantive
+        research-design work, reserved to the separately authorized construction-universe closure unit.
+        This filing therefore does not determine whether that future unit can or cannot successfully
+        preregister a finite hypothetical-architecture registry.
+    - route: DETERMINISTIC_CONSTRUCTION_GRAMMAR
+      unavailable_to_this_filing_because: >-
+        XASSET-0023 SSH.2 and SSH.3 state the conditions a qualifying statement or derivation must meet.
+        They are constraint sets, not generators, and satisfying a constraint set does not enumerate the
+        objects satisfying it. No accepted decision supplies a finite grammar producing concrete source
+        or derivation architectures, and the (route, class) product is a provenance classification
+        rather than a construction grammar. Whether a lawful grammar could be designed is likewise left
+        to the future closure unit and is not determined here.
+    routes_are_unavailable_now_not_permanently_foreclosed: true
+    routes_note: >-
+      Both entries record what XASSET-0027 cannot do from present authority. Neither is a determination
+      that the route is permanently unavailable, and neither may be cited as having foreclosed any option
+      for the future closure unit.
+    verified_this_session:
+    - NO_ACCEPTED_DECISION_ENUMERATES_CONCRETE_SOURCE_OR_CONSTRUCTION_ARCHITECTURES
+    - XASSET_0023_H_2_AND_H_3_ARE_CONSTRAINT_SETS_NOT_GENERATORS
+    - XASSET_0025_OUTCOME_C_ALREADY_EXHAUSTED_THE_FROZEN_EXISTING_SOURCE_CORPUS
+    consequence: >-
+      Stage 1 is NOT EXECUTABLE. No 240-slot run may be performed, and no such run could establish
+      exhaustive non-constructibility, because the slots bound provenance families rather than
+      hypotheses. A negative slot result would mean only that no construction the executor considered
+      within that family qualified.
+    next_required_prerequisite: CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION
+    next_required_prerequisite_note: >-
+      The smallest separately authorized next step is one governance unit whose scope is to determine
+      whether a concrete construction universe can be closed at all and, if so, to freeze it. That unit
+      must confront the open-hypothetical problem directly and must state its own answer; this charter
+      does not pre-decide it, does not choose among the possibilities that unit may consider, and does
+      not schedule it.
+    authorized_by_xasset_0027: false
+    invented_completeness: PROHIBITED
+    invented_completeness_note: >-
+      Honestly recording that this filing cannot close the universe is preferable to manufacturing a
+      registry. This charter records that the universe is not closed NOW and that XASSET-0027 cannot
+      close it, rather than asserting a completeness it cannot support — and equally, rather than
+      asserting an impossibility it has no authority to determine.
+  predecessor_prerequisite_satisfied_by: XASSET-0028
   invented_completeness: PROHIBITED
   invented_completeness_note: >-
-    Honestly recording that this filing cannot close the universe is preferable to manufacturing a
-    registry. This charter records that the universe is not closed NOW and that XASSET-0027 cannot
-    close it, rather than asserting a completeness it cannot support — and equally, rather than
-    asserting an impossibility it has no authority to determine.
+    The successor closure is complete over the GOVERNED REGISTERED study universe under its stated
+    basis. It does not assert, and may never be cited as asserting, an enumeration of every
+    conceivable future source architecture. Overstating that would be the invented completeness this
+    programme prohibits, in the opposite direction from the overclaim XASSET-0027 guarded against.
 
 completeness_rule:
   applies_only_after_construction_universe_closure: true
+  construction_universe_closure_now_exists: true
+  closed_by: XASSET-0028
   cell_negative_requires_all_registered_constructions_evaluated: true
   statement: >-
     Once — and only once — a concrete construction universe is closed by its own separately authorized
     unit, a cell may be recorded BLOCKED_CATEGORICALLY only if every registered construction for that
-    cell was evaluated and every one returned BLOCKED_CATEGORICALLY. Until that closure exists this
-    rule has no registered set to range over, which is precisely why Stage 1 is not executable.
+    cell was evaluated and every one returned BLOCKED_CATEGORICALLY. XASSET-0028 closes that universe
+    at exactly 680 registered constructions across the 48 cells, so this rule now has a registered set
+    to range over. It becomes operative only when XASSET-0028's own lifecycle closes in full.
   family_slot_negative_does_not_establish_non_constructibility: true
   family_slot_negative_note: >-
     A negative on a family slot means no construction the executor considered within that provenance
@@ -353,12 +442,18 @@ completeness_rule:
   partial_cell_outcome_permitted: false
 
 trial_inventory:
-  status: NOT_YET_DEFINABLE
+  status: DEFINED
+  amended_by: XASSET-0028
+  predecessor_status_xasset_0027: NOT_YET_DEFINABLE
   reason: >-
-    A trial ceiling bounds hypotheses. The construction universe is not closed, so the number of
-    constructions is undefined and no honest ceiling can be stated. The 240 family slots are a
-    classification grid and are expressly not a trial ceiling.
-  defined_by: THE_FUTURE_SEPARATELY_AUTHORIZED_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT
+    A trial ceiling bounds hypotheses. XASSET-0028 closes the construction universe, so the number of
+    constructions is now defined and an honest ceiling can be stated. The 240 family slots remain a
+    classification grid and are still expressly not a trial ceiling; the ceiling is the registered
+    construction count.
+  defined_by: XASSET-0028
+  registered_constructions: 680
+  derived_construction_expression: 4_SLEEVES_X_2_BOUNDS_X_5_PROVENANCE_FAMILIES_X_17_ARCHITECTURES
+  unit_of_trial: ONE_CONSTRUCTION_EVALUATION
   unit_of_trial_once_defined: ONE_CONSTRUCTION_EVALUATION
   derived_cell_expression: 4_SLEEVES_X_2_BOUNDS_X_6_DRIVER_CLASSES
   derived_cells: 48
@@ -892,9 +987,17 @@ consequential_parameter_registry:
     design_consequence: >-
       A study with no free numeric parameter cannot be tuned toward a preferred outcome, and there is
       no parameter for a later sweep, sensitivity variant, or neighboring-value robustness check to
-      perturb. With the candidate universe now closed by a deterministic generator, the qualitative
-      search surface is closed as well: the executor selects neither which constructions to try nor
-      when to stop.
+      perturb. With the construction universe closed by XASSET-0028's deterministic generator, the
+      qualitative search surface is closed as well: the executor selects neither which constructions
+      to try nor when to stop.
+    design_consequence_amendment_note: >-
+      CORRECTED BY XASSET-0028. Under XASSET-0027 this sentence asserted a closed candidate universe
+      while the same file recorded NOT_CLOSED, a contradiction disclosed by the PR #327 independent
+      review 4945473310 (MAJOR 2) and left uncorrected there because the file was hash-pinned.
+      XASSET-0028 is the separately accepted amendment that pin rule requires, and the sentence is now
+      true rather than merely tolerated: the universe IS closed, by a named generator, at a recorded
+      cardinality and integrity hash. Closure here is structural; operational Stage-1 authorization
+      remains gated on XASSET-0028's own lifecycle.
     verification_requirement: >-
       The dedicated validator asserts the registry's parameters list is empty. Introducing any
       parameter requires a separately accepted governance amendment with new hash pins.
@@ -1033,9 +1136,13 @@ provenance_manifest:
   - validator_result
   candidate_count_semantics: REGISTERED_CONSTRUCTIONS_IN_THE_CLOSED_CONSTRUCTION_UNIVERSE
   candidate_count_semantics_note: >-
-    candidates_expected counts registered constructions, not family slots. It is supplied by the
-    future construction universe closure unit and is expressly not 240. No count is pinned here,
-    because pinning one would assert a construction universe this charter does not close.
+    candidates_expected counts registered constructions, not family slots, and is expressly not 240.
+    AMENDED BY XASSET-0028, which closes the construction universe and therefore supplies the count:
+    680 registered constructions, with the aggregate identity hash recorded under
+    construction_universe_closure. XASSET-0027 declined to pin a count because pinning one would have
+    asserted a universe it did not close; XASSET-0028 does close it, so the count is now pinned.
+  candidates_expected: 680
+  candidates_expected_supplied_by: XASSET-0028
   hash_verification_failure_behavior: VOIDS_EXECUTION_AUTHORITY_HALT
 
 # --------------------------------------------------------------------------------------------------
@@ -1052,11 +1159,13 @@ execution:
     unregistered_attempt: PROHIBITED
   stopping_rules:
     terminates_when: EVERY_REGISTERED_CONSTRUCTION_IN_THE_CLOSED_CONSTRUCTION_UNIVERSE_CARRIES_A_RECORDED_DISPOSITION
-    stopping_rule_currently_has_no_registered_set: true
+    stopping_rule_currently_has_no_registered_set: false
+    stopping_rule_amended_by: XASSET-0028
     stopping_rule_note: >-
-      The registered set is supplied by the future construction universe closure unit, not by the 240
-      family slots. Until that closure exists this rule ranges over nothing, which is one of the
-      mechanical reasons Stage 1 is not executable.
+      The registered set is supplied by XASSET-0028's deterministic generator, not by the 240 family
+      slots. It ranges over exactly 680 registered constructions. Under XASSET-0027 this rule ranged
+      over nothing, which was one of the mechanical reasons Stage 1 was not executable; that
+      particular reason is now retired, while Stage 1 remains blocked on XASSET-0028's own lifecycle.
     early_stop_on_positive_finding: PROHIBITED
     early_stop_rationale: >-
       Coverage is all four sleeves and every lawful construction family. Stopping at the first
@@ -1245,4 +1354,5 @@ protected_paths:
 - intelligence/level1_sleeve_synthesis/
 - /private/tmp/phq-risk0001-results
 
-hash_version: ENDPOINT-0001-PREREG-V3
+hash_version: ENDPOINT-0001-PREREG-V4
+predecessor_hash_version: ENDPOINT-0001-PREREG-V3
