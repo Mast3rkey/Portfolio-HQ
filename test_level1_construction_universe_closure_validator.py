@@ -169,9 +169,9 @@ class TestMutationRejected:
             ("family_id", "R2_C2"),
             ("counterpart", "crypto"),
             ("comparator_architecture", "ALT__crypto"),
-            ("source_architecture_scope", "EXISTING_SOURCE_ARCHITECTURE"),
+            ("source_architecture", "EXISTING_SOURCE_ARCHITECTURE"),
+            ("hypothetical_source_requirements", "any source at all will do"),
             ("evidence_proposition", "a different hypothesis entirely"),
-            ("source_requirement", "the executor may compose the derivation"),
             ("representation_posture", "A_PRIOR_RULE"),
         ],
     )
@@ -246,29 +246,33 @@ class TestComparatorGrammar:
 # 24-27  R2, source architecture, free text, representation
 # =============================================================================================
 class TestHypothesisIntegrity:
-    def test_24_r2_states_a_source_requirement_and_composes_nothing(self, universe):
+    def test_24_r2_requires_a_source_prescribed_derivation_and_composes_nothing(self, universe):
         r2 = [r for r in universe if r["family_id"] == V.R2_FAMILY_ID]
         assert len(r2) == 136  # 680 / 5 families
         for r in r2:
-            req = r["source_requirement"]
-            assert "source must itself prescribe" in req
-            assert "composes, selects among, or invents no derivation" in req
+            req = r["hypothetical_source_requirements"]
+            assert "must itself prescribe exactly one XASSET-0023 SS-H.3 derivation" in req
+            assert "may compose, select among, or invent that derivation" in req
         # No arithmetic operator is ever emitted into a hypothesis field.
         for r in universe:
-            assert not re.search(r"[=+*/]|\bsum\b|\bmean\b", r["source_requirement"])
+            assert not re.search(r"[=+*/]|\bsum\b|\bmean\b", r["hypothetical_source_requirements"])
 
-    def test_24b_r1_states_a_stating_requirement(self, universe):
+    def test_24b_r1_requires_a_source_stated_bound(self, universe):
         for r in universe:
             if r["family_id"] != V.R2_FAMILY_ID:
-                assert "uniquely state the bound" in r["source_requirement"]
-                assert "originates no value" in r["source_requirement"]
+                assert "uniquely state the bound under XASSET-0023 SS-H.2" in (
+                    r["hypothetical_source_requirements"]
+                )
 
-    def test_25_source_architecture_spans_both_and_is_uniform(self, universe):
-        scopes = {r["source_architecture_scope"] for r in universe}
-        assert len(scopes) == 1
-        only = scopes.pop()
-        for accepted in PREREG.SOURCE_ARCHITECTURES:
-            assert accepted in only
+    def test_25_source_architecture_is_frozen_hypothetical_on_every_record(self, universe):
+        assert {r["source_architecture"] for r in universe} == {
+            V.FROZEN_SOURCE_ARCHITECTURE
+        }
+        assert V.FROZEN_SOURCE_ARCHITECTURE in PREREG.SOURCE_ARCHITECTURES
+        # hypothetical_forbids: no path or hash may appear in a frozen identity.
+        for r in universe:
+            assert "source_path" not in r
+            assert "source_sha256" not in r
 
     def test_26_no_result_author_free_text_field_exists(self, universe):
         """Descriptive fields must be regenerable from closed identity alone."""
@@ -277,6 +281,10 @@ class TestHypothesisIntegrity:
                 r["sleeve"], r["bound"], r["driver_class"], r["family_id"], r["counterpart"]
             )
             assert regenerated == r["evidence_proposition"]
+            regen_req = V._hypothetical_source_requirements(
+                r["sleeve"], r["bound"], r["driver_class"], r["family_id"], r["counterpart"]
+            )
+            assert regen_req == r["hypothetical_source_requirements"]
 
     def test_26b_evidence_proposition_is_unique_per_construction(self, universe):
         props = [r["evidence_proposition"] for r in universe]
@@ -585,3 +593,253 @@ class TestCoupling:
 
     def test_prereg_validator_still_passes_with_amended_canonical_bytes(self):
         assert PREREG.validate_file().ok
+
+
+# =============================================================================================
+# Review 4946087943 — BLOCKING 1: frozen source-architecture / provenance model
+# =============================================================================================
+class TestFrozenSourceProvenanceModel:
+    def test_1_generator_identity_satisfies_canonical_frozen_provenance(self, universe):
+        """Every record carries exactly what frozen_provenance_requirements demands."""
+        for r in universe:
+            assert r["source_architecture"] == "HYPOTHETICAL_SOURCE_ARCHITECTURE"
+            assert r["hypothetical_source_requirements"].strip()
+            assert "source_path" not in r and "source_sha256" not in r
+
+    def test_1b_canonical_contract_still_binds_this_unit(self):
+        data = yaml.safe_load(
+            (REPO_ROOT / "research/level1_endpoint_evidence/pre_registration.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        frozen = data["frozen_provenance_requirements"]
+        assert frozen["applies_to"] == "THE_FUTURE_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT"
+        assert frozen["binding_on_any_future_stage_1"] is True
+        assert frozen["result_author_may_alter_a_frozen_architecture"] is False
+
+    def test_2_source_architecture_cannot_be_selected_at_result_time(self, determination):
+        assert determination["source_architecture_contract"][
+            "source_architecture_selectable_at_result_time"
+        ] is False
+        determination["source_architecture_contract"][
+            "source_architecture_selectable_at_result_time"
+        ] = True
+        assert not V.validate(determination).ok
+
+    def test_3_existing_source_identity_cannot_be_substituted(self, universe):
+        """A frozen HYPOTHETICAL record may not be silently converted to an EXISTING one."""
+        frozen = V.frozen_construction_universe()
+        cid = universe[0]["construction_id"]
+        row = _result_row(cid, universe[0])
+        row["source_architecture"] = "EXISTING_SOURCE_ARCHITECTURE"
+        row["source_path"] = "research/level1_endpoint_evidence/PROTOCOL_V1.md"
+        row["source_sha256"] = "0" * 64
+        errs = _run_stage1(row, frozen)
+        assert any("may not alter a frozen architecture" in e for e in errs)
+
+    @pytest.mark.parametrize(
+        "mutation,needle",
+        [
+            ({"hypothetical_source_requirements": "anything I like"},
+             "does not match the frozen construction"),
+            ({"hypothetical_source_requirements": ""},
+             "required for HYPOTHETICAL_SOURCE_ARCHITECTURE"),
+            ({"source_path": "research/level1_endpoint_evidence/PROTOCOL_V1.md"},
+             "must carry no source_path or source_sha256"),
+            ({"source_sha256": "a" * 64}, "must carry no source_path or source_sha256"),
+        ],
+    )
+    def test_4_to_9_frozen_requirements_cannot_be_mutated(self, universe, mutation, needle):
+        frozen = V.frozen_construction_universe()
+        row = _result_row(universe[0]["construction_id"], universe[0])
+        row.update(mutation)
+        errs = _run_stage1(row, frozen)
+        assert any(needle in e for e in errs), errs
+
+    def test_10_generated_construction_is_structurally_consumable(self, universe):
+        """The frozen adapter emits exactly the shape validate_stage1_results() expects."""
+        frozen = V.frozen_construction_universe()
+        assert len(frozen) == len(universe)
+        for cid, rec in frozen.items():
+            assert set(rec) == {
+                "cell_id",
+                "source_architecture",
+                "hypothetical_source_requirements",
+            }
+        row = _result_row(universe[0]["construction_id"], universe[0])
+        errs = _run_stage1(row, frozen)
+        # No provenance-identity error survives for a faithful row.
+        assert not [
+            e
+            for e in errs
+            if "source_architecture" in e
+            or "hypothetical_source_requirements" in e
+            or "source_path" in e
+            or "source_sha256" in e
+        ], errs
+
+    def test_11_two_evaluations_share_one_frozen_hypothesis_identity(self):
+        a = V.frozen_construction_universe()
+        b = V.frozen_construction_universe()
+        assert a == b
+        assert json.dumps(a, sort_keys=True) == json.dumps(b, sort_keys=True)
+
+    def test_12_negative_does_not_depend_on_an_unbounded_source_search(self, universe):
+        """No institution, vendor, jurisdiction, or document is named anywhere."""
+        blob = V.canonical_universe_json(universe).lower()
+        for banned in ("inc.", "llc", "gmbh", "bloomberg", "msci", "s&p", "morningstar",
+                       "vendor", "institution name", "provider name"):
+            assert banned not in blob
+
+    def test_12b_requirements_are_identity_determined_and_distinct(self, universe):
+        reqs = [r["hypothetical_source_requirements"] for r in universe]
+        assert len(set(reqs)) == len(reqs)
+
+    def test_existing_source_half_is_disposed_not_omitted(self, determination):
+        contract = determination["source_architecture_contract"]
+        assert contract["existing_source_architecture_disposition"] == (
+            "RESOLVED_BY_XASSET_0025_OUTCOME_C_OVER_THE_XASSET_0021_FROZEN_SNAPSHOT"
+        )
+        determination["source_architecture_contract"][
+            "existing_source_architecture_disposition"
+        ] = "OMITTED"
+        assert not V.validate(determination).ok
+
+
+# =============================================================================================
+# Review 4946087943 — MAJOR 1: one unified six-gate Stage-1 lifecycle
+# =============================================================================================
+class TestUnifiedStage1Lifecycle:
+    def test_13_operative_preconditions_name_the_successor_lifecycle(self):
+        data = yaml.safe_load(
+            (REPO_ROOT / "research/level1_endpoint_evidence/pre_registration.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        expected = PREREG.STAGE_1_EXECUTION_PRECONDITION
+        assert "XASSET_0028" in expected
+        assert data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"] == expected
+        assert data["stages"]["stage_1"]["executable_only_after"] == expected
+        # The spent XASSET-0027 condition survives only as explicit history.
+        assert data["lifecycle_effectivity"][
+            "predecessor_stage_1_execution_may_begin_only_after_xasset_0027"
+        ] == PREREG.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION
+        assert "XASSET_0027" in PREREG.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION
+
+    def test_14_all_six_gates_required_everywhere(self, determination):
+        assert len(V.STAGE_1_EFFECTIVITY_GATES) == 6
+        assert set(determination["stage_1"]["effectivity_gates"]) == set(
+            V.STAGE_1_EFFECTIVITY_GATES
+        )
+        assert set(PREREG.STAGE_1_EFFECTIVITY_GATES) == set(V.STAGE_1_EFFECTIVITY_GATES)
+        data = yaml.safe_load(
+            (REPO_ROOT / "research/level1_endpoint_evidence/pre_registration.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        assert set(
+            data["stage_1_executability"]["operational_authorization_requires_all_of"]
+        ) == set(V.STAGE_1_EFFECTIVITY_GATES)
+
+    @pytest.mark.parametrize("gate", list(V.STAGE_1_EFFECTIVITY_GATES))
+    def test_15_removing_any_gate_fails_validation(self, determination, gate):
+        determination["stage_1"]["effectivity_gates"] = [
+            g for g in V.STAGE_1_EFFECTIVITY_GATES if g != gate
+        ]
+        result = V.validate(determination)
+        assert not result.ok
+        assert any(gate in e for e in result.errors)
+
+    def test_15b_unknown_gate_rejected(self, determination):
+        determination["stage_1"]["effectivity_gates"] = list(
+            V.STAGE_1_EFFECTIVITY_GATES
+        ) + ["SOMETHING_ELSE"]
+        assert not V.validate(determination).ok
+
+    def test_16_merge_alone_is_insufficient(self, determination):
+        determination["stage_1"]["effectivity_gates"] = ["MERGE"]
+        assert not V.validate(determination).ok
+
+    def test_17_structural_closure_alone_is_insufficient(self):
+        """The universe is readable, and Stage 1 still fails closed."""
+        assert len(PREREG.closed_construction_universe()) == 680
+        authorized, reason = PREREG.stage_1_operational_authorization_is_effective()
+        assert authorized is False
+        assert "not true" in reason
+        result = PREREG.validate_stage1_results({"candidate_results": []})
+        assert not result.ok
+        assert any("not operationally authorized" in e for e in result.errors)
+
+    def test_17b_fail_closed_reads_canonical_bytes_not_a_constant(self, tmp_path):
+        """A results author cannot flip authorization; it is read from the canonical file."""
+        fake = tmp_path / "prereg.yaml"
+        fake.write_text("stage_1_executability:\n  executable: true\n", encoding="utf-8")
+        assert PREREG.stage_1_operational_authorization_is_effective(fake)[0] is True
+        fake.write_text("stage_1_executability:\n  executable: false\n", encoding="utf-8")
+        assert PREREG.stage_1_operational_authorization_is_effective(fake)[0] is False
+
+
+# =============================================================================================
+# Review 4946087943 — MINOR 1: unambiguous no-preference boolean
+# =============================================================================================
+class TestNoPreferenceBoolean:
+    def test_18_predicate_and_value_agree_and_are_enforced(self):
+        data = yaml.safe_load(
+            (REPO_ROOT / "research/level1_endpoint_evidence/pre_registration.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        props = data["construction_universe_closure"]["closure_basis_properties"]
+        assert props["selects_ranks_or_prefers_any_sleeve_or_comparator"] is False
+        assert "selects_ranks_or_prefers_no_sleeve_or_comparator" not in props
+
+    def test_18b_flipping_the_flag_is_rejected(self):
+        data = yaml.safe_load(
+            (REPO_ROOT / "research/level1_endpoint_evidence/pre_registration.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        data["construction_universe_closure"]["closure_basis_properties"][
+            "selects_ranks_or_prefers_any_sleeve_or_comparator"
+        ] = True
+        result = PREREG.validate(data)
+        assert not result.ok
+        assert any("selects_ranks_or_prefers_any_sleeve_or_comparator" in e for e in result.errors)
+
+
+def _result_row(construction_id: str, record) -> dict:
+    """Build a faithful Stage-1 candidate row from a frozen construction."""
+    row = {key: None for key in PREREG.REQUIRED_CANDIDATE_RESULT_KEYS}
+    row.update(
+        {
+            "construction_id": construction_id,
+            "cell_id": record["cell_id"],
+            "sleeve": record["sleeve"],
+            "bound": record["bound"],
+            "driver_class": record["driver_class"],
+            "family_id": record["family_id"],
+            "route": record["route"],
+            "num_0001_class": record["num_0001_class"],
+            "source_architecture": record["source_architecture"],
+            "hypothetical_source_requirements": record["hypothetical_source_requirements"],
+            "governing_authority_refs": list(record["governing_authority_refs"]),
+        }
+    )
+    # REQUIRED_CANDIDATE_RESULT_KEYS requires source_path/source_sha256 to be PRESENT, while
+    # source_architecture_vocabulary.hypothetical_forbids requires them to carry no value. Both are
+    # satisfied by present-and-None, which is exactly what a frozen HYPOTHETICAL row looks like.
+    row["source_path"] = None
+    row["source_sha256"] = None
+    return row
+
+
+def _run_stage1(row: dict, frozen) -> tuple[str, ...]:
+    """Exercise validate_stage1_results()'s provenance machinery past the lifecycle gate."""
+    import unittest.mock as _mock
+
+    with _mock.patch.object(
+        PREREG, "stage_1_operational_authorization_is_effective", return_value=(True, "")
+    ):
+        return PREREG.validate_stage1_results(
+            {"candidate_results": [row]}, construction_universe=frozen
+        ).errors

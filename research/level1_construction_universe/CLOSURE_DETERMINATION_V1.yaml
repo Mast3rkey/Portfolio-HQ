@@ -11,19 +11,17 @@ authorizing_decision: XASSET-0028
 status: CLOSED
 
 closure_basis: >-
-  XASSET-0027 SS-I.1 records that a provenance family is a classification of provenance, not a
-  hypothesis, and names the dimensions that can inhabit one family: source identities, source
-  architectures, comparator architectures, evidence forms, external impositions, calibrations,
-  governance selections, provisional guardrails, and prescribed derivations. Five of those are
-  exactly the already-closed (route, NUM-0001 class) families. Evidence form is representation,
-  preserved as a downstream gate rather than an identity dimension. Source identity is what Stage
-  1 searches for, not something a registry could fix without enumerating every institution in
-  existence. That leaves comparator architecture as the one open identity dimension, and accepted
-  authority already closes it: XASSET-0020 SS-H fixes exactly six unordered sleeve-sleeve pair
-  records and additionally requires each of the four sleeves to be compared directly with
-  UNSIZED_UNASSIGNED_CAPITAL. Crossing that closed contract with the canonical driver_class_scope
-  partition fixes every DRIVER class's comparator architecture set exactly. No comparator rule is
-  supplied; SS-H's own mandated comparisons are enumerated.
+  XASSET-0027 SSI.1 records that a provenance family is a classification of provenance, not a
+  hypothesis, and names the dimensions that can inhabit one family. Five of those are exactly the
+  already-closed (route, NUM-0001 class) families. Evidence form is representation, preserved as a
+  downstream gate. Source ARCHITECTURE is frozen into construction identity, as
+  frozen_provenance_requirements -- addressed by name to this unit and binding on any future Stage
+  1 -- requires. That leaves comparator architecture, and accepted authority already closes it:
+  XASSET-0020 SSH fixes exactly six unordered sleeve-sleeve pair records and additionally requires
+  each of the four sleeves to be compared directly with UNSIZED_UNASSIGNED_CAPITAL. Crossing that
+  closed contract with the canonical driver_class_scope partition fixes every DRIVER class's
+  comparator architecture set exactly. No comparator rule is supplied; SSH's own mandated
+  comparisons are enumerated.
 
 closed_dimensions:
   sleeves:
@@ -53,7 +51,7 @@ comparator_contract:
   supplies_a_new_comparator_rule: false
   unassigned_capital_is_a_diversification_cobehavior_comparator: false
   unassigned_capital_exclusion_reason: >-
-    XASSET-0020 SS-H's UNSIZED_UNASSIGNED_CAPITAL comparison is not a pair record and carries its
+    XASSET-0020 SSH's UNSIZED_UNASSIGNED_CAPITAL comparison is not a pair record and carries its
     own separate conclusion vocabulary, and diversification_cobehavior's canonical scope is
     ONE_UNORDERED_PAIR. Registering a comparator the accepted contract does not admit would be
     inventing a construction rather than enumerating one. The alternative -- registering it as a
@@ -73,12 +71,45 @@ comparator_contract:
     diversification_cobehavior: 3
     sleeve_deployability: 1
 
+source_architecture_contract:
+  frozen_source_architecture: HYPOTHETICAL_SOURCE_ARCHITECTURE
+  source_architecture_is_frozen_construction_identity: true
+  source_architecture_selectable_at_result_time: false
+  hypothetical_source_requirements_frozen_before_execution: true
+  hypothetical_source_requirements_generated_from_closed_identity_only: true
+  result_author_may_author_or_alter_requirements: false
+  source_path_and_sha256_present: false
+  source_path_and_sha256_absent_reason: >-
+    source_architecture_vocabulary.hypothetical_forbids bars source_path and source_sha256 on a
+    HYPOTHETICAL construction. They are therefore absent from every registered identity.
+  existing_source_architecture_disposition: RESOLVED_BY_XASSET_0025_OUTCOME_C_OVER_THE_XASSET_0021_FROZEN_SNAPSHOT
+  existing_source_architecture_reason: >-
+    The existing-source half is not silently omitted. XASSET-0027 SSI.1.1 records that the
+    existing-source corpus is exactly XASSET-0021's frozen snapshot, that XASSET-0025 Outcome C
+    already searched precisely that corpus exhaustively and found no qualifying source, that a
+    Stage 1 restricted to it would re-run an accepted determination and add nothing, and that the
+    remaining space is constructions whose sources do not yet exist. The source-architecture
+    dimension therefore resolves to exactly ONE lawful value rather than two.
+  no_source_identity_enumeration: true
+  no_unbounded_source_search: true
+  no_unbounded_source_search_reason: >-
+    A frozen requirement specification names no institution, vendor, jurisdiction, or document.
+    Stage 1 evaluates whether the frozen specification is lawfully satisfiable under the twelve
+    gates. Two independent executors handed the same construction_id are handed the same frozen
+    requirement set byte for byte, so a negative means the registered specification was evaluated
+    and blocked, never that an executor failed to find something.
+  consumable_by_validate_stage1_results: true
+  frozen_universe_adapter: level1_construction_universe_closure_validator.frozen_construction_universe
+
 universe_identity:
   registered_construction_count: 680
   derived_cardinality: 680
-  derived_expression: 4_SLEEVES_X_2_BOUNDS_X_5_PROVENANCE_FAMILIES_X_17_ARCHITECTURES
-  aggregate_sha256: 97d0bc865500892cef648895b97208b1e8cf381993192b74ea86335ba457f6ce
+  derived_expression: 4_SLEEVES_X_2_BOUNDS_X_5_PROVENANCE_FAMILIES_X_17_ARCHITECTURES_X_1_SOURCE_ARCHITECTURE
+  aggregate_sha256: 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224
   generator: level1_construction_universe_closure_validator.generate_construction_universe
+  frozen_source_architecture: HYPOTHETICAL_SOURCE_ARCHITECTURE
+  existing_source_architecture_disposition: RESOLVED_BY_XASSET_0025_OUTCOME_C_OVER_THE_XASSET_0021_FROZEN_SNAPSHOT
+  source_architecture_selectable_at_result_time: false
   canonical_serialization: JSON_SORT_KEYS_TRUE_SEPARATORS_COMMA_COLON_ENSURE_ASCII_TRUE
   deterministic: true
   byte_identically_reproducible: true
@@ -89,10 +120,10 @@ universe_identity:
   universe_level_contract:
     admitted_input_classes: ADMITTED_DRIVER_INPUTS_ONLY_PER_XASSET_0023_SECTION_H_1
     prohibited_input_classes: >-
-      Any non-DRIVER input, any arithmetic outside XASSET-0020 SS-M's closed set, any RISK-0001
+      Any non-DRIVER input, any arithmetic outside XASSET-0020 SSM's closed set, any RISK-0001
       substantive reuse, and any executor-composed derivation.
     applicable_gate_ids_note: >-
-      All twelve XASSET-0027 SS-I.3 gates apply to every registered construction, so gate identity
+      All twelve XASSET-0027 SSI.3 gates apply to every registered construction, so gate identity
       and input classes are constant across the universe and are recorded here at universe level
       rather than duplicated into each construction's identity. They discriminate no hypothesis,
       which is why the smallest sufficient per-construction identity omits them.
@@ -169,20 +200,27 @@ canonical_amendment:
     research/level1_endpoint_evidence/PROTOCOL_V1.md: 1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b
     research/level1_endpoint_evidence/pre_registration.yaml: bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f
   successor_pins:
-    research/level1_endpoint_evidence/PROTOCOL_V1.md: 847aee6d777dc70ef7fad958dd3cfc34a2b9d6ea95cce9d5195f9822a080b491
-    research/level1_endpoint_evidence/pre_registration.yaml: 3a11f38dfe8e593336acba7642c0cfa37775838db143a461abae8ef7cf1b1f0e
+    research/level1_endpoint_evidence/PROTOCOL_V1.md: 9bb1738a81193fd6640106fa04e1371cb2d75459f40948a3087fb74bffca4034
+    research/level1_endpoint_evidence/pre_registration.yaml: 4c3452b69787e9e6f8397758492627fc0e6601c48a7efa373820ffb73119e83e
   corrected_stale_text: >-
     pre_registration.yaml zero_parameter_declaration.design_consequence previously asserted a
     closed candidate universe while the same file recorded NOT_CLOSED. That contradiction was
     disclosed by PR #327 independent review 4945473310 as MAJOR 2 and left uncorrected because the
     file was hash-pinned. XASSET-0028 is the separately accepted amendment the pin rule requires,
     and the sentence is now true rather than merely tolerated.
+  unified_stage_1_execution_precondition: >-
+    Review 4946087943 MAJOR 1 found lifecycle_effectivity.stage_1_execution_may_begin_only_after
+    and stages.stage_1.executable_only_after still naming the spent XASSET-0027 precondition. Both
+    now name the single XASSET-0028 six-gate successor condition; the XASSET-0027 value is retained
+    only in explicitly historical predecessor fields.
 
 stage_1:
   construction_universe_structurally_closed: true
   operationally_authorized: false
   executed_by_this_unit: false
   no_merge_to_execution_gap: true
+  structurally_consumable_but_fails_closed: true
+  fail_closed_mechanism: level1_endpoint_evidence_preregistration_validator.stage_1_operational_authorization_is_effective
   effectivity_gates:
   - INDEPENDENT_FULL_EXACT_HEAD_REVIEW
   - PRINCIPAL_EXACT_HEAD_ACCEPTANCE

@@ -511,7 +511,11 @@ class TestStage1IsNotExecutable:
             base_data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"]
             == V.STAGE_1_EXECUTION_PRECONDITION
         )
-        assert "CONSTRUCTION_UNIVERSE_CLOSURE" in V.STAGE_1_EXECUTION_PRECONDITION
+        # AMENDED BY XASSET-0028. Construction-universe closure is no longer a *pending* condition:
+        # XASSET-0028 supplies it, so the operative precondition is the six-gate successor lifecycle,
+        # which is strictly stronger than the spent predecessor string it replaces.
+        assert "XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES" in V.STAGE_1_EXECUTION_PRECONDITION
+        assert "CONSTRUCTION_UNIVERSE_CLOSURE" in V.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION
 
     def test_reverting_to_lifecycle_only_precondition_rejected(self, data: dict):
         data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"] = (
@@ -619,13 +623,25 @@ def _validate(results, universe=None):
 
 
 class TestStage1ResultsFailsClosed:
-    def test_the_real_closed_construction_universe_is_empty(self):
-        assert V.closed_construction_universe() == {}
+    def test_the_real_closed_construction_universe_is_now_the_frozen_680(self):
+        """AMENDED BY XASSET-0028. Emptiness is no longer what fails closed; lifecycle is."""
+        universe = V.closed_construction_universe()
+        assert len(universe) == 680
+        for record in universe.values():
+            assert record["source_architecture"] == "HYPOTHETICAL_SOURCE_ARCHITECTURE"
+            assert record["hypothetical_source_requirements"].strip()
 
-    def test_a_real_call_is_rejected_because_no_universe_is_closed(self):
+    def test_a_real_call_is_rejected_because_stage_1_is_not_authorized(self):
         r = V.validate_stage1_results(_full_results())
         assert not r.ok
-        assert any("no closed construction universe exists" in e for e in r.errors)
+        assert any("not operationally authorized" in e for e in r.errors)
+
+    def test_structural_closure_alone_does_not_authorize_execution(self):
+        authorized, reason = V.stage_1_operational_authorization_is_effective()
+        assert authorized is False
+        assert "XASSET-0028" in reason
+        for gate in V.STAGE_1_EFFECTIVITY_GATES:
+            assert gate in reason
 
     def test_an_explicitly_empty_universe_is_rejected(self):
         r = V.validate_stage1_results(_full_results(), {})
@@ -1563,8 +1579,17 @@ class TestLifecycleEffectivity:
     ):
         precondition = base_data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"]
         assert precondition == V.STAGE_1_EXECUTION_PRECONDITION
-        assert precondition.startswith("CONSTRUCTION_UNIVERSE_CLOSURE_THEN_")
-        assert "XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION" in precondition
+        # AMENDED BY XASSET-0028: the operative precondition is the six-gate successor lifecycle.
+        assert precondition.startswith("XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_")
+        assert V.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION.startswith(
+            "CONSTRUCTION_UNIVERSE_CLOSURE_THEN_"
+        )
+        assert (
+            "XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION"
+            in V.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION
+        )
+        # The spent predecessor condition must no longer be the operative one.
+        assert precondition != V.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION
 
     def test_gating_stage_1_on_merge_alone_rejected(self, data: dict):
         data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"] = "MERGE"

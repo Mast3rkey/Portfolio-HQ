@@ -41,7 +41,13 @@ lifecycle_effectivity:
   - MERGE
   - IMMEDIATE_POST_MERGE_VERIFICATION
   - SUCCESSFUL_MERGE_COMMIT_CI
-  stage_1_execution_may_begin_only_after: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
+  stage_1_execution_may_begin_only_after: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
+  stage_1_execution_precondition_amended_by: XASSET-0028
+  predecessor_stage_1_execution_may_begin_only_after_xasset_0027: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
+  predecessor_precondition_is_spent_note: >-
+    HISTORICAL ONLY. XASSET-0027's own lifecycle is complete and XASSET-0028 asserts construction-universe
+    closure, so the predecessor condition would read as already satisfied. It is retained for audit and
+    is NOT operative. The operative condition is the XASSET-0028 six-gate lifecycle above.
   merge_alone_is_sufficient: false
   note: >-
     Merge alone does not make this charter operationally effective and does not open a Stage 1
@@ -87,7 +93,9 @@ stages:
   stage_1:
     stage_id: STAGE_1_CONSTRUCTION_FEASIBILITY
     authorized_by_xasset_0027: false
-    executable_only_after: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
+    executable_only_after: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
+    executable_only_after_amended_by: XASSET-0028
+    predecessor_executable_only_after_xasset_0027: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
     acquires_data: false
     fits_or_estimates_anything: false
     produces_endpoint: false
@@ -343,13 +351,35 @@ construction_universe_closure:
     byte_identically_reproducible: true
     frozen_before_stage_1_outcomes: true
     contains_no_endpoint_value: true
-    selects_ranks_or_prefers_no_sleeve_or_comparator: false
+    selects_ranks_or_prefers_any_sleeve_or_comparator: false
   registered_construction_count: 680
   derived_construction_expression: 4_SLEEVES_X_2_BOUNDS_X_5_PROVENANCE_FAMILIES_X_17_ARCHITECTURES
   architectures_per_sleeve_bound_family: 17
-  construction_universe_sha256: 97d0bc865500892cef648895b97208b1e8cf381993192b74ea86335ba457f6ce
+  construction_universe_sha256: 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224
   generator: level1_construction_universe_closure_validator.generate_construction_universe
   generator_is_canonical_source_of_construction_identity: true
+  frozen_source_architecture: HYPOTHETICAL_SOURCE_ARCHITECTURE
+  source_architecture_is_frozen_construction_identity: true
+  source_architecture_selectable_at_result_time: false
+  existing_source_architecture_disposition: RESOLVED_BY_XASSET_0025_OUTCOME_C_OVER_THE_XASSET_0021_FROZEN_SNAPSHOT
+  source_architecture_note: >-
+    frozen_provenance_requirements is addressed by name to THE_FUTURE_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT
+    and is binding_on_any_future_stage_1, so source architecture is frozen INTO construction identity
+    rather than left open. Every registered construction is HYPOTHETICAL_SOURCE_ARCHITECTURE and
+    carries frozen, deterministically generated hypothetical_source_requirements; source_path and
+    source_sha256 are absent, as hypothetical_forbids requires. The existing-source half is not
+    silently omitted: XASSET-0027 SSI.1.1 records that the existing corpus is exactly XASSET-0021's
+    frozen snapshot, that XASSET-0025 Outcome C already searched it exhaustively and found no
+    qualifying source, that a Stage 1 restricted to it "would re-run an accepted determination and add
+    nothing", and that "the remaining space is constructions whose sources do not yet exist". The
+    source-architecture dimension therefore resolves to exactly ONE lawful value, not two, and the
+    cardinality is unchanged by that resolution rather than preserved by it.
+  no_source_identity_search: true
+  no_source_identity_note: >-
+    A frozen requirement specification names no institution, vendor, jurisdiction, or document. Stage 1
+    evaluates whether the frozen specification is lawfully satisfiable under the twelve gates; it does
+    not search the world for an organisation. A negative therefore means the registered specification
+    was evaluated and blocked, never "no source this executor happened to find".
   executor_may_add_omit_substitute_or_mutate_a_construction: false
   what_closure_means: >-
     The registered study universe is complete under the stated closure basis. It is not, and does not

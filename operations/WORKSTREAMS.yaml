@@ -12497,6 +12497,69 @@ workstreams:
           materially expands, the pushed head requires a NEW independent FULL
           exact-head review, not a DELTA. Not self-reviewed, not
           principal-accepted, not merged.
+
+          Correction after NEW independent FULL exact-head review 4946087943
+          (CHANGES REQUIRED, 1 BLOCKING / 1 MAJOR / 1 MINOR / 1 NOTE) of head
+          e5a7541b41cfe8d83c40c590f6d6ce6d6ad4ecbf. That review confirmed the
+          comparator grammar, the 680 arithmetic, the corrected stale canonical
+          sentence, the dashboard structural invariant, and the firewall
+          delegation as materially addressed, and found two remaining defects.
+
+          BLOCKING 1: the generated records carried a single
+          source_architecture_scope spanning both accepted source
+          architectures, which silently contradicted the canonical
+          frozen_provenance_requirements block -- a block addressed BY NAME to
+          THE_FUTURE_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT (this unit) and binding
+          on any future Stage 1 -- and left hypothesis-defining provenance
+          unfrozen after freeze. Resolved by Option A: source architecture is
+          now FROZEN construction identity. Every registered construction
+          carries source_architecture HYPOTHETICAL_SOURCE_ARCHITECTURE plus
+          deterministically generated hypothetical_source_requirements, with
+          source_path and source_sha256 absent per hypothetical_forbids. The
+          existing-source half is explicitly disposed rather than omitted:
+          XASSET-0027 SSI.1.1 records that XASSET-0025 Outcome C exhaustively
+          searched XASSET-0021's frozen snapshot and that the remaining space is
+          constructions whose sources do not yet exist, so the
+          source-architecture dimension resolves to exactly ONE lawful value
+          rather than two. Cardinality is therefore unchanged AT 680 by that
+          resolution rather than preserved through it, and the aggregate
+          universe hash changed to
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224.
+          Option B (amending the canonical provenance model to a spanning
+          hypothesis) was evaluated and rejected: it establishes closure only if
+          a deterministic bounded source-search universe can be stated, and none
+          exists. No institution, vendor, jurisdiction, or document is named
+          anywhere, so no unbounded source search is reintroduced.
+          frozen_construction_universe() emits exactly the shape
+          validate_stage1_results() consumes, and closed_construction_universe()
+          now returns it, so one definition of construction survives.
+
+          MAJOR 1: lifecycle_effectivity.stage_1_execution_may_begin_only_after
+          and stages.stage_1.executable_only_after still named the spent
+          XASSET-0027 precondition, which with that lifecycle complete would
+          have read as already satisfied. Both now name one exact XASSET-0028
+          six-gate successor condition; STAGE_1_EXECUTION_PRECONDITION and both
+          validators follow; the XASSET-0027 value survives only in explicitly
+          historical predecessor fields. The closure validator, which required
+          five gates, now requires the same six. Because
+          closed_construction_universe() is no longer empty, emptiness can no
+          longer fail closed, so validate_stage1_results() now consults
+          stage_1_operational_authorization_is_effective() first on the real
+          path -- which reads the canonical stage_1_executability.executable
+          (false) and refuses. A results author cannot satisfy it from a results
+          document and a merge alone cannot flip it.
+
+          MINOR 1: closure_basis_properties.selects_ranks_or_prefers_no_sleeve_or_comparator
+          was named as a positive predicate but recorded and enforced as false.
+          Renamed to selects_ranks_or_prefers_any_sleeve_or_comparator: false so
+          predicate and value agree, with the validator enforcing the
+          unambiguous form.
+
+          Stage 1 remains NOT EXECUTED and NOT EXECUTABLE, Stage 2 unauthorized,
+          application authority WITHHELD, SSK.1 unresolved, SSJ.12 deferred,
+          representation unchanged, RISK-0001 not reused. Because the source
+          model changed and the universe hash changed, the corrected head
+          requires another NEW independent FULL exact-head review, not a DELTA.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

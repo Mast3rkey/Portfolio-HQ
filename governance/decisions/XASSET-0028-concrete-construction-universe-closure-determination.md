@@ -70,8 +70,8 @@ basis**, not omniscience.
 |---|---|
 | external impositions, calibrations, governance selections, provisional guardrails, prescribed derivations | **already closed** — these *are* the five `(route, NUM-0001 class)` families |
 | evidence form | **representation** — preserved as a downstream gate (`G9`), never an identity dimension |
-| source identity | what Stage 1 **searches for**; fixing it would require enumerating every institution in existence |
-| source architecture | **spans both** accepted values rather than fixing one — see §F |
+| source identity | never enumerated — no institution, vendor, or document is named anywhere |
+| **source architecture** | **frozen into identity** — see §F |
 | **comparator architecture** | the one genuinely open dimension — **and accepted authority already closes it** |
 
 `XASSET-0020` §H closes the direct-comparison contract in two parts: exactly **six unordered
@@ -110,8 +110,8 @@ enumeration, not an economic judgment, and no comparator ordering implies sleeve
 Each construction carries: `construction_id`, `cell_id`, `sleeve`, `bound`, `driver_class`,
 `driver_class_scope`, `family_id`, `route`, `num_0001_class`, `comparison_subject_kind`,
 `comparator_architecture`, `counterpart`, `unordered_pair_id` (pair-scoped only),
-`source_architecture_scope`, `evidence_proposition`, `source_requirement`, `representation_posture`,
-`governing_authority_refs`, and `ordinal`.
+**`source_architecture`**, **`hypothetical_source_requirements`**, `evidence_proposition`,
+`representation_posture`, `governing_authority_refs`, and `ordinal`.
 
 Every descriptive field is **generated deterministically from closed identity**. No result-author free
 text exists, so two independent executors handed the same `construction_id` necessarily evaluate the
@@ -129,15 +129,42 @@ prescribe — *"composing one is authorship, not derivation."* It does not bar p
 hypothesis that a **qualifying source must itself prescribe one**. Every `R2_C2` construction therefore
 carries exactly that requirement and composes nothing. The generator produces no arithmetic.
 
-### F. Source architecture — spanned, not fixed
+### F. Source architecture — frozen into construction identity
 
-Every construction spans both accepted values rather than fixing one. Making it an identity dimension
-would either double the universe with a hypothetical twin of every construction whose existing-source
-answer `XASSET-0025` Outcome C already settled, or force enumeration of arbitrary institution names —
-the unbounded qualitative search this unit exists to remove. Whether a qualifying source already exists
-or comes to exist later is what Stage 1 evaluates, and it is precisely what `XASSET-0027` §I.3's
-**categorical vs. prerequisite** distinction separates. Stage 1 is therefore not vacuous: it separates
-*"no source yet"* from *"no lawful source could qualify."*
+**Corrected under review `4946087943` BLOCKING 1.** An earlier head left source architecture open
+(`SPANS_…`), silently contradicting the canonical contract. The contradiction is decisive:
+`frozen_provenance_requirements` is addressed **by name** to
+`THE_FUTURE_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT` — this unit — and is `binding_on_any_future_stage_1`.
+It is an instruction to me, not an obstacle. Leaving architecture open left the hypothesis-defining
+provenance unfrozen after freeze: exactly the result-time discretion those rules exist to prevent.
+
+**Every registered construction freezes `source_architecture: HYPOTHETICAL_SOURCE_ARCHITECTURE`** plus
+deterministically generated `hypothetical_source_requirements`. `source_path` and `source_sha256` are
+absent, as `source_architecture_vocabulary.hypothetical_forbids` requires.
+
+**The existing-source half is resolved, not omitted.** `XASSET-0027` §I.1.1, verbatim: the
+existing-source corpus "is exactly `XASSET-0021`'s frozen snapshot, and `XASSET-0025` Outcome C already
+searched precisely that corpus exhaustively and found no qualifying source; a Stage 1 restricted to it
+would re-run an accepted determination and add nothing. **The remaining space is constructions whose
+sources do not yet exist.**" Registering existing-source rows would re-litigate an accepted
+determination. The source-architecture dimension therefore resolves to exactly **one** lawful value
+rather than two — which is why the cardinality is *unchanged by* that resolution rather than *preserved
+through* it. The disposition is recorded explicitly, never silently dropped.
+
+**No source-identity search is reintroduced.** The frozen specification is a closed conjunction of
+already-accepted conditions (admissibility, single-sleeve bound, subject matter, provenance family,
+intrinsicality, the route's own §H.2/§H.3 conditions, the NUM-0001 field set, representation deferred
+to `G9`, no barred non-route). It names no institution, vendor, jurisdiction, or document. Stage 1
+evaluates whether a **frozen specification** is lawfully satisfiable under the twelve gates — it does
+not search the world. Two executors handed the same `construction_id` receive the same requirement set
+byte for byte, so a negative means *the registered specification was evaluated and blocked*, never "no
+source this executor happened to find." `XASSET-0027` §I.3's **categorical vs. prerequisite**
+distinction still does its work: a specification unlawful on its face is categorical; one merely unmet
+today is prerequisite-blocked.
+
+**Mechanically coupled.** `frozen_construction_universe()` emits exactly the shape
+`validate_stage1_results()` consumes, and `closed_construction_universe()` returns it. One definition
+of "construction" survives.
 
 ### G. Canonical amendment — lockstep, with preserved lineage
 
@@ -150,15 +177,15 @@ Both canonical files are amended under this decision's successor authority.
 
 <!-- XASSET-0028-HASH-PINS-V1
 protocol_path: research/level1_endpoint_evidence/PROTOCOL_V1.md
-protocol_sha256: 847aee6d777dc70ef7fad958dd3cfc34a2b9d6ea95cce9d5195f9822a080b491
+protocol_sha256: 9bb1738a81193fd6640106fa04e1371cb2d75459f40948a3087fb74bffca4034
 preregistration_path: research/level1_endpoint_evidence/pre_registration.yaml
-preregistration_sha256: 3a11f38dfe8e593336acba7642c0cfa37775838db143a461abae8ef7cf1b1f0e
+preregistration_sha256: 4c3452b69787e9e6f8397758492627fc0e6601c48a7efa373820ffb73119e83e
 predecessor_protocol_sha256: 1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b
 predecessor_preregistration_sha256: bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f
 -->
 
-- `PROTOCOL_V1.md`: `847aee6d777dc70ef7fad958dd3cfc34a2b9d6ea95cce9d5195f9822a080b491`
-- `pre_registration.yaml`: `3a11f38dfe8e593336acba7642c0cfa37775838db143a461abae8ef7cf1b1f0e`
+- `PROTOCOL_V1.md`: `9bb1738a81193fd6640106fa04e1371cb2d75459f40948a3087fb74bffca4034`
+- `pre_registration.yaml`: `4c3452b69787e9e6f8397758492627fc0e6601c48a7efa373820ffb73119e83e`
 
 Version identity moves `ENDPOINT-0001-PREREG-V3` → `V4`, with the predecessor recorded. The
 `XASSET-0027` record inside `construction_universe_closure` is retained **verbatim** under
@@ -166,9 +193,22 @@ Version identity moves `ENDPOINT-0001-PREREG-V3` → `V4`, with the predecessor 
 foreclosed, which `XASSET-0028` now vindicates: one of those very routes was available to a later unit.
 
 **Effectivity.** Until this decision's lifecycle closes, the `XASSET-0027` predecessor identity governs.
-The successor identity becomes effective only after independent full exact-head review, principal
-exact-head acceptance, merge, post-merge verification, merge-commit CI success, and verification of the
-merged successor hashes and universe hash. **There is no merge-to-execution gap.**
+The successor identity becomes effective only after all **six** gates: independent full exact-head
+review, principal exact-head acceptance, merge, post-merge verification, merge-commit CI success, and
+verification of the merged successor hashes and universe hash.
+
+**Corrected under review `4946087943` MAJOR 1.** `lifecycle_effectivity.stage_1_execution_may_begin_only_after`
+and `stages.stage_1.executable_only_after` still named the **spent** `XASSET-0027` precondition —
+which, with that lifecycle complete and closure now asserted, would have read as already satisfied.
+Both now name one exact `XASSET-0028` six-gate successor condition; `STAGE_1_EXECUTION_PRECONDITION`
+and both validators follow; the `XASSET-0027` value survives only in explicitly historical predecessor
+fields. The closure validator, which required five gates, now requires the same six.
+
+**Fail-closed, not merely documented.** `closed_construction_universe()` now returns the real
+680-record universe, so the enforcement machinery is testable — but `validate_stage1_results()`
+consults `stage_1_operational_authorization_is_effective()` **first**, which reads the canonical
+`stage_1_executability.executable` (false) and refuses. A results author cannot satisfy it from a
+results document, and a merge alone cannot flip it. **There is no merge-to-execution gap.**
 
 ### H. The stale contradiction — corrected, answering MAJOR 2
 
@@ -246,8 +286,14 @@ closure needs, and said comparators were "not fixed **here**" — leaving them f
 
 **Register 720 with 40 `NOT_APPLICABLE` rows.** Rejected: §H's UAC comparison is not a pair record.
 
-**Make source architecture an identity dimension (1,360).** Rejected: doubles the universe with
-constructions whose existing-source answer is already accepted, or forces arbitrary institution names.
+**Register existing-source constructions too.** Rejected: `XASSET-0025` Outcome C already searched the
+frozen snapshot exhaustively, so those rows would re-run an accepted determination. Recorded as an
+explicit disposition rather than a silent omission.
+
+**Option B — leave architecture open and amend the canonical provenance model.** Rejected: it would
+require amending a contract addressed to this unit, and it establishes closure only if a deterministic
+bounded source-search universe can be stated. None exists — that is precisely the unbounded search the
+negative filing correctly identified.
 
 **Put input classes and gate ids in each construction.** Rejected: constant across all 680; they
 discriminate no hypothesis.

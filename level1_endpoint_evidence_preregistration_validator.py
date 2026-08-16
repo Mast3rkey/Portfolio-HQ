@@ -272,7 +272,22 @@ LIFECYCLE_STEPS = (
 # Lifecycle closure alone does NOT make Stage 1 executable. It makes this architecture effective.
 # Stage 1 additionally requires a closed concrete construction universe, which XASSET-0027 neither
 # creates nor authorizes anyone to create.
+STAGE_1_EFFECTIVITY_GATES = (
+    "INDEPENDENT_FULL_EXACT_HEAD_REVIEW",
+    "PRINCIPAL_EXACT_HEAD_ACCEPTANCE",
+    "MERGE",
+    "POST_MERGE_VERIFICATION",
+    "MERGE_COMMIT_CI_SUCCESS",
+    "MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION",
+)
+
 STAGE_1_EXECUTION_PRECONDITION = (
+    "XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION"
+)
+
+# XASSET-0027's precondition, retained as HISTORY only. Its lifecycle is complete, so an operative
+# field still naming it would no longer block anything after structural closure.
+PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION = (
     "CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION"
 )
 
@@ -984,9 +999,9 @@ def _validate_construction_universe_closure(data: Mapping[str, Any], errors: lis
             _true(props.get(flag), f"construction_universe_closure.closure_basis_properties.{flag}",
                   errors)
         _false(
-            props.get("selects_ranks_or_prefers_no_sleeve_or_comparator"),
+            props.get("selects_ranks_or_prefers_any_sleeve_or_comparator"),
             "construction_universe_closure.closure_basis_properties."
-            "selects_ranks_or_prefers_no_sleeve_or_comparator",
+            "selects_ranks_or_prefers_any_sleeve_or_comparator",
             errors,
         )
 
@@ -1942,13 +1957,51 @@ def validate(data: Mapping[str, Any]) -> ValidationResult:
 
 
 def closed_construction_universe() -> Mapping[str, Mapping[str, Any]]:
-    """Return the closed construction universe: empty, because none is closed.
+    """Return the closed construction universe.
 
-    XASSET-0027 charters this programme's architecture and does NOT close a concrete construction
-    universe. The 240 family slots classify provenance; they do not enumerate constructions. This
-    function is deliberately empty so that any real call to validate_stage1_results fails closed.
+    AMENDED BY XASSET-0028. Under XASSET-0027 this was deliberately empty because no concrete
+    universe existed. XASSET-0028 closes one, so this now returns the real frozen universe: each
+    construction_id mapped to its frozen cell_id, source_architecture, and (since every registered
+    construction is HYPOTHETICAL_SOURCE_ARCHITECTURE) its frozen hypothetical_source_requirements.
+
+    Returning a non-empty universe makes the enforcement machinery real and testable. It does NOT
+    authorize execution: stage_1_operational_authorization_is_effective() is an independent gate that
+    validate_stage1_results() consults first and that no results author can satisfy from a results
+    document.
     """
-    return {}
+    try:
+        import level1_construction_universe_closure_validator as CU
+    except ImportError:  # pragma: no cover - defensive
+        return {}
+    return CU.frozen_construction_universe()
+
+
+def stage_1_operational_authorization_is_effective(
+    prereg_path: Path = PREREG_PATH,
+) -> tuple[bool, str]:
+    """Report whether Stage-1 OPERATIONAL authorization is effective, and why not when it is not.
+
+    Structural closure of the construction universe is not authorization. The canonical
+    stage_1_executability block carries `executable`, which stays false until the full XASSET-0028
+    six-gate lifecycle has closed and a later, separately governed amendment flips it. Reading the
+    canonical file rather than a module constant means a results author cannot bypass this by
+    constructing a document, and a merge alone cannot flip it either.
+    """
+    try:
+        data = yaml.safe_load(prereg_path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as exc:  # pragma: no cover - defensive
+        return False, f"canonical preregistration unreadable: {exc}"
+    block = (data or {}).get("stage_1_executability")
+    if not isinstance(block, Mapping):
+        return False, "canonical stage_1_executability block absent"
+    if block.get("executable") is not True:
+        return False, (
+            "stage_1_executability.executable is not true; the construction universe is "
+            "structurally closed but Stage-1 operational authorization requires the full "
+            f"XASSET-0028 lifecycle ({', '.join(STAGE_1_EFFECTIVITY_GATES)}). Structural closure is "
+            "not authorization, and there is no merge-to-execution gap."
+        )
+    return True, ""
 
 
 def validate_stage1_results(
@@ -1970,7 +2023,20 @@ def validate_stage1_results(
     if not isinstance(results, Mapping):
         return ValidationResult(False, ("stage1_results: expected a top-level mapping",))
 
+    # Lifecycle gate on the REAL path. XASSET-0028 closes the universe structurally, so
+    # closed_construction_universe() is no longer empty and can no longer fail closed by emptiness
+    # alone. An actual Stage-1 run passes no universe and is refused here until the six-gate
+    # XASSET-0028 lifecycle is complete.
+    #
+    # An explicitly supplied universe still exercises the enforcement machinery without authorizing
+    # anything -- the same distinction this function's own accepted docstring already drew.
     if construction_universe is None:
+        authorized, reason = stage_1_operational_authorization_is_effective()
+        if not authorized:
+            return ValidationResult(
+                False,
+                (f"stage1_results: Stage-1 execution is not operationally authorized — {reason}",),
+            )
         construction_universe = closed_construction_universe()
     if not construction_universe:
         return ValidationResult(

@@ -14,8 +14,12 @@ architectures, COMPARATOR ARCHITECTURES, evidence forms, external impositions, c
 governance selections, provisional guardrails, and prescribed derivations. Of those, external
 impositions / calibrations / governance selections / provisional guardrails / prescribed derivations
 are exactly the five already-closed (route, NUM-0001 class) families; evidence form is representation,
-preserved as a downstream gate rather than an identity dimension; and source identity is what Stage 1
-searches for rather than something a registry can fix without enumerating every institution on earth.
+preserved as a downstream gate rather than an identity dimension; and SOURCE ARCHITECTURE is frozen
+into construction identity as the accepted frozen_provenance_requirements block -- addressed by name
+to this unit -- requires. Source *identity* (which institution) is never enumerated: every registered
+construction is HYPOTHETICAL_SOURCE_ARCHITECTURE with frozen, deterministically generated
+hypothetical_source_requirements, so what Stage 1 evaluates is a frozen requirement specification,
+not an unbounded search of the world for an institution.
 
 That leaves comparator architecture as the one open identity dimension, and it is NOT open in accepted
 authority -- XASSET-0020 SS-H already closes the direct-comparison contract:
@@ -107,6 +111,18 @@ PREDECESSOR_PINS = {
 
 REQUIRED_STATUS = "CLOSED"
 
+# The XASSET-0028 successor Stage-1 lifecycle. All six are required, everywhere. The predecessor
+# XASSET-0027 precondition is spent -- its lifecycle is already complete -- so leaving it operative
+# would let a reader treat structural closure plus a finished predecessor lifecycle as sufficient.
+STAGE_1_EFFECTIVITY_GATES = (
+    "INDEPENDENT_FULL_EXACT_HEAD_REVIEW",
+    "PRINCIPAL_EXACT_HEAD_ACCEPTANCE",
+    "MERGE",
+    "POST_MERGE_VERIFICATION",
+    "MERGE_COMMIT_CI_SUCCESS",
+    "MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION",
+)
+
 # ---------------------------------------------------------------------------------------------
 # Closed vocabularies. Every one is sourced from the accepted preregistration validator rather than
 # restated, so a drift in accepted authority surfaces as an import-time mismatch instead of silently
@@ -148,15 +164,27 @@ SUBJECT_KIND_BY_SCOPE = {
     SCOPE_COMPARISON: SUBJECT_DIRECT_ALTERNATIVE,
 }
 
-# Source-architecture posture. Every construction SPANS both accepted source architectures rather
-# than fixing one, so this is deliberately NOT an identity dimension. Making it one would either
-# double the universe with a hypothetical twin of every construction whose existing-source answer
-# XASSET-0025 Outcome C already settled, or force enumeration of arbitrary institution names -- the
-# unbounded qualitative search this unit exists to remove. A construction fixes the question, the
-# sleeve, the bound, the DRIVER class, the provenance family, and the comparator architecture;
-# whether a qualifying source already exists or comes to exist later is exactly what Stage 1
-# evaluates, and it is what the categorical/prerequisite distinction of XASSET-0027 SS-I.3 separates.
-SOURCE_ARCHITECTURE_SCOPE = "SPANS_" + "_AND_".join(PREREG.SOURCE_ARCHITECTURES)
+# Source architecture IS frozen construction identity.
+#
+# The accepted preregistration's frozen_provenance_requirements block is addressed, by name, to
+# `THE_FUTURE_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT` -- this unit -- and is `binding_on_any_future_stage_1`.
+# It requires an EXISTING construction to freeze exact source_path and source_sha256, and a
+# HYPOTHETICAL construction to freeze exact hypothetical_source_requirements, with result-author
+# alteration prohibited. A construction that left source architecture open would leave the
+# hypothesis-defining provenance unfrozen, which is exactly the result-time discretion those rules
+# exist to prevent.
+#
+# Every registered construction is HYPOTHETICAL_SOURCE_ARCHITECTURE. That is not a convenience: the
+# existing-source half of the space is already resolved by accepted authority. XASSET-0027 SS-I.1.1
+# states that the existing-source corpus "is exactly XASSET-0021's frozen snapshot, and XASSET-0025
+# Outcome C already searched precisely that corpus exhaustively and found no qualifying source; a
+# Stage 1 restricted to it would re-run an accepted determination and add nothing. The remaining
+# space is constructions whose sources do not yet exist." Registering existing-source constructions
+# would therefore re-litigate an accepted determination rather than enumerate an open question, and
+# the source-architecture dimension resolves to exactly ONE lawful value rather than two.
+FROZEN_SOURCE_ARCHITECTURE = "HYPOTHETICAL_SOURCE_ARCHITECTURE"
+EXISTING_SOURCE_ARCHITECTURE = "EXISTING_SOURCE_ARCHITECTURE"
+EXISTING_SOURCE_DISPOSITION = "RESOLVED_BY_XASSET_0025_OUTCOME_C_OVER_THE_XASSET_0021_FROZEN_SNAPSHOT"
 
 # Representation is preserved as a downstream dependency and gate (G9), never an identity dimension,
 # per XASSET-0026 SS-I item 8 and XASSET-0027's conformance table.
@@ -167,16 +195,6 @@ REPRESENTATION_POSTURE = "SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED"
 # It does not bar preregistering the hypothesis that a qualifying source must itself prescribe one.
 # Every R2 construction therefore carries this source requirement and composes nothing.
 R2_FAMILY_ID = "R2_C2"
-R2_SOURCE_REQUIREMENT = (
-    "The qualifying source must itself prescribe exactly one lawful XASSET-0023 SS-H.3 derivation, "
-    "using admitted DRIVER inputs and closed arithmetic only. This construction states a requirement "
-    "on the source and composes, selects among, or invents no derivation."
-)
-R1_SOURCE_REQUIREMENT = (
-    "The qualifying source must itself uniquely state the bound under XASSET-0023 SS-H.2, carrying "
-    "this family's NUM-0001 class from competent stating authority. This construction states a "
-    "requirement on the source and originates no value."
-)
 
 ID_SEPARATOR = "::"
 
@@ -307,6 +325,80 @@ def _evidence_proposition(
     )
 
 
+def _hypothetical_source_requirements(
+    sleeve: str, bound: str, driver_class: str, family_id: str, counterpart: str | None
+) -> str:
+    """Deterministically generate the FROZEN requirement specification for one construction.
+
+    The accepted frozen_provenance_requirements block requires a HYPOTHETICAL construction's
+    requirements to be frozen before execution and prohibits a result author from authoring or
+    altering them ("a non-empty string authored in the results document is not a preregistration").
+    These are therefore generated here, from closed identity only, before any Stage-1 outcome exists.
+
+    The specification is a closed conjunction of already-accepted conditions. It names no institution,
+    vendor, jurisdiction, or document, so it introduces no source-identity search; and it is fully
+    determined by the construction's own identity, so two independent executors handed the same
+    construction_id are handed the same requirement set, byte for byte.
+    """
+    route = FAMILY_ROUTE[family_id]
+    num_class = FAMILY_NUM_0001_CLASS[family_id]
+
+    if counterpart is None:
+        basis = f"the {sleeve} sleeve's own {driver_class} evidence"
+    elif counterpart == UNASSIGNED:
+        basis = (
+            f"{driver_class} evidence directly comparing the {sleeve} sleeve with {UNASSIGNED}, "
+            f"which XASSET-0020 SS-H mandates as a direct comparison for every sleeve"
+        )
+    elif DRIVER_CLASS_SCOPE[driver_class] == SCOPE_ONE_UNORDERED_PAIR:
+        basis = (
+            f"direct {driver_class} pair evidence for the XASSET-0020 SS-H unordered pair "
+            f"{unordered_pair_id(sleeve, counterpart)}"
+        )
+    else:
+        basis = (
+            f"{driver_class} evidence directly comparing the {sleeve} sleeve with the "
+            f"{counterpart} sleeve as the direct alternative"
+        )
+
+    if route == "R2":
+        route_clause = (
+            "R6. The source must itself prescribe exactly one XASSET-0023 SS-H.3 derivation of the "
+            "bound, satisfying all seven SS-H.3 conditions, using admitted DRIVER inputs and the "
+            "closed arithmetic of XASSET-0020 SS-M only. No application, executor, or generator may "
+            "compose, select among, or invent that derivation."
+        )
+    else:
+        route_clause = (
+            "R6. The source must itself uniquely state the bound under XASSET-0023 SS-H.2, "
+            "satisfying all six SS-H.2 conditions including competent stating authority. Where the "
+            "class is an evidence-bounded governance selection or a provisional governance "
+            "guardrail, the value must have been selected by an effective governance authority "
+            "competent for Level-1 endpoints, never by an application author or reviewer."
+        )
+
+    return (
+        "A qualifying source under this construction must satisfy ALL of the following, and this "
+        "specification is frozen before execution and may not be altered at results time. "
+        f"R1. The source must be admissible under the ENDPOINT-0001 evidence-admission contract and "
+        f"admitted through a lawful XASSET-0021 snapshot successor. "
+        f"R2. It must establish a {bound} bound on the {sleeve} sleeve's share of the normalized "
+        f"asset unit, and on no other sleeve. "
+        f"R3. Its subject matter must be {basis}. "
+        f"R4. Its provenance family must be {family_id}: origination route {route} with NUM-0001 "
+        f"class {num_class}. "
+        f"R5. The bound must be intrinsic to the source's own statement rather than derived by the "
+        f"application, and must be expressed against the normalized asset unit. "
+        f"{route_clause} "
+        "R7. The source must carry the complete NUM-0001 SS4 provenance field set, and its class "
+        "must not be class 6. "
+        "R8. Representation admissibility is source-dependent and is evaluated by the G9 gate; this "
+        "specification asserts no prior representation rule. "
+        "R9. No barred origination mechanism of XASSET-0024 SS-D N1-N8 may appear anywhere in the "
+        "source's own derivation of the bound."
+    )
+
+
 def construction_id(
     sleeve: str, bound: str, driver_class: str, family_id: str, architecture_id: str
 ) -> str:
@@ -355,14 +447,12 @@ def generate_construction_universe() -> tuple[dict[str, Any], ...]:
                                 if scope == SCOPE_ONE_UNORDERED_PAIR
                                 else None
                             ),
-                            "source_architecture_scope": SOURCE_ARCHITECTURE_SCOPE,
-                            "evidence_proposition": _evidence_proposition(
+                            "source_architecture": FROZEN_SOURCE_ARCHITECTURE,
+                            "hypothetical_source_requirements": _hypothetical_source_requirements(
                                 sleeve, bound, driver_class, family_id, counterpart
                             ),
-                            "source_requirement": (
-                                R2_SOURCE_REQUIREMENT
-                                if family_id == R2_FAMILY_ID
-                                else R1_SOURCE_REQUIREMENT
+                            "evidence_proposition": _evidence_proposition(
+                                sleeve, bound, driver_class, family_id, counterpart
                             ),
                             "representation_posture": REPRESENTATION_POSTURE,
                             "governing_authority_refs": (
@@ -376,6 +466,27 @@ def generate_construction_universe() -> tuple[dict[str, Any], ...]:
                         }
                         universe.append(record)
     return tuple(universe)
+
+
+def frozen_construction_universe() -> dict[str, dict[str, Any]]:
+    """Return the closed universe in the exact shape validate_stage1_results() consumes.
+
+    Maps each frozen construction_id to its frozen provenance identity: cell_id, source_architecture,
+    and -- because every registered construction is HYPOTHETICAL_SOURCE_ARCHITECTURE -- the frozen
+    hypothetical_source_requirements. source_path and source_sha256 are deliberately ABSENT, which is
+    what source_architecture_vocabulary.hypothetical_forbids requires.
+
+    Supplying this mapping does not authorize execution. validate_stage1_results() independently
+    fails closed on lifecycle authorization.
+    """
+    return {
+        record["construction_id"]: {
+            "cell_id": record["cell_id"],
+            "source_architecture": record["source_architecture"],
+            "hypothetical_source_requirements": record["hypothetical_source_requirements"],
+        }
+        for record in generate_construction_universe()
+    }
 
 
 def canonical_universe_json(universe: Sequence[Mapping[str, Any]]) -> str:
@@ -475,6 +586,7 @@ TOP_KEYS = (
     "closure_basis",
     "closed_dimensions",
     "comparator_contract",
+    "source_architecture_contract",
     "universe_identity",
     "per_cell_cardinality",
     "canonical_amendment",
@@ -507,6 +619,7 @@ def validate(data: Mapping[str, Any]) -> ValidationResult:
 
     _validate_closed_dimensions(data.get("closed_dimensions"), errors)
     _validate_comparator_contract(data.get("comparator_contract"), errors)
+    _validate_source_architecture_contract(data.get("source_architecture_contract"), errors)
     _validate_universe_identity(data.get("universe_identity"), errors)
     _validate_per_cell(data.get("per_cell_cardinality"), errors)
     _validate_stage_1(data.get("stage_1"), errors)
@@ -560,6 +673,38 @@ def _validate_comparator_contract(block: Any, errors: list[str]) -> None:
         )
 
 
+def _validate_source_architecture_contract(block: Any, errors: list[str]) -> None:
+    """Source architecture must be FROZEN identity, never a result-time choice."""
+    if not isinstance(block, Mapping):
+        errors.append("source_architecture_contract: must be a mapping")
+        return
+    if block.get("frozen_source_architecture") != FROZEN_SOURCE_ARCHITECTURE:
+        errors.append(
+            f"source_architecture_contract.frozen_source_architecture: must be "
+            f"{FROZEN_SOURCE_ARCHITECTURE!r}"
+        )
+    if block.get("existing_source_architecture_disposition") != EXISTING_SOURCE_DISPOSITION:
+        errors.append(
+            "source_architecture_contract.existing_source_architecture_disposition: the "
+            "existing-source half must be explicitly disposed, not silently omitted"
+        )
+    for flag in (
+        "source_architecture_is_frozen_construction_identity",
+        "hypothetical_source_requirements_frozen_before_execution",
+        "hypothetical_source_requirements_generated_from_closed_identity_only",
+        "no_source_identity_enumeration",
+        "no_unbounded_source_search",
+        "consumable_by_validate_stage1_results",
+    ):
+        _true(block.get(flag), f"source_architecture_contract.{flag}", errors)
+    for flag in (
+        "source_architecture_selectable_at_result_time",
+        "result_author_may_author_or_alter_requirements",
+        "source_path_and_sha256_present",
+    ):
+        _false(block.get(flag), f"source_architecture_contract.{flag}", errors)
+
+
 def _validate_universe_identity(block: Any, errors: list[str]) -> None:
     if not isinstance(block, Mapping):
         errors.append("universe_identity: must be a mapping")
@@ -586,6 +731,18 @@ def _validate_universe_identity(block: Any, errors: list[str]) -> None:
     if block.get("generator") != "level1_construction_universe_closure_validator."\
                                  "generate_construction_universe":
         errors.append("universe_identity.generator: must name the generator function")
+    if block.get("frozen_source_architecture") != FROZEN_SOURCE_ARCHITECTURE:
+        errors.append(
+            "universe_identity.frozen_source_architecture: every registered construction must "
+            f"freeze {FROZEN_SOURCE_ARCHITECTURE!r}"
+        )
+    if block.get("existing_source_architecture_disposition") != EXISTING_SOURCE_DISPOSITION:
+        errors.append(
+            "universe_identity.existing_source_architecture_disposition: the existing-source half "
+            "must be recorded as already resolved by accepted authority, not silently omitted"
+        )
+    _false(block.get("source_architecture_selectable_at_result_time"),
+           "universe_identity.source_architecture_selectable_at_result_time", errors)
 
 
 def _validate_per_cell(block: Any, errors: list[str]) -> None:
@@ -608,14 +765,11 @@ def _validate_stage_1(block: Any, errors: list[str]) -> None:
           "stage_1.construction_universe_structurally_closed", errors)
     _false(block.get("operationally_authorized"), "stage_1.operationally_authorized", errors)
     _false(block.get("executed_by_this_unit"), "stage_1.executed_by_this_unit", errors)
-    required = (
-        "INDEPENDENT_FULL_EXACT_HEAD_REVIEW",
-        "PRINCIPAL_EXACT_HEAD_ACCEPTANCE",
-        "MERGE",
-        "POST_MERGE_VERIFICATION",
-        "MERGE_COMMIT_CI_SUCCESS",
-    )
+    required = STAGE_1_EFFECTIVITY_GATES
     gates = block.get("effectivity_gates")
+    for gate in (gates or ()):
+        if gate not in required:
+            errors.append(f"stage_1.effectivity_gates: unknown gate {gate!r}")
     for gate in required:
         if gate not in (gates or ()):
             errors.append(f"stage_1.effectivity_gates: must include {gate!r}")

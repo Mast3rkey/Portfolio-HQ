@@ -517,11 +517,21 @@ direct-comparison contract — six unordered sleeve-sleeve pairs, plus a mandate
 each sleeve with `UNSIZED_UNASSIGNED_CAPITAL` — crossed with the pre-registration's own canonical
 `driver_class_scope` partition. Nothing is selected, ranked, preferred, invented, or excluded.
 
+Every registered construction freezes its **source architecture** —
+`HYPOTHETICAL_SOURCE_ARCHITECTURE` — together with deterministically generated
+`hypothetical_source_requirements`, as `frozen_provenance_requirements` (addressed by name to this
+unit) requires. `source_path` and `source_sha256` are absent, per `hypothetical_forbids`. The
+existing-source half is not omitted but **already resolved**: `XASSET-0027` §I.1.1 records that
+`XASSET-0025` Outcome C exhaustively searched `XASSET-0021`'s frozen snapshot and that "the remaining
+space is constructions whose sources do not yet exist." No source identity is searched for, so a
+negative means the frozen specification was evaluated, not that an executor failed to find something.
+
 **Structural closure is not operational authorization.** Stage 1 is **NOT EXECUTED** by `XASSET-0028`
-and remains **NOT EXECUTABLE** until `XASSET-0028`'s own lifecycle closes in full — independent full
-exact-head review, principal exact-head acceptance, merge, post-merge verification, merge-commit CI
-success, and verification of the merged successor hashes and universe hash. There is no
-merge-to-execution gap.
+and remains **NOT EXECUTABLE** until `XASSET-0028`'s own lifecycle closes in full — all six gates:
+independent full exact-head review, principal exact-head acceptance, merge, post-merge verification,
+merge-commit CI success, and verification of the merged successor hashes and universe hash. That one
+six-gate condition is the sole operative Stage-1 execution precondition; the `XASSET-0027` condition
+is spent and retained only as predecessor history. There is no merge-to-execution gap.
 
 Predecessor canonical identity remains auditable and is never rewritten. Until `XASSET-0028` is
 effective, the `XASSET-0027` predecessor identity governs; after it, the successor identity governs.
@@ -544,7 +554,7 @@ consequential_parameter_count: 0
 stage_1_executable: false
 construction_universe_closed: true
 registered_construction_count: 680
-construction_universe_sha256: 97d0bc865500892cef648895b97208b1e8cf381993192b74ea86335ba457f6ce
+construction_universe_sha256: 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224
 stage_1_structurally_closed: true
 stage_1_operationally_authorized: false
 stage_2_authorized: false
