@@ -1,0 +1,725 @@
+# Level-1 endpoint-evidence program — canonical pre-registration
+#
+# Authorized by governance/decisions/XASSET-0027-level1-endpoint-authority-and-all-four-sleeve-evidence-program-charter.md
+#
+# This YAML is canonical for every closed identity, cell, gate, ordering, vocabulary, and count.
+# research/level1_endpoint_evidence/PROTOCOL_V1.md explains the design but cannot enlarge or override it.
+#
+# This file preregisters a research design. It contains no endpoint, no bound, no percentage, no
+# sleeve share, and no study result. It is not a DRIVER source and is not admissible as
+# endpoint-supporting evidence.
+
+schema_version: '1.0'
+study_id: ENDPOINT-0001
+
+identifier_note:
+  statement: >-
+    ENDPOINT-0001 is a study identifier only. It is not a governance decision prefix, and no
+    ENDPOINT-#### decision series is created, implied, or reserved by it. The authorizing decision is
+    XASSET-0027.
+
+authority:
+  authorizing_decision: XASSET-0027
+  authorizing_decision_path: governance/decisions/XASSET-0027-level1-endpoint-authority-and-all-four-sleeve-evidence-program-charter.md
+  lane: OPS-0009_LANE_G
+  program_shape: ALL_FOUR_SLEEVE_SELECTION_FREE_PROGRAM
+  program_shape_source: XASSET-0026
+  governing_research_question_source: XASSET-0025_SECTION_K
+  endpoint_quantity_source: XASSET-0024_SECTION_C
+  admissibility_checklist_source: XASSET-0024_SECTION_J_1_THROUGH_J_12
+  prohibited_input_firewall_source: XASSET-0025_SECTION_F
+  authority_constituted_by_same_decision: true
+  authority_exercised_by_this_program: false
+  authority_exercise_note: >-
+    XASSET-0027 constitutes LEVEL1_ENDPOINT_AUTHORITY and does not exercise it. This program does not
+    exercise it either. Executing Stage 1 states no endpoint and selects no value.
+
+# --------------------------------------------------------------------------------------------------
+# Governing research question
+# --------------------------------------------------------------------------------------------------
+
+research_question:
+  source: XASSET-0025_SECTION_K
+  reproduced_verbatim: >-
+    For one named Level-1 sleeve, is there directly evidenced, question-matched economic content —
+    admissible as a DRIVER under exactly one of XASSET-0020 SSE.1's six classes on its own subject
+    matter — that intrinsically establishes a LOWER or an UPPER limit on that sleeve's share of one
+    normalized unit of prospective unlevered asset-side capital, at exact precision, from a single
+    origin, with no step whose coefficient, ordering, tolerance, cutoff, or selection could have been
+    chosen differently?
+  instantiation: PER_CELL_TEMPLATE
+  instantiation_note: >-
+    The question form is sleeve-agnostic and is instantiated identically for every cell. Evidence is
+    sleeve-specific or comparison-scoped, per XASSET-0025 SSJ and XASSET-0026 SSD.
+  null_answer_is_complete_outcome: true
+  null_answer_source: XASSET-0020_SECTION_J_3
+
+# --------------------------------------------------------------------------------------------------
+# Closed population
+# --------------------------------------------------------------------------------------------------
+
+sleeves:
+- equity
+- fund_broad_market
+- fund_gld_defensive
+- crypto
+
+bounds:
+- LOWER
+- UPPER
+
+driver_classes:
+- portfolio_function
+- valuation_opportunity_cost
+- downside_path_risk
+- recovery
+- diversification_cobehavior
+- sleeve_deployability
+
+driver_class_scope:
+  record_keys:
+  - driver_class
+  - section_e1_scope_language
+  - minimum_evidence_item_scope
+  source: XASSET-0026_SECTION_D
+  scope_note: >-
+    Records evidence-item subject-matter scope only. Per XASSET-0026 SSD, evidence-item scope and
+    program endpoint/output coverage are different questions, and no DRIVER class is closed to a
+    program by its output coverage alone. Comparators are not fixed to a second sleeve by SSE.1 and
+    are not fixed here.
+  classes:
+    portfolio_function:
+      driver_class: portfolio_function
+      section_e1_scope_language: THE_SLEEVES_DIRECTLY_EVIDENCED_JOB_IN_THE_PROSPECTIVE_PORTFOLIO
+      minimum_evidence_item_scope: ONE_SLEEVE
+    valuation_opportunity_cost:
+      driver_class: valuation_opportunity_cost
+      section_e1_scope_language: MARGINAL_DOLLAR_HERE_RATHER_THAN_TO_THE_DIRECT_ALTERNATIVE
+      minimum_evidence_item_scope: COMPARISON_SCOPED_COMPARATOR_NOT_FIXED
+    downside_path_risk:
+      driver_class: downside_path_risk
+      section_e1_scope_language: DIRECTLY_COMPARABLE_LOSS_SHAPE_DEPTH_OR_PATH_EVIDENCE
+      minimum_evidence_item_scope: COMPARISON_SCOPED_COMPARATOR_NOT_FIXED
+    recovery:
+      driver_class: recovery
+      section_e1_scope_language: DIRECTLY_COMPARABLE_RECOVERY_OR_TIME_UNDERWATER_EVIDENCE
+      minimum_evidence_item_scope: COMPARISON_SCOPED_COMPARATOR_NOT_FIXED
+    diversification_cobehavior:
+      driver_class: diversification_cobehavior
+      section_e1_scope_language: DIRECT_PAIR_EVIDENCE_DUPLICATION_SHARED_LOSS_OFFSET
+      minimum_evidence_item_scope: ONE_UNORDERED_PAIR
+    sleeve_deployability:
+      driver_class: sleeve_deployability
+      section_e1_scope_language: SLEEVE_LEVEL_CONVERTIBILITY_LOCKUP_OR_IMPLEMENTATION_FRICTION
+      minimum_evidence_item_scope: ONE_SLEEVE
+
+# --------------------------------------------------------------------------------------------------
+# Stage boundary
+# --------------------------------------------------------------------------------------------------
+
+stages:
+  stage_1:
+    stage_id: STAGE_1_CONSTRUCTION_FEASIBILITY
+    authorized_by_xasset_0027: true
+    acquires_data: false
+    fits_or_estimates_anything: false
+    produces_endpoint: false
+    produces_admissible_evidence: false
+    unit_of_work: ONE_CELL
+    description: >-
+      A deterministic, per-cell evaluation of whether a lawful endpoint-supporting evidence
+      construction is identifiable for that cell under accepted authority, recording the first failing
+      gate where one fails. Stage 1 evaluates constructibility. It does not build, acquire, estimate,
+      or admit anything.
+  stage_2:
+    stage_id: STAGE_2_EMPIRICAL_EVIDENCE_PRODUCTION
+    authorized_by_xasset_0027: false
+    eligibility_condition: AT_LEAST_ONE_STAGE_1_CELL_CONSTRUCTIBLE_CANDIDATE_IDENTIFIED
+    authorization_requirement: SEPARATE_LATER_EXPLICITLY_ACCEPTED_GOVERNANCE_DECISION
+    note: >-
+      Stage 2 is neither authorized, commissioned, scheduled, nor partially granted by XASSET-0027.
+      Satisfying the eligibility condition creates no entitlement to Stage 2 and does not authorize
+      data acquisition, estimation, or any empirical run.
+
+# --------------------------------------------------------------------------------------------------
+# Cells and trial inventory
+# --------------------------------------------------------------------------------------------------
+
+cell_definition:
+  record_keys:
+  - cell_id
+  - sleeve
+  - bound
+  - driver_class
+  cell_id_format: '{sleeve}::{bound}::{driver_class}'
+  one_cell_is: ONE_SLEEVE_ONE_BOUND_ONE_DRIVER_CLASS
+  route_is_a_recorded_field_not_a_cell_dimension: true
+  num_0001_class_is_a_recorded_field_not_a_cell_dimension: true
+  dimension_rationale: >-
+    Route (R1/R2) and NUM-0001 class are properties of a candidate construction evaluated inside a
+    cell, not independent dimensions. Making them dimensions would duplicate cells without adding
+    coverage. Enumerating all six DRIVER classes for every sleeve and bound preserves XASSET-0026
+    SSI.5's requirement that no route or class be pre-selected.
+
+trial_inventory:
+  derived_ceiling_expression: 4_SLEEVES_X_2_BOUNDS_X_6_DRIVER_CLASSES
+  derived_ceiling_cells: 48
+  reserve_cells: 0
+  unused_capacity: LAPSES_CANNOT_BE_REALLOCATED
+  result_aware_cells: PROHIBITED
+  every_cell_must_be_recorded: true
+  cell_may_not_be_dropped_or_omitted: true
+
+roll_up_units:
+  derived_expression: 4_SLEEVES_X_2_BOUNDS
+  derived_count: 8
+  computed_only_from_own_six_cells: true
+  cross_bound_reference: PROHIBITED
+  cross_sleeve_reference: PROHIBITED
+
+# --------------------------------------------------------------------------------------------------
+# Gate sequence — fixed, ordered, evaluated first-failure-wins
+# --------------------------------------------------------------------------------------------------
+
+gate_sequence:
+  evaluation_order: STRICT_ASCENDING_GATE_INDEX
+  record_first_failing_gate_only: true
+  gates_may_not_be_added_removed_reordered_or_reinterpreted_after_any_outcome_observed: true
+  record_keys:
+  - gate_id
+  - gate_index
+  - question
+  - controlling_authority
+  - failure_disposition
+  gates:
+  - gate_id: G1_DRIVER_SUBJECT_MATTER
+    gate_index: 1
+    question: >-
+      Can evidence about this sleeve be admissible as a DRIVER under this cell's DRIVER class on the
+      evidence's own subject matter?
+    controlling_authority: XASSET-0024_J_3
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G2_MAGNITUDE_INTRINSICALITY
+    gate_index: 2
+    question: >-
+      Would the quantitative statement be intrinsic to that evidence rather than a share figure
+      appended to it?
+    controlling_authority: XASSET-0024_SECTION_D_AND_J_4
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G3_NORMALIZATION
+    gate_index: 3
+    question: >-
+      Would the candidate state the XASSET-0024 SSC quantity — a share of one normalized unit of
+      prospective unlevered asset-side capital — rather than a quantity in the sleeve's own,
+      within-instrument, market, per-share, or leverage-bearing denominator?
+    controlling_authority: XASSET-0024_SECTION_C_AND_SECTION_F_LIMB_1
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G4_ORIGIN
+    gate_index: 4
+    question: >-
+      Is every input free of barred origin, including barred historical values, equal division,
+      symmetry, residual, complement, and any reconstruction of a barred value?
+    controlling_authority: XASSET-0024_SECTION_F_LIMB_2_AND_NON_ROUTES_N4_N5_N7
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G5_CONSTRAINT_SHAPE
+    gate_index: 5
+    question: >-
+      Would the candidate originate a bound, rather than only cap, clip, block, or intersect one that
+      already exists?
+    controlling_authority: XASSET-0024_SECTION_F_LIMB_4_AND_NON_ROUTE_N1
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G6_ROUTE_COMPLIANCE
+    gate_index: 6
+    question: >-
+      Would the candidate satisfy R1 in full or R2 in full, with any R2 derivation source-prescribed
+      and containing no step whose coefficient, ordering, tolerance, cutoff, or selection could have
+      been chosen differently?
+    controlling_authority: XASSET-0024_J_6_AND_XASSET_0023_H_3_ITEM_7
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G7_DISCRETION_AND_PROVENANCE
+    gate_index: 7
+    question: >-
+      Would the candidate carry a NUM-0001 class in 1 through 5, with class 4 satisfying the
+      eight-item anti-discretion test and class 5 satisfying NUM-0001 SS6's provisional label and
+      stated review condition?
+    controlling_authority: XASSET-0024_SECTION_E_3_AND_J_7_AND_NUM_0001_SECTIONS_6_7_8
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G8_UNIQUENESS
+    gate_index: 8
+    question: >-
+      Would exactly one lawful value exist for this endpoint quantity across the admitted set, with no
+      second candidate value resolvable by any midpoint, average, precedence, or conservatism rule?
+    controlling_authority: XASSET-0024_J_8
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G9_REPRESENTATION
+    gate_index: 9
+    question: >-
+      Would the candidate be self-contained under XASSET-0024 SSG path 1, or covered by a separately
+      accepted Level-1 aggregation or selection rule under path 2?
+    controlling_authority: XASSET-0024_SECTION_G_AND_J_9
+    failure_disposition: BLOCKED_PENDING_SEPARATE_PREREQUISITE
+  - gate_id: G10_PAIR_INDEPENDENCE
+    gate_index: 10
+    question: >-
+      Would the candidate avoid consuming any unresolved pair as an input at all, establishing
+      direction-invariance by independence rather than direction-robustness by inspection?
+    controlling_authority: XASSET-0024_SECTION_H_4_AND_J_10
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G11_EXACTNESS_AND_DETERMINISM
+    gate_index: 11
+    question: >-
+      Would the candidate carry exact source precision or an exact rational derivation, with no
+      ungoverned rounding and byte-identical reproduction from the same frozen inputs?
+    controlling_authority: XASSET-0024_J_11_AND_XASSET_0021_SECTION_G
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G12_RECONCILIATION_FEASIBILITY
+    gate_index: 12
+    question: >-
+      Would exact set-valued reconciliation under XASSET-0020 SSK remain feasible, with no negative
+      complement, plug, proxy, or redistribution?
+    controlling_authority: XASSET-0024_J_12
+    failure_disposition: BLOCKED_CATEGORICALLY
+  - gate_id: G13_SNAPSHOT_ADMISSIBILITY_PATH
+    gate_index: 13
+    question: >-
+      Is a lawful XASSET-0021 snapshot successor identifiable that could admit the candidate, noting
+      that no snapshot successor is created, extended, or authorized by this program?
+    controlling_authority: XASSET-0024_J_1_AND_J_2_AND_XASSET_0026_G_2_CONSTRAINT_3
+    failure_disposition: BLOCKED_PENDING_SEPARATE_PREREQUISITE
+
+# --------------------------------------------------------------------------------------------------
+# The XASSET-0024 SSK.1 open reading — evaluated, never resolved
+# --------------------------------------------------------------------------------------------------
+
+open_reading_handling:
+  open_question_source: XASSET-0024_SECTION_K_1
+  question: >-
+    Whether XASSET-0020 SSE.1's six DRIVER classes are subject-matter classes capable of housing a
+    magnitude statement, or preference-only classes that cannot.
+  resolved_by_this_program: false
+  relied_upon_by_this_program: false
+  handling: EVALUATE_G2_UNDER_BOTH_READINGS_AND_RECORD_BOTH
+  required_recorded_fields:
+  - g2_outcome_under_subject_matter_reading
+  - g2_outcome_under_preference_only_reading
+  - g2_outcome_is_reading_dependent
+  consequence_if_preference_only_reading_later_established: ALL_CELLS_ABSTAIN
+  note: >-
+    Recording both outcomes preserves XASSET-0024 SSK.1, XASSET-0025 SSO.1, and XASSET-0026 SSK.2,
+    each of which leaves the reading open. This program neither resolves the reading nor presumes
+    either branch, and a cell whose passage depends on the reading is recorded as reading-dependent
+    rather than as passing.
+
+# --------------------------------------------------------------------------------------------------
+# Result vocabulary
+# --------------------------------------------------------------------------------------------------
+
+result_vocabulary:
+  cell_outcomes:
+  - CONSTRUCTIBLE_CANDIDATE_IDENTIFIED
+  - BLOCKED_CATEGORICALLY
+  - BLOCKED_PENDING_SEPARATE_PREREQUISITE
+  - UNABLE_TO_DETERMINE
+  roll_up_outcomes:
+  - CANDIDATE_CONSTRUCTION_IDENTIFIED
+  - PREREQUISITE_REQUIRED
+  - NO_CONSTRUCTIBLE_CANDIDATE
+  - UNABLE_TO_DETERMINE
+  roll_up_precedence:
+  - condition: ANY_CELL_CONSTRUCTIBLE_CANDIDATE_IDENTIFIED
+    outcome: CANDIDATE_CONSTRUCTION_IDENTIFIED
+  - condition: ANY_CELL_BLOCKED_PENDING_SEPARATE_PREREQUISITE
+    outcome: PREREQUISITE_REQUIRED
+  - condition: ANY_CELL_UNABLE_TO_DETERMINE
+    outcome: UNABLE_TO_DETERMINE
+  - condition: ALL_CELLS_BLOCKED_CATEGORICALLY
+    outcome: NO_CONSTRUCTIBLE_CANDIDATE
+  roll_up_is_not_a_score: true
+  roll_up_mechanism: FIXED_PRECEDENCE_EXISTENCE_TEST
+  roll_up_mechanism_note: >-
+    Each precedence step is an existence quantifier over the roll-up unit's own six cells. No cell is
+    weighted, counted, averaged, ranked, or voted. No numeric threshold participates. The precedence
+    order is fixed here, before any cell is evaluated.
+  point_or_range_support:
+    recorded_per_cell: true
+    values:
+    - WOULD_SUPPORT_RANGE_ENDPOINT
+    - WOULD_SUPPORT_POINT_ENDPOINT
+    - WOULD_SUPPORT_NEITHER
+    range_first_posture: CARRIED_FORWARD_UNCHANGED
+    range_first_source: XASSET-0024_SECTION_H_3
+    range_first_note: >-
+      RANGE feasibility is established before POINT feasibility unless a candidate's evidence uniquely
+      supplies a point, in which case the point route remains available on its own terms. This is a
+      sequencing preference and bars nothing.
+
+# --------------------------------------------------------------------------------------------------
+# Prohibited inputs and origins — complete XASSET-0025 SSF firewall
+# --------------------------------------------------------------------------------------------------
+
+prohibited_inputs:
+  may_not_be_used_anchored_to_initialized_from_centered_on_sanity_checked_against_or_reverse_engineered_toward: true
+  barred_historical_values:
+  - HISTORICAL_PROVISIONAL_TARGET_FAMILY
+  - HISTORICAL_RESIDUAL
+  - HISTORICAL_ASSIGNED_SUM
+  - HISTORICAL_SIX_WAY_EQUAL_BASELINE
+  - HISTORICAL_FIXED_ADJUSTMENT_INCREMENT
+  - HISTORICAL_R2_R3_CONSTRUCTS
+  barred_value_note: >-
+    Barred historical values are referenced by name rather than reproduced. Reproducing a barred
+    numeral inside this preregistration would itself introduce the anchor the firewall exists to
+    exclude. XASSET-0025 SSF records their exact locations.
+  barred_constructions:
+  - EQUAL_DIVISION_INCLUDING_FRESHLY_COMPUTED
+  - SYMMETRY_CONVENTION
+  - MIDPOINT
+  - DEFAULT_OR_MINIMUM_RANGE_WIDTH
+  - RESIDUAL_OR_COMPLEMENT_PLUG
+  - RECONSTRUCTION_OF_ANY_BARRED_VALUE
+  barred_current_state:
+  - CURRENT_TARGETS
+  - CURRENT_HOLDINGS
+  - CURRENT_WEIGHTS
+  - CURRENT_TIERS
+  - CURRENT_GATES
+  - CLUSTER_CAPS
+  - ISSUER_AND_COMMON_DRIVER_CEILINGS
+  barred_risk_reuse:
+  - RISK_SCENARIO_MAGNITUDES
+  - ALL_TWENTY_LAPSED_CONSEQUENTIAL_PARAMETERS
+  - GOLD_PARITY_ADMISSION_THRESHOLDS
+  - STUDY_INTERNAL_MATERIALITY_AND_REPRESENTATION_THRESHOLDS
+  - ANY_RISK_DERIVATION_PATTERN_AS_TEMPLATE
+  barred_other:
+  - CHART_OR_TECHNICAL_VALUES
+  - MARGIN_LEVERAGE_OR_BUFFER_STATE
+  - PER_SHARE_VALUATION_AGGREGATED_WITHOUT_AN_ACCEPTED_RULE
+  - WITHIN_FUND_OR_MARKET_COMPOSITION_SHARES
+  - ANY_DECISION_PROSE_VALUE_INCLUDING_XASSET_0027_S_OWN
+  literal_scan_is_a_floor_not_the_boundary: true
+  literal_scan_note: >-
+    XASSET-0024 SSF Limb 2 and XASSET-0023 SSH.2 item 6 both provide that clearing a literal string
+    scan is a floor rather than the boundary. G4 tests origin, not spelling.
+
+risk_lane_boundary:
+  risk_0001_attempt_2: COMPLETE
+  retry: PROHIBITED
+  attempt_3: DOES_NOT_EXIST
+  family_re_question: PROHIBITED
+  parameter_reuse: REQUIRES_SEPARATE_GOVERNANCE_AUTHORITY
+  protected_result_path: /private/tmp/phq-risk0001-results
+  protected_result_path_access: PROHIBITED_NO_READ_WRITE_DELETE_CLEAN_RESET_OR_REPURPOSE
+  accepted_risk_evidence_citation: PERMITTED_ONLY_WITHIN_ITS_ACCEPTED_HISTORICAL_MEANING
+
+# --------------------------------------------------------------------------------------------------
+# Representation
+# --------------------------------------------------------------------------------------------------
+
+representation:
+  disposition: SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED
+  disposition_source: XASSET-0026_SECTION_H
+  self_contained_path_preserved: true
+  self_contained_path_source: XASSET-0024_SECTION_G_PATH_1
+  rule_created_by_this_program: false
+  cm_14_through_cm_17_membership_designated: false
+  non_self_contained_handling: NAME_THE_EXACT_DEPENDENCY_AND_BLOCK_PENDING_SEPARATE_PREREQUISITE
+  non_self_contained_handling_note: >-
+    A cell whose candidate would require cross-representation combination records the exact
+    representation dependency and is BLOCKED_PENDING_SEPARATE_PREREQUISITE at G9. The dependency is
+    never silently solved, and no majority, average, weighting, representative selection, or most
+    conservative selection is performed.
+
+# --------------------------------------------------------------------------------------------------
+# Consequential parameters
+# --------------------------------------------------------------------------------------------------
+
+consequential_parameter_registry:
+  record_keys:
+  - parameter_id
+  - value
+  - unit
+  - num_0001_class
+  - contextual_class
+  - selection_basis
+  - evidence_status
+  - supporting_evidence
+  - canonical_source
+  - duplicate_locations
+  - fallback_locations
+  - hardcoded_or_config_editable
+  - binding_status
+  - binding_scope
+  - valid_for_study_id
+  - lapse_condition
+  - reuse_rule
+  - calibrated
+  - evidence_bounded
+  parameters: []
+  zero_parameter_declaration:
+    stage_1_introduces_zero_consequential_numeric_parameters: true
+    statement: >-
+      Stage 1 introduces no consequential numeric parameter as NUM-0001 SS18 defines the term. It
+      applies no threshold, tolerance, cutoff, materiality level, window, weight, coefficient, or
+      score. Every gate is a qualitative admissibility test drawn from already-accepted authority, and
+      every count below is derived from the closed population rather than chosen.
+    design_consequence: >-
+      A study with no free numeric parameter cannot be tuned toward a preferred outcome, and there is
+      no parameter for a later sweep, sensitivity variant, or neighboring-value robustness check to
+      perturb. This is a deliberate design property, not an omission.
+    verification_requirement: >-
+      The dedicated validator asserts the registry's parameters list is empty. Introducing any
+      parameter requires a separately accepted governance amendment with new hash pins.
+  derived_identities:
+    record_keys:
+    - identity_id
+    - expression
+    - value
+    - contextual_class
+    identities:
+    - identity_id: SLEEVE_COUNT
+      expression: CLOSED_SLEEVE_POPULATION_LENGTH
+      value: 4
+      contextual_class: CALCULATED_OUTPUT
+    - identity_id: BOUND_COUNT
+      expression: CLOSED_BOUND_POPULATION_LENGTH
+      value: 2
+      contextual_class: CALCULATED_OUTPUT
+    - identity_id: DRIVER_CLASS_COUNT
+      expression: CLOSED_DRIVER_CLASS_POPULATION_LENGTH
+      value: 6
+      contextual_class: CALCULATED_OUTPUT
+    - identity_id: CELL_CEILING
+      expression: SLEEVE_COUNT_X_BOUND_COUNT_X_DRIVER_CLASS_COUNT
+      value: 48
+      contextual_class: CALCULATED_OUTPUT
+    - identity_id: ROLL_UP_UNIT_COUNT
+      expression: SLEEVE_COUNT_X_BOUND_COUNT
+      value: 8
+      contextual_class: CALCULATED_OUTPUT
+    - identity_id: GATE_COUNT
+      expression: CLOSED_GATE_SEQUENCE_LENGTH
+      value: 13
+      contextual_class: CALCULATED_OUTPUT
+
+# --------------------------------------------------------------------------------------------------
+# Data, sources, provenance
+# --------------------------------------------------------------------------------------------------
+
+data_and_sources:
+  stage_1_acquires_data: false
+  stage_1_network_access: NOT_REQUIRED_AND_NOT_AUTHORIZED
+  stage_1_data_manifest: NOT_APPLICABLE_NO_DATA_ACQUIRED
+  stage_1_admissible_inputs:
+  - ACCEPTED_GOVERNANCE_DECISIONS_IN_GOVERNANCE_DECISIONS_DIRECTORY
+  - XASSET_0021_FROZEN_SNAPSHOT_INVENTORY_AS_ALREADY_RECORDED
+  - NUM_0001_CLASS_DEFINITIONS
+  stage_1_inadmissible_inputs:
+  - ANY_NEWLY_ACQUIRED_MARKET_OR_FUNDAMENTAL_DATA
+  - ANY_PROHIBITED_INPUT_LISTED_ABOVE
+  - ANY_RISK_0001_EXECUTION_ARTIFACT
+  source_currentness:
+    universal_age_threshold: PROHIBITED
+    freshness_score_or_penalty: PROHIBITED
+    rule: APPLY_EACH_SOURCE_OWNED_CURRENTNESS_RULE_EXACTLY_AS_WRITTEN_AND_RECORD_OBSERVED_STATE
+    source_without_governed_currentness_rule: REMAINS_HISTORICAL_OR_DISCLOSURE_MAY_NOT_BECOME_A_CURRENT_POSITIVE_DRIVER
+    controlling_authority: XASSET-0020_SECTION_F_1_AND_XASSET_0021_SECTION_H
+
+provenance_manifest:
+  required_fields:
+  - study_id
+  - stage_id
+  - execution_attempt_id
+  - authorizing_decision
+  - authorizing_decision_merge_sha
+  - protocol_path
+  - protocol_sha256_observed
+  - preregistration_path
+  - preregistration_sha256_observed
+  - hash_verification_result
+  - repository_head_sha
+  - execution_date
+  - cells_evaluated
+  - cells_expected
+  - validator_result
+  hash_verification_failure_behavior: VOIDS_EXECUTION_AUTHORITY_HALT
+
+# --------------------------------------------------------------------------------------------------
+# Execution identity, stopping, defect governance
+# --------------------------------------------------------------------------------------------------
+
+execution:
+  attempt_identity:
+    record_keys:
+    - execution_attempt_id
+    - protocol_sha256_observed
+    - preregistration_sha256_observed
+    - repository_head_sha
+    unregistered_attempt: PROHIBITED
+  stopping_rules:
+    terminates_when: ALL_48_CELLS_CARRY_A_RECORDED_OUTCOME
+    early_stop_on_positive_finding: PROHIBITED
+    early_stop_rationale: >-
+      Coverage is all four sleeves. Stopping at the first constructible candidate would convert a
+      coverage program into a search that terminates on the first success, which would advantage
+      whichever cell happened to be evaluated first.
+    partial_result_publication: PROHIBITED
+  rerun_rule:
+    after_outcomes_observed: PROHIBITED
+    required_authority: SEPARATELY_ACCEPTED_AMENDMENT_OR_NEW_AUTHORIZED_STUDY
+    allowed_basis:
+    - MATERIAL_NEW_EVIDENCE_REGIME
+    - SEPARATELY_GOVERNED_INTEGRITY_CORRECTION
+    discovered_defect_automatic_rerun: PROHIBITED
+    defect_handling: RECORD_THE_DEFECT_HALT_AND_RETURN_FOR_SEPARATE_GOVERNANCE
+  history_mining_controls:
+    gates_frozen_before_evaluation: true
+    cells_frozen_before_evaluation: true
+    vocabulary_frozen_before_evaluation: true
+    outcome_aware_gate_change: PROHIBITED
+    outcome_aware_cell_addition_or_removal: PROHIBITED
+  out_of_sample_discipline:
+    applicable_to_stage_1: false
+    reason: >-
+      Stage 1 acquires no data, estimates nothing, and fits nothing. There is no sample, no held-out
+      period, and no fitted quantity, so an out-of-sample or walk-forward split would be a ritual with
+      no object. Recording this honestly is preferred to performing a vacuous split.
+    required_of_any_future_stage_2: true
+  neighboring_parameter_robustness:
+    applicable_to_stage_1: false
+    reason: >-
+      Stage 1 has no numeric parameter to perturb, per the zero-parameter declaration above.
+    required_of_any_future_stage_2_if_it_introduces_parameters: true
+  negative_result_preservation:
+    all_cell_outcomes_recorded_regardless_of_direction: true
+    null_is_a_complete_outcome: true
+    suppression_of_any_cell_outcome: PROHIBITED
+
+# --------------------------------------------------------------------------------------------------
+# Result schema
+# --------------------------------------------------------------------------------------------------
+
+result_schema:
+  results_path: research/level1_endpoint_evidence/stage1_results.yaml
+  results_path_created_by_this_filing: false
+  top_level_keys:
+  - schema_version
+  - study_id
+  - stage_id
+  - provenance_manifest
+  - cell_results
+  - roll_up_results
+  - abstention_records
+  - limitations
+  - disposition
+  cell_result_keys:
+  - cell_id
+  - sleeve
+  - bound
+  - driver_class
+  - outcome
+  - first_failing_gate_id
+  - candidate_construction_description
+  - candidate_route
+  - candidate_num_0001_class
+  - point_or_range_support
+  - g2_outcome_under_subject_matter_reading
+  - g2_outcome_under_preference_only_reading
+  - g2_outcome_is_reading_dependent
+  - representation_dependency
+  - uncertainty_statement
+  roll_up_result_keys:
+  - sleeve
+  - bound
+  - outcome
+  - contributing_cell_ids
+  forbidden_result_content:
+  - ANY_NUMERIC_SLEEVE_SHARE
+  - ANY_LOWER_OR_UPPER_BOUND_VALUE
+  - ANY_PERCENTAGE_OF_THE_NORMALIZED_UNIT
+  - ANY_TARGET_WEIGHT_OR_ALLOCATION
+  - ANY_COMPOSITE_SCORE_RANK_OR_INDEX
+  - ANY_SLEEVE_PREFERENCE_RANKING_OR_SEQUENCING
+  - ANY_PORTFOLIO_RECONCILIATION_OR_SUM_TO_WHOLE
+
+result_status_of_stage_1_output:
+  is_a_driver_source: false
+  is_admissible_endpoint_supporting_evidence: false
+  may_be_cited_as_endpoint_supporting_evidence: false
+  may_enter_a_snapshot_as_a_driver: false
+  statement: >-
+    The Stage 1 result record is a feasibility finding about constructibility. It states no endpoint,
+    contains no share, and is classified non-DRIVER and non-admissible. It may never be cited,
+    admitted, or relied upon as endpoint-supporting evidence, and a later filing that attempted to do
+    so would be manufacturing the source this program was chartered to determine the feasibility of.
+
+# --------------------------------------------------------------------------------------------------
+# Abstention
+# --------------------------------------------------------------------------------------------------
+
+mandatory_abstention_conditions:
+- condition: REPRESENTATION_PATH_1_FAILS_AND_NO_ACCEPTED_RULE_EXISTS
+  authority: XASSET-0024_SECTION_G_PATH_3
+- condition: ANY_REQUIRED_INPUT_IS_BARRED_BY_ORIGIN
+  authority: XASSET-0024_SECTION_F_LIMB_2
+- condition: ANY_STEP_COULD_HAVE_BEEN_CHOSEN_DIFFERENTLY
+  authority: XASSET-0023_SECTION_H_3_ITEM_7
+- condition: A_SECOND_LAWFUL_VALUE_EXISTS_FOR_THE_SAME_QUANTITY
+  authority: XASSET-0024_J_8
+- condition: AN_UNRESOLVED_PAIR_WOULD_BE_CONSUMED_AS_AN_INPUT
+  authority: XASSET-0024_SECTION_H_4
+- condition: THE_PREFERENCE_ONLY_READING_OF_SECTION_E_1_IS_ESTABLISHED
+  authority: XASSET-0024_SECTION_K_1
+- condition: A_CANDIDATE_WOULD_REQUIRE_INVENTING_A_LEVEL_1_AGGREGATION_OR_REPRESENTATION_RULE
+  authority: XASSET-0023_SECTION_H_5
+abstention_is_a_complete_outcome: true
+
+# --------------------------------------------------------------------------------------------------
+# Prohibited scope
+# --------------------------------------------------------------------------------------------------
+
+prohibited_scope:
+- ENDPOINT_CREATION
+- LOWER_OR_UPPER_BOUND_VALUE
+- POINT_RANGE_PERCENTAGE_OR_WEIGHT
+- SLEEVE_SELECTION_PREFERENCE_RANKING_OR_SEQUENCING
+- PORTFOLIO_RECONCILIATION_OR_SUM_TARGETING
+- OPTIMIZER_WEIGHT_GRID_OR_SWEEP
+- COMPOSITE_SCORE_OR_INDEX
+- RESIDUAL_REDISTRIBUTION
+- FINAL_LEVEL1_TARGETS
+- LEVEL2_MEMBERSHIP_OR_WEIGHTS
+- SNAPSHOT_EXTENSION_OR_REPLACEMENT
+- EVIDENCE_ADMISSION
+- APPLICATION_AUTHORITY_OR_REGISTRY_POPULATION
+- APPLICATION_ARTIFACT_OR_DIRECTORY_CREATION
+- REPRESENTATION_RULE_ADOPTION
+- METHODOLOGY_AMENDMENT
+- LIQUIDITY_DETERMINATION
+- DEBT_MARGIN_OR_LEVERAGE_ANALYSIS
+- CHART_OR_TECHNICAL_SIGNALS
+- LADDER_OR_DEPLOYMENT
+- TRADES_OR_ORDERS
+- ALLOCATOR_MUTATION
+- TARGETS_YAML_MUTATION
+- HOLDINGS_MUTATION
+- GATES_YAML_MUTATION
+- AUTOMATIC_ADOPTION_OF_ANY_RESULT
+- UNREGISTERED_CELLS
+- AUTOMATIC_RERUNS
+- RISK_PARAMETER_REUSE
+- STAGE_2_EXECUTION
+
+protected_paths:
+- targets.yaml
+- holdings.yaml
+- gates.yaml
+- issuer_lookthrough.yaml
+- allocate.py
+- margin_state.py
+- levels.py
+- research/level1_sleeve_robustness/
+- intelligence/level1_sleeve_synthesis/
+- /private/tmp/phq-risk0001-results
+
+hash_version: ENDPOINT-0001-PREREG-V1

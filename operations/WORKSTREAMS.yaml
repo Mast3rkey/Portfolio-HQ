@@ -12232,6 +12232,91 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-15"
+      - gate: xasset0026-post-merge-verification
+        description: >
+          Additive post-merge factual record for XASSET-0026, independently
+          re-verified live this session rather than carried from any brief. The
+          prior xasset0026 gate's own text is byte-unchanged. PR #325 merged:
+          accepted head ecf94a383e0c75e962896346d45a1493df80cca2, base
+          99873d39c3e967d7a772ae65526349fb01a0a7e3, merge commit
+          e7e9e53dbcdcaaa0ff71f128694028650500c323 with those exact two parents
+          confirmed by direct git inspection. Final independent DELTA review
+          4945043816: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING /
+          0 MAJOR / 0 MINOR / 1 NOTE, that NOTE being the PR-body commit count
+          corrected as a metadata-only edit that did not change the reviewed
+          head. Principal exact-head acceptance issuecomment-5305071694.
+          Merge-commit CI run 31918888220 / job 95095344047, completed /
+          success, head_sha independently reconfirmed as the merge SHA. Zero
+          open pull requests at closure. XASSET-0026 is therefore effective, and
+          its determinations stand as accepted: program shape
+          ALL_FOUR_SLEEVE_SELECTION_FREE_PROGRAM; no accepted basis selects a
+          sleeve or proper subset today, expressly present-tense and not a
+          permanent bar; ordering between evidence production and authority
+          constitution REMAINS_UNRESOLVED; packaging
+          PACKAGING_REMAINS_AT_SUCCESSOR_ELECTION; representation
+          SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED; application authority
+          WITHHELD. Its decision-file and catalog status remain Proposed, the
+          known pre-existing two-step acceptance-recording pattern, not
+          corrected here.
+        pr: 325
+        status: complete
+        date: "2026-08-16"
+      - gate: xasset0027-level1-endpoint-authority-and-all-four-sleeve-evidence-program-charter
+        description: >
+          Current Lane G filing, and the successor XASSET-0026 SSJ named. One
+          combined unit that constitutes competent Level-1 endpoint authority
+          and charters the first purpose-built all-four-sleeve
+          endpoint-evidence program, on an explicit principal election of the
+          combined packaging permitted by XASSET-0026 SSG.3. The election is
+          specific to this filing and establishes no universal ordering or
+          packaging rule; SSG.1's REMAINS_UNRESOLVED and SSG.3's
+          PACKAGING_REMAINS_AT_SUCCESSOR_ELECTION are preserved, not narrowed.
+          Part A constitutes LEVEL1_ENDPOINT_AUTHORITY — competence to fix, for
+          exactly one named sleeve and exactly one named bound, one value of
+          the XASSET-0024 SSC quantity — as governance-time authority
+          exercisable only through an accepted Lane G decision that expressly
+          invokes it, satisfies XASSET-0024 SSJ.1 through SSJ.12 in full,
+          carries NUM-0001 SS7's complete triple for a class-4 value or SS6's
+          provisional label and review condition for a class-5 value, and
+          survives independent exact-head review, principal acceptance, and
+          merge. It closes the universal T5 failure XASSET-0025 SSG identified
+          — the one criterion no evidence-production effort could satisfy. It
+          is constituted and expressly NOT exercised: no bound, value, or
+          candidate source appears anywhere. Part B charters ENDPOINT-0001, a
+          study identifier only and not a decision prefix, against XASSET-0025
+          SSK's verbatim question, with canonical protocol and pre-registration
+          hash-pinned in the decision. Stage 1 is a deterministic, per-cell
+          construction-feasibility evaluation over a closed 4 sleeves x 2
+          bounds x 6 DRIVER classes = 48-cell set, zero reserve, thirteen
+          ordered gates evaluated first-failure-wins, distinguishing
+          categorical bars from named closeable prerequisites. It acquires no
+          data, estimates nothing, and introduces zero consequential numeric
+          parameters, which the dedicated validator asserts mechanically — a
+          study with no free parameter cannot be tuned. Out-of-sample and
+          neighbouring-parameter discipline is recorded NOT_APPLICABLE to Stage
+          1 with its reason, and required of any future Stage 2. Stage 2, being
+          any empirical or data-acquiring work, is NOT authorized and becomes
+          eligible to be proposed only on a constructible-candidate finding,
+          still requiring its own separate decision. XASSET-0024 SSK.1's open
+          reading is neither resolved nor relied upon: G2 is evaluated under
+          both readings and reading-dependent cells are recorded as such. The
+          Stage 1 output is classified non-DRIVER and non-admissible and may
+          never be cited as endpoint-supporting evidence. Creates no endpoint,
+          bound, point, range, percentage, weight, or allocation; selects,
+          prefers, ranks, sequences, or budgets no sleeve; grants no
+          evidence-admission or application authority; populates no registry;
+          creates no application artifact; extends no snapshot; supplies no
+          representation rule and designates no CM-14 through CM-17 membership;
+          builds no XASSET-0024 SSJ.1-SSJ.12 endpoint-admission validator,
+          which is named as a separately authorized successor; reuses no RISK
+          parameter and accesses no RISK execution artifact. Closure matrix
+          unchanged at 14 / 14 / 2; APPLICATION_AUTHORIZATION_REGISTRY empty;
+          application authority WITHHELD. Blocked on its own independent full
+          exact-head review, principal exact-head acceptance, merge, immediate
+          post-merge verification, and successful exact-head CI.
+        pr: null
+        status: in_progress
+        date: "2026-08-16"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -12281,6 +12366,37 @@ workstreams:
       - research/level1_sleeve_robustness/PROTOCOL_V1.md
       - research/level1_sleeve_robustness/pre_registration.yaml
     next_action: >
+      Update, 2026-08-16 (post-XASSET-0026 merge): XASSET-0026 is effective.
+      Accepted head ecf94a383e0c75e962896346d45a1493df80cca2 merged via PR #325
+      as e7e9e53dbcdcaaa0ff71f128694028650500c323, independently re-confirmed
+      live this session together with final DELTA review 4945043816 (APPROVED
+      FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR / 1
+      NOTE), principal acceptance issuecomment-5305071694, and merge-commit CI
+      run 31918888220 / job 95095344047 (completed / success at the exact merge
+      SHA). Its determinations stand: ALL_FOUR_SLEEVE_SELECTION_FREE_PROGRAM; no
+      accepted basis selects a sleeve or proper subset today, present-tense and
+      not a permanent bar; ordering REMAINS_UNRESOLVED; packaging
+      PACKAGING_REMAINS_AT_SUCCESSOR_ELECTION; representation
+      SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED; application authority WITHHELD.
+      The immediate next action is XASSET-0027's own lifecycle — independent
+      full exact-head review, principal exact-head acceptance, merge, immediate
+      post-merge verification, and successful exact-head CI. XASSET-0027 is the
+      successor XASSET-0026 SSJ named, filed on an explicit principal election
+      of the combined packaging SSG.3 permits: it constitutes
+      LEVEL1_ENDPOINT_AUTHORITY without exercising it, and charters the
+      all-four-sleeve ENDPOINT-0001 programme without executing it. Nothing
+      downstream may begin before it merges. After merge, the next authorized
+      action is the single Stage 1 implementation/results PR, which must verify
+      both pinned canonical hashes from the merged charter commit before
+      beginning; a mismatch voids execution authority. Stage 2, any empirical or
+      data-acquiring work, is NOT authorized and requires its own separate
+      decision even if Stage 1 identifies a constructible candidate. Also still
+      unauthorized and separately required, in dependency order: an XASSET-0024
+      SSJ.1-SSJ.12 endpoint-admission validator, a lawful XASSET-0021 snapshot
+      successor, a Level-1 representation aggregation or selection rule if and
+      only if a candidate source is not self-contained, an endpoint-capable
+      XASSET-0022 schema and generator successor, and an application
+      authorization. Application authority remains WITHHELD.
       Update, 2026-08-15 (later, post-XASSET-0024 merge): XASSET-0024 is
       effective. Accepted head 964474c79911088932243ea8225968dce334e715 merged
       via PR #323 as 4ec64c13552c101e6e132c295617789926b5066a, independently
@@ -12759,6 +12875,30 @@ workstreams:
       entry's own roadmap_preservation field names remain wholly
       unauthorized, unchanged.
     blocker: >
+      Current critical path, 2026-08-16 (post-XASSET-0026 merge): XASSET-0027
+      is the sole active lane and the sole mutation lane. It is a combined Lane
+      G governance unit — constituting competent Level-1 endpoint authority and
+      chartering the all-four-sleeve ENDPOINT-0001 programme — and must complete
+      independent full exact-head review, principal exact-head acceptance,
+      merge, immediate post-merge verification, and successful exact-head CI
+      before either half takes effect. Per XASSET-0026 SSG.3, its evidence half
+      and its authority half must each survive that same independent review, and
+      neither may be treated as certified by the other's presence in the same
+      file. Filing and CI do not make it effective. Until it merges: no
+      LEVEL1_ENDPOINT_AUTHORITY exists or may be invoked; ENDPOINT-0001 Stage 1
+      may not be executed and no cell may be evaluated; and no endpoint, bound,
+      point, range, percentage, weight, or sleeve selection exists anywhere.
+      After it merges, exactly one Stage 1 implementation/results PR is
+      authorized, gated on verifying both pinned canonical hashes from the
+      merged charter commit. Stage 2 remains unauthorized regardless of the
+      Stage 1 outcome. The XASSET-0021 closure matrix stands unchanged at 14
+      CLOSED_DETERMINISTICALLY / 14 APPLICATION_MUST_ABSTAIN / 2
+      SEPARATE_PREREQUISITE_REQUIRED, APPLICATION_AUTHORIZATION_REGISTRY remains
+      empty, no intelligence/level1_application/ artifact exists, and
+      application authority remains WITHHELD, including for an abstention-only
+      application. RISK-0001 Attempt 2 remains complete with no retry, no
+      Attempt 3, no family re-question, no parameter reuse absent separate
+      authority, and /private/tmp/phq-risk0001-results never accessed.
       Current critical path, 2026-08-15 (later, post-XASSET-0024 merge):
       XASSET-0025 is the sole active lane and the sole mutation lane. It is a
       governance/evidence-identification unit over already accepted authority
@@ -13149,10 +13289,10 @@ workstreams:
       representation-aggregation rule, any snapshot successor, RISK parameter
       reuse, Level-2 work, liquidity determination, and policy adoption all
       remain separately unauthorized.
-    active_branch: claude/xasset-0026-endpoint-program-shape-6lm8ho
+    active_branch: claude/xasset-0027-endpoint-authority-charter-xqave2
     active_pr: null
-    last_verified_main_sha: 99873d39c3e967d7a772ae65526349fb01a0a7e3
-    last_verified_date: "2026-08-15"
+    last_verified_main_sha: e7e9e53dbcdcaaa0ff71f128694028650500c323
+    last_verified_date: "2026-08-16"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively

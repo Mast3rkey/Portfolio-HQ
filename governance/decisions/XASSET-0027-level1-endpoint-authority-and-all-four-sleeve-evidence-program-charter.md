@@ -1,0 +1,582 @@
+---
+decision_id: XASSET-0027
+date: 2026-08-16
+status: Proposed
+category: cross_asset_allocation_architecture
+related_decisions: [GOV-0001, GOV-0002, OPS-0009, OPS-0014, NUM-0001, XASSET-0019, XASSET-0020, XASSET-0021, XASSET-0022, XASSET-0023, XASSET-0024, XASSET-0025, XASSET-0026, LEVEL2-0001, RISK-0001]
+supporting_artifact: research/level1_endpoint_evidence/PROTOCOL_V1.md
+---
+
+## Context
+
+### Live preflight
+
+Verified directly this session before any mutation, not carried from the authorizing brief:
+GitHub `main`, `origin/main`, and this branch's base are identical at
+`e7e9e53dbcdcaaa0ff71f128694028650500c323`; the working tree is clean; the open-pull-request
+inventory is empty; PR #325 is merged with parents `99873d39c3e967d7a772ae65526349fb01a0a7e3` and
+accepted head `ecf94a383e0c75e962896346d45a1493df80cca2`, its merge-commit CI run `31918888220` /
+job `95095344047` `completed` / `success` at that exact merge SHA; the decision catalog holds 128
+rows; and `XASSET-0027` was unused anywhere in the repository.
+
+### What was missing
+
+`XASSET-0025` Outcome C found no qualifying Level-1 endpoint source in the accepted corpus, and its
+§G isolated a failure of a different kind from all the others:
+
+> **No accepted decision anywhere grants Level-1 endpoint authority to any body, source, or record.**
+> … Even a source that stated the §C quantity perfectly would fail, because no authority competent to
+> fix a Level-1 sleeve share is in force. This is worth stating separately because it is the one
+> criterion **no evidence-production effort can satisfy**.
+
+`XASSET-0026` then fixed the lawful shape of the first purpose-built program — all four sleeves, no
+sleeve selected — left ordering and packaging at the successor's election, and named the successor
+exactly (§J):
+
+> One explicitly authorized Lane G governance unit whose scope is to constitute competent Level-1
+> endpoint authority, to charter the all-four-sleeve endpoint-evidence program against `XASSET-0025`
+> §K's question, **or to do both** — its packaging and internal ordering at its own lawful election
+> under §G.3, subject to §G.2's four binding constraints and §I's twelve architectural constraints.
+
+This filing is that unit, and the principal has elected the combined packaging.
+
+### The election, and its limits
+
+The combined packaging is an **explicit principal election under `XASSET-0026` §G.3**. It is specific
+to this filing. It establishes **no universal rule** that authority and evidence must be packaged
+together, or in this order, in any future unit. `XASSET-0026` §G.1's `REMAINS_UNRESOLVED` ordering
+disposition and §G.3's `PACKAGING_REMAINS_AT_SUCCESSOR_ELECTION` are preserved exactly, not narrowed
+by this election.
+
+`XASSET-0026` §G.3 attaches one condition to a combined lifecycle, and it is honoured here: a
+combined record "does not escape that discipline by being one document; its evidence half and its
+authority half must each survive the same independent review, and neither may be treated as certified
+by the other's presence in the same file."
+
+## Decision
+
+### A. Lifecycle, authority, and controlling identity
+
+`OPS-0009` Lane G throughout. This filing must remain a draft PR, receive independent full exact-head
+review with retained attribution, complete any required bounded correction and exact-head re-review,
+and receive explicit principal exact-head acceptance before merge. Filing and CI do not make it
+effective.
+
+Controlling authority, read in full this session: `XASSET-0020` (methodology), `XASSET-0021`
+(snapshot, closure matrix, application gate), `XASSET-0022` (application schema and mechanical
+enforcement), `XASSET-0023` (origination routes), `XASSET-0024` (endpoint quantity, route table,
+firewall, §J admissibility checklist), `XASSET-0025` (source and authority identification, §F
+firewall results, §K research question), `XASSET-0026` (program shape, ordering, packaging,
+representation, §I twelve constraints), and `NUM-0001` (classes, §6, §7, §8, §11).
+
+### B. Scope
+
+Two things, in one lifecycle, each independently reviewable:
+
+- **Part A** constitutes `LEVEL1_ENDPOINT_AUTHORITY` and does not exercise it.
+- **Part B** charters the all-four-sleeve endpoint-evidence program `ENDPOINT-0001` and does not
+  execute it.
+
+**No sleeve is selected, preferred, ranked, sequenced, or budgeted.** No endpoint, bound, point,
+range, percentage, or weight appears anywhere in this filing or in either canonical artifact.
+
+### C. The endpoint quantity, adopted unchanged
+
+`XASSET-0024` §C is adopted verbatim in substance and restated only to fix Part A's competence:
+**the share of one exact normalized unit of prospective, unlevered, asset-side capital attributable to
+one named investable sleeve.** The denominator excludes debt, debt reduction, margin buying power,
+leverage, and buffer state, and never uses current holdings, weights, or targets as priors. Nothing
+here amends it.
+
+---
+
+## PART A — Competent Level-1 endpoint authority
+
+### D. Determination A — `LEVEL1_ENDPOINT_AUTHORITY` is constituted
+
+**D.1 — The competence, stated exactly.** `LEVEL1_ENDPOINT_AUTHORITY` is authority to fix, for
+**exactly one named Level-1 investable sleeve** and **exactly one named bound** (`LOWER` or `UPPER`),
+**one value of the §C quantity**.
+
+It is competence over that quantity and nothing else. It is not authority over Level-2 membership or
+weights, over representation rules, over liquidity, over margin or leverage, over the allocator, or
+over any portfolio policy.
+
+**D.2 — It is governance-time authority, never application-author discretion.** This is the load-
+bearing property, and it is `XASSET-0024` §E.2's requirement stated as a grant rather than as a bar:
+the choice is relocated out of the application and into a separately filed, separately reviewed,
+separately accepted governance act. **The application transcribes; it never selects.**
+
+**D.3 — Who may exercise it.** Not a person, a session, or a model. The authority is held by, and
+exercisable only through, **an accepted Portfolio-HQ governance decision** that satisfies every one of
+the following cumulatively:
+
+1. it is filed as an `OPS-0009` Lane G governance unit;
+2. it **expressly invokes `LEVEL1_ENDPOINT_AUTHORITY` by name** and cites this section — an implicit,
+   inferred, or assumed invocation is not an invocation;
+3. each exercise names **exactly one sleeve and exactly one bound**; a decision containing more than
+   one exercise is lawful only if each exercise independently and completely satisfies every condition
+   here, with no exercise relying on another's evidence, authority, or representation coverage;
+4. it satisfies `XASSET-0024` §J.1 through §J.12 in full **for that bound**;
+5. for a `NUM-0001` class 4 value, it satisfies `XASSET-0024` §E.3's eight-item anti-discretion test
+   and records `NUM-0001` §7's complete triple — the range the evidence established, the specific
+   value chosen, and the **stated economic, not statistical, reason for that specific value** — and
+   the evidence establishing that range **already exists and is identified at the time of recording**
+   (`XASSET-0026` §G.2 constraint 1);
+6. for a `NUM-0001` class 5 value, it carries `NUM-0001` §6's explicit "provisional, not empirically
+   calibrated" label and a stated review condition, which may be calendar-based, event-driven, or
+   evidence-driven;
+7. it survives **independent exact-head review with retained attribution, explicit principal
+   exact-head acceptance, and merge**.
+
+**D.4 — Class 5 is not a shortcut around evidence.** `XASSET-0026` §G.2 constraint 1 expressly does
+not extend `NUM-0001` §7's evidence-established-range requirement to class 5, and this filing does not
+extend it either. But class 5 does not escape `XASSET-0024` §J: a class-5 bound must still be stated
+by a source that is **DRIVER-classified on its own subject matter** (§J.3) and that clears all four
+§F limbs (§J.4). `XASSET-0024` §D is explicit that "a source whose only claim to DRIVER status is that
+it contains a share figure does not satisfy §E.1." **A provisional guardrail may therefore never be a
+naked number**; the class governs how the value was selected, not whether subject-matter evidence is
+required.
+
+**D.5 — Effectiveness.** The authority becomes effective on this decision's own merge, and not before.
+Filing, CI, and independent review do not make it effective.
+
+### E. What the authority cannot do
+
+Stated as an enumerated bar so that no future exercise can claim a power by silence.
+`LEVEL1_ENDPOINT_AUTHORITY` **cannot**:
+
+1. be exercised by an application author or a reviewer, at any time, on any basis
+   (`XASSET-0021` §F's unconditional bar, which `XASSET-0024` §E.2 calls "the whole basis" for the
+   class-4 route);
+2. be exercised by this filing;
+3. be delegated to, or discharged by, a validator, generator, script, agent, automated process, or any
+   non-governance artifact;
+4. cure a source that stated or prescribed an endpoint under an incompetent scope — later admission
+   cures nothing (`XASSET-0026` §G.2 constraint 2);
+5. admit evidence — evidence admission under `XASSET-0020` §F.1 is a separate act this filing neither
+   grants nor performs;
+6. extend, replace, or amend the `XASSET-0021` snapshot;
+7. grant application authority, populate `APPLICATION_AUTHORIZATION_REGISTRY`, or create any
+   `intelligence/level1_application/` artifact;
+8. rehabilitate any barred-origin value, in any form, however arrived at
+   (`XASSET-0024` §F Limb 2; `XASSET-0025` §F);
+9. supply, imply, or substitute for a Level-1 representation aggregation or selection rule, or
+   designate CM-14 through CM-17 membership;
+10. reclassify any `XASSET-0021` §N closure-matrix row;
+11. amend `XASSET-0020` §E.1's DRIVER classes, §L's endpoint row, or any other methodology clause —
+    including by resolving `XASSET-0024` §K.1's open reading;
+12. select, prefer, rank, sequence, or budget a sleeve, whether for research or for capital;
+13. grant reuse authority over any lapsed RISK parameter, or authority to re-question any RISK family;
+14. accept any research output automatically — no result of `ENDPOINT-0001` or of any future study
+    becomes an endpoint, or acquires authority, by being produced.
+
+### F. How a later endpoint-stating source becomes competent
+
+`XASSET-0026` §G.2 constraint 2 fixes the timing, and it is the whole answer:
+
+> Competent Level-1 endpoint authority must extend to the source that states or prescribes the
+> endpoint, **at that source's own creation or adoption**. Underlying research or analysis may precede
+> that authority; the endpoint-stating step may not.
+
+So the sequence is: underlying work may be performed at any time and under any lawful scope; the act
+of **stating or prescribing** a bound must be performed by, or under, a governance decision meeting
+§D.3 in full; and no later admission, snapshot extension, or application step repairs a bound stated
+outside that scope.
+
+This closes the universal `T5` failure `XASSET-0025` §G identified. It closes nothing else: `T1`,
+`T2`, `T3`, `T4`, and `T6` through `T10` are untouched, and constituting authority creates no evidence
+whatsoever.
+
+### G. Non-exercise, stated unambiguously
+
+**This filing does not exercise `LEVEL1_ENDPOINT_AUTHORITY`.** It states no bound for any sleeve,
+records no value selection, identifies no candidate source, and performs no `NUM-0001` §7 triple. No
+value of the §C quantity appears anywhere in this decision or in either canonical artifact, and per
+`XASSET-0024` §D non-route N8 — which expressly reaches "this decision's own prose" — none could
+lawfully be created here even if one appeared.
+
+---
+
+## PART B — The all-four-sleeve endpoint-evidence program
+
+### H. The charter, canonical files, and hash pins
+
+`ENDPOINT-0001` is chartered. **The study identifier is a study identifier only**: no `ENDPOINT-####`
+governance decision series is created, implied, or reserved, and the authorizing decision is this one.
+
+The canonical files were finalized before the following hashes were computed. SHA-256 is over raw
+file bytes exactly as committed:
+
+<!-- XASSET-0027-HASH-PINS-V1
+protocol_path: research/level1_endpoint_evidence/PROTOCOL_V1.md
+protocol_sha256: f44b967a2889b81d66ecc59b337e28747514369dc1e70d8bc5b8144d0a1b673b
+preregistration_path: research/level1_endpoint_evidence/pre_registration.yaml
+preregistration_sha256: ef67196332bc5aa5d2aa55e2fa96cd74cf89bf95f2b83ffb1e47ea4fe229aacc
+-->
+
+- `research/level1_endpoint_evidence/PROTOCOL_V1.md`:
+  `f44b967a2889b81d66ecc59b337e28747514369dc1e70d8bc5b8144d0a1b673b`
+- `research/level1_endpoint_evidence/pre_registration.yaml`:
+  `ef67196332bc5aa5d2aa55e2fa96cd74cf89bf95f2b83ffb1e47ea4fe229aacc`
+
+**The structured pre-registration is canonical** for every closed identity, cell, gate, ordering,
+vocabulary, and count. The protocol explains the design but cannot enlarge or override it. Any later
+execution must verify both exact hashes from the merged charter commit before beginning. **A mismatch
+voids execution authority.** Any content change requires a separately accepted amendment with new pins.
+
+### I. Program architecture, and conformance with `XASSET-0026` §I
+
+The governing research question is `XASSET-0025` §K's, reproduced verbatim in the pre-registration and
+instantiated identically for every cell. The unit of work is one **cell** — one sleeve × one bound ×
+one DRIVER class — giving a derived ceiling of `4 × 2 × 6 = 48`, zero reserve, with route and
+`NUM-0001` class recorded as fields rather than made dimensions so that neither is pre-selected.
+
+Each cell is evaluated against thirteen ordered gates, first-failure-wins, each restating an
+already-accepted requirement. Failures are recorded as either **categorical** (a property of what the
+evidence measures or where it came from, which no future authorization can lift) or **prerequisite** (a
+named, closeable gap) — the same distinction `XASSET-0025` §I drew, and it matters for the same reason:
+it stops a categorical bar being quietly filed as a to-do.
+
+Conformance against `XASSET-0026` §I's twelve architectural constraints, each checked rather than
+asserted:
+
+| §I | Constraint | Where satisfied |
+|---|---|---|
+| 1 | All four sleeves, no proper subset | Closed `sleeves` population; 48 cells span all four |
+| 2 | Per-sleeve, per-bound outcome; null complete; no inference across sleeves | `roll_up_units`; `cross_sleeve_reference: PROHIBITED`; null is a complete outcome |
+| 3 | LOWER and UPPER independently governed | `cross_bound_reference: PROHIBITED`; each roll-up computed only from its own six cells |
+| 4 | Single-sleeve bounds only | Cell definition binds every candidate to one named sleeve |
+| 5 | Route and class open; classes 1–5; class 6 disqualifying | Route and class are recorded fields, not dimensions; all six DRIVER classes enumerated per cell |
+| 6 | No sum, residual, symmetry, or equal division | `G4_ORIGIN`; `barred_constructions`; `prohibited_scope` |
+| 7 | Pair independence by construction, not by inspection | `G10_PAIR_INDEPENDENCE` |
+| 8 | Self-contained representation path preserved; no rule assumed | `G9_REPRESENTATION`; `representation.rule_created_by_this_program: false` |
+| 9 | Snapshot successor required before admission | `G13`; `prohibited_scope: SNAPSHOT_EXTENSION_OR_REPLACEMENT` |
+| 10 | RANGE-first carried forward unchanged | `point_or_range_support.range_first_posture` |
+| 11 | No barred origin; literal scan is a floor | `G4`; `literal_scan_is_a_floor_not_the_boundary: true` |
+| 12 | No RISK reuse; no re-questioning | `risk_lane_boundary`; `barred_risk_reuse` |
+
+**All four sleeves are covered; not all four need succeed.** A lawful result may identify a candidate
+for one sleeve and none for the other three. The evidence determines which cells succeed. Nothing in
+the design prioritizes, ranks, sequences, or budgets a sleeve, and the 48 cells are a single closed set
+evaluated in full precisely so that no ordering can imply preference.
+
+### J. The magnitude problem, confronted rather than deferred
+
+**Directional evidence is not automatically magnitude evidence**, and a charter that ignored that would
+produce qualitative research with a percentage appended — the exact failure `XASSET-0024` §F and
+`XASSET-0025` §F exist to prevent. The problem is specific here and the design is built around it.
+
+**J.1 — Where the difficulty actually is.** Every one of `XASSET-0020` §E.1's six DRIVER classes is
+defined on a sleeve or on a comparison; the endpoint is a share **of the whole**. Converting sleeve
+economics into a share of the whole requires a mapping, and every mapping anyone would reach for is
+already barred by name: an optimizer or grid search, a composite score, a symmetry or equal-division
+convention, a midpoint, a default range width, or a residual plug (`XASSET-0024` §D non-routes N4 and
+N5; `XASSET-0020` §L, §M).
+
+**J.2 — The design tests that bridge instead of assuming it.** `G3_NORMALIZATION` asks, per cell,
+whether the candidate would state the §C quantity or only a quantity in some other denominator, and
+`G2_MAGNITUDE_INTRINSICALITY` asks whether the quantitative statement would be intrinsic to the
+evidence rather than appended to it. A class that can support direction but not magnitude fails at one
+of those two and is **recorded honestly rather than forced into an endpoint-producing role**.
+
+**J.3 — One textual observation, recorded as a fact and not as a prediction.** Of the six classes,
+`portfolio_function` is the only one whose §E.1 scope language refers to the prospective **portfolio**
+— "the sleeve's directly evidenced job in the prospective portfolio." Whether that suffices to carry a
+share-of-the-whole statement is what `G3` tests. The observation concerns a DRIVER class, not a sleeve;
+it ranks nothing, prefers no sleeve, and forecasts no outcome.
+
+**J.4 — Why no mechanism was appended to make the program look more productive.** Each candidate
+mechanism a successor might reach for was considered against the accepted route table, and the results
+are recorded in Alternatives Considered rather than quietly designed in. Where a mechanism reaches
+direction but not magnitude, or reaches magnitude only through a barred construction, the honest
+outcome is a `BLOCKED_CATEGORICALLY` cell, and `XASSET-0020` §J.3 already makes a null a complete
+outcome. **Mandatory abstention is a valid result of this program, and the design does not treat it as
+a failure to be engineered around.**
+
+### K. Stage boundary
+
+**Stage 1 — authorized.** A deterministic, per-cell construction-feasibility evaluation. It acquires no
+data, estimates nothing, fits nothing, and introduces **zero consequential numeric parameters** under
+`NUM-0001` §18's definition. That is a designed property, not an omission: a study with no free numeric
+parameter cannot be tuned toward a preferred outcome, and there is nothing for a sweep or a
+neighbouring-parameter robustness check to perturb. For the same reason, out-of-sample and walk-forward
+discipline is recorded as `NOT_APPLICABLE` to Stage 1 — there is no sample, no held-out period, and no
+fitted quantity — and both are **required of any future Stage 2**. Recording that honestly is preferred
+to performing a vacuous split.
+
+**Stage 2 — not authorized.** Any empirical or data-acquiring work is outside this charter. It becomes
+eligible to be *proposed* only if Stage 1 identifies at least one constructible candidate, and even
+then requires its own separate, later, explicitly accepted governance decision. **Eligibility is not
+entitlement**, and satisfying the condition schedules nothing.
+
+**Why acquisition was not chartered now.** `XASSET-0025` Outcome C's binding failures were `T1`/`T2`
+(what the evidence measures) and `T5` (who may certify it) — not data scarcity. Chartering acquisition
+before determining whether any acquirable evidence could clear `G2`, `G3`, and `G5` would spend a data
+program on a question whose blocker may not be data at all.
+
+### L. Adversarial review of the design
+
+Each failure mode was tested against the design rather than assumed absent.
+
+| Failure mode | Where it would have entered | Control |
+|---|---|---|
+| Hidden optimizer or model parameter | A mapping from sleeve economics to a share of the whole | `G3`, `G6` (`H.3` item 7 free-choice test); zero-parameter declaration, validator-asserted |
+| Historical-anchor contamination | Any barred value reused, reconstructed, or centred on | `G4`; complete `XASSET-0025` §F firewall; barred values named, never reproduced; adversarial numeral scan in the validator |
+| Residual or equal-split leakage | A bound obtained as a complement, or a fresh one-quarter split | `G4`; `EQUAL_DIVISION_INCLUDING_FRESHLY_COMPUTED` barred by construction, not by spelling; `G12` |
+| Direction → magnitude sleight of hand | Appending a share to a qualitative finding | `G2` and `G3` as separate gates; §J.2 |
+| Representation leakage | Silently combining representations | `G9`; no rule created; exact dependency named and blocked as a prerequisite |
+| Pair or transitivity leakage | Consuming an unresolved pair, or filling one transitively | `G10`, direction-invariance **by independence**, never robustness by inspection |
+| Author or reviewer discretion | A value chosen at application time | §D.2, §E.1; `G7`; exercise requires independent review, principal acceptance, and merge |
+| Class-4 / class-5 confusion | Imposing `NUM-0001` §7 on class 5, or letting class 5 skip subject-matter evidence | §D.3 items 5–6 and §D.4 — the two are kept distinct in both directions |
+| Research / policy conflation | A study result becoming policy by being produced | §E.14; Stage 1 output classified non-DRIVER and non-admissible; forbidden result content |
+| Implicit sleeve preference | Ordering, budgeting, or staging sleeves | Single closed 48-cell set; no early stop on a positive finding; no per-sleeve sequencing |
+| RISK reuse | Reusing a lapsed parameter, threshold, or derivation pattern | `risk_lane_boundary`; protected result path never accessed |
+| Backdoor endpoint source | Citing the Stage 1 record as endpoint evidence | `result_status_of_stage_1_output` — non-DRIVER, non-admissible, never citable; result schema forbids any share, bound, percentage, weight, score, rank, or reconciliation |
+
+### M. Recorded rather than resolved
+
+**M.1 — `XASSET-0024` §K.1's open reading is neither resolved nor relied upon.** Whether §E.1's six
+classes house a magnitude statement remains open, and this program is precisely the unit whose
+viability turns on it. Resolving it would be a methodology amendment performed inside a charter,
+without its own authorization. Instead `G2` is evaluated **under both readings**, and every cell
+records the outcome under each plus whether it is reading-dependent. A cell that passes only under the
+subject-matter reading is recorded as reading-dependent, **not as passing**. If the preference-only
+reading is later established, all cells abstain.
+
+**M.2 — Whether a normalization bridge exists at all is an outcome, not a premise.** §J.1 identifies
+the difficulty; it does not determine that no bridge exists. `G3` tests it per cell, and the answer is
+a finding of the study rather than an assumption of the charter. This filing takes no position on how
+many cells, if any, will clear it.
+
+**M.3 — Constraint-shaped candidates are expected to be contested, and the gate is where that
+happens.** `XASSET-0024` §F Limb 4 bars "a cap, ceiling, floor-as-limit, or concentration boundary"
+from originating a bound. Whether a particular deployability or structural-limit candidate is
+constraint-shaped in that sense is exactly what `G5` decides, per cell, on the candidate's own terms.
+No prejudgment is recorded here.
+
+**M.4 — Not reopened here.** `XASSET-0023` §G's Level-2 subset question; `XASSET-0021` §O's
+strict-conjunction tension; the gold-representation labelling difference; `XASSET-0024` §K.2's
+circularity discussion; `XASSET-0026` §G.1's unresolved ordering and §G.3's open packaging. None bears
+on any determination above, and none is resolved. In particular, this filing's combined packaging is an
+election permitted by §G.3, **not a resolution of it**.
+
+### N. Effect on the closure matrix and application authority
+
+No `XASSET-0021` §N row is reclassified. The matrix stands exactly as accepted at 14
+`CLOSED_DETERMINISTICALLY` / 14 `APPLICATION_MUST_ABSTAIN` / 2 `SEPARATE_PREREQUISITE_REQUIRED`, with
+`application_time_author_or_reviewer_judgment_remaining: 2`. CM-14 through CM-19, CM-25, and CM-26 are
+unchanged; this filing supplies no endpoint and no representation rule, and therefore changes nothing
+about them.
+
+**Application authority remains WITHHELD.** `XASSET-0021` §O's double gate is untouched, `XASSET-0022`
+§P's mechanical enforcement is untouched, `APPLICATION_AUTHORIZATION_REGISTRY` remains empty, and no
+`intelligence/level1_application/` artifact exists or is authorized. **No all-abstention application is
+authorized either.**
+
+The downstream boundary is unchanged and remains, in dependency order, each step separately
+authorized: **new evidence → lawful snapshot successor → endpoint-capable downstream consumption →
+application.** Constituting authority moves nothing along that path.
+
+### O. Governance package and WORKSTREAMS synchronization
+
+This filing touches exactly eight tracked files, mirroring `RISK-0001` §17's charter-filing precedent:
+
+1. this decision;
+2. `research/level1_endpoint_evidence/PROTOCOL_V1.md`;
+3. `research/level1_endpoint_evidence/pre_registration.yaml`;
+4. `level1_endpoint_evidence_preregistration_validator.py`;
+5. `test_level1_endpoint_evidence_preregistration_validator.py`;
+6. `governance/decisions.yaml` (one catalog row);
+7. `operations/WORKSTREAMS.yaml` (additive `XASSET-0026` post-merge closeout and `XASSET-0027` lane
+   facts; every prior gate's own text byte-unchanged); and
+8. `test_portfolio_hq_dashboard_decisions.py` (the two mechanical catalog-count assertions).
+
+The dedicated validator is read-only and mechanical. It validates closed structure, exact identities,
+derived arithmetic, the gate sequence, vocabularies, the zero-parameter declaration, firewall
+completeness, the protocol mirror, and this decision's hash pins. It cannot acquire data, execute the
+study, evaluate a cell, state an endpoint, or admit evidence.
+
+**It is deliberately not an endpoint-admission validator.** No validator anywhere in this repository
+mechanizes `XASSET-0024` §J.1–§J.12, and building one is **a separately authorized successor, not part
+of this filing** — see §P.2. Recording that boundary explicitly prevents a governance charter from
+silently becoming a new software subsystem.
+
+### P. What comes next, and what it would require
+
+**P.1 — One future Stage 1 implementation/results PR.** After this charter's independent exact-head
+review, principal acceptance, merge, and hash verification, exactly one later PR may deliver the Stage
+1 evaluation: all 48 cell outcomes, the 8 roll-ups, abstention records, the provenance manifest,
+limitations, focused tests, and hash verification. It may make no production configuration change, and
+its own result lifecycle requires independent exact-head review and principal acceptance.
+
+**P.2 — Separately required successors, none authorized here.** Named so they are not discovered late:
+
+- an **endpoint-admission validator** mechanizing `XASSET-0024` §J.1–§J.12, if and when a candidate
+  source exists to test — not authorized, not scoped, and not begun here;
+- a **Stage 2 authorization**, on the §K condition, for any empirical work;
+- a **`XASSET-0021` snapshot successor**, which cannot admit evidence that does not yet exist;
+- a **Level-1 representation aggregation or selection rule**, only if and when a candidate source is
+  not self-contained;
+- an **endpoint-capable `XASSET-0022` schema and generator successor**; and
+- an **application authorization**, which remains withheld.
+
+**P.3 — The exact next authorized action after this filing.** Independent full exact-head review of
+this PR. Nothing else in §P.1 or §P.2 may begin before this decision merges.
+
+### Q. Reopen triggers
+
+Reopen `XASSET-0027` if: `XASSET-0019` through `XASSET-0026`'s effective identity changes;
+`XASSET-0020` §E.1's driver classes or §L's endpoint row is amended; any `XASSET-0021` §C path or hash
+changes, or the snapshot is lawfully replaced or extended; either pinned canonical hash changes; a
+Level-1 cross-representation aggregation or selection rule becomes accepted; separate governance grants
+reuse authority over any lapsed RISK parameter or charters a new RISK study; `NUM-0001`'s classes, §6,
+§7, or §8 change; a reviewer establishes `XASSET-0024` §K.1's contrary reading of §E.1, or
+`XASSET-0021` §O's strict-conjunction reading; a candidate endpoint source is proposed and its §J
+compliance must be assessed; or the liquidity or Level-2 architecture changes a boundary relied on here.
+
+### R. Absolute non-authorization
+
+This decision creates no endpoint, bound, point, range, percentage, weight, target, or allocation, and
+selects, prefers, ranks, sequences, or budgets no sleeve; **exercises no endpoint authority**; performs
+and authorizes no research execution, data acquisition, backtest, study trial, cell evaluation,
+evidence admission, direct-pair study, representation study, or RISK study; produces no evidence
+conclusion or historical anchor; grants no evidence-admission authority and no application authority,
+including for an abstention-only application, and populates no authorization registry; creates no
+application artifact or directory; extends, replaces, or amends no `XASSET-0021` snapshot; amends no
+methodology and supplies no representation rule, equity aggregation, fund or gold peer selection, or
+crypto composite, and designates no CM-14 through CM-17 membership; resolves `XASSET-0024` §K.1
+neither way; performs no Level-1 sizing and no Level-2 membership or sizing; makes no liquidity
+determination; changes no `targets.yaml`, `holdings.yaml`, `gates.yaml`, `issuer_lookthrough.yaml`,
+allocator, tier, cluster, cap, or margin state; authorizes no chart, ladder, optimizer, deployment,
+trade, order, or brokerage action; adopts no portfolio policy; creates no `XASSET-0022` schema or
+version successor and no endpoint-admission validator; grants no reuse authority over any lapsed RISK
+parameter or result and no authority to re-question any RISK family; accesses, reruns, refreshes, or
+reuses no RISK-0001 execution artifact; converts its own combined packaging into a general ordering or
+packaging doctrine; edits no accepted decision; and rewrites no accepted history.
+
+## Rationale
+
+`XASSET-0026` §J named a successor that could constitute authority, charter the program, or do both,
+and left the election to it. The principal elected both. Two considerations made that election
+workable rather than merely permitted.
+
+The first is that the two halves fail for genuinely different reasons and therefore do not contaminate
+each other. `XASSET-0025` §G established that the authority gap fails **universally and independently
+of what evidence exists** — "the one criterion no evidence-production effort can satisfy." Constituting
+authority is thus a self-contained act whose correctness can be reviewed without reference to any
+evidence, and chartering a program is an act whose correctness can be reviewed without reference to who
+may later certify its output. `XASSET-0026` §G.3's condition — that neither half be treated as
+certified by the other's presence in the same file — is satisfiable here precisely because the halves
+are independently checkable, and §B states the separation explicitly for the reviewer.
+
+The second is that the authority can be constituted **without being exercised**, which is what keeps
+the combination from collapsing into a self-certifying record. `XASSET-0026` §J anticipates exactly
+this: an authority-constituting filing "may constitute that competence without exercising it, and for a
+`NUM-0001` class-4 bound it may not record a value selection before the evidence establishing the range
+exists." Part A defines competence; Part G refuses to use it; and §E.14 forecloses any future research
+output acquiring authority merely by being produced.
+
+The harder design question was Part B's, and it is the one on which this filing could most easily have
+gone wrong. The temptation was to charter an empirical program — acquire data, compute something per
+sleeve, and present the result as evidence bearing on a bound. That would have been a serious error.
+`XASSET-0025` Outcome C's binding failures were `T1`/`T2` and `T5`, none of which is a data problem,
+and `XASSET-0024` §F exists because plausible-looking numbers with correct units and correct
+denominators still fail on origin, class, scope, and question identity. A data program launched before
+anyone had established that acquirable evidence could clear `G2`, `G3`, and `G5` would have been an
+expensive way to rediscover §F.
+
+So Stage 1 tests constructibility first, deterministically and cheaply, and Stage 2 is withheld behind
+its own authorization. The zero-parameter property is the design's strongest guarantee: with no
+threshold, tolerance, window, weight, or coefficient anywhere, there is no surface on which the study
+could be tuned toward a preferred answer, and the validator asserts it mechanically rather than
+trusting the claim.
+
+Finally, `XASSET-0024` §K.1's open reading had to be handled rather than stepped around, because this
+is the first unit whose success depends on it. Resolving it would have been a methodology amendment
+smuggled into a charter. Ignoring it would have produced cells whose status was quietly ambiguous.
+Evaluating `G2` under both readings and marking reading-dependent cells as such preserves the question
+exactly where three prior decisions left it, while still producing the full information whichever unit
+eventually addresses it will need.
+
+## Alternatives Considered
+
+- **Constitute authority only, and charter nothing.** Lawful under `XASSET-0026` §G.3, and rejected
+  because the principal elected the combined packaging. It would also have left the program's shape
+  unfixed while `XASSET-0026`'s shape determination was freshest, inviting drift in a later unit.
+
+- **Charter the program only, and leave authority to a later unit.** Also lawful, and rejected for the
+  same reason. It would additionally have chartered a program whose entire output could not be
+  certified by anyone, since `T5` fails universally until authority exists.
+
+- **Charter an empirical, data-acquiring program in this filing.** Rejected as the most consequential
+  wrong turn available. `XASSET-0025`'s failures were about what evidence measures and who may certify
+  it, not about data availability; acquiring data first would have spent a program before establishing
+  that any acquirable evidence could clear the magnitude and normalization gates.
+
+- **Design a mechanism that converts sleeve-level economic evidence into a share of the whole.**
+  Rejected: every available construction is a portfolio-construction model, and each is already barred
+  by name — optimizer or grid search, composite score, symmetry or equal division, midpoint, default
+  range width, residual plug (`XASSET-0024` §D N4, N5; `XASSET-0020` §L, §M). Designing one would have
+  been a methodology amendment performed inside a charter.
+
+- **Treat an externally imposed structural limit as an `UPPER` bound source.** Considered seriously,
+  because it is the most natural-looking route to a magnitude that is not an optimizer output, and
+  **not adopted as a design premise**. `XASSET-0024` §F Limb 4 bars "a cap, ceiling, floor-as-limit, or
+  concentration boundary" from originating a bound however precisely expressed, and N1 confines
+  constraints to clipping. Whether a particular candidate is constraint-shaped in that sense is a
+  question about that candidate, so it is routed to `G5` per cell rather than decided here in either
+  direction (§M.3).
+
+- **Resolve `XASSET-0024` §K.1 so the program has firm ground.** Rejected — it is a `XASSET-0020` §E.1
+  methodology amendment requiring its own authorization and review, and three accepted decisions have
+  each declined to resolve or rely on it. `G2`'s dual-reading evaluation preserves it.
+
+- **Pre-select the DRIVER class most likely to carry a magnitude.** Rejected — `XASSET-0026` §I.5
+  requires route and class to stay open, and §K.1 records that which class will admit future evidence
+  "is a property of an evidence design that does not exist." All six are enumerated for every cell.
+
+- **Sequence or budget the sleeves for research tractability.** Rejected — `XASSET-0026` §E.2 records
+  that evidence coverage, maturity, availability, and tractability supply no accepted economic
+  selection basis and may not imply size or preference. It expressly declined to determine whether a
+  future authorized act could sequence for operational reasons under a non-preference firewall; this
+  filing does not need one, so it invents none, and evaluates all 48 cells as one closed set.
+
+- **Allow early stop once a constructible candidate is found.** Rejected — it would advantage whichever
+  cell happened to be evaluated first and would convert a coverage program into a search, undermining
+  `XASSET-0026` §F's all-four shape.
+
+- **Build the `XASSET-0024` §J.1–§J.12 endpoint-admission validator now.** Rejected — no candidate
+  source exists to test, `XASSET-0026` §J's charter requirements name a design, protocol,
+  pre-registration, provenance rules, and trial bounds but no such validator, and building one here
+  would materially expand scope. It is named as a separately authorized successor (§P.2).
+
+- **Reuse `level1_sleeve_robustness_preregistration_validator.py` rather than write a new module.**
+  Rejected on inspection: its `PREREG_PATH`, `PROTOCOL_PATH`, and `DECISION_PATH` constants and its
+  entire closed schema are bound to `RISK-0001`'s artifacts and vocabulary. Its **process** patterns —
+  fail-closed structural validation, hash pins, a protocol mirror block, an approved-files list, and a
+  rerun rule — are reused; none of its substantive parameters, thresholds, windows, magnitudes, or
+  conclusions is.
+
+## Consequences
+
+`LEVEL1_ENDPOINT_AUTHORITY` exists on merge, and for the first time a competent Level-1 endpoint
+authority is in force — closing the one `XASSET-0025` §G failure that no amount of evidence production
+could ever have closed. Nothing is thereby sized: the authority is constituted, not exercised, and a
+later exercise must satisfy `XASSET-0024` §J.1–§J.12 in full and survive its own independent review and
+principal acceptance.
+
+`ENDPOINT-0001` is chartered with its canonical protocol and pre-registration hash-pinned, and its
+Stage 1 becomes executable in exactly one later PR after merge and hash verification. That stage may
+return nulls for every one of its 48 cells; under `XASSET-0020` §J.3 that is a complete outcome and not
+a defect, and the design deliberately makes abstention reachable rather than engineering around it.
+
+Everything downstream is unchanged. The closure matrix stands at 14 / 14 / 2,
+`APPLICATION_AUTHORIZATION_REGISTRY` remains empty, no `intelligence/level1_application/` artifact
+exists, application authority remains **WITHHELD**, and the path from here — new evidence, then a
+lawful snapshot successor, then endpoint-capable consumption, then an application — is unshortened,
+with each step requiring its own separate authorization.
+
+Explicitly unchanged: `targets.yaml`, `holdings.yaml`, `gates.yaml`, `issuer_lookthrough.yaml`,
+`allocate.py`, `margin_state.py`, `levels.py`, every `research/level1_sleeve_robustness/` artifact,
+every `intelligence/` record, `/private/tmp/phq-risk0001-results`, and every accepted decision's status.
