@@ -230,15 +230,21 @@ class TestG3IsExpresslyReserved:
 
 
 class TestPositiveSubDeterminations:
-    def test_c1_condition_requires_the_source_to_carry_the_denominator(self, decision_text):
+    def test_c1_condition_requires_the_source_to_fix_the_denominator(self, decision_text):
         assert (
             "the `XASSET-0024` §C denominator — one normalized unit of prospective, unlevered, "
-            "asset-side capital — is carried by the source's own governed content" in decision_text
+            "asset-side capital — is fixed by the source's own governed content" in decision_text
         )
         assert (
-            "supplied, inferred, converted, completed, rescaled, or normalized by any downstream "
-            "reader is not the §C denominator" in decision_text
+            "**supplied, chosen, composed, selected, or invented by a downstream reader** is not the "
+            "§C denominator" in decision_text
         )
+
+    def test_c1_admits_both_routes_via_t1s_own_disjunction(self, decision_text):
+        """T1 reads 'states OR source-prescribes'; C.1 must not collapse that to R1 alone."""
+        assert "either **stated** by the source itself" in decision_text
+        assert "or produced by the source's **own complete prescribed derivation** (R2)" in decision_text
+        assert "T1's own disjunction is load-bearing and is preserved here" in decision_text
 
     def test_c1_is_grounded_in_the_t1_criterion_text(self):
         """T1's disqualifier is the operative rule: any other quantity, however expressed."""
@@ -251,17 +257,27 @@ class TestPositiveSubDeterminations:
         text = _collapse(XASSET_0025.read_text(encoding="utf-8"))
         assert "denominator is unspecified **by the source itself**" in text
 
-    def test_c2_bars_every_downstream_normalization(self, decision_text):
+    def test_c2_bars_downstream_authored_normalization(self, decision_text):
         assert (
-            "No transformation from `portfolio_function`, `valuation_opportunity_cost`, "
+            "No transformation of `portfolio_function`, `valuation_opportunity_cost`, "
             "`downside_path_risk`, `recovery`, `diversification_cobehavior`, or "
-            "`sleeve_deployability` content into a portfolio percentage is permitted at application "
-            "or Stage-1 time" in decision_text
+            "`sleeve_deployability` content into a portfolio percentage may be **composed, selected, "
+            "invented, tuned, or completed** at application or Stage-1 time" in decision_text
+        )
+
+    def test_c2_states_the_boundary_is_authorship_not_execution_locus(self, decision_text):
+        assert "The boundary is authorship, not execution locus." in decision_text
+        assert (
+            "Every one of those invalidators is an act of authorship or choice. None of them is the "
+            "physical act of computing." in decision_text
         )
 
     def test_c2_preserves_no_third_route(self, decision_text):
         assert '"There is no third route"' in decision_text
-        assert "is preserved exactly and is **not** narrowed, widened, or reinterpreted" in decision_text
+        assert "Both are preserved exactly." in decision_text
+        assert (
+            "does not convert a lawful R2 into a third route" in decision_text
+        )
 
     def test_c3_competent_authority_does_not_satisfy_g3(self, decision_text):
         assert (
@@ -274,6 +290,111 @@ class TestPositiveSubDeterminations:
         assert (
             "which are properties of what the evidence measures, not of who may certify it" in text
         )
+
+
+# --------------------------------------------------------------------------------------
+# R2 authorship vs execution (XASSET-0031 SS-C.2 limbs A/B, SS-E) -- review 4947565573 MAJOR 1
+# --------------------------------------------------------------------------------------
+
+
+class TestR2AuthorshipVersusExecution:
+    """The six cases the corrected SS-C.2 must distinguish.
+
+    Cases 1, 2 and 4 must be rejected as authorship or free choice; cases 3 and 5 must not be
+    barred *merely* because the executor runs the arithmetic; case 6 must confirm no third route
+    was created. None of these establishes that any R2 construction clears G3.
+    """
+
+    def test_case1_application_invented_formula_is_barred(self, decision_text):
+        """An application-authored normalization formula is limb A."""
+        limb_a = decision_text.split("**A — BARRED:")[1].split("**B —")[0]
+        assert "**composed, selected, invented, tuned, or completed**" in limb_a
+        assert "the application itself supplies" in limb_a
+        assert "a new portfolio model" in limb_a
+
+    def test_case2_application_selecting_among_formulas_is_barred(self):
+        """XASSET-0024 SS-D bars a SELECTED derivation, not only an invented one."""
+        text = _collapse(XASSET_0024.read_text(encoding="utf-8"))
+        assert "Any composed, selected, or invented derivation (that is authorship" in text
+
+    def test_case3_source_prescribed_derivation_is_not_barred_by_execution_locus(
+        self, decision_text
+    ):
+        """The corrected limb B: prescription upstream, arithmetic may run downstream."""
+        limb_b = decision_text.split("**B — NOT CATEGORICALLY BARRED:")[1].split(
+            "**The operative test"
+        )[0]
+        assert "the application may **execute** that derivation" in limb_b
+        assert "Execution is not authorship." in limb_b
+        assert "That the arithmetic physically runs downstream does not convert a lawful R2" in limb_b
+
+    def test_case3_requires_the_prescription_to_be_complete_and_choice_free(self, decision_text):
+        limb_b = decision_text.split("**B — NOT CATEGORICALLY BARRED:")[1].split(
+            "**The operative test"
+        )[0]
+        assert "prescribes the **complete** derivation" in limb_b
+        assert "its inputs, its operations, its ordering, and the §C quantity and denominator" in limb_b
+        assert "**zero free choice**" in limb_b
+
+    def test_case4_tunable_coefficient_or_free_choice_is_rejected(self, decision_text):
+        """SS-H.3 item 7 is named as the operative control, and quoted."""
+        assert (
+            "if any step could have been chosen differently without violating the source's own "
+            "prescription, it is a model parameter and the derivation fails" in decision_text
+        )
+        assert "a derivation that does not is authorship no matter where it runs" in decision_text
+
+    def test_case4_control_is_grounded_in_committed_authority(self):
+        text = _collapse(XASSET_0024.read_text(encoding="utf-8"))
+        assert "any tunable coefficient, ordering, tolerance, cutoff, or selection" in text
+        assert "§H.3 item 7's test is the control" in text
+
+    def test_case5_mechanical_execution_is_consistent_with_r2_in_the_route_table(
+        self, decision_text
+    ):
+        """The SS-E table must state where the arithmetic may run, per route."""
+        assert "| Route | Who fixes the §C denominator | Where the arithmetic may run |" in decision_text
+        table = decision_text.split("| Route | Who fixes the §C denominator |")[1].split(
+            "**Neither route is a"
+        )[0]
+        r2_row = [r for r in table.split("|\n") if "**R2** — uniquely derived" in r]
+        assert r2_row
+        assert "**Downstream execution is permitted**" in r2_row[0]
+        assert "it executes, never composes, selects, tunes, or completes" in r2_row[0]
+
+    def test_case5_r1_row_still_has_no_arithmetic(self, decision_text):
+        table = decision_text.split("| Route | Who fixes the §C denominator |")[1].split(
+            "**Neither route is a"
+        )[0]
+        r1_row = [r for r in table.split("|\n") if "**R1** — uniquely stated" in r]
+        assert r1_row
+        assert "there is no arithmetic to run" in r1_row[0]
+
+    def test_case6_no_third_route_is_created(self, decision_text):
+        assert "does not convert a lawful R2 into a third route" in decision_text
+        assert "Nothing about R2 requires the arithmetic itself to have been performed upstream" in decision_text
+
+    def test_j1_barred_list_is_not_evidence_against_limb_b(self, decision_text):
+        """SS-J.1's mappings are barred because the APPLICATION would choose them."""
+        assert (
+            "Each is barred because the application would be choosing it" in decision_text
+            and "so §J.1's list is not evidence against limb B" in decision_text
+        )
+
+    def test_correction_grants_nothing_about_g3(self, decision_text):
+        """The widened R2 reading must not become a G3 finding."""
+        assert (
+            "This does not establish that any R2 construction actually satisfies `G3`."
+            in decision_text
+        )
+        assert (
+            "no finding here is that any of the 136 registered `R2_C2` constructions clears `G3`"
+            in decision_text
+        )
+
+    def test_r2_c2_family_count_is_real(self, universe):
+        """The 136 figure cited in SS-E is read from the frozen universe, not asserted."""
+        assert sum(1 for e in universe.values() if e["family_id"] == "R2_C2") == 136
 
 
 # --------------------------------------------------------------------------------------
@@ -298,17 +419,76 @@ class TestPerClassCapability:
     def test_universe_carries_exactly_these_six_classes(self, universe):
         assert {e["driver_class"] for e in universe.values()} == set(self.SIX_CLASSES)
 
-    def test_direction_is_class_wide_because_the_pair_vocabulary_is_ordinal(self):
-        """SS-H's four pair conclusions are all directional; none carries a magnitude."""
+    def test_e1_is_an_admission_rule_not_a_realization_finding(self):
+        """SS-E.1 says the classes MAY SUPPORT preference -- eligibility, not a determination."""
         text = _collapse(XASSET_0020.read_text(encoding="utf-8"))
-        for value in (
-            "`self_preferred`",
-            "`counterpart_preferred`",
-            "`indistinguishable`",
-            "`unable_to_determine`",
-        ):
-            assert value in text
-        assert "Only these closed driver classes may support positive or negative economic" in text
+        assert (
+            "Only these closed driver classes may support positive or negative economic allocation "
+            "preference" in text
+        )
+        # The word that carries the whole distinction.
+        assert "may support" in text
+
+    def test_direction_is_recorded_permitted_not_class_wide_realized(self, decision_text):
+        assert "Level 2 (direction) is class-wide PERMITTED — not class-wide realized." in decision_text
+        assert "It does not determine that every class, every source, or every admitted item" in decision_text
+        assert "a result, not a class attribute" in decision_text
+
+    def test_capability_table_says_permitted_source_result_dependent_for_every_class(
+        self, decision_text
+    ):
+        table = decision_text.split("| # | DRIVER class |")[1].split("**Level 1 (subject matter)")[0]
+        assert table.count("**PERMITTED** (source/result-dependent)") == 6
+        # The overclaimed bare-YES direction cell must be gone from the direction column.
+        for cls in self.SIX_CLASSES:
+            row = [r for r in table.split("|\n") if f"`{cls}`" in r]
+            assert row, cls
+            assert "**PERMITTED** (source/result-dependent)" in row[0]
+
+    @pytest.mark.parametrize(
+        "value,is_direction",
+        [
+            ("self_preferred", True),
+            ("counterpart_preferred", True),
+            ("indistinguishable", False),
+            ("unable_to_determine", False),
+        ],
+    )
+    def test_only_two_of_the_four_pair_values_are_directions(
+        self, decision_text, value, is_direction
+    ):
+        """The semantic distinction, not mere vocabulary presence."""
+        per_value = decision_text.split("| §H value | What it is |")[1].split(
+            "**Two of the four are therefore non-directional"
+        )[0]
+        row = [r for r in per_value.split("|\n") if f"`{value}`" in r]
+        assert row, value
+        if is_direction:
+            assert "a **direction**" in row[0]
+        else:
+            assert "**not a direction**" in row[0]
+
+    def test_the_two_non_directional_outcomes_are_preserved_by_name(self, decision_text):
+        assert "Two of the four are therefore non-directional outcomes" in decision_text
+        assert "a determinate **tie**" in decision_text
+        assert "preserved **uncertainty**" in decision_text
+
+    def test_the_surviving_claim_is_magnitude_freedom_not_universal_direction(self, decision_text):
+        assert (
+            "none of the four carries a magnitude" in decision_text
+            and "every value is qualitative" in decision_text
+        )
+
+    def test_sect_h_condition_table_grounds_the_non_directional_readings(self):
+        """indistinguishable = determinate tie; unable_to_determine = unclosed state."""
+        text = _collapse(XASSET_0020.read_text(encoding="utf-8"))
+        assert (
+            "At least one driver is applicable; every applicable driver is `indistinguishable`" in text
+        )
+        assert (
+            "Any contrary directions, required missingness, staleness, conflict, failed "
+            "representation gate, or other unclosed state | `unable_to_determine` |" in text
+        )
 
     def test_portfolio_function_is_the_only_portfolio_framed_class(self):
         """The SS-E.1 scope language, read from committed bytes rather than asserted."""
@@ -547,9 +727,16 @@ class TestAdversarialCases:
         assert "What is **not** permitted is deriving one bound from the other" in text
 
     def test_pair_evidence_cannot_become_an_absolute_portfolio_weight(self, decision_text):
-        """Case 9: PAIR-scoped content is comparison-scoped; conversion is barred by SS-C.2."""
+        """Case 9: PAIR-scoped content is comparison-scoped; downstream-AUTHORED conversion is barred.
+
+        Updated for the corrected SS-C.2 limb A wording (review 4947565573 MAJOR 1). The bar is on
+        the application composing/selecting/inventing the conversion, not on execution locus.
+        """
         assert "`PAIR` — \"direct … pair evidence for the unordered pair …\"" in decision_text
-        assert "into a portfolio percentage is permitted at application" in decision_text
+        assert (
+            "content into a portfolio percentage may be **composed, selected, invented, tuned, or "
+            "completed** at application or Stage-1 time" in decision_text
+        )
 
     def test_representations_may_not_be_averaged(self):
         """Case 10: no majority, average, weighting, or representative selection."""

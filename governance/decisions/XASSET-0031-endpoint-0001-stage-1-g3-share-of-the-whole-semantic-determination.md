@@ -51,6 +51,41 @@ The canonical gate states the same question mechanically (`pre_registration.yaml
 `controlling_authority: XASSET-0024_SECTION_C_AND_SECTION_F_LIMB_1`; `failure_disposition:
 BLOCKED_CATEGORICALLY`.
 
+### Correction history
+
+**Correction 1** — after independent FULL exact-head review `4947565573` (`CHANGES REQUIRED` —
+0 BLOCKING / 2 MAJOR / 1 MINOR / 1 NOTE) at head `209e5d33c119c236b977e27bb44b640dceda3417`, whose
+exact-head CI run `31978535243` / job `95241592673` was completed/success. Both MAJOR findings were
+reproduced against controlling text before any edit.
+
+**MAJOR 1** — §C.1/§C.2 and the §E R1/R2 table over-narrowed lawful **R2** by conflating *where a
+derivation is authored* with *where it is executed*. `XASSET-0024` §D's R2 row invalidates a derivation
+that is "composed, selected, or invented" or carries "any tunable coefficient, ordering, tolerance,
+cutoff, or selection", and §J.6 requires it be "source-prescribed, not composed by the application" —
+every invalidator is authorship or choice, none is the act of computing. The prior text ("no downstream
+normalization is lawful, by any mechanism, ever"; "under both R1 and R2 the normalization has already
+occurred upstream") would have permanently forbidden constructions accepted authority leaves
+conditionally lawful. Corrected: §C.1 now turns on **who fixes the denominator**; §C.2 splits limb A
+(downstream-authored — barred) from limb B (mechanical execution of a complete, choice-free
+source-prescribed derivation — not categorically barred), with §H.3 item 7 as the operative control;
+the §E table gains a "where the arithmetic may run" column.
+
+**MAJOR 2** — §D's capability table recorded "Direction = **YES**" class-wide and the prose asserted
+"Every one of the four values is a direction." `XASSET-0020` §E.1 says only that the six classes "**may
+support**" preference — an admission rule, not a realization finding — and §H reaches `indistinguishable`
+on a determinate tie and `unable_to_determine` on missingness/conflict/staleness, neither of which is a
+positive or negative direction. Corrected: the column reads **PERMITTED (source/result-dependent)**,
+and a per-value table records which two of the four are directional and which two are not. What the
+vocabulary does establish — that **none of the four carries a magnitude** — is preserved, and is all
+this unit relies on.
+
+**MINOR 1** — `operations/WORKSTREAMS.yaml` carried `pr: null` / `active_pr: null` after PR #330 was
+opened. Corrected factually; no historical gate text rewritten.
+
+**Neither correction changes the `SHARE_OF_THE_WHOLE_CONDITION_NOT_CLOSABLE` determination, the
+`XASSET-0030` 6/6 gate map, §K.1's unresolved state, §E.1's unamended state, R1/R2 route authority, or
+any canonical semantics.** No R2 construction is found to clear `G3`.
+
 ## Decision
 
 ### A. Determination — `SHARE_OF_THE_WHOLE_CONDITION_NOT_CLOSABLE`
@@ -121,36 +156,66 @@ Each is a restatement of accepted authority assembled in one place. None adds a 
 **C.1 — The semantic condition, stated exactly.**
 
 > Evidence supports a LOWER or UPPER share of the whole **if and only if the `XASSET-0024` §C
-> denominator — one normalized unit of prospective, unlevered, asset-side capital — is carried by the
-> source's own governed content**: declared by the source itself, at exact source precision, as the
-> denominator the source's own statement or its own prescribed derivation is measured against. A
-> denominator that is supplied, inferred, converted, completed, rescaled, or normalized by any
-> downstream reader is not the §C denominator, however arithmetically faithful the conversion.
+> denominator — one normalized unit of prospective, unlevered, asset-side capital — is fixed by the
+> source's own governed content**: either **stated** by the source itself at exact source precision
+> (R1), or produced by the source's **own complete prescribed derivation** (R2), in each case as the
+> denominator that content is measured against. A denominator that is **supplied, chosen, composed,
+> selected, or invented by a downstream reader** is not the §C denominator, however arithmetically
+> faithful the conversion.
 
-Grounded in: `XASSET-0025` §D criterion **T1** — "**Right quantity** — states or source-prescribes a
+Grounded in: `XASSET-0025` §D criterion **T1** — "**Right quantity** — **states or source-prescribes** a
 value for the §C quantity", whose disqualifier is "**Any other quantity, however expressed as a
 percentage**"; `XASSET-0025` §F, which fails the RISK scenario magnitudes at T1 because "the denominator
 is unspecified **by the source itself**"; and the canonical gate question and `PROTOCOL_V1.md` §3.3,
 whose named wrong denominators are "sleeve-internal, within-fund, market-share, per-share, or
 leverage-bearing."
 
-**C.2 — No downstream normalization is lawful, by any mechanism, ever.** `XASSET-0023` §H fixes that
-"There is no third route", and `XASSET-0024` §D's closed table admits only **R1** (uniquely stated by
-the source) and **R2** (uniquely derived by a derivation *the source itself prescribes*), barring
-**N1–N8** by name. Consequently, and answering the question directly:
+**T1's own disjunction is load-bearing and is preserved here.** "States **or source-prescribes**"
+admits both routes. The condition therefore turns on **who fixes the denominator**, not on where any
+arithmetic physically runs — see §C.2.
 
-> **No transformation from `portfolio_function`, `valuation_opportunity_cost`, `downside_path_risk`,
-> `recovery`, `diversification_cobehavior`, or `sleeve_deployability` content into a portfolio
-> percentage is permitted at application or Stage-1 time — by any coefficient, ratio, integration,
-> scaling, budgeting, allocation, or normalization step whatsoever.** Any such step is a new portfolio
-> model and fails `XASSET-0023` §H.3 item 7's free-choice test, `XASSET-0020` §M's prohibitions, or
-> both.
+**C.2 — No downstream-*authored* normalization is lawful. The boundary is authorship, not execution
+locus.** `XASSET-0023` §H fixes that "There is no third route", and `XASSET-0024` §D's closed table
+admits only **R1** (uniquely stated by the source) and **R2** (uniquely derived by a derivation *the
+admitted source itself prescribes*), barring **N1–N8** by name. Both are preserved exactly.
 
-`XASSET-0027` §J.1 already names every mapping "anyone would reach for" as barred: an optimizer or grid
+`XASSET-0024` §D's R2 row states what invalidates the route: "**Any composed, selected, or invented
+derivation** (that is authorship, §H.3 item 3); **any tunable coefficient, ordering, tolerance, cutoff,
+or selection** (§H.3 item 7); ungoverned rounding; >1 lawful result." §J.6 puts it the same way: "For
+R2, the derivation must be **source-prescribed**, not composed by the application." **Every one of
+those invalidators is an act of authorship or choice. None of them is the physical act of computing.**
+The two cases must therefore be kept apart:
+
+> **A — BARRED: downstream-authored or downstream-selected normalization.** No transformation of
+> `portfolio_function`, `valuation_opportunity_cost`, `downside_path_risk`, `recovery`,
+> `diversification_cobehavior`, or `sleeve_deployability` content into a portfolio percentage may be
+> **composed, selected, invented, tuned, or completed** at application or Stage-1 time — by any
+> coefficient, ratio, integration, scaling, budgeting, allocation, or normalization step the
+> application itself supplies. Any such step is a new portfolio model and fails `XASSET-0023` §H.3
+> item 7's free-choice test, `XASSET-0020` §M's prohibitions, or both.
+>
+> **B — NOT CATEGORICALLY BARRED: mechanical execution of a source-prescribed R2 derivation.** Where
+> the admitted source prescribes the **complete** derivation — its inputs, its operations, its
+> ordering, and the §C quantity and denominator it yields — leaving the executor **zero free choice**,
+> the application may **execute** that derivation. Execution is not authorship. That the arithmetic
+> physically runs downstream does not convert a lawful R2 into a third route, and does not by itself
+> make the result "normalized by a downstream reader."
+
+**The operative test is `XASSET-0023` §H.3 item 7**, quoted by `XASSET-0024` §D as "the control": *if
+any step could have been chosen differently without violating the source's own prescription, it is a
+model parameter and the derivation fails.* A derivation that survives that test has had every choice
+already made upstream; a derivation that does not is authorship no matter where it runs.
+
+`XASSET-0027` §J.1 names every mapping "anyone would reach for" as barred — an optimizer or grid
 search, a composite score, a symmetry or equal-division convention, a midpoint, a default range width,
-or a residual plug. **The lawful architecture is therefore not a bridge at all**: under both surviving
-routes the normalization has already occurred upstream, inside the source's own governed content,
-before any application reads it. Nothing downstream ever converts anything.
+or a residual plug. **Each is barred because the application would be choosing it**, which is exactly
+limb A. None of them is a source-prescribed complete derivation, so §J.1's list is not evidence against
+limb B.
+
+**This does not establish that any R2 construction actually satisfies `G3`.** Whether an admitted
+source could prescribe a complete, choice-free derivation whose output is the §C quantity is precisely
+the reserved question (§A, §D). Limb B states that such a construction is not barred *by the execution
+locus*; it is still subject to `G3`'s own reservation, and to `G2`, `G6`, `G7`, and every other gate.
 
 **C.3 — `G3` is a property of what the evidence measures, not of who certifies it.** `XASSET-0025` §H
 states that T1 and T2 are "**properties of what the evidence measures, not of who may certify it**" —
@@ -168,22 +233,38 @@ being invented.
 
 | # | DRIVER class | 1. Subject matter | 2. Direction | 3. Intrinsic magnitude | 4. Intrinsic share-of-whole |
 |---|---|---|---|---|---|
-| 1 | `portfolio_function` | **YES** — `SELF` | **YES** | **OPEN (§K.1)** | **RESERVED — §J.3 names this class specifically** |
-| 2 | `valuation_opportunity_cost` | **YES** — `ALT` | **YES** | **OPEN (§K.1)** | **RESERVED — §M.3; source-dependent** |
-| 3 | `downside_path_risk` | **YES** — `ALT` | **YES** | **OPEN (§K.1)** | **RESERVED — §M.3; source-dependent** |
-| 4 | `recovery` | **YES** — `ALT` | **YES** | **OPEN (§K.1)** | **RESERVED — §M.3; source-dependent** |
-| 5 | `diversification_cobehavior` | **YES** — `PAIR` | **YES** | **OPEN (§K.1)** | **RESERVED — §M.3; source-dependent** |
-| 6 | `sleeve_deployability` | **YES** — `SELF` | **YES** | **OPEN (§K.1)** | **RESERVED — §M.3; source-dependent, and additionally contested at `G5`** |
+| 1 | `portfolio_function` | **YES** — `SELF` | **PERMITTED** (source/result-dependent) | **OPEN (§K.1)** | **RESERVED — §J.3 names this class specifically** |
+| 2 | `valuation_opportunity_cost` | **YES** — `ALT` | **PERMITTED** (source/result-dependent) | **OPEN (§K.1)** | **RESERVED — §M.3; source-dependent** |
+| 3 | `downside_path_risk` | **YES** — `ALT` | **PERMITTED** (source/result-dependent) | **OPEN (§K.1)** | **RESERVED — §M.3; source-dependent** |
+| 4 | `recovery` | **YES** — `ALT` | **PERMITTED** (source/result-dependent) | **OPEN (§K.1)** | **RESERVED — §M.3; source-dependent** |
+| 5 | `diversification_cobehavior` | **YES** — `PAIR` | **PERMITTED** (source/result-dependent) | **OPEN (§K.1)** | **RESERVED — §M.3; source-dependent** |
+| 6 | `sleeve_deployability` | **YES** — `SELF` | **PERMITTED** (source/result-dependent) | **OPEN (§K.1)** | **RESERVED — §M.3; source-dependent, and additionally contested at `G5`** |
 
 **Level 1 (subject matter) is class-wide YES** and is not this gate's question: `XASSET-0024` §D
 determines the six are subject-matter classes, and `XASSET-0030` closed `G1` on that basis.
 
-**Level 2 (direction) is class-wide YES by definition.** `XASSET-0020` §E.1's operative sentence is
-"Only these closed driver classes may support positive or negative economic **allocation preference**,"
-and §H's pair vocabulary — `self_preferred` / `counterpart_preferred` / `indistinguishable` /
-`unable_to_determine` — is **entirely ordinal**. Every one of the four values is a direction; **none
-carries a magnitude**. That §H's own conclusion vocabulary is magnitude-free is the structural reason
-direction is the level the classes indisputably reach.
+**Level 2 (direction) is class-wide PERMITTED — not class-wide realized.** `XASSET-0020` §E.1's
+operative sentence is "Only these closed driver classes **may support** positive or negative economic
+**allocation preference**." That is an **admission rule**: it closes *which* classes are eligible to
+carry a direction, and bars every other class from doing so. **It does not determine that every class,
+every source, or every admitted item actually carries one.** Whether a determinate direction exists is
+a property of the particular source and the particular comparison — a result, not a class attribute.
+
+§H's own four-value vocabulary confirms that reading rather than contradicting it, and the four values
+are **not** four directions:
+
+| §H value | What it is |
+|---|---|
+| `self_preferred` | a **direction** — positive preference toward `self` |
+| `counterpart_preferred` | a **direction** — positive preference toward `counterpart` |
+| `indistinguishable` | **not a direction** — a determinate **tie**; §H reaches it only when "every applicable driver is `indistinguishable`" |
+| `unable_to_determine` | **not a direction** — preserved **uncertainty**; §H reaches it on "any contrary directions, required missingness, staleness, conflict, failed representation gate, or other unclosed state" |
+
+**Two of the four are therefore non-directional outcomes**, and `unable_to_determine` is expressly the
+uncertainty/disclosure result `XASSET-0020` §F.1 requires rather than a weak preference. What the
+vocabulary *does* establish, and all this unit relies on, is that **none of the four carries a
+magnitude** — every value is qualitative. That is the structural point: §H's machinery, when it
+succeeds, yields at most a direction or a tie, never a quantity, and never a share of the whole.
 
 **Level 3 (intrinsic magnitude) is `XASSET-0024` §K.1's open question, class-wide, and is routed
 through `G2` and only `G2`** (`XASSET-0027` §M.1). This unit neither resolves nor relies on it.
@@ -213,15 +294,22 @@ and, for all 680 constructions, about sources that do not exist (§B.2).
 `XASSET-0023` §H's "There is no third route" is preserved exactly and is **not** narrowed, widened, or
 reinterpreted by anything above.
 
-| Route | How the §C denominator arrives | What this unit adds |
-|---|---|---|
-| **R1** — uniquely stated | The source's own governed content states one exact value **for the §C quantity**. The denominator is the source's own; no conversion occurs anywhere. | §C.1 states the condition the statement must satisfy; §C.3 records that competent authority does not substitute for it |
-| **R2** — uniquely derived | The source itself **prescribes** the derivation. The denominator is fixed by the source's own prescription; the application executes, never composes. | §C.2 records that a derivation composed downstream is authorship and fails `XASSET-0023` §H.3 items 3 and 7 |
+| Route | Who fixes the §C denominator | Where the arithmetic may run | What this unit adds |
+|---|---|---|---|
+| **R1** — uniquely stated | The source's own governed content **states** one exact value **for the §C quantity**. | Nowhere — there is no arithmetic to run. | §C.1 states the condition the statement must satisfy; §C.3 records that competent authority does not substitute for it |
+| **R2** — uniquely derived | The source itself **prescribes** the complete derivation, its inputs, its ordering, and the quantity it yields. | **Downstream execution is permitted**, provided the executor makes no choice: it executes, never composes, selects, tunes, or completes. | §C.2 limb B records that execution locus is not the authority boundary; §C.2 limb A records that a derivation composed, selected, or invented downstream is authorship and fails `XASSET-0023` §H.3 items 3 and 7 |
 
 **Neither route is a "bridge" in `XASSET-0027` §J.1's sense**, and that is the substantive point: §J.1's
-difficulty arises only for a *conversion*, and both lawful routes place the normalization upstream,
-inside the source, where no application-time choice exists. **This does not establish that any such
-source can exist** — that is `G3`, and it is reserved.
+difficulty arises only where a *conversion is chosen*, and under both lawful routes every choice has
+already been made upstream, inside the source — under R1 because the value is simply stated, under R2
+because the prescription fixes every step and §H.3 item 7 disqualifies any step that could have been
+chosen otherwise. **Nothing about R2 requires the arithmetic itself to have been performed upstream**,
+and reading it that way would forbid constructions `XASSET-0024` §D expressly leaves conditionally
+lawful.
+
+**This does not establish that any qualifying source can exist, by either route** — that is `G3`, and
+it is reserved (§A). In particular, no finding here is that any of the 136 registered `R2_C2`
+constructions clears `G3`, or would clear it.
 
 ### F. `XASSET-0024` §K.1 — preserved, not resolved, and shown not to be dispositive of `G3`
 
@@ -412,9 +500,10 @@ forbids as a premise and which would additionally contradict `XASSET-0024` §D's
 that R1 is lawful in principle for a source stating the §C quantity.
 
 **What was worth doing instead is the part that is closable.** Three things were genuinely unstated
-before this filing and are now fixed: the condition itself (§C.1), the absolute bar on downstream
-normalization by any mechanism (§C.2), and — the finding least likely to be anticipated — that
-competent Level-1 endpoint authority does **not** satisfy `G3` (§C.3). The third matters most.
+before this filing and are now fixed: the condition itself (§C.1), the bar on downstream-**authored**
+normalization together with the authorship-versus-execution boundary that limits it (§C.2), and — the
+finding least likely to be anticipated — that competent Level-1 endpoint authority does **not** satisfy
+`G3` (§C.3). The third matters most.
 `XASSET-0025` §G found T5 failing universally and `XASSET-0027` §F closed it; a successor that read
 those together could reasonably believe constituting endpoint authority moves `G3`. It does not:
 `XASSET-0025` §H fixes T1 as a property of what the evidence measures, not of who certifies it, and
@@ -470,8 +559,27 @@ undefined governed term. Bundling would have produced one filing whose review su
 unrelated questions.
 
 **Record `UNABLE_TO_DETERMINE`.** Rejected. Accepted authority determines the condition precisely
-enough to state it (§C.1) and to bar every downstream mapping (§C.2); abstaining on the whole question
-would have discarded three closable sub-determinations to avoid one reserved one.
+enough to state it (§C.1) and to bar every downstream-authored mapping (§C.2); abstaining on the whole
+question would have discarded three closable sub-determinations to avoid one reserved one.
+
+**State §C.2 as an absolute bar on all downstream normalization, including execution.** Rejected: that
+was this filing's own first formulation and it was wrong. `XASSET-0024` §D's R2 row invalidates a
+derivation that is "composed, selected, or invented," or that carries "any tunable coefficient,
+ordering, tolerance, cutoff, or selection" — every invalidator is an act of authorship or choice, and
+§J.6 fixes the requirement as "source-prescribed, not composed by the application." An absolute bar
+keyed on execution locus would permanently forbid constructions accepted authority expressly leaves
+conditionally lawful, while claiming to preserve "no third route" unchanged. The corrected §C.2 bars
+the authorship and leaves the execution question where `XASSET-0024` left it. **It grants nothing:
+`G3` is unchanged, and no R2 construction is found to clear it.**
+
+**State direction as class-wide realized rather than class-wide permitted.** Rejected for the same
+class of error, in the opposite direction. `XASSET-0020` §E.1 says the six classes "**may support**"
+preference — an admission rule fixing eligibility, not a finding that every source carries a direction
+— and §H's own condition table reaches `indistinguishable` only on a determinate tie and
+`unable_to_determine` on missingness, conflict, or staleness. Calling all four values "directions"
+would manufacture a class-wide semantic capability accepted authority does not establish, and could
+contaminate later `G3`/`G5` reasoning. The corrected §D records direction as permitted and
+source/result-dependent, and preserves the two non-directional outcomes by name.
 
 **File nothing, on the ground that `XASSET-0030` already recorded `G3` as reserved.** Rejected. "Not
 closable" without a stated condition leaves a successor unable to tell a qualifying source from a
@@ -480,10 +588,12 @@ disqualified one, or to know that the §E.1 clarification it is drafting is inco
 ## Consequences
 
 `G3` stays open and Stage 1 stays unarmed, but the successor's task is now bounded rather than
-open-ended. It knows the exact condition a qualifying source must satisfy, that no downstream
-normalization will ever supply it, that constituting competent Level-1 endpoint authority will not
-close it, that resolving §K.1 will not close it either, and that an §E.1 clarification aimed at `G3`
-must carry two properties rather than the one §K.1 names.
+open-ended. It knows the exact condition a qualifying source must satisfy, that no
+downstream-**authored** normalization will ever supply it — while mechanical execution of a complete,
+choice-free source-prescribed R2 derivation is not barred by execution locus and remains subject to
+`G3` like everything else — that constituting competent Level-1 endpoint authority will not close it,
+that resolving §K.1 will not close it either, and that an §E.1 clarification aimed at `G3` must carry
+two properties rather than the one §K.1 names.
 
 It also inherits `G1` and `G2` on their original, unamended basis, because this unit deliberately
 reached its conclusions without touching §E.1.

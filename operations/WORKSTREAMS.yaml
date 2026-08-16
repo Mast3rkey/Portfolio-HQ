@@ -13036,7 +13036,7 @@ workstreams:
           unconsumed. The prior xasset0030 gate's own text is byte-unchanged.
       - gate: xasset0031-g3-share-of-the-whole-semantic-determination
         status: in_progress
-        pr: null
+        pr: 330
         description: >-
           XASSET-0031, Lane G, bounded governance-only unit — the first semantic
           successor after XASSET-0030, addressing the gate XASSET-0030 recorded as
@@ -13055,11 +13055,23 @@ workstreams:
           disqualifier "Any other quantity, however expressed as a percentage", and
           in SS-F's RISK failure mode "denominator is unspecified by the source
           itself".
-          (C.2) No downstream normalization is lawful by any mechanism: XASSET-0023
-          SS-H's "There is no third route" is preserved exactly, so under both R1
-          and R2 the normalization has already occurred upstream inside the source.
-          No transformation from any of the six DRIVER classes into a portfolio
-          percentage is permitted at application or Stage-1 time.
+          (C.2) No downstream-AUTHORED normalization is lawful; the boundary is
+          authorship, not execution locus. XASSET-0023 SS-H's "There is no third
+          route" is preserved exactly. Limb A, BARRED: no transformation of any of
+          the six DRIVER classes into a portfolio percentage may be composed,
+          selected, invented, tuned, or completed at application or Stage-1 time.
+          Limb B, NOT CATEGORICALLY BARRED: where an admitted source prescribes the
+          COMPLETE derivation — inputs, operations, ordering, and the SS-C quantity
+          and denominator it yields — leaving the executor ZERO free choice, the
+          application may EXECUTE it; execution is not authorship, and downstream
+          arithmetic does not create a third route. Grounded in XASSET-0024 SS-D's
+          own R2 invalidators ("composed, selected, or invented derivation", "any
+          tunable coefficient, ordering, tolerance, cutoff, or selection") and SS-J.6
+          ("source-prescribed, not composed by the application") — every invalidator
+          is authorship or choice, none is the act of computing; SS-H.3 item 7 is the
+          operative control. This grants nothing about G3: no R2 construction is
+          found to clear it, and none of the 136 registered R2_C2 constructions is
+          determined to.
           (C.3) Competent Level-1 endpoint authority does NOT satisfy G3 —
           XASSET-0025 SS-H fixes T1 and T2 as "properties of what the evidence
           measures, not of who may certify it", and G3 is T1 while competent
@@ -13078,9 +13090,15 @@ workstreams:
           viability: all 680 constructions are HYPOTHETICAL_SOURCE_ARCHITECTURE, so
           no source exists whose declared denominator could be inspected.
           SIX-CLASS CAPABILITY, analyzed separately and not flattened: subject matter
-          YES class-wide (G1, closed); direction YES class-wide, because SS-E.1's
-          operative sentence is about allocation preference and SS-H's four pair
-          conclusions are entirely ordinal with no magnitude anywhere; intrinsic
+          YES class-wide (G1, closed); direction PERMITTED class-wide but NOT
+          class-wide realized and source/result-dependent, because SS-E.1 says only
+          that the six classes "may support" preference — an admission rule fixing
+          eligibility, not a finding that every class or source carries a direction —
+          and of SS-H's four pair values only self_preferred and counterpart_preferred
+          are directions, while indistinguishable is a determinate tie and
+          unable_to_determine is preserved uncertainty; what the vocabulary does
+          establish, and all this unit relies on, is that none of the four carries a
+          magnitude; intrinsic
           magnitude OPEN for all six (SS-K.1, routed through G2 alone); intrinsic
           share-of-whole RESERVED for all six — portfolio_function on SS-J.3's
           class-specific reservation, the other five on SS-M.3, with
@@ -13113,8 +13131,33 @@ workstreams:
           claims, completes or executes. Creates no endpoint, bound, percentage,
           runner, attestation, lane state, or stage1_results.yaml; consumes nothing
           of ATTEMPT_1; changes no canonical byte, hash pin, universe, or
-          LOAD_BEARING_RELPATHS. Draft PR; not merged, not independently reviewed,
-          not principal-accepted in this session.
+          LOAD_BEARING_RELPATHS.
+          CORRECTED after independent FULL exact-head review 4947565573 (CHANGES
+          REQUIRED, 0 BLOCKING / 2 MAJOR / 1 MINOR / 1 NOTE) at reviewed head
+          209e5d33c119c236b977e27bb44b640dceda3417, whose exact-head CI run
+          31978535243 / job 95241592673 was completed/success with 7803 passed / 0
+          failed. Both MAJOR findings were reproduced against controlling text before
+          any edit. MAJOR 1 — SS-C.1/SS-C.2 and the SS-E route table over-narrowed
+          lawful R2 by conflating where a derivation is AUTHORED with where it is
+          EXECUTED, which would have permanently forbidden constructions XASSET-0024
+          SS-D expressly leaves conditionally lawful; corrected as recorded in the
+          (C.1)/(C.2) text above, with the SS-E table gaining a "where the arithmetic
+          may run" column. MAJOR 2 — the six-class table recorded "Direction = YES"
+          class-wide and the prose called all four SS-H values directions; corrected
+          to PERMITTED/source-result-dependent with indistinguishable and
+          unable_to_determine preserved by name as non-directional, as recorded in
+          the SIX-CLASS CAPABILITY text above. MINOR 1 — this gate's own pr field and
+          WS-0014 active_pr were stale at null after PR #330 opened; corrected to 330
+          here, with no historical gate text rewritten. The correction changes no
+          determination: SHARE_OF_THE_WHOLE_CONDITION_NOT_CLOSABLE, the XASSET-0030
+          6/6 gate map, SS-K.1's unresolved state, SS-E.1's unamended state, R1/R2
+          route authority, and every canonical semantic are unchanged, and G1/G2
+          remain not re-derived. Focused suite 81 -> 104 tests, including a dedicated
+          TestR2AuthorshipVersusExecution class covering all six required cases and
+          replacement direction-semantics tests that assert the actual distinction
+          rather than mere vocabulary presence. Draft PR #330; corrected head pending
+          independent DELTA review from 209e5d33c119c236b977e27bb44b640dceda3417; not
+          merged, not principal-accepted in this session.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -14175,7 +14218,7 @@ workstreams:
       reuse, Level-2 work, liquidity determination, and policy adoption all
       remain separately unauthorized.
     active_branch: claude/xasset-0031-g3-magnitude-5tiqd5
-    active_pr: null
+    active_pr: 330
     last_verified_main_sha: 3bcb137981d7dea5362ebca05deba60830076bee
     last_verified_date: "2026-08-16"
     authorized_by: >
