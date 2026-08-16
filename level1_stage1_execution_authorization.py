@@ -211,6 +211,14 @@ LIFECYCLE_OPERATOR_LOGIN = "Mast3rkey"
 #: must match EXACTLY -- a substring test let an adverse review pass merely by containing the
 #: approval phrase in later explanatory text.
 FORMAL_DISPOSITION_PREFIX = "FORMAL DISPOSITION:"
+
+#: GitHub's own review states. The NATIVE state is durable truth and is evaluated independently of
+#: the repository's body grammar, so a later CHANGES_REQUESTED is adverse even with no formal line.
+NATIVE_ADVERSE_REVIEW_STATES = frozenset({"CHANGES_REQUESTED"})
+
+#: States that mechanically prove a later review is NOT an adverse finding. Anything outside both
+#: sets, with no parseable formal disposition, is unclassifiable and fails closed.
+NATIVE_NON_ADVERSE_REVIEW_STATES = frozenset({"APPROVED"})
 SCHEMA_VERSION = 2
 
 LANE_ABSENT = "ABSENT"
@@ -433,6 +441,10 @@ class LiveGovernanceTruthSource:
     """
 
     API = "https://api.github.com"
+    REVIEW_PAGE_SIZE = 100
+    #: A ceiling only, so a pathological listing cannot loop forever. Exceeding it returns None
+    #: (fail closed), never a silently truncated list.
+    MAX_REVIEW_PAGES = 50
 
     def __init__(self, repository: str = REPOSITORY_IDENTITY) -> None:
         self._repository = repository
@@ -479,9 +491,29 @@ class LiveGovernanceTruthSource:
         return self._get(f"/repos/{self._repository}/pulls/{number}/reviews/{review_id}")
 
     def reviews(self, number: int) -> Sequence[Mapping[str, Any]] | None:
-        """Every review on the pull request, for finality checking."""
-        payload = self._get_list(f"/repos/{self._repository}/pulls/{number}/reviews?per_page=100")
-        return payload
+        """EVERY review on the pull request, for finality checking.
+
+        MAJOR 1 (review 4946540894): this previously issued ONE request for the first 100
+        reviews and returned it as though it were the whole list, so with enough history a later
+        adverse exact-head review could sit on page 2 and never be seen. Pagination now continues
+        until a short page proves exhaustion, and ANY page that fails to retrieve or decode
+        returns ``None`` so the caller fails closed rather than reasoning over a partial list.
+        """
+        collected: list[Mapping[str, Any]] = []
+        page = 1
+        while page <= self.MAX_REVIEW_PAGES:
+            payload = self._get_list(
+                f"/repos/{self._repository}/pulls/{number}/reviews"
+                f"?per_page={self.REVIEW_PAGE_SIZE}&page={page}"
+            )
+            if payload is None:
+                return None  # a failed page means the list is NOT proven complete
+            collected.extend(payload)
+            if len(payload) < self.REVIEW_PAGE_SIZE:
+                return collected  # a short page proves exhaustion
+            page += 1
+        # Ran past the page ceiling without proving exhaustion: refuse to assert completeness.
+        return None
 
     def issue_comment(self, comment_id: str) -> Mapping[str, Any] | None:
         return self._get(f"/repos/{self._repository}/issues/comments/{comment_id}")
@@ -904,14 +936,41 @@ def _verify_selected_review_is_final(
             continue  # precedes the final clean pass: legitimate history
         if merged_at and submitted and submitted > merged_at:
             continue  # after the merge: outside this lifecycle
+        state = str(entry.get("state") or "").upper()
         verdict = parse_formal_disposition(entry.get("body") or "")
-        if verdict is not None and verdict != APPROVING_REVIEW_DISPOSITION:
+
+        # GitHub's NATIVE state is durable truth and must never be weaker than the repository's
+        # own body grammar. A later CHANGES_REQUESTED is adverse whether or not it carries a
+        # formal line.
+        if state in NATIVE_ADVERSE_REVIEW_STATES:
             errors.append(
-                f"governance truth: review {entry.get('id')} on the exact accepted head carries "
-                f"the later adverse formal disposition {verdict!r}, submitted after the certified "
-                f"review {selected_review_id}; principal certification of an earlier clean pass "
-                "does not erase a later exact-head finding"
+                f"governance truth: review {entry.get('id')} on the exact accepted head is a "
+                f"later non-dismissed {state} review submitted after the certified review "
+                f"{selected_review_id}; principal certification of an earlier clean pass does "
+                "not erase a later exact-head finding"
             )
+            continue
+        if verdict == APPROVING_REVIEW_DISPOSITION:
+            continue  # a later approving pass is not adverse
+        if verdict is None:
+            # Unclassifiable: neither a native adverse state nor a parseable formal disposition.
+            # Finality cannot be asserted over a review whose verdict is unknown, so this fails
+            # closed rather than being silently ignored.
+            if state in NATIVE_NON_ADVERSE_REVIEW_STATES:
+                continue
+            errors.append(
+                f"governance truth: review {entry.get('id')} on the exact accepted head, "
+                f"submitted after the certified review {selected_review_id}, carries neither a "
+                f"recognised native state ({state or 'unset'!r}) nor a parseable formal "
+                "disposition, so it cannot be proven non-adverse; finality fails closed"
+            )
+            continue
+        errors.append(
+            f"governance truth: review {entry.get('id')} on the exact accepted head carries "
+            f"the later adverse formal disposition {verdict!r}, submitted after the certified "
+            f"review {selected_review_id}; principal certification of an earlier clean pass "
+            "does not erase a later exact-head finding"
+        )
     return errors
 
 
@@ -1201,8 +1260,11 @@ def _read_ledger(path: Path) -> list[Mapping[str, Any]]:
         except (ValueError, json.JSONDecodeError):
             entries.append({"event": "CORRUPT"})
             continue
-        if isinstance(entry, Mapping):
-            entries.append(entry)
+        # MINOR 1 (review 4946540894): a syntactically valid line that is not a mapping -- `[]`,
+        # `"junk"`, `null`, `42` -- was SILENTLY DROPPED rather than treated as corruption, which
+        # is weaker than the canonical promise that malformed entries fail closed. Every
+        # non-empty line must decode to exactly one mapping or the ledger is corrupt.
+        entries.append(entry if isinstance(entry, Mapping) else {"event": "CORRUPT"})
     return entries
 
 
@@ -1315,6 +1377,17 @@ def _recover_mirrored_record(
         # A corrupt ledger participates in provenance; it may never be silently ignored.
         return None, "", (
             f"{ledger_problem}; {event.lower()} provenance cannot be established"
+        )
+
+    # MINOR 1: canonical V5 says DUPLICATED entries fail closed, so the test is "at most one
+    # event", not "one distinct value". Two byte-identical CLAIMED/COMPLETED events are still
+    # duplicated provenance history and are refused.
+    if len(events) > 1:
+        identical = len(distinct) == 1
+        shape = "identical duplicate" if identical else "conflicting"
+        return None, "", (
+            f"the ledger holds {len(events)} {event} events ({shape}); duplicated or conflicting "
+            f"{event.lower()} provenance fails closed, and identical duplicates are refused too"
         )
 
     if file_record is not None and events:

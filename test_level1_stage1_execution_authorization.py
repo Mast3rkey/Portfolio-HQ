@@ -1,6 +1,6 @@
 """Adversarial tests for the ENDPOINT-0001 Stage-1 authorization mechanism (XASSET-0029).
 
-CORRECTED AFTER INDEPENDENT FULL REVIEWS 4946327932, 4946397399 AND 4946464366.
+CORRECTED AFTER INDEPENDENT FULL REVIEWS 4946327932, 4946397399, 4946464366 AND 4946540894.
 
 The previous suite's "happy path" proved only that an internally consistent FICTION passes:
 synthetic SHAs, invented review/acceptance/verification/CI ids, and a self-declared reviewer.
@@ -972,7 +972,10 @@ class TestExactResultProvenance:
             handle.write(AUTH.canonical_json(conflicting) + "\n")
         paths.claim.unlink()
         record, claim_sha, problem = AUTH._recover_claim_record(paths)
-        assert record is None and "conflicting" in problem
+        # Review 4946540894 MINOR 1: two events now fail closed on COUNT before the distinct-value
+        # comparison is reached -- strictly stronger, and the message names which shape it saw.
+        assert record is None
+        assert "conflicting" in problem and "fails closed" in problem
 
 
 # =============================================================================================
@@ -1393,3 +1396,259 @@ class TestResultIdentityContract:
         assert actors["post_merge_verification_author_must_be"] == AUTH.LIFECYCLE_OPERATOR_LOGIN
         assert actors["formal_disposition_parsed_exactly"] is True
         assert actors["selected_review_must_be_final"] is True
+
+
+# =============================================================================================
+# G — REVIEW-LIST COMPLETENESS AND FINALITY CLASSIFICATION (review 4946540894, MAJOR 1)
+# =============================================================================================
+
+
+class PagedGovernance(FakeGovernance):
+    """A governance source whose review listing is genuinely paginated.
+
+    ``pages`` maps 1-indexed page number -> list of review records, or ``None`` to simulate a page
+    whose retrieval/decoding failed. ``reviews()`` mirrors the production contract: walk pages
+    until a short page proves exhaustion, and return ``None`` if ANY page fails.
+    """
+
+    PAGE_SIZE = 100
+
+    def __init__(self, pages, **overrides):
+        super().__init__(**overrides)
+        self._pages = pages
+
+    def reviews(self, number):
+        if number not in self.pulls:
+            return None
+        collected = []
+        page = 1
+        while True:
+            payload = self._pages.get(page)
+            if payload is None:
+                return None
+            collected.extend(payload)
+            if len(payload) < self.PAGE_SIZE:
+                return collected
+            page += 1
+
+
+def _review(review_id, commit, submitted, *, body=None, state="COMMENTED"):
+    return {
+        "id": review_id,
+        "commit_id": commit,
+        "body": body if body is not None else f"FORMAL DISPOSITION: {AUTH.APPROVING_REVIEW_DISPOSITION}",
+        "user": {"login": REVIEWER_LOGIN},
+        "state": state,
+        "submitted_at": submitted,
+        "html_url": f"{PR_URL}#pullrequestreview-{review_id}",
+    }
+
+
+SELECTED = _review(REVIEW_ID, HEAD, "2026-08-16T10:00:00Z")
+
+
+class TestReviewListCompleteness:
+    def test_g1_more_than_one_hundred_reviews_are_all_seen(self, payload):
+        """A full first page must not be mistaken for the whole list."""
+        page1 = [
+            _review(f"49000{i:05d}", "9" * 40, "2026-08-15T00:00:00Z")
+            for i in range(PagedGovernance.PAGE_SIZE - 1)
+        ] + [SELECTED]
+        page2 = [_review("4900099999", "8" * 40, "2026-08-15T01:00:00Z")]
+        gov = PagedGovernance({1: page1, 2: page2})
+        assert len(gov.reviews(AUTH.AUTHORIZING_PULL_REQUEST)) == PagedGovernance.PAGE_SIZE + 1
+        assert AUTH.validate_authorization_document(payload, sources(governance=gov)).valid is True
+
+    def test_g2_adverse_review_on_a_later_page_is_detected(self, payload):
+        """The reproduction: an adverse exact-head review hiding on page 2."""
+        page1 = [
+            _review(f"49000{i:05d}", "9" * 40, "2026-08-15T00:00:00Z")
+            for i in range(PagedGovernance.PAGE_SIZE - 1)
+        ] + [SELECTED]
+        page2 = [
+            _review(
+                "4900088888",
+                HEAD,
+                "2026-08-16T10:30:00Z",
+                body="FORMAL DISPOSITION: CHANGES REQUIRED — 1 BLOCKING",
+            )
+        ]
+        gov = PagedGovernance({1: page1, 2: page2})
+        _rejected(payload, "later adverse formal disposition", sources(governance=gov))
+
+    def test_g3_failed_later_page_retrieval_fails_closed(self, payload):
+        page1 = [
+            _review(f"49000{i:05d}", "9" * 40, "2026-08-15T00:00:00Z")
+            for i in range(PagedGovernance.PAGE_SIZE - 1)
+        ] + [SELECTED]
+        gov = PagedGovernance({1: page1, 2: None})  # page 2 fails
+        assert gov.reviews(AUTH.AUTHORIZING_PULL_REQUEST) is None
+        _rejected(payload, "finality cannot be established", sources(governance=gov))
+
+    def test_g4_clean_multi_page_history_passes(self, payload):
+        page1 = [
+            _review(f"49000{i:05d}", "9" * 40, "2026-08-15T00:00:00Z")
+            for i in range(PagedGovernance.PAGE_SIZE - 1)
+        ] + [SELECTED]
+        page2 = [
+            _review("4900077777", HEAD, "2026-08-16T09:00:00Z"),  # earlier: legitimate history
+            _review("4900077778", HEAD, "2026-08-16T10:30:00Z", state="APPROVED"),
+        ]
+        gov = PagedGovernance({1: page1, 2: page2})
+        assert AUTH.validate_authorization_document(payload, sources(governance=gov)).valid is True
+
+    def test_g5_live_source_paginates_and_fails_closed(self):
+        """The production source's contract, exercised without touching the network."""
+        source = AUTH.LiveGovernanceTruthSource()
+        assert source.REVIEW_PAGE_SIZE == 100
+
+        pages, calls = {}, []
+        pages[1] = [{"id": i} for i in range(100)]
+        pages[2] = [{"id": 100}]
+
+        def fake_get_list(path):
+            calls.append(path)
+            page = int(path.rsplit("page=", 1)[1])
+            return pages.get(page)
+
+        source._get_list = fake_get_list  # type: ignore[assignment]
+        assert len(source.reviews(328)) == 101
+        assert len(calls) == 2 and "page=2" in calls[1]
+
+        pages.pop(2)  # page 2 now fails
+        calls.clear()
+        assert source.reviews(328) is None
+
+    def test_g6_page_ceiling_refuses_to_assert_completeness(self):
+        source = AUTH.LiveGovernanceTruthSource()
+        source._get_list = lambda path: [{"id": 0}] * source.REVIEW_PAGE_SIZE  # never short
+        assert source.reviews(328) is None
+
+
+class TestFinalityClassification:
+    def test_g7_native_changes_requested_without_formal_text_is_adverse(self, payload):
+        """GitHub's native state is durable truth and must not be weaker than body grammar."""
+        gov = FakeGovernance()
+        gov.review_records["4900000009"] = _review(
+            "4900000009",
+            HEAD,
+            "2026-08-16T10:30:00Z",
+            body="no formal line here at all",
+            state="CHANGES_REQUESTED",
+        )
+        _rejected(payload, "non-dismissed CHANGES_REQUESTED", sources(governance=gov))
+
+    def test_g8_malformed_later_exact_head_review_fails_closed(self, payload):
+        gov = FakeGovernance()
+        gov.review_records["4900000010"] = _review(
+            "4900000010", HEAD, "2026-08-16T10:30:00Z", body="FORMAL DISPOSITION", state="COMMENTED"
+        )
+        _rejected(payload, "cannot be proven non-adverse", sources(governance=gov))
+
+    def test_g9_later_native_approved_without_formal_text_is_not_adverse(self, payload):
+        gov = FakeGovernance()
+        gov.review_records["4900000011"] = _review(
+            "4900000011", HEAD, "2026-08-16T10:30:00Z", body="looks good", state="APPROVED"
+        )
+        assert AUTH.validate_authorization_document(payload, sources(governance=gov)).valid is True
+
+    def test_g10_dismissed_native_changes_requested_remains_non_live(self, payload):
+        gov = FakeGovernance()
+        gov.review_records["4900000012"] = _review(
+            "4900000012",
+            HEAD,
+            "2026-08-16T10:30:00Z",
+            body="no formal line",
+            state="DISMISSED",
+        )
+        assert AUTH.validate_authorization_document(payload, sources(governance=gov)).valid is True
+
+    def test_g11_earlier_unclassifiable_review_remains_history(self, payload):
+        """Only reviews AFTER the certified pass are in scope."""
+        gov = FakeGovernance()
+        gov.review_records["4900000013"] = _review(
+            "4900000013",
+            HEAD,
+            "2026-08-16T09:00:00Z",
+            body="unparseable",
+            state="CHANGES_REQUESTED",
+        )
+        assert AUTH.validate_authorization_document(payload, sources(governance=gov)).valid is True
+
+    def test_g12_native_changes_requested_on_an_older_head_does_not_invalidate(self, payload):
+        gov = FakeGovernance()
+        gov.review_records["4900000014"] = _review(
+            "4900000014", "7" * 40, "2026-08-16T10:30:00Z", body="", state="CHANGES_REQUESTED"
+        )
+        assert AUTH.validate_authorization_document(payload, sources(governance=gov)).valid is True
+
+
+# =============================================================================================
+# H — LEDGER STRICTNESS (review 4946540894, MINOR 1)
+# =============================================================================================
+
+
+class TestLedgerStrictness:
+    @pytest.mark.parametrize(
+        "line,label", [("[]", "list"), ('"junk"', "string"), ("null", "null"), ("42", "scalar")]
+    )
+    def test_h1_valid_json_that_is_not_a_mapping_is_corrupt(self, tmp_path, line, label):
+        """Silently dropping these was weaker than the canonical fail-closed promise."""
+        paths = _lane(tmp_path)
+        paths.ledger.parent.mkdir(parents=True, exist_ok=True)
+        paths.ledger.write_text(line + "\n", encoding="utf-8")
+        entries = AUTH._read_ledger(paths.ledger)
+        assert any(e.get("event") == "CORRUPT" for e in entries), f"{label} must be corrupt"
+
+    @pytest.mark.parametrize("line", ["[]", '"junk"', "null", "42"])
+    def test_h2_non_mapping_ledger_line_blocks_claim_provenance(self, tmp_path, payload, line):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        with paths.ledger.open("a", encoding="utf-8") as handle:
+            handle.write(line + "\n")
+        ok, reason = AUTH.claimed_execution_is_authorized(paths, sources())
+        assert ok is False and "corrupt" in reason
+
+    def test_h3_duplicate_identical_claimed_events_fail_closed(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        duplicate = paths.ledger.read_text(encoding="utf-8")
+        with paths.ledger.open("a", encoding="utf-8") as handle:
+            handle.write(duplicate)  # byte-identical second CLAIMED
+        ok, reason = AUTH.claimed_execution_is_authorized(paths, sources())
+        assert ok is False
+        assert "identical duplicate" in reason and "fails closed" in reason
+
+    def test_h4_duplicate_identical_completed_events_fail_closed(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        AUTH.complete_execution(
+            completed_at_utc="t2", results=RESULT_A, paths=paths, sources=sources()
+        )
+        completed_line = [
+            line
+            for line in paths.ledger.read_text(encoding="utf-8").splitlines()
+            if '"COMPLETED"' in line
+        ][0]
+        with paths.ledger.open("a", encoding="utf-8") as handle:
+            handle.write(completed_line + "\n")
+        ok, reason = AUTH.completed_result_is_authorized(RESULT_A, paths, sources())
+        assert ok is False
+        assert "identical duplicate" in reason or "mirror-verified" in reason
+
+    def test_h5_single_record_loss_still_behaves_as_governed(self, tmp_path, payload):
+        """The already-accepted durability behaviour must be unchanged by this hardening."""
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        expected_claim_sha = AUTH.sha256_file(paths.claim)
+        paths.claim.unlink()  # one mirror lost, the other survives
+        record, claim_sha, problem = AUTH._recover_claim_record(paths)
+        assert record is not None and problem == ""
+        assert claim_sha == expected_claim_sha
+        assert AUTH.claimed_execution_is_authorized(paths, sources())[0] is True
+
+    def test_h6_ledger_absent_with_surviving_file_still_recovers(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        paths.ledger.unlink()
+        assert AUTH.claimed_execution_is_authorized(paths, sources())[0] is True
