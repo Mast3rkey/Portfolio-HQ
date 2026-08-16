@@ -198,6 +198,21 @@ R2_FAMILY_ID = "R2_C2"
 
 ID_SEPARATOR = "::"
 
+# Every immutable identity field a Stage-1 candidate result row duplicates from its registered
+# construction. validate_stage1_results() requires exact equality on all of them.
+FROZEN_RESULT_IDENTITY_FIELDS = (
+    "cell_id",
+    "sleeve",
+    "bound",
+    "driver_class",
+    "family_id",
+    "route",
+    "num_0001_class",
+    "governing_authority_refs",
+    "source_architecture",
+    "hypothetical_source_requirements",
+)
+
 # Reused from XASSET-0027's own correction after independent review: phrasing that asserts permanent
 # impossibility rather than a bound on present authority.
 BANNED_PERMANENCE_PHRASES = (
@@ -471,19 +486,25 @@ def generate_construction_universe() -> tuple[dict[str, Any], ...]:
 def frozen_construction_universe() -> dict[str, dict[str, Any]]:
     """Return the closed universe in the exact shape validate_stage1_results() consumes.
 
-    Maps each frozen construction_id to its frozen provenance identity: cell_id, source_architecture,
-    and -- because every registered construction is HYPOTHETICAL_SOURCE_ARCHITECTURE -- the frozen
-    hypothetical_source_requirements. source_path and source_sha256 are deliberately ABSENT, which is
-    what source_architecture_vocabulary.hypothetical_forbids requires.
+    Maps each frozen construction_id to EVERY immutable identity field a Stage-1 result row
+    duplicates, so validate_stage1_results() can require exact equality on all of them rather than on
+    the source-provenance subset alone. Under review 4946154405 MAJOR 2 the adapter exposed only
+    cell_id / source_architecture / hypothetical_source_requirements, which let a row name a valid
+    construction_id while mislabeling its sleeve, bound, DRIVER class, family, route, NUM-0001 class,
+    cell, or authority trace.
+
+    source_path and source_sha256 are deliberately ABSENT, which is what
+    source_architecture_vocabulary.hypothetical_forbids requires.
 
     Supplying this mapping does not authorize execution. validate_stage1_results() independently
     fails closed on lifecycle authorization.
     """
     return {
         record["construction_id"]: {
-            "cell_id": record["cell_id"],
-            "source_architecture": record["source_architecture"],
-            "hypothetical_source_requirements": record["hypothetical_source_requirements"],
+            key: (
+                list(record[key]) if key == "governing_authority_refs" else record[key]
+            )
+            for key in FROZEN_RESULT_IDENTITY_FIELDS
         }
         for record in generate_construction_universe()
     }

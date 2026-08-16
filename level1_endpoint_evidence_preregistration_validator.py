@@ -228,6 +228,20 @@ POINT_RANGE_VALUES = (
 
 SOURCE_ARCHITECTURES = ("EXISTING_SOURCE_ARCHITECTURE", "HYPOTHETICAL_SOURCE_ARCHITECTURE")
 
+# Immutable identity a candidate result row duplicates from its registered construction. Each must
+# equal the frozen value exactly. source_architecture and the provenance fields keep their own
+# dedicated checks below; these are the remaining duplicated identity fields.
+DUPLICATED_FROZEN_IDENTITY_FIELDS = (
+    "cell_id",
+    "sleeve",
+    "bound",
+    "driver_class",
+    "family_id",
+    "route",
+    "num_0001_class",
+    "governing_authority_refs",
+)
+
 PARAMETER_RECORD_KEYS = (
     "parameter_id",
     "value",
@@ -1844,13 +1858,30 @@ def _validate_result_boundary(data: Mapping[str, Any], errors: list[str]) -> Non
             "frozen_provenance_requirements.result_author_may_alter_a_frozen_architecture",
             errors,
         )
-        # No construction universe exists, so no architecture is frozen. This is the direct mechanical
-        # reason no results document can satisfy these requirements today.
-        _false(
-            frozen.get("currently_satisfiable"),
-            "frozen_provenance_requirements.currently_satisfiable",
+        # AMENDED BY XASSET-0028. The universe IS closed, so the requirements are STRUCTURALLY
+        # satisfied; what remains unavailable is OPERATIONAL use, gated on the six-gate lifecycle.
+        # Both facts are asserted, so neither can be read as the other.
+        _true(
+            frozen.get("structurally_satisfied"),
+            "frozen_provenance_requirements.structurally_satisfied",
             errors,
         )
+        _false(
+            frozen.get("operationally_usable"),
+            "frozen_provenance_requirements.operationally_usable",
+            errors,
+        )
+        _false(
+            frozen.get("predecessor_currently_satisfiable_xasset_0027"),
+            "frozen_provenance_requirements.predecessor_currently_satisfiable_xasset_0027",
+            errors,
+        )
+        if "currently_satisfiable" in frozen:
+            errors.append(
+                "frozen_provenance_requirements.currently_satisfiable: superseded by XASSET-0028's "
+                "structurally_satisfied / operationally_usable pair; the ambiguous single flag may "
+                "not be reintroduced"
+            )
     else:
         errors.append("frozen_provenance_requirements: expected a mapping")
 
@@ -2004,40 +2035,49 @@ def stage_1_operational_authorization_is_effective(
     return True, ""
 
 
-def validate_stage1_results(
+def validate_stage1_results(results: Mapping[str, Any]) -> ValidationResult:
+    """Validate a Stage-1 results document. PUBLIC, and unconditionally fail-closed.
+
+    AMENDED BY XASSET-0028 after independent review 4946154405 BLOCKING 1. A previous form accepted
+    an optional ``construction_universe`` argument and consulted the lifecycle gate only when that
+    argument was omitted, so any caller supplying a universe skipped operational authorization
+    entirely. A documented "supplying a universe does not authorize execution" note is not mechanical
+    enforcement; the parameter is therefore REMOVED from the public boundary.
+
+    This function now ALWAYS enforces operational authorization first and ALWAYS obtains the
+    canonical closed universe internally. There is no argument, results-document field, or call form
+    that can reach results validation before the full XASSET-0028 six-gate lifecycle is effective.
+
+    Structural machinery is still testable through the private
+    :func:`_validate_stage1_results_against_universe`, which is explicitly NOT an authorization path
+    and is not part of the public enforcement boundary.
+    """
+    if not isinstance(results, Mapping):
+        return ValidationResult(False, ("stage1_results: expected a top-level mapping",))
+
+    authorized, reason = stage_1_operational_authorization_is_effective()
+    if not authorized:
+        return ValidationResult(
+            False,
+            (f"stage1_results: Stage-1 execution is not operationally authorized — {reason}",),
+        )
+    return _validate_stage1_results_against_universe(results, closed_construction_universe())
+
+
+def _validate_stage1_results_against_universe(
     results: Mapping[str, Any],
-    construction_universe: Mapping[str, Mapping[str, Any]] | None = None,
+    construction_universe: Mapping[str, Mapping[str, Any]],
 ) -> ValidationResult:
-    """Validate a Stage-1 results document against a CLOSED construction universe.
+    """Structural validation of a results document against a frozen universe. PRIVATE.
 
-    ``construction_universe`` maps each frozen ``construction_id`` to its frozen provenance:
-    ``cell_id``, ``source_architecture``, and either ``source_path``/``source_sha256`` (existing) or
-    ``hypothetical_source_requirements`` (hypothetical). It defaults to
-    :func:`closed_construction_universe`, which is EMPTY, so a real call fails closed: no results
-    document may be produced while the construction universe is not closed.
-
-    Supplying a universe explicitly does not authorize execution; it exercises the enforcement
-    machinery a future, separately authorized closure unit and Stage-1 implementation must pass.
+    Deliberately performs NO operational-authorization check: it is the structural half of the
+    public validator, split out so adversarial tests can exercise frozen-identity enforcement
+    without any call form implying Stage-1 authorization. Calling it confers nothing.
     """
     errors: list[str] = []
     if not isinstance(results, Mapping):
         return ValidationResult(False, ("stage1_results: expected a top-level mapping",))
 
-    # Lifecycle gate on the REAL path. XASSET-0028 closes the universe structurally, so
-    # closed_construction_universe() is no longer empty and can no longer fail closed by emptiness
-    # alone. An actual Stage-1 run passes no universe and is refused here until the six-gate
-    # XASSET-0028 lifecycle is complete.
-    #
-    # An explicitly supplied universe still exercises the enforcement machinery without authorizing
-    # anything -- the same distinction this function's own accepted docstring already drew.
-    if construction_universe is None:
-        authorized, reason = stage_1_operational_authorization_is_effective()
-        if not authorized:
-            return ValidationResult(
-                False,
-                (f"stage1_results: Stage-1 execution is not operationally authorized — {reason}",),
-            )
-        construction_universe = closed_construction_universe()
     if not construction_universe:
         return ValidationResult(
             False,
@@ -2076,6 +2116,30 @@ def validate_stage1_results(
         for key in REQUIRED_CANDIDATE_RESULT_KEYS:
             if key not in row:
                 errors.append(f"{where}: required key {key!r} is absent")
+
+        # Every immutable identity field the result row duplicates must EQUAL the frozen
+        # construction. Review 4946154405 MAJOR 2: verifying construction-id membership and source
+        # provenance alone let a row name a valid id while mislabeling its sleeve, bound, DRIVER
+        # class, family, route, NUM-0001 class, cell, or authority trace -- which would corrupt the
+        # cell roll-up even though the id itself is registered.
+        if isinstance(frozen, Mapping):
+            for key in DUPLICATED_FROZEN_IDENTITY_FIELDS:
+                if key not in frozen:
+                    continue
+                expected = frozen[key]
+                recorded = row.get(key)
+                if key == "governing_authority_refs":
+                    if list(recorded or []) != list(expected or []):
+                        errors.append(
+                            f"{where}.governing_authority_refs: recorded {list(recorded or [])!r} "
+                            f"but the frozen construction identity is {list(expected or [])!r}; a "
+                            "result author may not alter a frozen authority trace"
+                        )
+                elif recorded != expected:
+                    errors.append(
+                        f"{where}.{key}: recorded {recorded!r} but the frozen construction identity "
+                        f"is {expected!r}; a result author may not relabel a registered construction"
+                    )
 
         # Provenance must be the FROZEN identity, verified against observed bytes. Accepting a
         # syntactically valid path plus an arbitrary 64-hex string validates shape, not identity.
@@ -2146,6 +2210,8 @@ def validate_stage1_results(
 
         if not row.get("governing_authority_refs"):
             errors.append(f"{where}.governing_authority_refs: must be non-empty")
+            # Exact equality against the frozen trace is enforced above; this remains as a floor for
+            # a universe entry that happens not to carry the field.
 
         # The reading map must be applied exactly, and it must GOVERN the recorded G2 gate result.
         sm = row.get("g2_outcome_under_subject_matter_reading")

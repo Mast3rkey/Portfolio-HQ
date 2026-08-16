@@ -177,15 +177,15 @@ Both canonical files are amended under this decision's successor authority.
 
 <!-- XASSET-0028-HASH-PINS-V1
 protocol_path: research/level1_endpoint_evidence/PROTOCOL_V1.md
-protocol_sha256: 9bb1738a81193fd6640106fa04e1371cb2d75459f40948a3087fb74bffca4034
+protocol_sha256: c02b4d519267b96ddb12500e6d1d55a47aeafd9437de8e41014c8871f631618c
 preregistration_path: research/level1_endpoint_evidence/pre_registration.yaml
-preregistration_sha256: 4c3452b69787e9e6f8397758492627fc0e6601c48a7efa373820ffb73119e83e
+preregistration_sha256: ffde86c1585050b2bf89e58033f37777a903ace86e97be46b6440a217c78ec4a
 predecessor_protocol_sha256: 1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b
 predecessor_preregistration_sha256: bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f
 -->
 
-- `PROTOCOL_V1.md`: `9bb1738a81193fd6640106fa04e1371cb2d75459f40948a3087fb74bffca4034`
-- `pre_registration.yaml`: `4c3452b69787e9e6f8397758492627fc0e6601c48a7efa373820ffb73119e83e`
+- `PROTOCOL_V1.md`: `c02b4d519267b96ddb12500e6d1d55a47aeafd9437de8e41014c8871f631618c`
+- `pre_registration.yaml`: `ffde86c1585050b2bf89e58033f37777a903ace86e97be46b6440a217c78ec4a`
 
 Version identity moves `ENDPOINT-0001-PREREG-V3` → `V4`, with the predecessor recorded. The
 `XASSET-0027` record inside `construction_universe_closure` is retained **verbatim** under

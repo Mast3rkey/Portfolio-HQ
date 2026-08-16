@@ -54,8 +54,12 @@ lifecycle_effectivity:
     execution lane. The full lifecycle above must close first, and the merged canonical hashes must
     verify from the merged commit. This removes any window between merge and lifecycle closure in
     which a second mutation lane could claim authority. Separately and additionally, Stage 1 is
-    NOT EXECUTABLE until a concrete construction universe is closed by its own future, separately
-    authorized unit — see construction_universe_closure. Lifecycle closure alone does not make
+    NOT EXECUTABLE until the complete XASSET-0028 six-gate lifecycle is effective. AMENDED BY
+    XASSET-0028: the construction universe IS closed — see construction_universe_closure — so the
+    predecessor form of this sentence, which required closure by a future separately authorized
+    unit, is historical and is retained only in
+    predecessor_stage_1_execution_may_begin_only_after_xasset_0027 above. Lifecycle closure alone
+    does not make
     Stage 1 executable either.
 
 stage_1_executability:
@@ -1139,11 +1143,23 @@ frozen_provenance_requirements:
       architecture and its requirements must be frozen in the construction universe before execution,
       and the results record may report the frozen architecture but may not invent or alter it.
   result_author_may_alter_a_frozen_architecture: false
-  currently_satisfiable: false
-  currently_satisfiable_note: >-
-    No construction universe exists, so no architecture is frozen and these requirements cannot
-    currently be met by any results document. That is the direct mechanical reason Stage 1 is not
-    executable.
+  structurally_satisfied: true
+  operationally_usable: false
+  amended_by: XASSET-0028
+  structural_operational_note: >-
+    AMENDED BY XASSET-0028. These requirements are now STRUCTURALLY SATISFIED: the construction
+    universe is closed at 680 registered constructions, every one freezes source_architecture
+    HYPOTHETICAL_SOURCE_ARCHITECTURE together with deterministically generated
+    hypothetical_source_requirements, and neither may be authored or altered at results time. They
+    are NOT OPERATIONALLY USABLE: no real Stage-1 run may rely on them until the complete XASSET-0028
+    six-gate lifecycle is effective. Structural freeze and operational authorization are separate
+    facts and this file states both rather than conflating them.
+  predecessor_currently_satisfiable_xasset_0027: false
+  predecessor_currently_satisfiable_note_xasset_0027: >-
+    HISTORICAL ONLY, and no longer the current state. Under XASSET-0027 no construction universe
+    existed, so no architecture was frozen and these requirements could not be met by any results
+    document. That was then the direct mechanical reason Stage 1 was not executable. XASSET-0028
+    closes the universe, so the mechanical reason is now lifecycle authorization, not absence.
 
 provenance_manifest:
   required_fields:

@@ -100,6 +100,31 @@ source_architecture_contract:
     and blocked, never that an executor failed to find something.
   consumable_by_validate_stage1_results: true
   frozen_universe_adapter: level1_construction_universe_closure_validator.frozen_construction_universe
+  frozen_result_identity_fields:
+  - cell_id
+  - sleeve
+  - bound
+  - driver_class
+  - family_id
+  - route
+  - num_0001_class
+  - governing_authority_refs
+  - source_architecture
+  - hypothetical_source_requirements
+  frozen_result_identity_note: >-
+    Every immutable identity field a Stage-1 candidate result row duplicates must EQUAL the frozen
+    construction exactly. Review 4946154405 MAJOR 2 found that verifying construction-id membership
+    and source provenance alone let a row name a valid registered id while mislabeling its sleeve,
+    bound, DRIVER class, family, route, NUM-0001 class, cell, or authority trace, which would corrupt
+    the cell roll-up even though the id itself is registered.
+  public_stage_1_validator_is_unconditionally_fail_closed: true
+  public_stage_1_validator_note: >-
+    Review 4946154405 BLOCKING 1 found the public Stage-1 results validator consulted operational
+    authorization only when no construction_universe argument was supplied, so any caller passing one
+    bypassed the gate. The public parameter is REMOVED: validate_stage1_results(results) always
+    enforces authorization and always obtains the canonical universe internally. Structural machinery
+    is exercised through the private _validate_stage1_results_against_universe, which is explicitly
+    not an authorization path.
 
 universe_identity:
   registered_construction_count: 680
@@ -200,8 +225,8 @@ canonical_amendment:
     research/level1_endpoint_evidence/PROTOCOL_V1.md: 1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b
     research/level1_endpoint_evidence/pre_registration.yaml: bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f
   successor_pins:
-    research/level1_endpoint_evidence/PROTOCOL_V1.md: 9bb1738a81193fd6640106fa04e1371cb2d75459f40948a3087fb74bffca4034
-    research/level1_endpoint_evidence/pre_registration.yaml: 4c3452b69787e9e6f8397758492627fc0e6601c48a7efa373820ffb73119e83e
+    research/level1_endpoint_evidence/PROTOCOL_V1.md: c02b4d519267b96ddb12500e6d1d55a47aeafd9437de8e41014c8871f631618c
+    research/level1_endpoint_evidence/pre_registration.yaml: ffde86c1585050b2bf89e58033f37777a903ace86e97be46b6440a217c78ec4a
   corrected_stale_text: >-
     pre_registration.yaml zero_parameter_declaration.design_consequence previously asserted a
     closed candidate universe while the same file recorded NOT_CLOSED. That contradiction was

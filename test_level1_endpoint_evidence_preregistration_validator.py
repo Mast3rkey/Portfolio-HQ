@@ -617,9 +617,10 @@ class TestTrialInventoryIsDefined:
 def _validate(results, universe=None):
     """Validate a synthetic results document against a SYNTHETIC construction universe.
 
-    A real call omits the universe and fails closed; see TestStage1ResultsFailsClosed.
+    Uses the PRIVATE structural seam. The public validate_stage1_results() takes no universe
+    argument and always enforces operational authorization; see TestStage1ResultsFailsClosed.
     """
-    return V.validate_stage1_results(results, universe or _synthetic_universe())
+    return V._validate_stage1_results_against_universe(results, universe or _synthetic_universe())
 
 
 class TestStage1ResultsFailsClosed:
@@ -644,12 +645,12 @@ class TestStage1ResultsFailsClosed:
             assert gate in reason
 
     def test_an_explicitly_empty_universe_is_rejected(self):
-        r = V.validate_stage1_results(_full_results(), {})
+        r = V._validate_stage1_results_against_universe(_full_results(), {})
         assert not r.ok
         assert any("no closed construction universe exists" in e for e in r.errors)
 
     def test_the_family_slot_grid_is_not_itself_a_construction_universe(self):
-        """Passing the grid works only because the caller supplied it explicitly."""
+        """The public path refuses; only the private structural seam takes a supplied universe."""
         assert V.validate_stage1_results(_full_results()).ok is False
         assert _validate(_full_results()).ok is True
 
@@ -766,7 +767,7 @@ class TestStage1ResultsEnforcement:
         assert not r.ok and any("every gate must be evaluated" in e for e in r.errors)
 
     def test_non_mapping_results_rejected(self):
-        assert not V.validate_stage1_results([], _synthetic_universe()).ok
+        assert not V._validate_stage1_results_against_universe([], _synthetic_universe()).ok
 
 
 # ---------------------------------------------------------------------------
@@ -810,31 +811,31 @@ def _existing_source_results(**overrides):
 
 class TestFrozenProvenance:
     def test_existing_source_matching_the_frozen_identity_and_bytes_accepted(self):
-        r = V.validate_stage1_results(_existing_source_results(), _existing_source_universe())
+        r = V._validate_stage1_results_against_universe(_existing_source_results(), _existing_source_universe())
         assert r.ok, r.errors
 
     def test_existing_source_requires_exact_path_and_hash(self):
         results = _existing_source_results(source_path=None, source_sha256=None)
-        r = V.validate_stage1_results(results, _existing_source_universe())
+        r = V._validate_stage1_results_against_universe(results, _existing_source_universe())
         assert not r.ok and any("source_path" in e for e in r.errors)
         assert any("source_sha256" in e for e in r.errors)
 
     def test_existing_source_rejects_a_malformed_digest(self):
         results = _existing_source_results(source_sha256="not-a-digest")
-        r = V.validate_stage1_results(results, _existing_source_universe())
+        r = V._validate_stage1_results_against_universe(results, _existing_source_universe())
         assert not r.ok and any("source_sha256" in e for e in r.errors)
 
     def test_syntactically_valid_but_arbitrary_digest_rejected(self):
         """Shape validation is not identity validation: a well-formed digest must still match."""
         results = _existing_source_results(source_sha256="a" * 64)
-        r = V.validate_stage1_results(results, _existing_source_universe())
+        r = V._validate_stage1_results_against_universe(results, _existing_source_universe())
         assert not r.ok
         assert any("does not match the frozen construction identity" in e for e in r.errors)
 
     def test_a_path_the_result_author_chose_is_rejected(self):
         """The path must be the FROZEN one, not one selected at results time."""
         results = _existing_source_results(source_path="constitution/INVESTMENT_CONSTITUTION.md")
-        r = V.validate_stage1_results(results, _existing_source_universe())
+        r = V._validate_stage1_results_against_universe(results, _existing_source_universe())
         assert not r.ok
         assert any("the frozen construction identity names" in e for e in r.errors)
 
@@ -845,7 +846,7 @@ class TestFrozenProvenance:
         wrong = "b" * 64
         universe[first] = dict(universe[first]) | {"source_sha256": wrong}
         results = _existing_source_results(source_sha256=wrong)
-        r = V.validate_stage1_results(results, universe)
+        r = V._validate_stage1_results_against_universe(results, universe)
         assert not r.ok
         assert any("does not match the observed bytes" in e for e in r.errors)
 
@@ -854,7 +855,7 @@ class TestFrozenProvenance:
         first = V.generate_family_slot_grid()[0]
         universe[first] = dict(universe[first]) | {"source_path": "governance/does_not_exist.md"}
         results = _existing_source_results(source_path="governance/does_not_exist.md")
-        r = V.validate_stage1_results(results, universe)
+        r = V._validate_stage1_results_against_universe(results, universe)
         assert not r.ok and any("does not exist" in e for e in r.errors)
 
     def test_path_escaping_the_repository_rejected(self):
@@ -863,7 +864,7 @@ class TestFrozenProvenance:
         escape = "../outside.md"
         universe[first] = dict(universe[first]) | {"source_path": escape}
         results = _existing_source_results(source_path=escape)
-        r = V.validate_stage1_results(results, universe)
+        r = V._validate_stage1_results_against_universe(results, universe)
         assert not r.ok and any("outside the repository" in e for e in r.errors)
 
     def test_architecture_may_not_depart_from_the_frozen_identity(self):
@@ -905,11 +906,12 @@ class TestFrozenProvenance:
             == "PROHIBITED"
         )
         assert frozen["result_author_may_alter_a_frozen_architecture"] is False
-        assert frozen["currently_satisfiable"] is False
+        assert frozen["structurally_satisfied"] is True
+        assert frozen["operationally_usable"] is False
 
-    def test_claiming_frozen_provenance_is_currently_satisfiable_rejected(self, data: dict):
-        data["frozen_provenance_requirements"]["currently_satisfiable"] = True
-        _assert_rejected(data, "frozen_provenance_requirements.currently_satisfiable")
+    def test_claiming_frozen_provenance_is_operationally_usable_rejected(self, data: dict):
+        data["frozen_provenance_requirements"]["operationally_usable"] = True
+        _assert_rejected(data, "frozen_provenance_requirements.operationally_usable")
 
     def test_permitting_results_time_free_text_rejected(self, data: dict):
         data["frozen_provenance_requirements"]["hypothetical_source_architecture"][

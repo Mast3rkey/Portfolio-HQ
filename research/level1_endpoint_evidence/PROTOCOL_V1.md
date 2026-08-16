@@ -30,11 +30,15 @@ This program is that program's first stage. Its job is narrow and specific:
 It is deliberately **not** an empirical study, and section 4 explains why that is the honest design
 rather than a reduction in ambition.
 
-**Stage 1 is not executable under this charter.** The architecture below — families, gates,
-disposition rules, reading map, deferrals, provenance requirements, and firewall — is what
-`XASSET-0027` establishes. What it does **not** establish is a concrete construction universe over
-which that architecture could run. Section 5.3 states why, and section 5.5 names the smallest
-separately authorized step required to close it.
+**Stage 1 is not executable.** The architecture below — families, gates, disposition rules, reading
+map, deferrals, provenance requirements, and firewall — is what `XASSET-0027` establishes.
+
+> **AMENDED BY `XASSET-0028`.** `XASSET-0027` did not establish a concrete construction universe.
+> **`XASSET-0028` closes one**, at 680 registered constructions. The **current** reason Stage 1 is
+> not executable is therefore **operational authorization**, not the absence of a universe: the
+> complete `XASSET-0028` six-gate lifecycle must be effective first. Sections 5.3 and 5.5 below are
+> retained as **`XASSET-0027` predecessor state**; the amendment section at the end of this document
+> is operative where they differ.
 
 ## 2. The governing question
 
@@ -94,7 +98,11 @@ eligible to be *proposed* only if Stage 1 identifies at least one constructible 
 then requires its own separate, later, explicitly accepted governance decision. Eligibility is not
 entitlement.
 
-## 5. Population, provenance families, and why the construction universe is not closed
+## 5. Population, provenance families, and the construction universe
+
+> **Sections 5.3 and 5.5 are `XASSET-0027` PREDECESSOR STATE, retained for audit and superseded by
+> the `XASSET-0028` amendment at the end of this document.** Sections 5.1, 5.2, and 5.4 remain
+> current.
 
 ### 5.1 The four classifying dimensions, each closed by accepted authority
 
@@ -137,7 +145,10 @@ external impositions, calibrations, governance selections, provisional guardrail
 derivations can all inhabit the same family. Closing the family vocabulary therefore closes the
 provenance classification and leaves the construction universe open.
 
-### 5.3 Why the construction universe is not closed, and why Stage 1 is therefore not executable
+### 5.3 `XASSET-0027` PREDECESSOR STATE — why the construction universe was not closed then
+
+> **HISTORICAL.** True of `XASSET-0027`. Superseded by the `XASSET-0028` amendment: the universe is
+> now closed and the operative Stage-1 blocker is lifecycle authorization.
 
 The `4 × 2 × 6 × 5 = 240` product is a **family slot grid**: `48` cells × `5` provenance families,
 `slot_id = {sleeve}::{bound}::{driver_class}::{family_id}`. It is exhaustive over the four closed
@@ -170,7 +181,7 @@ because the slots bound provenance families rather than hypotheses. **A negative
 to invented completeness**, so this charter records that the universe is not closed rather than
 manufacturing a registry it cannot support.
 
-### 5.4 The completeness rule — what a negative would mean, once a universe exists
+### 5.4 The completeness rule — what a negative means, now that a universe exists
 
 Once — and only once — a concrete construction universe is closed by its own separately authorized
 unit, a cell may be recorded `BLOCKED_CATEGORICALLY` **only if every registered construction for that
@@ -187,7 +198,10 @@ for one sleeve and none for the other three. The evidence determines which succe
 prioritizes, ranks, sequences, or budgets a sleeve, and the family slot grid is one closed
 classification precisely so that no ordering can imply preference.
 
-### 5.5 The smallest separately authorized next step
+### 5.5 `XASSET-0027` PREDECESSOR STATE — the separately authorized next step it named
+
+> **HISTORICAL.** The unit this section anticipated is `XASSET-0028`, which has since closed the
+> universe. No current-state requirement for a future closure unit survives.
 
 **One governance unit whose scope is to determine whether a concrete construction universe can be
 closed at all and, if so, to freeze it** (`CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION`). That unit

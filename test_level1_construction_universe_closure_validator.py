@@ -661,11 +661,7 @@ class TestFrozenSourceProvenanceModel:
         frozen = V.frozen_construction_universe()
         assert len(frozen) == len(universe)
         for cid, rec in frozen.items():
-            assert set(rec) == {
-                "cell_id",
-                "source_architecture",
-                "hypothetical_source_requirements",
-            }
+            assert set(rec) == set(V.FROZEN_RESULT_IDENTITY_FIELDS)
         row = _result_row(universe[0]["construction_id"], universe[0])
         errs = _run_stage1(row, frozen)
         # No provenance-identity error survives for a faithful row.
@@ -834,12 +830,214 @@ def _result_row(construction_id: str, record) -> dict:
 
 
 def _run_stage1(row: dict, frozen) -> tuple[str, ...]:
-    """Exercise validate_stage1_results()'s provenance machinery past the lifecycle gate."""
-    import unittest.mock as _mock
+    """Exercise the PRIVATE structural validator, which is explicitly not an authorization path."""
+    # PRIVATE structural seam. It confers no authorization and is not the public boundary.
+    return PREREG._validate_stage1_results_against_universe(
+        {"candidate_results": [row]}, frozen
+    ).errors
 
-    with _mock.patch.object(
-        PREREG, "stage_1_operational_authorization_is_effective", return_value=(True, "")
+
+# =============================================================================================
+# Review 4946154405 — BLOCKING 1: the public authorization boundary is unconditional
+# =============================================================================================
+class TestPublicAuthorizationBoundary:
+    def test_1_public_validator_fails_before_lifecycle_closure(self):
+        result = PREREG.validate_stage1_results({"candidate_results": []})
+        assert not result.ok
+        assert any("not operationally authorized" in e for e in result.errors)
+
+    def test_2_public_api_exposes_no_universe_parameter(self):
+        """The bypass was a public parameter; it is removed, not merely discouraged."""
+        import inspect
+
+        params = inspect.signature(PREREG.validate_stage1_results).parameters
+        assert list(params) == ["results"]
+        assert "construction_universe" not in params
+
+    def test_2b_supplying_a_universe_to_the_public_api_is_impossible(self):
+        with pytest.raises(TypeError):
+            PREREG.validate_stage1_results(  # type: ignore[call-arg]
+                {"candidate_results": []},
+                construction_universe=V.frozen_construction_universe(),
+            )
+
+    def test_2c_an_alternate_universe_cannot_reach_the_public_path(self):
+        """Even a hand-built universe cannot be routed through the public boundary."""
+        with pytest.raises(TypeError):
+            PREREG.validate_stage1_results({"candidate_results": []}, {})  # type: ignore[call-arg]
+
+    def test_3_private_helper_confers_no_authorization(self):
+        """The structural seam validates shape; it never reports Stage 1 authorized."""
+        frozen = V.frozen_construction_universe()
+        result = PREREG._validate_stage1_results_against_universe(
+            {"candidate_results": []}, frozen
+        )
+        # It runs structural checks rather than short-circuiting on authorization...
+        assert not any("not operationally authorized" in e for e in result.errors)
+        # ...and the real authorization state is unchanged by having called it.
+        assert PREREG.stage_1_operational_authorization_is_effective()[0] is False
+        assert not PREREG.validate_stage1_results({"candidate_results": []}).ok
+
+    def test_4_results_document_cannot_self_authorize(self):
+        forged = {
+            "candidate_results": [],
+            "stage_1_executability": {"executable": True},
+            "operationally_authorized": True,
+            "authorization": "GRANTED",
+        }
+        result = PREREG.validate_stage1_results(forged)
+        assert not result.ok
+        assert any("not operationally authorized" in e for e in result.errors)
+
+    def test_5_merge_alone_is_insufficient(self):
+        """Authorization is read from canonical bytes, which no merge event flips."""
+        data = yaml.safe_load(
+            (REPO_ROOT / "research/level1_endpoint_evidence/pre_registration.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        assert data["stage_1_executability"]["executable"] is False
+        assert "MERGE" in data["stage_1_executability"][
+            "operational_authorization_requires_all_of"
+        ]
+        assert len(data["stage_1_executability"]["operational_authorization_requires_all_of"]) == 6
+
+    def test_6_all_six_gates_still_required(self):
+        assert len(PREREG.STAGE_1_EFFECTIVITY_GATES) == 6
+        _, reason = PREREG.stage_1_operational_authorization_is_effective()
+        for gate in PREREG.STAGE_1_EFFECTIVITY_GATES:
+            assert gate in reason
+
+
+# =============================================================================================
+# Review 4946154405 — MAJOR 1: singular successor current state
+# =============================================================================================
+class TestSingularSuccessorState:
+    @pytest.fixture
+    def prereg(self):
+        return yaml.safe_load(
+            (REPO_ROOT / "research/level1_endpoint_evidence/pre_registration.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+
+    def test_7_frozen_provenance_is_structurally_satisfied(self, prereg):
+        frozen = prereg["frozen_provenance_requirements"]
+        assert frozen["structurally_satisfied"] is True
+
+    def test_8_frozen_provenance_is_not_operationally_usable(self, prereg):
+        assert prereg["frozen_provenance_requirements"]["operationally_usable"] is False
+
+    def test_8b_ambiguous_single_flag_cannot_return(self, prereg):
+        assert "currently_satisfiable" not in prereg["frozen_provenance_requirements"]
+        prereg["frozen_provenance_requirements"]["currently_satisfiable"] = False
+        result = PREREG.validate(prereg)
+        assert not result.ok
+        assert any("currently_satisfiable" in e for e in result.errors)
+
+    def test_8c_claiming_operational_usability_rejected(self, prereg):
+        prereg["frozen_provenance_requirements"]["operationally_usable"] = True
+        assert not PREREG.validate(prereg).ok
+
+    def test_9_no_current_state_claims_no_universe_exists(self, prereg):
+        """The predecessor claim survives only under an explicitly historical key."""
+        frozen = prereg["frozen_provenance_requirements"]
+        historical = frozen["predecessor_currently_satisfiable_note_xasset_0027"]
+        assert "no construction universe existed" in historical.lower()
+        assert "HISTORICAL ONLY" in historical
+        # No operative field repeats it.
+        for key, value in frozen.items():
+            if key.startswith("predecessor_"):
+                continue
+            if isinstance(value, str):
+                assert "no construction universe exists" not in value.lower()
+
+    def test_9b_lifecycle_note_no_longer_requires_a_future_closure_unit(self, prereg):
+        note = prereg["lifecycle_effectivity"]["note"]
+        assert "closed by its own future, separately" not in note
+        assert "XASSET-0028" in note
+        assert prereg["construction_universe_closure"]["status"] == "CLOSED"
+
+    def test_10_protocol_predecessor_prose_is_labelled_historical(self):
+        text = (REPO_ROOT / "research/level1_endpoint_evidence/PROTOCOL_V1.md").read_text(
+            encoding="utf-8"
+        )
+        assert "### 5.3 `XASSET-0027` PREDECESSOR STATE" in text
+        assert "### 5.5 `XASSET-0027` PREDECESSOR STATE" in text
+        assert "AMENDED BY `XASSET-0028`" in text
+        # The old current-state heading is gone.
+        assert "## 5. Population, provenance families, and why the construction universe is not closed" not in text
+
+
+# =============================================================================================
+# Review 4946154405 — MAJOR 2: full frozen result-identity binding
+# =============================================================================================
+class TestFrozenResultIdentityBinding:
+    def test_adapter_exposes_every_duplicated_identity_field(self, universe):
+        frozen = V.frozen_construction_universe()
+        for field in (
+            "cell_id",
+            "sleeve",
+            "bound",
+            "driver_class",
+            "family_id",
+            "route",
+            "num_0001_class",
+            "governing_authority_refs",
+            "source_architecture",
+            "hypothetical_source_requirements",
+        ):
+            assert field in frozen[universe[0]["construction_id"]]
+
+    @pytest.mark.parametrize(
+        "field,bad",
+        [
+            ("cell_id", "crypto::UPPER::recovery"),
+            ("sleeve", "crypto"),
+            ("bound", "UPPER"),
+            ("driver_class", "recovery"),
+            ("family_id", "R2_C2"),
+            ("route", "R2"),
+            ("num_0001_class", 2),
+            ("governing_authority_refs", ["INVENTED-0001"]),
+        ],
+    )
+    def test_11_to_18_mutating_any_duplicated_identity_field_is_rejected(
+        self, universe, field, bad
     ):
-        return PREREG.validate_stage1_results(
-            {"candidate_results": [row]}, construction_universe=frozen
-        ).errors
+        """A valid construction_id must not license a relabelled row."""
+        frozen = V.frozen_construction_universe()
+        row = _result_row(universe[0]["construction_id"], universe[0])
+        row[field] = bad
+        errs = _run_stage1(row, frozen)
+        assert any(field in e and "frozen construction identity" in e for e in errs), errs
+
+    def test_19_source_architecture_mutation_rejected(self, universe):
+        frozen = V.frozen_construction_universe()
+        row = _result_row(universe[0]["construction_id"], universe[0])
+        row["source_architecture"] = "EXISTING_SOURCE_ARCHITECTURE"
+        assert any("frozen" in e for e in _run_stage1(row, frozen))
+
+    def test_20_hypothetical_requirement_mutation_rejected(self, universe):
+        frozen = V.frozen_construction_universe()
+        row = _result_row(universe[0]["construction_id"], universe[0])
+        row["hypothetical_source_requirements"] = "whatever the executor prefers"
+        assert any(
+            "hypothetical_source_requirements" in e for e in _run_stage1(row, frozen)
+        )
+
+    def test_21_cell_rollup_cannot_be_altered_by_row_mislabelling(self, universe):
+        """A row may not relabel its cell, so roll-up ranges over the registered cell."""
+        frozen = V.frozen_construction_universe()
+        row = _result_row(universe[0]["construction_id"], universe[0])
+        registered_cell = frozen[universe[0]["construction_id"]]["cell_id"]
+        row["cell_id"] = "crypto::UPPER::recovery"
+        errs = _run_stage1(row, frozen)
+        assert any("cell_id" in e for e in errs)
+        assert registered_cell != "crypto::UPPER::recovery"
+
+    def test_faithful_row_passes_identity_binding(self, universe):
+        frozen = V.frozen_construction_universe()
+        row = _result_row(universe[0]["construction_id"], universe[0])
+        errs = _run_stage1(row, frozen)
+        assert not [e for e in errs if "frozen construction identity" in e], errs
