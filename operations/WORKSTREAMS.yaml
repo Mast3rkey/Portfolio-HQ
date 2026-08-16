@@ -12560,6 +12560,274 @@ workstreams:
           representation unchanged, RISK-0001 not reused. Because the source
           model changed and the universe hash changed, the corrected head
           requires another NEW independent FULL exact-head review, not a DELTA.
+      - gate: xasset0029-endpoint-0001-stage-1-operational-authorization
+        status: in_progress
+        pr: 328
+        description: >-
+          Current Lane G filing. XASSET-0028's own lifecycle closed in full
+          (PR #327: accepted head 036606401ea569b0a03f2d716d87a057d07d71dc,
+          final review 4946202326 APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE,
+          acceptance 5307509913, post-merge verification 5307545846, merge
+          c51e94609eff7ede2bdfa084844d59b8347561e5, merge-commit CI run
+          31948052529 / job 95167105752 completed/success) - all independently
+          re-verified live before any mutation. XASSET-0027 SS-P.1's two
+          prerequisites are therefore both satisfied, but the software gate
+          remained fail-closed and Stage 1 was still NOT OPERATIONALLY
+          AUTHORIZED. This unit supplies the missing authorization mechanism
+          without executing anything.
+          KEY FINDING, discovered by reading the code rather than assuming it:
+          "flip stage_1_executability.executable to true" was never actually
+          available. _validate_stage_1_executability enforces _false(executable)
+          while stage_1_operational_authorization_is_effective() required
+          executable is True - mutually exclusive, so the canonical file could
+          never be simultaneously valid and authorizing. XASSET-0029 preserves
+          that lock rather than unpicking it: executable stays false PERMANENTLY,
+          gains an enforced-true sibling
+          executable_is_never_the_authorization_source, and authorization is
+          relocated off committed state entirely.
+          MECHANISM - two-factor, neither sufficient alone: (1) structural arming,
+          a new inert canonical stage_1_operational_authorization block stating
+          WHAT a valid authorization must prove and WHICH identities it binds,
+          validator-enforced to keep saying currently_effective false /
+          authorization_is_committed_state false /
+          authorization_is_external_runtime_evidence true and to retain every
+          fail-closed condition; and (2) an EXTERNAL one-shot preexecution
+          attestation held outside the repository, so it can never be committed,
+          reviewed into existence, or forged into a pull request. New module
+          level1_stage1_execution_authorization.py binds repository, study,
+          decision, predecessor XASSET-0028 merge SHA, canonical protocol and
+          preregistration SHA-256, universe SHA-256, construction count 680, cell
+          count 48, execution_attempt_id, review id/disposition/reviewed SHA,
+          acceptance id/accepted head, merge SHA and BOTH parents, post-merge
+          verification id, and merge-commit CI run/job/status/conclusion/head SHA
+          - with canonical pins and universe identity RECOMPUTED LIVE and compared
+          against both the bound constants and the recorded values, closed schema
+          (unknown keys rejected), duplicate JSON keys rejected, and validation
+          before any bytes reach disk so an invalid attestation cannot occupy the
+          one-shot slot.
+          NO MERGE-TO-EXECUTION GAP: merging XASSET-0029 authorizes nothing. The
+          attestation cannot be pre-staged because generating it requires evidence
+          that does not exist until after the merge - the merge SHA, a post-merge
+          verification record, and a merge-commit CI run that has CONCLUDED success
+          at that exact merge SHA. CI cannot have concluded at the instant of merge,
+          so the interval is strictly positive and enforced by evidence, not
+          convention.
+          NO INFINITE REGRESS: arming is a runtime operator act, not a further
+          merged governance PR. XASSET-0029 is the final governance decision
+          required for Stage 1.
+          ONE LANE, ONE SHOT: execution_attempt_id ENDPOINT-0001::STAGE_1::ATTEMPT_1,
+          derived from repository truth (no Stage-1 attempt has ever been executed
+          or authorized). Attestation and consumption receipt each created with
+          O_EXCL, so neither can be regenerated nor replayed, and an authorization
+          naming one attempt can never authorize another. XASSET-0029 PREPARES the
+          single XASSET-0027 SS-P.1 lane and does NOT consume it.
+          CANONICAL AMENDMENT: PROTOCOL_V1.md and pre_registration.yaml amended in
+          lockstep V4 -> V5; protocol mirror gains stage_1_authorization_mechanism
+          and stage_1_execution_attempt_id so the two files cannot drift on the new
+          fact. XASSET-0028's pins retained as predecessor identity and its pin
+          check demoted to history-only - exactly the treatment XASSET-0028 gave
+          XASSET-0027's pins. Accepted history is never rewritten. CONSTRUCTION
+          UNIVERSE UNTOUCHED: 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224,
+          680 constructions, 48 cells, independently regenerated after the amendment
+          and unchanged.
+          One pre-existing test was STRENGTHENED rather than weakened: it previously
+          asserted a forged executable:true DID authorize; it now asserts that no
+          committed boolean can authorize and that forging it is reported as a
+          canonical-integrity failure.
+          NOT DONE: no Stage-1 execution, no gate evaluation, none of the 680 real
+          dispositions, no stage1_results.yaml, no execution receipt, no data
+          acquisition, no Stage 2, no endpoint admission, no endpoint value, bound,
+          point, range or percentage, no Level-1 sizing, no Level-2 work, no
+          XASSET-0021 snapshot successor, no representation-rule adoption, no
+          application authorization, no targets/holdings/gates/issuer_lookthrough/
+          allocate/margin_state/levels change, no dashboard or UI work, no charts,
+          ladders, margin/leverage/debt, deployment, trades or orders, and no
+          weakened tests. XASSET-0024 SS-K.1 remains UNRESOLVED, SS-J.12 remains
+          DEFERRED, representation remains SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED,
+          Stage 2 remains unauthorized, application authority remains WITHHELD.
+          Draft PR; not merged, not independently reviewed, not principal-accepted
+          in this session.
+      - gate: xasset0029-material-correction-after-full-review-4946327932
+        status: in_progress
+        pr: 328
+        description: >-
+          Material correction. Independent FULL exact-head review 4946327932 of PR
+          #328 at head c1f55543183e358de8b6b0d4b0818a7045473efe returned CHANGES
+          REQUIRED (2 BLOCKING / 2 MAJOR / 2 MINOR / 1 NOTE). Both BLOCKING defects
+          were reproduced before any correction.
+          BLOCKING 1 - the attestation did not verify the lifecycle it claimed to
+          attest. build_authorization_payload() took the head, the entire
+          lifecycle_evidence block, the author identity, and the timestamp from its
+          caller, and validation checked only internal consistency, so an entirely
+          fictional review/acceptance/merge/CI chain validated True. Corrected by
+          deriving and re-verifying every lifecycle fact from two durable sources on
+          every validation: the LOCAL GIT OBJECT STORE (merge SHA, both real parents,
+          current ancestry, and the byte identity of load-bearing files as they exist
+          in the merged tree) and GITHUB GOVERNANCE METADATA (the review and its exact
+          reviewed commit and formal disposition, the reviewer login DERIVED rather
+          than self-declared, the principal acceptance comment, the post-merge
+          verification comment, and the merge-commit CI run and job including their
+          pairing). Governance metadata only - never market, price, fundamental, or any
+          other economic data, and not a Stage-1 acquisition path. An unreachable
+          source FAILS CLOSED. Truth sources are injectable, so tests never touch live
+          GitHub.
+          BLOCKING 2 - consuming the one-shot authorization made the public result
+          validator reject the very execution that consumed it, while deferring
+          consumption left a replay and concurrency window. Corrected with an explicit
+          ABSENT -> READY -> CLAIMED -> COMPLETED state machine and two separate
+          predicates, because these are genuinely different questions:
+          new_execution_is_authorized() answers "may a NEW execution start?" (READY
+          only) and claimed_execution_is_authorized() answers "did THIS result come
+          from the one lawful claim?" (CLAIMED or COMPLETED, bound to the exact
+          attestation hash and attempt id). validate_stage1_results() now asks the
+          second, so the lawfully claimed execution can publish a valid result while a
+          second execution stays impossible. The claim is taken atomically immediately
+          before the first real work, via O_EXCL plus an append-only ledger.
+          DURABILITY, stated rather than overclaimed: the claim is recorded in two
+          places and EITHER establishes CLAIMED, so losing one alone does not reopen
+          the lane; destroying the whole directory also destroys the attestation, so
+          the lane becomes ABSENT, which is not READY; a crash after claiming leaves
+          the lane CLAIMED and recovery is a governed act. A privileged operator
+          deleting the entire directory is outside any filesystem enforcement boundary,
+          and that limit is disclosed.
+          MAJOR 1 - the canonical must_bind_exactly list promised
+          PREDECESSOR_XASSET_0028_MERGE_SHA while the module constants went unused.
+          Now bound one-for-one and verified from git, together with the XASSET-0028
+          accepted head and merge base, the authorizing pull request number, current
+          ancestry, and load-bearing enforcement-code identity derived FROM THE MERGED
+          TREE rather than a circular hard-coded self-hash.
+          MAJOR 2 - canonical V5 carried two competing current states. Corrected in
+          place (not by manufacturing a V6): the single current condition is the
+          XASSET-0029 lifecycle plus an authenticated external attestation plus a
+          one-shot claim; XASSET-0027 and XASSET-0028 survive only in explicitly
+          predecessor-named fields.
+          MINOR 1 - the large CLAUDE.md runtime narrative was removed and replaced with
+          one concise pointer to the authoritative decision and canonical files.
+          MINOR 2 - this factual sync.
+          The corrected happy-path fixture runs against a mechanically authenticated
+          seam, and a dedicated regression test proves the previous synthetic fiction
+          now FAILS. No test was weakened. Universe unchanged at 680 / 48 /
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224. Stage 1 is
+          still NOT EXECUTED and NOT EXECUTABLE; no attestation, claim, completion, or
+          ledger record exists. Because the correction changes lifecycle-truth
+          authentication and the execution state machine, the corrected head requires a
+          NEW independent FULL exact-head review, not a DELTA.
+      - gate: xasset0029-second-material-correction-after-full-review-4946397399
+        status: in_progress
+        pr: 328
+        description: >-
+          Second material correction. NEW independent FULL exact-head review
+          4946397399 of PR #328 at head 674f95c5aa249eb34de2068b8a5569e0572bf586
+          returned CHANGES REQUIRED (2 BLOCKING / 2 MAJOR / 2 MINOR / 1 NOTE). Both
+          BLOCKING defects were reproduced before any correction.
+          BLOCKING 1 - the CLAIMED/COMPLETED side bypassed the authenticated
+          attestation entirely. lane_state_at() recognised claim/ledger state before
+          loading authorization.json, and claimed_execution_is_authorized() then
+          accepted any syntactically valid 64-hex hash, skipping the comparison
+          outright when the attestation file was absent. A local claim.json carrying
+          the registered attempt id therefore made the PUBLIC result gate return
+          authorized with no attestation at all and no review, acceptance, merge or CI
+          ever consulted. Corrected: a claimed lane must re-prove that the exact
+          attestation still exists, still hashes to what the claim bound, and still
+          validates against durable git/GitHub truth, so post-claim canonical,
+          load-bearing, ancestry or governance drift fails closed. State detection may
+          still report CLAIMED; lawful provenance never follows from it.
+          BLOCKING 2 - nothing bound "this result". complete_execution() recorded a
+          result_identity_sha256 that no predicate read, and validate_stage1_results()
+          computed no identity for the supplied document, so completing result A did
+          not prevent publishing result B. Completion after claim-file loss also
+          emitted null attestation/claim identities, violating the canonical
+          completion_binds contract. Corrected with one deterministic
+          stage1_result_identity (SHA-256 of canonical JSON) shared by the future
+          result writer, completion, and the public gate; a public validator that
+          compares the supplied artifact against the completion record; and
+          deterministic claim-identity recovery from the append-only ledger, or failing
+          closed - never a null binding.
+          MAJOR 1 - the independence claim now matches what can be observed. This
+          repository uses ONE GitHub account for both roles, so login inequality cannot
+          observe session independence. Rather than leave an unenforced promise,
+          SELF_AUTHORED_REVIEW_WHERE_INDEPENDENCE_IS_REQUIRED was REMOVED and replaced
+          with a property the machine genuinely proves: the principal's durable
+          acceptance must NAME the exact independent review pass relied upon.
+          Verification also now requires review/acceptance/post-merge records to belong
+          to PR #328, the review to be non-dismissed, and the chronology review ->
+          acceptance -> merge -> post-merge verification to hold. author_identity is
+          reclassified as non-authorizing informational metadata.
+          MAJOR 2 - exact reviewed base and zero merge drift. Only the second merge
+          parent was bound and the merged tree became its own load-bearing reference,
+          so base drift or a merge resolution could silently become the authorized
+          implementation. Corrected: parents must be exactly [c51e9460..., accepted
+          head], the merge tree must equal the accepted-head tree, and every
+          load-bearing blob must match at BOTH the reviewed head and the merge.
+          MINOR 1 - the public validator docstring described the spent XASSET-0028
+          lifecycle; it now describes XASSET-0029, with XASSET-0028 as predecessor
+          history. MINOR 2 - the public boundary is now tested through the REAL
+          validate_stage1_results(), including result substitution.
+          Canonical V5 corrected in place, not replaced by a V6; successor pins
+          recomputed. No test weakened; 112 focused tests (up from 76). Universe
+          unchanged at 680 / 48 /
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224. Stage 1
+          still NOT EXECUTED and NOT EXECUTABLE; no attestation, claim, completion or
+          ledger record exists. Requires another NEW independent FULL exact-head
+          review, not a DELTA.
+      - gate: xasset0029-third-material-correction-after-full-review-4946464366
+        status: in_progress
+        pr: 328
+        description: >-
+          Third material correction. NEW independent FULL exact-head review
+          4946464366 of PR #328 at head a69bdeda7adbdb61f5d9ef45bb6615c459a731d6
+          returned CHANGES REQUIRED (2 BLOCKING / 3 MAJOR / 1 NOTE). All five
+          findings were reproduced before any correction.
+          BLOCKING 1 - the completed result was still mutable. completion.json was
+          preferred whenever present and never compared with its append-only ledger
+          mirror, so after lawfully completing result A, rewriting only
+          completion.json.result_identity_sha256 to bind B made B validate. The same
+          gap existed for claims, and a missing file took ledger[-1] without requiring
+          a unique event. Corrected by centralising both recoveries: both copies
+          present must be the same canonical record; a missing file recovers only from
+          exactly one unique uncorrupted ledger event; conflicting, duplicated,
+          malformed or corrupt entries fail closed. The one permitted asymmetry - a
+          surviving file with a lost ledger event - is exactly the single-record loss
+          the disclosed durability model already covers, and is tested.
+          BLOCKING 2 - lifecycle gates did not authenticate their actor. Acceptance and
+          post-merge verification were checked for location, body and chronology but
+          never for author; the synthetic fixtures carried no user at all and passed.
+          Any account able to comment on PR #328 could impersonate either gate.
+          Corrected: both records must be authored by the bound principal/lifecycle
+          account, and a record with no durable author identity is refused. Stated
+          honestly in canonical text: this repository's principal, merge and
+          lifecycle-operator account is the SAME GitHub login throughout its history,
+          so this is not claimed as a separation-of-duties proof - it stops OTHER
+          accounts impersonating the gates.
+          MAJOR 1 - the review verdict was matched as a substring, so an adverse review
+          passed whenever its explanatory text quoted the approval phrase. Corrected
+          with parse_formal_disposition(), which reads the FIRST "FORMAL DISPOSITION:"
+          line and requires the verdict to equal the approving value exactly.
+          Self-reported blocking/major counts can no longer rescue an adverse durable
+          review.
+          MAJOR 2 - selected-review finality was not checked, so a clean pass followed
+          by a later CHANGES REQUIRED review on the SAME head still armed the
+          lifecycle. Corrected by extending the governance source with a review listing
+          and rejecting any later non-dismissed adverse exact-head review submitted
+          after the certified review and before the merge. Historical adverse reviews
+          preceding the final clean pass remain legitimate; reviews on older heads do
+          not invalidate the current head; an unavailable listing fails closed.
+          MAJOR 3 - the result-identity contract was untruthful. Canonical said
+          EXACT_RESULT_ARTIFACT_SHA256 while the code hashed canonical JSON of the
+          parsed mapping (not the stage1_results.yaml bytes), and complete_execution()
+          accepted a caller-supplied digest. Corrected by choosing the SEMANTIC model
+          explicitly: renamed to EXACT_STAGE1_RESULT_SEMANTIC_IDENTITY_SHA256,
+          is_artifact_byte_hash false stated outright, and completion now takes the
+          actual result and derives the identity itself. No public completion API
+          accepts a precomputed digest.
+          Canonical V5 corrected in place, not replaced by a V6; successor pins
+          recomputed. No test weakened - where the stricter mirror check now trips
+          before the old hash comparison, assertions were updated to the STRONGER
+          reason. 142 focused tests, up from 112. Universe unchanged at 680 / 48 /
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224. Stage 1
+          still NOT EXECUTED and NOT EXECUTABLE; no attestation, claim, completion or
+          ledger record exists. Requires another NEW independent FULL exact-head
+          review, not a DELTA.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -13619,9 +13887,9 @@ workstreams:
       representation-aggregation rule, any snapshot successor, RISK parameter
       reuse, Level-2 work, liquidity determination, and policy adoption all
       remain separately unauthorized.
-    active_branch: claude/xasset-0027-endpoint-authority-charter-xqave2
-    active_pr: null
-    last_verified_main_sha: e7e9e53dbcdcaaa0ff71f128694028650500c323
+    active_branch: claude/xasset-0029-stage1-auth-d0vp7f
+    active_pr: 328
+    last_verified_main_sha: c51e94609eff7ede2bdfa084844d59b8347561e5
     last_verified_date: "2026-08-16"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I

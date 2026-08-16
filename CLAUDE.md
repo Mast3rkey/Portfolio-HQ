@@ -291,3 +291,4 @@ Allocation logic (as implemented in `allocate.py`, migrated to the canonical des
 
 ## Formatting
 Extremely concise. Bold headers, tables for comparisons, zero preamble. Honesty over comfort — name rationalizations directly.
+- **August 2026** — **`XASSET-0029` proposed (not yet accepted): `ENDPOINT-0001` Stage-1 operational authorization** — `governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md` is authoritative; the canonical mechanism lives in `research/level1_endpoint_evidence/pre_registration.yaml`'s `stage_1_operational_authorization` block and `level1_stage1_execution_authorization.py`. **Stage 1 remains NOT EXECUTABLE**, and no committed value in this repository authorizes it.

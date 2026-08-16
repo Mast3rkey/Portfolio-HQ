@@ -41,45 +41,65 @@ lifecycle_effectivity:
   - MERGE
   - IMMEDIATE_POST_MERGE_VERIFICATION
   - SUCCESSFUL_MERGE_COMMIT_CI
-  stage_1_execution_may_begin_only_after: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
-  stage_1_execution_precondition_amended_by: XASSET-0028
+  stage_1_execution_may_begin_only_after: XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  predecessor_stage_1_execution_may_begin_only_after_xasset_0028: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
+  stage_1_execution_precondition_amended_by: XASSET-0029
+  predecessor_stage_1_execution_precondition_amended_by_xasset_0028: XASSET-0028
   predecessor_stage_1_execution_may_begin_only_after_xasset_0027: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
   predecessor_precondition_is_spent_note: >-
-    HISTORICAL ONLY. XASSET-0027's own lifecycle is complete and XASSET-0028 asserts construction-universe
-    closure, so the predecessor condition would read as already satisfied. It is retained for audit and
-    is NOT operative. The operative condition is the XASSET-0028 six-gate lifecycle above.
+    HISTORICAL ONLY, AND THERE ARE NOW TWO SPENT PREDECESSORS. XASSET-0027's own lifecycle is complete
+    and XASSET-0028 closed the construction universe, so the XASSET-0027 condition reads as already
+    satisfied. XASSET-0028's own six-gate lifecycle has since closed in full, so that condition is
+    spent as well. Neither is operative. THE SINGLE OPERATIVE CONDITION IS
+    stage_1_execution_may_begin_only_after ABOVE: the XASSET-0029 lifecycle plus an authenticated
+    external one-shot preexecution attestation plus a one-shot execution claim.
   merge_alone_is_sufficient: false
   note: >-
     Merge alone does not make this charter operationally effective and does not open a Stage 1
     execution lane. The full lifecycle above must close first, and the merged canonical hashes must
     verify from the merged commit. This removes any window between merge and lifecycle closure in
-    which a second mutation lane could claim authority. Separately and additionally, Stage 1 is
-    NOT EXECUTABLE until the complete XASSET-0028 six-gate lifecycle is effective. AMENDED BY
-    XASSET-0028: the construction universe IS closed — see construction_universe_closure — so the
-    predecessor form of this sentence, which required closure by a future separately authorized
-    unit, is historical and is retained only in
-    predecessor_stage_1_execution_may_begin_only_after_xasset_0027 above. Lifecycle closure alone
-    does not make
-    Stage 1 executable either.
+    which a second mutation lane could claim authority. AMENDED BY XASSET-0029, WHICH IS THE SINGLE
+    CURRENT STATE: the construction universe IS closed (see construction_universe_closure) and
+    XASSET-0028's own lifecycle IS closed, so both predecessor conditions are historical and are
+    retained only in the explicitly predecessor-named fields above. Stage 1 is NOT EXECUTABLE until
+    the complete XASSET-0029 lifecycle is effective AND an authenticated external one-shot
+    preexecution attestation exists AND that attestation has been atomically claimed. Lifecycle
+    closure alone does not make Stage 1 executable, and no committed value in this repository does
+    either.
 
 stage_1_executability:
+  # AMENDED BY XASSET-0029. `executable` stays false PERMANENTLY and keeps its enforced-false
+  # check. Its meaning is now explicit and load-bearing: NO COMMITTED VALUE IN THIS REPOSITORY
+  # AUTHORIZES STAGE-1 EXECUTION. XASSET-0028 already enforced `_false(executable)` in the
+  # validator while the authorization gate simultaneously required `executable is True`, so the
+  # canonical file could never be both valid and self-authorizing. XASSET-0029 preserves that
+  # lock rather than unpicking it, and relocates authorization to an external, one-shot,
+  # post-lifecycle attestation. See `stage_1_operational_authorization` below.
   executable: false
+  executable_is_never_the_authorization_source: true
   status: STRUCTURALLY_CLOSED_NOT_OPERATIONALLY_AUTHORIZED
-  blocking_prerequisite: XASSET_0028_LIFECYCLE_CLOSURE
+  blocking_prerequisite: XASSET_0029_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
   authorized_by_xasset_0027: false
   authorized_by_xasset_0028: false
+  authorized_by_xasset_0029: false
   construction_universe_structurally_closed: true
-  amended_by: XASSET-0028
+  amended_by: XASSET-0029
+  predecessor_amended_by_xasset_0028: XASSET-0028
   predecessor_status_xasset_0027: NOT_YET_EXECUTABLE_CONSTRUCTION_UNIVERSE_NOT_CLOSED
   predecessor_blocking_prerequisite_xasset_0027: CONCRETE_CONSTRUCTION_UNIVERSE_CLOSURE
+  predecessor_blocking_prerequisite_xasset_0028: XASSET_0028_LIFECYCLE_CLOSURE
   statement: >-
     XASSET-0027 charters this programme's architecture — its families, gates, disposition rules,
     reading map, deferrals, provenance requirements, and firewall — and does NOT authorize Stage 1
     execution. XASSET-0027's own blocking prerequisite was that a concrete construction universe did
-    not exist. XASSET-0028 closes that universe structurally, which retires the PREDECESSOR blocker
-    and replaces it with a strictly narrower one: Stage 1 remains NOT EXECUTABLE until XASSET-0028's
-    own lifecycle closes in full. Structural closure is not operational authorization, and no reader
-    may treat the two as the same fact.
+    not exist. XASSET-0028 closed that universe structurally, retiring that blocker. XASSET-0028's
+    own lifecycle has since closed in full, which retires the XASSET-0028 blocker in turn.
+    XASSET-0029 does NOT thereby declare Stage 1 executable. It establishes the mechanism by which
+    exactly one Stage-1 attempt may become authorized, and that mechanism is deliberately NOT a
+    committed value: authorization is an external, one-shot preexecution attestation that cannot
+    exist until after XASSET-0029 has itself been reviewed, accepted, merged, post-merge verified,
+    and confirmed green by merge-commit CI. Structural closure is not operational authorization, and
+    no reader may treat the two as the same fact.
   operational_authorization_requires_all_of:
   - INDEPENDENT_FULL_EXACT_HEAD_REVIEW
   - PRINCIPAL_EXACT_HEAD_ACCEPTANCE
@@ -93,13 +113,242 @@ stage_1_executability:
     opens. A validator that can structurally read the closed universe must still fail closed on
     lifecycle authorization until every gate is met.
 
+# ESTABLISHED BY XASSET-0029. This block specifies WHAT a valid Stage-1 authorization must prove
+# and WHICH exact identities it must bind. It is inert: it never asserts that authorization has
+# been granted, and nothing a reader can edit here grants it.
+stage_1_operational_authorization:
+  mechanism: EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  established_by: XASSET-0029
+  currently_effective: false
+  currently_effective_note: >-
+    False here is not a switch awaiting a flip. Effectivity is not readable from this file at all:
+    it is decided at runtime by validating an external attestation that does not exist yet. A future
+    edit setting this true would change nothing, because no validator consults it for authorization.
+  authorization_is_committed_state: false
+  authorization_is_external_runtime_evidence: true
+  implementing_module: level1_stage1_execution_authorization.py
+  execution_attempt_id: ENDPOINT-0001::STAGE_1::ATTEMPT_1
+  one_shot: true
+  one_shot_note: >-
+    XASSET-0027 SSP.1 permits exactly ONE later Stage-1 evaluation/results PR. The attestation, the
+    execution claim, and the completion record are each created with O_EXCL and mirrored into an
+    append-only ledger, so a second claim always fails and an authorization naming one attempt can
+    never authorize another. A rerun after completion requires new governance authority.
+  lifecycle_actor_authentication:
+    principal_acceptance_author_must_be: Mast3rkey
+    post_merge_verification_author_must_be: Mast3rkey
+    same_account_disclosure: >-
+      This repository's principal, merge, and lifecycle-operator account is the SAME GitHub login
+      throughout its recorded history. That is stated plainly rather than implying separate
+      accounts exist. Verifying the author is still load-bearing: it prevents any other account
+      able to comment on the pull request from impersonating the acceptance or post-merge gate,
+      which was previously possible because only comment location and body text were checked.
+    formal_disposition_parsed_exactly: true
+    formal_disposition_note: >-
+      The review verdict is parsed from the FIRST "FORMAL DISPOSITION:" line and must equal the
+      approving value EXACTLY. A substring test previously let an adverse review pass whenever its
+      explanatory text quoted the approval phrase.
+    selected_review_must_be_final: true
+    selected_review_finality_note: >-
+      A later NON-DISMISSED adverse review on the EXACT accepted head, submitted after the
+      certified review and before the merge, invalidates the lifecycle. Reviews on older heads are
+      history and do not invalidate the current head; dismissed later reviews are not live
+      findings; adverse reviews preceding the final clean pass are legitimate history.
+  review_independence_position:
+    account_level_independence_observable: false
+    account_level_independence_note: >-
+      This repository uses a single GitHub account for both authoring and reviewing sessions, a
+      pre-existing platform limitation recorded repeatedly in its own history. GitHub login
+      inequality therefore CANNOT prove independent session authorship, and the mechanism does not
+      pretend otherwise. An earlier fail-closed condition asserting that a self-authored review is
+      mechanically refused was removed rather than left as an unenforced promise.
+    what_is_actually_verified: DURABLE_PRINCIPAL_CERTIFICATION_OF_THE_INDEPENDENT_REVIEW
+    what_is_actually_verified_note: >-
+      The principal's own durable acceptance record must NAME the exact independent review pass it
+      relies upon. The mechanism then verifies that review exists on the authorizing pull request,
+      was submitted against the exact accepted head, carries the approving formal disposition, is
+      not dismissed, and precedes the acceptance, which in turn precedes the merge. That is a real,
+      mechanically checkable certification chain; it is not a claim about session identity.
+    reviewer_identity_is_derived_not_declared: true
+    author_identity_is_authorizing: false
+    author_identity_note: >-
+      author_identity is caller-supplied informational metadata only. It is recorded for audit and
+      is deliberately NOT used to establish independence or any other authorization fact.
+  result_identity:
+    mechanism: SHA256_OF_CANONICAL_JSON
+    is_artifact_byte_hash: false
+    semantics_note: >-
+      This is a SEMANTIC identity, NOT the SHA-256 of the stage1_results.yaml file bytes. It hashes
+      the canonical JSON serialization of the parsed result mapping, so key ordering and
+      insignificant whitespace do not change identity while any content change does. The canonical
+      field name says SEMANTIC precisely so no reader mistakes it for an artifact byte hash.
+    derived_by_completion_not_supplied: true
+    derived_by_completion_note: >-
+      complete_execution() receives the actual result and computes the identity itself. There is no
+      public completion API that accepts a precomputed digest, so completion cannot bind a value
+      unrelated to the artifact produced.
+    single_shared_function: stage1_result_identity
+    shared_by:
+    - FUTURE_STAGE_1_RESULT_WRITER
+    - COMPLETION_RECORD
+    - PUBLIC_RESULT_VALIDATION
+    note: >-
+      Exactly one deterministic identity, so "is this the artifact the lawful execution completed"
+      is mechanically decidable. Key order and insignificant whitespace do not change identity; any
+      content change does. Completing result A therefore prevents publishing result B.
+  lifecycle_truth_sources:
+    principle: >-
+      A recorded lifecycle value is never accepted because its text is well-formed. Every value is
+      re-derived from a durable source and compared, and an unreachable source FAILS CLOSED. An
+      entirely fictional but internally consistent review/acceptance/merge/CI chain must be refused.
+    git_object_store: >-
+      Content-addressed and offline. Supplies the merge SHA, both real parents, current ancestry, and
+      the byte identity of load-bearing files AS THEY EXIST IN THE MERGED TREE.
+    github_governance_metadata: >-
+      Supplies the review and its exact reviewed commit and formal disposition, the reviewer login
+      (DERIVED, never self-declared), the principal acceptance comment, the post-merge verification
+      comment, and the merge-commit CI run and job. GOVERNANCE METADATA ONLY - never market, price,
+      fundamental, or any other economic data, and never a Stage-1 data-acquisition path.
+  execution_state_machine:
+    states:
+    - ABSENT
+    - READY
+    - CLAIMED
+    - COMPLETED
+    new_execution_permitted_in: READY
+    result_validation_permitted_in:
+    - CLAIMED
+    - COMPLETED
+    separation_note: >-
+      "May a NEW execution start?" and "did THIS result come from the one lawful execution?" are
+      different questions and are answered by different predicates. Conflating them made consuming
+      the authorization reject the very execution that consumed it, while deferring consumption left
+      a replay and concurrency window. The claim is taken atomically immediately before the first
+      real Stage-1 work.
+    mirrored_records_are_a_consistency_check: true
+    mirrored_records_note: >-
+      claim.json/completion.json and their append-only ledger mirrors are a CONSISTENCY CHECK, never
+      interchangeable alternatives. Both present must agree as the same canonical record; a missing
+      file recovers only from exactly one unique uncorrupted ledger event; conflicting, duplicated,
+      malformed, or corrupt entries FAIL CLOSED. A missing ledger event with a surviving file is the
+      one permitted single-record-loss case the durability model already discloses.
+    claimed_state_never_implies_lawful_provenance: true
+    claimed_state_note: >-
+      State DETECTION and authorization VALIDITY are different questions. A surviving claim record
+      or ledger entry may establish that the lane is CLAIMED, but lawful provenance additionally
+      requires that the exact attestation still exists, still hashes to what the claim bound, and
+      still validates against durable git and GitHub truth. A missing, invalid, or drifted
+      attestation fails closed even while the lane reports CLAIMED.
+    final_publication_requires_completion: true
+    final_publication_note: >-
+      Public result validation requires a COMPLETED record whose attempt, attestation, claim, and
+      RESULT identity all match, the last computed from the supplied artifact. Structural
+      validation of a candidate result before completion uses the private precompletion seam and
+      never weakens this final public boundary.
+    claim_binds:
+    - EXECUTION_ATTEMPT_ID
+    - EXACT_ATTESTATION_SHA256
+    completion_binds:
+    - EXECUTION_ATTEMPT_ID
+    - EXACT_ATTESTATION_SHA256
+    - EXACT_CLAIM_SHA256
+    - EXACT_STAGE1_RESULT_SEMANTIC_IDENTITY_SHA256
+  durability_boundary:
+    claim_recorded_in_two_places: true
+    single_record_loss_reopens_lane: false
+    total_directory_loss_state: ABSENT
+    total_directory_loss_is_ready: false
+    crash_after_claim_reopens_lane: false
+    statement: >-
+      O_EXCL prevents a second creation only while the path exists, so "can never be replayed" would
+      be an overclaim. What is enforced: the claim is recorded in both claim.json and an append-only
+      ledger, and EITHER establishes CLAIMED, so losing one alone does not reopen the lane;
+      destroying the whole directory also destroys the attestation, so the lane becomes ABSENT, which
+      is not READY and requires passing the full authenticated lifecycle verification again; and a
+      crash after claiming leaves the lane CLAIMED, recoverable only by a governed act. A privileged
+      operator deleting the entire directory is outside any filesystem-based enforcement boundary,
+      and that limit is disclosed rather than papered over.
+  trust_boundary:
+    repository_state_says: WHAT_IS_STRUCTURALLY_AUTHORIZED
+    external_attestation_says: WHETHER_THIS_EXECUTION_IS_AUTHORIZED
+    results_document_says: NOTHING_ABOUT_AUTHORIZATION
+    results_cannot_self_authorize: true
+    private_structural_seams_are_non_authorizing: true
+  must_bind_exactly:
+  - REPOSITORY_IDENTITY
+  - EXACT_REVIEWED_BASE_SHA
+  - EXACT_MERGE_PARENTS_REVIEWED_BASE_THEN_ACCEPTED_HEAD
+  - MERGE_TREE_EQUALS_ACCEPTED_HEAD_TREE
+  - PRINCIPAL_CERTIFIED_INDEPENDENT_REVIEW_ID
+  - EXACT_COMPLETED_RESULT_SEMANTIC_IDENTITY
+  - STUDY_ID
+  - AUTHORIZING_DECISION_XASSET_0029
+  - AUTHORIZING_PULL_REQUEST_NUMBER
+  - PREDECESSOR_XASSET_0028_MERGE_SHA
+  - PREDECESSOR_XASSET_0028_ACCEPTED_HEAD
+  - PREDECESSOR_XASSET_0028_MERGE_BASE
+  - LOAD_BEARING_IMPLEMENTATION_IDENTITY_FROM_MERGED_TREE
+  - CURRENT_GIT_ANCESTRY_OF_THE_AUTHORIZING_MERGE
+  - CANONICAL_PROTOCOL_SHA256
+  - CANONICAL_PREREGISTRATION_SHA256
+  - CONSTRUCTION_UNIVERSE_SHA256
+  - CONSTRUCTION_COUNT_680
+  - EXECUTION_ATTEMPT_ID
+  - INDEPENDENT_REVIEW_IDENTITY_AND_REVIEWED_SHA
+  - PRINCIPAL_ACCEPTANCE_IDENTITY_AND_ACCEPTED_HEAD
+  - MERGE_SHA_AND_BOTH_PARENTS
+  - POST_MERGE_VERIFICATION_IDENTITY
+  - MERGE_COMMIT_CI_RUN_JOB_AND_SUCCESS_CONCLUSION
+  must_fail_closed_on:
+  - NO_ATTESTATION_PRESENT
+  - MALFORMED_OR_DUPLICATE_KEYED_ATTESTATION
+  - WRONG_REPOSITORY_OR_STUDY_OR_DECISION
+  - WRONG_OR_STALE_AUTHORIZATION_HEAD
+  - WRONG_CANONICAL_OR_UNIVERSE_HASH
+  - WRONG_CONSTRUCTION_COUNT
+  - ABSENT_OR_ADVERSE_INDEPENDENT_REVIEW
+  - ABSENT_ACCEPTANCE_OR_ACCEPTANCE_FOR_ANOTHER_HEAD
+  - ABSENT_MERGE_OR_WRONG_MERGE_PARENTS
+  - ABSENT_POST_MERGE_VERIFICATION
+  - ABSENT_OR_UNSUCCESSFUL_MERGE_COMMIT_CI
+  - POST_ACCEPTANCE_OR_POST_MERGE_DRIFT
+  - REPLAYED_OR_ALREADY_CONSUMED_AUTHORIZATION
+  - AUTHORIZATION_FOR_A_DIFFERENT_EXECUTION_ATTEMPT
+  - UNVERIFIABLE_OR_UNREACHABLE_GOVERNANCE_TRUTH_SOURCE
+  - NONEXISTENT_BUT_WELL_FORMED_REVIEW_ACCEPTANCE_VERIFICATION_OR_CI_IDENTIFIER
+  - SELF_DECLARED_REVIEWER_IDENTITY
+  - PRINCIPAL_CERTIFICATION_OF_THE_INDEPENDENT_REVIEW_ABSENT_OR_MISMATCHED
+  - LIFECYCLE_RECORD_BELONGING_TO_ANOTHER_PULL_REQUEST
+  - LIFECYCLE_CHRONOLOGY_VIOLATION
+  - DISMISSED_OR_NON_FINAL_SELECTED_REVIEW
+  - MERGE_FIRST_PARENT_NOT_THE_EXACT_REVIEWED_BASE
+  - MERGE_TREE_DIFFERS_FROM_THE_ACCEPTED_HEAD_TREE
+  - CLAIMED_OR_COMPLETED_LANE_WITHOUT_A_STILL_VALID_ATTESTATION
+  - SUPPLIED_RESULT_NOT_THE_COMPLETED_RESULT_IDENTITY
+  - LOAD_BEARING_ENFORCEMENT_CODE_DRIFT
+  - AUTHORIZING_MERGE_NOT_IN_CURRENT_ANCESTRY
+  no_merge_to_execution_gap: true
+  no_merge_to_execution_gap_mechanism: >-
+    Merging XASSET-0029 authorizes nothing. The attestation cannot be pre-staged, because generating
+    it requires evidence that does not exist until after the merge: the merge SHA, a post-merge
+    verification record, and a merge-commit CI run that has CONCLUDED success at that exact merge
+    SHA. CI cannot have concluded at the instant of merge, so a strictly positive interval between
+    merge and authorizability is enforced by evidence rather than by convention.
+  no_infinite_authorization_regress: true
+  no_infinite_authorization_regress_mechanism: >-
+    Arming is a runtime operator act, not a further merged governance PR. XASSET-0029 is the final
+    governance decision required for Stage 1; after it merges and verifies, the generator is run
+    once and no additional authorization PR is ever required. The regress terminates because the
+    final step changes no repository state.
+
 stages:
   stage_1:
     stage_id: STAGE_1_CONSTRUCTION_FEASIBILITY
     authorized_by_xasset_0027: false
-    executable_only_after: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
-    executable_only_after_amended_by: XASSET-0028
+    executable_only_after: XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+    executable_only_after_amended_by: XASSET-0029
     predecessor_executable_only_after_xasset_0027: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
+    predecessor_executable_only_after_xasset_0028: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
     acquires_data: false
     fits_or_estimates_anything: false
     produces_endpoint: false
@@ -1400,5 +1649,5 @@ protected_paths:
 - intelligence/level1_sleeve_synthesis/
 - /private/tmp/phq-risk0001-results
 
-hash_version: ENDPOINT-0001-PREREG-V4
-predecessor_hash_version: ENDPOINT-0001-PREREG-V3
+hash_version: ENDPOINT-0001-PREREG-V5
+predecessor_hash_version: ENDPOINT-0001-PREREG-V4

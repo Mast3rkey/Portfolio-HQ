@@ -52,9 +52,16 @@ SUCCESSOR_DECISION_PATH = (
     / "XASSET-0028-concrete-construction-universe-closure-determination.md"
 )
 
+#: XASSET-0029 is the CURRENT successor authority over the canonical bytes.
+XASSET_0029_DECISION_PATH = (
+    ROOT
+    / "governance/decisions"
+    / "XASSET-0029-endpoint-0001-stage-1-operational-authorization.md"
+)
+
 STUDY_ID = "ENDPOINT-0001"
-HASH_VERSION = "ENDPOINT-0001-PREREG-V4"
-PREDECESSOR_HASH_VERSION = "ENDPOINT-0001-PREREG-V3"
+HASH_VERSION = "ENDPOINT-0001-PREREG-V5"
+PREDECESSOR_HASH_VERSION = "ENDPOINT-0001-PREREG-V4"
 
 # XASSET-0028 closes the construction universe. Cardinality and integrity hash are recomputed
 # from the real generator at validation time, never trusted as literals here.
@@ -67,6 +74,8 @@ TOP_KEYS = (
     "authority",
     "lifecycle_effectivity",
     "stage_1_executability",
+    # ESTABLISHED BY XASSET-0029: specifies the external one-shot authorization mechanism.
+    "stage_1_operational_authorization",
     "stages",
     "research_question",
     "sleeves",
@@ -295,8 +304,58 @@ STAGE_1_EFFECTIVITY_GATES = (
     "MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION",
 )
 
+#: AMENDED BY XASSET-0029. XASSET-0028's lifecycle has closed, retiring its blocker. Stage 1 is
+#: nonetheless still not executable: XASSET-0029 relocates authorization off committed state
+#: entirely, onto an external one-shot preexecution attestation that cannot exist until after the
+#: XASSET-0029 lifecycle has itself closed in full.
 STAGE_1_EXECUTION_PRECONDITION = (
+    "XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+)
+
+PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0028 = (
     "XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION"
+)
+
+STAGE_1_BLOCKING_PREREQUISITE = (
+    "XASSET_0029_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+)
+
+#: The XASSET-0029 authorization mechanism. Authorization is external runtime evidence, never
+#: committed state.
+STAGE_1_AUTHORIZATION_MECHANISM = "EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+
+STAGE_1_EXECUTION_ATTEMPT_ID = "ENDPOINT-0001::STAGE_1::ATTEMPT_1"
+
+#: Failure modes the XASSET-0029 mechanism must refuse. Declared canonically so a future edit
+#: silently dropping one is a validation error.
+STAGE_1_AUTHORIZATION_FAIL_CLOSED_CONDITIONS = (
+    "NO_ATTESTATION_PRESENT",
+    "MALFORMED_OR_DUPLICATE_KEYED_ATTESTATION",
+    "WRONG_REPOSITORY_OR_STUDY_OR_DECISION",
+    "WRONG_OR_STALE_AUTHORIZATION_HEAD",
+    "WRONG_CANONICAL_OR_UNIVERSE_HASH",
+    "WRONG_CONSTRUCTION_COUNT",
+    "ABSENT_OR_ADVERSE_INDEPENDENT_REVIEW",
+    "ABSENT_ACCEPTANCE_OR_ACCEPTANCE_FOR_ANOTHER_HEAD",
+    "ABSENT_MERGE_OR_WRONG_MERGE_PARENTS",
+    "ABSENT_POST_MERGE_VERIFICATION",
+    "ABSENT_OR_UNSUCCESSFUL_MERGE_COMMIT_CI",
+    "POST_ACCEPTANCE_OR_POST_MERGE_DRIFT",
+    "REPLAYED_OR_ALREADY_CONSUMED_AUTHORIZATION",
+    "AUTHORIZATION_FOR_A_DIFFERENT_EXECUTION_ATTEMPT",
+    # Added after review 4946397399. SELF_AUTHORED_REVIEW_WHERE_INDEPENDENCE_IS_REQUIRED was
+    # REMOVED rather than left as an unenforced promise: this repository uses one GitHub account
+    # for both roles, so login inequality cannot observe session independence. What replaces it is
+    # a property the machine genuinely proves -- the principal's durable acceptance must name the
+    # exact independent review pass relied upon.
+    "PRINCIPAL_CERTIFICATION_OF_THE_INDEPENDENT_REVIEW_ABSENT_OR_MISMATCHED",
+    "LIFECYCLE_RECORD_BELONGING_TO_ANOTHER_PULL_REQUEST",
+    "LIFECYCLE_CHRONOLOGY_VIOLATION",
+    "DISMISSED_OR_NON_FINAL_SELECTED_REVIEW",
+    "MERGE_FIRST_PARENT_NOT_THE_EXACT_REVIEWED_BASE",
+    "MERGE_TREE_DIFFERS_FROM_THE_ACCEPTED_HEAD_TREE",
+    "CLAIMED_OR_COMPLETED_LANE_WITHOUT_A_STILL_VALID_ATTESTATION",
+    "SUPPLIED_RESULT_NOT_THE_COMPLETED_RESULT_IDENTITY",
 )
 
 # XASSET-0027's precondition, retained as HISTORY only. Its lifecycle is complete, so an operative
@@ -737,7 +796,7 @@ def _validate_stage_1_executability(data: Mapping[str, Any], errors: list[str]) 
     )
     _exact(
         block.get("blocking_prerequisite"),
-        "XASSET_0028_LIFECYCLE_CLOSURE",
+        STAGE_1_BLOCKING_PREREQUISITE,
         "stage_1_executability.blocking_prerequisite",
         errors,
     )
@@ -749,6 +808,18 @@ def _validate_stage_1_executability(data: Mapping[str, Any], errors: list[str]) 
     _false(
         block.get("authorized_by_xasset_0028"),
         "stage_1_executability.authorized_by_xasset_0028",
+        errors,
+    )
+    # XASSET-0029 establishes the authorization MECHANISM. It does not itself authorize execution,
+    # and the canonical file must keep saying so.
+    _false(
+        block.get("authorized_by_xasset_0029"),
+        "stage_1_executability.authorized_by_xasset_0029",
+        errors,
+    )
+    _true(
+        block.get("executable_is_never_the_authorization_source"),
+        "stage_1_executability.executable_is_never_the_authorization_source",
         errors,
     )
     _true(
@@ -775,6 +846,94 @@ def _validate_stage_1_executability(data: Mapping[str, Any], errors: list[str]) 
             errors.append(
                 "stage_1_executability.operational_authorization_requires_all_of: must include "
                 f"{gate!r}"
+            )
+
+
+def _validate_stage_1_operational_authorization(
+    data: Mapping[str, Any], errors: list[str]
+) -> None:
+    """The XASSET-0029 authorization mechanism must be present, inert, and unweakened.
+
+    This block SPECIFIES a gate; it never opens one. The checks below therefore assert that it
+    keeps saying authorization is external, one-shot, and not committed state — and that no
+    fail-closed condition has been quietly dropped.
+    """
+    block = data.get("stage_1_operational_authorization")
+    if not isinstance(block, Mapping):
+        errors.append("stage_1_operational_authorization: expected a mapping")
+        return
+
+    _exact(
+        block.get("mechanism"),
+        STAGE_1_AUTHORIZATION_MECHANISM,
+        "stage_1_operational_authorization.mechanism",
+        errors,
+    )
+    _exact(
+        block.get("established_by"),
+        "XASSET-0029",
+        "stage_1_operational_authorization.established_by",
+        errors,
+    )
+    _exact(
+        block.get("execution_attempt_id"),
+        STAGE_1_EXECUTION_ATTEMPT_ID,
+        "stage_1_operational_authorization.execution_attempt_id",
+        errors,
+    )
+    # Committed state never authorizes, and this block never claims effectivity.
+    _false(
+        block.get("currently_effective"),
+        "stage_1_operational_authorization.currently_effective",
+        errors,
+    )
+    _false(
+        block.get("authorization_is_committed_state"),
+        "stage_1_operational_authorization.authorization_is_committed_state",
+        errors,
+    )
+    _true(
+        block.get("authorization_is_external_runtime_evidence"),
+        "stage_1_operational_authorization.authorization_is_external_runtime_evidence",
+        errors,
+    )
+    _true(block.get("one_shot"), "stage_1_operational_authorization.one_shot", errors)
+    _true(
+        block.get("no_merge_to_execution_gap"),
+        "stage_1_operational_authorization.no_merge_to_execution_gap",
+        errors,
+    )
+    _true(
+        block.get("no_infinite_authorization_regress"),
+        "stage_1_operational_authorization.no_infinite_authorization_regress",
+        errors,
+    )
+
+    boundary = block.get("trust_boundary")
+    if not isinstance(boundary, Mapping):
+        errors.append("stage_1_operational_authorization.trust_boundary: expected a mapping")
+    else:
+        _true(
+            boundary.get("results_cannot_self_authorize"),
+            "stage_1_operational_authorization.trust_boundary.results_cannot_self_authorize",
+            errors,
+        )
+        _true(
+            boundary.get("private_structural_seams_are_non_authorizing"),
+            "stage_1_operational_authorization.trust_boundary."
+            "private_structural_seams_are_non_authorizing",
+            errors,
+        )
+
+    declared = block.get("must_fail_closed_on") or ()
+    if not isinstance(declared, (list, tuple)):
+        errors.append("stage_1_operational_authorization.must_fail_closed_on: expected a list")
+        declared = ()
+    for condition in STAGE_1_AUTHORIZATION_FAIL_CLOSED_CONDITIONS:
+        if condition not in declared:
+            errors.append(
+                "stage_1_operational_authorization.must_fail_closed_on: must include "
+                f"{condition!r}"
             )
 
 
@@ -1962,6 +2121,7 @@ def validate(data: Mapping[str, Any]) -> ValidationResult:
     _validate_authority(data, errors)
     _validate_lifecycle(data, errors)
     _validate_stage_1_executability(data, errors)
+    _validate_stage_1_operational_authorization(data, errors)
     _validate_stages(data, errors)
     _validate_construction_families(data, errors)
     _validate_family_slot_grid(data, errors)
@@ -2007,16 +2167,14 @@ def closed_construction_universe() -> Mapping[str, Mapping[str, Any]]:
     return CU.frozen_construction_universe()
 
 
-def stage_1_operational_authorization_is_effective(
+def _canonical_authorization_mechanism_is_armed(
     prereg_path: Path = PREREG_PATH,
 ) -> tuple[bool, str]:
-    """Report whether Stage-1 OPERATIONAL authorization is effective, and why not when it is not.
+    """Factor 1 of the two-factor gate: is the committed specification present and unweakened?
 
-    Structural closure of the construction universe is not authorization. The canonical
-    stage_1_executability block carries `executable`, which stays false until the full XASSET-0028
-    six-gate lifecycle has closed and a later, separately governed amendment flips it. Reading the
-    canonical file rather than a module constant means a results author cannot bypass this by
-    constructing a document, and a merge alone cannot flip it either.
+    Shared by both public predicates so neither can drift from the other. Reading the canonical
+    file rather than a module constant means a results author cannot bypass this by constructing
+    a document. This never authorizes anything on its own.
     """
     try:
         data = yaml.safe_load(prereg_path.read_text(encoding="utf-8"))
@@ -2025,37 +2183,143 @@ def stage_1_operational_authorization_is_effective(
     block = (data or {}).get("stage_1_executability")
     if not isinstance(block, Mapping):
         return False, "canonical stage_1_executability block absent"
-    if block.get("executable") is not True:
+
+    # A committed value must never be able to authorize execution. If `executable` has been edited
+    # true, that is a canonical-integrity failure, not an authorization.
+    if block.get("executable") is not False:
         return False, (
-            "stage_1_executability.executable is not true; the construction universe is "
-            "structurally closed but Stage-1 operational authorization requires the full "
-            f"XASSET-0028 lifecycle ({', '.join(STAGE_1_EFFECTIVITY_GATES)}). Structural closure is "
-            "not authorization, and there is no merge-to-execution gap."
+            "stage_1_executability.executable must be false; no committed value in this repository "
+            "authorizes Stage-1 execution, and a true value makes the canonical preregistration "
+            "invalid rather than authorizing anything."
+        )
+
+    mechanism = (data or {}).get("stage_1_operational_authorization")
+    if not isinstance(mechanism, Mapping):
+        return False, (
+            "canonical stage_1_operational_authorization block absent; the XASSET-0029 "
+            "authorization mechanism is not armed."
+        )
+    if mechanism.get("mechanism") != STAGE_1_AUTHORIZATION_MECHANISM:
+        return False, (
+            "stage_1_operational_authorization.mechanism is not "
+            f"{STAGE_1_AUTHORIZATION_MECHANISM!r}; the authorization mechanism has been altered."
         )
     return True, ""
+
+
+def stage_1_operational_authorization_is_effective(
+    prereg_path: Path = PREREG_PATH,
+) -> tuple[bool, str]:
+    """Report whether Stage-1 OPERATIONAL authorization is effective, and why not when it is not.
+
+    AMENDED BY XASSET-0029. The predecessor form required ``stage_1_executability.executable`` to
+    be true. That could never happen: ``_validate_stage_1_executability`` enforces
+    ``_false(executable)``, so the canonical file was invalid in exactly the state that would have
+    authorized execution. Flipping the boolean was therefore never available, and would in any case
+    have opened a merge-to-execution gap (effective at merge, before post-merge verification and
+    before merge-commit CI concludes) and rested authorization on a mutable committed value that
+    demonstrates nothing.
+
+    XASSET-0029 relocates authorization off committed state entirely. Two factors are required and
+    neither suffices alone:
+
+      1. STRUCTURAL ARMING (this file). The canonical block must still say Stage 1 is not
+         self-authorizing, and must carry the XASSET-0029 mechanism specification. Reading the file
+         rather than a module constant means a results author cannot bypass this by constructing a
+         document.
+      2. EXTERNAL ATTESTATION (outside the repository). A one-shot preexecution attestation must
+         exist, be valid, be bound to the exact reviewed/accepted/merged identities and canonical
+         and universe hashes, and be unconsumed.
+
+    Merging XASSET-0029 satisfies neither factor by itself, so there is no merge-to-execution gap.
+    """
+    canonical_ok, reason = _canonical_authorization_mechanism_is_armed(prereg_path)
+    if not canonical_ok:
+        return False, reason
+
+    try:
+        import level1_stage1_execution_authorization as authorization
+    except ImportError as exc:  # pragma: no cover - defensive
+        return False, f"Stage-1 authorization module unavailable: {exc}"
+
+    # CORRECTED AFTER REVIEW 4946327932 BLOCKING 2. This predicate answers "did THIS result come
+    # from the one lawfully claimed execution?", NOT "may a new execution start?". The previous
+    # form asked the second question, so atomically claiming the authorization before the first
+    # real Stage-1 work -- the only safe moment to exclude a second executor -- made the resulting
+    # legitimate result impossible to validate. The two questions are now separate predicates.
+    authorized, reason = authorization.claimed_execution_is_authorized()
+    if not authorized:
+        return False, (
+            "Stage-1 execution is not operationally authorized. The construction universe is "
+            f"structurally closed, but operational authorization requires the full XASSET-0029 "
+            f"lifecycle ({', '.join(STAGE_1_EFFECTIVITY_GATES)}), an authenticated external "
+            "one-shot preexecution attestation, and an atomic execution claim. There is no "
+            f"merge-to-execution gap. {reason}"
+        )
+    return True, ""
+
+
+def new_stage_1_execution_is_authorized() -> tuple[bool, str]:
+    """May a NEW Stage-1 execution start? PUBLIC and fail-closed.
+
+    Distinct from stage_1_operational_authorization_is_effective(), which asks whether an
+    ALREADY-CLAIMED execution's result may be validated. A lane that is CLAIMED or COMPLETED
+    answers False here and True there, which is exactly the separation BLOCKING 2 required.
+    """
+    canonical_ok, reason = _canonical_authorization_mechanism_is_armed()
+    if not canonical_ok:
+        return False, reason
+    try:
+        import level1_stage1_execution_authorization as authorization
+    except ImportError as exc:  # pragma: no cover - defensive
+        return False, f"Stage-1 authorization module unavailable: {exc}"
+    return authorization.new_execution_is_authorized()
 
 
 def validate_stage1_results(results: Mapping[str, Any]) -> ValidationResult:
     """Validate a Stage-1 results document. PUBLIC, and unconditionally fail-closed.
 
-    AMENDED BY XASSET-0028 after independent review 4946154405 BLOCKING 1. A previous form accepted
-    an optional ``construction_universe`` argument and consulted the lifecycle gate only when that
-    argument was omitted, so any caller supplying a universe skipped operational authorization
-    entirely. A documented "supplying a universe does not authorize execution" note is not mechanical
-    enforcement; the parameter is therefore REMOVED from the public boundary.
+    THE CURRENT LIFECYCLE IS XASSET-0029. (MINOR 1, review 4946397399: this docstring previously
+    described the XASSET-0028 six-gate lifecycle as operative. XASSET-0028 is now PREDECESSOR
+    HISTORY — its lifecycle closed, and canonical V5 moved the operative condition to the
+    XASSET-0029 lifecycle plus an authenticated external attestation plus a one-shot claim.)
 
-    This function now ALWAYS enforces operational authorization first and ALWAYS obtains the
-    canonical closed universe internally. There is no argument, results-document field, or call form
-    that can reach results validation before the full XASSET-0028 six-gate lifecycle is effective.
+    Two mandatory gates, neither bypassable:
 
-    Structural machinery is still testable through the private
-    :func:`_validate_stage1_results_against_universe`, which is explicitly NOT an authorization path
-    and is not part of the public enforcement boundary.
+      1. AUTHORIZATION — ``completed_result_is_authorized`` proves the lane holds a LAWFUL,
+         still-authenticated claim (the attestation still exists, still hashes to what the claim
+         bound, and still validates against durable git/GitHub truth), that the execution has
+         COMPLETED, and that **this exact artifact** is the one it completed, by comparing
+         ``stage1_result_identity(results)`` with the completion record. Completing result A
+         therefore mechanically prevents publishing result B.
+      2. STRUCTURE — every row is validated against the frozen 680-construction universe,
+         obtained internally.
+
+    There is no ``construction_universe`` parameter, no authorization-path parameter, and no
+    results-document field that can reach structural validation first. Structural machinery
+    remains reachable through the private :func:`_validate_stage1_results_against_universe`,
+    which is explicitly NOT an authorization path — it is also the PRECOMPLETION seam a future
+    Stage-1 implementation uses to check a candidate result before persisting and completing,
+    without weakening this final public boundary.
     """
     if not isinstance(results, Mapping):
         return ValidationResult(False, ("stage1_results: expected a top-level mapping",))
 
-    authorized, reason = stage_1_operational_authorization_is_effective()
+    # CORRECTED AFTER REVIEW 4946397399 BLOCKING 1 + 2. The previous form asked only whether SOME
+    # claim existed — which a forged local claim satisfied with no attestation at all — and never
+    # bound the supplied artifact to the completed result identity.
+    try:
+        import level1_stage1_execution_authorization as authorization
+    except ImportError as exc:  # pragma: no cover - defensive
+        return ValidationResult(False, (f"stage1_results: authorization module unavailable: {exc}",))
+
+    canonical_ok, canonical_reason = _canonical_authorization_mechanism_is_armed()
+    if not canonical_ok:
+        return ValidationResult(
+            False,
+            (f"stage1_results: Stage-1 execution is not operationally authorized — {canonical_reason}",),
+        )
+    authorized, reason = authorization.completed_result_is_authorized(results)
     if not authorized:
         return ValidationResult(
             False,
@@ -2347,6 +2611,8 @@ def protocol_mirror_expected() -> dict[str, str]:
         "construction_universe_sha256": _universe_sha256(),
         "stage_1_structurally_closed": "true",
         "stage_1_operationally_authorized": "false",
+        "stage_1_authorization_mechanism": STAGE_1_AUTHORIZATION_MECHANISM,
+        "stage_1_execution_attempt_id": STAGE_1_EXECUTION_ATTEMPT_ID,
         "stage_2_authorized": "false",
         "j12_deferred": "true",
         "hash_version": HASH_VERSION,
@@ -2411,6 +2677,69 @@ SUCCESSOR_HASH_BLOCK_RE = re.compile(
     r"<!-- XASSET-0028-HASH-PINS-V1\n(?P<body>.*?)\n-->", re.DOTALL
 )
 
+# XASSET-0028's accepted pins, retained as HISTORICAL identity now that XASSET-0029 amends the
+# canonical bytes under successor authority. They no longer describe the current files and must not
+# be rewritten to pretend otherwise -- the same treatment XASSET-0028 gave XASSET-0027's pins.
+XASSET_0028_PINS = {
+    "protocol_sha256": "c02b4d519267b96ddb12500e6d1d55a47aeafd9437de8e41014c8871f631618c",
+    "preregistration_sha256": "ffde86c1585050b2bf89e58033f37777a903ace86e97be46b6440a217c78ec4a",
+}
+
+XASSET_0029_HASH_BLOCK_RE = re.compile(
+    r"<!-- XASSET-0029-HASH-PINS-V1\n(?P<body>.*?)\n-->", re.DOTALL
+)
+
+
+def validate_xasset_0029_successor_hash_pins(
+    decision_text: str, prereg_path: Path = PREREG_PATH, protocol_path: Path = PROTOCOL_PATH
+) -> ValidationResult:
+    """Validate XASSET-0029's successor pins against the canonical files as committed.
+
+    These are the EFFECTIVE pins for the current canonical bytes. XASSET-0028's pins are retained
+    as predecessor identity and are verified to be carried forward unchanged, so accepted history
+    stays auditable rather than being restated as current fact.
+    """
+    errors: list[str] = []
+    pins = extract_block(decision_text, XASSET_0029_HASH_BLOCK_RE)
+    if pins is None:
+        return ValidationResult(False, ("XASSET-0029: XASSET-0029-HASH-PINS-V1 block absent",))
+
+    expected_paths = {
+        "protocol_path": "research/level1_endpoint_evidence/PROTOCOL_V1.md",
+        "preregistration_path": "research/level1_endpoint_evidence/pre_registration.yaml",
+    }
+    for key, want in expected_paths.items():
+        if pins.get(key) != want:
+            errors.append(f"XASSET-0029 pins: {key} expected {want!r}, got {pins.get(key)!r}")
+
+    for key, path in (
+        ("protocol_sha256", protocol_path),
+        ("preregistration_sha256", prereg_path),
+    ):
+        pinned = pins.get(key)
+        if not pinned:
+            errors.append(f"XASSET-0029 pins: {key} is absent")
+            continue
+        actual = sha256_file(path)
+        if pinned != actual:
+            errors.append(
+                f"XASSET-0029 pins: {key} mismatch -- XASSET-0029 pins {pinned}, file is {actual}"
+            )
+        if pinned == XASSET_0028_PINS[key]:
+            errors.append(
+                f"XASSET-0029 pins: {key} equals the XASSET-0028 pin; the amendment must change the "
+                "canonical bytes it re-pins"
+            )
+
+    for key, want in XASSET_0028_PINS.items():
+        got = pins.get(f"predecessor_{key}")
+        if got != want:
+            errors.append(
+                f"XASSET-0029 pins: predecessor_{key} must retain the XASSET-0028 value {want!r}, "
+                f"got {got!r}"
+            )
+    return ValidationResult(not errors, tuple(errors))
+
 
 def validate_successor_hash_pins(
     decision_text: str, prereg_path: Path = PREREG_PATH, protocol_path: Path = PROTOCOL_PATH
@@ -2437,10 +2766,17 @@ def validate_successor_hash_pins(
         if not pinned:
             errors.append(f"successor pins: {key} is absent")
             continue
-        actual = sha256_file(path)
-        if pinned != actual:
+        # AMENDED BY XASSET-0029. This previously asserted that XASSET-0028's pins still matched the
+        # live canonical files. XASSET-0029 amends those files under successor authority, so that
+        # assertion would now force either a false failure or a rewrite of accepted history. It
+        # instead asserts XASSET-0028 still records exactly the digests it accepted. Current-byte
+        # verification moved to validate_xasset_0029_successor_hash_pins(). This is the same
+        # treatment XASSET-0028 itself gave validate_charter_hash_pins().
+        want = XASSET_0028_PINS[key]
+        if pinned != want:
             errors.append(
-                f"successor pins: {key} mismatch -- XASSET-0028 pins {pinned}, file is {actual}"
+                f"successor pins: {key} is {pinned}, but XASSET-0028's accepted historical pin is "
+                f"{want}; accepted history may not be rewritten"
             )
         if pinned == PREDECESSOR_PINS[key]:
             errors.append(
@@ -2519,7 +2855,8 @@ def validate_file(path: Path = PREREG_PATH) -> ValidationResult:
     else:
         errors.append(f"{DECISION_PATH}: file not found")
 
-    # XASSET-0028 successor pins are the EFFECTIVE ones for the amended canonical bytes.
+    # XASSET-0028's pins are retained as HISTORICAL identity: verified verbatim, not against the
+    # live files, which XASSET-0029 has since amended under successor authority.
     if SUCCESSOR_DECISION_PATH.exists():
         errors.extend(
             validate_successor_hash_pins(
@@ -2528,6 +2865,16 @@ def validate_file(path: Path = PREREG_PATH) -> ValidationResult:
         )
     else:
         errors.append(f"{SUCCESSOR_DECISION_PATH}: file not found")
+
+    # XASSET-0029 successor pins are the EFFECTIVE ones for the current canonical bytes.
+    if XASSET_0029_DECISION_PATH.exists():
+        errors.extend(
+            validate_xasset_0029_successor_hash_pins(
+                XASSET_0029_DECISION_PATH.read_text(encoding="utf-8")
+            ).errors
+        )
+    else:
+        errors.append(f"{XASSET_0029_DECISION_PATH}: file not found")
 
     return ValidationResult(not errors, tuple(errors))
 

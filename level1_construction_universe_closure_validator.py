@@ -109,6 +109,18 @@ PREDECESSOR_PINS = {
     ),
 }
 
+#: XASSET-0028's accepted successor pins, retained as HISTORICAL identity now that XASSET-0029
+#: amends the canonical bytes under its own successor authority. Asserted verbatim, never
+#: re-derived from the live files, so accepted history stays auditable.
+XASSET_0028_ACCEPTED_PINS = {
+    "research/level1_endpoint_evidence/PROTOCOL_V1.md": (
+        "c02b4d519267b96ddb12500e6d1d55a47aeafd9437de8e41014c8871f631618c"
+    ),
+    "research/level1_endpoint_evidence/pre_registration.yaml": (
+        "ffde86c1585050b2bf89e58033f37777a903ace86e97be46b6440a217c78ec4a"
+    ),
+}
+
 REQUIRED_STATUS = "CLOSED"
 
 # The XASSET-0028 successor Stage-1 lifecycle. All six are required, everywhere. The predecessor
@@ -827,16 +839,27 @@ def _validate_canonical_amendment(block: Any, errors: list[str]) -> None:
     if not isinstance(successor, Mapping):
         errors.append("canonical_amendment.successor_pins: must be a mapping")
         return
+    # AMENDED BY XASSET-0029. This previously asserted that XASSET-0028's successor pins still
+    # matched the live canonical files. XASSET-0029 amends those files under its own successor
+    # authority, so that assertion would now force either a false failure or a rewrite of accepted
+    # history. XASSET-0028's pins are instead asserted VERBATIM as historical identity, exactly the
+    # treatment XASSET-0028 itself gave XASSET-0027's pins. Current-byte verification for the live
+    # canonical files lives in
+    # level1_endpoint_evidence_preregistration_validator.validate_xasset_0029_successor_hash_pins().
     for rel, digest in sorted(successor.items()):
         path = ROOT / rel
         if not path.exists():
             errors.append(f"canonical_amendment.successor_pins: {rel} does not exist")
             continue
-        observed = sha256_file(path)
-        if observed != digest:
+        want = XASSET_0028_ACCEPTED_PINS.get(rel)
+        if want is None:
             errors.append(
-                f"canonical_amendment.successor_pins: {rel} observed digest {observed} does not "
-                f"match the recorded successor pin {digest}"
+                f"canonical_amendment.successor_pins: {rel} is not a canonical XASSET-0028 pin"
+            )
+        elif digest != want:
+            errors.append(
+                f"canonical_amendment.successor_pins: {rel} records {digest}, but XASSET-0028's "
+                f"accepted historical pin is {want}; accepted history may not be rewritten"
             )
     for rel in PREDECESSOR_PINS:
         if rel not in successor:
