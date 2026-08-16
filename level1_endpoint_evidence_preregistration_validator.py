@@ -3,14 +3,25 @@
 Authorized by governance/decisions/XASSET-0027-level1-endpoint-authority-and-all-four-sleeve-evidence-program-charter.md
 
 Read-only and mechanical. This module validates the closed structure, exact identities, derived
-arithmetic, gate sequence, vocabularies, zero-parameter declaration, firewall completeness, and hash
-conventions of the ENDPOINT-0001 pre-registration and protocol.
+arithmetic, construction-family closure, candidate-universe generation, gate sequence, disposition
+rules, the XASSET-0024 SS-K.1 reading map, deferred-requirement handling, vocabularies, the
+zero-parameter declaration, firewall completeness, and hash conventions of the ENDPOINT-0001
+pre-registration and protocol.
 
-It cannot acquire data, execute the study, evaluate a cell, state an endpoint, or admit evidence.
+It also supplies the pure, deterministic derivation functions the future Stage 1 execution must use
+(candidate universe generation, G2 reading mapping, and candidate/cell/roll-up disposition), plus
+validate_stage1_results(), which checks a Stage-1 results document against the frozen candidate
+universe. Those functions make the determinism and exhaustiveness claims mechanically enforceable
+rather than merely asserted.
+
+It cannot acquire data, execute the study, decide a gate, state an endpoint, or admit evidence.
+Deciding a gate outcome remains a human/analytical act performed under the charter; this module only
+composes already-decided gate results into a disposition by a fixed rule.
 
 Deliberate non-scope, recorded so the boundary is not blurred later: this module is NOT an
 XASSET-0024 SS-J.1-J.12 endpoint-admission validator. No such production validator exists anywhere in
-this repository, and building one is a separately authorized successor, not part of this filing.
+this repository, and building one is a separately authorized successor, not part of this filing. In
+particular SS-J.12 is deferred and is not decided here.
 
 Zero import coupling with allocate.py and margin_state.py in either direction.
 """
@@ -22,7 +33,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 
 import yaml
 
@@ -36,30 +47,40 @@ DECISION_PATH = (
 )
 
 STUDY_ID = "ENDPOINT-0001"
-HASH_VERSION = "ENDPOINT-0001-PREREG-V1"
+HASH_VERSION = "ENDPOINT-0001-PREREG-V2"
 
 TOP_KEYS = (
     "schema_version",
     "study_id",
     "identifier_note",
     "authority",
+    "lifecycle_effectivity",
+    "stages",
     "research_question",
     "sleeves",
     "bounds",
     "driver_classes",
     "driver_class_scope",
-    "stages",
-    "cell_definition",
+    "construction_families",
+    "candidate_universe",
+    "completeness_rule",
     "trial_inventory",
     "roll_up_units",
     "gate_sequence",
+    "categorical_definition",
+    "prerequisite_definition",
+    "disposition_rules",
     "open_reading_handling",
+    "g2_reading_mapping",
+    "stage_1_testable_subset",
+    "deferred_admissibility_requirements",
     "result_vocabulary",
     "prohibited_inputs",
     "risk_lane_boundary",
     "representation",
     "consequential_parameter_registry",
     "data_and_sources",
+    "source_architecture_vocabulary",
     "provenance_manifest",
     "execution",
     "result_schema",
@@ -82,6 +103,24 @@ DRIVER_CLASSES = (
     "sleeve_deployability",
 )
 
+# Closed by XASSET-0023 SS-H ("There is no third route") and SS-H.4 item 3 (R2 -> class 2;
+# R1 -> classes 1, 3, 4, 5). Class 6 is disqualifying under SS-H.4 item 2. Derived, not invented.
+CONSTRUCTION_FAMILIES = (
+    ("R1_C1", "R1", 1, "EXTERNALLY_IMPOSED"),
+    ("R1_C3", "R1", 3, "EMPIRICALLY_CALIBRATED"),
+    ("R1_C4", "R1", 4, "EVIDENCE_BOUNDED_GOVERNANCE_SELECTION"),
+    ("R1_C5", "R1", 5, "PROVISIONAL_GOVERNANCE_GUARDRAIL"),
+    ("R2_C2", "R2", 2, "MATHEMATICALLY_DERIVED"),
+)
+FAMILY_KEYS = (
+    "family_id",
+    "route",
+    "num_0001_class",
+    "class_name",
+    "originates_or_clips",
+    "authority_ref",
+)
+
 GATE_IDS = (
     "G1_DRIVER_SUBJECT_MATTER",
     "G2_MAGNITUDE_INTRINSICALITY",
@@ -94,8 +133,7 @@ GATE_IDS = (
     "G9_REPRESENTATION",
     "G10_PAIR_INDEPENDENCE",
     "G11_EXACTNESS_AND_DETERMINISM",
-    "G12_RECONCILIATION_FEASIBILITY",
-    "G13_SNAPSHOT_ADMISSIBILITY_PATH",
+    "G12_SNAPSHOT_ADMISSIBILITY_PATH",
 )
 GATE_KEYS = (
     "gate_id",
@@ -105,19 +143,36 @@ GATE_KEYS = (
     "failure_disposition",
 )
 FAILURE_DISPOSITIONS = ("BLOCKED_CATEGORICALLY", "BLOCKED_PENDING_SEPARATE_PREREQUISITE")
-PREREQUISITE_GATES = ("G9_REPRESENTATION", "G13_SNAPSHOT_ADMISSIBILITY_PATH")
+PREREQUISITE_GATES = ("G9_REPRESENTATION", "G12_SNAPSHOT_ADMISSIBILITY_PATH")
+CATEGORICAL_GATES = tuple(g for g in GATE_IDS if g not in PREREQUISITE_GATES)
 
-CELL_OUTCOMES = (
+GATE_RESULT_VOCABULARY = ("PASS", "FAIL", "UNABLE_TO_DETERMINE", "NOT_APPLICABLE")
+
+CANDIDATE_DISPOSITIONS = (
     "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED",
     "BLOCKED_CATEGORICALLY",
     "BLOCKED_PENDING_SEPARATE_PREREQUISITE",
     "UNABLE_TO_DETERMINE",
 )
+CELL_OUTCOMES = CANDIDATE_DISPOSITIONS
 ROLL_UP_OUTCOMES = (
     "CANDIDATE_CONSTRUCTION_IDENTIFIED",
     "PREREQUISITE_REQUIRED",
     "NO_CONSTRUCTIBLE_CANDIDATE",
     "UNABLE_TO_DETERMINE",
+)
+
+CANDIDATE_PRECEDENCE = (
+    ("ANY_CATEGORICAL_GATE_FAILURE", "BLOCKED_CATEGORICALLY"),
+    ("ANY_PREREQUISITE_GATE_FAILURE", "BLOCKED_PENDING_SEPARATE_PREREQUISITE"),
+    ("ANY_GATE_UNABLE_TO_DETERMINE", "UNABLE_TO_DETERMINE"),
+    ("ALL_GATES_PASS", "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED"),
+)
+CELL_PRECEDENCE = (
+    ("ANY_CANDIDATE_CONSTRUCTIBLE_CANDIDATE_IDENTIFIED", "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED"),
+    ("ANY_CANDIDATE_BLOCKED_PENDING_SEPARATE_PREREQUISITE", "BLOCKED_PENDING_SEPARATE_PREREQUISITE"),
+    ("ANY_CANDIDATE_UNABLE_TO_DETERMINE", "UNABLE_TO_DETERMINE"),
+    ("ALL_CANDIDATES_BLOCKED_CATEGORICALLY", "BLOCKED_CATEGORICALLY"),
 )
 ROLL_UP_PRECEDENCE = (
     ("ANY_CELL_CONSTRUCTIBLE_CANDIDATE_IDENTIFIED", "CANDIDATE_CONSTRUCTION_IDENTIFIED"),
@@ -126,11 +181,29 @@ ROLL_UP_PRECEDENCE = (
     ("ALL_CELLS_BLOCKED_CATEGORICALLY", "NO_CONSTRUCTIBLE_CANDIDATE"),
 )
 
+READING_VOCABULARY = ("PASSES", "FAILS", "UNABLE_TO_DETERMINE")
+G2_MAPPING_KEYS = (
+    "subject_matter_reading",
+    "preference_only_reading",
+    "g2_effective_outcome",
+    "reading_dependent",
+)
+G2_MAPPING_ROWS = (
+    ("PASSES", "PASSES", "PASSES", False),
+    ("FAILS", "FAILS", "FAILS_CATEGORICALLY", False),
+    ("PASSES", "FAILS", "UNABLE_TO_DETERMINE", True),
+    ("FAILS", "PASSES", "INCOHERENT_REJECTED", False),
+    ("UNABLE_TO_DETERMINE", "ANY", "UNABLE_TO_DETERMINE", False),
+    ("ANY", "UNABLE_TO_DETERMINE", "UNABLE_TO_DETERMINE", False),
+)
+
 POINT_RANGE_VALUES = (
     "WOULD_SUPPORT_RANGE_ENDPOINT",
     "WOULD_SUPPORT_POINT_ENDPOINT",
     "WOULD_SUPPORT_NEITHER",
 )
+
+SOURCE_ARCHITECTURES = ("EXISTING_SOURCE_ARCHITECTURE", "HYPOTHETICAL_SOURCE_ARCHITECTURE")
 
 PARAMETER_RECORD_KEYS = (
     "parameter_id",
@@ -158,10 +231,20 @@ DERIVED_IDENTITIES = {
     "SLEEVE_COUNT": 4,
     "BOUND_COUNT": 2,
     "DRIVER_CLASS_COUNT": 6,
-    "CELL_CEILING": 48,
+    "CONSTRUCTION_FAMILY_COUNT": 5,
+    "CELL_COUNT": 48,
+    "CANDIDATE_CEILING": 240,
     "ROLL_UP_UNIT_COUNT": 8,
-    "GATE_COUNT": 13,
+    "GATE_COUNT": 12,
 }
+
+LIFECYCLE_STEPS = (
+    "ACCEPTED_INDEPENDENT_EXACT_HEAD_REVIEW",
+    "PRINCIPAL_EXACT_HEAD_ACCEPTANCE",
+    "MERGE",
+    "IMMEDIATE_POST_MERGE_VERIFICATION",
+    "SUCCESSFUL_MERGE_COMMIT_CI",
+)
 
 REQUIRED_ABSTENTION_CONDITIONS = (
     "REPRESENTATION_PATH_1_FAILS_AND_NO_ACCEPTED_RULE_EXISTS",
@@ -171,6 +254,7 @@ REQUIRED_ABSTENTION_CONDITIONS = (
     "AN_UNRESOLVED_PAIR_WOULD_BE_CONSUMED_AS_AN_INPUT",
     "THE_PREFERENCE_ONLY_READING_OF_SECTION_E_1_IS_ESTABLISHED",
     "A_CANDIDATE_WOULD_REQUIRE_INVENTING_A_LEVEL_1_AGGREGATION_OR_REPRESENTATION_RULE",
+    "A_CANDIDATES_G2_OUTCOME_IS_READING_DEPENDENT_WHILE_SECTION_K_1_REMAINS_UNRESOLVED",
 )
 
 REQUIRED_PROHIBITED_SCOPE = (
@@ -178,6 +262,7 @@ REQUIRED_PROHIBITED_SCOPE = (
     "LOWER_OR_UPPER_BOUND_VALUE",
     "SLEEVE_SELECTION_PREFERENCE_RANKING_OR_SEQUENCING",
     "PORTFOLIO_RECONCILIATION_OR_SUM_TARGETING",
+    "CROSS_SLEEVE_OR_CROSS_BOUND_ARITHMETIC",
     "OPTIMIZER_WEIGHT_GRID_OR_SWEEP",
     "COMPOSITE_SCORE_OR_INDEX",
     "RESIDUAL_REDISTRIBUTION",
@@ -186,6 +271,7 @@ REQUIRED_PROHIBITED_SCOPE = (
     "APPLICATION_AUTHORITY_OR_REGISTRY_POPULATION",
     "REPRESENTATION_RULE_ADOPTION",
     "METHODOLOGY_AMENDMENT",
+    "UNREGISTERED_CANDIDATES",
     "RISK_PARAMETER_REUSE",
     "STAGE_2_EXECUTION",
 )
@@ -209,12 +295,40 @@ REQUIRED_FORBIDDEN_RESULT_CONTENT = (
     "ANY_COMPOSITE_SCORE_RANK_OR_INDEX",
     "ANY_SLEEVE_PREFERENCE_RANKING_OR_SEQUENCING",
     "ANY_PORTFOLIO_RECONCILIATION_OR_SUM_TO_WHOLE",
+    "ANY_CLAIM_OF_FULL_J_1_THROUGH_J_12_COMPLIANCE",
 )
 
 OPEN_READING_FIELDS = (
     "g2_outcome_under_subject_matter_reading",
     "g2_outcome_under_preference_only_reading",
     "g2_outcome_is_reading_dependent",
+)
+
+REQUIRED_CANDIDATE_RESULT_KEYS = (
+    "construction_id",
+    "cell_id",
+    "sleeve",
+    "bound",
+    "driver_class",
+    "family_id",
+    "route",
+    "num_0001_class",
+    "source_architecture",
+    "source_path",
+    "source_sha256",
+    "hypothetical_source_requirements",
+    "governing_authority_refs",
+    "gate_results",
+    "categorical_failures",
+    "prerequisite_failures",
+    "disposition",
+    "first_failing_gate_id",
+    "g2_outcome_under_subject_matter_reading",
+    "g2_outcome_under_preference_only_reading",
+    "g2_outcome_is_reading_dependent",
+    "point_or_range_support",
+    "representation_dependency",
+    "uncertainty_statement",
 )
 
 # Adversarial scan. Barred historical Level-1 values named by XASSET-0020 SS-M and XASSET-0025 SS-F.
@@ -248,6 +362,132 @@ class ValidationResult:
 
     def __bool__(self) -> bool:  # pragma: no cover - trivial
         return self.ok
+
+
+# ======================================================================================
+# Pure deterministic derivation — the determinism claims, made executable
+# ======================================================================================
+
+
+def generate_candidate_universe() -> tuple[str, ...]:
+    """Return the complete, ordered, deterministic candidate universe.
+
+    A Cartesian product over four dimensions, each closed by accepted authority. Byte-identically
+    reproducible; no executor input participates.
+    """
+    out: list[str] = []
+    for sleeve in SLEEVES:
+        for bound in BOUNDS:
+            for driver_class in DRIVER_CLASSES:
+                for family_id, _route, _cls, _name in CONSTRUCTION_FAMILIES:
+                    out.append(f"{sleeve}::{bound}::{driver_class}::{family_id}")
+    return tuple(out)
+
+
+def cell_id_of(construction_id: str) -> str:
+    """Return the owning cell id for a construction id."""
+    return "::".join(construction_id.split("::")[:3])
+
+
+def generate_cell_universe() -> tuple[str, ...]:
+    """Return the complete, ordered, deterministic cell universe."""
+    seen: list[str] = []
+    for construction_id in generate_candidate_universe():
+        cell = cell_id_of(construction_id)
+        if cell not in seen:
+            seen.append(cell)
+    return tuple(seen)
+
+
+def map_g2_reading(subject_matter: str, preference_only: str) -> str:
+    """Map the two XASSET-0024 SS-K.1 readings to G2's effective outcome.
+
+    An unresolved methodology reading is never a categorical impossibility: a candidate passing only
+    under the subject-matter reading is governed as UNABLE_TO_DETERMINE while SS-K.1 stands.
+    """
+    if subject_matter not in READING_VOCABULARY or preference_only not in READING_VOCABULARY:
+        raise ValueError(
+            f"reading outcomes must be in {READING_VOCABULARY}; "
+            f"got {subject_matter!r} / {preference_only!r}"
+        )
+    if subject_matter == "UNABLE_TO_DETERMINE" or preference_only == "UNABLE_TO_DETERMINE":
+        return "UNABLE_TO_DETERMINE"
+    if subject_matter == "PASSES" and preference_only == "PASSES":
+        return "PASSES"
+    if subject_matter == "FAILS" and preference_only == "FAILS":
+        return "FAILS_CATEGORICALLY"
+    if subject_matter == "PASSES" and preference_only == "FAILS":
+        return "UNABLE_TO_DETERMINE"
+    return "INCOHERENT_REJECTED"
+
+
+def is_reading_dependent(subject_matter: str, preference_only: str) -> bool:
+    """True only for the one genuinely reading-dependent combination."""
+    return subject_matter == "PASSES" and preference_only == "FAILS"
+
+
+def derive_candidate_disposition(gate_results: Mapping[str, str]) -> str:
+    """Compose already-decided gate results into a candidate disposition.
+
+    Universal over gates, with categorical failures dominating prerequisite failures. Implemented with
+    membership tests over the gate mapping, so the result cannot depend on gate order.
+    """
+    unknown = set(gate_results) - set(GATE_IDS)
+    if unknown:
+        raise ValueError(f"unknown gate id(s): {sorted(unknown)}")
+    missing = set(GATE_IDS) - set(gate_results)
+    if missing:
+        raise ValueError(f"every gate must be evaluated before classifying; missing {sorted(missing)}")
+    bad = {g: v for g, v in gate_results.items() if v not in GATE_RESULT_VOCABULARY}
+    if bad:
+        raise ValueError(f"gate results must be in {GATE_RESULT_VOCABULARY}; got {bad}")
+
+    if any(gate_results[g] == "FAIL" for g in CATEGORICAL_GATES):
+        return "BLOCKED_CATEGORICALLY"
+    if any(gate_results[g] == "FAIL" for g in PREREQUISITE_GATES):
+        return "BLOCKED_PENDING_SEPARATE_PREREQUISITE"
+    if any(v == "UNABLE_TO_DETERMINE" for v in gate_results.values()):
+        return "UNABLE_TO_DETERMINE"
+    return "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED"
+
+
+def derive_cell_outcome(candidate_dispositions: Iterable[str]) -> str:
+    """Compose a cell's candidate dispositions into a cell outcome (existential over candidates)."""
+    values = list(candidate_dispositions)
+    bad = [v for v in values if v not in CANDIDATE_DISPOSITIONS]
+    if bad:
+        raise ValueError(f"candidate dispositions must be in {CANDIDATE_DISPOSITIONS}; got {bad}")
+    if not values:
+        raise ValueError("a cell outcome requires at least one candidate disposition")
+    if "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED" in values:
+        return "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED"
+    if "BLOCKED_PENDING_SEPARATE_PREREQUISITE" in values:
+        return "BLOCKED_PENDING_SEPARATE_PREREQUISITE"
+    if "UNABLE_TO_DETERMINE" in values:
+        return "UNABLE_TO_DETERMINE"
+    return "BLOCKED_CATEGORICALLY"
+
+
+def derive_roll_up_outcome(cell_outcomes: Iterable[str]) -> str:
+    """Compose a (sleeve, bound) unit's cell outcomes into a roll-up (existential over cells)."""
+    values = list(cell_outcomes)
+    bad = [v for v in values if v not in CELL_OUTCOMES]
+    if bad:
+        raise ValueError(f"cell outcomes must be in {CELL_OUTCOMES}; got {bad}")
+    if not values:
+        raise ValueError("a roll-up requires at least one cell outcome")
+    if "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED" in values:
+        return "CANDIDATE_CONSTRUCTION_IDENTIFIED"
+    if "BLOCKED_PENDING_SEPARATE_PREREQUISITE" in values:
+        return "PREREQUISITE_REQUIRED"
+    if "UNABLE_TO_DETERMINE" in values:
+        return "UNABLE_TO_DETERMINE"
+    return "NO_CONSTRUCTIBLE_CANDIDATE"
+
+
+# ======================================================================================
+# Helpers
+# ======================================================================================
 
 
 def sha256_file(path: Path) -> str:
@@ -297,19 +537,39 @@ def _contains_all(actual: Any, required: Sequence[str], where: str, errors: list
             errors.append(f"{where}: required entry {item!r} is absent")
 
 
+def _precedence(
+    actual: Any, expected: Sequence[tuple[str, str]], where: str, errors: list[str]
+) -> None:
+    if not isinstance(actual, list):
+        errors.append(f"{where}: expected a list, got {type(actual).__name__}")
+        return
+    if len(actual) != len(expected):
+        errors.append(f"{where}: expected {len(expected)} rules, got {len(actual)}")
+        return
+    for position, rule in enumerate(actual):
+        loc = f"{where}[{position}]"
+        if not isinstance(rule, Mapping):
+            errors.append(f"{loc}: expected a mapping")
+            continue
+        _exact(rule.get("condition"), expected[position][0], f"{loc}.condition", errors)
+        _exact(rule.get("outcome"), expected[position][1], f"{loc}.outcome", errors)
+
+
+# ======================================================================================
+# Section validators
+# ======================================================================================
+
+
 def _validate_identity(data: Mapping[str, Any], errors: list[str]) -> None:
     _exact(data.get("study_id"), STUDY_ID, "study_id", errors)
     _exact(data.get("hash_version"), HASH_VERSION, "hash_version", errors)
     _exact(list(data.get("sleeves") or []), list(SLEEVES), "sleeves", errors)
     _exact(list(data.get("bounds") or []), list(BOUNDS), "bounds", errors)
-    _exact(
-        list(data.get("driver_classes") or []), list(DRIVER_CLASSES), "driver_classes", errors
-    )
+    _exact(list(data.get("driver_classes") or []), list(DRIVER_CLASSES), "driver_classes", errors)
 
     note = data.get("identifier_note")
     if isinstance(note, Mapping):
-        statement = str(note.get("statement", ""))
-        if "not a governance decision prefix" not in statement:
+        if "not a governance decision prefix" not in str(note.get("statement", "")):
             errors.append(
                 "identifier_note.statement: must record that ENDPOINT-0001 is not a decision prefix"
             )
@@ -330,8 +590,36 @@ def _validate_authority(data: Mapping[str, Any], errors: list[str]) -> None:
         "authority.program_shape",
         errors,
     )
-    _true(auth.get("authority_constituted_by_same_decision"), "authority.authority_constituted_by_same_decision", errors)
-    _false(auth.get("authority_exercised_by_this_program"), "authority.authority_exercised_by_this_program", errors)
+    _true(
+        auth.get("authority_constituted_by_same_decision"),
+        "authority.authority_constituted_by_same_decision",
+        errors,
+    )
+    _false(
+        auth.get("authority_exercised_by_this_program"),
+        "authority.authority_exercised_by_this_program",
+        errors,
+    )
+
+
+def _validate_lifecycle(data: Mapping[str, Any], errors: list[str]) -> None:
+    life = data.get("lifecycle_effectivity")
+    if not isinstance(life, Mapping):
+        errors.append("lifecycle_effectivity: expected a mapping")
+        return
+    _exact(
+        list(life.get("charter_effective_only_after_all_of") or []),
+        list(LIFECYCLE_STEPS),
+        "lifecycle_effectivity.charter_effective_only_after_all_of",
+        errors,
+    )
+    _exact(
+        life.get("stage_1_execution_may_begin_only_after"),
+        "XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION",
+        "lifecycle_effectivity.stage_1_execution_may_begin_only_after",
+        errors,
+    )
+    _false(life.get("merge_alone_is_sufficient"), "lifecycle_effectivity.merge_alone_is_sufficient", errors)
 
 
 def _validate_stages(data: Mapping[str, Any], errors: list[str]) -> None:
@@ -340,15 +628,25 @@ def _validate_stages(data: Mapping[str, Any], errors: list[str]) -> None:
         errors.append("stages: expected a mapping")
         return
     s1 = stages.get("stage_1")
-    s2 = stages.get("stage_2")
     if isinstance(s1, Mapping):
         _true(s1.get("authorized_by_xasset_0027"), "stages.stage_1.authorized_by_xasset_0027", errors)
-        _false(s1.get("acquires_data"), "stages.stage_1.acquires_data", errors)
-        _false(s1.get("fits_or_estimates_anything"), "stages.stage_1.fits_or_estimates_anything", errors)
-        _false(s1.get("produces_endpoint"), "stages.stage_1.produces_endpoint", errors)
-        _false(s1.get("produces_admissible_evidence"), "stages.stage_1.produces_admissible_evidence", errors)
+        _exact(
+            s1.get("executable_only_after"),
+            "XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION",
+            "stages.stage_1.executable_only_after",
+            errors,
+        )
+        for flag in (
+            "acquires_data",
+            "fits_or_estimates_anything",
+            "produces_endpoint",
+            "produces_admissible_evidence",
+        ):
+            _false(s1.get(flag), f"stages.stage_1.{flag}", errors)
+        _exact(s1.get("unit_of_work"), "ONE_CANDIDATE_EVALUATION", "stages.stage_1.unit_of_work", errors)
     else:
         errors.append("stages.stage_1: expected a mapping")
+    s2 = stages.get("stage_2")
     if isinstance(s2, Mapping):
         _false(s2.get("authorized_by_xasset_0027"), "stages.stage_2.authorized_by_xasset_0027", errors)
         _exact(
@@ -361,61 +659,162 @@ def _validate_stages(data: Mapping[str, Any], errors: list[str]) -> None:
         errors.append("stages.stage_2: expected a mapping")
 
 
-def _validate_gates(data: Mapping[str, Any], errors: list[str]) -> None:
-    seq = data.get("gate_sequence")
-    if not isinstance(seq, Mapping):
-        errors.append("gate_sequence: expected a mapping")
+def _validate_construction_families(data: Mapping[str, Any], errors: list[str]) -> None:
+    block = data.get("construction_families")
+    if not isinstance(block, Mapping):
+        errors.append("construction_families: expected a mapping")
         return
-    _true(
-        seq.get("record_first_failing_gate_only"),
-        "gate_sequence.record_first_failing_gate_only",
-        errors,
-    )
-    _true(
-        seq.get("gates_may_not_be_added_removed_reordered_or_reinterpreted_after_any_outcome_observed"),
-        "gate_sequence.gates_may_not_be_added_removed_reordered_or_reinterpreted_after_any_outcome_observed",
-        errors,
-    )
-    gates = seq.get("gates")
-    if not isinstance(gates, list):
-        errors.append("gate_sequence.gates: expected a list")
-        return
-    if len(gates) != len(GATE_IDS):
-        errors.append(f"gate_sequence.gates: expected {len(GATE_IDS)} gates, got {len(gates)}")
-        return
-    for position, gate in enumerate(gates):
-        where = f"gate_sequence.gates[{position}]"
-        if not _keys(gate, GATE_KEYS, where, errors):
-            continue
-        _exact(gate.get("gate_id"), GATE_IDS[position], f"{where}.gate_id", errors)
-        _exact(gate.get("gate_index"), position + 1, f"{where}.gate_index", errors)
-        disposition = gate.get("failure_disposition")
-        if disposition not in FAILURE_DISPOSITIONS:
-            errors.append(f"{where}.failure_disposition: {disposition!r} is outside the closed set")
-        expected = (
-            "BLOCKED_PENDING_SEPARATE_PREREQUISITE"
-            if gate.get("gate_id") in PREREQUISITE_GATES
-            else "BLOCKED_CATEGORICALLY"
+
+    closure = block.get("closure_basis")
+    if isinstance(closure, Mapping):
+        _exact(
+            closure.get("route_set_closed_by"),
+            "XASSET-0023_SECTION_H_THERE_IS_NO_THIRD_ROUTE",
+            "construction_families.closure_basis.route_set_closed_by",
+            errors,
         )
-        _exact(disposition, expected, f"{where}.failure_disposition", errors)
-        if not str(gate.get("question", "")).strip():
-            errors.append(f"{where}.question: must be non-empty")
-        if not str(gate.get("controlling_authority", "")).strip():
-            errors.append(f"{where}.controlling_authority: must be non-empty")
+        _exact(
+            closure.get("route_class_coherence_closed_by"),
+            "XASSET-0023_SECTION_H_4_ITEM_3",
+            "construction_families.closure_basis.route_class_coherence_closed_by",
+            errors,
+        )
+    else:
+        errors.append("construction_families.closure_basis: expected a mapping")
+
+    _exact(
+        list(block.get("record_keys") or []),
+        list(FAMILY_KEYS),
+        "construction_families.record_keys",
+        errors,
+    )
+
+    families = block.get("families")
+    if not isinstance(families, list):
+        errors.append("construction_families.families: expected a list")
+        return
+    if len(families) != len(CONSTRUCTION_FAMILIES):
+        errors.append(
+            f"construction_families.families: expected exactly {len(CONSTRUCTION_FAMILIES)} lawful "
+            f"(route, class) families closed by XASSET-0023 SS-H.4 item 3, got {len(families)}"
+        )
+        return
+    for position, family in enumerate(families):
+        where = f"construction_families.families[{position}]"
+        if not _keys(family, FAMILY_KEYS, where, errors):
+            continue
+        family_id, route, num_class, class_name = CONSTRUCTION_FAMILIES[position]
+        _exact(family.get("family_id"), family_id, f"{where}.family_id", errors)
+        _exact(family.get("route"), route, f"{where}.route", errors)
+        _exact(family.get("num_0001_class"), num_class, f"{where}.num_0001_class", errors)
+        _exact(family.get("class_name"), class_name, f"{where}.class_name", errors)
+        _exact(family.get("originates_or_clips"), "ORIGINATE", f"{where}.originates_or_clips", errors)
+
+    excluded = block.get("excluded_class")
+    if isinstance(excluded, Mapping):
+        _exact(excluded.get("num_0001_class"), 6, "construction_families.excluded_class.num_0001_class", errors)
+    else:
+        errors.append("construction_families.excluded_class: expected a mapping")
+
+    non_routes = block.get("excluded_non_routes")
+    if isinstance(non_routes, Mapping):
+        listed = non_routes.get("non_routes")
+        if not isinstance(listed, list) or len(listed) != 8:
+            errors.append(
+                "construction_families.excluded_non_routes.non_routes: expected XASSET-0024 SS-D's "
+                "eight non-routes N1 through N8"
+            )
+    else:
+        errors.append("construction_families.excluded_non_routes: expected a mapping")
+
+
+def _validate_candidate_universe(data: Mapping[str, Any], errors: list[str]) -> None:
+    universe = data.get("candidate_universe")
+    if not isinstance(universe, Mapping):
+        errors.append("candidate_universe: expected a mapping")
+        return
+    _exact(universe.get("generation_route"), "DETERMINISTIC_GENERATOR", "candidate_universe.generation_route", errors)
+    _exact(
+        universe.get("generation_rule"),
+        "CARTESIAN_PRODUCT_OF_SLEEVES_BOUNDS_DRIVER_CLASSES_AND_CONSTRUCTION_FAMILIES",
+        "candidate_universe.generation_rule",
+        errors,
+    )
+    _exact(
+        universe.get("construction_id_format"),
+        "{sleeve}::{bound}::{driver_class}::{family_id}",
+        "candidate_universe.construction_id_format",
+        errors,
+    )
+    _true(universe.get("exhaustive"), "candidate_universe.exhaustive", errors)
+    _true(universe.get("deterministic"), "candidate_universe.deterministic", errors)
+    _true(
+        universe.get("byte_identically_reproducible"),
+        "candidate_universe.byte_identically_reproducible",
+        errors,
+    )
+    _exact(
+        universe.get("candidate_addition_or_removal_by_executor"),
+        "PROHIBITED",
+        "candidate_universe.candidate_addition_or_removal_by_executor",
+        errors,
+    )
+    _exact(
+        universe.get("outcome_aware_candidate_change"),
+        "PROHIBITED",
+        "candidate_universe.outcome_aware_candidate_change",
+        errors,
+    )
+    _exact(
+        universe.get("invented_candidate_mechanism"),
+        "PROHIBITED",
+        "candidate_universe.invented_candidate_mechanism",
+        errors,
+    )
+
+    completeness = data.get("completeness_rule")
+    if isinstance(completeness, Mapping):
+        _true(
+            completeness.get("cell_negative_requires_all_candidates_evaluated"),
+            "completeness_rule.cell_negative_requires_all_candidates_evaluated",
+            errors,
+        )
+        _false(
+            completeness.get("unevaluated_candidate_permitted"),
+            "completeness_rule.unevaluated_candidate_permitted",
+            errors,
+        )
+        _false(
+            completeness.get("partial_cell_outcome_permitted"),
+            "completeness_rule.partial_cell_outcome_permitted",
+            errors,
+        )
+    else:
+        errors.append("completeness_rule: expected a mapping")
 
 
 def _validate_counts(data: Mapping[str, Any], errors: list[str]) -> None:
     inventory = data.get("trial_inventory")
     if isinstance(inventory, Mapping):
-        _exact(inventory.get("derived_ceiling_cells"), 48, "trial_inventory.derived_ceiling_cells", errors)
-        _exact(inventory.get("reserve_cells"), 0, "trial_inventory.reserve_cells", errors)
+        _exact(inventory.get("unit_of_trial"), "ONE_CANDIDATE_EVALUATION", "trial_inventory.unit_of_trial", errors)
+        _exact(inventory.get("derived_cells"), 48, "trial_inventory.derived_cells", errors)
         _exact(
-            inventory.get("result_aware_cells"), "PROHIBITED", "trial_inventory.result_aware_cells", errors
+            inventory.get("derived_candidate_ceiling"),
+            240,
+            "trial_inventory.derived_candidate_ceiling",
+            errors,
         )
-        _true(inventory.get("every_cell_must_be_recorded"), "trial_inventory.every_cell_must_be_recorded", errors)
+        _exact(inventory.get("candidates_per_cell"), 5, "trial_inventory.candidates_per_cell", errors)
+        _exact(inventory.get("reserve_candidates"), 0, "trial_inventory.reserve_candidates", errors)
+        _exact(
+            inventory.get("result_aware_candidates"),
+            "PROHIBITED",
+            "trial_inventory.result_aware_candidates",
+            errors,
+        )
         _true(
-            inventory.get("cell_may_not_be_dropped_or_omitted"),
-            "trial_inventory.cell_may_not_be_dropped_or_omitted",
+            inventory.get("every_candidate_must_be_recorded"),
+            "trial_inventory.every_candidate_must_be_recorded",
             errors,
         )
     else:
@@ -424,16 +823,31 @@ def _validate_counts(data: Mapping[str, Any], errors: list[str]) -> None:
     roll_up = data.get("roll_up_units")
     if isinstance(roll_up, Mapping):
         _exact(roll_up.get("derived_count"), 8, "roll_up_units.derived_count", errors)
-        _true(roll_up.get("computed_only_from_own_six_cells"), "roll_up_units.computed_only_from_own_six_cells", errors)
+        _true(
+            roll_up.get("computed_only_from_own_six_cells"),
+            "roll_up_units.computed_only_from_own_six_cells",
+            errors,
+        )
         _exact(roll_up.get("cross_bound_reference"), "PROHIBITED", "roll_up_units.cross_bound_reference", errors)
         _exact(roll_up.get("cross_sleeve_reference"), "PROHIBITED", "roll_up_units.cross_sleeve_reference", errors)
     else:
         errors.append("roll_up_units: expected a mapping")
 
-    # The derived ceiling must equal the product of the closed populations, not merely assert a number.
-    product = len(SLEEVES) * len(BOUNDS) * len(DRIVER_CLASSES)
-    if product != 48:
-        errors.append(f"derived arithmetic: closed populations imply {product} cells, not 48")
+    # Recompute the arithmetic from the closed populations rather than trusting the asserted numbers.
+    cells = len(SLEEVES) * len(BOUNDS) * len(DRIVER_CLASSES)
+    candidates = cells * len(CONSTRUCTION_FAMILIES)
+    if cells != 48 or candidates != 240:
+        errors.append(
+            f"derived arithmetic: closed populations imply {cells} cells and {candidates} candidates, "
+            "not 48 and 240"
+        )
+    generated = generate_candidate_universe()
+    if len(generated) != 240:
+        errors.append(f"generator produced {len(generated)} candidates, expected 240")
+    if len(set(generated)) != len(generated):
+        errors.append("generator produced duplicate construction ids")
+    if len(generate_cell_universe()) != 48:
+        errors.append("generator produced an unexpected cell count")
 
 
 def _validate_registry(data: Mapping[str, Any], errors: list[str]) -> None:
@@ -494,6 +908,140 @@ def _validate_registry(data: Mapping[str, Any], errors: list[str]) -> None:
             _exact(seen[identity_id], expected, f"derived_identities[{identity_id}].value", errors)
 
 
+def _validate_gates(data: Mapping[str, Any], errors: list[str]) -> None:
+    seq = data.get("gate_sequence")
+    if not isinstance(seq, Mapping):
+        errors.append("gate_sequence: expected a mapping")
+        return
+    _exact(
+        seq.get("evaluation_requirement"),
+        "EVALUATE_EVERY_APPLICABLE_GATE_BEFORE_CLASSIFYING",
+        "gate_sequence.evaluation_requirement",
+        errors,
+    )
+    _false(seq.get("record_first_failing_gate_only"), "gate_sequence.record_first_failing_gate_only", errors)
+    _true(
+        seq.get("first_failing_gate_is_diagnostic_only"),
+        "gate_sequence.first_failing_gate_is_diagnostic_only",
+        errors,
+    )
+    _true(
+        seq.get("gates_may_not_be_added_removed_reordered_or_reinterpreted_after_any_outcome_observed"),
+        "gate_sequence.gates_may_not_be_added_removed_reordered_or_reinterpreted_after_any_outcome_observed",
+        errors,
+    )
+    gates = seq.get("gates")
+    if not isinstance(gates, list):
+        errors.append("gate_sequence.gates: expected a list")
+        return
+    if len(gates) != len(GATE_IDS):
+        errors.append(f"gate_sequence.gates: expected {len(GATE_IDS)} gates, got {len(gates)}")
+        return
+    for position, gate in enumerate(gates):
+        where = f"gate_sequence.gates[{position}]"
+        if not _keys(gate, GATE_KEYS, where, errors):
+            continue
+        _exact(gate.get("gate_id"), GATE_IDS[position], f"{where}.gate_id", errors)
+        _exact(gate.get("gate_index"), position + 1, f"{where}.gate_index", errors)
+        disposition = gate.get("failure_disposition")
+        if disposition not in FAILURE_DISPOSITIONS:
+            errors.append(f"{where}.failure_disposition: {disposition!r} is outside the closed set")
+        expected = (
+            "BLOCKED_PENDING_SEPARATE_PREREQUISITE"
+            if gate.get("gate_id") in PREREQUISITE_GATES
+            else "BLOCKED_CATEGORICALLY"
+        )
+        _exact(disposition, expected, f"{where}.failure_disposition", errors)
+        if not str(gate.get("question", "")).strip():
+            errors.append(f"{where}.question: must be non-empty")
+        if not str(gate.get("controlling_authority", "")).strip():
+            errors.append(f"{where}.controlling_authority: must be non-empty")
+
+    gate_ids = [g.get("gate_id") for g in gates if isinstance(g, Mapping)]
+    for removed in ("G12_RECONCILIATION_FEASIBILITY", "G13_SNAPSHOT_ADMISSIBILITY_PATH"):
+        if removed in gate_ids:
+            errors.append(
+                f"gate_sequence.gates: {removed} must not appear; XASSET-0024 SS-J.12 is deferred as a "
+                "whole-candidate prerequisite and the snapshot gate is G12"
+            )
+
+
+def _validate_definitions(data: Mapping[str, Any], errors: list[str]) -> None:
+    cat = data.get("categorical_definition")
+    if isinstance(cat, Mapping):
+        _exact(cat.get("term"), "BLOCKED_CATEGORICALLY", "categorical_definition.term", errors)
+        _exact(
+            cat.get("means"),
+            "NOT_CLOSEABLE_BY_A_NAMED_PREREQUISITE_UNDER_THE_CURRENTLY_ACCEPTED_METHODOLOGY",
+            "categorical_definition.means",
+            errors,
+        )
+        _exact(
+            cat.get("does_not_mean"),
+            "PERMANENTLY_IMPOSSIBLE_UNDER_ALL_FUTURE_GOVERNANCE",
+            "categorical_definition.does_not_mean",
+            errors,
+        )
+    else:
+        errors.append("categorical_definition: expected a mapping")
+
+    pre = data.get("prerequisite_definition")
+    if isinstance(pre, Mapping):
+        _true(pre.get("requires_named_dependency"), "prerequisite_definition.requires_named_dependency", errors)
+    else:
+        errors.append("prerequisite_definition: expected a mapping")
+
+
+def _validate_disposition_rules(data: Mapping[str, Any], errors: list[str]) -> None:
+    rules = data.get("disposition_rules")
+    if not isinstance(rules, Mapping):
+        errors.append("disposition_rules: expected a mapping")
+        return
+    _true(rules.get("order_independent"), "disposition_rules.order_independent", errors)
+
+    cand = rules.get("candidate_disposition")
+    if isinstance(cand, Mapping):
+        _exact(
+            cand.get("quantifier"),
+            "UNIVERSAL_OVER_ITS_OWN_GATE_RESULTS",
+            "disposition_rules.candidate_disposition.quantifier",
+            errors,
+        )
+        _true(
+            cand.get("categorical_dominates_prerequisite"),
+            "disposition_rules.candidate_disposition.categorical_dominates_prerequisite",
+            errors,
+        )
+        _precedence(
+            cand.get("precedence"),
+            CANDIDATE_PRECEDENCE,
+            "disposition_rules.candidate_disposition.precedence",
+            errors,
+        )
+    else:
+        errors.append("disposition_rules.candidate_disposition: expected a mapping")
+
+    cell = rules.get("cell_outcome")
+    if isinstance(cell, Mapping):
+        _exact(
+            cell.get("quantifier"),
+            "EXISTENTIAL_OVER_ITS_OWN_FIVE_CANDIDATE_DISPOSITIONS",
+            "disposition_rules.cell_outcome.quantifier",
+            errors,
+        )
+        _precedence(cell.get("precedence"), CELL_PRECEDENCE, "disposition_rules.cell_outcome.precedence", errors)
+    else:
+        errors.append("disposition_rules.cell_outcome: expected a mapping")
+
+    roll = rules.get("roll_up_outcome")
+    if isinstance(roll, Mapping):
+        _precedence(
+            roll.get("precedence"), ROLL_UP_PRECEDENCE, "disposition_rules.roll_up_outcome.precedence", errors
+        )
+    else:
+        errors.append("disposition_rules.roll_up_outcome: expected a mapping")
+
+
 def _validate_open_reading(data: Mapping[str, Any], errors: list[str]) -> None:
     handling = data.get("open_reading_handling")
     if not isinstance(handling, Mapping):
@@ -503,8 +1051,14 @@ def _validate_open_reading(data: Mapping[str, Any], errors: list[str]) -> None:
     _false(handling.get("relied_upon_by_this_program"), "open_reading_handling.relied_upon_by_this_program", errors)
     _exact(
         handling.get("handling"),
-        "EVALUATE_G2_UNDER_BOTH_READINGS_AND_RECORD_BOTH",
+        "EVALUATE_G2_UNDER_BOTH_READINGS_AND_MAP_DETERMINISTICALLY",
         "open_reading_handling.handling",
+        errors,
+    )
+    _exact(
+        list(handling.get("per_reading_vocabulary") or []),
+        list(READING_VOCABULARY),
+        "open_reading_handling.per_reading_vocabulary",
         errors,
     )
     _exact(
@@ -520,12 +1074,119 @@ def _validate_open_reading(data: Mapping[str, Any], errors: list[str]) -> None:
         errors,
     )
 
+    mapping = data.get("g2_reading_mapping")
+    if not isinstance(mapping, Mapping):
+        errors.append("g2_reading_mapping: expected a mapping")
+        return
+    _true(mapping.get("closed_table"), "g2_reading_mapping.closed_table", errors)
+    _exact(
+        mapping.get("reading_dependent_maps_to_candidate_outcome"),
+        "UNABLE_TO_DETERMINE",
+        "g2_reading_mapping.reading_dependent_maps_to_candidate_outcome",
+        errors,
+    )
+    _exact(
+        list(mapping.get("record_keys") or []),
+        list(G2_MAPPING_KEYS),
+        "g2_reading_mapping.record_keys",
+        errors,
+    )
+    rows = mapping.get("rows")
+    if not isinstance(rows, list) or len(rows) != len(G2_MAPPING_ROWS):
+        errors.append(f"g2_reading_mapping.rows: expected {len(G2_MAPPING_ROWS)} closed rows")
+        return
+    for position, row in enumerate(rows):
+        where = f"g2_reading_mapping.rows[{position}]"
+        if not _keys(row, G2_MAPPING_KEYS, where, errors):
+            continue
+        sm, po, out, dep = G2_MAPPING_ROWS[position]
+        _exact(row.get("subject_matter_reading"), sm, f"{where}.subject_matter_reading", errors)
+        _exact(row.get("preference_only_reading"), po, f"{where}.preference_only_reading", errors)
+        _exact(row.get("g2_effective_outcome"), out, f"{where}.g2_effective_outcome", errors)
+        _exact(row.get("reading_dependent"), dep, f"{where}.reading_dependent", errors)
+
+    # The declared table and the executable mapping function must agree on every concrete pair.
+    for sm in READING_VOCABULARY:
+        for po in READING_VOCABULARY:
+            declared = None
+            for r_sm, r_po, r_out, _dep in G2_MAPPING_ROWS:
+                if (r_sm in (sm, "ANY")) and (r_po in (po, "ANY")):
+                    declared = r_out
+                    break
+            computed = map_g2_reading(sm, po)
+            if declared is not None and declared != computed:
+                errors.append(
+                    f"g2_reading_mapping: declared table gives {declared!r} for ({sm}, {po}) but "
+                    f"map_g2_reading() gives {computed!r}"
+                )
+
+
+def _validate_deferred(data: Mapping[str, Any], errors: list[str]) -> None:
+    subset = data.get("stage_1_testable_subset")
+    if isinstance(subset, Mapping):
+        items = subset.get("items")
+        if not isinstance(items, list) or len(items) != 12:
+            errors.append("stage_1_testable_subset.items: expected all twelve XASSET-0024 SS-J items")
+        else:
+            j12 = [i for i in items if isinstance(i, Mapping) and i.get("j_item", "").startswith("J_12")]
+            if not j12:
+                errors.append("stage_1_testable_subset.items: J_12 is absent")
+            else:
+                _exact(
+                    j12[0].get("stage_1_status"),
+                    "NOT_YET_DETERMINABLE_DEFERRED",
+                    "stage_1_testable_subset J_12.stage_1_status",
+                    errors,
+                )
+    else:
+        errors.append("stage_1_testable_subset: expected a mapping")
+
+    deferred = data.get("deferred_admissibility_requirements")
+    if not isinstance(deferred, Mapping):
+        errors.append("deferred_admissibility_requirements: expected a mapping")
+        return
+    _exact(
+        deferred.get("cross_sleeve_arithmetic_to_satisfy_a_deferred_requirement"),
+        "PROHIBITED",
+        "deferred_admissibility_requirements.cross_sleeve_arithmetic_to_satisfy_a_deferred_requirement",
+        errors,
+    )
+    reqs = deferred.get("requirements")
+    if not isinstance(reqs, list) or not reqs:
+        errors.append("deferred_admissibility_requirements.requirements: expected a non-empty list")
+        return
+    ids = {str(r.get("requirement_id")) for r in reqs if isinstance(r, Mapping)}
+    if "J_12_EXACT_SET_VALUED_RECONCILIATION" not in ids:
+        errors.append(
+            "deferred_admissibility_requirements: J_12_EXACT_SET_VALUED_RECONCILIATION must be recorded "
+            "as deferred; XASSET-0020 SS-K defines reconciliation jointly over the whole candidate"
+        )
+    for req in reqs:
+        if not isinstance(req, Mapping):
+            continue
+        _false(
+            req.get("stage_1_may_claim_compliance"),
+            f"deferred_admissibility_requirements[{req.get('requirement_id')!r}].stage_1_may_claim_compliance",
+            errors,
+        )
+        if not str(req.get("why_not_determinable_in_stage_1", "")).strip():
+            errors.append(
+                f"deferred_admissibility_requirements[{req.get('requirement_id')!r}]"
+                ".why_not_determinable_in_stage_1: must be non-empty"
+            )
+
 
 def _validate_vocabulary(data: Mapping[str, Any], errors: list[str]) -> None:
     vocab = data.get("result_vocabulary")
     if not isinstance(vocab, Mapping):
         errors.append("result_vocabulary: expected a mapping")
         return
+    _exact(
+        list(vocab.get("candidate_dispositions") or []),
+        list(CANDIDATE_DISPOSITIONS),
+        "result_vocabulary.candidate_dispositions",
+        errors,
+    )
     _exact(list(vocab.get("cell_outcomes") or []), list(CELL_OUTCOMES), "result_vocabulary.cell_outcomes", errors)
     _exact(
         list(vocab.get("roll_up_outcomes") or []),
@@ -533,31 +1194,19 @@ def _validate_vocabulary(data: Mapping[str, Any], errors: list[str]) -> None:
         "result_vocabulary.roll_up_outcomes",
         errors,
     )
-    _true(vocab.get("roll_up_is_not_a_score"), "result_vocabulary.roll_up_is_not_a_score", errors)
     _exact(
-        vocab.get("roll_up_mechanism"),
-        "FIXED_PRECEDENCE_EXISTENCE_TEST",
-        "result_vocabulary.roll_up_mechanism",
+        list(vocab.get("gate_result_vocabulary") or []),
+        list(GATE_RESULT_VOCABULARY),
+        "result_vocabulary.gate_result_vocabulary",
         errors,
     )
-
-    precedence = vocab.get("roll_up_precedence")
-    if not isinstance(precedence, list):
-        errors.append("result_vocabulary.roll_up_precedence: expected a list")
-    elif len(precedence) != len(ROLL_UP_PRECEDENCE):
-        errors.append(
-            f"result_vocabulary.roll_up_precedence: expected {len(ROLL_UP_PRECEDENCE)} rules, "
-            f"got {len(precedence)}"
-        )
-    else:
-        for position, rule in enumerate(precedence):
-            where = f"result_vocabulary.roll_up_precedence[{position}]"
-            if not isinstance(rule, Mapping):
-                errors.append(f"{where}: expected a mapping")
-                continue
-            expected_condition, expected_outcome = ROLL_UP_PRECEDENCE[position]
-            _exact(rule.get("condition"), expected_condition, f"{where}.condition", errors)
-            _exact(rule.get("outcome"), expected_outcome, f"{where}.outcome", errors)
+    _true(vocab.get("no_outcome_is_a_score"), "result_vocabulary.no_outcome_is_a_score", errors)
+    _exact(
+        vocab.get("mechanism"),
+        "FIXED_PRECEDENCE_QUANTIFIER_TESTS",
+        "result_vocabulary.mechanism",
+        errors,
+    )
 
     support = vocab.get("point_or_range_support")
     if isinstance(support, Mapping):
@@ -651,7 +1300,7 @@ def _validate_execution(data: Mapping[str, Any], errors: list[str]) -> None:
     if isinstance(stopping, Mapping):
         _exact(
             stopping.get("terminates_when"),
-            "ALL_48_CELLS_CARRY_A_RECORDED_OUTCOME",
+            "ALL_240_REGISTERED_CANDIDATES_CARRY_A_RECORDED_DISPOSITION",
             "execution.stopping_rules.terminates_when",
             errors,
         )
@@ -678,12 +1327,22 @@ def _validate_execution(data: Mapping[str, Any], errors: list[str]) -> None:
 
     mining = execution.get("history_mining_controls")
     if isinstance(mining, Mapping):
-        for key in ("gates_frozen_before_evaluation", "cells_frozen_before_evaluation", "vocabulary_frozen_before_evaluation"):
+        for key in (
+            "gates_frozen_before_evaluation",
+            "candidates_frozen_before_evaluation",
+            "vocabulary_frozen_before_evaluation",
+        ):
             _true(mining.get(key), f"execution.history_mining_controls.{key}", errors)
         _exact(
             mining.get("outcome_aware_gate_change"),
             "PROHIBITED",
             "execution.history_mining_controls.outcome_aware_gate_change",
+            errors,
+        )
+        _exact(
+            mining.get("outcome_aware_candidate_addition_or_removal"),
+            "PROHIBITED",
+            "execution.history_mining_controls.outcome_aware_candidate_addition_or_removal",
             errors,
         )
     else:
@@ -701,16 +1360,43 @@ def _validate_execution(data: Mapping[str, Any], errors: list[str]) -> None:
     negative = execution.get("negative_result_preservation")
     if isinstance(negative, Mapping):
         _true(
-            negative.get("all_cell_outcomes_recorded_regardless_of_direction"),
-            "execution.negative_result_preservation.all_cell_outcomes_recorded_regardless_of_direction",
+            negative.get("all_candidate_dispositions_recorded_regardless_of_direction"),
+            "execution.negative_result_preservation.all_candidate_dispositions_recorded_regardless_of_direction",
             errors,
         )
-        _true(negative.get("null_is_a_complete_outcome"), "execution.negative_result_preservation.null_is_a_complete_outcome", errors)
+        _true(
+            negative.get("null_is_a_complete_outcome"),
+            "execution.negative_result_preservation.null_is_a_complete_outcome",
+            errors,
+        )
     else:
         errors.append("execution.negative_result_preservation: expected a mapping")
 
 
 def _validate_result_boundary(data: Mapping[str, Any], errors: list[str]) -> None:
+    arch = data.get("source_architecture_vocabulary")
+    if isinstance(arch, Mapping):
+        _exact(
+            list(arch.get("values") or []),
+            list(SOURCE_ARCHITECTURES),
+            "source_architecture_vocabulary.values",
+            errors,
+        )
+        _contains_all(
+            arch.get("existing_requires"),
+            ("source_path", "source_sha256"),
+            "source_architecture_vocabulary.existing_requires",
+            errors,
+        )
+        _contains_all(
+            arch.get("hypothetical_forbids"),
+            ("source_path", "source_sha256"),
+            "source_architecture_vocabulary.hypothetical_forbids",
+            errors,
+        )
+    else:
+        errors.append("source_architecture_vocabulary: expected a mapping")
+
     schema = data.get("result_schema")
     if isinstance(schema, Mapping):
         _false(schema.get("results_path_created_by_this_filing"), "result_schema.results_path_created_by_this_filing", errors)
@@ -721,9 +1407,9 @@ def _validate_result_boundary(data: Mapping[str, Any], errors: list[str]) -> Non
             errors,
         )
         _contains_all(
-            schema.get("cell_result_keys"),
-            OPEN_READING_FIELDS + ("cell_id", "outcome", "first_failing_gate_id"),
-            "result_schema.cell_result_keys",
+            schema.get("candidate_result_keys"),
+            REQUIRED_CANDIDATE_RESULT_KEYS,
+            "result_schema.candidate_result_keys",
             errors,
         )
     else:
@@ -736,6 +1422,7 @@ def _validate_result_boundary(data: Mapping[str, Any], errors: list[str]) -> Non
             "is_admissible_endpoint_supporting_evidence",
             "may_be_cited_as_endpoint_supporting_evidence",
             "may_enter_a_snapshot_as_a_driver",
+            "may_claim_full_j_1_through_j_12_compliance",
         ):
             _false(status.get(key), f"result_status_of_stage_1_output.{key}", errors)
     else:
@@ -785,11 +1472,17 @@ def validate(data: Mapping[str, Any]) -> ValidationResult:
         return ValidationResult(False, tuple(errors))
     _validate_identity(data, errors)
     _validate_authority(data, errors)
+    _validate_lifecycle(data, errors)
     _validate_stages(data, errors)
-    _validate_gates(data, errors)
+    _validate_construction_families(data, errors)
+    _validate_candidate_universe(data, errors)
     _validate_counts(data, errors)
     _validate_registry(data, errors)
+    _validate_gates(data, errors)
+    _validate_definitions(data, errors)
+    _validate_disposition_rules(data, errors)
     _validate_open_reading(data, errors)
+    _validate_deferred(data, errors)
     _validate_vocabulary(data, errors)
     _validate_firewall(data, errors)
     _validate_representation(data, errors)
@@ -799,6 +1492,165 @@ def validate(data: Mapping[str, Any]) -> ValidationResult:
     return ValidationResult(not errors, tuple(errors))
 
 
+# ======================================================================================
+# Stage-1 results validation — enforces the frozen universe on a future results document
+# ======================================================================================
+
+
+def validate_stage1_results(results: Mapping[str, Any]) -> ValidationResult:
+    """Validate a Stage-1 results document against the frozen candidate universe.
+
+    No results document exists or is authorized by XASSET-0027. This function is the enforcement
+    mechanism a future, separately authorized Stage-1 implementation must pass, and it is what makes
+    the exhaustiveness and determinism claims checkable rather than merely stated.
+    """
+    errors: list[str] = []
+    if not isinstance(results, Mapping):
+        return ValidationResult(False, ("stage1_results: expected a top-level mapping",))
+
+    expected_universe = generate_candidate_universe()
+    candidates = results.get("candidate_results")
+    if not isinstance(candidates, list):
+        return ValidationResult(False, ("stage1_results.candidate_results: expected a list",))
+
+    seen: dict[str, Mapping[str, Any]] = {}
+    for position, row in enumerate(candidates):
+        where = f"candidate_results[{position}]"
+        if not isinstance(row, Mapping):
+            errors.append(f"{where}: expected a mapping")
+            continue
+        construction_id = row.get("construction_id")
+        if construction_id not in expected_universe:
+            errors.append(
+                f"{where}.construction_id: {construction_id!r} is not in the frozen candidate "
+                "universe; unregistered candidates are prohibited"
+            )
+            continue
+        if construction_id in seen:
+            errors.append(f"{where}.construction_id: {construction_id!r} is duplicated")
+            continue
+        seen[str(construction_id)] = row
+
+        for key in REQUIRED_CANDIDATE_RESULT_KEYS:
+            if key not in row:
+                errors.append(f"{where}: required key {key!r} is absent")
+
+        # Provenance: an existing-source candidate must be exactly identified.
+        architecture = row.get("source_architecture")
+        if architecture not in SOURCE_ARCHITECTURES:
+            errors.append(f"{where}.source_architecture: {architecture!r} is outside the closed set")
+        elif architecture == "EXISTING_SOURCE_ARCHITECTURE":
+            if not str(row.get("source_path") or "").strip():
+                errors.append(f"{where}.source_path: required for EXISTING_SOURCE_ARCHITECTURE")
+            sha = str(row.get("source_sha256") or "")
+            if not re.fullmatch(r"[0-9a-f]{64}", sha):
+                errors.append(f"{where}.source_sha256: required 64-hex digest for EXISTING_SOURCE_ARCHITECTURE")
+        else:
+            if row.get("source_path") is not None or row.get("source_sha256") is not None:
+                errors.append(
+                    f"{where}: HYPOTHETICAL_SOURCE_ARCHITECTURE must carry no source_path or source_sha256"
+                )
+            if not str(row.get("hypothetical_source_requirements") or "").strip():
+                errors.append(
+                    f"{where}.hypothetical_source_requirements: required for HYPOTHETICAL_SOURCE_ARCHITECTURE"
+                )
+
+        if not row.get("governing_authority_refs"):
+            errors.append(f"{where}.governing_authority_refs: must be non-empty")
+
+        # Disposition must equal the deterministic derivation from the recorded gate results.
+        gate_results = row.get("gate_results")
+        if isinstance(gate_results, Mapping):
+            try:
+                derived = derive_candidate_disposition(gate_results)
+            except ValueError as exc:
+                errors.append(f"{where}.gate_results: {exc}")
+            else:
+                if row.get("disposition") != derived:
+                    errors.append(
+                        f"{where}.disposition: recorded {row.get('disposition')!r} but the gate results "
+                        f"deterministically derive {derived!r}"
+                    )
+        else:
+            errors.append(f"{where}.gate_results: expected a mapping of every gate id to a result")
+
+        # The reading map must be applied exactly, and the dependence flag must be consistent.
+        sm = row.get("g2_outcome_under_subject_matter_reading")
+        po = row.get("g2_outcome_under_preference_only_reading")
+        if sm in READING_VOCABULARY and po in READING_VOCABULARY:
+            effective = map_g2_reading(str(sm), str(po))
+            if effective == "INCOHERENT_REJECTED":
+                errors.append(
+                    f"{where}: subject-matter FAILS with preference-only PASSES is incoherent; the "
+                    "preference-only reading is strictly narrower"
+                )
+            expected_dep = is_reading_dependent(str(sm), str(po))
+            if row.get("g2_outcome_is_reading_dependent") is not expected_dep:
+                errors.append(
+                    f"{where}.g2_outcome_is_reading_dependent: expected {expected_dep}, got "
+                    f"{row.get('g2_outcome_is_reading_dependent')!r}"
+                )
+            if expected_dep and row.get("disposition") == "BLOCKED_CATEGORICALLY":
+                errors.append(
+                    f"{where}: a reading-dependent G2 outcome may not be recorded as "
+                    "BLOCKED_CATEGORICALLY while XASSET-0024 SS-K.1 remains unresolved"
+                )
+        else:
+            errors.append(f"{where}: both G2 reading outcomes must be in {READING_VOCABULARY}")
+
+    missing = [c for c in expected_universe if c not in seen]
+    if missing:
+        errors.append(
+            f"candidate_results: {len(missing)} registered candidate(s) have no recorded disposition, "
+            f"e.g. {missing[:3]}; a cell outcome requires its complete candidate set"
+        )
+
+    # Cell outcomes must be the deterministic composition of their own five candidates.
+    cell_rows = results.get("cell_results")
+    if isinstance(cell_rows, list):
+        for position, row in enumerate(cell_rows):
+            where = f"cell_results[{position}]"
+            if not isinstance(row, Mapping):
+                errors.append(f"{where}: expected a mapping")
+                continue
+            cell_id = str(row.get("cell_id"))
+            members = [c for c in expected_universe if cell_id_of(c) == cell_id]
+            if len(members) != 5:
+                errors.append(f"{where}.cell_id: {cell_id!r} is not a registered cell")
+                continue
+            dispositions = [seen[m].get("disposition") for m in members if m in seen]
+            if len(dispositions) != 5:
+                errors.append(
+                    f"{where}: cell {cell_id!r} has {len(dispositions)} of 5 candidate dispositions; "
+                    "a negative cell outcome requires every registered candidate to be evaluated"
+                )
+                continue
+            try:
+                derived = derive_cell_outcome([str(d) for d in dispositions])
+            except ValueError as exc:
+                errors.append(f"{where}: {exc}")
+                continue
+            if row.get("outcome") != derived:
+                errors.append(
+                    f"{where}.outcome: recorded {row.get('outcome')!r} but its five candidates "
+                    f"deterministically derive {derived!r}"
+                )
+
+    for banned in ("J_1_THROUGH_J_12_SATISFIED", "FULL_J_COMPLIANCE"):
+        if banned in str(results.get("disposition", "")):
+            errors.append(
+                f"stage1_results.disposition: {banned!r} may not be claimed; XASSET-0024 SS-J.12 is "
+                "deferred and Stage 1 tests only the Stage-1-testable subset"
+            )
+
+    return ValidationResult(not errors, tuple(errors))
+
+
+# ======================================================================================
+# Companion-document validation
+# ======================================================================================
+
+
 def protocol_mirror_expected() -> dict[str, str]:
     """Return the mirror values the protocol must reproduce."""
     return {
@@ -806,12 +1658,15 @@ def protocol_mirror_expected() -> dict[str, str]:
         "sleeve_count": str(len(SLEEVES)),
         "bound_count": str(len(BOUNDS)),
         "driver_class_count": str(len(DRIVER_CLASSES)),
-        "cell_ceiling": str(DERIVED_IDENTITIES["CELL_CEILING"]),
+        "construction_family_count": str(len(CONSTRUCTION_FAMILIES)),
+        "cell_count": str(DERIVED_IDENTITIES["CELL_COUNT"]),
+        "candidate_ceiling": str(DERIVED_IDENTITIES["CANDIDATE_CEILING"]),
         "roll_up_unit_count": str(DERIVED_IDENTITIES["ROLL_UP_UNIT_COUNT"]),
         "gate_count": str(len(GATE_IDS)),
-        "reserve_cells": "0",
+        "reserve_candidates": "0",
         "consequential_parameter_count": "0",
         "stage_2_authorized": "false",
+        "j12_deferred": "true",
         "hash_version": HASH_VERSION,
     }
 
@@ -902,9 +1757,7 @@ def validate_file(path: Path = PREREG_PATH) -> ValidationResult:
         errors.append(f"{PROTOCOL_PATH}: file not found")
 
     if DECISION_PATH.exists():
-        errors.extend(
-            validate_charter_hash_pins(DECISION_PATH.read_text(encoding="utf-8")).errors
-        )
+        errors.extend(validate_charter_hash_pins(DECISION_PATH.read_text(encoding="utf-8")).errors)
     else:
         errors.append(f"{DECISION_PATH}: file not found")
 
@@ -914,7 +1767,10 @@ def validate_file(path: Path = PREREG_PATH) -> ValidationResult:
 def main() -> int:  # pragma: no cover - CLI
     result = validate_file()
     if result.ok:
-        print(f"level1_endpoint_evidence_preregistration_validator: OK ({STUDY_ID})")
+        print(
+            f"level1_endpoint_evidence_preregistration_validator: OK ({STUDY_ID}; "
+            f"{len(generate_candidate_universe())} candidates over {len(generate_cell_universe())} cells)"
+        )
         return 0
     print(f"level1_endpoint_evidence_preregistration_validator: {len(result.errors)} error(s)")
     for error in result.errors:

@@ -12285,22 +12285,52 @@ workstreams:
           candidate source appears anywhere. Part B charters ENDPOINT-0001, a
           study identifier only and not a decision prefix, against XASSET-0025
           SSK's verbatim question, with canonical protocol and pre-registration
-          hash-pinned in the decision. Stage 1 is a deterministic, per-cell
-          construction-feasibility evaluation over a closed 4 sleeves x 2
-          bounds x 6 DRIVER classes = 48-cell set, zero reserve, thirteen
-          ordered gates evaluated first-failure-wins, distinguishing
-          categorical bars from named closeable prerequisites. It acquires no
+          hash-pinned in the decision. Corrected under independent review
+          4945187522: the candidate universe is now closed before execution by
+          a deterministic generator rather than left to the executor. One
+          candidate is one sleeve x one bound x one DRIVER class x one lawful
+          construction family, and the five construction families are the
+          lawful (route, NUM-0001 class) pairs closed by XASSET-0023 SSH
+          ("There is no third route") and SSH.4 item 3 — enumerated here, not
+          invented, selected, ranked, or excluded. That yields a derived
+          ceiling of 4 x 2 x 6 x 5 = 240 candidates over 48 cells, zero
+          reserve, stable ids, byte-identically reproducible and
+          validator-enforced; the executor may not add or remove a candidate,
+          and a cell may be recorded negative only if all five of its
+          candidates were evaluated and every one was blocked categorically.
+          Twelve ordered gates are ALL evaluated before a candidate is
+          classified, with categorical failures dominating prerequisite
+          failures and first_failing_gate_id demoted to a diagnostic computed
+          after the disposition is fixed — so a candidate failing both a
+          prerequisite and a categorical gate is categorical, never filed as a
+          closeable to-do. "Categorical" is defined as not closeable by a named
+          prerequisite under the currently accepted methodology, expressly not
+          permanent impossibility under all future governance. It acquires no
           data, estimates nothing, and introduces zero consequential numeric
           parameters, which the dedicated validator asserts mechanically — a
-          study with no free parameter cannot be tuned. Out-of-sample and
+          study with no free parameter cannot be tuned, and with the candidate
+          universe generated rather than authored the qualitative search
+          surface is closed as well. Out-of-sample and
           neighbouring-parameter discipline is recorded NOT_APPLICABLE to Stage
           1 with its reason, and required of any future Stage 2. Stage 2, being
           any empirical or data-acquiring work, is NOT authorized and becomes
           eligible to be proposed only on a constructible-candidate finding,
           still requiring its own separate decision. XASSET-0024 SSK.1's open
           reading is neither resolved nor relied upon: G2 is evaluated under
-          both readings and reading-dependent cells are recorded as such. The
-          Stage 1 output is classified non-DRIVER and non-admissible and may
+          both readings from a closed vocabulary and mapped by a closed table,
+          and a candidate passing only under the subject-matter reading is
+          reading-dependent and maps to UNABLE_TO_DETERMINE — never to
+          BLOCKED_CATEGORICALLY, because an unresolved methodology reading is
+          not a categorical impossibility. XASSET-0024 SSJ.12 exact set-valued
+          reconciliation is DEFERRED rather than decided: XASSET-0020 SSK
+          defines it jointly over the whole candidate and other sleeves, while
+          Stage 1 produces no endpoint value and prohibits cross-sleeve and
+          cross-bound reference, so it is recorded
+          NOT_YET_DETERMINABLE_DEFERRED and Stage 1's success language is
+          narrowed to the Stage-1-testable subset of SSJ.1-SSJ.12; introducing
+          cross-sleeve arithmetic to make it returnable is prohibited. The
+          Stage 1 output is classified non-DRIVER and non-admissible, may not
+          claim full SSJ compliance, and may
           never be cited as endpoint-supporting evidence. Creates no endpoint,
           bound, point, range, percentage, weight, or allocation; selects,
           prefers, ranks, sequences, or budgets no sleeve; grants no
@@ -12385,10 +12415,17 @@ workstreams:
       of the combined packaging SSG.3 permits: it constitutes
       LEVEL1_ENDPOINT_AUTHORITY without exercising it, and charters the
       all-four-sleeve ENDPOINT-0001 programme without executing it. Nothing
-      downstream may begin before it merges. After merge, the next authorized
-      action is the single Stage 1 implementation/results PR, which must verify
-      both pinned canonical hashes from the merged charter commit before
-      beginning; a mismatch voids execution authority. Stage 2, any empirical or
+      downstream may begin before its COMPLETE lifecycle closes — corrected
+      under independent review 4945187522, effectivity is bound to all five of
+      accepted independent exact-head review, principal exact-head acceptance,
+      merge, immediate post-merge verification, and successful merge-commit CI,
+      and merge alone is expressly NOT sufficient. Only after that closure is
+      the next authorized action the single Stage 1 implementation/results PR,
+      which must verify both pinned canonical hashes from the merged charter
+      commit before beginning; a mismatch voids execution authority. That PR
+      records all 240 candidate dispositions, the 48 cell outcomes, the 8
+      roll-ups, and the deferred SSJ.12 record, and must pass
+      validate_stage1_results(). Stage 2, any empirical or
       data-acquiring work, is NOT authorized and requires its own separate
       decision even if Stage 1 identifies a constructible candidate. Also still
       unauthorized and separately required, in dependency order: an XASSET-0024
@@ -12884,7 +12921,12 @@ workstreams:
       before either half takes effect. Per XASSET-0026 SSG.3, its evidence half
       and its authority half must each survive that same independent review, and
       neither may be treated as certified by the other's presence in the same
-      file. Filing and CI do not make it effective. Until it merges: no
+      file. Filing and exact-head CI do not make it effective, and neither does
+      merge alone: effectivity requires the complete lifecycle — accepted
+      independent exact-head review, principal exact-head acceptance, merge,
+      immediate post-merge verification, and successful merge-commit CI — so no
+      Stage-1 mutation lane may open in the window between merge and lifecycle
+      closure. Until that closure: no
       LEVEL1_ENDPOINT_AUTHORITY exists or may be invoked; ENDPOINT-0001 Stage 1
       may not be executed and no cell may be evaluated; and no endpoint, bound,
       point, range, percentage, weight, or sleeve selection exists anywhere.

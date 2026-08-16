@@ -138,8 +138,15 @@ it contains a share figure does not satisfy §E.1." **A provisional guardrail ma
 naked number**; the class governs how the value was selected, not whether subject-matter evidence is
 required.
 
-**D.5 — Effectiveness.** The authority becomes effective on this decision's own merge, and not before.
-Filing, CI, and independent review do not make it effective.
+**D.5 — Effectiveness, bound to the completed lifecycle rather than to merge alone.** The authority
+becomes operationally effective only after **all five** of: accepted independent exact-head review;
+explicit principal exact-head acceptance; merge; immediate post-merge verification; and successful
+merge-commit CI — with the merged canonical hashes verified from the merged commit.
+
+**Merge alone is not sufficient.** Filing, exact-head CI, and independent review do not make it
+effective either. Binding effectivity to the completed lifecycle removes any window between merge and
+lifecycle closure in which a second mutation lane could claim authority, and it matches what this
+filing's own `operations/WORKSTREAMS.yaml` blocker already requires of both halves.
 
 ### E. What the authority cannot do
 
@@ -210,15 +217,15 @@ file bytes exactly as committed:
 
 <!-- XASSET-0027-HASH-PINS-V1
 protocol_path: research/level1_endpoint_evidence/PROTOCOL_V1.md
-protocol_sha256: f44b967a2889b81d66ecc59b337e28747514369dc1e70d8bc5b8144d0a1b673b
+protocol_sha256: 23f5669a2702d8b418481738782ba53c2eb6ac5449ac109b3ed64a6593580f93
 preregistration_path: research/level1_endpoint_evidence/pre_registration.yaml
-preregistration_sha256: ef67196332bc5aa5d2aa55e2fa96cd74cf89bf95f2b83ffb1e47ea4fe229aacc
+preregistration_sha256: c2b815cfdbfff55a851e794ff33ada366d5e123e259776df8372eaa8c54190d9
 -->
 
 - `research/level1_endpoint_evidence/PROTOCOL_V1.md`:
-  `f44b967a2889b81d66ecc59b337e28747514369dc1e70d8bc5b8144d0a1b673b`
+  `23f5669a2702d8b418481738782ba53c2eb6ac5449ac109b3ed64a6593580f93`
 - `research/level1_endpoint_evidence/pre_registration.yaml`:
-  `ef67196332bc5aa5d2aa55e2fa96cd74cf89bf95f2b83ffb1e47ea4fe229aacc`
+  `c2b815cfdbfff55a851e794ff33ada366d5e123e259776df8372eaa8c54190d9`
 
 **The structured pre-registration is canonical** for every closed identity, cell, gate, ordering,
 vocabulary, and count. The protocol explains the design but cannot enlarge or override it. Any later
@@ -228,38 +235,73 @@ voids execution authority.** Any content change requires a separately accepted a
 ### I. Program architecture, and conformance with `XASSET-0026` §I
 
 The governing research question is `XASSET-0025` §K's, reproduced verbatim in the pre-registration and
-instantiated identically for every cell. The unit of work is one **cell** — one sleeve × one bound ×
-one DRIVER class — giving a derived ceiling of `4 × 2 × 6 = 48`, zero reserve, with route and
-`NUM-0001` class recorded as fields rather than made dimensions so that neither is pre-selected.
+instantiated identically for every candidate.
 
-Each cell is evaluated against thirteen ordered gates, first-failure-wins, each restating an
-already-accepted requirement. Failures are recorded as either **categorical** (a property of what the
-evidence measures or where it came from, which no future authorization can lift) or **prerequisite** (a
-named, closeable gap) — the same distinction `XASSET-0025` §I drew, and it matters for the same reason:
-it stops a categorical bar being quietly filed as a to-do.
+**I.1 — The candidate universe is generated from closed authority, not authored.** The unit of work is
+one **candidate** — one sleeve × one bound × one DRIVER class × one **construction family** — and each
+of those four dimensions is closed by an already-accepted decision:
+
+| Dimension | Count | Closed by |
+|---|---|---|
+| Sleeve | 4 | `XASSET-0019`; `XASSET-0020` §B |
+| Bound | 2 | `XASSET-0024` §C |
+| DRIVER class | 6 | `XASSET-0020` §E.1 — "six closed classes" |
+| Construction family | 5 | `XASSET-0023` §H and §H.4 item 3 |
+
+The construction families are the lawful `(route, NUM-0001 class)` pairs, and their count is fixed by
+accepted text rather than by this filing: `XASSET-0023` §H states "**There is no third route**," and
+§H.4 item 3 fixes coherence exactly — "A §H.3 derivation is NUM-0001 class 2. A §H.2 statement may
+carry class 1, 3, 4, or 5" — with class 6 disqualifying under §H.4 item 2. That yields exactly five:
+`R1_C1`, `R1_C3`, `R1_C4`, `R1_C5`, `R2_C2`. This program **enumerates** them and selects, ranks,
+invents, and excludes none — which is how `XASSET-0026` §I.5's "no route or class pre-selected" is
+satisfied. Anything outside the five would necessarily be one of `XASSET-0024` §D's non-routes N1–N8,
+which are barred origination mechanisms rather than families, and are barred before evaluation.
+
+The generator is therefore a deterministic Cartesian product with a derived ceiling of
+`4 × 2 × 6 × 5 = 240` candidates over 48 cells, zero reserve, stable ids
+`{sleeve}::{bound}::{driver_class}::{family_id}`, byte-identically reproducible and validator-enforced.
+**The executor may not add or remove a candidate**, and amending the universe after outcomes are
+observed requires separate governance and new hash pins. No candidate is invented to fill the
+universe: each is the mechanical pairing of a closed cell with a closed family, and a family with no
+plausible instance in a cell is still evaluated and still recorded.
+
+**I.2 — What a negative therefore means.** A cell may be `BLOCKED_CATEGORICALLY` **only if all five of
+its registered candidates were evaluated and every one was blocked categorically**. A negative means
+every lawful construction family failed under accepted authority — not that no construction occurred
+to the executor. Partial cells and unevaluated candidates are prohibited, and the trial unit is a
+candidate evaluation rather than a cell label.
+
+**I.3 — Twelve gates, and disposition independent of order.** Each gate restates an already-accepted
+requirement. **Every applicable gate is evaluated before a candidate is classified**, and
+`first_failing_gate_id` survives only as a diagnostic computed after the disposition is fixed.
+Failures are **categorical** (not closeable by a named prerequisite while the currently accepted
+methodology stands) or **prerequisite** (closeable by a named, separately authorized prerequisite), and
+**categorical dominates**: a candidate failing both is `BLOCKED_CATEGORICALLY`, never
+prerequisite-blocked. That is what makes the `XASSET-0025` §I distinction do the work it was borrowed
+for — closing the named prerequisite would leave the categorical defect standing.
 
 Conformance against `XASSET-0026` §I's twelve architectural constraints, each checked rather than
 asserted:
 
 | §I | Constraint | Where satisfied |
 |---|---|---|
-| 1 | All four sleeves, no proper subset | Closed `sleeves` population; 48 cells span all four |
+| 1 | All four sleeves, no proper subset | Closed `sleeves` population; 240 candidates over 48 cells span all four |
 | 2 | Per-sleeve, per-bound outcome; null complete; no inference across sleeves | `roll_up_units`; `cross_sleeve_reference: PROHIBITED`; null is a complete outcome |
 | 3 | LOWER and UPPER independently governed | `cross_bound_reference: PROHIBITED`; each roll-up computed only from its own six cells |
-| 4 | Single-sleeve bounds only | Cell definition binds every candidate to one named sleeve |
-| 5 | Route and class open; classes 1–5; class 6 disqualifying | Route and class are recorded fields, not dimensions; all six DRIVER classes enumerated per cell |
+| 4 | Single-sleeve bounds only | Every candidate id binds to exactly one named sleeve |
+| 5 | Route and class open; classes 1–5; class 6 disqualifying | All five lawful `(route, class)` families enumerated for every cell; class 6 excluded by name |
 | 6 | No sum, residual, symmetry, or equal division | `G4_ORIGIN`; `barred_constructions`; `prohibited_scope` |
 | 7 | Pair independence by construction, not by inspection | `G10_PAIR_INDEPENDENCE` |
 | 8 | Self-contained representation path preserved; no rule assumed | `G9_REPRESENTATION`; `representation.rule_created_by_this_program: false` |
-| 9 | Snapshot successor required before admission | `G13`; `prohibited_scope: SNAPSHOT_EXTENSION_OR_REPLACEMENT` |
+| 9 | Snapshot successor required before admission | `G12_SNAPSHOT_ADMISSIBILITY_PATH`; `prohibited_scope: SNAPSHOT_EXTENSION_OR_REPLACEMENT` |
 | 10 | RANGE-first carried forward unchanged | `point_or_range_support.range_first_posture` |
 | 11 | No barred origin; literal scan is a floor | `G4`; `literal_scan_is_a_floor_not_the_boundary: true` |
 | 12 | No RISK reuse; no re-questioning | `risk_lane_boundary`; `barred_risk_reuse` |
 
 **All four sleeves are covered; not all four need succeed.** A lawful result may identify a candidate
-for one sleeve and none for the other three. The evidence determines which cells succeed. Nothing in
-the design prioritizes, ranks, sequences, or budgets a sleeve, and the 48 cells are a single closed set
-evaluated in full precisely so that no ordering can imply preference.
+for one sleeve and none for the other three. The evidence determines which succeed. Nothing in the
+design prioritizes, ranks, sequences, or budgets a sleeve, and the 240 candidates are a single closed
+set evaluated in full precisely so that no ordering can imply preference.
 
 ### J. The magnitude problem, confronted rather than deferred
 
@@ -294,16 +336,43 @@ outcome is a `BLOCKED_CATEGORICALLY` cell, and `XASSET-0020` §J.3 already makes
 outcome. **Mandatory abstention is a valid result of this program, and the design does not treat it as
 a failure to be engineered around.**
 
-### K. Stage boundary
+### K. Stage boundary, and what Stage 1 does not establish
 
-**Stage 1 — authorized.** A deterministic, per-cell construction-feasibility evaluation. It acquires no
-data, estimates nothing, fits nothing, and introduces **zero consequential numeric parameters** under
-`NUM-0001` §18's definition. That is a designed property, not an omission: a study with no free numeric
-parameter cannot be tuned toward a preferred outcome, and there is nothing for a sweep or a
-neighbouring-parameter robustness check to perturb. For the same reason, out-of-sample and walk-forward
-discipline is recorded as `NOT_APPLICABLE` to Stage 1 — there is no sample, no held-out period, and no
-fitted quantity — and both are **required of any future Stage 2**. Recording that honestly is preferred
-to performing a vacuous split.
+**Stage 1 — authorized, and executable only after this decision's own lifecycle closes (§D.5).** A
+deterministic, per-candidate construction-feasibility evaluation. It acquires no data, estimates
+nothing, fits nothing, and introduces **zero consequential numeric parameters** under `NUM-0001` §18's
+definition. That is a designed property, not an omission: a study with no free numeric parameter
+cannot be tuned toward a preferred outcome, and there is nothing for a sweep or a
+neighbouring-parameter robustness check to perturb. With the candidate universe now generated rather
+than authored, the *qualitative* search surface is closed as well — the executor selects neither which
+constructions to try nor when to stop. For the same reason, out-of-sample and walk-forward discipline
+is recorded as `NOT_APPLICABLE` to Stage 1 — there is no sample, no held-out period, and no fitted
+quantity — and both are **required of any future Stage 2**. Recording that honestly is preferred to
+performing a vacuous split.
+
+**K.1 — Stage 1 tests a subset of `XASSET-0024` §J, and says so.** A
+`CONSTRUCTIBLE_CANDIDATE_IDENTIFIED` disposition means **"a construction candidate satisfying the
+Stage-1-testable subset of §J.1–§J.12"** — never that full §J admissibility has been established. The
+pre-registration carries the item-by-item mapping, and the result schema forbids any claim of full
+§J.1–§J.12 compliance.
+
+**K.2 — §J.12 is deferred, because it cannot honestly be decided per candidate.** §J.12 requires
+**exact set-valued reconciliation under `XASSET-0020` §K**, and §K defines that identity *jointly* —
+`UNSIZED_UNASSIGNED_CAPITAL = normalized_asset_unit − separately_governed_liquidity_asset −
+sum(admitted_sleeve_points)`, and for ranges over "the exact feasible set of sleeve vectors inside the
+admitted endpoints," with a negative complement invalidating the candidate. It is inherently a
+**whole-candidate, cross-sleeve** condition.
+
+Stage 1 produces no endpoint value, prohibits cross-sleeve and cross-bound reference, and forbids any
+share from appearing in its result. There is therefore nothing from which an exact reconciliation could
+be computed, and any Stage-1 verdict on it would require assuming future endpoint values or other
+sleeves' outcomes. §J.12 is accordingly removed from the per-candidate gate sequence and recorded as
+`NOT_YET_DETERMINABLE_DEFERRED`, to be cleared at the first later, separately authorized stage where
+actual candidate endpoint values or sets coexist.
+
+**Introducing cross-sleeve arithmetic into Stage 1 merely to let a reconciliation gate return a verdict
+is prohibited** — it would breach the single-sleeve bound rule, the cross-sleeve prohibition, and the
+no-endpoint-value rule at once. Deferring the requirement is the smaller and more honest boundary.
 
 **Stage 2 — not authorized.** Any empirical or data-acquiring work is outside this charter. It becomes
 eligible to be *proposed* only if Stage 1 identifies at least one constructible candidate, and even
@@ -323,39 +392,65 @@ Each failure mode was tested against the design rather than assumed absent.
 |---|---|---|
 | Hidden optimizer or model parameter | A mapping from sleeve economics to a share of the whole | `G3`, `G6` (`H.3` item 7 free-choice test); zero-parameter declaration, validator-asserted |
 | Historical-anchor contamination | Any barred value reused, reconstructed, or centred on | `G4`; complete `XASSET-0025` §F firewall; barred values named, never reproduced; adversarial numeral scan in the validator |
-| Residual or equal-split leakage | A bound obtained as a complement, or a fresh one-quarter split | `G4`; `EQUAL_DIVISION_INCLUDING_FRESHLY_COMPUTED` barred by construction, not by spelling; `G12` |
+| Residual or equal-split leakage | A bound obtained as a complement, or a fresh one-quarter split | `G4`; `EQUAL_DIVISION_INCLUDING_FRESHLY_COMPUTED` barred by construction, not by spelling; non-route N5 excluded by name |
+| Unbounded qualitative search | An executor imagining some constructions and not others, making a negative non-exhaustive | Candidate universe generated from four closed dimensions; 240 registered candidates; executor may not add or remove one; completeness rule requires all five per cell before a negative |
+| Order-dependent classification | A prerequisite gate reached before a categorical one, filing a categorical bar as a to-do | Every applicable gate evaluated before classifying; **categorical dominates**; `first_failing_gate_id` demoted to diagnostic; derivation functions implemented as membership tests over a mapping |
+| Overstated §J compliance | Reading `CONSTRUCTIBLE_CANDIDATE_IDENTIFIED` as full §J.1–§J.12 admissibility | §K.1's explicit subset language; §J.12 deferred; `ANY_CLAIM_OF_FULL_J_1_THROUGH_J_12_COMPLIANCE` in forbidden result content |
+| Smuggled cross-sleeve arithmetic | Making a whole-candidate reconciliation gate returnable inside a value-free cell | §K.2 deferral; `CROSS_SLEEVE_OR_CROSS_BOUND_ARITHMETIC` in `prohibited_scope` |
+| Unreproducible candidate provenance | A candidate evaluation no one else can reconstruct | Per-candidate `construction_id`, family, route, class, authority refs, full gate results; `EXISTING_SOURCE_ARCHITECTURE` requires exact path + SHA-256; `HYPOTHETICAL_SOURCE_ARCHITECTURE` forbids them and requires a stated requirements description |
 | Direction → magnitude sleight of hand | Appending a share to a qualitative finding | `G2` and `G3` as separate gates; §J.2 |
 | Representation leakage | Silently combining representations | `G9`; no rule created; exact dependency named and blocked as a prerequisite |
 | Pair or transitivity leakage | Consuming an unresolved pair, or filling one transitively | `G10`, direction-invariance **by independence**, never robustness by inspection |
 | Author or reviewer discretion | A value chosen at application time | §D.2, §E.1; `G7`; exercise requires independent review, principal acceptance, and merge |
 | Class-4 / class-5 confusion | Imposing `NUM-0001` §7 on class 5, or letting class 5 skip subject-matter evidence | §D.3 items 5–6 and §D.4 — the two are kept distinct in both directions |
 | Research / policy conflation | A study result becoming policy by being produced | §E.14; Stage 1 output classified non-DRIVER and non-admissible; forbidden result content |
-| Implicit sleeve preference | Ordering, budgeting, or staging sleeves | Single closed 48-cell set; no early stop on a positive finding; no per-sleeve sequencing |
+| Implicit sleeve preference | Ordering, budgeting, or staging sleeves | Single closed 240-candidate set; no early stop on a positive finding; no per-sleeve sequencing; generation order carries no economic meaning and provably cannot affect any disposition |
 | RISK reuse | Reusing a lapsed parameter, threshold, or derivation pattern | `risk_lane_boundary`; protected result path never accessed |
 | Backdoor endpoint source | Citing the Stage 1 record as endpoint evidence | `result_status_of_stage_1_output` — non-DRIVER, non-admissible, never citable; result schema forbids any share, bound, percentage, weight, score, rank, or reconciliation |
 
 ### M. Recorded rather than resolved
 
-**M.1 — `XASSET-0024` §K.1's open reading is neither resolved nor relied upon.** Whether §E.1's six
-classes house a magnitude statement remains open, and this program is precisely the unit whose
-viability turns on it. Resolving it would be a methodology amendment performed inside a charter,
-without its own authorization. Instead `G2` is evaluated **under both readings**, and every cell
-records the outcome under each plus whether it is reading-dependent. A cell that passes only under the
-subject-matter reading is recorded as reading-dependent, **not as passing**. If the preference-only
-reading is later established, all cells abstain.
+**M.1 — `XASSET-0024` §K.1's open reading is neither resolved nor relied upon, and now maps
+deterministically.** Whether §E.1's six classes house a magnitude statement remains open, and this
+program is precisely the unit whose viability turns on it. Resolving it would be a methodology
+amendment performed inside a charter, without its own authorization.
 
-**M.2 — Whether a normalization bridge exists at all is an outcome, not a premise.** §J.1 identifies
-the difficulty; it does not determine that no bridge exists. `G3` tests it per cell, and the answer is
-a finding of the study rather than an assumption of the charter. This filing takes no position on how
-many cells, if any, will clear it.
+`G2` is therefore evaluated **under both readings**, each recorded from the closed vocabulary
+`PASSES` / `FAILS` / `UNABLE_TO_DETERMINE`, and mapped by a closed table so that two conforming
+implementations cannot disagree. The load-bearing row: a candidate passing only under the
+subject-matter reading is **reading-dependent**, and maps to **`UNABLE_TO_DETERMINE`** — a governed
+uncertainty outcome — **never to `BLOCKED_CATEGORICALLY`**. Calling an unresolved methodology reading a
+categorical impossibility would assert that accepted authority has settled §K.1 against the
+subject-matter reading, which it expressly has not. The converse combination (failing the broader
+reading while passing the strictly narrower one) is incoherent and is rejected as a recording defect
+rather than mapped to an outcome. If the preference-only reading is later established, all cells
+abstain.
 
-**M.3 — Constraint-shaped candidates are expected to be contested, and the gate is where that
+**M.2 — "Categorical" means *under the current methodology*, not permanently.**
+`BLOCKED_CATEGORICALLY` means **not closeable by a named prerequisite while the currently accepted
+methodology remains unchanged** — not that no future authorization could ever lift the bar. A later
+accepted methodology amendment can change a currently categorical rule, and such an amendment is
+already a §Q reopen trigger. This charter records a bar against the methodology as it stands; it does
+not purport to bind future governance.
+
+**M.3 — Whether a normalization bridge exists at all is an outcome, not a premise.** §J.1 identifies
+the difficulty; it does not determine that no bridge exists. `G3` tests it per candidate, and the
+answer is a finding of the study rather than an assumption of the charter. This filing takes no
+position on how many candidates, if any, will clear it.
+
+**M.4 — Constraint-shaped candidates are expected to be contested, and the gate is where that
 happens.** `XASSET-0024` §F Limb 4 bars "a cap, ceiling, floor-as-limit, or concentration boundary"
 from originating a bound. Whether a particular deployability or structural-limit candidate is
-constraint-shaped in that sense is exactly what `G5` decides, per cell, on the candidate's own terms.
-No prejudgment is recorded here.
+constraint-shaped in that sense is exactly what `G5` decides, per candidate, on the candidate's own
+terms. No prejudgment is recorded here.
 
-**M.4 — Not reopened here.** `XASSET-0023` §G's Level-2 subset question; `XASSET-0021` §O's
+**M.5 — Deferring §J.12 narrows what Stage 1 can claim, and that is the point.** §K.2 removes the
+reconciliation gate rather than answering it, so a successful Stage 1 establishes only the
+Stage-1-testable subset. This filing does not determine whether §J.12 would ultimately be satisfiable
+for any candidate; it determines only that Stage 1 is not the stage at which that can honestly be
+decided.
+
+**M.6 — Not reopened here.** `XASSET-0023` §G's Level-2 subset question; `XASSET-0021` §O's
 strict-conjunction tension; the gold-representation labelling difference; `XASSET-0024` §K.2's
 circularity discussion; `XASSET-0026` §G.1's unresolved ordering and §G.3's open packaging. None bears
 on any determination above, and none is resolved. In particular, this filing's combined packaging is an
@@ -393,27 +488,47 @@ This filing touches exactly eight tracked files, mirroring `RISK-0001` §17's ch
 8. `test_portfolio_hq_dashboard_decisions.py` (the two mechanical catalog-count assertions).
 
 The dedicated validator is read-only and mechanical. It validates closed structure, exact identities,
-derived arithmetic, the gate sequence, vocabularies, the zero-parameter declaration, firewall
-completeness, the protocol mirror, and this decision's hash pins. It cannot acquire data, execute the
-study, evaluate a cell, state an endpoint, or admit evidence.
+construction-family closure, candidate-universe generation, derived arithmetic, the gate sequence,
+disposition rules, the §K.1 reading map, deferred-requirement handling, vocabularies, the
+zero-parameter declaration, firewall completeness, the protocol mirror, and this decision's hash pins.
+
+It also supplies the **pure derivation functions** the future Stage 1 must use — universe generation,
+the reading map, and candidate/cell/roll-up disposition — plus `validate_stage1_results()`, which
+checks a future results document against the frozen universe: unregistered, duplicated, or missing
+candidates; incomplete cells; recorded dispositions that disagree with the deterministic derivation
+from their own gate results; missing per-candidate provenance; and reading-dependent candidates
+misrecorded as categorical. **That is what makes the exhaustiveness and determinism claims checkable
+rather than merely asserted.** No results document exists or is authorized.
+
+It cannot acquire data, execute the study, **decide** a gate, state an endpoint, or admit evidence.
+Deciding a gate outcome remains a human analytical act performed under the charter; the module only
+composes already-decided gate results into a disposition by a fixed rule.
 
 **It is deliberately not an endpoint-admission validator.** No validator anywhere in this repository
-mechanizes `XASSET-0024` §J.1–§J.12, and building one is **a separately authorized successor, not part
-of this filing** — see §P.2. Recording that boundary explicitly prevents a governance charter from
+mechanizes `XASSET-0024` §J.1–§J.12 — and in particular §J.12 is deferred and is not decided anywhere
+here. Building one is **a separately authorized successor, not part of this filing** — see §P.2.
+Recording that boundary explicitly prevents a governance charter from
 silently becoming a new software subsystem.
 
 ### P. What comes next, and what it would require
 
-**P.1 — One future Stage 1 implementation/results PR.** After this charter's independent exact-head
-review, principal acceptance, merge, and hash verification, exactly one later PR may deliver the Stage
-1 evaluation: all 48 cell outcomes, the 8 roll-ups, abstention records, the provenance manifest,
-limitations, focused tests, and hash verification. It may make no production configuration change, and
-its own result lifecycle requires independent exact-head review and principal acceptance.
+**P.1 — One future Stage 1 implementation/results PR, gated on this decision's completed lifecycle.**
+Only after **all five** §D.5 steps — accepted independent exact-head review, principal exact-head
+acceptance, merge, immediate post-merge verification, and successful merge-commit CI — **and** after
+verifying both pinned canonical hashes from the merged commit, may exactly one later PR deliver the
+Stage 1 evaluation: all 240 candidate dispositions, the 48 cell outcomes, the 8 roll-ups, the deferred
+§J.12 record, abstention records, the provenance manifest, limitations, focused tests, and hash
+verification. **No Stage-1 mutation lane may open before that lifecycle closes**; merge alone does not
+open one. That PR may make no production configuration change, must pass
+`validate_stage1_results()`, and its own result lifecycle requires independent exact-head review and
+principal acceptance.
 
 **P.2 — Separately required successors, none authorized here.** Named so they are not discovered late:
 
 - an **endpoint-admission validator** mechanizing `XASSET-0024` §J.1–§J.12, if and when a candidate
   source exists to test — not authorized, not scoped, and not begun here;
+- a **§J.12 whole-candidate reconciliation determination**, at the first later stage where actual
+  candidate endpoint values or sets coexist (§K.2) — deferred, not answered here;
 - a **Stage 2 authorization**, on the §K condition, for any empirical work;
 - a **`XASSET-0021` snapshot successor**, which cannot admit evidence that does not yet exist;
 - a **Level-1 representation aggregation or selection rule**, only if and when a candidate source is
@@ -422,7 +537,8 @@ its own result lifecycle requires independent exact-head review and principal ac
 - an **application authorization**, which remains withheld.
 
 **P.3 — The exact next authorized action after this filing.** Independent full exact-head review of
-this PR. Nothing else in §P.1 or §P.2 may begin before this decision merges.
+this PR. Nothing else in §P.1 or §P.2 may begin before this decision's **complete** §D.5 lifecycle
+closes — not merely before it merges.
 
 ### Q. Reopen triggers
 
