@@ -40,6 +40,11 @@ XASSET_0027 = (
 XASSET_0024 = (
     ROOT / "governance/decisions" / "XASSET-0024-level1-endpoint-basis-feasibility-determination.md"
 )
+DECISION = (
+    ROOT
+    / "governance/decisions"
+    / "XASSET-0030-endpoint-0001-stage-1-gate-evaluation-method-determination.md"
+)
 
 # XASSET-0024 SS-D (operative subject-matter reading) and SS-K.1 (preserved contrary reading) together
 # fix this pair for every registered construction. XASSET-0027 SS-M.1 routes the open reading through
@@ -373,6 +378,125 @@ class TestCorrectedGatePartition:
 # --------------------------------------------------------------------------------------
 # Frozen universe integrity
 # --------------------------------------------------------------------------------------
+
+
+class TestSnapshotIsCurrentAuthorityNotPermanentClosure:
+    """The 6/6 table is a CURRENT_AUTHORITY snapshot with per-gate invalidation triggers.
+
+    These tests pin the *durability contract*, not the gate names: a closable result may be reused
+    only while its controlling authority is unchanged, and each such gate must name what invalidates
+    it. They are deliberately written so that adding or removing a closable gate does not silently
+    weaken them -- every closable gate must carry a trigger row.
+    """
+
+    def test_table_is_labelled_a_current_authority_snapshot(self):
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        assert "CURRENT_AUTHORITY_GATE_EVALUATION_SNAPSHOT" in text
+        assert "not permanent gate closure" in text
+
+    def test_reuse_is_conditioned_on_unchanged_controlling_authority(self):
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        assert "only while every controlling authority and premise" in text
+
+    def test_no_permanent_closure_language_survives(self):
+        """The exact phrases review 4947130884 MAJOR 1 flagged must not reappear."""
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        for banned in (
+            "need not re-derive them",
+            "need no further work",
+            "Ordered by dependency",
+        ):
+            assert banned not in text, banned
+
+    def test_replacement_wording_is_present(self):
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        assert (
+            "need no separate work while their controlling authority remains unchanged" in text
+        )
+
+    @pytest.mark.parametrize("gate", sorted(CLOSABLE_GATES))
+    def test_every_closable_gate_has_an_invalidation_row(self, gate):
+        """No gate may be marked closable without naming what re-derivation it depends on."""
+        text = DECISION.read_text(encoding="utf-8")
+        section = text.split("#### E.1")[1].split("### F.")[0]
+        short = gate.split("_")[0]  # G1, G2, G4, ...
+        row = next(
+            (line for line in section.splitlines() if line.strip().startswith(f"| `{short}` |")),
+            None,
+        )
+        assert row is not None, f"{short} has no E.1 invalidation row"
+        assert row.count("|") >= 4, row
+        trigger = row.split("|")[3].strip()
+        assert trigger, f"{short} has an empty re-derivation trigger"
+
+    def test_g1_and_g2_name_their_upstream_dependencies(self):
+        """MAJOR 1's two named cases: G1 on SS-E.1/SS-D, G2 on SS-K.1's present state."""
+        section = DECISION.read_text(encoding="utf-8").split("#### E.1")[1].split("### F.")[0]
+        g1 = next(line for line in section.splitlines() if line.strip().startswith("| `G1` |"))
+        g2 = next(line for line in section.splitlines() if line.strip().startswith("| `G2` |"))
+        assert "§E.1" in g1 and "§D" in g1
+        assert "§K.1" in g2 and "§M.1" in g2
+        assert "amended" in g1
+        assert "resolved or amended" in g2
+
+    def test_snapshot_is_tied_to_xasset_0027_reopen_triggers(self):
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        assert "§Q" in text
+        section = DECISION.read_text(encoding="utf-8").split("#### E.1")[1].split("### F.")[0]
+        assert section.count("**§Q**") >= 6, "each closable gate should carry a §Q linkage"
+
+    def test_the_e1_clarification_coupling_is_stated_explicitly(self):
+        """The G3 corrective is G1/G2's own invalidation trigger; the decision must say so."""
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        assert "must re-derive `G1` and `G2`" in text
+
+    def test_xasset_0027_q_actually_contains_the_cited_triggers(self):
+        """Reproduced from controlling text, not asserted from the decision alone."""
+        text = _collapse(XASSET_0027.read_text(encoding="utf-8"))
+        assert "`XASSET-0020` §E.1's driver classes or §L's endpoint row is amended" in text
+        assert "a reviewer establishes `XASSET-0024` §K.1's contrary reading of §E.1" in text
+        assert "`NUM-0001`'s classes, §6, §7, or §8 change" in text
+        assert "either pinned canonical hash changes" in text
+
+
+class TestSuccessorSequencing:
+    """Semantic prerequisites first; one canonical/enforcement/reauthorization pass after."""
+
+    def test_two_distinct_classes_exist(self):
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        assert "G.A — Semantic / governance prerequisites" in text
+        assert "G.B — Final canonical / enforcement / reauthorization reconciliation" in text
+
+    def test_no_early_validator_only_reauthorization_prerequisite(self):
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        assert "No early validator-only reauthorization prerequisite exists" in text
+
+    def test_efficiency_reason_is_stated(self):
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        assert (
+            "Do not spend one reauthorization lifecycle on an intermediate enforcement state" in text
+        )
+
+    def test_semantic_set_covers_every_unclosable_gate(self):
+        """G.A must name each open semantic question, so none is silently dropped."""
+        section = DECISION.read_text(encoding="utf-8").split("#### G.A")[1].split("#### G.B")[0]
+        for gate in sorted(UNCLOSABLE_GATES):
+            short = gate.split("_")[0]
+            assert f"`{short}`" in section, f"{short} missing from the semantic prerequisite set"
+
+    def test_semantic_set_does_not_mandate_a_single_filing(self):
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        assert "These need not be one filing." in text
+
+    def test_arming_is_last_and_follows_the_single_rebinding_lifecycle(self):
+        section = DECISION.read_text(encoding="utf-8").split("#### G.B")[1].split("### H.")[0]
+        rebind = section.index("rebinding lifecycle")
+        arm = section.index("may Stage 1 be armed")
+        assert rebind < arm, "arming must follow the rebinding lifecycle"
+
+    def test_nothing_in_the_successor_model_is_authorized_here(self):
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        assert "This decision authorizes none of G.A or G.B" in text
 
 
 class TestFrozenUniverseCarriesNoGateOutcomes:

@@ -43,22 +43,38 @@ judgment — and if so, what is the smallest lawful method?**
 
 ### Correction history
 
-This decision was materially corrected after independent FULL exact-head review `4947074116`
-(`CHANGES REQUIRED` — 0 BLOCKING / 2 MAJOR / 2 MINOR / 1 NOTE) at head
-`ed99315121214f1839c13f9ed364b2a1c88c8971`. The core negative determination is unchanged and was
-affirmed by that review. What changed: §C's diagnosis of the canonical/enforcement contradiction, the
-entire §E gate inventory, and §G's successor list. Both MAJOR findings were reproduced against
-controlling text before any edit.
+**Correction 1** — after independent FULL exact-head review `4947074116` (`CHANGES REQUIRED` —
+0 BLOCKING / 2 MAJOR / 2 MINOR / 1 NOTE) at head `ed99315121214f1839c13f9ed364b2a1c88c8971`. Changed:
+§C's diagnosis of the canonical/enforcement contradiction, the entire §E gate inventory (7/5 → 6/6),
+and §G's successor list.
+
+**Correction 2** — after independent FULL exact-head review `4947130884` (`CHANGES REQUIRED` —
+0 BLOCKING / 2 MAJOR / 0 MINOR / 1 NOTE) at head `941852493b36fa75440c78e3b9002f544731a250`, whose
+exact-head CI run `31966991534` / job `95213557223` was completed/success. Changed **only** the
+successor model: §A and §E now frame the table as a `CURRENT_AUTHORITY_GATE_EVALUATION_SNAPSHOT` with
+per-gate invalidation triggers in new §E.1, and §G is restructured into semantic prerequisites (G.A)
+followed by one canonical/enforcement/reauthorization pass (G.B). **No gate disposition, canonical
+semantics, authority interpretation, or substantive methodology determination changed** — the 6/6 map
+is identical.
+
+The core negative determination is unchanged and was affirmed by both reviews. Every MAJOR finding was
+reproduced against controlling text before any edit.
 
 ## Decision
 
 ### A. Determination — `GATE_EVALUATION_METHOD_NOT_CLOSABLE`
 
 **The answer is NEGATIVE.** A complete deterministic per-construction gate-evaluation method **cannot
-lawfully be closed by this unit**. Six of the twelve gates are closable now against identified accepted
-feasibility authority and are recorded below so a successor need not re-derive them. Six are not, each
-for its own recorded reason — and three of those (`G3`, `G5`, `G12`) are blocked by *express
-reservations in accepted authority*, not by mere silence.
+lawfully be closed by this unit**. Six of the twelve gates are closable **under current authority**
+against identified accepted feasibility authority; six are not, each for its own recorded reason — and
+three of those (`G3`, `G5`, `G12`) are blocked by *express reservations in accepted authority*, not by
+mere silence.
+
+**§E's table is a `CURRENT_AUTHORITY_GATE_EVALUATION_SNAPSHOT`, not permanent gate closure.** Each
+closable result is reusable without separate re-analysis **only while every controlling authority and
+premise listed for that gate in §E.1 remains unchanged**. §E.1 states the invalidation triggers per
+gate; several are already `XASSET-0027` §Q reopen triggers, and at least `G1` and `G2` depend on
+authority that this decision's own §G semantic prerequisites propose to change.
 
 **Stage 1 remains UNARMED and NOT EXECUTABLE.** This filing changes no canonical byte, no universe, no
 hash pin, and no authorization state.
@@ -154,7 +170,13 @@ lawfully binds the new load-bearing implementation.** That is a cost of the corr
 against it — and it is recorded here so the successor scopes it up front rather than discovering it at
 arming time. **No such reconciliation is attempted, scoped, or authorized by this decision.**
 
-### E. Gate-by-gate result — re-derived
+### E. `CURRENT_AUTHORITY_GATE_EVALUATION_SNAPSHOT` — gate-by-gate, re-derived
+
+**This table records what current accepted authority determines today. It is not permanent gate
+closure.** A gate marked closable may be reused by a successor without separate re-analysis **only
+while every controlling authority and premise named for it in §E.1 remains unchanged**. Where an
+upstream authority changes, that gate's result is invalidated and must be re-derived under the
+successor authority — it does not survive as a frozen fact.
 
 **Corrected after review `4947074116` MAJOR 2.** The prior head's "7 closable / 5 not" split was
 re-derived from first principles rather than preserved. `G1` moved **in**; `G5` and `G12` moved **out**.
@@ -188,9 +210,35 @@ else: `T1`, `T2`, `T3`, `T4`, and `T6` through `T10` are untouched."
 | `G11_EXACTNESS_AND_DETERMINISM` | categorical | **YES → `PASS`** | `XASSET-0024` §C fixes the units regime — "carried at **exact source precision or as an exact rational derivation** under `XASSET-0021` §G" — and §D's `R2` row affirms an "exact, single-valued, byte-identically reproducible" derivation lawful in principle. The weakest of the closable set; recorded with its basis rather than asserted. |
 | `G12_SNAPSHOT_ADMISSIBILITY_PATH` | prerequisite | **NO** | **The prior head wrongly froze `FAIL` from absence alone.** The gate asks whether a lawful successor is *identifiable*, and the canonical mapping is `G12_IDENTIFIABILITY_ONLY_NO_SUCCESSOR_CREATED`. §P.2 **does** name a required `XASSET-0021` snapshot successor, which supports identifiability — while adding that it "cannot admit evidence that does not yet exist," which bears on the gate's second conjunct "*that could admit the candidate*." No governed definition of "identifiable" exists and nothing fixes the tense of "could admit." Two defensible answers; nonexistence alone is not non-identifiability. |
 
-**Six closable, six not.** `G3`, `G5` and `G12` are blocked by express reservations or an undefined
-governed term; `G8`, `G9` and `G10` by criteria `XASSET-0027` §F leaves untouched. **`G3` alone is
-sufficient for the negative determination**, and it survives the re-derivation unchanged.
+**Six closable under current authority, six not.** `G3`, `G5` and `G12` are blocked by express
+reservations or an undefined governed term; `G8`, `G9` and `G10` by criteria `XASSET-0027` §F leaves
+untouched. **`G3` alone is sufficient for the negative determination**, and it survives the
+re-derivation unchanged.
+
+#### E.1 Invalidation and re-derivation triggers
+
+Each closable result above is a **current-authority determination**. It may be carried forward without
+separate re-analysis only while its controlling authorities and premises hold. If any listed trigger
+fires, that gate **must be re-derived** under the successor authority before it is relied on again.
+Several triggers are already `XASSET-0027` §Q reopen triggers and are marked **§Q**.
+
+| Gate | Controlling authority / premise | Re-derivation required if |
+|---|---|---|
+| `G1` | `XASSET-0020` §E.1 DRIVER classes and their scope language; `XASSET-0024` §D's subject-matter determination; `XASSET-0027` §M.1's routing of §K.1 through `G2` alone | §E.1's classes or scope are amended (**§Q**); §D's subject-matter determination is amended or superseded; §M.1's routing changes, or a reading slot is added to `G1` |
+| `G2` | `XASSET-0024` §D (operative reading) and §K.1 (contrary reading preserved); `XASSET-0027` §M.1; the canonical `g2_reading_mapping` closed table | §K.1 is resolved or amended in either direction, including a reviewer establishing the contrary reading (**§Q**); §E.1 is clarified in a way that settles magnitude capability (**§Q**); the reading map or its `required_g2_gate_result` coupling changes |
+| `G4` | `XASSET-0024` §D's route table (`R1`/`R2` lawful in principle; `N1`–`N8` barred) and §F Limb 2; `XASSET-0023` §H's "no third route" | The route/non-route set or their lawfulness changes; §F's origin limbs are amended; `XASSET-0019`–`XASSET-0026` effective identity changes (**§Q**) |
+| `G6` | `XASSET-0024` §D's route table; `XASSET-0023` §H.2 items 1–6 / §H.3 items 1–7; `XASSET-0027` §F's `T5` closure and §D's constitution of `LEVEL1_ENDPOINT_AUTHORITY` | The `R1`/`R2` route contract changes; §H.2/§H.3 conditions are amended; competent-authority terms or `T5`'s closure change; `XASSET-0019`–`XASSET-0026` effective identity changes (**§Q**) |
+| `G7` | `NUM-0001` §1 classes and §§6–8; `XASSET-0024` §E.1's class-4 determination and §E.3's eight-item test; `XASSET-0023` §H.4 | `NUM-0001`'s classes, §6, §7 or §8 change (**§Q**); the class-4/class-5 governance requirements or the anti-discretion test change; route-class coherence changes |
+| `G11` | `XASSET-0024` §C's units regime and §J.11; `XASSET-0021` §G's exactness/rational-derivation rules; §D's `R2` byte-identical requirement | `XASSET-0021` §G's exactness authority changes, or the snapshot is lawfully replaced or extended (**§Q**); §C's units regime or §J.11 changes; either pinned canonical hash changes (**§Q**) |
+
+**A general trigger applies to every row**: if either pinned canonical hash changes, or
+`XASSET-0019` through `XASSET-0026`'s effective identity changes (**§Q** in both cases), the whole
+snapshot is re-derived rather than inherited.
+
+**This is not hypothetical.** §G's semantic prerequisite for `G3` contemplates exactly "a narrowly
+scoped clarification of `XASSET-0020` §E.1" — the amendment named in `G1`'s and `G2`'s trigger rows.
+A successor that unblocks `G3` that way **must re-derive `G1` and `G2`**, and must not carry today's
+results forward as settled.
 
 ### F. §K.1 is preserved, not resolved
 
@@ -200,26 +248,64 @@ consequence, and that §M.1 fixes the dual-reading fields as the mechanism carry
 than deciding it — at `G2`, and only at `G2`. No `g2_outcome_under_*` value is asserted for any
 construction; no results document exists.
 
-### G. Successor prerequisites
+### G. Successor model — semantic prerequisites first, then one reconciliation pass
 
-Corrected after MAJOR 1 and MAJOR 2. Ordered by dependency; **none is authorized here.**
+**Corrected after review `4947130884` MAJOR 2.** The prior head listed prerequisites "ordered by
+dependency" and put the validator conformance correction **first**. That ordering is wrong for the
+accepted `XASSET-0029` mechanism and would very likely be paid for twice.
 
-1. **A validator conformance correction** — not a governance election. Canonical precedence already
-   controls (§C), so the required act is to bring
-   `level1_endpoint_evidence_preregistration_validator.py` lines 2505–2509 into conformance with
-   `XASSET-0027` §M.1 and both canonical artifacts. **Its lifecycle must also absorb §D's load-bearing
-   reauthorization dependency**, because that correction necessarily produces enforcement drift.
-2. **The `T1`/`T2` methodology question** — `G3`'s share-of-the-whole determination, expressly reserved
-   by §J.3 and §M.3. §K.1 names the shape of the smallest corrective: "a narrowly scoped clarification
-   of `XASSET-0020` §E.1 alone."
-3. **`G5`'s constraint-shape reservation** (§M.4) — either a governed per-candidate evaluation rule, or
-   an accepted determination that no such rule is available.
-4. **`G12`'s "identifiable"** — a governed definition, including the tense of "could admit the
-   candidate" for a source that does not yet exist.
-5. **`G8`, `G9`, `G10`** — uniqueness over an empty admitted set; `G9`'s abstention-versus-prerequisite
-   mapping; `G10`'s unresolved-pair question within the RISK boundary.
+**Why the order matters.** `XASSET-0029` binds **both** the canonical `PROTOCOL_V1.md` /
+`pre_registration.yaml` pins **and** the load-bearing validators to the authorized merged tree (§D).
+A successor that makes Stage 1 deterministic must ultimately be reconciled into the canonical
+gate-evaluation contract; if that later changes the canonical artifacts or the validators, an *earlier*
+validator-only reauthorization is invalidated by design. **Do not spend one reauthorization lifecycle
+on an intermediate enforcement state that a later methodology or canonical change is expected to
+supersede.** The correct shape is therefore two classes, not one ordered list.
 
-Items 1 and 2 are independent and may be filed separately.
+**None of the following is authorized here.**
+
+#### G.A — Semantic / governance prerequisites (resolve first)
+
+The outcome-determining methodology questions. These are governance work and do not require, and must
+not be preceded by, any validator correction or reauthorization lifecycle.
+
+- **`G3` — the `T1`/`T2` share-of-the-whole question**, expressly reserved by §J.3 and §M.3. §K.1 names
+  the shape of the smallest corrective: "a narrowly scoped clarification of `XASSET-0020` §E.1 alone."
+  **Note the coupling**: that clarification is `G1`'s and `G2`'s §E.1 invalidation trigger, so it
+  re-opens both (§E.1).
+- **`G5`'s constraint-shape rule** (§M.4) — a governed per-candidate evaluation rule, or an accepted
+  determination that none is available.
+- **`G12`'s "identifiable"** — a governed definition, including the tense of "could admit the candidate"
+  for a source that does not yet exist.
+- **`G8`'s uniqueness** over an empty admitted set.
+- **`G9`'s representation treatment** — reconciling §G path 3's "mandatory abstention" with the gate's
+  declared prerequisite failure class.
+- **`G10`'s unresolved-pair question**, within the `risk_lane_boundary`.
+
+**These need not be one filing.** Independent governance questions may be filed separately or lawfully
+batched where authority permits; this decision prescribes neither the packaging nor any outcome. Some
+may proceed in parallel as read-only or governance work, subject to the repository's one-mutation-lane
+discipline.
+
+#### G.B — Final canonical / enforcement / reauthorization reconciliation (one coherent pass)
+
+**Only after the Stage-1 semantic contract is stable enough to execute**, and in this order:
+
+1. Reconcile the final accepted gate semantics into the canonical Stage-1 artifacts as required.
+2. Correct the validator's categorical-precedence enforcement defect (§C).
+3. Update any validator, generator, or runner implementation the final accepted semantics require.
+4. Recompute canonical pins **only after** the final bytes stabilize.
+5. Perform **one** successor operational-authorization / load-bearing rebinding lifecycle against the
+   final canonical **and** enforcement bytes (§D).
+6. Establish runner execution-readiness.
+7. Only then may Stage 1 be armed — one-shot arm, claim, and the 680-construction run.
+
+**No early validator-only reauthorization prerequisite exists**, and none is created here. The
+conformance defect of §C is real and still requires correction; what changed is *when* — it belongs in
+G.B's single pass, not ahead of the semantic questions that determine what the corrected enforcement
+must encode.
+
+**This decision authorizes none of G.A or G.B**, and performs no part of either.
 
 ### H. Absolute non-authorization
 
@@ -274,6 +360,17 @@ governance step while leaving the accepted semantic direction misstated.
 governance-only negative determination is not the vehicle for a change that also requires a
 reauthorization lifecycle. Recording the dependency is this unit's remit; discharging it is not.
 
+**Make the validator correction the first successor prerequisite** (correction 1's ordering). Rejected
+in correction 2: `XASSET-0029` binds canonical pins *and* load-bearing enforcement to one authorized
+tree, so a validator-only reauthorization performed before the semantic questions settle is invalidated
+by design as soon as the resulting methodology is reconciled into the canonical artifacts. Sequencing it
+into G.B's single pass costs nothing now and saves an entire authorization lifecycle later.
+
+**Treat the 6/6 table as durable closure.** Rejected in correction 2: `G1` rests on `XASSET-0020` §E.1
+and `XASSET-0024` §D, and `G2` on §K.1's present unresolved state — both `XASSET-0027` §Q reopen
+triggers, and both squarely in the path of the §E.1 clarification §G.A proposes for `G3`. Freezing them
+would hand a successor two stale results at exactly the moment their basis changed.
+
 **Preserve the 7/5 table.** Rejected: `G5` and `G12` do not survive their own controlling text, and a
 successor scoped against a wrong table is worse than no table.
 
@@ -289,10 +386,17 @@ rerun-after-outcomes is prohibited.
 
 ## Consequences
 
-Stage 1 stays unarmed, and the successor map is now both smaller and more reliable: one conformance
-correction carrying a named reauthorization dependency, one methodology question whose smallest
-corrective §K.1 already names, and four narrower items — against six gates that need no further work.
+Stage 1 stays unarmed, and the successor model is now both smaller and correctly sequenced: six
+semantic questions resolved first — one of them, `G3`, with a corrective §K.1 already names — followed
+by a single coherent canonical/enforcement/reauthorization pass, against six gates that **need no
+separate work while their controlling authority remains unchanged**.
+
+That last qualifier is the substance of the MAJOR 1 correction, not a hedge. The `G3` corrective most
+likely to unblock Stage 1 is an `XASSET-0020` §E.1 clarification, which is precisely `G1`'s and `G2`'s
+invalidation trigger. A successor reading the snapshot as frozen closure would carry two stale results
+through the very amendment that changed their basis.
 
 The negative outcome remains the honest one, and it is still the cheap one: one governance filing and
-one correction, against a single irreversible execution of a 680-construction study resting on
-undisclosed judgments.
+two corrections, against a single irreversible execution of a 680-construction study resting on
+undisclosed judgments — and now, against a successor sequence that does not pay for reauthorization
+twice.

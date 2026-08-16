@@ -12914,23 +12914,67 @@ workstreams:
           G11) / 6 not closable (G3, G5, G8, G9, G10, G12), superseding the prior 7/5.
           G3 alone remains sufficient for the negative determination and survives
           unchanged, expressly reserved by SS-J.3 and SS-M.3.
-          Corrected successor prerequisites: (1) a validator conformance correction - not
-          a governance election - whose lifecycle must absorb the SS-D load-bearing
-          reauthorization dependency; (2) the T1/T2 methodology question at G3, whose
-          smallest corrective SS-K.1 names as "a narrowly scoped clarification of
-          XASSET-0020 SS-E.1 alone"; (3) G5's constraint-shape reservation; (4) G12's
-          governed definition of "identifiable"; (5) G8, G9 and G10.
+          SECOND BOUNDED CORRECTION after NEW independent FULL exact-head review
+          4947130884 (CHANGES REQUIRED, 0 BLOCKING / 2 MAJOR / 0 MINOR / 1 NOTE) at head
+          941852493b36fa75440c78e3b9002f544731a250, whose exact-head CI run 31966991534 /
+          job 95213557223 was completed/success (7689 passed). That review affirmed the
+          first correction in full - canonical precedence recognised as controlling, the
+          gate map genuinely re-derived, the load-bearing dependency made explicit, and
+          WORKSTREAMS/CLAUDE.md factually corrected - and raised two successor-model
+          findings only. THE 6/6 GATE MAP IS UNCHANGED by this second correction, verified
+          by diffing the disposition rows against the reviewed head: identical.
+          MAJOR 1 - the 6/6 table was written as durable closure ("recorded so a successor
+          need not re-derive them"; "six gates that need no further work"), but at least G1
+          and G2 are contingent on authority the decision's own successor plan proposes to
+          change: XASSET-0027 SS-Q reopens on an XASSET-0020 SS-E.1 amendment and on a
+          reviewer establishing the contrary SS-K.1 reading. Corrected: SS-A and SS-E now
+          label the table CURRENT_AUTHORITY_GATE_EVALUATION_SNAPSHOT, reuse is conditioned
+          on every controlling authority and premise remaining unchanged, and a new SS-E.1
+          gives each of the six closable gates its own controlling-authority and
+          re-derivation-trigger row (G1 on SS-E.1/SS-D subject-matter semantics; G2 on
+          SS-D/SS-K.1/SS-M.1 and the canonical reading map; G4 on origin-route/non-route
+          semantics; G6 on the R1/R2 route contract and competent-authority terms; G7 on
+          NUM-0001 classes and SS6-SS8; G11 on XASSET-0021 SS-G exactness and SS-C/SS-J.11),
+          each linked to the applicable SS-Q trigger, with a general trigger on either
+          pinned canonical hash or XASSET-0019 through XASSET-0026 effective identity
+          changing. The coupling is stated explicitly: the SS-E.1 clarification proposed to
+          unblock G3 IS G1's and G2's own invalidation trigger, so a successor must
+          re-derive both rather than carry them forward. Permanent wording replaced with
+          "need no separate work while their controlling authority remains unchanged".
+          MAJOR 2 - SS-G listed prerequisites "ordered by dependency" and placed the
+          validator conformance correction plus load-bearing reauthorization FIRST. That is
+          backwards for the accepted XASSET-0029 mechanism, which binds both the canonical
+          pins and the load-bearing validators to one authorized tree: a validator-only
+          reauthorization performed before the semantic questions settle is invalidated by
+          design once the resulting methodology is reconciled into the canonical artifacts.
+          Corrected: SS-G is restructured into two classes. G.A SEMANTIC / GOVERNANCE
+          PREREQUISITES resolve first and require no prior validator work - G3's T1/T2
+          share-of-the-whole question, G5's constraint-shape rule, G12's identifiable /
+          could-admit semantics, G8's uniqueness over an empty admitted set, G9's
+          representation abstention-versus-prerequisite treatment, and G10's unresolved-pair
+          question within the RISK boundary - explicitly not required to be one filing, with
+          no policy outcome prescribed. G.B FINAL CANONICAL / ENFORCEMENT / REAUTHORIZATION
+          RECONCILIATION follows only once the Stage-1 semantic contract is stable: reconcile
+          final semantics into the canonical artifacts, correct the validator enforcement
+          defect, update implementation as required, recompute pins only after final bytes
+          stabilise, run ONE successor operational-authorization / load-bearing rebinding
+          lifecycle against the final bytes, establish runner readiness, and only then arm.
+          The efficiency reason is stated in the decision, and no early validator-only
+          reauthorization prerequisite is created. Neither class is authorized here.
           Governance-only throughout: no canonical byte, hash pin, universe, cardinality
           or construction identity changed; no load-bearing path touched; SS-K.1
           preserved and resolved neither way; SS-J.12 deferred; no gate evaluated for any
           construction. Stage 1 remains UNARMED and ATTEMPT_1 intact, unclaimed and
           unconsumed. Adversarial module
-          test_level1_stage1_gate_evaluation_determinism.py grew 29 -> 57 tests covering
-          canonical precedence versus the validator prohibition, the G1/G2 boundary, G12
-          identifiability versus existence, specification-versus-satisfiability, both
-          corrected gate partitions, the load-bearing dependency, and non-authorization.
-          Awaiting another NEW independent FULL exact-head review; not merged, not
-          principal-accepted.
+          test_level1_stage1_gate_evaluation_determinism.py grew 29 -> 57 -> 78 tests,
+          adding mechanical coverage for the current-authority snapshot labelling, the
+          absence of the flagged permanent-closure phrases, a per-closable-gate
+          invalidation-row requirement, G1's and G2's named upstream dependencies, the SS-Q
+          linkage reproduced from XASSET-0027's own text, the two-class successor structure,
+          semantic coverage of every unclosable gate, and arming ordering after the single
+          rebinding lifecycle. Delta limited to successor-model wording, sequencing, tests
+          and factual sync; eligible for independent DELTA review from
+          941852493b36fa75440c78e3b9002f544731a250. Not merged, not principal-accepted.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
