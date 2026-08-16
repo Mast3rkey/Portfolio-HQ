@@ -13013,6 +13013,108 @@ workstreams:
           rebinding lifecycle. Delta limited to successor-model wording, sequencing, tests
           and factual sync; eligible for independent DELTA review from
           941852493b36fa75440c78e3b9002f544731a250. Not merged, not principal-accepted.
+      - gate: xasset0030-post-merge-verification
+        status: complete
+        pr: 329
+        description: >-
+          Lane M factual synchronization, recorded by the next substantive WS-0014
+          unit (XASSET-0031) rather than by a dedicated reconciliation PR, per
+          OPS-0008 SS-4(a). PR #329 (XASSET-0030) is independently confirmed merged
+          via the GitHub API this session: accepted head
+          0a7e021622dc874fc4452191fda8f245379cd83d, base
+          3cc15d58a42e6d56fbe702ccf4f377b60fbb8b0c, merge commit
+          3bcb137981d7dea5362ebca05deba60830076bee (parents re-derived locally and
+          matching), 6 changed files, 4 commits, merged 2026-08-16T20:28:40Z. Final
+          independent DELTA review 4947231723. Merge-commit CI run 31970647289 /
+          job 95222489853, completed/success, head_sha matching the merge commit,
+          7722 passed with 1 unrelated warning. Post-merge state independently
+          re-verified at this filing: both canonical hashes unchanged
+          (6c34cbbc...64cb / 6e0c07a8...337c), construction universe regenerating
+          exactly 680 constructions / 48 cells / 73c0965e...5224, all six
+          LOAD_BEARING_RELPATHS re-hashed MATCH, authorization lane absent,
+          new_execution_is_authorized() False, and ATTEMPT_1 intact, unclaimed and
+          unconsumed. The prior xasset0030 gate's own text is byte-unchanged.
+      - gate: xasset0031-g3-share-of-the-whole-semantic-determination
+        status: in_progress
+        pr: null
+        description: >-
+          XASSET-0031, Lane G, bounded governance-only unit — the first semantic
+          successor after XASSET-0030, addressing the gate XASSET-0030 recorded as
+          independently sufficient for its own negative. Question: what exact
+          semantic condition permits evidence about a Level-1 sleeve or comparison
+          to support a LOWER or UPPER share of one normalized unit of prospective
+          unlevered asset-side capital, rather than merely supporting direction,
+          preference, function, risk, recovery, diversification, or deployability.
+          DETERMINATION: NEGATIVE — SHARE_OF_THE_WHOLE_CONDITION_NOT_CLOSABLE. It is
+          a bounded negative rather than a blank one: the semantic condition IS
+          exactly statable, and three positive sub-determinations are closed.
+          (C.1) The condition: the XASSET-0024 SS-C denominator must be carried by
+          the source's own governed content — declared by the source itself, never
+          supplied, inferred, converted, completed, rescaled, or normalized by any
+          downstream reader. Grounded in XASSET-0025 SS-D criterion T1 and its
+          disqualifier "Any other quantity, however expressed as a percentage", and
+          in SS-F's RISK failure mode "denominator is unspecified by the source
+          itself".
+          (C.2) No downstream normalization is lawful by any mechanism: XASSET-0023
+          SS-H's "There is no third route" is preserved exactly, so under both R1
+          and R2 the normalization has already occurred upstream inside the source.
+          No transformation from any of the six DRIVER classes into a portfolio
+          percentage is permitted at application or Stage-1 time.
+          (C.3) Competent Level-1 endpoint authority does NOT satisfy G3 —
+          XASSET-0025 SS-H fixes T1 and T2 as "properties of what the evidence
+          measures, not of who may certify it", and G3 is T1 while competent
+          authority is T5. Recorded because it is the most plausible way a successor
+          could believe it had closed G3 without having done so.
+          WHY NOT CLOSABLE: XASSET-0027 SS-J.3 expressly reserves whether
+          portfolio_function's portfolio-framed scope language suffices ("is what G3
+          tests"), and SS-M.3 expressly reserves the general case ("it does not
+          determine that no bridge exists... a finding of the study rather than an
+          assumption of the charter"). Both available closures were tested and both
+          fail: an affirmative close would rest on requirement R5, verified present
+          in all 680 frozen constructions, which is XASSET-0030 SS-E Standard 1's
+          rejected by-construction inference; a negative close would contradict
+          SS-M.3 and XASSET-0024 SS-D's standing "lawful in principle" R1 row.
+          Additionally disclosed, not converted into a finding about Stage 1's
+          viability: all 680 constructions are HYPOTHETICAL_SOURCE_ARCHITECTURE, so
+          no source exists whose declared denominator could be inspected.
+          SIX-CLASS CAPABILITY, analyzed separately and not flattened: subject matter
+          YES class-wide (G1, closed); direction YES class-wide, because SS-E.1's
+          operative sentence is about allocation preference and SS-H's four pair
+          conclusions are entirely ordinal with no magnitude anywhere; intrinsic
+          magnitude OPEN for all six (SS-K.1, routed through G2 alone); intrinsic
+          share-of-whole RESERVED for all six — portfolio_function on SS-J.3's
+          class-specific reservation, the other five on SS-M.3, with
+          sleeve_deployability additionally contested at G5 (SS-M.4, not entered).
+          Capability is recorded SOURCE-DEPENDENT rather than class-wide, since G3
+          tests a denominator a source declares. Native scopes reproduced
+          mechanically from the frozen R3 clauses: SELF 80 (portfolio_function,
+          sleeve_deployability), PAIR 120 (diversification_cobehavior), ALT 480
+          (downside_path_risk, recovery, valuation_opportunity_cost) — no class
+          carries a whole-portfolio scope.
+          SS-K.1 PRESERVED, NOT RESOLVED, and shown non-dispositive of G3 in either
+          direction: under the subject-matter reading G3 remains open; under the
+          preference-only reading the program abstains at G2 before denomination
+          matters. Narrow reconciliation with XASSET-0030 SS-G.A recorded: T1 and T2
+          are separate XASSET-0025 SS-D criteria, and SS-K.1's own text addresses T2
+          only, so an SS-E.1 clarification must carry TWO properties (magnitude
+          housing AND denominator scope) rather than the one SS-K.1 names.
+          XASSET-0030 is not contradicted — its SS-G.A named a shape, not a
+          sufficient text.
+          XASSET-0020 SS-E.1 IS NOT AMENDED, and every XASSET-0030 SS-E.1
+          invalidation trigger for G1 and G2 was checked trigger-by-trigger and none
+          fires, so G1 and G2 are NOT re-derived and carry forward unchanged. The
+          6/6 gate map stands exactly as XASSET-0030 SS-E left it; G5, G8, G9, G10
+          and G12 are untouched and nothing is determined about any of them.
+          Supporting artifact test_level1_stage1_g3_share_of_the_whole.py — 81
+          focused adversarial tests pinning the reproduction, the three positive
+          sub-determinations, the per-class capability refusal to flatten, both
+          SS-K.1 readings, the no-amendment and no-trigger-fires verification, the
+          unchanged gate map, fifteen adversarial cases, and that nothing arms,
+          claims, completes or executes. Creates no endpoint, bound, percentage,
+          runner, attestation, lane state, or stage1_results.yaml; consumes nothing
+          of ATTEMPT_1; changes no canonical byte, hash pin, universe, or
+          LOAD_BEARING_RELPATHS. Draft PR; not merged, not independently reviewed,
+          not principal-accepted in this session.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -14072,9 +14174,9 @@ workstreams:
       representation-aggregation rule, any snapshot successor, RISK parameter
       reuse, Level-2 work, liquidity determination, and policy adoption all
       remain separately unauthorized.
-    active_branch: claude/endpoint-0001-stage1-execution-results-a4z0x3
-    active_pr: 329
-    last_verified_main_sha: 3cc15d58a42e6d56fbe702ccf4f377b60fbb8b0c
+    active_branch: claude/xasset-0031-g3-magnitude-5tiqd5
+    active_pr: null
+    last_verified_main_sha: 3bcb137981d7dea5362ebca05deba60830076bee
     last_verified_date: "2026-08-16"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
