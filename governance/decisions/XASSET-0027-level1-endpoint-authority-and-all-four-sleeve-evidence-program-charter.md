@@ -745,7 +745,8 @@ eventually addresses it will need.
   that evidence coverage, maturity, availability, and tractability supply no accepted economic
   selection basis and may not imply size or preference. It expressly declined to determine whether a
   future authorized act could sequence for operational reasons under a non-preference firewall; this
-  filing does not need one, so it invents none, and evaluates all 48 cells as one closed set.
+  filing does not need one, so it invents none, and treats all 48 cells as one closed set spanning all
+  four sleeves.
 
 - **Allow early stop once a constructible candidate is found.** Rejected — it would advantage whichever
   cell happened to be evaluated first and would convert a coverage program into a search, undermining
@@ -765,16 +766,22 @@ eventually addresses it will need.
 
 ## Consequences
 
-`LEVEL1_ENDPOINT_AUTHORITY` exists on merge, and for the first time a competent Level-1 endpoint
-authority is in force — closing the one `XASSET-0025` §G failure that no amount of evidence production
-could ever have closed. Nothing is thereby sized: the authority is constituted, not exercised, and a
-later exercise must satisfy `XASSET-0024` §J.1–§J.12 in full and survive its own independent review and
-principal acceptance.
+`LEVEL1_ENDPOINT_AUTHORITY` exists once this decision's complete §D.5 lifecycle closes, and for the
+first time a competent Level-1 endpoint authority is in force — closing the one `XASSET-0025` §G
+failure that no amount of evidence production could ever have closed. Nothing is thereby sized: the
+authority is constituted, not exercised, and a later exercise must satisfy `XASSET-0024` §J.1–§J.12 in
+full and survive its own independent review and principal acceptance.
 
-`ENDPOINT-0001` is chartered with its canonical protocol and pre-registration hash-pinned, and its
-Stage 1 becomes executable in exactly one later PR after merge and hash verification. That stage may
-return nulls for every one of its 48 cells; under `XASSET-0020` §J.3 that is a complete outcome and not
-a defect, and the design deliberately makes abstention reachable rather than engineering around it.
+`ENDPOINT-0001`'s **architecture** is chartered with its canonical protocol and pre-registration
+hash-pinned. **Its Stage 1 does not thereby become executable.** Lifecycle closure makes the
+architecture effective; executing Stage 1 additionally requires a concrete construction universe that
+this decision does not close and authorizes no one to close (§I.1.1, §P.0). The immediate substantive
+consequence is therefore a named open question rather than a scheduled run: whether such a universe can
+be closed at all, to be answered by its own separate unit whose answer may itself be negative.
+
+If a Stage 1 is ever reached, it may return nulls throughout; under `XASSET-0020` §J.3 that is a
+complete outcome and not a defect, and the design deliberately makes abstention reachable rather than
+engineering around it.
 
 Everything downstream is unchanged. The closure matrix stands at 14 / 14 / 2,
 `APPLICATION_AUTHORIZATION_REGISTRY` remains empty, no `intelligence/level1_application/` artifact
