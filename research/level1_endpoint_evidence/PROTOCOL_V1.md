@@ -30,11 +30,15 @@ This program is that program's first stage. Its job is narrow and specific:
 It is deliberately **not** an empirical study, and section 4 explains why that is the honest design
 rather than a reduction in ambition.
 
-**Stage 1 is not executable under this charter.** The architecture below — families, gates,
-disposition rules, reading map, deferrals, provenance requirements, and firewall — is what
-`XASSET-0027` establishes. What it does **not** establish is a concrete construction universe over
-which that architecture could run. Section 5.3 states why, and section 5.5 names the smallest
-separately authorized step required to close it.
+**Stage 1 is not executable.** The architecture below — families, gates, disposition rules, reading
+map, deferrals, provenance requirements, and firewall — is what `XASSET-0027` establishes.
+
+> **AMENDED BY `XASSET-0028`.** `XASSET-0027` did not establish a concrete construction universe.
+> **`XASSET-0028` closes one**, at 680 registered constructions. The **current** reason Stage 1 is
+> not executable is therefore **operational authorization**, not the absence of a universe: the
+> complete `XASSET-0028` six-gate lifecycle must be effective first. Sections 5.3 and 5.5 below are
+> retained as **`XASSET-0027` predecessor state**; the amendment section at the end of this document
+> is operative where they differ.
 
 ## 2. The governing question
 
@@ -94,7 +98,11 @@ eligible to be *proposed* only if Stage 1 identifies at least one constructible 
 then requires its own separate, later, explicitly accepted governance decision. Eligibility is not
 entitlement.
 
-## 5. Population, provenance families, and why the construction universe is not closed
+## 5. Population, provenance families, and the construction universe
+
+> **Sections 5.3 and 5.5 are `XASSET-0027` PREDECESSOR STATE, retained for audit and superseded by
+> the `XASSET-0028` amendment at the end of this document.** Sections 5.1, 5.2, and 5.4 remain
+> current.
 
 ### 5.1 The four classifying dimensions, each closed by accepted authority
 
@@ -137,7 +145,10 @@ external impositions, calibrations, governance selections, provisional guardrail
 derivations can all inhabit the same family. Closing the family vocabulary therefore closes the
 provenance classification and leaves the construction universe open.
 
-### 5.3 Why the construction universe is not closed, and why Stage 1 is therefore not executable
+### 5.3 `XASSET-0027` PREDECESSOR STATE — why the construction universe was not closed then
+
+> **HISTORICAL.** True of `XASSET-0027`. Superseded by the `XASSET-0028` amendment: the universe is
+> now closed and the operative Stage-1 blocker is lifecycle authorization.
 
 The `4 × 2 × 6 × 5 = 240` product is a **family slot grid**: `48` cells × `5` provenance families,
 `slot_id = {sleeve}::{bound}::{driver_class}::{family_id}`. It is exhaustive over the four closed
@@ -170,7 +181,7 @@ because the slots bound provenance families rather than hypotheses. **A negative
 to invented completeness**, so this charter records that the universe is not closed rather than
 manufacturing a registry it cannot support.
 
-### 5.4 The completeness rule — what a negative would mean, once a universe exists
+### 5.4 The completeness rule — what a negative means, now that a universe exists
 
 Once — and only once — a concrete construction universe is closed by its own separately authorized
 unit, a cell may be recorded `BLOCKED_CATEGORICALLY` **only if every registered construction for that
@@ -187,7 +198,10 @@ for one sleeve and none for the other three. The evidence determines which succe
 prioritizes, ranks, sequences, or budgets a sleeve, and the family slot grid is one closed
 classification precisely so that no ordering can imply preference.
 
-### 5.5 The smallest separately authorized next step
+### 5.5 `XASSET-0027` PREDECESSOR STATE — the separately authorized next step it named
+
+> **HISTORICAL.** The unit this section anticipated is `XASSET-0028`, which has since closed the
+> universe. No current-state requirement for a future closure unit survives.
 
 **One governance unit whose scope is to determine whether a concrete construction universe can be
 closed at all and, if so, to freeze it** (`CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION`). That unit
@@ -504,6 +518,42 @@ new evidence → **lawful snapshot successor** → endpoint-capable downstream c
 `intelligence/level1_application/` artifact exists or is authorized, and **application authority
 remains WITHHELD**.
 
+## Amendment — `XASSET-0028` successor identity
+
+**Amended by `XASSET-0028`.** `XASSET-0027` recorded that the concrete construction universe was
+`NOT_CLOSED` and that Stage 1 was therefore not executable. `XASSET-0028` is the separately accepted
+amendment `XASSET-0027`'s own pin rule requires, and it **closes that universe**: a deterministic,
+finite, preregistered, grammar-derived universe of **680 registered constructions** across the 48
+cells, with exact identity, ordering, cardinality, and an aggregate integrity hash.
+
+The closure basis supplies **no new comparator rule**. It enumerates `XASSET-0020` §H's already-closed
+direct-comparison contract — six unordered sleeve-sleeve pairs, plus a mandated direct comparison of
+each sleeve with `UNSIZED_UNASSIGNED_CAPITAL` — crossed with the pre-registration's own canonical
+`driver_class_scope` partition. Nothing is selected, ranked, preferred, invented, or excluded.
+
+Every registered construction freezes its **source architecture** —
+`HYPOTHETICAL_SOURCE_ARCHITECTURE` — together with deterministically generated
+`hypothetical_source_requirements`, as `frozen_provenance_requirements` (addressed by name to this
+unit) requires. `source_path` and `source_sha256` are absent, per `hypothetical_forbids`. The
+existing-source half is not omitted but **already resolved**: `XASSET-0027` §I.1.1 records that
+`XASSET-0025` Outcome C exhaustively searched `XASSET-0021`'s frozen snapshot and that "the remaining
+space is constructions whose sources do not yet exist." No source identity is searched for, so a
+negative means the frozen specification was evaluated, not that an executor failed to find something.
+
+**Structural closure is not operational authorization.** Stage 1 is **NOT EXECUTED** by `XASSET-0028`
+and remains **NOT EXECUTABLE** until `XASSET-0028`'s own lifecycle closes in full — all six gates:
+independent full exact-head review, principal exact-head acceptance, merge, post-merge verification,
+merge-commit CI success, and verification of the merged successor hashes and universe hash. That one
+six-gate condition is the sole operative Stage-1 execution precondition; the `XASSET-0027` condition
+is spent and retained only as predecessor history. There is no merge-to-execution gap.
+
+Predecessor canonical identity remains auditable and is never rewritten. Until `XASSET-0028` is
+effective, the `XASSET-0027` predecessor identity governs; after it, the successor identity governs.
+
+`XASSET-0024` §K.1 remains **unresolved** with both readings preserved, §J.12 remains **deferred**,
+representation remains `SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED`, Stage 2 remains **unauthorized**,
+and application authority remains **WITHHELD**.
+
 <!-- ENDPOINT-0001-PROTOCOL-MIRROR-V1
 study_id: ENDPOINT-0001
 sleeve_count: 4
@@ -516,8 +566,13 @@ roll_up_unit_count: 8
 gate_count: 12
 consequential_parameter_count: 0
 stage_1_executable: false
-construction_universe_closed: false
+construction_universe_closed: true
+registered_construction_count: 680
+construction_universe_sha256: 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224
+stage_1_structurally_closed: true
+stage_1_operationally_authorized: false
 stage_2_authorized: false
 j12_deferred: true
-hash_version: ENDPOINT-0001-PREREG-V3
+hash_version: ENDPOINT-0001-PREREG-V4
+predecessor_hash_version: ENDPOINT-0001-PREREG-V3
 -->

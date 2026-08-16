@@ -105,7 +105,7 @@ def synth_repo(tmp_path: Path) -> Path:
 
 def test_real_repository_catalog_builds_all_71_with_no_issues():
     cat = decisions.build_catalog(REPO_ROOT)
-    assert len(cat.decisions) == 129
+    assert len(cat.decisions) == 130
     assert len(cat.legacy) == 12
     assert cat.issues == ()
     assert sum(len(d.issues) for d in cat.decisions) == 0
@@ -922,17 +922,51 @@ def test_real_repository_model_and_render_succeed_end_to_end():
     m = build_model(REPO_ROOT)
     html = render_html(m)
     assert html.startswith("<!DOCTYPE html>")
-    assert len(m.decision_catalog.decisions) == 129
+    assert len(m.decision_catalog.decisions) == 130
+
+
+def test_every_decision_renders_exactly_one_detail_section():
+    """Structural once-per-decision invariant.
+
+    This is the real guard the size ceiling was only ever a proxy for. It matches the renderer's
+    own stable attributes -- `data-decision-detail` and `data-decision-id="<ID>"` -- rather than
+    source-Markdown lines, which are unreliable because source files are hard-wrapped and the
+    rendered HTML is re-flowed. Catches duplication, omission, and id drift directly instead of
+    inferring them from a byte count.
+    """
+    m = build_model(REPO_ROOT)
+    html = render_html(m)
+
+    # Match the rendered section marker precisely: the attribute PAIR emitted by
+    # render.py's decision-detail <section>. A bare substring count would also match the
+    # page's own querySelector/getAttribute JavaScript, which is not a rendered section.
+    rendered_ids = re.findall(r'data-decision-detail\s+data-decision-id="([^"]+)"', html)
+    catalog_ids = [d.decision_id for d in m.decision_catalog.decisions]
+
+    # One section per catalog decision -- no more, no fewer.
+    assert len(rendered_ids) == len(catalog_ids)
+
+    # Every catalog id appears exactly once; none is duplicated or missing.
+    assert len(set(rendered_ids)) == len(rendered_ids), "a decision detail rendered more than once"
+    assert set(rendered_ids) == set(catalog_ids)
+    for decision_id in catalog_ids:
+        assert rendered_ids.count(decision_id) == 1
 
 
 def test_generated_html_size_within_regression_ceiling():
     m = build_model(REPO_ROOT)
     html = render_html(m)
-    # Measured ~2.1 MB for the current 58-decision corpus (~1.4 MB raw
-    # Markdown). A generous ceiling catches an accidental duplication
-    # regression (e.g. rendering every body twice) without being brittle to
-    # ordinary corpus growth.
-    assert len(html) < 6_000_000
+    # Retained as a coarse blow-up guard now that
+    # test_every_decision_renders_exactly_one_detail_section carries the real duplication
+    # invariant structurally. The bound is DERIVED from the corpus rather than hand-set, so its
+    # sensitivity stays constant as decisions are added instead of being granted arbitrary
+    # headroom: the rendered page may not exceed 4x the raw Markdown it renders. A full
+    # duplication of every body would breach it; ordinary corpus growth cannot.
+    raw_markdown_bytes = sum(
+        path.stat().st_size for path in (REPO_ROOT / "governance/decisions").glob("*.md")
+    )
+    assert raw_markdown_bytes > 0
+    assert len(html) < 4 * raw_markdown_bytes
 
 
 def test_no_second_top_level_navigation_item_added():
