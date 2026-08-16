@@ -12849,50 +12849,88 @@ workstreams:
           authorization lane directory remains ABSENT.
       - gate: xasset0030-stage1-gate-evaluation-method-determination
         status: in_progress
-        pr: null
+        pr: 329
         description: >-
           XASSET-0030, Lane G, bounded governance-only unit filed before any Stage-1
           arming. Question: can the per-construction gate-evaluation method be made
-          deterministic enough that two conforming executors must produce the same
-          twelve gate results and SS-K.1 per-reading fields without inventing economic
+          deterministic enough that two conforming executors, given the same frozen
+          construction and the same accepted authority, must produce the same twelve
+          gate results and SS-K.1 per-reading fields without inventing economic
           judgment. DETERMINATION: NEGATIVE - GATE_EVALUATION_METHOD_NOT_CLOSABLE.
-          Seven gates are closable now and are recorded so a successor need not
-          re-derive them: G2 (readings fixed at PASSES/FAILS by XASSET-0024 SS-D and
-          SS-K.1 plus PROTOCOL SS7, hence reading-dependent and UNABLE_TO_DETERMINE for
-          all 680), G4, G5, G6, G7, G11 (each satisfiable by the frozen specification),
-          and G12 (no lawful XASSET-0021 snapshot successor exists or is authorized, so
-          FAIL as a prerequisite with the dependency named). Five are not closable.
-          FINDING 1, the severe one: pre_registration.yaml
-          g2_reading_mapping.reading_dependent_end_to_end_note and PROTOCOL_V1.md SS7.1
-          BOTH state that a reading-dependent candidate disposes to UNABLE_TO_DETERMINE
-          "unless some categorical gate independently fails", while
-          level1_endpoint_evidence_preregistration_validator.py lines 2505-2509 forbid
-          recording BLOCKED_CATEGORICALLY for a reading-dependent candidate outright.
-          Reproduced adversarially: with the reading pair held at PASSES/FAILS, a FAIL
-          on ANY of the nine other categorical gates derives BLOCKED_CATEGORICALLY and
-          the structural validator then rejects the document, so the entire categorical
-          branch - and with it XASSET-0027 SS-J.2's "recorded honestly", SS-I.2's cell
-          rule, derive_cell_outcome's ALL_CANDIDATES_BLOCKED_CATEGORICALLY branch and
-          derive_roll_up_outcome's NO_CONSTRUCTIBLE_CANDIDATE - is unreachable. That is
-          worse than an open question: implementation currently forecloses one lawful
-          answer in one direction. FINDING 2: G3's share-of-the-whole question is
-          expressly reserved by XASSET-0027 SS-J.3 to "what G3 tests" and answered
-          nowhere; SS-J.1 is diagnostic and XASSET-0024 SS-D settles magnitude
-          capability but not share denomination ("none is 'sleeve share'"). G1, G8, G9
-          and G10 carry their own recorded blockers. Successor prerequisites, in
-          dependency order: (1) determine in governance whether the canonical clause or
-          the validator prohibition governs; (2) resolve or structurally accommodate the
-          SS-J.3 question, whose smallest corrective SS-K.1 itself names as "a narrowly
-          scoped clarification of XASSET-0020 SS-E.1 alone"; (3) separately, G1's
-          reading treatment, G8's uniqueness over an empty admitted set, G9's
-          abstention-versus-prerequisite mapping, and G10's unresolved-pair question
-          within the RISK boundary. Governance-only: no canonical byte, hash pin,
-          universe, cardinality or construction identity changed; SS-K.1 preserved and
-          resolved neither way; no gate evaluated for any construction. Stage 1 remains
-          UNARMED and ATTEMPT_1 intact, unclaimed and unconsumed. Ships one adversarial
-          module, test_level1_stage1_gate_evaluation_determinism.py (29 tests), pinning
-          both findings mechanically. Draft PR; not merged, not independently reviewed,
-          not principal-accepted in this session - effective only on merge.
+          Draft PR #329 at branch
+          claude/endpoint-0001-stage1-execution-results-a4z0x3, base
+          3cc15d58a42e6d56fbe702ccf4f377b60fbb8b0c.
+          MATERIALLY CORRECTED after independent FULL exact-head review 4947074116
+          (CHANGES REQUIRED, 0 BLOCKING / 2 MAJOR / 2 MINOR / 1 NOTE) at reviewed head
+          ed99315121214f1839c13f9ed364b2a1c88c8971, whose exact-head CI run
+          31965236926 / job 95209297001 was completed/success. The review affirmed the
+          core negative determination and required two substantive corrections, both
+          reproduced against controlling text before any edit.
+          MAJOR 1 - the first head framed the canonical/enforcement contradiction as an
+          unresolved governance election over which artifact governs. That is not
+          repository truth: pre_registration.yaml declares itself canonical for every
+          closed identity, candidate, gate, ordering, vocabulary and count;
+          PROTOCOL_V1.md states it cannot enlarge or override the YAML and that a
+          divergence is "a defect requiring a governed correction"; the validator's own
+          docstring disclaims gate-deciding authority ("Deciding a gate outcome remains
+          a human/analytical act"); and XASSET-0027 SS-M.1 states a reading-dependent
+          candidate "necessarily disposes to UNABLE_TO_DETERMINE, unless a categorical
+          gate independently fails". Corrected: canonical categorical precedence already
+          controls, and the validator prohibition at lines 2505-2509 is an
+          ENFORCEMENT/IMPLEMENTATION CONFORMANCE DEFECT, not a peer authority. SS-M.1's
+          "never to BLOCKED_CATEGORICALLY" governs the reading-to-G2 mapping, while the
+          validator keys on the candidate DISPOSITION - the level at which SS-M.1
+          expressly permits categorical override - so there is no internal conflict in
+          SS-M.1. Recorded downstream dependency (new SS-D): both
+          level1_endpoint_evidence_preregistration_validator.py and
+          level1_construction_universe_closure_validator.py are members of
+          LOAD_BEARING_RELPATHS, and the authorization mechanism requires their
+          working-tree bytes to equal the blob in the authorized merged XASSET-0029 tree
+          (both verified MATCH today), failing otherwise with "enforcement drift ...
+          load-bearing code has changed since the authorized merge". Any later lawful
+          validator correction therefore makes Stage 1 non-armable until a successor
+          operational-authorization or reconciliation lifecycle rebinds. Not attempted,
+          scoped or authorized here.
+          MAJOR 2 - the gate inventory was re-derived from first principles rather than
+          preserved. Two standards applied: a specification requiring property P is
+          never by itself proof that P is lawfully satisfiable (XASSET-0028 SS-F puts
+          Stage 1's question at satisfiability), and absence of a not-yet-created
+          artifact must be classified on governed grounds rather than inferred from
+          nonexistence. Feasibility authority relied on: XASSET-0024 SS-D's route table
+          "Lawful in principle?" column (R1/R2 "YES, conditionally", R1 "Originate",
+          N1-N8 "NO"), SS-E.1's determination that NUM-0001 class 4 "is a lawful route",
+          SS-C's exact-precision units regime, and XASSET-0027 SS-F's closure of T5 -
+          which expressly "closes nothing else: T1, T2, T3, T4, and T6 through T10 are
+          untouched". Result: G1 moved IN (XASSET-0024 SS-D independently determines the
+          six are subject-matter classes admitting DRIVER classification on their own
+          subject matter; SS-M.1 routes SS-K.1's magnitude ambiguity through G2 alone, so
+          importing it into G1 was a new rule); G5 moved OUT (SS-M.4 expressly reserves
+          it - "exactly what G5 decides, per candidate, on the candidate's own terms. No
+          prejudgment is recorded here"); G12 moved OUT (the canonical mapping is
+          G12_IDENTIFIABILITY_ONLY_NO_SUCCESSOR_CREATED and SS-P.2 names a required
+          snapshot successor, so nonexistence alone is not non-identifiability; no
+          governed definition of "identifiable" exists and nothing fixes the tense of
+          "could admit the candidate"). CORRECTED COUNT: 6 closable (G1, G2, G4, G6, G7,
+          G11) / 6 not closable (G3, G5, G8, G9, G10, G12), superseding the prior 7/5.
+          G3 alone remains sufficient for the negative determination and survives
+          unchanged, expressly reserved by SS-J.3 and SS-M.3.
+          Corrected successor prerequisites: (1) a validator conformance correction - not
+          a governance election - whose lifecycle must absorb the SS-D load-bearing
+          reauthorization dependency; (2) the T1/T2 methodology question at G3, whose
+          smallest corrective SS-K.1 names as "a narrowly scoped clarification of
+          XASSET-0020 SS-E.1 alone"; (3) G5's constraint-shape reservation; (4) G12's
+          governed definition of "identifiable"; (5) G8, G9 and G10.
+          Governance-only throughout: no canonical byte, hash pin, universe, cardinality
+          or construction identity changed; no load-bearing path touched; SS-K.1
+          preserved and resolved neither way; SS-J.12 deferred; no gate evaluated for any
+          construction. Stage 1 remains UNARMED and ATTEMPT_1 intact, unclaimed and
+          unconsumed. Adversarial module
+          test_level1_stage1_gate_evaluation_determinism.py grew 29 -> 57 tests covering
+          canonical precedence versus the validator prohibition, the G1/G2 boundary, G12
+          identifiability versus existence, specification-versus-satisfiability, both
+          corrected gate partitions, the load-bearing dependency, and non-authorization.
+          Awaiting another NEW independent FULL exact-head review; not merged, not
+          principal-accepted.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -13953,7 +13991,7 @@ workstreams:
       reuse, Level-2 work, liquidity determination, and policy adoption all
       remain separately unauthorized.
     active_branch: claude/endpoint-0001-stage1-execution-results-a4z0x3
-    active_pr: null
+    active_pr: 329
     last_verified_main_sha: 3cc15d58a42e6d56fbe702ccf4f377b60fbb8b0c
     last_verified_date: "2026-08-16"
     authorized_by: >

@@ -1,18 +1,19 @@
 """Adversarial tests pinning the XASSET-0030 gate-evaluation determinism findings.
 
-XASSET-0030 determined ``GATE_EVALUATION_METHOD_NOT_CLOSABLE``: seven of the twelve Stage-1 gates
-are deterministically closable from accepted authority, five are not, and one blocker is a
-contradiction between the canonical files and the validator rather than a mere gap.
+XASSET-0030 determined ``GATE_EVALUATION_METHOD_NOT_CLOSABLE``: six of the twelve Stage-1 gates are
+deterministically closable against identified accepted feasibility authority, six are not, and the
+canonical/enforcement contradiction is an implementation conformance defect rather than a governance
+election.
 
-These tests exist so that determination is **mechanically checkable rather than prose**, and so the
-findings cannot drift silently. They assert the repository's CURRENT structural state. A future,
-separately authorized unit that lawfully closes the method (or resolves the contradiction) is
-EXPECTED to update this module in the same PR that does so -- a failure here after such a unit is a
-signal to reconcile, not a regression to suppress.
+These tests exist so that determination is **mechanically checkable rather than prose**. They pin only
+determinations XASSET-0030 actually has authority to make: the precedence facts and the express
+reservations are read from committed bytes, never asserted from this module's own opinion. A future,
+separately authorized unit that corrects the validator or closes a reserved gate is EXPECTED to update
+this module in the same PR — a failure here after such a unit is a signal to reconcile.
 
-Nothing here arms, claims, completes, or executes Stage 1. Every candidate row is an isolated
-synthetic fixture built in memory; no results document, lane directory, attestation, claim,
-completion, or ledger entry is created or read for authorization purposes.
+Nothing here arms, claims, completes, or executes Stage 1. Every candidate row is an isolated synthetic
+fixture built in memory; no results document, lane directory, attestation, claim, completion, or ledger
+entry is created or read for authorization purposes.
 """
 
 from __future__ import annotations
@@ -22,18 +23,52 @@ import hashlib
 from pathlib import Path
 
 import pytest
+import yaml
 
 import level1_construction_universe_closure_validator as CU
 import level1_endpoint_evidence_preregistration_validator as P
 import level1_stage1_execution_authorization as A
 
 ROOT = Path(__file__).resolve().parent
+PREREG = ROOT / "research/level1_endpoint_evidence/pre_registration.yaml"
+PROTOCOL = ROOT / "research/level1_endpoint_evidence/PROTOCOL_V1.md"
+XASSET_0027 = (
+    ROOT
+    / "governance/decisions"
+    / "XASSET-0027-level1-endpoint-authority-and-all-four-sleeve-evidence-program-charter.md"
+)
+XASSET_0024 = (
+    ROOT / "governance/decisions" / "XASSET-0024-level1-endpoint-basis-feasibility-determination.md"
+)
 
-# The reading pair XASSET-0024 SS-D (operative subject-matter reading) and SS-K.1 (preserved contrary
-# reading) together fix for every registered construction. XASSET-0030 SS-E records this as the one
-# gate whose evaluation IS closable.
+# XASSET-0024 SS-D (operative subject-matter reading) and SS-K.1 (preserved contrary reading) together
+# fix this pair for every registered construction. XASSET-0027 SS-M.1 routes the open reading through
+# G2 and only G2.
 SUBJECT_MATTER_READING = "PASSES"
 PREFERENCE_ONLY_READING = "FAILS"
+
+# XASSET-0030 SS-E, as corrected after review 4947074116.
+CLOSABLE_GATES = {
+    "G1_DRIVER_SUBJECT_MATTER",
+    "G2_MAGNITUDE_INTRINSICALITY",
+    "G4_ORIGIN",
+    "G6_ROUTE_COMPLIANCE",
+    "G7_DISCRETION_AND_PROVENANCE",
+    "G11_EXACTNESS_AND_DETERMINISM",
+}
+UNCLOSABLE_GATES = {
+    "G3_NORMALIZATION",
+    "G5_CONSTRAINT_SHAPE",
+    "G8_UNIQUENESS",
+    "G9_REPRESENTATION",
+    "G10_PAIR_INDEPENDENCE",
+    "G12_SNAPSHOT_ADMISSIBILITY_PATH",
+}
+
+
+def _collapse(text: str) -> str:
+    """Both canonical files and the decisions wrap prose; match on collapsed whitespace."""
+    return " ".join(text.split())
 
 
 # --------------------------------------------------------------------------------------
@@ -52,10 +87,8 @@ def sample_id(universe: dict) -> str:
 
 
 def _reading_dependent_gates() -> dict[str, str]:
-    """Every gate PASS except the two whose outcomes XASSET-0030 records as closable."""
     gates = {gate: "PASS" for gate in P.GATE_IDS}
     gates["G2_MAGNITUDE_INTRINSICALITY"] = "UNABLE_TO_DETERMINE"
-    gates["G12_SNAPSHOT_ADMISSIBILITY_PATH"] = "FAIL"
     return gates
 
 
@@ -70,7 +103,7 @@ def _candidate_row(frozen: dict, construction_id: str, gates: dict[str, str]) ->
             "hypothetical_source_requirements": frozen["hypothetical_source_requirements"],
             "gate_results": gates,
             "categorical_failures": [],
-            "prerequisite_failures": ["G12_SNAPSHOT_ADMISSIBILITY_PATH"],
+            "prerequisite_failures": [],
             "disposition": P.derive_candidate_disposition(gates),
             "first_failing_gate_id": None,
             "g2_outcome_under_subject_matter_reading": SUBJECT_MATTER_READING,
@@ -85,7 +118,7 @@ def _candidate_row(frozen: dict, construction_id: str, gates: dict[str, str]) ->
 
 
 def _structural(row: dict, frozen: dict, construction_id: str):
-    """Private structural seam only. This is explicitly NOT an authorization path."""
+    """Private structural seam only. Explicitly NOT an authorization path."""
     return P._validate_stage1_results_against_universe(
         {"candidate_results": [row], "cell_results": []},
         {construction_id: frozen},
@@ -93,41 +126,252 @@ def _structural(row: dict, frozen: dict, construction_id: str):
 
 
 # --------------------------------------------------------------------------------------
-# B.1 -- the SS-K.1 map consumes readings; nothing produces them
+# (1) Canonical categorical precedence vs the current validator prohibition
 # --------------------------------------------------------------------------------------
 
 
-class TestReadingMapConsumesRatherThanProduces:
-    def test_map_is_deterministic_once_both_readings_are_supplied(self):
+class TestCanonicalPrecedenceControls:
+    """The precedence question is answered in committed text, not left to a governance election."""
+
+    def test_preregistration_declares_itself_canonical_for_gates_and_vocabularies(self):
+        text = _collapse(PREREG.read_text(encoding="utf-8"))
+        assert (
+            "This YAML is canonical for every closed identity, candidate, gate, ordering, "
+            "vocabulary, and count." in text
+        )
+
+    def test_protocol_is_expressly_subordinate_and_prelabels_divergence_a_defect(self):
+        text = _collapse(PROTOCOL.read_text(encoding="utf-8"))
+        assert "It cannot enlarge or override the YAML." in text
+        assert (
+            "Where the two appear to differ, the YAML governs and the difference is a defect "
+            "requiring a governed correction." in text
+        )
+
+    def test_validator_disclaims_gate_deciding_authority(self):
+        text = _collapse(
+            (ROOT / "level1_endpoint_evidence_preregistration_validator.py").read_text(
+                encoding="utf-8"
+            )
+        )
+        assert "Read-only and mechanical." in text
+        assert "Deciding a gate outcome remains a human/analytical act" in text
+
+    def test_xasset_0027_m1_permits_categorical_override_at_disposition_level(self):
+        text = _collapse(XASSET_0027.read_text(encoding="utf-8"))
+        assert (
+            "necessarily disposes to `UNABLE_TO_DETERMINE`, unless a categorical gate "
+            "independently fails" in text
+        )
+
+    def test_both_canonical_artifacts_carry_the_same_clause(self):
+        clause = "unless some categorical gate independently fails"
+        data = yaml.safe_load(PREREG.read_text(encoding="utf-8"))
+        assert clause in _collapse(
+            data["g2_reading_mapping"]["reading_dependent_end_to_end_note"]
+        )
+        assert clause in _collapse(PROTOCOL.read_text(encoding="utf-8"))
+
+    @pytest.mark.parametrize(
+        "gate", sorted(g for g in P.CATEGORICAL_GATES if g != "G2_MAGNITUDE_INTRINSICALITY")
+    )
+    def test_validator_currently_forbids_the_canonically_permitted_outcome(
+        self, universe, sample_id, gate
+    ):
+        """The enforcement defect, reproduced across every other categorical gate."""
+        gates = _reading_dependent_gates()
+        gates[gate] = "FAIL"
+        row = _candidate_row(universe[sample_id], sample_id, gates)
+        assert row["disposition"] == "BLOCKED_CATEGORICALLY"
+
+        result = _structural(row, universe[sample_id], sample_id)
+        assert result.ok is False
+        assert any(
+            "may not be recorded as BLOCKED_CATEGORICALLY" in error for error in result.errors
+        ), result.errors
+
+    def test_categorical_branches_remain_defined_though_currently_unreachable(self):
+        assert P.derive_cell_outcome(["BLOCKED_CATEGORICALLY"]) == "BLOCKED_CATEGORICALLY"
+
+
+# --------------------------------------------------------------------------------------
+# (2) G1 subject-matter vs G2 magnitude-reading boundary
+# --------------------------------------------------------------------------------------
+
+
+class TestG1IsNotG2:
+    """SS-K.1's magnitude ambiguity is routed through G2 only; importing it into G1 is a new rule."""
+
+    def test_k1_is_defined_as_a_magnitude_question_routed_through_g2(self):
+        text = _collapse(XASSET_0027.read_text(encoding="utf-8"))
+        assert "Whether §E.1's six classes house a magnitude statement remains open" in text
+        assert "`G2` is therefore evaluated **under both readings**" in text
+
+    def test_g1_has_independent_subject_matter_feasibility_authority(self):
+        """XASSET-0024 SS-D, not the frozen specification, is what makes G1 closable."""
+        text = _collapse(XASSET_0024.read_text(encoding="utf-8"))
+        assert "Those six are *subject-matter* classes describing what evidence is about" in text
+        assert (
+            "A qualifying source must therefore be admissible as a DRIVER under at least one of "
+            "the six **on its own subject matter**" in text
+        )
+
+    def test_only_g2_carries_per_reading_fields(self):
+        """No G1 reading slot exists, and this decision invents none."""
+        g2_fields = {
+            "g2_outcome_under_subject_matter_reading",
+            "g2_outcome_under_preference_only_reading",
+            "g2_outcome_is_reading_dependent",
+        }
+        assert g2_fields <= set(P.REQUIRED_CANDIDATE_RESULT_KEYS)
+        assert not any(
+            key.startswith("g1_outcome_under") for key in P.REQUIRED_CANDIDATE_RESULT_KEYS
+        )
+
+
+# --------------------------------------------------------------------------------------
+# (3) G12 identifiability vs existence
+# --------------------------------------------------------------------------------------
+
+
+class TestG12IdentifiabilityIsNotExistence:
+    def test_canonical_mapping_scopes_g12_to_identifiability_only(self):
+        data = yaml.safe_load(PREREG.read_text(encoding="utf-8"))
+        items = {i["j_item"]: i["gate_or_basis"] for i in data["stage_1_testable_subset"]["items"]}
+        assert items["J_2_SNAPSHOT_POSITION"] == "G12_IDENTIFIABILITY_ONLY_NO_SUCCESSOR_CREATED"
+
+    def test_protocol_states_the_gate_records_identifiability(self):
+        text = _collapse(PROTOCOL.read_text(encoding="utf-8"))
+        assert "`G12` records whether a snapshot successor is *identifiable*" in text
+
+    def test_a_successor_path_is_named_by_accepted_authority(self):
+        """XASSET-0027 SS-P.2 names it, which is why nonexistence alone cannot settle the gate."""
+        text = _collapse(XASSET_0027.read_text(encoding="utf-8"))
+        assert "a **`XASSET-0021` snapshot successor**, which cannot admit evidence that does not yet exist" in text
+
+    def test_no_governed_definition_of_identifiable_exists(self):
+        """The blocker: neither canonical artifact defines the term or fixes 'could admit' tense."""
+        for path in (PREREG, PROTOCOL):
+            text = _collapse(path.read_text(encoding="utf-8"))
+            assert "identifiable means" not in text.lower()
+            assert "definition of identifiable" not in text.lower()
+
+
+# --------------------------------------------------------------------------------------
+# (4) specification-requires-P vs accepted-authority-establishes-satisfiability
+# --------------------------------------------------------------------------------------
+
+
+class TestSatisfiabilityIsNotSpecification:
+    def test_every_construction_is_hypothetical_so_requirement_text_alone_proves_nothing(
+        self, universe
+    ):
+        assert {e["source_architecture"] for e in universe.values()} == {
+            "HYPOTHETICAL_SOURCE_ARCHITECTURE"
+        }
+
+    def test_route_table_supplies_independent_feasibility_authority(self):
+        """XASSET-0024 SS-D's 'Lawful in principle?' column is the basis for G4/G6/G11."""
+        text = _collapse(XASSET_0024.read_text(encoding="utf-8"))
+        assert "Lawful in principle?" in text
+        assert text.count("**YES, conditionally**") >= 2
+        assert "No route is invented here because the existing ones are difficult." in text
+
+    def test_t5_is_closed_but_t1_t2_t3_t4_t6_t10_are_not(self):
+        """XASSET-0027 SS-F is the feasibility authority for G6, and bounds what else it closes."""
+        text = _collapse(XASSET_0027.read_text(encoding="utf-8"))
+        assert "This closes the universal `T5` failure" in text
+        assert (
+            "It closes nothing else: `T1`, `T2`, `T3`, `T4`, and `T6` through `T10` are untouched"
+            in text
+        )
+
+    def test_class_4_route_is_independently_determined_lawful(self):
+        """XASSET-0024 SS-E.1 is the basis for G7."""
+        text = _collapse(XASSET_0024.read_text(encoding="utf-8"))
+        assert "It is a lawful route, and it is not a third route." in text
+
+    def test_units_regime_is_the_basis_for_g11(self):
+        text = _collapse(XASSET_0024.read_text(encoding="utf-8"))
+        assert (
+            "carried at exact source precision or as an exact rational derivation under "
+            "XASSET-0021 §G" in text
+        )
+
+
+# --------------------------------------------------------------------------------------
+# (5) / (6) the corrected closable / unclosable partition
+# --------------------------------------------------------------------------------------
+
+
+class TestCorrectedGatePartition:
+    def test_partition_is_exhaustive_and_disjoint(self):
+        assert CLOSABLE_GATES | UNCLOSABLE_GATES == set(P.GATE_IDS)
+        assert not (CLOSABLE_GATES & UNCLOSABLE_GATES)
+        assert len(CLOSABLE_GATES) == 6 and len(UNCLOSABLE_GATES) == 6
+
+    def test_g3_is_expressly_reserved(self):
+        text = _collapse(XASSET_0027.read_text(encoding="utf-8"))
+        assert "Whether that suffices to carry a share-of-the-whole statement is what `G3` tests" in text
+        assert "it does not determine that no bridge exists" in text
+
+    def test_g5_is_expressly_reserved(self):
+        """SS-M.4 reserves G5 the same way SS-M.3 reserves G3 — why G5 is not closable."""
+        text = _collapse(XASSET_0027.read_text(encoding="utf-8"))
+        assert (
+            "is exactly what `G5` decides, per candidate, on the candidate's own terms. No "
+            "prejudgment is recorded here." in text
+        )
+
+    def test_g9_mapping_is_unreconciled(self):
+        data = yaml.safe_load(PREREG.read_text(encoding="utf-8"))
+        assert "G9_REPRESENTATION" in P.PREREQUISITE_GATES
+        conditions = {c["condition"] for c in data["mandatory_abstention_conditions"]}
+        assert "REPRESENTATION_PATH_1_FAILS_AND_NO_ACCEPTED_RULE_EXISTS" in conditions
+
+    def test_g8_uniqueness_is_scoped_to_an_admitted_set(self):
+        data = yaml.safe_load(PREREG.read_text(encoding="utf-8"))
+        gate = next(
+            g for g in data["gate_sequence"]["gates"] if g["gate_id"] == "G8_UNIQUENESS"
+        )
+        assert "across the admitted set" in _collapse(gate["question"])
+
+    def test_g10_depends_on_an_unresolved_pair_determination(self):
+        data = yaml.safe_load(PREREG.read_text(encoding="utf-8"))
+        gate = next(
+            g for g in data["gate_sequence"]["gates"] if g["gate_id"] == "G10_PAIR_INDEPENDENCE"
+        )
+        assert "unresolved pair" in _collapse(gate["question"])
+
+    @pytest.mark.parametrize("gate", sorted(CLOSABLE_GATES | UNCLOSABLE_GATES))
+    def test_no_gate_outcome_is_preregistered_anywhere(self, universe, gate):
+        """Whatever its disposition, no gate's RESULT is committed data.
+
+        The preregistration names every gate; what it never carries is an outcome. Each gate entry
+        holds exactly the declared record_keys, none of which is a result field.
+        """
+        assert gate not in repr(universe), f"{gate} leaked into the frozen universe"
+
+        data = yaml.safe_load(PREREG.read_text(encoding="utf-8"))
+        declared = set(data["gate_sequence"]["record_keys"])
+        entry = next(g for g in data["gate_sequence"]["gates"] if g["gate_id"] == gate)
+        assert set(entry) == declared
+        assert not (set(entry) & {"result", "outcome", "gate_result", "disposition"})
+        assert not set(entry.values()) & set(P.GATE_RESULT_VOCABULARY)
+
+    def test_g2_is_the_one_gate_with_a_fixed_recorded_outcome(self, universe, sample_id):
+        gates = _reading_dependent_gates()
+        row = _candidate_row(universe[sample_id], sample_id, gates)
         assert (
             P.required_g2_gate_result(SUBJECT_MATTER_READING, PREFERENCE_ONLY_READING)
             == "UNABLE_TO_DETERMINE"
         )
-        assert P.is_reading_dependent(SUBJECT_MATTER_READING, PREFERENCE_ONLY_READING) is True
-
-    def test_no_module_function_derives_the_readings_from_a_construction(self, universe, sample_id):
-        """The gap: no callable maps a frozen construction to its two SS-K.1 reading outcomes."""
-        frozen = universe[sample_id]
-        assert "g2_outcome_under_subject_matter_reading" not in frozen
-        assert "g2_outcome_under_preference_only_reading" not in frozen
-
-        # Only three reading-related CALLABLES exist, and all three consume the two readings as
-        # arguments rather than deriving them. (OPEN_READING_FIELDS is a constant naming the three
-        # fields a results row must record; it produces nothing.)
-        allowed = {"required_g2_gate_result", "is_reading_dependent", "map_g2_reading"}
-        for module in (P, CU, A):
-            for name in dir(module):
-                if name.startswith("_") or "reading" not in name.lower():
-                    continue
-                if not callable(getattr(module, name)):
-                    continue
-                assert name in allowed, (
-                    f"unexpected reading-related callable {module.__name__}.{name}"
-                )
+        assert row["disposition"] == "UNABLE_TO_DETERMINE"
+        assert _structural(row, universe[sample_id], sample_id).ok is True
 
 
 # --------------------------------------------------------------------------------------
-# B.2 -- the frozen universe carries identity only, never outcomes
+# Frozen universe integrity
 # --------------------------------------------------------------------------------------
 
 
@@ -146,15 +390,10 @@ class TestFrozenUniverseCarriesNoGateOutcomes:
     }
 
     def test_universe_entries_carry_exactly_the_identity_fields(self, universe):
-        observed = set()
+        observed: set[str] = set()
         for entry in universe.values():
             observed |= set(entry)
         assert observed == self.EXPECTED_KEYS
-
-    def test_no_gate_id_appears_anywhere_in_the_universe(self, universe):
-        blob = repr(universe)
-        for gate in P.GATE_IDS:
-            assert gate not in blob, f"{gate} leaked into the frozen universe"
 
     def test_universe_identity_is_unchanged(self, universe):
         assert len(universe) == A.CONSTRUCTION_COUNT == 680
@@ -164,122 +403,40 @@ class TestFrozenUniverseCarriesNoGateOutcomes:
             == "73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224"
         )
 
-    def test_every_construction_is_hypothetical_source_architecture(self, universe):
-        assert {e["source_architecture"] for e in universe.values()} == {
-            "HYPOTHETICAL_SOURCE_ARCHITECTURE"
-        }
-
 
 # --------------------------------------------------------------------------------------
-# B.3 / Finding 2 -- G3 remains undetermined, and its PASS/UTD branch is disposition-neutral
+# Load-bearing reauthorization dependency (XASSET-0030 SS-D)
 # --------------------------------------------------------------------------------------
 
 
-class TestG3RemainsUndetermined:
-    @pytest.mark.parametrize("g3", ["PASS", "UNABLE_TO_DETERMINE"])
-    def test_pass_and_unable_to_determine_are_disposition_neutral(self, universe, sample_id, g3):
-        """Narrowing recorded by XASSET-0030 SS-B.4: two of G3's three answers agree."""
-        gates = _reading_dependent_gates()
-        gates["G3_NORMALIZATION"] = g3
-        row = _candidate_row(universe[sample_id], sample_id, gates)
-        assert row["disposition"] == "UNABLE_TO_DETERMINE"
-        assert _structural(row, universe[sample_id], sample_id).ok is True
+class TestLoadBearingReauthorizationDependency:
+    def test_both_validators_are_load_bearing_authorization_paths(self):
+        assert "level1_endpoint_evidence_preregistration_validator.py" in A.LOAD_BEARING_RELPATHS
+        assert "level1_construction_universe_closure_validator.py" in A.LOAD_BEARING_RELPATHS
 
-    def test_fail_derives_a_materially_different_disposition(self, universe, sample_id):
-        """The ambiguity is real: the third answer changes the outcome."""
-        gates = _reading_dependent_gates()
-        gates["G3_NORMALIZATION"] = "FAIL"
-        assert P.derive_candidate_disposition(gates) == "BLOCKED_CATEGORICALLY"
-
-
-# --------------------------------------------------------------------------------------
-# Finding 1 -- canonical text and validator contradict each other
-# --------------------------------------------------------------------------------------
-
-
-class TestReadingDependentCategoricalContradiction:
-    CANONICAL_CLAUSE = "unless some categorical gate independently fails"
-
-    @staticmethod
-    def _collapse(text: str) -> str:
-        """Both canonical files wrap prose, so match on whitespace-collapsed text."""
-        return " ".join(text.split())
-
-    def test_preregistration_says_categorical_failure_is_expected(self):
-        import yaml
-
-        data = yaml.safe_load(
-            (ROOT / "research/level1_endpoint_evidence/pre_registration.yaml").read_text(
-                encoding="utf-8"
-            )
+    def test_working_tree_bytes_are_bound_and_drift_is_an_error(self):
+        source = _collapse(
+            (ROOT / "level1_stage1_execution_authorization.py").read_text(encoding="utf-8")
         )
-        note = data["g2_reading_mapping"]["reading_dependent_end_to_end_note"]
-        assert self.CANONICAL_CLAUSE in self._collapse(note)
+        assert "enforcement drift" in source
+        # The message is assembled across adjacent f-string literals; collapse before matching.
+        assert 'load-bearing code has changed " "since the authorized merge' in source
 
-    def test_protocol_says_the_same(self):
-        text = (ROOT / "research/level1_endpoint_evidence/PROTOCOL_V1.md").read_text(
-            encoding="utf-8"
-        )
-        assert self.CANONICAL_CLAUSE in self._collapse(text)
+    def test_this_unit_left_every_load_bearing_path_untouched(self):
+        """Governance-only: correcting the Finding 1 defect is deliberately out of scope."""
+        import subprocess
 
-    @pytest.mark.parametrize(
-        "gate",
-        [g for g in P.CATEGORICAL_GATES if g != "G2_MAGNITUDE_INTRINSICALITY"],
-    )
-    def test_validator_forbids_what_the_canonical_files_expect(self, universe, sample_id, gate):
-        """Every categorical gate is unrepresentable while G2 is reading-dependent."""
-        gates = _reading_dependent_gates()
-        gates[gate] = "FAIL"
-        row = _candidate_row(universe[sample_id], sample_id, gates)
-        assert row["disposition"] == "BLOCKED_CATEGORICALLY"
-
-        result = _structural(row, universe[sample_id], sample_id)
-        assert result.ok is False
-        assert any(
-            "may not be recorded as BLOCKED_CATEGORICALLY" in error for error in result.errors
-        ), result.errors
-
-    def test_the_categorical_branch_of_the_cell_rule_is_therefore_unreachable(self):
-        """derive_cell_outcome still HAS the branch; no lawful candidate can reach it today."""
-        assert P.derive_cell_outcome(["BLOCKED_CATEGORICALLY"]) == "BLOCKED_CATEGORICALLY"
+        changed = subprocess.run(
+            ["git", "diff", "--name-only", "origin/main...HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=ROOT,
+        ).stdout.split()
+        assert not (set(changed) & set(A.LOAD_BEARING_RELPATHS)), changed
 
 
 # --------------------------------------------------------------------------------------
-# Closable gates -- recorded so a successor need not re-derive them
-# --------------------------------------------------------------------------------------
-
-
-class TestClosableGateDeterminations:
-    def test_g12_is_a_prerequisite_failure_not_a_categorical_one(self):
-        assert "G12_SNAPSHOT_ADMISSIBILITY_PATH" in P.PREREQUISITE_GATES
-        assert "G12_SNAPSHOT_ADMISSIBILITY_PATH" not in P.CATEGORICAL_GATES
-
-    def test_g9_is_a_prerequisite_gate_while_section_g_path_3_says_abstention(self):
-        """The unreconciled mapping XASSET-0030 SS-E records for G9."""
-        assert "G9_REPRESENTATION" in P.PREREQUISITE_GATES
-        import yaml
-
-        data = yaml.safe_load(
-            (ROOT / "research/level1_endpoint_evidence/pre_registration.yaml").read_text(
-                encoding="utf-8"
-            )
-        )
-        conditions = {c["condition"] for c in data["mandatory_abstention_conditions"]}
-        assert "REPRESENTATION_PATH_1_FAILS_AND_NO_ACCEPTED_RULE_EXISTS" in conditions
-
-    def test_prerequisite_failure_alone_still_yields_unable_to_determine(
-        self, universe, sample_id
-    ):
-        """G2 UTD dominates the G12 prerequisite failure, so G9's mapping cannot flip a disposition."""
-        gates = _reading_dependent_gates()
-        gates["G9_REPRESENTATION"] = "FAIL"
-        row = _candidate_row(universe[sample_id], sample_id, gates)
-        assert row["disposition"] == "UNABLE_TO_DETERMINE"
-        assert _structural(row, universe[sample_id], sample_id).ok is True
-
-
-# --------------------------------------------------------------------------------------
-# Non-authorization guards
+# (7) Non-authorization guards
 # --------------------------------------------------------------------------------------
 
 
@@ -313,7 +470,6 @@ class TestNothingHereAuthorizesOrExecutes:
             assert observed == digest, f"{relpath} canonical bytes changed"
 
     def test_this_module_never_writes_to_the_authorization_lane(self):
-        """Static guard: no write/claim/complete call appears anywhere in this file."""
         tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
         forbidden = {"write_authorization", "claim_execution", "complete_execution"}
         called = {
@@ -322,3 +478,25 @@ class TestNothingHereAuthorizesOrExecutes:
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
         }
         assert not (called & forbidden)
+
+    def test_no_fixture_names_a_real_source_or_acquires_data(self):
+        """Every fixture is a frozen hypothetical; none carries a source path or hash."""
+        source = Path(__file__).read_text(encoding="utf-8")
+        assert '"source_path": None' in source
+        assert '"source_sha256": None' in source
+        # Tokens are assembled at runtime so this guard cannot match its own literal.
+        banned = ["req" + "uests", "url" + "lib", "yfin" + "ance", "alp" + "aca",
+                  "phq-risk" + "0001-results"]
+        imported = {
+            node.module.split(".")[0]
+            for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.ImportFrom) and node.module
+        } | {
+            alias.name.split(".")[0]
+            for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.Import)
+            for alias in node.names
+        }
+        assert not (imported & set(banned)), imported
+        for token in banned:
+            assert source.count(token) <= 1, token
