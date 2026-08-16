@@ -105,7 +105,7 @@ def synth_repo(tmp_path: Path) -> Path:
 
 def test_real_repository_catalog_builds_all_71_with_no_issues():
     cat = decisions.build_catalog(REPO_ROOT)
-    assert len(cat.decisions) == 129
+    assert len(cat.decisions) == 130
     assert len(cat.legacy) == 12
     assert cat.issues == ()
     assert sum(len(d.issues) for d in cat.decisions) == 0
@@ -922,17 +922,24 @@ def test_real_repository_model_and_render_succeed_end_to_end():
     m = build_model(REPO_ROOT)
     html = render_html(m)
     assert html.startswith("<!DOCTYPE html>")
-    assert len(m.decision_catalog.decisions) == 129
+    assert len(m.decision_catalog.decisions) == 130
 
 
 def test_generated_html_size_within_regression_ceiling():
     m = build_model(REPO_ROOT)
     html = render_html(m)
-    # Measured ~2.1 MB for the current 58-decision corpus (~1.4 MB raw
-    # Markdown). A generous ceiling catches an accidental duplication
-    # regression (e.g. rendering every body twice) without being brittle to
-    # ordinary corpus growth.
-    assert len(html) < 6_000_000
+    # Measured ~6.0 MB for the current 130-decision corpus. The ceiling exists
+    # to catch an accidental duplication regression (e.g. rendering every body
+    # twice), not to cap ordinary corpus growth, so it is set well below the
+    # ~12 MB a full duplication of the current corpus would produce while
+    # leaving headroom for further decisions. Raised from 6_000_000 when the
+    # 130th decision crossed it by 0.6%; duplication was ruled out directly at
+    # that time by confirming each decision body renders once, but that check
+    # is not kept as a test: source files are hard-wrapped and the rendered
+    # HTML is re-flowed, so source-line matching is unreliable in both
+    # directions and a sound version would need corpus-wide whitespace
+    # normalization.
+    assert len(html) < 9_000_000
 
 
 def test_no_second_top_level_navigation_item_added():

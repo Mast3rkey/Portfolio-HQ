@@ -12394,6 +12394,100 @@ workstreams:
         pr: null
         status: in_progress
         date: "2026-08-16"
+      - gate: xasset0027-post-merge-verification
+        description: >
+          Additive post-merge synchronization for XASSET-0027, recorded without
+          editing the prior gate's own text, which was accurate when filed and
+          is now stale only as to lifecycle. Independently re-verified live this
+          session against GitHub and the local checkout rather than against any
+          brief: PR #326 merged; accepted head
+          6d6a5190a682fa4eb30d4abee70a836c24194fe1; base
+          e7e9e53dbcdcaaa0ff71f128694028650500c323; merge commit
+          e4b6f0b810884fcb73d1b8ee053d8005db532f3e with both parents re-derived
+          from git log and matching exactly; final independent review 4945377387
+          (APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0 MAJOR /
+          0 MINOR / 1 NOTE); principal exact-head acceptance
+          issuecomment-5305685656; merge-commit CI run 31926322438 / job
+          95114383877, event push, branch main, head_sha e4b6f0b8, completed /
+          success. Both canonical ENDPOINT-0001 hashes recomputed from observed
+          bytes and matching their accepted pins. XASSET-0027's complete
+          five-step lifecycle is therefore closed and its architecture is
+          effective. Effective state carried forward unchanged:
+          LEVEL1_ENDPOINT_AUTHORITY constituted and NOT exercised; ENDPOINT-0001
+          chartered and NOT executed; construction universe NOT_CLOSED; Stage 1
+          NOT EXECUTABLE; Stage 2 not authorized; XASSET-0024 SSK.1 unresolved;
+          SSJ.12 NOT_YET_DETERMINABLE_DEFERRED; application authority WITHHELD.
+          Lifecycle closure alone does NOT make Stage 1 executable. Its
+          decision-file and catalog status remain Proposed, the known
+          pre-existing two-step acceptance-recording pattern, not corrected
+          here.
+        pr: 326
+        status: complete
+        date: "2026-08-16"
+      - gate: xasset0028-concrete-construction-universe-closure-determination
+        description: >
+          Current Lane G filing, and the SSP.0 unit XASSET-0027 named without
+          pre-deciding, scoping, or scheduling it. Its sole question was whether
+          a concrete construction universe for ENDPOINT-0001 Stage 1 can be
+          closed at all and, if so, to freeze it. Determination:
+          CONSTRUCTION_UNIVERSE_NOT_CLOSED — closure is unavailable under
+          XASSET-0028's authority, and Stage 1 remains NOT EXECUTABLE. The
+          negative is bounded to present authority and is expressly NOT a claim
+          of permanent impossibility, inheriting the banned-phrase discipline
+          XASSET-0027 adopted after its own review found that overclaim. Four
+          routes were built out and failed on their merits: a concrete finite
+          registry (the existing-source half closes but re-runs XASSET-0025
+          Outcome C and adds nothing; the hypothetical half does not close), a
+          deterministic construction grammar (no lawful primitives for the open
+          dimensions, and for R2_C2 a grammar-composed derivation is the
+          authorship XASSET-0023 SSH.3 item 3 bars in terms), dominance over a
+          maximally permissive construction (gates are not monotone, and the
+          maximal element passes analytically so it cannot establish a
+          categorical block), and a finite quotient over gate-outcome vectors
+          (a consistent vector is not evidence of realizability, which is the
+          question Stage 1 exists to ask). The decisive failure is
+          exhaustiveness, not finiteness: XASSET-0027 SSI.2 ties
+          BLOCKED_CATEGORICALLY to every registered construction, so an authored
+          registry would relocate the unbounded qualitative search from results
+          time to freeze time rather than remove it. Two independent
+          prerequisites are named and are not alternatives — PREREQ-1, a
+          comparator admissibility rule, blocking 120 of 240 slots (the three
+          comparison-scoped DRIVER classes; diversification_cobehavior is
+          unaffected because XASSET-0020 closes its comparator space at exactly
+          six unordered pairs), the figure computed from the accepted
+          family-slot generator rather than asserted, and grounded in
+          XASSET-0026 SSD's own text that no comparator rule is supplied,
+          narrowed, or implied; and PREREQ-2, an enumeration principle for
+          hypothetical source architectures, blocking all 240. A non-governance
+          dissolution path is recorded: a qualifying source coming into
+          existence and admitted through an XASSET-0021 snapshot successor
+          closes its construction by observation rather than enumeration. A
+          partial closure was achievable and expressly NOT shipped, because it
+          would fail the exhaustiveness criterion while looking closed. No
+          canonical file was amended and no pin re-computed — the determination
+          is consistent with the accepted bytes, which already record
+          NOT_CLOSED — and the artifact was sited outside
+          research/level1_endpoint_evidence/ specifically so XASSET-0027's
+          exactly-two-canonical-files invariant test stays true and unweakened.
+          Discloses without correcting a stale sentence at
+          pre_registration.yaml lines 895-896 asserting the qualitative search
+          surface is closed, which contradicts the same file's own NOT_CLOSED
+          status at lines 286-287; it is hash-pinned so correcting it needs an
+          amendment decision, it is single-site (absent from PROTOCOL_V1.md),
+          it is not an enforcement gap, and this unit's validator blocks a
+          reader from acting on it mechanically. Creates no construction,
+          closes no universe, supplies no comparator rule or enumeration
+          principle, makes Stage 1 no more executable, authorizes no Stage 2 or
+          empirical work, produces no endpoint or allocation, exercises no
+          endpoint authority, resolves SSK.1 neither way, decides SSJ.12
+          neither way, supplies no representation rule, designates no CM-14
+          through CM-17, and accesses no RISK artifact. Zero consequential
+          numeric parameters. Blocked on its own independent full exact-head
+          review, principal exact-head acceptance, merge, immediate post-merge
+          verification, and successful exact-head CI.
+        pr: null
+        status: in_progress
+        date: "2026-08-16"
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -12443,6 +12537,53 @@ workstreams:
       - research/level1_sleeve_robustness/PROTOCOL_V1.md
       - research/level1_sleeve_robustness/pre_registration.yaml
     next_action: >
+      Update, 2026-08-16 (post-XASSET-0027 merge, XASSET-0028 filed):
+      XASSET-0027's complete five-step lifecycle is closed — PR #326, accepted
+      head 6d6a5190a682fa4eb30d4abee70a836c24194fe1, merge
+      e4b6f0b810884fcb73d1b8ee053d8005db532f3e, final review 4945377387,
+      principal acceptance issuecomment-5305685656, merge-commit CI 31926322438
+      / 95114383877 completed / success — all independently re-verified live.
+      LEVEL1_ENDPOINT_AUTHORITY is constituted and NOT exercised; ENDPOINT-0001
+      is chartered and NOT executed. XASSET-0028, the SSP.0 unit XASSET-0027
+      named, is now filed and determines
+      CONSTRUCTION_UNIVERSE_NOT_CLOSED: a concrete construction universe cannot
+      be closed under its authority, so Stage 1 remains NOT EXECUTABLE for a
+      determined reason rather than an open one. The binding constraint is
+      exhaustiveness rather than finiteness — XASSET-0027 SSI.2 ties
+      BLOCKED_CATEGORICALLY to every registered construction, so an authored
+      registry of imagined architectures would relocate the unbounded
+      qualitative search from results time to freeze time instead of removing
+      it. Two independent prerequisites are named and are NOT alternatives:
+      PREREQ-1, a comparator admissibility rule (120 of 240 slots, the three
+      comparison-scoped DRIVER classes, grounded in XASSET-0026 SSD's own
+      statement that no comparator rule is supplied, narrowed, or implied, and
+      itself a methodology amendment touching XASSET-0020 SSE.1), and PREREQ-2,
+      an enumeration principle for hypothetical source architectures (all 240
+      slots). Satisfying PREREQ-1 alone does NOT enable closure. Neither
+      prerequisite is authorized, scoped, or scheduled by XASSET-0028; each
+      needs its own separately accepted decision. A third, non-governance path
+      is recorded: a qualifying endpoint-stating source coming into existence
+      and admitted through a lawful XASSET-0021 snapshot successor would close
+      its own construction by observation rather than by enumeration, which is
+      why the negative is bounded to present authority and is expressly not a
+      permanent bar. Both canonical ENDPOINT-0001 hashes are unchanged and
+      re-verified from observed bytes; no canonical file was amended and no pin
+      recomputed. Separately disclosed and NOT corrected: pre_registration.yaml
+      lines 895-896 still assert the qualitative search surface is closed,
+      contradicting the same file's NOT_CLOSED status at lines 286-287 — the
+      file is hash-pinned, so correcting it requires an amendment decision; the
+      claim is single-site, is not an enforcement gap, and XASSET-0028's
+      validator blocks a downstream reader from acting on it. The immediate
+      next action is XASSET-0028's own lifecycle: independent full exact-head
+      review, principal exact-head acceptance, merge, immediate post-merge
+      verification, and successful exact-head CI. Nothing downstream may begin
+      before it closes, and closing it does NOT make Stage 1 executable —
+      XASSET-0027 SSP.1's two preconditions are unchanged and XASSET-0028
+      satisfies neither. Stage 2 remains unauthorized; every XASSET-0027 SSP.2
+      successor remains separately required; application authority remains
+      WITHHELD. On acceptance, XASSET-0027 SSQ is triggered, which reopens on a
+      SSP.0 unit being accepted whether its answer is that a universe can be
+      closed or that it cannot.
       Update, 2026-08-16 (post-XASSET-0026 merge): XASSET-0026 is effective.
       Accepted head ecf94a383e0c75e962896346d45a1493df80cca2 merged via PR #325
       as e7e9e53dbcdcaaa0ff71f128694028650500c323, independently re-confirmed
