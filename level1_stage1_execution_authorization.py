@@ -226,6 +226,11 @@ LANE_READY = "READY"
 LANE_CLAIMED = "CLAIMED"
 LANE_COMPLETED = "COMPLETED"
 
+# Not a lane state: the marker :func:`_read_ledger` substitutes for any line it cannot read as
+# exactly one mapping. Named because three separate sites must agree on it, and a divergence
+# between them is precisely how MINOR 1 (review 4946706062) went unnoticed.
+LEDGER_CORRUPT = "CORRUPT"
+
 REQUIRED_TOP_KEYS = (
     "schema_version",
     "mechanism",
@@ -1258,13 +1263,13 @@ def _read_ledger(path: Path) -> list[Mapping[str, Any]]:
         try:
             entry = json.loads(line, object_pairs_hook=_reject_duplicate_keys)
         except (ValueError, json.JSONDecodeError):
-            entries.append({"event": "CORRUPT"})
+            entries.append({"event": LEDGER_CORRUPT})
             continue
         # MINOR 1 (review 4946540894): a syntactically valid line that is not a mapping -- `[]`,
         # `"junk"`, `null`, `42` -- was SILENTLY DROPPED rather than treated as corruption, which
         # is weaker than the canonical promise that malformed entries fail closed. Every
         # non-empty line must decode to exactly one mapping or the ledger is corrupt.
-        entries.append(entry if isinstance(entry, Mapping) else {"event": "CORRUPT"})
+        entries.append(entry if isinstance(entry, Mapping) else {"event": LEDGER_CORRUPT})
     return entries
 
 
@@ -1315,6 +1320,29 @@ def lane_state_at(
             "crash after claiming does not reopen the lane, and recovery is a governed act"
         )
 
+    # MINOR 1 (review 4946706062): a ledger ALREADY KNOWN to be corrupt did not block
+    # READY -> CLAIMED. `_read_ledger` marked the bad line and `_ledger_events` rejected it, but
+    # that rejection was only ever consulted while RECOVERING claim/completion provenance -- here
+    # a lone CORRUPT entry fell straight through to the attestation check. Reproduced before
+    # correcting: with a valid attestation plus a pre-seeded `[]` ledger line, this returned
+    # READY, `new_execution_is_authorized()` returned true, and `claim_execution()` wrote
+    # claim.json and appended CLAIMED onto the corrupt ledger. Only the LATER
+    # `claimed_execution_is_authorized()` noticed -- after the one authorized attempt had begun.
+    #
+    # Deliberately placed AFTER the CLAIMED/COMPLETED determination, not before: an already
+    # claimed or completed lane is non-READY either way, and reordering would replace
+    # `_authenticated_claim`'s precise corrupt-ledger error with a bare "lane state ABSENT",
+    # weakening a message the mirror logic already gets right. The mirror rules, the
+    # single-record-loss semantics, and the lane states themselves are untouched -- this only
+    # refuses to call a lane READY when its provenance ledger is already unreadable.
+    if LEDGER_CORRUPT in ledger_events:
+        return LANE_ABSENT, (
+            "the append-only ledger contains a corrupt entry, so this lane's provenance is "
+            "already unreadable and no new execution may start in it. The single authorized "
+            f"attempt ({EXECUTION_ATTEMPT_ID}) must not begin under invalid audit state; "
+            "repairing the ledger is a governed act, not an automatic recovery"
+        )
+
     document, problem = _load_authorization(paths.authorization)
     if document is None:
         return LANE_ABSENT, (
@@ -1340,7 +1368,7 @@ def new_execution_is_authorized(
 def _ledger_events(paths: LanePaths, event: str) -> tuple[list[Mapping[str, Any]], str]:
     """Return the ledger's events of one kind, or an error if the ledger is unusable."""
     entries = _read_ledger(paths.ledger)
-    if any(e.get("event") == "CORRUPT" for e in entries):
+    if any(e.get("event") == LEDGER_CORRUPT for e in entries):
         return [], "the append-only ledger contains a corrupt entry"
     return [e for e in entries if e.get("event") == event], ""
 

@@ -1652,3 +1652,139 @@ class TestLedgerStrictness:
         AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
         paths.ledger.unlink()
         assert AUTH.claimed_execution_is_authorized(paths, sources())[0] is True
+
+
+# =============================================================================================
+# I. A ledger already known to be corrupt must block READY -> CLAIMED
+#
+# MINOR 1 (review 4946706062). Reproduced before correcting: with a valid attestation and a
+# pre-seeded corrupt ledger line, lane_state_at() returned READY, new_execution_is_authorized()
+# returned true, and claim_execution() wrote claim.json and appended CLAIMED onto the corrupt
+# ledger -- consuming the ONE authorized attempt under already-invalid audit state. Only the
+# later claimed_execution_is_authorized() noticed.
+# =============================================================================================
+
+
+CORRUPT_LINES = ["{not json", "[]", '"junk"', "null", "42"]
+
+
+class TestCorruptLedgerBlocksNewExecution:
+    @pytest.mark.parametrize("line", CORRUPT_LINES)
+    def test_i1_corrupt_ledger_prevents_ready_despite_valid_attestation(
+        self, tmp_path, payload, line
+    ):
+        """The exact reproduction: a VALID attestation must not make a corrupt lane READY."""
+        paths = _arm(tmp_path, payload)
+        paths.ledger.write_text(line + "\n", encoding="utf-8")
+
+        # The attestation itself is still perfectly good -- so this proves the ledger, not the
+        # attestation, is what refuses.
+        assert AUTH.validate_authorization_document(payload, sources()).valid
+
+        state, reason = AUTH.lane_state_at(paths, sources())
+        assert state == AUTH.LANE_ABSENT, f"{line!r} must not leave the lane READY"
+        assert state != AUTH.LANE_READY
+        assert "corrupt" in reason
+
+    @pytest.mark.parametrize("line", CORRUPT_LINES)
+    def test_i2_new_execution_is_not_authorized_over_a_corrupt_ledger(
+        self, tmp_path, payload, line
+    ):
+        paths = _arm(tmp_path, payload)
+        paths.ledger.write_text(line + "\n", encoding="utf-8")
+        authorized, reason = AUTH.new_execution_is_authorized(paths, sources())
+        assert authorized is False
+        assert "corrupt" in reason and "governed act" in reason
+
+    @pytest.mark.parametrize("line", CORRUPT_LINES)
+    def test_i3_claim_refuses_and_writes_nothing_at_all(self, tmp_path, payload, line):
+        """The whole point: refusal must happen BEFORE any side effect, not after."""
+        paths = _arm(tmp_path, payload)
+        paths.ledger.write_text(line + "\n", encoding="utf-8")
+        before = paths.ledger.read_bytes()
+
+        with pytest.raises(ValueError, match="corrupt"):
+            AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+
+        assert not paths.claim.exists(), "no claim file may be created"
+        assert not paths.completion.exists()
+        assert paths.ledger.read_bytes() == before, "no ledger event may be appended"
+
+    def test_i4_corrupt_entry_alongside_a_valid_entry_is_still_refused(self, tmp_path, payload):
+        """One well-formed line must not launder a corrupt sibling."""
+        paths = _arm(tmp_path, payload)
+        paths.ledger.write_text(
+            AUTH.canonical_json({"event": "NOTE", "detail": "benign"}) + "\n[]\n",
+            encoding="utf-8",
+        )
+        assert AUTH.new_execution_is_authorized(paths, sources())[0] is False
+
+    def test_i5_corrupt_ledger_without_any_attestation_still_fails_closed(self, tmp_path):
+        """No attestation AND a corrupt ledger is still not READY -- fail-closed either way."""
+        paths = _lane(tmp_path)
+        paths.ledger.parent.mkdir(parents=True, exist_ok=True)
+        paths.ledger.write_text("[]\n", encoding="utf-8")
+        state, reason = AUTH.lane_state_at(paths, sources())
+        assert state == AUTH.LANE_ABSENT and reason
+        with pytest.raises(ValueError):
+            AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        assert not paths.claim.exists()
+
+    def test_i6_an_already_claimed_lane_still_reports_claimed(self, tmp_path, payload):
+        """PRESERVED: the CLAIMED/COMPLETED mirror logic is deliberately untouched.
+
+        Had the corrupt check been placed BEFORE the claim determination, this lane would
+        report ABSENT and `claimed_execution_is_authorized` would lose its precise
+        corrupt-ledger provenance error in favour of a bare "lane state ABSENT".
+        """
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        with paths.ledger.open("a", encoding="utf-8") as handle:
+            handle.write("[]\n")
+
+        state, _ = AUTH.lane_state_at(paths, sources())
+        assert state == AUTH.LANE_CLAIMED
+
+        ok, reason = AUTH.claimed_execution_is_authorized(paths, sources())
+        assert ok is False
+        assert "corrupt" in reason and "provenance" in reason
+
+    def test_i7_an_already_completed_lane_still_reports_completed(self, tmp_path, payload):
+        """PRESERVED: a completed lane is COMPLETED, not retroactively ABSENT."""
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        AUTH.complete_execution(
+            completed_at_utc="t2", results=RESULT_A, paths=paths, sources=sources()
+        )
+        with paths.ledger.open("a", encoding="utf-8") as handle:
+            handle.write("[]\n")
+
+        state, reason = AUTH.lane_state_at(paths, sources())
+        assert state == AUTH.LANE_COMPLETED
+        assert "already completed" in reason
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is False
+
+    @pytest.mark.parametrize("body", ["", "\n", "   \n\n"])
+    def test_i8_a_clean_or_empty_ledger_does_not_over_fire(self, tmp_path, payload, body):
+        """The refusal must fire on corruption ONLY -- an empty or blank ledger is not corrupt."""
+        paths = _arm(tmp_path, payload)
+        paths.ledger.write_text(body, encoding="utf-8")
+        assert AUTH.new_execution_is_authorized(paths, sources()) == (True, "")
+
+    def test_i9_an_absent_ledger_is_still_ready(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        assert not paths.ledger.exists()
+        assert AUTH.lane_state_at(paths, sources())[0] == AUTH.LANE_READY
+
+    def test_i10_the_corrupt_marker_constant_matches_what_the_reader_emits(self, tmp_path):
+        """Three sites must agree on the marker; a divergence is how MINOR 1 stayed hidden."""
+        paths = _lane(tmp_path)
+        paths.ledger.parent.mkdir(parents=True, exist_ok=True)
+        paths.ledger.write_text("{not json\n", encoding="utf-8")
+        assert AUTH._read_ledger(paths.ledger) == [{"event": AUTH.LEDGER_CORRUPT}]
+        assert AUTH.LEDGER_CORRUPT not in (
+            AUTH.LANE_ABSENT,
+            AUTH.LANE_READY,
+            AUTH.LANE_CLAIMED,
+            AUTH.LANE_COMPLETED,
+        ), "the corrupt marker must not collide with a lane state"
