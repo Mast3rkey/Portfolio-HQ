@@ -145,18 +145,24 @@ dimensions and is **not** exhaustive over constructions. Two analysts could occu
 evaluating materially different source architectures. The grid is a classification scaffold for a
 future construction universe; it is not that universe, and it is expressly **not a trial ceiling**.
 
-Two routes to a genuinely closed universe were considered and both were rejected on their merits:
+Two routes to a genuinely closed universe were considered, and **neither is available to this
+charter**:
 
-- **A concrete finite registry.** Closeable only for constructions built on sources that already
-  exist. The set of existing admitted sources is exactly `XASSET-0021`'s frozen snapshot, and
-  `XASSET-0025` Outcome C already searched precisely that corpus exhaustively and found no qualifying
-  source. A Stage 1 restricted to existing sources would re-run an accepted determination and add
-  nothing. The genuinely open question concerns constructions whose sources do **not** yet exist, and
-  no accepted decision enumerates that space; enumerating it here would mean inventing research
-  mechanisms, which this charter prohibits.
-- **A deterministic construction grammar.** No accepted decision supplies a finite grammar producing
-  concrete source or derivation architectures. §H.2 and §H.3 are constraint sets, and the
-  `(route, class)` product is a provenance classification rather than a construction grammar.
+- **A concrete finite registry.** Not closeable **by this charter from the currently accepted corpus
+  alone**. The existing-source corpus is exactly `XASSET-0021`'s frozen snapshot, and `XASSET-0025`
+  Outcome C already searched precisely that corpus exhaustively and found no qualifying source, so a
+  Stage 1 restricted to it would re-run an accepted determination and add nothing. The remaining space
+  is constructions whose sources do **not** yet exist, and accepted authority does not enumerate the
+  concrete hypothetical source or construction architectures such a registry would need. Designing and
+  freezing them would itself be substantive research-design work, reserved to the separately authorized
+  §5.5 closure unit. **This charter does not determine whether that unit can or cannot successfully
+  preregister a finite hypothetical-architecture registry** — only that this charter cannot close one
+  now.
+- **A deterministic construction grammar.** Likewise unavailable **from accepted authority as it
+  stands**: no accepted decision supplies a finite grammar producing concrete source or derivation
+  architectures, §H.2 and §H.3 are constraint sets, and the `(route, class)` product is a provenance
+  classification rather than a construction grammar. Whether a lawful grammar could be designed is
+  again a question for the §5.5 unit, not one answered here.
 
 The route taken is therefore the third one: **an honest prerequisite**. `Stage 1 is NOT EXECUTABLE.`
 No 240-slot run may be performed, and no such run could establish exhaustive non-constructibility,

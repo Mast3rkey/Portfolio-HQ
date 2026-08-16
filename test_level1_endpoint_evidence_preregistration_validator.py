@@ -306,24 +306,28 @@ class TestConstructionUniverseIsNotClosed:
         data["construction_universe_closure"]["stage_1_executable"] = True
         _assert_rejected(data, "construction_universe_closure.stage_1_executable")
 
-    def test_both_rejected_routes_recorded_with_reasons(self, base_data: dict):
-        rejected = base_data["construction_universe_closure"]["routes_considered_and_rejected"]
-        assert [r["route"] for r in rejected] == [
+    def test_both_unavailable_routes_recorded_with_reasons(self, base_data: dict):
+        unavailable = base_data["construction_universe_closure"][
+            "routes_considered_and_unavailable_to_this_filing"
+        ]
+        assert [r["route"] for r in unavailable] == [
             "CONCRETE_FINITE_REGISTRY",
             "DETERMINISTIC_CONSTRUCTION_GRAMMAR",
         ]
-        for row in rejected:
-            assert row["rejected_because"].strip()
+        for row in unavailable:
+            assert row["unavailable_to_this_filing_because"].strip()
 
-    def test_dropping_a_rejected_route_rejected(self, data: dict):
-        data["construction_universe_closure"]["routes_considered_and_rejected"].pop()
-        _assert_rejected(data, "routes_considered_and_rejected")
+    def test_dropping_an_unavailable_route_rejected(self, data: dict):
+        data["construction_universe_closure"][
+            "routes_considered_and_unavailable_to_this_filing"
+        ].pop()
+        _assert_rejected(data, "routes_considered_and_unavailable_to_this_filing")
 
-    def test_empty_rejection_reason_rejected(self, data: dict):
-        data["construction_universe_closure"]["routes_considered_and_rejected"][0][
-            "rejected_because"
+    def test_empty_unavailability_reason_rejected(self, data: dict):
+        data["construction_universe_closure"]["routes_considered_and_unavailable_to_this_filing"][0][
+            "unavailable_to_this_filing_because"
         ] = "   "
-        _assert_rejected(data, "rejected_because")
+        _assert_rejected(data, "unavailable_to_this_filing_because")
 
     def test_next_prerequisite_is_named(self, data: dict):
         data["construction_universe_closure"]["next_required_prerequisite"] = "TBD"
@@ -332,6 +336,96 @@ class TestConstructionUniverseIsNotClosed:
     def test_invented_completeness_must_stay_prohibited(self, data: dict):
         data["construction_universe_closure"]["invented_completeness"] = "PERMITTED"
         _assert_rejected(data, "invented_completeness")
+
+
+# ---------------------------------------------------------------------------
+# The route unavailability is PRESENT-AUTHORITY, never a permanent foreclosure
+# ---------------------------------------------------------------------------
+
+
+class TestRouteUnavailabilityDoesNotForecloseTheFutureUnit:
+    """XASSET-0027 records what IT cannot do; it determines nothing about the future SS-P.0 unit.
+
+    A finite registry could in principle contain preregistered hypothetical source/construction
+    architectures. This filing is not authorized to invent them, which is a statement about this
+    filing's authority -- not a determination that no future authorized unit could ever close one.
+    """
+
+    def test_non_foreclosure_flag_is_recorded(self, base_data: dict):
+        assert (
+            base_data["construction_universe_closure"][
+                "routes_are_unavailable_now_not_permanently_foreclosed"
+            ]
+            is True
+        )
+
+    def test_dropping_the_non_foreclosure_flag_rejected(self, data: dict):
+        data["construction_universe_closure"][
+            "routes_are_unavailable_now_not_permanently_foreclosed"
+        ] = False
+        _assert_rejected(data, "routes_are_unavailable_now_not_permanently_foreclosed")
+
+    @pytest.mark.parametrize(
+        "phrase",
+        [
+            "A concrete registry is closeable only for constructions built on sources that already exist.",
+            "Such a registry can never be closed.",
+            "A finite hypothetical registry is impossible.",
+            "Route A is permanently foreclosed.",
+            "No future unit may close it.",
+        ],
+    )
+    def test_permanent_impossibility_claims_rejected(self, data: dict, phrase: str):
+        data["construction_universe_closure"]["routes_considered_and_unavailable_to_this_filing"][0][
+            "unavailable_to_this_filing_because"
+        ] = phrase
+        _assert_rejected(data, "permanent impossibility")
+
+    def test_reverting_to_the_rejected_because_key_is_rejected(self, data: dict):
+        row = data["construction_universe_closure"][
+            "routes_considered_and_unavailable_to_this_filing"
+        ][0]
+        row["rejected_because"] = row["unavailable_to_this_filing_because"]
+        _assert_rejected(data, "rejected_because")
+
+    def test_prereg_does_not_claim_a_registry_requires_existing_sources(self, raw_text: str):
+        lowered = raw_text.lower()
+        assert "closeable only for constructions" not in lowered
+        assert "closeable only over sources" not in lowered
+
+    def test_prereg_states_the_present_authority_scope(self, base_data: dict):
+        reason = base_data["construction_universe_closure"][
+            "routes_considered_and_unavailable_to_this_filing"
+        ][0]["unavailable_to_this_filing_because"]
+        assert "cannot be closed by XASSET-0027 from the currently accepted corpus alone" in reason
+        assert "does not determine whether that future unit" in reason
+
+    def test_decision_does_not_claim_a_registry_requires_existing_sources(self):
+        lowered = V.DECISION_PATH.read_text(encoding="utf-8").lower()
+        assert "closeable only for constructions" not in lowered
+        assert "closeable only over sources" not in lowered
+        assert "is closeable only" not in lowered
+
+    def test_protocol_does_not_claim_a_registry_requires_existing_sources(self):
+        lowered = V.PROTOCOL_PATH.read_text(encoding="utf-8").lower()
+        assert "closeable only for constructions" not in lowered
+        assert "closeable only over sources" not in lowered
+
+    def test_decision_states_it_does_not_prejudge_the_future_unit(self):
+        text = V.DECISION_PATH.read_text(encoding="utf-8")
+        assert "does not determine whether that future unit can" in text
+        assert "finite hypothetical-architecture registry" in text
+
+    def test_protocol_states_it_does_not_prejudge_the_future_unit(self):
+        text = V.PROTOCOL_PATH.read_text(encoding="utf-8")
+        assert "does not determine whether that unit can" in text
+        assert "finite hypothetical-architecture registry" in text
+
+    def test_p0_remains_open_and_unscoped(self, base_data: dict):
+        note = base_data["construction_universe_closure"]["next_required_prerequisite_note"]
+        assert "does not pre-decide it" in note
+        assert "does not choose among the possibilities that unit may consider" in note
+        assert base_data["construction_universe_closure"]["authorized_by_xasset_0027"] is False
 
 
 class TestStage1IsNotExecutable:

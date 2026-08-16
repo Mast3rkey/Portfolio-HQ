@@ -220,15 +220,15 @@ file bytes exactly as committed:
 
 <!-- XASSET-0027-HASH-PINS-V1
 protocol_path: research/level1_endpoint_evidence/PROTOCOL_V1.md
-protocol_sha256: 78920912c66ced5cff8c7a6043f7ede33c20a26a5b9e1cb79c1ec73808963984
+protocol_sha256: 1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b
 preregistration_path: research/level1_endpoint_evidence/pre_registration.yaml
-preregistration_sha256: 64f7364a6e262c93cd84e442295d1c2c9c2bf2941fac3e1c324005c93475e867
+preregistration_sha256: bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f
 -->
 
 - `research/level1_endpoint_evidence/PROTOCOL_V1.md`:
-  `78920912c66ced5cff8c7a6043f7ede33c20a26a5b9e1cb79c1ec73808963984`
+  `1a7b288718dfc688adb409ea9ecdf0fe5c858a32ee154f4f407c132895f41c8b`
 - `research/level1_endpoint_evidence/pre_registration.yaml`:
-  `64f7364a6e262c93cd84e442295d1c2c9c2bf2941fac3e1c324005c93475e867`
+  `bb25b1181c94d4dba2939a634b6fcb894f93597a664d5e91ffdcf021de3d385f`
 
 **The structured pre-registration is canonical** for every closed identity, cell, gate, ordering,
 vocabulary, and count. The protocol explains the design but cannot enlarge or override it. Any later
@@ -275,15 +275,23 @@ classification scaffold for a future construction universe; it is not that unive
 trial ceiling**, and no run over it could establish exhaustive non-constructibility.
 
 **I.1.1 — Stage 1 is therefore not executable under this charter.** Two routes to a genuinely closed
-construction universe were considered and both rejected on their merits:
+construction universe were considered, and **neither is available to this filing**:
 
-- **A concrete finite registry** is closeable only for constructions built on sources that already
-  exist. That set is exactly `XASSET-0021`'s frozen snapshot, and `XASSET-0025` Outcome C already
-  searched precisely that corpus exhaustively and found no qualifying source; a Stage 1 so restricted
-  would re-run an accepted determination and add nothing. The genuinely open question concerns
-  constructions whose sources do **not** yet exist, and no accepted decision enumerates that space.
-- **A deterministic construction grammar** does not exist in accepted authority. §H.2 and §H.3 are
-  constraint sets, and the `(route, class)` product is a provenance classification, not a grammar.
+- **A concrete finite registry** cannot be closed **by `XASSET-0027` from the currently accepted corpus
+  alone**. The existing-source corpus is exactly `XASSET-0021`'s frozen snapshot, and `XASSET-0025`
+  Outcome C already searched precisely that corpus exhaustively and found no qualifying source; a
+  Stage 1 restricted to it would re-run an accepted determination and add nothing. The remaining space
+  is constructions whose sources do **not** yet exist, and accepted authority does not enumerate the
+  concrete hypothetical source or construction architectures that space would require. Designing and
+  freezing such hypothetical architectures would itself be substantive research-design work — exactly
+  the work the separately authorized §P.0 closure unit exists to perform, and exactly what this filing
+  has no authority to invent. **This charter therefore does not determine whether that future unit can
+  or cannot successfully preregister a finite hypothetical-architecture registry**; it determines only
+  that `XASSET-0027` cannot close one now.
+- **A deterministic construction grammar** is likewise unavailable **from accepted authority as it
+  stands**: §H.2 and §H.3 are constraint sets, and the `(route, class)` product is a provenance
+  classification, not a grammar. Whether a lawful grammar could be designed is, again, a question for
+  the §P.0 unit and not one this charter answers.
 
 The route taken is the third: **an honest prerequisite**. `Stage 1 is NOT EXECUTABLE`, and
 `CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION` is recorded as the next required prerequisite. **A

@@ -889,24 +889,56 @@ def _validate_construction_universe_closure(data: Mapping[str, Any], errors: lis
         "construction_universe_closure.invented_completeness",
         errors,
     )
-    rejected = block.get("routes_considered_and_rejected")
-    if not isinstance(rejected, list) or len(rejected) != 2:
+    # The two routes are recorded as unavailable TO THIS FILING, never as permanently foreclosed.
+    # XASSET-0027 has no authority to determine that a future closure unit could not preregister a
+    # finite hypothetical-architecture registry, and must not be citable as having done so.
+    _true(
+        block.get("routes_are_unavailable_now_not_permanently_foreclosed"),
+        "construction_universe_closure.routes_are_unavailable_now_not_permanently_foreclosed",
+        errors,
+    )
+    unavailable = block.get("routes_considered_and_unavailable_to_this_filing")
+    if not isinstance(unavailable, list) or len(unavailable) != 2:
         errors.append(
-            "construction_universe_closure.routes_considered_and_rejected: expected both rejected "
-            "routes (CONCRETE_FINITE_REGISTRY, DETERMINISTIC_CONSTRUCTION_GRAMMAR) with reasons"
+            "construction_universe_closure.routes_considered_and_unavailable_to_this_filing: expected "
+            "both routes (CONCRETE_FINITE_REGISTRY, DETERMINISTIC_CONSTRUCTION_GRAMMAR) with reasons"
         )
     else:
         _exact(
-            [r.get("route") if isinstance(r, Mapping) else None for r in rejected],
+            [r.get("route") if isinstance(r, Mapping) else None for r in unavailable],
             ["CONCRETE_FINITE_REGISTRY", "DETERMINISTIC_CONSTRUCTION_GRAMMAR"],
-            "construction_universe_closure.routes_considered_and_rejected[].route",
+            "construction_universe_closure.routes_considered_and_unavailable_to_this_filing[].route",
             errors,
         )
-        for position, row in enumerate(rejected):
-            where = f"construction_universe_closure.routes_considered_and_rejected[{position}]"
-            reason = row.get("rejected_because") if isinstance(row, Mapping) else None
+        for position, row in enumerate(unavailable):
+            where = (
+                "construction_universe_closure."
+                f"routes_considered_and_unavailable_to_this_filing[{position}]"
+            )
+            reason = row.get("unavailable_to_this_filing_because") if isinstance(row, Mapping) else None
             if not isinstance(reason, str) or not reason.strip():
-                errors.append(f"{where}.rejected_because: expected a non-empty reason")
+                errors.append(f"{where}.unavailable_to_this_filing_because: expected a non-empty reason")
+            elif isinstance(row, Mapping):
+                # A route reason may not assert permanent impossibility.
+                for banned in (
+                    "closeable only",
+                    "can never",
+                    "could never",
+                    "is impossible",
+                    "permanently foreclosed",
+                    "no future",
+                ):
+                    if banned in reason.lower():
+                        errors.append(
+                            f"{where}.unavailable_to_this_filing_because: {banned!r} asserts a "
+                            "permanent impossibility this filing has no authority to determine; "
+                            "record what XASSET-0027 cannot do from present authority instead"
+                        )
+            if isinstance(row, Mapping) and "rejected_because" in row:
+                errors.append(
+                    f"{where}.rejected_because: a route is recorded as unavailable to this filing, "
+                    "not rejected; 'rejected' reads as permanently foreclosed"
+                )
 
     completeness = data.get("completeness_rule")
     if isinstance(completeness, Mapping):

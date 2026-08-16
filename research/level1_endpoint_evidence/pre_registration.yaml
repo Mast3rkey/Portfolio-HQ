@@ -286,23 +286,32 @@ construction_universe_closure:
   status: NOT_CLOSED
   stage_1_executable: false
   route_taken: HONEST_PREREQUISITE
-  routes_considered_and_rejected:
+  routes_considered_and_unavailable_to_this_filing:
   - route: CONCRETE_FINITE_REGISTRY
-    rejected_because: >-
-      A concrete registry is closeable only for constructions built on sources that already exist. The
+    unavailable_to_this_filing_because: >-
+      A concrete registry cannot be closed by XASSET-0027 from the currently accepted corpus alone. The
       set of existing admitted sources is exactly XASSET-0021's frozen snapshot, and XASSET-0025
-      Outcome C already searched precisely that corpus exhaustively and found no qualifying source. A
-      Stage 1 restricted to existing sources would therefore re-run an accepted determination and add
-      nothing. The genuinely open question concerns constructions whose sources do not yet exist, and
-      that space is not enumerated by any accepted decision; enumerating it would require inventing
-      research mechanisms, which this charter prohibits.
+      Outcome C already searched precisely that corpus exhaustively and found no qualifying source, so
+      a Stage 1 restricted to it would re-run an accepted determination and add nothing. The remaining
+      space is constructions whose sources do not yet exist, and accepted authority does not enumerate
+      the concrete hypothetical source or construction architectures such a registry would need.
+      Designing and freezing those hypothetical architectures would itself be substantive
+      research-design work, reserved to the separately authorized construction-universe closure unit.
+      This filing therefore does not determine whether that future unit can or cannot successfully
+      preregister a finite hypothetical-architecture registry.
   - route: DETERMINISTIC_CONSTRUCTION_GRAMMAR
-    rejected_because: >-
+    unavailable_to_this_filing_because: >-
       XASSET-0023 SSH.2 and SSH.3 state the conditions a qualifying statement or derivation must meet.
       They are constraint sets, not generators, and satisfying a constraint set does not enumerate the
       objects satisfying it. No accepted decision supplies a finite grammar producing concrete source
       or derivation architectures, and the (route, class) product is a provenance classification
-      rather than a construction grammar.
+      rather than a construction grammar. Whether a lawful grammar could be designed is likewise left
+      to the future closure unit and is not determined here.
+  routes_are_unavailable_now_not_permanently_foreclosed: true
+  routes_note: >-
+    Both entries record what XASSET-0027 cannot do from present authority. Neither is a determination
+    that the route is permanently unavailable, and neither may be cited as having foreclosed any option
+    for the future closure unit.
   verified_this_session:
   - NO_ACCEPTED_DECISION_ENUMERATES_CONCRETE_SOURCE_OR_CONSTRUCTION_ARCHITECTURES
   - XASSET_0023_H_2_AND_H_3_ARE_CONSTRAINT_SETS_NOT_GENERATORS
@@ -322,9 +331,10 @@ construction_universe_closure:
   authorized_by_xasset_0027: false
   invented_completeness: PROHIBITED
   invented_completeness_note: >-
-    A recorded negative determination about closability is preferable to a manufactured registry. This
-    charter records that the universe is not closed rather than asserting a completeness it cannot
-    support.
+    Honestly recording that this filing cannot close the universe is preferable to manufacturing a
+    registry. This charter records that the universe is not closed NOW and that XASSET-0027 cannot
+    close it, rather than asserting a completeness it cannot support — and equally, rather than
+    asserting an impossibility it has no authority to determine.
 
 completeness_rule:
   applies_only_after_construction_universe_closure: true
