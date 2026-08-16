@@ -58,6 +58,29 @@ def _passing_gates() -> dict[str, str]:
     return {gate: "PASS" for gate in V.GATE_IDS}
 
 
+def _synthetic_universe(construction_ids=None) -> dict[str, dict]:
+    """Build a SYNTHETIC closed construction universe for exercising the enforcement machinery.
+
+    No closed construction universe exists in the repository (XASSET-0027 does not close one), so
+    validate_stage1_results fails closed when called for real. These tests supply one explicitly to
+    test the enforcement logic itself, which is a different claim from asserting a real one exists.
+    """
+    ids = tuple(construction_ids) if construction_ids is not None else V.generate_family_slot_grid()
+    return {
+        construction_id: {
+            "cell_id": V.cell_id_of(construction_id),
+            "source_architecture": "HYPOTHETICAL_SOURCE_ARCHITECTURE",
+            "source_path": None,
+            "source_sha256": None,
+            "hypothetical_source_requirements": _FROZEN_REQUIREMENTS,
+        }
+        for construction_id in ids
+    }
+
+
+_FROZEN_REQUIREMENTS = "a source that would state the SS-C quantity intrinsically"
+
+
 def _candidate_row(construction_id: str, gates: dict[str, str] | None = None, **overrides) -> dict:
     gates = gates if gates is not None else _passing_gates()
     sleeve, bound, driver_class, family_id = construction_id.split("::")
@@ -74,7 +97,7 @@ def _candidate_row(construction_id: str, gates: dict[str, str] | None = None, **
         "source_architecture": "HYPOTHETICAL_SOURCE_ARCHITECTURE",
         "source_path": None,
         "source_sha256": None,
-        "hypothetical_source_requirements": "a source that would state the SS-C quantity intrinsically",
+        "hypothetical_source_requirements": _FROZEN_REQUIREMENTS,
         "governing_authority_refs": ["XASSET-0024_SECTION_J"],
         "gate_results": gates,
         "categorical_failures": [g for g in V.CATEGORICAL_GATES if gates.get(g) == "FAIL"],
@@ -93,9 +116,9 @@ def _candidate_row(construction_id: str, gates: dict[str, str] | None = None, **
 
 
 def _full_results(gates_for=None) -> dict:
-    """A complete, conforming synthetic results document over the whole frozen universe."""
+    """A complete, conforming synthetic results document over the synthetic universe."""
     rows = []
-    for construction_id in V.generate_candidate_universe():
+    for construction_id in V.generate_family_slot_grid():
         gates = gates_for(construction_id) if gates_for else _passing_gates()
         rows.append(_candidate_row(construction_id, gates))
     by_cell: dict[str, list[str]] = {}
@@ -217,104 +240,198 @@ class TestConstructionFamilies:
         assert len(base_data["construction_families"]["excluded_non_routes"]["non_routes"]) == 8
 
 
-class TestCandidateUniverse:
-    def test_generator_produces_240_unique_candidates(self):
-        universe = V.generate_candidate_universe()
-        assert len(universe) == 240
-        assert len(set(universe)) == 240
+class TestFamilySlotGrid:
+    def test_generator_produces_240_unique_slots(self):
+        grid = V.generate_family_slot_grid()
+        assert len(grid) == 240
+        assert len(set(grid)) == 240
 
     def test_generator_is_byte_identically_reproducible(self):
-        assert V.generate_candidate_universe() == V.generate_candidate_universe()
+        assert V.generate_family_slot_grid() == V.generate_family_slot_grid()
 
-    def test_generator_covers_48_cells_with_five_candidates_each(self):
+    def test_generator_covers_48_cells_with_five_slots_each(self):
         cells = V.generate_cell_universe()
         assert len(cells) == 48
         for cell in cells:
-            members = [c for c in V.generate_candidate_universe() if V.cell_id_of(c) == cell]
+            members = [c for c in V.generate_family_slot_grid() if V.cell_id_of(c) == cell]
             assert len(members) == 5
 
     def test_every_sleeve_and_bound_covered(self):
-        universe = V.generate_candidate_universe()
+        grid = V.generate_family_slot_grid()
         for sleeve in V.SLEEVES:
             for bound in V.BOUNDS:
-                assert any(c.startswith(f"{sleeve}::{bound}::") for c in universe)
+                assert any(c.startswith(f"{sleeve}::{bound}::") for c in grid)
 
-    def test_universe_is_the_product_of_the_closed_dimensions(self):
+    def test_grid_is_the_product_of_the_closed_dimensions(self):
         expected = (
             len(V.SLEEVES) * len(V.BOUNDS) * len(V.DRIVER_CLASSES) * len(V.CONSTRUCTION_FAMILIES)
         )
-        assert expected == len(V.generate_candidate_universe()) == 240
+        assert expected == len(V.generate_family_slot_grid()) == 240
 
-    def test_construction_id_format_locked(self, data: dict):
-        data["candidate_universe"]["construction_id_format"] = "{sleeve}-{bound}"
-        _assert_rejected(data, "construction_id_format")
+    def test_slot_id_format_locked(self, data: dict):
+        data["family_slot_grid"]["slot_id_format"] = "{sleeve}-{bound}"
+        _assert_rejected(data, "slot_id_format")
 
-    def test_free_form_generation_route_rejected(self, data: dict):
-        data["candidate_universe"]["generation_route"] = "EXECUTOR_JUDGMENT"
-        _assert_rejected(data, "generation_route")
+    def test_slot_addition_must_stay_prohibited(self, data: dict):
+        data["family_slot_grid"]["slot_addition_or_removal"] = "PERMITTED"
+        _assert_rejected(data, "slot_addition_or_removal")
 
-    def test_executor_candidate_addition_must_stay_prohibited(self, data: dict):
-        data["candidate_universe"]["candidate_addition_or_removal_by_executor"] = "PERMITTED"
-        _assert_rejected(data, "candidate_addition_or_removal_by_executor")
+    def test_exhaustive_over_families_required(self, data: dict):
+        data["family_slot_grid"]["exhaustive_over_families"] = False
+        _assert_rejected(data, "family_slot_grid.exhaustive_over_families")
 
-    def test_outcome_aware_candidate_change_must_stay_prohibited(self, data: dict):
-        data["candidate_universe"]["outcome_aware_candidate_change"] = "PERMITTED"
-        _assert_rejected(data, "outcome_aware_candidate_change")
+    def test_claiming_exhaustiveness_over_constructions_rejected(self, data: dict):
+        # The load-bearing distinction: a family is a classification of provenance, not a hypothesis.
+        data["family_slot_grid"]["exhaustive_over_constructions"] = True
+        _assert_rejected(data, "family_slot_grid.exhaustive_over_constructions")
 
-    def test_invented_candidate_mechanism_must_stay_prohibited(self, data: dict):
-        data["candidate_universe"]["invented_candidate_mechanism"] = "PERMITTED"
-        _assert_rejected(data, "invented_candidate_mechanism")
+    def test_wrong_slot_count_rejected(self, data: dict):
+        data["family_slot_grid"]["slot_count"] = 48
+        _assert_rejected(data, "family_slot_grid.slot_count")
 
-    def test_exhaustiveness_flag_required(self, data: dict):
-        data["candidate_universe"]["exhaustive"] = False
-        _assert_rejected(data, "candidate_universe.exhaustive")
+
+class TestConstructionUniverseIsNotClosed:
+    def test_closure_status_is_not_closed(self, base_data: dict):
+        block = base_data["construction_universe_closure"]
+        assert block["status"] == "NOT_CLOSED"
+        assert block["stage_1_executable"] is False
+        assert block["route_taken"] == "HONEST_PREREQUISITE"
+        assert block["authorized_by_xasset_0027"] is False
+
+    def test_claiming_the_universe_is_closed_rejected(self, data: dict):
+        data["construction_universe_closure"]["status"] = "CLOSED"
+        _assert_rejected(data, "construction_universe_closure.status")
+
+    def test_claiming_stage_1_is_executable_rejected(self, data: dict):
+        data["construction_universe_closure"]["stage_1_executable"] = True
+        _assert_rejected(data, "construction_universe_closure.stage_1_executable")
+
+    def test_both_rejected_routes_recorded_with_reasons(self, base_data: dict):
+        rejected = base_data["construction_universe_closure"]["routes_considered_and_rejected"]
+        assert [r["route"] for r in rejected] == [
+            "CONCRETE_FINITE_REGISTRY",
+            "DETERMINISTIC_CONSTRUCTION_GRAMMAR",
+        ]
+        for row in rejected:
+            assert row["rejected_because"].strip()
+
+    def test_dropping_a_rejected_route_rejected(self, data: dict):
+        data["construction_universe_closure"]["routes_considered_and_rejected"].pop()
+        _assert_rejected(data, "routes_considered_and_rejected")
+
+    def test_empty_rejection_reason_rejected(self, data: dict):
+        data["construction_universe_closure"]["routes_considered_and_rejected"][0][
+            "rejected_because"
+        ] = "   "
+        _assert_rejected(data, "rejected_because")
+
+    def test_next_prerequisite_is_named(self, data: dict):
+        data["construction_universe_closure"]["next_required_prerequisite"] = "TBD"
+        _assert_rejected(data, "next_required_prerequisite")
+
+    def test_invented_completeness_must_stay_prohibited(self, data: dict):
+        data["construction_universe_closure"]["invented_completeness"] = "PERMITTED"
+        _assert_rejected(data, "invented_completeness")
+
+
+class TestStage1IsNotExecutable:
+    def test_stage_1_executability_block_says_not_executable(self, base_data: dict):
+        block = base_data["stage_1_executability"]
+        assert block["executable"] is False
+        assert block["status"] == "NOT_YET_EXECUTABLE_CONSTRUCTION_UNIVERSE_NOT_CLOSED"
+        assert block["blocking_prerequisite"] == "CONCRETE_CONSTRUCTION_UNIVERSE_CLOSURE"
+        assert block["authorized_by_xasset_0027"] is False
+
+    def test_claiming_stage_1_executable_rejected(self, data: dict):
+        data["stage_1_executability"]["executable"] = True
+        _assert_rejected(data, "stage_1_executability.executable")
+
+    def test_claiming_xasset_0027_authorizes_stage_1_rejected(self, data: dict):
+        data["stage_1_executability"]["authorized_by_xasset_0027"] = True
+        _assert_rejected(data, "stage_1_executability.authorized_by_xasset_0027")
+
+    def test_stages_block_agrees_stage_1_is_unauthorized(self, base_data: dict):
+        assert base_data["stages"]["stage_1"]["authorized_by_xasset_0027"] is False
+
+    def test_stages_block_claiming_authorization_rejected(self, data: dict):
+        data["stages"]["stage_1"]["authorized_by_xasset_0027"] = True
+        _assert_rejected(data, "stages.stage_1.authorized_by_xasset_0027")
+
+    def test_lifecycle_precondition_includes_construction_universe_closure(self, base_data: dict):
+        # Lifecycle closure alone must not be stated as sufficient for Stage 1.
+        assert (
+            base_data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"]
+            == V.STAGE_1_EXECUTION_PRECONDITION
+        )
+        assert "CONSTRUCTION_UNIVERSE_CLOSURE" in V.STAGE_1_EXECUTION_PRECONDITION
+
+    def test_reverting_to_lifecycle_only_precondition_rejected(self, data: dict):
+        data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"] = (
+            "XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION"
+        )
+        _assert_rejected(data, "stage_1_execution_may_begin_only_after")
 
 
 class TestCompletenessRule:
     def test_completeness_rule_present(self, base_data: dict):
         rule = base_data["completeness_rule"]
-        assert rule["cell_negative_requires_all_candidates_evaluated"] is True
-        assert rule["unevaluated_candidate_permitted"] is False
+        assert rule["applies_only_after_construction_universe_closure"] is True
+        assert rule["cell_negative_requires_all_registered_constructions_evaluated"] is True
+        assert rule["family_slot_negative_does_not_establish_non_constructibility"] is True
+        assert rule["unevaluated_construction_permitted"] is False
         assert rule["partial_cell_outcome_permitted"] is False
 
-    def test_permitting_unevaluated_candidates_rejected(self, data: dict):
-        data["completeness_rule"]["unevaluated_candidate_permitted"] = True
-        _assert_rejected(data, "unevaluated_candidate_permitted")
+    def test_permitting_unevaluated_constructions_rejected(self, data: dict):
+        data["completeness_rule"]["unevaluated_construction_permitted"] = True
+        _assert_rejected(data, "unevaluated_construction_permitted")
 
     def test_permitting_partial_cells_rejected(self, data: dict):
         data["completeness_rule"]["partial_cell_outcome_permitted"] = True
         _assert_rejected(data, "partial_cell_outcome_permitted")
 
     def test_dropping_the_negative_exhaustiveness_requirement_rejected(self, data: dict):
-        data["completeness_rule"]["cell_negative_requires_all_candidates_evaluated"] = False
-        _assert_rejected(data, "cell_negative_requires_all_candidates_evaluated")
+        data["completeness_rule"]["cell_negative_requires_all_registered_constructions_evaluated"] = False
+        _assert_rejected(data, "cell_negative_requires_all_registered_constructions_evaluated")
+
+    def test_claiming_a_family_slot_negative_is_exhaustive_rejected(self, data: dict):
+        data["completeness_rule"]["family_slot_negative_does_not_establish_non_constructibility"] = False
+        _assert_rejected(data, "family_slot_negative_does_not_establish_non_constructibility")
 
 
-class TestTrialInventoryBoundsCandidates:
-    def test_trial_unit_is_a_candidate_not_a_cell(self, base_data: dict):
-        assert base_data["trial_inventory"]["unit_of_trial"] == "ONE_CANDIDATE_EVALUATION"
+class TestTrialInventoryIsNotYetDefinable:
+    def test_trial_inventory_status_is_not_yet_definable(self, base_data: dict):
+        inventory = base_data["trial_inventory"]
+        assert inventory["status"] == "NOT_YET_DEFINABLE"
+        assert inventory["unit_of_trial_once_defined"] == "ONE_CONSTRUCTION_EVALUATION"
+        assert inventory["defined_by"] == (
+            "THE_FUTURE_SEPARATELY_AUTHORIZED_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT"
+        )
 
-    def test_candidate_ceiling_is_240(self, base_data: dict):
-        assert base_data["trial_inventory"]["derived_candidate_ceiling"] == 240
-        assert base_data["trial_inventory"]["candidates_per_cell"] == 5
+    def test_family_slot_arithmetic_still_recorded(self, base_data: dict):
+        assert base_data["trial_inventory"]["derived_family_slots"] == 240
+        assert base_data["trial_inventory"]["family_slots_per_cell"] == 5
 
-    def test_cell_only_ceiling_rejected(self, data: dict):
-        data["trial_inventory"]["unit_of_trial"] = "ONE_CELL"
-        _assert_rejected(data, "unit_of_trial")
+    def test_declaring_a_trial_ceiling_now_rejected(self, data: dict):
+        data["trial_inventory"]["status"] = "DEFINED"
+        _assert_rejected(data, "trial_inventory.status")
 
-    def test_wrong_candidate_ceiling_rejected(self, data: dict):
-        data["trial_inventory"]["derived_candidate_ceiling"] = 48
-        _assert_rejected(data, "derived_candidate_ceiling")
+    @pytest.mark.parametrize(
+        "banned_key",
+        ("unit_of_trial", "derived_candidate_ceiling", "candidates_per_cell"),
+    )
+    def test_smuggling_back_an_old_ceiling_key_rejected(self, data: dict, banned_key: str):
+        data["trial_inventory"][banned_key] = 240
+        _assert_rejected(data, f"trial_inventory.{banned_key}")
 
-    def test_nonzero_reserve_rejected(self, data: dict):
-        data["trial_inventory"]["reserve_candidates"] = 3
-        _assert_rejected(data, "reserve_candidates")
+    def test_wrong_family_slot_count_rejected(self, data: dict):
+        data["trial_inventory"]["derived_family_slots"] = 48
+        _assert_rejected(data, "derived_family_slots")
 
     def test_derived_identity_mismatch_rejected(self, data: dict):
         for row in data["consequential_parameter_registry"]["derived_identities"]["identities"]:
-            if row["identity_id"] == "CANDIDATE_CEILING":
+            if row["identity_id"] == "FAMILY_SLOT_COUNT":
                 row["value"] = 480
-        _assert_rejected(data, "CANDIDATE_CEILING")
+        _assert_rejected(data, "FAMILY_SLOT_COUNT")
 
     def test_derived_identity_may_not_be_a_num_0001_class(self, data: dict):
         rows = data["consequential_parameter_registry"]["derived_identities"]["identities"]
@@ -330,13 +447,41 @@ class TestTrialInventoryBoundsCandidates:
 
 
 # ---------------------------------------------------------------------------
-# MAJOR 1 — Stage-1 results enforcement against the frozen universe
+# Stage-1 results enforcement — fails closed, and enforces a closed universe
 # ---------------------------------------------------------------------------
+
+
+def _validate(results, universe=None):
+    """Validate a synthetic results document against a SYNTHETIC construction universe.
+
+    A real call omits the universe and fails closed; see TestStage1ResultsFailsClosed.
+    """
+    return V.validate_stage1_results(results, universe or _synthetic_universe())
+
+
+class TestStage1ResultsFailsClosed:
+    def test_the_real_closed_construction_universe_is_empty(self):
+        assert V.closed_construction_universe() == {}
+
+    def test_a_real_call_is_rejected_because_no_universe_is_closed(self):
+        r = V.validate_stage1_results(_full_results())
+        assert not r.ok
+        assert any("no closed construction universe exists" in e for e in r.errors)
+
+    def test_an_explicitly_empty_universe_is_rejected(self):
+        r = V.validate_stage1_results(_full_results(), {})
+        assert not r.ok
+        assert any("no closed construction universe exists" in e for e in r.errors)
+
+    def test_the_family_slot_grid_is_not_itself_a_construction_universe(self):
+        """Passing the grid works only because the caller supplied it explicitly."""
+        assert V.validate_stage1_results(_full_results()).ok is False
+        assert _validate(_full_results()).ok is True
 
 
 class TestStage1ResultsEnforcement:
     def test_complete_conforming_results_accepted(self):
-        assert V.validate_stage1_results(_full_results()).ok
+        assert _validate(_full_results()).ok
 
     def test_unregistered_construction_rejected(self):
         results = _full_results()
@@ -344,32 +489,32 @@ class TestStage1ResultsEnforcement:
             _candidate_row("equity::LOWER::portfolio_function::R1_C1")
             | {"construction_id": "equity::LOWER::portfolio_function::R9_C9"}
         )
-        r = V.validate_stage1_results(results)
-        assert not r.ok and any("not in the frozen candidate universe" in e for e in r.errors)
+        r = _validate(results)
+        assert not r.ok and any("not in the frozen construction universe" in e for e in r.errors)
 
     def test_missing_registered_construction_rejected(self):
         results = _full_results()
         results["candidate_results"].pop()
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
         assert not r.ok and any("no recorded disposition" in e for e in r.errors)
 
     def test_duplicate_construction_rejected(self):
         results = _full_results()
         results["candidate_results"].append(copy.deepcopy(results["candidate_results"][0]))
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
         assert not r.ok and any("duplicated" in e for e in r.errors)
 
     def test_non_exhaustive_negative_cell_rejected(self):
-        """A cell may not be recorded negative when its candidate set is incomplete."""
+        """A cell may not be recorded negative when its registered set is incomplete."""
         results = _full_results()
         target = results["cell_results"][0]["cell_id"]
         results["candidate_results"] = [
             r for r in results["candidate_results"] if r["cell_id"] != target
         ] + [r for r in results["candidate_results"] if r["cell_id"] == target][:2]
         results["cell_results"][0]["outcome"] = "BLOCKED_CATEGORICALLY"
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
         assert not r.ok
-        assert any("no recorded disposition" in e or "of 5 candidate dispositions" in e for e in r.errors)
+        assert any("no recorded disposition" in e or "registered dispositions" in e for e in r.errors)
 
     def test_outcome_aware_candidate_removal_rejected(self):
         """Dropping the one candidate that survived, to make a cell look negative, is caught."""
@@ -390,76 +535,31 @@ class TestStage1ResultsEnforcement:
         for cell in results["cell_results"]:
             if cell["cell_id"] == survivor["cell_id"]:
                 cell["outcome"] = "BLOCKED_CATEGORICALLY"
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
         assert not r.ok
 
     def test_cell_outcome_must_equal_the_deterministic_derivation(self):
         results = _full_results()
         results["cell_results"][0]["outcome"] = "BLOCKED_CATEGORICALLY"
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
         assert not r.ok and any("deterministically derive" in e for e in r.errors)
 
     def test_disposition_must_equal_the_derivation_from_its_own_gates(self):
         results = _full_results()
         results["candidate_results"][0]["disposition"] = "BLOCKED_CATEGORICALLY"
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
         assert not r.ok and any("deterministically derive" in e for e in r.errors)
-
-    def test_existing_source_requires_exact_path_and_hash(self):
-        results = _full_results()
-        results["candidate_results"][0].update(
-            {"source_architecture": "EXISTING_SOURCE_ARCHITECTURE", "source_path": None, "source_sha256": None}
-        )
-        r = V.validate_stage1_results(results)
-        assert not r.ok and any("source_path" in e for e in r.errors)
-        assert any("source_sha256" in e for e in r.errors)
-
-    def test_existing_source_rejects_a_malformed_digest(self):
-        results = _full_results()
-        results["candidate_results"][0].update(
-            {
-                "source_architecture": "EXISTING_SOURCE_ARCHITECTURE",
-                "source_path": "intelligence/example.yaml",
-                "source_sha256": "not-a-digest",
-            }
-        )
-        r = V.validate_stage1_results(results)
-        assert not r.ok and any("source_sha256" in e for e in r.errors)
-
-    def test_existing_source_with_full_provenance_accepted(self):
-        results = _full_results()
-        results["candidate_results"][0].update(
-            {
-                "source_architecture": "EXISTING_SOURCE_ARCHITECTURE",
-                "source_path": "intelligence/example.yaml",
-                "source_sha256": "a" * 64,
-                "hypothetical_source_requirements": None,
-            }
-        )
-        assert V.validate_stage1_results(results).ok
-
-    def test_hypothetical_source_must_not_carry_a_path_or_hash(self):
-        results = _full_results()
-        results["candidate_results"][0]["source_path"] = "intelligence/example.yaml"
-        r = V.validate_stage1_results(results)
-        assert not r.ok and any("must carry no source_path" in e for e in r.errors)
-
-    def test_hypothetical_source_requires_a_requirements_statement(self):
-        results = _full_results()
-        results["candidate_results"][0]["hypothetical_source_requirements"] = "  "
-        r = V.validate_stage1_results(results)
-        assert not r.ok and any("hypothetical_source_requirements" in e for e in r.errors)
 
     def test_missing_governing_authority_refs_rejected(self):
         results = _full_results()
         results["candidate_results"][0]["governing_authority_refs"] = []
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
         assert not r.ok and any("governing_authority_refs" in e for e in r.errors)
 
     def test_missing_required_candidate_key_rejected(self):
         results = _full_results()
         del results["candidate_results"][0]["point_or_range_support"]
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
         assert not r.ok and any("point_or_range_support" in e for e in r.errors)
 
     def test_candidate_order_cannot_affect_the_result(self):
@@ -467,13 +567,19 @@ class TestStage1ResultsEnforcement:
         shuffled = copy.deepcopy(results)
         random.Random(20260816).shuffle(shuffled["candidate_results"])
         random.Random(99).shuffle(shuffled["cell_results"])
-        assert V.validate_stage1_results(results).ok
-        assert V.validate_stage1_results(shuffled).ok
+        assert _validate(results).ok
+        assert _validate(shuffled).ok
 
     def test_full_j_compliance_claim_rejected(self):
         results = _full_results()
         results["disposition"] = "J_1_THROUGH_J_12_SATISFIED"
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
+        assert not r.ok and any("may not be claimed" in e for e in r.errors)
+
+    def test_exhaustive_non_constructibility_claim_rejected(self):
+        results = _full_results()
+        results["disposition"] = "EXHAUSTIVE_NON_CONSTRUCTIBILITY"
+        r = _validate(results)
         assert not r.ok and any("may not be claimed" in e for e in r.errors)
 
     def test_incomplete_gate_coverage_rejected(self):
@@ -481,11 +587,166 @@ class TestStage1ResultsEnforcement:
         gates = dict(_passing_gates())
         del gates["G7_DISCRETION_AND_PROVENANCE"]
         results["candidate_results"][0]["gate_results"] = gates
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
         assert not r.ok and any("every gate must be evaluated" in e for e in r.errors)
 
     def test_non_mapping_results_rejected(self):
-        assert not V.validate_stage1_results([]).ok
+        assert not V.validate_stage1_results([], _synthetic_universe()).ok
+
+
+# ---------------------------------------------------------------------------
+# Frozen provenance — exact source identity, verified against observed bytes
+# ---------------------------------------------------------------------------
+
+# A real, stable, committed file this PR does not touch. Its digest is computed at test time from
+# the file's own bytes, so this test file hardcodes no digest and cannot drift.
+_REAL_SOURCE_PATH = "governance/decisions/README.md"
+
+
+def _existing_source_universe():
+    """A synthetic universe whose first construction has a FROZEN existing-source identity."""
+    universe = dict(_synthetic_universe())
+    first = V.generate_family_slot_grid()[0]
+    universe[first] = {
+        "cell_id": V.cell_id_of(first),
+        "source_architecture": "EXISTING_SOURCE_ARCHITECTURE",
+        "source_path": _REAL_SOURCE_PATH,
+        "source_sha256": V.sha256_file(ROOT / _REAL_SOURCE_PATH),
+        "hypothetical_source_requirements": None,
+    }
+    return universe
+
+
+def _existing_source_results(**overrides):
+    results = _full_results()
+    first = V.generate_family_slot_grid()[0]
+    row = next(r for r in results["candidate_results"] if r["construction_id"] == first)
+    row.update(
+        {
+            "source_architecture": "EXISTING_SOURCE_ARCHITECTURE",
+            "source_path": _REAL_SOURCE_PATH,
+            "source_sha256": V.sha256_file(ROOT / _REAL_SOURCE_PATH),
+            "hypothetical_source_requirements": None,
+        }
+    )
+    row.update(overrides)
+    return results
+
+
+class TestFrozenProvenance:
+    def test_existing_source_matching_the_frozen_identity_and_bytes_accepted(self):
+        r = V.validate_stage1_results(_existing_source_results(), _existing_source_universe())
+        assert r.ok, r.errors
+
+    def test_existing_source_requires_exact_path_and_hash(self):
+        results = _existing_source_results(source_path=None, source_sha256=None)
+        r = V.validate_stage1_results(results, _existing_source_universe())
+        assert not r.ok and any("source_path" in e for e in r.errors)
+        assert any("source_sha256" in e for e in r.errors)
+
+    def test_existing_source_rejects_a_malformed_digest(self):
+        results = _existing_source_results(source_sha256="not-a-digest")
+        r = V.validate_stage1_results(results, _existing_source_universe())
+        assert not r.ok and any("source_sha256" in e for e in r.errors)
+
+    def test_syntactically_valid_but_arbitrary_digest_rejected(self):
+        """Shape validation is not identity validation: a well-formed digest must still match."""
+        results = _existing_source_results(source_sha256="a" * 64)
+        r = V.validate_stage1_results(results, _existing_source_universe())
+        assert not r.ok
+        assert any("does not match the frozen construction identity" in e for e in r.errors)
+
+    def test_a_path_the_result_author_chose_is_rejected(self):
+        """The path must be the FROZEN one, not one selected at results time."""
+        results = _existing_source_results(source_path="constitution/INVESTMENT_CONSTITUTION.md")
+        r = V.validate_stage1_results(results, _existing_source_universe())
+        assert not r.ok
+        assert any("the frozen construction identity names" in e for e in r.errors)
+
+    def test_digest_that_does_not_match_the_observed_bytes_rejected(self):
+        """Both the frozen record and the result agree, but neither matches the file on disk."""
+        universe = _existing_source_universe()
+        first = V.generate_family_slot_grid()[0]
+        wrong = "b" * 64
+        universe[first] = dict(universe[first]) | {"source_sha256": wrong}
+        results = _existing_source_results(source_sha256=wrong)
+        r = V.validate_stage1_results(results, universe)
+        assert not r.ok
+        assert any("does not match the observed bytes" in e for e in r.errors)
+
+    def test_nonexistent_frozen_source_rejected(self):
+        universe = _existing_source_universe()
+        first = V.generate_family_slot_grid()[0]
+        universe[first] = dict(universe[first]) | {"source_path": "governance/does_not_exist.md"}
+        results = _existing_source_results(source_path="governance/does_not_exist.md")
+        r = V.validate_stage1_results(results, universe)
+        assert not r.ok and any("does not exist" in e for e in r.errors)
+
+    def test_path_escaping_the_repository_rejected(self):
+        universe = _existing_source_universe()
+        first = V.generate_family_slot_grid()[0]
+        escape = "../outside.md"
+        universe[first] = dict(universe[first]) | {"source_path": escape}
+        results = _existing_source_results(source_path=escape)
+        r = V.validate_stage1_results(results, universe)
+        assert not r.ok and any("outside the repository" in e for e in r.errors)
+
+    def test_architecture_may_not_depart_from_the_frozen_identity(self):
+        results = _full_results()
+        results["candidate_results"][0]["source_architecture"] = "EXISTING_SOURCE_ARCHITECTURE"
+        r = _validate(results)
+        assert not r.ok
+        assert any("may not alter a frozen architecture" in e for e in r.errors)
+
+    def test_hypothetical_source_must_not_carry_a_path_or_hash(self):
+        results = _full_results()
+        results["candidate_results"][0]["source_path"] = _REAL_SOURCE_PATH
+        r = _validate(results)
+        assert not r.ok and any("must carry no source_path" in e for e in r.errors)
+
+    def test_hypothetical_source_requires_a_requirements_statement(self):
+        results = _full_results()
+        results["candidate_results"][0]["hypothetical_source_requirements"] = "  "
+        r = _validate(results)
+        assert not r.ok and any("hypothetical_source_requirements" in e for e in r.errors)
+
+    def test_results_time_authored_requirements_rejected(self):
+        """A non-empty string authored in the results document is not a preregistration."""
+        results = _full_results()
+        results["candidate_results"][0]["hypothetical_source_requirements"] = (
+            "something the result author made up at write time"
+        )
+        r = _validate(results)
+        assert not r.ok
+        assert any("does not match the frozen construction identity" in e for e in r.errors)
+
+    def test_preregistration_records_the_frozen_provenance_requirements(self, base_data: dict):
+        frozen = base_data["frozen_provenance_requirements"]
+        assert frozen["binding_on_any_future_stage_1"] is True
+        assert frozen["existing_source_architecture"]["observed_bytes_must_be_verified_against_the_frozen_hash"] is True
+        assert frozen["existing_source_architecture"]["syntactic_validation_is_insufficient"] is True
+        assert (
+            frozen["hypothetical_source_architecture"]["executor_authored_free_text_at_results_time"]
+            == "PROHIBITED"
+        )
+        assert frozen["result_author_may_alter_a_frozen_architecture"] is False
+        assert frozen["currently_satisfiable"] is False
+
+    def test_claiming_frozen_provenance_is_currently_satisfiable_rejected(self, data: dict):
+        data["frozen_provenance_requirements"]["currently_satisfiable"] = True
+        _assert_rejected(data, "frozen_provenance_requirements.currently_satisfiable")
+
+    def test_permitting_results_time_free_text_rejected(self, data: dict):
+        data["frozen_provenance_requirements"]["hypothetical_source_architecture"][
+            "executor_authored_free_text_at_results_time"
+        ] = "PERMITTED"
+        _assert_rejected(data, "executor_authored_free_text_at_results_time")
+
+    def test_dropping_observed_bytes_verification_rejected(self, data: dict):
+        data["frozen_provenance_requirements"]["existing_source_architecture"][
+            "observed_bytes_must_be_verified_against_the_frozen_hash"
+        ] = False
+        _assert_rejected(data, "observed_bytes_must_be_verified_against_the_frozen_hash")
 
 
 # ---------------------------------------------------------------------------
@@ -798,6 +1059,7 @@ class TestOpenReadingMapping:
         row = results["candidate_results"][0]
         gates = _passing_gates()
         gates["G4_ORIGIN"] = "FAIL"
+        gates["G2_MAGNITUDE_INTRINSICALITY"] = "UNABLE_TO_DETERMINE"
         row.update(
             {
                 "gate_results": gates,
@@ -807,14 +1069,14 @@ class TestOpenReadingMapping:
                 "g2_outcome_is_reading_dependent": True,
             }
         )
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
         assert not r.ok
         assert any("reading-dependent" in e for e in r.errors)
 
     def test_results_reject_inconsistent_dependence_flag(self):
         results = _full_results()
         results["candidate_results"][0]["g2_outcome_is_reading_dependent"] = True
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
         assert not r.ok and any("g2_outcome_is_reading_dependent" in e for e in r.errors)
 
     def test_results_reject_incoherent_reading_pair(self):
@@ -825,8 +1087,207 @@ class TestOpenReadingMapping:
                 "g2_outcome_under_preference_only_reading": "PASSES",
             }
         )
-        r = V.validate_stage1_results(results)
+        r = _validate(results)
         assert not r.ok and any("incoherent" in e for e in r.errors)
+
+
+# ---------------------------------------------------------------------------
+# The reading map GOVERNS the recorded G2 gate result rather than annotating it
+# ---------------------------------------------------------------------------
+
+
+def _reading_dependent_row(**gate_overrides):
+    """A results document whose first candidate carries the reading-dependent SS-K.1 pair."""
+    results = _full_results()
+    row = results["candidate_results"][0]
+    gates = _passing_gates()
+    gates["G2_MAGNITUDE_INTRINSICALITY"] = "UNABLE_TO_DETERMINE"
+    gates.update(gate_overrides)
+    row.update(
+        {
+            "gate_results": gates,
+            "disposition": V.derive_candidate_disposition(gates),
+            "categorical_failures": [g for g in V.CATEGORICAL_GATES if gates.get(g) == "FAIL"],
+            "prerequisite_failures": [g for g in V.PREREQUISITE_GATES if gates.get(g) == "FAIL"],
+            "g2_outcome_under_subject_matter_reading": "PASSES",
+            "g2_outcome_under_preference_only_reading": "FAILS",
+            "g2_outcome_is_reading_dependent": True,
+        }
+    )
+    # Recompute the owning cell so the document stays internally consistent.
+    by_cell: dict[str, list[str]] = {}
+    for r in results["candidate_results"]:
+        by_cell.setdefault(r["cell_id"], []).append(r["disposition"])
+    results["cell_results"] = [
+        {"cell_id": cell, "outcome": V.derive_cell_outcome(d)} for cell, d in by_cell.items()
+    ]
+    return results
+
+
+class TestReadingMapCouplesToTheRecordedGateResult:
+    @pytest.mark.parametrize(
+        "sm,po,expected",
+        [
+            ("PASSES", "PASSES", "PASS"),
+            ("FAILS", "FAILS", "FAIL"),
+            ("PASSES", "FAILS", "UNABLE_TO_DETERMINE"),
+            ("FAILS", "PASSES", V.G2_RECORD_REJECTED),
+            ("UNABLE_TO_DETERMINE", "PASSES", "UNABLE_TO_DETERMINE"),
+            ("PASSES", "UNABLE_TO_DETERMINE", "UNABLE_TO_DETERMINE"),
+        ],
+    )
+    def test_required_gate_result_for_every_pair(self, sm: str, po: str, expected: str):
+        assert V.required_g2_gate_result(sm, po) == expected
+
+    def test_reading_dependent_pair_recorded_as_pass_is_rejected(self):
+        """DELTA MAJOR 2A: the exact defect — reading-dependent readings, G2 recorded PASS."""
+        results = _reading_dependent_row()
+        row = results["candidate_results"][0]
+        gates = dict(row["gate_results"])
+        gates["G2_MAGNITUDE_INTRINSICALITY"] = "PASS"
+        row["gate_results"] = gates
+        row["disposition"] = V.derive_candidate_disposition(gates)
+        r = _validate(results)
+        assert not r.ok
+        assert any("the reading map governs" in e for e in r.errors)
+
+    def test_reading_dependent_pair_recorded_as_pass_cannot_yield_a_constructible_candidate(self):
+        results = _reading_dependent_row()
+        row = results["candidate_results"][0]
+        gates = dict(row["gate_results"])
+        gates["G2_MAGNITUDE_INTRINSICALITY"] = "PASS"
+        row["gate_results"] = gates
+        row["disposition"] = "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED"
+        r = _validate(results)
+        assert not r.ok
+
+    def test_reading_dependent_pair_recorded_as_fail_is_rejected(self):
+        results = _reading_dependent_row()
+        row = results["candidate_results"][0]
+        gates = dict(row["gate_results"])
+        gates["G2_MAGNITUDE_INTRINSICALITY"] = "FAIL"
+        row["gate_results"] = gates
+        row["disposition"] = V.derive_candidate_disposition(gates)
+        r = _validate(results)
+        assert not r.ok
+        assert any("G2_MAGNITUDE_INTRINSICALITY" in e for e in r.errors)
+
+    def test_both_readings_pass_but_g2_recorded_unable_is_rejected(self):
+        results = _full_results()
+        row = results["candidate_results"][0]
+        gates = _passing_gates()
+        gates["G2_MAGNITUDE_INTRINSICALITY"] = "UNABLE_TO_DETERMINE"
+        row["gate_results"] = gates
+        row["disposition"] = V.derive_candidate_disposition(gates)
+        r = _validate(results)
+        assert not r.ok
+        assert any("the reading map governs" in e for e in r.errors)
+
+    def test_correctly_coupled_reading_dependent_candidate_is_accepted(self):
+        results = _reading_dependent_row()
+        assert results["candidate_results"][0]["disposition"] == "UNABLE_TO_DETERMINE"
+        assert _validate(results).ok
+
+
+# ---------------------------------------------------------------------------
+# DELTA MAJOR 2B — uncertainty outranks a prerequisite failure, at candidate level only
+# ---------------------------------------------------------------------------
+
+
+class TestUncertaintyOutranksPrerequisite:
+    def test_uncertain_g2_with_failing_prerequisite_is_unable_to_determine(self):
+        """The exact defect: closing G9 cannot resolve SS-K.1, so this is not a to-do."""
+        gates = _passing_gates()
+        gates["G2_MAGNITUDE_INTRINSICALITY"] = "UNABLE_TO_DETERMINE"
+        gates["G9_REPRESENTATION"] = "FAIL"
+        assert V.derive_candidate_disposition(gates) == "UNABLE_TO_DETERMINE"
+
+    def test_uncertainty_also_outranks_the_snapshot_prerequisite(self):
+        gates = _passing_gates()
+        gates["G2_MAGNITUDE_INTRINSICALITY"] = "UNABLE_TO_DETERMINE"
+        gates["G12_SNAPSHOT_ADMISSIBILITY_PATH"] = "FAIL"
+        assert V.derive_candidate_disposition(gates) == "UNABLE_TO_DETERMINE"
+
+    def test_categorical_still_dominates_uncertainty(self):
+        gates = _passing_gates()
+        gates["G2_MAGNITUDE_INTRINSICALITY"] = "UNABLE_TO_DETERMINE"
+        gates["G4_ORIGIN"] = "FAIL"
+        assert V.derive_candidate_disposition(gates) == "BLOCKED_CATEGORICALLY"
+
+    def test_categorical_dominates_uncertainty_and_prerequisite_together(self):
+        gates = _passing_gates()
+        gates["G2_MAGNITUDE_INTRINSICALITY"] = "UNABLE_TO_DETERMINE"
+        gates["G9_REPRESENTATION"] = "FAIL"
+        gates["G4_ORIGIN"] = "FAIL"
+        assert V.derive_candidate_disposition(gates) == "BLOCKED_CATEGORICALLY"
+
+    def test_prerequisite_alone_is_still_prerequisite_blocked(self):
+        gates = _passing_gates()
+        gates["G9_REPRESENTATION"] = "FAIL"
+        assert V.derive_candidate_disposition(gates) == "BLOCKED_PENDING_SEPARATE_PREREQUISITE"
+
+    def test_results_reject_reading_dependent_recorded_as_prerequisite_blocked(self):
+        results = _reading_dependent_row(G9_REPRESENTATION="FAIL")
+        row = results["candidate_results"][0]
+        row["disposition"] = "BLOCKED_PENDING_SEPARATE_PREREQUISITE"
+        r = _validate(results)
+        assert not r.ok
+        assert any("BLOCKED_PENDING_SEPARATE_PREREQUISITE" in e for e in r.errors)
+
+    def test_cell_precedence_is_unchanged(self):
+        """A determinately prerequisite-blocked sibling may still keep a cell open."""
+        assert [o for _c, o in V.CELL_PRECEDENCE] == [
+            "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED",
+            "BLOCKED_PENDING_SEPARATE_PREREQUISITE",
+            "UNABLE_TO_DETERMINE",
+            "BLOCKED_CATEGORICALLY",
+        ]
+        assert V.derive_cell_outcome(
+            ["UNABLE_TO_DETERMINE", "BLOCKED_PENDING_SEPARATE_PREREQUISITE"]
+        ) == "BLOCKED_PENDING_SEPARATE_PREREQUISITE"
+
+    def test_roll_up_precedence_is_unchanged(self):
+        assert [o for _c, o in V.ROLL_UP_PRECEDENCE] == [
+            "CANDIDATE_CONSTRUCTION_IDENTIFIED",
+            "PREREQUISITE_REQUIRED",
+            "UNABLE_TO_DETERMINE",
+            "NO_CONSTRUCTIBLE_CANDIDATE",
+        ]
+        assert V.derive_roll_up_outcome(
+            ["UNABLE_TO_DETERMINE", "BLOCKED_PENDING_SEPARATE_PREREQUISITE"]
+        ) == "PREREQUISITE_REQUIRED"
+
+    def test_candidate_precedence_declared_order_matches(self, base_data: dict):
+        conditions = [
+            r["condition"] for r in base_data["disposition_rules"]["candidate_disposition"]["precedence"]
+        ]
+        assert conditions == [
+            "ANY_CATEGORICAL_GATE_FAILURE",
+            "ANY_GATE_UNABLE_TO_DETERMINE",
+            "ANY_PREREQUISITE_GATE_FAILURE",
+            "ALL_GATES_PASS",
+        ]
+
+    def test_uncertainty_dominance_declared(self, base_data: dict):
+        cand = base_data["disposition_rules"]["candidate_disposition"]
+        assert cand["uncertainty_dominates_prerequisite"] is True
+        assert cand["applies_at"] == "CANDIDATE_LEVEL_ONLY"
+
+    def test_removing_uncertainty_dominance_rejected(self, data: dict):
+        data["disposition_rules"]["candidate_disposition"]["uncertainty_dominates_prerequisite"] = False
+        _assert_rejected(data, "uncertainty_dominates_prerequisite")
+
+    def test_widening_the_scope_beyond_candidate_level_rejected(self, data: dict):
+        data["disposition_rules"]["candidate_disposition"]["applies_at"] = "ALL_LEVELS"
+        _assert_rejected(data, "applies_at")
+
+    def test_g2_coupling_flag_required(self, data: dict):
+        data["g2_reading_mapping"]["coupled_to_g2_gate_result"] = False
+        _assert_rejected(data, "coupled_to_g2_gate_result")
+
+    def test_required_gate_result_column_locked(self, data: dict):
+        data["g2_reading_mapping"]["rows"][2]["required_g2_gate_result"] = "PASS"
+        _assert_rejected(data, "required_g2_gate_result")
 
 
 class TestCategoricalDefinitionNarrowed:
@@ -938,11 +1399,13 @@ class TestLifecycleEffectivity:
         ]
         _assert_rejected(data, "charter_effective_only_after_all_of")
 
-    def test_stage_1_gated_on_lifecycle_closure(self, base_data: dict):
-        assert (
-            base_data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"]
-            == "XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION"
-        )
+    def test_stage_1_gated_on_construction_universe_closure_and_lifecycle_closure(
+        self, base_data: dict
+    ):
+        precondition = base_data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"]
+        assert precondition == V.STAGE_1_EXECUTION_PRECONDITION
+        assert precondition.startswith("CONSTRUCTION_UNIVERSE_CLOSURE_THEN_")
+        assert "XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION" in precondition
 
     def test_gating_stage_1_on_merge_alone_rejected(self, data: dict):
         data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"] = "MERGE"
@@ -1064,10 +1527,10 @@ class TestStageBoundary:
         data["stages"]["stage_1"][flag] = True
         _assert_rejected(data, flag)
 
-    def test_stage_1_executability_gated_on_lifecycle_closure(self, base_data: dict):
+    def test_stage_1_executability_gated_on_both_preconditions(self, base_data: dict):
         assert (
             base_data["stages"]["stage_1"]["executable_only_after"]
-            == "XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION"
+            == V.STAGE_1_EXECUTION_PRECONDITION
         )
 
     def test_gating_stage_1_on_merge_alone_rejected_in_stages_block(self, data: dict):
@@ -1077,11 +1540,19 @@ class TestStageBoundary:
     def test_stage_1_unit_of_work_is_a_candidate(self, base_data: dict):
         assert base_data["stages"]["stage_1"]["unit_of_work"] == "ONE_CANDIDATE_EVALUATION"
 
-    def test_execution_stopping_rule_counts_candidates(self, base_data: dict):
-        assert (
-            base_data["execution"]["stopping_rules"]["terminates_when"]
-            == "ALL_240_REGISTERED_CANDIDATES_CARRY_A_RECORDED_DISPOSITION"
+    def test_execution_stopping_rule_ranges_over_registered_constructions(self, base_data: dict):
+        stopping = base_data["execution"]["stopping_rules"]
+        assert stopping["terminates_when"] == (
+            "EVERY_REGISTERED_CONSTRUCTION_IN_THE_CLOSED_CONSTRUCTION_UNIVERSE_"
+            "CARRIES_A_RECORDED_DISPOSITION"
         )
+        assert stopping["stopping_rule_currently_has_no_registered_set"] is True
+
+    def test_pinning_the_stopping_rule_to_the_family_slot_count_rejected(self, data: dict):
+        data["execution"]["stopping_rules"]["terminates_when"] = (
+            "ALL_240_REGISTERED_CANDIDATES_CARRY_A_RECORDED_DISPOSITION"
+        )
+        _assert_rejected(data, "terminates_when")
 
     def test_cell_only_stopping_rule_rejected(self, data: dict):
         data["execution"]["stopping_rules"]["terminates_when"] = "ALL_48_CELLS_CARRY_A_RECORDED_OUTCOME"
@@ -1384,15 +1855,15 @@ class TestMirrorAndPins:
 
     def test_mirror_value_mismatch_rejected(self):
         text = V.PROTOCOL_PATH.read_text(encoding="utf-8").replace(
-            "candidate_ceiling: 240", "candidate_ceiling: 480"
+            "family_slot_count: 240", "family_slot_count: 480"
         )
         result = V.validate_protocol_mirror(text)
-        assert not result.ok and any("candidate_ceiling" in e for e in result.errors)
+        assert not result.ok and any("family_slot_count" in e for e in result.errors)
 
     def test_mirror_extra_key_rejected(self):
         text = V.PROTOCOL_PATH.read_text(encoding="utf-8").replace(
-            "hash_version: ENDPOINT-0001-PREREG-V2",
-            "hash_version: ENDPOINT-0001-PREREG-V2\nsmuggled_key: yes",
+            f"hash_version: {V.HASH_VERSION}",
+            f"hash_version: {V.HASH_VERSION}\nsmuggled_key: yes",
         )
         result = V.validate_protocol_mirror(text)
         assert not result.ok and any("smuggled_key" in e for e in result.errors)
@@ -1403,9 +1874,29 @@ class TestMirrorAndPins:
         assert mirror["stage_2_authorized"] == "false"
         assert mirror["consequential_parameter_count"] == "0"
         assert mirror["construction_family_count"] == "5"
-        assert mirror["candidate_ceiling"] == "240"
+        assert mirror["family_slot_count"] == "240"
         assert mirror["gate_count"] == "12"
         assert mirror["j12_deferred"] == "true"
+
+    def test_mirror_reports_stage_1_not_executable(self):
+        mirror = V.extract_block(V.PROTOCOL_PATH.read_text(encoding="utf-8"), V.MIRROR_BLOCK_RE)
+        assert mirror is not None
+        assert mirror["stage_1_executable"] == "false"
+        assert mirror["construction_universe_closed"] == "false"
+
+    def test_mirror_claiming_stage_1_executable_rejected(self):
+        text = V.PROTOCOL_PATH.read_text(encoding="utf-8").replace(
+            "stage_1_executable: false", "stage_1_executable: true"
+        )
+        result = V.validate_protocol_mirror(text)
+        assert not result.ok and any("stage_1_executable" in e for e in result.errors)
+
+    def test_mirror_claiming_a_closed_construction_universe_rejected(self):
+        text = V.PROTOCOL_PATH.read_text(encoding="utf-8").replace(
+            "construction_universe_closed: false", "construction_universe_closed: true"
+        )
+        result = V.validate_protocol_mirror(text)
+        assert not result.ok and any("construction_universe_closed" in e for e in result.errors)
 
     def test_missing_hash_block_rejected(self):
         result = V.validate_charter_hash_pins("## decision with no pins\n")

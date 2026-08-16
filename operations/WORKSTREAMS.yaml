@@ -12285,22 +12285,43 @@ workstreams:
           candidate source appears anywhere. Part B charters ENDPOINT-0001, a
           study identifier only and not a decision prefix, against XASSET-0025
           SSK's verbatim question, with canonical protocol and pre-registration
-          hash-pinned in the decision. Corrected under independent review
-          4945187522: the candidate universe is now closed before execution by
-          a deterministic generator rather than left to the executor. One
-          candidate is one sleeve x one bound x one DRIVER class x one lawful
-          construction family, and the five construction families are the
+          hash-pinned in the decision. Corrected under independent reviews
+          4945187522 and 4945256642. The five construction families are the
           lawful (route, NUM-0001 class) pairs closed by XASSET-0023 SSH
           ("There is no third route") and SSH.4 item 3 — enumerated here, not
-          invented, selected, ranked, or excluded. That yields a derived
-          ceiling of 4 x 2 x 6 x 5 = 240 candidates over 48 cells, zero
-          reserve, stable ids, byte-identically reproducible and
-          validator-enforced; the executor may not add or remove a candidate,
-          and a cell may be recorded negative only if all five of its
-          candidates were evaluated and every one was blocked categorically.
-          Twelve ordered gates are ALL evaluated before a candidate is
-          classified, with categorical failures dominating prerequisite
-          failures and first_failing_gate_id demoted to a diagnostic computed
+          invented, selected, ranked, or excluded. Corrected under delta review
+          4945256642: those five are PROVENANCE FAMILIES, not an exhaustive
+          construction universe. SSH.2 and SSH.3 are constraint sets, not
+          generators, and satisfying a constraint set does not enumerate the
+          objects that satisfy it, so many distinct source and comparator
+          architectures can inhabit one family. The 4 x 2 x 6 x 5 = 240 product
+          is therefore a FAMILY SLOT GRID over 48 cells — exhaustive over
+          provenance families, expressly NOT exhaustive over constructions, not
+          a trial ceiling, and incapable of establishing exhaustive
+          non-constructibility. Both routes to a genuinely closed construction
+          universe were considered and rejected on their merits: a concrete
+          finite registry is closeable only over sources that already exist,
+          which is exactly the corpus XASSET-0025 Outcome C already exhausted;
+          and no accepted decision supplies a deterministic construction
+          grammar. The route taken is an HONEST PREREQUISITE — Stage 1 is NOT
+          EXECUTABLE, stages.stage_1.authorized_by_xasset_0027 is false, the
+          trial inventory is NOT_YET_DEFINABLE, and
+          CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION is recorded as the
+          next required prerequisite, to be answered by its own future,
+          separately authorized unit which may itself answer negatively. A
+          negative outcome is preferable to invented completeness. Lifecycle
+          closure alone does not make Stage 1 executable; both preconditions
+          are necessary. validate_stage1_results now FAILS CLOSED, defaulting
+          to an empty closed_construction_universe(), and enforces frozen
+          provenance: an existing-source construction's path and digest must be
+          the ones frozen in the construction identity and the digest must be
+          recomputed from the file's OBSERVED BYTES, since syntactic validation
+          of a path plus any 64-hex string validates shape rather than
+          identity; a hypothetical construction's requirements must likewise be
+          frozen before execution rather than authored at results time. Twelve
+          ordered gates are ALL evaluated before a candidate is
+          classified, with categorical failures dominating everything and
+          first_failing_gate_id demoted to a diagnostic computed
           after the disposition is fixed — so a candidate failing both a
           prerequisite and a categorical gate is categorical, never filed as a
           closeable to-do. "Categorical" is defined as not closeable by a named
@@ -12308,9 +12329,9 @@ workstreams:
           permanent impossibility under all future governance. It acquires no
           data, estimates nothing, and introduces zero consequential numeric
           parameters, which the dedicated validator asserts mechanically — a
-          study with no free parameter cannot be tuned, and with the candidate
-          universe generated rather than authored the qualitative search
-          surface is closed as well. Out-of-sample and
+          study with no free parameter cannot be tuned, though the qualitative
+          search surface is expressly NOT closed, which is why Stage 1 is not
+          executable. Out-of-sample and
           neighbouring-parameter discipline is recorded NOT_APPLICABLE to Stage
           1 with its reason, and required of any future Stage 2. Stage 2, being
           any empirical or data-acquiring work, is NOT authorized and becomes
@@ -12321,7 +12342,21 @@ workstreams:
           and a candidate passing only under the subject-matter reading is
           reading-dependent and maps to UNABLE_TO_DETERMINE — never to
           BLOCKED_CATEGORICALLY, because an unresolved methodology reading is
-          not a categorical impossibility. XASSET-0024 SSJ.12 exact set-valued
+          not a categorical impossibility. Corrected under delta review
+          4945256642, the map now GOVERNS the recorded gate result rather than
+          annotating it: each row carries a required_g2_gate_result and a
+          record whose recorded G2 disagrees with its own two reading fields is
+          rejected, closing the path by which a reading-dependent pair could be
+          recorded alongside G2 = PASS and derive a constructible candidate.
+          Candidate precedence is likewise corrected to categorical ->
+          UNABLE_TO_DETERMINE -> prerequisite -> pass: a categorical bar may
+          dominate uncertainty because the candidate is barred whatever the
+          uncertainty resolves to, but a prerequisite failure may not, because
+          closing the named prerequisite cannot resolve SSK.1 — recording such
+          a candidate as prerequisite-blocked would convert an open methodology
+          question into a closeable to-do. That ordering is CANDIDATE-LEVEL
+          ONLY; cell and roll-up precedence remain unchanged existential tests.
+          XASSET-0024 SSJ.12 exact set-valued
           reconciliation is DEFERRED rather than decided: XASSET-0020 SSK
           defines it jointly over the whole candidate and other sleeves, while
           Stage 1 produces no endpoint value and prohibits cross-sleeve and
@@ -12419,16 +12454,31 @@ workstreams:
       under independent review 4945187522, effectivity is bound to all five of
       accepted independent exact-head review, principal exact-head acceptance,
       merge, immediate post-merge verification, and successful merge-commit CI,
-      and merge alone is expressly NOT sufficient. Only after that closure is
-      the next authorized action the single Stage 1 implementation/results PR,
-      which must verify both pinned canonical hashes from the merged charter
-      commit before beginning; a mismatch voids execution authority. That PR
-      records all 240 candidate dispositions, the 48 cell outcomes, the 8
-      roll-ups, and the deferred SSJ.12 record, and must pass
-      validate_stage1_results(). Stage 2, any empirical or
+      and merge alone is expressly NOT sufficient. Corrected further under
+      delta review 4945256642: lifecycle closure alone does NOT make Stage 1
+      executable either. The five (route, class) pairs are provenance families,
+      not an exhaustive construction universe, and the 240-slot grid is a
+      classification scaffold rather than a candidate enumeration or a trial
+      ceiling, so Stage 1 is recorded NOT EXECUTABLE and
+      stages.stage_1.authorized_by_xasset_0027 is false. The next authorized
+      substantive action is therefore NOT a Stage 1 run: it is one future,
+      separately authorized governance unit
+      (CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION) whose scope is to
+      determine whether a concrete construction universe can be closed at all
+      and, if so, to freeze it — an answer that may itself be negative, and one
+      XASSET-0027 does not pre-decide, scope, or schedule. Only after BOTH
+      XASSET-0027's complete lifecycle closes AND that universe is closed may a
+      single Stage 1 implementation/results PR proceed, verifying both pinned
+      canonical hashes from the merged charter commit before beginning; a
+      mismatch voids execution authority. That PR would record every registered
+      construction's disposition, the cell outcomes, the roll-ups, and the
+      deferred SSJ.12 record, and must pass validate_stage1_results() against
+      the closed universe — which today fails closed on an empty
+      closed_construction_universe(). Stage 2, any empirical or
       data-acquiring work, is NOT authorized and requires its own separate
       decision even if Stage 1 identifies a constructible candidate. Also still
-      unauthorized and separately required, in dependency order: an XASSET-0024
+      unauthorized and separately required, in dependency order: the
+      construction-universe closure unit above, an XASSET-0024
       SSJ.1-SSJ.12 endpoint-admission validator, a lawful XASSET-0021 snapshot
       successor, a Level-1 representation aggregation or selection rule if and
       only if a candidate source is not self-contained, an endpoint-capable
@@ -12930,8 +12980,14 @@ workstreams:
       LEVEL1_ENDPOINT_AUTHORITY exists or may be invoked; ENDPOINT-0001 Stage 1
       may not be executed and no cell may be evaluated; and no endpoint, bound,
       point, range, percentage, weight, or sleeve selection exists anywhere.
-      After it merges, exactly one Stage 1 implementation/results PR is
-      authorized, gated on verifying both pinned canonical hashes from the
+      Corrected under delta review 4945256642, lifecycle closure is necessary
+      but NOT sufficient for Stage 1: the construction universe is not closed,
+      Stage 1 is recorded NOT EXECUTABLE, and the next substantive step is one
+      future, separately authorized
+      CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION unit whose own answer may
+      be negative. A Stage 1 implementation/results PR becomes possible only
+      after BOTH that closure and this filing's complete lifecycle, gated on
+      verifying both pinned canonical hashes from the
       merged charter commit. Stage 2 remains unauthorized regardless of the
       Stage 1 outcome. The XASSET-0021 closure matrix stands unchanged at 14
       CLOSED_DETERMINISTICALLY / 14 APPLICATION_MUST_ABSTAIN / 2

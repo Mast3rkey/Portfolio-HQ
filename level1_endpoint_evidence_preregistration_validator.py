@@ -47,7 +47,7 @@ DECISION_PATH = (
 )
 
 STUDY_ID = "ENDPOINT-0001"
-HASH_VERSION = "ENDPOINT-0001-PREREG-V2"
+HASH_VERSION = "ENDPOINT-0001-PREREG-V3"
 
 TOP_KEYS = (
     "schema_version",
@@ -55,6 +55,7 @@ TOP_KEYS = (
     "identifier_note",
     "authority",
     "lifecycle_effectivity",
+    "stage_1_executability",
     "stages",
     "research_question",
     "sleeves",
@@ -62,7 +63,8 @@ TOP_KEYS = (
     "driver_classes",
     "driver_class_scope",
     "construction_families",
-    "candidate_universe",
+    "family_slot_grid",
+    "construction_universe_closure",
     "completeness_rule",
     "trial_inventory",
     "roll_up_units",
@@ -81,6 +83,7 @@ TOP_KEYS = (
     "consequential_parameter_registry",
     "data_and_sources",
     "source_architecture_vocabulary",
+    "frozen_provenance_requirements",
     "provenance_manifest",
     "execution",
     "result_schema",
@@ -162,10 +165,14 @@ ROLL_UP_OUTCOMES = (
     "UNABLE_TO_DETERMINE",
 )
 
+# Candidate-level precedence. Categorical dominates, then uncertainty, then prerequisite.
+# A prerequisite failure may not outrank UNABLE_TO_DETERMINE, because closing the named prerequisite
+# cannot resolve the uncertainty; recording such a candidate as prerequisite-blocked would convert an
+# open methodology question into a closeable to-do. Cell and roll-up precedence are unchanged.
 CANDIDATE_PRECEDENCE = (
     ("ANY_CATEGORICAL_GATE_FAILURE", "BLOCKED_CATEGORICALLY"),
-    ("ANY_PREREQUISITE_GATE_FAILURE", "BLOCKED_PENDING_SEPARATE_PREREQUISITE"),
     ("ANY_GATE_UNABLE_TO_DETERMINE", "UNABLE_TO_DETERMINE"),
+    ("ANY_PREREQUISITE_GATE_FAILURE", "BLOCKED_PENDING_SEPARATE_PREREQUISITE"),
     ("ALL_GATES_PASS", "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED"),
 )
 CELL_PRECEDENCE = (
@@ -186,16 +193,20 @@ G2_MAPPING_KEYS = (
     "subject_matter_reading",
     "preference_only_reading",
     "g2_effective_outcome",
+    "required_g2_gate_result",
     "reading_dependent",
 )
 G2_MAPPING_ROWS = (
-    ("PASSES", "PASSES", "PASSES", False),
-    ("FAILS", "FAILS", "FAILS_CATEGORICALLY", False),
-    ("PASSES", "FAILS", "UNABLE_TO_DETERMINE", True),
-    ("FAILS", "PASSES", "INCOHERENT_REJECTED", False),
-    ("UNABLE_TO_DETERMINE", "ANY", "UNABLE_TO_DETERMINE", False),
-    ("ANY", "UNABLE_TO_DETERMINE", "UNABLE_TO_DETERMINE", False),
+    ("PASSES", "PASSES", "PASSES", "PASS", False),
+    ("FAILS", "FAILS", "FAILS_CATEGORICALLY", "FAIL", False),
+    ("PASSES", "FAILS", "UNABLE_TO_DETERMINE", "UNABLE_TO_DETERMINE", True),
+    ("FAILS", "PASSES", "INCOHERENT_REJECTED", "RECORD_REJECTED", False),
+    ("UNABLE_TO_DETERMINE", "ANY", "UNABLE_TO_DETERMINE", "UNABLE_TO_DETERMINE", False),
+    ("ANY", "UNABLE_TO_DETERMINE", "UNABLE_TO_DETERMINE", "UNABLE_TO_DETERMINE", False),
 )
+# The effective-outcome value that means the two reading fields are mutually incoherent and the
+# record is rejected outright rather than mapped to any gate result.
+G2_RECORD_REJECTED = "RECORD_REJECTED"
 
 POINT_RANGE_VALUES = (
     "WOULD_SUPPORT_RANGE_ENDPOINT",
@@ -233,7 +244,7 @@ DERIVED_IDENTITIES = {
     "DRIVER_CLASS_COUNT": 6,
     "CONSTRUCTION_FAMILY_COUNT": 5,
     "CELL_COUNT": 48,
-    "CANDIDATE_CEILING": 240,
+    "FAMILY_SLOT_COUNT": 240,
     "ROLL_UP_UNIT_COUNT": 8,
     "GATE_COUNT": 12,
 }
@@ -244,6 +255,13 @@ LIFECYCLE_STEPS = (
     "MERGE",
     "IMMEDIATE_POST_MERGE_VERIFICATION",
     "SUCCESSFUL_MERGE_COMMIT_CI",
+)
+
+# Lifecycle closure alone does NOT make Stage 1 executable. It makes this architecture effective.
+# Stage 1 additionally requires a closed concrete construction universe, which XASSET-0027 neither
+# creates nor authorizes anyone to create.
+STAGE_1_EXECUTION_PRECONDITION = (
+    "CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION"
 )
 
 REQUIRED_ABSTENTION_CONDITIONS = (
@@ -369,11 +387,16 @@ class ValidationResult:
 # ======================================================================================
 
 
-def generate_candidate_universe() -> tuple[str, ...]:
-    """Return the complete, ordered, deterministic candidate universe.
+def generate_family_slot_grid() -> tuple[str, ...]:
+    """Return the complete, ordered, deterministic family slot grid.
 
     A Cartesian product over four dimensions, each closed by accepted authority. Byte-identically
     reproducible; no executor input participates.
+
+    This is EXHAUSTIVE OVER PROVENANCE FAMILIES and NOT EXHAUSTIVE OVER CONSTRUCTIONS. A slot names a
+    lawful provenance shape for a sleeve and bound; it does not name a hypothesis. It is therefore a
+    classification scaffold for a future construction universe and is expressly not a trial ceiling,
+    not a candidate enumeration, and not a basis for claiming exhaustive non-constructibility.
     """
     out: list[str] = []
     for sleeve in SLEEVES:
@@ -384,16 +407,16 @@ def generate_candidate_universe() -> tuple[str, ...]:
     return tuple(out)
 
 
-def cell_id_of(construction_id: str) -> str:
-    """Return the owning cell id for a construction id."""
-    return "::".join(construction_id.split("::")[:3])
+def cell_id_of(slot_or_construction_id: str) -> str:
+    """Return the owning cell id for a family slot id or a construction id."""
+    return "::".join(slot_or_construction_id.split("::")[:3])
 
 
 def generate_cell_universe() -> tuple[str, ...]:
     """Return the complete, ordered, deterministic cell universe."""
     seen: list[str] = []
-    for construction_id in generate_candidate_universe():
-        cell = cell_id_of(construction_id)
+    for slot_id in generate_family_slot_grid():
+        cell = cell_id_of(slot_id)
         if cell not in seen:
             seen.append(cell)
     return tuple(seen)
@@ -426,11 +449,40 @@ def is_reading_dependent(subject_matter: str, preference_only: str) -> bool:
     return subject_matter == "PASSES" and preference_only == "FAILS"
 
 
+def required_g2_gate_result(subject_matter: str, preference_only: str) -> str:
+    """Return the G2 gate result the two SS-K.1 readings REQUIRE, or RECORD_REJECTED.
+
+    This is the enforced identity that makes the reading map load-bearing rather than decorative.
+    Without it a results record could carry the reading-dependent pair while recording G2 as PASS, and
+    the candidate would derive to CONSTRUCTIBLE_CANDIDATE_IDENTIFIED -- the exact outcome the open
+    SS-K.1 reading is supposed to make impossible.
+    """
+    effective = map_g2_reading(subject_matter, preference_only)
+    if effective == "PASSES":
+        return "PASS"
+    if effective == "FAILS_CATEGORICALLY":
+        return "FAIL"
+    if effective == "UNABLE_TO_DETERMINE":
+        return "UNABLE_TO_DETERMINE"
+    return G2_RECORD_REJECTED
+
+
 def derive_candidate_disposition(gate_results: Mapping[str, str]) -> str:
     """Compose already-decided gate results into a candidate disposition.
 
-    Universal over gates, with categorical failures dominating prerequisite failures. Implemented with
-    membership tests over the gate mapping, so the result cannot depend on gate order.
+    Universal over gates. Categorical failures dominate everything; UNABLE_TO_DETERMINE then dominates
+    a prerequisite failure. Implemented with membership tests over the gate mapping, so the result
+    cannot depend on gate order.
+
+    Uncertainty outranks a prerequisite failure because closing the named prerequisite cannot resolve
+    the uncertainty. A candidate whose G2 is UNABLE_TO_DETERMINE because XASSET-0024 SS-K.1 is
+    unresolved, and whose G9 representation also fails, is not merely waiting on a representation
+    rule: supplying that rule would leave SS-K.1 exactly as unresolved. A categorical bar may dominate
+    uncertainty because the candidate is barred whatever the uncertainty resolves to.
+
+    This ordering is CANDIDATE-LEVEL ONLY. derive_cell_outcome and derive_roll_up_outcome keep their
+    existing existential precedence, because a different candidate that is determinately
+    prerequisite-blocked can legitimately keep a cell open while another candidate is uncertain.
     """
     unknown = set(gate_results) - set(GATE_IDS)
     if unknown:
@@ -444,10 +496,10 @@ def derive_candidate_disposition(gate_results: Mapping[str, str]) -> str:
 
     if any(gate_results[g] == "FAIL" for g in CATEGORICAL_GATES):
         return "BLOCKED_CATEGORICALLY"
-    if any(gate_results[g] == "FAIL" for g in PREREQUISITE_GATES):
-        return "BLOCKED_PENDING_SEPARATE_PREREQUISITE"
     if any(v == "UNABLE_TO_DETERMINE" for v in gate_results.values()):
         return "UNABLE_TO_DETERMINE"
+    if any(gate_results[g] == "FAIL" for g in PREREQUISITE_GATES):
+        return "BLOCKED_PENDING_SEPARATE_PREREQUISITE"
     return "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED"
 
 
@@ -615,11 +667,41 @@ def _validate_lifecycle(data: Mapping[str, Any], errors: list[str]) -> None:
     )
     _exact(
         life.get("stage_1_execution_may_begin_only_after"),
-        "XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION",
+        STAGE_1_EXECUTION_PRECONDITION,
         "lifecycle_effectivity.stage_1_execution_may_begin_only_after",
         errors,
     )
     _false(life.get("merge_alone_is_sufficient"), "lifecycle_effectivity.merge_alone_is_sufficient", errors)
+
+
+def _validate_stage_1_executability(data: Mapping[str, Any], errors: list[str]) -> None:
+    """Stage 1 is not executable under this charter, and the YAML must say so unambiguously.
+
+    Lifecycle closure makes the architecture effective. It does not close the concrete construction
+    universe, which XASSET-0027 neither creates nor authorizes anyone to create.
+    """
+    block = data.get("stage_1_executability")
+    if not isinstance(block, Mapping):
+        errors.append("stage_1_executability: expected a mapping")
+        return
+    _false(block.get("executable"), "stage_1_executability.executable", errors)
+    _exact(
+        block.get("status"),
+        "NOT_YET_EXECUTABLE_CONSTRUCTION_UNIVERSE_NOT_CLOSED",
+        "stage_1_executability.status",
+        errors,
+    )
+    _exact(
+        block.get("blocking_prerequisite"),
+        "CONCRETE_CONSTRUCTION_UNIVERSE_CLOSURE",
+        "stage_1_executability.blocking_prerequisite",
+        errors,
+    )
+    _false(
+        block.get("authorized_by_xasset_0027"),
+        "stage_1_executability.authorized_by_xasset_0027",
+        errors,
+    )
 
 
 def _validate_stages(data: Mapping[str, Any], errors: list[str]) -> None:
@@ -629,10 +711,10 @@ def _validate_stages(data: Mapping[str, Any], errors: list[str]) -> None:
         return
     s1 = stages.get("stage_1")
     if isinstance(s1, Mapping):
-        _true(s1.get("authorized_by_xasset_0027"), "stages.stage_1.authorized_by_xasset_0027", errors)
+        _false(s1.get("authorized_by_xasset_0027"), "stages.stage_1.authorized_by_xasset_0027", errors)
         _exact(
             s1.get("executable_only_after"),
-            "XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION",
+            STAGE_1_EXECUTION_PRECONDITION,
             "stages.stage_1.executable_only_after",
             errors,
         )
@@ -728,60 +810,124 @@ def _validate_construction_families(data: Mapping[str, Any], errors: list[str]) 
         errors.append("construction_families.excluded_non_routes: expected a mapping")
 
 
-def _validate_candidate_universe(data: Mapping[str, Any], errors: list[str]) -> None:
-    universe = data.get("candidate_universe")
-    if not isinstance(universe, Mapping):
-        errors.append("candidate_universe: expected a mapping")
+def _validate_family_slot_grid(data: Mapping[str, Any], errors: list[str]) -> None:
+    """The grid is exhaustive over provenance families and NOT over constructions.
+
+    Both facts must be stated affirmatively in the YAML. A grid that claimed exhaustiveness over
+    constructions would license reporting a family-slot negative as exhaustive non-constructibility,
+    which is precisely the overreach this validator exists to prevent.
+    """
+    grid = data.get("family_slot_grid")
+    if not isinstance(grid, Mapping):
+        errors.append("family_slot_grid: expected a mapping")
         return
-    _exact(universe.get("generation_route"), "DETERMINISTIC_GENERATOR", "candidate_universe.generation_route", errors)
     _exact(
-        universe.get("generation_rule"),
+        grid.get("generation_rule"),
         "CARTESIAN_PRODUCT_OF_SLEEVES_BOUNDS_DRIVER_CLASSES_AND_CONSTRUCTION_FAMILIES",
-        "candidate_universe.generation_rule",
+        "family_slot_grid.generation_rule",
         errors,
     )
     _exact(
-        universe.get("construction_id_format"),
+        grid.get("slot_id_format"),
         "{sleeve}::{bound}::{driver_class}::{family_id}",
-        "candidate_universe.construction_id_format",
+        "family_slot_grid.slot_id_format",
         errors,
     )
-    _true(universe.get("exhaustive"), "candidate_universe.exhaustive", errors)
-    _true(universe.get("deterministic"), "candidate_universe.deterministic", errors)
+    _exact(grid.get("slot_count"), len(generate_family_slot_grid()), "family_slot_grid.slot_count", errors)
+    _true(grid.get("exhaustive_over_families"), "family_slot_grid.exhaustive_over_families", errors)
+    _false(
+        grid.get("exhaustive_over_constructions"),
+        "family_slot_grid.exhaustive_over_constructions",
+        errors,
+    )
+    _true(grid.get("deterministic"), "family_slot_grid.deterministic", errors)
     _true(
-        universe.get("byte_identically_reproducible"),
-        "candidate_universe.byte_identically_reproducible",
+        grid.get("byte_identically_reproducible"),
+        "family_slot_grid.byte_identically_reproducible",
         errors,
     )
     _exact(
-        universe.get("candidate_addition_or_removal_by_executor"),
+        grid.get("slot_addition_or_removal"),
         "PROHIBITED",
-        "candidate_universe.candidate_addition_or_removal_by_executor",
+        "family_slot_grid.slot_addition_or_removal",
+        errors,
+    )
+
+
+def _validate_construction_universe_closure(data: Mapping[str, Any], errors: list[str]) -> None:
+    """The construction universe is not closed, and this charter does not close it.
+
+    A negative outcome is preferable to invented completeness, so the YAML must record NOT_CLOSED
+    rather than manufacture a registry it cannot support.
+    """
+    block = data.get("construction_universe_closure")
+    if not isinstance(block, Mapping):
+        errors.append("construction_universe_closure: expected a mapping")
+        return
+    _exact(block.get("status"), "NOT_CLOSED", "construction_universe_closure.status", errors)
+    _false(block.get("stage_1_executable"), "construction_universe_closure.stage_1_executable", errors)
+    _exact(
+        block.get("route_taken"),
+        "HONEST_PREREQUISITE",
+        "construction_universe_closure.route_taken",
         errors,
     )
     _exact(
-        universe.get("outcome_aware_candidate_change"),
-        "PROHIBITED",
-        "candidate_universe.outcome_aware_candidate_change",
+        block.get("next_required_prerequisite"),
+        "CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION",
+        "construction_universe_closure.next_required_prerequisite",
+        errors,
+    )
+    _false(
+        block.get("authorized_by_xasset_0027"),
+        "construction_universe_closure.authorized_by_xasset_0027",
         errors,
     )
     _exact(
-        universe.get("invented_candidate_mechanism"),
+        block.get("invented_completeness"),
         "PROHIBITED",
-        "candidate_universe.invented_candidate_mechanism",
+        "construction_universe_closure.invented_completeness",
         errors,
     )
+    rejected = block.get("routes_considered_and_rejected")
+    if not isinstance(rejected, list) or len(rejected) != 2:
+        errors.append(
+            "construction_universe_closure.routes_considered_and_rejected: expected both rejected "
+            "routes (CONCRETE_FINITE_REGISTRY, DETERMINISTIC_CONSTRUCTION_GRAMMAR) with reasons"
+        )
+    else:
+        _exact(
+            [r.get("route") if isinstance(r, Mapping) else None for r in rejected],
+            ["CONCRETE_FINITE_REGISTRY", "DETERMINISTIC_CONSTRUCTION_GRAMMAR"],
+            "construction_universe_closure.routes_considered_and_rejected[].route",
+            errors,
+        )
+        for position, row in enumerate(rejected):
+            where = f"construction_universe_closure.routes_considered_and_rejected[{position}]"
+            reason = row.get("rejected_because") if isinstance(row, Mapping) else None
+            if not isinstance(reason, str) or not reason.strip():
+                errors.append(f"{where}.rejected_because: expected a non-empty reason")
 
     completeness = data.get("completeness_rule")
     if isinstance(completeness, Mapping):
         _true(
-            completeness.get("cell_negative_requires_all_candidates_evaluated"),
-            "completeness_rule.cell_negative_requires_all_candidates_evaluated",
+            completeness.get("applies_only_after_construction_universe_closure"),
+            "completeness_rule.applies_only_after_construction_universe_closure",
+            errors,
+        )
+        _true(
+            completeness.get("cell_negative_requires_all_registered_constructions_evaluated"),
+            "completeness_rule.cell_negative_requires_all_registered_constructions_evaluated",
+            errors,
+        )
+        _true(
+            completeness.get("family_slot_negative_does_not_establish_non_constructibility"),
+            "completeness_rule.family_slot_negative_does_not_establish_non_constructibility",
             errors,
         )
         _false(
-            completeness.get("unevaluated_candidate_permitted"),
-            "completeness_rule.unevaluated_candidate_permitted",
+            completeness.get("unevaluated_construction_permitted"),
+            "completeness_rule.unevaluated_construction_permitted",
             errors,
         )
         _false(
@@ -796,27 +942,47 @@ def _validate_candidate_universe(data: Mapping[str, Any], errors: list[str]) -> 
 def _validate_counts(data: Mapping[str, Any], errors: list[str]) -> None:
     inventory = data.get("trial_inventory")
     if isinstance(inventory, Mapping):
-        _exact(inventory.get("unit_of_trial"), "ONE_CANDIDATE_EVALUATION", "trial_inventory.unit_of_trial", errors)
-        _exact(inventory.get("derived_cells"), 48, "trial_inventory.derived_cells", errors)
+        # A trial ceiling bounds hypotheses. The construction universe is not closed, so the number
+        # of constructions is undefined and no honest ceiling can be stated.
+        _exact(inventory.get("status"), "NOT_YET_DEFINABLE", "trial_inventory.status", errors)
         _exact(
-            inventory.get("derived_candidate_ceiling"),
-            240,
-            "trial_inventory.derived_candidate_ceiling",
+            inventory.get("defined_by"),
+            "THE_FUTURE_SEPARATELY_AUTHORIZED_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT",
+            "trial_inventory.defined_by",
             errors,
         )
-        _exact(inventory.get("candidates_per_cell"), 5, "trial_inventory.candidates_per_cell", errors)
-        _exact(inventory.get("reserve_candidates"), 0, "trial_inventory.reserve_candidates", errors)
         _exact(
-            inventory.get("result_aware_candidates"),
+            inventory.get("unit_of_trial_once_defined"),
+            "ONE_CONSTRUCTION_EVALUATION",
+            "trial_inventory.unit_of_trial_once_defined",
+            errors,
+        )
+        _exact(inventory.get("derived_cells"), 48, "trial_inventory.derived_cells", errors)
+        _exact(
+            inventory.get("derived_family_slots"),
+            240,
+            "trial_inventory.derived_family_slots",
+            errors,
+        )
+        _exact(inventory.get("family_slots_per_cell"), 5, "trial_inventory.family_slots_per_cell", errors)
+        _exact(
+            inventory.get("result_aware_constructions"),
             "PROHIBITED",
-            "trial_inventory.result_aware_candidates",
+            "trial_inventory.result_aware_constructions",
             errors,
         )
         _true(
-            inventory.get("every_candidate_must_be_recorded"),
-            "trial_inventory.every_candidate_must_be_recorded",
+            inventory.get("every_registered_construction_must_be_recorded"),
+            "trial_inventory.every_registered_construction_must_be_recorded",
             errors,
         )
+        # A trial ceiling must not be smuggled back in under the old key names.
+        for banned in ("unit_of_trial", "derived_candidate_ceiling", "candidates_per_cell"):
+            if banned in inventory:
+                errors.append(
+                    f"trial_inventory.{banned}: a trial ceiling may not be stated while the "
+                    "construction universe is not closed"
+                )
     else:
         errors.append("trial_inventory: expected a mapping")
 
@@ -835,17 +1001,17 @@ def _validate_counts(data: Mapping[str, Any], errors: list[str]) -> None:
 
     # Recompute the arithmetic from the closed populations rather than trusting the asserted numbers.
     cells = len(SLEEVES) * len(BOUNDS) * len(DRIVER_CLASSES)
-    candidates = cells * len(CONSTRUCTION_FAMILIES)
-    if cells != 48 or candidates != 240:
+    slots = cells * len(CONSTRUCTION_FAMILIES)
+    if cells != 48 or slots != 240:
         errors.append(
-            f"derived arithmetic: closed populations imply {cells} cells and {candidates} candidates, "
+            f"derived arithmetic: closed populations imply {cells} cells and {slots} family slots, "
             "not 48 and 240"
         )
-    generated = generate_candidate_universe()
+    generated = generate_family_slot_grid()
     if len(generated) != 240:
-        errors.append(f"generator produced {len(generated)} candidates, expected 240")
+        errors.append(f"generator produced {len(generated)} family slots, expected 240")
     if len(set(generated)) != len(generated):
-        errors.append("generator produced duplicate construction ids")
+        errors.append("generator produced duplicate family slot ids")
     if len(generate_cell_universe()) != 48:
         errors.append("generator produced an unexpected cell count")
 
@@ -1012,6 +1178,17 @@ def _validate_disposition_rules(data: Mapping[str, Any], errors: list[str]) -> N
             "disposition_rules.candidate_disposition.categorical_dominates_prerequisite",
             errors,
         )
+        _true(
+            cand.get("uncertainty_dominates_prerequisite"),
+            "disposition_rules.candidate_disposition.uncertainty_dominates_prerequisite",
+            errors,
+        )
+        _exact(
+            cand.get("applies_at"),
+            "CANDIDATE_LEVEL_ONLY",
+            "disposition_rules.candidate_disposition.applies_at",
+            errors,
+        )
         _precedence(
             cand.get("precedence"),
             CANDIDATE_PRECEDENCE,
@@ -1079,6 +1256,9 @@ def _validate_open_reading(data: Mapping[str, Any], errors: list[str]) -> None:
         errors.append("g2_reading_mapping: expected a mapping")
         return
     _true(mapping.get("closed_table"), "g2_reading_mapping.closed_table", errors)
+    # Without this the table is decorative: a record could carry the reading-dependent pair while
+    # recording G2 as PASS, and derive a constructible candidate.
+    _true(mapping.get("coupled_to_g2_gate_result"), "g2_reading_mapping.coupled_to_g2_gate_result", errors)
     _exact(
         mapping.get("reading_dependent_maps_to_candidate_outcome"),
         "UNABLE_TO_DETERMINE",
@@ -1099,25 +1279,34 @@ def _validate_open_reading(data: Mapping[str, Any], errors: list[str]) -> None:
         where = f"g2_reading_mapping.rows[{position}]"
         if not _keys(row, G2_MAPPING_KEYS, where, errors):
             continue
-        sm, po, out, dep = G2_MAPPING_ROWS[position]
+        sm, po, out, gate, dep = G2_MAPPING_ROWS[position]
         _exact(row.get("subject_matter_reading"), sm, f"{where}.subject_matter_reading", errors)
         _exact(row.get("preference_only_reading"), po, f"{where}.preference_only_reading", errors)
         _exact(row.get("g2_effective_outcome"), out, f"{where}.g2_effective_outcome", errors)
+        _exact(row.get("required_g2_gate_result"), gate, f"{where}.required_g2_gate_result", errors)
         _exact(row.get("reading_dependent"), dep, f"{where}.reading_dependent", errors)
 
-    # The declared table and the executable mapping function must agree on every concrete pair.
+    # The declared table and both executable mapping functions must agree on every concrete pair.
     for sm in READING_VOCABULARY:
         for po in READING_VOCABULARY:
             declared = None
-            for r_sm, r_po, r_out, _dep in G2_MAPPING_ROWS:
+            declared_gate = None
+            for r_sm, r_po, r_out, r_gate, _dep in G2_MAPPING_ROWS:
                 if (r_sm in (sm, "ANY")) and (r_po in (po, "ANY")):
                     declared = r_out
+                    declared_gate = r_gate
                     break
             computed = map_g2_reading(sm, po)
             if declared is not None and declared != computed:
                 errors.append(
                     f"g2_reading_mapping: declared table gives {declared!r} for ({sm}, {po}) but "
                     f"map_g2_reading() gives {computed!r}"
+                )
+            computed_gate = required_g2_gate_result(sm, po)
+            if declared_gate is not None and declared_gate != computed_gate:
+                errors.append(
+                    f"g2_reading_mapping: declared table requires G2 {declared_gate!r} for ({sm}, {po}) "
+                    f"but required_g2_gate_result() gives {computed_gate!r}"
                 )
 
 
@@ -1298,10 +1487,18 @@ def _validate_execution(data: Mapping[str, Any], errors: list[str]) -> None:
 
     stopping = execution.get("stopping_rules")
     if isinstance(stopping, Mapping):
+        # The registered set is supplied by the future construction universe closure unit, not by the
+        # 240 family slots. Pinning the stopping rule to 240 would reintroduce the family-slot ceiling
+        # as though it were a candidate enumeration.
         _exact(
             stopping.get("terminates_when"),
-            "ALL_240_REGISTERED_CANDIDATES_CARRY_A_RECORDED_DISPOSITION",
+            "EVERY_REGISTERED_CONSTRUCTION_IN_THE_CLOSED_CONSTRUCTION_UNIVERSE_CARRIES_A_RECORDED_DISPOSITION",
             "execution.stopping_rules.terminates_when",
+            errors,
+        )
+        _true(
+            stopping.get("stopping_rule_currently_has_no_registered_set"),
+            "execution.stopping_rules.stopping_rule_currently_has_no_registered_set",
             errors,
         )
         _exact(
@@ -1397,6 +1594,56 @@ def _validate_result_boundary(data: Mapping[str, Any], errors: list[str]) -> Non
     else:
         errors.append("source_architecture_vocabulary: expected a mapping")
 
+    frozen = data.get("frozen_provenance_requirements")
+    if isinstance(frozen, Mapping):
+        _true(
+            frozen.get("binding_on_any_future_stage_1"),
+            "frozen_provenance_requirements.binding_on_any_future_stage_1",
+            errors,
+        )
+        existing = frozen.get("existing_source_architecture")
+        if isinstance(existing, Mapping):
+            for key in (
+                "identity_must_be_frozen_before_execution",
+                "path_and_hash_must_be_bound_to_a_preregistered_construction_identity",
+                "observed_bytes_must_be_verified_against_the_frozen_hash",
+                "syntactic_validation_is_insufficient",
+            ):
+                _true(existing.get(key), f"frozen_provenance_requirements.existing_source_architecture.{key}", errors)
+        else:
+            errors.append("frozen_provenance_requirements.existing_source_architecture: expected a mapping")
+        hypothetical = frozen.get("hypothetical_source_architecture")
+        if isinstance(hypothetical, Mapping):
+            _true(
+                hypothetical.get("requirements_must_be_frozen_before_execution"),
+                "frozen_provenance_requirements.hypothetical_source_architecture."
+                "requirements_must_be_frozen_before_execution",
+                errors,
+            )
+            _exact(
+                hypothetical.get("executor_authored_free_text_at_results_time"),
+                "PROHIBITED",
+                "frozen_provenance_requirements.hypothetical_source_architecture."
+                "executor_authored_free_text_at_results_time",
+                errors,
+            )
+        else:
+            errors.append("frozen_provenance_requirements.hypothetical_source_architecture: expected a mapping")
+        _false(
+            frozen.get("result_author_may_alter_a_frozen_architecture"),
+            "frozen_provenance_requirements.result_author_may_alter_a_frozen_architecture",
+            errors,
+        )
+        # No construction universe exists, so no architecture is frozen. This is the direct mechanical
+        # reason no results document can satisfy these requirements today.
+        _false(
+            frozen.get("currently_satisfiable"),
+            "frozen_provenance_requirements.currently_satisfiable",
+            errors,
+        )
+    else:
+        errors.append("frozen_provenance_requirements: expected a mapping")
+
     schema = data.get("result_schema")
     if isinstance(schema, Mapping):
         _false(schema.get("results_path_created_by_this_filing"), "result_schema.results_path_created_by_this_filing", errors)
@@ -1473,9 +1720,11 @@ def validate(data: Mapping[str, Any]) -> ValidationResult:
     _validate_identity(data, errors)
     _validate_authority(data, errors)
     _validate_lifecycle(data, errors)
+    _validate_stage_1_executability(data, errors)
     _validate_stages(data, errors)
     _validate_construction_families(data, errors)
-    _validate_candidate_universe(data, errors)
+    _validate_family_slot_grid(data, errors)
+    _validate_construction_universe_closure(data, errors)
     _validate_counts(data, errors)
     _validate_registry(data, errors)
     _validate_gates(data, errors)
@@ -1497,18 +1746,49 @@ def validate(data: Mapping[str, Any]) -> ValidationResult:
 # ======================================================================================
 
 
-def validate_stage1_results(results: Mapping[str, Any]) -> ValidationResult:
-    """Validate a Stage-1 results document against the frozen candidate universe.
+def closed_construction_universe() -> Mapping[str, Mapping[str, Any]]:
+    """Return the closed construction universe: empty, because none is closed.
 
-    No results document exists or is authorized by XASSET-0027. This function is the enforcement
-    mechanism a future, separately authorized Stage-1 implementation must pass, and it is what makes
-    the exhaustiveness and determinism claims checkable rather than merely stated.
+    XASSET-0027 charters this programme's architecture and does NOT close a concrete construction
+    universe. The 240 family slots classify provenance; they do not enumerate constructions. This
+    function is deliberately empty so that any real call to validate_stage1_results fails closed.
+    """
+    return {}
+
+
+def validate_stage1_results(
+    results: Mapping[str, Any],
+    construction_universe: Mapping[str, Mapping[str, Any]] | None = None,
+) -> ValidationResult:
+    """Validate a Stage-1 results document against a CLOSED construction universe.
+
+    ``construction_universe`` maps each frozen ``construction_id`` to its frozen provenance:
+    ``cell_id``, ``source_architecture``, and either ``source_path``/``source_sha256`` (existing) or
+    ``hypothetical_source_requirements`` (hypothetical). It defaults to
+    :func:`closed_construction_universe`, which is EMPTY, so a real call fails closed: no results
+    document may be produced while the construction universe is not closed.
+
+    Supplying a universe explicitly does not authorize execution; it exercises the enforcement
+    machinery a future, separately authorized closure unit and Stage-1 implementation must pass.
     """
     errors: list[str] = []
     if not isinstance(results, Mapping):
         return ValidationResult(False, ("stage1_results: expected a top-level mapping",))
 
-    expected_universe = generate_candidate_universe()
+    if construction_universe is None:
+        construction_universe = closed_construction_universe()
+    if not construction_universe:
+        return ValidationResult(
+            False,
+            (
+                "stage1_results: no closed construction universe exists, so no Stage-1 results "
+                "document may be produced or validated. The 240 family slots classify provenance and "
+                "do not enumerate constructions. Closing a concrete construction universe requires "
+                "its own separately authorized unit (CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION).",
+            ),
+        )
+
+    expected_universe = tuple(construction_universe)
     candidates = results.get("candidate_results")
     if not isinstance(candidates, list):
         return ValidationResult(False, ("stage1_results.candidate_results: expected a list",))
@@ -1520,46 +1800,132 @@ def validate_stage1_results(results: Mapping[str, Any]) -> ValidationResult:
             errors.append(f"{where}: expected a mapping")
             continue
         construction_id = row.get("construction_id")
-        if construction_id not in expected_universe:
+        if construction_id not in construction_universe:
             errors.append(
-                f"{where}.construction_id: {construction_id!r} is not in the frozen candidate "
-                "universe; unregistered candidates are prohibited"
+                f"{where}.construction_id: {construction_id!r} is not in the frozen construction "
+                "universe; unregistered constructions are prohibited"
             )
             continue
         if construction_id in seen:
             errors.append(f"{where}.construction_id: {construction_id!r} is duplicated")
             continue
         seen[str(construction_id)] = row
+        frozen = construction_universe[str(construction_id)]
 
         for key in REQUIRED_CANDIDATE_RESULT_KEYS:
             if key not in row:
                 errors.append(f"{where}: required key {key!r} is absent")
 
-        # Provenance: an existing-source candidate must be exactly identified.
+        # Provenance must be the FROZEN identity, verified against observed bytes. Accepting a
+        # syntactically valid path plus an arbitrary 64-hex string validates shape, not identity.
         architecture = row.get("source_architecture")
+        frozen_architecture = frozen.get("source_architecture") if isinstance(frozen, Mapping) else None
         if architecture not in SOURCE_ARCHITECTURES:
             errors.append(f"{where}.source_architecture: {architecture!r} is outside the closed set")
+        elif architecture != frozen_architecture:
+            errors.append(
+                f"{where}.source_architecture: recorded {architecture!r} but the frozen construction "
+                f"identity is {frozen_architecture!r}; a result author may not alter a frozen architecture"
+            )
         elif architecture == "EXISTING_SOURCE_ARCHITECTURE":
-            if not str(row.get("source_path") or "").strip():
+            recorded_path = str(row.get("source_path") or "").strip()
+            recorded_sha = str(row.get("source_sha256") or "")
+            frozen_path = str(frozen.get("source_path") or "").strip()
+            frozen_sha = str(frozen.get("source_sha256") or "")
+            if not recorded_path:
                 errors.append(f"{where}.source_path: required for EXISTING_SOURCE_ARCHITECTURE")
-            sha = str(row.get("source_sha256") or "")
-            if not re.fullmatch(r"[0-9a-f]{64}", sha):
+            elif recorded_path != frozen_path:
+                errors.append(
+                    f"{where}.source_path: recorded {recorded_path!r} but the frozen construction "
+                    f"identity names {frozen_path!r}"
+                )
+            if not re.fullmatch(r"[0-9a-f]{64}", recorded_sha):
                 errors.append(f"{where}.source_sha256: required 64-hex digest for EXISTING_SOURCE_ARCHITECTURE")
+            elif recorded_sha != frozen_sha:
+                errors.append(
+                    f"{where}.source_sha256: recorded digest does not match the frozen construction "
+                    "identity's digest"
+                )
+            elif recorded_path == frozen_path and recorded_path:
+                # Verify the digest against the file's observed bytes, not merely its syntax.
+                resolved = (ROOT / recorded_path).resolve()
+                try:
+                    resolved.relative_to(ROOT)
+                except ValueError:
+                    errors.append(f"{where}.source_path: {recorded_path!r} resolves outside the repository")
+                else:
+                    if not resolved.is_file():
+                        errors.append(
+                            f"{where}.source_path: {recorded_path!r} does not exist; a frozen source "
+                            "identity must name an actual file whose bytes can be verified"
+                        )
+                    else:
+                        observed = sha256_file(resolved)
+                        if observed != recorded_sha:
+                            errors.append(
+                                f"{where}.source_sha256: recorded digest does not match the observed "
+                                f"bytes of {recorded_path!r}"
+                            )
         else:
             if row.get("source_path") is not None or row.get("source_sha256") is not None:
                 errors.append(
                     f"{where}: HYPOTHETICAL_SOURCE_ARCHITECTURE must carry no source_path or source_sha256"
                 )
-            if not str(row.get("hypothetical_source_requirements") or "").strip():
+            recorded_requirements = str(row.get("hypothetical_source_requirements") or "").strip()
+            frozen_requirements = str(frozen.get("hypothetical_source_requirements") or "").strip()
+            if not recorded_requirements:
                 errors.append(
                     f"{where}.hypothetical_source_requirements: required for HYPOTHETICAL_SOURCE_ARCHITECTURE"
+                )
+            elif recorded_requirements != frozen_requirements:
+                errors.append(
+                    f"{where}.hypothetical_source_requirements: does not match the frozen construction "
+                    "identity; a non-empty string authored at results time is not a preregistration"
                 )
 
         if not row.get("governing_authority_refs"):
             errors.append(f"{where}.governing_authority_refs: must be non-empty")
 
-        # Disposition must equal the deterministic derivation from the recorded gate results.
+        # The reading map must be applied exactly, and it must GOVERN the recorded G2 gate result.
+        sm = row.get("g2_outcome_under_subject_matter_reading")
+        po = row.get("g2_outcome_under_preference_only_reading")
         gate_results = row.get("gate_results")
+        if sm in READING_VOCABULARY and po in READING_VOCABULARY:
+            required_gate = required_g2_gate_result(str(sm), str(po))
+            if required_gate == G2_RECORD_REJECTED:
+                errors.append(
+                    f"{where}: subject-matter FAILS with preference-only PASSES is incoherent; the "
+                    "preference-only reading is strictly narrower"
+                )
+            elif isinstance(gate_results, Mapping):
+                recorded_gate = gate_results.get("G2_MAGNITUDE_INTRINSICALITY")
+                if recorded_gate != required_gate:
+                    errors.append(
+                        f"{where}.gate_results.G2_MAGNITUDE_INTRINSICALITY: recorded {recorded_gate!r} "
+                        f"but the two SS-K.1 readings require {required_gate!r}; the reading map governs "
+                        "the recorded gate result and is not an annotation beside it"
+                    )
+            expected_dep = is_reading_dependent(str(sm), str(po))
+            if row.get("g2_outcome_is_reading_dependent") is not expected_dep:
+                errors.append(
+                    f"{where}.g2_outcome_is_reading_dependent: expected {expected_dep}, got "
+                    f"{row.get('g2_outcome_is_reading_dependent')!r}"
+                )
+            if expected_dep and row.get("disposition") == "BLOCKED_CATEGORICALLY":
+                errors.append(
+                    f"{where}: a reading-dependent G2 outcome may not be recorded as "
+                    "BLOCKED_CATEGORICALLY while XASSET-0024 SS-K.1 remains unresolved"
+                )
+            if expected_dep and row.get("disposition") == "BLOCKED_PENDING_SEPARATE_PREREQUISITE":
+                errors.append(
+                    f"{where}: a reading-dependent G2 outcome may not be recorded as "
+                    "BLOCKED_PENDING_SEPARATE_PREREQUISITE; closing a named prerequisite cannot "
+                    "resolve XASSET-0024 SS-K.1"
+                )
+        else:
+            errors.append(f"{where}: both G2 reading outcomes must be in {READING_VOCABULARY}")
+
+        # Disposition must equal the deterministic derivation from the recorded gate results.
         if isinstance(gate_results, Mapping):
             try:
                 derived = derive_candidate_disposition(gate_results)
@@ -1574,38 +1940,14 @@ def validate_stage1_results(results: Mapping[str, Any]) -> ValidationResult:
         else:
             errors.append(f"{where}.gate_results: expected a mapping of every gate id to a result")
 
-        # The reading map must be applied exactly, and the dependence flag must be consistent.
-        sm = row.get("g2_outcome_under_subject_matter_reading")
-        po = row.get("g2_outcome_under_preference_only_reading")
-        if sm in READING_VOCABULARY and po in READING_VOCABULARY:
-            effective = map_g2_reading(str(sm), str(po))
-            if effective == "INCOHERENT_REJECTED":
-                errors.append(
-                    f"{where}: subject-matter FAILS with preference-only PASSES is incoherent; the "
-                    "preference-only reading is strictly narrower"
-                )
-            expected_dep = is_reading_dependent(str(sm), str(po))
-            if row.get("g2_outcome_is_reading_dependent") is not expected_dep:
-                errors.append(
-                    f"{where}.g2_outcome_is_reading_dependent: expected {expected_dep}, got "
-                    f"{row.get('g2_outcome_is_reading_dependent')!r}"
-                )
-            if expected_dep and row.get("disposition") == "BLOCKED_CATEGORICALLY":
-                errors.append(
-                    f"{where}: a reading-dependent G2 outcome may not be recorded as "
-                    "BLOCKED_CATEGORICALLY while XASSET-0024 SS-K.1 remains unresolved"
-                )
-        else:
-            errors.append(f"{where}: both G2 reading outcomes must be in {READING_VOCABULARY}")
-
     missing = [c for c in expected_universe if c not in seen]
     if missing:
         errors.append(
-            f"candidate_results: {len(missing)} registered candidate(s) have no recorded disposition, "
-            f"e.g. {missing[:3]}; a cell outcome requires its complete candidate set"
+            f"candidate_results: {len(missing)} registered construction(s) have no recorded "
+            f"disposition, e.g. {missing[:3]}; a cell outcome requires its complete registered set"
         )
 
-    # Cell outcomes must be the deterministic composition of their own five candidates.
+    # Cell outcomes must be the deterministic composition of their own registered constructions.
     cell_rows = results.get("cell_results")
     if isinstance(cell_rows, list):
         for position, row in enumerate(cell_rows):
@@ -1615,14 +1957,15 @@ def validate_stage1_results(results: Mapping[str, Any]) -> ValidationResult:
                 continue
             cell_id = str(row.get("cell_id"))
             members = [c for c in expected_universe if cell_id_of(c) == cell_id]
-            if len(members) != 5:
+            if not members:
                 errors.append(f"{where}.cell_id: {cell_id!r} is not a registered cell")
                 continue
             dispositions = [seen[m].get("disposition") for m in members if m in seen]
-            if len(dispositions) != 5:
+            if len(dispositions) != len(members):
                 errors.append(
-                    f"{where}: cell {cell_id!r} has {len(dispositions)} of 5 candidate dispositions; "
-                    "a negative cell outcome requires every registered candidate to be evaluated"
+                    f"{where}: cell {cell_id!r} has {len(dispositions)} of {len(members)} registered "
+                    "dispositions; a negative cell outcome requires every registered construction to "
+                    "be evaluated"
                 )
                 continue
             try:
@@ -1632,7 +1975,7 @@ def validate_stage1_results(results: Mapping[str, Any]) -> ValidationResult:
                 continue
             if row.get("outcome") != derived:
                 errors.append(
-                    f"{where}.outcome: recorded {row.get('outcome')!r} but its five candidates "
+                    f"{where}.outcome: recorded {row.get('outcome')!r} but its registered constructions "
                     f"deterministically derive {derived!r}"
                 )
 
@@ -1641,6 +1984,13 @@ def validate_stage1_results(results: Mapping[str, Any]) -> ValidationResult:
             errors.append(
                 f"stage1_results.disposition: {banned!r} may not be claimed; XASSET-0024 SS-J.12 is "
                 "deferred and Stage 1 tests only the Stage-1-testable subset"
+            )
+    for banned in ("EXHAUSTIVE_NON_CONSTRUCTIBILITY", "NO_CONSTRUCTION_IS_POSSIBLE"):
+        if banned in str(results.get("disposition", "")):
+            errors.append(
+                f"stage1_results.disposition: {banned!r} may not be claimed; a family-slot negative "
+                "means only that no construction the executor considered within that provenance "
+                "family qualified"
             )
 
     return ValidationResult(not errors, tuple(errors))
@@ -1660,11 +2010,12 @@ def protocol_mirror_expected() -> dict[str, str]:
         "driver_class_count": str(len(DRIVER_CLASSES)),
         "construction_family_count": str(len(CONSTRUCTION_FAMILIES)),
         "cell_count": str(DERIVED_IDENTITIES["CELL_COUNT"]),
-        "candidate_ceiling": str(DERIVED_IDENTITIES["CANDIDATE_CEILING"]),
+        "family_slot_count": str(DERIVED_IDENTITIES["FAMILY_SLOT_COUNT"]),
         "roll_up_unit_count": str(DERIVED_IDENTITIES["ROLL_UP_UNIT_COUNT"]),
         "gate_count": str(len(GATE_IDS)),
-        "reserve_candidates": "0",
         "consequential_parameter_count": "0",
+        "stage_1_executable": "false",
+        "construction_universe_closed": "false",
         "stage_2_authorized": "false",
         "j12_deferred": "true",
         "hash_version": HASH_VERSION,
@@ -1769,7 +2120,8 @@ def main() -> int:  # pragma: no cover - CLI
     if result.ok:
         print(
             f"level1_endpoint_evidence_preregistration_validator: OK ({STUDY_ID}; "
-            f"{len(generate_candidate_universe())} candidates over {len(generate_cell_universe())} cells)"
+            f"{len(generate_family_slot_grid())} family slots over {len(generate_cell_universe())} "
+            "cells; construction universe NOT CLOSED; Stage 1 NOT EXECUTABLE)"
         )
         return 0
     print(f"level1_endpoint_evidence_preregistration_validator: {len(result.errors)} error(s)")

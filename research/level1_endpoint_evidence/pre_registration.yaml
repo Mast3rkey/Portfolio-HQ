@@ -41,19 +41,33 @@ lifecycle_effectivity:
   - MERGE
   - IMMEDIATE_POST_MERGE_VERIFICATION
   - SUCCESSFUL_MERGE_COMMIT_CI
-  stage_1_execution_may_begin_only_after: XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
+  stage_1_execution_may_begin_only_after: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
   merge_alone_is_sufficient: false
   note: >-
     Merge alone does not make this charter operationally effective and does not open a Stage 1
     execution lane. The full lifecycle above must close first, and the merged canonical hashes must
     verify from the merged commit. This removes any window between merge and lifecycle closure in
-    which a second mutation lane could claim authority.
+    which a second mutation lane could claim authority. Separately and additionally, Stage 1 is
+    NOT EXECUTABLE until a concrete construction universe is closed by its own future, separately
+    authorized unit — see construction_universe_closure. Lifecycle closure alone does not make
+    Stage 1 executable either.
+
+stage_1_executability:
+  executable: false
+  status: NOT_YET_EXECUTABLE_CONSTRUCTION_UNIVERSE_NOT_CLOSED
+  blocking_prerequisite: CONCRETE_CONSTRUCTION_UNIVERSE_CLOSURE
+  authorized_by_xasset_0027: false
+  statement: >-
+    XASSET-0027 charters this programme's architecture — its families, gates, disposition rules,
+    reading map, deferrals, provenance requirements, and firewall — and does NOT authorize Stage 1
+    execution. Executing Stage 1 requires a concrete construction universe that does not yet exist
+    and that XASSET-0027 does not create.
 
 stages:
   stage_1:
     stage_id: STAGE_1_CONSTRUCTION_FEASIBILITY
-    authorized_by_xasset_0027: true
-    executable_only_after: XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
+    authorized_by_xasset_0027: false
+    executable_only_after: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
     acquires_data: false
     fits_or_estimates_anything: false
     produces_endpoint: false
@@ -158,6 +172,8 @@ driver_class_scope:
 # --------------------------------------------------------------------------------------------------
 
 construction_families:
+  what_this_vocabulary_is: CLOSED_PROVENANCE_ORIGINATION_FAMILY_CLASSIFICATION
+  what_this_vocabulary_is_not: AN_EXHAUSTIVE_ENUMERATION_OF_CONCRETE_CONSTRUCTIONS
   closure_basis:
     route_set_closed_by: XASSET-0023_SECTION_H_THERE_IS_NO_THIRD_ROUTE
     route_class_coherence_closed_by: XASSET-0023_SECTION_H_4_ITEM_3
@@ -166,9 +182,18 @@ construction_families:
       XASSET-0023 SSH states of the two origination routes that "There is no third route," and SSH.4
       item 3 fixes route-class coherence exactly: a SSH.3 derivation is NUM-0001 class 2, and a SSH.2
       statement may carry class 1, 3, 4, or 5. Class 6 is disqualifying under SSH.4 item 2. The lawful
-      set of (route, NUM-0001 class) construction families is therefore closed by already-accepted
+      set of (route, NUM-0001 class) provenance families is therefore closed by already-accepted
       authority at exactly five members. This program enumerates them; it does not select among them,
       rank them, invent one, or exclude one.
+    what_closure_does_not_establish: >-
+      Closing the family vocabulary does NOT close the set of concrete constructions. XASSET-0023
+      SSH.2 states the conditions under which an endpoint is "uniquely stated" and SSH.3 the
+      conditions for a source-prescribed derivation; both are constraint sets, and satisfying a
+      constraint set does not enumerate the objects that satisfy it. Many distinct source
+      identities, source architectures, comparator architectures, evidence forms, external
+      impositions, calibrations, governance selections, provisional guardrails, and prescribed
+      derivations can inhabit the same family. A family is a classification of provenance, not a
+      hypothesis.
   record_keys:
   - family_id
   - route
@@ -230,8 +255,9 @@ construction_families:
 # Candidate universe — deterministic generator, closed before execution
 # --------------------------------------------------------------------------------------------------
 
-candidate_universe:
-  generation_route: DETERMINISTIC_GENERATOR
+family_slot_grid:
+  what_this_is: A_CLASSIFICATION_GRID_OF_SLEEVE_BOUND_DRIVER_CLASS_AND_PROVENANCE_FAMILY
+  what_this_is_not: A_TRIAL_CEILING_OR_AN_EXHAUSTIVE_CANDIDATE_ENUMERATION
   generation_rule: CARTESIAN_PRODUCT_OF_SLEEVES_BOUNDS_DRIVER_CLASSES_AND_CONSTRUCTION_FAMILIES
   generation_order:
   - sleeves
@@ -239,55 +265,99 @@ candidate_universe:
   - driver_classes
   - construction_families
   generation_order_note: >-
-    The generation order fixes construction_id assignment and iteration determinism only. It carries
-    no economic meaning, no priority, and no sleeve preference, and the final disposition of every
-    candidate, cell, and roll-up is provably independent of it.
-  construction_id_format: '{sleeve}::{bound}::{driver_class}::{family_id}'
+    The generation order fixes slot-id assignment and iteration determinism only. It carries no
+    economic meaning, no priority, and no sleeve preference.
+  slot_id_format: '{sleeve}::{bound}::{driver_class}::{family_id}'
   cell_id_format: '{sleeve}::{bound}::{driver_class}'
-  exhaustive: true
-  exhaustiveness_basis: >-
-    Every one of the four generating dimensions is closed by already-accepted authority: the sleeve
-    ontology (XASSET-0019, XASSET-0020 SSB), the two bounds (XASSET-0024 SSC), XASSET-0020 SSE.1's six
-    closed DRIVER classes, and the five (route, class) families closed by XASSET-0023 SSH and SSH.4
-    item 3. The product is therefore exhaustive over every lawful origination shape accepted authority
-    permits, and no lawful candidate exists outside it.
-  byte_identically_reproducible: true
+  slot_count: 240
   deterministic: true
-  candidate_addition_or_removal_by_executor: PROHIBITED
-  outcome_aware_candidate_change: PROHIBITED
-  amendment_after_outcomes_observed: REQUIRES_SEPARATE_GOVERNANCE_AND_NEW_HASH_PINS
-  invented_candidate_mechanism: PROHIBITED
-  invented_candidate_mechanism_note: >-
-    No candidate is invented to fill the universe. Each is the mechanical pairing of a closed cell with
-    a closed lawful construction family, and a family with no plausible instance in a given cell is
-    still evaluated and still recorded, because a recorded negative is the point.
+  byte_identically_reproducible: true
+  slot_addition_or_removal: PROHIBITED
+  exhaustive_over_families: true
+  exhaustive_over_constructions: false
+  exhaustiveness_statement: >-
+    This grid is exhaustive over the four closed dimensions — sleeve, bound, DRIVER class, and
+    provenance family — and is NOT exhaustive over concrete constructions. A slot names a lawful
+    provenance shape for a sleeve and bound; it does not name a hypothesis. Two analysts could occupy
+    the same slot while evaluating materially different source architectures. The grid is therefore a
+    classification scaffold for a future construction universe, not that universe.
+
+construction_universe_closure:
+  status: NOT_CLOSED
+  stage_1_executable: false
+  route_taken: HONEST_PREREQUISITE
+  routes_considered_and_rejected:
+  - route: CONCRETE_FINITE_REGISTRY
+    rejected_because: >-
+      A concrete registry is closeable only for constructions built on sources that already exist. The
+      set of existing admitted sources is exactly XASSET-0021's frozen snapshot, and XASSET-0025
+      Outcome C already searched precisely that corpus exhaustively and found no qualifying source. A
+      Stage 1 restricted to existing sources would therefore re-run an accepted determination and add
+      nothing. The genuinely open question concerns constructions whose sources do not yet exist, and
+      that space is not enumerated by any accepted decision; enumerating it would require inventing
+      research mechanisms, which this charter prohibits.
+  - route: DETERMINISTIC_CONSTRUCTION_GRAMMAR
+    rejected_because: >-
+      XASSET-0023 SSH.2 and SSH.3 state the conditions a qualifying statement or derivation must meet.
+      They are constraint sets, not generators, and satisfying a constraint set does not enumerate the
+      objects satisfying it. No accepted decision supplies a finite grammar producing concrete source
+      or derivation architectures, and the (route, class) product is a provenance classification
+      rather than a construction grammar.
+  verified_this_session:
+  - NO_ACCEPTED_DECISION_ENUMERATES_CONCRETE_SOURCE_OR_CONSTRUCTION_ARCHITECTURES
+  - XASSET_0023_H_2_AND_H_3_ARE_CONSTRAINT_SETS_NOT_GENERATORS
+  - XASSET_0025_OUTCOME_C_ALREADY_EXHAUSTED_THE_FROZEN_EXISTING_SOURCE_CORPUS
+  consequence: >-
+    Stage 1 is NOT EXECUTABLE. No 240-slot run may be performed, and no such run could establish
+    exhaustive non-constructibility, because the slots bound provenance families rather than
+    hypotheses. A negative slot result would mean only that no construction the executor considered
+    within that family qualified.
+  next_required_prerequisite: CONCRETE_CONSTRUCTION_UNIVERSE_PREREGISTRATION
+  next_required_prerequisite_note: >-
+    The smallest separately authorized next step is one governance unit whose scope is to determine
+    whether a concrete construction universe can be closed at all and, if so, to freeze it. That unit
+    must confront the open-hypothetical problem directly and must state its own answer; this charter
+    does not pre-decide it, does not choose among the possibilities that unit may consider, and does
+    not schedule it.
+  authorized_by_xasset_0027: false
+  invented_completeness: PROHIBITED
+  invented_completeness_note: >-
+    A recorded negative determination about closability is preferable to a manufactured registry. This
+    charter records that the universe is not closed rather than asserting a completeness it cannot
+    support.
 
 completeness_rule:
-  cell_negative_requires_all_candidates_evaluated: true
+  applies_only_after_construction_universe_closure: true
+  cell_negative_requires_all_registered_constructions_evaluated: true
   statement: >-
-    A cell may be recorded BLOCKED_CATEGORICALLY only if all five of its registered candidates were
-    evaluated and every one returned BLOCKED_CATEGORICALLY. A negative cell outcome therefore means
-    every lawful construction family failed under accepted authority — not that no construction
-    occurred to the executor.
-  unevaluated_candidate_permitted: false
+    Once — and only once — a concrete construction universe is closed by its own separately authorized
+    unit, a cell may be recorded BLOCKED_CATEGORICALLY only if every registered construction for that
+    cell was evaluated and every one returned BLOCKED_CATEGORICALLY. Until that closure exists this
+    rule has no registered set to range over, which is precisely why Stage 1 is not executable.
+  family_slot_negative_does_not_establish_non_constructibility: true
+  family_slot_negative_note: >-
+    A negative on a family slot means no construction the executor considered within that provenance
+    family qualified. It does not establish that no construction within that family could qualify, and
+    it may never be reported as exhaustive non-constructibility.
+  unevaluated_construction_permitted: false
   partial_cell_outcome_permitted: false
-  search_terminates_when: EVERY_REGISTERED_CANDIDATE_HAS_A_RECORDED_DISPOSITION
 
 trial_inventory:
-  unit_of_trial: ONE_CANDIDATE_EVALUATION
-  unit_of_trial_note: >-
-    The bounded trial unit is a candidate evaluation, not a cell label. A cell is a grouping of five
-    candidate evaluations and is not itself a trial.
+  status: NOT_YET_DEFINABLE
+  reason: >-
+    A trial ceiling bounds hypotheses. The construction universe is not closed, so the number of
+    constructions is undefined and no honest ceiling can be stated. The 240 family slots are a
+    classification grid and are expressly not a trial ceiling.
+  defined_by: THE_FUTURE_SEPARATELY_AUTHORIZED_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT
+  unit_of_trial_once_defined: ONE_CONSTRUCTION_EVALUATION
   derived_cell_expression: 4_SLEEVES_X_2_BOUNDS_X_6_DRIVER_CLASSES
   derived_cells: 48
-  derived_candidate_expression: 4_SLEEVES_X_2_BOUNDS_X_6_DRIVER_CLASSES_X_5_CONSTRUCTION_FAMILIES
-  derived_candidate_ceiling: 240
-  candidates_per_cell: 5
-  reserve_candidates: 0
-  unused_capacity: LAPSES_CANNOT_BE_REALLOCATED
-  result_aware_candidates: PROHIBITED
-  every_candidate_must_be_recorded: true
-  candidate_may_not_be_dropped_or_omitted: true
+  derived_family_slot_expression: 4_SLEEVES_X_2_BOUNDS_X_6_DRIVER_CLASSES_X_5_CONSTRUCTION_FAMILIES
+  derived_family_slots: 240
+  family_slots_per_cell: 5
+  result_aware_constructions: PROHIBITED
+  every_registered_construction_must_be_recorded: true
+  construction_may_not_be_dropped_or_omitted: true
 
 roll_up_units:
   derived_expression: 4_SLEEVES_X_2_BOUNDS
@@ -433,13 +503,14 @@ disposition_rules:
   candidate_disposition:
     quantifier: UNIVERSAL_OVER_ITS_OWN_GATE_RESULTS
     categorical_dominates_prerequisite: true
+    uncertainty_dominates_prerequisite: true
     precedence:
     - condition: ANY_CATEGORICAL_GATE_FAILURE
       outcome: BLOCKED_CATEGORICALLY
-    - condition: ANY_PREREQUISITE_GATE_FAILURE
-      outcome: BLOCKED_PENDING_SEPARATE_PREREQUISITE
     - condition: ANY_GATE_UNABLE_TO_DETERMINE
       outcome: UNABLE_TO_DETERMINE
+    - condition: ANY_PREREQUISITE_GATE_FAILURE
+      outcome: BLOCKED_PENDING_SEPARATE_PREREQUISITE
     - condition: ALL_GATES_PASS
       outcome: CONSTRUCTIBLE_CANDIDATE_IDENTIFIED
     compound_failure_note: >-
@@ -448,6 +519,21 @@ disposition_rules:
       categorical defect standing, so recording it as a closeable to-do would misstate what the
       evidence shows. Every applicable gate is evaluated before classification precisely so this
       cannot depend on which gate happens to be reached first.
+    uncertainty_precedence_note: >-
+      UNABLE_TO_DETERMINE outranks a prerequisite failure, and the ordering is logical rather than
+      stylistic. A categorical bar may dominate uncertainty because the candidate is barred whatever
+      the uncertainty resolves to. A prerequisite failure may not, because closing the named
+      prerequisite cannot resolve the uncertainty: a candidate whose G2 is UNABLE_TO_DETERMINE
+      because XASSET-0024 SSK.1 is unresolved, and whose G9 representation also fails, is not merely
+      waiting on a representation rule — supplying that rule would leave SSK.1 exactly as unresolved.
+      Recording such a candidate as prerequisite-blocked would convert an open methodology question
+      into a closeable to-do. Absent a categorical bar, uncertainty is never downgraded.
+    applies_at: CANDIDATE_LEVEL_ONLY
+    applies_at_note: >-
+      This ordering governs a single candidate's own gate results. Cell and roll-up precedence are
+      unchanged existential tests, because a different candidate that is determinately
+      prerequisite-blocked can legitimately keep a cell open even while another candidate is
+      uncertain.
   cell_outcome:
     quantifier: EXISTENTIAL_OVER_ITS_OWN_FIVE_CANDIDATE_DISPOSITIONS
     precedence:
@@ -505,35 +591,48 @@ open_reading_handling:
 
 g2_reading_mapping:
   closed_table: true
+  coupled_to_g2_gate_result: true
+  coupling_statement: >-
+    The two reading fields determine the recorded G2 gate result. This is an enforced identity, not an
+    informational annotation: a results record whose G2 gate result disagrees with the mapping is
+    rejected. Without this coupling the table would be decorative, and a record could carry a
+    reading-dependent pair while recording G2 as PASS and deriving a constructible candidate.
   record_keys:
   - subject_matter_reading
   - preference_only_reading
   - g2_effective_outcome
+  - required_g2_gate_result
   - reading_dependent
   rows:
   - subject_matter_reading: PASSES
     preference_only_reading: PASSES
     g2_effective_outcome: PASSES
+    required_g2_gate_result: PASS
     reading_dependent: false
   - subject_matter_reading: FAILS
     preference_only_reading: FAILS
     g2_effective_outcome: FAILS_CATEGORICALLY
+    required_g2_gate_result: FAIL
     reading_dependent: false
   - subject_matter_reading: PASSES
     preference_only_reading: FAILS
     g2_effective_outcome: UNABLE_TO_DETERMINE
+    required_g2_gate_result: UNABLE_TO_DETERMINE
     reading_dependent: true
   - subject_matter_reading: FAILS
     preference_only_reading: PASSES
     g2_effective_outcome: INCOHERENT_REJECTED
+    required_g2_gate_result: RECORD_REJECTED
     reading_dependent: false
   - subject_matter_reading: UNABLE_TO_DETERMINE
     preference_only_reading: ANY
     g2_effective_outcome: UNABLE_TO_DETERMINE
+    required_g2_gate_result: UNABLE_TO_DETERMINE
     reading_dependent: false
   - subject_matter_reading: ANY
     preference_only_reading: UNABLE_TO_DETERMINE
     g2_effective_outcome: UNABLE_TO_DETERMINE
+    required_g2_gate_result: UNABLE_TO_DETERMINE
     reading_dependent: false
   incoherence_note: >-
     The preference-only reading is strictly narrower than the subject-matter reading: anything
@@ -541,6 +640,11 @@ g2_reading_mapping:
     failing the subject-matter reading while passing the preference-only reading is therefore a
     recording defect, rejected rather than mapped to an outcome.
   reading_dependent_maps_to_candidate_outcome: UNABLE_TO_DETERMINE
+  reading_dependent_end_to_end_note: >-
+    With the coupling above and the candidate precedence in disposition_rules, a reading-dependent
+    candidate necessarily records G2 as UNABLE_TO_DETERMINE and therefore necessarily disposes to
+    UNABLE_TO_DETERMINE unless some categorical gate independently fails — including when a
+    prerequisite gate also fails. That is the end-to-end guarantee the closed table promises.
 
 # --------------------------------------------------------------------------------------------------
 # Stage-1-testable subset of XASSET-0024 SSJ, and deferred requirements
@@ -811,7 +915,7 @@ consequential_parameter_registry:
       expression: SLEEVE_COUNT_X_BOUND_COUNT_X_DRIVER_CLASS_COUNT
       value: 48
       contextual_class: CALCULATED_OUTPUT
-    - identity_id: CANDIDATE_CEILING
+    - identity_id: FAMILY_SLOT_COUNT
       expression: CELL_COUNT_X_CONSTRUCTION_FAMILY_COUNT
       value: 240
       contextual_class: CALCULATED_OUTPUT
@@ -861,11 +965,42 @@ source_architecture_vocabulary:
   - source_path
   - source_sha256
   note: >-
-    Most Stage-1 candidates describe the architecture a future source would need, because XASSET-0025
-    Outcome C found no qualifying source exists. Those are HYPOTHETICAL_SOURCE_ARCHITECTURE and carry a
-    stated requirements description with no path or hash. A candidate that consults an actual admitted
-    source is EXISTING_SOURCE_ARCHITECTURE and must carry that source's exact path and SHA-256, so the
-    evaluation is independently reproducible.
+    A construction that consults an actual admitted source is EXISTING_SOURCE_ARCHITECTURE and must
+    carry that source's exact path and SHA-256. A construction describing the architecture a future
+    source would need is HYPOTHETICAL_SOURCE_ARCHITECTURE and carries a stated requirements
+    description with no path or hash.
+
+frozen_provenance_requirements:
+  applies_to: THE_FUTURE_CONSTRUCTION_UNIVERSE_CLOSURE_UNIT
+  binding_on_any_future_stage_1: true
+  existing_source_architecture:
+    identity_must_be_frozen_before_execution: true
+    frozen_fields:
+    - source_path
+    - source_sha256
+    path_and_hash_must_be_bound_to_a_preregistered_construction_identity: true
+    observed_bytes_must_be_verified_against_the_frozen_hash: true
+    syntactic_validation_is_insufficient: true
+    syntactic_validation_note: >-
+      Accepting a syntactically valid path plus an arbitrary 64-hex string validates shape, not
+      identity. The recorded digest must be recomputed from the observed file bytes and must match,
+      and the path and digest must be the ones frozen in the construction universe rather than chosen
+      at results time.
+  hypothetical_source_architecture:
+    requirements_must_be_frozen_before_execution: true
+    frozen_fields:
+    - hypothetical_source_requirements
+    executor_authored_free_text_at_results_time: PROHIBITED
+    executor_authored_free_text_note: >-
+      A non-empty string authored in the results document is not a preregistration. The exact
+      architecture and its requirements must be frozen in the construction universe before execution,
+      and the results record may report the frozen architecture but may not invent or alter it.
+  result_author_may_alter_a_frozen_architecture: false
+  currently_satisfiable: false
+  currently_satisfiable_note: >-
+    No construction universe exists, so no architecture is frozen and these requirements cannot
+    currently be met by any results document. That is the direct mechanical reason Stage 1 is not
+    executable.
 
 provenance_manifest:
   required_fields:
@@ -886,6 +1021,11 @@ provenance_manifest:
   - cells_evaluated
   - cells_expected
   - validator_result
+  candidate_count_semantics: REGISTERED_CONSTRUCTIONS_IN_THE_CLOSED_CONSTRUCTION_UNIVERSE
+  candidate_count_semantics_note: >-
+    candidates_expected counts registered constructions, not family slots. It is supplied by the
+    future construction universe closure unit and is expressly not 240. No count is pinned here,
+    because pinning one would assert a construction universe this charter does not close.
   hash_verification_failure_behavior: VOIDS_EXECUTION_AUTHORITY_HALT
 
 # --------------------------------------------------------------------------------------------------
@@ -901,7 +1041,12 @@ execution:
     - repository_head_sha
     unregistered_attempt: PROHIBITED
   stopping_rules:
-    terminates_when: ALL_240_REGISTERED_CANDIDATES_CARRY_A_RECORDED_DISPOSITION
+    terminates_when: EVERY_REGISTERED_CONSTRUCTION_IN_THE_CLOSED_CONSTRUCTION_UNIVERSE_CARRIES_A_RECORDED_DISPOSITION
+    stopping_rule_currently_has_no_registered_set: true
+    stopping_rule_note: >-
+      The registered set is supplied by the future construction universe closure unit, not by the 240
+      family slots. Until that closure exists this rule ranges over nothing, which is one of the
+      mechanical reasons Stage 1 is not executable.
     early_stop_on_positive_finding: PROHIBITED
     early_stop_rationale: >-
       Coverage is all four sleeves and every lawful construction family. Stopping at the first
@@ -1090,4 +1235,4 @@ protected_paths:
 - intelligence/level1_sleeve_synthesis/
 - /private/tmp/phq-risk0001-results
 
-hash_version: ENDPOINT-0001-PREREG-V2
+hash_version: ENDPOINT-0001-PREREG-V3
