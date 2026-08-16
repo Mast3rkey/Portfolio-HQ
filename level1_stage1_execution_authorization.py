@@ -6,101 +6,81 @@ WHAT THIS MODULE IS
 XASSET-0028 closed the concrete construction universe STRUCTURALLY (680 registered
 constructions across 48 cells). Structural closure is not operational authorization. This
 module supplies the missing half: the mechanism by which exactly one Stage-1 execution
-attempt may become operationally authorized, and the fail-closed validator that decides
-whether THIS execution is authorized.
+attempt may become operationally authorized, and the fail-closed machinery that decides
+both "may a NEW execution start?" and "did THIS result come from the one lawful execution?"
 
 WHY THE COMMITTED BOOLEAN IS NOT THE MECHANISM
 ==============================================
 
-The obvious design is to flip ``stage_1_executability.executable`` to true. That is wrong
-for three independent reasons, the third of which is dispositive:
+Flipping ``stage_1_executability.executable`` to true is wrong on three independent
+grounds, the third dispositive: (1) a committed flag is effective the instant its PR
+merges, before post-merge verification and before CI concludes; (2) a flag ASSERTS
+authorization without demonstrating any gate closed; (3) it is already a validation error
+-- ``_validate_stage_1_executability`` enforces ``_false(executable)``, so the canonical
+file is INVALID in exactly the state that would authorize execution. XASSET-0029 preserves
+that lock. ``executable`` stays false FOREVER: *no committed value in this repository
+authorizes Stage-1 execution.*
 
-1. MERGE-TO-EXECUTION GAP. A committed boolean becomes effective the instant the
-   authorizing PR merges — before post-merge verification and before merge-commit CI has
-   even started, let alone concluded. The canonical file itself already promises
-   ``no_merge_to_execution_gap: true``, so a committed flag cannot be the mechanism
-   without contradicting it.
+CORRECTED AFTER INDEPENDENT FULL REVIEW 4946327932 (2 BLOCKING / 2 MAJOR)
+========================================================================
 
-2. A MUTABLE BOOLEAN IS NOT EVIDENCE. A single committed flag asserts authorization; it
-   does not demonstrate that any gate actually closed. Nothing about the flag is bound to
-   a review, an acceptance, a merge, a CI conclusion, or a hash.
+BLOCKING 1 -- the previous form accepted the entire lifecycle from caller strings and
+checked only internal consistency, so an entirely fictional review/acceptance/merge/CI
+chain validated. Reproduced before correcting. Lifecycle facts are now DERIVED AND
+RE-VERIFIED from two durable truth sources on every validation:
 
-3. IT IS ALREADY A VALIDATION ERROR. ``_validate_stage_1_executability`` in
-   ``level1_endpoint_evidence_preregistration_validator`` enforces
-   ``_false(block.get("executable"))``. The canonical preregistration is therefore INVALID
-   whenever ``executable`` is true. A file cannot be simultaneously valid and
-   self-authorizing. This is a deliberate permanent lock inherited from XASSET-0028, and
-   XASSET-0029 preserves it rather than unpicking it.
+  * LOCAL GIT OBJECT STORE (``GitTruthSource``) -- merge SHA, both parents, ancestry, and
+    the byte identity of load-bearing files AS THEY EXIST IN THE MERGED TREE. Content
+    addressed and cryptographically durable; forging it means forging SHA-1/SHA-256
+    preimages, not editing a JSON file.
+  * GITHUB GOVERNANCE METADATA (``GovernanceTruthSource``) -- the review, its exact
+    reviewed commit, its formal disposition, the reviewer's login, the principal
+    acceptance comment, the post-merge verification comment, and the merge-commit CI
+    run/job. This is GOVERNANCE metadata only. It is NOT market, price, fundamental, or
+    any other economic data, and this module acquires none.
 
-``executable`` accordingly stays false FOREVER and keeps its enforced-false check. Its
-meaning is now explicit: *no committed value in this repository authorizes Stage-1
-execution.*
+A recorded value is never accepted because its text is well-formed. Every recorded value
+is compared against the independently fetched fact, and an unreachable source FAILS CLOSED.
 
-THE MECHANISM
-=============
+BLOCKING 2 -- consuming the authorization made the public result validator reject the very
+execution that consumed it, while deferring consumption until after the work left a replay
+and concurrency window. Reproduced before correcting. The lane is now an explicit state
+machine:
 
-Authorization is TWO-FACTOR, and the two factors live in deliberately different places:
+    ABSENT -> READY -> CLAIMED -> COMPLETED
 
-  Factor 1 — REPOSITORY STATE (committed, reviewable, inert).
-      The canonical ``stage_1_operational_authorization`` block states WHAT a valid
-      authorization must prove and WHICH exact identities it must bind. It is a
-      specification of a gate. It never asserts that the gate is open.
+and the two questions are separated, because they are genuinely different questions:
 
-  Factor 2 — EXTERNAL PREEXECUTION ATTESTATION (not committed, runtime, one-shot).
-      A JSON document outside the repository, creatable only AFTER the XASSET-0029
-      lifecycle has closed in full, recording independently verifiable evidence for every
-      gate and bound to exact hashes and commit identities.
+  * ``new_execution_is_authorized()``  -- may a NEW execution start?  READY only.
+  * ``claimed_execution_is_authorized()`` -- did THIS result come from the one lawful
+    claim? CLAIMED or COMPLETED, bound to the exact attestation hash and attempt id.
 
-Neither factor authorizes anything alone. Execution is authorized only when the committed
-specification is satisfied AND a valid external attestation exists for THIS attempt.
+``validate_stage1_results()`` asks the SECOND question, so the lawfully claimed execution
+can publish a valid result while a second execution remains impossible.
 
-WHY THIS CLOSES THE MERGE-TO-EXECUTION GAP
-==========================================
+DURABILITY BOUNDARY -- STATED, NOT OVERCLAIMED
+==============================================
 
-Merging XASSET-0029 changes nothing operationally: no attestation exists, so
-``authorization_is_effective()`` still returns False. The attestation cannot be
-back-dated or pre-staged, because generating it requires evidence that does not exist
-until after the merge:
+``O_EXCL`` prevents a second creation only while the path exists, so "can never be
+replayed" would be an overclaim. What is actually enforced:
 
-  * the merge SHA (does not exist before the merge),
-  * a post-merge verification comment (posted after the merge),
-  * a merge-commit CI run that has CONCLUDED success at that exact merge SHA.
+  * The claim is recorded in TWO places -- ``claim.json`` and an append-only
+    ``lane_ledger.jsonl``. Losing either one alone does NOT reopen the lane, because both
+    are consulted and either is sufficient to establish CLAIMED.
+  * Destroying the whole authorization directory destroys the attestation too, so the lane
+    becomes ABSENT, which is NOT READY. Re-arming then requires passing the full
+    authenticated lifecycle verification again from scratch.
+  * A crash after CLAIM leaves the lane CLAIMED. It never returns to READY on its own.
+    Recovery is a governed act, not an automatic transition.
 
-CI cannot have concluded at the instant of merge. There is therefore a strictly positive
-interval between merge and authorizability, and it is enforced by evidence rather than by
-convention.
-
-WHY THIS DOES NOT REGRESS INFINITELY
-====================================
-
-Arming is a RUNTIME operator act, not another merged governance PR. XASSET-0029 is the
-last governance decision required for Stage 1. After it merges and verifies, the operator
-runs the generator once; no further authorization PR is needed, ever. The regress
-terminates because the final step changes no repository state.
-
-TRUST BOUNDARY
-==============
-
-  * Repository state says what is STRUCTURALLY authorized.
-  * The external attestation says whether THIS execution is authorized.
-  * A results document can satisfy neither. It is validated last and is never consulted
-    for authorization.
-  * Private ``_at``-suffixed seams exist so structural tests can run without any call form
-    implying authorization. Calling them confers nothing.
-
-ONE AUTHORIZED LANE
-===================
-
-XASSET-0027 SSP.1 permits exactly ONE later Stage-1 evaluation/results PR. This module
-therefore binds a single ``execution_attempt_id`` and enforces one-shot semantics with
-``O_EXCL`` on both the attestation and its consumption receipt. An authorization naming
-one attempt cannot authorize another, and a consumed authorization cannot be replayed.
+A privileged operator who deletes the entire directory is outside any filesystem-based
+enforcement boundary; that is disclosed here rather than papered over.
 
 NOT A RISK MODULE. No RISK-0001 scenario, threshold, magnitude, window, parameter, attempt
-identity, result value, or family conclusion is read, imported, or reused here. Only
-neutral engineering patterns (canonical JSON hashing, duplicate-key rejection, immutable
-preexecution metadata, exact-identity verification, O_EXCL one-shot creation, fail-closed
-validation) are shared, and those are general repository craft.
+identity, result value, or family conclusion is read, imported, or reused. Only neutral
+engineering patterns are shared: canonical JSON hashing, duplicate-key rejection, immutable
+preexecution metadata, exact-identity verification, O_EXCL one-shot creation, consuming
+authorization at the first eligible work item, and fail-closed validation.
 """
 
 from __future__ import annotations
@@ -108,14 +88,15 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from dataclasses import dataclass
+import subprocess
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Mapping, Protocol, Sequence
 
 ROOT = Path(__file__).resolve().parent
 
 # ======================================================================================
-# Bound identity — every value below is verified live, never trusted from the document
+# Bound identity
 # ======================================================================================
 
 REPOSITORY_IDENTITY = "Mast3rkey/Portfolio-HQ"
@@ -123,63 +104,81 @@ STUDY_ID = "ENDPOINT-0001"
 AUTHORIZING_DECISION = "XASSET-0029"
 PREDECESSOR_DECISION = "XASSET-0028"
 
-#: The single Stage-1 execution lane XASSET-0027 SSP.1 permits. Derived from repository
-#: truth, not invented: no Stage-1 attempt has ever been executed or authorized, so the
-#: one authorized lane is the first.
+#: The XASSET-0029 pull request. Bound so an attestation cannot silently reference another.
+AUTHORIZING_PULL_REQUEST = 328
+
+#: The single Stage-1 execution lane XASSET-0027 SS-P.1 permits. Derived from repository
+#: truth, not invented: no Stage-1 attempt has ever been executed or authorized.
 EXECUTION_ATTEMPT_ID = "ENDPOINT-0001::STAGE_1::ATTEMPT_1"
 
-#: XASSET-0028's merge identity, verified against live git history at validation time.
+#: XASSET-0028's exact historical identity. MAJOR 1: the canonical contract promises this
+#: is bound, so it is now actually verified against the local git object store.
 PREDECESSOR_MERGE_SHA = "c51e94609eff7ede2bdfa084844d59b8347561e5"
 PREDECESSOR_ACCEPTED_HEAD = "036606401ea569b0a03f2d716d87a057d07d71dc"
 PREDECESSOR_MERGE_BASE = "e4b6f0b810884fcb73d1b8ee053d8005db532f3e"
 
-#: The frozen construction universe XASSET-0028 closed. Recomputed live and compared.
 CONSTRUCTION_UNIVERSE_SHA256 = (
     "73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224"
 )
 CONSTRUCTION_COUNT = 680
 CONSTRUCTION_CELL_COUNT = 48
 
-PROTOCOL_PATH = ROOT / "research/level1_endpoint_evidence/PROTOCOL_V1.md"
-PREREGISTRATION_PATH = ROOT / "research/level1_endpoint_evidence/pre_registration.yaml"
+CANONICAL_PROTOCOL_RELPATH = "research/level1_endpoint_evidence/PROTOCOL_V1.md"
+CANONICAL_PREREGISTRATION_RELPATH = "research/level1_endpoint_evidence/pre_registration.yaml"
 
-#: XASSET-0029 successor pins, computed AFTER the canonical bytes were final, exactly as
-#: XASSET-0028 pinned its own successors. These are separate files from this module, so there is no
-#: self-hashing circularity. ``validate_authorization_document`` compares an attestation against
-#: BOTH these bound values AND the live bytes on disk, so post-acceptance drift in either direction
-#: is refused.
+PROTOCOL_PATH = ROOT / CANONICAL_PROTOCOL_RELPATH
+PREREGISTRATION_PATH = ROOT / CANONICAL_PREREGISTRATION_RELPATH
+
+#: XASSET-0029 successor pins for the canonical bytes, computed after those bytes were
+#: final. Separate files from this module, so there is no self-hashing circularity.
 CANONICAL_PINS: dict[str, str] = {
-    "research/level1_endpoint_evidence/PROTOCOL_V1.md": (
+    CANONICAL_PROTOCOL_RELPATH: (
         "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb"
     ),
-    "research/level1_endpoint_evidence/pre_registration.yaml": (
-        "14d166f071e579bd958a7e4d0d34ac1f5cdef999f58aecd01d1276321bebdce6"
+    CANONICAL_PREREGISTRATION_RELPATH: (
+        "366ae3c4d43664be0c57da676d53f3a095c6df8c712277b0c289dbb032f0de3d"
     ),
 }
 
 #: XASSET-0028's pins, retained as predecessor identity. History is never invalidated.
 PREDECESSOR_CANONICAL_PINS = {
-    "research/level1_endpoint_evidence/PROTOCOL_V1.md": (
+    CANONICAL_PROTOCOL_RELPATH: (
         "c02b4d519267b96ddb12500e6d1d55a47aeafd9437de8e41014c8871f631618c"
     ),
-    "research/level1_endpoint_evidence/pre_registration.yaml": (
+    CANONICAL_PREREGISTRATION_RELPATH: (
         "ffde86c1585050b2bf89e58033f37777a903ace86e97be46b6440a217c78ec4a"
     ),
 }
 
+#: MAJOR 1: load-bearing enforcement code. Expected identity is DERIVED FROM THE MERGED GIT
+#: TREE at validation time, never from a hard-coded constant here -- a literal would have to
+#: be edited in the same commit that changes the bytes it claims to verify, which is not a
+#: check. Drift in any of these between the accepted/merged tree and the working tree is
+#: refused.
+LOAD_BEARING_RELPATHS = (
+    "level1_stage1_execution_authorization.py",
+    "level1_endpoint_evidence_preregistration_validator.py",
+    "level1_construction_universe_closure_validator.py",
+    CANONICAL_PROTOCOL_RELPATH,
+    CANONICAL_PREREGISTRATION_RELPATH,
+    "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
+)
+
 # ======================================================================================
-# Marker location — deliberately OUTSIDE the repository
+# Lane storage — deliberately OUTSIDE the repository
 # ======================================================================================
 
-#: The attestation lives outside the repository so it can never be committed, reviewed
-#: into existence, forged into a pull request, or produced by editing tracked files. It is
-#: also NOT the RISK-0001 results location, which this module never reads or references.
+#: Outside the repository so no lane record can be committed, reviewed into existence, or
+#: forged into a pull request. Deliberately NOT the RISK-0001 results location, which this
+#: module never reads or references.
 AUTHORIZATION_ROOT = Path("/var/tmp/phq-endpoint0001-stage1-authorization")
 AUTHORIZATION_PATH = AUTHORIZATION_ROOT / "authorization.json"
-CONSUMPTION_RECEIPT_PATH = AUTHORIZATION_ROOT / "consumed.json"
+CLAIM_PATH = AUTHORIZATION_ROOT / "claim.json"
+COMPLETION_PATH = AUTHORIZATION_ROOT / "completion.json"
+LEDGER_PATH = AUTHORIZATION_ROOT / "lane_ledger.jsonl"
 
 # ======================================================================================
-# Gate vocabulary
+# Vocabulary
 # ======================================================================================
 
 REQUIRED_LIFECYCLE_GATES = (
@@ -192,6 +191,13 @@ REQUIRED_LIFECYCLE_GATES = (
 )
 
 AUTHORIZATION_MECHANISM = "EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+APPROVING_REVIEW_DISPOSITION = "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
+SCHEMA_VERSION = 2
+
+LANE_ABSENT = "ABSENT"
+LANE_READY = "READY"
+LANE_CLAIMED = "CLAIMED"
+LANE_COMPLETED = "COMPLETED"
 
 REQUIRED_TOP_KEYS = (
     "schema_version",
@@ -199,12 +205,15 @@ REQUIRED_TOP_KEYS = (
     "repository",
     "study_id",
     "authorizing_decision",
+    "authorizing_pull_request",
     "predecessor_decision",
     "execution_attempt_id",
     "authorization_head",
+    "predecessor_identity",
     "canonical_pins",
     "construction_universe",
     "lifecycle_evidence",
+    "load_bearing_identity",
     "author_identity",
     "generated_at_utc",
 )
@@ -217,15 +226,6 @@ REQUIRED_LIFECYCLE_EVIDENCE_KEYS = (
     "merge_commit_ci",
 )
 
-APPROVING_REVIEW_DISPOSITION = "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
-
-SCHEMA_VERSION = 1
-
-
-# ======================================================================================
-# Primitives
-# ======================================================================================
-
 
 @dataclass(frozen=True)
 class ValidationResult:
@@ -233,22 +233,25 @@ class ValidationResult:
     errors: tuple[str, ...] = ()
 
 
+# ======================================================================================
+# Primitives
+# ======================================================================================
+
+
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
 def canonical_json(payload: Any) -> str:
-    """Deterministic canonical JSON: sorted keys, tight separators, no trailing newline."""
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
 def _reject_duplicate_keys(pairs: Sequence[tuple[str, Any]]) -> dict[str, Any]:
-    """JSON object hook that refuses duplicate keys.
-
-    A duplicate key silently discards the earlier value in ordinary ``json.loads``, which
-    would let a malformed attestation present one identity to a reader and another to the
-    parser.
-    """
+    """A duplicate key silently discards the earlier value in ordinary ``json.loads``."""
     seen: dict[str, Any] = {}
     for key, value in pairs:
         if key in seen:
@@ -257,18 +260,18 @@ def _reject_duplicate_keys(pairs: Sequence[tuple[str, Any]]) -> dict[str, Any]:
     return seen
 
 
-def _is_sha256(value: Any) -> bool:
+def _is_commit_sha(value: Any) -> bool:
     return (
         isinstance(value, str)
-        and len(value) == 64
+        and len(value) == 40
         and all(character in "0123456789abcdef" for character in value)
     )
 
 
-def _is_sha1_commit(value: Any) -> bool:
+def _is_sha256(value: Any) -> bool:
     return (
         isinstance(value, str)
-        and len(value) == 40
+        and len(value) == 64
         and all(character in "0123456789abcdef" for character in value)
     )
 
@@ -285,54 +288,442 @@ def _exact(value: Any, expected: Any, where: str, errors: list[str]) -> None:
         errors.append(f"{where}: expected {expected!r}, found {value!r}")
 
 
-# ======================================================================================
-# Live repository facts — recomputed, never taken from the document
-# ======================================================================================
-
-
-def live_canonical_hashes() -> dict[str, str]:
-    return {
-        relative: sha256_file(ROOT / relative) for relative in sorted(CANONICAL_PINS)
-    }
-
-
-def live_construction_universe_facts() -> dict[str, Any]:
-    """Recompute the closed universe from its generator. Never read from a document."""
-    import level1_construction_universe_closure_validator as closure
-
-    universe = closure.frozen_construction_universe()
-    return {
-        "sha256": closure.universe_aggregate_sha256(),
-        "count": closure.derived_cardinality(),
-        "cell_count": len(closure.per_cell_cardinality()),
-        "construction_ids": tuple(universe),
-    }
-
-
 def pins_are_placeholders() -> bool:
-    """True while the successor pins have not yet been refreshed to real digests."""
     return any(not _is_sha256(value) for value in CANONICAL_PINS.values())
 
 
 # ======================================================================================
-# Document validation — fail-closed on every path
+# Truth sources — injectable so tests never touch live GitHub
 # ======================================================================================
 
 
-def validate_authorization_document(document: Any) -> ValidationResult:
-    """Validate an attestation against bound identity and live repository facts.
+class GitTruthSource(Protocol):
+    """The local git object store. Content-addressed, durable, offline."""
 
-    Every check is independent and every failure is fatal. There is no permissive branch,
-    no caller-supplied override, and no field a results author could set to relax a check.
+    def commit_parents(self, sha: str) -> tuple[str, ...] | None: ...
+    def is_ancestor(self, ancestor: str, descendant: str) -> bool: ...
+    def blob_sha256_at(self, commit: str, relpath: str) -> str | None: ...
+    def head(self) -> str | None: ...
+
+
+class GovernanceTruthSource(Protocol):
+    """GitHub GOVERNANCE metadata only. Never market, price, or fundamental data."""
+
+    def pull_request(self, number: int) -> Mapping[str, Any] | None: ...
+    def review(self, number: int, review_id: str) -> Mapping[str, Any] | None: ...
+    def issue_comment(self, comment_id: str) -> Mapping[str, Any] | None: ...
+    def workflow_run(self, run_id: str) -> Mapping[str, Any] | None: ...
+    def workflow_job(self, job_id: str) -> Mapping[str, Any] | None: ...
+
+
+class LiveGitTruthSource:
+    """Reads the real local git object store via plumbing commands."""
+
+    def __init__(self, root: Path = ROOT) -> None:
+        self._root = root
+
+    def _run(self, *args: str) -> str | None:
+        try:
+            proc = subprocess.run(
+                ["git", *args],
+                cwd=self._root,
+                capture_output=True,
+                text=True,
+                timeout=30,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):  # pragma: no cover - defensive
+            return None
+        if proc.returncode != 0:
+            return None
+        return proc.stdout.strip()
+
+    def commit_parents(self, sha: str) -> tuple[str, ...] | None:
+        out = self._run("rev-list", "--parents", "-n", "1", sha)
+        if not out:
+            return None
+        parts = out.split()
+        return tuple(parts[1:]) if len(parts) > 1 else ()
+
+    def is_ancestor(self, ancestor: str, descendant: str) -> bool:
+        try:
+            proc = subprocess.run(
+                ["git", "merge-base", "--is-ancestor", ancestor, descendant],
+                cwd=self._root,
+                capture_output=True,
+                timeout=30,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):  # pragma: no cover - defensive
+            return False
+        return proc.returncode == 0
+
+    def blob_sha256_at(self, commit: str, relpath: str) -> str | None:
+        try:
+            proc = subprocess.run(
+                ["git", "cat-file", "blob", f"{commit}:{relpath}"],
+                cwd=self._root,
+                capture_output=True,
+                timeout=30,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):  # pragma: no cover - defensive
+            return None
+        if proc.returncode != 0:
+            return None
+        return sha256_bytes(proc.stdout)
+
+    def head(self) -> str | None:
+        return self._run("rev-parse", "HEAD")
+
+
+class LiveGovernanceTruthSource:
+    """Reads GitHub governance metadata over HTTPS.
+
+    GOVERNANCE ONLY. This fetches reviews, comments, pull-request state, and CI run/job
+    status. It never fetches market, price, fundamental, or any other economic data, and it
+    is not, and must not become, a Stage-1 data-acquisition path.
     """
+
+    API = "https://api.github.com"
+
+    def __init__(self, repository: str = REPOSITORY_IDENTITY) -> None:
+        self._repository = repository
+
+    def _get(self, path: str) -> Mapping[str, Any] | None:
+        import urllib.error
+        import urllib.request
+
+        request = urllib.request.Request(
+            f"{self.API}{path}",
+            headers={"Accept": "application/vnd.github+json", "User-Agent": "phq-xasset-0029"},
+        )
+        token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+        if token:
+            request.add_header("Authorization", f"Bearer {token}")
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except Exception:  # pragma: no cover - network/permission failure fails closed
+            return None
+        return payload if isinstance(payload, Mapping) else None
+
+    def pull_request(self, number: int) -> Mapping[str, Any] | None:
+        return self._get(f"/repos/{self._repository}/pulls/{number}")
+
+    def review(self, number: int, review_id: str) -> Mapping[str, Any] | None:
+        return self._get(f"/repos/{self._repository}/pulls/{number}/reviews/{review_id}")
+
+    def issue_comment(self, comment_id: str) -> Mapping[str, Any] | None:
+        return self._get(f"/repos/{self._repository}/issues/comments/{comment_id}")
+
+    def workflow_run(self, run_id: str) -> Mapping[str, Any] | None:
+        return self._get(f"/repos/{self._repository}/actions/runs/{run_id}")
+
+    def workflow_job(self, job_id: str) -> Mapping[str, Any] | None:
+        return self._get(f"/repos/{self._repository}/actions/jobs/{job_id}")
+
+
+@dataclass(frozen=True)
+class TruthSources:
+    git: GitTruthSource = field(default_factory=LiveGitTruthSource)
+    governance: GovernanceTruthSource = field(default_factory=LiveGovernanceTruthSource)
+
+
+# ======================================================================================
+# Live repository facts
+# ======================================================================================
+
+
+def live_canonical_hashes() -> dict[str, str]:
+    return {relative: sha256_file(ROOT / relative) for relative in sorted(CANONICAL_PINS)}
+
+
+def live_construction_universe_facts() -> dict[str, Any]:
+    import level1_construction_universe_closure_validator as closure
+
+    return {
+        "sha256": closure.universe_aggregate_sha256(),
+        "count": closure.derived_cardinality(),
+        "cell_count": len(closure.per_cell_cardinality()),
+    }
+
+
+def live_load_bearing_hashes() -> dict[str, str]:
+    return {relative: sha256_file(ROOT / relative) for relative in sorted(LOAD_BEARING_RELPATHS)}
+
+
+# ======================================================================================
+# Authenticated lifecycle verification — BLOCKING 1
+# ======================================================================================
+
+
+def verify_lifecycle_against_truth(
+    document: Mapping[str, Any], sources: TruthSources
+) -> tuple[str, ...]:
+    """Re-derive every lifecycle fact from durable truth and compare.
+
+    Nothing is accepted because a recorded string is well-formed. Every claim is checked
+    against an independently fetched fact, and an unreachable source fails closed.
+    """
+    errors: list[str] = []
+    evidence = document.get("lifecycle_evidence")
+    if not isinstance(evidence, Mapping):
+        return ("lifecycle_evidence: expected a mapping",)
+
+    head = document.get("authorization_head")
+    number = document.get("authorizing_pull_request")
+
+    # --- The pull request itself -------------------------------------------------------
+    pull = sources.governance.pull_request(number) if isinstance(number, int) else None
+    if pull is None:
+        errors.append(
+            f"governance truth: pull request #{number!r} could not be verified; an "
+            "unverifiable lifecycle never authorizes execution"
+        )
+        return tuple(errors)
+
+    repo_full = ((pull.get("base") or {}).get("repo") or {}).get("full_name")
+    if repo_full != REPOSITORY_IDENTITY:
+        errors.append(f"governance truth: pull request belongs to {repo_full!r}")
+    if pull.get("merged") is not True:
+        errors.append("governance truth: pull request is not merged")
+    real_head = (pull.get("head") or {}).get("sha")
+    if real_head != head:
+        errors.append(
+            f"governance truth: pull request head is {real_head!r}, not the recorded "
+            f"authorization_head {head!r}"
+        )
+    real_merge = pull.get("merge_commit_sha")
+
+    # --- Gate 1: the review really exists, on the exact head ---------------------------
+    recorded_review = evidence.get("independent_review") or {}
+    review_id = str(recorded_review.get("review_id") or "")
+    review = sources.governance.review(number, review_id) if review_id else None
+    if review is None:
+        errors.append(
+            f"governance truth: independent review {review_id!r} does not exist on pull "
+            f"request #{number}; a well-formed but nonexistent review id never authorizes "
+            "execution"
+        )
+    else:
+        if review.get("commit_id") != head:
+            errors.append(
+                f"governance truth: review {review_id} was submitted against "
+                f"{review.get('commit_id')!r}, not the authorization head {head!r}"
+            )
+        body = review.get("body") or ""
+        if APPROVING_REVIEW_DISPOSITION not in body:
+            errors.append(
+                f"governance truth: review {review_id} does not carry the approving formal "
+                "disposition"
+            )
+        # Reviewer identity is DERIVED from durable metadata, never self-declared.
+        derived_reviewer = (review.get("user") or {}).get("login")
+        if recorded_review.get("reviewer_identity") != derived_reviewer:
+            errors.append(
+                "governance truth: reviewer_identity is self-declared as "
+                f"{recorded_review.get('reviewer_identity')!r} but the durable review "
+                f"metadata says {derived_reviewer!r}; reviewer identity may not be asserted"
+            )
+
+    # --- Gate 2: principal acceptance really exists and names the exact head -----------
+    acceptance_id = str((evidence.get("principal_acceptance") or {}).get("comment_id") or "")
+    acceptance = sources.governance.issue_comment(acceptance_id) if acceptance_id else None
+    if acceptance is None:
+        errors.append(
+            f"governance truth: principal acceptance comment {acceptance_id!r} does not exist"
+        )
+    elif isinstance(head, str) and head not in (acceptance.get("body") or ""):
+        errors.append(
+            f"governance truth: acceptance comment {acceptance_id} does not name the exact "
+            f"head {head!r}"
+        )
+
+    # --- Gate 3: the merge, its real SHA, and its real parents -------------------------
+    recorded_merge = evidence.get("merge") or {}
+    merge_sha = recorded_merge.get("merge_sha")
+    if real_merge and merge_sha != real_merge:
+        errors.append(
+            f"governance truth: recorded merge {merge_sha!r} is not the real merge commit "
+            f"{real_merge!r}"
+        )
+    real_parents = sources.git.commit_parents(merge_sha) if _is_commit_sha(merge_sha) else None
+    if real_parents is None:
+        errors.append(
+            f"git truth: merge commit {merge_sha!r} does not exist in the local object store"
+        )
+    else:
+        if list(recorded_merge.get("parents") or []) != list(real_parents):
+            errors.append(
+                f"git truth: recorded parents {list(recorded_merge.get('parents') or [])!r} do "
+                f"not equal the real parents {list(real_parents)!r}"
+            )
+        if len(real_parents) != 2:
+            errors.append(
+                f"git truth: merge {merge_sha} has {len(real_parents)} parent(s); a squash or "
+                "rebase does not carry the accepted head as a parent"
+            )
+        elif real_parents[1] != head:
+            errors.append(
+                f"git truth: merge second parent {real_parents[1]!r} is not the accepted head "
+                f"{head!r}; the merged bytes are not the accepted bytes"
+            )
+
+    # --- Gate 4: the post-merge verification record really exists ----------------------
+    verification_id = str(
+        (evidence.get("post_merge_verification") or {}).get("comment_id") or ""
+    )
+    verification = (
+        sources.governance.issue_comment(verification_id) if verification_id else None
+    )
+    if verification is None:
+        errors.append(
+            f"governance truth: post-merge verification comment {verification_id!r} does not "
+            "exist; merge alone never authorizes execution"
+        )
+    elif isinstance(merge_sha, str) and merge_sha not in (verification.get("body") or ""):
+        errors.append(
+            f"governance truth: post-merge verification {verification_id} does not name the "
+            f"merge SHA {merge_sha!r}"
+        )
+
+    # --- Gate 5: the merge-commit CI run AND its job, correctly paired ------------------
+    recorded_ci = evidence.get("merge_commit_ci") or {}
+    run_id = str(recorded_ci.get("run_id") or "")
+    job_id = str(recorded_ci.get("job_id") or "")
+    run = sources.governance.workflow_run(run_id) if run_id else None
+    if run is None:
+        errors.append(f"governance truth: workflow run {run_id!r} does not exist")
+    else:
+        if run.get("status") != "completed" or run.get("conclusion") != "success":
+            errors.append(
+                f"governance truth: workflow run {run_id} is "
+                f"{run.get('status')!r}/{run.get('conclusion')!r}, not completed/success"
+            )
+        if run.get("head_sha") != merge_sha:
+            errors.append(
+                f"governance truth: workflow run {run_id} ran against {run.get('head_sha')!r}, "
+                f"not the merge commit {merge_sha!r}"
+            )
+    job = sources.governance.workflow_job(job_id) if job_id else None
+    if job is None:
+        errors.append(f"governance truth: workflow job {job_id!r} does not exist")
+    else:
+        if str(job.get("run_id")) != run_id:
+            errors.append(
+                f"governance truth: job {job_id} belongs to run {job.get('run_id')!r}, not the "
+                f"recorded run {run_id!r}"
+            )
+        if job.get("conclusion") != "success":
+            errors.append(f"governance truth: job {job_id} concluded {job.get('conclusion')!r}")
+
+    # --- Gate 6: ancestry, predecessor identity, load-bearing byte identity -------------
+    errors.extend(_verify_git_anchored_identity(document, merge_sha, sources))
+    return tuple(errors)
+
+
+def _verify_git_anchored_identity(
+    document: Mapping[str, Any], merge_sha: Any, sources: TruthSources
+) -> list[str]:
+    """MAJOR 1: predecessor identity, current ancestry, and load-bearing byte identity."""
+    errors: list[str] = []
+
+    # Predecessor XASSET-0028 identity, verified from git rather than merely declared.
+    recorded_predecessor = document.get("predecessor_identity")
+    if not isinstance(recorded_predecessor, Mapping):
+        errors.append("predecessor_identity: expected a mapping")
+    else:
+        _exact(
+            recorded_predecessor.get("merge_sha"),
+            PREDECESSOR_MERGE_SHA,
+            "predecessor_identity.merge_sha",
+            errors,
+        )
+        _exact(
+            recorded_predecessor.get("accepted_head"),
+            PREDECESSOR_ACCEPTED_HEAD,
+            "predecessor_identity.accepted_head",
+            errors,
+        )
+        _exact(
+            recorded_predecessor.get("merge_base"),
+            PREDECESSOR_MERGE_BASE,
+            "predecessor_identity.merge_base",
+            errors,
+        )
+    predecessor_parents = sources.git.commit_parents(PREDECESSOR_MERGE_SHA)
+    if predecessor_parents is None:
+        errors.append(
+            f"git truth: predecessor merge {PREDECESSOR_MERGE_SHA} is absent from the local "
+            "object store"
+        )
+    elif list(predecessor_parents) != [PREDECESSOR_MERGE_BASE, PREDECESSOR_ACCEPTED_HEAD]:
+        errors.append(
+            f"git truth: predecessor merge parents {list(predecessor_parents)!r} do not match "
+            f"XASSET-0028's accepted identity"
+        )
+
+    # Current ancestry: the authorizing merge must be reachable from the working HEAD.
+    head_now = sources.git.head()
+    if not head_now:
+        errors.append("git truth: current HEAD could not be resolved")
+    elif _is_commit_sha(merge_sha) and not sources.git.is_ancestor(merge_sha, head_now):
+        errors.append(
+            f"git truth: the authorizing merge {merge_sha} is not an ancestor of the current "
+            f"HEAD {head_now}; the working tree is not on the authorized history"
+        )
+
+    # Load-bearing byte identity: expected values come from the MERGED TREE, not a constant.
+    recorded = document.get("load_bearing_identity")
+    if not isinstance(recorded, Mapping):
+        errors.append("load_bearing_identity: expected a mapping")
+        return errors
+    if sorted(recorded) != sorted(LOAD_BEARING_RELPATHS):
+        errors.append(
+            "load_bearing_identity: must cover exactly the load-bearing files "
+            f"{sorted(LOAD_BEARING_RELPATHS)!r}"
+        )
+    for relative in sorted(LOAD_BEARING_RELPATHS):
+        if not _is_commit_sha(merge_sha):
+            continue
+        merged = sources.git.blob_sha256_at(str(merge_sha), relative)
+        if merged is None:
+            errors.append(
+                f"git truth: {relative} is absent from the authorized merged tree {merge_sha}"
+            )
+            continue
+        if recorded.get(relative) != merged:
+            errors.append(
+                f"load_bearing_identity[{relative!r}]: recorded {recorded.get(relative)!r} but "
+                f"the authorized merged tree has {merged!r}"
+            )
+        working = sha256_file(ROOT / relative) if (ROOT / relative).exists() else None
+        if working != merged:
+            errors.append(
+                f"enforcement drift: {relative} in the working tree hashes to {working!r} but "
+                f"the authorized merged tree has {merged!r}; load-bearing code has changed "
+                "since the authorized merge"
+            )
+    return errors
+
+
+# ======================================================================================
+# Document validation
+# ======================================================================================
+
+
+def validate_authorization_document(
+    document: Any, sources: TruthSources | None = None
+) -> ValidationResult:
+    """Validate an attestation: closed schema, bound identity, and AUTHENTICATED lifecycle."""
     errors: list[str] = []
 
     root = _mapping(document, "authorization", errors)
     if root is None:
         return ValidationResult(False, tuple(errors))
 
-    unknown = sorted(set(root) - set(REQUIRED_TOP_KEYS))
-    for key in unknown:
+    for key in sorted(set(root) - set(REQUIRED_TOP_KEYS)):
         errors.append(f"authorization.{key}: unknown key; the schema is closed")
     for key in REQUIRED_TOP_KEYS:
         if key not in root:
@@ -351,6 +742,12 @@ def validate_authorization_document(document: Any) -> ValidationResult:
         errors,
     )
     _exact(
+        root.get("authorizing_pull_request"),
+        AUTHORIZING_PULL_REQUEST,
+        "authorization.authorizing_pull_request",
+        errors,
+    )
+    _exact(
         root.get("predecessor_decision"),
         PREDECESSOR_DECISION,
         "authorization.predecessor_decision",
@@ -362,52 +759,44 @@ def validate_authorization_document(document: Any) -> ValidationResult:
         "authorization.execution_attempt_id",
         errors,
     )
-
-    authorization_head = root.get("authorization_head")
-    if not _is_sha1_commit(authorization_head):
-        errors.append(
-            "authorization.authorization_head: expected a 40-character commit SHA"
-        )
+    if not _is_commit_sha(root.get("authorization_head")):
+        errors.append("authorization.authorization_head: expected a 40-character commit SHA")
 
     _validate_canonical_pins(root.get("canonical_pins"), errors)
     _validate_construction_universe(root.get("construction_universe"), errors)
-    _validate_lifecycle_evidence(
-        root.get("lifecycle_evidence"), authorization_head, root.get("author_identity"), errors
-    )
+    _validate_lifecycle_shape(root.get("lifecycle_evidence"), errors)
 
     if not isinstance(root.get("author_identity"), str) or not root["author_identity"].strip():
         errors.append("authorization.author_identity: expected a non-empty string")
     if not isinstance(root.get("generated_at_utc"), str) or not root["generated_at_utc"].strip():
         errors.append("authorization.generated_at_utc: expected a non-empty string")
 
+    # AUTHENTICATION. Structural shape alone never authorizes.
+    errors.extend(verify_lifecycle_against_truth(root, sources or TruthSources()))
     return ValidationResult(not errors, tuple(errors))
 
 
 def _validate_canonical_pins(block: Any, errors: list[str]) -> None:
-    """Recorded pins must equal the bound pins AND the live bytes on disk."""
     pins = _mapping(block, "authorization.canonical_pins", errors)
     if pins is None:
         return
-
     if pins_are_placeholders():
         errors.append(
-            "authorization.canonical_pins: XASSET-0029 successor pins have not been "
-            "refreshed to real digests, so no attestation can be validated"
+            "authorization.canonical_pins: XASSET-0029 successor pins have not been refreshed "
+            "to real digests, so no attestation can be validated"
         )
         return
-
     live = live_canonical_hashes()
     for relative, bound in sorted(CANONICAL_PINS.items()):
-        recorded = pins.get(relative)
-        if recorded != bound:
+        if pins.get(relative) != bound:
             errors.append(
-                f"authorization.canonical_pins[{relative!r}]: recorded {recorded!r} but the "
-                f"bound XASSET-0029 pin is {bound!r}"
+                f"authorization.canonical_pins[{relative!r}]: recorded {pins.get(relative)!r} "
+                f"but the bound XASSET-0029 pin is {bound!r}"
             )
         if live.get(relative) != bound:
             errors.append(
                 f"canonical drift: {relative} on disk hashes to {live.get(relative)!r} but the "
-                f"bound XASSET-0029 pin is {bound!r}; the authorized bytes have changed"
+                f"bound XASSET-0029 pin is {bound!r}"
             )
     for relative in sorted(set(pins) - set(CANONICAL_PINS)):
         errors.append(
@@ -417,11 +806,9 @@ def _validate_canonical_pins(block: Any, errors: list[str]) -> None:
 
 
 def _validate_construction_universe(block: Any, errors: list[str]) -> None:
-    """Recorded universe identity must equal the bound values AND a live recomputation."""
     recorded = _mapping(block, "authorization.construction_universe", errors)
     if recorded is None:
         return
-
     _exact(
         recorded.get("sha256"),
         CONSTRUCTION_UNIVERSE_SHA256,
@@ -429,10 +816,7 @@ def _validate_construction_universe(block: Any, errors: list[str]) -> None:
         errors,
     )
     _exact(
-        recorded.get("count"),
-        CONSTRUCTION_COUNT,
-        "authorization.construction_universe.count",
-        errors,
+        recorded.get("count"), CONSTRUCTION_COUNT, "authorization.construction_universe.count", errors
     )
     _exact(
         recorded.get("cell_count"),
@@ -440,45 +824,30 @@ def _validate_construction_universe(block: Any, errors: list[str]) -> None:
         "authorization.construction_universe.cell_count",
         errors,
     )
-
     try:
         live = live_construction_universe_facts()
     except Exception as exc:  # pragma: no cover - defensive
         errors.append(f"construction universe could not be recomputed live: {exc}")
         return
-
     if live["sha256"] != CONSTRUCTION_UNIVERSE_SHA256:
-        errors.append(
-            f"universe drift: live universe hashes to {live['sha256']!r} but the bound frozen "
-            f"universe is {CONSTRUCTION_UNIVERSE_SHA256!r}"
-        )
+        errors.append(f"universe drift: live universe hashes to {live['sha256']!r}")
     if live["count"] != CONSTRUCTION_COUNT:
-        errors.append(
-            f"universe drift: live universe has {live['count']} constructions but the bound "
-            f"frozen cardinality is {CONSTRUCTION_COUNT}"
-        )
+        errors.append(f"universe drift: live universe has {live['count']} constructions")
     if live["cell_count"] != CONSTRUCTION_CELL_COUNT:
-        errors.append(
-            f"universe drift: live universe has {live['cell_count']} cells but the bound frozen "
-            f"cell count is {CONSTRUCTION_CELL_COUNT}"
-        )
+        errors.append(f"universe drift: live universe has {live['cell_count']} cells")
 
 
-def _validate_lifecycle_evidence(
-    block: Any, authorization_head: Any, author_identity: Any, errors: list[str]
-) -> None:
-    """Every one of the six gates must carry evidence anchored to the exact head."""
+def _validate_lifecycle_shape(block: Any, errors: list[str]) -> None:
+    """Structural shape only. Authenticity is established by verify_lifecycle_against_truth."""
     evidence = _mapping(block, "authorization.lifecycle_evidence", errors)
     if evidence is None:
         return
-
     where = "authorization.lifecycle_evidence"
     for key in REQUIRED_LIFECYCLE_EVIDENCE_KEYS:
         if key not in evidence:
             errors.append(f"{where}.{key}: required gate evidence is absent")
     for key in sorted(set(evidence) - set(REQUIRED_LIFECYCLE_EVIDENCE_KEYS) - {"gates_closed"}):
         errors.append(f"{where}.{key}: unknown gate evidence; the schema is closed")
-
     declared = evidence.get("gates_closed") or ()
     if not isinstance(declared, (list, tuple)):
         errors.append(f"{where}.gates_closed: expected a list")
@@ -489,210 +858,158 @@ def _validate_lifecycle_evidence(
     for gate in declared:
         if gate not in REQUIRED_LIFECYCLE_GATES:
             errors.append(f"{where}.gates_closed: unknown gate {gate!r}")
-
-    # --- Gate 1: independent full exact-head review -----------------------------------
-    review = _mapping(evidence.get("independent_review"), f"{where}.independent_review", errors)
-    if review is not None:
-        if not isinstance(review.get("review_id"), (int, str)) or not str(
-            review.get("review_id")
-        ).strip():
-            errors.append(f"{where}.independent_review.review_id: expected a non-empty id")
-        disposition = review.get("formal_disposition")
-        if disposition != APPROVING_REVIEW_DISPOSITION:
-            errors.append(
-                f"{where}.independent_review.formal_disposition: expected "
-                f"{APPROVING_REVIEW_DISPOSITION!r}, found {disposition!r}; an adverse or absent "
-                "disposition never authorizes execution"
-            )
-        for counter in ("blocking", "major"):
-            count = review.get(f"{counter}_count")
-            if count != 0:
+    review = evidence.get("independent_review")
+    if isinstance(review, Mapping):
+        for counter in ("blocking_count", "major_count"):
+            if review.get(counter) != 0:
                 errors.append(
-                    f"{where}.independent_review.{counter}_count: expected 0 unresolved, found "
-                    f"{count!r}"
+                    f"{where}.independent_review.{counter}: expected 0 unresolved, found "
+                    f"{review.get(counter)!r}"
                 )
-        if review.get("reviewed_sha") != authorization_head:
-            errors.append(
-                f"{where}.independent_review.reviewed_sha: {review.get('reviewed_sha')!r} does not "
-                f"equal authorization_head {authorization_head!r}; a stale-head review never "
-                "authorizes execution"
-            )
-        reviewer = review.get("reviewer_identity")
-        if not isinstance(reviewer, str) or not reviewer.strip():
-            errors.append(f"{where}.independent_review.reviewer_identity: expected a non-empty string")
-        elif isinstance(author_identity, str) and reviewer.strip() == author_identity.strip():
-            errors.append(
-                f"{where}.independent_review.reviewer_identity: the reviewing session "
-                f"{reviewer!r} is the authoring session; a self-authored review is not independent"
-            )
-
-    # --- Gate 2: principal exact-head acceptance --------------------------------------
-    acceptance = _mapping(
-        evidence.get("principal_acceptance"), f"{where}.principal_acceptance", errors
-    )
-    if acceptance is not None:
-        if not str(acceptance.get("comment_id") or "").strip():
-            errors.append(f"{where}.principal_acceptance.comment_id: expected a non-empty id")
-        if acceptance.get("accepted_head") != authorization_head:
-            errors.append(
-                f"{where}.principal_acceptance.accepted_head: "
-                f"{acceptance.get('accepted_head')!r} does not equal authorization_head "
-                f"{authorization_head!r}; acceptance for another head never authorizes execution"
-            )
-
-    # --- Gate 3: merge ----------------------------------------------------------------
-    merge = _mapping(evidence.get("merge"), f"{where}.merge", errors)
-    merge_sha: Any = None
-    if merge is not None:
-        merge_sha = merge.get("merge_sha")
-        if not _is_sha1_commit(merge_sha):
-            errors.append(f"{where}.merge.merge_sha: expected a 40-character commit SHA")
-        parents = merge.get("parents")
-        if not isinstance(parents, (list, tuple)) or len(parents) != 2:
-            errors.append(
-                f"{where}.merge.parents: expected exactly two parents; a squash or rebase does "
-                "not carry the accepted head as a parent and never authorizes execution"
-            )
-        else:
-            if parents[1] != authorization_head:
-                errors.append(
-                    f"{where}.merge.parents[1]: {parents[1]!r} does not equal authorization_head "
-                    f"{authorization_head!r}; the merged bytes are not the accepted bytes"
-                )
-            if parents[0] == authorization_head:
-                errors.append(
-                    f"{where}.merge.parents[0]: the base parent must not equal authorization_head"
-                )
-
-    # --- Gate 4: post-merge verification ----------------------------------------------
-    verification = _mapping(
-        evidence.get("post_merge_verification"), f"{where}.post_merge_verification", errors
-    )
-    if verification is not None:
-        if not str(verification.get("comment_id") or "").strip():
-            errors.append(
-                f"{where}.post_merge_verification.comment_id: expected a non-empty id; merge alone "
-                "never authorizes execution"
-            )
-        if merge_sha is not None and verification.get("verified_merge_sha") != merge_sha:
-            errors.append(
-                f"{where}.post_merge_verification.verified_merge_sha: "
-                f"{verification.get('verified_merge_sha')!r} does not equal the recorded merge SHA "
-                f"{merge_sha!r}"
-            )
-
-    # --- Gate 5: merge-commit CI success ----------------------------------------------
-    ci = _mapping(evidence.get("merge_commit_ci"), f"{where}.merge_commit_ci", errors)
-    if ci is not None:
-        if not str(ci.get("run_id") or "").strip():
-            errors.append(f"{where}.merge_commit_ci.run_id: expected a non-empty id")
-        if not str(ci.get("job_id") or "").strip():
-            errors.append(f"{where}.merge_commit_ci.job_id: expected a non-empty id")
-        _exact(ci.get("status"), "completed", f"{where}.merge_commit_ci.status", errors)
-        if ci.get("conclusion") != "success":
-            errors.append(
-                f"{where}.merge_commit_ci.conclusion: expected 'success', found "
-                f"{ci.get('conclusion')!r}; a failed, cancelled, or still-running merge-commit CI "
-                "never authorizes execution"
-            )
-        if merge_sha is not None and ci.get("head_sha") != merge_sha:
-            errors.append(
-                f"{where}.merge_commit_ci.head_sha: {ci.get('head_sha')!r} does not equal the "
-                f"recorded merge SHA {merge_sha!r}; CI for another commit never authorizes "
-                "execution"
-            )
-
-    # --- Gate 6 is the canonical-pin and universe verification performed above --------
 
 
 # ======================================================================================
-# Effectivity — the single public authorization question
+# Lane state machine — BLOCKING 2
 # ======================================================================================
 
 
-def _authorization_is_effective_at(
-    authorization_path: Path, receipt_path: Path
-) -> tuple[bool, str]:
-    """Private structural seam. Calling this confers no authorization on any caller."""
-    if receipt_path.exists():
-        return False, (
-            f"the single authorized Stage-1 execution attempt ({EXECUTION_ATTEMPT_ID}) has "
-            "already been consumed; a consumed authorization can never be replayed, and a rerun "
-            "requires new governance authority"
-        )
-    if not authorization_path.exists():
-        return False, (
-            "no Stage-1 preexecution authorization attestation exists. Structural closure of the "
-            f"construction universe is not authorization: the {AUTHORIZING_DECISION} lifecycle "
-            f"must close in full ({', '.join(REQUIRED_LIFECYCLE_GATES)}) and an external one-shot "
-            "attestation must then be generated. There is no merge-to-execution gap"
-        )
+@dataclass(frozen=True)
+class LanePaths:
+    authorization: Path = AUTHORIZATION_PATH
+    claim: Path = CLAIM_PATH
+    completion: Path = COMPLETION_PATH
+    ledger: Path = LEDGER_PATH
+
+
+def _read_ledger(path: Path) -> list[Mapping[str, Any]]:
+    if not path.exists():
+        return []
+    entries: list[Mapping[str, Any]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line, object_pairs_hook=_reject_duplicate_keys)
+        except (ValueError, json.JSONDecodeError):
+            entries.append({"event": "CORRUPT"})
+            continue
+        if isinstance(entry, Mapping):
+            entries.append(entry)
+    return entries
+
+
+def _append_ledger(path: Path, entry: Mapping[str, Any]) -> None:
+    """Append-only. Losing claim.json alone therefore cannot reopen the lane."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+    with os.fdopen(descriptor, "a", encoding="utf-8") as handle:
+        handle.write(canonical_json(entry) + "\n")
+
+
+def _load_authorization(path: Path) -> tuple[Mapping[str, Any] | None, str]:
+    if not path.exists():
+        return None, "no attestation present"
     try:
-        raw = authorization_path.read_text(encoding="utf-8")
+        raw = path.read_text(encoding="utf-8")
     except OSError as exc:
-        return False, f"authorization attestation unreadable: {exc}"
+        return None, f"attestation unreadable: {exc}"
     try:
         document = json.loads(raw, object_pairs_hook=_reject_duplicate_keys)
     except (ValueError, json.JSONDecodeError) as exc:
-        return False, f"authorization attestation malformed: {exc}"
+        return None, f"attestation malformed: {exc}"
+    if not isinstance(document, Mapping):
+        return None, "attestation is not a mapping"
+    return document, ""
 
-    result = validate_authorization_document(document)
+
+def lane_state_at(
+    paths: LanePaths, sources: TruthSources | None = None
+) -> tuple[str, str]:
+    """Return the lane state and, when not READY, why a new execution may not start.
+
+    A claim recorded in EITHER ``claim.json`` OR the append-only ledger establishes CLAIMED,
+    so losing one record alone does not reopen the lane. No attestation means ABSENT, which
+    is not READY -- destroying the directory fails closed rather than resetting.
+    """
+    ledger = _read_ledger(paths.ledger)
+    ledger_events = {str(entry.get("event")) for entry in ledger}
+
+    if paths.completion.exists() or LANE_COMPLETED in ledger_events:
+        return LANE_COMPLETED, (
+            f"the single authorized attempt ({EXECUTION_ATTEMPT_ID}) has already completed; a "
+            "second execution requires new governance authority"
+        )
+    if paths.claim.exists() or LANE_CLAIMED in ledger_events:
+        return LANE_CLAIMED, (
+            f"the single authorized attempt ({EXECUTION_ATTEMPT_ID}) is already claimed; a "
+            "crash after claiming does not reopen the lane, and recovery is a governed act"
+        )
+
+    document, problem = _load_authorization(paths.authorization)
+    if document is None:
+        return LANE_ABSENT, (
+            f"{problem}. Structural closure of the construction universe is not authorization: "
+            f"the {AUTHORIZING_DECISION} lifecycle must close in full "
+            f"({', '.join(REQUIRED_LIFECYCLE_GATES)}) and an authenticated one-shot attestation "
+            "must then be generated. There is no merge-to-execution gap"
+        )
+    result = validate_authorization_document(document, sources)
     if not result.valid:
-        return False, "authorization attestation invalid: " + "; ".join(result.errors)
+        return LANE_ABSENT, "attestation invalid: " + "; ".join(result.errors)
+    return LANE_READY, ""
+
+
+def new_execution_is_authorized(
+    paths: LanePaths | None = None, sources: TruthSources | None = None
+) -> tuple[bool, str]:
+    """May a NEW Stage-1 execution start? READY only. PUBLIC and fail-closed."""
+    state, reason = lane_state_at(paths or LanePaths(), sources)
+    return (state == LANE_READY), reason
+
+
+def claimed_execution_is_authorized(
+    paths: LanePaths | None = None, sources: TruthSources | None = None
+) -> tuple[bool, str]:
+    """Did THIS result come from the one lawfully claimed execution?
+
+    This is a DIFFERENT question from "may a new execution start", and conflating the two
+    was BLOCKING 2: consuming the authorization made the public result validator reject the
+    very execution that consumed it. CLAIMED and COMPLETED both answer yes here; READY does
+    not, because no execution has lawfully begun.
+    """
+    paths = paths or LanePaths()
+    state, _ = lane_state_at(paths, sources)
+    if state not in (LANE_CLAIMED, LANE_COMPLETED):
+        return False, (
+            f"no lawfully claimed Stage-1 execution exists (lane state {state}); a results "
+            "document may only be validated when it originates from the one claimed attempt"
+        )
+
+    record, problem = _load_authorization(paths.claim)
+    if record is None:
+        ledger = [e for e in _read_ledger(paths.ledger) if e.get("event") == LANE_CLAIMED]
+        if not ledger:
+            return False, f"claim record unavailable and no ledger claim entry exists: {problem}"
+        record = ledger[-1]
+    if record.get("execution_attempt_id") != EXECUTION_ATTEMPT_ID:
+        return False, (
+            f"claim names attempt {record.get('execution_attempt_id')!r}, not "
+            f"{EXECUTION_ATTEMPT_ID!r}"
+        )
+    if not _is_sha256(record.get("authorization_sha256")):
+        return False, "claim does not bind an attestation hash"
+    if paths.authorization.exists():
+        actual = sha256_file(paths.authorization)
+        if record.get("authorization_sha256") != actual:
+            return False, (
+                "claim binds a different attestation than the one now present; the claimed "
+                "execution and the current authorization are not the same"
+            )
     return True, ""
 
 
-def authorization_is_effective() -> tuple[bool, str]:
-    """Is Stage-1 execution operationally authorized right now? PUBLIC and fail-closed.
-
-    Takes NO arguments. There is deliberately no path parameter, no universe parameter, and
-    no override: a caller cannot point this at an attestation of their own choosing, and a
-    results document cannot reach results validation before this returns True.
-    """
-    return _authorization_is_effective_at(AUTHORIZATION_PATH, CONSUMPTION_RECEIPT_PATH)
-
-
-# ======================================================================================
-# Generation and consumption — one-shot, post-lifecycle only
-# ======================================================================================
-
-
-def build_authorization_payload(
-    *,
-    authorization_head: str,
-    lifecycle_evidence: Mapping[str, Any],
-    author_identity: str,
-    generated_at_utc: str,
-) -> dict[str, Any]:
-    """Assemble an attestation payload from live repository facts.
-
-    Canonical pins and universe identity are recomputed here rather than accepted from a
-    caller, so a generator invocation cannot assert bytes it did not observe.
-    """
-    universe = live_construction_universe_facts()
-    return {
-        "schema_version": SCHEMA_VERSION,
-        "mechanism": AUTHORIZATION_MECHANISM,
-        "repository": REPOSITORY_IDENTITY,
-        "study_id": STUDY_ID,
-        "authorizing_decision": AUTHORIZING_DECISION,
-        "predecessor_decision": PREDECESSOR_DECISION,
-        "execution_attempt_id": EXECUTION_ATTEMPT_ID,
-        "authorization_head": authorization_head,
-        "canonical_pins": live_canonical_hashes(),
-        "construction_universe": {
-            "sha256": universe["sha256"],
-            "count": universe["count"],
-            "cell_count": universe["cell_count"],
-        },
-        "lifecycle_evidence": dict(lifecycle_evidence),
-        "author_identity": author_identity,
-        "generated_at_utc": generated_at_utc,
-    }
-
-
 def _write_once(path: Path, text: str) -> None:
-    """Create ``path`` exactly once. O_EXCL makes a second creation impossible."""
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     try:
@@ -706,15 +1023,127 @@ def _write_once(path: Path, text: str) -> None:
         raise
 
 
-def write_authorization(
-    payload: Mapping[str, Any], authorization_path: Path = AUTHORIZATION_PATH
-) -> None:
-    """Validate then persist an attestation, once.
+def claim_execution(
+    *,
+    claimed_at_utc: str,
+    paths: LanePaths | None = None,
+    sources: TruthSources | None = None,
+) -> Mapping[str, Any]:
+    """Atomically claim the single authorized attempt IMMEDIATELY BEFORE the first real work.
 
-    The payload is validated BEFORE any bytes are written, so an invalid attestation never
-    reaches disk and cannot occupy the one-shot slot.
+    The claim is written with ``O_EXCL`` and mirrored into the append-only ledger, so a
+    second claim always fails and losing one record alone does not reopen the lane. This is
+    the neutral structural pattern the RISK runner also uses -- authorization is consumed at
+    the first eligible work item, before computation -- with no RISK substance reused.
     """
-    result = validate_authorization_document(payload)
+    paths = paths or LanePaths()
+    authorized, reason = new_execution_is_authorized(paths, sources)
+    if not authorized:
+        raise ValueError(f"refusing to claim a non-READY execution lane: {reason}")
+
+    record = {
+        "event": LANE_CLAIMED,
+        "execution_attempt_id": EXECUTION_ATTEMPT_ID,
+        "authorization_sha256": sha256_file(paths.authorization),
+        "claimed_at_utc": claimed_at_utc,
+    }
+    # O_EXCL first: if a concurrent process already claimed, this raises and no ledger entry
+    # is written, so the two records cannot disagree about who holds the lane.
+    _write_once(paths.claim, canonical_json(record) + "\n")
+    _append_ledger(paths.ledger, record)
+    return record
+
+
+def complete_execution(
+    *,
+    completed_at_utc: str,
+    result_identity_sha256: str,
+    paths: LanePaths | None = None,
+    sources: TruthSources | None = None,
+) -> Mapping[str, Any]:
+    """Record completion, bound to the exact claim and the exact result artifact identity."""
+    paths = paths or LanePaths()
+    ok, reason = claimed_execution_is_authorized(paths, sources)
+    if not ok:
+        raise ValueError(f"refusing to complete an unclaimed execution: {reason}")
+    if not _is_sha256(result_identity_sha256):
+        raise ValueError("result_identity_sha256 must be a SHA-256 digest")
+
+    claim, _ = _load_authorization(paths.claim)
+    record = {
+        "event": LANE_COMPLETED,
+        "execution_attempt_id": EXECUTION_ATTEMPT_ID,
+        "authorization_sha256": (claim or {}).get("authorization_sha256"),
+        "claim_sha256": sha256_file(paths.claim) if paths.claim.exists() else None,
+        "result_identity_sha256": result_identity_sha256,
+        "completed_at_utc": completed_at_utc,
+    }
+    _write_once(paths.completion, canonical_json(record) + "\n")
+    _append_ledger(paths.ledger, record)
+    return record
+
+
+# ======================================================================================
+# Arming
+# ======================================================================================
+
+
+def build_authorization_payload(
+    *,
+    authorization_head: str,
+    lifecycle_evidence: Mapping[str, Any],
+    author_identity: str,
+    generated_at_utc: str,
+    merge_sha: str,
+) -> dict[str, Any]:
+    """Assemble an attestation from live repository facts.
+
+    Canonical pins, universe identity, predecessor identity, and load-bearing byte identity
+    are all recomputed here rather than accepted from a caller. The lifecycle block is still
+    supplied by the operator, but supplying it proves nothing: every field is re-derived and
+    compared against durable truth at validation time.
+    """
+    universe = live_construction_universe_facts()
+    git = LiveGitTruthSource()
+    load_bearing = {
+        relative: (git.blob_sha256_at(merge_sha, relative) or sha256_file(ROOT / relative))
+        for relative in sorted(LOAD_BEARING_RELPATHS)
+    }
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "mechanism": AUTHORIZATION_MECHANISM,
+        "repository": REPOSITORY_IDENTITY,
+        "study_id": STUDY_ID,
+        "authorizing_decision": AUTHORIZING_DECISION,
+        "authorizing_pull_request": AUTHORIZING_PULL_REQUEST,
+        "predecessor_decision": PREDECESSOR_DECISION,
+        "execution_attempt_id": EXECUTION_ATTEMPT_ID,
+        "authorization_head": authorization_head,
+        "predecessor_identity": {
+            "merge_sha": PREDECESSOR_MERGE_SHA,
+            "accepted_head": PREDECESSOR_ACCEPTED_HEAD,
+            "merge_base": PREDECESSOR_MERGE_BASE,
+        },
+        "canonical_pins": live_canonical_hashes(),
+        "construction_universe": {
+            "sha256": universe["sha256"],
+            "count": universe["count"],
+            "cell_count": universe["cell_count"],
+        },
+        "lifecycle_evidence": dict(lifecycle_evidence),
+        "load_bearing_identity": load_bearing,
+        "author_identity": author_identity,
+        "generated_at_utc": generated_at_utc,
+    }
+
+
+def write_authorization(
+    payload: Mapping[str, Any],
+    authorization_path: Path = AUTHORIZATION_PATH,
+    sources: TruthSources | None = None,
+) -> None:
+    """Validate against durable truth, then persist once. Invalid bytes never reach disk."""
+    result = validate_authorization_document(payload, sources)
     if not result.valid:
         raise ValueError(
             "refusing to write an invalid Stage-1 authorization attestation: "
@@ -723,36 +1152,14 @@ def write_authorization(
     _write_once(authorization_path, canonical_json(payload) + "\n")
 
 
-def consume_authorization(
-    *,
-    consumed_at_utc: str,
-    authorization_path: Path = AUTHORIZATION_PATH,
-    receipt_path: Path = CONSUMPTION_RECEIPT_PATH,
-) -> None:
-    """Burn the single authorized attempt. Idempotency is deliberately NOT provided."""
-    effective, reason = _authorization_is_effective_at(authorization_path, receipt_path)
-    if not effective:
-        raise ValueError(f"refusing to consume a non-effective authorization: {reason}")
-    _write_once(
-        receipt_path,
-        canonical_json(
-            {
-                "execution_attempt_id": EXECUTION_ATTEMPT_ID,
-                "authorization_sha256": sha256_file(authorization_path),
-                "consumed_at_utc": consumed_at_utc,
-            }
-        )
-        + "\n",
-    )
-
-
 def main(argv: Sequence[str] | None = None) -> int:  # pragma: no cover - CLI
-    effective, reason = authorization_is_effective()
+    state, reason = lane_state_at(LanePaths())
     print(f"study: {STUDY_ID}")
     print(f"attempt: {EXECUTION_ATTEMPT_ID}")
     print(f"mechanism: {AUTHORIZATION_MECHANISM}")
-    print(f"authorized: {effective}")
-    if not effective:
+    print(f"lane state: {state}")
+    print(f"new execution authorized: {state == LANE_READY}")
+    if reason:
         print(f"reason: {reason}")
     return 0
 

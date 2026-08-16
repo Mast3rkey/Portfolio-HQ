@@ -43,25 +43,29 @@ lifecycle_effectivity:
   - SUCCESSFUL_MERGE_COMMIT_CI
   stage_1_execution_may_begin_only_after: XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
   predecessor_stage_1_execution_may_begin_only_after_xasset_0028: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
-  stage_1_execution_precondition_amended_by: XASSET-0028
+  stage_1_execution_precondition_amended_by: XASSET-0029
+  predecessor_stage_1_execution_precondition_amended_by_xasset_0028: XASSET-0028
   predecessor_stage_1_execution_may_begin_only_after_xasset_0027: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
   predecessor_precondition_is_spent_note: >-
-    HISTORICAL ONLY. XASSET-0027's own lifecycle is complete and XASSET-0028 asserts construction-universe
-    closure, so the predecessor condition would read as already satisfied. It is retained for audit and
-    is NOT operative. The operative condition is the XASSET-0028 six-gate lifecycle above.
+    HISTORICAL ONLY, AND THERE ARE NOW TWO SPENT PREDECESSORS. XASSET-0027's own lifecycle is complete
+    and XASSET-0028 closed the construction universe, so the XASSET-0027 condition reads as already
+    satisfied. XASSET-0028's own six-gate lifecycle has since closed in full, so that condition is
+    spent as well. Neither is operative. THE SINGLE OPERATIVE CONDITION IS
+    stage_1_execution_may_begin_only_after ABOVE: the XASSET-0029 lifecycle plus an authenticated
+    external one-shot preexecution attestation plus a one-shot execution claim.
   merge_alone_is_sufficient: false
   note: >-
     Merge alone does not make this charter operationally effective and does not open a Stage 1
     execution lane. The full lifecycle above must close first, and the merged canonical hashes must
     verify from the merged commit. This removes any window between merge and lifecycle closure in
-    which a second mutation lane could claim authority. Separately and additionally, Stage 1 is
-    NOT EXECUTABLE until the complete XASSET-0028 six-gate lifecycle is effective. AMENDED BY
-    XASSET-0028: the construction universe IS closed — see construction_universe_closure — so the
-    predecessor form of this sentence, which required closure by a future separately authorized
-    unit, is historical and is retained only in
-    predecessor_stage_1_execution_may_begin_only_after_xasset_0027 above. Lifecycle closure alone
-    does not make
-    Stage 1 executable either.
+    which a second mutation lane could claim authority. AMENDED BY XASSET-0029, WHICH IS THE SINGLE
+    CURRENT STATE: the construction universe IS closed (see construction_universe_closure) and
+    XASSET-0028's own lifecycle IS closed, so both predecessor conditions are historical and are
+    retained only in the explicitly predecessor-named fields above. Stage 1 is NOT EXECUTABLE until
+    the complete XASSET-0029 lifecycle is effective AND an authenticated external one-shot
+    preexecution attestation exists AND that attestation has been atomically claimed. Lifecycle
+    closure alone does not make Stage 1 executable, and no committed value in this repository does
+    either.
 
 stage_1_executability:
   # AMENDED BY XASSET-0029. `executable` stays false PERMANENTLY and keeps its enforced-false
@@ -126,10 +130,62 @@ stage_1_operational_authorization:
   execution_attempt_id: ENDPOINT-0001::STAGE_1::ATTEMPT_1
   one_shot: true
   one_shot_note: >-
-    XASSET-0027 SSP.1 permits exactly ONE later Stage-1 evaluation/results PR. The attestation and
-    its consumption receipt are each created with O_EXCL, so neither can be regenerated or replayed,
-    and an authorization naming one attempt can never authorize another. A rerun after consumption
-    requires new governance authority.
+    XASSET-0027 SSP.1 permits exactly ONE later Stage-1 evaluation/results PR. The attestation, the
+    execution claim, and the completion record are each created with O_EXCL and mirrored into an
+    append-only ledger, so a second claim always fails and an authorization naming one attempt can
+    never authorize another. A rerun after completion requires new governance authority.
+  lifecycle_truth_sources:
+    principle: >-
+      A recorded lifecycle value is never accepted because its text is well-formed. Every value is
+      re-derived from a durable source and compared, and an unreachable source FAILS CLOSED. An
+      entirely fictional but internally consistent review/acceptance/merge/CI chain must be refused.
+    git_object_store: >-
+      Content-addressed and offline. Supplies the merge SHA, both real parents, current ancestry, and
+      the byte identity of load-bearing files AS THEY EXIST IN THE MERGED TREE.
+    github_governance_metadata: >-
+      Supplies the review and its exact reviewed commit and formal disposition, the reviewer login
+      (DERIVED, never self-declared), the principal acceptance comment, the post-merge verification
+      comment, and the merge-commit CI run and job. GOVERNANCE METADATA ONLY - never market, price,
+      fundamental, or any other economic data, and never a Stage-1 data-acquisition path.
+  execution_state_machine:
+    states:
+    - ABSENT
+    - READY
+    - CLAIMED
+    - COMPLETED
+    new_execution_permitted_in: READY
+    result_validation_permitted_in:
+    - CLAIMED
+    - COMPLETED
+    separation_note: >-
+      "May a NEW execution start?" and "did THIS result come from the one lawful execution?" are
+      different questions and are answered by different predicates. Conflating them made consuming
+      the authorization reject the very execution that consumed it, while deferring consumption left
+      a replay and concurrency window. The claim is taken atomically immediately before the first
+      real Stage-1 work.
+    claim_binds:
+    - EXECUTION_ATTEMPT_ID
+    - EXACT_ATTESTATION_SHA256
+    completion_binds:
+    - EXECUTION_ATTEMPT_ID
+    - EXACT_ATTESTATION_SHA256
+    - EXACT_CLAIM_SHA256
+    - EXACT_RESULT_ARTIFACT_SHA256
+  durability_boundary:
+    claim_recorded_in_two_places: true
+    single_record_loss_reopens_lane: false
+    total_directory_loss_state: ABSENT
+    total_directory_loss_is_ready: false
+    crash_after_claim_reopens_lane: false
+    statement: >-
+      O_EXCL prevents a second creation only while the path exists, so "can never be replayed" would
+      be an overclaim. What is enforced: the claim is recorded in both claim.json and an append-only
+      ledger, and EITHER establishes CLAIMED, so losing one alone does not reopen the lane;
+      destroying the whole directory also destroys the attestation, so the lane becomes ABSENT, which
+      is not READY and requires passing the full authenticated lifecycle verification again; and a
+      crash after claiming leaves the lane CLAIMED, recoverable only by a governed act. A privileged
+      operator deleting the entire directory is outside any filesystem-based enforcement boundary,
+      and that limit is disclosed rather than papered over.
   trust_boundary:
     repository_state_says: WHAT_IS_STRUCTURALLY_AUTHORIZED
     external_attestation_says: WHETHER_THIS_EXECUTION_IS_AUTHORIZED
@@ -140,7 +196,12 @@ stage_1_operational_authorization:
   - REPOSITORY_IDENTITY
   - STUDY_ID
   - AUTHORIZING_DECISION_XASSET_0029
+  - AUTHORIZING_PULL_REQUEST_NUMBER
   - PREDECESSOR_XASSET_0028_MERGE_SHA
+  - PREDECESSOR_XASSET_0028_ACCEPTED_HEAD
+  - PREDECESSOR_XASSET_0028_MERGE_BASE
+  - LOAD_BEARING_IMPLEMENTATION_IDENTITY_FROM_MERGED_TREE
+  - CURRENT_GIT_ANCESTRY_OF_THE_AUTHORIZING_MERGE
   - CANONICAL_PROTOCOL_SHA256
   - CANONICAL_PREREGISTRATION_SHA256
   - CONSTRUCTION_UNIVERSE_SHA256
@@ -167,6 +228,11 @@ stage_1_operational_authorization:
   - POST_ACCEPTANCE_OR_POST_MERGE_DRIFT
   - REPLAYED_OR_ALREADY_CONSUMED_AUTHORIZATION
   - AUTHORIZATION_FOR_A_DIFFERENT_EXECUTION_ATTEMPT
+  - UNVERIFIABLE_OR_UNREACHABLE_GOVERNANCE_TRUTH_SOURCE
+  - NONEXISTENT_BUT_WELL_FORMED_REVIEW_ACCEPTANCE_VERIFICATION_OR_CI_IDENTIFIER
+  - SELF_DECLARED_REVIEWER_IDENTITY
+  - LOAD_BEARING_ENFORCEMENT_CODE_DRIFT
+  - AUTHORIZING_MERGE_NOT_IN_CURRENT_ANCESTRY
   no_merge_to_execution_gap: true
   no_merge_to_execution_gap_mechanism: >-
     Merging XASSET-0029 authorizes nothing. The attestation cannot be pre-staged, because generating

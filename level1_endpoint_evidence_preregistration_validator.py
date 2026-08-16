@@ -2155,31 +2155,14 @@ def closed_construction_universe() -> Mapping[str, Mapping[str, Any]]:
     return CU.frozen_construction_universe()
 
 
-def stage_1_operational_authorization_is_effective(
+def _canonical_authorization_mechanism_is_armed(
     prereg_path: Path = PREREG_PATH,
 ) -> tuple[bool, str]:
-    """Report whether Stage-1 OPERATIONAL authorization is effective, and why not when it is not.
+    """Factor 1 of the two-factor gate: is the committed specification present and unweakened?
 
-    AMENDED BY XASSET-0029. The predecessor form required ``stage_1_executability.executable`` to
-    be true. That could never happen: ``_validate_stage_1_executability`` enforces
-    ``_false(executable)``, so the canonical file was invalid in exactly the state that would have
-    authorized execution. Flipping the boolean was therefore never available, and would in any case
-    have opened a merge-to-execution gap (effective at merge, before post-merge verification and
-    before merge-commit CI concludes) and rested authorization on a mutable committed value that
-    demonstrates nothing.
-
-    XASSET-0029 relocates authorization off committed state entirely. Two factors are required and
-    neither suffices alone:
-
-      1. STRUCTURAL ARMING (this file). The canonical block must still say Stage 1 is not
-         self-authorizing, and must carry the XASSET-0029 mechanism specification. Reading the file
-         rather than a module constant means a results author cannot bypass this by constructing a
-         document.
-      2. EXTERNAL ATTESTATION (outside the repository). A one-shot preexecution attestation must
-         exist, be valid, be bound to the exact reviewed/accepted/merged identities and canonical
-         and universe hashes, and be unconsumed.
-
-    Merging XASSET-0029 satisfies neither factor by itself, so there is no merge-to-execution gap.
+    Shared by both public predicates so neither can drift from the other. Reading the canonical
+    file rather than a module constant means a results author cannot bypass this by constructing
+    a document. This never authorizes anything on its own.
     """
     try:
         data = yaml.safe_load(prereg_path.read_text(encoding="utf-8"))
@@ -2209,21 +2192,76 @@ def stage_1_operational_authorization_is_effective(
             "stage_1_operational_authorization.mechanism is not "
             f"{STAGE_1_AUTHORIZATION_MECHANISM!r}; the authorization mechanism has been altered."
         )
+    return True, ""
+
+
+def stage_1_operational_authorization_is_effective(
+    prereg_path: Path = PREREG_PATH,
+) -> tuple[bool, str]:
+    """Report whether Stage-1 OPERATIONAL authorization is effective, and why not when it is not.
+
+    AMENDED BY XASSET-0029. The predecessor form required ``stage_1_executability.executable`` to
+    be true. That could never happen: ``_validate_stage_1_executability`` enforces
+    ``_false(executable)``, so the canonical file was invalid in exactly the state that would have
+    authorized execution. Flipping the boolean was therefore never available, and would in any case
+    have opened a merge-to-execution gap (effective at merge, before post-merge verification and
+    before merge-commit CI concludes) and rested authorization on a mutable committed value that
+    demonstrates nothing.
+
+    XASSET-0029 relocates authorization off committed state entirely. Two factors are required and
+    neither suffices alone:
+
+      1. STRUCTURAL ARMING (this file). The canonical block must still say Stage 1 is not
+         self-authorizing, and must carry the XASSET-0029 mechanism specification. Reading the file
+         rather than a module constant means a results author cannot bypass this by constructing a
+         document.
+      2. EXTERNAL ATTESTATION (outside the repository). A one-shot preexecution attestation must
+         exist, be valid, be bound to the exact reviewed/accepted/merged identities and canonical
+         and universe hashes, and be unconsumed.
+
+    Merging XASSET-0029 satisfies neither factor by itself, so there is no merge-to-execution gap.
+    """
+    canonical_ok, reason = _canonical_authorization_mechanism_is_armed(prereg_path)
+    if not canonical_ok:
+        return False, reason
 
     try:
         import level1_stage1_execution_authorization as authorization
     except ImportError as exc:  # pragma: no cover - defensive
         return False, f"Stage-1 authorization module unavailable: {exc}"
 
-    effective, reason = authorization.authorization_is_effective()
-    if not effective:
+    # CORRECTED AFTER REVIEW 4946327932 BLOCKING 2. This predicate answers "did THIS result come
+    # from the one lawfully claimed execution?", NOT "may a new execution start?". The previous
+    # form asked the second question, so atomically claiming the authorization before the first
+    # real Stage-1 work -- the only safe moment to exclude a second executor -- made the resulting
+    # legitimate result impossible to validate. The two questions are now separate predicates.
+    authorized, reason = authorization.claimed_execution_is_authorized()
+    if not authorized:
         return False, (
             "Stage-1 execution is not operationally authorized. The construction universe is "
             f"structurally closed, but operational authorization requires the full XASSET-0029 "
-            f"lifecycle ({', '.join(STAGE_1_EFFECTIVITY_GATES)}) followed by a valid external "
-            f"one-shot preexecution attestation. There is no merge-to-execution gap. {reason}"
+            f"lifecycle ({', '.join(STAGE_1_EFFECTIVITY_GATES)}), an authenticated external "
+            "one-shot preexecution attestation, and an atomic execution claim. There is no "
+            f"merge-to-execution gap. {reason}"
         )
     return True, ""
+
+
+def new_stage_1_execution_is_authorized() -> tuple[bool, str]:
+    """May a NEW Stage-1 execution start? PUBLIC and fail-closed.
+
+    Distinct from stage_1_operational_authorization_is_effective(), which asks whether an
+    ALREADY-CLAIMED execution's result may be validated. A lane that is CLAIMED or COMPLETED
+    answers False here and True there, which is exactly the separation BLOCKING 2 required.
+    """
+    canonical_ok, reason = _canonical_authorization_mechanism_is_armed()
+    if not canonical_ok:
+        return False, reason
+    try:
+        import level1_stage1_execution_authorization as authorization
+    except ImportError as exc:  # pragma: no cover - defensive
+        return False, f"Stage-1 authorization module unavailable: {exc}"
+    return authorization.new_execution_is_authorized()
 
 
 def validate_stage1_results(results: Mapping[str, Any]) -> ValidationResult:

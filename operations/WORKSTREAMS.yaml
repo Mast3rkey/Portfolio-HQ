@@ -12562,7 +12562,7 @@ workstreams:
           requires another NEW independent FULL exact-head review, not a DELTA.
       - gate: xasset0029-endpoint-0001-stage-1-operational-authorization
         status: in_progress
-        pr: null
+        pr: 328
         description: >-
           Current Lane G filing. XASSET-0028's own lifecycle closed in full
           (PR #327: accepted head 036606401ea569b0a03f2d716d87a057d07d71dc,
@@ -12647,6 +12647,71 @@ workstreams:
           Stage 2 remains unauthorized, application authority remains WITHHELD.
           Draft PR; not merged, not independently reviewed, not principal-accepted
           in this session.
+      - gate: xasset0029-material-correction-after-full-review-4946327932
+        status: in_progress
+        pr: 328
+        description: >-
+          Material correction. Independent FULL exact-head review 4946327932 of PR
+          #328 at head c1f55543183e358de8b6b0d4b0818a7045473efe returned CHANGES
+          REQUIRED (2 BLOCKING / 2 MAJOR / 2 MINOR / 1 NOTE). Both BLOCKING defects
+          were reproduced before any correction.
+          BLOCKING 1 - the attestation did not verify the lifecycle it claimed to
+          attest. build_authorization_payload() took the head, the entire
+          lifecycle_evidence block, the author identity, and the timestamp from its
+          caller, and validation checked only internal consistency, so an entirely
+          fictional review/acceptance/merge/CI chain validated True. Corrected by
+          deriving and re-verifying every lifecycle fact from two durable sources on
+          every validation: the LOCAL GIT OBJECT STORE (merge SHA, both real parents,
+          current ancestry, and the byte identity of load-bearing files as they exist
+          in the merged tree) and GITHUB GOVERNANCE METADATA (the review and its exact
+          reviewed commit and formal disposition, the reviewer login DERIVED rather
+          than self-declared, the principal acceptance comment, the post-merge
+          verification comment, and the merge-commit CI run and job including their
+          pairing). Governance metadata only - never market, price, fundamental, or any
+          other economic data, and not a Stage-1 acquisition path. An unreachable
+          source FAILS CLOSED. Truth sources are injectable, so tests never touch live
+          GitHub.
+          BLOCKING 2 - consuming the one-shot authorization made the public result
+          validator reject the very execution that consumed it, while deferring
+          consumption left a replay and concurrency window. Corrected with an explicit
+          ABSENT -> READY -> CLAIMED -> COMPLETED state machine and two separate
+          predicates, because these are genuinely different questions:
+          new_execution_is_authorized() answers "may a NEW execution start?" (READY
+          only) and claimed_execution_is_authorized() answers "did THIS result come
+          from the one lawful claim?" (CLAIMED or COMPLETED, bound to the exact
+          attestation hash and attempt id). validate_stage1_results() now asks the
+          second, so the lawfully claimed execution can publish a valid result while a
+          second execution stays impossible. The claim is taken atomically immediately
+          before the first real work, via O_EXCL plus an append-only ledger.
+          DURABILITY, stated rather than overclaimed: the claim is recorded in two
+          places and EITHER establishes CLAIMED, so losing one alone does not reopen
+          the lane; destroying the whole directory also destroys the attestation, so
+          the lane becomes ABSENT, which is not READY; a crash after claiming leaves
+          the lane CLAIMED and recovery is a governed act. A privileged operator
+          deleting the entire directory is outside any filesystem enforcement boundary,
+          and that limit is disclosed.
+          MAJOR 1 - the canonical must_bind_exactly list promised
+          PREDECESSOR_XASSET_0028_MERGE_SHA while the module constants went unused.
+          Now bound one-for-one and verified from git, together with the XASSET-0028
+          accepted head and merge base, the authorizing pull request number, current
+          ancestry, and load-bearing enforcement-code identity derived FROM THE MERGED
+          TREE rather than a circular hard-coded self-hash.
+          MAJOR 2 - canonical V5 carried two competing current states. Corrected in
+          place (not by manufacturing a V6): the single current condition is the
+          XASSET-0029 lifecycle plus an authenticated external attestation plus a
+          one-shot claim; XASSET-0027 and XASSET-0028 survive only in explicitly
+          predecessor-named fields.
+          MINOR 1 - the large CLAUDE.md runtime narrative was removed and replaced with
+          one concise pointer to the authoritative decision and canonical files.
+          MINOR 2 - this factual sync.
+          The corrected happy-path fixture runs against a mechanically authenticated
+          seam, and a dedicated regression test proves the previous synthetic fiction
+          now FAILS. No test was weakened. Universe unchanged at 680 / 48 /
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224. Stage 1 is
+          still NOT EXECUTED and NOT EXECUTABLE; no attestation, claim, completion, or
+          ledger record exists. Because the correction changes lifecycle-truth
+          authentication and the execution state machine, the corrected head requires a
+          NEW independent FULL exact-head review, not a DELTA.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -13707,7 +13772,7 @@ workstreams:
       reuse, Level-2 work, liquidity determination, and policy adoption all
       remain separately unauthorized.
     active_branch: claude/xasset-0029-stage1-auth-d0vp7f
-    active_pr: null
+    active_pr: 328
     last_verified_main_sha: c51e94609eff7ede2bdfa084844d59b8347561e5
     last_verified_date: "2026-08-16"
     authorized_by: >
