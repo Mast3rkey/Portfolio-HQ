@@ -634,7 +634,9 @@ Level-1 cross-representation aggregation or selection rule becomes accepted; sep
 reuse authority over any lapsed RISK parameter or charters a new RISK study; `NUM-0001`'s classes, §6,
 §7, or §8 change; a reviewer establishes `XASSET-0024` §K.1's contrary reading of §E.1, or
 `XASSET-0021` §O's strict-conjunction reading; a candidate endpoint source is proposed and its §J
-compliance must be assessed; or the liquidity or Level-2 architecture changes a boundary relied on here.
+compliance must be assessed; **a §P.0 construction-universe closure unit is accepted, whether its own
+answer is that a concrete universe can be closed or that it cannot**; or the liquidity or Level-2
+architecture changes a boundary relied on here.
 
 ### R. Absolute non-authorization
 
@@ -651,7 +653,9 @@ neither way; performs no Level-1 sizing and no Level-2 membership or sizing; mak
 determination; changes no `targets.yaml`, `holdings.yaml`, `gates.yaml`, `issuer_lookthrough.yaml`,
 allocator, tier, cluster, cap, or margin state; authorizes no chart, ladder, optimizer, deployment,
 trade, order, or brokerage action; adopts no portfolio policy; creates no `XASSET-0022` schema or
-version successor and no endpoint-admission validator; grants no reuse authority over any lapsed RISK
+version successor and no endpoint-admission validator; **closes no concrete construction universe and
+authorizes no one to close one, and does not pre-decide, scope, or schedule the §P.0 unit that would
+attempt it**; grants no reuse authority over any lapsed RISK
 parameter or result and no authority to re-question any RISK family; accesses, reruns, refreshes, or
 reuses no RISK-0001 execution artifact; converts its own combined packaging into a general ordering or
 packaging doctrine; edits no accepted decision; and rewrites no accepted history.
