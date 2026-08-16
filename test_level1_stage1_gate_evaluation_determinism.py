@@ -76,6 +76,16 @@ def _collapse(text: str) -> str:
     return " ".join(text.split())
 
 
+def _collapse_prose(text: str) -> str:
+    """Like _collapse, but also strips Markdown blockquote markers.
+
+    A wrapped `>` blockquote otherwise injects a stray `>` mid-sentence when collapsed, which would
+    make a correct quotation fail to match for purely typographic reasons.
+    """
+    stripped = "\n".join(line.lstrip().removeprefix(">").strip() for line in text.splitlines())
+    return " ".join(stripped.split())
+
+
 # --------------------------------------------------------------------------------------
 # Fixtures -- synthetic candidate rows only
 # --------------------------------------------------------------------------------------
@@ -465,7 +475,11 @@ class TestSuccessorSequencing:
     def test_two_distinct_classes_exist(self):
         text = _collapse(DECISION.read_text(encoding="utf-8"))
         assert "G.A — Semantic / governance prerequisites" in text
-        assert "G.B — Final canonical / enforcement / reauthorization reconciliation" in text
+        # Correction 3 renamed G.B to name the outcome-producing-code byte class explicitly.
+        assert (
+            "G.B — Final canonical / enforcement / **outcome-producing-code** / reauthorization "
+            "reconciliation" in text
+        )
 
     def test_no_early_validator_only_reauthorization_prerequisite(self):
         text = _collapse(DECISION.read_text(encoding="utf-8"))
@@ -491,12 +505,118 @@ class TestSuccessorSequencing:
     def test_arming_is_last_and_follows_the_single_rebinding_lifecycle(self):
         section = DECISION.read_text(encoding="utf-8").split("#### G.B")[1].split("### H.")[0]
         rebind = section.index("rebinding lifecycle")
-        arm = section.index("may Stage 1 be armed")
+        arm = section.index("attestation be produced and Stage 1 armed")
         assert rebind < arm, "arming must follow the rebinding lifecycle"
 
     def test_nothing_in_the_successor_model_is_authorized_here(self):
         text = _collapse(DECISION.read_text(encoding="utf-8"))
         assert "This decision authorizes none of G.A or G.B" in text
+
+
+class TestRunnerTrustBoundarySequencing:
+    """§G.B must bind outcome-producing code BEFORE the final rebinding, not merely before arming.
+
+    These pin the *governance contract* in XASSET-0030. They deliberately do not reference any runner
+    file: none exists, and building one is prohibited here. Nothing in this class writes, arms, claims,
+    or executes anything.
+    """
+
+    @staticmethod
+    def _gb() -> str:
+        return DECISION.read_text(encoding="utf-8").split("#### G.B")[1].split("### H.")[0]
+
+    def _step_index(self, needle: str) -> int:
+        gb = self._gb()
+        assert needle in gb, f"missing from G.B: {needle!r}"
+        return gb.index(needle)
+
+    def test_the_invariant_is_stated_plainly(self):
+        text = _collapse_prose(DECISION.read_text(encoding="utf-8"))
+        assert (
+            "No outcome-producing executable code may be created, changed, or left outside the "
+            "bound execution identity after the final rebinding and before `ATTEMPT_1`." in text
+        )
+
+    def test_outcome_producing_code_is_defined(self):
+        gb = _collapse(self._gb())
+        for capability in ("deciding", "ordering", "serializing", "writing", "materially altering"):
+            assert capability in gb, capability
+
+    def test_runner_implementation_precedes_the_binding_extension(self):
+        impl = self._step_index("Implement and fully validate")
+        bind = self._step_index("Extend the successor operational-authorization trust boundary")
+        assert impl < bind
+
+    def test_binding_extension_precedes_the_rebinding_lifecycle(self):
+        bind = self._step_index("Extend the successor operational-authorization trust boundary")
+        rebind = self._step_index("rebinding lifecycle against those")
+        assert bind < rebind
+
+    def test_rebinding_covers_canonical_enforcement_and_outcome_producing_bytes(self):
+        gb = _collapse(self._gb())
+        assert (
+            "canonical **and** enforcement **and** outcome-producing executable" in gb
+        ), "the rebinding scope must name all three byte classes"
+
+    def test_pins_are_computed_only_after_all_three_byte_classes_stabilize(self):
+        gb = _collapse(self._gb())
+        assert (
+            "only after all** canonical **and** validator/enforcement **and** "
+            "runner/result-production bytes have stabilized" in gb
+        )
+
+    def test_runner_readiness_is_read_only_and_follows_rebinding(self):
+        rebind = self._step_index("rebinding lifecycle against those")
+        readiness = self._step_index("read-only verification of already-bound bytes")
+        assert rebind < readiness
+        gb = _collapse(self._gb())
+        assert (
+            "It is **not** a phase in which outcome-producing executable code may still be created "
+            "or changed." in gb
+        )
+
+    def test_post_rebinding_drift_fails_closed_before_ready_or_claim(self):
+        gb = _collapse(self._gb())
+        assert (
+            "Any post-rebinding drift in runner / result-production bytes must fail closed before "
+            "`READY` or claim" in gb
+        )
+
+    def test_arming_is_last(self):
+        gb = self._gb()
+        arm = gb.index("attestation be produced and Stage 1 armed")
+        for earlier in (
+            "Implement and fully validate",
+            "Extend the successor operational-authorization trust boundary",
+            "rebinding lifecycle against those",
+            "read-only verification of already-bound bytes",
+            "must fail closed before",
+        ):
+            assert gb.index(earlier) < arm, earlier
+
+    def test_the_gap_is_justified_from_the_real_load_bearing_set(self):
+        """The decision must state WHY: no runner is in the current six-path set."""
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        assert "No Stage-1 runner is in that set" in text
+        assert len(A.LOAD_BEARING_RELPATHS) == 6
+        assert not any(
+            "runner" in path or "stage1_results" in path for path in A.LOAD_BEARING_RELPATHS
+        ), A.LOAD_BEARING_RELPATHS
+
+    def test_this_pr_builds_no_runner_and_changes_no_load_bearing_set(self):
+        text = _collapse(DECISION.read_text(encoding="utf-8"))
+        assert (
+            "This decision builds no runner, changes no `LOAD_BEARING_RELPATHS`, and amends no "
+            "`XASSET-0029`." in text
+        )
+        assert not (ROOT / "research/level1_endpoint_evidence/stage1_results.yaml").exists()
+
+    def test_load_bearing_set_is_enumerated_exactly_and_matches_the_module(self):
+        """MINOR 1: the decision's own enumeration must equal the live six-path tuple."""
+        section = DECISION.read_text(encoding="utf-8").split("### D.")[1].split("### E.")[0]
+        for path in A.LOAD_BEARING_RELPATHS:
+            assert path in section, f"{path} missing from the §D enumeration"
+        assert "exactly **six** paths" in _collapse(section)
 
 
 class TestFrozenUniverseCarriesNoGateOutcomes:

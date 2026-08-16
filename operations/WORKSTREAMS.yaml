@@ -12953,14 +12953,52 @@ workstreams:
           could-admit semantics, G8's uniqueness over an empty admitted set, G9's
           representation abstention-versus-prerequisite treatment, and G10's unresolved-pair
           question within the RISK boundary - explicitly not required to be one filing, with
-          no policy outcome prescribed. G.B FINAL CANONICAL / ENFORCEMENT / REAUTHORIZATION
-          RECONCILIATION follows only once the Stage-1 semantic contract is stable: reconcile
-          final semantics into the canonical artifacts, correct the validator enforcement
-          defect, update implementation as required, recompute pins only after final bytes
-          stabilise, run ONE successor operational-authorization / load-bearing rebinding
-          lifecycle against the final bytes, establish runner readiness, and only then arm.
-          The efficiency reason is stated in the decision, and no early validator-only
-          reauthorization prerequisite is created. Neither class is authorized here.
+          no policy outcome prescribed. G.B FINAL CANONICAL / ENFORCEMENT /
+          OUTCOME-PRODUCING-CODE / REAUTHORIZATION RECONCILIATION follows only once the
+          Stage-1 semantic contract is stable. The efficiency reason is stated in the
+          decision, and no early validator-only reauthorization prerequisite is created.
+          Neither class is authorized here.
+          THIRD BOUNDED CORRECTION after independent DELTA review 4947182126 (CHANGES
+          REQUIRED, 0 BLOCKING / 1 MAJOR / 1 MINOR / 1 NOTE) at head
+          78616411d68d568335dd89fc324c1df5fe221190, whose exact-head CI run 31968383950 /
+          job 95216918628 was completed/success (7710 passed). That review recorded both
+          correction-2 findings as substantively resolved and raised one successor
+          trust-boundary finding plus one factual count finding. THE 6/6 GATE MAP IS AGAIN
+          UNCHANGED.
+          MAJOR 1 - SS-G.B sequenced the runner's implementation but never required the
+          final rebinding to BIND its bytes, and placed runner readiness after the rebinding
+          without constraining that step to read-only. XASSET-0029's LOAD_BEARING_RELPATHS
+          contains exactly six paths - the authorization module, the preregistration
+          validator, the construction-universe validator, PROTOCOL_V1.md,
+          pre_registration.yaml, and the XASSET-0029 decision itself - and NO Stage-1 runner,
+          because none existed when XASSET-0029 was accepted. An attestation could therefore
+          be perfectly authenticated while the code generating all 680 dispositions was
+          unbound; ATTEMPT_1 is non-rerunnable after claim, so the gap is material.
+          Corrected: SS-G.B now states the governing invariant plainly - no outcome-producing
+          executable code may be created, changed, or left outside the bound execution
+          identity after the final rebinding and before ATTEMPT_1 - defines
+          outcome-producing code as any component capable of deciding, ordering,
+          serializing, writing or materially altering the 680 outcomes, and sequences eleven
+          explicit steps: resolve G.A semantics, reconcile canonical artifacts, correct
+          enforcement defects, IMPLEMENT AND FULLY VALIDATE the deterministic runner /
+          result writer / serializer, EXTEND the successor authorization trust boundary so
+          those exact runner and result-production paths are load-bearing (or establish an
+          equivalently strong exact-byte binding), recompute pins only after ALL canonical
+          AND enforcement AND runner/result-production bytes stabilise, independently review
+          and merge that exact complete executable package, run ONE rebinding lifecycle
+          against those exact merged bytes covering all three byte classes, treat runner
+          readiness as READ-ONLY verification of already-bound bytes rather than a phase in
+          which outcome-producing code may still change, FAIL CLOSED on any post-rebinding
+          runner or result-production drift before READY or claim, and only then produce the
+          attestation and arm. SS-D now enumerates the six load-bearing paths explicitly and
+          records that none is a runner.
+          MINOR 1 - durable PR #329 metadata said "all five load-bearing paths" were
+          re-verified; the live set is six. The miscount existed only in the PR body - the
+          decision file, this register entry, CLAUDE.md and the tests carried no such count -
+          and the PR body is corrected. All six paths are re-verified byte-identical to the
+          authorized merged tree at this head.
+          No runner is built, no LOAD_BEARING_RELPATHS is changed, and XASSET-0029 is not
+          amended by this correction; SS-G.B describes what a successor must do.
           Governance-only throughout: no canonical byte, hash pin, universe, cardinality
           or construction identity changed; no load-bearing path touched; SS-K.1
           preserved and resolved neither way; SS-J.12 deferred; no gate evaluated for any

@@ -57,8 +57,20 @@ followed by one canonical/enforcement/reauthorization pass (G.B). **No gate disp
 semantics, authority interpretation, or substantive methodology determination changed** — the 6/6 map
 is identical.
 
-The core negative determination is unchanged and was affirmed by both reviews. Every MAJOR finding was
-reproduced against controlling text before any edit.
+**Correction 3** — after independent DELTA review `4947182126` (`CHANGES REQUIRED` — 0 BLOCKING /
+1 MAJOR / 1 MINOR / 1 NOTE) at head `78616411d68d568335dd89fc324c1df5fe221190`, whose exact-head CI run
+`31968383950` / job `95216918628` was completed/success. That review recorded correction 2's two
+findings as substantively resolved and raised a successor **trust-boundary** finding: §G.B sequenced the
+runner's implementation but never required the final rebinding to **bind** its bytes, leaving the code
+that produces the 680 outcomes outside the bound execution identity. Changed **only** §G.B (now
+explicitly runner-bound-before-rebinding, with a read-only readiness step and a post-rebinding
+fail-closed drift rule), §D (the six-path load-bearing set enumerated, with its absence of any runner
+made explicit), and matching tests / `WORKSTREAMS` / `CLAUDE.md` wording. **No gate disposition,
+canonical semantics, authority interpretation, or substantive methodology determination changed** — the
+6/6 map is identical.
+
+The core negative determination is unchanged and was affirmed by all three reviews. Every MAJOR finding
+was reproduced against controlling text before any edit.
 
 ## Decision
 
@@ -154,12 +166,22 @@ correcting it is outside a governance-only unit's scope.
 
 ### D. The load-bearing reauthorization dependency — recorded so it is not discovered late
 
-`level1_endpoint_evidence_preregistration_validator.py` and
-`level1_construction_universe_closure_validator.py` are both members of
-`level1_stage1_execution_authorization.LOAD_BEARING_RELPATHS`. Verified mechanically: the authorization
-mechanism hashes the **current working-tree bytes** of each load-bearing path and requires them to equal
-the same blob in the **authorized merged `XASSET-0029` tree** (`3cc15d58…`), which must in turn equal
-the blob at the independently reviewed head. Both currently match. The failure branch reads:
+`level1_stage1_execution_authorization.LOAD_BEARING_RELPATHS` currently contains exactly **six** paths:
+
+1. `level1_stage1_execution_authorization.py`
+2. `level1_endpoint_evidence_preregistration_validator.py`
+3. `level1_construction_universe_closure_validator.py`
+4. `research/level1_endpoint_evidence/PROTOCOL_V1.md`
+5. `research/level1_endpoint_evidence/pre_registration.yaml`
+6. `governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md`
+
+**No Stage-1 runner or result-production path is in that set**, because none existed when `XASSET-0029`
+was accepted — which is why §G.B step 5 exists.
+
+Both validators are members. Verified mechanically: the authorization mechanism hashes the **current
+working-tree bytes** of each load-bearing path and requires them to equal the same blob in the
+**authorized merged `XASSET-0029` tree** (`3cc15d58…`), which must in turn equal the blob at the
+independently reviewed head. All six currently match. The failure branch reads:
 
 > `enforcement drift: {path} in the working tree hashes to {working} but the authorized merged tree
 > has {merged}; load-bearing code has changed since the authorized merge`
@@ -287,23 +309,60 @@ batched where authority permits; this decision prescribes neither the packaging 
 may proceed in parallel as read-only or governance work, subject to the repository's one-mutation-lane
 discipline.
 
-#### G.B — Final canonical / enforcement / reauthorization reconciliation (one coherent pass)
+#### G.B — Final canonical / enforcement / **outcome-producing-code** / reauthorization reconciliation (one coherent pass)
+
+**Corrected after DELTA review `4947182126` MAJOR 1.** The prior head sequenced runner implementation
+*before* the rebinding but never required the rebinding to **cover** the runner's bytes, and placed
+"runner execution-readiness" *after* it without constraining that step to read-only verification. That
+left the code which actually produces the 680 outcomes outside the bound execution identity.
+
+**The governing invariant, stated plainly:**
+
+> **No outcome-producing executable code may be created, changed, or left outside the bound execution
+> identity after the final rebinding and before `ATTEMPT_1`.**
+
+"Outcome-producing executable code" means every executable component capable of **deciding, ordering,
+serializing, writing, or materially altering** the 680 Stage-1 outcomes — the deterministic runner, the
+result writer/serializer, and any other minimal executable set with that capability.
+
+**Why this is not already covered.** `XASSET-0029`'s `LOAD_BEARING_RELPATHS` contains exactly **six**
+paths — the authorization module, the two validators, the two canonical files, and the `XASSET-0029`
+decision itself. **No Stage-1 runner is in that set, because none existed when `XASSET-0029` was
+accepted.** An attestation could therefore be perfectly authenticated while the code generating every
+disposition was unbound. `ATTEMPT_1` is non-rerunnable after claim, so that gap is material.
 
 **Only after the Stage-1 semantic contract is stable enough to execute**, and in this order:
 
-1. Reconcile the final accepted gate semantics into the canonical Stage-1 artifacts as required.
-2. Correct the validator's categorical-precedence enforcement defect (§C).
-3. Update any validator, generator, or runner implementation the final accepted semantics require.
-4. Recompute canonical pins **only after** the final bytes stabilize.
-5. Perform **one** successor operational-authorization / load-bearing rebinding lifecycle against the
-   final canonical **and** enforcement bytes (§D).
-6. Establish runner execution-readiness.
-7. Only then may Stage 1 be armed — one-shot arm, claim, and the 680-construction run.
+1. Resolve all required §G.A semantic/governance prerequisites.
+2. Reconcile the final accepted gate semantics into the canonical Stage-1 artifacts as required.
+3. Correct the validator's categorical-precedence enforcement defect (§C) and any other
+   enforcement-conformance defect the final semantics require.
+4. **Implement and fully validate** the deterministic Stage-1 runner, result writer/serializer, and any
+   other minimal executable component capable of materially affecting the 680 outcomes.
+5. **Extend the successor operational-authorization trust boundary so those exact runner /
+   result-production paths are load-bearing** — by adding them to the successor `LOAD_BEARING_RELPATHS`,
+   or by establishing an equivalently strong exact-byte binding that the attestation actually proves.
+6. Recompute final identities and canonical pins **only after all** canonical **and**
+   validator/enforcement **and** runner/result-production bytes have stabilized.
+7. Independently review, principal-accept, merge, and post-merge verify **that exact complete
+   executable package**.
+8. Perform **one** successor operational-authorization / load-bearing rebinding lifecycle against those
+   exact merged bytes — canonical **and** enforcement **and** outcome-producing executable.
+9. After rebinding, "runner execution-readiness" is **read-only verification of already-bound bytes**.
+   It is **not** a phase in which outcome-producing executable code may still be created or changed.
+10. **Any post-rebinding drift in runner / result-production bytes must fail closed before `READY` or
+    claim** — the same fail-closed property §D already records for the current six load-bearing paths.
+11. Only then may the external one-shot attestation be produced and Stage 1 armed — arm, claim, and the
+    680-construction run.
 
 **No early validator-only reauthorization prerequisite exists**, and none is created here. The
 conformance defect of §C is real and still requires correction; what changed is *when* — it belongs in
 G.B's single pass, not ahead of the semantic questions that determine what the corrected enforcement
-must encode.
+must encode. Step 5 is the same argument applied one layer out: binding the runner early, before the
+semantics that determine what it must compute, would be invalidated by design.
+
+**This decision builds no runner, changes no `LOAD_BEARING_RELPATHS`, and amends no `XASSET-0029`.**
+Steps 4, 5, 8 and 10 describe what a successor must do; performing any of them here is prohibited (§H).
 
 **This decision authorizes none of G.A or G.B**, and performs no part of either.
 
