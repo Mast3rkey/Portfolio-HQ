@@ -134,6 +134,37 @@ stage_1_operational_authorization:
     execution claim, and the completion record are each created with O_EXCL and mirrored into an
     append-only ledger, so a second claim always fails and an authorization naming one attempt can
     never authorize another. A rerun after completion requires new governance authority.
+  review_independence_position:
+    account_level_independence_observable: false
+    account_level_independence_note: >-
+      This repository uses a single GitHub account for both authoring and reviewing sessions, a
+      pre-existing platform limitation recorded repeatedly in its own history. GitHub login
+      inequality therefore CANNOT prove independent session authorship, and the mechanism does not
+      pretend otherwise. An earlier fail-closed condition asserting that a self-authored review is
+      mechanically refused was removed rather than left as an unenforced promise.
+    what_is_actually_verified: DURABLE_PRINCIPAL_CERTIFICATION_OF_THE_INDEPENDENT_REVIEW
+    what_is_actually_verified_note: >-
+      The principal's own durable acceptance record must NAME the exact independent review pass it
+      relies upon. The mechanism then verifies that review exists on the authorizing pull request,
+      was submitted against the exact accepted head, carries the approving formal disposition, is
+      not dismissed, and precedes the acceptance, which in turn precedes the merge. That is a real,
+      mechanically checkable certification chain; it is not a claim about session identity.
+    reviewer_identity_is_derived_not_declared: true
+    author_identity_is_authorizing: false
+    author_identity_note: >-
+      author_identity is caller-supplied informational metadata only. It is recorded for audit and
+      is deliberately NOT used to establish independence or any other authorization fact.
+  result_identity:
+    mechanism: SHA256_OF_CANONICAL_JSON
+    single_shared_function: stage1_result_identity
+    shared_by:
+    - FUTURE_STAGE_1_RESULT_WRITER
+    - COMPLETION_RECORD
+    - PUBLIC_RESULT_VALIDATION
+    note: >-
+      Exactly one deterministic identity, so "is this the artifact the lawful execution completed"
+      is mechanically decidable. Key order and insignificant whitespace do not change identity; any
+      content change does. Completing result A therefore prevents publishing result B.
   lifecycle_truth_sources:
     principle: >-
       A recorded lifecycle value is never accepted because its text is well-formed. Every value is
@@ -163,6 +194,19 @@ stage_1_operational_authorization:
       the authorization reject the very execution that consumed it, while deferring consumption left
       a replay and concurrency window. The claim is taken atomically immediately before the first
       real Stage-1 work.
+    claimed_state_never_implies_lawful_provenance: true
+    claimed_state_note: >-
+      State DETECTION and authorization VALIDITY are different questions. A surviving claim record
+      or ledger entry may establish that the lane is CLAIMED, but lawful provenance additionally
+      requires that the exact attestation still exists, still hashes to what the claim bound, and
+      still validates against durable git and GitHub truth. A missing, invalid, or drifted
+      attestation fails closed even while the lane reports CLAIMED.
+    final_publication_requires_completion: true
+    final_publication_note: >-
+      Public result validation requires a COMPLETED record whose attempt, attestation, claim, and
+      RESULT identity all match, the last computed from the supplied artifact. Structural
+      validation of a candidate result before completion uses the private precompletion seam and
+      never weakens this final public boundary.
     claim_binds:
     - EXECUTION_ATTEMPT_ID
     - EXACT_ATTESTATION_SHA256
@@ -194,6 +238,11 @@ stage_1_operational_authorization:
     private_structural_seams_are_non_authorizing: true
   must_bind_exactly:
   - REPOSITORY_IDENTITY
+  - EXACT_REVIEWED_BASE_SHA
+  - EXACT_MERGE_PARENTS_REVIEWED_BASE_THEN_ACCEPTED_HEAD
+  - MERGE_TREE_EQUALS_ACCEPTED_HEAD_TREE
+  - PRINCIPAL_CERTIFIED_INDEPENDENT_REVIEW_ID
+  - EXACT_COMPLETED_RESULT_IDENTITY
   - STUDY_ID
   - AUTHORIZING_DECISION_XASSET_0029
   - AUTHORIZING_PULL_REQUEST_NUMBER
@@ -220,7 +269,6 @@ stage_1_operational_authorization:
   - WRONG_CANONICAL_OR_UNIVERSE_HASH
   - WRONG_CONSTRUCTION_COUNT
   - ABSENT_OR_ADVERSE_INDEPENDENT_REVIEW
-  - SELF_AUTHORED_REVIEW_WHERE_INDEPENDENCE_IS_REQUIRED
   - ABSENT_ACCEPTANCE_OR_ACCEPTANCE_FOR_ANOTHER_HEAD
   - ABSENT_MERGE_OR_WRONG_MERGE_PARENTS
   - ABSENT_POST_MERGE_VERIFICATION
@@ -231,6 +279,14 @@ stage_1_operational_authorization:
   - UNVERIFIABLE_OR_UNREACHABLE_GOVERNANCE_TRUTH_SOURCE
   - NONEXISTENT_BUT_WELL_FORMED_REVIEW_ACCEPTANCE_VERIFICATION_OR_CI_IDENTIFIER
   - SELF_DECLARED_REVIEWER_IDENTITY
+  - PRINCIPAL_CERTIFICATION_OF_THE_INDEPENDENT_REVIEW_ABSENT_OR_MISMATCHED
+  - LIFECYCLE_RECORD_BELONGING_TO_ANOTHER_PULL_REQUEST
+  - LIFECYCLE_CHRONOLOGY_VIOLATION
+  - DISMISSED_OR_NON_FINAL_SELECTED_REVIEW
+  - MERGE_FIRST_PARENT_NOT_THE_EXACT_REVIEWED_BASE
+  - MERGE_TREE_DIFFERS_FROM_THE_ACCEPTED_HEAD_TREE
+  - CLAIMED_OR_COMPLETED_LANE_WITHOUT_A_STILL_VALID_ATTESTATION
+  - SUPPLIED_RESULT_NOT_THE_COMPLETED_RESULT_IDENTITY
   - LOAD_BEARING_ENFORCEMENT_CODE_DRIFT
   - AUTHORIZING_MERGE_NOT_IN_CURRENT_ANCESTRY
   no_merge_to_execution_gap: true

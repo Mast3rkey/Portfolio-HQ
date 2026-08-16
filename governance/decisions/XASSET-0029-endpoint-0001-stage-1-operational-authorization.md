@@ -133,13 +133,10 @@ repository state.
 - Private `_at`-suffixed seams exist so structural tests run without any call form implying
   authorization. **Calling them confers nothing.**
 
-### G. One authorized lane, and an explicit execution state machine
+### G. One authorized lane, authenticated provenance, and an exact result binding
 
 `XASSET-0027` §P.1 permits exactly one later Stage-1 evaluation/results PR. The attempt identity is
-`ENDPOINT-0001::STAGE_1::ATTEMPT_1` — derived from repository truth, not invented: no Stage-1
-attempt has ever been executed or authorized.
-
-The lane is a state machine, and the two questions it must answer are genuinely different:
+`ENDPOINT-0001::STAGE_1::ATTEMPT_1` — derived from repository truth, not invented.
 
 ```
 ABSENT ──▶ READY ──▶ CLAIMED ──▶ COMPLETED
@@ -148,25 +145,34 @@ ABSENT ──▶ READY ──▶ CLAIMED ──▶ COMPLETED
 | Question | Predicate | True in |
 |---|---|---|
 | May a **new** execution start? | `new_execution_is_authorized()` | `READY` only |
-| Did **this** result come from the one lawful claim? | `claimed_execution_is_authorized()` | `CLAIMED`, `COMPLETED` |
+| Did **this** execution come from the one lawful claim? | `claimed_execution_is_authorized()` | `CLAIMED`, `COMPLETED` |
+| Is **this exact artifact** the one it completed? | `completed_result_is_authorized(results)` | `COMPLETED`, matching identity |
 
-`validate_stage1_results()` asks the **second**. Conflating them would mean that claiming the
-authorization before the first real work — the only safe moment to exclude a second executor —
-made the resulting legitimate result impossible to validate. The claim is taken **atomically
-immediately before the first real Stage-1 work**, with `O_EXCL` plus an append-only ledger, and is
-bound to the exact attestation hash and attempt id. Completion additionally binds the exact claim
-and the exact result-artifact identity.
+**State detection and authorization validity are different questions.** A surviving claim record
+may establish that the lane *is* `CLAIMED`; it never establishes that the claim is **lawful**. Lawful
+provenance additionally requires that the exact attestation still exists, still hashes to what the
+claim bound, and **still validates against durable git and GitHub truth** — so canonical,
+load-bearing, ancestry, or governance drift *after* the claim fails closed rather than being
+grandfathered in.
+
+**Exactly one result identity.** `stage1_result_identity()` — SHA-256 of canonical JSON — is shared
+by the future Stage-1 result writer, the completion record, and the public gate. Completing result A
+therefore mechanically prevents publishing result B. Structural checking of a candidate result
+before completion uses the private precompletion seam and never weakens the final public boundary.
+
+The claim is taken **atomically immediately before the first real work**, with `O_EXCL` plus an
+append-only ledger. Completion binds the attempt, the exact attestation, the exact claim identity,
+and the exact result identity — recovered deterministically from the ledger if the claim file is
+lost, or **failing closed**, never emitting a null binding.
 
 **Durability boundary, stated rather than overclaimed.** `O_EXCL` prevents a second creation only
-while the path exists, so "can never be replayed" would be false. What is enforced: the claim is
-recorded in **two** places and **either** establishes `CLAIMED`, so losing one alone does not
-reopen the lane; destroying the whole directory also destroys the attestation, so the lane becomes
-`ABSENT`, which is **not** `READY`; and a crash after claiming leaves the lane `CLAIMED`, with
-recovery a governed act rather than an automatic transition. A privileged operator deleting the
-entire directory is outside any filesystem-based enforcement boundary — disclosed, not papered
-over.
+while the path exists. The claim is recorded in **two** places and **either** establishes `CLAIMED`;
+destroying the whole directory also destroys the attestation, so the lane becomes `ABSENT`, which is
+**not** `READY`; a crash after claiming leaves the lane `CLAIMED`, with recovery a governed act. A
+privileged operator deleting the entire directory is outside any filesystem-based enforcement
+boundary — disclosed, not papered over.
 
-**`XASSET-0029` prepares that lane and does not claim or consume it.**
+**`XASSET-0029` prepares that lane and does not claim, complete, or consume it.**
 
 ### H. Canonical amendment
 
@@ -183,13 +189,13 @@ independently regenerated after the amendment and unchanged.
 protocol_path: research/level1_endpoint_evidence/PROTOCOL_V1.md
 protocol_sha256: 6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb
 preregistration_path: research/level1_endpoint_evidence/pre_registration.yaml
-preregistration_sha256: 366ae3c4d43664be0c57da676d53f3a095c6df8c712277b0c289dbb032f0de3d
+preregistration_sha256: dbebe44f4f7e6f487b6d3d01b5c4de19670f14073919ee1578ed878db59c100d
 predecessor_protocol_sha256: c02b4d519267b96ddb12500e6d1d55a47aeafd9437de8e41014c8871f631618c
 predecessor_preregistration_sha256: ffde86c1585050b2bf89e58033f37777a903ace86e97be46b6440a217c78ec4a
 -->
 
 - `PROTOCOL_V1.md`: `6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb`
-- `pre_registration.yaml`: `366ae3c4d43664be0c57da676d53f3a095c6df8c712277b0c289dbb032f0de3d`
+- `pre_registration.yaml`: `dbebe44f4f7e6f487b6d3d01b5c4de19670f14073919ee1578ed878db59c100d`
 - Predecessor (`XASSET-0028`, retained): `c02b4d51…f631618c` / `ffde86c1…6b440a217c78ec4a`
 
 ## Rationale
@@ -263,3 +269,55 @@ No test was weakened. The construction universe is unchanged (`73c0965e…5224`,
 remains **NOT EXECUTED** and **NOT EXECUTABLE**: no attestation, claim, completion, or ledger record
 exists. Because the correction changes lifecycle-truth authentication and the execution state
 machine, the corrected head requires a **NEW independent FULL exact-head review, not a DELTA**.
+
+---
+
+## Second bounded correction — independent FULL review `4946397399`
+
+The corrected candidate (`674f95c`) returned **CHANGES REQUIRED**: 2 BLOCKING / 2 MAJOR / 2 MINOR /
+1 NOTE. Both BLOCKING defects were **reproduced before any correction**.
+
+**BLOCKING 1 — `CLAIMED`/`COMPLETED` bypassed the authenticated attestation.** `lane_state_at()`
+recognised claim/ledger state *before* loading `authorization.json`, and
+`claimed_execution_is_authorized()` then accepted any syntactically valid 64-hex hash — skipping the
+comparison entirely when the attestation was absent. **A local `claim.json` carrying the registered
+attempt id was enough to make the public result gate return authorized with no attestation at all,
+and no review, acceptance, merge, or CI ever consulted.** Corrected: a claimed lane must re-prove
+that the exact attestation exists, hashes to what the claim bound, and still validates against
+durable truth. State detection may still report `CLAIMED`; lawful provenance never follows from it.
+
+**BLOCKING 2 — nothing bound "this result".** `complete_execution()` recorded a
+`result_identity_sha256` that no predicate ever read, and `validate_stage1_results()` computed no
+identity for the document handed to it, so completing result A did not prevent publishing result B.
+Separately, completing after a claim-file loss emitted `authorization_sha256=None` and
+`claim_sha256=None`, violating the canonical `completion_binds` contract. Corrected with one
+deterministic `stage1_result_identity()`, a public gate that compares the supplied artifact against
+the completion record, and deterministic claim-identity recovery from the append-only ledger — or
+failing closed, never a null binding.
+
+**MAJOR 1 — the independence claim now matches what can be observed.** The canonical contract
+required `SELF_AUTHORED_REVIEW_WHERE_INDEPENDENCE_IS_REQUIRED` to fail closed, but this repository
+uses **one GitHub account for both roles**, so login inequality cannot observe session
+independence. Rather than leave an unenforced promise or fake a check, that condition is **removed**
+and replaced with one the machine genuinely proves: the principal's own durable acceptance must
+**name the exact independent review pass** it relies upon. Verification now also requires the
+review, acceptance, and post-merge record to **belong to PR #328**, the review to be non-dismissed,
+and the chronology review → acceptance → merge → post-merge verification to hold. `author_identity`
+is explicitly reclassified as **non-authorizing informational metadata**.
+
+**MAJOR 2 — exact reviewed base and zero merge drift.** Only the second merge parent was bound, and
+the merged tree became its own load-bearing reference — so base drift or a merge resolution could
+silently become the authorized implementation. Corrected: parents must be exactly
+`[c51e9460…, accepted_head]`, the merge tree must equal the accepted-head tree, and every
+load-bearing blob must match at **both** the reviewed head and the merge.
+
+**MINOR 1** — the public validator's docstring described the spent `XASSET-0028` lifecycle; it now
+describes `XASSET-0029`, with `XASSET-0028` as predecessor history. **MINOR 2** — the public
+boundary is now tested through the **real** `validate_stage1_results()`, including result
+substitution.
+
+Canonical V5 is corrected **in place**, not replaced by a V6. No test was weakened. The universe is
+unchanged (`73c0965e…5224`, 680, 48). Stage 1 remains **NOT EXECUTED** and **NOT EXECUTABLE**: no
+attestation, claim, completion, or ledger record exists. Because the correction changes the public
+claimed/completed provenance path and exact result binding, the corrected head requires **another
+NEW independent FULL exact-head review, not a DELTA**.

@@ -12712,6 +12712,64 @@ workstreams:
           ledger record exists. Because the correction changes lifecycle-truth
           authentication and the execution state machine, the corrected head requires a
           NEW independent FULL exact-head review, not a DELTA.
+      - gate: xasset0029-second-material-correction-after-full-review-4946397399
+        status: in_progress
+        pr: 328
+        description: >-
+          Second material correction. NEW independent FULL exact-head review
+          4946397399 of PR #328 at head 674f95c5aa249eb34de2068b8a5569e0572bf586
+          returned CHANGES REQUIRED (2 BLOCKING / 2 MAJOR / 2 MINOR / 1 NOTE). Both
+          BLOCKING defects were reproduced before any correction.
+          BLOCKING 1 - the CLAIMED/COMPLETED side bypassed the authenticated
+          attestation entirely. lane_state_at() recognised claim/ledger state before
+          loading authorization.json, and claimed_execution_is_authorized() then
+          accepted any syntactically valid 64-hex hash, skipping the comparison
+          outright when the attestation file was absent. A local claim.json carrying
+          the registered attempt id therefore made the PUBLIC result gate return
+          authorized with no attestation at all and no review, acceptance, merge or CI
+          ever consulted. Corrected: a claimed lane must re-prove that the exact
+          attestation still exists, still hashes to what the claim bound, and still
+          validates against durable git/GitHub truth, so post-claim canonical,
+          load-bearing, ancestry or governance drift fails closed. State detection may
+          still report CLAIMED; lawful provenance never follows from it.
+          BLOCKING 2 - nothing bound "this result". complete_execution() recorded a
+          result_identity_sha256 that no predicate read, and validate_stage1_results()
+          computed no identity for the supplied document, so completing result A did
+          not prevent publishing result B. Completion after claim-file loss also
+          emitted null attestation/claim identities, violating the canonical
+          completion_binds contract. Corrected with one deterministic
+          stage1_result_identity (SHA-256 of canonical JSON) shared by the future
+          result writer, completion, and the public gate; a public validator that
+          compares the supplied artifact against the completion record; and
+          deterministic claim-identity recovery from the append-only ledger, or failing
+          closed - never a null binding.
+          MAJOR 1 - the independence claim now matches what can be observed. This
+          repository uses ONE GitHub account for both roles, so login inequality cannot
+          observe session independence. Rather than leave an unenforced promise,
+          SELF_AUTHORED_REVIEW_WHERE_INDEPENDENCE_IS_REQUIRED was REMOVED and replaced
+          with a property the machine genuinely proves: the principal's durable
+          acceptance must NAME the exact independent review pass relied upon.
+          Verification also now requires review/acceptance/post-merge records to belong
+          to PR #328, the review to be non-dismissed, and the chronology review ->
+          acceptance -> merge -> post-merge verification to hold. author_identity is
+          reclassified as non-authorizing informational metadata.
+          MAJOR 2 - exact reviewed base and zero merge drift. Only the second merge
+          parent was bound and the merged tree became its own load-bearing reference,
+          so base drift or a merge resolution could silently become the authorized
+          implementation. Corrected: parents must be exactly [c51e9460..., accepted
+          head], the merge tree must equal the accepted-head tree, and every
+          load-bearing blob must match at BOTH the reviewed head and the merge.
+          MINOR 1 - the public validator docstring described the spent XASSET-0028
+          lifecycle; it now describes XASSET-0029, with XASSET-0028 as predecessor
+          history. MINOR 2 - the public boundary is now tested through the REAL
+          validate_stage1_results(), including result substitution.
+          Canonical V5 corrected in place, not replaced by a V6; successor pins
+          recomputed. No test weakened; 112 focused tests (up from 76). Universe
+          unchanged at 680 / 48 /
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224. Stage 1
+          still NOT EXECUTED and NOT EXECUTABLE; no attestation, claim, completion or
+          ledger record exists. Requires another NEW independent FULL exact-head
+          review, not a DELTA.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

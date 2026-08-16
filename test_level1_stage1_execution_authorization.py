@@ -1,11 +1,17 @@
 """Adversarial tests for the ENDPOINT-0001 Stage-1 authorization mechanism (XASSET-0029).
 
-CORRECTED AFTER INDEPENDENT FULL REVIEW 4946327932.
+CORRECTED AFTER INDEPENDENT FULL REVIEWS 4946327932 AND 4946397399.
 
 The previous suite's "happy path" proved only that an internally consistent FICTION passes:
 synthetic SHAs, invented review/acceptance/verification/CI ids, and a self-declared reviewer.
 The review correctly called that the principal flaw. This suite is rebuilt so the happy path
 runs against a MECHANICALLY AUTHENTICATED seam, and so that fiction fails.
+
+Review 4946397399 then found that the CLAIMED/COMPLETED side bypassed that authentication
+entirely -- a forged local claim made the PUBLIC result gate return authorized with no
+attestation at all -- and that nothing bound the supplied result to the completed one. Both were
+reproduced before correcting, and classes ``TestClaimAuthentication``, ``TestExactResultProvenance``
+and ``TestPublicResultBoundary`` below attack the corrected paths directly.
 
 Truth is injected through ``TruthSources`` rather than fetched live, so tests never touch
 GitHub. The fake sources below are honest stand-ins for durable truth: they answer only for
@@ -34,7 +40,7 @@ REPO_ROOT = Path(__file__).resolve().parent
 # facts, which do not exist yet because XASSET-0029 has not merged.
 HEAD = "a" * 40
 MERGE = "b" * 40
-BASE = "c" * 40
+BASE = AUTH.REVIEWED_BASE_SHA  # MAJOR 2: merge parent[0] must be the EXACT reviewed base
 REVIEW_ID = "4900000001"
 ACCEPT_ID = "5900000001"
 VERIFY_ID = "5900000002"
@@ -42,6 +48,7 @@ RUN_ID = "3100000001"
 JOB_ID = "9500000001"
 REVIEWER_LOGIN = "independent-reviewer"
 AUTHOR_LOGIN = "implementation-author"
+PR_URL = f"https://api.github.com/repos/{AUTH.REPOSITORY_IDENTITY}/issues/{AUTH.AUTHORIZING_PULL_REQUEST}"
 
 
 class FakeGit:
@@ -55,16 +62,22 @@ class FakeGit:
                 AUTH.PREDECESSOR_ACCEPTED_HEAD,
             ),
         }
-        self.blobs = {
-            (MERGE, rel): AUTH.sha256_file(REPO_ROOT / rel)
-            for rel in AUTH.LOAD_BEARING_RELPATHS
-        }
+        self.blobs = {}
+        for rel in AUTH.LOAD_BEARING_RELPATHS:
+            digest = AUTH.sha256_file(REPO_ROOT / rel)
+            # Zero merge drift: the reviewed head and the merge carry identical bytes.
+            self.blobs[(MERGE, rel)] = digest
+            self.blobs[(HEAD, rel)] = digest
+        self.trees = {MERGE: "t" * 40, HEAD: "t" * 40}
         self._head = MERGE
         self._ancestor = True
         self.__dict__.update(overrides)
 
     def commit_parents(self, sha):
         return self.parents.get(sha)
+
+    def commit_tree(self, sha):
+        return self.trees.get(sha)
 
     def is_ancestor(self, ancestor, descendant):
         return self._ancestor
@@ -87,6 +100,7 @@ class FakeGovernance:
                 "merged": True,
                 "merge_commit_sha": MERGE,
                 "user": {"login": AUTHOR_LOGIN},
+                "merged_at": "2026-08-16T12:00:00Z",
             }
         }
         self.reviews = {
@@ -94,11 +108,24 @@ class FakeGovernance:
                 "commit_id": HEAD,
                 "body": f"FORMAL DISPOSITION: {AUTH.APPROVING_REVIEW_DISPOSITION} — 0 BLOCKING",
                 "user": {"login": REVIEWER_LOGIN},
+                "state": "COMMENTED",
+                "submitted_at": "2026-08-16T10:00:00Z",
+                "html_url": f"{PR_URL}#pullrequestreview-{REVIEW_ID}",
             }
         }
         self.comments = {
-            ACCEPT_ID: {"body": f"Principal acceptance at exact head `{HEAD}`."},
-            VERIFY_ID: {"body": f"Post-merge verification for merge `{MERGE}`."},
+            # MAJOR 1: the principal's acceptance must CERTIFY the exact independent review pass.
+            ACCEPT_ID: {
+                "body": f"Principal acceptance at exact head `{HEAD}`, relying on independent "
+                        f"review {REVIEW_ID}.",
+                "issue_url": PR_URL,
+                "created_at": "2026-08-16T11:00:00Z",
+            },
+            VERIFY_ID: {
+                "body": f"Post-merge verification for merge `{MERGE}`.",
+                "issue_url": PR_URL,
+                "created_at": "2026-08-16T13:00:00Z",
+            },
         }
         self.runs = {
             RUN_ID: {"status": "completed", "conclusion": "success", "head_sha": MERGE}
@@ -478,7 +505,7 @@ class TestExecutionStateMachine:
         paths.claim.write_text(AUTH.canonical_json(forged) + "\n", encoding="utf-8")
         ok, reason = AUTH.claimed_execution_is_authorized(paths, sources())
         assert ok is False
-        assert "different attestation" in reason
+        assert "not the one this claim bound" in reason
 
     def test_20_wrong_attempt_rejected(self, tmp_path, payload):
         paths = _arm(tmp_path, payload)
@@ -729,3 +756,355 @@ class TestPreservedPostures:
     def test_removing_the_mechanism_block_rejected(self, prereg):
         del prereg["stage_1_operational_authorization"]
         assert not PREREG.validate(prereg).ok
+
+
+# =============================================================================================
+# A — CLAIM/ATTESTATION AUTHENTICATION (review 4946397399, BLOCKING 1)
+# =============================================================================================
+
+
+class TestClaimAuthentication:
+    """A surviving claim record must never substitute for a valid attestation."""
+
+    @staticmethod
+    def _forged_claim(paths: AUTH.LanePaths, digest: str = "0" * 64) -> dict:
+        return {
+            "event": AUTH.LANE_CLAIMED,
+            "execution_attempt_id": AUTH.EXECUTION_ATTEMPT_ID,
+            "authorization_sha256": digest,
+            "claimed_at_utc": "whenever",
+        }
+
+    def test_a1_forged_claim_without_attestation_rejected(self, tmp_path):
+        paths = _lane(tmp_path)
+        paths.claim.parent.mkdir(parents=True, exist_ok=True)
+        paths.claim.write_text(AUTH.canonical_json(self._forged_claim(paths)) + "\n")
+        # State detection may still report CLAIMED; lawful provenance must not follow from it.
+        assert AUTH.lane_state_at(paths, sources())[0] == AUTH.LANE_CLAIMED
+        ok, reason = AUTH.claimed_execution_is_authorized(paths, sources())
+        assert ok is False
+        assert "no longer exists" in reason
+
+    def test_a2_forged_ledger_claim_without_attestation_rejected(self, tmp_path):
+        paths = _lane(tmp_path)
+        paths.ledger.parent.mkdir(parents=True, exist_ok=True)
+        paths.ledger.write_text(AUTH.canonical_json(self._forged_claim(paths)) + "\n")
+        assert AUTH.lane_state_at(paths, sources())[0] == AUTH.LANE_CLAIMED
+        assert AUTH.claimed_execution_is_authorized(paths, sources())[0] is False
+
+    def test_a3_claim_bound_to_malformed_attestation_rejected(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        paths.authorization.write_text("{ not json", encoding="utf-8")
+        ok, reason = AUTH.claimed_execution_is_authorized(paths, sources())
+        assert ok is False
+        assert "not the one this claim bound" in reason or "unusable" in reason
+
+    def test_a4_claim_bound_to_unauthenticated_lifecycle_rejected(self, tmp_path, payload):
+        """The attestation survives byte-for-byte, but GitHub truth no longer supports it."""
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        gov = FakeGovernance()
+        gov.reviews.pop(REVIEW_ID)
+        ok, reason = AUTH.claimed_execution_is_authorized(paths, sources(governance=gov))
+        assert ok is False
+        assert "no longer validates against durable truth" in reason
+
+    def test_a5_attestation_deleted_after_claim_rejected(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        paths.authorization.unlink()
+        assert AUTH.claimed_execution_is_authorized(paths, sources())[0] is False
+
+    def test_a6_canonical_drift_after_claim_rejected(self, tmp_path, payload, monkeypatch):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        monkeypatch.setattr(
+            AUTH, "CANONICAL_PINS", dict(AUTH.CANONICAL_PINS, **{AUTH.CANONICAL_PROTOCOL_RELPATH: "9" * 64})
+        )
+        ok, reason = AUTH.claimed_execution_is_authorized(paths, sources())
+        assert ok is False
+        assert "canonical" in reason
+
+    def test_a7_load_bearing_drift_after_claim_rejected(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        git = FakeGit()
+        git.blobs[(MERGE, "level1_stage1_execution_authorization.py")] = "0" * 64
+        assert AUTH.claimed_execution_is_authorized(paths, sources(git=git))[0] is False
+
+    def test_a8_governance_drift_after_claim_rejected(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        gov = FakeGovernance()
+        gov.runs[RUN_ID] = {"status": "completed", "conclusion": "failure", "head_sha": MERGE}
+        assert AUTH.claimed_execution_is_authorized(paths, sources(governance=gov))[0] is False
+
+    def test_a9_ancestry_drift_after_claim_rejected(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        git = FakeGit()
+        git._ancestor = False
+        assert AUTH.claimed_execution_is_authorized(paths, sources(git=git))[0] is False
+
+
+# =============================================================================================
+# B — EXACT RESULT PROVENANCE (review 4946397399, BLOCKING 2)
+# =============================================================================================
+
+RESULT_A = {"candidate_results": [], "note": "A"}
+RESULT_B = {"candidate_results": [], "note": "B"}
+
+
+class TestExactResultProvenance:
+    @staticmethod
+    def _complete(paths, results):
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        return AUTH.complete_execution(
+            completed_at_utc="t2",
+            result_identity_sha256=AUTH.stage1_result_identity(results),
+            paths=paths,
+            sources=sources(),
+        )
+
+    def test_b1_exact_completed_result_authorized(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        self._complete(paths, RESULT_A)
+        ok, reason = AUTH.completed_result_is_authorized(RESULT_A, paths, sources())
+        assert ok is True, reason
+
+    def test_b2_substituted_result_rejected(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        self._complete(paths, RESULT_A)
+        ok, reason = AUTH.completed_result_is_authorized(RESULT_B, paths, sources())
+        assert ok is False
+        assert "may not be published" in reason
+
+    def test_b3_one_field_change_after_completion_rejected(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        self._complete(paths, RESULT_A)
+        mutated = dict(RESULT_A, note="A ")
+        assert AUTH.completed_result_is_authorized(mutated, paths, sources())[0] is False
+
+    def test_b4_claimed_but_not_completed_rejects_publication(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        ok, reason = AUTH.completed_result_is_authorized(RESULT_A, paths, sources())
+        assert ok is False
+        assert "has not been completed" in reason
+
+    def test_b5_wrong_completion_result_hash_rejected(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        self._complete(paths, RESULT_A)
+        forged = json.loads(paths.completion.read_text(encoding="utf-8"))
+        forged["result_identity_sha256"] = "5" * 64
+        paths.completion.write_text(AUTH.canonical_json(forged) + "\n", encoding="utf-8")
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is False
+
+    def test_b6_wrong_completion_attempt_rejected(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        self._complete(paths, RESULT_A)
+        forged = json.loads(paths.completion.read_text(encoding="utf-8"))
+        forged["execution_attempt_id"] = "ENDPOINT-0001::STAGE_1::ATTEMPT_2"
+        paths.completion.write_text(AUTH.canonical_json(forged) + "\n", encoding="utf-8")
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is False
+
+    def test_b7_completion_after_claim_file_loss_preserves_exact_binding(self, tmp_path, payload):
+        """Claim-file loss must not produce null binding fields; the ledger carries identity."""
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        expected_claim_sha = AUTH.sha256_file(paths.claim)
+        paths.claim.unlink()
+        record = AUTH.complete_execution(
+            completed_at_utc="t2",
+            result_identity_sha256=AUTH.stage1_result_identity(RESULT_A),
+            paths=paths,
+            sources=sources(),
+        )
+        assert record["authorization_sha256"] is not None
+        assert record["claim_sha256"] == expected_claim_sha
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is True
+
+    def test_b8_corrupt_ledger_cannot_substitute_for_the_claim(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        paths.claim.unlink()
+        paths.ledger.write_text("{ not json\n", encoding="utf-8")
+        with pytest.raises(ValueError):
+            AUTH.complete_execution(
+                completed_at_utc="t2",
+                result_identity_sha256=AUTH.stage1_result_identity(RESULT_A),
+                paths=paths,
+                sources=sources(),
+            )
+
+    def test_b9_ambiguous_ledger_claims_rejected(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        conflicting = json.loads(paths.claim.read_text(encoding="utf-8"))
+        conflicting["claimed_at_utc"] = "a-different-time"
+        with paths.ledger.open("a", encoding="utf-8") as handle:
+            handle.write(AUTH.canonical_json(conflicting) + "\n")
+        paths.claim.unlink()
+        record, claim_sha, problem = AUTH._recover_claim_record(paths)
+        assert record is None and "ambiguous" in problem
+
+
+# =============================================================================================
+# C — GOVERNANCE TRUTH IDENTITY, CHRONOLOGY AND FINALITY (review 4946397399, MAJOR 1)
+# =============================================================================================
+
+
+class TestGovernanceIdentity:
+    def test_c1_acceptance_belonging_to_another_pr_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.comments[ACCEPT_ID] = dict(
+            gov.comments[ACCEPT_ID], issue_url="https://api.github.com/repos/x/y/issues/999"
+        )
+        _rejected(payload, "does not belong to pull request", sources(governance=gov))
+
+    def test_c2_postmerge_belonging_to_another_pr_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.comments[VERIFY_ID] = dict(
+            gov.comments[VERIFY_ID], issue_url="https://api.github.com/repos/x/y/issues/999"
+        )
+        _rejected(payload, "does not belong to pull request", sources(governance=gov))
+
+    def test_c3_acceptance_omitting_the_review_id_rejected(self, payload):
+        """MAJOR 1: the principal must certify the exact independent review pass."""
+        gov = FakeGovernance()
+        gov.comments[ACCEPT_ID] = dict(
+            gov.comments[ACCEPT_ID], body=f"Principal acceptance at exact head `{HEAD}`."
+        )
+        _rejected(payload, "does not certify the independent review", sources(governance=gov))
+
+    def test_c4_dismissed_review_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.reviews[REVIEW_ID] = dict(gov.reviews[REVIEW_ID], state="DISMISSED")
+        _rejected(payload, "DISMISSED", sources(governance=gov))
+
+    def test_c5_acceptance_before_review_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.comments[ACCEPT_ID] = dict(gov.comments[ACCEPT_ID], created_at="2026-08-16T09:00:00Z")
+        _rejected(payload, "precedes review", sources(governance=gov))
+
+    def test_c6_merge_before_acceptance_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.pulls[AUTH.AUTHORIZING_PULL_REQUEST] = dict(
+            gov.pulls[AUTH.AUTHORIZING_PULL_REQUEST], merged_at="2026-08-16T10:30:00Z"
+        )
+        _rejected(payload, "precedes acceptance", sources(governance=gov))
+
+    def test_c7_postmerge_verification_before_merge_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.comments[VERIFY_ID] = dict(gov.comments[VERIFY_ID], created_at="2026-08-16T11:30:00Z")
+        _rejected(payload, "precedes the merge", sources(governance=gov))
+
+    def test_c8_review_not_owned_by_the_pull_request_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.reviews[REVIEW_ID] = dict(gov.reviews[REVIEW_ID], html_url="https://example.invalid/x")
+        _rejected(payload, "does not belong to pull request", sources(governance=gov))
+
+    def test_c9_author_identity_is_not_an_authorization_fact(self, payload):
+        """Changing informational author metadata must not change the verdict either way."""
+        payload["author_identity"] = "someone-entirely-different"
+        assert AUTH.validate_authorization_document(payload, sources()).valid is True
+
+
+# =============================================================================================
+# D — EXACT REVIEWED BASE AND ZERO MERGE DRIFT (review 4946397399, MAJOR 2)
+# =============================================================================================
+
+
+class TestExactBaseAndMergeDrift:
+    def test_d1_first_parent_not_the_reviewed_base_rejected(self, payload):
+        git = FakeGit()
+        git.parents[MERGE] = ("9" * 40, HEAD)
+        payload["lifecycle_evidence"]["merge"]["parents"] = ["9" * 40, HEAD]
+        _rejected(payload, "is not the exact reviewed base", sources(git=git))
+
+    def test_d2_second_parent_not_the_accepted_head_rejected(self, payload):
+        git = FakeGit()
+        git.parents[MERGE] = (BASE, "8" * 40)
+        payload["lifecycle_evidence"]["merge"]["parents"] = [BASE, "8" * 40]
+        _rejected(payload, "is not the accepted head", sources(git=git))
+
+    def test_d3_merge_tree_differing_from_accepted_head_tree_rejected(self, payload):
+        git = FakeGit()
+        git.trees[MERGE] = "z" * 40
+        _rejected(payload, "differs from the accepted head tree", sources(git=git))
+
+    def test_d4_load_bearing_blob_changed_by_the_merge_rejected(self, payload):
+        """The merged tree may not become its own source of truth."""
+        git = FakeGit()
+        git.blobs[(HEAD, "level1_stage1_execution_authorization.py")] = "4" * 64
+        _rejected(payload, "merge drift", sources(git=git))
+
+    def test_d5_reviewed_base_is_bound_to_current_main(self):
+        assert AUTH.REVIEWED_BASE_SHA == "c51e94609eff7ede2bdfa084844d59b8347561e5"
+
+
+# =============================================================================================
+# E — THE ACTUAL PUBLIC BOUNDARY (review 4946397399, BLOCKING 2 / MINOR 2)
+# =============================================================================================
+
+
+class TestPublicResultBoundary:
+    """These call the REAL public validator, not a helper predicate."""
+
+    @staticmethod
+    def _publish(tmp_path, payload, completed, monkeypatch):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        AUTH.complete_execution(
+            completed_at_utc="t2",
+            result_identity_sha256=AUTH.stage1_result_identity(completed),
+            paths=paths,
+            sources=sources(),
+        )
+        # Point the module's DEFAULT lane and truth sources at the synthetic fixture, so the
+        # public validator is exercised through its real no-argument boundary. Build the sources
+        # object before patching, since the helper constructs AUTH.TruthSources itself.
+        fixture_sources = sources()
+        monkeypatch.setattr(AUTH, "AUTHORIZATION_PATH", paths.authorization)
+        monkeypatch.setattr(AUTH, "CLAIM_PATH", paths.claim)
+        monkeypatch.setattr(AUTH, "COMPLETION_PATH", paths.completion)
+        monkeypatch.setattr(AUTH, "LEDGER_PATH", paths.ledger)
+        monkeypatch.setattr(AUTH, "LanePaths", lambda: paths)
+        monkeypatch.setattr(AUTH, "TruthSources", lambda: fixture_sources)
+        return paths
+
+    def test_e1_exact_completed_result_clears_the_public_authorization_gate(
+        self, tmp_path, payload, monkeypatch
+    ):
+        """The exact completed artifact passes AUTHORIZATION and reaches structural validation.
+
+        Deliberately asserted this way rather than ``outcome.ok``. Reaching a fully-passing
+        result would require 680 fabricated dispositions, and this PR must execute no
+        construction and produce no Stage-1 content. The precise, honest proof is that the
+        authorization half is cleared -- no authorization error survives -- and the ONLY
+        remaining failure is structural completeness, which is exactly what a real Stage-1
+        execution would supply. Compare ``test_e2``, where an authorization error DOES appear.
+        """
+        result = {"candidate_results": []}
+        self._publish(tmp_path, payload, result, monkeypatch)
+        outcome = PREREG.validate_stage1_results(result)
+        assert not any("not operationally authorized" in e for e in outcome.errors), outcome.errors
+        assert all("registered construction" in e for e in outcome.errors), outcome.errors
+
+    def test_e2_substituted_result_fails_the_public_validator(
+        self, tmp_path, payload, monkeypatch
+    ):
+        self._publish(tmp_path, payload, {"candidate_results": []}, monkeypatch)
+        outcome = PREREG.validate_stage1_results({"candidate_results": [], "note": "substituted"})
+        assert not outcome.ok
+        assert any("not operationally authorized" in e for e in outcome.errors)
+
+    def test_e3_unauthenticated_result_fails_the_public_validator(self):
+        assert PREREG.validate_stage1_results({"candidate_results": []}).ok is False
+
+    def test_e4_no_bypass_parameter_exists_on_the_public_boundary(self):
+        import inspect
+
+        signature = inspect.signature(PREREG.validate_stage1_results)
+        assert list(signature.parameters) == ["results"]

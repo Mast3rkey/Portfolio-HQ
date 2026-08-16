@@ -111,6 +111,11 @@ AUTHORIZING_PULL_REQUEST = 328
 #: truth, not invented: no Stage-1 attempt has ever been executed or authorized.
 EXECUTION_ATTEMPT_ID = "ENDPOINT-0001::STAGE_1::ATTEMPT_1"
 
+#: MAJOR 2 (review 4946397399): the exact base the XASSET-0029 lifecycle was reviewed against.
+#: The real merge's FIRST parent must equal this. If main advances before merge, the lifecycle
+#: cannot arm from the old review -- it requires a fresh exact-head/base review.
+REVIEWED_BASE_SHA = "c51e94609eff7ede2bdfa084844d59b8347561e5"
+
 #: XASSET-0028's exact historical identity. MAJOR 1: the canonical contract promises this
 #: is bound, so it is now actually verified against the local git object store.
 PREDECESSOR_MERGE_SHA = "c51e94609eff7ede2bdfa084844d59b8347561e5"
@@ -136,7 +141,7 @@ CANONICAL_PINS: dict[str, str] = {
         "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb"
     ),
     CANONICAL_PREREGISTRATION_RELPATH: (
-        "366ae3c4d43664be0c57da676d53f3a095c6df8c712277b0c289dbb032f0de3d"
+        "dbebe44f4f7e6f487b6d3d01b5c4de19670f14073919ee1578ed878db59c100d"
     ),
 }
 
@@ -250,6 +255,21 @@ def canonical_json(payload: Any) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
+def stage1_result_identity(results: Any) -> str:
+    """THE deterministic Stage-1 result identity. One mechanism, shared by every consumer.
+
+    BLOCKING 2 (review 4946397399): completion recorded a result hash that nothing ever
+    checked, so completing result A did not prevent publishing result B. This function is the
+    single identity used by the future Stage-1 result writer, by ``complete_execution``, and by
+    the PUBLIC ``validate_stage1_results`` gate, so "the exact completed artifact" is a
+    mechanically decidable question rather than a promise.
+
+    It hashes the canonical JSON serialization, so key order and insignificant whitespace do not
+    change identity while any content change does. It invents no economic content.
+    """
+    return sha256_bytes(canonical_json(results).encode("utf-8"))
+
+
 def _reject_duplicate_keys(pairs: Sequence[tuple[str, Any]]) -> dict[str, Any]:
     """A duplicate key silently discards the earlier value in ordinary ``json.loads``."""
     seen: dict[str, Any] = {}
@@ -301,6 +321,7 @@ class GitTruthSource(Protocol):
     """The local git object store. Content-addressed, durable, offline."""
 
     def commit_parents(self, sha: str) -> tuple[str, ...] | None: ...
+    def commit_tree(self, sha: str) -> str | None: ...
     def is_ancestor(self, ancestor: str, descendant: str) -> bool: ...
     def blob_sha256_at(self, commit: str, relpath: str) -> str | None: ...
     def head(self) -> str | None: ...
@@ -344,6 +365,10 @@ class LiveGitTruthSource:
             return None
         parts = out.split()
         return tuple(parts[1:]) if len(parts) > 1 else ()
+
+    def commit_tree(self, sha: str) -> str | None:
+        """The commit's tree SHA. Equal trees prove byte-identical content."""
+        return self._run("rev-parse", f"{sha}^{{tree}}")
 
     def is_ancestor(self, ancestor: str, descendant: str) -> bool:
         try:
@@ -458,6 +483,24 @@ def live_load_bearing_hashes() -> dict[str, str]:
 # ======================================================================================
 
 
+def _belongs_to_pull_request(record: Mapping[str, Any], number: Any) -> bool:
+    """Does this durable record actually belong to the authorizing pull request?
+
+    MAJOR 1: acceptance and post-merge verification were fetched as repository-wide comment
+    ids and only their body text was inspected, so a comment from any other pull request or
+    issue satisfied the gate. GitHub records carry their own owning URL; a record without one
+    cannot prove ownership and is refused.
+    """
+    if not isinstance(number, int):
+        return False
+    marker = f"/{number}"
+    for key in ("issue_url", "pull_request_url", "html_url", "_links"):
+        value = record.get(key)
+        if isinstance(value, str) and (value.endswith(marker) or f"{marker}#" in value):
+            return True
+    return False
+
+
 def verify_lifecycle_against_truth(
     document: Mapping[str, Any], sources: TruthSources
 ) -> tuple[str, ...]:
@@ -526,6 +569,17 @@ def verify_lifecycle_against_truth(
                 f"{recorded_review.get('reviewer_identity')!r} but the durable review "
                 f"metadata says {derived_reviewer!r}; reviewer identity may not be asserted"
             )
+        # MAJOR 1: a dismissed or adverse review is not a lifecycle gate.
+        if str(review.get("state") or "").upper() == "DISMISSED":
+            errors.append(
+                f"governance truth: review {review_id} has been DISMISSED and cannot certify a "
+                "lifecycle gate"
+            )
+        # The review must belong to THIS pull request, not merely exist somewhere.
+        if not _belongs_to_pull_request(review, number):
+            errors.append(
+                f"governance truth: review {review_id} does not belong to pull request #{number}"
+            )
 
     # --- Gate 2: principal acceptance really exists and names the exact head -----------
     acceptance_id = str((evidence.get("principal_acceptance") or {}).get("comment_id") or "")
@@ -534,11 +588,41 @@ def verify_lifecycle_against_truth(
         errors.append(
             f"governance truth: principal acceptance comment {acceptance_id!r} does not exist"
         )
-    elif isinstance(head, str) and head not in (acceptance.get("body") or ""):
-        errors.append(
-            f"governance truth: acceptance comment {acceptance_id} does not name the exact "
-            f"head {head!r}"
-        )
+    else:
+        acceptance_body = acceptance.get("body") or ""
+        if isinstance(head, str) and head not in acceptance_body:
+            errors.append(
+                f"governance truth: acceptance comment {acceptance_id} does not name the exact "
+                f"head {head!r}"
+            )
+        if not _belongs_to_pull_request(acceptance, number):
+            errors.append(
+                f"governance truth: acceptance comment {acceptance_id} does not belong to pull "
+                f"request #{number}"
+            )
+        # MAJOR 1 -- PRINCIPAL CERTIFICATION replaces the unobservable independence property.
+        # Same-account GitHub means login inequality cannot prove independent session authorship,
+        # so the honest, mechanically verifiable substitute is that the principal's own durable
+        # acceptance record NAMES the exact independent review pass being relied upon.
+        if review_id and review_id not in acceptance_body:
+            errors.append(
+                f"governance truth: acceptance comment {acceptance_id} does not certify the "
+                f"independent review {review_id!r} it relies upon; the principal must durably "
+                "identify the exact review pass"
+            )
+        # Chronology: review, then acceptance, then merge.
+        submitted = (review or {}).get("submitted_at")
+        accepted = acceptance.get("created_at")
+        merged_at = pull.get("merged_at")
+        if submitted and accepted and str(accepted) < str(submitted):
+            errors.append(
+                f"governance truth: acceptance {accepted} precedes review {submitted}; the "
+                "principal cannot certify a review that had not yet been submitted"
+            )
+        if accepted and merged_at and str(merged_at) < str(accepted):
+            errors.append(
+                f"governance truth: merge {merged_at} precedes acceptance {accepted}"
+            )
 
     # --- Gate 3: the merge, its real SHA, and its real parents -------------------------
     recorded_merge = evidence.get("merge") or {}
@@ -564,11 +648,35 @@ def verify_lifecycle_against_truth(
                 f"git truth: merge {merge_sha} has {len(real_parents)} parent(s); a squash or "
                 "rebase does not carry the accepted head as a parent"
             )
-        elif real_parents[1] != head:
-            errors.append(
-                f"git truth: merge second parent {real_parents[1]!r} is not the accepted head "
-                f"{head!r}; the merged bytes are not the accepted bytes"
-            )
+        else:
+            # MAJOR 2: bind BOTH parents exactly. Binding only the second let the base drift
+            # after review, so a different base -- or a merge resolution -- could silently
+            # become the authorized implementation.
+            if real_parents[0] != REVIEWED_BASE_SHA:
+                errors.append(
+                    f"git truth: merge first parent {real_parents[0]!r} is not the exact reviewed "
+                    f"base {REVIEWED_BASE_SHA!r}; base drift requires a fresh exact-head/base "
+                    "review and cannot arm from the old one"
+                )
+            if real_parents[1] != head:
+                errors.append(
+                    f"git truth: merge second parent {real_parents[1]!r} is not the accepted head "
+                    f"{head!r}; the merged bytes are not the accepted bytes"
+                )
+            # ZERO MERGE DRIFT: equal trees prove merging changed no reviewed byte.
+            merge_tree = sources.git.commit_tree(str(merge_sha))
+            head_tree = sources.git.commit_tree(str(head)) if _is_commit_sha(head) else None
+            if merge_tree is None or head_tree is None:
+                errors.append(
+                    "git truth: merge or accepted-head tree could not be resolved, so zero merge "
+                    "drift cannot be proven"
+                )
+            elif merge_tree != head_tree:
+                errors.append(
+                    f"git truth: merge tree {merge_tree} differs from the accepted head tree "
+                    f"{head_tree}; merging changed reviewed bytes, so the merged tree may not "
+                    "become its own source of truth"
+                )
 
     # --- Gate 4: the post-merge verification record really exists ----------------------
     verification_id = str(
@@ -582,11 +690,24 @@ def verify_lifecycle_against_truth(
             f"governance truth: post-merge verification comment {verification_id!r} does not "
             "exist; merge alone never authorizes execution"
         )
-    elif isinstance(merge_sha, str) and merge_sha not in (verification.get("body") or ""):
-        errors.append(
-            f"governance truth: post-merge verification {verification_id} does not name the "
-            f"merge SHA {merge_sha!r}"
-        )
+    else:
+        if isinstance(merge_sha, str) and merge_sha not in (verification.get("body") or ""):
+            errors.append(
+                f"governance truth: post-merge verification {verification_id} does not name the "
+                f"merge SHA {merge_sha!r}"
+            )
+        if not _belongs_to_pull_request(verification, number):
+            errors.append(
+                f"governance truth: post-merge verification {verification_id} does not belong to "
+                f"pull request #{number}"
+            )
+        verified_at = verification.get("created_at")
+        merged_at = pull.get("merged_at")
+        if verified_at and merged_at and str(verified_at) < str(merged_at):
+            errors.append(
+                f"governance truth: post-merge verification {verified_at} precedes the merge "
+                f"{merged_at}; it cannot verify a merge that had not happened"
+            )
 
     # --- Gate 5: the merge-commit CI run AND its job, correctly paired ------------------
     recorded_ci = evidence.get("merge_commit_ci") or {}
@@ -684,6 +805,7 @@ def _verify_git_anchored_identity(
             "load_bearing_identity: must cover exactly the load-bearing files "
             f"{sorted(LOAD_BEARING_RELPATHS)!r}"
         )
+    accepted_head = document.get("authorization_head")
     for relative in sorted(LOAD_BEARING_RELPATHS):
         if not _is_commit_sha(merge_sha):
             continue
@@ -693,6 +815,20 @@ def _verify_git_anchored_identity(
                 f"git truth: {relative} is absent from the authorized merged tree {merge_sha}"
             )
             continue
+        # MAJOR 2: the merged tree may not become its own source of truth. Every load-bearing
+        # blob must ALSO equal the same blob in the independently reviewed head.
+        if _is_commit_sha(accepted_head):
+            reviewed = sources.git.blob_sha256_at(str(accepted_head), relative)
+            if reviewed is None:
+                errors.append(
+                    f"git truth: {relative} is absent from the reviewed head {accepted_head}"
+                )
+            elif reviewed != merged:
+                errors.append(
+                    f"merge drift: {relative} differs between the reviewed head "
+                    f"({reviewed}) and the merged tree ({merged}); merging changed a "
+                    "load-bearing file that independent review never saw"
+                )
         if recorded.get(relative) != merged:
             errors.append(
                 f"load_bearing_identity[{relative!r}]: recorded {recorded.get(relative)!r} but "
@@ -968,15 +1104,101 @@ def new_execution_is_authorized(
     return (state == LANE_READY), reason
 
 
+def _recover_claim_record(paths: LanePaths) -> tuple[Mapping[str, Any] | None, str, str]:
+    """Recover the canonical claim record and its exact identity hash.
+
+    Returns ``(record, claim_sha256, error)``. When ``claim.json`` is present it is
+    authoritative. When it has been lost but the append-only ledger still establishes CLAIMED,
+    the record is recovered from the ledger and its identity hash is RE-DERIVED
+    deterministically from the same canonical bytes the claim file would have contained --
+    ``canonical_json(record) + "\n"`` -- so completion never has to emit a null binding.
+
+    An absent, duplicated, or corrupt ledger claim is refused rather than guessed at.
+    """
+    if paths.claim.exists():
+        record, problem = _load_authorization(paths.claim)
+        if record is None:
+            return None, "", f"claim record unreadable: {problem}"
+        return record, sha256_file(paths.claim), ""
+
+    entries = [e for e in _read_ledger(paths.ledger) if e.get("event") == LANE_CLAIMED]
+    if any(e.get("event") == "CORRUPT" for e in _read_ledger(paths.ledger)):
+        return None, "", "ledger contains a corrupt entry; claim identity cannot be recovered"
+    if not entries:
+        return None, "", "no claim record and no ledger claim entry exists"
+    if len({canonical_json(e) for e in entries}) != 1:
+        return None, "", (
+            "ledger contains ambiguous or conflicting claim entries; exact claim identity "
+            "cannot be recovered"
+        )
+    record = entries[-1]
+    return record, sha256_bytes((canonical_json(record) + "\n").encode("utf-8")), ""
+
+
+def _authenticated_claim(
+    paths: LanePaths, sources: TruthSources | None
+) -> tuple[Mapping[str, Any] | None, str, str]:
+    """Prove a CLAIMED/COMPLETED lane is LAWFUL, not merely present.
+
+    BLOCKING 1 (review 4946397399): ``lane_state_at`` recognised claim/ledger state BEFORE
+    loading the attestation, and this predicate then accepted any syntactically valid 64-hex
+    ``authorization_sha256`` -- skipping the hash comparison entirely when the attestation file
+    was absent. A local ``claim.json`` with the registered attempt id was therefore enough to
+    make the PUBLIC result gate return authorized with no review, acceptance, merge, or CI ever
+    consulted. Reproduced before correcting.
+
+    State detection and authorization validity are different questions. The lane may report
+    CLAIMED from a surviving record; lawful provenance additionally requires that the exact
+    attestation still exists, still hashes to what the claim bound, and STILL passes full
+    durable-truth validation -- so post-claim canonical, load-bearing, ancestry, or governance
+    drift fails closed rather than being grandfathered in by an old claim.
+    """
+    record, claim_sha, problem = _recover_claim_record(paths)
+    if record is None:
+        return None, "", problem
+    if record.get("execution_attempt_id") != EXECUTION_ATTEMPT_ID:
+        return None, "", (
+            f"claim names attempt {record.get('execution_attempt_id')!r}, not "
+            f"{EXECUTION_ATTEMPT_ID!r}"
+        )
+    bound = record.get("authorization_sha256")
+    if not _is_sha256(bound):
+        return None, "", "claim does not bind an attestation hash"
+
+    # The attestation must STILL exist. A surviving claim never substitutes for it.
+    if not paths.authorization.exists():
+        return None, "", (
+            "the attestation this claim binds no longer exists; a claim record alone never "
+            "establishes lawful authorization, so this fails closed"
+        )
+    actual = sha256_file(paths.authorization)
+    if actual != bound:
+        return None, "", (
+            "the present attestation is not the one this claim bound; the claimed execution "
+            "and the current authorization are not the same"
+        )
+
+    # ...and it must STILL authenticate against durable truth.
+    document, load_problem = _load_authorization(paths.authorization)
+    if document is None:
+        return None, "", f"attestation unusable: {load_problem}"
+    result = validate_authorization_document(document, sources)
+    if not result.valid:
+        return None, "", (
+            "the attestation this claim binds no longer validates against durable truth: "
+            + "; ".join(result.errors)
+        )
+    return record, claim_sha, ""
+
+
 def claimed_execution_is_authorized(
     paths: LanePaths | None = None, sources: TruthSources | None = None
 ) -> tuple[bool, str]:
-    """Did THIS result come from the one lawfully claimed execution?
+    """Did THIS execution come from the one LAWFUL, still-authenticated claim?
 
-    This is a DIFFERENT question from "may a new execution start", and conflating the two
-    was BLOCKING 2: consuming the authorization made the public result validator reject the
-    very execution that consumed it. CLAIMED and COMPLETED both answer yes here; READY does
-    not, because no execution has lawfully begun.
+    A different question from "may a new execution start", and conflating them was the earlier
+    BLOCKING 2. CLAIMED and COMPLETED both answer yes here -- but only after the attestation
+    behind the claim is re-proved, never from claim-file existence alone.
     """
     paths = paths or LanePaths()
     state, _ = lane_state_at(paths, sources)
@@ -985,27 +1207,62 @@ def claimed_execution_is_authorized(
             f"no lawfully claimed Stage-1 execution exists (lane state {state}); a results "
             "document may only be validated when it originates from the one claimed attempt"
         )
-
-    record, problem = _load_authorization(paths.claim)
+    record, _, problem = _authenticated_claim(paths, sources)
     if record is None:
-        ledger = [e for e in _read_ledger(paths.ledger) if e.get("event") == LANE_CLAIMED]
+        return False, problem
+    return True, ""
+
+
+def completed_result_is_authorized(
+    results: Any, paths: LanePaths | None = None, sources: TruthSources | None = None
+) -> tuple[bool, str]:
+    """Is THIS EXACT results artifact the one the lawful execution completed?
+
+    BLOCKING 2 (review 4946397399): completion recorded a result hash that nothing ever read,
+    and the public validator never computed any identity for the document handed to it, so
+    completing result A did not prevent publishing result B. Reproduced before correcting.
+
+    Final publication therefore requires a COMPLETED record whose bound attempt, attestation,
+    claim identity, and RESULT identity all match -- the last computed from the supplied
+    artifact with :func:`stage1_result_identity`.
+    """
+    paths = paths or LanePaths()
+    authorized, reason = claimed_execution_is_authorized(paths, sources)
+    if not authorized:
+        return False, reason
+
+    completion, problem = _load_authorization(paths.completion)
+    if completion is None:
+        ledger = [e for e in _read_ledger(paths.ledger) if e.get("event") == LANE_COMPLETED]
         if not ledger:
-            return False, f"claim record unavailable and no ledger claim entry exists: {problem}"
-        record = ledger[-1]
-    if record.get("execution_attempt_id") != EXECUTION_ATTEMPT_ID:
+            return False, (
+                "the lawful execution has not been completed, so no exact result identity has "
+                f"been bound yet and no result may be published ({problem})"
+            )
+        completion = ledger[-1]
+
+    claim, claim_sha, claim_problem = _recover_claim_record(paths)
+    if claim is None:
+        return False, claim_problem
+    if completion.get("execution_attempt_id") != EXECUTION_ATTEMPT_ID:
         return False, (
-            f"claim names attempt {record.get('execution_attempt_id')!r}, not "
+            f"completion names attempt {completion.get('execution_attempt_id')!r}, not "
             f"{EXECUTION_ATTEMPT_ID!r}"
         )
-    if not _is_sha256(record.get("authorization_sha256")):
-        return False, "claim does not bind an attestation hash"
-    if paths.authorization.exists():
-        actual = sha256_file(paths.authorization)
-        if record.get("authorization_sha256") != actual:
-            return False, (
-                "claim binds a different attestation than the one now present; the claimed "
-                "execution and the current authorization are not the same"
-            )
+    if completion.get("authorization_sha256") != claim.get("authorization_sha256"):
+        return False, "completion binds a different attestation than the claim"
+    if completion.get("claim_sha256") != claim_sha:
+        return False, "completion binds a different claim than the one on record"
+
+    expected = completion.get("result_identity_sha256")
+    if not _is_sha256(expected):
+        return False, "completion does not bind an exact result identity"
+    supplied = stage1_result_identity(results)
+    if supplied != expected:
+        return False, (
+            f"the supplied results artifact hashes to {supplied}, but the lawful execution "
+            f"completed {expected}; a substituted or modified result may not be published"
+        )
     return True, ""
 
 
@@ -1069,12 +1326,23 @@ def complete_execution(
     if not _is_sha256(result_identity_sha256):
         raise ValueError("result_identity_sha256 must be a SHA-256 digest")
 
-    claim, _ = _load_authorization(paths.claim)
+    # BLOCKING 2: the previous form read the claim from paths.claim only, so completing after a
+    # claim-file loss emitted authorization_sha256=None and claim_sha256=None -- directly
+    # violating the canonical completion_binds contract. The exact identities are now recovered
+    # (from the ledger when necessary) or the completion fails closed.
+    claim, claim_sha, problem = _recover_claim_record(paths)
+    if claim is None:
+        raise ValueError(f"refusing to complete without an exact claim identity: {problem}")
+    bound_attestation = claim.get("authorization_sha256")
+    if not _is_sha256(bound_attestation) or not _is_sha256(claim_sha):
+        raise ValueError(
+            "refusing to complete with a null or malformed attestation/claim identity"
+        )
     record = {
         "event": LANE_COMPLETED,
         "execution_attempt_id": EXECUTION_ATTEMPT_ID,
-        "authorization_sha256": (claim or {}).get("authorization_sha256"),
-        "claim_sha256": sha256_file(paths.claim) if paths.claim.exists() else None,
+        "authorization_sha256": bound_attestation,
+        "claim_sha256": claim_sha,
         "result_identity_sha256": result_identity_sha256,
         "completed_at_utc": completed_at_utc,
     }

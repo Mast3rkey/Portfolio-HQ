@@ -336,7 +336,6 @@ STAGE_1_AUTHORIZATION_FAIL_CLOSED_CONDITIONS = (
     "WRONG_CANONICAL_OR_UNIVERSE_HASH",
     "WRONG_CONSTRUCTION_COUNT",
     "ABSENT_OR_ADVERSE_INDEPENDENT_REVIEW",
-    "SELF_AUTHORED_REVIEW_WHERE_INDEPENDENCE_IS_REQUIRED",
     "ABSENT_ACCEPTANCE_OR_ACCEPTANCE_FOR_ANOTHER_HEAD",
     "ABSENT_MERGE_OR_WRONG_MERGE_PARENTS",
     "ABSENT_POST_MERGE_VERIFICATION",
@@ -344,6 +343,19 @@ STAGE_1_AUTHORIZATION_FAIL_CLOSED_CONDITIONS = (
     "POST_ACCEPTANCE_OR_POST_MERGE_DRIFT",
     "REPLAYED_OR_ALREADY_CONSUMED_AUTHORIZATION",
     "AUTHORIZATION_FOR_A_DIFFERENT_EXECUTION_ATTEMPT",
+    # Added after review 4946397399. SELF_AUTHORED_REVIEW_WHERE_INDEPENDENCE_IS_REQUIRED was
+    # REMOVED rather than left as an unenforced promise: this repository uses one GitHub account
+    # for both roles, so login inequality cannot observe session independence. What replaces it is
+    # a property the machine genuinely proves -- the principal's durable acceptance must name the
+    # exact independent review pass relied upon.
+    "PRINCIPAL_CERTIFICATION_OF_THE_INDEPENDENT_REVIEW_ABSENT_OR_MISMATCHED",
+    "LIFECYCLE_RECORD_BELONGING_TO_ANOTHER_PULL_REQUEST",
+    "LIFECYCLE_CHRONOLOGY_VIOLATION",
+    "DISMISSED_OR_NON_FINAL_SELECTED_REVIEW",
+    "MERGE_FIRST_PARENT_NOT_THE_EXACT_REVIEWED_BASE",
+    "MERGE_TREE_DIFFERS_FROM_THE_ACCEPTED_HEAD_TREE",
+    "CLAIMED_OR_COMPLETED_LANE_WITHOUT_A_STILL_VALID_ATTESTATION",
+    "SUPPLIED_RESULT_NOT_THE_COMPLETED_RESULT_IDENTITY",
 )
 
 # XASSET-0027's precondition, retained as HISTORY only. Its lifecycle is complete, so an operative
@@ -2267,24 +2279,47 @@ def new_stage_1_execution_is_authorized() -> tuple[bool, str]:
 def validate_stage1_results(results: Mapping[str, Any]) -> ValidationResult:
     """Validate a Stage-1 results document. PUBLIC, and unconditionally fail-closed.
 
-    AMENDED BY XASSET-0028 after independent review 4946154405 BLOCKING 1. A previous form accepted
-    an optional ``construction_universe`` argument and consulted the lifecycle gate only when that
-    argument was omitted, so any caller supplying a universe skipped operational authorization
-    entirely. A documented "supplying a universe does not authorize execution" note is not mechanical
-    enforcement; the parameter is therefore REMOVED from the public boundary.
+    THE CURRENT LIFECYCLE IS XASSET-0029. (MINOR 1, review 4946397399: this docstring previously
+    described the XASSET-0028 six-gate lifecycle as operative. XASSET-0028 is now PREDECESSOR
+    HISTORY — its lifecycle closed, and canonical V5 moved the operative condition to the
+    XASSET-0029 lifecycle plus an authenticated external attestation plus a one-shot claim.)
 
-    This function now ALWAYS enforces operational authorization first and ALWAYS obtains the
-    canonical closed universe internally. There is no argument, results-document field, or call form
-    that can reach results validation before the full XASSET-0028 six-gate lifecycle is effective.
+    Two mandatory gates, neither bypassable:
 
-    Structural machinery is still testable through the private
-    :func:`_validate_stage1_results_against_universe`, which is explicitly NOT an authorization path
-    and is not part of the public enforcement boundary.
+      1. AUTHORIZATION — ``completed_result_is_authorized`` proves the lane holds a LAWFUL,
+         still-authenticated claim (the attestation still exists, still hashes to what the claim
+         bound, and still validates against durable git/GitHub truth), that the execution has
+         COMPLETED, and that **this exact artifact** is the one it completed, by comparing
+         ``stage1_result_identity(results)`` with the completion record. Completing result A
+         therefore mechanically prevents publishing result B.
+      2. STRUCTURE — every row is validated against the frozen 680-construction universe,
+         obtained internally.
+
+    There is no ``construction_universe`` parameter, no authorization-path parameter, and no
+    results-document field that can reach structural validation first. Structural machinery
+    remains reachable through the private :func:`_validate_stage1_results_against_universe`,
+    which is explicitly NOT an authorization path — it is also the PRECOMPLETION seam a future
+    Stage-1 implementation uses to check a candidate result before persisting and completing,
+    without weakening this final public boundary.
     """
     if not isinstance(results, Mapping):
         return ValidationResult(False, ("stage1_results: expected a top-level mapping",))
 
-    authorized, reason = stage_1_operational_authorization_is_effective()
+    # CORRECTED AFTER REVIEW 4946397399 BLOCKING 1 + 2. The previous form asked only whether SOME
+    # claim existed — which a forged local claim satisfied with no attestation at all — and never
+    # bound the supplied artifact to the completed result identity.
+    try:
+        import level1_stage1_execution_authorization as authorization
+    except ImportError as exc:  # pragma: no cover - defensive
+        return ValidationResult(False, (f"stage1_results: authorization module unavailable: {exc}",))
+
+    canonical_ok, canonical_reason = _canonical_authorization_mechanism_is_armed()
+    if not canonical_ok:
+        return ValidationResult(
+            False,
+            (f"stage1_results: Stage-1 execution is not operationally authorized — {canonical_reason}",),
+        )
+    authorized, reason = authorization.completed_result_is_authorized(results)
     if not authorized:
         return ValidationResult(
             False,
