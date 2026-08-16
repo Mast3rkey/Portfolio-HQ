@@ -141,7 +141,7 @@ CANONICAL_PINS: dict[str, str] = {
         "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb"
     ),
     CANONICAL_PREREGISTRATION_RELPATH: (
-        "dbebe44f4f7e6f487b6d3d01b5c4de19670f14073919ee1578ed878db59c100d"
+        "6e0c07a8e3279f8100a41df489921720f7f3125346f977e64fb5deca2f34337c"
     ),
 }
 
@@ -197,6 +197,20 @@ REQUIRED_LIFECYCLE_GATES = (
 
 AUTHORIZATION_MECHANISM = "EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
 APPROVING_REVIEW_DISPOSITION = "APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE"
+
+#: BLOCKING 2 (review 4946464366): the GitHub account that performs principal acceptance and
+#: post-merge verification in this repository. Previously the acceptance and post-merge gates
+#: checked only comment location and body text, so ANY account able to comment on the pull
+#: request could impersonate them. This repository's principal, merge, and lifecycle-operator
+#: account is the same login throughout its recorded history -- stated here honestly rather than
+#: implying separate accounts exist.
+PRINCIPAL_ACCOUNT_LOGIN = "Mast3rkey"
+LIFECYCLE_OPERATOR_LOGIN = "Mast3rkey"
+
+#: MAJOR 1: the repository's review grammar. The formal disposition is the FIRST formal line and
+#: must match EXACTLY -- a substring test let an adverse review pass merely by containing the
+#: approval phrase in later explanatory text.
+FORMAL_DISPOSITION_PREFIX = "FORMAL DISPOSITION:"
 SCHEMA_VERSION = 2
 
 LANE_ABSENT = "ABSENT"
@@ -256,7 +270,14 @@ def canonical_json(payload: Any) -> str:
 
 
 def stage1_result_identity(results: Any) -> str:
-    """THE deterministic Stage-1 result identity. One mechanism, shared by every consumer.
+    """THE deterministic Stage-1 result SEMANTIC identity. One mechanism, every consumer.
+
+    MAJOR 3 (review 4946464366): the canonical contract previously called this
+    ``EXACT_RESULT_ARTIFACT_SHA256``, which was not truthful -- this is NOT the SHA-256 of the
+    ``stage1_results.yaml`` file bytes. It is the SHA-256 of the canonical JSON serialization of
+    the parsed result mapping, deliberately chosen so that key ordering and insignificant
+    whitespace do not change identity while any content change does. Canonical wording is
+    renamed to EXACT_STAGE1_RESULT_SEMANTIC_IDENTITY_SHA256 to match what the code computes.
 
     BLOCKING 2 (review 4946397399): completion recorded a result hash that nothing ever
     checked, so completing result A did not prevent publishing result B. This function is the
@@ -332,6 +353,7 @@ class GovernanceTruthSource(Protocol):
 
     def pull_request(self, number: int) -> Mapping[str, Any] | None: ...
     def review(self, number: int, review_id: str) -> Mapping[str, Any] | None: ...
+    def reviews(self, number: int) -> Sequence[Mapping[str, Any]] | None: ...
     def issue_comment(self, comment_id: str) -> Mapping[str, Any] | None: ...
     def workflow_run(self, run_id: str) -> Mapping[str, Any] | None: ...
     def workflow_job(self, job_id: str) -> Mapping[str, Any] | None: ...
@@ -433,11 +455,33 @@ class LiveGovernanceTruthSource:
             return None
         return payload if isinstance(payload, Mapping) else None
 
+    def _get_list(self, path: str) -> list[Mapping[str, Any]] | None:
+        import urllib.request
+
+        request = urllib.request.Request(
+            f"{self.API}{path}",
+            headers={"Accept": "application/vnd.github+json", "User-Agent": "phq-xasset-0029"},
+        )
+        token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+        if token:
+            request.add_header("Authorization", f"Bearer {token}")
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except Exception:  # pragma: no cover - network/permission failure fails closed
+            return None
+        return payload if isinstance(payload, list) else None
+
     def pull_request(self, number: int) -> Mapping[str, Any] | None:
         return self._get(f"/repos/{self._repository}/pulls/{number}")
 
     def review(self, number: int, review_id: str) -> Mapping[str, Any] | None:
         return self._get(f"/repos/{self._repository}/pulls/{number}/reviews/{review_id}")
+
+    def reviews(self, number: int) -> Sequence[Mapping[str, Any]] | None:
+        """Every review on the pull request, for finality checking."""
+        payload = self._get_list(f"/repos/{self._repository}/pulls/{number}/reviews?per_page=100")
+        return payload
 
     def issue_comment(self, comment_id: str) -> Mapping[str, Any] | None:
         return self._get(f"/repos/{self._repository}/issues/comments/{comment_id}")
@@ -481,6 +525,39 @@ def live_load_bearing_hashes() -> dict[str, str]:
 # ======================================================================================
 # Authenticated lifecycle verification — BLOCKING 1
 # ======================================================================================
+
+
+def parse_formal_disposition(body: str) -> str | None:
+    """Return the review's FORMAL DISPOSITION verdict, parsed exactly from the first formal line.
+
+    MAJOR 1 (review 4946464366): the previous check was ``APPROVING_REVIEW_DISPOSITION in body``,
+    so a review whose formal line read ``CHANGES REQUIRED`` still passed if any later explanatory
+    sentence quoted the approval phrase. Reproduced before correcting.
+
+    Only the FIRST ``FORMAL DISPOSITION:`` line counts, and only the verdict up to the first
+    finding-count separator, so trailing counts such as ``— 0 BLOCKING / 0 MAJOR`` do not change
+    the verdict while a different verdict always does.
+    """
+    if not isinstance(body, str):
+        return None
+    for line in body.splitlines():
+        stripped = line.strip()
+        if not stripped.upper().startswith(FORMAL_DISPOSITION_PREFIX):
+            continue
+        verdict = stripped[len(FORMAL_DISPOSITION_PREFIX):].strip()
+        for separator in ("—", "--", " - ", "|"):
+            if separator in verdict:
+                verdict = verdict.split(separator, 1)[0].strip()
+        return verdict
+    return None
+
+
+def _actor_login(record: Mapping[str, Any]) -> str | None:
+    user = record.get("user")
+    if isinstance(user, Mapping):
+        login = user.get("login")
+        return login if isinstance(login, str) and login.strip() else None
+    return None
 
 
 def _belongs_to_pull_request(record: Mapping[str, Any], number: Any) -> bool:
@@ -555,11 +632,17 @@ def verify_lifecycle_against_truth(
                 f"governance truth: review {review_id} was submitted against "
                 f"{review.get('commit_id')!r}, not the authorization head {head!r}"
             )
-        body = review.get("body") or ""
-        if APPROVING_REVIEW_DISPOSITION not in body:
+        verdict = parse_formal_disposition(review.get("body") or "")
+        if verdict is None:
             errors.append(
-                f"governance truth: review {review_id} does not carry the approving formal "
-                "disposition"
+                f"governance truth: review {review_id} carries no parseable "
+                f"'{FORMAL_DISPOSITION_PREFIX}' line, so its verdict cannot be authenticated"
+            )
+        elif verdict != APPROVING_REVIEW_DISPOSITION:
+            errors.append(
+                f"governance truth: review {review_id}'s formal disposition is {verdict!r}, not "
+                f"{APPROVING_REVIEW_DISPOSITION!r}; an adverse review never authorizes execution "
+                "even if its explanatory text quotes the approval phrase"
             )
         # Reviewer identity is DERIVED from durable metadata, never self-declared.
         derived_reviewer = (review.get("user") or {}).get("login")
@@ -581,6 +664,16 @@ def verify_lifecycle_against_truth(
                 f"governance truth: review {review_id} does not belong to pull request #{number}"
             )
 
+    # --- Gate 1b: the selected review must be the FINAL clean exact-head review ---------
+    # MAJOR 2 (review 4946464366): only the certified review id was consulted, so a clean pass
+    # followed by a later CHANGES REQUIRED review on the SAME head still armed the lifecycle.
+    # Historical adverse reviews BEFORE the final clean pass are legitimate and are preserved.
+    errors.extend(
+        _verify_selected_review_is_final(
+            sources, number, head, review_id, (review or {}).get("submitted_at"), pull
+        )
+    )
+
     # --- Gate 2: principal acceptance really exists and names the exact head -----------
     acceptance_id = str((evidence.get("principal_acceptance") or {}).get("comment_id") or "")
     acceptance = sources.governance.issue_comment(acceptance_id) if acceptance_id else None
@@ -599,6 +692,18 @@ def verify_lifecycle_against_truth(
             errors.append(
                 f"governance truth: acceptance comment {acceptance_id} does not belong to pull "
                 f"request #{number}"
+            )
+        # BLOCKING 2: the acceptance must be the PRINCIPAL's, not merely a qualifying comment.
+        acceptance_actor = _actor_login(acceptance)
+        if acceptance_actor is None:
+            errors.append(
+                f"governance truth: acceptance comment {acceptance_id} carries no durable author "
+                "identity, so the principal gate cannot be authenticated"
+            )
+        elif acceptance_actor != PRINCIPAL_ACCOUNT_LOGIN:
+            errors.append(
+                f"governance truth: acceptance comment {acceptance_id} was authored by "
+                f"{acceptance_actor!r}, not the principal {PRINCIPAL_ACCOUNT_LOGIN!r}"
             )
         # MAJOR 1 -- PRINCIPAL CERTIFICATION replaces the unobservable independence property.
         # Same-account GitHub means login inequality cannot prove independent session authorship,
@@ -701,6 +806,18 @@ def verify_lifecycle_against_truth(
                 f"governance truth: post-merge verification {verification_id} does not belong to "
                 f"pull request #{number}"
             )
+        verification_actor = _actor_login(verification)
+        if verification_actor is None:
+            errors.append(
+                f"governance truth: post-merge verification {verification_id} carries no durable "
+                "author identity, so the verification gate cannot be authenticated"
+            )
+        elif verification_actor != LIFECYCLE_OPERATOR_LOGIN:
+            errors.append(
+                f"governance truth: post-merge verification {verification_id} was authored by "
+                f"{verification_actor!r}, not the lifecycle operator "
+                f"{LIFECYCLE_OPERATOR_LOGIN!r}"
+            )
         verified_at = verification.get("created_at")
         merged_at = pull.get("merged_at")
         if verified_at and merged_at and str(verified_at) < str(merged_at):
@@ -742,6 +859,60 @@ def verify_lifecycle_against_truth(
     # --- Gate 6: ancestry, predecessor identity, load-bearing byte identity -------------
     errors.extend(_verify_git_anchored_identity(document, merge_sha, sources))
     return tuple(errors)
+
+
+def _verify_selected_review_is_final(
+    sources: TruthSources,
+    number: Any,
+    head: Any,
+    selected_review_id: str,
+    selected_submitted_at: Any,
+    pull: Mapping[str, Any],
+) -> list[str]:
+    """Reject a later non-dismissed adverse review on the EXACT accepted head.
+
+    Scope, stated precisely:
+
+      * only reviews on the exact accepted head matter -- reviews on older heads are history and
+        never invalidate the current head;
+      * only reviews submitted AFTER the selected approving review and BEFORE the merge matter;
+      * a DISMISSED later review does not count as a live adverse finding;
+      * a later APPROVING review is not adverse.
+    """
+    errors: list[str] = []
+    listing = sources.governance.reviews(number) if isinstance(number, int) else None
+    if listing is None:
+        errors.append(
+            "governance truth: the pull request's review list could not be retrieved, so the "
+            "selected review's finality cannot be established; this fails closed"
+        )
+        return errors
+
+    merged_at = str(pull.get("merged_at") or "")
+    selected_at = str(selected_submitted_at or "")
+    for entry in listing:
+        if not isinstance(entry, Mapping):
+            continue
+        if str(entry.get("id")) == str(selected_review_id):
+            continue
+        if entry.get("commit_id") != head:
+            continue  # a different head: historical, not a live finding on this one
+        if str(entry.get("state") or "").upper() == "DISMISSED":
+            continue
+        submitted = str(entry.get("submitted_at") or "")
+        if selected_at and submitted and submitted <= selected_at:
+            continue  # precedes the final clean pass: legitimate history
+        if merged_at and submitted and submitted > merged_at:
+            continue  # after the merge: outside this lifecycle
+        verdict = parse_formal_disposition(entry.get("body") or "")
+        if verdict is not None and verdict != APPROVING_REVIEW_DISPOSITION:
+            errors.append(
+                f"governance truth: review {entry.get('id')} on the exact accepted head carries "
+                f"the later adverse formal disposition {verdict!r}, submitted after the certified "
+                f"review {selected_review_id}; principal certification of an earlier clean pass "
+                "does not erase a later exact-head finding"
+            )
+    return errors
 
 
 def _verify_git_anchored_identity(
@@ -1104,35 +1275,84 @@ def new_execution_is_authorized(
     return (state == LANE_READY), reason
 
 
-def _recover_claim_record(paths: LanePaths) -> tuple[Mapping[str, Any] | None, str, str]:
-    """Recover the canonical claim record and its exact identity hash.
+def _ledger_events(paths: LanePaths, event: str) -> tuple[list[Mapping[str, Any]], str]:
+    """Return the ledger's events of one kind, or an error if the ledger is unusable."""
+    entries = _read_ledger(paths.ledger)
+    if any(e.get("event") == "CORRUPT" for e in entries):
+        return [], "the append-only ledger contains a corrupt entry"
+    return [e for e in entries if e.get("event") == event], ""
 
-    Returns ``(record, claim_sha256, error)``. When ``claim.json`` is present it is
-    authoritative. When it has been lost but the append-only ledger still establishes CLAIMED,
-    the record is recovered from the ledger and its identity hash is RE-DERIVED
-    deterministically from the same canonical bytes the claim file would have contained --
-    ``canonical_json(record) + "\n"`` -- so completion never has to emit a null binding.
 
-    An absent, duplicated, or corrupt ledger claim is refused rather than guessed at.
+def _recover_mirrored_record(
+    paths: LanePaths, path: Path, event: str
+) -> tuple[Mapping[str, Any] | None, str, str]:
+    """Recover a lane record from its file and its ledger mirror, requiring them to AGREE.
+
+    BLOCKING 1 (review 4946464366): the file was treated as authoritative whenever present and
+    the ledger mirror was never consulted, so rewriting only ``completion.json`` retargeted the
+    lawful run from result A to result B while the ledger still bound A. Reproduced before
+    correcting. The two copies are a CONSISTENCY CHECK, not interchangeable alternatives:
+
+      * both present  -> they must be the same canonical record, byte for byte;
+      * file missing  -> recover only from exactly ONE unique uncorrupted ledger event;
+      * ledger event missing but file present -> permitted, and ONLY this case, because it is
+        exactly the single-record loss the disclosed durability model already covers;
+      * conflicting, duplicated-different, malformed, or corrupt entries -> FAIL CLOSED.
+
+    Returns ``(record, identity_sha256, error)``. The identity hash is the SHA-256 of the exact
+    canonical bytes the file holds (or would hold), so it is identical whichever copy survives.
     """
-    if paths.claim.exists():
-        record, problem = _load_authorization(paths.claim)
-        if record is None:
-            return None, "", f"claim record unreadable: {problem}"
-        return record, sha256_file(paths.claim), ""
+    events, ledger_problem = _ledger_events(paths, event)
+    distinct = {canonical_json(e) for e in events}
 
-    entries = [e for e in _read_ledger(paths.ledger) if e.get("event") == LANE_CLAIMED]
-    if any(e.get("event") == "CORRUPT" for e in _read_ledger(paths.ledger)):
-        return None, "", "ledger contains a corrupt entry; claim identity cannot be recovered"
-    if not entries:
-        return None, "", "no claim record and no ledger claim entry exists"
-    if len({canonical_json(e) for e in entries}) != 1:
+    file_record: Mapping[str, Any] | None = None
+    if path.exists():
+        file_record, problem = _load_authorization(path)
+        if file_record is None:
+            return None, "", f"{event.lower()} record unreadable: {problem}"
+
+    if ledger_problem:
+        # A corrupt ledger participates in provenance; it may never be silently ignored.
         return None, "", (
-            "ledger contains ambiguous or conflicting claim entries; exact claim identity "
-            "cannot be recovered"
+            f"{ledger_problem}; {event.lower()} provenance cannot be established"
         )
-    record = entries[-1]
+
+    if file_record is not None and events:
+        if len(distinct) != 1:
+            return None, "", (
+                f"the ledger holds conflicting {event} events; {event.lower()} provenance is "
+                "ambiguous and fails closed"
+            )
+        if canonical_json(file_record) != next(iter(distinct)):
+            return None, "", (
+                f"the {event.lower()} record and its append-only ledger mirror disagree; the "
+                "record has been altered after it was written"
+            )
+        return file_record, sha256_file(path), ""
+
+    if file_record is not None:
+        # Single-record loss: the ledger event is gone but the file survives.
+        return file_record, sha256_file(path), ""
+
+    if not events:
+        return None, "", f"no {event.lower()} record and no ledger {event} entry exists"
+    if len(distinct) != 1:
+        return None, "", (
+            f"the ledger holds conflicting {event} events; exact {event.lower()} identity cannot "
+            "be recovered"
+        )
+    record = events[-1]
     return record, sha256_bytes((canonical_json(record) + "\n").encode("utf-8")), ""
+
+
+def _recover_claim_record(paths: LanePaths) -> tuple[Mapping[str, Any] | None, str, str]:
+    """Recover the canonical claim record and its exact identity hash, mirror-checked."""
+    return _recover_mirrored_record(paths, paths.claim, LANE_CLAIMED)
+
+
+def _recover_completion_record(paths: LanePaths) -> tuple[Mapping[str, Any] | None, str, str]:
+    """Recover the canonical completion record and its exact identity hash, mirror-checked."""
+    return _recover_mirrored_record(paths, paths.completion, LANE_COMPLETED)
 
 
 def _authenticated_claim(
@@ -1231,15 +1451,13 @@ def completed_result_is_authorized(
     if not authorized:
         return False, reason
 
-    completion, problem = _load_authorization(paths.completion)
+    completion, _, completion_problem = _recover_completion_record(paths)
     if completion is None:
-        ledger = [e for e in _read_ledger(paths.ledger) if e.get("event") == LANE_COMPLETED]
-        if not ledger:
-            return False, (
-                "the lawful execution has not been completed, so no exact result identity has "
-                f"been bound yet and no result may be published ({problem})"
-            )
-        completion = ledger[-1]
+        return False, (
+            "the lawful execution has not been completed with a consistent, mirror-verified "
+            f"record, so no exact result identity is bound and no result may be published "
+            f"({completion_problem})"
+        )
 
     claim, claim_sha, claim_problem = _recover_claim_record(paths)
     if claim is None:
@@ -1314,17 +1532,23 @@ def claim_execution(
 def complete_execution(
     *,
     completed_at_utc: str,
-    result_identity_sha256: str,
+    results: Any,
     paths: LanePaths | None = None,
     sources: TruthSources | None = None,
 ) -> Mapping[str, Any]:
-    """Record completion, bound to the exact claim and the exact result artifact identity."""
+    """Record completion, bound to the exact claim and the SEMANTIC identity of the real result.
+
+    MAJOR 3 (review 4946464366): this previously accepted a caller-supplied
+    ``result_identity_sha256``, so completion could bind any 64-hex digest rather than the
+    artifact actually produced. It now takes the RESULT ITSELF and computes the identity
+    internally with :func:`stage1_result_identity`, so the bound identity is derived, never
+    chosen. There is deliberately no public completion API accepting a precomputed digest.
+    """
     paths = paths or LanePaths()
     ok, reason = claimed_execution_is_authorized(paths, sources)
     if not ok:
         raise ValueError(f"refusing to complete an unclaimed execution: {reason}")
-    if not _is_sha256(result_identity_sha256):
-        raise ValueError("result_identity_sha256 must be a SHA-256 digest")
+    result_identity_sha256 = stage1_result_identity(results)
 
     # BLOCKING 2: the previous form read the claim from paths.claim only, so completing after a
     # claim-file loss emitted authorization_sha256=None and claim_sha256=None -- directly
@@ -1332,7 +1556,9 @@ def complete_execution(
     # (from the ledger when necessary) or the completion fails closed.
     claim, claim_sha, problem = _recover_claim_record(paths)
     if claim is None:
-        raise ValueError(f"refusing to complete without an exact claim identity: {problem}")
+        raise ValueError(
+            f"refusing to complete without a consistent, mirror-verified claim identity: {problem}"
+        )
     bound_attestation = claim.get("authorization_sha256")
     if not _is_sha256(bound_attestation) or not _is_sha256(claim_sha):
         raise ValueError(

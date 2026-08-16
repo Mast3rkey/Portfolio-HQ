@@ -1,6 +1,6 @@
 """Adversarial tests for the ENDPOINT-0001 Stage-1 authorization mechanism (XASSET-0029).
 
-CORRECTED AFTER INDEPENDENT FULL REVIEWS 4946327932 AND 4946397399.
+CORRECTED AFTER INDEPENDENT FULL REVIEWS 4946327932, 4946397399 AND 4946464366.
 
 The previous suite's "happy path" proved only that an internally consistent FICTION passes:
 synthetic SHAs, invented review/acceptance/verification/CI ids, and a self-declared reviewer.
@@ -47,6 +47,7 @@ VERIFY_ID = "5900000002"
 RUN_ID = "3100000001"
 JOB_ID = "9500000001"
 REVIEWER_LOGIN = "independent-reviewer"
+PRINCIPAL_LOGIN = AUTH.PRINCIPAL_ACCOUNT_LOGIN
 AUTHOR_LOGIN = "implementation-author"
 PR_URL = f"https://api.github.com/repos/{AUTH.REPOSITORY_IDENTITY}/issues/{AUTH.AUTHORIZING_PULL_REQUEST}"
 
@@ -103,9 +104,10 @@ class FakeGovernance:
                 "merged_at": "2026-08-16T12:00:00Z",
             }
         }
-        self.reviews = {
+        self.review_records = {
             REVIEW_ID: {
                 "commit_id": HEAD,
+                "id": REVIEW_ID,
                 "body": f"FORMAL DISPOSITION: {AUTH.APPROVING_REVIEW_DISPOSITION} — 0 BLOCKING",
                 "user": {"login": REVIEWER_LOGIN},
                 "state": "COMMENTED",
@@ -120,11 +122,14 @@ class FakeGovernance:
                         f"review {REVIEW_ID}.",
                 "issue_url": PR_URL,
                 "created_at": "2026-08-16T11:00:00Z",
+                # BLOCKING 2: lifecycle gates must authenticate their ACTOR.
+                "user": {"login": PRINCIPAL_LOGIN},
             },
             VERIFY_ID: {
                 "body": f"Post-merge verification for merge `{MERGE}`.",
                 "issue_url": PR_URL,
                 "created_at": "2026-08-16T13:00:00Z",
+                "user": {"login": PRINCIPAL_LOGIN},
             },
         }
         self.runs = {
@@ -139,7 +144,11 @@ class FakeGovernance:
         return self.pulls.get(number)
 
     def review(self, number, review_id):
-        return self.reviews.get(str(review_id)) if number in self.pulls else None
+        return self.review_records.get(str(review_id)) if number in self.pulls else None
+
+    def reviews(self, number):
+        """MAJOR 2: the full review set, for finality checking."""
+        return list(self.review_records.values()) if number in self.pulls else None
 
     def issue_comment(self, comment_id):
         return self.comments.get(str(comment_id))
@@ -372,13 +381,16 @@ class TestLifecycleTruth:
 
     def test_08_stale_reviewed_head_fails(self, payload):
         gov = FakeGovernance()
-        gov.reviews[REVIEW_ID] = dict(gov.reviews[REVIEW_ID], commit_id="9" * 40)
+        gov.review_records[REVIEW_ID] = dict(gov.review_records[REVIEW_ID], commit_id="9" * 40)
         _rejected(payload, "was submitted against", sources(governance=gov))
 
     def test_08b_adverse_disposition_fails(self, payload):
         gov = FakeGovernance()
-        gov.reviews[REVIEW_ID] = dict(gov.reviews[REVIEW_ID], body="CHANGES REQUIRED")
-        _rejected(payload, "approving formal", sources(governance=gov))
+        gov.review_records[REVIEW_ID] = dict(
+            gov.review_records[REVIEW_ID],
+            body="FORMAL DISPOSITION: CHANGES REQUIRED — 1 BLOCKING",
+        )
+        _rejected(payload, "formal disposition is 'CHANGES REQUIRED'", sources(governance=gov))
 
     def test_09_reviewer_identity_cannot_be_self_declared(self, payload):
         """Claiming a different reviewer than the durable metadata reports is refused."""
@@ -388,7 +400,7 @@ class TestLifecycleTruth:
     def test_10_reviewer_identity_is_derived_from_durable_truth(self, payload):
         """The accepted value must equal the login the source reports, not the caller's."""
         gov = FakeGovernance()
-        gov.reviews[REVIEW_ID] = dict(gov.reviews[REVIEW_ID], user={"login": "someone-else"})
+        gov.review_records[REVIEW_ID] = dict(gov.review_records[REVIEW_ID], user={"login": "someone-else"})
         _rejected(payload, "durable review metadata says", sources(governance=gov))
 
     def test_11_load_bearing_code_drift_fails(self, payload):
@@ -473,27 +485,38 @@ class TestExecutionStateMachine:
         AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
         record = AUTH.complete_execution(
             completed_at_utc="t2",
-            result_identity_sha256="a" * 64,
+            results=RESULT_A,
             paths=paths,
             sources=sources(),
         )
         assert record["execution_attempt_id"] == AUTH.EXECUTION_ATTEMPT_ID
         assert record["authorization_sha256"] == AUTH.sha256_file(paths.authorization)
-        assert record["result_identity_sha256"] == "a" * 64
+        # MAJOR 3: the identity is DERIVED from the actual result, never caller-chosen.
+        assert record["result_identity_sha256"] == AUTH.stage1_result_identity(RESULT_A)
 
     def test_18b_completion_without_a_claim_fails(self, tmp_path, payload):
         paths = _arm(tmp_path, payload)
         with pytest.raises(ValueError):
             AUTH.complete_execution(
-                completed_at_utc="t2", result_identity_sha256="a" * 64, paths=paths, sources=sources()
+                completed_at_utc="t2", results=RESULT_A, paths=paths, sources=sources()
             )
 
-    def test_18c_completion_requires_a_real_result_identity(self, tmp_path, payload):
+    def test_18c_completion_cannot_accept_a_caller_chosen_digest(self, tmp_path, payload):
+        """MAJOR 3: there is no public completion API taking a precomputed final digest."""
+        import inspect
+
+        parameters = inspect.signature(AUTH.complete_execution).parameters
+        assert "result_identity_sha256" not in parameters
+        assert "results" in parameters
+
         paths = _arm(tmp_path, payload)
         AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
-        with pytest.raises(ValueError):
-            AUTH.complete_execution(
-                completed_at_utc="t2", result_identity_sha256="not-a-digest", paths=paths, sources=sources()
+        with pytest.raises(TypeError):
+            AUTH.complete_execution(  # type: ignore[call-arg]
+                completed_at_utc="t2",
+                result_identity_sha256="a" * 64,
+                paths=paths,
+                sources=sources(),
             )
 
     def test_19_wrong_claim_hash_rejected(self, tmp_path, payload):
@@ -505,7 +528,9 @@ class TestExecutionStateMachine:
         paths.claim.write_text(AUTH.canonical_json(forged) + "\n", encoding="utf-8")
         ok, reason = AUTH.claimed_execution_is_authorized(paths, sources())
         assert ok is False
-        assert "not the one this claim bound" in reason
+        # BLOCKING 1 (4946464366): rewriting claim.json alone now trips the ledger-mirror
+        # consistency check FIRST -- strictly stronger than the previous hash comparison.
+        assert "disagree" in reason
 
     def test_20_wrong_attempt_rejected(self, tmp_path, payload):
         paths = _arm(tmp_path, payload)
@@ -515,7 +540,7 @@ class TestExecutionStateMachine:
         paths.claim.write_text(AUTH.canonical_json(forged) + "\n", encoding="utf-8")
         ok, reason = AUTH.claimed_execution_is_authorized(paths, sources())
         assert ok is False
-        assert "not 'ENDPOINT-0001::STAGE_1::ATTEMPT_1'" in reason
+        assert "disagree" in reason
 
     def test_21_lawfully_claimed_execution_can_have_its_result_validated(self, tmp_path, payload):
         """BLOCKING 2 regression: claiming must NOT make the resulting output unvalidatable."""
@@ -524,7 +549,7 @@ class TestExecutionStateMachine:
         ok, reason = AUTH.claimed_execution_is_authorized(paths, sources())
         assert ok is True, reason
         AUTH.complete_execution(
-            completed_at_utc="t2", result_identity_sha256="b" * 64, paths=paths, sources=sources()
+            completed_at_utc="t2", results=RESULT_A, paths=paths, sources=sources()
         )
         assert AUTH.claimed_execution_is_authorized(paths, sources())[0] is True
 
@@ -538,7 +563,7 @@ class TestExecutionStateMachine:
         paths = _arm(tmp_path, payload)
         AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
         AUTH.complete_execution(
-            completed_at_utc="t2", result_identity_sha256="c" * 64, paths=paths, sources=sources()
+            completed_at_utc="t2", results=RESULT_A, paths=paths, sources=sources()
         )
         allowed, reason = AUTH.new_execution_is_authorized(paths, sources())
         assert allowed is False
@@ -805,7 +830,7 @@ class TestClaimAuthentication:
         paths = _arm(tmp_path, payload)
         AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
         gov = FakeGovernance()
-        gov.reviews.pop(REVIEW_ID)
+        gov.review_records.pop(REVIEW_ID)
         ok, reason = AUTH.claimed_execution_is_authorized(paths, sources(governance=gov))
         assert ok is False
         assert "no longer validates against durable truth" in reason
@@ -862,7 +887,7 @@ class TestExactResultProvenance:
         AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
         return AUTH.complete_execution(
             completed_at_utc="t2",
-            result_identity_sha256=AUTH.stage1_result_identity(results),
+            results=results,
             paths=paths,
             sources=sources(),
         )
@@ -917,7 +942,7 @@ class TestExactResultProvenance:
         paths.claim.unlink()
         record = AUTH.complete_execution(
             completed_at_utc="t2",
-            result_identity_sha256=AUTH.stage1_result_identity(RESULT_A),
+            results=RESULT_A,
             paths=paths,
             sources=sources(),
         )
@@ -933,7 +958,7 @@ class TestExactResultProvenance:
         with pytest.raises(ValueError):
             AUTH.complete_execution(
                 completed_at_utc="t2",
-                result_identity_sha256=AUTH.stage1_result_identity(RESULT_A),
+                results=RESULT_A,
                 paths=paths,
                 sources=sources(),
             )
@@ -947,7 +972,7 @@ class TestExactResultProvenance:
             handle.write(AUTH.canonical_json(conflicting) + "\n")
         paths.claim.unlink()
         record, claim_sha, problem = AUTH._recover_claim_record(paths)
-        assert record is None and "ambiguous" in problem
+        assert record is None and "conflicting" in problem
 
 
 # =============================================================================================
@@ -980,7 +1005,7 @@ class TestGovernanceIdentity:
 
     def test_c4_dismissed_review_rejected(self, payload):
         gov = FakeGovernance()
-        gov.reviews[REVIEW_ID] = dict(gov.reviews[REVIEW_ID], state="DISMISSED")
+        gov.review_records[REVIEW_ID] = dict(gov.review_records[REVIEW_ID], state="DISMISSED")
         _rejected(payload, "DISMISSED", sources(governance=gov))
 
     def test_c5_acceptance_before_review_rejected(self, payload):
@@ -1002,7 +1027,7 @@ class TestGovernanceIdentity:
 
     def test_c8_review_not_owned_by_the_pull_request_rejected(self, payload):
         gov = FakeGovernance()
-        gov.reviews[REVIEW_ID] = dict(gov.reviews[REVIEW_ID], html_url="https://example.invalid/x")
+        gov.review_records[REVIEW_ID] = dict(gov.review_records[REVIEW_ID], html_url="https://example.invalid/x")
         _rejected(payload, "does not belong to pull request", sources(governance=gov))
 
     def test_c9_author_identity_is_not_an_authorization_fact(self, payload):
@@ -1058,7 +1083,7 @@ class TestPublicResultBoundary:
         AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
         AUTH.complete_execution(
             completed_at_utc="t2",
-            result_identity_sha256=AUTH.stage1_result_identity(completed),
+            results=completed,
             paths=paths,
             sources=sources(),
         )
@@ -1108,3 +1133,263 @@ class TestPublicResultBoundary:
 
         signature = inspect.signature(PREREG.validate_stage1_results)
         assert list(signature.parameters) == ["results"]
+
+
+# =============================================================================================
+# F — MIRROR CONSISTENCY, ACTOR AUTHENTICATION, REVIEW FINALITY, RESULT-IDENTITY CONTRACT
+# (review 4946464366: BLOCKING 1, BLOCKING 2, MAJOR 1, MAJOR 2, MAJOR 3)
+# =============================================================================================
+
+
+class TestMirrorConsistency:
+    """BLOCKING 1: the file and its ledger mirror are a consistency check, not alternatives."""
+
+    @staticmethod
+    def _completed(tmp_path, payload, results=RESULT_A):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        AUTH.complete_execution(
+            completed_at_utc="t2", results=results, paths=paths, sources=sources()
+        )
+        return paths
+
+    def test_f1_completion_retarget_from_a_to_b_rejected(self, tmp_path, payload):
+        """THE reproduction: rewrite only completion.json to bind B; B must still fail."""
+        paths = self._completed(tmp_path, payload, RESULT_A)
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is True
+
+        retargeted = json.loads(paths.completion.read_text(encoding="utf-8"))
+        retargeted["result_identity_sha256"] = AUTH.stage1_result_identity(RESULT_B)
+        paths.completion.write_text(AUTH.canonical_json(retargeted) + "\n", encoding="utf-8")
+
+        ok, reason = AUTH.completed_result_is_authorized(RESULT_B, paths, sources())
+        assert ok is False, "retargeting the lawful run from A to B must fail"
+        assert "consistent, mirror-verified" in reason
+        # ...and A is not silently resurrected either: the record is now inconsistent.
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is False
+
+    def test_f2_appended_conflicting_completion_rejected(self, tmp_path, payload):
+        paths = self._completed(tmp_path, payload, RESULT_A)
+        rogue = {
+            "event": AUTH.LANE_COMPLETED,
+            "execution_attempt_id": AUTH.EXECUTION_ATTEMPT_ID,
+            "authorization_sha256": AUTH.sha256_file(paths.authorization),
+            "claim_sha256": AUTH.sha256_file(paths.claim),
+            "result_identity_sha256": AUTH.stage1_result_identity(RESULT_B),
+            "completed_at_utc": "t9",
+        }
+        with paths.ledger.open("a", encoding="utf-8") as handle:
+            handle.write(AUTH.canonical_json(rogue) + "\n")
+        assert AUTH.completed_result_is_authorized(RESULT_B, paths, sources())[0] is False
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is False
+
+    def test_f3_completion_file_ledger_mismatch_rejected(self, tmp_path, payload):
+        paths = self._completed(tmp_path, payload, RESULT_A)
+        altered = json.loads(paths.completion.read_text(encoding="utf-8"))
+        altered["completed_at_utc"] = "tampered"
+        paths.completion.write_text(AUTH.canonical_json(altered) + "\n", encoding="utf-8")
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is False
+
+    def test_f4_claim_file_ledger_mismatch_rejected(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        altered = json.loads(paths.claim.read_text(encoding="utf-8"))
+        altered["claimed_at_utc"] = "tampered"
+        paths.claim.write_text(AUTH.canonical_json(altered) + "\n", encoding="utf-8")
+        ok, reason = AUTH.claimed_execution_is_authorized(paths, sources())
+        assert ok is False and "disagree" in reason
+
+    def test_f5_corrupt_claimed_ledger_with_claim_file_present_rejected(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        with paths.ledger.open("a", encoding="utf-8") as handle:
+            handle.write("{ not json\n")
+        ok, reason = AUTH.claimed_execution_is_authorized(paths, sources())
+        assert ok is False and "corrupt" in reason
+
+    def test_f6_corrupt_completed_ledger_with_completion_file_present_rejected(
+        self, tmp_path, payload
+    ):
+        paths = self._completed(tmp_path, payload, RESULT_A)
+        with paths.ledger.open("a", encoding="utf-8") as handle:
+            handle.write("{ not json\n")
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is False
+
+    def test_f7_single_record_loss_behaves_exactly_as_the_durability_contract_promises(
+        self, tmp_path, payload
+    ):
+        """Losing ONE record is the disclosed, permitted case and must still work."""
+        paths = self._completed(tmp_path, payload, RESULT_A)
+        paths.completion.unlink()  # file lost, ledger survives
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is True
+        assert AUTH.completed_result_is_authorized(RESULT_B, paths, sources())[0] is False
+
+
+class TestLifecycleActorAuthentication:
+    """BLOCKING 2: a qualifying comment from the wrong account may not impersonate a gate."""
+
+    def test_f8_acceptance_from_the_wrong_user_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.comments[ACCEPT_ID] = dict(gov.comments[ACCEPT_ID], user={"login": "impostor"})
+        _rejected(payload, "not the principal", sources(governance=gov))
+
+    def test_f9_postmerge_verification_from_the_wrong_user_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.comments[VERIFY_ID] = dict(gov.comments[VERIFY_ID], user={"login": "impostor"})
+        _rejected(payload, "not the lifecycle operator", sources(governance=gov))
+
+    def test_f10_acceptance_without_any_user_identity_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.comments[ACCEPT_ID] = {
+            k: v for k, v in gov.comments[ACCEPT_ID].items() if k != "user"
+        }
+        _rejected(payload, "carries no durable author identity", sources(governance=gov))
+
+    def test_f11_postmerge_without_any_user_identity_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.comments[VERIFY_ID] = {
+            k: v for k, v in gov.comments[VERIFY_ID].items() if k != "user"
+        }
+        _rejected(payload, "carries no durable author identity", sources(governance=gov))
+
+    def test_f12_correct_principal_identity_passes(self, payload):
+        assert AUTH.validate_authorization_document(payload, sources()).valid is True
+
+
+class TestExactFormalDisposition:
+    """MAJOR 1: the verdict is parsed exactly, not matched as a substring."""
+
+    def test_f13_adverse_formal_line_with_later_approval_phrase_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.review_records[REVIEW_ID] = dict(
+            gov.review_records[REVIEW_ID],
+            body=(
+                "FORMAL DISPOSITION: CHANGES REQUIRED — 2 BLOCKING\n\n"
+                "The prior pass was APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, but this one "
+                "is not."
+            ),
+        )
+        _rejected(payload, "formal disposition is 'CHANGES REQUIRED'", sources(governance=gov))
+
+    def test_f14_exact_approving_formal_line_passes(self, payload):
+        assert AUTH.validate_authorization_document(payload, sources()).valid is True
+
+    def test_f15_self_reported_zero_counts_cannot_rescue_an_adverse_review(self, payload):
+        """The attestation says 0 BLOCKING / 0 MAJOR; the durable review says otherwise."""
+        assert payload["lifecycle_evidence"]["independent_review"]["blocking_count"] == 0
+        gov = FakeGovernance()
+        gov.review_records[REVIEW_ID] = dict(
+            gov.review_records[REVIEW_ID],
+            body="FORMAL DISPOSITION: CHANGES REQUIRED — 3 BLOCKING",
+        )
+        _rejected(payload, "formal disposition is 'CHANGES REQUIRED'", sources(governance=gov))
+
+    def test_f16_body_without_a_formal_line_rejected(self, payload):
+        gov = FakeGovernance()
+        gov.review_records[REVIEW_ID] = dict(
+            gov.review_records[REVIEW_ID], body="looks fine to me"
+        )
+        _rejected(payload, "no parseable", sources(governance=gov))
+
+    @pytest.mark.parametrize(
+        "body,expected",
+        [
+            ("FORMAL DISPOSITION: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE", True),
+            ("FORMAL DISPOSITION: APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE — 0 BLOCKING", True),
+            ("FORMAL DISPOSITION: CHANGES REQUIRED — 1 BLOCKING", False),
+            ("FORMAL DISPOSITION: BLOCKING", False),
+        ],
+    )
+    def test_f17_disposition_parser_grammar(self, body, expected):
+        verdict = AUTH.parse_formal_disposition(body)
+        assert (verdict == AUTH.APPROVING_REVIEW_DISPOSITION) is expected
+
+
+class TestReviewFinality:
+    """MAJOR 2: a later adverse exact-head review invalidates an earlier certified pass."""
+
+    @staticmethod
+    def _extra(gov, review_id, commit, submitted, verdict, state="COMMENTED"):
+        gov.review_records[review_id] = {
+            "id": review_id,
+            "commit_id": commit,
+            "body": f"FORMAL DISPOSITION: {verdict}",
+            "user": {"login": REVIEWER_LOGIN},
+            "state": state,
+            "submitted_at": submitted,
+            "html_url": f"{PR_URL}#pullrequestreview-{review_id}",
+        }
+        return gov
+
+    def test_f18_earlier_adverse_then_selected_clean_passes(self, payload):
+        gov = self._extra(
+            FakeGovernance(), "4900000000", HEAD, "2026-08-16T09:00:00Z", "CHANGES REQUIRED"
+        )
+        assert AUTH.validate_authorization_document(payload, sources(governance=gov)).valid is True
+
+    def test_f19_later_adverse_same_head_rejected(self, payload):
+        gov = self._extra(
+            FakeGovernance(), "4900000002", HEAD, "2026-08-16T10:30:00Z", "CHANGES REQUIRED"
+        )
+        _rejected(payload, "later adverse formal disposition", sources(governance=gov))
+
+    def test_f20_later_adverse_on_an_older_head_does_not_invalidate(self, payload):
+        gov = self._extra(
+            FakeGovernance(), "4900000003", "9" * 40, "2026-08-16T10:30:00Z", "CHANGES REQUIRED"
+        )
+        assert AUTH.validate_authorization_document(payload, sources(governance=gov)).valid is True
+
+    def test_f21_later_dismissed_adverse_does_not_invalidate(self, payload):
+        gov = self._extra(
+            FakeGovernance(),
+            "4900000004",
+            HEAD,
+            "2026-08-16T10:30:00Z",
+            "CHANGES REQUIRED",
+            state="DISMISSED",
+        )
+        assert AUTH.validate_authorization_document(payload, sources(governance=gov)).valid is True
+
+    def test_f22_unavailable_review_list_fails_closed(self, payload):
+        class NoList(FakeGovernance):
+            def reviews(self, number):
+                return None
+
+        _rejected(payload, "finality cannot be established", sources(governance=NoList()))
+
+
+class TestResultIdentityContract:
+    """MAJOR 3: the canonical name and the implementation must agree exactly."""
+
+    def test_f23_completion_derives_identity_from_the_actual_result(self, tmp_path, payload):
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        record = AUTH.complete_execution(
+            completed_at_utc="t2", results=RESULT_A, paths=paths, sources=sources()
+        )
+        assert record["result_identity_sha256"] == AUTH.stage1_result_identity(RESULT_A)
+
+    def test_f24_reordered_keys_have_the_same_semantic_identity(self):
+        assert AUTH.stage1_result_identity({"a": 1, "b": 2}) == AUTH.stage1_result_identity(
+            {"b": 2, "a": 1}
+        )
+
+    def test_f25_changed_content_changes_identity(self):
+        assert AUTH.stage1_result_identity(RESULT_A) != AUTH.stage1_result_identity(RESULT_B)
+
+    def test_f26_canonical_wording_matches_the_implementation(self, prereg):
+        mechanism = prereg["stage_1_operational_authorization"]
+        identity = mechanism["result_identity"]
+        assert identity["is_artifact_byte_hash"] is False
+        assert identity["derived_by_completion_not_supplied"] is True
+        binds = mechanism["execution_state_machine"]["completion_binds"]
+        assert "EXACT_STAGE1_RESULT_SEMANTIC_IDENTITY_SHA256" in binds
+        # The misleading artifact-byte wording must be gone everywhere.
+        assert "EXACT_RESULT_ARTIFACT_SHA256" not in yaml.safe_dump(prereg)
+
+    def test_f27_canonical_actor_binding_is_stated(self, prereg):
+        actors = prereg["stage_1_operational_authorization"]["lifecycle_actor_authentication"]
+        assert actors["principal_acceptance_author_must_be"] == AUTH.PRINCIPAL_ACCOUNT_LOGIN
+        assert actors["post_merge_verification_author_must_be"] == AUTH.LIFECYCLE_OPERATOR_LOGIN
+        assert actors["formal_disposition_parsed_exactly"] is True
+        assert actors["selected_review_must_be_final"] is True

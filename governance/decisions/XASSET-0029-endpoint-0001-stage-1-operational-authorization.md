@@ -189,13 +189,13 @@ independently regenerated after the amendment and unchanged.
 protocol_path: research/level1_endpoint_evidence/PROTOCOL_V1.md
 protocol_sha256: 6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb
 preregistration_path: research/level1_endpoint_evidence/pre_registration.yaml
-preregistration_sha256: dbebe44f4f7e6f487b6d3d01b5c4de19670f14073919ee1578ed878db59c100d
+preregistration_sha256: 6e0c07a8e3279f8100a41df489921720f7f3125346f977e64fb5deca2f34337c
 predecessor_protocol_sha256: c02b4d519267b96ddb12500e6d1d55a47aeafd9437de8e41014c8871f631618c
 predecessor_preregistration_sha256: ffde86c1585050b2bf89e58033f37777a903ace86e97be46b6440a217c78ec4a
 -->
 
 - `PROTOCOL_V1.md`: `6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb`
-- `pre_registration.yaml`: `dbebe44f4f7e6f487b6d3d01b5c4de19670f14073919ee1578ed878db59c100d`
+- `pre_registration.yaml`: `6e0c07a8e3279f8100a41df489921720f7f3125346f977e64fb5deca2f34337c`
 - Predecessor (`XASSET-0028`, retained): `c02b4d51…f631618c` / `ffde86c1…6b440a217c78ec4a`
 
 ## Rationale
@@ -321,3 +321,61 @@ unchanged (`73c0965e…5224`, 680, 48). Stage 1 remains **NOT EXECUTED** and **N
 attestation, claim, completion, or ledger record exists. Because the correction changes the public
 claimed/completed provenance path and exact result binding, the corrected head requires **another
 NEW independent FULL exact-head review, not a DELTA**.
+
+---
+
+## Third bounded correction — independent FULL review `4946464366`
+
+The corrected candidate (`a69bded`) returned **CHANGES REQUIRED**: 2 BLOCKING / 3 MAJOR / 1 NOTE.
+**All five findings were reproduced before any correction.**
+
+**BLOCKING 1 — the completed result was still mutable.** `complete_execution()` wrote the record to
+both `completion.json` and the ledger, but `completed_result_is_authorized()` preferred the file
+whenever present and **never compared it with the ledger mirror**. Reproduced: after lawfully
+completing result A, rewriting only `completion.json.result_identity_sha256` to bind B made B
+validate. The same gap existed for claims, and a missing file took `ledger[-1]` without requiring a
+unique event. Corrected by centralising both recoveries into one `_recover_mirrored_record()`: both
+copies present must be the **same canonical record**; a missing file recovers only from exactly
+**one unique uncorrupted** ledger event; conflicting, duplicated, malformed, or corrupt entries
+**fail closed**. The one permitted asymmetry — a surviving file with a lost ledger event — is
+exactly the single-record loss the disclosed durability model already covers, and it is tested.
+
+**BLOCKING 2 — lifecycle gates did not authenticate their actor.** Acceptance and post-merge
+verification were checked for location, body, and chronology, but never for author. The synthetic
+happy-path fixtures carried no `user` at all and still passed. **Any account able to comment on
+PR #328 could impersonate either gate.** Corrected: both records must be authored by the bound
+principal/lifecycle account, and a record with no durable author identity is refused.
+
+> **Stated honestly:** this repository's principal, merge, and lifecycle-operator account is the
+> **same GitHub login** throughout its history. That is recorded in the canonical block rather than
+> implying separate accounts exist. Verifying the author remains load-bearing — it stops *other*
+> accounts from impersonating the gates — but it is not, and is not claimed to be, a separation-of-
+> duties proof.
+
+**MAJOR 1 — the review verdict was matched as a substring.** `APPROVING_REVIEW_DISPOSITION in body`
+let an adverse review pass whenever its explanatory text quoted the approval phrase — reproduced
+directly. Corrected with `parse_formal_disposition()`, which reads the **first**
+`FORMAL DISPOSITION:` line and requires the verdict to equal the approving value **exactly**.
+Self-reported `blocking_count`/`major_count` can no longer rescue an adverse durable review.
+
+**MAJOR 2 — selected-review finality was not checked.** Only the certified review id was consulted,
+so a clean pass followed by a later `CHANGES REQUIRED` review on the **same head** still armed the
+lifecycle. Corrected by extending the governance source with a review listing and rejecting any
+later **non-dismissed** adverse exact-head review submitted after the certified review and before
+the merge. Historical adverse reviews preceding the final clean pass remain legitimate; reviews on
+older heads do not invalidate the current head; an unavailable listing **fails closed**.
+
+**MAJOR 3 — the result-identity contract was not truthful.** Canonical said
+`EXACT_RESULT_ARTIFACT_SHA256` while the code hashed canonical JSON of the parsed mapping — not the
+`stage1_results.yaml` bytes — and `complete_execution()` accepted a **caller-supplied digest**.
+Corrected by choosing the **semantic** model explicitly: canonical wording is renamed to
+`EXACT_STAGE1_RESULT_SEMANTIC_IDENTITY_SHA256`, `is_artifact_byte_hash: false` is stated outright,
+and completion now takes the **actual result** and derives the identity itself. There is no public
+completion API accepting a precomputed digest.
+
+Canonical V5 is corrected **in place**, not replaced by a V6; successor pins recomputed. No test was
+weakened — where the stricter mirror check now trips before the old hash comparison, the assertions
+were updated to the **stronger** reason. The universe is unchanged (`73c0965e…5224`, 680, 48).
+Stage 1 remains **NOT EXECUTED** and **NOT EXECUTABLE**: no attestation, claim, completion, or
+ledger record exists. The corrected head requires another **NEW independent FULL exact-head review,
+not a DELTA**.

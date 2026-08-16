@@ -12770,6 +12770,64 @@ workstreams:
           still NOT EXECUTED and NOT EXECUTABLE; no attestation, claim, completion or
           ledger record exists. Requires another NEW independent FULL exact-head
           review, not a DELTA.
+      - gate: xasset0029-third-material-correction-after-full-review-4946464366
+        status: in_progress
+        pr: 328
+        description: >-
+          Third material correction. NEW independent FULL exact-head review
+          4946464366 of PR #328 at head a69bdeda7adbdb61f5d9ef45bb6615c459a731d6
+          returned CHANGES REQUIRED (2 BLOCKING / 3 MAJOR / 1 NOTE). All five
+          findings were reproduced before any correction.
+          BLOCKING 1 - the completed result was still mutable. completion.json was
+          preferred whenever present and never compared with its append-only ledger
+          mirror, so after lawfully completing result A, rewriting only
+          completion.json.result_identity_sha256 to bind B made B validate. The same
+          gap existed for claims, and a missing file took ledger[-1] without requiring
+          a unique event. Corrected by centralising both recoveries: both copies
+          present must be the same canonical record; a missing file recovers only from
+          exactly one unique uncorrupted ledger event; conflicting, duplicated,
+          malformed or corrupt entries fail closed. The one permitted asymmetry - a
+          surviving file with a lost ledger event - is exactly the single-record loss
+          the disclosed durability model already covers, and is tested.
+          BLOCKING 2 - lifecycle gates did not authenticate their actor. Acceptance and
+          post-merge verification were checked for location, body and chronology but
+          never for author; the synthetic fixtures carried no user at all and passed.
+          Any account able to comment on PR #328 could impersonate either gate.
+          Corrected: both records must be authored by the bound principal/lifecycle
+          account, and a record with no durable author identity is refused. Stated
+          honestly in canonical text: this repository's principal, merge and
+          lifecycle-operator account is the SAME GitHub login throughout its history,
+          so this is not claimed as a separation-of-duties proof - it stops OTHER
+          accounts impersonating the gates.
+          MAJOR 1 - the review verdict was matched as a substring, so an adverse review
+          passed whenever its explanatory text quoted the approval phrase. Corrected
+          with parse_formal_disposition(), which reads the FIRST "FORMAL DISPOSITION:"
+          line and requires the verdict to equal the approving value exactly.
+          Self-reported blocking/major counts can no longer rescue an adverse durable
+          review.
+          MAJOR 2 - selected-review finality was not checked, so a clean pass followed
+          by a later CHANGES REQUIRED review on the SAME head still armed the
+          lifecycle. Corrected by extending the governance source with a review listing
+          and rejecting any later non-dismissed adverse exact-head review submitted
+          after the certified review and before the merge. Historical adverse reviews
+          preceding the final clean pass remain legitimate; reviews on older heads do
+          not invalidate the current head; an unavailable listing fails closed.
+          MAJOR 3 - the result-identity contract was untruthful. Canonical said
+          EXACT_RESULT_ARTIFACT_SHA256 while the code hashed canonical JSON of the
+          parsed mapping (not the stage1_results.yaml bytes), and complete_execution()
+          accepted a caller-supplied digest. Corrected by choosing the SEMANTIC model
+          explicitly: renamed to EXACT_STAGE1_RESULT_SEMANTIC_IDENTITY_SHA256,
+          is_artifact_byte_hash false stated outright, and completion now takes the
+          actual result and derives the identity itself. No public completion API
+          accepts a precomputed digest.
+          Canonical V5 corrected in place, not replaced by a V6; successor pins
+          recomputed. No test weakened - where the stricter mirror check now trips
+          before the old hash comparison, assertions were updated to the STRONGER
+          reason. 142 focused tests, up from 112. Universe unchanged at 680 / 48 /
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224. Stage 1
+          still NOT EXECUTED and NOT EXECUTABLE; no attestation, claim, completion or
+          ledger record exists. Requires another NEW independent FULL exact-head
+          review, not a DELTA.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

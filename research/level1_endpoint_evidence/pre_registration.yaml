@@ -134,6 +134,26 @@ stage_1_operational_authorization:
     execution claim, and the completion record are each created with O_EXCL and mirrored into an
     append-only ledger, so a second claim always fails and an authorization naming one attempt can
     never authorize another. A rerun after completion requires new governance authority.
+  lifecycle_actor_authentication:
+    principal_acceptance_author_must_be: Mast3rkey
+    post_merge_verification_author_must_be: Mast3rkey
+    same_account_disclosure: >-
+      This repository's principal, merge, and lifecycle-operator account is the SAME GitHub login
+      throughout its recorded history. That is stated plainly rather than implying separate
+      accounts exist. Verifying the author is still load-bearing: it prevents any other account
+      able to comment on the pull request from impersonating the acceptance or post-merge gate,
+      which was previously possible because only comment location and body text were checked.
+    formal_disposition_parsed_exactly: true
+    formal_disposition_note: >-
+      The review verdict is parsed from the FIRST "FORMAL DISPOSITION:" line and must equal the
+      approving value EXACTLY. A substring test previously let an adverse review pass whenever its
+      explanatory text quoted the approval phrase.
+    selected_review_must_be_final: true
+    selected_review_finality_note: >-
+      A later NON-DISMISSED adverse review on the EXACT accepted head, submitted after the
+      certified review and before the merge, invalidates the lifecycle. Reviews on older heads are
+      history and do not invalidate the current head; dismissed later reviews are not live
+      findings; adverse reviews preceding the final clean pass are legitimate history.
   review_independence_position:
     account_level_independence_observable: false
     account_level_independence_note: >-
@@ -156,6 +176,17 @@ stage_1_operational_authorization:
       is deliberately NOT used to establish independence or any other authorization fact.
   result_identity:
     mechanism: SHA256_OF_CANONICAL_JSON
+    is_artifact_byte_hash: false
+    semantics_note: >-
+      This is a SEMANTIC identity, NOT the SHA-256 of the stage1_results.yaml file bytes. It hashes
+      the canonical JSON serialization of the parsed result mapping, so key ordering and
+      insignificant whitespace do not change identity while any content change does. The canonical
+      field name says SEMANTIC precisely so no reader mistakes it for an artifact byte hash.
+    derived_by_completion_not_supplied: true
+    derived_by_completion_note: >-
+      complete_execution() receives the actual result and computes the identity itself. There is no
+      public completion API that accepts a precomputed digest, so completion cannot bind a value
+      unrelated to the artifact produced.
     single_shared_function: stage1_result_identity
     shared_by:
     - FUTURE_STAGE_1_RESULT_WRITER
@@ -194,6 +225,13 @@ stage_1_operational_authorization:
       the authorization reject the very execution that consumed it, while deferring consumption left
       a replay and concurrency window. The claim is taken atomically immediately before the first
       real Stage-1 work.
+    mirrored_records_are_a_consistency_check: true
+    mirrored_records_note: >-
+      claim.json/completion.json and their append-only ledger mirrors are a CONSISTENCY CHECK, never
+      interchangeable alternatives. Both present must agree as the same canonical record; a missing
+      file recovers only from exactly one unique uncorrupted ledger event; conflicting, duplicated,
+      malformed, or corrupt entries FAIL CLOSED. A missing ledger event with a surviving file is the
+      one permitted single-record-loss case the durability model already discloses.
     claimed_state_never_implies_lawful_provenance: true
     claimed_state_note: >-
       State DETECTION and authorization VALIDITY are different questions. A surviving claim record
@@ -214,7 +252,7 @@ stage_1_operational_authorization:
     - EXECUTION_ATTEMPT_ID
     - EXACT_ATTESTATION_SHA256
     - EXACT_CLAIM_SHA256
-    - EXACT_RESULT_ARTIFACT_SHA256
+    - EXACT_STAGE1_RESULT_SEMANTIC_IDENTITY_SHA256
   durability_boundary:
     claim_recorded_in_two_places: true
     single_record_loss_reopens_lane: false
@@ -242,7 +280,7 @@ stage_1_operational_authorization:
   - EXACT_MERGE_PARENTS_REVIEWED_BASE_THEN_ACCEPTED_HEAD
   - MERGE_TREE_EQUALS_ACCEPTED_HEAD_TREE
   - PRINCIPAL_CERTIFIED_INDEPENDENT_REVIEW_ID
-  - EXACT_COMPLETED_RESULT_IDENTITY
+  - EXACT_COMPLETED_RESULT_SEMANTIC_IDENTITY
   - STUDY_ID
   - AUTHORIZING_DECISION_XASSET_0029
   - AUTHORIZING_PULL_REQUEST_NUMBER
