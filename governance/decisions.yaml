@@ -963,3 +963,11 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0009, OPS-0014, NUM-0001, XASSET-0019, XASSET-0020, XASSET-0021, XASSET-0022, XASSET-0023, XASSET-0024, XASSET-0025, XASSET-0026, XASSET-0027, XASSET-0028, LEVEL2-0001, RISK-0001]
     supporting_artifact: level1_stage1_execution_authorization.py
     file: governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md
+
+  - decision_id: XASSET-0030
+    date: 2026-08-16
+    status: Proposed
+    category: cross_asset_allocation_architecture
+    related_decisions: [GOV-0001, GOV-0002, OPS-0009, OPS-0014, NUM-0001, XASSET-0019, XASSET-0020, XASSET-0021, XASSET-0022, XASSET-0023, XASSET-0024, XASSET-0025, XASSET-0026, XASSET-0027, XASSET-0028, XASSET-0029, LEVEL2-0001, RISK-0001]
+    supporting_artifact: test_level1_stage1_gate_evaluation_determinism.py
+    file: governance/decisions/XASSET-0030-endpoint-0001-stage-1-gate-evaluation-method-determination.md
