@@ -12560,6 +12560,93 @@ workstreams:
           representation unchanged, RISK-0001 not reused. Because the source
           model changed and the universe hash changed, the corrected head
           requires another NEW independent FULL exact-head review, not a DELTA.
+      - gate: xasset0029-endpoint-0001-stage-1-operational-authorization
+        status: in_progress
+        pr: null
+        description: >-
+          Current Lane G filing. XASSET-0028's own lifecycle closed in full
+          (PR #327: accepted head 036606401ea569b0a03f2d716d87a057d07d71dc,
+          final review 4946202326 APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE,
+          acceptance 5307509913, post-merge verification 5307545846, merge
+          c51e94609eff7ede2bdfa084844d59b8347561e5, merge-commit CI run
+          31948052529 / job 95167105752 completed/success) - all independently
+          re-verified live before any mutation. XASSET-0027 SS-P.1's two
+          prerequisites are therefore both satisfied, but the software gate
+          remained fail-closed and Stage 1 was still NOT OPERATIONALLY
+          AUTHORIZED. This unit supplies the missing authorization mechanism
+          without executing anything.
+          KEY FINDING, discovered by reading the code rather than assuming it:
+          "flip stage_1_executability.executable to true" was never actually
+          available. _validate_stage_1_executability enforces _false(executable)
+          while stage_1_operational_authorization_is_effective() required
+          executable is True - mutually exclusive, so the canonical file could
+          never be simultaneously valid and authorizing. XASSET-0029 preserves
+          that lock rather than unpicking it: executable stays false PERMANENTLY,
+          gains an enforced-true sibling
+          executable_is_never_the_authorization_source, and authorization is
+          relocated off committed state entirely.
+          MECHANISM - two-factor, neither sufficient alone: (1) structural arming,
+          a new inert canonical stage_1_operational_authorization block stating
+          WHAT a valid authorization must prove and WHICH identities it binds,
+          validator-enforced to keep saying currently_effective false /
+          authorization_is_committed_state false /
+          authorization_is_external_runtime_evidence true and to retain every
+          fail-closed condition; and (2) an EXTERNAL one-shot preexecution
+          attestation held outside the repository, so it can never be committed,
+          reviewed into existence, or forged into a pull request. New module
+          level1_stage1_execution_authorization.py binds repository, study,
+          decision, predecessor XASSET-0028 merge SHA, canonical protocol and
+          preregistration SHA-256, universe SHA-256, construction count 680, cell
+          count 48, execution_attempt_id, review id/disposition/reviewed SHA,
+          acceptance id/accepted head, merge SHA and BOTH parents, post-merge
+          verification id, and merge-commit CI run/job/status/conclusion/head SHA
+          - with canonical pins and universe identity RECOMPUTED LIVE and compared
+          against both the bound constants and the recorded values, closed schema
+          (unknown keys rejected), duplicate JSON keys rejected, and validation
+          before any bytes reach disk so an invalid attestation cannot occupy the
+          one-shot slot.
+          NO MERGE-TO-EXECUTION GAP: merging XASSET-0029 authorizes nothing. The
+          attestation cannot be pre-staged because generating it requires evidence
+          that does not exist until after the merge - the merge SHA, a post-merge
+          verification record, and a merge-commit CI run that has CONCLUDED success
+          at that exact merge SHA. CI cannot have concluded at the instant of merge,
+          so the interval is strictly positive and enforced by evidence, not
+          convention.
+          NO INFINITE REGRESS: arming is a runtime operator act, not a further
+          merged governance PR. XASSET-0029 is the final governance decision
+          required for Stage 1.
+          ONE LANE, ONE SHOT: execution_attempt_id ENDPOINT-0001::STAGE_1::ATTEMPT_1,
+          derived from repository truth (no Stage-1 attempt has ever been executed
+          or authorized). Attestation and consumption receipt each created with
+          O_EXCL, so neither can be regenerated nor replayed, and an authorization
+          naming one attempt can never authorize another. XASSET-0029 PREPARES the
+          single XASSET-0027 SS-P.1 lane and does NOT consume it.
+          CANONICAL AMENDMENT: PROTOCOL_V1.md and pre_registration.yaml amended in
+          lockstep V4 -> V5; protocol mirror gains stage_1_authorization_mechanism
+          and stage_1_execution_attempt_id so the two files cannot drift on the new
+          fact. XASSET-0028's pins retained as predecessor identity and its pin
+          check demoted to history-only - exactly the treatment XASSET-0028 gave
+          XASSET-0027's pins. Accepted history is never rewritten. CONSTRUCTION
+          UNIVERSE UNTOUCHED: 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224,
+          680 constructions, 48 cells, independently regenerated after the amendment
+          and unchanged.
+          One pre-existing test was STRENGTHENED rather than weakened: it previously
+          asserted a forged executable:true DID authorize; it now asserts that no
+          committed boolean can authorize and that forging it is reported as a
+          canonical-integrity failure.
+          NOT DONE: no Stage-1 execution, no gate evaluation, none of the 680 real
+          dispositions, no stage1_results.yaml, no execution receipt, no data
+          acquisition, no Stage 2, no endpoint admission, no endpoint value, bound,
+          point, range or percentage, no Level-1 sizing, no Level-2 work, no
+          XASSET-0021 snapshot successor, no representation-rule adoption, no
+          application authorization, no targets/holdings/gates/issuer_lookthrough/
+          allocate/margin_state/levels change, no dashboard or UI work, no charts,
+          ladders, margin/leverage/debt, deployment, trades or orders, and no
+          weakened tests. XASSET-0024 SS-K.1 remains UNRESOLVED, SS-J.12 remains
+          DEFERRED, representation remains SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED,
+          Stage 2 remains unauthorized, application authority remains WITHHELD.
+          Draft PR; not merged, not independently reviewed, not principal-accepted
+          in this session.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -13619,9 +13706,9 @@ workstreams:
       representation-aggregation rule, any snapshot successor, RISK parameter
       reuse, Level-2 work, liquidity determination, and policy adoption all
       remain separately unauthorized.
-    active_branch: claude/xasset-0027-endpoint-authority-charter-xqave2
+    active_branch: claude/xasset-0029-stage1-auth-d0vp7f
     active_pr: null
-    last_verified_main_sha: e7e9e53dbcdcaaa0ff71f128694028650500c323
+    last_verified_main_sha: c51e94609eff7ede2bdfa084844d59b8347561e5
     last_verified_date: "2026-08-16"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I

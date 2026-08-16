@@ -476,9 +476,16 @@ class TestStage1IsNotExecutable:
         block = base_data["stage_1_executability"]
         assert block["executable"] is False
         assert block["status"] == "STRUCTURALLY_CLOSED_NOT_OPERATIONALLY_AUTHORIZED"
-        assert block["blocking_prerequisite"] == "XASSET_0028_LIFECYCLE_CLOSURE"
+        # AMENDED BY XASSET-0029: XASSET-0028's lifecycle has closed, so its blocker is spent and
+        # is replaced by the strictly narrower external-attestation prerequisite.
+        assert block["blocking_prerequisite"] == V.STAGE_1_BLOCKING_PREREQUISITE
+        assert "XASSET_0029" in block["blocking_prerequisite"]
+        assert "EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION" in block["blocking_prerequisite"]
         assert block["authorized_by_xasset_0027"] is False
         assert block["authorized_by_xasset_0028"] is False
+        assert block["authorized_by_xasset_0029"] is False
+        # The committed boolean is permanently disqualified as an authorization source.
+        assert block["executable_is_never_the_authorization_source"] is True
         assert block["construction_universe_structurally_closed"] is True
         assert block["no_merge_to_execution_gap"] is True
 
@@ -514,8 +521,17 @@ class TestStage1IsNotExecutable:
         # AMENDED BY XASSET-0028. Construction-universe closure is no longer a *pending* condition:
         # XASSET-0028 supplies it, so the operative precondition is the six-gate successor lifecycle,
         # which is strictly stronger than the spent predecessor string it replaces.
-        assert "XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES" in V.STAGE_1_EXECUTION_PRECONDITION
+        # FURTHER AMENDED BY XASSET-0029: the XASSET-0028 lifecycle is itself spent, so the
+        # operative precondition is the XASSET-0029 lifecycle plus an external attestation.
+        assert "XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES" in V.STAGE_1_EXECUTION_PRECONDITION
+        assert (
+            "EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION" in V.STAGE_1_EXECUTION_PRECONDITION
+        )
         assert "CONSTRUCTION_UNIVERSE_CLOSURE" in V.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION
+        assert (
+            "XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES"
+            in V.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0028
+        )
 
     def test_reverting_to_lifecycle_only_precondition_rejected(self, data: dict):
         data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"] = (
@@ -640,7 +656,11 @@ class TestStage1ResultsFailsClosed:
     def test_structural_closure_alone_does_not_authorize_execution(self):
         authorized, reason = V.stage_1_operational_authorization_is_effective()
         assert authorized is False
-        assert "XASSET-0028" in reason
+        # AMENDED BY XASSET-0029: the current authority is named, and the reason must state that
+        # an external attestation -- not merely a closed lifecycle -- is still required.
+        assert "XASSET-0029" in reason
+        assert "attestation" in reason
+        assert "no merge-to-execution gap" in reason
         for gate in V.STAGE_1_EFFECTIVITY_GATES:
             assert gate in reason
 
@@ -1582,7 +1602,7 @@ class TestLifecycleEffectivity:
         precondition = base_data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"]
         assert precondition == V.STAGE_1_EXECUTION_PRECONDITION
         # AMENDED BY XASSET-0028: the operative precondition is the six-gate successor lifecycle.
-        assert precondition.startswith("XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_")
+        assert precondition.startswith("XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_")
         assert V.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION.startswith(
             "CONSTRUCTION_UNIVERSE_CLOSURE_THEN_"
         )
@@ -2126,15 +2146,18 @@ class TestMirrorAndPins:
         assert V.validate_successor_hash_pins(text).ok
 
     def test_successor_pin_mismatch_rejected(self):
+        # AMENDED BY XASSET-0029: XASSET-0028's pins are historical, so a mismatch now means the
+        # decision no longer records the digests it actually accepted -- history being rewritten.
         text = V.SUCCESSOR_DECISION_PATH.read_text(encoding="utf-8").replace(
-            V.sha256_file(V.PREREG_PATH), "0" * 64
+            V.XASSET_0028_PINS["preregistration_sha256"], "0" * 64
         )
         result = V.validate_successor_hash_pins(text)
-        assert not result.ok and any("preregistration_sha256 mismatch" in e for e in result.errors)
+        assert not result.ok
+        assert any("accepted historical pin" in e for e in result.errors)
 
     def test_successor_pin_equal_to_predecessor_rejected(self):
         text = V.SUCCESSOR_DECISION_PATH.read_text(encoding="utf-8").replace(
-            f"protocol_sha256: {V.sha256_file(V.PROTOCOL_PATH)}",
+            f"protocol_sha256: {V.XASSET_0028_PINS['protocol_sha256']}",
             f"protocol_sha256: {V.PREDECESSOR_PINS['protocol_sha256']}",
         )
         result = V.validate_successor_hash_pins(text)

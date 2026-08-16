@@ -412,9 +412,24 @@ class TestCanonicalLineageAndStage1:
         assert pred["preserved_verbatim"] is True
         assert len(pred["routes_considered_and_unavailable_to_this_filing"]) == 2
 
-    def test_39_successor_pins_verify_observed_final_bytes(self, determination):
-        for rel, digest in determination["canonical_amendment"]["successor_pins"].items():
-            assert V.sha256_file(REPO_ROOT / rel) == digest
+    def test_39_successor_pins_preserve_xasset_0028_accepted_identity(self, determination):
+        """AMENDED BY XASSET-0029.
+
+        XASSET-0029 amends the canonical bytes under its own successor authority, so XASSET-0028's
+        determination pins are now HISTORICAL identity and are asserted verbatim rather than
+        re-derived from the live files. Current-byte verification for the live canonical files is
+        performed by PREREG.validate_xasset_0029_successor_hash_pins(), exercised below.
+        """
+        recorded = determination["canonical_amendment"]["successor_pins"]
+        assert recorded == V.XASSET_0028_ACCEPTED_PINS
+        # And the live bytes have genuinely moved on -- history is preserved, not restated.
+        for rel, digest in recorded.items():
+            assert V.sha256_file(REPO_ROOT / rel) != digest
+
+    def test_39b_xasset_0029_pins_verify_observed_final_bytes(self):
+        """The CURRENT canonical bytes are pin-verified against the XASSET-0029 decision."""
+        text = PREREG.XASSET_0029_DECISION_PATH.read_text(encoding="utf-8")
+        assert PREREG.validate_xasset_0029_successor_hash_pins(text).ok
 
     def test_39b_successor_pins_differ_from_predecessor(self, determination):
         amendment = determination["canonical_amendment"]
@@ -713,7 +728,15 @@ class TestUnifiedStage1Lifecycle:
             )
         )
         expected = PREREG.STAGE_1_EXECUTION_PRECONDITION
-        assert "XASSET_0028" in expected
+        # FURTHER AMENDED BY XASSET-0029: the XASSET-0028 lifecycle is itself spent.
+        assert "XASSET_0029" in expected
+        assert "EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION" in expected
+        assert (
+            data["lifecycle_effectivity"][
+                "predecessor_stage_1_execution_may_begin_only_after_xasset_0028"
+            ]
+            == PREREG.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0028
+        )
         assert data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"] == expected
         assert data["stages"]["stage_1"]["executable_only_after"] == expected
         # The spent XASSET-0027 condition survives only as explicit history.
@@ -761,18 +784,33 @@ class TestUnifiedStage1Lifecycle:
         assert len(PREREG.closed_construction_universe()) == 680
         authorized, reason = PREREG.stage_1_operational_authorization_is_effective()
         assert authorized is False
-        assert "not true" in reason
+        # AMENDED BY XASSET-0029: the blocker is the absent external attestation, not a boolean.
+        assert "attestation" in reason
+        assert "XASSET-0029" in reason
         result = PREREG.validate_stage1_results({"candidate_results": []})
         assert not result.ok
         assert any("not operationally authorized" in e for e in result.errors)
 
-    def test_17b_fail_closed_reads_canonical_bytes_not_a_constant(self, tmp_path):
-        """A results author cannot flip authorization; it is read from the canonical file."""
-        fake = tmp_path / "prereg.yaml"
-        fake.write_text("stage_1_executability:\n  executable: true\n", encoding="utf-8")
-        assert PREREG.stage_1_operational_authorization_is_effective(fake)[0] is True
-        fake.write_text("stage_1_executability:\n  executable: false\n", encoding="utf-8")
-        assert PREREG.stage_1_operational_authorization_is_effective(fake)[0] is False
+    def test_17b_no_committed_boolean_can_authorize_execution(self, tmp_path):
+        """AMENDED BY XASSET-0029 -- STRICTLY STRENGTHENED.
+
+        Under XASSET-0028 a canonical file reading ``executable: true`` DID authorize execution.
+        That was unreachable in practice (the validator enforces ``_false(executable)``, so such a
+        file is invalid) but it meant a single mutable committed boolean was nominally the
+        authorization source. XASSET-0029 removes that entirely: forging ``executable: true``
+        authorizes nothing, and is itself reported as a canonical-integrity failure.
+        """
+        forged = tmp_path / "prereg.yaml"
+        forged.write_text("stage_1_executability:\n  executable: true\n", encoding="utf-8")
+        authorized, reason = PREREG.stage_1_operational_authorization_is_effective(forged)
+        assert authorized is False
+        assert "must be false" in reason
+
+        forged.write_text("stage_1_executability:\n  executable: false\n", encoding="utf-8")
+        authorized, reason = PREREG.stage_1_operational_authorization_is_effective(forged)
+        assert authorized is False
+        # Even a well-formed false file authorizes nothing without the mechanism block.
+        assert "stage_1_operational_authorization" in reason
 
 
 # =============================================================================================

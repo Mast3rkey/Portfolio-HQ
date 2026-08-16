@@ -41,7 +41,8 @@ lifecycle_effectivity:
   - MERGE
   - IMMEDIATE_POST_MERGE_VERIFICATION
   - SUCCESSFUL_MERGE_COMMIT_CI
-  stage_1_execution_may_begin_only_after: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
+  stage_1_execution_may_begin_only_after: XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  predecessor_stage_1_execution_may_begin_only_after_xasset_0028: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
   stage_1_execution_precondition_amended_by: XASSET-0028
   predecessor_stage_1_execution_may_begin_only_after_xasset_0027: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
   predecessor_precondition_is_spent_note: >-
@@ -63,23 +64,38 @@ lifecycle_effectivity:
     Stage 1 executable either.
 
 stage_1_executability:
+  # AMENDED BY XASSET-0029. `executable` stays false PERMANENTLY and keeps its enforced-false
+  # check. Its meaning is now explicit and load-bearing: NO COMMITTED VALUE IN THIS REPOSITORY
+  # AUTHORIZES STAGE-1 EXECUTION. XASSET-0028 already enforced `_false(executable)` in the
+  # validator while the authorization gate simultaneously required `executable is True`, so the
+  # canonical file could never be both valid and self-authorizing. XASSET-0029 preserves that
+  # lock rather than unpicking it, and relocates authorization to an external, one-shot,
+  # post-lifecycle attestation. See `stage_1_operational_authorization` below.
   executable: false
+  executable_is_never_the_authorization_source: true
   status: STRUCTURALLY_CLOSED_NOT_OPERATIONALLY_AUTHORIZED
-  blocking_prerequisite: XASSET_0028_LIFECYCLE_CLOSURE
+  blocking_prerequisite: XASSET_0029_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
   authorized_by_xasset_0027: false
   authorized_by_xasset_0028: false
+  authorized_by_xasset_0029: false
   construction_universe_structurally_closed: true
-  amended_by: XASSET-0028
+  amended_by: XASSET-0029
+  predecessor_amended_by_xasset_0028: XASSET-0028
   predecessor_status_xasset_0027: NOT_YET_EXECUTABLE_CONSTRUCTION_UNIVERSE_NOT_CLOSED
   predecessor_blocking_prerequisite_xasset_0027: CONCRETE_CONSTRUCTION_UNIVERSE_CLOSURE
+  predecessor_blocking_prerequisite_xasset_0028: XASSET_0028_LIFECYCLE_CLOSURE
   statement: >-
     XASSET-0027 charters this programme's architecture — its families, gates, disposition rules,
     reading map, deferrals, provenance requirements, and firewall — and does NOT authorize Stage 1
     execution. XASSET-0027's own blocking prerequisite was that a concrete construction universe did
-    not exist. XASSET-0028 closes that universe structurally, which retires the PREDECESSOR blocker
-    and replaces it with a strictly narrower one: Stage 1 remains NOT EXECUTABLE until XASSET-0028's
-    own lifecycle closes in full. Structural closure is not operational authorization, and no reader
-    may treat the two as the same fact.
+    not exist. XASSET-0028 closed that universe structurally, retiring that blocker. XASSET-0028's
+    own lifecycle has since closed in full, which retires the XASSET-0028 blocker in turn.
+    XASSET-0029 does NOT thereby declare Stage 1 executable. It establishes the mechanism by which
+    exactly one Stage-1 attempt may become authorized, and that mechanism is deliberately NOT a
+    committed value: authorization is an external, one-shot preexecution attestation that cannot
+    exist until after XASSET-0029 has itself been reviewed, accepted, merged, post-merge verified,
+    and confirmed green by merge-commit CI. Structural closure is not operational authorization, and
+    no reader may treat the two as the same fact.
   operational_authorization_requires_all_of:
   - INDEPENDENT_FULL_EXACT_HEAD_REVIEW
   - PRINCIPAL_EXACT_HEAD_ACCEPTANCE
@@ -93,13 +109,86 @@ stage_1_executability:
     opens. A validator that can structurally read the closed universe must still fail closed on
     lifecycle authorization until every gate is met.
 
+# ESTABLISHED BY XASSET-0029. This block specifies WHAT a valid Stage-1 authorization must prove
+# and WHICH exact identities it must bind. It is inert: it never asserts that authorization has
+# been granted, and nothing a reader can edit here grants it.
+stage_1_operational_authorization:
+  mechanism: EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  established_by: XASSET-0029
+  currently_effective: false
+  currently_effective_note: >-
+    False here is not a switch awaiting a flip. Effectivity is not readable from this file at all:
+    it is decided at runtime by validating an external attestation that does not exist yet. A future
+    edit setting this true would change nothing, because no validator consults it for authorization.
+  authorization_is_committed_state: false
+  authorization_is_external_runtime_evidence: true
+  implementing_module: level1_stage1_execution_authorization.py
+  execution_attempt_id: ENDPOINT-0001::STAGE_1::ATTEMPT_1
+  one_shot: true
+  one_shot_note: >-
+    XASSET-0027 SSP.1 permits exactly ONE later Stage-1 evaluation/results PR. The attestation and
+    its consumption receipt are each created with O_EXCL, so neither can be regenerated or replayed,
+    and an authorization naming one attempt can never authorize another. A rerun after consumption
+    requires new governance authority.
+  trust_boundary:
+    repository_state_says: WHAT_IS_STRUCTURALLY_AUTHORIZED
+    external_attestation_says: WHETHER_THIS_EXECUTION_IS_AUTHORIZED
+    results_document_says: NOTHING_ABOUT_AUTHORIZATION
+    results_cannot_self_authorize: true
+    private_structural_seams_are_non_authorizing: true
+  must_bind_exactly:
+  - REPOSITORY_IDENTITY
+  - STUDY_ID
+  - AUTHORIZING_DECISION_XASSET_0029
+  - PREDECESSOR_XASSET_0028_MERGE_SHA
+  - CANONICAL_PROTOCOL_SHA256
+  - CANONICAL_PREREGISTRATION_SHA256
+  - CONSTRUCTION_UNIVERSE_SHA256
+  - CONSTRUCTION_COUNT_680
+  - EXECUTION_ATTEMPT_ID
+  - INDEPENDENT_REVIEW_IDENTITY_AND_REVIEWED_SHA
+  - PRINCIPAL_ACCEPTANCE_IDENTITY_AND_ACCEPTED_HEAD
+  - MERGE_SHA_AND_BOTH_PARENTS
+  - POST_MERGE_VERIFICATION_IDENTITY
+  - MERGE_COMMIT_CI_RUN_JOB_AND_SUCCESS_CONCLUSION
+  must_fail_closed_on:
+  - NO_ATTESTATION_PRESENT
+  - MALFORMED_OR_DUPLICATE_KEYED_ATTESTATION
+  - WRONG_REPOSITORY_OR_STUDY_OR_DECISION
+  - WRONG_OR_STALE_AUTHORIZATION_HEAD
+  - WRONG_CANONICAL_OR_UNIVERSE_HASH
+  - WRONG_CONSTRUCTION_COUNT
+  - ABSENT_OR_ADVERSE_INDEPENDENT_REVIEW
+  - SELF_AUTHORED_REVIEW_WHERE_INDEPENDENCE_IS_REQUIRED
+  - ABSENT_ACCEPTANCE_OR_ACCEPTANCE_FOR_ANOTHER_HEAD
+  - ABSENT_MERGE_OR_WRONG_MERGE_PARENTS
+  - ABSENT_POST_MERGE_VERIFICATION
+  - ABSENT_OR_UNSUCCESSFUL_MERGE_COMMIT_CI
+  - POST_ACCEPTANCE_OR_POST_MERGE_DRIFT
+  - REPLAYED_OR_ALREADY_CONSUMED_AUTHORIZATION
+  - AUTHORIZATION_FOR_A_DIFFERENT_EXECUTION_ATTEMPT
+  no_merge_to_execution_gap: true
+  no_merge_to_execution_gap_mechanism: >-
+    Merging XASSET-0029 authorizes nothing. The attestation cannot be pre-staged, because generating
+    it requires evidence that does not exist until after the merge: the merge SHA, a post-merge
+    verification record, and a merge-commit CI run that has CONCLUDED success at that exact merge
+    SHA. CI cannot have concluded at the instant of merge, so a strictly positive interval between
+    merge and authorizability is enforced by evidence rather than by convention.
+  no_infinite_authorization_regress: true
+  no_infinite_authorization_regress_mechanism: >-
+    Arming is a runtime operator act, not a further merged governance PR. XASSET-0029 is the final
+    governance decision required for Stage 1; after it merges and verifies, the generator is run
+    once and no additional authorization PR is ever required. The regress terminates because the
+    final step changes no repository state.
+
 stages:
   stage_1:
     stage_id: STAGE_1_CONSTRUCTION_FEASIBILITY
     authorized_by_xasset_0027: false
-    executable_only_after: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
-    executable_only_after_amended_by: XASSET-0028
+    executable_only_after: XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+    executable_only_after_amended_by: XASSET-0029
     predecessor_executable_only_after_xasset_0027: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
+    predecessor_executable_only_after_xasset_0028: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
     acquires_data: false
     fits_or_estimates_anything: false
     produces_endpoint: false
@@ -1400,5 +1489,5 @@ protected_paths:
 - intelligence/level1_sleeve_synthesis/
 - /private/tmp/phq-risk0001-results
 
-hash_version: ENDPOINT-0001-PREREG-V4
-predecessor_hash_version: ENDPOINT-0001-PREREG-V3
+hash_version: ENDPOINT-0001-PREREG-V5
+predecessor_hash_version: ENDPOINT-0001-PREREG-V4

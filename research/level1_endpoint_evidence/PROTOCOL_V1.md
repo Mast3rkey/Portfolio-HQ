@@ -40,6 +40,15 @@ map, deferrals, provenance requirements, and firewall — is what `XASSET-0027` 
 > retained as **`XASSET-0027` predecessor state**; the amendment section at the end of this document
 > is operative where they differ.
 
+> **FURTHER AMENDED BY `XASSET-0029`.** `XASSET-0028`'s own lifecycle has since closed in full,
+> retiring that blocker in turn. Stage 1 is nonetheless **still not executable**, for a new and
+> narrower reason: `XASSET-0029` establishes that **no committed value in this repository
+> authorizes Stage-1 execution**. Authorization is an **external, one-shot preexecution
+> attestation** that cannot exist until the `XASSET-0029` lifecycle has itself closed in full and
+> merge-commit CI has *concluded* success. `stage_1_executability.executable` stays `false`
+> permanently and keeps its enforced-false check. The `XASSET-0029` amendment section at the end of
+> this document is operative where earlier text differs.
+
 ## 2. The governing question
 
 Reproduced from `XASSET-0025` §K, unmodified, and instantiated identically for every candidate:
@@ -543,9 +552,12 @@ negative means the frozen specification was evaluated, not that an executor fail
 **Structural closure is not operational authorization.** Stage 1 is **NOT EXECUTED** by `XASSET-0028`
 and remains **NOT EXECUTABLE** until `XASSET-0028`'s own lifecycle closes in full — all six gates:
 independent full exact-head review, principal exact-head acceptance, merge, post-merge verification,
-merge-commit CI success, and verification of the merged successor hashes and universe hash. That one
-six-gate condition is the sole operative Stage-1 execution precondition; the `XASSET-0027` condition
-is spent and retained only as predecessor history. There is no merge-to-execution gap.
+merge-commit CI success, and verification of the merged successor hashes and universe hash.
+
+> **`XASSET-0028` PREDECESSOR STATE.** The six-gate condition stated immediately above was the sole
+> operative Stage-1 execution precondition *under `XASSET-0028`*. That lifecycle has since closed,
+> so the condition is **spent**. It is retained here as auditable history and is **superseded** by
+> the `XASSET-0029` amendment section below, which is operative where the two differ.
 
 Predecessor canonical identity remains auditable and is never rewritten. Until `XASSET-0028` is
 effective, the `XASSET-0027` predecessor identity governs; after it, the successor identity governs.
@@ -571,8 +583,71 @@ registered_construction_count: 680
 construction_universe_sha256: 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224
 stage_1_structurally_closed: true
 stage_1_operationally_authorized: false
+stage_1_authorization_mechanism: EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+stage_1_execution_attempt_id: ENDPOINT-0001::STAGE_1::ATTEMPT_1
 stage_2_authorized: false
 j12_deferred: true
-hash_version: ENDPOINT-0001-PREREG-V4
-predecessor_hash_version: ENDPOINT-0001-PREREG-V3
+hash_version: ENDPOINT-0001-PREREG-V5
+predecessor_hash_version: ENDPOINT-0001-PREREG-V4
 -->
+
+---
+
+## Amendment — `XASSET-0029` Stage-1 operational authorization
+
+**Amended by `XASSET-0029`.** `XASSET-0028` closed the construction universe structurally and its
+own lifecycle has since closed in full. Neither fact makes Stage 1 executable. This amendment
+supplies the missing half: the mechanism by which exactly one Stage-1 attempt may become
+operationally authorized.
+
+### The committed boolean is not the mechanism
+
+`stage_1_executability.executable` stays **`false` permanently** and keeps its enforced-false
+validator check. Its meaning is now explicit and load-bearing: **no committed value in this
+repository authorizes Stage-1 execution.** Three independent reasons, the third dispositive:
+
+1. **Merge-to-execution gap.** A committed flag becomes effective the instant its PR merges —
+   before post-merge verification, and before merge-commit CI has started, let alone concluded.
+2. **A mutable boolean is not evidence.** A flag *asserts* authorization; it demonstrates no gate
+   actually closed, and is bound to no review, acceptance, merge, CI conclusion, or hash.
+3. **It is already a validation error.** The preregistration validator enforces
+   `_false(executable)`. The canonical file is therefore **invalid** in exactly the state that
+   would authorize execution. A file cannot be simultaneously valid and self-authorizing.
+   `XASSET-0029` preserves that lock rather than unpicking it.
+
+### Two-factor authorization
+
+| Factor | Location | Says |
+|---|---|---|
+| Structural arming | `stage_1_operational_authorization` (committed, inert) | **what** a valid authorization must prove |
+| Preexecution attestation | outside the repository (runtime, one-shot) | whether **this** execution is authorized |
+
+Neither suffices alone. A results document satisfies neither and is never consulted for
+authorization; private structural seams confer nothing.
+
+### No merge-to-execution gap
+
+Merging `XASSET-0029` authorizes nothing: no attestation exists. The attestation cannot be
+pre-staged, because generating it requires evidence that does not exist until after the merge —
+the merge SHA, a post-merge verification record, and a merge-commit CI run that has **concluded**
+success at that exact merge SHA. CI cannot have concluded at the instant of merge, so a strictly
+positive interval between merge and authorizability is enforced **by evidence, not by convention**.
+
+### No infinite authorization regress
+
+Arming is a **runtime operator act**, not a further merged governance PR. `XASSET-0029` is the
+final governance decision required for Stage 1; the generator is then run once, and no additional
+authorization PR is ever required. The regress terminates because the final step changes no
+repository state.
+
+### One authorized lane
+
+`XASSET-0027` §P.1 permits exactly **one** later Stage-1 evaluation/results PR. The attestation and
+its consumption receipt are each created with `O_EXCL`, so neither can be regenerated or replayed,
+and an authorization naming one attempt can never authorize another
+(`ENDPOINT-0001::STAGE_1::ATTEMPT_1`). A rerun after consumption requires new governance authority.
+
+`XASSET-0029` **executes no Stage 1**, evaluates no gate, produces no `stage1_results.yaml`, and
+consumes no execution lane. `XASSET-0024` §K.1 remains **unresolved** with both readings preserved,
+§J.12 remains **deferred**, representation remains `SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED`,
+Stage 2 remains **unauthorized**, and application authority remains **WITHHELD**.
