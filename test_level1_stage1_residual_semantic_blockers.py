@@ -996,19 +996,133 @@ class TestCorrectionsRecordedForwardOnly:
 
 
 class TestGBUnlockIsTiedToLifecycleClosure:
-    def test_unlock_is_not_claimed_on_merge(self, decision):
-        section = _norm(decision.split("### I.")[1].split("### J.")[0])
-        assert "not unlocked by this PR being opened, nor by its merge alone" in section
+    """Correction 1 / FULL review `4951655331` MINOR 1.
 
-    def test_full_lifecycle_is_enumerated(self, decision):
-        section = _norm(decision.split("### I.")[1].split("### J.")[0])
+    The operative unlock rule must enumerate **complete** lifecycle closure, including successful
+    merge-commit CI bound to the exact merge SHA. Every test below is written so that deleting or
+    weakening the merge-commit-CI condition fails the suite.
+    """
+
+    def test_unlock_is_not_claimed_on_merge(self, decision):
+        section = _norm(_section(decision, "I"))
+        assert "not unlocked by this PR being opened, nor by any single lifecycle step in isolation" in section
+
+    def test_all_seven_conditions_are_enumerated(self, decision):
+        section = _norm(_section(decision, "I"))
         for step in (
-            "independent full exact-head review",
-            "exact-head re-review",
-            "principal exact-head acceptance",
-            "post-merge verification",
+            "Independent exact-head review",
+            "any required bounded correction and exact-head re-review",
+            "explicit principal exact-head acceptance",
+            "normal merge",
+            "immediate post-merge verification",
+            "successful merge-commit CI whose `head_sha` is the exact merge SHA",
+            "final post-CI verification and lifecycle closure",
         ):
-            assert step in section
+            assert step in section, f"missing lifecycle condition: {step!r}"
+
+    def test_conditions_are_numbered_one_through_seven(self, decision):
+        section = _section(decision, "I")
+        for n in range(1, 8):
+            assert re.search(rf"^{n}\. \*\*", section, flags=re.MULTILINE), f"missing numbered item {n}"
+
+    # ---- the four "alone is not enough" properties, each pinned separately ----
+
+    def test_exact_head_review_alone_does_not_unlock(self, decision):
+        section = _norm(_section(decision, "I"))
+        assert "None of these is individually sufficient" in section
+        assert "Independent exact-head review" in section
+
+    def test_principal_acceptance_alone_does_not_unlock(self, decision):
+        section = _norm(_section(decision, "I"))
+        assert "principal acceptance does not" in section
+
+    def test_merge_alone_does_not_unlock(self, decision):
+        section = _norm(_section(decision, "I"))
+        assert "merge does not" in section
+
+    def test_post_merge_verification_without_merge_commit_ci_does_not_unlock(self, decision):
+        section = _norm(_section(decision, "I"))
+        assert (
+            "post-merge verification without a successful exact merge-commit CI run does not" in section
+        )
+
+    def test_pr_head_ci_is_not_a_substitute_for_merge_commit_ci(self, decision):
+        section = _norm(_section(decision, "I"))
+        assert "not the PR head's own CI run" in section
+        assert "a green PR-head CI run" in section
+
+    def test_merge_commit_ci_must_bind_the_exact_merge_sha(self, decision):
+        section = _norm(_section(decision, "I"))
+        assert "`head_sha` is the exact merge SHA" in section
+        assert "not a run against any other commit" in section
+
+    def test_final_lifecycle_closure_is_required(self, decision):
+        section = _norm(_section(decision, "I"))
+        assert "final post-CI verification and lifecycle closure" in section
+        assert "merged-successor identity verification" in section
+
+    def test_only_complete_closure_unlocks(self, decision):
+        section = _norm(_section(decision, "I"))
+        assert "Only complete closure of all seven does" in section
+
+    # ---- grounded in the repository's own definition, which must stay unmodified ----
+
+    def test_rule_is_grounded_in_required_lifecycle_gates(self, decision):
+        section = _norm(_section(decision, "I"))
+        assert "REQUIRED_LIFECYCLE_GATES" in section
+        assert "not a new requirement invented here" in section
+
+    def test_canonical_required_lifecycle_gates_include_merge_commit_ci(self):
+        """The authority the corrected rule cites — read from the live load-bearing module."""
+        assert "MERGE_COMMIT_CI_SUCCESS" in A.REQUIRED_LIFECYCLE_GATES
+        assert "MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION" in A.REQUIRED_LIFECYCLE_GATES
+        assert len(A.REQUIRED_LIFECYCLE_GATES) == 6
+
+    def test_canonical_stage_1_names_all_six_gates(self, prereg):
+        assert (
+            prereg["stages"]["stage_1"]["executable_only_after"]
+            == "XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+        )
+
+    def test_authorization_module_is_cited_not_modified(self, decision):
+        section = _norm(_section(decision, "I"))
+        assert "neither reads nor modifies that module's bytes" in section
+
+    # ---- every mirror carries the corrected condition ----
+
+    def test_section_a_summary_carries_merge_commit_ci(self, decision):
+        section = _norm(_section(decision, "A"))
+        assert "merge-commit CI whose `head_sha` is the exact merge SHA" in section
+        assert "All seven conditions at §I are required" in section
+
+    def test_consequences_mirror_carries_complete_closure(self, decision):
+        tail = _norm(decision.split("## Consequences")[1])
+        assert "in full" in tail
+        assert "merge-commit CI on the exact merge SHA" in tail
+
+    def test_alternatives_mirror_rejects_merge_alone(self, decision):
+        tail = _norm(decision.split("## Alternatives Considered")[1])
+        assert "all seven conditions, including successful merge-commit CI on the exact merge SHA" in tail
+
+    def test_workstreams_mirror_carries_merge_commit_ci(self):
+        text = _norm((ROOT / "operations/WORKSTREAMS.yaml").read_text(encoding="utf-8"))
+        assert "SUCCESSFUL MERGE-COMMIT CI WHOSE head_sha IS THE EXACT MERGE SHA" in text
+        assert "post-merge verification without exact merge-commit CI does not" in text
+
+    def test_claude_md_pointer_carries_merge_commit_ci(self):
+        text = _norm((ROOT / "CLAUDE.md").read_text(encoding="utf-8"))
+        assert "successful merge-commit CI whose `head_sha` is the exact merge SHA" in text
+        assert "a green PR-head run is not a substitute" in text
+
+    def test_correction_history_records_the_finding(self, decision):
+        normalised = _norm(decision)
+        assert "Correction 1" in normalised
+        assert "4951655331" in normalised
+        assert "omits successful merge-commit CI on the exact merge SHA" in normalised
+
+    def test_correction_is_lifecycle_wording_only(self, decision):
+        normalised = _norm(decision)
+        assert "Lifecycle-effectivity wording only" in normalised
 
     def test_gb_invariant_is_restated_unchanged(self, decision):
         section = _norm(decision.split("### I.")[1].split("### J.")[0])
@@ -1210,6 +1324,68 @@ class TestTwoConformingExecutorsCannotDiverge:
         assert "ALL_THREE_RESIDUAL_SEMANTIC_BLOCKERS_RESOLVED" in decision
         table = decision.split("### A.")[1].split("### B.")[0]
         assert "**B1**" in table and "**B2**" in table and "**B3**" in table
+
+
+class TestCorrection1ChangedOnlyLifecycleWording:
+    """Correction 1 must not have moved any B1/B2/B3 semantic, nor unarmed Stage 1's state."""
+
+    def test_b1_rule_text_unchanged(self, decision):
+        section = _norm(_section(decision, "E"))
+        assert "lawful satisfiability of the frozen construction specification" in section
+        assert "not against execution-time world state" in section
+        assert "constitutive governed statement, not a reading" in section
+
+    def test_b2_rule_and_inventory_unchanged(self, decision, universe):
+        section = _norm(_section(decision, "F"))
+        assert (
+            "if and only if both of its own two frozen named comparison endpoints are members of "
+            "the four-sleeve set" in section
+        )
+        assert "never by the presence or absence of the `unordered_pair_id` label" in section
+        # 480 / 200 inventory recomputed live, not read from prose.
+        consuming = sum(
+            1
+            for cid in universe
+            if _comparison_group(cid) in {"UNORDERED_PAIR", "DIRECT_ALTERNATIVE_SLEEVE"}
+        )
+        assert consuming == 480
+        assert len(universe) - consuming == 200
+
+    def test_b3_rule_and_fence_unchanged(self, decision):
+        section = _norm(_section(decision, "G"))
+        assert "records `UNABLE_TO_DETERMINE`" in section
+        assert "applies to no other gate" in section
+        assert "does not give `G10` an `UNABLE_TO_DETERMINE` posture" in section
+        assert "remains prerequisite-blocked" in section
+
+    def test_determination_verdict_unchanged(self, decision):
+        assert "ALL_THREE_RESIDUAL_SEMANTIC_BLOCKERS_RESOLVED" in decision
+
+    def test_six_six_map_and_open_questions_unchanged(self, decision, prereg):
+        normalised = _norm(decision)
+        assert "6/6 map is unchanged" in normalised
+        assert "§K.1 stays unresolved" in normalised
+        assert "`XASSET-0020` §E.1 stays unamended" in normalised
+        assert prereg["open_reading_handling"]["resolved_by_this_program"] is False
+
+    def test_enforcement_defect_disclosure_preserved_per_note_1(self, decision):
+        """FULL review NOTE 1: this disclosure is successor scope and must survive the correction."""
+        section = _norm(decision.split("#### F.8")[1].split("### G.")[0])
+        assert "480" in section
+        assert "does not correct it" in section
+        assert "neither re-derived, expanded, narrowed, nor corrected" in section
+
+    def test_stage_1_still_unarmed_after_correction(self):
+        authorized, _reason = A.new_execution_is_authorized()
+        assert authorized is False
+        assert not A.AUTHORIZATION_ROOT.exists()
+
+    def test_frozen_inputs_still_exact_after_correction(self):
+        import hashlib
+
+        assert hashlib.sha256(PROTOCOL.read_bytes()).hexdigest() == PROTOCOL_SHA256
+        assert hashlib.sha256(PREREG.read_bytes()).hexdigest() == PREREG_SHA256
+        assert CU.universe_aggregate_sha256() == FROZEN_UNIVERSE_SHA256
 
 
 class TestSuiteHasNoVacuousAssertions:

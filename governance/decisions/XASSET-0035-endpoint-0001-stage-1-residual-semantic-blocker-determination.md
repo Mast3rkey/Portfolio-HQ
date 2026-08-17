@@ -33,6 +33,41 @@ filing's summary:
 
 **Stage 1 is UNARMED and NOT EXECUTABLE. `ATTEMPT_1` is intact, unclaimed, unconsumed.**
 
+### Correction history
+
+**Correction 1** — after independent FULL exact-head review `4951655331` (`CHANGES REQUIRED` —
+0 BLOCKING / 0 MAJOR / **1 MINOR** / 1 NOTE) at head `97fc78a923d935c83ccd4e847c24d9e5eece5370`, whose
+exact-head CI run `32028976384` / job `95384421111` was completed/success with 8276 passed / 0 failed.
+
+**The review independently challenged all three closures and reopened none.** B1's constitutive character,
+B2's 480/200 substance rule, and B3's elimination posture each survived substantive review; NOTE 1
+affirmed B2's enforcement-defect disclosure as successor scope to preserve rather than a finding.
+
+**MINOR 1, reproduced against this filing's own text before any edit.** §A and §I both stated the §G.B
+unlock condition as an explicit list — "independent full exact-head review, any bounded correction and
+exact-head re-review, explicit principal exact-head acceptance, merge, and post-merge verification" —
+which **omits successful merge-commit CI on the exact merge SHA**. The governing concept ("accepted
+lifecycle closure") was right; the enumeration that defined it was narrower than the repository's own
+lifecycle, leaving a future author able to read post-merge verification as sufficient and enter §G.B
+before the merge commit itself was CI-validated. That matters here because §G.B unlock permits entry to
+the canonical / enforcement / outcome-producing-code phase against a one-shot `ATTEMPT_1`.
+
+**Independently confirmed while reproducing it, and stronger than the review stated:** the omission is
+against a definition already committed in a **load-bearing** path.
+`level1_stage1_execution_authorization.REQUIRED_LIFECYCLE_GATES` is a **six**-element tuple, and canonical
+`stages.stage_1.executable_only_after` names it "**ALL SIX GATES**". The prior enumeration named four of
+those six plus the re-review discipline, omitting **both** `MERGE_COMMIT_CI_SUCCESS` **and**
+`MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION`. This filing's own §Context preflight table had
+already recorded merge-commit CI as part of the *predecessor's* closure — so the operative rule was also
+internally inconsistent with the evidence standard the same filing applied to `XASSET-0034`.
+
+Corrected: §I now states seven numbered conditions, declares that none is individually sufficient, and
+grounds them in `REQUIRED_LIFECYCLE_GATES` by citation; §A, the `WS-0014` mirror, and the `CLAUDE.md`
+pointer are brought into line. **Lifecycle-effectivity wording only.** B1, B2 and B3's semantics, the
+480/200 inventory, B3's fence, the 6/6 map, §K.1, §E.1, the satisfaction residues, the canonical pins, the
+universe, and the six load-bearing paths are all unchanged — and no validator, enforcement layer, runner,
+or canonical byte is touched.
+
 ### The question this unit answers
 
 `XASSET-0034` determined `SEMANTIC_CLOSURE_PARTIAL_THREE_RESIDUAL_BLOCKERS` — five §G.A items are
@@ -67,10 +102,12 @@ conforming executors cannot lawfully diverge — because `ATTEMPT_1` is one-shot
 | **B2** `G10` §H.4 consumption | **INTERPRETIVE** — accepted authority selects | A construction consumes a canonical §H unordered pair **iff both of its own two frozen named comparison endpoints are sleeves**. Determined by frozen comparison identity, never by the `unordered_pair_id` label (§F) |
 | **B3** reserved-gate recording posture | **INTERPRETIVE** — by elimination over the closed vocabulary | `UNABLE_TO_DETERMINE`, for exactly `G3`, `G5`, and `G9` path 1 **when undetermined** (§G) |
 
-**§G.B is therefore unlocked — but only on this decision's own accepted lifecycle closure**, not on
-this PR being opened or merged. Independent full exact-head review, any bounded correction and
-exact-head re-review, explicit principal exact-head acceptance, merge, and post-merge verification are
-each required first (§I).
+**§G.B is therefore unlocked — but only on this decision's own *complete* accepted lifecycle closure**,
+not on this PR being opened or merged and not on any single step in isolation. All seven conditions at §I
+are required: independent exact-head review; any bounded correction and exact-head re-review; explicit
+principal exact-head acceptance; normal merge; immediate post-merge verification; **successful
+merge-commit CI whose `head_sha` is the exact merge SHA**; and final post-CI verification and lifecycle
+closure. These track the repository's own six `REQUIRED_LIFECYCLE_GATES` (§I).
 
 **Nothing else moves.** The `XASSET-0030` 6/6 gate map is **unchanged** and no §E.1 invalidation trigger
 fires (§H.1). `XASSET-0024` §K.1 stays unresolved; `XASSET-0020` §E.1 stays unamended; `XASSET-0031`'s
@@ -562,16 +599,40 @@ categorical gates, but §F's consequence is a categorical `FAIL` and §G's is ex
 `XASSET-0034` §H: if either pinned canonical hash changes, or `XASSET-0019` through `XASSET-0026`'s
 effective identity changes, the whole set is re-derived rather than inherited.
 
-### I. Effect on `XASSET-0030` §G.B — unlocked on lifecycle closure, not on merge
+### I. Effect on `XASSET-0030` §G.B — unlocked on *complete* lifecycle closure, not on merge
 
 **§G.B step 1 is now satisfied.** Its six §G.A items divide as `XASSET-0034` §A determined: five are
 execution-ready satisfaction residues that were never entry conditions, and the three semantic blockers
 are resolved by §§E–G.
 
-**§G.B is not unlocked by this PR being opened, nor by its merge alone.** It becomes lawful to begin only
-after this decision has completed independent full exact-head review under `OPS-0007` §1, any bounded
-correction and exact-head re-review, explicit principal exact-head acceptance, merge, and post-merge
-verification — the same lifecycle every filing in this program has carried.
+**§G.B is not unlocked by this PR being opened, nor by any single lifecycle step in isolation.** It
+becomes lawful to begin only after **all** of the following are complete for this decision's accepted
+exact head and the resulting merge:
+
+1. **Independent exact-head review** under `OPS-0007` §1, anchored to the exact head being accepted;
+2. **any required bounded correction and exact-head re-review**, so that condition 1 holds at the *final*
+   accepted head rather than at a superseded one;
+3. **explicit principal exact-head acceptance** at that final head;
+4. **normal merge**;
+5. **immediate post-merge verification**;
+6. **successful merge-commit CI whose `head_sha` is the exact merge SHA** — not the PR head's own CI run,
+   and not a run against any other commit; and
+7. **final post-CI verification and lifecycle closure** as repository convention requires, including
+   merged-successor identity verification.
+
+**None of these is individually sufficient.** Opening the PR does not unlock §G.B; a green PR-head CI run
+does not; principal acceptance does not; merge does not; and post-merge verification without a successful
+exact merge-commit CI run does not. **Only complete closure of all seven does.**
+
+**This is the repository's own definition of closure, not a new requirement invented here.**
+`level1_stage1_execution_authorization.REQUIRED_LIFECYCLE_GATES` — a member of the six load-bearing paths
+— is a six-element tuple: `INDEPENDENT_FULL_EXACT_HEAD_REVIEW`, `PRINCIPAL_EXACT_HEAD_ACCEPTANCE`,
+`MERGE`, `POST_MERGE_VERIFICATION`, **`MERGE_COMMIT_CI_SUCCESS`**, and
+**`MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION`**; canonical
+`stages.stage_1.executable_only_after` names it `XASSET_0029_LIFECYCLE_CLOSURE_**ALL_SIX_GATES**_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION`.
+Conditions 5–7 above are that tuple's last three members; condition 2 is the exact-head discipline
+`OPS-0009` §6 already applies to condition 1. **This decision neither reads nor modifies that module's
+bytes** — it is cited as the controlling definition, and remains byte-unchanged.
 
 **What the next unit may then do — recorded as scope, not authorization, and performed nowhere here.**
 `XASSET-0030` §G.B steps 2–11, as one coherent pass: reconcile the final accepted semantics into the
@@ -753,7 +814,9 @@ It is a load-bearing implementation path, its correction deliberately creates en
 (`XASSET-0030` §D), and it belongs to §G.B step 3 where the final semantics determine what the corrected
 enforcement must encode. Recording the raised stakes is this unit's remit; discharging them is not.
 
-**Declare §G.B unlocked on merge of this PR.** Rejected. §I ties it to accepted lifecycle closure.
+**Declare §G.B unlocked on merge of this PR.** Rejected. §I ties it to **complete** accepted lifecycle
+closure — all seven conditions, including successful merge-commit CI on the exact merge SHA. Merge alone,
+post-merge verification alone, and a green PR-head CI run are each expressly insufficient.
 
 **Abstain on all three and file the analysis only.** Rejected. B2 and B3 are settled by authority in
 force, so abstaining would misreport them as open; and B1 can never be settled by evidence, so
@@ -764,7 +827,8 @@ abstaining there is not deferral but termination.
 `XASSET-0030` §G.A is **closed**. Its six items are now five execution-ready satisfaction residues that
 were never entry conditions and one — `G12` — resolved by a governed `G12`-scoped modal statement, with
 `G10`'s consumption semantics and the reserved-gate recording posture resolved alongside it. §G.B may
-begin once this decision completes its own lifecycle, and not before.
+begin once this decision completes its own lifecycle **in full** — all seven §I conditions, successful
+merge-commit CI on the exact merge SHA among them — and not before.
 
 Two of the three resolutions cost nothing to carry forward, because they add no rule: §F assembles
 `XASSET-0020` §H and §I with `XASSET-0024` §H.4 and the canonical abstention conditions, and §G

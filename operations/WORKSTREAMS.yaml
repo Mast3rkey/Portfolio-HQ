@@ -13491,9 +13491,22 @@ workstreams:
           HYPOTHETICAL_SOURCE_ARCHITECTURE specification.
           DETERMINATION: ALL_THREE_RESIDUAL_SEMANTIC_BLOCKERS_RESOLVED. SS-G.A's semantic
           prerequisites are complete and SS-G.B is unlocked — but ONLY on this decision's
-          own accepted lifecycle closure (independent full exact-head review, any bounded
-          correction and exact-head re-review, explicit principal exact-head acceptance,
-          merge, post-merge verification), NOT on this PR being opened or merged.
+          own COMPLETE accepted lifecycle closure, NOT on this PR being opened or merged
+          and NOT on any single lifecycle step in isolation. SS-I states seven conditions,
+          all required: (1) independent exact-head review; (2) any bounded correction and
+          exact-head re-review, so (1) holds at the FINAL accepted head; (3) explicit
+          principal exact-head acceptance; (4) normal merge; (5) immediate post-merge
+          verification; (6) SUCCESSFUL MERGE-COMMIT CI WHOSE head_sha IS THE EXACT MERGE
+          SHA — not the PR head's own CI run; and (7) final post-CI verification and
+          lifecycle closure including merged-successor identity verification. None is
+          individually sufficient: a green PR-head CI run does not unlock SS-G.B, principal
+          acceptance does not, merge does not, and post-merge verification without exact
+          merge-commit CI does not. This is the repository's OWN definition of closure, not
+          a new requirement — level1_stage1_execution_authorization.REQUIRED_LIFECYCLE_GATES
+          (a load-bearing path) is a six-element tuple including MERGE_COMMIT_CI_SUCCESS and
+          MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION, and canonical
+          stages.stage_1.executable_only_after names it "ALL SIX GATES"; that module is
+          cited only, and remains byte-unchanged.
           BATCHABILITY (SS-C): XASSET-0032 SS-C's five-question test applied and returned
           ALL-THREE COHERENT UNIT — one shared authority surface, all three decidable from
           committed text with no candidate source, snapshot successor, market data, or
