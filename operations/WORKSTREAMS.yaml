@@ -13248,6 +13248,107 @@ workstreams:
           ATTEMPT_1; changes no canonical byte, hash pin, universe, or LOAD_BEARING_RELPATHS.
           Draft PR; not merged, not independently reviewed, not principal-accepted in this
           session.
+      - gate: xasset0032-post-merge-verification
+        status: complete
+        pr: 331
+        description: >-
+          Lane M factual synchronization, recorded by the XASSET-0033 session. PR
+          #331 (XASSET-0032) independently re-confirmed merged from live GitHub and
+          git state: merge commit eebc4d6642353d50807f0f40f8a3ceed5ef8d97c, which is
+          simultaneously GitHub main, origin/main, and this session's own branch base.
+          Merge-commit CI run 31988605930, head_sha eebc4d66..., completed/success.
+          Zero open PRs at verification; working tree clean; stash empty; sole
+          worktree. Confirmed unchanged at that merge: the XASSET-0032 five-gate
+          determination (G5, G8, G9, G10, G12 all NOT CLOSABLE); the XASSET-0030 6/6
+          gate map; XASSET-0024 SS-K.1 unresolved; XASSET-0020 SS-E.1 unamended;
+          G1/G2/G4/G6/G7/G11 not re-derived; XASSET-0031's G3 determination neither
+          reopened nor relied upon; universe 680 constructions, 73c0965e...5224;
+          canonical pins 6c34cbbc...64cb and 6e0c07a8...337c; all six XASSET-0029
+          load-bearing paths present with no runner among them; stage1_results.yaml
+          absent; new_execution_is_authorized() False ("no attestation present ...
+          There is no merge-to-execution gap"); Stage 1 UNARMED and NOT EXECUTABLE;
+          ATTEMPT_1 intact, unclaimed, unconsumed. The prior xasset0032 gate's own
+          text is byte-unchanged.
+      - gate: xasset0033-g12-could-admit-tense-determination
+        status: in_progress
+        pr: null
+        description: >-
+          XASSET-0033, Lane G, bounded governance-only unit — the third semantic
+          successor after XASSET-0030, taking the single blocker XASSET-0032 SS-H.4
+          left on G12: the TENSE OF "COULD ADMIT". Question: can that phrase be
+          deterministically assigned one temporal reading such that two independent
+          conforming executors, handed the same frozen inputs, cannot lawfully return
+          opposite G12 results.
+          DETERMINATION: G12_COULD_ADMIT_TENSE_NOT_CLOSABLE. G12 remains NOT CLOSABLE
+          and its XASSET-0032 classification is UNCHANGED; the XASSET-0030 6/6 gate map
+          is UNCHANGED; no gate moves between partitions; no SS-E.1 invalidation trigger
+          fires. Closure was tested seriously and rejected against the stated bar — the
+          competing reading must be shown UNLAWFUL, not merely less attractive.
+          WHAT THIS UNIT CLOSES (SS-C): the candidate-relative clause "that could admit
+          the candidate" is OPERATIVE gate text. PROTOCOL_V1.md SS-6 row 12 and SS-6.1
+          both restate G12 without it, but PROTOCOL's own opening states the precedence
+          — pre_registration.yaml is canonical "for every closed identity, candidate,
+          gate, ordering, vocabulary, and count", and the protocol "cannot enlarge or
+          override the YAML". A shorter restatement in a document that cannot override
+          the YAML does not delete a conjunct from it. G12 may therefore NOT be
+          evaluated as bare successor-identifiability with the conjunct dropped — the
+          dissolution route is foreclosed. Expressly NOT a defect finding against
+          PROTOCOL_V1.md: abbreviation in a summary table and an explanatory gloss is
+          not a divergence, and no governed correction is triggered.
+          WHAT THIS UNIT NARROWS (SS-E): both texts XASSET-0032 SS-H.4 recorded as
+          SUPPORTS for the present-tense reading are, read in their own sections rather
+          than as the sentence they share, ORDERING statements and therefore NEUTRAL
+          between the readings. XASSET-0026 SS-G.2's own heading names its four items
+          "ordering constraints that do bind"; constraint 3's own title is "Snapshot
+          successor after evidence, before any application"; its operative sentence is
+          paired with "and no application may read the evidence before it does",
+          bracketing the successor's POSITION; and XASSET-0026 states "the third's
+          position in the sequence *is* fixed". XASSET-0027 SS-P.2 is headed
+          "Separately required successors, none authorized here", and the G12 clause
+          occupies the same grammatical slot as three overt timing qualifiers ("if and
+          when a candidate source exists to test"; "at the first later stage where
+          actual candidate endpoint values or sets coexist"; "only if and when a
+          candidate source is not self-contained"). NOT overstated: the inference FROM
+          the ordering TO the present-tense reading remains available and is expressly
+          preserved; what is removed is citing either text as INDEPENDENT AFFIRMATIVE
+          SUPPORT.
+          SURVIVING BLOCKER (SS-G): no accepted text defines the modal "could", states a
+          gate-level tense or modal rule, or ranks the canonical Stage-1 register
+          statements (stage_1.description "Stage 1 evaluates constructibility";
+          no_source_identity_note "lawfully satisfiable under the twelve gates") above
+          the G12 question's own unglossed wording. Two conforming executors may still
+          lawfully diverge — FAIL for all 680 on the operative clause plus the frozen
+          HYPOTHETICAL_SOURCE_ARCHITECTURE identity field, or PASS on the identifiability
+          conjunct on the register plus the named ordered dependency. Executor A's ground
+          is narrower than before this filing but is not foreclosed. Three obstacles to
+          closure recorded at SS-F.3, the sharpest being that XASSET-0025 SS-D already
+          accepts a gate failing every candidate structurally, so the intuitive "a gate
+          cannot fail all 680" objection is unavailable.
+          SMALLEST FUTURE AUTHORITY (SS-I): a G12-scoped modal statement — one governed
+          sentence, no new evidence, no methodology amendment, no change to G12's
+          wording, one gate. A program-wide gate-modal register rule would also work but
+          would reach EVERY gate including the six recorded as closable, and is disclosed
+          as a caution, not a recommendation. Neither is authorized or begun.
+          CORRECTIONS (SS-H), classification unchanged, no prior decision's text edited:
+          (1) XASSET-0032 SS-H.4's characterization of SS-G.2 constraint 3 and SS-P.2 as
+          present-tense supports; (2) XASSET-0032 SS-H.3's citation of the dependency
+          order to PROTOCOL_V1.md SS-12 — the quotation is accurate, the section number
+          is not; the sentence is at SS-17 ("Lifecycle and downstream boundary"), while
+          SS-12 is "Parameters, and why there are none".
+          Supporting artifact test_level1_stage1_g12_could_admit_tense.py — 80 focused
+          adversarial tests pinning the intended rules and their nearest plausible
+          overreaches (dissolution; over-closure from the ordering finding; silent
+          closure; the nonexistence-equals-FAIL regression; widening identifiability-only
+          into full SS-J.1 admission), plus the unchanged canonical gate, the XASSET-0030
+          partition, G3/SS-K.1/SS-E.1 preservation, the protected-path boundary, and that
+          Stage 1 stays UNARMED. Suite mutation-tested: six deliberate overreaches were
+          injected into the decision and every one was caught, with the file restored
+          byte-identical.
+          Creates no endpoint, bound, percentage, runner, attestation, lane state, or
+          stage1_results.yaml; evaluates no gate for any construction; consumes nothing of
+          ATTEMPT_1; changes no canonical byte, hash pin, universe, or LOAD_BEARING_RELPATHS.
+          Draft PR; not merged, not independently reviewed, not principal-accepted in this
+          session.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -14307,9 +14408,9 @@ workstreams:
       representation-aggregation rule, any snapshot successor, RISK parameter
       reuse, Level-2 work, liquidity determination, and policy adoption all
       remain separately unauthorized.
-    active_branch: claude/xasset-0032-semantic-gates-sk79mn
+    active_branch: claude/g12-could-admit-tense-up3ntt
     active_pr: null
-    last_verified_main_sha: 1d7c61f3a6188cf2df7a7bc0390c269e596ef202
+    last_verified_main_sha: eebc4d6642353d50807f0f40f8a3ceed5ef8d97c
     last_verified_date: "2026-08-17"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
