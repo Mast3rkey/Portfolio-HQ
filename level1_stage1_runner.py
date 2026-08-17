@@ -40,10 +40,25 @@ They are executor-supplied like any other undetermined gate.
 FAIL-CLOSED AUTHORIZATION
 =========================
 
-:func:`run_stage1` consults the operational authorization gate FIRST and refuses to compose anything
-when Stage 1 is unarmed. The check is injectable so this module's own tests can exercise the
-composition logic against a synthetic authorizer without ever arming the real one-shot lane.
-Injecting a stub confers nothing: it changes no lane state, creates no attestation, and claims no
+:func:`run_stage1` and :func:`write_stage1_results` are the two outcome-producing entry points, and
+each consults ``level1_stage1_execution_authorization.active_execution_is_authorized`` FIRST --
+before any composition, any path resolution, any validation, and any file descriptor. That
+predicate succeeds ONLY while the one authorized attempt is EXACTLY ``LANE_CLAIMED`` and its
+attestation still authenticates against durable truth. ``READY`` is not enough (the claim has not
+been taken) and ``COMPLETED`` is not enough either (the single attempt is spent; recovering a
+crashed execution or a lost artifact is a governed act requiring new authority, never an ordinary
+re-run). The deliberately broader ``claimed_execution_is_authorized``, true in ``CLAIMED`` or
+``COMPLETED``, remains correct for authenticating an already-completed result and is NOT used here.
+
+NEITHER production path has an injection seam. ``run_stage1`` takes only ``analytical_inputs`` and
+``provenance``; ``write_stage1_results`` takes only ``document`` and writes only to the canonical
+path. There is no authorizer, traversal, cell-universe, or destination parameter to substitute.
+
+Synthetic composition is a separate PRIVATE seam, :func:`_compose_synthetic_stage1_document`, which
+refuses a ``None`` traversal and refuses any record or analytical input naming a registered
+construction, so it cannot reach a real disposition. :func:`_write_synthetic_results_artifact` is
+its writing counterpart and is mechanically barred from the canonical results path. Neither seam
+consults or confers authorization: they change no lane state, create no attestation, and claim no
 attempt.
 
 Structural, read-only traversal of the frozen universe is separately available through
@@ -520,20 +535,26 @@ def run_stage1(
     Reproduced before correcting.
 
     Composing a disposition for a registered construction IS the real work, so the question that
-    must be answered here is ``claimed_execution_is_authorized`` -- "did THIS execution come from
-    the one lawful, still-authenticated claim". There is NO injection seam on this path: the only
-    authorizer is the real one, the only traversal is the real frozen universe, and the only cell
-    ordering is the canonical one.
+    must be answered here is ``active_execution_is_authorized`` -- "is the one lawful attempt
+    CURRENTLY IN PROGRESS", i.e. exactly ``LANE_CLAIMED`` and still authenticated. There is NO
+    injection seam on this path: the only authorizer is the real one, the only traversal is the
+    real frozen universe, and the only cell ordering is the canonical one.
+
+    BLOCKING 1 (review 4953558775): this asked ``claimed_execution_is_authorized`` instead, which
+    answers a deliberately broader question and is true in ``COMPLETED`` as well, because the
+    completed-result authentication path needs that provenance. A terminal lane therefore did not
+    terminate composition. Reproduced before correcting, on isolated temporary lane paths.
 
     Synthetic composition lives in :func:`_compose_synthetic_stage1_document`, which is
     mechanically barred from every registered identity.
     """
     import level1_stage1_execution_authorization as authorization
 
-    authorized, reason = authorization.claimed_execution_is_authorized()
+    authorized, reason = authorization.active_execution_is_authorized()
     if not authorized:
         raise Stage1RunnerError(
-            "Stage-1 outcomes may only be composed by a lawfully claimed execution -- " + reason
+            "Stage-1 outcomes may only be composed by a lawfully claimed execution that is "
+            "currently in progress -- " + reason
         )
 
     records = tuple(frozen_traversal())
@@ -750,20 +771,28 @@ def write_stage1_results(document: Mapping[str, Any]) -> str:
 
     Three gates now precede any file being opened, in this order, and every one fails closed:
 
-    1. the execution must come from the one lawful, still-authenticated claim;
+    1. the one lawful attempt must be CURRENTLY IN PROGRESS -- exactly ``LANE_CLAIMED``, still
+       authenticated;
     2. the destination is the canonical path and nothing else -- there is no path parameter;
     3. the document must pass the INDEPENDENT result validator, in memory, in full.
 
     Only after all three pass is the file opened, and then with ``O_EXCL``.
+
+    BLOCKING 1 (review 4953558775): gate 1 asked ``claimed_execution_is_authorized``, which is
+    also true in ``COMPLETED``. A canonical artifact lost or removed after completion could
+    therefore be recreated here -- ``O_EXCL`` protects nothing once the path is gone -- turning
+    the ordinary writer into an ungoverned recovery bypass. It now asks
+    ``active_execution_is_authorized`` and refuses in ``COMPLETED`` exactly as in ``READY``:
+    recovering a lost artifact is a governed act requiring new authority, never a re-publish.
     """
     import level1_stage1_execution_authorization as authorization
     import level1_stage1_result_validator as result_validator
 
-    authorized, reason = authorization.claimed_execution_is_authorized()
+    authorized, reason = authorization.active_execution_is_authorized()
     if not authorized:
         raise Stage1RunnerError(
-            "a Stage-1 results artifact may only be published by a lawfully claimed execution -- "
-            + reason
+            "a Stage-1 results artifact may only be published by a lawfully claimed execution "
+            "that is currently in progress -- " + reason
         )
 
     outcome = result_validator.validate_stage1_result_document(document)

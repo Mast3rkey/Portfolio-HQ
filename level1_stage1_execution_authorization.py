@@ -1565,6 +1565,50 @@ def claimed_execution_is_authorized(
     return True, ""
 
 
+def active_execution_is_authorized(
+    paths: LanePaths | None = None, sources: TruthSources | None = None
+) -> tuple[bool, str]:
+    """May THIS execution do real work RIGHT NOW? Exactly ``LANE_CLAIMED``, and lawfully so.
+
+    BLOCKING 1 (review 4953558775): a THIRD question, narrower than both existing ones, and the
+    one an outcome-producing runner or a publishing writer actually needs to ask.
+
+    * :func:`new_execution_is_authorized` -- may a NEW execution start? ``READY`` only.
+    * :func:`claimed_execution_is_authorized` -- did THIS execution come from the one lawful
+      claim? ``CLAIMED`` **or** ``COMPLETED``, deliberately, because
+      :func:`completed_result_is_authorized` authenticates a result AFTER completion and needs
+      exactly that provenance. It is not narrowed here, and must not be.
+    * this predicate -- is the one lawful attempt CURRENTLY IN PROGRESS? ``CLAIMED`` alone.
+
+    Reproduced before correcting, on isolated temporary lane paths: with a valid attestation,
+    a real claim, and a real completion, ``lane_state_at`` returned ``COMPLETED`` and said "a
+    second execution requires new governance authority", while
+    ``claimed_execution_is_authorized`` returned ``(True, "")``. Both production entry points
+    gated on that predicate alone, so the terminal state did not terminate either
+    outcome-producing capability: real composition could re-enter, and a canonical results
+    artifact lost after completion could be recreated by the ordinary writer, with ``O_EXCL``
+    no longer protecting a path that no longer exists.
+
+    Recovery after a crash or a lost artifact stays a GOVERNED act. This predicate deliberately
+    offers no recovery path: it refuses in ``COMPLETED`` exactly as it refuses in ``READY``, so
+    the ordinary writer can never become a recovery bypass.
+    """
+    paths = paths or LanePaths()
+    state, why = lane_state_at(paths, sources)
+    if state != LANE_CLAIMED:
+        return False, (
+            f"the one authorized attempt ({EXECUTION_ATTEMPT_ID}) is not currently in progress "
+            f"(lane state {state}); real Stage-1 work may only be performed while the lane is "
+            f"exactly {LANE_CLAIMED}. {why or 'A claim must be taken immediately beforehand.'} "
+            "Recovering a crashed or lost execution is a governed act requiring new authority, "
+            "never an ordinary re-run"
+        )
+    record, _, problem = _authenticated_claim(paths, sources)
+    if record is None:
+        return False, problem
+    return True, ""
+
+
 def completed_result_is_authorized(
     results: Any, paths: LanePaths | None = None, sources: TruthSources | None = None
 ) -> tuple[bool, str]:

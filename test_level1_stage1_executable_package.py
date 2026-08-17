@@ -36,6 +36,9 @@ import level1_endpoint_evidence_preregistration_validator as PV
 import level1_stage1_execution_authorization as AUTH
 import level1_stage1_result_validator as RV
 import level1_stage1_runner as R
+# The authorization module's own suite owns the fake truth sources and lifecycle evidence.
+# Imported rather than duplicated so exactly one such harness exists in the repository.
+import test_level1_stage1_execution_authorization as AUTHTEST
 
 ROOT = Path(__file__).resolve().parent
 
@@ -50,6 +53,110 @@ XASSET_0029_DECISION_RELPATH = (
 # module asserts the absence of that collision directly rather than trusting the naming convention.
 SYNTHETIC_SLEEVE = "zz_synthetic_sleeve"
 SYNTHETIC_CELL = f"{SYNTHETIC_SLEEVE}::LOWER::portfolio_function"
+
+
+# ======================================================================================
+# Isolated lane harness -- BLOCKING 1 (review 4953558775)
+#
+# Every lane below lives in a pytest tmp_path. The REAL AUTHORIZATION_ROOT is never created,
+# read as authority, or touched, and no real attestation, claim, completion, ledger entry, or
+# results artifact is produced. The fake truth sources are reused from the authorization
+# module's own suite rather than duplicated, so there is exactly one such harness.
+# ======================================================================================
+
+LANE_SOURCES = AUTHTEST.sources()
+_REAL_LANE_PATHS = AUTH.LanePaths
+
+
+def _valid_attestation() -> dict:
+    document = AUTH.build_authorization_payload(
+        authorization_head=AUTHTEST.HEAD,
+        lifecycle_evidence=AUTHTEST.lifecycle(),
+        author_identity=AUTHTEST.AUTHOR_LOGIN,
+        generated_at_utc="2026-08-16T00:00:00Z",
+        merge_sha=AUTHTEST.MERGE,
+    )
+    # As in the authorization suite: the fake merged tree carries the working tree's bytes.
+    document["load_bearing_identity"] = {
+        rel: AUTH.sha256_file(AUTHTEST.REPO_ROOT / rel)
+        for rel in sorted(AUTH.LOAD_BEARING_RELPATHS)
+    }
+    return document
+
+
+@pytest.fixture
+def armed_lane(tmp_path, monkeypatch) -> AUTH.LanePaths:
+    """An ISOLATED lane in state READY.
+
+    Only the lane's STORAGE LOCATION and its TRUTH ORACLE are redirected. Every authorization
+    predicate under test runs for real against them -- nothing about the gate itself is stubbed,
+    so these cases exercise the production control flow rather than a lookalike.
+    """
+    paths = _REAL_LANE_PATHS(
+        authorization=tmp_path / "authorization.json",
+        claim=tmp_path / "claim.json",
+        completion=tmp_path / "completion.json",
+        ledger=tmp_path / "lane_ledger.jsonl",
+    )
+    AUTH.write_authorization(_valid_attestation(), paths.authorization, LANE_SOURCES)
+
+    def lane_paths(*args, **kwargs):
+        return paths if not (args or kwargs) else _REAL_LANE_PATHS(*args, **kwargs)
+
+    monkeypatch.setattr(AUTH, "LanePaths", lane_paths)
+    monkeypatch.setattr(AUTH, "TruthSources", lambda *a, **k: LANE_SOURCES)
+    return paths
+
+
+@pytest.fixture
+def claimed_lane(armed_lane) -> AUTH.LanePaths:
+    """An ISOLATED lane in state CLAIMED, via a real claim against the isolated paths."""
+    AUTH.claim_execution(
+        claimed_at_utc="2026-08-17T00:00:00Z", paths=armed_lane, sources=LANE_SOURCES
+    )
+    return armed_lane
+
+
+@pytest.fixture
+def completed_lane(claimed_lane) -> AUTH.LanePaths:
+    """An ISOLATED lane in state COMPLETED -- the terminal state."""
+    AUTH.complete_execution(
+        completed_at_utc="2026-08-17T01:00:00Z",
+        results={"schema_version": 2, "candidate_results": []},
+        paths=claimed_lane,
+        sources=LANE_SOURCES,
+    )
+    return claimed_lane
+
+
+class _SideEffectRecorder:
+    def __init__(self) -> None:
+        self.rows: list[tuple] = []
+        self.opens: list[tuple] = []
+
+
+@pytest.fixture(scope="module")
+def synthetic_document() -> dict:
+    """Built once, at module scope, so it exists BEFORE any side-effect patch is installed."""
+    return _run()
+
+
+@pytest.fixture
+def no_side_effects(monkeypatch) -> _SideEffectRecorder:
+    """Record, and neutralize, the two acts that must not happen before a gate passes.
+
+    ``_open_exclusive`` is the runner's own single open seam, patched instead of ``os.open`` so
+    an isolated lane's genuine claim/completion writes are unaffected -- patching ``os.open``
+    reaches the authorization module too, since both name the same module object.
+    """
+    recorder = _SideEffectRecorder()
+    monkeypatch.setattr(
+        R, "build_candidate_row", lambda *a, **k: recorder.rows.append(a) or {}
+    )
+    monkeypatch.setattr(
+        R, "_open_exclusive", lambda *a, **k: recorder.opens.append(a) or 1
+    )
+    return recorder
 
 
 @pytest.fixture(scope="module")
@@ -522,7 +629,7 @@ class TestRunnerFailsClosed:
     def test_the_production_path_refuses_while_stage_1_is_unclaimed(self):
         with pytest.raises(R.Stage1RunnerError) as excinfo:
             R.run_stage1({})
-        assert "lawfully claimed execution" in str(excinfo.value)
+        assert "currently in progress" in str(excinfo.value)
 
     def test_the_real_new_execution_gate_is_false(self):
         authorized, _ = AUTH.new_execution_is_authorized()
@@ -551,12 +658,138 @@ class TestRunnerFailsClosed:
         assert "unregistered" in str(excinfo.value)
 
 
+class TestOnlyAnActiveClaimAuthorizesRealWork:
+    """BLOCKING 1 (review 4953558775). The terminal state must terminate both outcome-producing
+    capabilities.
+
+    Every lane here is an ISOLATED temporary one. The real ``AUTHORIZATION_ROOT`` is never
+    created, read as authority, or touched, and no real attestation, claim, completion, ledger
+    entry, or results artifact is produced anywhere in this class.
+    """
+
+    def test_the_real_authorization_root_is_absent_throughout(self):
+        assert not AUTH.AUTHORIZATION_ROOT.exists()
+
+    def test_the_broader_claimed_predicate_is_deliberately_not_narrowed(self):
+        """``completed_result_is_authorized`` depends on CLAIMED-or-COMPLETED provenance."""
+        source = inspect.getsource(AUTH.claimed_execution_is_authorized)
+        assert "LANE_CLAIMED, LANE_COMPLETED" in source
+        assert "claimed_execution_is_authorized" in inspect.getsource(
+            AUTH.completed_result_is_authorized
+        )
+
+    def test_the_active_predicate_requires_exactly_claimed(self):
+        source = inspect.getsource(AUTH.active_execution_is_authorized)
+        assert "state != LANE_CLAIMED" in source
+        assert "_authenticated_claim" in source
+
+    def test_both_production_entry_points_use_the_active_predicate(self):
+        for function in (R.run_stage1, R.write_stage1_results):
+            called = {
+                node.func.attr
+                for node in ast.walk(ast.parse(inspect.getsource(function).lstrip()))
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+            }
+            assert "active_execution_is_authorized" in called
+            assert "claimed_execution_is_authorized" not in called
+
+    # -- isolated real-state cases -------------------------------------------------------
+
+    def test_ready_but_unclaimed_refuses_before_any_composition(self, armed_lane, no_side_effects):
+        assert AUTH.lane_state_at(armed_lane, LANE_SOURCES)[0] == AUTH.LANE_READY
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R.run_stage1({})
+        assert "not currently in progress" in str(excinfo.value)
+        assert no_side_effects.rows == [] and no_side_effects.opens == []
+
+    def test_ready_but_unclaimed_refuses_before_any_open(
+        self, armed_lane, synthetic_document, no_side_effects
+    ):
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R.write_stage1_results(synthetic_document)
+        assert "not currently in progress" in str(excinfo.value)
+        assert no_side_effects.opens == []
+
+    def test_an_authenticated_claim_passes_the_production_composition_gate(
+        self, claimed_lane, no_side_effects
+    ):
+        """The gate PASSES; the call then stops at the completeness check, which is not
+        outcome-producing. No registered construction is ever composed."""
+        assert AUTH.lane_state_at(claimed_lane, LANE_SOURCES)[0] == AUTH.LANE_CLAIMED
+        assert AUTH.active_execution_is_authorized()[0] is True
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R.run_stage1({})
+        assert "partial publication is prohibited" in str(excinfo.value)
+        assert no_side_effects.rows == []
+
+    def test_an_authenticated_claim_passes_the_production_publication_gate(
+        self, claimed_lane, synthetic_document, no_side_effects
+    ):
+        """The gate PASSES; the call then stops at independent validation, before any open.
+
+        The synthetic document is well-formed only against a synthetic universe, so validating
+        it against the REAL frozen universe must fail -- which is the proof that the
+        authorization gate was cleared and validation was actually reached.
+        """
+        assert AUTH.active_execution_is_authorized()[0] is True
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R.write_stage1_results(synthetic_document)
+        assert "failed independent validation" in str(excinfo.value)
+        assert no_side_effects.opens == []
+
+    def test_completed_refuses_before_any_composition(self, completed_lane, no_side_effects):
+        assert AUTH.lane_state_at(completed_lane, LANE_SOURCES)[0] == AUTH.LANE_COMPLETED
+        assert AUTH.claimed_execution_is_authorized()[0] is True  # deliberately still true
+        assert AUTH.active_execution_is_authorized()[0] is False
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R.run_stage1({})
+        assert "already completed" in str(excinfo.value)
+        assert no_side_effects.rows == [] and no_side_effects.opens == []
+
+    def test_completed_refuses_before_any_open(
+        self, completed_lane, synthetic_document, no_side_effects
+    ):
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R.write_stage1_results(synthetic_document)
+        assert "already completed" in str(excinfo.value)
+        assert no_side_effects.opens == []
+
+    def test_a_second_run_after_completion_is_refused(self, completed_lane, no_side_effects):
+        """The lane was armed, really claimed, and really completed. A second production run
+        in that same lane must not silently restart outcome production."""
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R.run_stage1({})
+        assert "already completed" in str(excinfo.value)
+        assert "new governance authority" in str(excinfo.value)
+        assert no_side_effects.rows == []
+
+    def test_losing_the_artifact_after_completion_does_not_let_the_writer_recreate_it(
+        self, completed_lane, synthetic_document, no_side_effects
+    ):
+        """O_EXCL protects nothing once the path is gone, so the GATE must refuse instead."""
+        assert not R.canonical_results_path().exists()
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R.write_stage1_results(synthetic_document)
+        assert "governed act" in str(excinfo.value)
+        assert no_side_effects.opens == []
+        assert not R.canonical_results_path().exists()
+
+    def test_recovery_is_named_as_governed_rather_than_offered(self):
+        source = inspect.getsource(AUTH.active_execution_is_authorized)
+        assert "governed act" in source
+        assert "never an ordinary re-run" in source
+
+    def test_no_real_lane_artifact_was_created_by_any_of_these_cases(self):
+        assert not AUTH.AUTHORIZATION_ROOT.exists()
+        assert not R.canonical_results_path().exists()
+
+
 class TestProductionCompositionRequiresAClaim:
     """BLOCKING 1 (review 4953193650). The production path asks the CLAIMED question and has no
     injection seam; the synthetic seam cannot reach a registered construction."""
 
-    def test_run_stage1_asks_the_claimed_question_not_the_ready_question(self):
-        """Checked against the parsed CODE, so a docstring mentioning the other question by name
+    def test_run_stage1_asks_the_active_question_not_the_ready_question(self):
+        """Checked against the parsed CODE, so a docstring mentioning another question by name
         cannot make this pass or fail."""
         tree = ast.parse(inspect.getsource(R.run_stage1).lstrip())
         called = {
@@ -564,8 +797,10 @@ class TestProductionCompositionRequiresAClaim:
             for node in ast.walk(tree)
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
         }
-        assert "claimed_execution_is_authorized" in called
+        assert "active_execution_is_authorized" in called
         assert "new_execution_is_authorized" not in called
+        # BLOCKING 1 (review 4953558775): the broader predicate is also true in COMPLETED.
+        assert "claimed_execution_is_authorized" not in called
 
     def test_run_stage1_accepts_no_authorizer_traversal_or_cell_universe_parameter(self):
         parameters = set(inspect.signature(R.run_stage1).parameters)
@@ -584,7 +819,7 @@ class TestProductionCompositionRequiresAClaim:
         monkeypatch.setattr(AUTH, "new_execution_is_authorized", lambda *a, **k: (True, ""))
         with pytest.raises(R.Stage1RunnerError) as excinfo:
             R.run_stage1({})
-        assert "lawfully claimed execution" in str(excinfo.value)
+        assert "currently in progress" in str(excinfo.value)
 
     def test_the_synthetic_seam_refuses_a_none_traversal(self):
         with pytest.raises(R.Stage1RunnerError) as excinfo:
@@ -830,7 +1065,7 @@ class TestPublicationBoundary:
     def test_writer_refuses_while_stage_1_is_unclaimed(self):
         with pytest.raises(R.Stage1RunnerError) as excinfo:
             R.write_stage1_results(_run())
-        assert "lawfully claimed execution" in str(excinfo.value)
+        assert "currently in progress" in str(excinfo.value)
 
     def test_writer_opens_no_file_when_unclaimed(self, monkeypatch):
         opened = []
@@ -840,7 +1075,7 @@ class TestPublicationBoundary:
         assert opened == []
 
     def test_writer_refuses_an_invalid_document_even_when_claimed(self, monkeypatch):
-        monkeypatch.setattr(AUTH, "claimed_execution_is_authorized", lambda *a, **k: (True, ""))
+        monkeypatch.setattr(AUTH, "active_execution_is_authorized", lambda *a, **k: (True, ""))
         opened = []
         monkeypatch.setattr(R.os, "open", lambda *a, **k: opened.append(a) or 1)
         with pytest.raises(R.Stage1RunnerError) as excinfo:
@@ -851,7 +1086,7 @@ class TestPublicationBoundary:
     def test_writer_validation_precedes_any_open(self, monkeypatch):
         """A synthetic document is well-formed only against a synthetic universe, so validating
         it against the REAL frozen universe must fail -- and must fail before any open."""
-        monkeypatch.setattr(AUTH, "claimed_execution_is_authorized", lambda *a, **k: (True, ""))
+        monkeypatch.setattr(AUTH, "active_execution_is_authorized", lambda *a, **k: (True, ""))
         opened = []
         monkeypatch.setattr(R.os, "open", lambda *a, **k: opened.append(a) or 1)
         with pytest.raises(R.Stage1RunnerError):
@@ -871,11 +1106,11 @@ class TestPublicationBoundary:
 
     def test_the_writer_names_all_three_gates(self):
         source = inspect.getsource(R.write_stage1_results)
-        assert "claimed_execution_is_authorized" in source
+        assert "active_execution_is_authorized" in source
         assert "validate_stage1_result_document" in source
         assert "canonical_results_path" in source
         # The claim gate is asked before validation, and validation before any open.
-        assert source.index("claimed_execution_is_authorized") < source.index(
+        assert source.index("active_execution_is_authorized") < source.index(
             "validate_stage1_result_document"
         )
         assert source.index("validate_stage1_result_document") < source.index("_open_exclusive")
@@ -887,7 +1122,7 @@ class TestResultIdentityIsSingular:
 
     def test_writer_returns_the_semantic_identity(self, monkeypatch, tmp_path):
         document = _run()
-        monkeypatch.setattr(AUTH, "claimed_execution_is_authorized", lambda *a, **k: (True, ""))
+        monkeypatch.setattr(AUTH, "active_execution_is_authorized", lambda *a, **k: (True, ""))
         monkeypatch.setattr(
             R, "canonical_results_path", lambda: tmp_path / "published.yaml"
         )
