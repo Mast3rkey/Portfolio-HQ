@@ -41,6 +41,7 @@ authorization purposes.
 from __future__ import annotations
 
 import ast
+import hashlib
 import re
 from pathlib import Path
 
@@ -99,6 +100,18 @@ PROTECTED_RELPATHS = (
     "level1_construction_universe_closure_validator.py",
 )
 
+#: The two frozen canonical pins, written as exact literals **here** rather than imported from the
+#: authorization module. Importing them would make the comparison circular: mutating the module's own
+#: declared pin would mutate the expectation with it and the test would still pass.
+EXPECTED_CANONICAL_PINS = {
+    "research/level1_endpoint_evidence/PROTOCOL_V1.md": (
+        "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb"
+    ),
+    "research/level1_endpoint_evidence/pre_registration.yaml": (
+        "6e0c07a8e3279f8100a41df489921720f7f3125346f977e64fb5deca2f34337c"
+    ),
+}
+
 #: Artifacts whose existence would mean Stage 1 had been armed, claimed, or run.
 EXECUTION_ARTIFACT_RELPATHS = (
     "research/level1_endpoint_evidence/stage1_results.yaml",
@@ -122,6 +135,24 @@ def _collapse(text: str) -> str:
 
 def _read(path: Path) -> str:
     return _collapse(path.read_text(encoding="utf-8"))
+
+
+def _observed_canonical_digests() -> dict[str, str]:
+    """SHA-256 over the canonical files' observed bytes, computed here.
+
+    Deliberately independent of ``level1_stage1_execution_authorization`` so that a mutation of that
+    module's own hashing path cannot make an unchanged-pins claim true by construction.
+    """
+    return {
+        relpath: hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
+        for relpath in EXPECTED_CANONICAL_PINS
+    }
+
+
+def _pin_mismatches(expected: dict[str, str]) -> list[str]:
+    """Relpaths whose observed digest differs from ``expected``. Empty means every pin matches."""
+    observed = _observed_canonical_digests()
+    return sorted(rel for rel, digest in expected.items() if observed.get(rel) != digest)
 
 
 def _section(text: str, start: str, end: str) -> str:
@@ -538,10 +569,61 @@ class TestNoSilentResolution:
 # ---------------------------------------------------------------------------
 
 
-class TestNoProtectedMutation:
-    def test_canonical_pins_still_match(self) -> None:
-        assert A.canonical_protocol_sha256() if hasattr(A, "canonical_protocol_sha256") else True
+class TestCanonicalPinsStillMatch:
+    """Strict digest verification of both frozen canonical pins.
 
+    Corrected after FULL review ``4950747345`` MINOR 1. The prior form was
+    ``assert A.canonical_protocol_sha256() if hasattr(A, "canonical_protocol_sha256") else True``,
+    which verified nothing: the helper does not exist, so the ternary was unconditionally ``True``;
+    had it existed, any non-empty return would have passed even when wrong; and the preregistration
+    pin was never checked at all.
+    """
+
+    @pytest.mark.parametrize("relpath", sorted(EXPECTED_CANONICAL_PINS))
+    def test_observed_digest_equals_the_exact_expected_pin(self, relpath: str) -> None:
+        observed = _observed_canonical_digests()[relpath]
+        assert observed == EXPECTED_CANONICAL_PINS[relpath]
+
+    def test_no_pin_mismatches_at_all(self) -> None:
+        assert _pin_mismatches(EXPECTED_CANONICAL_PINS) == []
+
+    def test_the_authorization_module_declares_the_same_exact_pins(self) -> None:
+        """Catches a module-side pin edit that the file-digest check alone would not see."""
+        assert dict(A.CANONICAL_PINS) == EXPECTED_CANONICAL_PINS
+
+    def test_the_modules_own_strict_verifier_agrees(self) -> None:
+        """Option B cross-check: the module's own observed-hash helper reaches the same values."""
+        assert dict(A.live_canonical_hashes()) == EXPECTED_CANONICAL_PINS
+        assert A.pins_are_placeholders() is False
+
+    @pytest.mark.parametrize("relpath", sorted(EXPECTED_CANONICAL_PINS))
+    def test_adversarial_a_mutated_expected_digest_is_detected(self, relpath: str) -> None:
+        """Proof the comparison discriminates — no canonical file is touched.
+
+        One hex character of the *expectation* is flipped; the mismatch must surface for exactly
+        that relpath and for no other.
+        """
+        digest = EXPECTED_CANONICAL_PINS[relpath]
+        flipped = ("f" if digest[0] != "f" else "0") + digest[1:]
+        assert flipped != digest
+
+        mutated = dict(EXPECTED_CANONICAL_PINS)
+        mutated[relpath] = flipped
+        assert _pin_mismatches(mutated) == [relpath]
+
+    def test_adversarial_both_pins_mutated_are_both_detected(self) -> None:
+        mutated = {rel: "0" * 64 for rel in EXPECTED_CANONICAL_PINS}
+        assert _pin_mismatches(mutated) == sorted(EXPECTED_CANONICAL_PINS)
+
+    def test_adversarial_a_truthiness_check_would_not_have_caught_either(self) -> None:
+        """Pins the reviewer's diagnosis: truthiness is satisfied by a wrong digest."""
+        wrong = "0" * 64
+        assert bool(wrong) is True
+        assert wrong != EXPECTED_CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH]
+        assert wrong != EXPECTED_CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH]
+
+
+class TestNoProtectedMutation:
     @pytest.mark.parametrize("relpath", PROTECTED_RELPATHS)
     def test_protected_path_still_exists_and_is_load_bearing_or_canonical(
         self, relpath: str
@@ -620,13 +702,73 @@ class TestFilingIntegrity:
         assert "Resolve all required §G.A semantic/governance prerequisites" in _read(XASSET_0030)
 
     def test_this_module_contains_no_vacuous_assertions(self) -> None:
-        """A bare truthy literal would pin nothing; the sibling modules were audited for this."""
+        """No assertion may be satisfiable without exercising the property it claims to pin.
+
+        Widened after FULL review ``4950747345`` MINOR 1. The prior form checked only bare truthy
+        literals, which is why it did not catch
+        ``assert A.canonical_protocol_sha256() if hasattr(...) else True`` — a *ternary* whose
+        fallback branch was an unconditional ``True``. Three shapes are now rejected:
+
+        1. ``assert <truthy literal>``;
+        2. ``assert X if cond else <truthy literal>`` — an unconditional-pass fallback;
+        3. ``assert X or <truthy literal>`` — short-circuits to true regardless of ``X``.
+        """
         tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
-        vacuous = [
-            node.lineno
-            for node in ast.walk(tree)
-            if isinstance(node, ast.Assert)
-            and isinstance(node.test, ast.Constant)
-            and bool(node.test.value)
-        ]
-        assert vacuous == [], f"vacuous assertions at lines {vacuous}"
+
+        def _is_truthy_const(node: ast.expr) -> bool:
+            return isinstance(node, ast.Constant) and bool(node.value)
+
+        vacuous: list[tuple[int, str]] = []
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Assert):
+                continue
+            test = node.test
+            if _is_truthy_const(test):
+                vacuous.append((node.lineno, "bare truthy literal"))
+            elif isinstance(test, ast.IfExp) and (
+                _is_truthy_const(test.body) or _is_truthy_const(test.orelse)
+            ):
+                vacuous.append((node.lineno, "ternary with unconditional-pass branch"))
+            elif isinstance(test, ast.BoolOp) and isinstance(test.op, ast.Or) and any(
+                _is_truthy_const(value) for value in test.values
+            ):
+                vacuous.append((node.lineno, "or-ed truthy literal"))
+
+        assert vacuous == [], f"vacuous assertions: {vacuous}"
+
+    def test_the_vacuous_assertion_guard_catches_the_shape_that_slipped_through(self) -> None:
+        """Direct regression proof against the exact defect FULL review 4950747345 found."""
+
+        def _vacuous_shapes(src: str) -> list[str]:
+            tree = ast.parse(src)
+
+            def _is_truthy_const(node: ast.expr) -> bool:
+                return isinstance(node, ast.Constant) and bool(node.value)
+
+            found: list[str] = []
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Assert):
+                    continue
+                test = node.test
+                if _is_truthy_const(test):
+                    found.append("bare")
+                elif isinstance(test, ast.IfExp) and (
+                    _is_truthy_const(test.body) or _is_truthy_const(test.orelse)
+                ):
+                    found.append("ternary")
+                elif isinstance(test, ast.BoolOp) and isinstance(test.op, ast.Or) and any(
+                    _is_truthy_const(value) for value in test.values
+                ):
+                    found.append("or")
+            return found
+
+        original_defect = (
+            'assert A.canonical_protocol_sha256() '
+            'if hasattr(A, "canonical_protocol_sha256") else True'
+        )
+        assert _vacuous_shapes(original_defect) == ["ternary"]
+        assert _vacuous_shapes("assert True") == ["bare"]
+        assert _vacuous_shapes("assert x == 1 or True") == ["or"]
+        # A genuine assertion of each shape's non-vacuous form must NOT be flagged.
+        assert _vacuous_shapes("assert a if cond else b") == []
+        assert _vacuous_shapes("assert observed == expected") == []
