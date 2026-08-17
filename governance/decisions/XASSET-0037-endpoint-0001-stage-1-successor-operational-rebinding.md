@@ -111,9 +111,16 @@ conflated them could bind a decision while leaving the code it authorized unboun
 
 ### D. What the rebinding binds and proves
 
-`AUTHORIZING_DECISION` → `XASSET-0037`; `AUTHORIZING_PULL_REQUEST` → the XASSET-0037 pull request,
-bound **after** the draft existed rather than guessed ahead of it; `REVIEWED_BASE_SHA` →
+`AUTHORIZING_DECISION` → `XASSET-0037`; `AUTHORIZING_PULL_REQUEST` → **337**; `REVIEWED_BASE_SHA` →
 `3e5de8f85c69c2e5dc2b75421446b5db996d7cf1`.
+
+**Provenance of the bound pull-request number, stated exactly rather than flatteringly.** The
+literal `337` was first written *before* the draft pull request existed, as the next-sequential
+number, and then **verified against the real draft once it was opened** — it is #337, and the two
+agree. The load-bearing property is the verification, not the authoring order: a wrong number fails
+closed at `verify_lifecycle_against_truth`, which fetches that exact pull request from durable
+governance metadata and compares its head, merge, and merged state. Had the real number differed,
+the constant would have been corrected on the branch before review.
 
 Every check the mechanism already performed is retained unchanged. Added on top, each derived from
 the local git object store rather than declared:

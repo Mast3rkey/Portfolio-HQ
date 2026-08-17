@@ -154,7 +154,14 @@ AUTHORIZING_DECISION = "XASSET-0037"
 PREDECESSOR_DECISION = "XASSET-0028"
 
 #: The XASSET-0037 pull request. Bound so an attestation cannot silently reference another.
-#: Bound AFTER the draft pull request existed, never guessed ahead of it.
+#:
+#: PROVENANCE, stated exactly rather than flatteringly: this literal was FIRST WRITTEN before the
+#: draft pull request existed, as the next-sequential number, and was then VERIFIED against the
+#: real draft once it was opened -- it is #337, and the two agree. The load-bearing property is the
+#: verification, not the authoring order: a wrong number here fails closed at
+#: ``verify_lifecycle_against_truth``, which fetches this exact pull request from durable
+#: governance metadata and compares its head, merge, and merged state. Had the real number
+#: differed, this constant would have been corrected on the branch before review.
 AUTHORIZING_PULL_REQUEST = 337
 
 #: The single Stage-1 execution lane XASSET-0027 SS-P.1 permits. Derived from repository

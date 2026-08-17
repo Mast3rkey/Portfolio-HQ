@@ -340,6 +340,22 @@ class TestObsoleteLifecycleCannotAuthorize:
         assert A.HISTORICAL_OPERATIONAL_AUTHORIZATION_DECISION == "XASSET-0029"
         assert A.AUTHORIZING_DECISION != A.HISTORICAL_OPERATIONAL_AUTHORIZATION_DECISION
 
+    def test_the_bound_pull_request_is_the_successors_own(self):
+        """Verified against the real draft after it was opened; see the constant's provenance note."""
+        assert A.AUTHORIZING_PULL_REQUEST == 337
+        assert A.AUTHORIZING_PULL_REQUEST != A.HISTORICAL_OPERATIONAL_AUTHORIZATION_PULL_REQUEST
+        assert A.AUTHORIZING_PULL_REQUEST != A.PACKAGE_AUTHORIZING_PULL_REQUEST
+        assert A.AUTHORIZING_PULL_REQUEST != A.EXECUTABLE_PACKAGE_PULL_REQUEST
+
+    def test_the_bound_pull_request_provenance_is_disclosed_not_flattered(self):
+        """The constant must not claim an authoring order it did not have."""
+        raw = (ROOT / "level1_stage1_execution_authorization.py").read_text(encoding="utf-8")
+        # The note is a wrapped comment block, so compare on content rather than line breaks.
+        source = " ".join(raw.replace("#:", " ").split())
+        assert "FIRST WRITTEN before the draft pull request existed" in source
+        assert "VERIFIED against the real draft once it was opened" in source
+        assert "The load-bearing property is the verification, not the authoring order" in source
+
 
 # ======================================================================================
 # (2) Four structurally distinct identities, never overloaded
