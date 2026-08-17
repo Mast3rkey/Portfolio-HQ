@@ -13349,6 +13349,115 @@ workstreams:
           ATTEMPT_1; changes no canonical byte, hash pin, universe, or LOAD_BEARING_RELPATHS.
           Draft PR; not merged, not independently reviewed, not principal-accepted in this
           session.
+      - gate: xasset0033-post-merge-verification
+        status: complete
+        pr: 332
+        description: >-
+          Lane M factual synchronization, recorded by the XASSET-0034 session. PR #332
+          (XASSET-0033, G12 "could admit" tense determination) independently re-confirmed
+          MERGED via the GitHub API this session, not inherited from any prior summary:
+          accepted head f985c1bfc7fb331e596ad9a0fea4768cfd2ca813; merge commit
+          cd126f0ea8d6e3bbdb9e8ee8689de0136272b685, which is simultaneously GitHub main,
+          origin/main, and this session's own branch base; merge-commit CI workflow run
+          32017402494 completed/success. Zero open pull requests at handoff; working tree
+          clean; stash empty; sole worktree. The prior gate's own text is left
+          byte-unchanged per this repository's never-silently-rewrite convention.
+      - gate: xasset0034-semantic-closure-and-execution-feasibility-determination
+        status: in_progress
+        pr: null
+        description: >-
+          XASSET-0034, Lane G, bounded governance-only unit — a SEQUENCING determination,
+          not a further gate-closure attempt. Question: after XASSET-0031, XASSET-0032 and
+          XASSET-0033, what does XASSET-0030 SS-G.B step 1's "resolve all REQUIRED SS-G.A
+          semantic/governance prerequisites" lawfully require, given that several gate
+          SATISFACTION questions are inherently source-, candidate-, or
+          future-snapshot-dependent. The conflict is real and reproduces from the text:
+          SS-G.B step 1 demands resolution, XASSET-0032 SS-N records all six examined and
+          none closed, and XASSET-0032's own Consequences state that G5 and G9 path 1
+          "cannot be closed by governance at all" — so a literal reading makes SS-G.B
+          unreachable by construction.
+          DETERMINATION: SEMANTIC_CLOSURE_PARTIAL_THREE_RESIDUAL_BLOCKERS — MIXED
+          (option C). SS-G.B is NOT unlocked. Neither option A nor option B is supportable:
+          A fails because three genuine unresolved SEMANTIC degrees of freedom remain that
+          no candidate fact could settle; B fails because G3, G5 and G9 path 1 are
+          expressly reserved TO THE STUDY, so demanding their pre-execution closure is
+          circular. The XASSET-0030 6/6 gate map is UNCHANGED; no gate moves partition; no
+          gate is closed, re-derived, reclassified, or reordered.
+          THE DISTINCTION IT TURNS ON (SS-C): SEMANTIC RULE CLOSURE ("what does this gate
+          mean, and what result follows from each observable state of its object") is
+          governance work; SATISFACTION ("what does this specification, source, or snapshot
+          exhibit") is the study's. XASSET-0031 SS-A and XASSET-0032 SS-C.1 already draw
+          that line; what had never been decided is which side SS-G.B step 1's word
+          "REQUIRED" falls on. Rule adopted: a SS-G.A prerequisite is REQUIRED for SS-G.B
+          entry if and only if it is a semantic-rule question; one whose only residue is
+          satisfaction is NOT, because SS-G.B step 2 reconciles semantics and a
+          satisfaction finding is not a semantics input. Two guards preserved in full:
+          XASSET-0032's outright rejection of "let a Stage-1 executor decide at run time"
+          (ATTEMPT_1 is one-shot; rerun after outcomes observed is PROHIBITED), and
+          XASSET-0030 SS-E Standards 1 and 2 in BOTH directions — no by-construction PASS,
+          no nonexistence-FAIL.
+          EXECUTION-READY, NOT SS-G.B ENTRY CONDITIONS (SS-D), five items, none closed:
+          G3 (rule closed by XASSET-0031 SS-C.1/SS-C.2/SS-C.3; satisfaction assigned by
+          name to the study by XASSET-0027 SS-M.3, "a finding of the study rather than an
+          assumption of the charter", with XASSET-0031 SS-K.1's "judging satisfiability is
+          the designed task"); G5 (rule closed by XASSET-0032 SS-D.1; reserved per candidate
+          by XASSET-0027 SS-M.4 with "no prejudgment"); G9 path 1 (path 2 determinately
+          unavailable and the path-3/prerequisite tension reconciled by both canonical
+          artifacts; residue is frozen R8's own declared source-dependence); G8 (rule closed
+          by XASSET-0032 SS-E.1; residue is a FUTURE snapshot successor's composition); G10
+          blocker 1 (pair status under a successor snapshot — same future fact).
+          THREE RESIDUAL BLOCKERS (SS-E), each stated with exact authority, exact
+          unresolved semantic degree of freedom, material consequence, and why the closed
+          four-value vocabulary cannot represent it safely: B1 — G12's tense of "could
+          admit" (XASSET-0033; opposite gate results for all 680, and XASSET-0032 SS-H.5
+          forecloses the disposition-inert defence). B2 — G10 SS-H.4 consumption semantics
+          for the 360 DIRECT_ALTERNATIVE constructions carrying a sleeve counterpart but no
+          unordered_pair_id (XASSET-0032 SS-G.4: "Both readings are defensible and nothing
+          selects"); G10 is CATEGORICAL, so the consuming reading flips 360 candidates from
+          UNABLE_TO_DETERMINE to BLOCKED_CATEGORICALLY — the largest outcome swing of the
+          three, and decidable TODAY from committed text. B3 — NEW, isolated by this filing
+          and by no prior one: the shared RECORDING POSTURE for reserved-satisfiability
+          gates evaluated against a frozen HYPOTHETICAL_SOURCE_ARCHITECTURE specification.
+          Standard 1 bars PASS from the specification's own requirement and Standard 2 bars
+          FAIL from nonexistence, but Standard 2 requires "governed grounds" to select among
+          categorical, prerequisite and uncertainty, and for G3/G5/G9 none are stated;
+          XASSET-0028 SS-F's dichotomy does not close it either, since G3 and G5 are
+          categorical-class gates for which the prerequisite limb is structurally
+          unavailable. Verified mechanically: no reserved-gate-to-gate-result mapping exists
+          anywhere in canon outside the G2-specific g2_reading_mapping table, which
+          XASSET-0032 expressly declined to generalize. B3 reaches three gates and all 680
+          constructions and is the highest-leverage remaining item.
+          WHY SS-G.B IS BLOCKED (SS-F): SS-G.B step 2 is "reconcile the FINAL ACCEPTED gate
+          semantics into the canonical artifacts" — a transcription act presupposing
+          accepted semantics to transcribe. For B1-B3 there are none, so step 2 would have
+          to CHOOSE the semantics it is meant to RECORD, inside an implementation pass
+          without its own governance review — the same defect XASSET-0030 SS-G already
+          corrected once. Steps 3-11 inherit it: enforcement encodes the semantics, the
+          runner computes them, and the rebinding freezes those bytes against a one-shot
+          ATTEMPT_1.
+          WORK ELIMINATED (SS-E.4): seven candidate successor prerequisites were considered
+          and expressly NOT created — closing G3/G5/G9-path-1/G8/G10 satisfaction, a
+          program-wide gate-modal register rule, and extending g2_reading_mapping — each
+          rejected against the stated bar rather than waved through. The remaining path is
+          three governance questions, ALL decidable from committed text, NONE requiring a
+          candidate source, snapshot successor, market data, or protected RISK access.
+          Supporting artifact test_level1_stage1_semantic_closure_feasibility.py — 87
+          focused adversarial tests pinning every intended rule and its nearest plausible
+          overreach across all eleven required properties (rule-versus-satisfaction
+          non-conflation; no invented candidate fact; prerequisite class preserved;
+          abstention still a complete outcome; source-dependence becoming neither automatic
+          PASS nor automatic FAIL; a real semantic choice still blocking SS-G.B; no gate
+          closed for convenience; no G3/SS-K.1/SS-E.1 silent resolution; no
+          canonical/enforcement/runner mutation; no execution artifact), plus an AST guard
+          proving the module contains zero vacuous assertions. Suite mutation-tested: four
+          deliberate decision overreaches injected — unlocking SS-G.B, downgrading B3 to a
+          satisfaction question, lifting a reservation, and dropping Standard 2 — every one
+          caught, file restored byte-identical.
+          Creates no endpoint, bound, percentage, runner, attestation, lane state, or
+          stage1_results.yaml; evaluates no gate for any construction; consumes nothing of
+          ATTEMPT_1; enters no part of SS-G.B; changes no canonical byte, hash pin,
+          universe, or LOAD_BEARING_RELPATHS. Draft PR; not merged, not independently
+          reviewed, not principal-accepted in this session.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
