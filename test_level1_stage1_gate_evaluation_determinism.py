@@ -743,6 +743,10 @@ class TestLoadBearingReauthorizationDependency:
             "level1_stage1_runner.py",
             "level1_stage1_result_validator.py",
             "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
+            # AMENDED BY XASSET-0037 / SS-G.B step 8's successor rebinding. SS-D's six enumerated
+            # paths are still all retained above, and the additions remain EXACTLY the authorized
+            # set -- outcome-producing code plus each authorizing decision.
+            "governance/decisions/XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
         }
         assert not any("stage1_results" in path for path in A.LOAD_BEARING_RELPATHS)
 

@@ -13820,8 +13820,8 @@ workstreams:
           xasset0036-gb-executable-package-authorization gate's own text is left byte-unchanged;
           this is an additive record, not an edit.
       - gate: xasset0036-gb-executable-package-implementation
-        status: in_progress
-        pr: null
+        status: complete
+        pr: 336
         description: >
           The single XASSET-0036-authorized XASSET-0030 SS-G.B STEPS 2-7 implementation pass,
           delivered as ONE coherent PR per SS-G. No new governance decision is filed: XASSET-0036
@@ -13904,6 +13904,90 @@ workstreams:
           precise authorized set rather than accepted as "some change". Stage 1 remains UNARMED and
           NOT EXECUTABLE; ATTEMPT_1 intact, unclaimed, unconsumed. Draft PR; not merged, not
           independently reviewed, not principal-accepted in this session.
+      - gate: xasset0036-implementation-post-merge-verification
+        status: complete
+        pr: 336
+        description: >
+          Lane M factual synchronization, folded into the XASSET-0037 filing per the established
+          convention that a prior gate's own description text is never rewritten. Independently
+          re-verified this session from live GitHub and live git, not inherited from any prior
+          session's summary: PR #336 is MERGED — merged_by Mast3rkey, 5 commits, 17 files, accepted
+          head 07519f864c869d98aaf4a65cea53e85086a99fec, base
+          be90aeef5c48e84849a007b31abbb1166857785d, merge commit
+          3e5de8f85c69c2e5dc2b75421446b5db996d7cf1 whose parents are exactly [be90aeef…, 07519f86…]
+          in that order and whose merge tree c7d3e07fb997c29b4d537f6b3a8f8dec76b9e7b2 is
+          BYTE-IDENTICAL to the accepted head's own tree — ZERO MERGE DRIFT. The
+          xasset0036-gb-executable-package-implementation gate above was accurate when written but
+          self-stale at merge; its status/pr fields are corrected factually here to complete / 336
+          and its description text is left byte-unchanged. The XASSET-0036-authorized SS-G.B steps
+          2-7 package is therefore delivered, and SS-G.B step 8's successor
+          operational-authorization / load-bearing rebinding lifecycle became the next required
+          unit. NOTHING about the merge armed Stage 1: per XASSET-0030 SS-D the package
+          deliberately created enforcement drift, leaving Stage 1 NON-ARMABLE until that rebinding.
+      - gate: xasset0037-successor-operational-rebinding
+        status: in_progress
+        pr: null
+        description: >
+          The single XASSET-0030 SS-G.B STEP 8 successor operational-authorization / load-bearing
+          rebinding lifecycle, filed as XASSET-0037. It is NOT an activation step, NOT an
+          attestation, and adds ZERO activation authorizations. THE FAIL-CLOSED CONDITION WAS
+          REPRODUCED BEFORE IT WAS CORRECTED, safely, using the real local git object store, an
+          honest stand-in recording PR #328's real governance facts, and an ISOLATED TEMPORARY LANE
+          — the real lane was never created, inspected, or touched: against the authorized merged
+          XASSET-0029 tree (3cc15d58…) the nine load-bearing paths resolve to THREE "absent from
+          the authorized merged tree" errors (level1_stage1_runner.py,
+          level1_stage1_result_validator.py, and the XASSET-0036 decision) and FOUR "enforcement
+          drift" errors (level1_stage1_execution_authorization.py,
+          level1_endpoint_evidence_preregistration_validator.py, PROTOCOL_V1.md,
+          pre_registration.yaml); validate_authorization_document returned valid=False,
+          write_authorization REFUSED to put the attestation on disk, new_execution_is_authorized
+          returned False, and the temporary lane directory was left empty. An obsolete
+          authorization that cannot authorize a changed package is the mechanism working.
+          FOUR STRUCTURALLY DISTINCT IDENTITIES are bound, each with its own constants, its own
+          attestation block, and its own git-derived verification, so no single "predecessor" field
+          carries inconsistent meanings: PREDECESSOR_* stays XASSET-0028 (structural universe
+          closure) UNCHANGED in name, meaning and value; HISTORICAL_OPERATIONAL_AUTHORIZATION_* is
+          XASSET-0029 / PR #328 / merge 3cc15d58…, PRESERVED as historical authority and still
+          verified against git rather than disowned; PACKAGE_AUTHORIZING_* is XASSET-0036 / PR #335
+          / merge be90aeef… (authority over the package's creation, not the package); and
+          EXECUTABLE_PACKAGE_* is PR #336 / merge 3e5de8f8… / head 07519f86… / base be90aeef… (the
+          exact merged bytes bound). AUTHORIZING_DECISION becomes XASSET-0037,
+          AUTHORIZING_PULL_REQUEST is bound AFTER the draft PR existed rather than guessed ahead of
+          it, and REVIEWED_BASE_SHA becomes 3e5de8f85c69c2e5dc2b75421446b5db996d7cf1. Beyond every
+          check already performed, the rebinding proves from git: PR #336's merge parents in exact
+          order; its merge tree byte-identical to its accepted head tree; that merge an ANCESTOR of
+          the successor merge, as are XASSET-0029's and XASSET-0036's; XASSET-0029's own merge
+          parents; and — SS-G.B's invariant, mechanised — that level1_stage1_runner.py and
+          level1_stage1_result_validator.py are BYTE-IDENTICAL at the package's reviewed head, the
+          package's merge, the successor's reviewed head, the successor's merge, and the working
+          tree, so a silent runner edit smuggled into the rebinding that binds it fails closed.
+          Neither outcome-producing module is modified by this unit. LOAD_BEARING_RELPATHS 9 -> 10
+          using the EXISTING exact-byte mechanism unchanged: NOTHING IS REMOVED and no exact-byte
+          check is weakened; the single addition is the XASSET-0037 decision itself, on exactly the
+          footing XASSET-0029 and XASSET-0036 already occupy. The pin-succession check is
+          STRENGTHENED, not relaxed — a successor pin equal to ANY predecessor generation's accepted
+          pin (XASSET-0036's, XASSET-0029's, XASSET-0028's, or XASSET-0027's) is refused, so a pin
+          can be neither copied forward nor reverted. CANONICAL AMENDMENT V6 -> V7, authorization
+          language only: the operative lifecycle fields name XASSET-0037 with XASSET-0029's values
+          retained in explicitly predecessor-named fields; established_by stays XASSET-0029
+          (historical truth, not rewritten) alongside new rebound_by and
+          effective_structural_authorization_source; a new successor_operational_rebinding block
+          records the four distinct identities, that the rebinding is not an activation step and
+          adds zero activation authorizations, that the historical operational authorization is NOT
+          invalidated, that the drift was recorded in advance, and that no load-bearing path was
+          removed and no exact-byte check weakened. NO gate semantics, gate class, disposition,
+          B1/B2/B3, construction identity, universe membership, ordering, cardinality, or universe
+          hash changes — 680 / 48 / 73c0965e…5224 independently regenerated after the amendment and
+          unchanged. XASSET-0029 SS-E's no-infinite-regress rule is PRESERVED UNWEAKENED: its own
+          terminating condition is a step that CHANGES NO REPOSITORY STATE, a rebinding changes it
+          extensively, and XASSET-0030 SS-D / SS-G.B step 8 and XASSET-0036 SS-D — all accepted
+          after XASSET-0029 — expressly require exactly this lifecycle. SS-G.B STEPS 9, 10 AND 11
+          REMAIN UNAUTHORIZED and are not performed: no attestation, no AUTHORIZATION_ROOT, no
+          READY/CLAIMED/COMPLETED lane state, no arm, claim, completion, execution or recovery, no
+          gate evaluated for any registered construction, no stage1_results.yaml, and nothing of
+          ATTEMPT_1 consumed. XASSET-0027 SS-P.1's exactly-one evaluation/results PR remains
+          separately reserved and UNSPENT. Stage 1 remains UNARMED and NOT EXECUTABLE. Draft PR;
+          not merged, not independently reviewed, not principal-accepted in this session.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -14963,9 +15047,9 @@ workstreams:
       representation-aggregation rule, any snapshot successor, RISK parameter
       reuse, Level-2 work, liquidity determination, and policy adoption all
       remain separately unauthorized.
-    active_branch: claude/xasset-0036-gb-authorization-x932t8
+    active_branch: claude/xasset-0037-rebinding-mrdyma
     active_pr: null
-    last_verified_main_sha: ed3f062f86607574291428ea2345d2cba78b3a02
+    last_verified_main_sha: 3e5de8f85c69c2e5dc2b75421446b5db996d7cf1
     last_verified_date: "2026-08-17"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I

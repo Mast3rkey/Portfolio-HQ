@@ -63,6 +63,19 @@ class FakeGit:
                 AUTH.PREDECESSOR_MERGE_BASE,
                 AUTH.PREDECESSOR_ACCEPTED_HEAD,
             ),
+            # EXTENDED BY XASSET-0037. The successor rebinding verifies three further identities
+            # from git, so an honest stand-in must vouch for them too. Each is kept SEPARATE, in
+            # exactly the shape the module distinguishes them: the HISTORICAL operational
+            # authorization, the PACKAGE AUTHORITY, and the EXECUTABLE PACKAGE itself.
+            AUTH.HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_SHA: (
+                AUTH.HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_BASE,
+                AUTH.HISTORICAL_OPERATIONAL_AUTHORIZATION_ACCEPTED_HEAD,
+            ),
+            AUTH.PACKAGE_AUTHORIZING_MERGE_SHA: ("e" * 40, "f" * 40),
+            AUTH.EXECUTABLE_PACKAGE_MERGE_SHA: (
+                AUTH.EXECUTABLE_PACKAGE_MERGE_BASE,
+                AUTH.EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+            ),
         }
         self.blobs = {}
         for rel in AUTH.LOAD_BEARING_RELPATHS:
@@ -70,7 +83,18 @@ class FakeGit:
             # Zero merge drift: the reviewed head and the merge carry identical bytes.
             self.blobs[(MERGE, rel)] = digest
             self.blobs[(HEAD, rel)] = digest
-        self.trees = {MERGE: "t" * 40, HEAD: "t" * 40}
+        # XASSET-0037 §G.B's invariant: the outcome-producing bytes are the accepted package's,
+        # unchanged. The stand-in reproduces that rather than asserting it.
+        for rel in AUTH.EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS:
+            digest = AUTH.sha256_file(REPO_ROOT / rel)
+            self.blobs[(AUTH.EXECUTABLE_PACKAGE_MERGE_SHA, rel)] = digest
+            self.blobs[(AUTH.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, rel)] = digest
+        self.trees = {
+            MERGE: "t" * 40,
+            HEAD: "t" * 40,
+            AUTH.EXECUTABLE_PACKAGE_MERGE_SHA: "p" * 40,
+            AUTH.EXECUTABLE_PACKAGE_ACCEPTED_HEAD: "p" * 40,
+        }
         self._head = MERGE
         self._ancestor = True
         self.__dict__.update(overrides)
@@ -761,15 +785,33 @@ class TestPreservedPostures:
         assert boundary["total_directory_loss_is_ready"] is False
         assert boundary["crash_after_claim_reopens_lane"] is False
 
-    def test_canonical_v5_has_exactly_one_current_lifecycle_state(self, prereg):
-        """MAJOR 2: no operative field may still name the spent XASSET-0028 condition."""
+    def test_canonical_has_exactly_one_current_lifecycle_state(self, prereg):
+        """MAJOR 2: no operative field may still name a SPENT condition.
+
+        AMENDED BY XASSET-0037. The property this test protects is unchanged and is what actually
+        matters: exactly ONE operative lifecycle, with every superseded one confined to explicitly
+        predecessor-named fields. The operative value moved XASSET-0029 -> XASSET-0037 when
+        XASSET-0030 §G.B step 8's rebinding bound the XASSET-0036 executable package, so this now
+        asserts the CURRENT operative source AND that XASSET-0029 survives exactly as history.
+        Neither the check nor its strictness is weakened -- it gained an assertion.
+        """
         lifecycle_block = prereg["lifecycle_effectivity"]
-        assert "XASSET_0029" in lifecycle_block["stage_1_execution_may_begin_only_after"]
-        assert lifecycle_block["stage_1_execution_precondition_amended_by"] == "XASSET-0029"
+        assert "XASSET_0037" in lifecycle_block["stage_1_execution_may_begin_only_after"]
+        assert lifecycle_block["stage_1_execution_precondition_amended_by"] == "XASSET-0037"
+        # This filing's own accepted value, retained as HISTORY rather than rewritten.
+        assert "XASSET_0029" in lifecycle_block[
+            "predecessor_stage_1_execution_may_begin_only_after_xasset_0029"
+        ]
+        assert (
+            lifecycle_block["predecessor_stage_1_execution_precondition_amended_by_xasset_0029"]
+            == "XASSET-0029"
+        )
         for key, value in lifecycle_block.items():
             if key.startswith("predecessor_") or not isinstance(value, str):
                 continue
             assert "XASSET-0028 six-gate lifecycle above" not in value
+            # No operative field may name a spent lifecycle as though it were current.
+            assert not value.startswith("XASSET_0029_LIFECYCLE_CLOSURE")
 
     def test_stage_2_and_application_authority_withheld(self, prereg):
         assert prereg["stages"]["stage_2"]["authorized_by_xasset_0027"] is False
@@ -1069,8 +1111,22 @@ class TestExactBaseAndMergeDrift:
         git.blobs[(HEAD, "level1_stage1_execution_authorization.py")] = "4" * 64
         _rejected(payload, "merge drift", sources(git=git))
 
-    def test_d5_reviewed_base_is_bound_to_current_main(self):
-        assert AUTH.REVIEWED_BASE_SHA == "c51e94609eff7ede2bdfa084844d59b8347561e5"
+    def test_d5_reviewed_base_is_bound_to_the_current_lifecycles_own_base(self):
+        """AMENDED BY XASSET-0037. The base a lifecycle is reviewed against is per-lifecycle.
+
+        This filing's own accepted value, `c51e9460…`, was XASSET-0029's base and is retained
+        below as history. XASSET-0030 §G.B step 8's rebinding branches from the XASSET-0036
+        executable package's merge, so THAT is what the current lifecycle must bind. Asserting
+        the equality mechanically -- rather than repeating a literal twice -- is what makes a
+        rebinding to some OTHER commit fail here.
+        """
+        assert AUTH.REVIEWED_BASE_SHA == AUTH.EXECUTABLE_PACKAGE_MERGE_SHA
+        assert AUTH.REVIEWED_BASE_SHA == "3e5de8f85c69c2e5dc2b75421446b5db996d7cf1"
+        # XASSET-0029's own accepted base, retained verbatim as history.
+        assert (
+            AUTH.HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_BASE
+            == "c51e94609eff7ede2bdfa084844d59b8347561e5"
+        )
 
 
 # =============================================================================================

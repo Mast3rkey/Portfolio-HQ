@@ -49,6 +49,17 @@ map, deferrals, provenance requirements, and firewall — is what `XASSET-0027` 
 > permanently and keeps its enforced-false check. The `XASSET-0029` amendment section at the end of
 > this document is operative where earlier text differs.
 
+> **FURTHER AMENDED BY `XASSET-0037`.** `XASSET-0029`'s own six-gate lifecycle closed in full and
+> remains valid history, but the `XASSET-0036` executable package (PR #336) changed the
+> load-bearing bytes `XASSET-0029` bound — exactly the enforcement drift `XASSET-0030` §D recorded
+> in advance. `XASSET-0037` performs the one successor operational-authorization / load-bearing
+> rebinding lifecycle §G.B step 8 requires, against the exact merged bytes of that package.
+> **The mechanism is unchanged**; what changed is which merged tree it proves load-bearing identity
+> against. Stage 1 is still **not executable**: rebinding is not arming, it adds **zero** activation
+> authorizations, and `stage_1_executability.executable` stays `false` permanently. The
+> `XASSET-0037` amendment section at the end of this document is operative where earlier text
+> differs.
+
 ## 2. The governing question
 
 Reproduced from `XASSET-0025` §K, unmodified, and instantiated identically for every candidate:
@@ -585,10 +596,14 @@ stage_1_structurally_closed: true
 stage_1_operationally_authorized: false
 stage_1_authorization_mechanism: EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
 stage_1_execution_attempt_id: ENDPOINT-0001::STAGE_1::ATTEMPT_1
+stage_1_effective_structural_authorization_source: XASSET-0037
+stage_1_authorization_mechanism_established_by: XASSET-0029
+stage_1_authorization_rebound_by: XASSET-0037
+stage_1_executable_package_bound: PULL_REQUEST_336
 stage_2_authorized: false
 j12_deferred: true
-hash_version: ENDPOINT-0001-PREREG-V6
-predecessor_hash_version: ENDPOINT-0001-PREREG-V5
+hash_version: ENDPOINT-0001-PREREG-V7
+predecessor_hash_version: ENDPOINT-0001-PREREG-V6
 -->
 
 ---
@@ -777,4 +792,83 @@ them. That is the designed cost of the correction, not a defect.
 **`XASSET-0036` executes no Stage 1**, evaluates no gate for any construction, produces no
 `stage1_results.yaml`, performs no rebinding, generates no attestation, and consumes no execution
 lane. `XASSET-0024` §K.1 remains **unresolved**, §J.12 remains **deferred**, Stage 2 remains
+**unauthorized**, and application authority remains **WITHHELD**.
+
+---
+
+## Amendment — `XASSET-0037` Stage-1 successor operational rebinding
+
+**Amended by `XASSET-0037`, under `XASSET-0030` §G.B step 8.** This section is operative where
+earlier text differs. It changes **no** gate semantics, gate class, disposition rule, B1/B2/B3
+determination, construction identity, universe membership, ordering, cardinality, or universe hash.
+
+### What this amendment is
+
+`XASSET-0036` authorized the §G.B steps-2–7 executable package and PR #336 delivered it: the
+deterministic runner, the result validator, the corrected §C enforcement branch, the reconciled
+canonical bytes, and an extension of the trust boundary from six load-bearing paths to nine.
+
+`XASSET-0030` §D recorded **before the fact** that doing so would deliberately create enforcement
+drift, because the structural authorization source was still bound to the `XASSET-0029` merged tree
+(PR #328, `3cc15d58…`). That drift was **reproduced before it was corrected**: against that tree the
+nine load-bearing paths resolve to three *absent from the authorized merged tree* errors — the
+runner, the result validator, and the `XASSET-0036` decision — and four *enforcement drift* errors —
+the authorization module, the preregistration validator, and both canonical files. No attestation
+could be written and no lane could reach `READY`.
+
+**An obsolete authorization that cannot authorize a changed package is the mechanism working**, not
+a defect. `XASSET-0037` performs the one successor rebinding §G.B step 8 requires, against the exact
+merged bytes of PR #336.
+
+### Four structurally distinct identities
+
+They are deliberately **not** folded into one "predecessor" notion. Overloading a single field
+across four different relationships is how a rebinding silently starts binding the wrong tree.
+
+| Relationship | Identity | Role |
+|---|---|---|
+| Structural closure predecessor | `XASSET-0028` | the construction universe. Untouched by this rebinding. |
+| Historical operational authorization | `XASSET-0029` (PR #328) | established the mechanism. Valid history, no longer the effective source. |
+| Package authority | `XASSET-0036` (PR #335) | authorized the package's creation. Not the package. |
+| Executable package | PR #336 | the exact merged bytes being bound. |
+
+`XASSET-0029` is **preserved, not invalidated**. Its lifecycle really closed; it is still verified
+against the git object store, so the successor cannot quietly disown the predecessor it inherits
+from. What changed is which merged tree load-bearing identity is proven against.
+
+### What the rebinding proves
+
+Beyond every check the mechanism already performed, and in addition to them:
+
+- PR #336's merge really has parents `[be90aeef…, 07519f86…]`, in that order;
+- its merge tree is **byte-identical** to its accepted head tree — zero merge drift on the package;
+- that merge is an **ancestor** of the successor merge, as are `XASSET-0029`'s and `XASSET-0036`'s;
+- `XASSET-0029`'s merge really has the parents the successor claims to inherit from;
+- the **outcome-producing bytes** — the runner and the result validator — are byte-identical at the
+  package's reviewed head, the package's merge, the successor's reviewed head, the successor's
+  merge, and the working tree. §G.B's invariant forbids outcome-producing code being created,
+  changed, or left outside the bound identity after the final rebinding, so a silent runner edit
+  smuggled into the rebinding that binds it **fails closed**.
+
+`LOAD_BEARING_RELPATHS` grows **9 → 10**. Nothing is removed and no exact-byte check is weakened:
+the single addition is the `XASSET-0037` decision itself, on exactly the footing `XASSET-0029` and
+`XASSET-0036` already occupy for their own authorizations.
+
+### Rebinding is not arming
+
+`XASSET-0029` §E terminates the activation regress on a step that **changes no repository state** —
+the runtime attestation. A rebinding changes repository state extensively, so it is categorically
+outside the step §E terminates, and `XASSET-0030` §D and §G.B step 8, both accepted *after*
+`XASSET-0029`, expressly require exactly one such successor lifecycle once the load-bearing bytes
+change. **This amendment adds zero activation authorizations.** Final activation remains the
+external one-shot runtime attestation and the operator's act, never another merged activation PR.
+
+`stage_1_executability.executable` stays `false` **permanently** and keeps its enforced-false check.
+No committed value in this repository authorizes Stage-1 execution — and merging `XASSET-0037`
+authorizes nothing, exactly as merging `XASSET-0029` authorized nothing.
+
+**`XASSET-0037` executes no Stage 1**, evaluates no gate for any construction, produces no
+`stage1_results.yaml`, generates no attestation, creates no `READY`/`CLAIMED`/`COMPLETED` lane state
+or authorization root, consumes nothing of `ATTEMPT_1`, and performs none of §G.B steps 9–11.
+`XASSET-0024` §K.1 remains **unresolved**, §J.12 remains **deferred**, Stage 2 remains
 **unauthorized**, and application authority remains **WITHHELD**.

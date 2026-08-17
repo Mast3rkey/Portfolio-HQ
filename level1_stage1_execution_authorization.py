@@ -1,4 +1,4 @@
-"""ENDPOINT-0001 Stage-1 operational execution authorization — XASSET-0029.
+"""ENDPOINT-0001 Stage-1 operational execution authorization — XASSET-0037 (successor).
 
 WHAT THIS MODULE IS
 ===================
@@ -76,6 +76,48 @@ replayed" would be an overclaim. What is actually enforced:
 A privileged operator who deletes the entire directory is outside any filesystem-based
 enforcement boundary; that is disclosed here rather than papered over.
 
+SUCCESSOR OPERATIONAL REBINDING — XASSET-0037 (XASSET-0030 §G.B step 8)
+=======================================================================
+
+XASSET-0036 authorized the §G.B steps-2–7 executable package, and PR #336 delivered it: the
+deterministic runner, the result validator, the corrected §C enforcement branch, the reconciled
+canonical bytes, and an extension of the trust boundary from six paths to nine. XASSET-0030 §D
+recorded up front that doing so *deliberately creates enforcement drift*, because the structural
+authorization source was still bound to the XASSET-0029 merged tree (PR #328, ``3cc15d58…``), in
+which three of those nine paths do not exist and four others carry different bytes.
+
+**That fail-closed condition was reproduced before it was corrected.** Against the XASSET-0029
+merged tree, the nine load-bearing paths resolve to three ``git truth: … is absent from the
+authorized merged tree`` errors (the runner, the result validator, and the XASSET-0036 decision)
+and four ``enforcement drift: …`` errors (this module, the preregistration validator, and both
+canonical files). No attestation could be written and no lane could reach READY. **The obsolete
+XASSET-0029 lifecycle cannot authorize the current package, and that is the correct behaviour.**
+
+XASSET-0037 performs the one successor operational-authorization / load-bearing rebinding
+lifecycle XASSET-0030 §G.B step 8 requires, against the exact merged bytes of PR #336. It binds
+**four structurally distinct identities**, deliberately kept in separate constants and separate
+attestation blocks so no single "predecessor" field carries inconsistent meanings:
+
+  * ``PREDECESSOR_*`` — XASSET-0028, the construction-universe **structural closure** predecessor.
+    Unchanged in name, meaning, and value; this rebinding does not touch it.
+  * ``HISTORICAL_OPERATIONAL_AUTHORIZATION_*`` — XASSET-0029, the **historical** operational
+    authorization (PR #328). Preserved as predecessor authority and still verified against git;
+    it is no longer the effective structural authorization source.
+  * ``PACKAGE_AUTHORIZING_*`` — XASSET-0036, the decision that **authorized** the executable
+    package (PR #335). Authority over the package, not over this rebinding.
+  * ``EXECUTABLE_PACKAGE_*`` — PR #336 itself, the exact **completed package identity** being
+    rebound: its merge, accepted head, base, and zero merge drift.
+
+``AUTHORIZING_DECISION`` / ``AUTHORIZING_PULL_REQUEST`` / ``REVIEWED_BASE_SHA`` now name
+XASSET-0037. Nothing is removed from ``LOAD_BEARING_RELPATHS`` and no exact-byte check is
+weakened: the set grows 9 → 10 with the XASSET-0037 decision itself, on the same footing
+XASSET-0029 and XASSET-0036 already occupy for their own authorizations.
+
+Rebinding is **not** arming. It changes repository state, so XASSET-0029 §E's no-infinite-regress
+rule — whose stated terminating condition is a final step that *changes no repository state* — is
+untouched: this adds zero activation authorizations, and final activation remains the external
+one-shot runtime attestation and the operator's act.
+
 NOT A RISK MODULE. No RISK-0001 scenario, threshold, magnitude, window, parameter, attempt
 identity, result value, or family conclusion is read, imported, or reused. Only neutral
 engineering patterns are shared: canonical JSON hashing, duplicate-key rejection, immutable
@@ -101,26 +143,77 @@ ROOT = Path(__file__).resolve().parent
 
 REPOSITORY_IDENTITY = "Mast3rkey/Portfolio-HQ"
 STUDY_ID = "ENDPOINT-0001"
-AUTHORIZING_DECISION = "XASSET-0029"
+#: EFFECTIVE structural authorization source, rebound under XASSET-0030 SS-G.B step 8. XASSET-0029
+#: remains valid history and is preserved verbatim below under its own distinct constants; what
+#: changed is which merged tree the load-bearing identity is proven against.
+AUTHORIZING_DECISION = "XASSET-0037"
+
+#: XASSET-0028, the construction-universe STRUCTURAL CLOSURE predecessor. Deliberately UNCHANGED in
+#: name, meaning, and value: repointing it at XASSET-0029 would overload one field with two
+#: different relationships, which is exactly what this rebinding must not do.
 PREDECESSOR_DECISION = "XASSET-0028"
 
-#: The XASSET-0029 pull request. Bound so an attestation cannot silently reference another.
-AUTHORIZING_PULL_REQUEST = 328
+#: The XASSET-0037 pull request. Bound so an attestation cannot silently reference another.
+#: Bound AFTER the draft pull request existed, never guessed ahead of it.
+AUTHORIZING_PULL_REQUEST = 337
 
 #: The single Stage-1 execution lane XASSET-0027 SS-P.1 permits. Derived from repository
-#: truth, not invented: no Stage-1 attempt has ever been executed or authorized.
+#: truth, not invented: no Stage-1 attempt has ever been executed or authorized. UNCHANGED by the
+#: rebinding -- a successor authorization does not mint a second attempt.
 EXECUTION_ATTEMPT_ID = "ENDPOINT-0001::STAGE_1::ATTEMPT_1"
 
-#: MAJOR 2 (review 4946397399): the exact base the XASSET-0029 lifecycle was reviewed against.
-#: The real merge's FIRST parent must equal this. If main advances before merge, the lifecycle
-#: cannot arm from the old review -- it requires a fresh exact-head/base review.
-REVIEWED_BASE_SHA = "c51e94609eff7ede2bdfa084844d59b8347561e5"
+#: MAJOR 2 (review 4946397399), rebound by XASSET-0037: the exact base the SUCCESSOR lifecycle was
+#: reviewed against. The real merge's FIRST parent must equal this. If main advances before merge,
+#: the lifecycle cannot arm from the old review -- it requires a fresh exact-head/base review.
+REVIEWED_BASE_SHA = "3e5de8f85c69c2e5dc2b75421446b5db996d7cf1"
 
 #: XASSET-0028's exact historical identity. MAJOR 1: the canonical contract promises this
 #: is bound, so it is now actually verified against the local git object store.
 PREDECESSOR_MERGE_SHA = "c51e94609eff7ede2bdfa084844d59b8347561e5"
 PREDECESSOR_ACCEPTED_HEAD = "036606401ea569b0a03f2d716d87a057d07d71dc"
 PREDECESSOR_MERGE_BASE = "e4b6f0b810884fcb73d1b8ee053d8005db532f3e"
+
+# --------------------------------------------------------------------------------------
+# XASSET-0037 / SS-G.B step 8 — three further identities, each structurally distinct
+# --------------------------------------------------------------------------------------
+#
+# These are NOT interchangeable with PREDECESSOR_* above, and NOT with each other. Overloading one
+# "predecessor" notion across four different relationships is precisely how a rebinding silently
+# starts binding the wrong tree, so each relationship gets its own constants and its own
+# independently verified attestation block.
+
+#: XASSET-0029, the HISTORICAL operational authorization (PR #328). Its lifecycle really closed and
+#: is not invalidated; it simply stopped being the EFFECTIVE structural authorization source once
+#: the XASSET-0036 executable package changed the bytes it bound. Still verified against git, so
+#: the successor cannot quietly disown a predecessor it claims to inherit from.
+HISTORICAL_OPERATIONAL_AUTHORIZATION_DECISION = "XASSET-0029"
+HISTORICAL_OPERATIONAL_AUTHORIZATION_PULL_REQUEST = 328
+HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_SHA = "3cc15d58a42e6d56fbe702ccf4f377b60fbb8b0c"
+HISTORICAL_OPERATIONAL_AUTHORIZATION_ACCEPTED_HEAD = "49609c3ff9befe1ba8d0b296da421337b5a425a0"
+HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_BASE = "c51e94609eff7ede2bdfa084844d59b8347561e5"
+
+#: XASSET-0036 (PR #335), which AUTHORIZED the executable package. Authority over the package's
+#: creation -- not over this rebinding, and not itself the package.
+PACKAGE_AUTHORIZING_DECISION = "XASSET-0036"
+PACKAGE_AUTHORIZING_PULL_REQUEST = 335
+PACKAGE_AUTHORIZING_MERGE_SHA = "be90aeef5c48e84849a007b31abbb1166857785d"
+
+#: PR #336 itself -- the exact COMPLETED EXECUTABLE PACKAGE this rebinding binds. Distinct from the
+#: decision that authorized it: the authority is a governance record, this is a merged tree.
+EXECUTABLE_PACKAGE_PULL_REQUEST = 336
+EXECUTABLE_PACKAGE_MERGE_SHA = "3e5de8f85c69c2e5dc2b75421446b5db996d7cf1"
+EXECUTABLE_PACKAGE_ACCEPTED_HEAD = "07519f864c869d98aaf4a65cea53e85086a99fec"
+EXECUTABLE_PACKAGE_MERGE_BASE = "be90aeef5c48e84849a007b31abbb1166857785d"
+
+#: The outcome-producing bytes PR #336 delivered. XASSET-0030 SS-G.B's invariant is that no
+#: outcome-producing executable code may be created, changed, or left outside the bound execution
+#: identity after the final rebinding -- so the rebinding proves these are BYTE-IDENTICAL across
+#: the package's reviewed head, the package's merge, the successor's reviewed head, the successor's
+#: merge, and the working tree. A silent runner edit smuggled into the rebinding fails closed.
+EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS = (
+    "level1_stage1_runner.py",
+    "level1_stage1_result_validator.py",
+)
 
 CONSTRUCTION_UNIVERSE_SHA256 = (
     "73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224"
@@ -134,10 +227,24 @@ CANONICAL_PREREGISTRATION_RELPATH = "research/level1_endpoint_evidence/pre_regis
 PROTOCOL_PATH = ROOT / CANONICAL_PROTOCOL_RELPATH
 PREREGISTRATION_PATH = ROOT / CANONICAL_PREREGISTRATION_RELPATH
 
-#: EFFECTIVE pins for the canonical bytes, recomputed under XASSET-0036 SS-E.7 after the canonical,
-#: enforcement, and outcome-producing bytes stabilized. Separate files from this module, so there
-#: is no self-hashing circularity.
+#: EFFECTIVE pins for the canonical bytes, recomputed ONCE under XASSET-0037 after every permitted
+#: canonical and enforcement byte stabilized. Separate files from this module, so there is no
+#: self-hashing circularity.
 CANONICAL_PINS: dict[str, str] = {
+    CANONICAL_PROTOCOL_RELPATH: (
+        "367583b616e1c6ab614bcf67d451fe27ce40507d073374190c57291e761d8971"
+    ),
+    CANONICAL_PREREGISTRATION_RELPATH: (
+        "768b013c0129f02577fea3c2a1a3100b4340b9a42f48ee0d0dbd6e671894bce1"
+    ),
+}
+
+#: The XASSET-0036 executable package's V6 pins, retained as predecessor identity now that
+#: XASSET-0037 amends the canonical authorization language under successor authority. They no
+#: longer describe the current files and must NOT be rewritten to pretend otherwise -- the same
+#: treatment XASSET-0036 gave XASSET-0029's, XASSET-0029 gave XASSET-0028's, and XASSET-0028 gave
+#: XASSET-0027's.
+XASSET_0036_PACKAGE_CANONICAL_PINS = {
     CANONICAL_PROTOCOL_RELPATH: (
         "86b2a5e8674247698ac592ce4734744f940b4a119ffda5fd702bc3cbf3e40c13"
     ),
@@ -188,6 +295,16 @@ PREDECESSOR_CANONICAL_PINS = {
 # The EXISTING exact-byte mechanism is reused unchanged (XASSET-0036 SS-E.6 states a preference for
 # it, and no concrete technical reason to depart was found): expected identity is still DERIVED
 # FROM THE MERGED GIT TREE at validation time, never from a hard-coded constant here.
+#
+# EXTENDED AGAIN BY XASSET-0037 / SS-G.B step 8, 9 -> 10. NOTHING IS REMOVED and no exact-byte check
+# is weakened. The single addition is the XASSET-0037 decision itself, on exactly the footing
+# XASSET-0029 and XASSET-0036 already occupy for their own authorizations: the decision that
+# supplies the effective structural authorization must be inside the identity it authorizes, or an
+# attestation could authenticate perfectly while its own governing text had been edited afterwards.
+#
+# What the rebinding changes is not this tuple's mechanism but the TREE it is proven against: these
+# ten paths are now verified in the XASSET-0037 merged tree and its independently reviewed head,
+# rather than the obsolete XASSET-0029 tree in which three of them do not exist at all.
 LOAD_BEARING_RELPATHS = (
     "level1_stage1_execution_authorization.py",
     "level1_endpoint_evidence_preregistration_validator.py",
@@ -198,6 +315,7 @@ LOAD_BEARING_RELPATHS = (
     CANONICAL_PREREGISTRATION_RELPATH,
     "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
     "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
+    "governance/decisions/XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
 )
 
 # ======================================================================================
@@ -273,6 +391,11 @@ REQUIRED_TOP_KEYS = (
     "execution_attempt_id",
     "authorization_head",
     "predecessor_identity",
+    # XASSET-0037. Three SEPARATE blocks, deliberately not folded into ``predecessor_identity``:
+    # that field means XASSET-0028's structural closure and nothing else.
+    "historical_operational_authorization",
+    "package_authorization",
+    "executable_package_identity",
     "canonical_pins",
     "construction_universe",
     "lifecycle_evidence",
@@ -926,7 +1049,183 @@ def verify_lifecycle_against_truth(
 
     # --- Gate 6: ancestry, predecessor identity, load-bearing byte identity -------------
     errors.extend(_verify_git_anchored_identity(document, merge_sha, sources))
+    # --- Gate 7 (XASSET-0037): the successor rebinding binds the EXACT merged package ---
+    errors.extend(_verify_successor_rebinding_identity(document, merge_sha, sources))
     return tuple(errors)
+
+
+def _verify_successor_rebinding_identity(
+    document: Mapping[str, Any], merge_sha: Any, sources: TruthSources
+) -> list[str]:
+    """XASSET-0030 SS-G.B step 8: prove this rebinding binds the exact completed package.
+
+    Three separately named relationships, each verified from git rather than declared:
+
+      * the HISTORICAL operational authorization (XASSET-0029 / PR #328) really has the identity
+        the successor claims to inherit from, and is reachable from the successor merge;
+      * the PACKAGE AUTHORITY (XASSET-0036 / PR #335) really merged, and is reachable;
+      * the EXECUTABLE PACKAGE (PR #336) has exactly the recorded merge, accepted head, and base,
+        with ZERO merge drift, and is an ancestor of the successor merge.
+
+    And the invariant SS-G.B exists for: the outcome-producing bytes are byte-identical at the
+    package's reviewed head, the package's merge, the successor's reviewed head, the successor's
+    merge, and the working tree. A rebinding that silently altered the runner would otherwise bind
+    code that independent review of the package never saw, against a non-rerunnable ``ATTEMPT_1``.
+    """
+    errors: list[str] = []
+    git = sources.git
+
+    def _block(key: str, expected: Mapping[str, Any]) -> Mapping[str, Any] | None:
+        recorded = document.get(key)
+        if not isinstance(recorded, Mapping):
+            errors.append(f"{key}: expected a mapping")
+            return None
+        for field_name, want in sorted(expected.items()):
+            _exact(recorded.get(field_name), want, f"{key}.{field_name}", errors)
+        for unknown in sorted(set(recorded) - set(expected)):
+            errors.append(f"{key}.{unknown}: unknown key; the schema is closed")
+        return recorded
+
+    _block(
+        "historical_operational_authorization",
+        {
+            "decision": HISTORICAL_OPERATIONAL_AUTHORIZATION_DECISION,
+            "pull_request": HISTORICAL_OPERATIONAL_AUTHORIZATION_PULL_REQUEST,
+            "merge_sha": HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_SHA,
+            "accepted_head": HISTORICAL_OPERATIONAL_AUTHORIZATION_ACCEPTED_HEAD,
+            "merge_base": HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_BASE,
+        },
+    )
+    _block(
+        "package_authorization",
+        {
+            "decision": PACKAGE_AUTHORIZING_DECISION,
+            "pull_request": PACKAGE_AUTHORIZING_PULL_REQUEST,
+            "merge_sha": PACKAGE_AUTHORIZING_MERGE_SHA,
+        },
+    )
+    _block(
+        "executable_package_identity",
+        {
+            "pull_request": EXECUTABLE_PACKAGE_PULL_REQUEST,
+            "merge_sha": EXECUTABLE_PACKAGE_MERGE_SHA,
+            "accepted_head": EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+            "merge_base": EXECUTABLE_PACKAGE_MERGE_BASE,
+        },
+    )
+
+    # --- The historical operational authorization really is what the successor inherits from ---
+    historical_parents = git.commit_parents(HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_SHA)
+    if historical_parents is None:
+        errors.append(
+            f"git truth: the historical operational-authorization merge "
+            f"{HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_SHA} is absent from the local object "
+            "store, so the successor cannot prove what it is superseding"
+        )
+    elif list(historical_parents) != [
+        HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_BASE,
+        HISTORICAL_OPERATIONAL_AUTHORIZATION_ACCEPTED_HEAD,
+    ]:
+        errors.append(
+            f"git truth: historical operational-authorization merge parents "
+            f"{list(historical_parents)!r} do not match XASSET-0029's accepted identity"
+        )
+
+    # --- The package authority really merged ------------------------------------------------
+    if git.commit_parents(PACKAGE_AUTHORIZING_MERGE_SHA) is None:
+        errors.append(
+            f"git truth: the package-authorizing merge {PACKAGE_AUTHORIZING_MERGE_SHA} "
+            f"({PACKAGE_AUTHORIZING_DECISION}) is absent from the local object store"
+        )
+
+    # --- The executable package: exact parents, and ZERO merge drift -------------------------
+    package_parents = git.commit_parents(EXECUTABLE_PACKAGE_MERGE_SHA)
+    if package_parents is None:
+        errors.append(
+            f"git truth: the executable-package merge {EXECUTABLE_PACKAGE_MERGE_SHA} is absent "
+            "from the local object store; the bytes being rebound cannot be identified"
+        )
+    elif list(package_parents) != [
+        EXECUTABLE_PACKAGE_MERGE_BASE,
+        EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+    ]:
+        errors.append(
+            f"git truth: executable-package merge parents {list(package_parents)!r} are not "
+            f"[{EXECUTABLE_PACKAGE_MERGE_BASE!r}, {EXECUTABLE_PACKAGE_ACCEPTED_HEAD!r}]; a squash, "
+            "rebase, or different base is not the accepted package"
+        )
+    package_merge_tree = git.commit_tree(EXECUTABLE_PACKAGE_MERGE_SHA)
+    package_head_tree = git.commit_tree(EXECUTABLE_PACKAGE_ACCEPTED_HEAD)
+    if package_merge_tree is None or package_head_tree is None:
+        errors.append(
+            "git truth: the executable package's merge or accepted-head tree could not be "
+            "resolved, so zero merge drift cannot be proven for the package being rebound"
+        )
+    elif package_merge_tree != package_head_tree:
+        errors.append(
+            f"package merge drift: the executable-package merge tree {package_merge_tree} differs "
+            f"from its accepted head tree {package_head_tree}; the merged package is not the "
+            "package independent review accepted"
+        )
+
+    # --- The successor must actually descend from the package it claims to bind --------------
+    if _is_commit_sha(merge_sha):
+        if not git.is_ancestor(EXECUTABLE_PACKAGE_MERGE_SHA, str(merge_sha)):
+            errors.append(
+                f"git truth: the executable-package merge {EXECUTABLE_PACKAGE_MERGE_SHA} is not an "
+                f"ancestor of the successor merge {merge_sha}; a rebinding cannot bind a package "
+                "that is not in its own history"
+            )
+        if not git.is_ancestor(HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_SHA, str(merge_sha)):
+            errors.append(
+                f"git truth: the historical operational-authorization merge "
+                f"{HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_SHA} is not an ancestor of the "
+                f"successor merge {merge_sha}; the successor is not on the authorized history"
+            )
+        if not git.is_ancestor(PACKAGE_AUTHORIZING_MERGE_SHA, str(merge_sha)):
+            errors.append(
+                f"git truth: the package-authorizing merge {PACKAGE_AUTHORIZING_MERGE_SHA} is not "
+                f"an ancestor of the successor merge {merge_sha}"
+            )
+
+    # --- SS-G.B's invariant: outcome-producing bytes are the package's, unchanged --------------
+    accepted_head = document.get("authorization_head")
+    for relative in EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS:
+        if relative not in LOAD_BEARING_RELPATHS:
+            errors.append(
+                f"trust boundary: {relative} produces Stage-1 outcomes but is not load-bearing; "
+                "SS-G.B's invariant forbids outcome-producing code outside the bound identity"
+            )
+        anchors = {
+            "executable-package accepted head": EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+            "executable-package merge": EXECUTABLE_PACKAGE_MERGE_SHA,
+        }
+        if _is_commit_sha(accepted_head):
+            anchors["successor reviewed head"] = str(accepted_head)
+        if _is_commit_sha(merge_sha):
+            anchors["successor merge"] = str(merge_sha)
+        digests: dict[str, str] = {}
+        for label, commit in anchors.items():
+            digest = git.blob_sha256_at(commit, relative)
+            if digest is None:
+                errors.append(
+                    f"git truth: {relative} is absent from the {label} {commit}; the "
+                    "outcome-producing bytes being rebound cannot be identified"
+                )
+                continue
+            digests[label] = digest
+        working = sha256_file(ROOT / relative) if (ROOT / relative).exists() else None
+        if working is None:
+            errors.append(f"{relative}: absent from the working tree")
+        else:
+            digests["working tree"] = working
+        if len(set(digests.values())) > 1:
+            errors.append(
+                f"outcome-producing drift: {relative} is not byte-identical across the accepted "
+                f"executable package and this rebinding ({digests!r}); SS-G.B forbids changing "
+                "outcome-producing code inside the rebinding that binds it"
+            )
+    return errors
 
 
 def _verify_selected_review_is_final(
@@ -1184,8 +1483,8 @@ def _validate_canonical_pins(block: Any, errors: list[str]) -> None:
         return
     if pins_are_placeholders():
         errors.append(
-            "authorization.canonical_pins: XASSET-0029 successor pins have not been refreshed "
-            "to real digests, so no attestation can be validated"
+            f"authorization.canonical_pins: {AUTHORIZING_DECISION} successor pins have not been "
+            "refreshed to real digests, so no attestation can be validated"
         )
         return
     live = live_canonical_hashes()
@@ -1193,13 +1492,25 @@ def _validate_canonical_pins(block: Any, errors: list[str]) -> None:
         if pins.get(relative) != bound:
             errors.append(
                 f"authorization.canonical_pins[{relative!r}]: recorded {pins.get(relative)!r} "
-                f"but the bound XASSET-0029 pin is {bound!r}"
+                f"but the bound {AUTHORIZING_DECISION} pin is {bound!r}"
             )
         if live.get(relative) != bound:
             errors.append(
                 f"canonical drift: {relative} on disk hashes to {live.get(relative)!r} but the "
-                f"bound XASSET-0029 pin is {bound!r}"
+                f"bound {AUTHORIZING_DECISION} pin is {bound!r}"
             )
+        # XASSET-0037: an amendment that left the bytes identical to a predecessor's would mean the
+        # successor pin was copied forward rather than recomputed after the bytes stabilized.
+        for label, historical in (
+            (PACKAGE_AUTHORIZING_DECISION, XASSET_0036_PACKAGE_CANONICAL_PINS),
+            (HISTORICAL_OPERATIONAL_AUTHORIZATION_DECISION, XASSET_0029_CANONICAL_PINS),
+            (PREDECESSOR_DECISION, PREDECESSOR_CANONICAL_PINS),
+        ):
+            if bound == historical.get(relative):
+                errors.append(
+                    f"canonical pins: {relative} still carries the {label} pin; the successor "
+                    "amendment must change the canonical bytes it re-pins"
+                )
     for relative in sorted(set(pins) - set(CANONICAL_PINS)):
         errors.append(
             f"authorization.canonical_pins[{relative!r}]: unknown canonical file; the pin set "
@@ -1818,6 +2129,27 @@ def build_authorization_payload(
             "accepted_head": PREDECESSOR_ACCEPTED_HEAD,
             "merge_base": PREDECESSOR_MERGE_BASE,
         },
+        # XASSET-0037. Three distinct relationships, three distinct blocks. Assembled from the
+        # module's bound constants and then RE-VERIFIED against git at validation time, so writing
+        # them here proves nothing on its own.
+        "historical_operational_authorization": {
+            "decision": HISTORICAL_OPERATIONAL_AUTHORIZATION_DECISION,
+            "pull_request": HISTORICAL_OPERATIONAL_AUTHORIZATION_PULL_REQUEST,
+            "merge_sha": HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_SHA,
+            "accepted_head": HISTORICAL_OPERATIONAL_AUTHORIZATION_ACCEPTED_HEAD,
+            "merge_base": HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_BASE,
+        },
+        "package_authorization": {
+            "decision": PACKAGE_AUTHORIZING_DECISION,
+            "pull_request": PACKAGE_AUTHORIZING_PULL_REQUEST,
+            "merge_sha": PACKAGE_AUTHORIZING_MERGE_SHA,
+        },
+        "executable_package_identity": {
+            "pull_request": EXECUTABLE_PACKAGE_PULL_REQUEST,
+            "merge_sha": EXECUTABLE_PACKAGE_MERGE_SHA,
+            "accepted_head": EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+            "merge_base": EXECUTABLE_PACKAGE_MERGE_BASE,
+        },
         "canonical_pins": live_canonical_hashes(),
         "construction_universe": {
             "sha256": universe["sha256"],
@@ -1851,6 +2183,19 @@ def main(argv: Sequence[str] | None = None) -> int:  # pragma: no cover - CLI
     print(f"study: {STUDY_ID}")
     print(f"attempt: {EXECUTION_ATTEMPT_ID}")
     print(f"mechanism: {AUTHORIZATION_MECHANISM}")
+    print(f"effective structural authorization: {AUTHORIZING_DECISION} (PR #{AUTHORIZING_PULL_REQUEST})")
+    print(
+        f"historical operational authorization: "
+        f"{HISTORICAL_OPERATIONAL_AUTHORIZATION_DECISION} "
+        f"(PR #{HISTORICAL_OPERATIONAL_AUTHORIZATION_PULL_REQUEST})"
+    )
+    print(
+        f"package authority: {PACKAGE_AUTHORIZING_DECISION} "
+        f"(PR #{PACKAGE_AUTHORIZING_PULL_REQUEST})"
+    )
+    print(f"executable package bound: PR #{EXECUTABLE_PACKAGE_PULL_REQUEST} "
+          f"@ {EXECUTABLE_PACKAGE_MERGE_SHA}")
+    print(f"load-bearing paths: {len(LOAD_BEARING_RELPATHS)}")
     print(f"lane state: {state}")
     print(f"new execution authorized: {state == LANE_READY}")
     if reason:

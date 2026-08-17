@@ -41,18 +41,25 @@ lifecycle_effectivity:
   - MERGE
   - IMMEDIATE_POST_MERGE_VERIFICATION
   - SUCCESSFUL_MERGE_COMMIT_CI
-  stage_1_execution_may_begin_only_after: XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  stage_1_execution_may_begin_only_after: XASSET_0037_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  predecessor_stage_1_execution_may_begin_only_after_xasset_0029: XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
   predecessor_stage_1_execution_may_begin_only_after_xasset_0028: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
-  stage_1_execution_precondition_amended_by: XASSET-0029
+  stage_1_execution_precondition_amended_by: XASSET-0037
+  predecessor_stage_1_execution_precondition_amended_by_xasset_0029: XASSET-0029
   predecessor_stage_1_execution_precondition_amended_by_xasset_0028: XASSET-0028
   predecessor_stage_1_execution_may_begin_only_after_xasset_0027: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
   predecessor_precondition_is_spent_note: >-
-    HISTORICAL ONLY, AND THERE ARE NOW TWO SPENT PREDECESSORS. XASSET-0027's own lifecycle is complete
-    and XASSET-0028 closed the construction universe, so the XASSET-0027 condition reads as already
-    satisfied. XASSET-0028's own six-gate lifecycle has since closed in full, so that condition is
-    spent as well. Neither is operative. THE SINGLE OPERATIVE CONDITION IS
-    stage_1_execution_may_begin_only_after ABOVE: the XASSET-0029 lifecycle plus an authenticated
-    external one-shot preexecution attestation plus a one-shot execution claim.
+    HISTORICAL ONLY, AND THERE ARE NOW THREE SPENT PREDECESSORS. XASSET-0027's own lifecycle is
+    complete and XASSET-0028 closed the construction universe, so the XASSET-0027 condition reads
+    as already satisfied. XASSET-0028's own six-gate lifecycle has since closed in full, so that
+    condition is spent as well. XASSET-0029's six-gate lifecycle also closed in full and its
+    condition was operative until the XASSET-0036 executable package changed the load-bearing bytes
+    XASSET-0029 bound; XASSET-0037 then rebound them under XASSET-0030 SS-G.B step 8. None of the
+    three is operative. THE SINGLE OPERATIVE CONDITION IS stage_1_execution_may_begin_only_after
+    ABOVE: the XASSET-0037 lifecycle plus an authenticated external one-shot preexecution
+    attestation plus a one-shot execution claim. A SPENT PREDECESSOR IS NOT AN INVALIDATED ONE -
+    XASSET-0029 remains valid accepted history and is retained verbatim in the explicitly
+    predecessor-named fields above.
   merge_alone_is_sufficient: false
   note: >-
     Merge alone does not make this charter operationally effective and does not open a Stage 1
@@ -78,12 +85,16 @@ stage_1_executability:
   executable: false
   executable_is_never_the_authorization_source: true
   status: STRUCTURALLY_CLOSED_NOT_OPERATIONALLY_AUTHORIZED
-  blocking_prerequisite: XASSET_0029_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+  blocking_prerequisite: XASSET_0037_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
   authorized_by_xasset_0027: false
   authorized_by_xasset_0028: false
   authorized_by_xasset_0029: false
+  authorized_by_xasset_0036: false
+  authorized_by_xasset_0037: false
   construction_universe_structurally_closed: true
-  amended_by: XASSET-0029
+  amended_by: XASSET-0037
+  predecessor_amended_by_xasset_0029: XASSET-0029
+  predecessor_blocking_prerequisite_xasset_0029: XASSET_0029_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
   predecessor_amended_by_xasset_0028: XASSET-0028
   predecessor_status_xasset_0027: NOT_YET_EXECUTABLE_CONSTRUCTION_UNIVERSE_NOT_CLOSED
   predecessor_blocking_prerequisite_xasset_0027: CONCRETE_CONSTRUCTION_UNIVERSE_CLOSURE
@@ -119,6 +130,12 @@ stage_1_executability:
 stage_1_operational_authorization:
   mechanism: EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
   established_by: XASSET-0029
+  established_by_note: >-
+    The MECHANISM was established by XASSET-0029 and that fact is historical truth, so this field is
+    deliberately NOT rewritten. What XASSET-0037 changed is not who established the mechanism but
+    which merged tree the mechanism proves its load-bearing identity against. See rebound_by.
+  rebound_by: XASSET-0037
+  effective_structural_authorization_source: XASSET-0037
   currently_effective: false
   currently_effective_note: >-
     False here is not a switch awaiting a flip. Effectivity is not readable from this file at all:
@@ -274,6 +291,52 @@ stage_1_operational_authorization:
     results_document_says: NOTHING_ABOUT_AUTHORIZATION
     results_cannot_self_authorize: true
     private_structural_seams_are_non_authorizing: true
+  # ESTABLISHED BY XASSET-0037 under XASSET-0030 SS-G.B step 8. FOUR structurally distinct
+  # identities, each with its own attestation block and its own git-derived verification. They are
+  # deliberately NOT folded into one "predecessor" notion: overloading a single field across four
+  # different relationships is how a rebinding silently starts binding the wrong tree.
+  successor_operational_rebinding:
+    rebinding_decision: XASSET-0037
+    rebinding_authority: XASSET-0030_SS_G_B_STEP_8
+    package_authorization_decision: XASSET-0036
+    is_an_activation_step: false
+    is_an_attestation: false
+    adds_activation_authorizations: 0
+    no_infinite_authorization_regress_preserved: true
+    no_infinite_authorization_regress_note: >-
+      XASSET-0029 SS-E terminates the activation regress on a step that CHANGES NO REPOSITORY STATE
+      - the runtime attestation. A rebinding changes repository state extensively, so it is
+      categorically outside the step SS-E terminates, and XASSET-0030 SS-D and SS-G.B step 8, both
+      accepted after XASSET-0029, expressly require exactly one such successor lifecycle. This adds
+      ZERO activation authorizations: final activation remains the external one-shot runtime
+      attestation and the operator's act, never another merged activation PR.
+    distinct_identities:
+      structural_closure_predecessor: XASSET-0028
+      historical_operational_authorization: XASSET-0029
+      package_authority: XASSET-0036
+      executable_package: PULL_REQUEST_336
+    historical_operational_authorization_is_invalidated: false
+    historical_operational_authorization_note: >-
+      XASSET-0029's own six-gate lifecycle really closed and remains valid accepted history. It
+      stopped being the EFFECTIVE structural authorization source only because the XASSET-0036
+      executable package changed the load-bearing bytes it bound. It is still verified against the
+      git object store, so the successor cannot quietly disown the predecessor it inherits from.
+    enforcement_drift_recorded_in_advance: true
+    enforcement_drift_note: >-
+      XASSET-0030 SS-D recorded before the fact that a lawful correction of the SS-C defect would
+      deliberately create enforcement drift, leaving Stage 1 non-armable until a successor lifecycle
+      rebound the new load-bearing implementation. That drift was reproduced against the XASSET-0029
+      merged tree before it was corrected: three load-bearing paths absent and four in byte drift.
+      An obsolete authorization that cannot authorize a changed package is the mechanism working.
+    outcome_producing_paths_must_be_byte_identical_to_the_accepted_package: true
+    outcome_producing_paths_note: >-
+      SS-G.B's invariant is that no outcome-producing executable code may be created, changed, or
+      left outside the bound execution identity after the final rebinding and before ATTEMPT_1. The
+      rebinding therefore proves the runner and the result validator are byte-identical at the
+      package's reviewed head, the package's merge, the successor's reviewed head, the successor's
+      merge, and the working tree. A silent runner edit inside the rebinding fails closed.
+    load_bearing_paths_removed: 0
+    exact_byte_checking_weakened: false
   must_bind_exactly:
   - REPOSITORY_IDENTITY
   - EXACT_REVIEWED_BASE_SHA
@@ -282,11 +345,17 @@ stage_1_operational_authorization:
   - PRINCIPAL_CERTIFIED_INDEPENDENT_REVIEW_ID
   - EXACT_COMPLETED_RESULT_SEMANTIC_IDENTITY
   - STUDY_ID
-  - AUTHORIZING_DECISION_XASSET_0029
+  - AUTHORIZING_DECISION_XASSET_0037
   - AUTHORIZING_PULL_REQUEST_NUMBER
   - PREDECESSOR_XASSET_0028_MERGE_SHA
   - PREDECESSOR_XASSET_0028_ACCEPTED_HEAD
   - PREDECESSOR_XASSET_0028_MERGE_BASE
+  - HISTORICAL_OPERATIONAL_AUTHORIZATION_XASSET_0029_IDENTITY
+  - PACKAGE_AUTHORIZATION_XASSET_0036_IDENTITY
+  - EXECUTABLE_PACKAGE_PULL_REQUEST_336_MERGE_ACCEPTED_HEAD_AND_BASE
+  - EXECUTABLE_PACKAGE_MERGE_TREE_EQUALS_ITS_ACCEPTED_HEAD_TREE
+  - EXECUTABLE_PACKAGE_MERGE_IS_AN_ANCESTOR_OF_THE_SUCCESSOR_MERGE
+  - OUTCOME_PRODUCING_BYTES_IDENTICAL_TO_THE_ACCEPTED_EXECUTABLE_PACKAGE
   - LOAD_BEARING_IMPLEMENTATION_IDENTITY_FROM_MERGED_TREE
   - CURRENT_GIT_ANCESTRY_OF_THE_AUTHORIZING_MERGE
   - CANONICAL_PROTOCOL_SHA256
@@ -327,28 +396,38 @@ stage_1_operational_authorization:
   - SUPPLIED_RESULT_NOT_THE_COMPLETED_RESULT_IDENTITY
   - LOAD_BEARING_ENFORCEMENT_CODE_DRIFT
   - AUTHORIZING_MERGE_NOT_IN_CURRENT_ANCESTRY
+  - SUPERSEDED_PREDECESSOR_AUTHORIZATION_DECISION_OR_PULL_REQUEST
+  - EXECUTABLE_PACKAGE_IDENTITY_ABSENT_MISMATCHED_OR_DRIFTED
+  - EXECUTABLE_PACKAGE_NOT_AN_ANCESTOR_OF_THE_SUCCESSOR_MERGE
+  - OUTCOME_PRODUCING_CODE_CHANGED_INSIDE_THE_REBINDING_THAT_BINDS_IT
   no_merge_to_execution_gap: true
   no_merge_to_execution_gap_mechanism: >-
-    Merging XASSET-0029 authorizes nothing. The attestation cannot be pre-staged, because generating
-    it requires evidence that does not exist until after the merge: the merge SHA, a post-merge
-    verification record, and a merge-commit CI run that has CONCLUDED success at that exact merge
-    SHA. CI cannot have concluded at the instant of merge, so a strictly positive interval between
-    merge and authorizability is enforced by evidence rather than by convention.
+    Merging XASSET-0037 authorizes nothing, exactly as merging XASSET-0029 authorized nothing. The
+    attestation cannot be pre-staged, because generating it requires evidence that does not exist
+    until after the merge: the merge SHA, a post-merge verification record, and a merge-commit CI
+    run that has CONCLUDED success at that exact merge SHA. CI cannot have concluded at the instant
+    of merge, so a strictly positive interval between merge and authorizability is enforced by
+    evidence rather than by convention.
   no_infinite_authorization_regress: true
   no_infinite_authorization_regress_mechanism: >-
-    Arming is a runtime operator act, not a further merged governance PR. XASSET-0029 is the final
-    governance decision required for Stage 1; after it merges and verifies, the generator is run
-    once and no additional authorization PR is ever required. The regress terminates because the
-    final step changes no repository state.
+    Arming is a runtime operator act, not a further merged governance PR. After the effective
+    structural authorization lifecycle merges and verifies, the generator is run once and no
+    additional ACTIVATION pull request is ever required. The regress terminates because the final
+    step changes no repository state. AMENDED BY XASSET-0037: a successor operational REBINDING is
+    not an activation step and does not reopen that regress. It changes repository state, so it is
+    categorically outside the step this rule terminates, and XASSET-0030 SS-D and SS-G.B step 8 -
+    both accepted after XASSET-0029 - expressly require exactly one such lifecycle once the
+    load-bearing bytes change. XASSET-0037 adds ZERO activation authorizations.
 
 stages:
   stage_1:
     stage_id: STAGE_1_CONSTRUCTION_FEASIBILITY
     authorized_by_xasset_0027: false
-    executable_only_after: XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
-    executable_only_after_amended_by: XASSET-0029
+    executable_only_after: XASSET_0037_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
+    executable_only_after_amended_by: XASSET-0037
     predecessor_executable_only_after_xasset_0027: CONSTRUCTION_UNIVERSE_CLOSURE_THEN_XASSET_0027_LIFECYCLE_CLOSURE_AND_MERGED_HASH_VERIFICATION
     predecessor_executable_only_after_xasset_0028: XASSET_0028_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
+    predecessor_executable_only_after_xasset_0029: XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
     acquires_data: false
     fits_or_estimates_anything: false
     produces_endpoint: false
@@ -1802,5 +1881,5 @@ protected_paths:
 - intelligence/level1_sleeve_synthesis/
 - /private/tmp/phq-risk0001-results
 
-hash_version: ENDPOINT-0001-PREREG-V6
-predecessor_hash_version: ENDPOINT-0001-PREREG-V5
+hash_version: ENDPOINT-0001-PREREG-V7
+predecessor_hash_version: ENDPOINT-0001-PREREG-V6
