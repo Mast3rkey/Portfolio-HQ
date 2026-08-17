@@ -293,9 +293,39 @@ class TestOrderingTextsAreNeutral:
         assert "cannot admit evidence that does not yet exist" in _read(XASSET_0027)
 
     def test_decision_records_them_as_neutral_not_as_refutation(self, decision_text):
-        """The nearest overreach: treating an ordering frame as defeating present-tense."""
-        assert "Both are ordering statements, and an ordering statement is consistent with either "
+        """The nearest overreach: treating an ordering frame as defeating present-tense.
+
+        Both halves of the neutrality finding are pinned against the normalized decision text —
+        the positive claim that the ordering texts are consistent with *either* reading, and the
+        absence of any claim that they refute, defeat, or foreclose the present-tense reading.
+        Deleting or inverting the neutrality sentence must fail this test.
+        """
+        assert (
+            "Both are ordering statements, and an ordering statement is consistent with either "
+            "reading." in decision_text
+        )
         assert "Neither is a capability verdict" in decision_text
+
+    @pytest.mark.parametrize(
+        "inversion",
+        (
+            "refutes the present-tense",
+            "defeats the present-tense",
+            "forecloses the present-tense",
+            "refute the present-tense",
+            "defeat the present-tense",
+            "foreclose the present-tense",
+        ),
+    )
+    def test_decision_never_claims_the_ordering_texts_defeat_present_tense(
+        self, decision_text, inversion
+    ):
+        """The inverted overreach, pinned separately from the positive claim.
+
+        §E may only downgrade the two texts from *supports* to *neutral*. Upgrading the same
+        finding into a refutation of the present-tense reading would silently close G12.
+        """
+        assert inversion not in decision_text
 
     def test_decision_expressly_preserves_the_inference_from_ordering(self, decision_text):
         """§E.3 must keep the present-tense proponent's route open, not quietly close it."""
