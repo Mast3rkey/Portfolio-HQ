@@ -13158,6 +13158,96 @@ workstreams:
           rather than mere vocabulary presence. Draft PR #330; corrected head pending
           independent DELTA review from 209e5d33c119c236b977e27bb44b640dceda3417; not
           merged, not principal-accepted in this session.
+      - gate: xasset0031-post-merge-verification
+        status: complete
+        pr: 330
+        description: >-
+          Lane M factual synchronization, recorded by the XASSET-0032 session. PR
+          #330 (XASSET-0031) independently re-confirmed merged from live GitHub and
+          git state: accepted head 2d3252d424d7f95c5461b4be79e0f21a89243154, merge
+          commit 1d7c61f3a6188cf2df7a7bc0390c269e596ef202, parents
+          3bcb137981d7dea5362ebca05deba60830076bee and the accepted head, merge tree
+          byte-identical to the accepted head's own tree — zero drift at merge. Final
+          independent DELTA review 4947741115, APPROVED FOR PRINCIPAL EXACT-HEAD
+          ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR / 1 NOTE. Principal exact-head
+          acceptance issuecomment-5310583096. Merge-commit CI run 31983014229,
+          head_sha 1d7c61f3..., completed/success. Zero open PRs at verification.
+          Confirmed unchanged at that merge: SHARE_OF_THE_WHOLE_CONDITION_NOT_CLOSABLE;
+          the XASSET-0030 6/6 gate map; XASSET-0024 SS-K.1 unresolved; XASSET-0020
+          SS-E.1 unamended; G1/G2 not re-derived; R1/R2 route authority and "no third
+          route"; universe 680/48/73c0965e...5224; canonical pins 6c34cbbc...64cb and
+          6e0c07a8...337c; all six XASSET-0029 load-bearing paths; Stage 1 UNARMED;
+          ATTEMPT_1 intact, unclaimed, unconsumed. The prior xasset0031 gate's own
+          text is byte-unchanged.
+      - gate: xasset0032-remaining-semantic-gate-determination
+        status: in_progress
+        pr: null
+        description: >-
+          XASSET-0032, Lane G, bounded governance-only unit — the second semantic
+          successor after XASSET-0030, taking the five remaining XASSET-0030 SS-G.A
+          semantic prerequisites together: G5, G8, G9, G10, G12. Question: for each,
+          what is the most specific deterministic semantic rule, or the most exactly
+          bounded non-closability finding, that accepted authority actually supports.
+          BATCHABILITY: all five answered as ONE coherent unit after a five-question
+          test — one shared methodology and authority surface, no cross-gate policy
+          created, no gate requiring amendment of a different controlling decision, no
+          gate requiring protected evidence or a real future candidate for the
+          determinations actually made, and each judgment separately sectioned and
+          separately tested. The only genuinely separable concern — G10's possible
+          risk_lane_boundary dependence — resolved into NOT requiring protected
+          evidence, removing the sole reason to split.
+          DETERMINATION: all five remain NOT CLOSABLE. The XASSET-0030 6/6 gate map is
+          UNCHANGED; no gate moves between partitions; no SS-E.1 invalidation trigger
+          fires, so G1, G2, G4, G6, G7 and G11 are NOT re-derived. XASSET-0031's G3
+          determination is untouched and is neither reopened nor relied on as a
+          premise.
+          WHAT IS CLOSED, per gate. G5 — the originate-vs-clip rule is exactly
+          statable from XASSET-0024 SS-F Limb 4, non-route N1, XASSET-0020 SS-E.2 and
+          XASSET-0021 SS-F; the XASSET-0027 SS-M.4 reservation is general, not
+          sleeve_deployability-specific, and NO class-wide PASS or FAIL is recorded for
+          any of the six classes. G8 — "exactly one" is a conjunction of EXISTENCE and
+          uniqueness, so empty-set/vacuous uniqueness is never a PASS; and the
+          admitted set EXISTS and is non-empty (21 non-RISK + 14 RISK = 35 items),
+          while what is empty is the set of lawful endpoint VALUES in it (XASSET-0021
+          SS-F), so the current snapshot contributes zero competing values. G9 — path 2
+          is determinately unavailable (no accepted Level-1 aggregation/selection rule
+          exists), and the path-3-mandatory-abstention versus prerequisite-failure-class
+          tension is RECONCILED by both canonical artifacts: the gate-record class is
+          BLOCKED_PENDING_SEPARATE_PREREQUISITE while abstention is the endpoint-level
+          outcome, one state at two levels. G10 — "unresolved" is defined by
+          XASSET-0020 SS-I as a pair conclusion of unable_to_determine, and
+          XASSET-0021 SS-D determines ALL SIX canonical pairs unresolved under the
+          accepted snapshot, from committed governance text with NO protected-evidence
+          access; the population decomposes 120 UNORDERED_PAIR / 360 DIRECT_ALTERNATIVE
+          with a sleeve counterpart / 200 neither. G12 — "identifiable" does not mean
+          "exists", so nonexistence alone may never be recorded as G12 FAIL; and
+          PROTOCOL SS-8.1 confines G12 to identifiability only, forbidding an executor
+          from widening it into a full SS-J.1 admission test.
+          WHAT REMAINS OPEN: G5 and G9-path-1 are per-candidate and cannot be closed by
+          governance at all; G8 and G10 depend on a successor snapshot's composition and
+          pair status; G10 additionally on SS-H.4 consumption semantics for the 360
+          DIRECT_ALTERNATIVE constructions; G12 on the unfixed tense of "could admit",
+          whose two grounded readings produce opposite results.
+          THREE XASSET-0030 SS-E BASIS STATEMENTS CORRECTED, classification unchanged in
+          every case and XASSET-0030's own text NOT edited: G8's "no admitted set
+          exists"; G9's "additionally unreconciled" path-3 ground; G10's "determined
+          nowhere" and its risk_lane_boundary concern, which is dissolved rather than
+          crossed — the canonical protected result path was not read, listed, opened, or
+          reproduced, and this filing deliberately does not restate its literal value.
+          CONFORMANCE: all three derivation functions and PREREQUISITE_GATES conform to
+          canonical precedence; the reading-dependent BLOCKED_PENDING_SEPARATE_PREREQUISITE
+          prohibition conforms; XASSET-0030 SS-C's recorded BLOCKED_CATEGORICALLY defect is
+          neither re-derived, expanded, narrowed, nor corrected; NO new defect found.
+          Supporting artifact test_level1_stage1_remaining_semantic_gates.py — 90 focused
+          adversarial tests pinning, for every gate, both the intended rule and its nearest
+          plausible overreach, plus the shared structural reproduction, the unchanged gate
+          map and canonical gate definitions, G3/SS-K.1/SS-E.1 preservation, the
+          protected-path boundary, and that nothing arms, claims, completes or executes.
+          Creates no endpoint, bound, percentage, runner, attestation, lane state, or
+          stage1_results.yaml; evaluates no gate for any construction; consumes nothing of
+          ATTEMPT_1; changes no canonical byte, hash pin, universe, or LOAD_BEARING_RELPATHS.
+          Draft PR; not merged, not independently reviewed, not principal-accepted in this
+          session.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -14217,10 +14307,10 @@ workstreams:
       representation-aggregation rule, any snapshot successor, RISK parameter
       reuse, Level-2 work, liquidity determination, and policy adoption all
       remain separately unauthorized.
-    active_branch: claude/xasset-0031-g3-magnitude-5tiqd5
-    active_pr: 330
-    last_verified_main_sha: 3bcb137981d7dea5362ebca05deba60830076bee
-    last_verified_date: "2026-08-16"
+    active_branch: claude/xasset-0032-semantic-gates-sk79mn
+    active_pr: null
+    last_verified_main_sha: 1d7c61f3a6188cf2df7a7bc0390c269e596ef202
+    last_verified_date: "2026-08-17"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively
