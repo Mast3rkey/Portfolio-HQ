@@ -14024,8 +14024,12 @@ workstreams:
           CHANGED: both outcome-producing modules remain byte-identical to the accepted PR #336
           package and the live projected derivation surface is identical at the package's accepted
           head, the package's merge, this head, and the working tree. MINOR 1: this register still
-          said AUTHORIZING_PULL_REQUEST was bound AFTER the draft PR existed while every other
-          surface disclosed the opposite; corrected here to the exact truth - 337 was FIRST WRITTEN
+          asserted the OPPOSITE of the constant's own disclosed provenance - that the number had been
+          bound only once the draft existed, rather than written first and verified afterwards -
+          while every other surface already recorded the truth; the defective sentence is
+          deliberately NOT reproduced here, because the regression test forbids that exact claim on
+          every durable surface and a correction record restating it verbatim would reintroduce what
+          the test exists to keep out; corrected here to the exact truth - 337 was FIRST WRITTEN
           before the draft existed as the next sequential number and VERIFIED against the real draft
           once it opened, with the post-opening verification named as the load-bearing property - and
           a parametrized regression test now asserts across all three durable surfaces that the false

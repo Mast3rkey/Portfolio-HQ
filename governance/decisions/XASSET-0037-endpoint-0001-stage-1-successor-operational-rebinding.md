@@ -435,9 +435,13 @@ head, and the working tree.
 
 ### MINOR 1 — the durable register still told a different history
 
-`operations/WORKSTREAMS.yaml` still said `AUTHORIZING_PULL_REQUEST` was "bound AFTER the draft PR
-existed rather than guessed ahead of it", while the constant's comment, §D, the PR body, and two
-tests already disclosed the opposite. The corrective commit had missed the register copy.
+`operations/WORKSTREAMS.yaml` still asserted the **opposite** of the constant's own disclosed
+provenance — that the number had been bound only once the draft existed, rather than written first
+and verified afterwards — while the constant's comment, §D, the PR body, and two tests already
+recorded the truth. The corrective commit had missed the register copy. The defective sentence is
+deliberately **not** reproduced here: the regression test below forbids that exact claim on every
+durable surface, and a correction record that restated it verbatim would reintroduce the thing the
+test exists to keep out.
 
 **Corrected**: the register now states that `337` was **first written before the draft existed**, as
 the next sequential number, and **verified against the real draft once it opened**, with the
