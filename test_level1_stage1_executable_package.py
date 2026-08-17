@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import inspect
 from pathlib import Path
 
 import pytest
@@ -89,11 +90,6 @@ def _synthetic_record(family_id: str, counterpart: str | None = None) -> dict:
 SYNTHETIC_TRAVERSAL = [_synthetic_record("R1_C1"), _synthetic_record("R1_C3", "crypto")]
 
 
-def _synthetic_authorizer():
-    """A stub authorizer. Confers nothing: no lane state, no attestation, no claim."""
-    return (True, "synthetic test authorizer")
-
-
 def _input(**overrides) -> dict:
     base = {
         "gate_results": {gate: "PASS" for gate in R.EXECUTOR_SUPPLIED_GATES},
@@ -130,10 +126,9 @@ def _run(inputs=None, traversal=None):
         if inputs is None
         else inputs
     )
-    return R.run_stage1(
+    return R._compose_synthetic_stage1_document(
         inputs,
         provenance=_provenance(),
-        authorization=_synthetic_authorizer,
         traversal=traversal,
         cell_universe=[SYNTHETIC_CELL],
     )
@@ -348,6 +343,11 @@ class TestEnforcementCorrection:
             "point_or_range_support": "WOULD_SUPPORT_RANGE_ENDPOINT",
             "representation_dependency": None,
             "uncertainty_statement": "recorded",
+            "g12_basis": (
+                "NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS"
+                if gates.get("G12_SNAPSHOT_ADMISSIBILITY_PATH") == "FAIL"
+                else "LAWFUL_SUCCESSOR_IDENTIFIABLE"
+            ),
         }
         results = {
             "candidate_results": [row],
@@ -514,26 +514,29 @@ class TestRealPairConsumptionInventory:
 
 
 # ======================================================================================
-# The runner -- synthetic constructions, injected authorizer (SS-F.1(b) observed)
+# The runner -- synthetic constructions only (SS-F.1(b) observed)
 # ======================================================================================
 
 
 class TestRunnerFailsClosed:
-    def test_the_real_default_refuses_while_stage_1_is_unarmed(self):
+    def test_the_production_path_refuses_while_stage_1_is_unclaimed(self):
         with pytest.raises(R.Stage1RunnerError) as excinfo:
-            R.run_stage1({}, traversal=SYNTHETIC_TRAVERSAL)
-        assert "not operationally authorized" in str(excinfo.value)
+            R.run_stage1({})
+        assert "lawfully claimed execution" in str(excinfo.value)
 
-    def test_the_real_authorization_gate_is_false(self):
+    def test_the_real_new_execution_gate_is_false(self):
         authorized, _ = AUTH.new_execution_is_authorized()
+        assert authorized is False
+
+    def test_the_real_claimed_execution_gate_is_false(self):
+        authorized, _ = AUTH.claimed_execution_is_authorized()
         assert authorized is False
 
     def test_partial_publication_is_refused(self):
         with pytest.raises(R.Stage1RunnerError) as excinfo:
-            R.run_stage1(
-                {},
-                authorization=_synthetic_authorizer,
-                traversal=SYNTHETIC_TRAVERSAL,
+            R._compose_synthetic_stage1_document(
+                {}, provenance=_provenance(), traversal=SYNTHETIC_TRAVERSAL,
+                cell_universe=[SYNTHETIC_CELL],
             )
         assert "partial publication is prohibited" in str(excinfo.value)
 
@@ -541,10 +544,81 @@ class TestRunnerFailsClosed:
         inputs = {record["construction_id"]: _input() for record in SYNTHETIC_TRAVERSAL}
         inputs["not::a::registered::construction::SELF"] = _input()
         with pytest.raises(R.Stage1RunnerError) as excinfo:
-            R.run_stage1(
-                inputs, authorization=_synthetic_authorizer, traversal=SYNTHETIC_TRAVERSAL
+            R._compose_synthetic_stage1_document(
+                inputs, provenance=_provenance(), traversal=SYNTHETIC_TRAVERSAL,
+                cell_universe=[SYNTHETIC_CELL],
             )
         assert "unregistered" in str(excinfo.value)
+
+
+class TestProductionCompositionRequiresAClaim:
+    """BLOCKING 1 (review 4953193650). The production path asks the CLAIMED question and has no
+    injection seam; the synthetic seam cannot reach a registered construction."""
+
+    def test_run_stage1_asks_the_claimed_question_not_the_ready_question(self):
+        """Checked against the parsed CODE, so a docstring mentioning the other question by name
+        cannot make this pass or fail."""
+        tree = ast.parse(inspect.getsource(R.run_stage1).lstrip())
+        called = {
+            node.func.attr
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+        }
+        assert "claimed_execution_is_authorized" in called
+        assert "new_execution_is_authorized" not in called
+
+    def test_run_stage1_accepts_no_authorizer_traversal_or_cell_universe_parameter(self):
+        parameters = set(inspect.signature(R.run_stage1).parameters)
+        assert parameters == {"analytical_inputs", "provenance"}
+
+    def test_run_stage1_refuses_before_composing_any_row(self, monkeypatch):
+        calls = []
+        monkeypatch.setattr(
+            R, "build_candidate_row", lambda *a, **k: calls.append(1) or {}
+        )
+        with pytest.raises(R.Stage1RunnerError):
+            R.run_stage1({})
+        assert calls == []
+
+    def test_a_ready_but_unclaimed_lane_does_not_authorize_composition(self, monkeypatch):
+        monkeypatch.setattr(AUTH, "new_execution_is_authorized", lambda *a, **k: (True, ""))
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R.run_stage1({})
+        assert "lawfully claimed execution" in str(excinfo.value)
+
+    def test_the_synthetic_seam_refuses_a_none_traversal(self):
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R._compose_synthetic_stage1_document(
+                {}, traversal=None, cell_universe=[SYNTHETIC_CELL]
+            )
+        assert "explicit traversal" in str(excinfo.value)
+
+    def test_the_synthetic_seam_refuses_a_registered_record(self):
+        registered = sorted(R._registered_construction_ids())[0]
+        record = dict(SYNTHETIC_TRAVERSAL[0])
+        record["construction_id"] = registered
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R._compose_synthetic_stage1_document(
+                {registered: _input()},
+                traversal=[record],
+                cell_universe=[SYNTHETIC_CELL],
+            )
+        assert "may not name registered construction" in str(excinfo.value)
+
+    def test_the_synthetic_seam_refuses_a_registered_analytical_input(self):
+        registered = sorted(R._registered_construction_ids())[0]
+        inputs = {record["construction_id"]: _input() for record in SYNTHETIC_TRAVERSAL}
+        inputs[registered] = _input()
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R._compose_synthetic_stage1_document(
+                inputs, traversal=SYNTHETIC_TRAVERSAL, cell_universe=[SYNTHETIC_CELL]
+            )
+        assert "may not name registered construction" in str(excinfo.value)
+
+    def test_the_synthetic_seam_is_private_and_the_public_one_is_not_reachable_around(self):
+        public = {name for name in dir(R) if not name.startswith("_")}
+        assert "_compose_synthetic_stage1_document".lstrip("_") not in public
+        assert not any("authoriz" in name and "readiness" not in name for name in public)
 
 
 class TestRunnerDeterminedValues:
@@ -690,10 +764,9 @@ class TestRunnerCompositionIsOrderIndependent:
     def test_candidate_order_does_not_change_any_outcome(self):
         forward = _run()
         reverse_traversal = list(reversed(SYNTHETIC_TRAVERSAL))
-        reverse = R.run_stage1(
+        reverse = R._compose_synthetic_stage1_document(
             {record["construction_id"]: _input() for record in reverse_traversal},
             provenance=_provenance(),
-            authorization=_synthetic_authorizer,
             traversal=reverse_traversal,
             cell_universe=[SYNTHETIC_CELL],
         )
@@ -714,15 +787,17 @@ class TestSerializer:
         document = _run()
         assert R.serialize_stage1_results(document) == R.serialize_stage1_results(document)
 
-    def test_content_hash_is_stable(self):
+    def test_artifact_hash_is_stable(self):
         document = _run()
-        assert R.stage1_result_content_sha256(document) == R.stage1_result_content_sha256(document)
+        assert R.stage1_result_artifact_sha256(document) == R.stage1_result_artifact_sha256(document)
 
-    def test_a_content_change_changes_the_hash(self):
+    def test_a_content_change_changes_the_artifact_hash(self):
         document = _run()
         tampered = copy.deepcopy(document)
         tampered["candidate_results"][0]["uncertainty_statement"] = "changed"
-        assert R.stage1_result_content_sha256(document) != R.stage1_result_content_sha256(tampered)
+        assert R.stage1_result_artifact_sha256(document) != R.stage1_result_artifact_sha256(
+            tampered
+        )
 
     def test_row_key_order_is_the_canonical_result_schema_order(self):
         document = _run()
@@ -736,23 +811,224 @@ class TestSerializer:
         assert text.index('"schema_version"') < text.index('"study_id"')
         assert text.index('"candidate_results"') < text.index('"cell_results"')
 
-    def test_writer_refuses_to_overwrite(self, tmp_path):
+    def test_synthetic_write_seam_refuses_to_overwrite(self, tmp_path):
         document = _run()
         target = tmp_path / "results.yaml"
-        R.write_stage1_results(document, target)
+        R._write_synthetic_results_artifact(document, target)
         with pytest.raises(R.Stage1RunnerError) as excinfo:
-            R.write_stage1_results(document, target)
+            R._write_synthetic_results_artifact(document, target)
         assert "written once" in str(excinfo.value)
 
-    def test_writer_returns_the_content_hash(self, tmp_path):
+
+class TestPublicationBoundary:
+    """BLOCKING 2 (review 4953193650). Publication requires a lawful claim, the canonical path,
+    and full independent validation -- all BEFORE any file is opened."""
+
+    def test_writer_accepts_no_path_parameter(self):
+        assert set(inspect.signature(R.write_stage1_results).parameters) == {"document"}
+
+    def test_writer_refuses_while_stage_1_is_unclaimed(self):
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R.write_stage1_results(_run())
+        assert "lawfully claimed execution" in str(excinfo.value)
+
+    def test_writer_opens_no_file_when_unclaimed(self, monkeypatch):
+        opened = []
+        monkeypatch.setattr(R.os, "open", lambda *a, **k: opened.append(a) or 1)
+        with pytest.raises(R.Stage1RunnerError):
+            R.write_stage1_results(_run())
+        assert opened == []
+
+    def test_writer_refuses_an_invalid_document_even_when_claimed(self, monkeypatch):
+        monkeypatch.setattr(AUTH, "claimed_execution_is_authorized", lambda *a, **k: (True, ""))
+        opened = []
+        monkeypatch.setattr(R.os, "open", lambda *a, **k: opened.append(a) or 1)
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R.write_stage1_results({"not": "a results document"})
+        assert "failed independent validation" in str(excinfo.value)
+        assert opened == []
+
+    def test_writer_validation_precedes_any_open(self, monkeypatch):
+        """A synthetic document is well-formed only against a synthetic universe, so validating
+        it against the REAL frozen universe must fail -- and must fail before any open."""
+        monkeypatch.setattr(AUTH, "claimed_execution_is_authorized", lambda *a, **k: (True, ""))
+        opened = []
+        monkeypatch.setattr(R.os, "open", lambda *a, **k: opened.append(a) or 1)
+        with pytest.raises(R.Stage1RunnerError):
+            R.write_stage1_results(_run())
+        assert opened == []
+
+    def test_the_canonical_results_path_does_not_exist(self):
+        assert not R.canonical_results_path().exists()
+
+    def test_the_canonical_path_is_the_declared_relpath(self):
+        assert R.canonical_results_path() == R.ROOT / R.RESULTS_RELPATH
+
+    def test_the_synthetic_write_seam_may_not_target_the_canonical_path(self):
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            R._write_synthetic_results_artifact(_run(), R.canonical_results_path())
+        assert "may never target the canonical results path" in str(excinfo.value)
+
+    def test_the_writer_names_all_three_gates(self):
+        source = inspect.getsource(R.write_stage1_results)
+        assert "claimed_execution_is_authorized" in source
+        assert "validate_stage1_result_document" in source
+        assert "canonical_results_path" in source
+        # The claim gate is asked before validation, and validation before any open.
+        assert source.index("claimed_execution_is_authorized") < source.index(
+            "validate_stage1_result_document"
+        )
+        assert source.index("validate_stage1_result_document") < source.index("_open_exclusive")
+
+
+class TestResultIdentityIsSingular:
+    """MAJOR 1 (review 4953193650). The writer returns the SEMANTIC identity the completion path
+    binds, never the artifact byte checksum."""
+
+    def test_writer_returns_the_semantic_identity(self, monkeypatch, tmp_path):
         document = _run()
-        target = tmp_path / "results.yaml"
-        assert R.write_stage1_results(document, target) == R.stage1_result_content_sha256(document)
+        monkeypatch.setattr(AUTH, "claimed_execution_is_authorized", lambda *a, **k: (True, ""))
+        monkeypatch.setattr(
+            R, "canonical_results_path", lambda: tmp_path / "published.yaml"
+        )
+        monkeypatch.setattr(
+            RV, "validate_stage1_result_document", lambda *a, **k: PV.ValidationResult(True, ())
+        )
+        returned = R.write_stage1_results(document)
+        assert returned == AUTH.stage1_result_identity(document)
+        assert returned != R.stage1_result_artifact_sha256(document)
+
+    def test_the_two_hashes_are_different_functions(self):
+        document = _run()
+        assert AUTH.stage1_result_identity(document) != R.stage1_result_artifact_sha256(document)
+
+    def test_key_reordering_changes_the_artifact_hash_but_not_the_identity(self):
+        document = _run()
+        reordered = dict(reversed(list(document.items())))
+        assert AUTH.stage1_result_identity(document) == AUTH.stage1_result_identity(reordered)
+        assert R.stage1_result_artifact_sha256(document) != R.stage1_result_artifact_sha256(
+            reordered
+        )
+
+    def test_the_completion_path_binds_the_semantic_identity(self):
+        for function in (AUTH.complete_execution, AUTH.completed_result_is_authorized):
+            assert "stage1_result_identity" in inspect.getsource(function)
+
+    def test_no_authorization_function_consumes_the_artifact_checksum(self):
+        assert "stage1_result_artifact_sha256" not in Path(
+            "level1_stage1_execution_authorization.py"
+        ).read_text(encoding="utf-8")
 
 
 # ======================================================================================
 # The independent result validator
 # ======================================================================================
+
+
+class TestG12BasisIsPersistedAndIndependentlyEnforced:
+    """MAJOR 2 (review 4953193650). B1's preserved floor survives serialization: the basis the
+    runner validated is recorded in the publishable artifact, and the independent validator
+    re-enforces the coupling rather than trusting the producer."""
+
+    def test_the_schema_declares_the_basis_key(self):
+        assert "g12_basis" in PV.REQUIRED_CANDIDATE_RESULT_KEYS
+
+    def test_every_row_records_the_basis_the_runner_validated(self):
+        document = _run()
+        for row in document["candidate_results"]:
+            assert row["g12_basis"] == "LAWFUL_SUCCESSOR_IDENTIFIABLE"
+
+    def test_the_runner_and_the_validator_agree_on_the_closed_vocabulary(self):
+        assert set(R.G12_BASES) == set(RV._G12_BASIS_VALUES) == set(PV.G12_BASIS_VALUES)
+
+    def test_the_validator_defines_its_vocabulary_independently_of_the_runner(self):
+        source = inspect.getsource(RV)
+        marker = source.index("_G12_BASIS_VALUES = (")
+        assert "RUNNER.G12_BASES" not in source
+        assert "LAWFUL_SUCCESSOR_IDENTIFIABLE" in source[marker : marker + 400]
+
+    @pytest.mark.parametrize("basis", ["", None, "SOMETHING_ELSE", "lawful_successor_identifiable"])
+    def test_an_unknown_or_missing_basis_is_rejected(self, basis):
+        document = _run()
+        document["candidate_results"][0]["g12_basis"] = basis
+        result = _validate(document)
+        assert not result.ok and any("g12_basis" in error for error in result.errors)
+
+    def test_a_g12_fail_on_successor_nonexistence_alone_is_rejected(self):
+        document = _run()
+        row = document["candidate_results"][0]
+        row["gate_results"]["G12_SNAPSHOT_ADMISSIBILITY_PATH"] = "FAIL"
+        row["g12_basis"] = "SUCCESSOR_NONEXISTENCE_ALONE"
+        result = _validate(document)
+        assert not result.ok
+        assert any("SUCCESSOR_NONEXISTENCE_ALONE" in error for error in result.errors)
+
+    def test_a_g12_fail_on_independent_grounds_remains_representable(self):
+        inputs = {
+            record["construction_id"]: _input(
+                gate_results={
+                    **{gate: "PASS" for gate in R.EXECUTOR_SUPPLIED_GATES},
+                    "G12_SNAPSHOT_ADMISSIBILITY_PATH": "FAIL",
+                },
+                g12_basis="NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS",
+            )
+            for record in SYNTHETIC_TRAVERSAL
+        }
+        document = _run(inputs)
+        assert _validate(document).ok, _validate(document).errors
+
+    def test_successor_nonexistence_alone_is_lawful_when_g12_does_not_fail(self):
+        inputs = {
+            record["construction_id"]: _input(g12_basis="SUCCESSOR_NONEXISTENCE_ALONE")
+            for record in SYNTHETIC_TRAVERSAL
+        }
+        document = _run(inputs)
+        assert _validate(document).ok, _validate(document).errors
+
+    def test_the_runner_still_refuses_the_pairing_at_input_time(self):
+        inputs = {
+            record["construction_id"]: _input(
+                gate_results={
+                    **{gate: "PASS" for gate in R.EXECUTOR_SUPPLIED_GATES},
+                    "G12_SNAPSHOT_ADMISSIBILITY_PATH": "FAIL",
+                },
+                g12_basis="SUCCESSOR_NONEXISTENCE_ALONE",
+            )
+            for record in SYNTHETIC_TRAVERSAL
+        }
+        with pytest.raises(R.Stage1RunnerError) as excinfo:
+            _run(inputs)
+        assert "successor nonexistence alone" in str(excinfo.value)
+
+    def test_the_basis_survives_a_serialize_parse_round_trip(self):
+        document = _run()
+        parsed = RV.load_results(R.serialize_stage1_results(document))
+        assert [row["g12_basis"] for row in parsed["candidate_results"]] == [
+            row["g12_basis"] for row in document["candidate_results"]
+        ]
+
+    def test_tampering_with_the_basis_after_serialization_is_caught(self):
+        inputs = {
+            record["construction_id"]: _input(
+                gate_results={
+                    **{gate: "PASS" for gate in R.EXECUTOR_SUPPLIED_GATES},
+                    "G12_SNAPSHOT_ADMISSIBILITY_PATH": "FAIL",
+                },
+                g12_basis="NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS",
+            )
+            for record in SYNTHETIC_TRAVERSAL
+        }
+        document = _run(inputs)
+        assert _validate(document).ok
+        parsed = RV.load_results(R.serialize_stage1_results(document))
+        parsed["candidate_results"][0]["g12_basis"] = "SUCCESSOR_NONEXISTENCE_ALONE"
+        assert not _validate(parsed).ok
+
+    def test_the_canonical_artifact_declares_the_coupling(self, prereg):
+        block = prereg["result_schema"]["g12_basis_vocabulary"]
+        assert block["prohibited_with_g12_fail"] == "SUCCESSOR_NONEXISTENCE_ALONE"
+        assert block["coupling_is_enforced"] is True
+        assert set(block["values"]) == set(PV.G12_BASIS_VALUES)
 
 
 class TestResultValidator:
@@ -881,7 +1157,7 @@ class TestResultValidator:
         """A round trip through disk still re-derives everything."""
         document = _run()
         target = tmp_path / "results.yaml"
-        R.write_stage1_results(document, target)
+        R._write_synthetic_results_artifact(document, target)
         loaded = RV.load_results(target.read_bytes())
         assert _validate(loaded).ok
 
@@ -1092,10 +1368,10 @@ class TestNoExecutionOccurred:
         assert not paths.authorization.exists()
         assert not paths.claim.exists()
 
-    def test_injecting_a_synthetic_authorizer_confers_nothing(self):
+    def test_using_the_synthetic_seam_confers_nothing(self):
         _run()
-        authorized, _ = AUTH.new_execution_is_authorized()
-        assert authorized is False
+        assert AUTH.new_execution_is_authorized()[0] is False
+        assert AUTH.claimed_execution_is_authorized()[0] is False
         assert not AUTH.LanePaths().authorization.exists()
 
     def test_no_real_registered_construction_carries_a_disposition_in_this_suite(self):

@@ -110,6 +110,14 @@ def _candidate_row(construction_id: str, gates: dict[str, str] | None = None, **
         "point_or_range_support": "WOULD_SUPPORT_RANGE_ENDPOINT",
         "representation_dependency": None,
         "uncertainty_statement": "recorded",
+        # Added to the publishable schema by the XASSET-0036 SS-G.B package (MAJOR 2, review
+        # 4953193650), so B1's preserved floor survives serialization instead of living only as
+        # the runner's input-time refusal. A conforming row records it.
+        "g12_basis": (
+            "NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS"
+            if gates.get("G12_SNAPSHOT_ADMISSIBILITY_PATH") == "FAIL"
+            else "LAWFUL_SUCCESSOR_IDENTIFIABLE"
+        ),
     }
     row.update(overrides)
     return row

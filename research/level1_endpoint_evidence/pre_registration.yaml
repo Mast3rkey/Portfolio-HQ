@@ -1673,6 +1673,28 @@ result_schema:
   - point_or_range_support
   - representation_dependency
   - uncertainty_statement
+  - g12_basis
+  g12_basis_vocabulary:
+    values:
+    - LAWFUL_SUCCESSOR_IDENTIFIABLE
+    - SUCCESSOR_NONEXISTENCE_ALONE
+    - NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS
+    - UNDETERMINED
+    recorded_per_candidate: true
+    prohibited_with_g12_fail: SUCCESSOR_NONEXISTENCE_ALONE
+    statement: >-
+      Every candidate result records the machine-readable basis on which its G12 result rests. This
+      is what makes g12_modal_register's floor independently enforceable at results time rather than
+      only at input time: without it, a serialized G12 FAIL carries no fact distinguishing the
+      prohibited successor-nonexistence-alone ground from a lawful independent one, and an
+      independent validator has nothing to check.
+    coupling_is_enforced: true
+    coupling_statement: >-
+      A candidate recording G12 as FAIL may not record SUCCESSOR_NONEXISTENCE_ALONE as its basis.
+      XASSET-0035 SSE.5 preserves the floor that successor nonexistence is never BY ITSELF a ground
+      for concluding no lawful successor could admit the candidate. A G12 FAIL resting on
+      independent grounds remains fully representable, and every other result value may carry any
+      basis in the closed vocabulary.
   cell_result_keys:
   - cell_id
   - sleeve

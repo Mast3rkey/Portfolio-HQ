@@ -57,7 +57,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -488,10 +488,20 @@ def build_candidate_row(
         "point_or_range_support": analytical_input["point_or_range_support"],
         "representation_dependency": analytical_input["g9_named_dependency"],
         "uncertainty_statement": analytical_input["uncertainty_statement"],
+        # XASSET-0035 SS-E.5's preserved floor, carried into the publishable artifact rather than
+        # left as an input-time refusal an independent reader cannot see. The runner emits exactly
+        # the basis it validated above; the independent result validator re-enforces the coupling.
+        "g12_basis": str(analytical_input["g12_basis"]),
     }
 
 
-def _default_authorization() -> tuple[bool, str]:
+def _registered_construction_ids() -> frozenset[str]:
+    """The real frozen registered identities. Read-only; evaluates nothing."""
+    return frozenset(str(record["construction_id"]) for record in frozen_traversal())
+
+
+def new_execution_readiness() -> tuple[bool, str]:
+    """Report the READY question for the read-only self-check. Authorizes nothing."""
     import level1_stage1_execution_authorization as authorization
 
     return authorization.new_execution_is_authorized()
@@ -501,32 +511,90 @@ def run_stage1(
     analytical_inputs: Mapping[str, Mapping[str, Any]],
     *,
     provenance: Mapping[str, Any] | None = None,
-    authorization: Callable[[], tuple[bool, str]] | None = None,
-    traversal: Sequence[Mapping[str, Any]] | None = None,
-    cell_universe: Sequence[str] | None = None,
 ) -> dict[str, Any]:
-    """Compose a complete Stage-1 results document. FAILS CLOSED on authorization.
+    """Compose the real Stage-1 results document. PRODUCTION path. FAILS CLOSED.
 
-    ``authorization`` is injectable so this module's tests can exercise composition against a
-    synthetic authorizer. Injecting one confers nothing: it creates no attestation, writes no lane
-    state, and claims no attempt. The real default refuses while Stage 1 is unarmed.
+    BLOCKING 1 (review 4953193650): this previously asked only ``new_execution_is_authorized`` --
+    "may a NEW execution start" -- and accepted an injected authorizer on the real path, so a
+    caller could compose real outcomes over the real frozen 680 without any claim ever existing.
+    Reproduced before correcting.
 
-    ``traversal`` is injectable for the same reason, so composition can be tested over a small
-    synthetic universe without touching the real 680.
+    Composing a disposition for a registered construction IS the real work, so the question that
+    must be answered here is ``claimed_execution_is_authorized`` -- "did THIS execution come from
+    the one lawful, still-authenticated claim". There is NO injection seam on this path: the only
+    authorizer is the real one, the only traversal is the real frozen universe, and the only cell
+    ordering is the canonical one.
+
+    Synthetic composition lives in :func:`_compose_synthetic_stage1_document`, which is
+    mechanically barred from every registered identity.
     """
-    check = authorization or _default_authorization
-    authorized, reason = check()
+    import level1_stage1_execution_authorization as authorization
+
+    authorized, reason = authorization.claimed_execution_is_authorized()
     if not authorized:
         raise Stage1RunnerError(
-            f"Stage-1 execution is not operationally authorized -- {reason}"
+            "Stage-1 outcomes may only be composed by a lawfully claimed execution -- " + reason
         )
 
-    records = tuple(frozen_traversal() if traversal is None else traversal)
-    if traversal is None:
-        ok, errors = verify_frozen_traversal(records)
-        if not ok:
-            raise Stage1RunnerError(f"frozen traversal failed structural verification: {errors}")
+    records = tuple(frozen_traversal())
+    ok, errors = verify_frozen_traversal(records)
+    if not ok:
+        raise Stage1RunnerError(f"frozen traversal failed structural verification: {errors}")
+    return _compose_stage1_document(
+        analytical_inputs,
+        provenance=provenance,
+        records=records,
+        ordered_cells=tuple(PV.generate_cell_universe()),
+    )
 
+
+def _compose_synthetic_stage1_document(
+    analytical_inputs: Mapping[str, Mapping[str, Any]],
+    *,
+    provenance: Mapping[str, Any] | None = None,
+    traversal: Sequence[Mapping[str, Any]],
+    cell_universe: Sequence[str],
+) -> dict[str, Any]:
+    """Compose over a SYNTHETIC universe. Private seam; authorizes and publishes nothing.
+
+    Two mechanical restrictions make this seam incapable of standing in for the production path:
+    a traversal must be supplied explicitly (``None`` is refused rather than silently defaulting
+    to the real 680), and no supplied record or analytical input may name a registered
+    construction. A caller therefore cannot reach a real disposition through this door.
+    """
+    if traversal is None:
+        raise Stage1RunnerError(
+            "the synthetic composition seam requires an explicit traversal; it may never fall "
+            "back to the real frozen universe"
+        )
+    records = tuple(traversal)
+    registered = _registered_construction_ids()
+    offending = sorted(
+        {str(record["construction_id"]) for record in records}.union(map(str, analytical_inputs))
+        & registered
+    )
+    if offending:
+        raise Stage1RunnerError(
+            "the synthetic composition seam may not name registered construction(s) "
+            f"{offending[:5]}; real dispositions are composed only by run_stage1 under a lawful "
+            "claim"
+        )
+    return _compose_stage1_document(
+        analytical_inputs,
+        provenance=provenance,
+        records=records,
+        ordered_cells=tuple(cell_universe),
+    )
+
+
+def _compose_stage1_document(
+    analytical_inputs: Mapping[str, Mapping[str, Any]],
+    *,
+    provenance: Mapping[str, Any] | None,
+    records: Sequence[Mapping[str, Any]],
+    ordered_cells: Sequence[str],
+) -> dict[str, Any]:
+    """Pure, deterministic composition. Selects no traversal and consults no authorization."""
     expected_ids = [str(record["construction_id"]) for record in records]
     unregistered = [key for key in analytical_inputs if key not in set(expected_ids)]
     if unregistered:
@@ -547,13 +615,10 @@ def run_stage1(
     by_cell: dict[str, list[dict[str, Any]]] = {}
     for row in rows:
         by_cell.setdefault(str(row["cell_id"]), []).append(row)
-    # Cells are emitted in the canonical cell-universe order, not in dict-insertion or sorted
+    # Cells are emitted in the supplied cell-universe order, not in dict-insertion or sorted
     # order, so the document's ordering is a canonical fact rather than an artifact of traversal.
-    # ``cell_universe`` is injectable for the same reason ``traversal`` is, and defaults to the
-    # canonical order in production.
-    ordered_cells = (
-        tuple(PV.generate_cell_universe()) if cell_universe is None else tuple(cell_universe)
-    )
+    # The production caller always supplies the canonical order.
+    ordered_cells = tuple(ordered_cells)
     # A cell present in the traversal but absent from the ordering would be silently dropped,
     # which would publish a partial document while every other check passed.
     orphan_cells = [cell_id for cell_id in by_cell if cell_id not in set(ordered_cells)]
@@ -640,25 +705,96 @@ def serialize_stage1_results(document: Mapping[str, Any]) -> bytes:
     ).encode("utf-8")
 
 
-def stage1_result_content_sha256(document: Mapping[str, Any]) -> str:
-    """Return the SHA-256 of the serialized document."""
+def stage1_result_artifact_sha256(document: Mapping[str, Any]) -> str:
+    """SHA-256 of the SERIALIZED BYTES. Diagnostic only -- this is NOT the result identity.
+
+    MAJOR 1 (review 4953193650): the writer previously returned this value while the whole
+    authorization chain -- ``complete_execution`` and ``completed_result_is_authorized`` -- binds
+    ``level1_stage1_execution_authorization.stage1_result_identity``, the SHA-256 of the CANONICAL
+    SORTED JSON. The two are different functions of the same document and diverge whenever key
+    order changes, so returning this one invited a caller to bind an identity the completion path
+    would then reject. Reproduced before correcting.
+
+    This value therefore authorizes nothing and is never accepted anywhere an identity is
+    required. It exists only to express byte-level artifact reproducibility. Use
+    :func:`level1_stage1_execution_authorization.stage1_result_identity` for identity.
+    """
     return hashlib.sha256(serialize_stage1_results(document)).hexdigest()
 
 
-def write_stage1_results(document: Mapping[str, Any], path: Path) -> str:
-    """Write a results document exactly once, refusing to overwrite. Returns its SHA-256.
-
-    Uses ``O_EXCL`` so a results artifact can never be silently regenerated or replayed -- the same
-    property the attestation and its consumption receipt already rely on.
-    """
-    payload = serialize_stage1_results(document)
-    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+def _open_exclusive(path: Path) -> int:
+    """``O_EXCL`` open, so an artifact can never be silently regenerated or replayed."""
     try:
-        handle = os.open(path, flags, 0o644)
+        return os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
     except FileExistsError as exc:
         raise Stage1RunnerError(
             f"{path} already exists; a Stage-1 results artifact is written once and never replaced"
         ) from exc
+
+
+def canonical_results_path() -> Path:
+    """The one path a real Stage-1 results artifact may ever occupy."""
+    return ROOT / RESULTS_RELPATH
+
+
+def write_stage1_results(document: Mapping[str, Any]) -> str:
+    """Publish the real Stage-1 results artifact. PRODUCTION path. FAILS CLOSED.
+
+    Returns the SEMANTIC RESULT IDENTITY -- ``stage1_result_identity`` -- the single value the
+    completion and publication path already binds.
+
+    BLOCKING 2 (review 4953193650): this previously accepted an arbitrary path, consulted no
+    authorization, and validated nothing, so any caller could write any bytes anywhere and call
+    the output a Stage-1 results artifact. Reproduced before correcting by writing a garbage
+    document the independent validator rejects.
+
+    Three gates now precede any file being opened, in this order, and every one fails closed:
+
+    1. the execution must come from the one lawful, still-authenticated claim;
+    2. the destination is the canonical path and nothing else -- there is no path parameter;
+    3. the document must pass the INDEPENDENT result validator, in memory, in full.
+
+    Only after all three pass is the file opened, and then with ``O_EXCL``.
+    """
+    import level1_stage1_execution_authorization as authorization
+    import level1_stage1_result_validator as result_validator
+
+    authorized, reason = authorization.claimed_execution_is_authorized()
+    if not authorized:
+        raise Stage1RunnerError(
+            "a Stage-1 results artifact may only be published by a lawfully claimed execution -- "
+            + reason
+        )
+
+    outcome = result_validator.validate_stage1_result_document(document)
+    if not outcome.ok:
+        raise Stage1RunnerError(
+            "the results document failed independent validation and will not be published; "
+            f"first errors: {list(outcome.errors)[:5]}"
+        )
+
+    path = canonical_results_path()
+    payload = serialize_stage1_results(document)
+    handle = _open_exclusive(path)
+    with os.fdopen(handle, "wb") as stream:
+        stream.write(payload)
+    return authorization.stage1_result_identity(document)
+
+
+def _write_synthetic_results_artifact(document: Mapping[str, Any], path: Path) -> str:
+    """Serialize a SYNTHETIC document to a caller-chosen path. Private seam; publishes nothing.
+
+    Mechanically barred from the canonical results path, so it can never stand in for
+    :func:`write_stage1_results`. Returns the artifact byte checksum, which authorizes nothing.
+    """
+    destination = Path(path)
+    if destination.resolve() == canonical_results_path().resolve():
+        raise Stage1RunnerError(
+            "the synthetic write seam may never target the canonical results path; a real "
+            "artifact is published only by write_stage1_results under a lawful claim"
+        )
+    payload = serialize_stage1_results(document)
+    handle = _open_exclusive(destination)
     with os.fdopen(handle, "wb") as stream:
         stream.write(payload)
     return hashlib.sha256(payload).hexdigest()
@@ -668,7 +804,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Read-only structural self-check. Executes no Stage 1 and writes nothing."""
     ok, errors = verify_frozen_traversal()
     inventory = pair_consumption_inventory()
-    authorized, reason = _default_authorization()
+    authorized, reason = new_execution_readiness()
     print(f"frozen traversal structurally verified: {ok}")
     for error in errors:
         print(f"  {error}")

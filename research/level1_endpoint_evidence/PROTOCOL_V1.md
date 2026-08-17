@@ -741,6 +741,22 @@ never makes `G2` a categorical `FAIL`; what is now permitted is a **candidate di
 `BLOCKED_CATEGORICALLY` when some categorical gate **other than `G2`** independently fails. A
 reading-dependent `G2` with no other categorical failure still may not be recorded categorically.
 
+### The recorded `G12` basis
+
+B1's floor is only enforceable on a published document if the document carries the fact the floor
+turns on. Every candidate result therefore records `g12_basis`, drawn from a closed four-value
+vocabulary: `LAWFUL_SUCCESSOR_IDENTIFIABLE`, `SUCCESSOR_NONEXISTENCE_ALONE`,
+`NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS`, `UNDETERMINED`.
+
+The coupling is enforced, not annotated: **a candidate recording `G12` as `FAIL` may not record
+`SUCCESSOR_NONEXISTENCE_ALONE` as its basis.** A `G12` `FAIL` resting on independent grounds stays
+fully representable, and every other `G12` result may carry any basis in the vocabulary.
+
+Without this field a serialized `G12` `FAIL` carries no fact distinguishing the prohibited ground
+from a lawful one, so the floor could only be checked at runner-input time — which a tampered or
+hand-authored document bypasses entirely. Recording it moves the check to where an independent
+validator can actually make it.
+
 ### Deterministic execution machinery
 
 The package adds a deterministic runner, a result writer, and an independent result validator. The

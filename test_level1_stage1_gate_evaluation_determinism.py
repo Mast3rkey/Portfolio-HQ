@@ -127,6 +127,13 @@ def _candidate_row(frozen: dict, construction_id: str, gates: dict[str, str]) ->
             "point_or_range_support": "RANGE_FIRST",
             "representation_dependency": None,
             "uncertainty_statement": "XASSET-0024 SS-K.1 remains unresolved.",
+            # Added to the publishable schema by the XASSET-0036 SS-G.B package (MAJOR 2, review
+            # 4953193650). A conforming row records it; the coupling with a G12 FAIL is enforced.
+            "g12_basis": (
+                "NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS"
+                if gates.get("G12_SNAPSHOT_ADMISSIBILITY_PATH") == "FAIL"
+                else "LAWFUL_SUCCESSOR_IDENTIFIABLE"
+            ),
         }
     )
     return row

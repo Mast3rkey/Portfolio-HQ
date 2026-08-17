@@ -116,6 +116,25 @@ _PERMITTED_NUMERIC_KEYS = frozenset(
 )
 
 
+#: The closed ``g12_basis`` vocabulary, restated here rather than imported from the producing
+#: runner so this validator can contradict a runner that drifts. ``XASSET-0035`` SS-E fixes ``G12``'s
+#: modal register at lawful satisfiability of the frozen construction specification; SS-E.5 preserves
+#: the floor that successor nonexistence is NEVER BY ITSELF a ground for concluding no successor
+#: could admit the candidate. A lawful ``G12`` ``FAIL`` on independent grounds stays representable.
+_G12_BASIS_VALUES = (
+    "LAWFUL_SUCCESSOR_IDENTIFIABLE",
+    "SUCCESSOR_NONEXISTENCE_ALONE",
+    "NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS",
+    "UNDETERMINED",
+)
+
+#: The one basis that may never accompany a ``G12`` ``FAIL``.
+_G12_BASIS_PROHIBITED_WITH_FAIL = "SUCCESSOR_NONEXISTENCE_ALONE"
+
+#: The gate the basis is coupled to.
+_G12_GATE_ID = "G12_SNAPSHOT_ADMISSIBILITY_PATH"
+
+
 class ResultValidationError(ValueError):
     """Raised when a results document cannot even be parsed safely."""
 
@@ -389,6 +408,26 @@ def validate_stage1_result_document(
                 )
         else:
             errors.append(f"{where}: both G2 reading outcomes must be in {PV.READING_VOCABULARY}")
+
+        # XASSET-0035 SS-E.5's preserved floor, re-enforced against the PUBLISHED artifact. The
+        # runner refuses this pairing at input time, but an input-time refusal is invisible to an
+        # independent reader of the artifact, so the coupling is checked again here from the row's
+        # own recorded basis and its own recorded G12 result.
+        recorded_basis = row.get("g12_basis")
+        if recorded_basis not in _G12_BASIS_VALUES:
+            errors.append(
+                f"{where}.g12_basis: recorded {recorded_basis!r} but must be one of "
+                f"{list(_G12_BASIS_VALUES)}"
+            )
+        elif (
+            gate_results.get(_G12_GATE_ID) == "FAIL"
+            and recorded_basis == _G12_BASIS_PROHIBITED_WITH_FAIL
+        ):
+            errors.append(
+                f"{where}: G12 may not FAIL on {_G12_BASIS_PROHIBITED_WITH_FAIL}; XASSET-0035 "
+                "SS-E fixes the modal register at lawful satisfiability of the frozen "
+                "specification, and successor nonexistence is never by itself a FAIL ground"
+            )
 
         # Composition, re-derived from the row's OWN gate results.
         try:

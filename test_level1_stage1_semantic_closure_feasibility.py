@@ -110,10 +110,10 @@ PROTECTED_RELPATHS = (
 #: SS-E/SS-F/SS-G semantics into the canonical artifacts and recomputed the pins afterwards.
 EXPECTED_CANONICAL_PINS = {
     "research/level1_endpoint_evidence/PROTOCOL_V1.md": (
-        "3e1202b5ffccb35fdee52f18a8f6c1c92252adacbc32145acf59b9877ec40edc"
+        "86b2a5e8674247698ac592ce4734744f940b4a119ffda5fd702bc3cbf3e40c13"
     ),
     "research/level1_endpoint_evidence/pre_registration.yaml": (
-        "1fea41b5879a38cc4b54a9bc1bbd70e24bb759aecf05b3c6e00cb27ccb40b57e"
+        "e993df9f41d2f5352e51c9921dd006d50ab69518a730d37def106696b3f149d4"
     ),
 }
 

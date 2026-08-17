@@ -452,7 +452,24 @@ REQUIRED_CANDIDATE_RESULT_KEYS = (
     "point_or_range_support",
     "representation_dependency",
     "uncertainty_statement",
+    # ADDED UNDER XASSET-0036 SS-E.1/SS-E.3. Without a machine-readable basis on the publishable
+    # row, a serialized G12 FAIL carries no fact distinguishing the PROHIBITED
+    # successor-nonexistence-alone ground from a lawful independent one, so the independent result
+    # validator cannot enforce g12_modal_register's floor at all -- it could only be enforced at
+    # runner-input time, which a tampered or hand-authored document bypasses entirely.
+    "g12_basis",
 )
+
+#: Closed vocabulary for a candidate's recorded G12 basis.
+G12_BASIS_VALUES = (
+    "LAWFUL_SUCCESSOR_IDENTIFIABLE",
+    "SUCCESSOR_NONEXISTENCE_ALONE",
+    "NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS",
+    "UNDETERMINED",
+)
+
+#: The one basis a ``G12`` ``FAIL`` may never rest on (``g12_modal_register``'s preserved floor).
+G12_BASIS_PROHIBITED_WITH_FAIL = "SUCCESSOR_NONEXISTENCE_ALONE"
 
 # Adversarial scan. Barred historical Level-1 values named by XASSET-0020 SS-M and XASSET-0025 SS-F.
 # Written as digit-separated patterns so this module does not itself embed a usable anchor literal.
@@ -2321,6 +2338,35 @@ def _validate_result_boundary(data: Mapping[str, Any], errors: list[str]) -> Non
             "result_schema.candidate_result_keys",
             errors,
         )
+        # ADDED UNDER XASSET-0036 SS-E.1/SS-E.3. The basis vocabulary and its coupling to a G12
+        # FAIL are what make g12_modal_register's floor enforceable on a PUBLISHED document
+        # rather than only on runner input.
+        basis = schema.get("g12_basis_vocabulary")
+        if not isinstance(basis, Mapping):
+            errors.append("result_schema.g12_basis_vocabulary: expected a mapping")
+        else:
+            _exact(
+                list(basis.get("values") or []),
+                list(G12_BASIS_VALUES),
+                "result_schema.g12_basis_vocabulary.values",
+                errors,
+            )
+            _true(
+                basis.get("recorded_per_candidate"),
+                "result_schema.g12_basis_vocabulary.recorded_per_candidate",
+                errors,
+            )
+            _exact(
+                basis.get("prohibited_with_g12_fail"),
+                G12_BASIS_PROHIBITED_WITH_FAIL,
+                "result_schema.g12_basis_vocabulary.prohibited_with_g12_fail",
+                errors,
+            )
+            _true(
+                basis.get("coupling_is_enforced"),
+                "result_schema.g12_basis_vocabulary.coupling_is_enforced",
+                errors,
+            )
     else:
         errors.append("result_schema: expected a mapping")
 
@@ -2807,6 +2853,27 @@ def _validate_stage1_results_against_universe(
                 )
         else:
             errors.append(f"{where}: both G2 reading outcomes must be in {READING_VOCABULARY}")
+
+        # ADDED UNDER XASSET-0036 SS-E.1/SS-E.3: g12_modal_register's floor, enforced on the
+        # PUBLISHED row. The runner refuses the prohibited pairing at input time, but that refusal
+        # is invisible to any consumer of a serialized document -- a tampered or hand-authored row
+        # would otherwise carry G12 FAIL with no recoverable basis at all.
+        recorded_basis = row.get("g12_basis")
+        if recorded_basis not in G12_BASIS_VALUES:
+            errors.append(
+                f"{where}.g12_basis: recorded {recorded_basis!r} but must be one of "
+                f"{list(G12_BASIS_VALUES)}"
+            )
+        elif (
+            isinstance(gate_results, Mapping)
+            and gate_results.get("G12_SNAPSHOT_ADMISSIBILITY_PATH") == "FAIL"
+            and recorded_basis == G12_BASIS_PROHIBITED_WITH_FAIL
+        ):
+            errors.append(
+                f"{where}: G12 may not FAIL on {G12_BASIS_PROHIBITED_WITH_FAIL}; successor "
+                "nonexistence is never by itself a ground for concluding no lawful successor "
+                "could admit the candidate"
+            )
 
         # Disposition must equal the deterministic derivation from the recorded gate results.
         if isinstance(gate_results, Mapping):
