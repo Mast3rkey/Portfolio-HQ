@@ -721,21 +721,40 @@ class TestXasset0029NoRegressIntact:
 
 
 class TestThisFilingMutatesNothingLoadBearing:
-    def test_canonical_pins_are_unchanged(self) -> None:
+    # AMENDED BY the XASSET-0036-AUTHORIZED IMPLEMENTATION. This class asserted the state as of
+    # THIS FILING, which authorized but performed none of §G.B. That remains true of the filing
+    # itself. The implementation it authorized has since landed and lawfully changed the state, so
+    # these three tests now assert the filing's accepted values as HISTORY and the live state as
+    # what §G.B steps 2-6 produced. Nothing is weakened: each addition is checked to be exactly the
+    # authorized set, not merely "some change".
+    def test_this_filings_accepted_pins_are_retained_as_history(self) -> None:
+        assert A.XASSET_0029_CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH] == PROTOCOL_SHA256
+        assert A.XASSET_0029_CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH] == PREREG_SHA256
+
+    def test_current_canonical_bytes_match_the_effective_pins(self) -> None:
         import hashlib
 
-        assert hashlib.sha256(PROTOCOL.read_bytes()).hexdigest() == PROTOCOL_SHA256
-        assert hashlib.sha256(PREREG.read_bytes()).hexdigest() == PREREG_SHA256
+        assert (
+            hashlib.sha256(PROTOCOL.read_bytes()).hexdigest()
+            == A.CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH]
+        )
+        assert (
+            hashlib.sha256(PREREG.read_bytes()).hexdigest()
+            == A.CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH]
+        )
 
-    def test_load_bearing_relpaths_still_the_same_six(self) -> None:
-        assert tuple(sorted(A.LOAD_BEARING_RELPATHS)) == EXPECTED_LOAD_BEARING
+    def test_the_six_paths_this_filing_saw_are_all_retained(self) -> None:
+        for relative in EXPECTED_LOAD_BEARING:
+            assert relative in A.LOAD_BEARING_RELPATHS
 
-    def test_no_runner_or_result_path_is_load_bearing_yet(self) -> None:
-        """§G.B step 5 exists precisely because this is still true today."""
-        for relative in A.LOAD_BEARING_RELPATHS:
-            lowered = relative.lower()
-            assert "runner" not in lowered
-            assert "result" not in lowered
+    def test_the_only_additions_are_the_authorized_outcome_producing_paths(self) -> None:
+        """§G.B step 5's extension, checked to be exactly the authorized set."""
+        additions = set(A.LOAD_BEARING_RELPATHS) - set(EXPECTED_LOAD_BEARING)
+        assert additions == {
+            "level1_stage1_runner.py",
+            "level1_stage1_result_validator.py",
+            "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
+        }
 
     def test_frozen_universe_is_unchanged(self) -> None:
         data = yaml.safe_load(PREREG.read_text(encoding="utf-8"))
@@ -758,11 +777,18 @@ class TestThisFilingMutatesNothingLoadBearing:
         assert not A.CLAIM_PATH.exists()
         assert not A.LEDGER_PATH.exists()
 
-    def test_no_endpoint_stage1_runner_or_results_document_exists(self) -> None:
+    def test_no_real_stage1_results_document_exists(self) -> None:
+        """AMENDED BY the XASSET-0036-AUTHORIZED IMPLEMENTATION.
+
+        This filing created no runner and no result validator, and §G.B step 4 later created both
+        under its authorization. What must STILL be absent -- and is the property this test was
+        really protecting -- is any REAL Stage-1 results document. §G.B steps 8-11 remain
+        unauthorized, so no execution has occurred and none may.
+        """
         assert not (ROOT / "stage1_results.yaml").exists()
-        assert not (ROOT / "level1_stage1_runner.py").exists()
-        assert not (ROOT / "level1_stage1_result_writer.py").exists()
-        assert not (ROOT / "level1_stage1_result_validator.py").exists()
+        assert not (ROOT / "research/level1_endpoint_evidence/stage1_results.yaml").exists()
+        authorized, _ = A.new_execution_is_authorized()
+        assert authorized is False
 
     def test_decision_declares_it_mutates_nothing_load_bearing(self, decision: str) -> None:
         body = _norm(_section(decision, "J"))

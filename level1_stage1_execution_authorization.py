@@ -134,9 +134,21 @@ CANONICAL_PREREGISTRATION_RELPATH = "research/level1_endpoint_evidence/pre_regis
 PROTOCOL_PATH = ROOT / CANONICAL_PROTOCOL_RELPATH
 PREREGISTRATION_PATH = ROOT / CANONICAL_PREREGISTRATION_RELPATH
 
-#: XASSET-0029 successor pins for the canonical bytes, computed after those bytes were
-#: final. Separate files from this module, so there is no self-hashing circularity.
+#: EFFECTIVE pins for the canonical bytes, recomputed under XASSET-0036 SS-E.7 after the canonical,
+#: enforcement, and outcome-producing bytes stabilized. Separate files from this module, so there
+#: is no self-hashing circularity.
 CANONICAL_PINS: dict[str, str] = {
+    CANONICAL_PROTOCOL_RELPATH: (
+        "3e1202b5ffccb35fdee52f18a8f6c1c92252adacbc32145acf59b9877ec40edc"
+    ),
+    CANONICAL_PREREGISTRATION_RELPATH: (
+        "1fea41b5879a38cc4b54a9bc1bbd70e24bb759aecf05b3c6e00cb27ccb40b57e"
+    ),
+}
+
+#: XASSET-0029's pins, retained as predecessor identity now that XASSET-0036's executable package
+#: amends the canonical bytes under successor authority. History is never invalidated.
+XASSET_0029_CANONICAL_PINS = {
     CANONICAL_PROTOCOL_RELPATH: (
         "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb"
     ),
@@ -160,13 +172,32 @@ PREDECESSOR_CANONICAL_PINS = {
 #: be edited in the same commit that changes the bytes it claims to verify, which is not a
 #: check. Drift in any of these between the accepted/merged tree and the working tree is
 #: refused.
+#
+# EXTENDED BY XASSET-0036 SS-E.6 / XASSET-0030 SS-G.B step 5. The prior set contained exactly six
+# paths and NO outcome-producing code, because none existed when XASSET-0029 was accepted. An
+# attestation could therefore have been perfectly authenticated while the code generating every one
+# of the 680 dispositions was unbound, and ATTEMPT_1 is non-rerunnable after claim.
+#
+# The three added paths are exactly those whose bytes can materially decide, order, map, derive,
+# serialize, write, or validate a Stage-1 outcome:
+#   * the runner -- decides ordering, applies B1/B2/B3, composes dispositions, serializes, writes;
+#   * the result validator -- decides whether a candidate result document may be published;
+#   * XASSET-0036 itself -- the decision authorizing the package, on the same footing XASSET-0029
+#     already occupies for its own authorization.
+#
+# The EXISTING exact-byte mechanism is reused unchanged (XASSET-0036 SS-E.6 states a preference for
+# it, and no concrete technical reason to depart was found): expected identity is still DERIVED
+# FROM THE MERGED GIT TREE at validation time, never from a hard-coded constant here.
 LOAD_BEARING_RELPATHS = (
     "level1_stage1_execution_authorization.py",
     "level1_endpoint_evidence_preregistration_validator.py",
     "level1_construction_universe_closure_validator.py",
+    "level1_stage1_runner.py",
+    "level1_stage1_result_validator.py",
     CANONICAL_PROTOCOL_RELPATH,
     CANONICAL_PREREGISTRATION_RELPATH,
     "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
+    "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
 )
 
 # ======================================================================================

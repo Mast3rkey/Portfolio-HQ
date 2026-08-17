@@ -737,16 +737,30 @@ class TestG1AndG2AreNotReDerived:
     def test_magnitude_capability_is_left_open_for_all_six_classes(self, decision_text):
         assert "Level 3 recorded **OPEN** for all six classes" in decision_text
 
-    def test_canonical_hashes_are_unchanged(self):
+    def test_canonical_hashes_match_the_effective_pins(self):
+        """AMENDED BY XASSET-0036 SS-E.1/SS-E.7.
+
+        This filing changed no canonical byte and neither re-derived G1 nor G2. The implementation
+        XASSET-0036 later authorized amended the canonical artifacts and recomputed the pins, so
+        the literals asserted here are XASSET-0029's and are now checked as history.
+        """
         import hashlib
 
         assert (
-            hashlib.sha256(PROTOCOL.read_bytes()).hexdigest()
+            A.XASSET_0029_CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH]
             == "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb"
         )
         assert (
-            hashlib.sha256(PREREG.read_bytes()).hexdigest()
+            A.XASSET_0029_CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH]
             == "6e0c07a8e3279f8100a41df489921720f7f3125346f977e64fb5deca2f34337c"
+        )
+        assert (
+            hashlib.sha256(PROTOCOL.read_bytes()).hexdigest()
+            == A.CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH]
+        )
+        assert (
+            hashlib.sha256(PREREG.read_bytes()).hexdigest()
+            == A.CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH]
         )
 
 
@@ -933,10 +947,23 @@ class TestNothingHereAuthorizesOrExecutes:
         assert not (ROOT / "research/level1_endpoint_evidence/stage1_results.yaml").exists()
         assert not list((ROOT / "research/level1_endpoint_evidence").glob("**/stage1_results.yaml"))
 
-    def test_no_runner_was_created_and_load_bearing_set_is_unchanged(self):
-        assert len(A.LOAD_BEARING_RELPATHS) == 6
-        assert not any("runner" in path for path in A.LOAD_BEARING_RELPATHS)
+    def test_this_decision_is_not_load_bearing_and_the_six_are_retained(self):
+        """AMENDED BY XASSET-0036 SS-E.6.
+
+        The property this filing was protecting -- that IT added nothing to the trust boundary --
+        is preserved: its own decision file is still not load-bearing. SS-G.B step 5 later added
+        exactly the outcome-producing paths, and the six this filing saw are all still present.
+        """
         assert Path(DECISION).name not in A.LOAD_BEARING_RELPATHS
+        for relative in (
+            "level1_stage1_execution_authorization.py",
+            "level1_endpoint_evidence_preregistration_validator.py",
+            "level1_construction_universe_closure_validator.py",
+            A.CANONICAL_PROTOCOL_RELPATH,
+            A.CANONICAL_PREREGISTRATION_RELPATH,
+            "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
+        ):
+            assert relative in A.LOAD_BEARING_RELPATHS
 
     def test_load_bearing_paths_are_byte_identical_to_head(self):
         import subprocess

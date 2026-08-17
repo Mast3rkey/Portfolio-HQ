@@ -82,6 +82,15 @@ FROZEN_UNIVERSE_SHA256 = "73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2c
 PROTOCOL_SHA256 = "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb"
 PREREG_SHA256 = "6e0c07a8e3279f8100a41df489921720f7f3125346f977e64fb5deca2f34337c"
 
+# AMENDED BY XASSET-0036's SS-G.B steps-2-7 executable package. The two canonical digests below are
+# XASSET-0029's, retained as HISTORICAL identity: XASSET-0036 SS-E.1 authorized reconciling the
+# XASSET-0035 SS-E/SS-F/SS-G semantics into the canonical artifacts, and SS-E.7 authorized
+# recomputing the pins afterwards. Rewriting these constants to the new values would erase what
+# this filing actually accepted, so they stay exactly as accepted and the CURRENT-byte check now
+# runs against the single effective source, level1_stage1_execution_authorization.CANONICAL_PINS.
+XASSET_0029_PROTOCOL_SHA256 = PROTOCOL_SHA256
+XASSET_0029_PREREG_SHA256 = PREREG_SHA256
+
 #: The four sleeves. ``XASSET-0020`` §H's six unordered pairs are exactly ``C(4, 2)`` over this set.
 SLEEVES = ("equity", "fund_broad_market", "fund_gld_defensive", "crypto")
 
@@ -220,10 +229,25 @@ def _synthetic_gate_results(**overrides: str) -> dict[str, str]:
 
 class TestFrozenInputsUnchanged:
     def test_canonical_pins_match(self):
+        """The current bytes match the current EFFECTIVE pins (XASSET-0036 SS-E.7)."""
         import hashlib
 
-        assert hashlib.sha256(PROTOCOL.read_bytes()).hexdigest() == PROTOCOL_SHA256
-        assert hashlib.sha256(PREREG.read_bytes()).hexdigest() == PREREG_SHA256
+        assert (
+            hashlib.sha256(PROTOCOL.read_bytes()).hexdigest()
+            == A.CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH]
+        )
+        assert (
+            hashlib.sha256(PREREG.read_bytes()).hexdigest()
+            == A.CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH]
+        )
+
+    def test_this_filings_accepted_pins_are_retained_as_history(self):
+        """Accepted history is never rewritten to match amended bytes."""
+        assert A.XASSET_0029_CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH] == XASSET_0029_PROTOCOL_SHA256
+        assert (
+            A.XASSET_0029_CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH]
+            == XASSET_0029_PREREG_SHA256
+        )
 
     def test_universe_cardinality_and_hash(self, universe):
         assert len(universe) == 680
@@ -238,11 +262,38 @@ class TestFrozenInputsUnchanged:
             "HYPOTHETICAL_SOURCE_ARCHITECTURE"
         }
 
-    def test_load_bearing_paths_are_exactly_six_and_contain_no_runner(self):
-        assert len(A.LOAD_BEARING_RELPATHS) == 6
-        joined = " ".join(A.LOAD_BEARING_RELPATHS).lower()
-        assert "runner" not in joined
-        assert "stage1_results" not in joined
+    def test_this_filing_added_no_load_bearing_path(self):
+        """AMENDED BY XASSET-0036. This filing left the set at six; SS-G.B step 5 later extended it.
+
+        What this test actually protects is that XASSET-0035 added nothing -- so it now asserts
+        the six paths XASSET-0035 saw are all still present, and that any addition beyond them is
+        exactly the outcome-producing set SS-G.B step 5 authorizes. It is not weakened into
+        accepting an arbitrary set.
+        """
+        for relative in (
+            "level1_stage1_execution_authorization.py",
+            "level1_endpoint_evidence_preregistration_validator.py",
+            "level1_construction_universe_closure_validator.py",
+            A.CANONICAL_PROTOCOL_RELPATH,
+            A.CANONICAL_PREREGISTRATION_RELPATH,
+            "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
+        ):
+            assert relative in A.LOAD_BEARING_RELPATHS
+        additions = set(A.LOAD_BEARING_RELPATHS) - {
+            "level1_stage1_execution_authorization.py",
+            "level1_endpoint_evidence_preregistration_validator.py",
+            "level1_construction_universe_closure_validator.py",
+            A.CANONICAL_PROTOCOL_RELPATH,
+            A.CANONICAL_PREREGISTRATION_RELPATH,
+            "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
+        }
+        assert additions == {
+            "level1_stage1_runner.py",
+            "level1_stage1_result_validator.py",
+            "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
+        }
+        # No REAL results artifact is load-bearing, because none exists.
+        assert "stage1_results" not in " ".join(A.LOAD_BEARING_RELPATHS).lower()
 
 
 class TestStageOneRemainsUnarmed:
@@ -744,13 +795,29 @@ class TestB2DoesNotDetermineTheGateResult:
         assert "does not correct it" in section
         assert "neither re-derived, expanded, narrowed, nor corrected" in section
 
-    def test_validator_enforcement_defect_branch_still_stands(self):
-        """§F.8 raises the stakes on XASSET-0030 §C; it must not silently fix it."""
+    def test_the_enforcement_defect_was_not_fixed_by_this_filing(self):
+        """AMENDED BY XASSET-0036 SS-E.2, which authorized SS-G.B step 3's correction.
+
+        XASSET-0035 SS-F.8 raised the stakes on the XASSET-0030 SS-C defect and expressly did NOT
+        correct it, recording that the correction "belongs to SS-G.B step 3". That correction has
+        since landed. What this test protects is the SUBSTANCE the defect branch guarded -- that
+        reading dependence alone never yields a categorical disposition -- which is preserved
+        exactly, alongside the canonically permitted outcome the defect wrongly blocked.
+        """
         source = (ROOT / "level1_endpoint_evidence_preregistration_validator.py").read_text(
             encoding="utf-8"
         )
         assert "a reading-dependent G2 outcome may not be recorded as " in source
-        assert "BLOCKED_CATEGORICALLY while XASSET-0024 SS-K.1 remains unresolved" in source
+        assert "independently fails" in source
+
+        gates = {gate: "PASS" for gate in V.GATE_IDS}
+        gates["G2_MAGNITUDE_INTRINSICALITY"] = "UNABLE_TO_DETERMINE"
+        # Reading dependence alone is still uncertainty, never a categorical bar.
+        assert V.derive_candidate_disposition(dict(gates)) == "UNABLE_TO_DETERMINE"
+        # An independent categorical failure now lawfully derives BLOCKED_CATEGORICALLY, which is
+        # exactly what XASSET-0027 SS-M.1 and both canonical artifacts always permitted.
+        gates["G10_PAIR_INDEPENDENCE"] = "FAIL"
+        assert V.derive_candidate_disposition(gates) == "BLOCKED_CATEGORICALLY"
 
 
 # ======================================================================================
@@ -1381,10 +1448,23 @@ class TestCorrection1ChangedOnlyLifecycleWording:
         assert not A.AUTHORIZATION_ROOT.exists()
 
     def test_frozen_inputs_still_exact_after_correction(self):
+        """AMENDED BY XASSET-0036 SS-E.1/SS-E.7, as in ``test_canonical_pins_match`` above.
+
+        The canonical digests now track the current EFFECTIVE pins. The FROZEN UNIVERSE hash is
+        deliberately still asserted against its literal accepted value: XASSET-0036 SS-F forbids
+        changing the construction identities, universe, cardinality, or universe hash, so that one
+        must NOT have moved.
+        """
         import hashlib
 
-        assert hashlib.sha256(PROTOCOL.read_bytes()).hexdigest() == PROTOCOL_SHA256
-        assert hashlib.sha256(PREREG.read_bytes()).hexdigest() == PREREG_SHA256
+        assert (
+            hashlib.sha256(PROTOCOL.read_bytes()).hexdigest()
+            == A.CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH]
+        )
+        assert (
+            hashlib.sha256(PREREG.read_bytes()).hexdigest()
+            == A.CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH]
+        )
         assert CU.universe_aggregate_sha256() == FROZEN_UNIVERSE_SHA256
 
 

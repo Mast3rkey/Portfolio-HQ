@@ -556,21 +556,43 @@ class TestStage1RemainsUnarmedAndNotExecutable:
     def test_attempt_1_identity_is_untouched(self):
         assert A.EXECUTION_ATTEMPT_ID == "ENDPOINT-0001::STAGE_1::ATTEMPT_1"
 
-    def test_canonical_pins_are_unchanged(self):
+    def test_this_filings_accepted_pins_are_retained_as_history(self):
+        """AMENDED BY XASSET-0036 SS-E.1/SS-E.7. This filing changed no canonical byte; the
+        implementation it later authorized did, so the literals it asserted are now history and
+        the live check runs against the effective pins."""
         assert (
-            A.sha256_file(ROOT / A.CANONICAL_PROTOCOL_RELPATH)
+            A.XASSET_0029_CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH]
             == "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb"
         )
         assert (
-            A.sha256_file(ROOT / A.CANONICAL_PREREGISTRATION_RELPATH)
+            A.XASSET_0029_CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH]
             == "6e0c07a8e3279f8100a41df489921720f7f3125346f977e64fb5deca2f34337c"
         )
 
-    def test_load_bearing_paths_are_unchanged_and_carry_no_runner(self):
-        assert len(A.LOAD_BEARING_RELPATHS) == 6
-        assert not any(
-            "runner" in p or "stage1_results" in p for p in A.LOAD_BEARING_RELPATHS
-        ), A.LOAD_BEARING_RELPATHS
+    def test_canonical_bytes_match_the_effective_pins(self):
+        assert (
+            A.sha256_file(ROOT / A.CANONICAL_PROTOCOL_RELPATH)
+            == A.CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH]
+        )
+        assert (
+            A.sha256_file(ROOT / A.CANONICAL_PREREGISTRATION_RELPATH)
+            == A.CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH]
+        )
+
+    def test_load_bearing_paths_retain_the_six_this_filing_saw(self):
+        """AMENDED BY XASSET-0036 SS-E.6. SS-G.B step 5 later added exactly the outcome-producing
+        paths; the six this filing saw are all still present, and no REAL results artifact is
+        load-bearing because none exists."""
+        for relative in (
+            "level1_stage1_execution_authorization.py",
+            "level1_endpoint_evidence_preregistration_validator.py",
+            "level1_construction_universe_closure_validator.py",
+            A.CANONICAL_PROTOCOL_RELPATH,
+            A.CANONICAL_PREREGISTRATION_RELPATH,
+            "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
+        ):
+            assert relative in A.LOAD_BEARING_RELPATHS
+        assert not any("stage1_results" in p for p in A.LOAD_BEARING_RELPATHS)
 
     def test_no_results_document_exists(self):
         assert not (ROOT / "research/level1_endpoint_evidence/stage1_results.yaml").exists()

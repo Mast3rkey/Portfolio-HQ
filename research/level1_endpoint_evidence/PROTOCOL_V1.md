@@ -587,8 +587,8 @@ stage_1_authorization_mechanism: EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION
 stage_1_execution_attempt_id: ENDPOINT-0001::STAGE_1::ATTEMPT_1
 stage_2_authorized: false
 j12_deferred: true
-hash_version: ENDPOINT-0001-PREREG-V5
-predecessor_hash_version: ENDPOINT-0001-PREREG-V4
+hash_version: ENDPOINT-0001-PREREG-V6
+predecessor_hash_version: ENDPOINT-0001-PREREG-V5
 -->
 
 ---
@@ -651,3 +651,114 @@ and an authorization naming one attempt can never authorize another
 consumes no execution lane. `XASSET-0024` §K.1 remains **unresolved** with both readings preserved,
 §J.12 remains **deferred**, representation remains `SOURCE_DEPENDENT_NO_PRIOR_RULE_REQUIRED`,
 Stage 2 remains **unauthorized**, and application authority remains **WITHHELD**.
+
+---
+
+## Amendment — `XASSET-0036` residual gate semantics and the executable package
+
+**Amended by `XASSET-0036`**, which authorized exactly one `XASSET-0030` §G.B steps-2–7
+implementation pass. This amendment transcribes the three residual gate-semantic determinations
+`XASSET-0035` accepted, and records what the executable package added.
+
+This protocol explains the design; it cannot enlarge or override the YAML. The canonical blocks are
+`g12_modal_register`, `pair_consumption_rule`, and `reserved_gate_recording_posture`. Where this
+section and the YAML appear to differ, **the YAML governs and the difference is a defect requiring a
+governed correction.**
+
+### Why fixing gate semantics now is the lawful window
+
+Canonical `gates_may_not_be_added_removed_reordered_or_reinterpreted_after_any_outcome_observed` is
+`true`, and **no outcome has been observed**: Stage 1 is unarmed and `ATTEMPT_1` unclaimed. Fixing
+these semantics before execution is therefore expressly permitted, and doing it afterwards would not
+be. None of the three blocks records a gate result for any construction, and none closes any gate on
+satisfaction.
+
+### B1 — `G12`'s modal register
+
+`G12`'s embedded modal "could admit" is evaluated against the **lawful satisfiability of the frozen
+construction specification**, not against execution-time world state. The register is chosen for
+coherence with the canonical gate-question register — nine of the twelve gate questions ask "*Would*
+the candidate …", a register only coherent about a source that does not yet exist — and not because
+it blocks fewer constructions.
+
+Three limits are preserved rather than absorbed. `G12` tests **identifiability only** and may not
+take on §J.1's hash-match, validator-pass, or governed-freshness conditions. "That could admit the
+candidate" remains an **operative conjunct** and may not be dropped on the strength of §6/§6.1's
+shorter restatements. And **successor nonexistence is never by itself a `FAIL` ground**. The register
+is `G12`-scoped: it is expressly not a program-wide gate-modal rule, because a program-wide statement
+would be an invalidation trigger for the `XASSET-0030` snapshot partition.
+
+### B2 — what it means to consume a pair
+
+A construction consumes a canonical `XASSET-0020` §H unordered pair **iff both of its own two frozen
+named comparison endpoints are sleeves**. Consumption is read off the construction's own frozen
+comparison identity, and **never off the presence or absence of the `unordered_pair_id` label** —
+inferring non-consumption from specification silence is the inference already rejected for the
+200-construction group, and an accepted decision cannot bar it for 200 while permitting it for 360.
+
+Structurally: **480 consuming, 200 non-consuming**, over the frozen 680. The 360
+`DIRECT_ALTERNATIVE` constructions carrying a sleeve counterpart consume the pair their two endpoints
+form, 60 per canonical pair across all six, with none unmapped and none degenerate.
+
+Four abuses are barred in terms: no hidden pair inference; **no transitive consumption**; **no
+relabelling** — `comparison_subject_kind` and `unordered_pair_id` change for no construction, and
+consumption is not identity; and no ignoring genuine consumption.
+
+This rule determines **whether** a pair is consumed. It does **not** determine `G10`'s result, which
+additionally turns on whether the consumed pair is unresolved at evaluation time. The 200
+non-consuming constructions are not thereby recorded `G10` `PASS`.
+
+### B3 — the reserved-gate recording posture
+
+Where a gate's *satisfaction* is expressly reserved by accepted authority, and the frozen
+construction is `HYPOTHETICAL_SOURCE_ARCHITECTURE` so the reserved question cannot be answered from
+the specification, the executor records **`UNABLE_TO_DETERMINE`**.
+
+The value is reached by elimination over the closed four-value vocabulary, not chosen for
+convenience. `PASS` is barred as a by-construction inference; `NOT_APPLICABLE` is unavailable because
+each gate applies to all 680; and `FAIL` is barred because recording it would **assert** the very
+non-closeability the reservation withholds.
+
+This reaches exactly three items — `G3`, `G5`, and `G9` **path 1 when self-containment is
+undetermined** — and **no other gate**. The limit is operative, not decorative: a broader posture
+would silently decide B1 and B2 by giving `G12` and `G10` an `UNABLE_TO_DETERMINE` posture. `G8`,
+`G10`, and `G12` are named as excluded.
+
+A **determined** `G9` path-1 failure remains prerequisite-blocked under canonical
+`non_self_contained_handling`, unchanged. `UNABLE_TO_DETERMINE` is neither `FAIL` nor
+`BLOCKED_CATEGORICALLY`; it is not a negative portfolio judgment, and it is not a pass by
+specification-satisfaction.
+
+### The enforcement-conformance correction
+
+`XASSET-0030` §C recorded an enforcement defect: the results validator rejected any
+`BLOCKED_CATEGORICALLY` disposition while `G2` was reading-dependent, although `XASSET-0027` §M.1 and
+both canonical artifacts admit exactly that outcome "unless a categorical gate independently fails."
+B2 made the defect load-bearing for up to 480 of 680 constructions rather than hypothetical.
+
+The correction is narrow and keys on the distinction §M.1 itself draws. The **reading pair** still
+never makes `G2` a categorical `FAIL`; what is now permitted is a **candidate disposition** of
+`BLOCKED_CATEGORICALLY` when some categorical gate **other than `G2`** independently fails. A
+reading-dependent `G2` with no other categorical failure still may not be recorded categorically.
+
+### Deterministic execution machinery
+
+The package adds a deterministic runner, a result writer, and an independent result validator. The
+runner traverses the frozen universe in canonical order and supplies mechanically every value
+accepted authority determines — the `G2` reading pair, B3's `UNABLE_TO_DETERMINE` for `G3`/`G5`, and
+B2's consumption classification — refusing any executor attempt to override a determined value. It
+invents no economic judgment: the gate results accepted authority does **not** determine remain the
+executor's analytical act, supplied as inputs.
+
+The result validator re-derives every disposition, cell outcome, and roll-up independently rather
+than trusting the runner's own arithmetic, and fails closed.
+
+Per `XASSET-0030` §D this amendment **deliberately creates enforcement drift**: the load-bearing
+bytes now differ from the authorized merged `XASSET-0029` tree, so Stage 1 is **non-armable** until a
+successor operational-authorization / load-bearing rebinding lifecycle (§G.B step 8) lawfully binds
+them. That is the designed cost of the correction, not a defect.
+
+**`XASSET-0036` executes no Stage 1**, evaluates no gate for any construction, produces no
+`stage1_results.yaml`, performs no rebinding, generates no attestation, and consumes no execution
+lane. `XASSET-0024` §K.1 remains **unresolved**, §J.12 remains **deferred**, Stage 2 remains
+**unauthorized**, and application authority remains **WITHHELD**.

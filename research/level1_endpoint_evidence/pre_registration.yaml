@@ -1035,6 +1035,137 @@ g2_reading_mapping:
     prerequisite gate also fails. That is the end-to-end guarantee the closed table promises.
 
 # --------------------------------------------------------------------------------------------------
+# Accepted residual gate semantics — XASSET-0035 SSE/SSF/SSG, transcribed under XASSET-0036 SSE.1
+#
+# These three blocks are the canonical transcription of XASSET-0035's B1, B2 and B3 determinations.
+# They fix gate SEMANTICS before any outcome is observed, which canonical
+# gates_may_not_be_added_removed_reordered_or_reinterpreted_after_any_outcome_observed makes the
+# lawful window. None of them records a gate RESULT for any construction, and none closes any gate
+# on satisfaction.
+# --------------------------------------------------------------------------------------------------
+
+g12_modal_register:
+  authority: XASSET-0035_SECTION_E
+  route: CONSTITUTIVE
+  scope: G12_ONLY
+  applies_to_gate: G12_SNAPSHOT_ADMISSIBILITY_PATH
+  register: LAWFUL_SATISFIABILITY_OF_THE_FROZEN_CONSTRUCTION_SPECIFICATION
+  rejected_register: EXECUTION_TIME_WORLD_STATE
+  statement: >-
+    G12's embedded modal "could admit" is evaluated against the lawful satisfiability of the frozen
+    construction specification, not against execution-time world state. A lawful XASSET-0021 snapshot
+    successor "could admit the candidate" if, under accepted authority and the ordering that authority
+    fixes, that successor would be capable of admitting a source conforming to the construction's own
+    frozen specification. The present nonexistence of a conforming source is not, by itself, a ground
+    for concluding that no such successor could admit it.
+  successor_nonexistence_alone_is_never_a_fail_ground: true
+  identifiability_only: true
+  identifiability_only_note: >-
+    G12 tests identifiability only. It may not absorb XASSET-0024 SSJ.1's hash-match, validator-pass,
+    or governed-freshness conditions. stage_1_testable_subset keeps J_2_SNAPSHOT_POSITION at
+    G12_IDENTIFIABILITY_ONLY_NO_SUCCESSOR_CREATED.
+  could_admit_clause_remains_operative: true
+  could_admit_clause_note: >-
+    "that could admit the candidate" remains an operative conjunct of G12's question. It may not be
+    dropped on the strength of PROTOCOL_V1.md SS6/SS6.1's shorter restatements.
+  is_program_wide_gate_modal_rule: false
+  creates_snapshot_successor: false
+  records_a_gate_result: false
+
+pair_consumption_rule:
+  authority: XASSET-0035_SECTION_F
+  route: INTERPRETIVE
+  bears_on_gate: G10_PAIR_INDEPENDENCE
+  statement: >-
+    A construction consumes a canonical XASSET-0020 SSH unordered pair if and only if both of its own
+    two frozen named comparison endpoints are members of the four-sleeve set — that is, its
+    comparison_subject_kind is UNORDERED_PAIR, or it is DIRECT_ALTERNATIVE whose counterpart is
+    another sleeve. The pair consumed is the single unordered pair those two endpoints form.
+  determined_by: FROZEN_COMPARISON_IDENTITY
+  never_determined_by: UNORDERED_PAIR_ID_LABEL
+  label_absence_is_not_evidence_of_non_consumption: true
+  transitive_consumption_permitted: false
+  relabelling_permitted: false
+  relabelling_note: >-
+    comparison_subject_kind and unordered_pair_id are not changed for any construction. The 360
+    DIRECT_ALTERNATIVE constructions carrying a sleeve counterpart remain DIRECT_ALTERNATIVE with
+    unordered_pair_id absent. Consumption is not identity: this rule creates no UNORDERED_PAIR
+    construction, no seventh pair, and no change to the frozen universe or its hash.
+  structural_inventory:
+    record_keys:
+    - group
+    - comparison_subject_kind
+    - count
+    - consumes_canonical_pair
+    rows:
+    - group: PAIR
+      comparison_subject_kind: UNORDERED_PAIR
+      count: 120
+      consumes_canonical_pair: true
+    - group: ALT_SLEEVE_COUNTERPART
+      comparison_subject_kind: DIRECT_ALTERNATIVE
+      count: 360
+      consumes_canonical_pair: true
+    - group: ALT_UNSIZED_UNASSIGNED_CAPITAL
+      comparison_subject_kind: DIRECT_ALTERNATIVE
+      count: 120
+      consumes_canonical_pair: false
+    - group: SELF
+      comparison_subject_kind: SLEEVE_SELF
+      count: 80
+      consumes_canonical_pair: false
+    consuming_total: 480
+    non_consuming_total: 200
+    universe_total: 680
+  determines_g10_result: false
+  determines_g10_result_note: >-
+    This rule determines only WHETHER a canonical pair is consumed. G10's result additionally turns on
+    whether the consumed pair is unresolved at evaluation time, which remains an execution-ready
+    satisfaction residue and is not closed here. The 200 non-consuming constructions are not thereby
+    recorded G10 PASS.
+
+reserved_gate_recording_posture:
+  authority: XASSET-0035_SECTION_G
+  route: INTERPRETIVE
+  recorded_value: UNABLE_TO_DETERMINE
+  statement: >-
+    Where a gate's satisfaction is expressly reserved by accepted authority, and the frozen
+    construction is HYPOTHETICAL_SOURCE_ARCHITECTURE so the reserved question cannot be answered from
+    the specification, the executor records UNABLE_TO_DETERMINE for that gate.
+  applies_to:
+  - gate: G3_NORMALIZATION
+    gate_class: categorical
+    reservation_authority: XASSET-0027_SECTION_M_3
+    condition: ALWAYS_UNDER_HYPOTHETICAL_SOURCE_ARCHITECTURE
+  - gate: G5_CONSTRAINT_SHAPE
+    gate_class: categorical
+    reservation_authority: XASSET-0027_SECTION_M_4
+    condition: ALWAYS_UNDER_HYPOTHETICAL_SOURCE_ARCHITECTURE
+  - gate: G9_REPRESENTATION
+    gate_class: prerequisite
+    reservation_authority: XASSET-0032_SECTION_F_3
+    condition: PATH_1_SELF_CONTAINMENT_UNDETERMINED
+  does_not_apply_to:
+  - G8_UNIQUENESS
+  - G10_PAIR_INDEPENDENCE
+  - G12_SNAPSHOT_ADMISSIBILITY_PATH
+  scope_limit_note: >-
+    Stated as an operative limit. A broader posture would silently decide the G12 modal register and
+    the pair-consumption rule. G8's residue is a future snapshot successor's composition; G10's is
+    pair status under a successor snapshot, with consumption governed by pair_consumption_rule; G12 is
+    governed by g12_modal_register. None of the three is reached.
+  determined_g9_path_1_failure_remains_prerequisite_blocked: true
+  determined_g9_path_1_failure_note: >-
+    Where a candidate's construction would require cross-representation combination, canonical
+    non_self_contained_handling governs unchanged: it records the exact dependency and fails G9 as a
+    prerequisite. This posture applies only to the undetermined case and does not convert that
+    determined case into UNABLE_TO_DETERMINE.
+  generalizes_g2_reading_mapping: false
+  changes_any_gate_class: false
+  is_a_negative_portfolio_judgment: false
+  is_a_specification_satisfaction_pass: false
+
+# --------------------------------------------------------------------------------------------------
 # Stage-1-testable subset of XASSET-0024 SSJ, and deferred requirements
 # --------------------------------------------------------------------------------------------------
 
@@ -1649,5 +1780,5 @@ protected_paths:
 - intelligence/level1_sleeve_synthesis/
 - /private/tmp/phq-risk0001-results
 
-hash_version: ENDPOINT-0001-PREREG-V5
-predecessor_hash_version: ENDPOINT-0001-PREREG-V4
+hash_version: ENDPOINT-0001-PREREG-V6
+predecessor_hash_version: ENDPOINT-0001-PREREG-V5
