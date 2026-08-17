@@ -110,6 +110,14 @@ def _candidate_row(construction_id: str, gates: dict[str, str] | None = None, **
         "point_or_range_support": "WOULD_SUPPORT_RANGE_ENDPOINT",
         "representation_dependency": None,
         "uncertainty_statement": "recorded",
+        # Added to the publishable schema by the XASSET-0036 SS-G.B package (MAJOR 2, review
+        # 4953193650), so B1's preserved floor survives serialization instead of living only as
+        # the runner's input-time refusal. A conforming row records it.
+        "g12_basis": (
+            "NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS"
+            if gates.get("G12_SNAPSHOT_ADMISSIBILITY_PATH") == "FAIL"
+            else "LAWFUL_SUCCESSOR_IDENTIFIABLE"
+        ),
     }
     row.update(overrides)
     return row
@@ -1251,11 +1259,48 @@ class TestOpenReadingMapping:
         data["g2_reading_mapping"]["reading_dependent_maps_to_candidate_outcome"] = "BLOCKED_CATEGORICALLY"
         _assert_rejected(data, "reading_dependent_maps_to_candidate_outcome")
 
-    def test_results_reject_reading_dependent_recorded_as_categorical(self):
+    # CORRECTED UNDER XASSET-0036 SS-E.2. This test previously asserted that ANY
+    # BLOCKED_CATEGORICALLY disposition was rejected while G2 was reading-dependent -- including
+    # this case, where G4_ORIGIN independently FAILS. That pinned the XASSET-0030 SS-C
+    # enforcement-conformance defect: XASSET-0027 SS-M.1 and both canonical artifacts admit exactly
+    # that disposition "unless a categorical gate independently fails". The corrected pair below
+    # pins BOTH directions, so neither the overreach nor its opposite can return silently.
+    def test_results_accept_categorical_when_another_gate_independently_fails(self):
+        """An independent categorical failure lawfully derives BLOCKED_CATEGORICALLY."""
         results = _full_results()
         row = results["candidate_results"][0]
         gates = _passing_gates()
         gates["G4_ORIGIN"] = "FAIL"
+        gates["G2_MAGNITUDE_INTRINSICALITY"] = "UNABLE_TO_DETERMINE"
+        row.update(
+            {
+                "gate_results": gates,
+                "categorical_failures": ["G4_ORIGIN"],
+                "disposition": "BLOCKED_CATEGORICALLY",
+                "first_failing_gate_id": "G4_ORIGIN",
+                "g2_outcome_under_subject_matter_reading": "PASSES",
+                "g2_outcome_under_preference_only_reading": "FAILS",
+                "g2_outcome_is_reading_dependent": True,
+            }
+        )
+        # The cell this row belongs to must reflect its own candidates' dispositions.
+        for cell in results["cell_results"]:
+            if cell["cell_id"] == row["cell_id"]:
+                cell["outcome"] = V.derive_cell_outcome(
+                    [
+                        candidate["disposition"]
+                        for candidate in results["candidate_results"]
+                        if candidate["cell_id"] == cell["cell_id"]
+                    ]
+                )
+        r = _validate(results)
+        assert r.ok, r.errors
+
+    def test_results_reject_categorical_from_reading_dependence_alone(self):
+        """Reading dependence alone is uncertainty, never a categorical bar."""
+        results = _full_results()
+        row = results["candidate_results"][0]
+        gates = _passing_gates()
         gates["G2_MAGNITUDE_INTRINSICALITY"] = "UNABLE_TO_DETERMINE"
         row.update(
             {

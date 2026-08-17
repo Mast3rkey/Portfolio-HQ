@@ -134,9 +134,21 @@ CANONICAL_PREREGISTRATION_RELPATH = "research/level1_endpoint_evidence/pre_regis
 PROTOCOL_PATH = ROOT / CANONICAL_PROTOCOL_RELPATH
 PREREGISTRATION_PATH = ROOT / CANONICAL_PREREGISTRATION_RELPATH
 
-#: XASSET-0029 successor pins for the canonical bytes, computed after those bytes were
-#: final. Separate files from this module, so there is no self-hashing circularity.
+#: EFFECTIVE pins for the canonical bytes, recomputed under XASSET-0036 SS-E.7 after the canonical,
+#: enforcement, and outcome-producing bytes stabilized. Separate files from this module, so there
+#: is no self-hashing circularity.
 CANONICAL_PINS: dict[str, str] = {
+    CANONICAL_PROTOCOL_RELPATH: (
+        "86b2a5e8674247698ac592ce4734744f940b4a119ffda5fd702bc3cbf3e40c13"
+    ),
+    CANONICAL_PREREGISTRATION_RELPATH: (
+        "e993df9f41d2f5352e51c9921dd006d50ab69518a730d37def106696b3f149d4"
+    ),
+}
+
+#: XASSET-0029's pins, retained as predecessor identity now that XASSET-0036's executable package
+#: amends the canonical bytes under successor authority. History is never invalidated.
+XASSET_0029_CANONICAL_PINS = {
     CANONICAL_PROTOCOL_RELPATH: (
         "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb"
     ),
@@ -160,13 +172,32 @@ PREDECESSOR_CANONICAL_PINS = {
 #: be edited in the same commit that changes the bytes it claims to verify, which is not a
 #: check. Drift in any of these between the accepted/merged tree and the working tree is
 #: refused.
+#
+# EXTENDED BY XASSET-0036 SS-E.6 / XASSET-0030 SS-G.B step 5. The prior set contained exactly six
+# paths and NO outcome-producing code, because none existed when XASSET-0029 was accepted. An
+# attestation could therefore have been perfectly authenticated while the code generating every one
+# of the 680 dispositions was unbound, and ATTEMPT_1 is non-rerunnable after claim.
+#
+# The three added paths are exactly those whose bytes can materially decide, order, map, derive,
+# serialize, write, or validate a Stage-1 outcome:
+#   * the runner -- decides ordering, applies B1/B2/B3, composes dispositions, serializes, writes;
+#   * the result validator -- decides whether a candidate result document may be published;
+#   * XASSET-0036 itself -- the decision authorizing the package, on the same footing XASSET-0029
+#     already occupies for its own authorization.
+#
+# The EXISTING exact-byte mechanism is reused unchanged (XASSET-0036 SS-E.6 states a preference for
+# it, and no concrete technical reason to depart was found): expected identity is still DERIVED
+# FROM THE MERGED GIT TREE at validation time, never from a hard-coded constant here.
 LOAD_BEARING_RELPATHS = (
     "level1_stage1_execution_authorization.py",
     "level1_endpoint_evidence_preregistration_validator.py",
     "level1_construction_universe_closure_validator.py",
+    "level1_stage1_runner.py",
+    "level1_stage1_result_validator.py",
     CANONICAL_PROTOCOL_RELPATH,
     CANONICAL_PREREGISTRATION_RELPATH,
     "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
+    "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
 )
 
 # ======================================================================================
@@ -1534,6 +1565,59 @@ def claimed_execution_is_authorized(
     return True, ""
 
 
+def active_execution_is_authorized(
+    paths: LanePaths | None = None, sources: TruthSources | None = None
+) -> tuple[bool, str]:
+    """May THIS execution do real work RIGHT NOW? Exactly ``LANE_CLAIMED``, and lawfully so.
+
+    BLOCKING 1 (review 4953558775): a THIRD question, narrower than both existing ones.
+
+    * :func:`new_execution_is_authorized` -- may a NEW execution start? ``READY`` only.
+    * :func:`claimed_execution_is_authorized` -- did THIS execution come from the one lawful
+      claim? ``CLAIMED`` **or** ``COMPLETED``, deliberately, because
+      :func:`completed_result_is_authorized` authenticates a result AFTER completion and needs
+      exactly that provenance. It is not narrowed here, and must not be.
+    * this predicate -- is the one lawful attempt CURRENTLY IN PROGRESS? ``CLAIMED`` alone.
+
+    Exactly three acts may happen only DURING the single attempt, and all three ask this one:
+
+    * outcome composition -- :func:`level1_stage1_runner.run_stage1`;
+    * result publication -- :func:`level1_stage1_runner.write_stage1_results`;
+    * the one ``CLAIMED`` -> ``COMPLETED`` state transition -- :func:`complete_execution`
+      (BLOCKING 1, review 4953842000).
+
+    Authenticating an already-completed result is deliberately NOT on that list: it happens after
+    the transition, which is exactly why the broader predicate exists and stays broad.
+
+    Reproduced before correcting, on isolated temporary lane paths: with a valid attestation,
+    a real claim, and a real completion, ``lane_state_at`` returned ``COMPLETED`` and said "a
+    second execution requires new governance authority", while
+    ``claimed_execution_is_authorized`` returned ``(True, "")``. Both production entry points
+    gated on that predicate alone, so the terminal state did not terminate either
+    outcome-producing capability: real composition could re-enter, and a canonical results
+    artifact lost after completion could be recreated by the ordinary writer, with ``O_EXCL``
+    no longer protecting a path that no longer exists.
+
+    Recovery after a crash or a lost artifact stays a GOVERNED act. This predicate deliberately
+    offers no recovery path: it refuses in ``COMPLETED`` exactly as it refuses in ``READY``, so
+    the ordinary writer can never become a recovery bypass.
+    """
+    paths = paths or LanePaths()
+    state, why = lane_state_at(paths, sources)
+    if state != LANE_CLAIMED:
+        return False, (
+            f"the one authorized attempt ({EXECUTION_ATTEMPT_ID}) is not currently in progress "
+            f"(lane state {state}); real Stage-1 work may only be performed while the lane is "
+            f"exactly {LANE_CLAIMED}. {why or 'A claim must be taken immediately beforehand.'} "
+            "Recovering a crashed or lost execution is a governed act requiring new authority, "
+            "never an ordinary re-run"
+        )
+    record, _, problem = _authenticated_claim(paths, sources)
+    if record is None:
+        return False, problem
+    return True, ""
+
+
 def completed_result_is_authorized(
     results: Any, paths: LanePaths | None = None, sources: TruthSources | None = None
 ) -> tuple[bool, str]:
@@ -1644,11 +1728,26 @@ def complete_execution(
     artifact actually produced. It now takes the RESULT ITSELF and computes the identity
     internally with :func:`stage1_result_identity`, so the bound identity is derived, never
     chosen. There is deliberately no public completion API accepting a precomputed digest.
+
+    BLOCKING 1 (review 4953842000): this gated on the deliberately broader
+    ``claimed_execution_is_authorized``, true in ``CLAIMED`` **or** ``COMPLETED``, so the terminal
+    state was not terminal for the transition API either. Reproduced on isolated lane paths:
+    after the single mirror loss the durability contract expressly permits -- ``completion.json``
+    gone, the original ``COMPLETED`` ledger event intact, result A still authorized -- an ordinary
+    call with result B found the completion path absent, so its ``O_EXCL`` write SUCCEEDED and it
+    appended a SECOND ``COMPLETED`` event. ``_recover_mirrored_record`` then rejected the
+    duplicated completion, and provenance authorized NEITHER A nor B: a lawful, recoverable result
+    had been made unpublishable through the public API alone, with no file forgery.
+
+    A completion is the one ``CLAIMED`` -> ``COMPLETED`` transition, so it asks
+    :func:`active_execution_is_authorized` -- exactly ``LANE_CLAIMED``, still authenticated --
+    BEFORE computing any result identity and before either write. Repairing a lost mirror is a
+    governed act requiring new authority, never a second ordinary completion.
     """
     paths = paths or LanePaths()
-    ok, reason = claimed_execution_is_authorized(paths, sources)
+    ok, reason = active_execution_is_authorized(paths, sources)
     if not ok:
-        raise ValueError(f"refusing to complete an unclaimed execution: {reason}")
+        raise ValueError(f"refusing to complete an execution that is not actively claimed: {reason}")
     result_identity_sha256 = stage1_result_identity(results)
 
     # BLOCKING 2: the previous form read the claim from paths.claim only, so completing after a

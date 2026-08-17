@@ -100,10 +100,26 @@ PROTECTED_RELPATHS = (
     "level1_construction_universe_closure_validator.py",
 )
 
-#: The two frozen canonical pins, written as exact literals **here** rather than imported from the
+#: The two canonical pins, written as exact literals **here** rather than imported from the
 #: authorization module. Importing them would make the comparison circular: mutating the module's own
-#: declared pin would mutate the expectation with it and the test would still pass.
+#: declared pin would mutate the expectation with it and the test would still pass. That
+#: non-circular design is preserved exactly; only the VALUES are advanced.
+#:
+#: AMENDED BY XASSET-0036 SS-E.1/SS-E.7. This filing changed no canonical byte, and that remains
+#: true of it. The implementation XASSET-0036 later authorized reconciled the XASSET-0035
+#: SS-E/SS-F/SS-G semantics into the canonical artifacts and recomputed the pins afterwards.
 EXPECTED_CANONICAL_PINS = {
+    "research/level1_endpoint_evidence/PROTOCOL_V1.md": (
+        "86b2a5e8674247698ac592ce4734744f940b4a119ffda5fd702bc3cbf3e40c13"
+    ),
+    "research/level1_endpoint_evidence/pre_registration.yaml": (
+        "e993df9f41d2f5352e51c9921dd006d50ab69518a730d37def106696b3f149d4"
+    ),
+}
+
+#: XASSET-0029's pins, retained as HISTORICAL identity and asserted as such below. Accepted history
+#: is never rewritten to match amended bytes.
+XASSET_0029_CANONICAL_PINS = {
     "research/level1_endpoint_evidence/PROTOCOL_V1.md": (
         "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb"
     ),
@@ -615,12 +631,18 @@ class TestCanonicalPinsStillMatch:
         mutated = {rel: "0" * 64 for rel in EXPECTED_CANONICAL_PINS}
         assert _pin_mismatches(mutated) == sorted(EXPECTED_CANONICAL_PINS)
 
+    def test_the_predecessor_pins_are_retained_as_history(self) -> None:
+        """The literals XASSET-0029 accepted, asserted against the module's historical constant."""
+        assert dict(A.XASSET_0029_CANONICAL_PINS) == XASSET_0029_CANONICAL_PINS
+        assert dict(A.CANONICAL_PINS) != XASSET_0029_CANONICAL_PINS
+
     def test_adversarial_a_truthiness_check_would_not_have_caught_either(self) -> None:
         """Pins the reviewer's diagnosis: truthiness is satisfied by a wrong digest."""
         wrong = "0" * 64
         assert bool(wrong) is True
         assert wrong != EXPECTED_CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH]
         assert wrong != EXPECTED_CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH]
+        assert wrong != XASSET_0029_CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH]
 
 
 class TestNoProtectedMutation:
@@ -630,11 +652,24 @@ class TestNoProtectedMutation:
     ) -> None:
         assert (ROOT / relpath).is_file()
 
-    def test_load_bearing_set_is_still_exactly_six(self) -> None:
-        assert len(A.LOAD_BEARING_RELPATHS) == 6
+    # AMENDED BY XASSET-0036 SS-E.3/SS-E.6. This filing created no runner and extended nothing,
+    # and both remain true of it. SS-G.B steps 4-5 later created the outcome-producing modules and
+    # bound them, which is the outcome this filing's own successor model called for.
+    def test_the_six_paths_this_filing_saw_are_all_retained(self) -> None:
+        assert {
+            "level1_stage1_execution_authorization.py",
+            "level1_endpoint_evidence_preregistration_validator.py",
+            "level1_construction_universe_closure_validator.py",
+            "research/level1_endpoint_evidence/PROTOCOL_V1.md",
+            "research/level1_endpoint_evidence/pre_registration.yaml",
+            "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
+        } <= set(A.LOAD_BEARING_RELPATHS)
 
-    def test_no_runner_module_was_created_for_stage_1(self) -> None:
-        assert not (ROOT / "level1_stage1_runner.py").exists()
+    def test_the_outcome_producing_modules_are_bound_not_loose(self) -> None:
+        """The governing SS-G.B invariant: no outcome-producing code outside the boundary."""
+        for relative in ("level1_stage1_runner.py", "level1_stage1_result_validator.py"):
+            assert (ROOT / relative).exists()
+            assert relative in A.LOAD_BEARING_RELPATHS
         assert not (ROOT / "level1_stage1_result_writer.py").exists()
 
     def test_the_decision_disclaims_every_protected_mutation(self, decision_text: str) -> None:

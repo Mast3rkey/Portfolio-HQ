@@ -127,6 +127,13 @@ def _candidate_row(frozen: dict, construction_id: str, gates: dict[str, str]) ->
             "point_or_range_support": "RANGE_FIRST",
             "representation_dependency": None,
             "uncertainty_statement": "XASSET-0024 SS-K.1 remains unresolved.",
+            # Added to the publishable schema by the XASSET-0036 SS-G.B package (MAJOR 2, review
+            # 4953193650). A conforming row records it; the coupling with a G12 FAIL is enforced.
+            "g12_basis": (
+                "NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS"
+                if gates.get("G12_SNAPSHOT_ADMISSIBILITY_PATH") == "FAIL"
+                else "LAWFUL_SUCCESSOR_IDENTIFIABLE"
+            ),
         }
     )
     return row
@@ -190,15 +197,33 @@ class TestCanonicalPrecedenceControls:
     @pytest.mark.parametrize(
         "gate", sorted(g for g in P.CATEGORICAL_GATES if g != "G2_MAGNITUDE_INTRINSICALITY")
     )
-    def test_validator_currently_forbids_the_canonically_permitted_outcome(
+    def test_the_canonically_permitted_outcome_is_now_accepted(
         self, universe, sample_id, gate
     ):
-        """The enforcement defect, reproduced across every other categorical gate."""
+        """AMENDED BY XASSET-0036 SS-E.2, which authorized SS-G.B step 3's correction.
+
+        This test previously reproduced the XASSET-0030 SS-C enforcement DEFECT across every
+        categorical gate: the validator rejected a lawfully-derived BLOCKED_CATEGORICALLY whenever
+        G2 was reading-dependent, although XASSET-0027 SS-M.1 and both canonical artifacts permit it
+        "unless a categorical gate independently fails". The defect has since been corrected, so the
+        same fixture now pins the CORRECT behaviour across the same gates. The companion test below
+        pins the other direction, so the overreach cannot return.
+        """
         gates = _reading_dependent_gates()
         gates[gate] = "FAIL"
         row = _candidate_row(universe[sample_id], sample_id, gates)
         assert row["disposition"] == "BLOCKED_CATEGORICALLY"
 
+        result = _structural(row, universe[sample_id], sample_id)
+        assert result.ok is True, result.errors
+
+    def test_reading_dependence_alone_still_may_not_be_recorded_as_categorical(
+        self, universe, sample_id
+    ):
+        """The protection the defect branch was really guarding, preserved exactly."""
+        gates = _reading_dependent_gates()
+        row = _candidate_row(universe[sample_id], sample_id, gates)
+        row["disposition"] = "BLOCKED_CATEGORICALLY"
         result = _structural(row, universe[sample_id], sample_id)
         assert result.ok is False
         assert any(
@@ -594,14 +619,20 @@ class TestRunnerTrustBoundarySequencing:
         ):
             assert gb.index(earlier) < arm, earlier
 
-    def test_the_gap_is_justified_from_the_real_load_bearing_set(self):
-        """The decision must state WHY: no runner is in the current six-path set."""
+    def test_the_gap_is_justified_and_has_since_been_closed(self):
+        """AMENDED BY XASSET-0036 SS-E.6, which authorized SS-G.B step 5's extension.
+
+        XASSET-0030 SS-D recorded the gap -- no runner was in the six-path set, because none
+        existed -- and SS-G.B step 5 exists to close it. The decision text stating the gap is
+        unchanged and still asserted here; the gap itself is now closed, which is the outcome that
+        text called for rather than a contradiction of it.
+        """
         text = _collapse(DECISION.read_text(encoding="utf-8"))
         assert "No Stage-1 runner is in that set" in text
-        assert len(A.LOAD_BEARING_RELPATHS) == 6
-        assert not any(
-            "runner" in path or "stage1_results" in path for path in A.LOAD_BEARING_RELPATHS
-        ), A.LOAD_BEARING_RELPATHS
+        assert "level1_stage1_runner.py" in A.LOAD_BEARING_RELPATHS
+        assert "level1_stage1_result_validator.py" in A.LOAD_BEARING_RELPATHS
+        # No REAL results artifact is load-bearing, because none exists.
+        assert not any("stage1_results" in path for path in A.LOAD_BEARING_RELPATHS)
 
     def test_this_pr_builds_no_runner_and_changes_no_load_bearing_set(self):
         text = _collapse(DECISION.read_text(encoding="utf-8"))
@@ -611,11 +642,27 @@ class TestRunnerTrustBoundarySequencing:
         )
         assert not (ROOT / "research/level1_endpoint_evidence/stage1_results.yaml").exists()
 
-    def test_load_bearing_set_is_enumerated_exactly_and_matches_the_module(self):
-        """MINOR 1: the decision's own enumeration must equal the live six-path tuple."""
+    def test_load_bearing_set_enumerated_by_this_decision_is_still_present(self):
+        """AMENDED BY XASSET-0036 SS-E.6.
+
+        XASSET-0030 SS-D enumerated the six paths that existed when it was accepted. Those six are
+        still asserted present here, and the decision's own "exactly six" wording is unchanged and
+        still checked -- it accurately describes SS-D's own moment. The three paths SS-G.B step 5
+        later added are verified separately, in this suite's own trust-boundary test above and in
+        the XASSET-0036 package suite.
+        """
         section = DECISION.read_text(encoding="utf-8").split("### D.")[1].split("### E.")[0]
-        for path in A.LOAD_BEARING_RELPATHS:
-            assert path in section, f"{path} missing from the §D enumeration"
+        enumerated = [
+            "level1_stage1_execution_authorization.py",
+            "level1_endpoint_evidence_preregistration_validator.py",
+            "level1_construction_universe_closure_validator.py",
+            A.CANONICAL_PROTOCOL_RELPATH,
+            A.CANONICAL_PREREGISTRATION_RELPATH,
+            "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
+        ]
+        for path in enumerated:
+            assert path in section, f"{path} missing from the SS-D enumeration"
+            assert path in A.LOAD_BEARING_RELPATHS, f"{path} dropped from the live set"
         assert "exactly **six** paths" in _collapse(section)
 
 
@@ -666,17 +713,38 @@ class TestLoadBearingReauthorizationDependency:
         # The message is assembled across adjacent f-string literals; collapse before matching.
         assert 'load-bearing code has changed " "since the authorized merge' in source
 
-    def test_this_unit_left_every_load_bearing_path_untouched(self):
-        """Governance-only: correcting the Finding 1 defect is deliberately out of scope."""
-        import subprocess
+    def test_the_recorded_dependency_was_discharged_exactly_as_authorized(self):
+        """AMENDED BY XASSET-0036 SS-E.5/SS-E.6, which authorized SS-G.B steps 3 and 5.
 
-        changed = subprocess.run(
-            ["git", "diff", "--name-only", "origin/main...HEAD"],
-            capture_output=True,
-            text=True,
-            cwd=ROOT,
-        ).stdout.split()
-        assert not (set(changed) & set(A.LOAD_BEARING_RELPATHS)), changed
+        This test previously asserted that ``origin/main...HEAD`` touched no load-bearing path.
+        That was the right check for XASSET-0030's own governance-only unit, but the expression
+        captures WHATEVER BRANCH IS CHECKED OUT rather than that unit specifically -- so on the
+        authorized implementation branch it necessarily fails, since SS-G.B steps 3 and 5 exist
+        precisely to change those paths. (It also passes vacuously whenever HEAD equals
+        ``origin/main``, which is why it is not a durable guard.)
+
+        SS-D recorded the dependency: correcting the Finding 1 defect deliberately creates
+        enforcement drift, and the trust boundary must then be extended to cover the
+        outcome-producing code. What is durably checkable, and what this test now asserts, is that
+        the dependency was discharged EXACTLY as authorized -- the six paths SS-D enumerated are
+        all retained, the additions are exactly the authorized outcome-producing set, and no real
+        results artifact is load-bearing because none exists.
+        """
+        enumerated = {
+            "level1_stage1_execution_authorization.py",
+            "level1_endpoint_evidence_preregistration_validator.py",
+            "level1_construction_universe_closure_validator.py",
+            A.CANONICAL_PROTOCOL_RELPATH,
+            A.CANONICAL_PREREGISTRATION_RELPATH,
+            "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
+        }
+        assert enumerated <= set(A.LOAD_BEARING_RELPATHS)
+        assert set(A.LOAD_BEARING_RELPATHS) - enumerated == {
+            "level1_stage1_runner.py",
+            "level1_stage1_result_validator.py",
+            "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
+        }
+        assert not any("stage1_results" in path for path in A.LOAD_BEARING_RELPATHS)
 
 
 # --------------------------------------------------------------------------------------
@@ -700,8 +768,15 @@ class TestNothingHereAuthorizesOrExecutes:
     def test_no_stage1_results_document_exists(self):
         assert not (ROOT / "research/level1_endpoint_evidence/stage1_results.yaml").exists()
 
-    def test_canonical_pins_are_unchanged_by_this_unit(self):
-        expected = {
+    def test_canonical_pins_match_the_effective_pins(self):
+        """AMENDED BY XASSET-0036 SS-E.1/SS-E.7.
+
+        This unit changed no canonical byte, and that remains true of it. The literals it asserted
+        are XASSET-0029's, retained below as history; XASSET-0036's authorized reconciliation
+        amended the bytes and recomputed the pins, so the live check now runs against the single
+        effective source rather than a superseded literal.
+        """
+        xasset_0029_pins = {
             "research/level1_endpoint_evidence/PROTOCOL_V1.md": (
                 "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb"
             ),
@@ -709,9 +784,10 @@ class TestNothingHereAuthorizesOrExecutes:
                 "6e0c07a8e3279f8100a41df489921720f7f3125346f977e64fb5deca2f34337c"
             ),
         }
-        for relpath, digest in expected.items():
+        assert A.XASSET_0029_CANONICAL_PINS == xasset_0029_pins
+        for relpath, digest in A.CANONICAL_PINS.items():
             observed = hashlib.sha256((ROOT / relpath).read_bytes()).hexdigest()
-            assert observed == digest, f"{relpath} canonical bytes changed"
+            assert observed == digest, f"{relpath} does not match its effective pin"
 
     def test_this_module_never_writes_to_the_authorization_lane(self):
         tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))

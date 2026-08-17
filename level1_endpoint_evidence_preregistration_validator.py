@@ -60,8 +60,8 @@ XASSET_0029_DECISION_PATH = (
 )
 
 STUDY_ID = "ENDPOINT-0001"
-HASH_VERSION = "ENDPOINT-0001-PREREG-V5"
-PREDECESSOR_HASH_VERSION = "ENDPOINT-0001-PREREG-V4"
+HASH_VERSION = "ENDPOINT-0001-PREREG-V6"
+PREDECESSOR_HASH_VERSION = "ENDPOINT-0001-PREREG-V5"
 
 # XASSET-0028 closes the construction universe. Cardinality and integrity hash are recomputed
 # from the real generator at validation time, never trusted as literals here.
@@ -94,6 +94,11 @@ TOP_KEYS = (
     "disposition_rules",
     "open_reading_handling",
     "g2_reading_mapping",
+    # ESTABLISHED BY XASSET-0036 SSE.1, transcribing XASSET-0035 SSE/SSF/SSG. These fix gate
+    # SEMANTICS before any outcome is observed; none records a gate result for any construction.
+    "g12_modal_register",
+    "pair_consumption_rule",
+    "reserved_gate_recording_posture",
     "stage_1_testable_subset",
     "deferred_admissibility_requirements",
     "result_vocabulary",
@@ -447,7 +452,24 @@ REQUIRED_CANDIDATE_RESULT_KEYS = (
     "point_or_range_support",
     "representation_dependency",
     "uncertainty_statement",
+    # ADDED UNDER XASSET-0036 SS-E.1/SS-E.3. Without a machine-readable basis on the publishable
+    # row, a serialized G12 FAIL carries no fact distinguishing the PROHIBITED
+    # successor-nonexistence-alone ground from a lawful independent one, so the independent result
+    # validator cannot enforce g12_modal_register's floor at all -- it could only be enforced at
+    # runner-input time, which a tampered or hand-authored document bypasses entirely.
+    "g12_basis",
 )
+
+#: Closed vocabulary for a candidate's recorded G12 basis.
+G12_BASIS_VALUES = (
+    "LAWFUL_SUCCESSOR_IDENTIFIABLE",
+    "SUCCESSOR_NONEXISTENCE_ALONE",
+    "NO_LAWFUL_SUCCESSOR_IDENTIFIABLE_ON_INDEPENDENT_GROUNDS",
+    "UNDETERMINED",
+)
+
+#: The one basis a ``G12`` ``FAIL`` may never rest on (``g12_modal_register``'s preserved floor).
+G12_BASIS_PROHIBITED_WITH_FAIL = "SUCCESSOR_NONEXISTENCE_ALONE"
 
 # Adversarial scan. Barred historical Level-1 values named by XASSET-0020 SS-M and XASSET-0025 SS-F.
 # Written as digit-separated patterns so this module does not itself embed a usable anchor literal.
@@ -1595,6 +1617,263 @@ def _validate_disposition_rules(data: Mapping[str, Any], errors: list[str]) -> N
         errors.append("disposition_rules.roll_up_outcome: expected a mapping")
 
 
+#: XASSET-0035 SSF.5's structural inventory. Consumption is a property of frozen comparison
+#: identity, so these counts are recomputable from the frozen universe and are pinned here so a
+#: silent drift in either direction is a validation failure rather than a quiet reinterpretation.
+PAIR_CONSUMING_TOTAL = 480
+PAIR_NON_CONSUMING_TOTAL = 200
+
+#: XASSET-0035 SSG.1's exact scope. B3 reaches these three items and no others; SSG.4 makes the
+#: limit operative because a broader posture would silently decide B1 and B2.
+RESERVED_POSTURE_GATES = (
+    "G3_NORMALIZATION",
+    "G5_CONSTRAINT_SHAPE",
+    "G9_REPRESENTATION",
+)
+RESERVED_POSTURE_EXCLUDED_GATES = (
+    "G8_UNIQUENESS",
+    "G10_PAIR_INDEPENDENCE",
+    "G12_SNAPSHOT_ADMISSIBILITY_PATH",
+)
+
+
+def _validate_residual_gate_semantics(data: Mapping[str, Any], errors: list[str]) -> None:
+    """Validate the XASSET-0035 SSE/SSF/SSG transcription (B1, B2, B3).
+
+    ESTABLISHED BY XASSET-0036 SSE.1. These blocks fix gate SEMANTICS; none of them records a gate
+    result for any construction, and none closes any gate on satisfaction. Each load-bearing clause
+    is asserted individually so that weakening one is a validation failure rather than a silent
+    reinterpretation of an accepted determination.
+    """
+    # ---- B1: G12's modal register (XASSET-0035 SSE) -------------------------------------------
+    register = data.get("g12_modal_register")
+    if not isinstance(register, Mapping):
+        errors.append("g12_modal_register: expected a mapping")
+    else:
+        _exact(register.get("authority"), "XASSET-0035_SECTION_E", "g12_modal_register.authority", errors)
+        _exact(register.get("route"), "CONSTITUTIVE", "g12_modal_register.route", errors)
+        # SSE.5: expressly NOT a program-wide gate-modal rule. A program-wide statement would be an
+        # invalidation trigger for the XASSET-0030 6/6 partition.
+        _exact(register.get("scope"), "G12_ONLY", "g12_modal_register.scope", errors)
+        _exact(
+            register.get("applies_to_gate"),
+            "G12_SNAPSHOT_ADMISSIBILITY_PATH",
+            "g12_modal_register.applies_to_gate",
+            errors,
+        )
+        _exact(
+            register.get("register"),
+            "LAWFUL_SATISFIABILITY_OF_THE_FROZEN_CONSTRUCTION_SPECIFICATION",
+            "g12_modal_register.register",
+            errors,
+        )
+        _exact(
+            register.get("rejected_register"),
+            "EXECUTION_TIME_WORLD_STATE",
+            "g12_modal_register.rejected_register",
+            errors,
+        )
+        # SSE.5's preserved floor: successor nonexistence is never by itself a FAIL ground.
+        _true(
+            register.get("successor_nonexistence_alone_is_never_a_fail_ground"),
+            "g12_modal_register.successor_nonexistence_alone_is_never_a_fail_ground",
+            errors,
+        )
+        # XASSET-0032 SSH.2, preserved in full: G12 may not absorb SSJ.1's other conditions.
+        _true(register.get("identifiability_only"), "g12_modal_register.identifiability_only", errors)
+        # XASSET-0033 SSC's dissolution bar: the clause stays an operative conjunct.
+        _true(
+            register.get("could_admit_clause_remains_operative"),
+            "g12_modal_register.could_admit_clause_remains_operative",
+            errors,
+        )
+        _false(
+            register.get("is_program_wide_gate_modal_rule"),
+            "g12_modal_register.is_program_wide_gate_modal_rule",
+            errors,
+        )
+        _false(
+            register.get("creates_snapshot_successor"),
+            "g12_modal_register.creates_snapshot_successor",
+            errors,
+        )
+        _false(register.get("records_a_gate_result"), "g12_modal_register.records_a_gate_result", errors)
+
+    # ---- B2: the pair-consumption rule (XASSET-0035 SSF) --------------------------------------
+    rule = data.get("pair_consumption_rule")
+    if not isinstance(rule, Mapping):
+        errors.append("pair_consumption_rule: expected a mapping")
+    else:
+        _exact(rule.get("authority"), "XASSET-0035_SECTION_F", "pair_consumption_rule.authority", errors)
+        _exact(rule.get("route"), "INTERPRETIVE", "pair_consumption_rule.route", errors)
+        _exact(
+            rule.get("bears_on_gate"),
+            "G10_PAIR_INDEPENDENCE",
+            "pair_consumption_rule.bears_on_gate",
+            errors,
+        )
+        # SSF.1: consumption is read off frozen comparison identity, never off the label.
+        _exact(
+            rule.get("determined_by"),
+            "FROZEN_COMPARISON_IDENTITY",
+            "pair_consumption_rule.determined_by",
+            errors,
+        )
+        _exact(
+            rule.get("never_determined_by"),
+            "UNORDERED_PAIR_ID_LABEL",
+            "pair_consumption_rule.never_determined_by",
+            errors,
+        )
+        # SSF.4: inferring non-consumption from specification silence is the inference
+        # XASSET-0032 SSG.5 already rejected for the 200-construction group.
+        _true(
+            rule.get("label_absence_is_not_evidence_of_non_consumption"),
+            "pair_consumption_rule.label_absence_is_not_evidence_of_non_consumption",
+            errors,
+        )
+        # SSF.6's four abuses.
+        _false(
+            rule.get("transitive_consumption_permitted"),
+            "pair_consumption_rule.transitive_consumption_permitted",
+            errors,
+        )
+        _false(rule.get("relabelling_permitted"), "pair_consumption_rule.relabelling_permitted", errors)
+        # SSF.7: consumption is not G10's result.
+        _false(rule.get("determines_g10_result"), "pair_consumption_rule.determines_g10_result", errors)
+
+        inventory = rule.get("structural_inventory")
+        if not isinstance(inventory, Mapping):
+            errors.append("pair_consumption_rule.structural_inventory: expected a mapping")
+        else:
+            _exact(
+                inventory.get("consuming_total"),
+                PAIR_CONSUMING_TOTAL,
+                "pair_consumption_rule.structural_inventory.consuming_total",
+                errors,
+            )
+            _exact(
+                inventory.get("non_consuming_total"),
+                PAIR_NON_CONSUMING_TOTAL,
+                "pair_consumption_rule.structural_inventory.non_consuming_total",
+                errors,
+            )
+            _exact(
+                inventory.get("universe_total"),
+                REGISTERED_CONSTRUCTION_COUNT,
+                "pair_consumption_rule.structural_inventory.universe_total",
+                errors,
+            )
+            rows = inventory.get("rows")
+            if not isinstance(rows, list) or not rows:
+                errors.append("pair_consumption_rule.structural_inventory.rows: expected a non-empty list")
+            else:
+                total = 0
+                consuming = 0
+                for position, row in enumerate(rows):
+                    if not isinstance(row, Mapping):
+                        errors.append(
+                            f"pair_consumption_rule.structural_inventory.rows[{position}]: expected a mapping"
+                        )
+                        continue
+                    count = row.get("count")
+                    if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+                        errors.append(
+                            f"pair_consumption_rule.structural_inventory.rows[{position}].count: "
+                            f"expected a non-negative integer, got {count!r}"
+                        )
+                        continue
+                    total += count
+                    if row.get("consumes_canonical_pair") is True:
+                        consuming += count
+                # The declared totals must be the rows' own arithmetic, so a row and a total cannot
+                # drift apart while both individually look plausible.
+                if total != REGISTERED_CONSTRUCTION_COUNT:
+                    errors.append(
+                        "pair_consumption_rule.structural_inventory.rows: counts sum to "
+                        f"{total}, but the frozen universe has {REGISTERED_CONSTRUCTION_COUNT}"
+                    )
+                if consuming != PAIR_CONSUMING_TOTAL:
+                    errors.append(
+                        "pair_consumption_rule.structural_inventory.rows: consuming counts sum to "
+                        f"{consuming}, but consuming_total is {PAIR_CONSUMING_TOTAL}"
+                    )
+
+    # ---- B3: the reserved-gate recording posture (XASSET-0035 SSG) ----------------------------
+    posture = data.get("reserved_gate_recording_posture")
+    if not isinstance(posture, Mapping):
+        errors.append("reserved_gate_recording_posture: expected a mapping")
+    else:
+        _exact(
+            posture.get("authority"),
+            "XASSET-0035_SECTION_G",
+            "reserved_gate_recording_posture.authority",
+            errors,
+        )
+        _exact(posture.get("route"), "INTERPRETIVE", "reserved_gate_recording_posture.route", errors)
+        # SSG.2's elimination leaves exactly one lawful value over the closed four-value vocabulary.
+        _exact(
+            posture.get("recorded_value"),
+            "UNABLE_TO_DETERMINE",
+            "reserved_gate_recording_posture.recorded_value",
+            errors,
+        )
+        applies = posture.get("applies_to")
+        if not isinstance(applies, list):
+            errors.append("reserved_gate_recording_posture.applies_to: expected a list")
+        else:
+            named = [row.get("gate") for row in applies if isinstance(row, Mapping)]
+            _exact(
+                list(named),
+                list(RESERVED_POSTURE_GATES),
+                "reserved_gate_recording_posture.applies_to",
+                errors,
+            )
+            for row in applies:
+                if not isinstance(row, Mapping):
+                    continue
+                if row.get("gate") == "G9_REPRESENTATION":
+                    # SSG.3: B3 reaches only the UNDETERMINED case for G9 path 1.
+                    _exact(
+                        row.get("condition"),
+                        "PATH_1_SELF_CONTAINMENT_UNDETERMINED",
+                        "reserved_gate_recording_posture.applies_to[G9].condition",
+                        errors,
+                    )
+        # SSG.4's operative scope limit.
+        _exact(
+            list(posture.get("does_not_apply_to") or []),
+            list(RESERVED_POSTURE_EXCLUDED_GATES),
+            "reserved_gate_recording_posture.does_not_apply_to",
+            errors,
+        )
+        _true(
+            posture.get("determined_g9_path_1_failure_remains_prerequisite_blocked"),
+            "reserved_gate_recording_posture.determined_g9_path_1_failure_remains_prerequisite_blocked",
+            errors,
+        )
+        _false(
+            posture.get("generalizes_g2_reading_mapping"),
+            "reserved_gate_recording_posture.generalizes_g2_reading_mapping",
+            errors,
+        )
+        _false(
+            posture.get("changes_any_gate_class"),
+            "reserved_gate_recording_posture.changes_any_gate_class",
+            errors,
+        )
+        _false(
+            posture.get("is_a_negative_portfolio_judgment"),
+            "reserved_gate_recording_posture.is_a_negative_portfolio_judgment",
+            errors,
+        )
+        _false(
+            posture.get("is_a_specification_satisfaction_pass"),
+            "reserved_gate_recording_posture.is_a_specification_satisfaction_pass",
+            errors,
+        )
+
+
 def _validate_open_reading(data: Mapping[str, Any], errors: list[str]) -> None:
     handling = data.get("open_reading_handling")
     if not isinstance(handling, Mapping):
@@ -2059,6 +2338,35 @@ def _validate_result_boundary(data: Mapping[str, Any], errors: list[str]) -> Non
             "result_schema.candidate_result_keys",
             errors,
         )
+        # ADDED UNDER XASSET-0036 SS-E.1/SS-E.3. The basis vocabulary and its coupling to a G12
+        # FAIL are what make g12_modal_register's floor enforceable on a PUBLISHED document
+        # rather than only on runner input.
+        basis = schema.get("g12_basis_vocabulary")
+        if not isinstance(basis, Mapping):
+            errors.append("result_schema.g12_basis_vocabulary: expected a mapping")
+        else:
+            _exact(
+                list(basis.get("values") or []),
+                list(G12_BASIS_VALUES),
+                "result_schema.g12_basis_vocabulary.values",
+                errors,
+            )
+            _true(
+                basis.get("recorded_per_candidate"),
+                "result_schema.g12_basis_vocabulary.recorded_per_candidate",
+                errors,
+            )
+            _exact(
+                basis.get("prohibited_with_g12_fail"),
+                G12_BASIS_PROHIBITED_WITH_FAIL,
+                "result_schema.g12_basis_vocabulary.prohibited_with_g12_fail",
+                errors,
+            )
+            _true(
+                basis.get("coupling_is_enforced"),
+                "result_schema.g12_basis_vocabulary.coupling_is_enforced",
+                errors,
+            )
     else:
         errors.append("result_schema: expected a mapping")
 
@@ -2132,6 +2440,7 @@ def validate(data: Mapping[str, Any]) -> ValidationResult:
     _validate_definitions(data, errors)
     _validate_disposition_rules(data, errors)
     _validate_open_reading(data, errors)
+    _validate_residual_gate_semantics(data, errors)
     _validate_deferred(data, errors)
     _validate_vocabulary(data, errors)
     _validate_firewall(data, errors)
@@ -2502,11 +2811,40 @@ def _validate_stage1_results_against_universe(
                     f"{where}.g2_outcome_is_reading_dependent: expected {expected_dep}, got "
                     f"{row.get('g2_outcome_is_reading_dependent')!r}"
                 )
+            # CORRECTED UNDER XASSET-0036 SSE.2 -- the XASSET-0030 SSC enforcement-conformance
+            # defect. The prior form rejected ANY BLOCKED_CATEGORICALLY disposition while G2 was
+            # reading-dependent. That contradicted canonical categorical precedence: XASSET-0027
+            # SSM.1, g2_reading_mapping.reading_dependent_end_to_end_note, and PROTOCOL_V1.md SS7.1
+            # all say a reading-dependent candidate disposes to UNABLE_TO_DETERMINE "unless a
+            # categorical gate independently fails". SSM.1's "never to BLOCKED_CATEGORICALLY"
+            # governs the reading -> G2 GATE RESULT mapping; this branch keys on the CANDIDATE
+            # DISPOSITION, which is exactly the level at which SSM.1 permits it. XASSET-0035 SSF.8
+            # made the defect load-bearing for up to 480 of 680 constructions rather than
+            # hypothetical.
+            #
+            # The corrected rule keeps the real protection and drops the overreach: G2 reading
+            # dependence ALONE may never produce a categorical disposition, but an independent
+            # categorical failure lawfully may. G2 is excluded from the "independent" set
+            # explicitly rather than relying on the recorded-gate check above having already run,
+            # so this branch is correct in isolation.
             if expected_dep and row.get("disposition") == "BLOCKED_CATEGORICALLY":
-                errors.append(
-                    f"{where}: a reading-dependent G2 outcome may not be recorded as "
-                    "BLOCKED_CATEGORICALLY while XASSET-0024 SS-K.1 remains unresolved"
+                independent_categorical_failures = (
+                    [
+                        gate
+                        for gate in CATEGORICAL_GATES
+                        if gate != "G2_MAGNITUDE_INTRINSICALITY"
+                        and gate_results.get(gate) == "FAIL"
+                    ]
+                    if isinstance(gate_results, Mapping)
+                    else []
                 )
+                if not independent_categorical_failures:
+                    errors.append(
+                        f"{where}: a reading-dependent G2 outcome may not be recorded as "
+                        "BLOCKED_CATEGORICALLY unless some categorical gate other than G2 "
+                        "independently fails; reading dependence alone is uncertainty, not a "
+                        "categorical bar"
+                    )
             if expected_dep and row.get("disposition") == "BLOCKED_PENDING_SEPARATE_PREREQUISITE":
                 errors.append(
                     f"{where}: a reading-dependent G2 outcome may not be recorded as "
@@ -2515,6 +2853,27 @@ def _validate_stage1_results_against_universe(
                 )
         else:
             errors.append(f"{where}: both G2 reading outcomes must be in {READING_VOCABULARY}")
+
+        # ADDED UNDER XASSET-0036 SS-E.1/SS-E.3: g12_modal_register's floor, enforced on the
+        # PUBLISHED row. The runner refuses the prohibited pairing at input time, but that refusal
+        # is invisible to any consumer of a serialized document -- a tampered or hand-authored row
+        # would otherwise carry G12 FAIL with no recoverable basis at all.
+        recorded_basis = row.get("g12_basis")
+        if recorded_basis not in G12_BASIS_VALUES:
+            errors.append(
+                f"{where}.g12_basis: recorded {recorded_basis!r} but must be one of "
+                f"{list(G12_BASIS_VALUES)}"
+            )
+        elif (
+            isinstance(gate_results, Mapping)
+            and gate_results.get("G12_SNAPSHOT_ADMISSIBILITY_PATH") == "FAIL"
+            and recorded_basis == G12_BASIS_PROHIBITED_WITH_FAIL
+        ):
+            errors.append(
+                f"{where}: G12 may not FAIL on {G12_BASIS_PROHIBITED_WITH_FAIL}; successor "
+                "nonexistence is never by itself a ground for concluding no lawful successor "
+                "could admit the candidate"
+            )
 
         # Disposition must equal the deterministic derivation from the recorded gate results.
         if isinstance(gate_results, Mapping):
@@ -2690,14 +3049,74 @@ XASSET_0029_HASH_BLOCK_RE = re.compile(
 )
 
 
+#: XASSET-0029's pins, retained as HISTORICAL identity now that the XASSET-0036 executable package
+#: amends the canonical bytes under successor authority. They no longer describe the current files
+#: and must not be rewritten to pretend otherwise -- the same treatment XASSET-0029 itself gave
+#: XASSET-0028's pins, and XASSET-0028 gave XASSET-0027's.
+XASSET_0029_PINS = {
+    "protocol_sha256": "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb",
+    "preregistration_sha256": "6e0c07a8e3279f8100a41df489921720f7f3125346f977e64fb5deca2f34337c",
+}
+
+
+def validate_current_canonical_pins(
+    prereg_path: Path = PREREG_PATH, protocol_path: Path = PROTOCOL_PATH
+) -> ValidationResult:
+    """Verify the CURRENT canonical bytes against the effective pins. EFFECTIVE.
+
+    ESTABLISHED BY XASSET-0036 SS-E.7. The effective pins live in
+    ``level1_stage1_execution_authorization.CANONICAL_PINS``, which is the single value the
+    operational-authorization mechanism itself consults, so there is exactly one effective source
+    rather than two that can silently disagree.
+
+    The predecessor decision files are NOT re-verified against live bytes here. Each accepted
+    decision records the digests it accepted, and those are checked verbatim by their own
+    historical validators. Rewriting them to match amended bytes would be rewriting accepted
+    history.
+    """
+    errors: list[str] = []
+    try:
+        import level1_stage1_execution_authorization as authorization
+    except ImportError as exc:  # pragma: no cover - defensive
+        return ValidationResult(False, (f"canonical pins: authorization module unavailable: {exc}",))
+
+    for relative, path in (
+        (authorization.CANONICAL_PROTOCOL_RELPATH, protocol_path),
+        (authorization.CANONICAL_PREREGISTRATION_RELPATH, prereg_path),
+    ):
+        pinned = authorization.CANONICAL_PINS.get(relative)
+        actual = sha256_file(path)
+        if pinned != actual:
+            errors.append(
+                f"canonical pins: {relative} is pinned {pinned}, file is {actual}"
+            )
+        # An amendment that left the bytes unchanged would not be an amendment, and would mean the
+        # successor pin was copied forward rather than recomputed.
+        historical = (
+            XASSET_0029_PINS["protocol_sha256"]
+            if relative == authorization.CANONICAL_PROTOCOL_RELPATH
+            else XASSET_0029_PINS["preregistration_sha256"]
+        )
+        if pinned == historical:
+            errors.append(
+                f"canonical pins: {relative} still carries the XASSET-0029 pin; the amendment must "
+                "change the canonical bytes it re-pins"
+            )
+    return ValidationResult(not errors, tuple(errors))
+
+
 def validate_xasset_0029_successor_hash_pins(
     decision_text: str, prereg_path: Path = PREREG_PATH, protocol_path: Path = PROTOCOL_PATH
 ) -> ValidationResult:
-    """Validate XASSET-0029's successor pins against the canonical files as committed.
+    """Validate XASSET-0029's pins as HISTORICAL identity.
 
-    These are the EFFECTIVE pins for the current canonical bytes. XASSET-0028's pins are retained
-    as predecessor identity and are verified to be carried forward unchanged, so accepted history
-    stays auditable rather than being restated as current fact.
+    AMENDED BY XASSET-0036. This previously asserted that XASSET-0029's pins still matched the live
+    canonical files. The XASSET-0036 executable package amends those files under successor
+    authority, so that assertion would now force either a false failure or a rewrite of accepted
+    history. It instead asserts XASSET-0029 still records exactly the digests it accepted.
+    Current-byte verification moved to :func:`validate_current_canonical_pins`. This is the same
+    treatment XASSET-0029 itself gave :func:`validate_successor_hash_pins`, and XASSET-0028 gave
+    :func:`validate_charter_hash_pins`.
     """
     errors: list[str] = []
     pins = extract_block(decision_text, XASSET_0029_HASH_BLOCK_RE)
@@ -2712,18 +3131,16 @@ def validate_xasset_0029_successor_hash_pins(
         if pins.get(key) != want:
             errors.append(f"XASSET-0029 pins: {key} expected {want!r}, got {pins.get(key)!r}")
 
-    for key, path in (
-        ("protocol_sha256", protocol_path),
-        ("preregistration_sha256", prereg_path),
-    ):
+    for key in ("protocol_sha256", "preregistration_sha256"):
         pinned = pins.get(key)
         if not pinned:
             errors.append(f"XASSET-0029 pins: {key} is absent")
             continue
-        actual = sha256_file(path)
-        if pinned != actual:
+        want = XASSET_0029_PINS[key]
+        if pinned != want:
             errors.append(
-                f"XASSET-0029 pins: {key} mismatch -- XASSET-0029 pins {pinned}, file is {actual}"
+                f"XASSET-0029 pins: {key} is {pinned}, but XASSET-0029's accepted historical pin "
+                f"is {want}; accepted history may not be rewritten"
             )
         if pinned == XASSET_0028_PINS[key]:
             errors.append(
@@ -2866,7 +3283,12 @@ def validate_file(path: Path = PREREG_PATH) -> ValidationResult:
     else:
         errors.append(f"{SUCCESSOR_DECISION_PATH}: file not found")
 
-    # XASSET-0029 successor pins are the EFFECTIVE ones for the current canonical bytes.
+    # The EFFECTIVE current-byte check, under XASSET-0036 SS-E.7. Each predecessor decision's own
+    # pins are verified verbatim as accepted history by their own validators above and below.
+    errors.extend(validate_current_canonical_pins(path, PROTOCOL_PATH).errors)
+
+    # XASSET-0029's pins are retained as HISTORICAL identity, verified verbatim rather than
+    # against the live files, which XASSET-0036's executable package has since amended.
     if XASSET_0029_DECISION_PATH.exists():
         errors.extend(
             validate_xasset_0029_successor_hash_pins(

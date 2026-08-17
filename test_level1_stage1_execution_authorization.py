@@ -24,6 +24,7 @@ written to pytest ``tmp_path``, never to the real authorization location.
 
 from __future__ import annotations
 
+import inspect
 import json
 from pathlib import Path
 
@@ -1225,6 +1226,145 @@ class TestMirrorConsistency:
         paths = self._completed(tmp_path, payload, RESULT_A)
         paths.completion.unlink()  # file lost, ledger survives
         assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is True
+        assert AUTH.completed_result_is_authorized(RESULT_B, paths, sources())[0] is False
+
+
+class TestCompletionIsAlsoOneShot:
+    """BLOCKING 1 (review 4953842000). The one CLAIMED -> COMPLETED transition may happen once.
+
+    Every lane here is an ISOLATED ``tmp_path`` lane with the fake truth sources. The real
+    ``AUTHORIZATION_ROOT`` is never created, read as authority, or touched, and no real
+    attestation, claim, completion, or ledger entry is produced -- and therefore the real
+    ``ATTEMPT_1`` is never claimed, completed, or consumed.
+    """
+
+    @staticmethod
+    def _claimed(tmp_path, payload) -> AUTH.LanePaths:
+        paths = _arm(tmp_path, payload)
+        AUTH.claim_execution(claimed_at_utc="t1", paths=paths, sources=sources())
+        return paths
+
+    def test_the_real_authorization_root_is_absent_throughout(self):
+        assert not AUTH.AUTHORIZATION_ROOT.exists()
+
+    def test_completion_gates_on_the_active_predicate(self):
+        """Checked against the parsed CODE, so the docstring's historical explanation of the
+        superseded predicate cannot decide this either way."""
+        import ast
+
+        source = inspect.getsource(AUTH.complete_execution)
+        called = [
+            node.func.id
+            for node in ast.walk(ast.parse(source.lstrip()))
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        ]
+        assert "active_execution_is_authorized" in called
+        assert "claimed_execution_is_authorized" not in called
+        # ...and the gate must be asked BEFORE binding any identity or writing anything.
+        assert called.index("active_execution_is_authorized") < called.index(
+            "stage1_result_identity"
+        )
+        assert called.index("active_execution_is_authorized") < called.index("_write_once")
+
+    def test_the_broader_predicate_is_still_broad_for_completed_result_authentication(self):
+        assert "LANE_CLAIMED, LANE_COMPLETED" in inspect.getsource(
+            AUTH.claimed_execution_is_authorized
+        )
+        assert "claimed_execution_is_authorized" in inspect.getsource(
+            AUTH.completed_result_is_authorized
+        )
+
+    def test_an_authenticated_claim_completes_exactly_once(self, tmp_path, payload):
+        paths = self._claimed(tmp_path, payload)
+        assert AUTH.active_execution_is_authorized(paths, sources())[0] is True
+        record = AUTH.complete_execution(
+            completed_at_utc="t2", results=RESULT_A, paths=paths, sources=sources()
+        )
+        assert record["result_identity_sha256"] == AUTH.stage1_result_identity(RESULT_A)
+        assert AUTH.lane_state_at(paths, sources())[0] == AUTH.LANE_COMPLETED
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is True
+
+    def test_completed_cannot_complete_again(self, tmp_path, payload):
+        paths = self._claimed(tmp_path, payload)
+        AUTH.complete_execution(
+            completed_at_utc="t2", results=RESULT_A, paths=paths, sources=sources()
+        )
+        # The broader predicate is deliberately still true here; the narrower one is not.
+        assert AUTH.claimed_execution_is_authorized(paths, sources())[0] is True
+        assert AUTH.active_execution_is_authorized(paths, sources())[0] is False
+        with pytest.raises(ValueError) as excinfo:
+            AUTH.complete_execution(
+                completed_at_utc="t3", results=RESULT_B, paths=paths, sources=sources()
+            )
+        assert "not actively claimed" in str(excinfo.value)
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is True
+
+    def test_after_completion_mirror_loss_a_second_completion_is_rejected(
+        self, tmp_path, payload, monkeypatch
+    ):
+        """THE reproduction. The permitted single-record loss must not become a second
+        transition: with completion.json gone, O_EXCL no longer protects it, so the GATE has
+        to refuse -- before any identity is bound, any file is created, or the ledger grows."""
+        paths = self._claimed(tmp_path, payload)
+        AUTH.complete_execution(
+            completed_at_utc="t2", results=RESULT_A, paths=paths, sources=sources()
+        )
+        paths.completion.unlink()
+        ledger_before = paths.ledger.read_bytes()
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is True
+
+        bound = []
+        monkeypatch.setattr(
+            AUTH, "stage1_result_identity", lambda r: bound.append(r) or ("0" * 64)
+        )
+        with pytest.raises(ValueError) as excinfo:
+            AUTH.complete_execution(
+                completed_at_utc="t3", results=RESULT_B, paths=paths, sources=sources()
+            )
+        assert "not actively claimed" in str(excinfo.value)
+        assert bound == [], "no result identity may be computed before the gate passes"
+        assert not paths.completion.exists(), "no completion file may be created"
+        assert paths.ledger.read_bytes() == ledger_before, "the ledger must be byte-unchanged"
+
+    def test_the_surviving_ledger_event_still_authorizes_a_and_rejects_b(
+        self, tmp_path, payload
+    ):
+        """The durability contract survives the rejected call, rather than being poisoned."""
+        paths = self._claimed(tmp_path, payload)
+        AUTH.complete_execution(
+            completed_at_utc="t2", results=RESULT_A, paths=paths, sources=sources()
+        )
+        paths.completion.unlink()
+        with pytest.raises(ValueError):
+            AUTH.complete_execution(
+                completed_at_utc="t3", results=RESULT_B, paths=paths, sources=sources()
+            )
+        events = [entry.get("event") for entry in AUTH._read_ledger(paths.ledger)]
+        assert events.count(AUTH.LANE_COMPLETED) == 1
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is True
+        assert AUTH.completed_result_is_authorized(RESULT_B, paths, sources())[0] is False
+
+    def test_reverting_only_the_completion_gate_reproduces_the_failure(
+        self, tmp_path, payload, monkeypatch
+    ):
+        """Mutation proof, in-suite: restore the pre-correction predicate and nothing else."""
+        paths = self._claimed(tmp_path, payload)
+        AUTH.complete_execution(
+            completed_at_utc="t2", results=RESULT_A, paths=paths, sources=sources()
+        )
+        paths.completion.unlink()
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is True
+
+        monkeypatch.setattr(
+            AUTH, "active_execution_is_authorized", AUTH.claimed_execution_is_authorized
+        )
+        AUTH.complete_execution(
+            completed_at_utc="t3", results=RESULT_B, paths=paths, sources=sources()
+        )
+        events = [entry.get("event") for entry in AUTH._read_ledger(paths.ledger)]
+        assert events.count(AUTH.LANE_COMPLETED) == 2, "the second transition went through"
+        # Duplicated completion provenance now authorizes NEITHER result.
+        assert AUTH.completed_result_is_authorized(RESULT_A, paths, sources())[0] is False
         assert AUTH.completed_result_is_authorized(RESULT_B, paths, sources())[0] is False
 
 

@@ -754,9 +754,23 @@ class TestNothingHereAuthorizesOrExecutes:
     def test_no_stage1_results_document_exists(self):
         assert not list(ROOT.rglob("stage1_results.yaml"))
 
-    def test_load_bearing_set_is_still_exactly_six(self):
-        assert len(A.LOAD_BEARING_RELPATHS) == 6
-        assert set(A.LOAD_BEARING_RELPATHS) == {
+    # AMENDED BY XASSET-0036 SS-E.6/SS-E.7. This filing added nothing to the trust boundary and
+    # changed no canonical byte, and both remain true of it. The implementation XASSET-0036 later
+    # authorized extended the boundary (SS-G.B step 5) and recomputed the pins (step 6), so these
+    # tests now assert this filing's accepted values as HISTORY and the live state as exactly the
+    # authorized result.
+    def test_the_six_paths_this_filing_saw_are_all_retained(self):
+        assert {
+            "level1_stage1_execution_authorization.py",
+            "level1_endpoint_evidence_preregistration_validator.py",
+            "level1_construction_universe_closure_validator.py",
+            "research/level1_endpoint_evidence/PROTOCOL_V1.md",
+            "research/level1_endpoint_evidence/pre_registration.yaml",
+            "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
+        } <= set(A.LOAD_BEARING_RELPATHS)
+
+    def test_the_only_additions_are_the_authorized_outcome_producing_paths(self):
+        additions = set(A.LOAD_BEARING_RELPATHS) - {
             "level1_stage1_execution_authorization.py",
             "level1_endpoint_evidence_preregistration_validator.py",
             "level1_construction_universe_closure_validator.py",
@@ -764,18 +778,28 @@ class TestNothingHereAuthorizesOrExecutes:
             "research/level1_endpoint_evidence/pre_registration.yaml",
             "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
         }
+        assert additions == {
+            "level1_stage1_runner.py",
+            "level1_stage1_result_validator.py",
+            "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
+        }
 
-    def test_no_runner_is_among_the_load_bearing_paths(self):
-        assert not any("runner" in p for p in A.LOAD_BEARING_RELPATHS)
-
-    def test_canonical_pins_are_unchanged(self):
+    def test_canonical_pins_are_history_and_current_bytes_match_the_effective_pins(self):
         assert (
-            A.sha256_file(ROOT / A.CANONICAL_PROTOCOL_RELPATH)
+            A.XASSET_0029_CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH]
             == "6c34cbbc4ed28807354f9468b225771341c6cdd40190fad06722e0cfd0ae64cb"
         )
         assert (
-            A.sha256_file(ROOT / A.CANONICAL_PREREGISTRATION_RELPATH)
+            A.XASSET_0029_CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH]
             == "6e0c07a8e3279f8100a41df489921720f7f3125346f977e64fb5deca2f34337c"
+        )
+        assert (
+            A.sha256_file(ROOT / A.CANONICAL_PROTOCOL_RELPATH)
+            == A.CANONICAL_PINS[A.CANONICAL_PROTOCOL_RELPATH]
+        )
+        assert (
+            A.sha256_file(ROOT / A.CANONICAL_PREREGISTRATION_RELPATH)
+            == A.CANONICAL_PINS[A.CANONICAL_PREREGISTRATION_RELPATH]
         )
 
     def test_decision_asserts_no_per_construction_outcome(self, decision_text):

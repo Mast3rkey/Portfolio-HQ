@@ -13800,6 +13800,110 @@ workstreams:
           or brokerage action; and rewrites no accepted history. Stage 1 remains UNARMED and NOT
           EXECUTABLE; ATTEMPT_1 intact, unclaimed, unconsumed. Draft PR; not merged, not
           independently reviewed, not principal-accepted in this session.
+      - gate: xasset0036-post-merge-verification
+        status: complete
+        pr: 335
+        description: >
+          Lane M factual synchronization, recorded by the XASSET-0036-authorized implementation
+          session rather than by a dedicated reconciliation PR, per OPS-0008 SS-4(a). PR #335
+          (XASSET-0036) independently re-confirmed merged: accepted head
+          3902283a7640a3d3b734d7a3753bd80d503ff6be; merge commit
+          be90aeef5c48e84849a007b31abbb1166857785d with parents ed3f062f... and 3902283a...,
+          re-derived via git log rather than read from an API summary; independent FULL review
+          4952475219 (CHANGES REQUIRED — 0 BLOCKING / 1 MAJOR / 1 MINOR / 1 NOTE) followed by
+          bounded correction and DELTA review 4952587537 (APPROVED FOR PRINCIPAL EXACT-HEAD
+          ACCEPTANCE — 0/0/0/1 NOTE) at the accepted head; principal acceptance
+          issuecomment-5317498788; immediate post-merge verification issuecomment-5317510321;
+          merge-commit CI run 32044441575 / job 95429299573, completed/success, head_sha equal to
+          the EXACT merge SHA; lifecycle closure issuecomment-5317557292. All seven SS-H conditions
+          are therefore closed and the SS-G.B implementation authorization is EFFECTIVE. The prior
+          xasset0036-gb-executable-package-authorization gate's own text is left byte-unchanged;
+          this is an additive record, not an edit.
+      - gate: xasset0036-gb-executable-package-implementation
+        status: in_progress
+        pr: null
+        description: >
+          The single XASSET-0036-authorized XASSET-0030 SS-G.B STEPS 2-7 implementation pass,
+          delivered as ONE coherent PR per SS-G. No new governance decision is filed: XASSET-0036
+          is the sole authorization, so governance/decisions.yaml and the decision-catalog count
+          are untouched. STEP 2, canonical reconciliation: three new blocks transcribe the accepted
+          XASSET-0035 semantics into pre_registration.yaml — g12_modal_register (B1: "could admit"
+          evaluated against LAWFUL_SATISFIABILITY_OF_THE_FROZEN_CONSTRUCTION_SPECIFICATION, not
+          execution-time world state; G12_ONLY scope; identifiability-only, could-admit-clause-
+          operative, and successor-nonexistence-is-never-alone-a-FAIL-ground floors all preserved),
+          pair_consumption_rule (B2: consumes iff BOTH frozen named comparison endpoints are
+          sleeves, determined by FROZEN_COMPARISON_IDENTITY and never by the unordered_pair_id
+          label, with the 480 consuming / 200 non-consuming / 680 total inventory pinned and its
+          rows required to sum to their own declared totals, and no-transitivity / no-relabelling /
+          does-not-determine-G10 all asserted), and reserved_gate_recording_posture (B3:
+          UNABLE_TO_DETERMINE for EXACTLY G3, G5, and G9 path 1 when undetermined, with G8, G10 and
+          G12 named as NOT reached, the determined G9 path-1 failure staying prerequisite-blocked,
+          and no generalization of g2_reading_mapping). PROTOCOL_V1.md gains a matching subordinate
+          amendment section; hash_version moves ENDPOINT-0001-PREREG-V5 to V6. STEP 3, the
+          XASSET-0030 SS-C enforcement-conformance correction: the validator branch that rejected
+          ANY BLOCKED_CATEGORICALLY disposition while G2 was reading-dependent now rejects it only
+          when NO categorical gate OTHER THAN G2 independently fails — G2 is excluded from the
+          "independent" set explicitly so the branch is correct in isolation rather than relying on
+          the recorded-gate check having already run. The defect was REPRODUCED on a synthetic
+          universe before being corrected, and both directions are pinned: an independent
+          categorical FAIL now lawfully derives BLOCKED_CATEGORICALLY (parametrized across every
+          categorical gate except G2), while reading dependence ALONE still may not. Prerequisite/
+          UTD precedence and gate-order independence are unchanged and separately tested. STEP 4,
+          outcome-producing machinery: level1_stage1_runner.py (traverses the frozen universe
+          through the PRODUCTION seam in canonical order; supplies mechanically every value
+          accepted authority determines and REFUSES an executor attempt to override one even when
+          the supplied value agrees; enforces B1's floor by rejecting a G12 FAIL based on successor
+          nonexistence alone; refuses partial publication, unregistered constructions, incoherent
+          reading pairs, and a determined G9 failure that names no dependency; deliberately does
+          NOT encode the XASSET-0030 SS-E six-gate snapshot, because SS-E.1's invalidation triggers
+          make a hard-coded copy unsafe; FAILS CLOSED on the real authorization gate, with the
+          check injectable so composition can be tested against a synthetic authorizer that confers
+          nothing; deterministic byte-reproducible serializer; O_EXCL writer that refuses to
+          overwrite) and level1_stage1_result_validator.py (re-derives every disposition, cell
+          outcome and roll-up from the document's OWN recorded gate results rather than trusting
+          the runner; checks identity against the frozen universe rather than the document's
+          neighbouring fields; enforces exact inventory, exact canonical order, no duplicate/
+          missing/extra, the B3 posture, the G2 coupling, provenance completeness and count
+          truthfulness, cross-sleeve/cross-bound roll-up prohibition, and forbidden quantitative
+          content; rejects duplicate keys at load, which ordinary json.loads silently resolves).
+          STEPS 5-6, trust boundary and pins: LOAD_BEARING_RELPATHS extended from six to nine using
+          the EXISTING exact-byte mechanism unchanged (SS-E.6's stated preference; no departure was
+          needed, so none is argued), adding level1_stage1_runner.py,
+          level1_stage1_result_validator.py, and the XASSET-0036 decision file; CANONICAL_PINS
+          recomputed only AFTER the canonical bytes stabilized, with XASSET-0029's pins retained as
+          XASSET_0029_CANONICAL_PINS and current-byte verification moved to a new
+          validate_current_canonical_pins() — the same succession treatment XASSET-0029 gave
+          XASSET-0028 and XASSET-0028 gave XASSET-0027. NO ACCEPTED DECISION FILE IS EDITED.
+          EXECUTION BOUNDARY, observed and directly asserted rather than assumed: the real frozen
+          680 is used ONLY for read-only structural traversal, ordering, inventory, identity, and
+          B2 480/200 recomputation, all authorized by SS-F.1(a) and all confirmed clean —
+          480/200 exact, six canonical pairs at 80 each, zero degenerate, and all 360 consuming
+          DIRECT_ALTERNATIVE records carrying NO unordered_pair_id, which is the positive proof
+          that consumption is read off frozen identity rather than the label. Everything that
+          composes a gate result, disposition, cell outcome or roll-up uses SYNTHETIC constructions
+          under a synthetic sleeve name, and a dedicated test asserts no composed row names a
+          registered construction — a check that CAUGHT a real defect during development, when an
+          earlier fixture used ids that ARE registered. No stage1_results.yaml, no
+          AUTHORIZATION_ROOT, no attestation, no lane or ledger write, no ATTEMPT_1 claim, no data
+          acquisition, and no risk_lane_boundary protected-path reference: AST guards prove neither
+          new module imports a network, subprocess, or brokerage surface, that the result validator
+          never opens a file for writing, and that the only write surface is the explicit O_EXCL
+          writer. STEPS 8-11 REMAIN UNAUTHORIZED and are not performed: no operational rebinding,
+          no attestation, no READY/CLAIMED/COMPLETED, no execution. Per XASSET-0030 SS-D the
+          package DELIBERATELY CREATES ENFORCEMENT DRIFT — the load-bearing bytes now differ from
+          the authorized merged XASSET-0029 tree, so Stage 1 is non-armable until the separate
+          SS-G.B step 8 rebinding lifecycle lawfully binds them. That is the designed cost of the
+          correction, recorded up front, not a defect. XASSET-0027 SS-P.1's exactly-one
+          evaluation/results PR remains separately reserved and UNSPENT. Supporting artifact
+          test_level1_stage1_executable_package.py — 152 adversarial tests, each pinning an
+          authorized boundary AND its nearest plausible overreach. Predecessor governance suites
+          that pinned the PRE-implementation state (canonical pins, "exactly six load-bearing
+          paths", "no runner exists", "the defect branch still stands") were updated rather than
+          deleted or weakened: each now asserts its own filing's accepted values as HISTORY and the
+          live state as EXACTLY the authorized result, with every addition checked against the
+          precise authorized set rather than accepted as "some change". Stage 1 remains UNARMED and
+          NOT EXECUTABLE; ATTEMPT_1 intact, unclaimed, unconsumed. Draft PR; not merged, not
+          independently reviewed, not principal-accepted in this session.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
