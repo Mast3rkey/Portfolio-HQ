@@ -706,17 +706,38 @@ class TestLoadBearingReauthorizationDependency:
         # The message is assembled across adjacent f-string literals; collapse before matching.
         assert 'load-bearing code has changed " "since the authorized merge' in source
 
-    def test_this_unit_left_every_load_bearing_path_untouched(self):
-        """Governance-only: correcting the Finding 1 defect is deliberately out of scope."""
-        import subprocess
+    def test_the_recorded_dependency_was_discharged_exactly_as_authorized(self):
+        """AMENDED BY XASSET-0036 SS-E.5/SS-E.6, which authorized SS-G.B steps 3 and 5.
 
-        changed = subprocess.run(
-            ["git", "diff", "--name-only", "origin/main...HEAD"],
-            capture_output=True,
-            text=True,
-            cwd=ROOT,
-        ).stdout.split()
-        assert not (set(changed) & set(A.LOAD_BEARING_RELPATHS)), changed
+        This test previously asserted that ``origin/main...HEAD`` touched no load-bearing path.
+        That was the right check for XASSET-0030's own governance-only unit, but the expression
+        captures WHATEVER BRANCH IS CHECKED OUT rather than that unit specifically -- so on the
+        authorized implementation branch it necessarily fails, since SS-G.B steps 3 and 5 exist
+        precisely to change those paths. (It also passes vacuously whenever HEAD equals
+        ``origin/main``, which is why it is not a durable guard.)
+
+        SS-D recorded the dependency: correcting the Finding 1 defect deliberately creates
+        enforcement drift, and the trust boundary must then be extended to cover the
+        outcome-producing code. What is durably checkable, and what this test now asserts, is that
+        the dependency was discharged EXACTLY as authorized -- the six paths SS-D enumerated are
+        all retained, the additions are exactly the authorized outcome-producing set, and no real
+        results artifact is load-bearing because none exists.
+        """
+        enumerated = {
+            "level1_stage1_execution_authorization.py",
+            "level1_endpoint_evidence_preregistration_validator.py",
+            "level1_construction_universe_closure_validator.py",
+            A.CANONICAL_PROTOCOL_RELPATH,
+            A.CANONICAL_PREREGISTRATION_RELPATH,
+            "governance/decisions/XASSET-0029-endpoint-0001-stage-1-operational-authorization.md",
+        }
+        assert enumerated <= set(A.LOAD_BEARING_RELPATHS)
+        assert set(A.LOAD_BEARING_RELPATHS) - enumerated == {
+            "level1_stage1_runner.py",
+            "level1_stage1_result_validator.py",
+            "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
+        }
+        assert not any("stage1_results" in path for path in A.LOAD_BEARING_RELPATHS)
 
 
 # --------------------------------------------------------------------------------------
