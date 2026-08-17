@@ -52,6 +52,28 @@ refused at every prior step.
 
 This unit closes that gap and does nothing else. **It authorizes; it does not implement.**
 
+### Correction history
+
+**Correction 1** — after independent FULL exact-head review `4952475219` at head
+`e8f81f00600375a8c6d4d69177dd2457e966d54b` (`CHANGES REQUIRED` — 0 BLOCKING / 1 MAJOR / 1 MINOR / 1 NOTE).
+
+The review **accepted the core authority determination in full**, and raised no objection to the grant,
+the `XASSET-0027` §P.1 separation, the `XASSET-0029` activation model, the steps-2–7 scope, the
+steps-8–11 withholding, or the seven-condition effectivity lifecycle. **None of those changed.**
+
+- **MAJOR 1 — resolved by new §F.1.** The original §F banned validating the runner against the real
+  680-construction universe outright. That conflated *reading already-frozen identities* with *deriving
+  outcomes from them*, and would have made the runner's most important integrity property unprovable at
+  its real boundary. §F.1 replaces the categorical ban with a two-sided boundary: read-only,
+  non-outcome-producing structural traversal is authorized (§F.1(a)); every outcome-producing act stays
+  absolutely prohibited (§F.1(b)). The one-shot `ATTEMPT_1` protection is not weakened.
+- **MINOR 1 — PR body only.** The PR body listed "production config" in its absolute withheld summary
+  while this decision correctly authorizes the §G.B steps 2/3/5 production-configuration changes.
+  Corrected there. **This decision file, `operations/WORKSTREAMS.yaml`, and the `CLAUDE.md` pointer never
+  carried that contradiction** — independently verified: in all three, "production configuration change"
+  appears only inside the correct §P.1 reconciliation, never in a withheld list.
+- **NOTE 1** — non-actionable; every boundary it named is preserved.
+
 ## Decision
 
 ### A. Determination — `G_B_IMPLEMENTATION_PACKAGE_AUTHORIZED`
@@ -229,10 +251,56 @@ The authorization in §E **does not extend to**, and the implementation PR **mus
   authorized;
 - performing §G.B steps 8–11.
 
-**Rejecting the tempting shortcut explicitly:** the implementation PR may build and fully validate the
-runner against **synthetic or isolated inputs**, exactly as `XASSET-0030` §B and `XASSET-0035` did. It may
-**not** run it over the real 680-construction universe to "check that it works." That is execution, it
-consumes the non-rerunnable `ATTEMPT_1` lane's subject matter, and it is prohibited.
+#### F.1 — The line between structural validation and execution
+
+**Corrected after FULL review `4952475219` MAJOR 1.** The prior head stated a single categorical rule: the
+runner could be validated only against synthetic or isolated inputs and could "not run over the real
+680-construction universe." That conflated two different operations, and the stricter reading was the
+wrong one — it would have made the runner's single most important integrity property unprovable at its
+real boundary, and pushed a future author toward either under-testing or inferring an unauthorized
+exception.
+
+**Accessing and traversing the frozen construction identities is not execution. Applying gate-evaluation
+semantics to those identities to derive Stage-1 outcomes is execution.** The universe is *already frozen*;
+reading it changes nothing and produces no outcome. That distinction, not the synthetic/real distinction,
+is what protects the one-shot lane.
+
+This is how the program has always in fact behaved: `XASSET-0035` mechanically recomputed the B2
+480/200 inventory directly from the merged frozen universe, and this decision's own preflight regenerated
+the 680 / 48 / universe hash. Neither consumed `ATTEMPT_1`, because neither evaluated a gate.
+
+**F.1(a) — Authorized: read-only, non-outcome-producing structural validation.** The implementation PR
+**may** read and structurally traverse the real frozen construction universe — including through the
+actual production traversal seam rather than a synthetic lookalike — to prove properties such as:
+
+- the production traversal consumes exactly all **680** registered construction identities;
+- exact canonical ordering;
+- zero duplicate, missing, or extra construction;
+- immutability of identity fields, and that nothing is relabelled;
+- the **680 / 48 / `73c0965e…5224`** universe verification;
+- B2's structural **480 consuming / 200 non-consuming** classification, recomputed from frozen identities;
+- that the production wiring reaches the frozen universe directly, not a competing hand-built traversal.
+
+This permission is **conditional on the operation remaining read-only and non-outcome-producing**, and it
+never extends past that condition.
+
+**F.1(b) — Prohibited: outcome-producing execution.** No such validation, and nothing else in the
+implementation PR, may: evaluate or decide any gate (`G1`–`G12`) for a real registered construction;
+derive a candidate disposition; derive a cell or roll-up outcome; serialize, persist, or publish a real
+Stage-1 result; create `stage1_results.yaml`; create or modify `AUTHORIZATION_ROOT`; create an attestation;
+claim `ATTEMPT_1`; write lane state or a ledger entry; acquire market, fundamental, or economic data; or
+access protected `RISK` results.
+
+**An actual Stage-1 run over the real 680 — any operation applying gate-evaluation semantics to real
+registered constructions and deriving governed Stage-1 outcomes — remains absolutely prohibited** until
+the lane is lawfully armed and claimed. It stays downstream of operational rebinding → attestation →
+`READY` → lawful claim → execution, exactly as §G.B steps 8–11 require. `ATTEMPT_1` is non-rerunnable, and
+this correction does not weaken that protection by one step: it narrows an over-broad ban to the precise
+act that would actually consume the lane.
+
+Building and validating against **synthetic or isolated inputs** — the method `XASSET-0030` §B and
+`XASSET-0035` both used — remains fully available and is the right tool for gate-semantics testing, where
+real identities are neither needed nor permitted.
 
 ### G. Packaging — one authorization, one coherent implementation PR
 

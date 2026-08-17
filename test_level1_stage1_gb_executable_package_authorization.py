@@ -15,9 +15,16 @@ The four overreaches that matter most each have a dedicated guard:
 1. **"Unlocked" read as "authorized."** ``TestUnlockedIsNotAuthorized`` fails if the decision ever
    treats ``XASSET-0035``'s unlock as self-executing permission, or drops the six predecessor
    disclaimers that make the gap real.
-2. **Scope creep from implementation into execution.** ``TestExecutionNotAuthorized`` and
-   ``TestNoRealResultArtifact`` fail if the grant reaches attestation, arming, claiming, ``ATTEMPT_1``,
-   any construction run, or any real results document.
+2. **Scope creep from implementation into execution — in either direction.**
+   ``TestExecutionNotAuthorized`` and ``TestNoRealResultArtifact`` fail if the grant reaches
+   attestation, arming, claiming, ``ATTEMPT_1``, or any real results document.
+   ``TestStructuralValidationVersusExecutionBoundary`` pins §F.1, the correction from FULL review
+   ``4952475219`` MAJOR 1, on **both** sides: read-only structural traversal of the real frozen 680
+   — through the actual production seam, not a synthetic lookalike — must stay authorized, and every
+   outcome-producing act (gate evaluation, disposition/cell/roll-up derivation, result persistence,
+   claim, lane mutation, data acquisition, protected ``RISK`` access) must stay barred. A one-sided
+   suite would let the correction drift back into either the original over-broad ban or an
+   unauthorized execution licence.
 3. **Silent consumption of the reserved results PR.** ``TestP1ResultsPRRemainsSeparate`` fails if
    ``XASSET-0027`` §P.1's exactly-one evaluation/results PR is merged into, replaced by, or counted
    against this authorization.
@@ -430,16 +437,173 @@ class TestExecutionNotAuthorized:
         assert "creating `READY`, `CLAIMED`, or `COMPLETED` lane state" in body
         assert "AUTHORIZATION_ROOT" in body
 
-    def test_the_dry_run_shortcut_is_rejected_by_name(self, decision: str) -> None:
-        """The single most likely well-intentioned breach: 'just run it once to check.'"""
-        body = _norm(_section(decision, "F"))
-        assert "may build and fully validate the runner against **synthetic or isolated inputs**" in body
-        assert "may **not** run it over the real 680-construction universe" in body
-        assert "consumes the non-rerunnable `ATTEMPT_1` lane's subject matter" in body
-
     def test_steps_8_through_11_are_in_the_withheld_list(self, decision: str) -> None:
         body = _norm(_section(decision, "F"))
         assert "performing §G.B steps 8–11" in body
+
+
+class TestStructuralValidationVersusExecutionBoundary:
+    """§F.1 — the correction from FULL review 4952475219 MAJOR 1.
+
+    The prior head banned running the runner over the real 680 outright, which conflated *reading
+    already-frozen identities* with *deriving outcomes from them*. These tests pin both sides: the
+    read-only structural permission must survive, and every outcome-producing act must stay barred.
+    A test that only checked one side would let the correction drift back into either error.
+    """
+
+    def test_the_key_distinction_is_stated_in_operative_text(self, decision: str) -> None:
+        body = _norm(_section(decision, "F"))
+        assert "Accessing and traversing the frozen construction identities is not execution" in body
+        assert (
+            "Applying gate-evaluation semantics to those identities to derive Stage-1 outcomes is "
+            "execution" in body
+        )
+
+    def test_read_only_structural_traversal_of_the_real_680_is_authorized(
+        self, decision: str
+    ) -> None:
+        body = _norm(_section(decision, "F"))
+        assert "may** read and structurally traverse the real frozen construction universe" in body
+        assert "the production traversal consumes exactly all **680** registered construction" in body
+
+    @pytest.mark.parametrize(
+        "permitted",
+        [
+            "exact canonical ordering",
+            "zero duplicate, missing, or extra construction",
+            "immutability of identity fields, and that nothing is relabelled",
+            "universe verification",
+            "480 consuming / 200 non-consuming",
+            "reaches the frozen universe directly, not a competing hand-built traversal",
+        ],
+    )
+    def test_each_authorized_structural_operation_is_enumerated(
+        self, decision: str, permitted: str
+    ) -> None:
+        body = _norm(_section(decision, "F"))
+        assert permitted in body, f"authorized structural operation missing: {permitted!r}"
+
+    def test_the_permission_may_use_the_real_production_seam_not_only_a_lookalike(
+        self, decision: str
+    ) -> None:
+        """The whole point of MAJOR 1: a synthetic lookalike cannot prove the production invariant."""
+        body = _norm(_section(decision, "F"))
+        assert "through the actual production traversal seam rather than a synthetic lookalike" in body
+
+    def test_the_permission_is_conditional_not_open_ended(self, decision: str) -> None:
+        body = _norm(_section(decision, "F"))
+        assert "conditional on the operation remaining read-only and non-outcome-producing" in body
+        assert "never extends past that condition" in body
+
+    @pytest.mark.parametrize(
+        "prohibited",
+        [
+            # Each item carries its own list terminator. Mutation testing showed that asserting the
+            # bare phrase lets a qualifier be spliced in — "derive a candidate disposition **when
+            # convenient**;" still contains the bare phrase and would have passed. Pinning the
+            # delimiter makes each prohibition unqualifiable.
+            "evaluate or decide any gate (`G1`–`G12`) for a real registered construction;",
+            "derive a candidate disposition;",
+            "derive a cell or roll-up outcome;",
+            "serialize, persist, or publish a real Stage-1 result;",
+            "create `stage1_results.yaml`;",
+            "create or modify `AUTHORIZATION_ROOT`;",
+            "create an attestation;",
+            "claim `ATTEMPT_1`;",
+            "write lane state or a ledger entry;",
+            "acquire market, fundamental, or economic data;",
+            "access protected `RISK` results.",
+        ],
+    )
+    def test_each_outcome_producing_act_remains_prohibited(
+        self, decision: str, prohibited: str
+    ) -> None:
+        body = _norm(_section(decision, "F"))
+        assert prohibited in body, f"outcome-producing prohibition missing or qualified: {prohibited!r}"
+
+    def test_the_prohibition_list_is_introduced_as_an_absolute_bar(self, decision: str) -> None:
+        """Guards the list's own framing — items are worthless if the lead-in becomes permissive."""
+        body = _norm(_section(decision, "F"))
+        assert "No such validation, and nothing else in the implementation PR, may:" in body
+
+    def test_actual_outcome_producing_680_execution_remains_absolutely_prohibited(
+        self, decision: str
+    ) -> None:
+        body = _norm(_section(decision, "F"))
+        assert (
+            "any operation applying gate-evaluation semantics to real registered constructions and "
+            "deriving governed Stage-1 outcomes — remains absolutely prohibited" in body
+        )
+
+    def test_execution_stays_downstream_of_the_full_arming_chain(self, decision: str) -> None:
+        body = _norm(_section(decision, "F"))
+        assert (
+            "operational rebinding → attestation → `READY` → lawful claim → execution" in body
+        )
+
+    def test_the_one_shot_protection_is_expressly_not_weakened(self, decision: str) -> None:
+        body = _norm(_section(decision, "F"))
+        assert "`ATTEMPT_1` is non-rerunnable" in body
+        assert "does not weaken that protection by one step" in body
+
+    def test_synthetic_validation_remains_available_for_gate_semantics(
+        self, decision: str
+    ) -> None:
+        """The correction widens, it does not replace — synthetic testing stays the right tool."""
+        body = _norm(_section(decision, "F"))
+        assert "synthetic or isolated inputs" in body
+        assert "remains fully available" in body
+
+    def test_the_correction_is_attributed_to_the_review_that_required_it(
+        self, decision: str
+    ) -> None:
+        body = _norm(_section(decision, "F"))
+        assert "Corrected after FULL review `4952475219` MAJOR 1" in body
+
+    def test_the_prior_categorical_ban_is_not_still_asserted_as_the_rule(
+        self, decision: str
+    ) -> None:
+        """The old wording may be *described* as corrected, never restated as operative."""
+        body = _norm(_section(decision, "F"))
+        assert "may **not** run it over the real 680-construction universe to \"check that it works.\"" not in body
+
+    def test_precedent_for_reading_the_frozen_universe_is_cited(self, decision: str) -> None:
+        """Grounded in what the program already did, not in this filing's own preference."""
+        body = _norm(_section(decision, "F"))
+        assert "`XASSET-0035` mechanically recomputed the B2" in body
+        assert "Neither consumed `ATTEMPT_1`, because neither evaluated a gate" in body
+
+    def test_correction_history_records_the_review_and_preserves_the_core_grant(
+        self, decision: str
+    ) -> None:
+        """The correction must be traceable, and must state what it did NOT change."""
+        norm = _norm(decision)
+        assert "**Correction 1** — after independent FULL exact-head review `4952475219`" in norm
+        assert "accepted the core authority determination in full" in norm
+        assert "**None of those changed.**" in norm
+
+    def test_minor_1_is_recorded_as_pr_body_only(self, decision: str) -> None:
+        """Guards against a future reader inferring the mirrors carried the contradiction."""
+        norm = _norm(decision)
+        assert "MINOR 1 — PR body only" in norm
+        assert "never carried that contradiction" in norm
+
+    def test_mirrors_do_not_withhold_production_config_broadly(self) -> None:
+        """MINOR 1's substance, checked against the real mirrors rather than asserted.
+
+        ``production configuration change`` is legitimate inside the §P.1 reconciliation — it is
+        the quoted §P.1 prohibition. It must never appear as an unqualified item in this decision's
+        own withheld list, which would contradict the §E grant it exists to permit.
+        """
+        withheld = _norm(_section(D0036.read_text(encoding="utf-8"), "F"))
+        for contradiction in (
+            "- production config",
+            "production config;",
+            "any production configuration change;",
+        ):
+            assert contradiction not in withheld, (
+                f"§F withheld list contradicts the §E grant: {contradiction!r}"
+            )
 
 
 class TestNoRealResultArtifact:

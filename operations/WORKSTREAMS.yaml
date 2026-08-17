@@ -13713,17 +13713,77 @@ workstreams:
           lifecycle closure. None is individually sufficient; the SS-G.B implementation PR is
           NOT authorized to begin before all seven close. REQUIRED_LIFECYCLE_GATES is cited only
           and remains byte-unchanged. Supporting artifact
-          test_level1_stage1_gb_executable_package_authorization.py — 80 adversarial tests, each
+          test_level1_stage1_gb_executable_package_authorization.py — 108 adversarial tests, each
           pinning an authorized boundary AND its nearest plausible overreach, with AST guards
           proving zero or-fallback assertions, zero filesystem writes, and that the suite never
-          references the risk_lane_boundary protected result path. Mutation-tested with 16
-          injected decision overreaches across two rounds — dropping the unlocked-is-not-authorized
-          distinction, making merge sufficient, dropping or weakening the exact-merge-SHA CI
-          condition, consuming the SS-P.1 results PR, authorizing steps 8-11, becoming an
-          activation PR, weakening the no-regress rule, permitting a real results artifact,
-          permitting the real 680-construction dry run, permitting per-component PRs, permitting
-          B1/B2/B3 reopening, dropping the exactly-one-PR bound, and weakening the load-bearing
-          preference — ALL 16 CAUGHT, decision file restored byte-identical (sha256 verified).
+          references the risk_lane_boundary protected result path. Mutation-tested across three
+          rounds — 15 injected decision overreaches against the authorization itself (dropping the
+          unlocked-is-not-authorized distinction, making merge sufficient, dropping or weakening the
+          exact-merge-SHA CI condition, consuming the SS-P.1 results PR, authorizing steps 8-11,
+          becoming an activation PR, weakening the no-regress rule, permitting a real results
+          artifact, permitting per-component PRs, permitting B1/B2/B3 reopening, dropping the
+          exactly-one-PR bound, and weakening the load-bearing preference), plus 25 injected
+          against the corrected SS-F.1 boundary in BOTH directions — 10 removing or narrowing the
+          authorized read-only structural validation (traversal permission, exact-680 coverage
+          proof, production-seam permission, the key distinction itself, the B2 480/200 recompute,
+          canonical-order, duplicate/missing/extra, immutability/no-relabel, the synthetic-still-
+          available clause, the precedent grounding) and 15 widening it into outcome production
+          (permitting or qualifying gate evaluation, disposition derivation, cell/roll-up
+          derivation, result persistence, ATTEMPT_1 claim, lane-state writes, protected RISK
+          access; dropping the absolute-prohibition clause, the arming-chain ordering, the
+          one-shot-protection statement, the conditionality, the never-extends clause, the list
+          lead-in, and the review attribution) — ALL 40 CAUGHT, decision file restored
+          byte-identical (sha256 verified) after every one. Two genuine suite gaps were found and
+          closed rather than papered over: bare-phrase prohibition assertions survived qualifier
+          splicing ("derive a candidate disposition WHEN CONVENIENT;" still contained the bare
+          phrase), so every SS-F.1(b) prohibition is now pinned WITH its own list terminator, and
+          the list lead-in is pinned separately.
+          BOUNDED CORRECTION, same PR, after independent FULL exact-head review 4952475219
+          (CHANGES REQUIRED — 0 BLOCKING / 1 MAJOR / 1 MINOR / 1 NOTE) at head
+          e8f81f00600375a8c6d4d69177dd2457e966d54b. The reviewer ACCEPTED the core authority
+          determination in full and raised no objection to the grant, the SS-P.1 separation, the
+          XASSET-0029 activation model, the steps-2-7 scope, the steps-8-11 withholding, or the
+          seven-condition effectivity lifecycle — all unchanged by this correction. MAJOR 1: the
+          original SS-F stated one categorical rule — the runner could be validated only against
+          synthetic or isolated inputs and could not be run over the real 680-construction universe
+          — which conflated READING already-frozen construction identities with DERIVING Stage-1
+          outcomes from them, and would have made the runner's single most important integrity
+          property (that the real production traversal consumes exactly the frozen 680, in exact
+          canonical order, with no duplicate/missing/extra/relabelled identity) unprovable at its
+          real boundary, pushing a future author toward either under-testing or inferring an
+          unauthorized exception. RESOLVED by new SS-F.1, which replaces the categorical ban with a
+          precise two-sided boundary. SS-F.1(a) AUTHORIZES read-only, non-outcome-producing
+          structural traversal of the real frozen universe — expressly including through the actual
+          production traversal seam rather than only a synthetic lookalike — to prove exact-680
+          coverage, canonical ordering, zero duplicate/missing/extra, identity immutability and
+          no relabelling, the 680/48/frozen-hash verification, B2's structural 480/200
+          classification recomputed from frozen identities, and that production wiring reaches the
+          frozen universe directly rather than a competing hand-built traversal; the permission is
+          expressly CONDITIONAL on remaining read-only and non-outcome-producing and never extends
+          past that condition. SS-F.1(b) keeps ABSOLUTELY PROHIBITED every outcome-producing act:
+          evaluating or deciding any gate G1-G12 for a real registered construction, deriving a
+          candidate disposition, deriving a cell or roll-up outcome, serializing/persisting/
+          publishing a real Stage-1 result, creating stage1_results.yaml, creating or modifying
+          AUTHORIZATION_ROOT, creating an attestation, claiming ATTEMPT_1, writing lane state or a
+          ledger entry, acquiring market/fundamental/economic data, or accessing protected RISK
+          results — and an actual Stage-1 run over the real 680 remains downstream of operational
+          rebinding, attestation, READY, lawful claim, and execution. The one-shot ATTEMPT_1
+          protection is NOT weakened by one step: the correction narrows an over-broad ban to the
+          precise act that would actually consume the lane, grounded in what this program already
+          did (XASSET-0035 recomputed the B2 480/200 inventory directly from the merged frozen
+          universe, and this filing's own preflight regenerated 680/48/hash — neither consumed
+          ATTEMPT_1, because neither evaluated a gate). Synthetic/isolated-input validation remains
+          fully available and stays the right tool for gate-semantics testing. MINOR 1 was a PR-body
+          factual contradiction only ("production config" listed in the absolute withheld summary
+          while the decision correctly authorizes the SS-G.B steps 2/3/5 production-configuration
+          changes); corrected in the PR body to "production-configuration changes outside the exact
+          SS-E / SS-G.B steps 2-7 grant". Independently verified this session that neither this
+          register entry nor the CLAUDE.md pointer nor the decision file ever carried that
+          contradiction — in all three, "production configuration change" appears only inside the
+          correct SS-P.1 reconciliation, never in a withheld list. NOTE 1 was non-actionable
+          (boundaries worth preserving), and every one it named is preserved. No governance
+          decision, canonical byte, validator, load-bearing path, universe value, or catalog count
+          changed in this correction.
           NON-AUTHORIZATION: this filing generates no attestation and creates no READY/CLAIMED/
           COMPLETED lane state or authorization root; arms and executes no Stage 1; creates no
           runner, result writer, result validator, or stage1_results.yaml; consumes nothing of
