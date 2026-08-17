@@ -13631,6 +13631,115 @@ workstreams:
           changes no targets.yaml, holdings.yaml, gates.yaml, issuer_lookthrough.yaml, allocator,
           tier, cluster, cap, or margin state. Draft PR; not merged, not independently reviewed,
           not principal-accepted in this session.
+      - gate: xasset0035-post-merge-verification
+        status: complete
+        pr: 334
+        description: >
+          Lane M factual synchronization, recorded by the XASSET-0036 session. PR #334
+          (XASSET-0035, Stage-1 residual semantic blockers B1/B2/B3) independently re-confirmed
+          MERGED via the GitHub API and live git this session, not inherited from any prior
+          summary: accepted head 369139a1be738aec7d63f42f1611fdb05603637f; base
+          a39f8e1322ba321b70a89be781ee9463047b8882; merge commit
+          ed3f062f86607574291428ea2345d2cba78b3a02, whose two parents were independently
+          re-derived via git log --pretty and match, and which is simultaneously GitHub main,
+          origin/main, and this session's own branch base; merge tree 0fb7ac358f16c5717eb61d73a301e3aa55d74c14
+          confirmed BYTE-IDENTICAL to the accepted head's own tree, so drift at merge is zero;
+          final independent DELTA review 4951982716, APPROVED FOR PRINCIPAL EXACT-HEAD
+          ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR / 1 NOTE, following FULL review 4951655331
+          (CHANGES REQUIRED, 1 MINOR) resolved by Correction 1; principal acceptance
+          issuecomment-5316716838; merge-commit CI workflow run 32035476253 / job 95404782049,
+          head_sha ed3f062f86607574291428ea2345d2cba78b3a02 — the EXACT merge SHA, not the PR
+          head — completed/success. All seven XASSET-0035 SS-I conditions are therefore closed,
+          and XASSET-0030 SS-G.B is SEMANTICALLY UNLOCKED. Zero open pull requests at handoff;
+          working tree clean; stash empty; sole worktree; both canonical pins matching
+          (6c34cbbc...64cb / 6e0c07a8...337c); frozen universe 680 / 48 cells / 73c0965e...5224
+          matching; six LOAD_BEARING_RELPATHS unchanged; AUTHORIZATION_ROOT absent;
+          new_execution_is_authorized() False; ATTEMPT_1 intact, unclaimed, unconsumed; no
+          ENDPOINT Stage-1 runner, result writer, result validator, claim, completion, ledger,
+          or stage1_results.yaml anywhere. The prior xasset0035-residual-semantic-blocker-determination
+          gate's own text is left byte-unchanged; this is an additive record, not an edit.
+      - gate: xasset0036-gb-executable-package-authorization
+        status: in_progress
+        pr: null
+        description: >
+          XASSET-0036, Lane G, bounded governance-only AUTHORIZATION unit. XASSET-0035 closed
+          the last semantic blocker, so XASSET-0030 SS-G.B is semantically UNLOCKED — but a
+          read-only implementation preflight found it UNLOCKED BUT NOT AUTHORIZED. Six
+          consecutive filings named SS-G.B and six expressly declined to grant it, verbatim:
+          XASSET-0030 SS-G.B ("This decision authorizes none of G.A or G.B"); XASSET-0031 ("No
+          part of SS-G.A or SS-G.B is authorized by this decision"); XASSET-0032 (leaves the
+          invariant intact, grants nothing); XASSET-0033 ("remains separately reserved");
+          XASSET-0034 SS-G ("Recorded as scope, not as authorization... authorizes none of it");
+          XASSET-0035 SS-I ("recorded as scope, not authorization" / "authorizes none of SS-G.B
+          and performs no part of it"). DETERMINATION: G_B_IMPLEMENTATION_PACKAGE_AUTHORIZED.
+          Exactly ONE future, separate, bounded SS-G.B implementation PR is authorized, covering
+          SS-G.B STEPS 2 THROUGH 7 as one coherent pass — canonical reconciliation into
+          PROTOCOL_V1.md and pre_registration.yaml; correction of the XASSET-0030 SS-C
+          enforcement-conformance defect (load-bearing for up to 480 of 680 constructions per
+          XASSET-0035 SS-F.8) plus only such other conformance defects as the final semantics
+          mechanically require; implementation of the deterministic ENDPOINT Stage-1 runner,
+          result writer/serializer, dedicated result validator, and supporting derivation code;
+          implementation of the accepted B1/B2/B3 semantics WITHOUT reopening them; modification
+          of the authorization/trust-boundary implementation only as necessary to bind all
+          outcome-producing executable bytes exactly; LOAD_BEARING_RELPATHS extension (the
+          existing exact-byte mechanism preferred, any departure argued not assumed); final
+          identity and pin recomputation only after all bytes stabilize; focused/adversarial
+          tests and factual register sync; and one draft PR for independent FULL exact-head
+          review. SS-G.B STEPS 8 THROUGH 11 — the successor operational-authorization /
+          load-bearing rebinding lifecycle, post-rebinding read-only readiness verification,
+          fail-closed drift handling, and the external attestation, arm, claim, and
+          680-construction run — ARE NOT AUTHORIZED. XASSET-0027 SS-P.1's exactly-one Stage-1
+          EVALUATION/RESULTS PR is NOT consumed, replaced, amended, or counted against: it
+          remains separately reserved and unspent, on three independent grounds, any one
+          sufficient — its verbatim "That PR may make no production configuration change"
+          prohibition versus SS-G.B steps 2/3/5 which are nothing but production configuration
+          changes; its deliverable being an output rather than an implementation; and the two
+          sitting on opposite sides of arming. XASSET-0029 SS-E's no-infinite-authorization-regress
+          rule remains INTACT AND UNWEAKENED: this is NOT an activation PR, generates no
+          attestation, arms nothing, adds ZERO activation authorizations, and SS-E's own stated
+          terminating condition ("the final step changes no repository state") categorically
+          excludes state-changing SS-G.B work — while XASSET-0030 SS-D and SS-G.B step 8,
+          accepted AFTER XASSET-0029, already expressly contemplate a successor rebinding
+          lifecycle. After the authorized package merges and the separate rebinding lifecycle
+          completes, final activation remains the external one-shot runtime attestation and the
+          operator's act, never another merged activation PR. PACKAGING: one authorization, one
+          coherent implementation PR — not one per component; a session finding a concrete
+          technical reason the package cannot lawfully be one PR must STOP AND DISCLOSE rather
+          than silently split or widen. EFFECTIVITY: this authorization is effective only on
+          COMPLETE closure of all SEVEN conditions — independent FULL exact-head review; any
+          bounded correction and exact-head re-review; principal exact-head acceptance; normal
+          merge; immediate post-merge verification; successful merge-commit CI whose head_sha is
+          the EXACT MERGE SHA (not the PR head's own run); and final post-CI verification and
+          lifecycle closure. None is individually sufficient; the SS-G.B implementation PR is
+          NOT authorized to begin before all seven close. REQUIRED_LIFECYCLE_GATES is cited only
+          and remains byte-unchanged. Supporting artifact
+          test_level1_stage1_gb_executable_package_authorization.py — 80 adversarial tests, each
+          pinning an authorized boundary AND its nearest plausible overreach, with AST guards
+          proving zero or-fallback assertions, zero filesystem writes, and that the suite never
+          references the risk_lane_boundary protected result path. Mutation-tested with 16
+          injected decision overreaches across two rounds — dropping the unlocked-is-not-authorized
+          distinction, making merge sufficient, dropping or weakening the exact-merge-SHA CI
+          condition, consuming the SS-P.1 results PR, authorizing steps 8-11, becoming an
+          activation PR, weakening the no-regress rule, permitting a real results artifact,
+          permitting the real 680-construction dry run, permitting per-component PRs, permitting
+          B1/B2/B3 reopening, dropping the exactly-one-PR bound, and weakening the load-bearing
+          preference — ALL 16 CAUGHT, decision file restored byte-identical (sha256 verified).
+          NON-AUTHORIZATION: this filing generates no attestation and creates no READY/CLAIMED/
+          COMPLETED lane state or authorization root; arms and executes no Stage 1; creates no
+          runner, result writer, result validator, or stage1_results.yaml; consumes nothing of
+          ATTEMPT_1; evaluates no gate for any construction and asserts no per-construction
+          outcome; corrects no validator and extends no LOAD_BEARING_RELPATHS; performs no
+          load-bearing reauthorization or rebinding; amends no canonical file and changes no
+          hash pin, universe, cardinality, comparison_subject_kind, unordered_pair_id, or
+          construction identity; performs no part of SS-G.B and enters none of it; acquires no
+          market, fundamental, economic, or Stage-2 data; resolves XASSET-0024 SS-K.1 neither
+          way and leaves XASSET-0020 SS-E.1 unamended; reopens neither B1, B2, nor B3; reads,
+          lists, opens, or references no risk_lane_boundary protected result path; changes no
+          targets.yaml, holdings.yaml, gates.yaml, issuer_lookthrough.yaml, allocator, tier,
+          cluster, cap, or margin state; authorizes no chart, ladder, deployment, trade, order,
+          or brokerage action; and rewrites no accepted history. Stage 1 remains UNARMED and NOT
+          EXECUTABLE; ATTEMPT_1 intact, unclaimed, unconsumed. Draft PR; not merged, not
+          independently reviewed, not principal-accepted in this session.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -14690,9 +14799,9 @@ workstreams:
       representation-aggregation rule, any snapshot successor, RISK parameter
       reuse, Level-2 work, liquidity determination, and policy adoption all
       remain separately unauthorized.
-    active_branch: claude/xasset-0035-semantic-blockers-wqvukh
+    active_branch: claude/xasset-0036-gb-authorization-x932t8
     active_pr: null
-    last_verified_main_sha: a39f8e1322ba321b70a89be781ee9463047b8882
+    last_verified_main_sha: ed3f062f86607574291428ea2345d2cba78b3a02
     last_verified_date: "2026-08-17"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
@@ -15004,6 +15113,33 @@ workstreams:
       push, and open exactly one draft PR; then stop for independent full
       exact-head review. Implemented by LEVEL2-0001 and its structured
       supporting artifact in this current filing.
+
+      Further controlling principal directive, a later session, 2026-08-17:
+      XASSET-0035 (PR #334) having merged and its own complete seven-condition
+      lifecycle having closed — independently re-verified this session,
+      including merge-commit CI run 32035476253 whose head_sha is the EXACT
+      merge SHA ed3f062f86607574291428ea2345d2cba78b3a02 — XASSET-0030 SS-G.B
+      is SEMANTICALLY UNLOCKED. A read-only implementation preflight then
+      established that SS-G.B is UNLOCKED BUT NOT AUTHORIZED: six consecutive
+      filings (XASSET-0030 through XASSET-0035) each named SS-G.B and each
+      expressly declined to grant it, and neither XASSET-0027 SS-P.1's
+      exactly-one evaluation/results PR (barred from any production
+      configuration change) nor XASSET-0029 SS-E's no-further-authorization-PR
+      rule (terminating on a step that changes no repository state) supplies
+      the missing authority. Directive: file ONE bounded governance-only unit
+      explicitly authorizing exactly one future SS-G.B executable-package
+      implementation PR, covering SS-G.B steps 2 through 7 as one coherent
+      pass, sufficiently explicit that a future author need not infer
+      authority from adjacency, roadmap text, or 'unlocked' status. The
+      filing must implement no part of SS-G.B, must not consume SS-P.1's
+      reserved results PR, must not become an activation PR or reopen
+      XASSET-0029 SS-E's regress bar, must withhold attestation, arming,
+      claiming, execution, and any real result artifact, and must itself take
+      effect only on its own complete seven-condition lifecycle closure.
+      Implemented by XASSET-0036 (draft, unmerged, not independently reviewed,
+      not principal-accepted in this session) — see that decision file for the
+      full bounded specification, its five-part authority-gap reproduction,
+      and its SS-P.1 and SS-E reconciliations.
     roadmap_preservation: >
       Planning/coordination only, additively folded forward by the
       economic-assessment content-implementation session (2026-08-10,

@@ -1011,3 +1011,11 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0009, OPS-0014, NUM-0001, XASSET-0019, XASSET-0020, XASSET-0021, XASSET-0022, XASSET-0023, XASSET-0024, XASSET-0025, XASSET-0026, XASSET-0027, XASSET-0028, XASSET-0029, XASSET-0030, XASSET-0031, XASSET-0032, XASSET-0033, XASSET-0034, LEVEL2-0001, RISK-0001]
     supporting_artifact: test_level1_stage1_residual_semantic_blockers.py
     file: governance/decisions/XASSET-0035-endpoint-0001-stage-1-residual-semantic-blocker-determination.md
+
+  - decision_id: XASSET-0036
+    date: 2026-08-17
+    status: Proposed
+    category: cross_asset_allocation_architecture
+    related_decisions: [GOV-0001, GOV-0002, OPS-0007, OPS-0009, OPS-0014, NUM-0001, XASSET-0019, XASSET-0020, XASSET-0021, XASSET-0022, XASSET-0023, XASSET-0024, XASSET-0025, XASSET-0026, XASSET-0027, XASSET-0028, XASSET-0029, XASSET-0030, XASSET-0031, XASSET-0032, XASSET-0033, XASSET-0034, XASSET-0035, LEVEL2-0001, RISK-0001]
+    supporting_artifact: test_level1_stage1_gb_executable_package_authorization.py
+    file: governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md
