@@ -1570,8 +1570,7 @@ def active_execution_is_authorized(
 ) -> tuple[bool, str]:
     """May THIS execution do real work RIGHT NOW? Exactly ``LANE_CLAIMED``, and lawfully so.
 
-    BLOCKING 1 (review 4953558775): a THIRD question, narrower than both existing ones, and the
-    one an outcome-producing runner or a publishing writer actually needs to ask.
+    BLOCKING 1 (review 4953558775): a THIRD question, narrower than both existing ones.
 
     * :func:`new_execution_is_authorized` -- may a NEW execution start? ``READY`` only.
     * :func:`claimed_execution_is_authorized` -- did THIS execution come from the one lawful
@@ -1579,6 +1578,16 @@ def active_execution_is_authorized(
       :func:`completed_result_is_authorized` authenticates a result AFTER completion and needs
       exactly that provenance. It is not narrowed here, and must not be.
     * this predicate -- is the one lawful attempt CURRENTLY IN PROGRESS? ``CLAIMED`` alone.
+
+    Exactly three acts may happen only DURING the single attempt, and all three ask this one:
+
+    * outcome composition -- :func:`level1_stage1_runner.run_stage1`;
+    * result publication -- :func:`level1_stage1_runner.write_stage1_results`;
+    * the one ``CLAIMED`` -> ``COMPLETED`` state transition -- :func:`complete_execution`
+      (BLOCKING 1, review 4953842000).
+
+    Authenticating an already-completed result is deliberately NOT on that list: it happens after
+    the transition, which is exactly why the broader predicate exists and stays broad.
 
     Reproduced before correcting, on isolated temporary lane paths: with a valid attestation,
     a real claim, and a real completion, ``lane_state_at`` returned ``COMPLETED`` and said "a
@@ -1719,11 +1728,26 @@ def complete_execution(
     artifact actually produced. It now takes the RESULT ITSELF and computes the identity
     internally with :func:`stage1_result_identity`, so the bound identity is derived, never
     chosen. There is deliberately no public completion API accepting a precomputed digest.
+
+    BLOCKING 1 (review 4953842000): this gated on the deliberately broader
+    ``claimed_execution_is_authorized``, true in ``CLAIMED`` **or** ``COMPLETED``, so the terminal
+    state was not terminal for the transition API either. Reproduced on isolated lane paths:
+    after the single mirror loss the durability contract expressly permits -- ``completion.json``
+    gone, the original ``COMPLETED`` ledger event intact, result A still authorized -- an ordinary
+    call with result B found the completion path absent, so its ``O_EXCL`` write SUCCEEDED and it
+    appended a SECOND ``COMPLETED`` event. ``_recover_mirrored_record`` then rejected the
+    duplicated completion, and provenance authorized NEITHER A nor B: a lawful, recoverable result
+    had been made unpublishable through the public API alone, with no file forgery.
+
+    A completion is the one ``CLAIMED`` -> ``COMPLETED`` transition, so it asks
+    :func:`active_execution_is_authorized` -- exactly ``LANE_CLAIMED``, still authenticated --
+    BEFORE computing any result identity and before either write. Repairing a lost mirror is a
+    governed act requiring new authority, never a second ordinary completion.
     """
     paths = paths or LanePaths()
-    ok, reason = claimed_execution_is_authorized(paths, sources)
+    ok, reason = active_execution_is_authorized(paths, sources)
     if not ok:
-        raise ValueError(f"refusing to complete an unclaimed execution: {reason}")
+        raise ValueError(f"refusing to complete an execution that is not actively claimed: {reason}")
     result_identity_sha256 = stage1_result_identity(results)
 
     # BLOCKING 2: the previous form read the claim from paths.claim only, so completing after a

@@ -14,12 +14,25 @@ This module therefore:
 
 * uses the REAL frozen 680 only for read-only structural traversal, ordering, inventory, identity,
   and pair-consumption checks -- SS-F.1(a);
-* uses SYNTHETIC constructions and an injected authorizer for everything that composes a gate
-  result, a disposition, a cell outcome, or a roll-up -- SS-F.1(b);
-* never writes ``stage1_results.yaml``, never touches ``AUTHORIZATION_ROOT``, never creates an
-  attestation, and never claims ``ATTEMPT_1``.
+* uses SYNTHETIC constructions, through the private ``_compose_synthetic_stage1_document`` seam,
+  for everything that composes a gate result, a disposition, a cell outcome, or a roll-up --
+  SS-F.1(b). That seam is mechanically barred from every registered identity, and there is no
+  production injection seam: neither ``run_stage1`` nor ``write_stage1_results`` accepts an
+  authorizer, traversal, cell-universe, or destination parameter.
 
-A dedicated test at the end asserts those last properties directly rather than by convention.
+TWO DISTINCT HARNESSES, NOT ONE
+===============================
+
+The synthetic COMPOSITION seam above is separate from the isolated AUTHORIZATION-LIFECYCLE
+harness introduced for BLOCKING 1 (review 4953558775). The latter builds real attestations, takes
+real claims, and records real completions -- but every one of them lives in a pytest ``tmp_path``
+lane, against the authorization suite's own fake truth sources. Only the lane's storage location
+and truth oracle are redirected, so the authorization predicates under test execute for real.
+
+**No REAL lane and no real ``ATTEMPT_1`` is ever created, claimed, completed, or consumed.** This
+module never writes ``stage1_results.yaml``, never creates or touches ``AUTHORIZATION_ROOT``, and
+never produces a real attestation, claim, completion, or ledger entry. Dedicated tests assert
+those properties directly rather than by convention.
 """
 
 from __future__ import annotations
