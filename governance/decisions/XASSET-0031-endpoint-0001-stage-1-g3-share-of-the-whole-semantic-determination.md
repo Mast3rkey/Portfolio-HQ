@@ -86,6 +86,36 @@ opened. Corrected factually; no historical gate text rewritten.
 `XASSET-0030` 6/6 gate map, §K.1's unresolved state, §E.1's unamended state, R1/R2 route authority, or
 any canonical semantics.** No R2 construction is found to clear `G3`.
 
+**Correction 2** — after independent DELTA review `4947665744` (`CHANGES REQUIRED` — 0 BLOCKING /
+1 MAJOR / 0 MINOR / 1 NOTE) at head `f19dde2cd121f9e8801fc028ee600b0860cbedc7`, whose exact-head CI run
+`31980541182` / job `95246422723` was completed/success. That review recorded correction 1's two
+findings as substantially corrected and raised one **stale mirror** of MAJOR 1 surviving in §D.
+
+**MAJOR 1** — §D's five-class bullet still read: "Their native denominators are the sleeve's own
+position, the pair, or the alternative. **Reaching the whole from any of them would require precisely
+the mapping §C.2 bars.**" After correction 1 that is false: §C.2 limb B and the §E R2 row expressly
+leave a complete, zero-free-choice, source-prescribed R2 derivation **not categorically barred**. The
+sentence would have let a successor cite §D for a **class-wide negative** against
+`valuation_opportunity_cost`, `downside_path_risk`, `recovery`, `diversification_cobehavior`, and
+`sleeve_deployability` — converting a reserved per-source question into a settled impossibility for
+five of six classes. Corrected: the bullet now records native scope as **an observation only**, states
+that a source in one of the five reaches the §C quantity by satisfying §C.1 on its own terms (R1's
+direct statement, or a complete source-prescribed R2 derivation), keeps §C.2 limb A's bar on any
+application-composed conversion, and states that **neither satisfaction nor impossibility is determined
+here for any class**. The valid native-scope facts (`SELF`/`PAIR`/`ALT`, no class whole-scoped) are
+preserved unchanged.
+
+**Sweep.** The decision, the `WORKSTREAMS` `xasset0031` mirror, the PR body, and the focused tests were
+each searched for equivalent claims. **No other live stale mirror exists.** The `WORKSTREAMS` mirror
+states only "no class carries a whole-portfolio scope" — a native-scope fact with no barred-mapping
+inference — and was therefore left unchanged. Two residual matches in the decision and PR body are the
+**correction-1 history quoting the prior head**, which is intentional documentation rather than a live
+claim.
+
+**Correction 2 changes no determination either**: the core NEGATIVE, the 6/6 gate map, §K.1, §E.1,
+R1/R2 route authority, and canonical semantics are all untouched, and `G3` remains source-dependent and
+RESERVED for every class.
+
 ## Decision
 
 ### A. Determination — `SHARE_OF_THE_WHOLE_CONDITION_NOT_CLOSABLE`
@@ -279,9 +309,13 @@ reasons, and the difference is recorded rather than flattened:
   Determining here that it suffices would decide the precise question §J.3 assigns to the study;
   determining that it does not would contradict §M.3. **The observation is carried forward unchanged as
   a fact and not as a prediction**, exactly as §J.3 framed it.
-- **The other five carry no portfolio-framed scope language at all.** Their native denominators are
-  the sleeve's own position, the pair, or the alternative. Reaching the whole from any of them would
-  require precisely the mapping §C.2 bars.
+- **The other five carry no portfolio-framed scope language at all.** Their native subject matter is
+  `SELF`, `PAIR`, or `ALT` — the sleeve's own position, the pair, or the alternative — not the whole.
+  **That observation is about native scope only, and does not by itself decide `G3` for any of them.**
+  A source in one of the five reaches the §C quantity only by satisfying §C.1 on its own terms — R1's
+  direct statement, or a complete, zero-free-choice, source-prescribed R2 derivation that yields it —
+  and any conversion the application would compose, select, invent, or tune remains barred by §C.2
+  limb A. **Neither satisfaction nor impossibility is determined here for any class.**
 
 **Why the reserved answer is source-dependent and not class-wide.** `G3` tests the denominator a source
 *declares*, and `XASSET-0025` §H fixes that as a property of the evidence itself. Two sources in the

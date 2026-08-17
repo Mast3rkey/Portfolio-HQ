@@ -525,6 +525,122 @@ class TestPerClassCapability:
 
 
 # --------------------------------------------------------------------------------------
+# Native scope does not decide G3 (XASSET-0031 SS-D) -- DELTA review 4947665744 MAJOR 1
+# --------------------------------------------------------------------------------------
+
+
+class TestNativeScopeDoesNotDecideG3:
+    """The stale mirror this correction removed, pinned so it cannot return.
+
+    The prior head said of the five non-portfolio-framed classes that "reaching the whole from any of
+    them would require precisely the mapping SS-C.2 bars" -- a class-wide negative that contradicted
+    the corrected SS-C.2 limb B and the SS-E R2 row. Native scope is an observation about subject
+    matter; it decides nothing about G3 either way.
+    """
+
+    NON_PORTFOLIO_FRAMED = (
+        "valuation_opportunity_cost",
+        "downside_path_risk",
+        "recovery",
+        "diversification_cobehavior",
+        "sleeve_deployability",
+    )
+
+    def _five_class_bullet(self, decision_text: str) -> str:
+        return decision_text.split("**The other five carry no portfolio-framed scope language at all.**")[
+            1
+        ].split("**Why the reserved answer is source-dependent")[0]
+
+    def test1_native_scope_does_not_itself_imply_g3_impossible(self, decision_text):
+        bullet = self._five_class_bullet(decision_text)
+        assert (
+            "That observation is about native scope only, and does not by itself decide `G3` for any "
+            "of them." in bullet
+        )
+        assert "Neither satisfaction nor impossibility is determined here for any class." in bullet
+
+    STALE = "Reaching the whole from any of them would require precisely the mapping"
+
+    def test1_the_removed_class_wide_negative_survives_only_as_history(self, decision_text):
+        """The stale formulation must appear exactly once, inside the correction record.
+
+        Stricter than a bare absence check: the phrase is legitimately quoted where correction 2
+        documents what it removed, so this pins BOTH that it is quoted there AND that it is nowhere
+        else -- in particular, nowhere in SS-D's live body.
+        """
+        assert decision_text.count(self.STALE) == 1
+        i = decision_text.find(self.STALE)
+        context = decision_text[max(0, i - 400) : i]
+        assert "**Correction 2**" in context or "**MAJOR 1** — §D's five-class bullet" in context
+
+    def test1_the_stale_claim_is_absent_from_the_live_five_class_bullet(self, decision_text):
+        bullet = self._five_class_bullet(decision_text)
+        assert self.STALE not in bullet
+        assert "§C.2 bars" not in bullet
+
+    def test2_five_class_source_may_reach_the_quantity_via_r1_or_prescribed_r2(self, decision_text):
+        bullet = self._five_class_bullet(decision_text)
+        assert "reaches the §C quantity only by satisfying §C.1 on its own terms" in bullet
+        assert "R1's direct statement" in bullet
+        assert "complete, zero-free-choice, source-prescribed R2 derivation that yields it" in bullet
+
+    def test3_application_authored_conversion_remains_barred(self, decision_text):
+        bullet = self._five_class_bullet(decision_text)
+        assert (
+            "any conversion the application would compose, select, invent, or tune remains barred by "
+            "§C.2 limb A" in bullet
+        )
+
+    def test4_source_prescribed_r2_execution_remains_permitted_in_principle(self, decision_text):
+        """The SS-C.2/SS-E permission must still stand after this correction."""
+        assert "**B — NOT CATEGORICALLY BARRED:" in decision_text
+        assert "**Downstream execution is permitted**" in decision_text
+
+    def test5_no_class_wide_g3_pass_or_fail_is_introduced(self, decision_text):
+        """Every level-4 cell stays RESERVED; no class is recorded as clearing or failing G3."""
+        table = decision_text.split("| # | DRIVER class |")[1].split("**Level 1 (subject matter)")[0]
+        assert table.count("RESERVED") >= 6
+        for verdict in ("**PASS**", "**FAIL**", "G3 PASS", "G3 FAIL"):
+            assert verdict not in table
+
+    def test5_no_class_is_declared_incapable(self, decision_text):
+        for phrase in ("can never reach", "cannot reach the whole", "never reach the whole"):
+            assert phrase not in decision_text
+
+    def test6_portfolio_function_remains_separately_reserved_under_j3(self, decision_text):
+        assert "RESERVED — §J.3 names this class specifically" in decision_text
+        assert "Whether that suffices to carry a share-of-the-whole statement is what `G3` tests." in decision_text
+
+    @pytest.mark.parametrize("cls", NON_PORTFOLIO_FRAMED)
+    def test7_all_five_remain_source_dependent_at_g3(self, decision_text, cls):
+        table = decision_text.split("| # | DRIVER class |")[1].split("**Level 1 (subject matter)")[0]
+        row = [r for r in table.split("|\n") if f"`{cls}`" in r]
+        assert row, cls
+        assert "RESERVED" in row[0]
+        assert "source-dependent" in row[0]
+
+    def test7_capability_is_still_recorded_source_dependent_not_class_wide(self, decision_text):
+        assert "Why the reserved answer is source-dependent and not class-wide" in decision_text
+
+    def test8_gate_map_unchanged_by_this_correction(self, decision_text):
+        assert (
+            "The `CURRENT_AUTHORITY_GATE_EVALUATION_SNAPSHOT` stands exactly as `XASSET-0030` §E left it"
+            in decision_text
+        )
+        assert "`G3` remains not closable" in decision_text
+        assert "SHARE_OF_THE_WHOLE_CONDITION_NOT_CLOSABLE" in decision_text
+
+    def test_native_scope_facts_themselves_are_preserved(self, decision_text, universe):
+        """The valid observation survives: SELF/PAIR/ALT, no class whole-scoped."""
+        bullet = self._five_class_bullet(decision_text)
+        assert "Their native subject matter is `SELF`, `PAIR`, or `ALT`" in bullet
+        assert "not the whole" in bullet
+        # And it is still true of the frozen universe.
+        tags = {cid.split("::")[-1].split("__")[0] for cid in universe}
+        assert tags == {"SELF", "PAIR", "ALT"}
+
+
+# --------------------------------------------------------------------------------------
 # SS-K.1 preserved, and shown non-dispositive (XASSET-0031 SS-F)
 # --------------------------------------------------------------------------------------
 
