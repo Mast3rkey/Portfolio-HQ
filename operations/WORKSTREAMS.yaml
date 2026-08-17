@@ -13952,8 +13952,12 @@ workstreams:
           / merge be90aeef… (authority over the package's creation, not the package); and
           EXECUTABLE_PACKAGE_* is PR #336 / merge 3e5de8f8… / head 07519f86… / base be90aeef… (the
           exact merged bytes bound). AUTHORIZING_DECISION becomes XASSET-0037,
-          AUTHORIZING_PULL_REQUEST is bound AFTER the draft PR existed rather than guessed ahead of
-          it, and REVIEWED_BASE_SHA becomes 3e5de8f85c69c2e5dc2b75421446b5db996d7cf1. Beyond every
+          AUTHORIZING_PULL_REQUEST is 337 — the literal was FIRST WRITTEN before the draft PR
+          existed, as the next sequential number, and was then VERIFIED against the real draft once
+          it opened; the load-bearing property is the post-opening verification, not the authoring
+          order, and a wrong number fails closed at verify_lifecycle_against_truth, which fetches
+          that exact pull request and compares its head, merge, and merged state —
+          and REVIEWED_BASE_SHA becomes 3e5de8f85c69c2e5dc2b75421446b5db996d7cf1. Beyond every
           check already performed, the rebinding proves from git: PR #336's merge parents in exact
           order; its merge tree byte-identical to its accepted head tree; that merge an ANCESTOR of
           the successor merge, as are XASSET-0029's and XASSET-0036's; XASSET-0029's own merge
@@ -13987,7 +13991,57 @@ workstreams:
           gate evaluated for any registered construction, no stage1_results.yaml, and nothing of
           ATTEMPT_1 consumed. XASSET-0027 SS-P.1's exactly-one evaluation/results PR remains
           separately reserved and UNSPENT. Stage 1 remains UNARMED and NOT EXECUTABLE. Draft PR;
-          not merged, not independently reviewed, not principal-accepted in this session.
+          not merged, not independently reviewed, not principal-accepted in this session. BOUNDED
+          CORRECTION after independent FULL exact-head review 4955010993 at head
+          f7bd5ecff747ade2ffab30574c58da3d683e4d60 (CHANGES REQUIRED - 0 BLOCKING / 1 MAJOR /
+          2 MINOR / 0 NOTE). ALL THREE FINDINGS WERE REPRODUCED BEFORE CORRECTING. The review
+          accepted the core determination in full and objected to none of the four-way identity
+          separation, V7 canonical succession, 9->10 load-bearing extension, historical
+          preservation, exact-head lifecycle checks, or non-activation posture; none of those
+          changed. MAJOR 1: EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS named only the runner and
+          result validator, but BOTH import their disposition, cell-outcome, roll-up, G2-reading and
+          vocabulary decisions from level1_endpoint_evidence_preregistration_validator.py, so that
+          module - which decides and orders the 680 outcomes - was never compared between the
+          accepted package and this rebinding. Reproduced through the real public validator with
+          isolated truth sources: injecting different package-head/package-merge bytes for it, with
+          the successor identity internally consistent, returned valid=True with errors=(), while
+          the identical mismatch on either declared path was correctly refused. Corrected with a
+          deterministic SEMANTIC PROJECTION rather than whole-file equality, because that same file
+          also carries authorization-only code this rebinding must lawfully change: 18 seed symbols
+          (declared in OUTCOME_PRODUCING_PROJECTION_SEEDS and independently re-derived from the two
+          consumers' own source by the test suite, so the production tuple is never its own oracle),
+          transitively closed to 26 symbols over the module's own top-level names, serialized sorted
+          by symbol with location-free ast.dump, docstrings excluded as a narrow disclosed exception
+          because prose cannot decide an outcome, and FAIL-CLOSED on unparseable source, a missing or
+          renamed seed, a duplicated top-level symbol, an unreadable anchor, or an unserializable
+          node. Compared across all five anchors - package accepted head, package merge, successor
+          reviewed head, successor merge, working tree - via a new blob_text_at truth-source method,
+          because a digest cannot answer a SURFACE question. Adversarial proof covers drift at either
+          package anchor, at the successor head, in a transitive dependency, a renamed seed, an
+          unparseable anchor, and an unreadable anchor; PRECISION is pinned too - an edit to a real
+          top-level constant OUTSIDE the closure correctly does not fire, since a projection that
+          fired on it would be byte equality under another name. NO STAGE-1 OUTCOME SEMANTICS
+          CHANGED: both outcome-producing modules remain byte-identical to the accepted PR #336
+          package and the live projected derivation surface is identical at the package's accepted
+          head, the package's merge, this head, and the working tree. MINOR 1: this register still
+          said AUTHORIZING_PULL_REQUEST was bound AFTER the draft PR existed while every other
+          surface disclosed the opposite; corrected here to the exact truth - 337 was FIRST WRITTEN
+          before the draft existed as the next sequential number and VERIFIED against the real draft
+          once it opened, with the post-opening verification named as the load-bearing property - and
+          a parametrized regression test now asserts across all three durable surfaces that the false
+          claim is absent and the true one present, so it cannot return. MINOR 2:
+          _validate_successor_operational_rebinding checked required values but never rejected extra
+          keys, so a smuggled key was accepted in both mappings while validate(...).ok stayed True;
+          reproduced, then corrected by routing both successor_operational_rebinding and its nested
+          distinct_identities through the module's own _keys mechanism against SUCCESSOR_REBINDING_KEYS
+          and SUCCESSOR_REBINDING_IDENTITY_KEYS, so missing keys, extra keys, and key-order drift are
+          all refused, with independent negative tests for each. NO CANONICAL BYTE CHANGED, so the V7
+          pins are re-verified rather than recomputed; the frozen universe stays 680 / 48 /
+          73c0965e...5224; LOAD_BEARING_RELPATHS stays 10 with nothing removed and no byte check
+          weakened; B1/B2/B3, gate semantics, construction identities and dispositions are untouched;
+          no accepted decision file was edited; and no SS-G.B step 9, 10 or 11, attestation, lane
+          state, ATTEMPT_1 or XASSET-0027 SS-P.1 consumption occurred. The corrected head requires an
+          independent exact-head DELTA review from f7bd5ecff747ade2ffab30574c58da3d683e4d60.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

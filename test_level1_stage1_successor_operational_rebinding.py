@@ -41,6 +41,43 @@ PREREG_PATH = ROOT / "research/level1_endpoint_evidence/pre_registration.yaml"
 
 FROZEN_UNIVERSE_SHA256 = "73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224"
 
+#: The module whose imported derivation surface MAJOR 1 (review 4955010993) requires be bound.
+DERIVATION_RELPATH = "level1_endpoint_evidence_preregistration_validator.py"
+DERIVATION_SOURCE = (ROOT / DERIVATION_RELPATH).read_text(encoding="utf-8")
+
+
+def _independently_derived_seed_symbols() -> set[str]:
+    """Re-derive the outcome-producing seed set from the CONSUMERS' own source, by AST.
+
+    Deliberately NOT read from ``A.OUTCOME_PRODUCING_PROJECTION_SEEDS``: the review's explicit
+    requirement is that the production tuple must not be its own test oracle. This walks
+    ``level1_stage1_runner.py`` and ``level1_stage1_result_validator.py``, finds whatever alias each
+    binds the derivation module to, and collects every attribute actually accessed through it. If a
+    future edit starts consuming a new derivation symbol without declaring it, the equality
+    assertion below fails.
+    """
+    import ast
+
+    found: set[str] = set()
+    for relative in A.EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS:
+        tree = ast.parse((ROOT / relative).read_text(encoding="utf-8"))
+        aliases = {
+            (entry.asname or entry.name)
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Import)
+            for entry in node.names
+            if entry.name == "level1_endpoint_evidence_preregistration_validator"
+        }
+        assert aliases, f"{relative} does not import the derivation module"
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Attribute)
+                and isinstance(node.value, ast.Name)
+                and node.value.id in aliases
+            ):
+                found.add(node.attr)
+    return found
+
 #: The nine paths the XASSET-0036 executable package bound. XASSET-0037 removes none of them.
 PACKAGE_LOAD_BEARING = (
     "level1_stage1_execution_authorization.py",
@@ -108,9 +145,24 @@ class FakeGit:
             A.EXECUTABLE_PACKAGE_MERGE_SHA: "p" * 40,
             A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD: "p" * 40,
         }
+        # MAJOR 1 (review 4955010993): the projection needs blob TEXT, not a digest. The stand-in
+        # serves the module's real current source at every anchor, so the default posture is the
+        # true one and each negative test perturbs exactly one anchor.
+        self.texts = {
+            (commit, DERIVATION_RELPATH): DERIVATION_SOURCE
+            for commit in (
+                MERGE,
+                HEAD,
+                A.EXECUTABLE_PACKAGE_MERGE_SHA,
+                A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+            )
+        }
         self._head = MERGE
         self._ancestor = True
         self.__dict__.update(overrides)
+
+    def blob_text_at(self, commit, relpath):
+        return self.texts.get((commit, relpath))
 
     def commit_parents(self, sha):
         return self.parents.get(sha)
@@ -549,6 +601,13 @@ class TestOutcomeProducingInvariant:
         assert git.blob_sha256_at(
             A.EXECUTABLE_PACKAGE_MERGE_SHA, relative
         ) == git.blob_sha256_at(A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, relative)
+
+    def test_the_declared_relpaths_are_not_the_whole_outcome_producing_surface(self):
+        """MAJOR 1's premise, asserted rather than assumed: both consumers import derivations."""
+        seeds = _independently_derived_seed_symbols()
+        assert seeds, "the consumers import no derivation symbols — premise broken"
+        assert DERIVATION_RELPATH not in A.EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS
+        assert DERIVATION_RELPATH in A.LOAD_BEARING_RELPATHS
 
     def test_this_rebinding_modified_neither_outcome_producing_module(self):
         """The claim is checked against git, not asserted in prose."""
@@ -1178,3 +1237,328 @@ class TestGovernanceRecord:
         assert gates["xasset0036-gb-executable-package-implementation"]["status"] == "complete"
         assert gates["xasset0036-gb-executable-package-implementation"]["pr"] == 336
         assert gates["xasset0036-implementation-post-merge-verification"]["pr"] == 336
+
+
+# ======================================================================================
+# (12) MAJOR 1 (review 4955010993) — the TRANSITIVE outcome-producing surface
+# ======================================================================================
+
+
+class TestOutcomeProducingProjection:
+    """The imported derivation surface must be bound, not merely the two declared files.
+
+    The reviewed head's defect: injecting different package-anchor bytes for
+    ``level1_endpoint_evidence_preregistration_validator.py`` returned ``valid=True`` with
+    ``errors=()``, while the identical mismatch on either declared path was refused. These tests
+    pin the corrected boundary and its nearest overreaches.
+    """
+
+    # --- the seed set is independently derived, never read from the production tuple ---
+
+    def test_the_declared_seeds_equal_the_independently_derived_consumption(self):
+        """Non-circular: the production tuple is checked against the consumers' real source."""
+        derived = _independently_derived_seed_symbols()
+        assert set(A.OUTCOME_PRODUCING_PROJECTION_SEEDS) == derived, (
+            "declared outcome-producing seeds disagree with what the runner and result validator "
+            f"actually consume; declared-only={set(A.OUTCOME_PRODUCING_PROJECTION_SEEDS) - derived}, "
+            f"consumed-only={derived - set(A.OUTCOME_PRODUCING_PROJECTION_SEEDS)}"
+        )
+
+    def test_every_declared_seed_exists_in_the_derivation_module(self):
+        surface = A.project_outcome_producing_surface(DERIVATION_SOURCE)
+        for seed in A.OUTCOME_PRODUCING_PROJECTION_SEEDS:
+            assert f"{seed}::" in surface, f"{seed} absent from the projection"
+
+    def test_the_projection_is_transitively_closed_beyond_the_seeds(self):
+        """A seed's own module-level dependencies are part of the surface, not stopped at the edge."""
+        projected = {
+            line.split("::", 1)[0]
+            for line in A.project_outcome_producing_surface(DERIVATION_SOURCE).splitlines()
+        }
+        assert projected > set(A.OUTCOME_PRODUCING_PROJECTION_SEEDS)
+        # Real transitive dependencies of the seeds, named independently of the implementation.
+        for dependency in ("SLEEVES", "BOUNDS", "DRIVER_CLASSES", "CONSTRUCTION_FAMILIES",
+                           "CANDIDATE_DISPOSITIONS", "CELL_OUTCOMES", "cell_id_of",
+                           "generate_family_slot_grid", "map_g2_reading"):
+            assert dependency in projected, f"{dependency} missing from the transitive closure"
+
+    # --- determinism and fail-closed behaviour ---
+
+    def test_the_projection_is_deterministic(self):
+        first = A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        for _ in range(3):
+            assert A.outcome_producing_projection_digest(DERIVATION_SOURCE) == first
+
+    def test_reordering_definitions_does_not_change_identity(self):
+        """Identity is the SURFACE, not the file layout — otherwise the check is byte equality."""
+        assert A.outcome_producing_projection_digest(DERIVATION_SOURCE) == (
+            A.outcome_producing_projection_digest(DERIVATION_SOURCE + "\n\nUNRELATED = 1\n")
+        )
+
+    def test_a_docstring_only_edit_does_not_trip_the_projection(self):
+        """The one deliberate, disclosed exclusion: prose cannot decide an outcome."""
+        mutated = DERIVATION_SOURCE.replace(
+            '"""Aggregate identity hash of the XASSET-0028 construction universe, recomputed live.',
+            '"""AGGREGATE identity hash of the XASSET-0028 construction universe, recomputed live.',
+            1,
+        )
+        assert mutated != DERIVATION_SOURCE
+        assert A.outcome_producing_projection_digest(mutated) == (
+            A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        )
+
+    @pytest.mark.parametrize(
+        ("old", "new"),
+        [
+            ("REGISTERED_CONSTRUCTION_COUNT = 680", "REGISTERED_CONSTRUCTION_COUNT = 679"),
+            ("def derive_candidate_disposition(", "def derive_candidate_disposition_X("),
+            ("def derive_cell_outcome(", "def derive_cell_outcome_X("),
+            ("def generate_cell_universe(", "def generate_cell_universe_X("),
+        ],
+    )
+    def test_a_real_semantic_edit_does_change_identity_or_fails_closed(self, old, new):
+        mutated = DERIVATION_SOURCE.replace(old, new, 1)
+        assert mutated != DERIVATION_SOURCE, f"fixture did not mutate: {old!r}"
+        try:
+            assert A.outcome_producing_projection_digest(mutated) != (
+                A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+            )
+        except A.ProjectionError:
+            pass  # a renamed seed fails closed, which is the stronger outcome
+
+    def test_a_missing_seed_fails_closed(self):
+        with pytest.raises(A.ProjectionError, match="absent or renamed"):
+            A.project_outcome_producing_surface(
+                DERIVATION_SOURCE, seeds=("NoSuchSymbolAnywhere",)
+            )
+
+    def test_an_empty_seed_set_fails_closed(self):
+        with pytest.raises(A.ProjectionError, match="seed set is empty"):
+            A.project_outcome_producing_surface(DERIVATION_SOURCE, seeds=())
+
+    def test_unparseable_source_fails_closed(self):
+        with pytest.raises(A.ProjectionError, match="does not parse"):
+            A.project_outcome_producing_surface("def broken(:\n")
+
+    def test_a_duplicated_top_level_symbol_fails_closed(self):
+        """An ambiguous surface is refused rather than silently resolved to the last definition."""
+        mutated = DERIVATION_SOURCE + "\n\nREGISTERED_CONSTRUCTION_COUNT = 1\n"
+        with pytest.raises(A.ProjectionError, match="defined more than once"):
+            A.project_outcome_producing_surface(mutated)
+
+    # --- the real corpus: identical to the accepted PR #336 package ---
+
+    @pytest.mark.parametrize(
+        "anchor",
+        ["EXECUTABLE_PACKAGE_ACCEPTED_HEAD", "EXECUTABLE_PACKAGE_MERGE_SHA"],
+    )
+    def test_the_live_projection_is_identical_to_the_accepted_package(self, anchor):
+        """Against real git, not a stand-in: this rebinding changed no outcome-producing semantics."""
+        git = A.LiveGitTruthSource()
+        source = git.blob_text_at(getattr(A, anchor), DERIVATION_RELPATH)
+        assert source is not None, f"{DERIVATION_RELPATH} unreadable at {anchor}"
+        assert A.outcome_producing_projection_digest(source) == (
+            A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        )
+
+    def test_the_live_projection_is_identical_at_the_successor_head(self):
+        git = A.LiveGitTruthSource()
+        source = git.blob_text_at("HEAD", DERIVATION_RELPATH)
+        assert source is not None
+        assert A.outcome_producing_projection_digest(source) == (
+            A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        )
+
+    # --- the adversarial mutation proof through the REAL public validator ---
+
+    def test_the_reviewed_head_defect_is_closed(self, payload):
+        """The exact injection that previously returned valid=True with errors=()."""
+        mutated = DERIVATION_SOURCE.replace(
+            "REGISTERED_CONSTRUCTION_COUNT = 680", "REGISTERED_CONSTRUCTION_COUNT = 679", 1
+        )
+        assert mutated != DERIVATION_SOURCE
+        git = FakeGit()
+        git.texts[(A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, DERIVATION_RELPATH)] = mutated
+        git.texts[(A.EXECUTABLE_PACKAGE_MERGE_SHA, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection drift", sources(git=git))
+
+    @pytest.mark.parametrize(
+        "anchor",
+        ["EXECUTABLE_PACKAGE_ACCEPTED_HEAD", "EXECUTABLE_PACKAGE_MERGE_SHA"],
+    )
+    def test_drift_at_either_package_anchor_alone_is_rejected(self, payload, anchor):
+        mutated = DERIVATION_SOURCE.replace(
+            "REGISTERED_CONSTRUCTION_COUNT = 680", "REGISTERED_CONSTRUCTION_COUNT = 678", 1
+        )
+        git = FakeGit()
+        git.texts[(getattr(A, anchor), DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection drift", sources(git=git))
+
+    def test_drift_introduced_at_the_successor_head_is_rejected(self, payload):
+        """Symmetric: the rebinding may not quietly alter the surface it is binding either."""
+        mutated = DERIVATION_SOURCE.replace(
+            "REGISTERED_CONSTRUCTION_COUNT = 680", "REGISTERED_CONSTRUCTION_COUNT = 677", 1
+        )
+        git = FakeGit()
+        git.texts[(HEAD, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection drift", sources(git=git))
+
+    def test_a_transitive_dependency_edit_is_rejected(self, payload):
+        """Not just the seeds: a change one level deeper is caught too.
+
+        ``CANDIDATE_DISPOSITIONS`` is not a seed — it is reached only because
+        ``derive_candidate_disposition`` and ``derive_cell_outcome`` depend on it.
+        """
+        assert "CANDIDATE_DISPOSITIONS" not in A.OUTCOME_PRODUCING_PROJECTION_SEEDS
+        anchor = 'CANDIDATE_DISPOSITIONS = (\n    "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED",'
+        assert DERIVATION_SOURCE.count(anchor) == 1, "fixture anchor is not unique"
+        mutated = DERIVATION_SOURCE.replace(
+            anchor, 'CANDIDATE_DISPOSITIONS = (\n    "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED_X",', 1
+        )
+        git = FakeGit()
+        git.texts[(A.EXECUTABLE_PACKAGE_MERGE_SHA, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection drift", sources(git=git))
+
+    def test_an_edit_outside_the_closure_correctly_does_not_fire(self, payload):
+        """PRECISION, not only sensitivity — and the reason this projection is not whole-file equality.
+
+        ``FAILURE_DISPOSITIONS`` is a real top-level constant that no outcome-producing seed reaches.
+        A projection that fired on it would be byte equality wearing a different name, and would make
+        the authorization-only edits this rebinding must lawfully make impossible.
+        """
+        anchor = 'FAILURE_DISPOSITIONS = ("BLOCKED_CATEGORICALLY", '
+        assert DERIVATION_SOURCE.count(anchor) == 1
+        projected = {
+            line.split("::", 1)[0]
+            for line in A.project_outcome_producing_surface(DERIVATION_SOURCE).splitlines()
+        }
+        assert "FAILURE_DISPOSITIONS" not in projected
+        mutated = DERIVATION_SOURCE.replace(
+            anchor, 'FAILURE_DISPOSITIONS = ("BLOCKED_CATEGORICALLY_X", ', 1
+        )
+        assert mutated != DERIVATION_SOURCE
+        assert A.outcome_producing_projection_digest(mutated) == (
+            A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        )
+        git = FakeGit()
+        git.texts[(A.EXECUTABLE_PACKAGE_MERGE_SHA, DERIVATION_RELPATH)] = mutated
+        assert A.validate_authorization_document(payload, sources(git=git)).valid
+
+    @pytest.mark.parametrize(
+        "anchor_attr", ["EXECUTABLE_PACKAGE_ACCEPTED_HEAD", "EXECUTABLE_PACKAGE_MERGE_SHA"]
+    )
+    def test_an_unreadable_anchor_fails_closed(self, payload, anchor_attr):
+        git = FakeGit()
+        del git.texts[(getattr(A, anchor_attr), DERIVATION_RELPATH)]
+        _rejected(payload, "could not be read at the executable-package", sources(git=git))
+
+    def test_a_renamed_seed_at_an_anchor_fails_closed(self, payload):
+        mutated = DERIVATION_SOURCE.replace(
+            "def derive_roll_up_outcome(", "def derive_roll_up_outcome_RENAMED(", 1
+        )
+        git = FakeGit()
+        git.texts[(A.EXECUTABLE_PACKAGE_MERGE_SHA, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection failed", sources(git=git))
+
+    def test_an_unparseable_anchor_fails_closed(self, payload):
+        git = FakeGit()
+        git.texts[(A.EXECUTABLE_PACKAGE_MERGE_SHA, DERIVATION_RELPATH)] = "def broken(:\n"
+        _rejected(payload, "outcome-producing projection failed", sources(git=git))
+
+    def test_the_happy_path_still_validates_with_the_new_gate(self, payload):
+        result = A.validate_authorization_document(payload, sources())
+        assert result.valid, result.errors
+
+
+# ======================================================================================
+# (13) MINOR 1 and MINOR 2 (review 4955010993)
+# ======================================================================================
+
+
+class TestReviewedMinorFindings:
+    # --- MINOR 1: the durable register told a different history from every other surface ---
+
+    @pytest.mark.parametrize(
+        "relative",
+        [
+            "operations/WORKSTREAMS.yaml",
+            "governance/decisions/"
+            "XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
+            "level1_stage1_execution_authorization.py",
+        ],
+    )
+    def test_no_surface_claims_the_number_was_bound_after_the_draft(self, relative):
+        """The false claim must not remain and must not return."""
+        text = (ROOT / relative).read_text(encoding="utf-8").lower()
+        collapsed = " ".join(text.split())
+        assert "bound after the draft" not in collapsed, (
+            f"{relative} still carries the false PR-number provenance"
+        )
+
+    @pytest.mark.parametrize(
+        "relative",
+        [
+            "operations/WORKSTREAMS.yaml",
+            "governance/decisions/"
+            "XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
+            "level1_stage1_execution_authorization.py",
+        ],
+    )
+    def test_every_surface_states_the_true_provenance(self, relative):
+        collapsed = " ".join(
+            (ROOT / relative).read_text(encoding="utf-8").replace("#:", " ").replace("*", "").split()
+        ).lower()
+        assert "first written before the draft" in collapsed, relative
+        assert "verified against the real draft" in collapsed, relative
+
+    def test_the_register_names_the_verified_number(self):
+        register = (ROOT / "operations/WORKSTREAMS.yaml").read_text(encoding="utf-8")
+        assert "AUTHORIZING_PULL_REQUEST is 337" in register
+
+    # --- MINOR 2: both rebinding mappings are exact closed schemas ---
+
+    @pytest.fixture
+    def canonical(self) -> dict:
+        return yaml.safe_load(PREREG_PATH.read_text(encoding="utf-8"))
+
+    def test_the_canonical_baseline_still_validates(self, canonical):
+        assert PREREG.validate(canonical).ok
+
+    def test_an_unknown_key_in_the_rebinding_block_is_rejected(self, canonical):
+        canonical["stage_1_operational_authorization"]["successor_operational_rebinding"][
+            "smuggled"
+        ] = "value"
+        result = PREREG.validate(canonical)
+        assert not result.ok
+        assert any("unexpected key(s)" in e for e in result.errors), result.errors
+
+    def test_an_unknown_key_in_distinct_identities_is_rejected(self, canonical):
+        canonical["stage_1_operational_authorization"]["successor_operational_rebinding"][
+            "distinct_identities"
+        ]["smuggled"] = "value"
+        result = PREREG.validate(canonical)
+        assert not result.ok
+        assert any("unexpected key(s)" in e for e in result.errors), result.errors
+
+    @pytest.mark.parametrize("key", list(PREREG.SUCCESSOR_REBINDING_KEYS))
+    def test_a_missing_rebinding_key_is_rejected(self, canonical, key):
+        del canonical["stage_1_operational_authorization"]["successor_operational_rebinding"][key]
+        assert not PREREG.validate(canonical).ok
+
+    @pytest.mark.parametrize("key", list(PREREG.SUCCESSOR_REBINDING_IDENTITY_KEYS))
+    def test_a_missing_identity_key_is_rejected(self, canonical, key):
+        del canonical["stage_1_operational_authorization"]["successor_operational_rebinding"][
+            "distinct_identities"
+        ][key]
+        assert not PREREG.validate(canonical).ok
+
+    def test_key_order_drift_is_rejected(self, canonical):
+        block = canonical["stage_1_operational_authorization"]["successor_operational_rebinding"]
+        block["distinct_identities"] = dict(reversed(list(block["distinct_identities"].items())))
+        result = PREREG.validate(canonical)
+        assert not result.ok
+        assert any("key order differs" in e for e in result.errors), result.errors
+
+    def test_the_identity_schema_still_names_exactly_four_relationships(self):
+        assert len(PREREG.SUCCESSOR_REBINDING_IDENTITY_KEYS) == 4
+        assert len(set(PREREG.SUCCESSOR_REBINDING_IDENTITY_KEYS)) == 4

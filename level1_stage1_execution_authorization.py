@@ -127,6 +127,7 @@ authorization at the first eligible work item, and fail-closed validation.
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import os
@@ -220,6 +221,57 @@ EXECUTABLE_PACKAGE_MERGE_BASE = "be90aeef5c48e84849a007b31abbb1166857785d"
 EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS = (
     "level1_stage1_runner.py",
     "level1_stage1_result_validator.py",
+)
+
+# --------------------------------------------------------------------------------------
+# MAJOR 1 (review 4955010993) -- the TRANSITIVE outcome-producing surface
+# --------------------------------------------------------------------------------------
+#
+# The two paths above are not the whole outcome-producing surface. Both modules
+# ``import level1_endpoint_evidence_preregistration_validator as PV`` and call its
+# ``generate_cell_universe``, ``derive_candidate_disposition``, ``derive_cell_outcome``,
+# ``derive_roll_up_outcome``, ``required_g2_gate_result`` and ``is_reading_dependent``, plus the
+# gate/disposition/reading vocabularies those decisions are made against. That module therefore sits
+# squarely on the path SS-G.B defines as outcome-producing: it DECIDES and ORDERS the 680 outcomes.
+#
+# REPRODUCED BEFORE CORRECTING, through the real public validator with isolated truth sources:
+# injecting different package-head/package-merge bytes for that module, while leaving the successor
+# head/merge/working identity internally consistent, returned ``valid=True`` with ``errors=()``. The
+# identical mismatch on either declared path was correctly refused. The mechanism did not prove the
+# fact it relied on.
+#
+# WHY NOT WHOLE-FILE EQUALITY. That module also contains authorization-only code -- the canonical
+# lifecycle constants, the pin-succession checks, the rebinding block validator -- which THIS
+# rebinding must lawfully change. Requiring whole-file equality against the package would make a
+# lawful rebinding impossible, so the binding is a deterministic SEMANTIC PROJECTION of exactly the
+# outcome-determining surface instead.
+
+#: The module carrying the imported derivation surface.
+OUTCOME_PRODUCING_DERIVATION_RELPATH = "level1_endpoint_evidence_preregistration_validator.py"
+
+#: The EXACT top-level symbols the runner and result validator consume from that module. Enumerated
+#: explicitly here as the authorized surface declaration; ``test_...successor_operational_rebinding``
+#: independently re-derives the same set straight from the two consumers' own source and asserts
+#: equality, so this tuple is never its own test oracle.
+OUTCOME_PRODUCING_PROJECTION_SEEDS = (
+    "CATEGORICAL_GATES",
+    "DERIVED_IDENTITIES",
+    "G2_RECORD_REJECTED",
+    "GATE_IDS",
+    "GATE_RESULT_VOCABULARY",
+    "POINT_RANGE_VALUES",
+    "PREREQUISITE_GATES",
+    "READING_VOCABULARY",
+    "REGISTERED_CONSTRUCTION_COUNT",
+    "REQUIRED_CANDIDATE_RESULT_KEYS",
+    "SLEEVES",
+    "ValidationResult",
+    "derive_candidate_disposition",
+    "derive_cell_outcome",
+    "derive_roll_up_outcome",
+    "generate_cell_universe",
+    "is_reading_dependent",
+    "required_g2_gate_result",
 )
 
 CONSTRUCTION_UNIVERSE_SHA256 = (
@@ -465,6 +517,144 @@ def stage1_result_identity(results: Any) -> str:
     return sha256_bytes(canonical_json(results).encode("utf-8"))
 
 
+class ProjectionError(ValueError):
+    """The outcome-producing projection could not be established. ALWAYS fail closed on this."""
+
+
+def _strip_docstrings(node: ast.AST) -> ast.AST:
+    """Remove docstrings so a pure prose edit is not reported as an outcome-semantics change.
+
+    Deliberate and narrow: a docstring cannot decide, order, serialize, write, or materially alter
+    an outcome, which is exactly what XASSET-0030 SS-G.B defines as outcome-producing. Excluding it
+    keeps the projection a SEMANTIC one. Every other node -- every constant, comparison, branch,
+    ordering, and vocabulary member -- is retained. Tested in both directions: a docstring-only edit
+    does not trip the projection, and any real logic or constant edit does.
+    """
+    for candidate in ast.walk(node):
+        if not isinstance(
+            candidate, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module)
+        ):
+            continue
+        body = getattr(candidate, "body", None)
+        if (
+            body
+            and isinstance(body[0], ast.Expr)
+            and isinstance(body[0].value, ast.Constant)
+            and isinstance(body[0].value.value, str)
+        ):
+            del body[0]
+    return node
+
+
+def _top_level_symbol_table(tree: ast.Module, where: str) -> dict[str, ast.AST]:
+    """Map every top-level symbol to its single defining node. Duplicates FAIL CLOSED."""
+    table: dict[str, ast.AST] = {}
+    seen: set[str] = set()
+    duplicates: set[str] = set()
+
+    def record(name: str, node: ast.AST) -> None:
+        if name in seen:
+            duplicates.add(name)
+        seen.add(name)
+        table[name] = node
+
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            record(node.name, node)
+        elif isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    record(target.id, node)
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            record(node.target.id, node)
+
+    if duplicates:
+        raise ProjectionError(
+            f"{where}: top-level symbol(s) {sorted(duplicates)!r} are defined more than once, so "
+            "the outcome-producing surface is ambiguous"
+        )
+    return table
+
+
+def project_outcome_producing_surface(
+    source: str,
+    seeds: Sequence[str] = OUTCOME_PRODUCING_PROJECTION_SEEDS,
+    where: str = OUTCOME_PRODUCING_DERIVATION_RELPATH,
+) -> str:
+    """Deterministically project the TRANSITIVE outcome-producing surface of a module's source.
+
+    MAJOR 1 (review 4955010993). Takes SOURCE TEXT rather than an imported module precisely so the
+    same projection can be computed for an arbitrary git blob -- the accepted package's reviewed
+    head, the package's merge, the successor's reviewed head, the successor's merge, and the working
+    tree -- and compared. An imported module could only ever describe the working tree.
+
+    The projection is the transitive closure of ``seeds`` over the module's own top-level symbols:
+    every function, constant, vocabulary, and ordering dependency reachable from the symbols the
+    runner and result validator actually consume. Serialization is sorted by symbol name and uses
+    location-free ``ast.dump``, so reordering definitions or reflowing whitespace does not change
+    identity while any change to a value, branch, comparison, or ordering does.
+
+    FAILS CLOSED, raising :class:`ProjectionError`, on: unparseable source; a seed that is missing or
+    was renamed; a top-level symbol defined more than once; or a serialization that cannot be
+    produced. It never returns a partial or best-effort surface.
+
+    Determinism boundary, stated rather than overclaimed: ``ast.dump``'s exact text is stable for a
+    given interpreter, not guaranteed identical across Python versions. That is sufficient and is
+    what the caller needs, because every projection compared here is computed by ONE interpreter in
+    ONE validation pass; the value is never persisted or compared across processes.
+    """
+    if not seeds:
+        raise ProjectionError(f"{where}: the outcome-producing seed set is empty")
+
+    # Parsed and docstring-stripped exactly ONCE. Re-parsing per symbol was correct but quadratic
+    # over a four-thousand-line module, and this function runs five times per validation.
+    try:
+        tree = ast.parse(source)
+    except SyntaxError as exc:
+        raise ProjectionError(f"{where}: source does not parse: {exc}") from exc
+    _strip_docstrings(tree)
+
+    table = _top_level_symbol_table(tree, where)
+
+    missing = [name for name in seeds if name not in table]
+    if missing:
+        raise ProjectionError(
+            f"{where}: outcome-producing seed symbol(s) {sorted(missing)!r} are absent or renamed; "
+            "the surface cannot be projected"
+        )
+
+    # Transitive closure over the module's OWN top-level names. A referenced name that is not a
+    # top-level symbol is a builtin or an import and is deliberately out of scope.
+    closure: set[str] = set()
+    stack = list(seeds)
+    while stack:
+        name = stack.pop()
+        if name in closure:
+            continue
+        closure.add(name)
+        for sub in ast.walk(table[name]):
+            if isinstance(sub, ast.Name) and sub.id in table and sub.id not in closure:
+                stack.append(sub.id)
+
+    parts: list[str] = []
+    for name in sorted(closure):
+        try:
+            rendered = ast.dump(table[name], include_attributes=False)
+        except Exception as exc:  # pragma: no cover - defensive
+            raise ProjectionError(f"{where}: {name!r} could not be serialized: {exc}") from exc
+        parts.append(f"{name}::{rendered}")
+    return "\n".join(parts)
+
+
+def outcome_producing_projection_digest(
+    source: str,
+    seeds: Sequence[str] = OUTCOME_PRODUCING_PROJECTION_SEEDS,
+    where: str = OUTCOME_PRODUCING_DERIVATION_RELPATH,
+) -> str:
+    """SHA-256 of the projection, so anchors are compared by one short deterministic value."""
+    return sha256_bytes(project_outcome_producing_surface(source, seeds, where).encode("utf-8"))
+
+
 def _reject_duplicate_keys(pairs: Sequence[tuple[str, Any]]) -> dict[str, Any]:
     """A duplicate key silently discards the earlier value in ordinary ``json.loads``."""
     seen: dict[str, Any] = {}
@@ -519,6 +709,10 @@ class GitTruthSource(Protocol):
     def commit_tree(self, sha: str) -> str | None: ...
     def is_ancestor(self, ancestor: str, descendant: str) -> bool: ...
     def blob_sha256_at(self, commit: str, relpath: str) -> str | None: ...
+    #: MAJOR 1 (review 4955010993): a digest alone cannot answer "is the outcome-producing SURFACE
+    #: the same", only "are the whole bytes the same" -- and whole-byte equality is the wrong
+    #: question for a file this rebinding must lawfully change. Source text is required.
+    def blob_text_at(self, commit: str, relpath: str) -> str | None: ...
     def head(self) -> str | None: ...
 
 
@@ -579,7 +773,7 @@ class LiveGitTruthSource:
             return False
         return proc.returncode == 0
 
-    def blob_sha256_at(self, commit: str, relpath: str) -> str | None:
+    def _blob_bytes(self, commit: str, relpath: str) -> bytes | None:
         try:
             proc = subprocess.run(
                 ["git", "cat-file", "blob", f"{commit}:{relpath}"],
@@ -592,7 +786,21 @@ class LiveGitTruthSource:
             return None
         if proc.returncode != 0:
             return None
-        return sha256_bytes(proc.stdout)
+        return proc.stdout
+
+    def blob_sha256_at(self, commit: str, relpath: str) -> str | None:
+        raw = self._blob_bytes(commit, relpath)
+        return None if raw is None else sha256_bytes(raw)
+
+    def blob_text_at(self, commit: str, relpath: str) -> str | None:
+        """Decoded source at a commit. Undecodable content fails closed as absent."""
+        raw = self._blob_bytes(commit, relpath)
+        if raw is None:
+            return None
+        try:
+            return raw.decode("utf-8")
+        except UnicodeDecodeError:  # pragma: no cover - defensive
+            return None
 
     def head(self) -> str | None:
         return self._run("rev-parse", "HEAD")
@@ -1232,6 +1440,77 @@ def _verify_successor_rebinding_identity(
                 f"executable package and this rebinding ({digests!r}); SS-G.B forbids changing "
                 "outcome-producing code inside the rebinding that binds it"
             )
+
+    # --- MAJOR 1: the TRANSITIVE surface, projected rather than byte-compared -----------------
+    errors.extend(_verify_outcome_producing_projection(document, merge_sha, sources))
+    return errors
+
+
+def _verify_outcome_producing_projection(
+    document: Mapping[str, Any], merge_sha: Any, sources: TruthSources
+) -> list[str]:
+    """MAJOR 1 (review 4955010993): bind the imported derivation surface, not just the two files.
+
+    The runner and result validator import their disposition, cell-outcome, roll-up, ``G2``-reading
+    and vocabulary decisions from ``level1_endpoint_evidence_preregistration_validator.py``. Byte
+    equality is the wrong instrument there -- this rebinding must lawfully change that file's
+    AUTHORIZATION-ONLY code -- so what is compared is a deterministic semantic projection of exactly
+    the outcome-determining symbols, across the same five anchors the byte checks use.
+
+    Fails closed on any anchor whose source is missing, unparseable, renamed, duplicated, or
+    unprojectable. It never treats an unobtainable anchor as agreement.
+    """
+    errors: list[str] = []
+    relative = OUTCOME_PRODUCING_DERIVATION_RELPATH
+
+    if relative not in LOAD_BEARING_RELPATHS:
+        errors.append(
+            f"trust boundary: {relative} supplies the outcome-producing derivation surface but is "
+            "not load-bearing"
+        )
+
+    anchors: dict[str, str] = {
+        "executable-package accepted head": EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+        "executable-package merge": EXECUTABLE_PACKAGE_MERGE_SHA,
+    }
+    accepted_head = document.get("authorization_head")
+    if _is_commit_sha(accepted_head):
+        anchors["successor reviewed head"] = str(accepted_head)
+    if _is_commit_sha(merge_sha):
+        anchors["successor merge"] = str(merge_sha)
+
+    digests: dict[str, str] = {}
+    for label, commit in anchors.items():
+        source = sources.git.blob_text_at(commit, relative)
+        if source is None:
+            errors.append(
+                f"git truth: {relative} could not be read at the {label} {commit}; the "
+                "outcome-producing derivation surface cannot be projected, so this fails closed"
+            )
+            continue
+        try:
+            digests[label] = outcome_producing_projection_digest(source)
+        except ProjectionError as exc:
+            errors.append(f"outcome-producing projection failed at the {label} {commit}: {exc}")
+
+    working_path = ROOT / relative
+    if not working_path.exists():
+        errors.append(f"{relative}: absent from the working tree")
+    else:
+        try:
+            digests["working tree"] = outcome_producing_projection_digest(
+                working_path.read_text(encoding="utf-8")
+            )
+        except (ProjectionError, OSError, UnicodeDecodeError) as exc:
+            errors.append(f"outcome-producing projection failed in the working tree: {exc}")
+
+    if len(set(digests.values())) > 1:
+        errors.append(
+            f"outcome-producing projection drift: {relative}'s outcome-determining surface is not "
+            f"identical across the accepted executable package and this rebinding ({digests!r}); "
+            "SS-G.B forbids changing code that decides or orders the 680 outcomes inside the "
+            "rebinding that binds it"
+        )
     return errors
 
 

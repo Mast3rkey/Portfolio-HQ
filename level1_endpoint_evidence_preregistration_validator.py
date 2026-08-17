@@ -362,6 +362,38 @@ STAGE_1_AUTHORIZATION_REBOUND_BY = "XASSET-0037"
 #: authorized implementation, delivered by pull request 336).
 STAGE_1_EXECUTABLE_PACKAGE_BOUND = "PULL_REQUEST_336"
 
+#: MINOR 2 (review 4955010993): the successor-rebinding block's CLOSED schema, in exact order. A
+#: future edit adding, removing, or reordering a key is a validation error rather than a silent
+#: change of meaning -- the same treatment every other closed mapping in this module receives.
+SUCCESSOR_REBINDING_KEYS = (
+    "rebinding_decision",
+    "rebinding_authority",
+    "package_authorization_decision",
+    "is_an_activation_step",
+    "is_an_attestation",
+    "adds_activation_authorizations",
+    "no_infinite_authorization_regress_preserved",
+    "no_infinite_authorization_regress_note",
+    "distinct_identities",
+    "historical_operational_authorization_is_invalidated",
+    "historical_operational_authorization_note",
+    "enforcement_drift_recorded_in_advance",
+    "enforcement_drift_note",
+    "outcome_producing_paths_must_be_byte_identical_to_the_accepted_package",
+    "outcome_producing_paths_note",
+    "load_bearing_paths_removed",
+    "exact_byte_checking_weakened",
+)
+
+#: The four distinct relationships, closed and ordered. A fifth key here would be a fifth claimed
+#: identity, which is precisely what the "four structurally distinct identities" doctrine forbids.
+SUCCESSOR_REBINDING_IDENTITY_KEYS = (
+    "structural_closure_predecessor",
+    "historical_operational_authorization",
+    "package_authority",
+    "executable_package",
+)
+
 #: Failure modes the mechanism must refuse. Declared canonically so a future edit silently dropping
 #: one is a validation error. EXTENDED BY XASSET-0037 with the successor-rebinding failure modes.
 STAGE_1_AUTHORIZATION_FAIL_CLOSED_CONDITIONS = (
@@ -1026,6 +1058,14 @@ def _validate_successor_operational_rebinding(
         errors.append(f"{where}: expected a mapping")
         return
 
+    # MINOR 2 (review 4955010993): this block validated required VALUES but never rejected extra
+    # keys, so `smuggled: value` was accepted in both mappings while `validate(...).ok` stayed True.
+    # Reproduced before correcting. Both are now exact closed schemas through the module's own
+    # `_keys` mechanism -- missing keys, extra keys, and key-order drift are all refused, exactly as
+    # every other closed mapping in this validator is treated.
+    if not _keys(rebinding, SUCCESSOR_REBINDING_KEYS, where, errors):
+        return
+
     _exact(rebinding.get("rebinding_decision"), "XASSET-0037", f"{where}.rebinding_decision", errors)
     _exact(
         rebinding.get("rebinding_authority"),
@@ -1083,6 +1123,10 @@ def _validate_successor_operational_rebinding(
     identities = rebinding.get("distinct_identities")
     if not isinstance(identities, Mapping):
         errors.append(f"{where}.distinct_identities: expected a mapping")
+        return
+    if not _keys(
+        identities, SUCCESSOR_REBINDING_IDENTITY_KEYS, f"{where}.distinct_identities", errors
+    ):
         return
     for key, want in (
         ("structural_closure_predecessor", "XASSET-0028"),

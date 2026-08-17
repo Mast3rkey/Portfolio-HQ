@@ -133,13 +133,52 @@ the local git object store rather than declared:
 5. `XASSET-0029`'s merge really has the parents the successor claims to inherit from;
 6. the **outcome-producing bytes** — `level1_stage1_runner.py` and
    `level1_stage1_result_validator.py` — are byte-identical at the package's reviewed head, the
-   package's merge, the successor's reviewed head, the successor's merge, **and** the working tree.
+   package's merge, the successor's reviewed head, the successor's merge, **and** the working tree;
+7. the **transitive outcome-producing surface** — the derivation symbols those two modules import
+   from `level1_endpoint_evidence_preregistration_validator.py` — projects identically at the same
+   five anchors (§D.1, added by the bounded correction below).
 
-Point 6 is §G.B's own invariant, mechanised: *no outcome-producing executable code may be created,
-changed, or left outside the bound execution identity after the final rebinding and before
-`ATTEMPT_1`.* A silent runner edit smuggled into the rebinding that binds it **fails closed**.
-Neither outcome-producing module is modified by this unit; both are byte-identical to the accepted
+Points 6 and 7 are §G.B's own invariant, mechanised: *no outcome-producing executable code may be
+created, changed, or left outside the bound execution identity after the final rebinding and before
+`ATTEMPT_1`.* A silent runner edit — or a silent edit to the code the runner imports to decide and
+order outcomes — smuggled into the rebinding that binds it **fails closed**. Neither outcome-producing
+module is modified by this unit, and the projected derivation surface is identical to the accepted
 PR #336 package.
+
+#### D.1 — The transitive surface, and why it is projected rather than byte-compared
+
+Both outcome-producing modules `import level1_endpoint_evidence_preregistration_validator as PV` and
+call its `generate_cell_universe`, `derive_candidate_disposition`, `derive_cell_outcome`,
+`derive_roll_up_outcome`, `required_g2_gate_result` and `is_reading_dependent`, against its gate,
+disposition, and reading vocabularies. That module therefore *decides and orders* the 680 outcomes
+and sits squarely inside §G.B's definition.
+
+Whole-file equality is the wrong instrument for it: the same file also carries the canonical
+lifecycle constants, the pin-succession checks, and the rebinding-block validator — **authorization-only
+code this rebinding must lawfully change**. Requiring byte equality against the package would make a
+lawful rebinding impossible. What is bound instead is a deterministic **semantic projection**:
+
+- **Seeds** — the exact 18 top-level symbols the two consumers actually access, declared in
+  `OUTCOME_PRODUCING_PROJECTION_SEEDS` and independently re-derived from the consumers' own source by
+  the test suite, so the production tuple is never its own oracle.
+- **Closure** — the transitive closure of those seeds over the module's own top-level symbols: 26 in
+  total, reaching dependencies such as `CANDIDATE_DISPOSITIONS`, `CELL_OUTCOMES`, `cell_id_of`,
+  `map_g2_reading`, and `generate_family_slot_grid` that no seed names directly.
+- **Serialization** — sorted by symbol, location-free `ast.dump`. Reordering definitions or reflowing
+  whitespace does not change identity; any change to a value, branch, comparison, or ordering does.
+- **Docstrings excluded** — deliberate, narrow, and disclosed: prose cannot decide, order, serialize,
+  write, or materially alter an outcome, so a docstring edit is not an outcome-semantics change. Tested
+  in **both** directions.
+- **Fail-closed** — unparseable source, a missing or renamed seed, a duplicated top-level symbol, an
+  unreadable anchor, or an unserializable node each raise rather than yielding a partial surface.
+- **Precision as well as sensitivity** — an edit to a real top-level constant *outside* the closure
+  (`FAILURE_DISPOSITIONS`) correctly does **not** fire. A projection that fired on it would be byte
+  equality under another name.
+
+Determinism boundary, stated rather than overclaimed: `ast.dump`'s exact text is stable for a given
+interpreter, not guaranteed identical across Python versions. That is sufficient, because every
+projection compared here is computed by one interpreter in one validation pass and is never persisted
+or compared across processes.
 
 ### E. The trust boundary grows, and nothing is removed
 
@@ -356,3 +395,77 @@ reserved, unspent results PR; and every accepted decision's status and text.
 
 **Stage 1 remains UNARMED and NOT EXECUTABLE. `ATTEMPT_1` is intact, unclaimed, and unconsumed. No
 construction was evaluated, no gate result asserted, and no outcome produced.**
+
+---
+
+## Bounded correction — independent FULL exact-head review `4955010993`
+
+The first candidate (`f7bd5ecff747ade2ffab30574c58da3d683e4d60`) returned **CHANGES REQUIRED**:
+0 BLOCKING / 1 MAJOR / 2 MINOR / 0 NOTE. **All three findings were reproduced before any correction.**
+
+The review accepted the core determination in full and raised no objection to the four-way identity
+separation, the V7 canonical succession, the 9 → 10 load-bearing extension, historical preservation,
+the exact-head lifecycle checks, or the non-activation posture. **None of those changed.**
+
+### MAJOR 1 — the outcome-producing equality boundary omitted the imported derivation surface
+
+`EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS` named only the runner and the result validator, but
+both import their disposition, cell-outcome, roll-up, `G2`-reading and vocabulary decisions from
+`level1_endpoint_evidence_preregistration_validator.py`. That module was therefore never compared
+between the accepted package and this rebinding.
+
+**Reproduced through the real public validator** with isolated truth sources: injecting different
+package-head and package-merge bytes for that module, while leaving the successor head, merge, and
+load-bearing identity internally consistent, returned `valid=True` with `errors=()`. The identical
+mismatch on either declared path was correctly refused. The mechanism did not prove the fact it
+relied on.
+
+**Corrected by §D.1's semantic projection**, bound across all five anchors — a new fail-closed
+`project_outcome_producing_surface` / `outcome_producing_projection_digest` pair, a
+`blob_text_at` truth-source method (a digest cannot answer a *surface* question), and a
+`_verify_outcome_producing_projection` gate. The reproduced injection is now refused, and a
+non-circular adversarial suite proves drift at either package anchor, at the successor head, in a
+transitive dependency, in a renamed seed, in an unparseable anchor, and in an unreadable anchor are
+each rejected.
+
+**No Stage-1 outcome semantics were changed.** `level1_stage1_runner.py` and
+`level1_stage1_result_validator.py` are byte-identical to the accepted PR #336 package, and the live
+projected derivation surface is identical at the package's accepted head, the package's merge, this
+head, and the working tree.
+
+### MINOR 1 — the durable register still told a different history
+
+`operations/WORKSTREAMS.yaml` still said `AUTHORIZING_PULL_REQUEST` was "bound AFTER the draft PR
+existed rather than guessed ahead of it", while the constant's comment, §D, the PR body, and two
+tests already disclosed the opposite. The corrective commit had missed the register copy.
+
+**Corrected**: the register now states that `337` was **first written before the draft existed**, as
+the next sequential number, and **verified against the real draft once it opened**, with the
+load-bearing property named as the post-opening verification. A parametrized regression test asserts
+across all three durable surfaces that the false claim is absent and the true one present, so it
+cannot return.
+
+### MINOR 2 — the rebinding block was not actually closed-schema
+
+`_validate_successor_operational_rebinding` checked required values but never rejected extra keys.
+**Reproduced**: `smuggled: value` injected into `successor_operational_rebinding` and independently
+into `distinct_identities` each left `validate(...).ok` `True`.
+
+**Corrected**: both mappings now go through the module's own `_keys` mechanism against
+`SUCCESSOR_REBINDING_KEYS` and `SUCCESSOR_REBINDING_IDENTITY_KEYS`, so missing keys, extra keys, and
+key-order drift are all refused — the same treatment every other closed mapping in that validator
+receives. Independent negative tests cover an unknown key in each mapping, every missing key in
+both, and key-order drift.
+
+### What this correction did not do
+
+No canonical byte changed, so the **V7 pins are not recomputed** — `PROTOCOL_V1.md`
+`367583b6…d8971` and `pre_registration.yaml` `768b013c…4bce1` are re-verified, not rewritten. The
+frozen universe is unchanged at **680 / 48 / `73c0965e…5224`**. `LOAD_BEARING_RELPATHS` remains
+**10**; nothing was removed and no byte check was weakened. B1, B2, B3, every gate's semantics, every
+construction identity, and every disposition are untouched. No accepted decision file was edited. No
+§G.B step 9, 10, or 11 was performed, no attestation generated, no lane state created, and nothing of
+`ATTEMPT_1` or `XASSET-0027` §P.1 consumed.
+
+**Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires an independent exact-head
+**DELTA** review from `f7bd5ecff747ade2ffab30574c58da3d683e4d60`.

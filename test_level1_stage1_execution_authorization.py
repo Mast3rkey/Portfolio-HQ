@@ -95,9 +95,28 @@ class FakeGit:
             AUTH.EXECUTABLE_PACKAGE_MERGE_SHA: "p" * 40,
             AUTH.EXECUTABLE_PACKAGE_ACCEPTED_HEAD: "p" * 40,
         }
+        # EXTENDED AGAIN after review 4955010993 MAJOR 1. The successor rebinding now also binds a
+        # deterministic SEMANTIC PROJECTION of the derivation surface the runner and result
+        # validator import, which needs blob TEXT rather than a digest. The stand-in serves the
+        # module's real current source at every anchor, so the default posture is the true one.
+        derivation_source = (
+            REPO_ROOT / AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH
+        ).read_text(encoding="utf-8")
+        self.texts = {
+            (commit, AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): derivation_source
+            for commit in (
+                MERGE,
+                HEAD,
+                AUTH.EXECUTABLE_PACKAGE_MERGE_SHA,
+                AUTH.EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+            )
+        }
         self._head = MERGE
         self._ancestor = True
         self.__dict__.update(overrides)
+
+    def blob_text_at(self, commit, relpath):
+        return self.texts.get((commit, relpath))
 
     def commit_parents(self, sha):
         return self.parents.get(sha)
