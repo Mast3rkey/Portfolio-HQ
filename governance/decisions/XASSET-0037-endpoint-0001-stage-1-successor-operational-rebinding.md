@@ -982,3 +982,116 @@ generated, no lane state created, and nothing of `ATTEMPT_1` or `XASSET-0027` §
 
 **Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires a further independent
 exact-head **DELTA** review from `d9c55d48da3abdec09c1a56d27a2f9fade3d486f`.
+
+## Seventh bounded correction — independent exact-head DELTA review `4962377217`
+
+The delta review of `696795742f228a1f0ec566bacc9b34e0c02a5a30` returned **CHANGES REQUIRED — 0
+BLOCKING / 2 MAJOR / 0 MINOR / 0 NOTE**. It independently confirmed the five forms from review
+`4961431702` now refused, the postponed-annotation precision boundary behaving as requested, the
+delta confined to four files, no runner / result-validator / derivation / canonical / universe /
+protected portfolio file changed in that delta, and exact-head CI green at 9,139 passed. Two
+semantic gaps remained.
+
+### The two invariants this correction establishes
+
+Both findings are symptoms of the same thing: the analysis decided questions *syntactically* that
+Python answers *by value*. The correction is therefore stated as two conservative invariants, and
+every mechanism below is an instance of one of them.
+
+1. **Import-time execution reachability.** A construct is analysed unless it is *proven* not to run
+   during module initialization. Deferral must be established by value flow and call semantics, not
+   by immediate AST parentage. Ambiguous or control-dependent reachability is resolved by analysing.
+2. **Callable and namespace origin proof.** A callee or argument is permitted only when *every*
+   origin it can resolve to is positively proven safe. Unresolved, container-mediated, or merely
+   unlisted origins are refused.
+
+### MAJOR 1 — reachability was syntax-local, not transitively closed
+
+Four independent mechanisms, each losing reachability at a different point: a generator assigned to
+a name and consumed by a *later* call (the consumer saw only a `Name`); a `lambda` used *directly*
+as a decorator (only a bare `ast.Name` decorator was treated as an implicit call, while the lambda
+body was pruned); a local class whose `__init__` mutates, *instantiated* at module scope (only the
+class-creation body was scanned, never construction); and two conditional definitions of one name,
+where `definitions[name]` kept whichever node was written last and silently discarded the other.
+
+### MAJOR 2 — namespace origin died in containers, and the boundary was still a denylist
+
+`_value_origins` labelled every tuple/list/set/dict `("literal",)` regardless of contents, so a live
+namespace placed in a container and selected back out by subscript was invisible. Compounding it,
+`_origin_is_safe_callee` returned *safe* for any symbol or attribute rooted in a module outside
+`_PROJECTION_BEARING_MODULES` unless its spelling appeared in a dangerous-name set — a denylist
+wearing a positive boundary's name, which an ordinary standard-library mutator walked straight
+through.
+
+### Reproduced first — all five forms, before any code changed
+
+Reviewed-head blobs (`level1_stage1_execution_authorization.py` `124daadd…35c833`, derivation
+`2b8ead2b…b3d356`) loaded in isolation; execution only ever in **disposable child interpreters**;
+the real lane never created, opened, inspected, or touched.
+
+| Form | Mechanism | Projection at reviewed head | Executed disposition | This head |
+|---|---|---|---|---|
+| `_g = (…); list(_g)` | consumption through an alias | **accepted, identical** | `BLOCKED_CATEGORICALLY` → **`CONSTRUCTIBLE_CANDIDATE_IDENTIFIED`** | **`ProjectionError`** |
+| `@(lambda _f: …)` | implicit decorator invocation | **accepted, identical** | same flip | **`ProjectionError`** |
+| `class _C: __init__` then `_C()` | constructor execution | **accepted, identical** | same flip | **`ProjectionError`** |
+| two conditional `def _p` then `_p()` | control-dependent origin | **accepted, identical** | same flip | **`ProjectionError`** |
+| `_b = (ns,)` then `setitem(_b[0], …)` | container/subscript taint | **accepted, identical** | same flip | **`ProjectionError`** |
+
+### The correction
+
+**Invariant 1.** `_deferred_values_for_name` follows a name through any number of ordinary aliasing
+assignments to the deferred values it can hold, and `analyse_consumed` analyses those bodies at
+every eagerly consuming position — call arguments and `for`-loop iterables — bounded against
+self-referential aliases. `analyse_decorator` replaces the bare-`Name` special case and handles each
+decorator shape by **what Python does with it**: a `lambda` is invoked, so its body is analysed; a
+decorator *factory* returns a callable nothing names, so it is refused; an attributed or named
+decorator is judged exactly as a callee. `analyse_definition` analyses **every** definition bound to
+a name, and, when one is a class that is called, the bodies of every function in its class body —
+deliberately a superset of `__init__`/`__new__`/`__post_init__`, because a metaclass `__call__`,
+`__init_subclass__`, or `__set_name__` can also run while the instance is produced.
+
+**Invariant 2.** `_value_origins` propagates origins through container construction, subscript
+selection, starred unpacking, conditional expressions, and boolean operators, so taint survives any
+number of hops; a selection whose base cannot be proven free of namespace origins is refused rather
+than assumed harmless. `_SAFE_IMPORTED_CALLABLES` and `_SAFE_CONSTRUCTED_METHODS` make the boundary
+genuinely positive: `re.compile`, `pathlib.Path` plus `.resolve()`, `dataclasses.dataclass`/`field`,
+and `sys.exit` are *listed* as proven; every other imported callable, attributed module call, and
+multi-step module chain fails closed **because it is unlisted**, not because it was enumerated as
+dangerous.
+
+### Verification
+
+**Twenty-eight** must-fail forms — spanning alias hops, `for`-loop consumption, decorator factories,
+constructor aliases, both branch orders of a conditional definition, `try`/`except` duplicates,
+nested containers, conditional expressions, and unlisted standard-library callables — all refused.
+**Sixteen** must-pass forms — including every construct the real module actually performs and the
+postponed-annotation boundary from review `4961431702` — all project **byte-identically**. The live
+projected identity is **unchanged at
+`574b9194b61cbc1fe9dca0f1536b91bd6b1c716d5d197df7529e27c9e0039af5`**.
+
+**Mutation proof, one component at a time**: disabling only alias consumption fails 8; only the
+general decorator handling, 4; only constructor modelling, 7; only multi-definition preservation, 4;
+only container taint, 2; only the positive import boundary, 3. Restoring reproduces the
+implementation byte-identically (`9ea848b0…59cebd3`) and all 70 new tests pass.
+
+**Two pre-existing precision entries were corrected, and the change makes the suite stricter.** Both
+asserted that `@functools.lru_cache(maxsize=1)` must not be refused. That single form is exactly
+what this review required be refused, on two independent grounds — the callable a factory returns is
+named by nothing, and `functools` is not positively listed. Each entry now exercises a decorator
+that *is* proven (`@dataclass`, mirroring the real module's own use), and the factory form is pinned
+on the must-fail side. `functools` is not imported by the derivation module at all, so no lawful
+identity is affected. One test of mine also conflated two protection mechanisms — the binder model
+closes an ambient rebinding by **moving** the identity, not by raising — and now asserts each by the
+mechanism that actually implements it.
+
+### Preserved
+
+The four-way identity separation, `LOAD_BEARING_RELPATHS = 10`, both V7 canonical pins, the 680/48
+universe and `73c0965e…5224`, every protected portfolio path, the outcome-producing derivation
+module, runner, and result validator, and the whole non-activation posture. No gate semantics,
+construction identity, or disposition was reopened. No §G.B step 9-11 work was performed, no
+attestation generated, no lane state created, and nothing of `ATTEMPT_1` or `XASSET-0027` §P.1
+consumed.
+
+**Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires a further independent
+exact-head **DELTA** review from `696795742f228a1f0ec566bacc9b34e0c02a5a30`.

@@ -2481,8 +2481,14 @@ _EAGER_PRECISION_MATRIX = [
     ("def-with-safe-defaults", "def _safe(_a=1, _b=sorted([2, 1])):\n    return _a\n"),
     ("plain-class",
      "class _Plain(object):\n    VALUE = 3\n    def m(self):\n        return __import__('os')\n"),
+    # Delta review 4962377217 required every decorator expression to be an implicit invocation
+    # whose callable is PROVEN, and a genuinely positive boundary for imported callables. A
+    # ``functools.lru_cache`` FACTORY satisfies neither -- the callable it returns is named by
+    # nothing, and ``functools`` is not positively listed -- so this entry now exercises a
+    # decorator that IS proven, mirroring the real module's own ``@dataclass``. The factory form
+    # moved to the must-fail side; see _REACHABILITY_MATRIX.
     ("decorated-function",
-     "import functools as _ft\n@_ft.lru_cache(maxsize=1)\ndef _cached():\n    return 1\n"),
+     "from dataclasses import dataclass as _dc0\n@_dc0\nclass _Dec0:\n    pass\n"),
     ("deferred-body-is-pruned",
      "def _deferred():\n    import builtins as _rb\n    _rb.__dict__.update(any=min)\n"),
     ("safe-import-alias-call", "from builtins import sorted as _rsorted\n_s = _rsorted([2, 1])\n"),
@@ -2778,8 +2784,10 @@ _UNPROVEN_CALLEE_MATRIX = [
 _TRANSITIVE_PRECISION_MATRIX = [
     ("safe-helper-called-eagerly", "def _h():\n    return sorted([2, 1])\n_r = _h()\n"),
     ("safe-local-decorator", "def _dec(f):\n    return f\n@_dec\ndef _t():\n    pass\n"),
-    ("safe-decorator-factory",
-     "import functools as _ft\n@_ft.lru_cache(maxsize=1)\ndef _cached():\n    return 1\n"),
+    # Superseded by delta review 4962377217 for the same reason as the entry above: a decorator
+    # FACTORY's returned callable cannot be named, and ``functools`` is not positively listed.
+    ("proven-decorator",
+     "from dataclasses import dataclass as _dc1\n@_dc1\nclass _Dec1:\n    pass\n"),
     ("deferred-body-untouched",
      "def _d():\n    import builtins as _rb\n    _rb.__dict__.update(any=min)\n"),
     ("unconsumed-generator",
@@ -3054,3 +3062,347 @@ class TestTransitiveExecutionAndAliasFlow:
         ):
             with pytest.raises(A.ProjectionError):
                 A.outcome_producing_projection_digest(_with_module_level_line(refusing))
+
+
+# --------------------------------------------------------------------------------------------
+# Delta review 4962377217: import-time execution reachability across values and call semantics,
+# and namespace origin through containers under a genuinely positive call boundary.
+# --------------------------------------------------------------------------------------------
+
+_MUT = "_rb.__dict__.update(any=min)"
+_IMP = "import builtins as _rb\n"
+
+#: MAJOR 1. Execution reachability must close over VALUES and Python's call semantics, not merely
+#: immediate AST parentage. Each entry is derived from what Python actually executes while creating
+#: a module, and each carries indirection the reported example did not, so passing this matrix
+#: proves the CLASS rather than the four reported spellings.
+_REACHABILITY_MATRIX = [
+    # -- consumption propagated back through aliases --
+    ("generator-aliased-then-consumed",
+     _IMP + f"_g = ({_MUT} for _i in (1,))\n_c = list(_g)\n"),
+    ("generator-aliased-two-hops",
+     _IMP + f"_g = ({_MUT} for _i in (1,))\n_h = _g\n_c = set(_h)\n"),
+    ("generator-consumed-by-for-loop",
+     _IMP + f"_g = ({_MUT} for _i in (1,))\nfor _x in _g:\n    pass\n"),
+    ("generator-consumed-by-sum",
+     _IMP + f"_g = (0 if {_MUT} else 0 for _i in (1,))\n_c = sum(_g)\n"),
+    ("lambda-aliased-then-mapped",
+     _IMP + f"_L = lambda: {_MUT}\n_c = list(map(_L, (1,)))\n"),
+    # -- every decorator expression is an implicit invocation --
+    ("lambda-used-directly-as-decorator",
+     _IMP + f"@(lambda _f: ({_MUT}, _f)[1])\ndef _d():\n    pass\n"),
+    ("decorator-factory-returned-callable",
+     _IMP + f"def _mk():\n    {_MUT}\n    return lambda _f: _f\n@_mk()\ndef _d():\n    pass\n"),
+    ("decorator-attribute-outside-positive-boundary",
+     "import functools as _ft\n@_ft.cache\ndef _d():\n    return 1\n"),
+    # The exact form two earlier precision entries used to assert was harmless. Delta review
+    # 4962377217 requires it refused on TWO independent grounds -- the callable the factory returns
+    # is named by nothing, and ``functools`` is not positively listed -- so it is pinned here.
+    ("decorator-factory-from-unlisted-module",
+     "import functools as _ft2\n@_ft2.lru_cache(maxsize=1)\ndef _cached():\n    return 1\n"),
+    # -- calling a class runs construction --
+    ("class-constructor",
+     _IMP + f"class _C:\n    def __init__(self):\n        {_MUT}\n_i = _C()\n"),
+    ("class-constructor-through-alias",
+     _IMP + f"class _C:\n    def __init__(self):\n        {_MUT}\n_A = _C\n_i = _A()\n"),
+    ("class-post-init",
+     _IMP + f"class _C:\n    def __post_init__(self):\n        {_MUT}\n_i = _C()\n"),
+    ("class-any-member-is-conservative",
+     _IMP + f"class _C:\n    def _m(self):\n        {_MUT}\n_i = _C()\n"),
+    # -- every possible control-dependent definition, not the last one written --
+    ("conditional-duplicate-definition-first-branch",
+     _IMP + f"if True:\n    def _p():\n        {_MUT}\nelse:\n    def _p():\n        pass\n_p()\n"),
+    ("conditional-duplicate-definition-second-branch",
+     _IMP + f"if True:\n    def _p():\n        pass\nelse:\n    def _p():\n        {_MUT}\n_p()\n"),
+    ("try-except-duplicate-definition",
+     _IMP + f"try:\n    def _p():\n        pass\nexcept Exception:\n    def _p():\n        {_MUT}\n"
+     "_p()\n"),
+    ("multi-hop-helper-chain",
+     _IMP + f"def _a():\n    {_MUT}\ndef _b():\n    _a()\n_b()\n"),
+]
+
+#: MAJOR 2. A live namespace must stay tainted through construction, selection, assignment, and any
+#: number of hops, and an imported callable must be POSITIVELY proven rather than merely absent
+#: from a dangerous-name list.
+_NAMESPACE_FLOW_MATRIX = [
+    ("namespace-in-tuple-selected-by-subscript",
+     _IMP + "from operator import setitem as _si\n_b = (_rb.__dict__,)\n"
+     "_si(_b[0], 'any', min)\n"),
+    ("namespace-in-list-selected-by-subscript",
+     _IMP + "from operator import setitem as _si\n_b = [_rb.__dict__]\n"
+     "_si(_b[0], 'any', min)\n"),
+    ("namespace-as-dict-value",
+     _IMP + "from operator import setitem as _si\n_b = {'k': _rb.__dict__}\n"
+     "_si(_b['k'], 'any', min)\n"),
+    ("namespace-container-through-alias",
+     _IMP + "from operator import setitem as _si\n_b = (_rb.__dict__,)\n_c = _b\n"
+     "_si(_c[0], 'any', min)\n"),
+    ("namespace-in-nested-container",
+     _IMP + "from operator import setitem as _si\n_b = ((_rb.__dict__,),)\n"
+     "_si(_b[0][0], 'any', min)\n"),
+    ("namespace-through-conditional-expression",
+     _IMP + "from operator import setitem as _si\n_b = _rb.__dict__ if _rb else None\n"
+     "_si(_b, 'any', min)\n"),
+    ("namespace-container-handed-whole",
+     _IMP + "def _sink(_x):\n    pass\n_b = (_rb.__dict__,)\n_sink(_b)\n"),
+]
+
+#: The positive boundary itself: an ordinary imported callable is refused because it is not proven,
+#: never because its spelling was enumerated as dangerous.
+_POSITIVE_BOUNDARY_MATRIX = [
+    ("attributed-module-call-outside-boundary",
+     _IMP + "import operator as _op\n_op.setitem(_rb.__dict__, 'any', min)\n"),
+    ("imported-symbol-outside-boundary",
+     _IMP + "from operator import setitem as _si\n_si(_rb.__dict__, 'any', min)\n"),
+    ("benign-but-unproven-module-call", "import json as _j\n_x = _j.loads('{}')\n"),
+    ("multi-step-module-chain", "import os as _os\n_x = _os.path.join('a', 'b')\n"),
+    ("bare-module-object-call", "import json as _j2\n_x = _j2()\n"),
+]
+
+#: Precision. Every one of these is lawful and must leave the identity BYTE-IDENTICAL, including
+#: the postponed-annotation boundary established by delta review 4961431702.
+_REACHABILITY_PRECISION_MATRIX = [
+    ("re-compile", "import re as _re2\n_P = _re2.compile('x')\n"),
+    ("path-constructed-then-resolved",
+     "from pathlib import Path as _P2\n_here = _P2(__file__).resolve()\n"),
+    ("dataclass-decorator",
+     "from dataclasses import dataclass as _dc\n@_dc\nclass _S:\n    pass\n"),
+    ("field-call", "from dataclasses import field as _fl2\n_F = _fl2(default_factory=tuple)\n"),
+    ("tuple-of-generator", "_T = tuple(_x for _x in (1, 2))\n"),
+    ("safe-builtin", "_S2 = sorted([2, 1])\n"),
+    ("safe-builtin-imported", "from builtins import sorted as _rs\n_S3 = _rs([2, 1])\n"),
+    ("generator-never-consumed", _IMP + f"_g = ({_MUT} for _i in (1,))\n"),
+    ("function-never-called", _IMP + f"def _never():\n    {_MUT}\n"),
+    ("class-never-instantiated", _IMP + f"class _C2:\n    def __init__(self):\n        {_MUT}\n"),
+    ("lambda-never-called", _IMP + f"_L2 = lambda: {_MUT}\n"),
+    ("helper-called-only-from-main-guard",
+     _IMP + f"def _h2():\n    {_MUT}\nif __name__ == '__main__':\n    _h2()\n"),
+    ("postponed-argument-annotation", _IMP + f"def _w(_a: ({_MUT} or int)):\n    pass\n"),
+    ("postponed-return-annotation", _IMP + f"def _v() -> ({_MUT} or None):\n    pass\n"),
+    ("for-loop-over-literal", "for _x in (1, 2, 3):\n    pass\n"),
+    ("plain-container-subscript", "_b = (1, 2, 3)\n_c = _b[0]\n"),
+]
+
+
+class TestExecutionReachabilityAndNamespaceFlow:
+    """Delta review 4962377217, both MAJOR findings, as SEMANTIC CLASSES.
+
+    **MAJOR 1**: import-time reachability was syntax-local. A generator aliased then consumed, a
+    ``lambda`` used directly as a decorator, a class whose ``__init__`` mutates, and two conditional
+    definitions of one name all executed during module initialization while the analysis either
+    pruned the body or examined the wrong node. **MAJOR 2**: a container erased the origins of what
+    it held, so a live namespace survived a tuple and a subscript unseen -- and the "positive"
+    call boundary was still a denylist for any module outside the projection-bearing set.
+
+    Every entry below is written from Python's own execution semantics. None is derived from a
+    production constant, tuple, or allowlist, so production and these tests cannot drift together.
+    """
+
+    _REPORTED_4962377217 = [
+        ("generator-aliased-then-consumed",
+         _IMP + f"_g = ({_MUT} for _i in (1,))\n_c = list(_g)\n"),
+        ("lambda-decorator",
+         _IMP + f"@(lambda _f: ({_MUT}, _f)[1])\ndef _d():\n    pass\n"),
+        ("class-constructor",
+         _IMP + f"class _C:\n    def __init__(self):\n        {_MUT}\n_i = _C()\n"),
+        ("conditional-duplicate-definitions",
+         _IMP + f"if True:\n    def _p():\n        {_MUT}\nelse:\n    def _p():\n        pass\n"
+         "_p()\n"),
+        ("namespace-in-container-subscript",
+         _IMP + "from operator import setitem as _si\n_b = (_rb.__dict__,)\n"
+         "_si(_b[0], 'any', min)\n"),
+    ]
+
+    @pytest.mark.parametrize(
+        "label,block", _REPORTED_4962377217, ids=[e[0] for e in _REPORTED_4962377217]
+    )
+    def test_each_reported_form_actually_flips_a_disposition(self, label, block):
+        """Established by EXECUTION in a disposable subprocess, never assumed."""
+        gate_results = dict.fromkeys(PREREG.GATE_IDS, "PASS")
+        gate_results[sorted(PREREG.CATEGORICAL_GATES)[0]] = "FAIL"
+        assert PREREG.derive_candidate_disposition(gate_results) == "BLOCKED_CATEGORICALLY"
+        assert (
+            _execute_derivation_in_subprocess(_with_module_level_line(block))
+            == "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED"
+        )
+
+    @pytest.mark.parametrize(
+        "label,block", _REPORTED_4962377217, ids=[e[0] for e in _REPORTED_4962377217]
+    )
+    def test_the_public_validator_refuses_each_reported_form_at_the_successor(
+        self, payload, label, block
+    ):
+        mutated = _with_module_level_line(block)
+        git = FakeGit()
+        git.texts[(HEAD, DERIVATION_RELPATH)] = mutated
+        git.texts[(MERGE, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection", sources(git=git))
+
+    @pytest.mark.parametrize(
+        "label,block", _REPORTED_4962377217, ids=[e[0] for e in _REPORTED_4962377217]
+    )
+    def test_the_public_validator_refuses_each_reported_form_at_every_anchor(
+        self, payload, label, block
+    ):
+        mutated = _with_module_level_line(block)
+        git = FakeGit()
+        for commit in (
+            HEAD, MERGE, A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, A.EXECUTABLE_PACKAGE_MERGE_SHA,
+        ):
+            git.texts[(commit, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection", sources(git=git))
+
+    # --- MAJOR 1: the class, not the examples ---
+
+    @pytest.mark.parametrize(
+        "label,block", _REACHABILITY_MATRIX, ids=[e[0] for e in _REACHABILITY_MATRIX]
+    )
+    def test_every_import_time_reachability_path_fails_closed(self, label, block):
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(_with_module_level_line(block))
+
+    def test_consumption_is_propagated_through_an_alias_not_just_inline(self):
+        """The distinction the review drew, asserted in both directions at one hop."""
+        inline = _IMP + f"_c = list({_MUT} for _i in (1,))\n"
+        aliased = _IMP + f"_g = ({_MUT} for _i in (1,))\n_c = list(_g)\n"
+        unconsumed = _IMP + f"_g = ({_MUT} for _i in (1,))\n"
+        for refusing in (inline, aliased):
+            with pytest.raises(A.ProjectionError):
+                A.outcome_producing_projection_digest(_with_module_level_line(refusing))
+        assert A.outcome_producing_projection_digest(
+            _with_module_level_line(unconsumed)
+        ) == A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    def test_a_class_is_analysed_when_called_and_not_when_merely_defined(self):
+        defined = _IMP + f"class _C3:\n    def __init__(self):\n        {_MUT}\n"
+        called = defined + "_i = _C3()\n"
+        assert A.outcome_producing_projection_digest(
+            _with_module_level_line(defined)
+        ) == A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(_with_module_level_line(called))
+
+    def test_both_conditional_definitions_of_one_name_are_preserved(self):
+        """Never the last syntactic definition only -- proven from the model, not the outcome."""
+        import ast as _ast
+        tree = _ast.parse(
+            "if True:\n    def _p():\n        pass\nelse:\n    def _p():\n        return 1\n"
+        )
+        context = A._build_module_scope_context(tree)
+        assert len(context.definitions["_p"]) == 2
+
+    def test_a_self_referential_deferred_alias_terminates(self):
+        """A binding cycle must fail closed or pass, never recurse forever."""
+        block = _IMP + "_g = (_x for _x in _g)\n_c = list(_g)\n"
+        try:
+            A.outcome_producing_projection_digest(_with_module_level_line(block))
+        except A.ProjectionError:
+            pass
+
+    # --- MAJOR 2: the class, not the example ---
+
+    @pytest.mark.parametrize(
+        "label,block", _NAMESPACE_FLOW_MATRIX, ids=[e[0] for e in _NAMESPACE_FLOW_MATRIX]
+    )
+    def test_every_namespace_flow_fails_closed(self, label, block):
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(_with_module_level_line(block))
+
+    def test_a_container_carries_the_origins_of_what_it_holds(self):
+        """Asserted on the origin model itself, independently of any refusal message."""
+        import ast as _ast
+        tree = _ast.parse("import builtins as _rb\n_b = (_rb.__dict__,)\n_c = _b[0]\n")
+        context = A._build_module_scope_context(tree)
+        for name in ("_b", "_c"):
+            assert any(
+                origin[0] == "namespace"
+                for origin in A._name_origins(name, context, frozenset())
+            ), name
+
+    def test_a_plain_container_carries_no_namespace_origin(self):
+        import ast as _ast
+        tree = _ast.parse("_b = (1, 2, 3)\n_c = _b[0]\n")
+        context = A._build_module_scope_context(tree)
+        for name in ("_b", "_c"):
+            assert not any(
+                origin[0] == "namespace"
+                for origin in A._name_origins(name, context, frozenset())
+            ), name
+
+    @pytest.mark.parametrize(
+        "label,block", _POSITIVE_BOUNDARY_MATRIX, ids=[e[0] for e in _POSITIVE_BOUNDARY_MATRIX]
+    )
+    def test_an_unproven_imported_callable_fails_closed(self, label, block):
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(_with_module_level_line(block))
+
+    def test_the_boundary_is_positive_for_imports_not_a_denylist(self):
+        """``json.loads`` mutates nothing and is named in no dangerous set -- and is still refused,
+        because being unlisted is what decides it. That is what makes the boundary positive."""
+        assert "loads" not in A._DYNAMIC_NAMESPACE_CALLS
+        assert "loads" not in A._NAMESPACE_REPLACING_CALLABLES
+        assert "loads" not in A._IN_PLACE_MUTATOR_METHODS
+        assert "json" not in A._PROJECTION_BEARING_MODULES
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(
+                _with_module_level_line("import json as _j3\n_x = _j3.loads('{}')\n")
+            )
+
+    # --- precision, including every earlier boundary ---
+
+    @pytest.mark.parametrize(
+        "label,block",
+        _REACHABILITY_PRECISION_MATRIX,
+        ids=[e[0] for e in _REACHABILITY_PRECISION_MATRIX],
+    )
+    def test_lawful_forms_leave_the_identity_byte_identical(self, label, block):
+        assert A.outcome_producing_projection_digest(
+            _with_module_level_line(block)
+        ) == A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    def test_the_real_module_projects_unchanged(self):
+        """The whole point: closing both classes moved no lawful identity."""
+        assert A.outcome_producing_projection_digest(DERIVATION_SOURCE) == (
+            A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        )
+        digest = A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        assert len(digest) == 64 and int(digest, 16) >= 0
+
+    def test_every_previously_closed_form_is_still_closed_by_refusal(self):
+        """Protections from reviews 4958940810, 4960897843, and 4961431702 are preserved.
+
+        These forms are closed by the MUTATION GATE, which refuses outright.
+        """
+        for earlier in (
+            "import builtins as _rb\n_rb.__dict__.update(any=min)\n",
+            "import builtins as _rb\ndef _h():\n    _rb.__dict__.update(any=min)\n_h()\n",
+            "import builtins as _rb\ndef _dec(f):\n    _rb.__dict__.update(any=min)\n    return f\n"
+            "@_dec\ndef _t():\n    pass\n",
+            "import builtins as _rb\n_ns = _rb.__dict__\n"
+            "_c = tuple(_ns.update(any=min) for _ in (1,))\n",
+            "_e = exec\n_e('any=min')\n",
+            "from builtins import __dict__ as _ns\nimport operator as _op\n"
+            "_op.setitem(_ns, 'any', min)\n",
+            "import builtins as _rb\nclass _P:\n    _rb.__dict__.update(any=min)\n",
+            "from builtins import exec as _rexec\n_rexec('any=min')\n",
+            "import builtins as _rb\ngetattr(_rb, 'exec')('any=min')\n",
+        ):
+            with pytest.raises(A.ProjectionError):
+                A.outcome_producing_projection_digest(_with_module_level_line(earlier))
+
+    def test_binder_rebinding_forms_are_still_closed_by_a_moved_identity(self):
+        """The OTHER protection mechanism, asserted as what it actually is.
+
+        Review 4957056810's binder model closes an ambient REBINDING by naming the binder in the
+        ambient surface, so the identity MOVES rather than the projection refusing. Asserting a
+        refusal here would have been wrong about the mechanism and would have passed only by
+        accident; asserting the move is what actually pins that protection.
+        """
+        baseline = A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        for rebinding in (
+            "if True:\n    from builtins import min as any\n",
+            "any, _unused = min, None\n",
+        ):
+            assert A.outcome_producing_projection_digest(
+                _with_module_level_line(rebinding)
+            ) != baseline

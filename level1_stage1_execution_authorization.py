@@ -874,6 +874,31 @@ _NAMESPACE_REPLACING_CALLABLES = frozenset(
     {"reload", "import_module", "__import__", "invalidate_caches", "get_objects", "get_referrers"}
 )
 
+#: The POSITIVE proof boundary for imported callables and attributed module calls.
+#:
+#: MAJOR 2 (delta review 4962377217). The predecessor returned "safe" for any symbol or attribute
+#: rooted in a module outside :data:`_PROJECTION_BEARING_MODULES` unless its spelling appeared in a
+#: dangerous-name set -- a DENYLIST wearing a positive boundary's name, which an ordinary
+#: standard-library mutator walked straight through. Membership here is therefore a positive
+#: proof obligation: each entry is a pure constructor, compiler, or process-exit that provably
+#: neither reads nor writes another module's namespace. Anything absent fails closed, which is the
+#: correct direction for a module whose lawful module-scope surface is this small.
+_SAFE_IMPORTED_CALLABLES: Mapping[str, frozenset[str]] = {
+    "dataclasses": frozenset({"dataclass", "field"}),
+    "pathlib": frozenset({"Path", "PurePath", "PurePosixPath"}),
+    "re": frozenset({"compile", "escape", "fullmatch", "match", "search"}),
+    "sys": frozenset({"exit"}),
+}
+
+#: Methods provably safe to invoke on a receiver constructed by a proven-safe imported callable --
+#: ``Path(__file__).resolve()`` being the real module's own use. A method absent here is unproven
+#: even when its receiver is proven, because the receiver's TYPE is not established statically.
+_SAFE_CONSTRUCTED_METHODS = frozenset({"resolve", "absolute", "expanduser", "as_posix"})
+
+#: Methods Python runs while CONSTRUCTING an instance. Analysed whenever a module-scope call
+#: instantiates a locally defined class; see :func:`_reject_dynamic_namespace_mutation`.
+_CONSTRUCTION_TIME_METHODS = frozenset({"__init__", "__new__", "__post_init__"})
+
 
 @dataclass(frozen=True)
 class _ModuleScopeContext:
@@ -885,7 +910,7 @@ class _ModuleScopeContext:
 
     imports: Mapping[str, tuple[tuple[str, str | None], ...]]
     assignments: Mapping[str, tuple[ast.AST, ...]]
-    definitions: Mapping[str, ast.AST]
+    definitions: Mapping[str, tuple[ast.AST, ...]]
     future_annotations: bool
 
 
@@ -899,7 +924,7 @@ def _build_module_scope_context(tree: ast.Module) -> _ModuleScopeContext:
     """
     imports: dict[str, list[tuple[str, str | None]]] = {}
     assignments: dict[str, list[ast.AST]] = {}
-    definitions: dict[str, ast.AST] = {}
+    definitions: dict[str, list[ast.AST]] = {}
     future_annotations = False
 
     def visit(body: Sequence[ast.AST]) -> None:
@@ -922,7 +947,11 @@ def _build_module_scope_context(tree: ast.Module) -> _ModuleScopeContext:
                     imports.setdefault(bound, []).append((module, symbol))
                 continue
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                definitions[node.name] = node
+                # MAJOR 1 (delta review 4962377217): EVERY definition bound to this name is kept.
+                # Two conditional module-scope definitions of one name are both POSSIBLE origins;
+                # the predecessor stored one entry and silently overwrote the earlier node, so an
+                # eager call analysed only whichever definition happened to be written last.
+                definitions.setdefault(node.name, []).append(node)
                 continue
             if isinstance(node, ast.Assign):
                 for target in node.targets:
@@ -943,7 +972,7 @@ def _build_module_scope_context(tree: ast.Module) -> _ModuleScopeContext:
     return _ModuleScopeContext(
         imports={name: tuple(values) for name, values in imports.items()},
         assignments={name: tuple(values) for name, values in assignments.items()},
-        definitions=dict(definitions),
+        definitions={name: tuple(nodes) for name, nodes in definitions.items()},
         future_annotations=future_annotations,
     )
 
@@ -1004,8 +1033,45 @@ def _value_origins(
         return frozenset({("call-result",)})
     if isinstance(expression, ast.Constant):
         return frozenset({("literal",)})
-    if isinstance(expression, (ast.Tuple, ast.List, ast.Set, ast.Dict, ast.JoinedStr)):
+    if isinstance(expression, ast.JoinedStr):
         return frozenset({("literal",)})
+
+    # MAJOR 2 (delta review 4962377217). A container was labelled ``("literal",)`` REGARDLESS of
+    # what it held, so a live namespace placed in a tuple and selected back out by subscript was
+    # invisible to the call gate. Containers therefore CARRY the origins of what they contain, and
+    # a selection out of one inherits them -- taint propagates through construction, selection,
+    # assignment, and any number of hops.
+    if isinstance(expression, (ast.Tuple, ast.List, ast.Set)):
+        origins: set[tuple[str, ...]] = {("literal",)}
+        for element in expression.elts:
+            origins |= _value_origins(element, context, seen)
+        return frozenset(origins)
+    if isinstance(expression, ast.Dict):
+        origins = {("literal",)}
+        for element in (*expression.keys, *expression.values):
+            if element is not None:  # ``{**other}`` has a ``None`` key
+                origins |= _value_origins(element, context, seen)
+            else:
+                origins.add(("unresolvable",))
+        return frozenset(origins)
+    if isinstance(expression, ast.Starred):
+        return _value_origins(expression.value, context, seen)
+    if isinstance(expression, ast.Subscript):
+        # Which element a subscript selects is not known statically, so the selection inherits
+        # every origin its base can hold. That is the only reading under which a namespace cannot
+        # be laundered through a container.
+        return _value_origins(expression.value, context, seen)
+    if isinstance(expression, ast.IfExp):
+        # Control-dependent: BOTH branches are possible origins, exactly as both conditional
+        # definitions of one name are.
+        return _value_origins(expression.body, context, seen) | _value_origins(
+            expression.orelse, context, seen
+        )
+    if isinstance(expression, ast.BoolOp):
+        origins = set()
+        for value in expression.values:
+            origins |= _value_origins(value, context, seen)
+        return frozenset(origins)
     return frozenset({("unresolvable",)})
 
 
@@ -1066,43 +1132,98 @@ def _callee_chain(node: ast.AST) -> tuple[str, tuple[str, ...]] | None:
 
 
 def _origin_is_safe_callee(
-    origin: tuple[str, ...], context: _ModuleScopeContext
+    origin: tuple[str, ...],
+    context: _ModuleScopeContext,
+    attributes: tuple[str, ...] = (),
 ) -> str | None:
-    """Return ``None`` when this callee origin is PROVABLY safe, else why it is not.
+    """Return ``None`` when this callee origin PLUS its attribute chain is PROVABLY safe.
 
-    The positive boundary: a builtin must be in the narrow pure set; an import must be of a module
-    that is not projection-bearing and of a symbol that neither reads/writes nor replaces a
-    namespace. A locally defined callable is not judged here -- the caller analyses its body, which
-    is the only way to prove anything about it. Everything else -- a namespace, a call result, an
-    unresolvable name, a bare attribute -- is unproven and therefore refused.
+    A genuinely POSITIVE boundary, in the sense MAJOR 2 of delta review 4962377217 required: every
+    permitted case is named here, and everything else is refused. In particular an arbitrary symbol
+    or attribute rooted in an ordinary imported module is no longer safe by default merely because
+    its spelling is absent from a dangerous-name set -- it must appear in
+    :data:`_SAFE_IMPORTED_CALLABLES`.
+
+    * a BUILTIN must be in the narrow pure set, and carries no attribute chain (a method on a
+      builtin's result is not proven, because that result's type is not established statically);
+    * a WHOLE-MODULE import must resolve, through exactly one attribute, to a symbol positively
+      listed for that module -- ``re.compile`` yes, ``operator.setitem`` no;
+    * a SYMBOL import must be positively listed for its module, and any method invoked on what it
+      constructs must be in :data:`_SAFE_CONSTRUCTED_METHODS` -- ``Path(__file__).resolve()`` yes;
+    * a symbol imported from a PROJECTION-BEARING module is judged against the narrow builtin set,
+      so ``from builtins import sorted`` stays lawful while ``from builtins import exec`` does not;
+    * a LOCAL definition is not judged here -- the caller analyses its body, which is the only way
+      to prove anything about it;
+    * everything else -- a namespace, a call result, an unresolvable name, a bare attribute, a
+      literal, a container -- is unproven and therefore refused.
     """
     kind = origin[0]
+
     if kind == "builtin":
+        if attributes:
+            return (
+                f"a method {'.'.join(attributes)!r} on the result of the builtin {origin[1]!r}, "
+                "whose type is not established statically"
+            )
         if origin[1] in _SAFE_BUILTIN_CALLABLES:
             return None
         return f"the builtin {origin[1]!r}, which is outside the narrow safe-call boundary"
+
     if kind == "import":
         module, symbol = origin[1], origin[2] or None
+
         if symbol is None:
-            # A whole-module import binds the module object; a projection-bearing one is a
-            # namespace and is reported as such by _name_origins, so anything reaching here is an
-            # ordinary module such as ``re``, ``sys``, or ``functools``.
-            return None
+            # ``import re`` -> the module OBJECT. Only ``module.symbol`` where that exact symbol is
+            # positively listed is proven; a bare module call and any deeper chain are not.
+            if not attributes:
+                return f"the module object {module!r}, which is not itself a proven callable"
+            if len(attributes) > 1:
+                return (
+                    f"a multi-step attribute chain {'.'.join(attributes)!r} on the module "
+                    f"{module!r}, which no positive listing covers"
+                )
+            if attributes[0] in _SAFE_IMPORTED_CALLABLES.get(module, frozenset()):
+                return None
+            return (
+                f"{module}.{attributes[0]}, which is not in the positive safe-call boundary for "
+                f"imported callables"
+            )
+
         if symbol in _DYNAMIC_NAMESPACE_CALLS:
             return f"a direct import of the namespace-reading or -writing callable {symbol!r}"
         if symbol in _NAMESPACE_REPLACING_CALLABLES:
             return f"a direct import of {symbol!r}, which can replace or reload a namespace"
+
         if module in _PROJECTION_BEARING_MODULES:
             # ``from builtins import X`` binds ONE symbol, so judge that symbol against the same
             # narrow positive boundary a bare builtin gets -- refusing the whole module here would
             # reject ``from builtins import sorted``, which mutates nothing.
+            if attributes:
+                return (
+                    f"a method {'.'.join(attributes)!r} on {symbol!r} imported from {module!r}, "
+                    "which no positive listing covers"
+                )
             if symbol in _SAFE_BUILTIN_CALLABLES:
                 return None
             return (
                 f"a direct import of {symbol!r} from {module!r}, outside the narrow safe-call "
                 "boundary"
             )
+
+        if symbol not in _SAFE_IMPORTED_CALLABLES.get(module, frozenset()):
+            return (
+                f"{symbol!r} imported from {module!r}, which is not in the positive safe-call "
+                "boundary for imported callables"
+            )
+        unproven = [attribute for attribute in attributes
+                    if attribute not in _SAFE_CONSTRUCTED_METHODS]
+        if unproven:
+            return (
+                f"the method(s) {', '.join(repr(a) for a in unproven)} invoked on what "
+                f"{symbol!r} constructs, which no positive listing covers"
+            )
         return None
+
     if kind == "local-definition":
         return None  # proven, or refused, by analysing the body
     if kind == "namespace":
@@ -1112,8 +1233,36 @@ def _origin_is_safe_callee(
     if kind == "attribute":
         return f"an unresolved attribute ({origin[1]!r})"
     if kind == "literal":
-        return "a literal, which is not callable in any provable way"
+        return "a literal or container, which is not callable in any provable way"
     return "a name whose origin cannot be resolved"
+
+
+def _deferred_values_for_name(
+    name: str, context: _ModuleScopeContext, seen: frozenset[str]
+) -> tuple[ast.AST, ...]:
+    """Every DEFERRED value a module-scope name can hold, followed through alias hops.
+
+    MAJOR 1 (delta review 4962377217). ``_g = (mutate() for _ in (1,))`` is correctly deferred at
+    the assignment, but ``list(_g)`` later CONSUMES it and the body runs during module
+    initialization. The consumer sees only a ``Name``, so consumption has to be propagated back to
+    the value -- through any number of ordinary aliasing assignments.
+    """
+    if name in seen:
+        return ()
+    seen = seen | {name}
+    found: list[ast.AST] = []
+    for value in context.assignments.get(name, ()):
+        if isinstance(value, (ast.GeneratorExp, ast.Lambda)):
+            found.append(value)
+        elif isinstance(value, ast.Name):
+            found.extend(_deferred_values_for_name(value.id, context, seen))
+        elif isinstance(value, ast.IfExp):
+            for branch in (value.body, value.orelse):
+                if isinstance(branch, (ast.GeneratorExp, ast.Lambda)):
+                    found.append(branch)
+                elif isinstance(branch, ast.Name):
+                    found.extend(_deferred_values_for_name(branch.id, context, seen))
+    return tuple(found)
 
 
 def _reject_call_mediated_namespace_mutation(
@@ -1121,21 +1270,27 @@ def _reject_call_mediated_namespace_mutation(
     context: _ModuleScopeContext,
     offences: set[str],
     analyse_definition,
+    analyse_consumed=None,
 ) -> None:
     """FAIL CLOSED unless a module-scope CALL is PROVABLY safe.
 
-    Reversed from the predecessor's denylist, exactly as DELTA review 4961431702 required. A call is
-    permitted only when every one of these holds:
+    Reversed from the predecessor's denylist, exactly as DELTA review 4961431702 required and as
+    delta review 4962377217 then extended to imported callables. A call is permitted only when
+    every one of these holds:
 
     * the callee decomposes to a root name and attribute chain -- a call result, subscript, lambda,
       or conditional callee names nothing and is refused;
-    * every origin the root resolves to is provably safe (see :func:`_origin_is_safe_callee`), with
-      origins propagated transitively through module-scope assignments so one ordinary binding
-      cannot launder a dangerous callable;
-    * a locally defined callee has its BODY analysed, because that is the only way to prove it;
+    * every origin the root resolves to is provably safe FOR THAT ATTRIBUTE CHAIN (see
+      :func:`_origin_is_safe_callee`), with origins propagated transitively through module-scope
+      assignments, containers, and selections so no ordinary binding can launder a dangerous
+      callable or a live namespace;
+    * a locally defined callee has its BODY analysed -- and, when it is a CLASS, its
+      construction-time methods too, because calling a class runs them;
     * the attribute chain reaches no namespace-exposing attribute and ends in no in-place mutator;
-    * no argument carries a namespace origin -- a bare ``Name`` bound to ``builtins.__dict__`` is
-      caught exactly as a literal ``__dict__`` attribute is.
+    * no argument carries a namespace origin -- a bare ``Name`` bound to ``builtins.__dict__``, or
+      to a container holding it, is caught exactly as a literal ``__dict__`` attribute is;
+    * every argument is treated as CONSUMED, so a deferred value handed in as an alias has its
+      body analysed rather than trusted.
     """
     decomposed = _callee_chain(call.func)
     if decomposed is None:
@@ -1160,13 +1315,16 @@ def _reject_call_mediated_namespace_mutation(
         )
 
     for origin in _name_origins(root, context, frozenset()):
-        reason = _origin_is_safe_callee(origin, context)
+        reason = _origin_is_safe_callee(origin, context, attributes)
         if reason is not None:
             offences.add(f"a module-scope call rooted at {root!r}, which resolves to {reason}")
         elif origin[0] == "local-definition" and not attributes:
             analyse_definition(origin[1])
 
-    for argument in list(call.args) + [keyword.value for keyword in call.keywords]:
+    arguments = list(call.args) + [keyword.value for keyword in call.keywords]
+    for argument in arguments:
+        if analyse_consumed is not None:
+            analyse_consumed(argument)
         for inner in ast.walk(argument):
             if isinstance(inner, ast.Attribute) and inner.attr in _NAMESPACE_EXPOSING_ATTRIBUTES:
                 offences.add(
@@ -1181,6 +1339,17 @@ def _reject_call_mediated_namespace_mutation(
                     offences.add(
                         f"a module-scope call handed {inner.id!r}, which resolves to a live "
                         "namespace, as an argument"
+                    )
+            elif isinstance(inner, ast.Subscript):
+                # A selection out of a container: refuse unless the base is PROVEN free of
+                # namespace origins. "Cannot be proven non-namespace" is the failing condition,
+                # not "is known to be a namespace".
+                selected = _value_origins(inner, context, frozenset())
+                if any(origin[0] in {"namespace", "unresolvable"} for origin in selected):
+                    offences.add(
+                        "a module-scope call handed a selection out of "
+                        f"{ast.dump(inner.value, include_attributes=False)[:40]}, which cannot be "
+                        "proven not to be a namespace"
                     )
 
 
@@ -1287,20 +1456,96 @@ def _reject_dynamic_namespace_mutation(
         context = _build_module_scope_context(tree)
     offences: set[str] = set()
     analysed: set[str] = set()
+    consumed: set[int] = set()
 
-    def analyse_definition(name: str) -> None:
-        """Analyse an eagerly reachable module-scope definition's body, cycle-guarded."""
-        if name in analysed:
-            return
-        analysed.add(name)
-        definition = context.definitions.get(name)
-        if definition is None:
-            return
-        for statement in getattr(definition, "body", []) or []:
+    def analyse_body(body) -> None:
+        for statement in body or []:
             for inner in _iter_eager_module_scope_nodes(
                 statement, context.future_annotations, consumed=True
             ):
                 inspect_node(inner, eager_reachable=True)
+
+    def analyse_definition(name: str) -> None:
+        """Analyse EVERY eagerly reachable definition bound to this name, cycle-guarded.
+
+        MAJOR 1 (delta review 4962377217), two distinct corrections:
+
+        * every definition is analysed, not merely the last one written. Two conditional
+          module-scope definitions of one name are both possible origins of the call;
+        * calling a CLASS runs construction, so a class contributes its creation body AND its
+          construction-time methods. Every function defined directly in the class body is analysed
+          -- deliberately a superset of ``__init__``/``__new__``/``__post_init__``, because a
+          metaclass ``__call__``, ``__init_subclass__``, or ``__set_name__`` can also run while the
+          instance is produced, and a superset is the fail-closed direction.
+        """
+        if name in analysed:
+            return
+        analysed.add(name)
+        for definition in context.definitions.get(name, ()):
+            analyse_body(getattr(definition, "body", []))
+            if isinstance(definition, ast.ClassDef):
+                for member in definition.body:
+                    if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                        analyse_body(member.body)
+
+    def analyse_consumed(expression: ast.AST) -> None:
+        """Analyse deferred values reached through an eagerly CONSUMED expression.
+
+        ``consumed`` bounds the recursion: a self-referential alias such as
+        ``_g = (x for x in _g)`` would otherwise re-enter its own body forever.
+        """
+        for inner in ast.walk(expression):
+            if isinstance(inner, ast.Name) and isinstance(getattr(inner, "ctx", None), ast.Load):
+                for deferred in _deferred_values_for_name(inner.id, context, frozenset()):
+                    if id(deferred) in consumed:
+                        continue
+                    consumed.add(id(deferred))
+                    body = deferred.body if isinstance(deferred, ast.Lambda) else deferred
+                    for node in _iter_eager_module_scope_nodes(
+                        body, context.future_annotations, consumed=True
+                    ):
+                        inspect_node(node, eager_reachable=True)
+
+    def analyse_decorator(decorator: ast.AST) -> None:
+        """Every decorator EXPRESSION is an implicit invocation at definition time.
+
+        MAJOR 1 (delta review 4962377217). The predecessor recognised only a bare ``ast.Name``
+        decorator as an implicit call, so a ``lambda`` used directly as a decorator was invoked by
+        Python while its body was pruned as deferred. Each decorator shape is handled by what
+        Python actually does with it.
+        """
+        if isinstance(decorator, ast.Lambda):
+            # Python calls it immediately; its body therefore runs during module initialization.
+            for node in _iter_eager_module_scope_nodes(
+                decorator.body, context.future_annotations, consumed=True
+            ):
+                inspect_node(node, eager_reachable=True)
+            return
+        if isinstance(decorator, ast.Call):
+            # A decorator FACTORY: the factory call is scanned by the traversal, but whatever it
+            # returns is then invoked and nothing names it.
+            offences.add(
+                "a module-scope decorator factory whose returned callable cannot be named "
+                f"({ast.dump(decorator.func, include_attributes=False)[:50]})"
+            )
+            return
+        decomposed = _callee_chain(decorator)
+        if decomposed is None:
+            offences.add(
+                "a module-scope decorator that cannot be named statically "
+                f"({ast.dump(decorator, include_attributes=False)[:50]})"
+            )
+            return
+        root, attributes = decomposed
+        for origin in _name_origins(root, context, frozenset()):
+            reason = _origin_is_safe_callee(origin, context, attributes)
+            if reason is not None:
+                offences.add(
+                    f"a module-scope decorator {root!r} applied implicitly, "
+                    f"which resolves to {reason}"
+                )
+            elif origin[0] == "local-definition" and not attributes:
+                analyse_definition(origin[1])
 
     def inspect_node(inner: ast.AST, eager_reachable: bool) -> None:
         if isinstance(inner, ast.Call):
@@ -1309,7 +1554,11 @@ def _reject_dynamic_namespace_mutation(
                 context,
                 offences,
                 analyse_definition if eager_reachable else (lambda _name: None),
+                analyse_consumed if eager_reachable else None,
             )
+        elif isinstance(inner, (ast.For, ast.AsyncFor)) and eager_reachable:
+            # Iterating a name CONSUMES it, so a deferred value reached that way runs now.
+            analyse_consumed(inner.iter)
         elif isinstance(inner, (ast.Global, ast.Nonlocal)):
             offences.add(f"a {type(inner).__name__.lower()} declaration")
         elif isinstance(inner, (ast.Attribute, ast.Subscript)) and isinstance(
@@ -1327,18 +1576,9 @@ def _reject_dynamic_namespace_mutation(
             for name in _target_names(inner.target):
                 offences.add(f"module-scope augmented assignment to {name!r}")
         elif isinstance(inner, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            # A bare-Name decorator is an IMPLICIT CALL of that name at definition time.
-            for decorator in getattr(inner, "decorator_list", []) or []:
-                if isinstance(decorator, ast.Name) and eager_reachable:
-                    for origin in _name_origins(decorator.id, context, frozenset()):
-                        reason = _origin_is_safe_callee(origin, context)
-                        if reason is not None:
-                            offences.add(
-                                f"a module-scope decorator {decorator.id!r} applied implicitly, "
-                                f"which resolves to {reason}"
-                            )
-                        elif origin[0] == "local-definition":
-                            analyse_definition(origin[1])
+            if eager_reachable:
+                for decorator in getattr(inner, "decorator_list", []) or []:
+                    analyse_decorator(decorator)
 
     for statement in tree.body:
         reachable = not _is_main_guard(statement)
