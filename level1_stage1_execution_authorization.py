@@ -127,13 +127,11 @@ authorization at the first eligible work item, and fail-closed validation.
 
 from __future__ import annotations
 
-import ast
 import builtins
 import hashlib
 import json
 import os
 import subprocess
-import symtable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping, Protocol, Sequence
@@ -226,7 +224,7 @@ EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS = (
 )
 
 # --------------------------------------------------------------------------------------
-# MAJOR 1 (review 4955010993) -- the TRANSITIVE outcome-producing surface
+# The TRANSITIVE outcome-producing surface -- an EXACT CLOSED TRANSITION
 # --------------------------------------------------------------------------------------
 #
 # The two paths above are not the whole outcome-producing surface. Both modules
@@ -236,45 +234,105 @@ EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS = (
 # gate/disposition/reading vocabularies those decisions are made against. That module therefore sits
 # squarely on the path SS-G.B defines as outcome-producing: it DECIDES and ORDERS the 680 outcomes.
 #
-# REPRODUCED BEFORE CORRECTING, through the real public validator with isolated truth sources:
-# injecting different package-head/package-merge bytes for that module, while leaving the successor
-# head/merge/working identity internally consistent, returned ``valid=True`` with ``errors=()``. The
-# identical mismatch on either declared path was correctly refused. The mechanism did not prove the
-# fact it relied on.
+# WHY NOT WHOLE-FILE EQUALITY AGAINST THE PACKAGE. That module also carries authorization-only code
+# -- the canonical lifecycle constants, the pin-succession checks, the rebinding block validator --
+# which THIS rebinding must lawfully change. Requiring whole-file equality with the package would
+# make a lawful rebinding impossible.
 #
-# WHY NOT WHOLE-FILE EQUALITY. That module also contains authorization-only code -- the canonical
-# lifecycle constants, the pin-succession checks, the rebinding block validator -- which THIS
-# rebinding must lawfully change. Requiring whole-file equality against the package would make a
-# lawful rebinding impossible, so the binding is a deterministic SEMANTIC PROJECTION of exactly the
-# outcome-determining surface instead.
+# WHY NOT A SEMANTIC PROJECTION. Review 4963386313 established that the predecessor mechanism -- a
+# deterministic AST projection of the outcome-determining symbols plus their ambient bindings -- was
+# NONCONVERGENT. To decide "did the outcome surface change" from source text alone, it had to decide
+# arbitrary Python runtime behaviour statically: reachability through aliases, containers, call
+# results and higher-order builtins; callback invocation; attributed local-class members;
+# descriptors; decorators; class construction AND class-creation hooks; namespace effects; and
+# deferred execution. Four independent reviews closed sixteen distinct bypass forms and each one
+# produced new ones, because the underlying question is undecidable, not merely unimplemented.
+# Correction-by-example cannot terminate against an adversary who may write any Python.
+#
+# WHAT IS ENFORCED INSTEAD. A FINITE proposition, decided by byte identity alone:
+#
+#     these exact accepted package bytes became these exact successor bytes
+#     through only this exact reviewed transition.
+#
+# Both complete blobs are pinned. Between them sits a CLOSED, ORDERED manifest of the reviewed
+# replacement regions, each recording exact byte offsets, exact lengths, and the cryptographic
+# identity of the package bytes it replaces and the successor bytes it installs. Every span outside
+# a declared region must be byte-identical, both files must be consumed completely, and no gap,
+# overlap, duplicate, reordering, resizing, addition, or removal is tolerated. Any other byte change
+# anywhere -- including a change INSIDE a declared region that is not exactly the authorized
+# successor bytes -- fails closed.
+#
+# The authorization boundary is bytes: no AST interpretation, no import or execution of the audited
+# module, no ``eval``, no ``difflib``, and no version-dependent diff algorithm participates. The
+# manifest is a frozen constant, and this module verifies it by comparison only.
+#
+# HONEST SCOPE. This does NOT prove Python semantic equivalence, and does not claim to. It proves
+# exact reviewed byte identity plus an exact closed transition -- which is a stronger and, unlike
+# the projection, a DECIDABLE claim. What the reviewed transition means was settled by review, not
+# by a parser.
 
 #: The module carrying the imported derivation surface.
 OUTCOME_PRODUCING_DERIVATION_RELPATH = "level1_endpoint_evidence_preregistration_validator.py"
 
-#: The EXACT top-level symbols the runner and result validator consume from that module. Enumerated
-#: explicitly here as the authorized surface declaration; ``test_...successor_operational_rebinding``
-#: independently re-derives the same set straight from the two consumers' own source and asserts
-#: equality, so this tuple is never its own test oracle.
-OUTCOME_PRODUCING_PROJECTION_SEEDS = (
-    "CATEGORICAL_GATES",
-    "DERIVED_IDENTITIES",
-    "G2_RECORD_REJECTED",
-    "GATE_IDS",
-    "GATE_RESULT_VOCABULARY",
-    "POINT_RANGE_VALUES",
-    "PREREQUISITE_GATES",
-    "READING_VOCABULARY",
-    "REGISTERED_CONSTRUCTION_COUNT",
-    "REQUIRED_CANDIDATE_RESULT_KEYS",
-    "SLEEVES",
-    "ValidationResult",
-    "derive_candidate_disposition",
-    "derive_cell_outcome",
-    "derive_roll_up_outcome",
-    "generate_cell_universe",
-    "is_reading_dependent",
-    "required_g2_gate_result",
+#: The COMPLETE accepted executable-package blob (PR #336 accepted head and merge) and the COMPLETE
+#: successor blob this rebinding reviews. Independently recomputed from the git objects at both
+#: package anchors and at the successor head.
+OUTCOME_PRODUCING_PACKAGE_SHA256 = (
+    "840b558b9923b9a6fa480146a192ce0cb92b81de71448bf2c9896ee9225883b7"
 )
+OUTCOME_PRODUCING_PACKAGE_LENGTH = 147967
+OUTCOME_PRODUCING_SUCCESSOR_SHA256 = (
+    "2b8ead2b0d661ddd14fa6019ee1802fe49900a214ec443228636701edeb3d356"
+)
+OUTCOME_PRODUCING_SUCCESSOR_LENGTH = 161232
+
+#: The CLOSED, ORDERED transition. Seventeen replacement regions, each
+#: ``(package_offset, package_length, package_sha256, successor_offset, successor_length,
+#: successor_sha256)``, ordered by package offset. Everything not named here must be byte-identical
+#: in both files. Together with the two whole-blob pins above, this is the entire authorization
+#: boundary for the derivation module.
+#:
+#: Every region is confined to XASSET-0037 lifecycle constants, pin succession, canonical
+#: validation, or successor-rebinding validation. No region alters an outcome-consumed symbol: all
+#: twenty-six symbols the runner and result validator import are structurally identical across the
+#: two blobs, verified independently in the test module rather than asserted here.
+OUTCOME_PRODUCING_TRANSITION: tuple[tuple[int, int, str, int, int, str], ...] = (
+    (2447, 76, "f5d2f6298222b03724d8bd17fb7f24413fc91a714f0abddd14af170edfece78c",
+     2447, 222, "95fdb59a97f56a58acfa3db5f3c59953c05c8e8fb66bc5801e7772ba70082f2f"),
+    (2665, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     2811, 224, "3d59d54b4f302ba6a00a30bf945fc55a0a94d90c6b10c135e25625e9cdc99ba8"),
+    (2692, 94, "7d485b65b4acd0d318bec20d45774709e9b177bf2bba4918cdfa8c1b81d11a4b",
+     3062, 94, "1e6dad91b2540a29ec753f75eec6f501f92e75aa0b4f55a644983c1bcdfa7b2f"),
+    (11018, 339, "1ed43083907435324367a13c828e8cee71f6bceffc839bf3335b4f136d8808c1",
+     11388, 544, "f52f965396ce53a8894027b645de48d1294b5393cb3ad4fd91fc28c04b567290"),
+    (11392, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     11967, 250, "09f5cc8bce2a442c721e1b507473555f22e14635b10f76f3ea4f37db501540e1"),
+    (11697, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     12522, 145, "c91695cda27443df537e78c6e1c36b9bfc275d7612c9478c018c49c374a97347"),
+    (12046, 142, "0d04bc11ff13276ef533d05c831afa4e8268bc3388ca5348a7471fbd4cb0e9ca",
+     13016, 2196, "bba4460251e0ed7a13b898d7864b62fa4dd949d0256baec9cf17f898f52bfe8f"),
+    (13736, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     16760, 471, "c850053a7f943ca1865c21d1bc19df9ae20d6756ab8d8b02731dd4ce7d29a5c3"),
+    (35126, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     38621, 189, "1435764c91084d59d88f0200258151c3b66956c80cd0cad35ec4395f7c0b8546"),
+    (35175, 23, "347dd3a6b3cbdb7729e12f6c473af8fbed54c09a05cf17cfa451378c7ff3db56",
+     38859, 56, "327c635dfef43343e8d540cb27c2111e336dea977b405068af04c3d5f1ab7962"),
+    (35280, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     38997, 470, "d5b7deb28ad2059e08922b6d5725f2a7a391461775bb3fd6a7b6d363786e054e"),
+    (37561, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     41748, 4437, "83f3aa63bd96c0b8660ed4aa05c99713c04aa8eba298d8b4f5ca6fb6f7df4843"),
+    (131872, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     140496, 620, "06237b012cd85eee1d475a339daadb0e581a54f2c64cbc381ead1b9d649f180e"),
+    (135627, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     144871, 489, "be02a42aa485b8d2c5b863109c602b4242db80d1639c726d8ad6e09864b0b055"),
+    (137239, 507, "a0a4197a9ab965984e1b82b3313b78d7b09286a6e805bb709575f7172d6b51f7",
+     146972, 919, "122525fda0e596593f4c497b1871415cdb81587734d9b684b2ef05f90e35edf3"),
+    (144723, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     154868, 2574, "a0375e1c5edc67b5b475f3c6ae96e4601707dd2c97ff135bca8102942cc7df76"),
+    (147193, 0, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     159912, 546, "9275d8b0d7ae70be0cbd59f1d476c53159bc9c0f50ca9e85a59885e2e75a5054"),
+)
+
 
 CONSTRUCTION_UNIVERSE_SHA256 = (
     "73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224"
@@ -519,1373 +577,118 @@ def stage1_result_identity(results: Any) -> str:
     return sha256_bytes(canonical_json(results).encode("utf-8"))
 
 
-class ProjectionError(ValueError):
-    """The outcome-producing projection could not be established. ALWAYS fail closed on this."""
+class TransitionError(ValueError):
+    """The exact package-to-successor transition could not be proven.
 
-
-def _strip_docstrings(node: ast.AST) -> ast.AST:
-    """Remove docstrings so a pure prose edit is not reported as an outcome-semantics change.
-
-    Deliberate and narrow: a docstring cannot decide, order, serialize, write, or materially alter
-    an outcome, which is exactly what XASSET-0030 SS-G.B defines as outcome-producing. Excluding it
-    keeps the projection a SEMANTIC one. Every other node -- every constant, comparison, branch,
-    ordering, and vocabulary member -- is retained. Tested in both directions: a docstring-only edit
-    does not trip the projection, and any real logic or constant edit does.
-    """
-    for candidate in ast.walk(node):
-        if not isinstance(
-            candidate, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module)
-        ):
-            continue
-        body = getattr(candidate, "body", None)
-        if (
-            body
-            and isinstance(body[0], ast.Expr)
-            and isinstance(body[0].value, ast.Constant)
-            and isinstance(body[0].value.value, str)
-        ):
-            del body[0]
-    return node
-
-
-def _top_level_symbol_table(tree: ast.Module, where: str) -> dict[str, ast.AST]:
-    """Map every top-level symbol to its single defining node. Duplicates FAIL CLOSED."""
-    table: dict[str, ast.AST] = {}
-    seen: set[str] = set()
-    duplicates: set[str] = set()
-
-    def record(name: str, node: ast.AST) -> None:
-        if name in seen:
-            duplicates.add(name)
-        seen.add(name)
-        table[name] = node
-
-    for node in tree.body:
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            record(node.name, node)
-        elif isinstance(node, ast.Assign):
-            for target in node.targets:
-                if isinstance(target, ast.Name):
-                    record(target.id, node)
-        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-            record(node.target.id, node)
-
-    if duplicates:
-        raise ProjectionError(
-            f"{where}: top-level symbol(s) {sorted(duplicates)!r} are defined more than once, so "
-            "the outcome-producing surface is ambiguous"
-        )
-    return table
-
-
-#: Node types that open a NEW name-resolution scope. Free-name analysis descends into each of
-#: these separately rather than treating their internals as part of the enclosing scope.
-_SCOPE_NODES = (
-    ast.FunctionDef,
-    ast.AsyncFunctionDef,
-    ast.Lambda,
-    ast.ClassDef,
-    ast.ListComp,
-    ast.SetComp,
-    ast.DictComp,
-    ast.GeneratorExp,
-)
-
-#: Calls that can mutate a module namespace in ways no static analysis can resolve. Encountering
-#: one is a HARD FAILURE; it is never assumed harmless.
-_DYNAMIC_NAMESPACE_CALLS = frozenset({"exec", "eval", "globals", "vars", "setattr", "delattr"})
-
-#: Module attributes the interpreter supplies. Resolvable, and not an ambient BINDING a successor
-#: could redirect, so they are recorded by name rather than refused.
-_MODULE_DUNDERS = frozenset(
-    {"__name__", "__file__", "__doc__", "__package__", "__spec__", "__loader__", "__builtins__"}
-)
-
-
-#: Compound statements whose bodies still EXECUTE IN MODULE SCOPE. A binder inside one of these
-#: binds a module global exactly as a direct statement does, which is why discovery must recurse
-#: through them rather than reading ``tree.body`` alone.
-_MODULE_SCOPE_COMPOUND_NODES: tuple[type[ast.AST], ...] = tuple(
-    node
-    for node in (
-        ast.If,
-        ast.Try,
-        ast.For,
-        ast.AsyncFor,
-        ast.While,
-        ast.With,
-        ast.AsyncWith,
-        getattr(ast, "TryStar", None),
-        getattr(ast, "Match", None),
-    )
-    if node is not None
-)
-
-
-def _import_binding_rendering(node: ast.Import | ast.ImportFrom, alias: ast.alias) -> str:
-    """Render ONE import binding deterministically, independent of location or grouping.
-
-    Built from AST fields rather than the source line, so regrouping or reordering the import block
-    does not change identity, while changing WHAT a name is bound to always does.
-    """
-    if isinstance(node, ast.Import):
-        return f"import {alias.name}" + (f" as {alias.asname}" if alias.asname else "")
-    module = "." * (node.level or 0) + (node.module or "")
-    return f"from {module} import {alias.name}" + (f" as {alias.asname}" if alias.asname else "")
-
-
-def _target_names(target: ast.AST | None) -> list[str]:
-    """Every name ONE binding target binds, unpacked recursively.
-
-    MAJOR 1 (delta review 4957056810). ``any, _unused = min, None`` binds ``any`` through a
-    ``Tuple`` target, which a ``isinstance(target, ast.Name)`` test misses entirely. Tuples, lists,
-    starred targets, and any nesting of them are unpacked here; attribute and subscript targets bind
-    no module name and are handled separately as namespace mutation.
-    """
-    if target is None:
-        return []
-    names: list[str] = []
-    stack: list[ast.AST] = [target]
-    while stack:
-        node = stack.pop()
-        if isinstance(node, ast.Name):
-            names.append(node.id)
-        elif isinstance(node, ast.Starred):
-            stack.append(node.value)
-        elif isinstance(node, (ast.Tuple, ast.List)):
-            stack.extend(node.elts)
-    return names
-
-
-def _pattern_names(pattern: ast.AST) -> list[str]:
-    """Every name a structural-pattern-matching case captures."""
-    names: list[str] = []
-    for node in ast.walk(pattern):
-        captured = getattr(node, "name", None)
-        if isinstance(captured, str):
-            names.append(captured)
-        rest = getattr(node, "rest", None)
-        if isinstance(rest, str):
-            names.append(rest)
-    return names
-
-
-def _controlling_identity(chain: Sequence[ast.AST]) -> str:
-    """Deterministic identity of the compound statements CONTROLLING a nested module-scope binder.
-
-    Requirement of the finding: "a conditional or order-dependent binding must include enough
-    controlling AST identity to detect a semantic change". Only the controlling EXPRESSION of each
-    enclosing statement is rendered -- an ``if``'s test, a loop's iterable, a ``with``'s items, a
-    ``match``'s subject, an ``except``'s type -- so ``if True:`` and ``if False:`` are different
-    identities while unrelated edits inside the same block are not swept in.
-    """
-    if not chain:
-        return "direct"
-    parts: list[str] = []
-    for node in chain:
-        label = type(node).__name__
-        controller: ast.AST | list | None = None
-        if isinstance(node, (ast.If, ast.While)):
-            controller = node.test
-        elif isinstance(node, (ast.For, ast.AsyncFor)):
-            controller = node.iter
-        elif isinstance(node, (ast.With, ast.AsyncWith)):
-            controller = [item.context_expr for item in node.items]
-        elif isinstance(node, ast.ExceptHandler):
-            controller = node.type
-        elif getattr(ast, "Match", None) is not None and isinstance(node, ast.Match):
-            controller = node.subject
-        elif getattr(ast, "match_case", None) is not None and isinstance(node, ast.match_case):
-            controller = node.pattern
-        if controller is None:
-            rendered = ""
-        elif isinstance(controller, list):
-            rendered = "|".join(ast.dump(item, include_attributes=False) for item in controller)
-        else:
-            rendered = ast.dump(controller, include_attributes=False)
-        parts.append(f"{label}({rendered})")
-    return "conditional[" + ">".join(parts) + "]"
-
-
-def _module_scope_binders(tree: ast.Module, where: str) -> dict[str, tuple[str, ...]]:
-    """Map EVERY name bound in module scope to the deterministic identity of each binder.
-
-    MAJOR 1 (delta review 4957056810). The predecessor scanned ``tree.body`` for direct ``Import`` /
-    ``ImportFrom`` nodes only, so two independent spellings slipped past it while changing outcome
-    semantics: a conditional import (``if True: from builtins import min as any``) and a
-    destructuring assignment (``any, _unused = min, None``). Both bind the module global ``any``,
-    both turned one categorical FAIL from BLOCKED_CATEGORICALLY into
-    CONSTRUCTIBLE_CANDIDATE_IDENTIFIED, and both left the projection byte-identical.
-
-    Discovery is therefore RECURSIVE through every compound statement that still executes in module
-    scope -- ``if`` / ``try`` / ``except`` / ``for`` / ``while`` / ``with`` / ``match`` -- and
-    TARGET-AWARE, unpacking tuple, list, and starred targets to arbitrary depth. Function, class,
-    lambda, and comprehension bodies are NOT entered: they open their own scope, and only the
-    definition's own name binds here.
-
-    Every binding form is covered: imports, ordinary/annotated/augmented assignments, named
-    expressions, loop targets, ``with ... as`` targets, ``except ... as`` names, match captures, and
-    function/class declarations. Each record carries its binder kind, the controlling identity of
-    any enclosing compound statement, and a deterministic rendering -- per-alias for imports, so
-    regrouping the import block still changes nothing, and a location-free ``ast.dump`` of the
-    binding statement otherwise, so the bound VALUE is part of the identity.
-
-    A star import fails closed here; every other refusal is deferred to the caller, which alone
-    knows which names the projected closure actually resolves.
-    """
-    binders: dict[str, list[str]] = {}
-
-    def record(name: str, kind: str, chain: Sequence[ast.AST], rendering: str) -> None:
-        binders.setdefault(name, []).append(
-            f"{kind}@{_controlling_identity(chain)}::{rendering}"
-        )
-
-    def dumped(node: ast.AST) -> str:
-        return ast.dump(node, include_attributes=False)
-
-    def visit(body: Sequence[ast.AST], chain: tuple[ast.AST, ...]) -> None:
-        for node in body:
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                record(node.name, "definition", chain, f"{type(node).__name__} {node.name}")
-                continue
-            if isinstance(node, (ast.Import, ast.ImportFrom)):
-                for alias in node.names:
-                    if alias.name == "*":
-                        raise ProjectionError(
-                            f"{where}: a module-scope star import binds an unknowable set of names, "
-                            "so the ambient surface of the outcome-producing closure cannot be "
-                            "established"
-                        )
-                    bound = alias.asname or alias.name.split(".")[0]
-                    record(bound, "import", chain, _import_binding_rendering(node, alias))
-                continue
-            if isinstance(node, ast.Assign):
-                for target in node.targets:
-                    for name in _target_names(target):
-                        record(name, "assign", chain, dumped(node))
-            elif isinstance(node, ast.AnnAssign):
-                for name in _target_names(node.target):
-                    record(name, "annassign", chain, dumped(node))
-            elif isinstance(node, ast.AugAssign):
-                for name in _target_names(node.target):
-                    record(name, "augassign", chain, dumped(node))
-            elif isinstance(node, (ast.For, ast.AsyncFor)):
-                for name in _target_names(node.target):
-                    record(name, "loop-target", chain, dumped(node.target))
-            elif isinstance(node, (ast.With, ast.AsyncWith)):
-                for item in node.items:
-                    for name in _target_names(item.optional_vars):
-                        record(name, "with-target", chain, dumped(item))
-
-            # Named expressions bind wherever they appear in a module-scope expression.
-            for inner in ast.walk(node):
-                if isinstance(inner, _SCOPE_NODES):
-                    continue
-                if isinstance(inner, ast.NamedExpr):
-                    for name in _target_names(inner.target):
-                        record(name, "named-expression", chain, dumped(inner))
-
-            if isinstance(node, _MODULE_SCOPE_COMPOUND_NODES):
-                nested = chain + (node,)
-                for field in ("body", "orelse", "finalbody"):
-                    visit(getattr(node, field, None) or [], nested)
-                for handler in getattr(node, "handlers", None) or []:
-                    if handler.name:
-                        record(handler.name, "exception-name", nested + (handler,), handler.name)
-                    visit(handler.body, nested + (handler,))
-                for case in getattr(node, "cases", None) or []:
-                    case_chain = nested + (case,)
-                    for name in _pattern_names(case.pattern):
-                        record(name, "match-capture", case_chain, dumped(case.pattern))
-                    visit(case.body, case_chain)
-
-    visit(tree.body, ())
-    return {name: tuple(records) for name, records in binders.items()}
-
-
-#: Attributes that EXPOSE a live namespace. Reaching one in a module-scope call expression -- as the
-#: callee's receiver chain or as an argument handed to an unknown callable -- means the call can
-#: reach the very mapping the projected closure resolves through.
-_NAMESPACE_EXPOSING_ATTRIBUTES = frozenset(
-    {
-        "__dict__",
-        "__globals__",
-        "__builtins__",
-        "__class__",
-        "__bases__",
-        "__mro__",
-        "__subclasses__",
-        "__setattr__",
-        "__delattr__",
-        "__getattribute__",
-        "__setitem__",
-        "__delitem__",
-        "modules",
-    }
-)
-
-#: Method names that MUTATE their receiver in place. A static projection cannot prove the receiver
-#: is not a namespace -- ``_ns.update(any=min)`` looks identical whether ``_ns`` is a scratch dict or
-#: ``builtins.__dict__`` -- so at module scope these are refused on any receiver.
-_IN_PLACE_MUTATOR_METHODS = frozenset(
-    {
-        "update",
-        "setdefault",
-        "pop",
-        "popitem",
-        "clear",
-        "append",
-        "extend",
-        "insert",
-        "__setitem__",
-        "__delitem__",
-    }
-)
-
-#: Modules whose namespace the projected closure resolves through, or which hand out a live
-#: namespace on demand. A module-scope call rooted at one of these can rebind what a projected free
-#: name means. ``sys`` is deliberately NOT here: ``sys.exit(main())`` is the lawful CLI guard and
-#: mutates nothing, while the genuinely namespace-reaching ``sys`` avenue -- ``sys.modules`` -- is
-#: already refused by the namespace-attribute clause, which is the precise rule rather than a
-#: whole-module ban that would take the guard with it.
-#: The NARROW POSITIVE safe-call boundary. DELTA review 4961431702 asked for exactly this shape:
-#: "if sound bounded analysis cannot prove an arbitrary call harmless, use a narrow positive
-#: safe-call boundary rather than another list of dangerous spellings". These builtins are pure --
-#: none of them reads, writes, replaces, or hands out a namespace. Anything absent is REFUSED, so a
-#: builtin added to Python later is refused until it is deliberately admitted here.
-_SAFE_BUILTIN_CALLABLES = frozenset(
-    {
-        "abs", "all", "any", "ascii", "bin", "bool", "bytearray", "bytes", "chr", "complex",
-        "dict", "divmod", "enumerate", "filter", "float", "format", "frozenset", "hash", "hex",
-        "int", "isinstance", "issubclass", "iter", "len", "list", "map", "max", "min", "next",
-        "oct", "ord", "pow", "print", "range", "repr", "reversed", "round", "set", "slice",
-        "sorted", "str", "sum", "tuple", "zip",
-    }
-)
-
-#: Modules whose namespace the projected closure resolves through, or which hand out a live
-#: namespace on demand. ``sys`` is deliberately absent: ``sys.exit`` is the lawful CLI guard and
-#: mutates nothing, while ``sys.modules`` is caught precisely by the namespace-attribute rule.
-_PROJECTION_BEARING_MODULES = frozenset({"builtins", "importlib", "gc", "ctypes", "inspect"})
-
-#: Callables that REPLACE or RELOAD a live module namespace, judged against the imported SYMBOL so
-#: an alias cannot launder them.
-_NAMESPACE_REPLACING_CALLABLES = frozenset(
-    {"reload", "import_module", "__import__", "invalidate_caches", "get_objects", "get_referrers"}
-)
-
-#: The POSITIVE proof boundary for imported callables and attributed module calls.
-#:
-#: MAJOR 2 (delta review 4962377217). The predecessor returned "safe" for any symbol or attribute
-#: rooted in a module outside :data:`_PROJECTION_BEARING_MODULES` unless its spelling appeared in a
-#: dangerous-name set -- a DENYLIST wearing a positive boundary's name, which an ordinary
-#: standard-library mutator walked straight through. Membership here is therefore a positive
-#: proof obligation: each entry is a pure constructor, compiler, or process-exit that provably
-#: neither reads nor writes another module's namespace. Anything absent fails closed, which is the
-#: correct direction for a module whose lawful module-scope surface is this small.
-_SAFE_IMPORTED_CALLABLES: Mapping[str, frozenset[str]] = {
-    "dataclasses": frozenset({"dataclass", "field"}),
-    "pathlib": frozenset({"Path", "PurePath", "PurePosixPath"}),
-    "re": frozenset({"compile", "escape", "fullmatch", "match", "search"}),
-    "sys": frozenset({"exit"}),
-}
-
-#: Methods provably safe to invoke on a receiver constructed by a proven-safe imported callable --
-#: ``Path(__file__).resolve()`` being the real module's own use. A method absent here is unproven
-#: even when its receiver is proven, because the receiver's TYPE is not established statically.
-_SAFE_CONSTRUCTED_METHODS = frozenset({"resolve", "absolute", "expanduser", "as_posix"})
-
-#: Methods Python runs while CONSTRUCTING an instance. Analysed whenever a module-scope call
-#: instantiates a locally defined class; see :func:`_reject_dynamic_namespace_mutation`.
-_CONSTRUCTION_TIME_METHODS = frozenset({"__init__", "__new__", "__post_init__"})
-
-
-@dataclass(frozen=True)
-class _ModuleScopeContext:
-    """Everything the mutation gate needs to know about one module's own scope.
-
-    Built once per projection so origin resolution, eager-execution reachability, and the
-    future-annotations posture are all answered from the same snapshot.
+    Raised only by :func:`verify_exact_transition`. Every path is fail-closed: an unreadable blob,
+    a wrong length, a wrong whole-blob digest, a malformed manifest, a region that does not carry
+    its declared bytes, a span outside the declared regions that is not byte-identical, or bytes
+    left unconsumed at either end all raise rather than returning a verdict.
     """
 
-    imports: Mapping[str, tuple[tuple[str, str | None], ...]]
-    assignments: Mapping[str, tuple[ast.AST, ...]]
-    definitions: Mapping[str, tuple[ast.AST, ...]]
-    future_annotations: bool
 
-
-def _build_module_scope_context(tree: ast.Module) -> _ModuleScopeContext:
-    """Collect module-scope imports, assignments, definitions, and the annotations posture.
-
-    MINOR 1 (delta review 4961431702): ``from __future__ import annotations`` postpones every
-    annotation expression, so under that posture Python does NOT evaluate annotations while
-    creating the module. Recording the posture here lets the traversal be execution-accurate in
-    both directions rather than scanning annotations unconditionally.
-    """
-    imports: dict[str, list[tuple[str, str | None]]] = {}
-    assignments: dict[str, list[ast.AST]] = {}
-    definitions: dict[str, list[ast.AST]] = {}
-    future_annotations = False
-
-    def visit(body: Sequence[ast.AST]) -> None:
-        nonlocal future_annotations
-        for node in body:
-            if isinstance(node, ast.ImportFrom) and node.module == "__future__":
-                if any(alias.name == "annotations" for alias in node.names):
-                    future_annotations = True
-            if isinstance(node, (ast.Import, ast.ImportFrom)):
-                for alias in node.names:
-                    if alias.name == "*":
-                        continue  # refused separately by the binder model
-                    bound = alias.asname or alias.name.split(".")[0]
-                    module = (
-                        alias.name
-                        if isinstance(node, ast.Import)
-                        else "." * (node.level or 0) + (node.module or "")
-                    )
-                    symbol = None if isinstance(node, ast.Import) else alias.name
-                    imports.setdefault(bound, []).append((module, symbol))
-                continue
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                # MAJOR 1 (delta review 4962377217): EVERY definition bound to this name is kept.
-                # Two conditional module-scope definitions of one name are both POSSIBLE origins;
-                # the predecessor stored one entry and silently overwrote the earlier node, so an
-                # eager call analysed only whichever definition happened to be written last.
-                definitions.setdefault(node.name, []).append(node)
-                continue
-            if isinstance(node, ast.Assign):
-                for target in node.targets:
-                    for name in _target_names(target):
-                        assignments.setdefault(name, []).append(node.value)
-            elif isinstance(node, ast.AnnAssign) and node.value is not None:
-                for name in _target_names(node.target):
-                    assignments.setdefault(name, []).append(node.value)
-            if isinstance(node, _MODULE_SCOPE_COMPOUND_NODES):
-                for field in ("body", "orelse", "finalbody"):
-                    visit(getattr(node, field, None) or [])
-                for handler in getattr(node, "handlers", None) or []:
-                    visit(handler.body)
-                for case in getattr(node, "cases", None) or []:
-                    visit(case.body)
-
-    visit(tree.body)
-    return _ModuleScopeContext(
-        imports={name: tuple(values) for name, values in imports.items()},
-        assignments={name: tuple(values) for name, values in assignments.items()},
-        definitions={name: tuple(nodes) for name, nodes in definitions.items()},
-        future_annotations=future_annotations,
-    )
-
-
-def _is_main_guard(node: ast.AST) -> bool:
-    """Is this the ``if __name__ == "__main__":`` guard?
-
-    Load-bearing for execution accuracy, not convenience. The derivation module participates in
-    outcome production only by being IMPORTED by the runner and the result validator, and on import
-    this block provably does not run. Its statements are still scanned for direct mutation -- the
-    defensive posture is unchanged -- but a call inside it does not make the called definition's
-    body eagerly reachable, because that call does not happen on import.
-    """
-    if not isinstance(node, ast.If):
-        return False
-    test = node.test
-    if not isinstance(test, ast.Compare) or len(test.ops) != 1:
-        return False
-    if not isinstance(test.ops[0], ast.Eq):
-        return False
-    left, right = test.left, test.comparators[0]
-    names = {
-        operand.id for operand in (left, right) if isinstance(operand, ast.Name)
-    }
-    literals = {
-        operand.value
-        for operand in (left, right)
-        if isinstance(operand, ast.Constant) and isinstance(operand.value, str)
-    }
-    return "__name__" in names and "__main__" in literals
-
-
-def _value_origins(
-    expression: ast.AST, context: _ModuleScopeContext, seen: frozenset[str]
-) -> frozenset[tuple[str, ...]]:
-    """What a module-scope VALUE expression can be, as a set of origin tags.
-
-    MAJOR 2 (delta review 4961431702). The predecessor resolved only a callee bound DIRECTLY by an
-    import, so one ordinary assignment laundered anything: ``_e = exec`` then ``_e("any=min")``, or
-    ``_ns = _rb.__dict__`` then handing ``_ns`` to an external mutator. Origins are therefore
-    propagated TRANSITIVELY through module-scope assignments, with a ``seen`` set bounding cycles,
-    and anything that cannot be resolved is reported as ``("unresolvable",)`` so the caller fails
-    closed rather than guessing.
-    """
-    if isinstance(expression, ast.Name):
-        return _name_origins(expression.id, context, seen)
-    if isinstance(expression, ast.Attribute):
-        if expression.attr in _NAMESPACE_EXPOSING_ATTRIBUTES:
-            return frozenset({("namespace", expression.attr)})
-        base = _value_origins(expression.value, context, seen)
-        if any(origin[0] == "namespace" for origin in base):
-            return frozenset({("namespace", expression.attr)})
-        for origin in base:
-            if origin[0] == "import" and origin[1] in _PROJECTION_BEARING_MODULES:
-                return frozenset({("namespace", origin[1])})
-        return frozenset({("attribute", expression.attr)})
-    if isinstance(expression, ast.Call):
-        return frozenset({("call-result",)})
-    if isinstance(expression, ast.Constant):
-        return frozenset({("literal",)})
-    if isinstance(expression, ast.JoinedStr):
-        return frozenset({("literal",)})
-
-    # MAJOR 2 (delta review 4962377217). A container was labelled ``("literal",)`` REGARDLESS of
-    # what it held, so a live namespace placed in a tuple and selected back out by subscript was
-    # invisible to the call gate. Containers therefore CARRY the origins of what they contain, and
-    # a selection out of one inherits them -- taint propagates through construction, selection,
-    # assignment, and any number of hops.
-    if isinstance(expression, (ast.Tuple, ast.List, ast.Set)):
-        origins: set[tuple[str, ...]] = {("literal",)}
-        for element in expression.elts:
-            origins |= _value_origins(element, context, seen)
-        return frozenset(origins)
-    if isinstance(expression, ast.Dict):
-        origins = {("literal",)}
-        for element in (*expression.keys, *expression.values):
-            if element is not None:  # ``{**other}`` has a ``None`` key
-                origins |= _value_origins(element, context, seen)
-            else:
-                origins.add(("unresolvable",))
-        return frozenset(origins)
-    if isinstance(expression, ast.Starred):
-        return _value_origins(expression.value, context, seen)
-    if isinstance(expression, ast.Subscript):
-        # Which element a subscript selects is not known statically, so the selection inherits
-        # every origin its base can hold. That is the only reading under which a namespace cannot
-        # be laundered through a container.
-        return _value_origins(expression.value, context, seen)
-    if isinstance(expression, ast.IfExp):
-        # Control-dependent: BOTH branches are possible origins, exactly as both conditional
-        # definitions of one name are.
-        return _value_origins(expression.body, context, seen) | _value_origins(
-            expression.orelse, context, seen
-        )
-    if isinstance(expression, ast.BoolOp):
-        origins = set()
-        for value in expression.values:
-            origins |= _value_origins(value, context, seen)
-        return frozenset(origins)
-    return frozenset({("unresolvable",)})
-
-
-def _name_origins(
-    name: str, context: _ModuleScopeContext, seen: frozenset[str]
-) -> frozenset[tuple[str, ...]]:
-    """Everything one module-scope NAME can be bound to, resolved transitively."""
-    if name in seen:
-        return frozenset({("unresolvable",)})  # a binding cycle proves nothing
-    seen = seen | {name}
-    origins: set[tuple[str, ...]] = set()
-    resolved = False
-    if name in context.definitions:
-        origins.add(("local-definition", name))
-        resolved = True
-    for module, symbol in context.imports.get(name, ()):
-        if symbol is not None and symbol in _NAMESPACE_EXPOSING_ATTRIBUTES:
-            # ``from builtins import __dict__ as _ns`` binds the live mapping itself.
-            origins.add(("namespace", f"{module}.{symbol}"))
-        elif symbol is None and module in _PROJECTION_BEARING_MODULES:
-            # ``import builtins as _rb`` binds the module OBJECT, which is a namespace.
-            origins.add(("namespace", module))
-        else:
-            origins.add(("import", module, symbol or ""))
-        resolved = True
-    for value in context.assignments.get(name, ()):
-        origins |= _value_origins(value, context, seen)
-        resolved = True
-    if not resolved:
-        if hasattr(builtins, name):
-            return frozenset({("builtin", name)})
-        return frozenset({("unresolvable",)})
-    return frozenset(origins)
-
-
-def _callee_chain(node: ast.AST) -> tuple[str, tuple[str, ...]] | None:
-    """Decompose a callee into ``(root name, attribute chain)``, or ``None`` if not decomposable.
-
-    ``sys.exit`` -> ``("sys", ("exit",))``. ``b.__dict__.update`` ->
-    ``("b", ("__dict__", "update"))``. ``Path(__file__).resolve()`` -> ``("Path", ("resolve",))``,
-    because a NAMED METHOD on a constructed receiver is still named. A callee that IS a call
-    result -- ``getattr(m, "x")()`` -- or is rooted in a subscript, lambda, conditional,
-    comprehension, or literal returns ``None``: what it will run cannot be named statically.
-    """
-    attributes: list[str] = []
-    current = node
-    while True:
-        if isinstance(current, ast.Attribute):
-            attributes.append(current.attr)
-            current = current.value
-        elif isinstance(current, ast.Call) and attributes:
-            current = current.func
-        else:
-            break
-    if isinstance(current, ast.Name):
-        return current.id, tuple(reversed(attributes))
-    return None
-
-
-def _origin_is_safe_callee(
-    origin: tuple[str, ...],
-    context: _ModuleScopeContext,
-    attributes: tuple[str, ...] = (),
-) -> str | None:
-    """Return ``None`` when this callee origin PLUS its attribute chain is PROVABLY safe.
-
-    A genuinely POSITIVE boundary, in the sense MAJOR 2 of delta review 4962377217 required: every
-    permitted case is named here, and everything else is refused. In particular an arbitrary symbol
-    or attribute rooted in an ordinary imported module is no longer safe by default merely because
-    its spelling is absent from a dangerous-name set -- it must appear in
-    :data:`_SAFE_IMPORTED_CALLABLES`.
-
-    * a BUILTIN must be in the narrow pure set, and carries no attribute chain (a method on a
-      builtin's result is not proven, because that result's type is not established statically);
-    * a WHOLE-MODULE import must resolve, through exactly one attribute, to a symbol positively
-      listed for that module -- ``re.compile`` yes, ``operator.setitem`` no;
-    * a SYMBOL import must be positively listed for its module, and any method invoked on what it
-      constructs must be in :data:`_SAFE_CONSTRUCTED_METHODS` -- ``Path(__file__).resolve()`` yes;
-    * a symbol imported from a PROJECTION-BEARING module is judged against the narrow builtin set,
-      so ``from builtins import sorted`` stays lawful while ``from builtins import exec`` does not;
-    * a LOCAL definition is not judged here -- the caller analyses its body, which is the only way
-      to prove anything about it;
-    * everything else -- a namespace, a call result, an unresolvable name, a bare attribute, a
-      literal, a container -- is unproven and therefore refused.
-    """
-    kind = origin[0]
-
-    if kind == "builtin":
-        if attributes:
-            return (
-                f"a method {'.'.join(attributes)!r} on the result of the builtin {origin[1]!r}, "
-                "whose type is not established statically"
-            )
-        if origin[1] in _SAFE_BUILTIN_CALLABLES:
-            return None
-        return f"the builtin {origin[1]!r}, which is outside the narrow safe-call boundary"
-
-    if kind == "import":
-        module, symbol = origin[1], origin[2] or None
-
-        if symbol is None:
-            # ``import re`` -> the module OBJECT. Only ``module.symbol`` where that exact symbol is
-            # positively listed is proven; a bare module call and any deeper chain are not.
-            if not attributes:
-                return f"the module object {module!r}, which is not itself a proven callable"
-            if len(attributes) > 1:
-                return (
-                    f"a multi-step attribute chain {'.'.join(attributes)!r} on the module "
-                    f"{module!r}, which no positive listing covers"
-                )
-            if attributes[0] in _SAFE_IMPORTED_CALLABLES.get(module, frozenset()):
-                return None
-            return (
-                f"{module}.{attributes[0]}, which is not in the positive safe-call boundary for "
-                f"imported callables"
-            )
-
-        if symbol in _DYNAMIC_NAMESPACE_CALLS:
-            return f"a direct import of the namespace-reading or -writing callable {symbol!r}"
-        if symbol in _NAMESPACE_REPLACING_CALLABLES:
-            return f"a direct import of {symbol!r}, which can replace or reload a namespace"
-
-        if module in _PROJECTION_BEARING_MODULES:
-            # ``from builtins import X`` binds ONE symbol, so judge that symbol against the same
-            # narrow positive boundary a bare builtin gets -- refusing the whole module here would
-            # reject ``from builtins import sorted``, which mutates nothing.
-            if attributes:
-                return (
-                    f"a method {'.'.join(attributes)!r} on {symbol!r} imported from {module!r}, "
-                    "which no positive listing covers"
-                )
-            if symbol in _SAFE_BUILTIN_CALLABLES:
-                return None
-            return (
-                f"a direct import of {symbol!r} from {module!r}, outside the narrow safe-call "
-                "boundary"
-            )
-
-        if symbol not in _SAFE_IMPORTED_CALLABLES.get(module, frozenset()):
-            return (
-                f"{symbol!r} imported from {module!r}, which is not in the positive safe-call "
-                "boundary for imported callables"
-            )
-        unproven = [attribute for attribute in attributes
-                    if attribute not in _SAFE_CONSTRUCTED_METHODS]
-        if unproven:
-            return (
-                f"the method(s) {', '.join(repr(a) for a in unproven)} invoked on what "
-                f"{symbol!r} constructs, which no positive listing covers"
-            )
-        return None
-
-    if kind == "local-definition":
-        return None  # proven, or refused, by analysing the body
-    if kind == "namespace":
-        return f"a live namespace ({origin[1]!r})"
-    if kind == "call-result":
-        return "the result of another call, which nothing names"
-    if kind == "attribute":
-        return f"an unresolved attribute ({origin[1]!r})"
-    if kind == "literal":
-        return "a literal or container, which is not callable in any provable way"
-    return "a name whose origin cannot be resolved"
-
-
-def _deferred_values_for_name(
-    name: str, context: _ModuleScopeContext, seen: frozenset[str]
-) -> tuple[ast.AST, ...]:
-    """Every DEFERRED value a module-scope name can hold, followed through alias hops.
-
-    MAJOR 1 (delta review 4962377217). ``_g = (mutate() for _ in (1,))`` is correctly deferred at
-    the assignment, but ``list(_g)`` later CONSUMES it and the body runs during module
-    initialization. The consumer sees only a ``Name``, so consumption has to be propagated back to
-    the value -- through any number of ordinary aliasing assignments.
-    """
-    if name in seen:
-        return ()
-    seen = seen | {name}
-    found: list[ast.AST] = []
-    for value in context.assignments.get(name, ()):
-        if isinstance(value, (ast.GeneratorExp, ast.Lambda)):
-            found.append(value)
-        elif isinstance(value, ast.Name):
-            found.extend(_deferred_values_for_name(value.id, context, seen))
-        elif isinstance(value, ast.IfExp):
-            for branch in (value.body, value.orelse):
-                if isinstance(branch, (ast.GeneratorExp, ast.Lambda)):
-                    found.append(branch)
-                elif isinstance(branch, ast.Name):
-                    found.extend(_deferred_values_for_name(branch.id, context, seen))
-    return tuple(found)
-
-
-def _reject_call_mediated_namespace_mutation(
-    call: ast.Call,
-    context: _ModuleScopeContext,
-    offences: set[str],
-    analyse_definition,
-    analyse_consumed=None,
+def verify_exact_transition(
+    package: bytes,
+    successor: bytes,
+    transition: Sequence[tuple[int, int, str, int, int, str]] = OUTCOME_PRODUCING_TRANSITION,
 ) -> None:
-    """FAIL CLOSED unless a module-scope CALL is PROVABLY safe.
+    """Prove ``package`` became ``successor`` through EXACTLY ``transition``, or raise.
 
-    Reversed from the predecessor's denylist, exactly as DELTA review 4961431702 required and as
-    delta review 4962377217 then extended to imported callables. A call is permitted only when
-    every one of these holds:
+    Byte identity is the whole instrument. No parsing, importing, executing, ``eval``, ``difflib``,
+    or version-dependent diff algorithm participates, so the answer does not vary with interpreter
+    version, library version, or anyone's ability to model Python's runtime.
 
-    * the callee decomposes to a root name and attribute chain -- a call result, subscript, lambda,
-      or conditional callee names nothing and is refused;
-    * every origin the root resolves to is provably safe FOR THAT ATTRIBUTE CHAIN (see
-      :func:`_origin_is_safe_callee`), with origins propagated transitively through module-scope
-      assignments, containers, and selections so no ordinary binding can launder a dangerous
-      callable or a live namespace;
-    * a locally defined callee has its BODY analysed -- and, when it is a CLASS, its
-      construction-time methods too, because calling a class runs them;
-    * the attribute chain reaches no namespace-exposing attribute and ends in no in-place mutator;
-    * no argument carries a namespace origin -- a bare ``Name`` bound to ``builtins.__dict__``, or
-      to a container holding it, is caught exactly as a literal ``__dict__`` attribute is;
-    * every argument is treated as CONSUMED, so a deferred value handed in as an alias has its
-      body analysed rather than trusted.
+    Enforced, in order:
+
+    1. both blobs carry their pinned lengths and pinned whole-blob digests;
+    2. the manifest is well-formed -- ordered, non-overlapping in BOTH files, no region empty on
+       both sides, and offsets/lengths inside their file;
+    3. every span BETWEEN declared regions is byte-identical in both files, and so is the span
+       before the first region and after the last;
+    4. every declared region carries exactly its declared package bytes and exactly its declared
+       successor bytes, by digest;
+    5. both files are consumed completely -- no undeclared trailing bytes on either side.
+
+    Adding, removing, reordering, resizing, duplicating, overlapping, or gapping a region breaks
+    (2) or (3). Editing bytes inside a region breaks (4). Editing bytes anywhere else breaks (1)
+    and (3). Appending or truncating breaks (1) and (5).
     """
-    decomposed = _callee_chain(call.func)
-    if decomposed is None:
-        offences.add(
-            "a module-scope call whose callee cannot be named statically "
-            f"({ast.dump(call.func, include_attributes=False)[:60]})"
+    if len(package) != OUTCOME_PRODUCING_PACKAGE_LENGTH:
+        raise TransitionError(
+            f"package blob is {len(package)} bytes, expected {OUTCOME_PRODUCING_PACKAGE_LENGTH}"
         )
-        return
-    root, attributes = decomposed
-
-    for attribute in attributes:
-        if attribute in _NAMESPACE_EXPOSING_ATTRIBUTES:
-            offences.add(f"a module-scope call reaching the namespace attribute {attribute!r}")
-    if attributes and attributes[-1] in _IN_PLACE_MUTATOR_METHODS:
-        offences.add(
-            f"a module-scope in-place mutator call {attributes[-1]!r}, whose receiver cannot be "
-            "proven not to be a namespace"
+    if len(successor) != OUTCOME_PRODUCING_SUCCESSOR_LENGTH:
+        raise TransitionError(
+            f"successor blob is {len(successor)} bytes, expected "
+            f"{OUTCOME_PRODUCING_SUCCESSOR_LENGTH}"
         )
-    if attributes and attributes[-1] in _NAMESPACE_REPLACING_CALLABLES:
-        offences.add(
-            f"a module-scope call to {attributes[-1]!r}, which can replace or reload a namespace"
+    package_digest = sha256_bytes(package)
+    if package_digest != OUTCOME_PRODUCING_PACKAGE_SHA256:
+        raise TransitionError(
+            f"package blob digest is {package_digest}, expected "
+            f"{OUTCOME_PRODUCING_PACKAGE_SHA256}"
         )
+    successor_digest = sha256_bytes(successor)
+    if successor_digest != OUTCOME_PRODUCING_SUCCESSOR_SHA256:
+        raise TransitionError(
+            f"successor blob digest is {successor_digest}, expected "
+            f"{OUTCOME_PRODUCING_SUCCESSOR_SHA256}"
+        )
+    if not transition:
+        raise TransitionError("the transition manifest is empty; a closed transition must be declared")
 
-    for origin in _name_origins(root, context, frozenset()):
-        reason = _origin_is_safe_callee(origin, context, attributes)
-        if reason is not None:
-            offences.add(f"a module-scope call rooted at {root!r}, which resolves to {reason}")
-        elif origin[0] == "local-definition" and not attributes:
-            analyse_definition(origin[1])
-
-    arguments = list(call.args) + [keyword.value for keyword in call.keywords]
-    for argument in arguments:
-        if analyse_consumed is not None:
-            analyse_consumed(argument)
-        for inner in ast.walk(argument):
-            if isinstance(inner, ast.Attribute) and inner.attr in _NAMESPACE_EXPOSING_ATTRIBUTES:
-                offences.add(
-                    f"a module-scope call handed the namespace attribute {inner.attr!r} as an "
-                    "argument, so what the callee does with it cannot be proven harmless"
-                )
-            elif isinstance(inner, ast.Name):
-                if any(
-                    origin[0] == "namespace"
-                    for origin in _name_origins(inner.id, context, frozenset())
-                ):
-                    offences.add(
-                        f"a module-scope call handed {inner.id!r}, which resolves to a live "
-                        "namespace, as an argument"
-                    )
-            elif isinstance(inner, ast.Subscript):
-                # A selection out of a container: refuse unless the base is PROVEN free of
-                # namespace origins. "Cannot be proven non-namespace" is the failing condition,
-                # not "is known to be a namespace".
-                selected = _value_origins(inner, context, frozenset())
-                if any(origin[0] in {"namespace", "unresolvable"} for origin in selected):
-                    offences.add(
-                        "a module-scope call handed a selection out of "
-                        f"{ast.dump(inner.value, include_attributes=False)[:40]}, which cannot be "
-                        "proven not to be a namespace"
-                    )
-
-
-def _iter_eager_module_scope_nodes(
-    node: ast.AST, future_annotations: bool = False, consumed: bool = False
-):
-    """Yield every node EXECUTED during module initialization, pruning what is genuinely deferred.
-
-    Execution-aware rather than syntactic, in both directions:
-
-    * a function or lambda contributes its decorators, defaults, keyword defaults and -- unless the
-      module postpones them -- its annotations; its BODY is pruned, because it runs only when
-      called. MINOR 1 (delta review 4961431702): under ``from __future__ import annotations`` the
-      annotation expressions are never evaluated, so scanning them would refuse lawful edits for
-      behaviour Python does not perform;
-    * a class contributes its decorators, bases, keywords AND its entire body, recursively;
-    * a list, set, or dict comprehension runs immediately and is scanned in full;
-    * a generator expression is LAZY, so only its outermost iterable is scanned -- unless it is
-      being CONSUMED by the surrounding operation, in which case its whole body runs during module
-      initialization and is scanned. MAJOR 1 (delta review 4961431702) reported exactly that form;
-    * everything else contributes itself and all of its children, with call arguments marked
-      consumed so a generator handed to ``tuple(...)`` is analysed.
-    """
-    yield node
-
-    def recurse(child, consumed_child=False):
-        yield from _iter_eager_module_scope_nodes(child, future_annotations, consumed_child)
-
-    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
-        eager: list[ast.AST] = list(getattr(node, "decorator_list", []) or [])
-        arguments = node.args
-        eager.extend(default for default in arguments.defaults if default is not None)
-        eager.extend(default for default in arguments.kw_defaults if default is not None)
-        if not future_annotations:
-            for argument in (
-                *arguments.posonlyargs,
-                *arguments.args,
-                *arguments.kwonlyargs,
-                arguments.vararg,
-                arguments.kwarg,
-            ):
-                if argument is not None and argument.annotation is not None:
-                    eager.append(argument.annotation)
-            if getattr(node, "returns", None) is not None:
-                eager.append(node.returns)
-        for child in eager:
-            yield from recurse(child)
-        return  # the body is DEFERRED
-
-    if isinstance(node, ast.ClassDef):
-        for child in (*node.decorator_list, *node.bases, *node.keywords, *node.body):
-            yield from recurse(child)
-        return
-
-    if isinstance(node, ast.GeneratorExp):
-        if consumed:
-            for child in (node.elt, *(g.iter for g in node.generators),
-                          *(condition for g in node.generators for condition in g.ifs)):
-                yield from recurse(child)
-        elif node.generators:
-            yield from recurse(node.generators[0].iter)
-        return
-
-    if isinstance(node, ast.Call):
-        yield from recurse(node.func)
-        for argument in node.args:
-            yield from recurse(argument, consumed_child=True)
-        for keyword in node.keywords:
-            yield from recurse(keyword.value, consumed_child=True)
-        return
-
-    for child in ast.iter_child_nodes(node):
-        yield from recurse(child)
-
-
-def _reject_dynamic_namespace_mutation(
-    tree: ast.Module, where: str, context: _ModuleScopeContext | None = None
-) -> None:
-    """FAIL CLOSED on namespace mutation this analysis cannot resolve statically.
-
-    Deliberately unconditional rather than "only when it touches a projected name": deciding
-    whether a ``globals()`` write, an ``exec``, or an attribute assignment onto an imported module
-    reaches the closure would require evaluating it, which is precisely what a static projection
-    cannot do. None of these forms exists in the real module, so refusing them costs no lawful
-    authorization-only edit, while silently tolerating one would let an outcome change hide exactly
-    where this projection is supposed to look.
-
-    Every module-scope call is handed to :func:`_reject_call_mediated_namespace_mutation`, which
-    applies a NARROW POSITIVE safe-call boundary. When a call's root resolves to a module-scope
-    definition, that definition's BODY is analysed too -- MAJOR 1 (delta review 4961431702) showed a
-    helper whose body performed the mutation and a bare-``Name`` decorator applied implicitly, both
-    of which execute during module initialization without any call syntax at the mutation site.
-    A bare-``Name`` decorator is therefore treated as the implicit call it is.
-
-    ``if __name__ == "__main__":`` is scanned for direct mutation exactly as any other block, so no
-    defensive coverage is lost -- but a call inside it does NOT make the called definition eagerly
-    reachable, because on import, which is the only way this module participates in outcome
-    production, that block provably does not run. See :func:`_is_main_guard`.
-
-    Augmented assignment and deletion are refused OUTRIGHT at module scope rather than merely
-    modelled as binders, keeping the predecessor's blanket refusal exactly as strict.
-    """
-    if context is None:
-        context = _build_module_scope_context(tree)
-    offences: set[str] = set()
-    analysed: set[str] = set()
-    consumed: set[int] = set()
-
-    def analyse_body(body) -> None:
-        for statement in body or []:
-            for inner in _iter_eager_module_scope_nodes(
-                statement, context.future_annotations, consumed=True
-            ):
-                inspect_node(inner, eager_reachable=True)
-
-    def analyse_definition(name: str) -> None:
-        """Analyse EVERY eagerly reachable definition bound to this name, cycle-guarded.
-
-        MAJOR 1 (delta review 4962377217), two distinct corrections:
-
-        * every definition is analysed, not merely the last one written. Two conditional
-          module-scope definitions of one name are both possible origins of the call;
-        * calling a CLASS runs construction, so a class contributes its creation body AND its
-          construction-time methods. Every function defined directly in the class body is analysed
-          -- deliberately a superset of ``__init__``/``__new__``/``__post_init__``, because a
-          metaclass ``__call__``, ``__init_subclass__``, or ``__set_name__`` can also run while the
-          instance is produced, and a superset is the fail-closed direction.
-        """
-        if name in analysed:
-            return
-        analysed.add(name)
-        for definition in context.definitions.get(name, ()):
-            analyse_body(getattr(definition, "body", []))
-            if isinstance(definition, ast.ClassDef):
-                for member in definition.body:
-                    if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                        analyse_body(member.body)
-
-    def analyse_consumed(expression: ast.AST) -> None:
-        """Analyse deferred values reached through an eagerly CONSUMED expression.
-
-        ``consumed`` bounds the recursion: a self-referential alias such as
-        ``_g = (x for x in _g)`` would otherwise re-enter its own body forever.
-        """
-        for inner in ast.walk(expression):
-            if isinstance(inner, ast.Name) and isinstance(getattr(inner, "ctx", None), ast.Load):
-                for deferred in _deferred_values_for_name(inner.id, context, frozenset()):
-                    if id(deferred) in consumed:
-                        continue
-                    consumed.add(id(deferred))
-                    body = deferred.body if isinstance(deferred, ast.Lambda) else deferred
-                    for node in _iter_eager_module_scope_nodes(
-                        body, context.future_annotations, consumed=True
-                    ):
-                        inspect_node(node, eager_reachable=True)
-
-    def analyse_decorator(decorator: ast.AST) -> None:
-        """Every decorator EXPRESSION is an implicit invocation at definition time.
-
-        MAJOR 1 (delta review 4962377217). The predecessor recognised only a bare ``ast.Name``
-        decorator as an implicit call, so a ``lambda`` used directly as a decorator was invoked by
-        Python while its body was pruned as deferred. Each decorator shape is handled by what
-        Python actually does with it.
-        """
-        if isinstance(decorator, ast.Lambda):
-            # Python calls it immediately; its body therefore runs during module initialization.
-            for node in _iter_eager_module_scope_nodes(
-                decorator.body, context.future_annotations, consumed=True
-            ):
-                inspect_node(node, eager_reachable=True)
-            return
-        if isinstance(decorator, ast.Call):
-            # A decorator FACTORY: the factory call is scanned by the traversal, but whatever it
-            # returns is then invoked and nothing names it.
-            offences.add(
-                "a module-scope decorator factory whose returned callable cannot be named "
-                f"({ast.dump(decorator.func, include_attributes=False)[:50]})"
+    package_cursor = 0
+    successor_cursor = 0
+    for index, region in enumerate(transition):
+        if len(region) != 6:
+            raise TransitionError(f"region {index}: expected six fields, got {len(region)}")
+        p_at, p_len, p_want, s_at, s_len, s_want = region
+        if not all(isinstance(v, int) for v in (p_at, p_len, s_at, s_len)):
+            raise TransitionError(f"region {index}: offsets and lengths must be integers")
+        if p_len < 0 or s_len < 0 or p_at < 0 or s_at < 0:
+            raise TransitionError(f"region {index}: offsets and lengths must not be negative")
+        if p_len == 0 and s_len == 0:
+            raise TransitionError(f"region {index}: declares no change on either side")
+        if p_at < package_cursor or s_at < successor_cursor:
+            raise TransitionError(
+                f"region {index}: starts at package {p_at}/successor {s_at}, which overlaps or "
+                f"precedes the previous region ending at {package_cursor}/{successor_cursor}"
             )
-            return
-        decomposed = _callee_chain(decorator)
-        if decomposed is None:
-            offences.add(
-                "a module-scope decorator that cannot be named statically "
-                f"({ast.dump(decorator, include_attributes=False)[:50]})"
+        if p_at + p_len > len(package) or s_at + s_len > len(successor):
+            raise TransitionError(f"region {index}: extends past the end of its file")
+
+        gap_package = package[package_cursor:p_at]
+        gap_successor = successor[successor_cursor:s_at]
+        if gap_package != gap_successor:
+            raise TransitionError(
+                f"the span before region {index} (package {package_cursor}:{p_at}, successor "
+                f"{successor_cursor}:{s_at}) is not byte-identical; only declared regions may differ"
             )
-            return
-        root, attributes = decomposed
-        for origin in _name_origins(root, context, frozenset()):
-            reason = _origin_is_safe_callee(origin, context, attributes)
-            if reason is not None:
-                offences.add(
-                    f"a module-scope decorator {root!r} applied implicitly, "
-                    f"which resolves to {reason}"
-                )
-            elif origin[0] == "local-definition" and not attributes:
-                analyse_definition(origin[1])
 
-    def inspect_node(inner: ast.AST, eager_reachable: bool) -> None:
-        if isinstance(inner, ast.Call):
-            _reject_call_mediated_namespace_mutation(
-                inner,
-                context,
-                offences,
-                analyse_definition if eager_reachable else (lambda _name: None),
-                analyse_consumed if eager_reachable else None,
+        got_package = sha256_bytes(package[p_at:p_at + p_len])
+        if got_package != p_want:
+            raise TransitionError(
+                f"region {index}: package bytes {p_at}:{p_at + p_len} hash {got_package}, expected "
+                f"{p_want}"
             )
-        elif isinstance(inner, (ast.For, ast.AsyncFor)) and eager_reachable:
-            # Iterating a name CONSUMES it, so a deferred value reached that way runs now.
-            analyse_consumed(inner.iter)
-        elif isinstance(inner, (ast.Global, ast.Nonlocal)):
-            offences.add(f"a {type(inner).__name__.lower()} declaration")
-        elif isinstance(inner, (ast.Attribute, ast.Subscript)) and isinstance(
-            getattr(inner, "ctx", None), (ast.Store, ast.Del)
-        ):
-            offences.add(
-                f"module-scope {type(inner).__name__.lower()} mutation "
-                f"({ast.dump(inner, include_attributes=False)[:60]})"
+        got_successor = sha256_bytes(successor[s_at:s_at + s_len])
+        if got_successor != s_want:
+            raise TransitionError(
+                f"region {index}: successor bytes {s_at}:{s_at + s_len} hash {got_successor}, "
+                f"expected {s_want}"
             )
-        elif isinstance(inner, ast.Delete):
-            for target in inner.targets:
-                for name in _target_names(target):
-                    offences.add(f"module-scope deletion of {name!r}")
-        elif isinstance(inner, ast.AugAssign):
-            for name in _target_names(inner.target):
-                offences.add(f"module-scope augmented assignment to {name!r}")
-        elif isinstance(inner, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            if eager_reachable:
-                for decorator in getattr(inner, "decorator_list", []) or []:
-                    analyse_decorator(decorator)
+        package_cursor = p_at + p_len
+        successor_cursor = s_at + s_len
 
-    for statement in tree.body:
-        reachable = not _is_main_guard(statement)
-        for inner in _iter_eager_module_scope_nodes(statement, context.future_annotations):
-            inspect_node(inner, eager_reachable=reachable)
-
-    # A global/nonlocal declaration anywhere -- including inside a function -- reaches module scope.
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.Global, ast.Nonlocal)):
-            offences.add(f"a {type(node).__name__.lower()} declaration")
-
-    if offences:
-        raise ProjectionError(
-            f"{where}: unsupported dynamic namespace mutation ({', '.join(sorted(offences))}); the "
-            "ambient surface of the outcome-producing closure cannot be established statically"
+    if package[package_cursor:] != successor[successor_cursor:]:
+        raise TransitionError(
+            "the span after the last declared region is not byte-identical; only declared regions "
+            "may differ"
         )
-
-
-def _symtable_module_globals(source: str, where: str) -> set[str]:
-    """Every module-global BINDING Python's own symbol table reports.
-
-    An INDEPENDENT completeness oracle for :func:`_module_scope_binders`, deliberately built from a
-    different mechanism -- CPython's compiler front end rather than this module's AST walk -- so a
-    binding form the walk forgets is caught by something that did not inherit the same blind spot.
-    """
-    try:
-        table = symtable.symtable(source, where, "exec")
-    except (SyntaxError, ValueError) as exc:  # pragma: no cover - parse already succeeded
-        raise ProjectionError(f"{where}: symbol table could not be built: {exc}") from exc
-    return {
-        symbol.get_name()
-        for symbol in table.get_symbols()
-        if symbol.is_assigned() or symbol.is_imported()
-    }
-
-
-def _scope_parts(scope: ast.AST) -> list[ast.AST]:
-    """The sub-expressions and statements that execute INSIDE one scope."""
-    if isinstance(scope, ast.Lambda):
-        return [scope.body]
-    if isinstance(scope, (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.DictComp)):
-        parts: list[ast.AST] = (
-            [scope.key, scope.value] if isinstance(scope, ast.DictComp) else [scope.elt]
-        )
-        for generator in scope.generators:
-            parts.append(generator.iter)
-            parts.extend(generator.ifs)
-        return parts
-    return list(scope.body)
-
-
-def _outer_parts(scope: ast.AST) -> list[ast.AST]:
-    """Sub-expressions of a scope NODE that evaluate in the ENCLOSING scope, not inside it."""
-    parts: list[ast.AST] = list(getattr(scope, "decorator_list", []) or [])
-    if isinstance(scope, ast.ClassDef):
-        parts.extend(scope.bases)
-        parts.extend(keyword.value for keyword in scope.keywords)
-        return parts
-    arguments = getattr(scope, "args", None)
-    if arguments is not None:
-        parts.extend(default for default in arguments.defaults if default is not None)
-        parts.extend(default for default in arguments.kw_defaults if default is not None)
-        for argument in (
-            *arguments.posonlyargs,
-            *arguments.args,
-            *arguments.kwonlyargs,
-            arguments.vararg,
-            arguments.kwarg,
-        ):
-            if argument is not None and argument.annotation is not None:
-                parts.append(argument.annotation)
-    if getattr(scope, "returns", None) is not None:
-        parts.append(scope.returns)
-    return parts
-
-
-def _scope_local_bindings(scope: ast.AST) -> set[str]:
-    """Names bound DIRECTLY in one scope, not descending into scopes nested inside it."""
-    bound: set[str] = set()
-
-    if isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
-        arguments = scope.args
-        for argument in (*arguments.posonlyargs, *arguments.args, *arguments.kwonlyargs):
-            bound.add(argument.arg)
-        if arguments.vararg:
-            bound.add(arguments.vararg.arg)
-        if arguments.kwarg:
-            bound.add(arguments.kwarg.arg)
-
-    if isinstance(scope, (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)):
-        for generator in scope.generators:
-            for inner in ast.walk(generator.target):
-                if isinstance(inner, ast.Name):
-                    bound.add(inner.id)
-
-    stack: list[ast.AST] = list(_scope_parts(scope))
-    while stack:
-        node = stack.pop()
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            bound.add(node.name)
-            continue
-        if isinstance(node, _SCOPE_NODES):
-            continue
-        if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
-            bound.add(node.id)
-        elif isinstance(node, (ast.Import, ast.ImportFrom)):
-            for alias in node.names:
-                bound.add(alias.asname or alias.name.split(".")[0])
-        elif isinstance(node, ast.ExceptHandler) and node.name:
-            bound.add(node.name)
-        stack.extend(ast.iter_child_nodes(node))
-    return bound
-
-
-def _free_names_of(node: ast.AST) -> set[str]:
-    """Names a top-level definition resolves through the MODULE namespace when it executes.
-
-    Scope-aware: parameters, local assignments, comprehension targets, ``except ... as`` names,
-    nested definitions, and function-local imports are all bound and therefore NOT free. Class-body
-    bindings deliberately do not propagate into methods, matching Python's actual scoping, so a
-    method reading a module-level name of the same name is still reported. Decorators, default
-    values, annotations, and class bases are analysed in the enclosing scope, where they execute.
-
-    Errs toward reporting a name rather than omitting it. Every reported name must then resolve to a
-    top-level symbol, a module-level import binding, a builtin, or an interpreter-supplied module
-    attribute; anything else fails closed rather than being assumed harmless.
-    """
-    free: set[str] = set()
-
-    def enter(scope: ast.AST, enclosing: frozenset[str]) -> None:
-        local = _scope_local_bindings(scope)
-        visible = frozenset(enclosing | local)
-        # A class body does not extend the scope chain of functions nested inside it.
-        nested = enclosing if isinstance(scope, ast.ClassDef) else visible
-        for part in _scope_parts(scope):
-            walk(part, visible, nested)
-
-    def walk(current: ast.AST, visible: frozenset[str], nested: frozenset[str]) -> None:
-        if isinstance(current, ast.Name):
-            if isinstance(current.ctx, ast.Load) and current.id not in visible:
-                free.add(current.id)
-            return
-        if isinstance(current, _SCOPE_NODES):
-            for part in _outer_parts(current):
-                walk(part, visible, nested)
-            enter(current, nested)
-            return
-        for child in ast.iter_child_nodes(current):
-            walk(child, visible, nested)
-
-    walk(node, frozenset(), frozenset())
-    return free
-
-
-def project_outcome_producing_surface(
-    source: str,
-    seeds: Sequence[str] = OUTCOME_PRODUCING_PROJECTION_SEEDS,
-    where: str = OUTCOME_PRODUCING_DERIVATION_RELPATH,
-) -> str:
-    """Deterministically project the TRANSITIVE outcome-producing surface of a module's source.
-
-    MAJOR 1 (review 4955010993). Takes SOURCE TEXT rather than an imported module precisely so the
-    same projection can be computed for an arbitrary git blob -- the accepted package's reviewed
-    head, the package's merge, the successor's reviewed head, the successor's merge, and the working
-    tree -- and compared. An imported module could only ever describe the working tree.
-
-    The projection is the transitive closure of ``seeds`` over the module's own top-level symbols:
-    every function, constant, vocabulary, and ordering dependency reachable from the symbols the
-    runner and result validator actually consume. Serialization is sorted by symbol name and uses
-    location-free ``ast.dump``, so reordering definitions or reflowing whitespace does not change
-    identity while any change to a value, branch, comparison, or ordering does.
-
-    The projection ALSO includes the AMBIENT surface: for every name the closure resolves through
-    the module namespace rather than its own top-level symbols, the projection records what that
-    name is bound to -- a module-level import binding, rendered from AST fields, or the builtin it
-    falls through to. MAJOR 1 (delta review 4955476669) demonstrated why this is not optional:
-    ``from builtins import min as any`` leaves every projected AST byte-for-byte identical while
-    turning one categorical FAIL from BLOCKED_CATEGORICALLY into CONSTRUCTIBLE_CANDIDATE_IDENTIFIED.
-    An import the closure never references is NOT included, so authorization-only edits outside the
-    outcome-producing surface -- including new imports serving them -- remain lawful.
-
-    FAILS CLOSED, raising :class:`ProjectionError`, on: unparseable source; a seed that is missing or
-    was renamed; a top-level symbol defined more than once; a star import; a name the closure
-    resolves that is bound by more than one module-scope binder; a projected symbol conditionally
-    rebound in module scope; a module-global binding Python's own symbol table reports that the
-    binder model does not represent; unsupported dynamic namespace mutation (``exec``, ``eval``, ``globals``,
-    ``vars``, ``setattr``, ``delattr``, ``global``/``nonlocal``, module-level augmented assignment or
-    deletion); a referenced name that resolves to nothing this analysis can name; or a serialization
-    that cannot be produced. It never returns a partial or best-effort surface.
-
-    Determinism boundary, stated rather than overclaimed: ``ast.dump``'s exact text is stable for a
-    given interpreter, not guaranteed identical across Python versions. That is sufficient and is
-    what the caller needs, because every projection compared here is computed by ONE interpreter in
-    ONE validation pass; the value is never persisted or compared across processes.
-    """
-    if not seeds:
-        raise ProjectionError(f"{where}: the outcome-producing seed set is empty")
-
-    # Parsed and docstring-stripped exactly ONCE. Re-parsing per symbol was correct but quadratic
-    # over a four-thousand-line module, and this function runs five times per validation.
-    try:
-        tree = ast.parse(source)
-    except SyntaxError as exc:
-        raise ProjectionError(f"{where}: source does not parse: {exc}") from exc
-    _strip_docstrings(tree)
-
-    binders = _module_scope_binders(tree, where)
-    _reject_dynamic_namespace_mutation(tree, where, _build_module_scope_context(tree))
-    table = _top_level_symbol_table(tree, where)
-
-    # INDEPENDENT completeness oracle. Every module-global binding CPython's own symbol table
-    # reports must be represented by the binder model; a form the AST walk forgot fails closed here
-    # rather than falling silently through to a builtin.
-    unmodelled = sorted(_symtable_module_globals(source, where) - set(binders) - set(table))
-    if unmodelled:
-        raise ProjectionError(
-            f"{where}: Python's symbol table reports module-global binding(s) {unmodelled!r} that "
-            "the module-scope binder model does not represent; the ambient surface cannot be "
-            "established"
-        )
-
-    missing = [name for name in seeds if name not in table]
-    if missing:
-        raise ProjectionError(
-            f"{where}: outcome-producing seed symbol(s) {sorted(missing)!r} are absent or renamed; "
-            "the surface cannot be projected"
-        )
-
-    # Transitive closure over the module's OWN top-level names. A referenced name that is NOT a
-    # top-level symbol is resolved separately, below, as part of the ambient surface -- it is not
-    # assumed out of scope, which was exactly the MAJOR 1 defect.
-    closure: set[str] = set()
-    stack = list(seeds)
-    while stack:
-        name = stack.pop()
-        if name in closure:
-            continue
-        closure.add(name)
-        for sub in ast.walk(table[name]):
-            if isinstance(sub, ast.Name) and sub.id in table and sub.id not in closure:
-                stack.append(sub.id)
-
-    parts: list[str] = []
-    for name in sorted(closure):
-        try:
-            rendered = ast.dump(table[name], include_attributes=False)
-        except Exception as exc:  # pragma: no cover - defensive
-            raise ProjectionError(f"{where}: {name!r} could not be serialized: {exc}") from exc
-        parts.append(f"{name}::{rendered}")
-
-    referenced: set[str] = set()
-    for name in closure:
-        referenced |= _free_names_of(table[name])
-
-    # A projected symbol that is ALSO rebound elsewhere in module scope is order-dependent: which
-    # definition the closure actually runs cannot be decided statically.
-    rebound = sorted(
-        name
-        for name in closure
-        if len({record for record in binders.get(name, ()) if "@direct::" not in record}) > 0
-    )
-    if rebound:
-        raise ProjectionError(
-            f"{where}: projected symbol(s) {rebound!r} are also bound by a conditional or nested "
-            "module-scope binder, so which definition the outcome-producing closure runs is "
-            "order-dependent and cannot be projected"
-        )
-
-    ambient_parts: list[str] = []
-    unresolved: list[str] = []
-    ambiguous: list[str] = []
-    for name in sorted(referenced - set(table)):
-        if name in binders:
-            records = binders[name]
-            if len(set(records)) != 1:
-                ambiguous.append(name)
-                continue
-            ambient_parts.append(f"@ambient::{name}::bound::{records[0]}")
-        elif hasattr(builtins, name):
-            ambient_parts.append(f"@ambient::{name}::builtin")
-        elif name in _MODULE_DUNDERS:
-            ambient_parts.append(f"@ambient::{name}::module-attribute")
-        else:
-            unresolved.append(name)
-    if ambiguous:
-        raise ProjectionError(
-            f"{where}: the outcome-producing closure resolves {sorted(ambiguous)!r} through a "
-            "module-scope name bound by more than one binder, so what it means is "
-            "resolution-order-dependent and cannot be projected"
-        )
-    if unresolved:
-        raise ProjectionError(
-            f"{where}: the outcome-producing closure references {sorted(unresolved)!r}, which "
-            "resolve to neither a top-level symbol, a module-level import binding, a builtin, nor "
-            "an interpreter-supplied module attribute; the surface cannot be projected"
-        )
-
-    return "\n".join(ambient_parts + parts)
-
-
-def outcome_producing_projection_digest(
-    source: str,
-    seeds: Sequence[str] = OUTCOME_PRODUCING_PROJECTION_SEEDS,
-    where: str = OUTCOME_PRODUCING_DERIVATION_RELPATH,
-) -> str:
-    """SHA-256 of the projection, so anchors are compared by one short deterministic value."""
-    return sha256_bytes(project_outcome_producing_surface(source, seeds, where).encode("utf-8"))
+    if package_cursor + len(package[package_cursor:]) != len(package):  # pragma: no cover
+        raise TransitionError("package blob was not consumed completely")
+    if successor_cursor + len(successor[successor_cursor:]) != len(successor):  # pragma: no cover
+        raise TransitionError("successor blob was not consumed completely")
 
 
 def _reject_duplicate_keys(pairs: Sequence[tuple[str, Any]]) -> dict[str, Any]:
@@ -2675,23 +1478,29 @@ def _verify_successor_rebinding_identity(
             )
 
     # --- MAJOR 1: the TRANSITIVE surface, projected rather than byte-compared -----------------
-    errors.extend(_verify_outcome_producing_projection(document, merge_sha, sources))
+    errors.extend(_verify_outcome_producing_transition(document, merge_sha, sources))
     return errors
 
 
-def _verify_outcome_producing_projection(
+def _verify_outcome_producing_transition(
     document: Mapping[str, Any], merge_sha: Any, sources: TruthSources
 ) -> list[str]:
-    """MAJOR 1 (review 4955010993): bind the imported derivation surface, not just the two files.
+    """Prove the derivation module's EXACT package-to-successor transition across five anchors.
 
     The runner and result validator import their disposition, cell-outcome, roll-up, ``G2``-reading
-    and vocabulary decisions from ``level1_endpoint_evidence_preregistration_validator.py``. Byte
-    equality is the wrong instrument there -- this rebinding must lawfully change that file's
-    AUTHORIZATION-ONLY code -- so what is compared is a deterministic semantic projection of exactly
-    the outcome-determining symbols, across the same five anchors the byte checks use.
+    and vocabulary decisions from ``level1_endpoint_evidence_preregistration_validator.py``. Whole-
+    file equality with the package is the wrong instrument -- this rebinding must lawfully change
+    that file's authorization-only code -- and a semantic projection of it was found nonconvergent
+    (review 4963386313). What is enforced instead is finite and decidable:
 
-    Fails closed on any anchor whose source is missing, unparseable, renamed, duplicated, or
-    unprojectable. It never treats an unobtainable anchor as agreement.
+    * the two PACKAGE anchors must carry the exact accepted package blob;
+    * the successor reviewed head, the successor merge, and the working tree must carry the exact
+      successor blob;
+    * and the package blob must have become the successor blob through EXACTLY the reviewed closed
+      transition -- see :func:`verify_exact_transition`.
+
+    Fails closed on any anchor whose blob is missing or undecodable. It never treats an unobtainable
+    anchor as agreement.
     """
     errors: list[str] = []
     relative = OUTCOME_PRODUCING_DERIVATION_RELPATH
@@ -2702,47 +1511,87 @@ def _verify_outcome_producing_projection(
             "not load-bearing"
         )
 
-    anchors: dict[str, str] = {
+    def blob_at(commit: str, label: str) -> bytes | None:
+        text = sources.git.blob_text_at(commit, relative)
+        if text is None:
+            errors.append(
+                f"git truth: {relative} could not be read at the {label} {commit}; the exact "
+                "package-to-successor transition cannot be proven, so this fails closed"
+            )
+            return None
+        return text.encode("utf-8")
+
+    package_anchors = {
         "executable-package accepted head": EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
         "executable-package merge": EXECUTABLE_PACKAGE_MERGE_SHA,
     }
+    successor_anchors: dict[str, str] = {}
     accepted_head = document.get("authorization_head")
     if _is_commit_sha(accepted_head):
-        anchors["successor reviewed head"] = str(accepted_head)
+        successor_anchors["successor reviewed head"] = str(accepted_head)
     if _is_commit_sha(merge_sha):
-        anchors["successor merge"] = str(merge_sha)
+        successor_anchors["successor merge"] = str(merge_sha)
 
-    digests: dict[str, str] = {}
-    for label, commit in anchors.items():
-        source = sources.git.blob_text_at(commit, relative)
-        if source is None:
+    package_bytes: bytes | None = None
+    for label, commit in package_anchors.items():
+        blob = blob_at(commit, label)
+        if blob is None:
+            continue
+        digest = sha256_bytes(blob)
+        if digest != OUTCOME_PRODUCING_PACKAGE_SHA256:
             errors.append(
-                f"git truth: {relative} could not be read at the {label} {commit}; the "
-                "outcome-producing derivation surface cannot be projected, so this fails closed"
+                f"{relative} at the {label} {commit} hashes {digest}, but the accepted executable "
+                f"package is {OUTCOME_PRODUCING_PACKAGE_SHA256}; the transition's starting bytes "
+                "are not the reviewed ones"
             )
             continue
-        try:
-            digests[label] = outcome_producing_projection_digest(source)
-        except ProjectionError as exc:
-            errors.append(f"outcome-producing projection failed at the {label} {commit}: {exc}")
+        package_bytes = blob
+
+    successor_bytes: bytes | None = None
+    for label, commit in successor_anchors.items():
+        blob = blob_at(commit, label)
+        if blob is None:
+            continue
+        digest = sha256_bytes(blob)
+        if digest != OUTCOME_PRODUCING_SUCCESSOR_SHA256:
+            errors.append(
+                f"{relative} at the {label} {commit} hashes {digest}, but the reviewed successor "
+                f"bytes are {OUTCOME_PRODUCING_SUCCESSOR_SHA256}"
+            )
+            continue
+        successor_bytes = blob
 
     working_path = ROOT / relative
     if not working_path.exists():
         errors.append(f"{relative}: absent from the working tree")
     else:
         try:
-            digests["working tree"] = outcome_producing_projection_digest(
-                working_path.read_text(encoding="utf-8")
-            )
-        except (ProjectionError, OSError, UnicodeDecodeError) as exc:
-            errors.append(f"outcome-producing projection failed in the working tree: {exc}")
+            working = working_path.read_bytes()
+        except OSError as exc:  # pragma: no cover - defensive
+            errors.append(f"{relative}: unreadable in the working tree: {exc}")
+        else:
+            digest = sha256_bytes(working)
+            if digest != OUTCOME_PRODUCING_SUCCESSOR_SHA256:
+                errors.append(
+                    f"{relative} in the working tree hashes {digest}, but the reviewed successor "
+                    f"bytes are {OUTCOME_PRODUCING_SUCCESSOR_SHA256}"
+                )
+            else:
+                successor_bytes = working
 
-    if len(set(digests.values())) > 1:
+    if package_bytes is None or successor_bytes is None:
+        if not errors:  # pragma: no cover - defensive
+            errors.append(
+                f"{relative}: the exact package-to-successor transition could not be established"
+            )
+        return errors
+
+    try:
+        verify_exact_transition(package_bytes, successor_bytes)
+    except TransitionError as exc:
         errors.append(
-            f"outcome-producing projection drift: {relative}'s outcome-determining surface is not "
-            f"identical across the accepted executable package and this rebinding ({digests!r}); "
-            "SS-G.B forbids changing code that decides or orders the 680 outcomes inside the "
-            "rebinding that binds it"
+            f"{relative}: the accepted package bytes did not become the reviewed successor bytes "
+            f"through the reviewed transition ({exc})"
         )
     return errors
 

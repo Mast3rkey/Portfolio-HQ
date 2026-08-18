@@ -14486,6 +14486,95 @@ workstreams:
           or 11, attestation, lane state, ATTEMPT_1 or XASSET-0027 SS-P.1 consumption occurred.
           Stage 1 remains UNARMED and NOT EXECUTABLE. The corrected head requires a further
           independent exact-head DELTA review from 696795742f228a1f0ec566bacc9b34e0c02a5a30.
+          ARCHITECTURAL CORRECTION after independent exact-head DELTA review 4963386313 at head
+          a79f9611af6704cb2989dc699c1a1e374e9720a0 (CHANGES REQUIRED - 0 BLOCKING / 3 MAJOR /
+          0 MINOR / 0 NOTE). That review reported three further ways import-time execution crosses
+          the semantic projection unchanged: deferred iterables and callbacks reached through
+          containers, call results and higher-order builtins; attributed local-class members and
+          decorators accepted without member-body analysis; and class-CREATION hooks such as
+          __init_subclass__, which run with no explicit call at all. THE THREE FINDINGS WERE TREATED
+          AS EVIDENCE OF AN ARCHITECTURAL DEFECT, NOT AS THREE MORE DEFECTS TO PATCH. Four
+          consecutive independent reviews had closed SIXTEEN distinct bypass forms and each
+          correction produced new ones, because answering 'did the outcome surface change' from
+          source text alone requires deciding arbitrary Python runtime behaviour statically -
+          reachability, aliasing, callbacks, descriptors, decorators, class construction AND class
+          creation, namespace effects, metaclasses and deferred execution - which is UNDECIDABLE,
+          not merely unimplemented. Extending the callable lists or adding three more AST cases
+          would have produced review eight. THE SEMANTIC PROJECTION IS RETIRED AND REPLACED BY A
+          CLOSED EXACT TRANSITION PROOF whose proposition is finite: these exact accepted package
+          bytes became these exact successor bytes through only this exact reviewed transition.
+          IDENTITIES INDEPENDENTLY RECOMPUTED FROM THE GIT OBJECT STORE rather than accepted from
+          any prior statement: package accepted head 07519f864c869d98aaf4a65cea53e85086a99fec;
+          package merge / successor base 3e5de8f85c69c2e5dc2b75421446b5db996d7cf1; package blob
+          840b558b9923b9a6fa480146a192ce0cb92b81de71448bf2c9896ee9225883b7 at 147,967 bytes,
+          IDENTICAL at both package anchors; successor blob
+          2b8ead2b0d661ddd14fa6019ee1802fe49900a214ec443228636701edeb3d356 at 161,232 bytes;
+          transition 17 ordered replacement regions, +308/-21 lines, 1,181 -> 14,446 bytes. DESIGN:
+          OUTCOME_PRODUCING_TRANSITION is a frozen constant of 17 tuples (package_offset,
+          package_length, package_sha256, successor_offset, successor_length, successor_sha256)
+          ordered by package offset, and verify_exact_transition enforces, in order, that both blobs
+          carry their pinned lengths and pinned whole-blob digests; that the manifest is ordered,
+          non-overlapping in BOTH files, in-bounds, and declares no region empty on both sides; that
+          every span BETWEEN declared regions, and before the first and after the last, is
+          byte-identical; that every region carries exactly its declared package bytes and exactly
+          its declared successor bytes; and that both files are consumed COMPLETELY.
+          _verify_outcome_producing_transition applies this across the same five anchors the byte
+          checks already used, failing closed on any anchor whose blob is missing or undecodable.
+          THE AUTHORIZATION BOUNDARY IS BYTES: no AST interpretation, no import or execution of the
+          audited module, no eval, no difflib and no version-dependent diff algorithm participates,
+          so the answer does not vary with interpreter version, library version, or anyone's ability
+          to model Python's runtime. NO SECOND AUTHORIZATION PATH WAS LEFT STANDING - the projection
+          subsystem was REMOVED, not disabled: ProjectionError,
+          OUTCOME_PRODUCING_PROJECTION_SEEDS, project_outcome_producing_surface,
+          outcome_producing_projection_digest, _verify_outcome_producing_projection, the
+          module-scope binder model and its symtable oracle, alias/origin inference, the
+          eager-execution traversal, the decorator and constructor analyses and every safe-call
+          catalogue, 1,420 lines in total, together with the now-dead ast and symtable imports; a
+          test asserts each retired symbol is absent and another asserts the authorization module no
+          longer imports ast, symtable or difflib and never calls eval, exec, compile or __import__.
+          SCOPE CONFIRMED, NO BLOCKER: all 17 regions were independently inspected and are confined
+          to XASSET-0037 lifecycle constants, pin succession, canonical validation and
+          successor-rebinding validation, and all 26 symbols the runner and result validator import
+          are STRUCTURALLY IDENTICAL across the package and successor blobs, verified from the
+          CONSUMERS' own source so no declaration is its own oracle;
+          level1_endpoint_evidence_preregistration_validator.py remains exactly at
+          2b8ead2b...d356 and level1_stage1_runner.py and level1_stage1_result_validator.py are
+          untouched and still byte-compared across all five anchors. TEST REPLACEMENT STATED AS AN
+          EXACT EXCHANGE: seven projection-mechanism classes removed - 122 test definitions, 340
+          collected cases - replaced by 33 definitions and 95 collected cases of exact-transition
+          coverage, with every removed category mapped to its replacement in the decision record;
+          the suite is STRICTER AND SIMPLER, with no skips, no xfails and no weakened assertion. All
+          17 bypass families from every prior review, including the three newest, are pinned TWICE
+          each - through verify_exact_transition and through the real public authorization validator
+          at both anchor arrangements - as ORDINARY UNAUTHORIZED BYTE CHANGES requiring no analyser.
+          Disposable subprocess demonstrations that representative mutations really would flip a
+          disposition are retained as EVIDENCE ONLY, never part of the authorization proof and never
+          touching the real lane. Every one of the ten verifier components is independently
+          mutation-pinned, with the two mutually reinforcing whole-blob digest checks mutated as the
+          pair they are, and TWO TESTS WERE CORRECTED after mutation testing showed an earlier check
+          was masking the one they claimed to cover. NO CANONICAL BYTE CHANGED, so the V7 pins are
+          again re-verified rather than recomputed; the frozen universe stays 680 / 48 /
+          73c0965e...5224; LOAD_BEARING_RELPATHS stays 10; the four-way identity separation,
+          B1/B2/B3, gate semantics, construction identities, dispositions, XASSET-0024 SS-K.1 and
+          XASSET-0020 SS-E.1 are untouched; no accepted decision file was edited and no protected
+          portfolio path changed; and no SS-G.B step 9, 10 or 11, attestation, lane state, ATTEMPT_1
+          or XASSET-0027 SS-P.1 consumption occurred. Stage 1 remains UNARMED and NOT EXECUTABLE.
+          ONE DISCLOSED SCOPE DEVIATION: the correction was scoped to four files and a FIFTH was
+          genuinely required - test_level1_stage1_execution_authorization.py's stand-in git source
+          served the SUCCESSOR blob at ALL FOUR anchors, and its own comment called that 'the true
+          posture'; under a projection it was, because the projection was identical at both sides,
+          but under an exact transition it is false, since the package anchors really do hold
+          840b558b...883b7 rather than 2b8ead2b...d356, and the new mechanism correctly refused the
+          impossible world the fixture described. The fixture now serves each anchor what the git
+          object store actually holds. It is a TEST FIXTURE ONLY - not outcome-producing code, not a
+          canonical or universe artifact, not a protected portfolio path, not on the prohibited-edit
+          list - and it grants no authority; change size +22/-12.
+          THE NEXT REVIEW MUST BE A NEW INDEPENDENT FULL EXACT-HEAD REVIEW, NOT A DELTA: the
+          authorization mechanism for the transitive outcome-producing surface has been REPLACED,
+          1,420 lines of the previously reviewed enforcement path have been deleted, and the
+          security argument has changed from inferred semantic equivalence to exact reviewed byte
+          identity plus an exact closed transition, so a delta anchored on the prior head would
+          inspect a diff against a mechanism that no longer exists.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

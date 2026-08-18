@@ -134,18 +134,20 @@ the local git object store rather than declared:
 6. the **outcome-producing bytes** — `level1_stage1_runner.py` and
    `level1_stage1_result_validator.py` — are byte-identical at the package's reviewed head, the
    package's merge, the successor's reviewed head, the successor's merge, **and** the working tree;
-7. the **transitive outcome-producing surface** — the derivation symbols those two modules import
-   from `level1_endpoint_evidence_preregistration_validator.py` — projects identically at the same
-   five anchors (§D.1, added by the bounded correction below).
+7. the **transitive outcome-producing surface** — `level1_endpoint_evidence_preregistration_validator.py`,
+   which those two modules import to decide and order outcomes — carries the **exact accepted package
+   bytes** at both package anchors, the **exact reviewed successor bytes** at the successor's reviewed
+   head, the successor's merge, and the working tree, and the first became the second through
+   **exactly one closed, reviewed transition** (§D.1).
 
 Points 6 and 7 are §G.B's own invariant, mechanised: *no outcome-producing executable code may be
 created, changed, or left outside the bound execution identity after the final rebinding and before
 `ATTEMPT_1`.* A silent runner edit — or a silent edit to the code the runner imports to decide and
 order outcomes — smuggled into the rebinding that binds it **fails closed**. Neither outcome-producing
-module is modified by this unit, and the projected derivation surface is identical to the accepted
-PR #336 package.
+module is modified by this unit, and the derivation module's transition from the accepted PR #336
+package is exactly the reviewed one, byte for byte.
 
-#### D.1 — The transitive surface, and why it is projected rather than byte-compared
+#### D.1 — The transitive surface, bound by an exact closed transition
 
 Both outcome-producing modules `import level1_endpoint_evidence_preregistration_validator as PV` and
 call its `generate_cell_universe`, `derive_candidate_disposition`, `derive_cell_outcome`,
@@ -153,32 +155,45 @@ call its `generate_cell_universe`, `derive_candidate_disposition`, `derive_cell_
 disposition, and reading vocabularies. That module therefore *decides and orders* the 680 outcomes
 and sits squarely inside §G.B's definition.
 
-Whole-file equality is the wrong instrument for it: the same file also carries the canonical
-lifecycle constants, the pin-succession checks, and the rebinding-block validator — **authorization-only
-code this rebinding must lawfully change**. Requiring byte equality against the package would make a
-lawful rebinding impossible. What is bound instead is a deterministic **semantic projection**:
+**Whole-file equality against the package is the wrong instrument** for it: the same file also
+carries the canonical lifecycle constants, the pin-succession checks, and the rebinding-block
+validator — *authorization-only code this rebinding must lawfully change*. Requiring byte equality
+with the package would make a lawful rebinding impossible.
 
-- **Seeds** — the exact 18 top-level symbols the two consumers actually access, declared in
-  `OUTCOME_PRODUCING_PROJECTION_SEEDS` and independently re-derived from the consumers' own source by
-  the test suite, so the production tuple is never its own oracle.
-- **Closure** — the transitive closure of those seeds over the module's own top-level symbols: 26 in
-  total, reaching dependencies such as `CANDIDATE_DISPOSITIONS`, `CELL_OUTCOMES`, `cell_id_of`,
-  `map_g2_reading`, and `generate_family_slot_grid` that no seed names directly.
-- **Serialization** — sorted by symbol, location-free `ast.dump`. Reordering definitions or reflowing
-  whitespace does not change identity; any change to a value, branch, comparison, or ordering does.
-- **Docstrings excluded** — deliberate, narrow, and disclosed: prose cannot decide, order, serialize,
-  write, or materially alter an outcome, so a docstring edit is not an outcome-semantics change. Tested
-  in **both** directions.
-- **Fail-closed** — unparseable source, a missing or renamed seed, a duplicated top-level symbol, an
-  unreadable anchor, or an unserializable node each raise rather than yielding a partial surface.
-- **Precision as well as sensitivity** — an edit to a real top-level constant *outside* the closure
-  (`FAILURE_DISPOSITIONS`) correctly does **not** fire. A projection that fired on it would be byte
-  equality under another name.
+**A semantic projection was the wrong instrument too, and was retired** (architectural correction,
+review `4963386313`; see the section at the end of this record). What is bound instead is a finite,
+decidable proposition:
 
-Determinism boundary, stated rather than overclaimed: `ast.dump`'s exact text is stable for a given
-interpreter, not guaranteed identical across Python versions. That is sufficient, because every
-projection compared here is computed by one interpreter in one validation pass and is never persisted
-or compared across processes.
+> these exact accepted package bytes became these exact successor bytes through only this exact
+> reviewed transition.
+
+- **Both complete blobs are pinned.** The accepted executable package is
+  `840b558b9923b9a6fa480146a192ce0cb92b81de71448bf2c9896ee9225883b7` (147,967 bytes), carried
+  identically at PR #336's accepted head `07519f86…` and its merge `3e5de8f8…`. The reviewed
+  successor is `2b8ead2b0d661ddd14fa6019ee1802fe49900a214ec443228636701edeb3d356` (161,232 bytes),
+  required at the successor's reviewed head, the successor's merge, and the working tree.
+- **The transition between them is a closed, ordered manifest** of **17** replacement regions, each
+  recording exact package and successor byte offsets, exact lengths, and the SHA-256 identity of the
+  bytes it replaces and the bytes it installs. Total replaced: 1,181 package bytes → 14,446 successor
+  bytes.
+- **Everything outside a declared region must be byte-identical**, both files must be consumed
+  completely, and no gap, overlap, duplicate, reordering, resizing, addition, or removal is
+  tolerated. A change *inside* a declared region that is not exactly the authorized successor bytes
+  fails closed just as a change outside one does.
+- **The authorization boundary is bytes.** No AST interpretation, no import or execution of the
+  audited module, no `eval`, no `difflib`, and no version-dependent diff algorithm participates. The
+  manifest is a frozen constant and is verified by comparison only — so the answer does not vary with
+  interpreter version, library version, or anyone's ability to model Python's runtime.
+- **What the 17 regions contain**, verified rather than asserted: every one is confined to XASSET-0037
+  lifecycle constants, pin succession, canonical validation, or successor-rebinding validation. All
+  **26** symbols the runner and result validator import are structurally identical across the two
+  blobs. That check lives in the test suite, derived from the *consumers'* own source, and is
+  **evidence about what the reviewed bytes mean — not the authorization**, which remains byte-exact.
+
+**Honest scope.** This does not prove Python semantic equivalence and does not claim to. It proves
+exact reviewed byte identity plus an exact closed transition. What the reviewed transition *means*
+was settled by review, not by a parser — which is the correct division of labour, and the one the
+retired projection got wrong.
 
 ### E. The trust boundary grows, and nothing is removed
 
@@ -1095,3 +1110,152 @@ consumed.
 
 **Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires a further independent
 exact-head **DELTA** review from `696795742f228a1f0ec566bacc9b34e0c02a5a30`.
+
+## Architectural correction — independent exact-head DELTA review `4963386313`
+
+The delta review of `a79f9611af6704cb2989dc699c1a1e374e9720a0` returned **CHANGES REQUIRED — 0
+BLOCKING / 3 MAJOR / 0 MINOR / 0 NOTE**, reporting three further ways import-time execution crosses
+the semantic projection unchanged: deferred iterables and callbacks reached through containers, call
+results, and higher-order builtins; attributed local-class members and decorators accepted without
+member-body analysis; and class-*creation* hooks such as `__init_subclass__`, which run with no
+explicit call at all.
+
+**Every prior correction in this record above is preserved verbatim.** Nothing in the audit trail is
+erased or rewritten: each of those corrections was a faithful fix to the defect it was given, and
+each was independently verified. What changed is the conclusion drawn from the *sequence* of them.
+
+### Why correction-by-example could not converge
+
+Four consecutive independent reviews closed **sixteen** distinct bypass forms, and each correction
+produced new ones:
+
+| Review | Forms closed | What the analysis had to decide |
+|---|---|---|
+| `4955476669` | ambient bindings | free-name resolution across scopes |
+| `4957056810` | conditional import, destructuring | complete module-scope binder discovery |
+| `4958940810` | call-mediated namespace mutation | which calls reach a namespace |
+| `4960897843` | definition-time/class-body code, imported and call-returned callables | eager-vs-deferred execution, alias resolution |
+| `4961431702` | aliased consumption, lambda decorators, constructor execution, control-dependent definitions | value flow and call semantics |
+| `4962377217` | containers, selections, unlisted imported callables | namespace taint propagation |
+| `4963386313` | containers/call-results/higher-order builtins, attributed class members, class-creation hooks | **still more of the same** |
+
+The pattern is not a run of implementation misses. To answer *"did the outcome surface change"* from
+source text alone, the projection had to decide arbitrary Python runtime behaviour statically:
+reachability, aliasing, callbacks, descriptors, decorators, class construction *and* class creation,
+namespace effects, metaclasses, and deferred execution. That question is **undecidable**, not merely
+unimplemented. An adversary may write any Python; a static analyser must model all of it. Each fix
+narrowed the gap without closing the class, because the class has no finite boundary.
+
+The three findings in review `4963386313` are therefore treated as **evidence of an architectural
+defect**, not as three more defects to patch. Extending the positive/negative callable lists or
+adding three more AST cases would have produced review eight.
+
+### What replaces it
+
+A **closed exact transition proof**, and nothing else. The proposition is finite:
+
+> these exact accepted package bytes became these exact successor bytes through only this exact
+> reviewed transition.
+
+**Identities, independently recomputed from the git object store rather than accepted from any
+prior statement:**
+
+| Fact | Value |
+|---|---|
+| Package accepted head | `07519f864c869d98aaf4a65cea53e85086a99fec` |
+| Package merge / successor base | `3e5de8f85c69c2e5dc2b75421446b5db996d7cf1` |
+| Package blob, **identical at both anchors** | `840b558b9923b9a6fa480146a192ce0cb92b81de71448bf2c9896ee9225883b7`, 147,967 bytes |
+| Successor blob | `2b8ead2b0d661ddd14fa6019ee1802fe49900a214ec443228636701edeb3d356`, 161,232 bytes |
+| Transition | **17** ordered replacement regions, +308 / −21 lines, 1,181 → 14,446 bytes |
+
+**Design.** `OUTCOME_PRODUCING_TRANSITION` is a frozen constant of 17 tuples
+`(package_offset, package_length, package_sha256, successor_offset, successor_length,
+successor_sha256)`, ordered by package offset. `verify_exact_transition` enforces, in order: both
+blobs carry their pinned lengths and pinned whole-blob digests; the manifest is ordered,
+non-overlapping in both files, in-bounds, and declares no region empty on both sides; every span
+*between* declared regions — and before the first and after the last — is byte-identical; every
+region carries exactly its declared package bytes and exactly its declared successor bytes; and both
+files are consumed completely. `_verify_outcome_producing_transition` applies this across the same
+five anchors the byte checks already used, failing closed on any anchor whose blob is missing or
+undecodable.
+
+**No second authorization path was left standing.** The projection subsystem was removed, not
+disabled: `ProjectionError`, `OUTCOME_PRODUCING_PROJECTION_SEEDS`,
+`project_outcome_producing_surface`, `outcome_producing_projection_digest`,
+`_verify_outcome_producing_projection`, the module-scope binder model and its `symtable` oracle,
+alias/origin inference, the eager-execution traversal, the decorator and constructor analyses, and
+every safe-call catalogue — **1,420 lines**, together with the now-dead `ast` and `symtable`
+imports. A test asserts each retired symbol is absent, and another asserts the authorization module
+no longer imports `ast`, `symtable`, or `difflib` and never calls `eval`, `exec`, `compile`, or
+`__import__`.
+
+### Why this is an exact authorized equivalent under `XASSET-0036` §E.5–E.6
+
+§E.5 requires the outcome-producing surface bound to the accepted package to be exactly what review
+accepted; §E.6 requires any difference to be exactly the reviewed one. The retired projection
+attempted to satisfy both by *inferring* semantic equivalence — a claim it could not actually
+establish, as seven reviews demonstrated. The exact transition satisfies both **directly and
+verifiably**: the package side is pinned to the accepted bytes, the successor side is pinned to the
+reviewed bytes, and the only permitted difference is the enumerated reviewed transition. This is
+strictly stronger than the mechanism it replaces — it admits *fewer* successor states, not more —
+and, unlike its predecessor, it is decidable.
+
+### Why no outcome-producing module changed
+
+`level1_endpoint_evidence_preregistration_validator.py` remains exactly at
+`2b8ead2b0d661ddd14fa6019ee1802fe49900a214ec443228636701edeb3d356`; `level1_stage1_runner.py` and
+`level1_stage1_result_validator.py` are untouched and still byte-compared across all five anchors.
+All **17** transition regions were independently inspected and are confined to XASSET-0037 lifecycle
+constants, pin succession, canonical validation, and successor-rebinding validation. All **26**
+symbols the two consumers import are structurally identical across the package and successor blobs —
+verified from the consumers' own source, so no declaration is its own oracle. **No blocker was
+found.**
+
+### Test replacement, stated as an exact exchange
+
+Seven projection-mechanism test classes were removed — **122 test definitions, 340 collected cases**
+— and replaced by **33 definitions, 95 collected cases** of exact-transition coverage. Each removed
+category maps to its replacement:
+
+| Removed class | Collected | Decided what | Replaced by |
+|---|---|---|---|
+| `TestOutcomeProducingProjection` | 28 | projection digest identity across anchors | exact five-anchor blob identity + closed transition |
+| `TestAmbientBindingIdentity` | 30 | free-name / ambient binding surface | byte identity — no ambient concept remains |
+| `TestModuleScopeBinderCompleteness` | 70 | complete binder discovery + `symtable` oracle | byte identity |
+| `TestCallMediatedNamespaceMutation` | 33 | which calls reach a namespace | bypass-family matrix, as ordinary byte changes |
+| `TestEagerExecutionAndAliasedCallables` | 52 | eager execution, aliased/returned callables | bypass-family matrix |
+| `TestTransitiveExecutionAndAliasFlow` | 57 | transitive execution and alias flow | bypass-family matrix |
+| `TestExecutionReachabilityAndNamespaceFlow` | 70 | reachability, container taint, positive call boundary | bypass-family matrix |
+
+The suite is **stricter and simpler**: no skips, no xfails, no weakened assertion. All **17** bypass
+families from every prior review — including the three newest — are pinned twice each, through
+`verify_exact_transition` and through the real public authorization validator at both anchor
+arrangements, as *ordinary unauthorized byte changes* requiring no analyser. Disposable subprocess
+demonstrations that representative mutations really would flip a disposition are retained as
+**evidence only**; they are not part of the authorization proof and never touch the real lane. Every
+one of the ten verifier components is independently mutation-pinned, with the two mutually
+reinforcing whole-blob digest checks mutated as the pair they are; two tests were corrected after
+mutation testing showed an earlier check was masking the one they claimed to cover.
+
+### One disclosed scope deviation
+
+The correction was scoped to four files. A **fifth** was genuinely required and is disclosed rather
+than absorbed: `test_level1_stage1_execution_authorization.py`'s stand-in git source served the
+successor blob at **all four** anchors, and its own comment called that "the true posture". Under a
+projection it was — the projection was identical at both sides. Under an exact transition it is
+false: the package anchors really do hold different bytes (`840b558b…`, not `2b8ead2b…`), and the
+new mechanism correctly refused the impossible world the fixture described. The fixture now serves
+each anchor what the git object store actually holds. It is a test fixture only — not
+outcome-producing code, not a canonical or universe artifact, not a protected portfolio path, and
+not on this unit's prohibited-edit list — and it grants no authority. Change size: +22 / −12.
+
+### Why the next review must be FULL, not DELTA
+
+This is not a bounded correction inside an established mechanism. The authorization mechanism for
+the transitive outcome-producing surface has been **replaced**, 1,420 lines of the previously
+reviewed enforcement path have been deleted, and the security argument has changed from *inferred
+semantic equivalence* to *exact reviewed byte identity plus an exact closed transition*. A delta
+review anchored on the prior head would inspect a diff against a mechanism that no longer exists.
+The next review must therefore be an independent **FULL** exact-head review of this head.
+
+**Stage 1 remains UNARMED and NOT EXECUTABLE.** `ATTEMPT_1` is intact, unclaimed, and unconsumed.

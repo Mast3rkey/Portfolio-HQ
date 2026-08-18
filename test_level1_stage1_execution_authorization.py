@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -95,21 +96,30 @@ class FakeGit:
             AUTH.EXECUTABLE_PACKAGE_MERGE_SHA: "p" * 40,
             AUTH.EXECUTABLE_PACKAGE_ACCEPTED_HEAD: "p" * 40,
         }
-        # EXTENDED AGAIN after review 4955010993 MAJOR 1. The successor rebinding now also binds a
-        # deterministic SEMANTIC PROJECTION of the derivation surface the runner and result
-        # validator import, which needs blob TEXT rather than a digest. The stand-in serves the
-        # module's real current source at every anchor, so the default posture is the true one.
-        derivation_source = (
+        # The successor rebinding binds the derivation module by an EXACT CLOSED TRANSITION
+        # (architectural correction, review 4963386313), which needs blob TEXT rather than a digest
+        # AND distinguishes the anchors: the two PACKAGE anchors carry the accepted package bytes,
+        # the successor anchors carry the reviewed successor bytes. The predecessor fixture served
+        # one blob everywhere and called that "the true posture"; under a projection it was, because
+        # the projection was identical at both. It is not true of the real bytes, so the stand-in now
+        # serves each anchor what the git object store actually holds there.
+        successor_source = (
             REPO_ROOT / AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH
         ).read_text(encoding="utf-8")
+        package_source = subprocess.run(
+            [
+                "git", "show",
+                f"{AUTH.EXECUTABLE_PACKAGE_MERGE_SHA}:{AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH}",
+            ],
+            capture_output=True, cwd=str(REPO_ROOT), timeout=120, check=True,
+        ).stdout.decode("utf-8")
         self.texts = {
-            (commit, AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): derivation_source
-            for commit in (
-                MERGE,
-                HEAD,
-                AUTH.EXECUTABLE_PACKAGE_MERGE_SHA,
-                AUTH.EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
-            )
+            (MERGE, AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): successor_source,
+            (HEAD, AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): successor_source,
+            (AUTH.EXECUTABLE_PACKAGE_MERGE_SHA,
+             AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): package_source,
+            (AUTH.EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+             AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): package_source,
         }
         self._head = MERGE
         self._ancestor = True
