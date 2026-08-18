@@ -850,15 +850,23 @@ _IN_PLACE_MUTATOR_METHODS = frozenset(
 #: whole-module ban that would take the guard with it.
 _PROJECTION_BEARING_MODULES = frozenset({"builtins", "importlib", "gc", "ctypes"})
 
+#: Callables that REPLACE or RELOAD a live module namespace. Distinct from
+#: :data:`_DYNAMIC_NAMESPACE_CALLS`, which names callables that read or write a namespace directly.
+#: Both sets are judged against the IMPORTED SYMBOL, so an alias cannot launder either.
+_NAMESPACE_REPLACING_CALLABLES = frozenset(
+    {"reload", "import_module", "__import__", "invalidate_caches", "get_objects", "get_referrers"}
+)
+
 
 def _callee_chain(node: ast.AST) -> tuple[str | None, tuple[str, ...]] | None:
     """Decompose a callee into ``(root name, attribute chain)``, or ``None`` if not decomposable.
 
     ``sys.exit`` -> ``("sys", ("exit",))``. ``b.__dict__.update`` ->
     ``("b", ("__dict__", "update"))``. ``Path(__file__).resolve()`` -> ``("Path", ("resolve",))``,
-    because an intermediate call still leaves a nameable root. A callee rooted in a subscript,
-    lambda, conditional, comprehension, or literal -- ``registry["f"]()``, ``(a or b)()`` --
-    returns ``None``, because what it will run cannot be named statically.
+    because a NAMED METHOD on a constructed receiver is still named. A callee that IS a call
+    result -- ``getattr(m, "x")()`` -- or is rooted in a subscript, lambda, conditional,
+    comprehension, or literal -- ``registry["f"]()``, ``(a or b)()`` -- returns ``None``, because
+    what it will run cannot be named statically.
     """
     attributes: list[str] = []
     current = node
@@ -866,16 +874,52 @@ def _callee_chain(node: ast.AST) -> tuple[str | None, tuple[str, ...]] | None:
         if isinstance(current, ast.Attribute):
             attributes.append(current.attr)
             current = current.value
-        elif isinstance(current, ast.Call):
-            # A chained call keeps a nameable root: ``Path(__file__).resolve()`` is rooted at
-            # ``Path``. Only the ROOT decides whether the chain reaches a namespace; refusing every
-            # chained call would take ordinary safe code with it.
+        elif isinstance(current, ast.Call) and attributes:
+            # MAJOR 2 (delta review 4960897843). Walking through an intermediate call is lawful
+            # ONLY beneath an attribute: ``Path(__file__).resolve()`` invokes the NAMED method
+            # ``resolve`` on a constructed receiver, so it stays nameable. ``getattr(m, "x")()``
+            # invokes whatever the inner call RETURNED -- nothing names it -- and the predecessor
+            # reported it as rooted at ``getattr``, contradicting this function's own contract.
+            # With no attribute collected yet, the callee IS the returned object: unnameable.
             current = current.func
         else:
             break
     if isinstance(current, ast.Name):
         return current.id, tuple(reversed(attributes))
     return None
+
+
+def _imported_origin(rendering: str) -> tuple[str, str | None]:
+    """Decompose one import rendering into ``(module, imported symbol or None)``.
+
+    ``from builtins import exec as _rexec`` -> ``("builtins", "exec")``.
+    ``import builtins as _rb`` -> ``("builtins", None)`` -- the bound object is the module itself.
+    """
+    if rendering.startswith("from "):
+        module, _, remainder = rendering[len("from ") :].partition(" import ")
+        symbol = remainder.split(" as ")[0].strip()
+        return module.strip(), symbol or None
+    if rendering.startswith("import "):
+        return rendering[len("import ") :].split(" as ")[0].strip(), None
+    return rendering, None
+
+
+def _resolved_import_origins(
+    root: str, binders: Mapping[str, tuple[str, ...]] | None
+) -> tuple[tuple[str, str | None], ...]:
+    """Every ``(module, symbol)`` a module-scope import binds the name ``root`` to.
+
+    MAJOR 2 (delta review 4960897843). The predecessor consulted the binders only when the callee
+    carried attributes, and only to recognise a projection-bearing MODULE -- so
+    ``from builtins import exec as _rexec`` followed by ``_rexec("any=min")`` was read as an
+    ordinary local name and waved through. Resolving the alias to the imported SYMBOL closes that.
+    """
+    origins: list[tuple[str, str | None]] = []
+    for record in (binders or {}).get(root, ()):
+        kind, _, rendering = record.partition("::")
+        if kind.startswith("import@"):
+            origins.append(_imported_origin(rendering))
+    return tuple(origins)
 
 
 def _reject_call_mediated_namespace_mutation(
@@ -935,20 +979,44 @@ def _reject_call_mediated_namespace_mutation(
     if not attributes and root in _DYNAMIC_NAMESPACE_CALLS:
         offences.add(f"a call to {root!r}")
 
-    if attributes:
-        aliased = root
-        for record in (binders or {}).get(root, ()):  # resolve an import alias to its real module
-            _, _, rendering = record.partition("::")
-            for module in _PROJECTION_BEARING_MODULES:
-                if rendering.startswith(f"import {module}") or rendering.startswith(
-                    f"from {module} import"
-                ):
-                    aliased = module
-        if aliased in _PROJECTION_BEARING_MODULES:
+    # Resolve the written root through the module-scope import binders, so an ALIAS is judged by
+    # what it is actually bound to rather than by how it is spelled. This applies whether or not
+    # the callee carries attributes: a bare ``_rexec(...)`` and an attributed ``_rb.exec(...)`` are
+    # the same danger reached two ways.
+    for module, symbol in _resolved_import_origins(root, binders):
+        if symbol is None:
+            # ``import builtins as _rb`` binds the MODULE OBJECT itself, so any call reached
+            # through it touches that namespace.
+            if module in _PROJECTION_BEARING_MODULES:
+                offences.add(
+                    f"a module-scope call rooted at {root!r}, an import of {module!r}, whose "
+                    "namespace the outcome-producing closure resolves through"
+                )
+            continue
+        # ``from builtins import X`` binds ONE symbol, so judge that symbol -- refusing the whole
+        # module here would reject ``from builtins import sorted``, which mutates nothing.
+        if symbol in _DYNAMIC_NAMESPACE_CALLS:
             offences.add(
-                f"a module-scope call rooted at {aliased!r}, whose namespace the outcome-producing "
-                "closure resolves through"
+                f"a module-scope call to {root!r}, a direct import of the namespace-reading or "
+                f"-writing callable {symbol!r}"
             )
+        if symbol in _NAMESPACE_REPLACING_CALLABLES:
+            offences.add(
+                f"a module-scope call to {root!r}, a direct import of {symbol!r}, which can "
+                "replace or reload a live module namespace"
+            )
+
+    if attributes and attributes[-1] in _NAMESPACE_REPLACING_CALLABLES:
+        offences.add(
+            f"a module-scope call to {attributes[-1]!r}, which can replace or reload a live "
+            "module namespace"
+        )
+
+    if attributes and root in _PROJECTION_BEARING_MODULES:
+        offences.add(
+            f"a module-scope call rooted at {root!r}, whose namespace the outcome-producing "
+            "closure resolves through"
+        )
 
     for argument in list(call.args) + [keyword.value for keyword in call.keywords]:
         for inner in ast.walk(argument):
@@ -957,6 +1025,73 @@ def _reject_call_mediated_namespace_mutation(
                     f"a module-scope call handed the namespace attribute {inner.attr!r} as an "
                     "argument, so what the callee does with it cannot be proven harmless"
                 )
+
+
+def _iter_eager_module_scope_nodes(node: ast.AST):
+    """Yield every node that EXECUTES during module initialization, pruning deferred bodies.
+
+    MAJOR 1 (delta review 4960897843). The predecessor scanner did ``continue`` on every top-level
+    ``FunctionDef`` / ``AsyncFunctionDef`` / ``ClassDef``, which skipped code Python runs at import
+    time. Two independent forms slipped through, each flipping one categorical FAIL from
+    BLOCKED_CATEGORICALLY to CONSTRUCTIBLE_CANDIDATE_IDENTIFIED without moving the projection::
+
+        def _probe(_x=_rb.__dict__.update(any=min)): ...   # default expression
+        class _Probe: _rb.__dict__.update(any=min)         # class body
+
+    Neither is a deferred function body. Decorators, default and keyword-default expressions,
+    annotations, class bases and keywords, and the whole class body all execute while the module is
+    being created -- before any projected outcome function is ever called.
+
+    So the traversal is EXECUTION-AWARE rather than syntactic, in both directions:
+
+    * a function or lambda contributes its decorators, defaults, keyword defaults, argument
+      annotations, and return annotation -- and its ``body`` is PRUNED, because it runs only when
+      called;
+    * a class contributes its decorators, bases, keywords AND its entire body, recursively;
+    * a list, set, or dict comprehension runs immediately at module scope, so all of it is
+      scanned; a generator expression is lazy, so only its outermost iterable -- the one part
+      evaluated eagerly -- is scanned and the rest is pruned;
+    * everything else contributes itself and all of its children.
+
+    This is strictly more accurate than ``ast.walk``, which the predecessor used: ``walk``
+    enumerates deferred bodies it should not scan while the ``continue`` skipped eager code it
+    should have.
+    """
+    yield node
+
+    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+        eager: list[ast.AST] = list(getattr(node, "decorator_list", []) or [])
+        arguments = node.args
+        eager.extend(default for default in arguments.defaults if default is not None)
+        eager.extend(default for default in arguments.kw_defaults if default is not None)
+        for argument in (
+            *arguments.posonlyargs,
+            *arguments.args,
+            *arguments.kwonlyargs,
+            arguments.vararg,
+            arguments.kwarg,
+        ):
+            if argument is not None and argument.annotation is not None:
+                eager.append(argument.annotation)
+        if getattr(node, "returns", None) is not None:
+            eager.append(node.returns)
+        for child in eager:
+            yield from _iter_eager_module_scope_nodes(child)
+        return  # the body is DEFERRED
+
+    if isinstance(node, ast.ClassDef):
+        for child in (*node.decorator_list, *node.bases, *node.keywords, *node.body):
+            yield from _iter_eager_module_scope_nodes(child)
+        return
+
+    if isinstance(node, ast.GeneratorExp):
+        # Lazy: only the outermost iterable is evaluated when the expression is created.
+        if node.generators:
+            yield from _iter_eager_module_scope_nodes(node.generators[0].iter)
+        return
+
+    for child in ast.iter_child_nodes(node):
+        yield from _iter_eager_module_scope_nodes(child)
 
 
 def _reject_dynamic_namespace_mutation(
@@ -979,6 +1114,12 @@ def _reject_dynamic_namespace_mutation(
     call-mediated namespace mutation rather than the pre-existing by-name set alone. A method call
     contains no ``Store`` node anywhere, so nothing else in this gate could ever have seen it.
 
+    Traversal is by :func:`_iter_eager_module_scope_nodes`, which enumerates exactly what Python
+    executes while creating the module. That is deliberately NOT a blanket skip of every ``def``
+    and ``class``: decorators, default expressions, annotations, class bases and keywords, and the
+    class body itself all run at import time and are scanned, while deferred function, lambda, and
+    generator bodies are pruned rather than scanned merely because ``ast.walk`` reaches them.
+
     Augmented assignment and deletion are refused OUTRIGHT at module scope rather than merely
     modelled as binders. :func:`_module_scope_binders` records them too, so that model is complete
     in its own right and answers the symbol-table completeness check honestly, but this gate runs
@@ -988,40 +1129,26 @@ def _reject_dynamic_namespace_mutation(
     """
     offences: set[str] = set()
 
-    def scan(body: Sequence[ast.AST]) -> None:
-        for node in body:
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                continue
-            for inner in ast.walk(node):
-                if isinstance(inner, _SCOPE_NODES) and inner is not node:
-                    continue
-                if isinstance(inner, ast.Call):
-                    _reject_call_mediated_namespace_mutation(inner, binders, offences)
-                elif isinstance(inner, (ast.Global, ast.Nonlocal)):
-                    offences.add(f"a {type(inner).__name__.lower()} declaration")
-                elif isinstance(inner, (ast.Attribute, ast.Subscript)) and isinstance(
-                    getattr(inner, "ctx", None), (ast.Store, ast.Del)
-                ):
-                    offences.add(
-                        f"module-scope {type(inner).__name__.lower()} mutation "
-                        f"({ast.dump(inner, include_attributes=False)[:60]})"
-                    )
-                elif isinstance(inner, ast.Delete):
-                    for target in inner.targets:
-                        for name in _target_names(target):
-                            offences.add(f"module-scope deletion of {name!r}")
-                elif isinstance(inner, ast.AugAssign):
-                    for name in _target_names(inner.target):
-                        offences.add(f"module-scope augmented assignment to {name!r}")
-            if isinstance(node, _MODULE_SCOPE_COMPOUND_NODES):
-                for field in ("body", "orelse", "finalbody"):
-                    scan(getattr(node, field, None) or [])
-                for handler in getattr(node, "handlers", None) or []:
-                    scan(handler.body)
-                for case in getattr(node, "cases", None) or []:
-                    scan(case.body)
-
-    scan(tree.body)
+    for statement in tree.body:
+        for inner in _iter_eager_module_scope_nodes(statement):
+            if isinstance(inner, ast.Call):
+                _reject_call_mediated_namespace_mutation(inner, binders, offences)
+            elif isinstance(inner, (ast.Global, ast.Nonlocal)):
+                offences.add(f"a {type(inner).__name__.lower()} declaration")
+            elif isinstance(inner, (ast.Attribute, ast.Subscript)) and isinstance(
+                getattr(inner, "ctx", None), (ast.Store, ast.Del)
+            ):
+                offences.add(
+                    f"module-scope {type(inner).__name__.lower()} mutation "
+                    f"({ast.dump(inner, include_attributes=False)[:60]})"
+                )
+            elif isinstance(inner, ast.Delete):
+                for target in inner.targets:
+                    for name in _target_names(target):
+                        offences.add(f"module-scope deletion of {name!r}")
+            elif isinstance(inner, ast.AugAssign):
+                for name in _target_names(inner.target):
+                    offences.add(f"module-scope augmented assignment to {name!r}")
 
     # A global/nonlocal declaration anywhere -- including inside a function -- reaches module scope.
     for node in ast.walk(tree):

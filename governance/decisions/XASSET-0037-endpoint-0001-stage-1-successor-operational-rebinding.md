@@ -773,3 +773,105 @@ created, and nothing of `ATTEMPT_1` or `XASSET-0027` §P.1 consumed.
 
 **Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires a further independent
 exact-head **DELTA** review from `bc38501688679d3255da4703169a5c8d020441c6`.
+
+## Fifth bounded correction — independent exact-head DELTA review `4960897843`
+
+The delta review of `4781ffbc06036d88884368c8dc4a7f1024fdc810` returned **CHANGES REQUIRED — 0
+BLOCKING / 2 MAJOR / 0 MINOR / 0 NOTE**. It confirmed the previously reported attribute-method
+spelling corrected, the delta confined to four files, the runner / result validator / derivation
+module untouched, and no canonical byte, universe identity, load-bearing count, activation posture,
+attempt state, or protected path changed. Two independent gaps remained in the claimed
+semantic-class closure.
+
+### MAJOR 1 — eager definition-time and class-body code was skipped wholesale
+
+`_reject_dynamic_namespace_mutation.scan` did `continue` on every top-level `FunctionDef`,
+`AsyncFunctionDef`, and `ClassDef`. That skipped code Python executes **during module
+initialization** — decorators, defaults, annotations, class bases and keywords, and the class body
+itself. None of those is a deferred function body.
+
+### MAJOR 2 — imported and call-returned dangerous callables were treated as harmless
+
+Two mechanics combined. A bare call was checked against the dangerous set **by its written root
+name only**, with the import binders consulted solely when the callee carried attributes and solely
+to recognise a projection-bearing *module* — so a dangerous builtin imported under an alias walked
+straight through. Separately, `_callee_chain` walked through **any** intermediate `ast.Call`, so
+`getattr(m, "x")()` was reported as rooted at `getattr` rather than unnameable — contradicting that
+function's own documented contract.
+
+### Reproduced first — all four forms, before any code changed
+
+Isolated checkout, disposable subprocess execution, real public validator, **real lane never
+created, opened, or touched**:
+
+| Form | Same digest | Executed disposition | Validator, accepted@package + mutated@successor | Validator, mutated at all four anchors |
+|---|---|---|---|---|
+| `def _p(_x=_rb.__dict__.update(any=min))` | **yes** | `BLOCKED_CATEGORICALLY` → **`CONSTRUCTIBLE_CANDIDATE_IDENTIFIED`** | **`valid=True, errors=()`** | **`valid=True, errors=()`** |
+| `class _P: _rb.__dict__.update(any=min)` | **yes** | same flip | **`valid=True, errors=()`** | **`valid=True, errors=()`** |
+| `from builtins import exec as _rexec` | **yes** | same flip | **`valid=True, errors=()`** | **`valid=True, errors=()`** |
+| `getattr(_rb, "exec")("any=min")` | **yes** | same flip | **`valid=True, errors=()`** | **`valid=True, errors=()`** |
+
+### The correction
+
+**MAJOR 1 — an execution-aware pruning traversal.** `_iter_eager_module_scope_nodes` replaces
+`ast.walk` plus the blanket skip, and is more accurate in *both* directions — the predecessor
+enumerated deferred bodies it should not have scanned while skipping eager code it should have. A
+function or lambda contributes its decorators, defaults, keyword defaults, argument annotations, and
+return annotation, and its **body is pruned**; a class contributes its decorators, bases, keywords,
+**and its entire body**, recursively; a list/set/dict comprehension is scanned in full because it
+runs immediately, while a generator expression contributes only its outermost iterable — the one
+part evaluated eagerly.
+
+**MAJOR 2 — resolve the alias, and distinguish a named method from a returned callable.**
+`_imported_origin` and `_resolved_import_origins` decompose each module-scope import binding into
+`(module, symbol)`. A `from module import symbol` binding is judged **by its symbol** — refused when
+that symbol reads or writes a namespace (`exec`, `eval`, `globals`, `vars`, `setattr`, `delattr`) or
+replaces or reloads one (`reload`, `import_module`, `__import__`, `invalidate_caches`,
+`get_objects`, `get_referrers`) — while an `import module` binding binds the **namespace object
+itself**, so any call reached through it stays refused. `_callee_chain` now walks through an
+intermediate call **only beneath an attribute**: `Path(__file__).resolve()` invokes a *named method*
+on a constructed receiver and remains nameable, whereas `getattr(m, "x")()` invokes whatever the
+inner call returned — nothing names it — and is refused.
+
+**Precision was verified, not assumed, and one first-draft clause was narrowed before committing.**
+Refusing every call rooted at an import *of* a projection-bearing module also rejected
+`from builtins import sorted as _rsorted`, which mutates nothing; the symbol-level rule above
+replaced it. All ten lawful forms — the CLI guard, `sorted(...)`, `Path(...).resolve()`,
+`re.compile(...)`, `tuple(genexp)`, a `def` with safe defaults, a plain class, a decorated function,
+a **deferred body that is pruned rather than scanned**, and a safe import alias — leave the identity
+unchanged.
+
+**The projected identity is unchanged at `574b9194…9af5`.** Both classes fail closed; nothing is
+restated into the surface. The 18-seed → 26-symbol projection, scope-aware free-name analysis,
+direct-import binding, recursive target-aware binder discovery, controlling-expression identity, the
+`symtable` oracle, and the narrow docstring exclusion are all untouched.
+
+### Proof, not assertion
+
+**Fifty-two new tests.** Each of the four reported forms is **executed in a disposable subprocess**
+to prove the flip and driven through the **real public validator** at the successor anchors and at
+all four anchors. A thirteen-entry eager-execution matrix covers every module-initialization
+boundary; a nine-entry matrix covers aliased and call-returned callables; a ten-entry precision
+matrix pins that harmless eager code is not refused; dedicated tests prove deferred bodies are
+pruned, that the traversal reaches an eager default while *not* reaching a deferred body, that a
+call-returned callable is unnameable while a named method is not, and that the rendering grammar
+resolves an alias to its imported symbol. Every entry is written from **Python's own execution
+semantics**, not from any production constant, tuple, or allowlist.
+
+**Mutation proof, per correction:** disabling **only** the MAJOR-1 traversal fails **16 of 52**;
+disabling **only** the MAJOR-2 alias and call-chain corrections fails **14 of 52**; with both
+restored all 52 pass.
+
+### What this fifth correction did not do
+
+No canonical byte changed, so the **V7 pins are again re-verified, not recomputed**. The frozen
+universe is unchanged at **680 / 48 / `73c0965e…5224`**; `LOAD_BEARING_RELPATHS` remains **10**.
+**No outcome-producing module was edited.** All 397 pre-existing tests in the suite still pass
+strictly — none weakened, skipped, deleted, xfailed, or loosened. B1, B2, B3, gate semantics,
+construction identities, dispositions, `XASSET-0024` §K.1, and `XASSET-0020` §E.1 are untouched; no
+accepted decision file was edited and no protected portfolio path changed. No §G.B step 9, 10, or 11
+was performed, no attestation generated, no lane state created, and nothing of `ATTEMPT_1` or
+`XASSET-0027` §P.1 consumed.
+
+**Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires a further independent
+exact-head **DELTA** review from `4781ffbc06036d88884368c8dc4a7f1024fdc810`.
