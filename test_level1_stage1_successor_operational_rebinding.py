@@ -1776,7 +1776,13 @@ class TestAmbientBindingIdentity:
             "from dataclasses import dataclass, field", "from dataclasses import dataclass", 1
         )
         assert mutated != DERIVATION_SOURCE
-        with pytest.raises(A.ProjectionError, match="resolve to neither a top-level symbol"):
+        # Still fail-closed; the refusal now fires EARLIER, in the positive safe-call boundary,
+        # because the removed import leaves the callee's origin unresolvable. Either message is a
+        # refusal -- the assertion below still requires ProjectionError.
+        with pytest.raises(
+            A.ProjectionError,
+            match="resolve to neither a top-level symbol|origin cannot be resolved",
+        ):
             A.outcome_producing_projection_digest(mutated)
 
     # --- the ambient surface itself, derived independently of the production helpers ---
@@ -2441,10 +2447,6 @@ _EAGER_EXECUTION_MATRIX = [
      "class _T(object, metaclass=(_rb.__dict__.update(any=min) or type)):\n    pass\n"),
     ("keyword-only-default",
      "import builtins as _rb\ndef _u(*, _k=_rb.__dict__.update(any=min)):\n    pass\n"),
-    ("return-annotation",
-     "import builtins as _rb\ndef _v() -> (_rb.__dict__.update(any=min) or None):\n    pass\n"),
-    ("argument-annotation",
-     "import builtins as _rb\ndef _w(_a: (_rb.__dict__.update(any=min) or int)):\n    pass\n"),
     ("lambda-default",
      "import builtins as _rb\n_l = lambda _x=_rb.__dict__.update(any=min): None\n"),
     ("nested-class-in-class-body",
@@ -2484,6 +2486,13 @@ _EAGER_PRECISION_MATRIX = [
     ("deferred-body-is-pruned",
      "def _deferred():\n    import builtins as _rb\n    _rb.__dict__.update(any=min)\n"),
     ("safe-import-alias-call", "from builtins import sorted as _rsorted\n_s = _rsorted([2, 1])\n"),
+    # MINOR 1 (delta review 4961431702): the derivation module enables postponed annotations, so
+    # Python never evaluates these while creating it. Treating them as executed refused lawful
+    # authorization-only edits for behaviour that does not occur.
+    ("postponed-argument-annotation",
+     "import builtins as _rb\ndef _w(_a: (_rb.__dict__.update(any=min) or int)):\n    pass\n"),
+    ("postponed-return-annotation",
+     "import builtins as _rb\ndef _v() -> (_rb.__dict__.update(any=min) or None):\n    pass\n"),
 ]
 
 
@@ -2627,11 +2636,26 @@ class TestEagerExecutionAndAliasedCallables:
         assert A._callee_chain(named_method.func) == ("Path", ("resolve",))
 
     def test_an_import_alias_resolves_to_the_imported_symbol(self):
-        """Derived from the rendering grammar, not from any production allowlist."""
-        assert A._imported_origin("from builtins import exec as _rexec") == ("builtins", "exec")
-        assert A._imported_origin("from builtins import exec") == ("builtins", "exec")
-        assert A._imported_origin("import builtins as _rb") == ("builtins", None)
-        assert A._imported_origin("import builtins") == ("builtins", None)
+        """Asserted against real source through the module-scope context, not a rendering string.
+
+        The rendering-grammar helper this previously called was replaced by
+        ``_build_module_scope_context`` when origin resolution became transitive; the property under
+        test is unchanged and is now checked end to end, which is strictly stronger.
+        """
+        import ast as _ast
+
+        context = A._build_module_scope_context(
+            _ast.parse(
+                "from builtins import exec as _rexec\n"
+                "from builtins import eval\n"
+                "import builtins as _rb\n"
+                "import builtins\n"
+            )
+        )
+        assert context.imports["_rexec"] == (("builtins", "exec"),)
+        assert context.imports["eval"] == (("builtins", "eval"),)
+        assert context.imports["_rb"] == (("builtins", None),)
+        assert context.imports["builtins"] == (("builtins", None),)
 
     # --- precision: eager code is not refused merely for being eager ---
 
@@ -2691,6 +2715,342 @@ class TestEagerExecutionAndAliasedCallables:
         for refusing in (
             _REPORTED_CALL_MEDIATED_MUTATION,
             "import builtins as _b\nvars(_b).update(any=min)\n",
+        ):
+            with pytest.raises(A.ProjectionError):
+                A.outcome_producing_projection_digest(_with_module_level_line(refusing))
+
+
+#: The three MAJOR-1 immediate-execution paths DELTA review 4961431702 reported. None of these is
+#: syntactically eager at the mutation site: surrounding module-initialization code reaches it.
+_TRANSITIVE_EXECUTION_MATRIX = [
+    ("helper-called-eagerly",
+     "import builtins as _rb\ndef _h():\n    _rb.__dict__.update(any=min)\n_h()\n"),
+    ("helper-called-eagerly-multi-hop",
+     "import builtins as _rb\ndef _a():\n    _rb.__dict__.update(any=min)\n"
+     "def _b():\n    _a()\n_b()\n"),
+    ("local-decorator-applied-implicitly",
+     "import builtins as _rb\ndef _dec(f):\n    _rb.__dict__.update(any=min)\n    return f\n"
+     "@_dec\ndef _t():\n    pass\n"),
+    ("local-decorator-on-a-class",
+     "import builtins as _rb\ndef _dec(c):\n    _rb.__dict__.update(any=min)\n    return c\n"
+     "@_dec\nclass _C:\n    pass\n"),
+    ("generator-consumed-eagerly",
+     "import builtins as _rb\n_ns = _rb.__dict__\n"
+     "_c = tuple(_ns.update(any=min) for _ in (1,))\n"),
+    ("generator-consumed-eagerly-direct",
+     "import builtins as _rb\n_c = list(_rb.__dict__.update(any=min) for _ in (1,))\n"),
+]
+
+#: The two MAJOR-2 alias-flow mechanisms, plus the variants the review named explicitly:
+#: direct import -> assignment -> call, module attribute -> assignment -> call, namespace
+#: import/assignment -> external mutator, destructuring, conditional, and multi-hop aliases.
+_ALIAS_FLOW_MATRIX = [
+    ("assignment-alias-of-dangerous-builtin", "_e = exec\n_e('any=min')\n"),
+    ("multi-hop-assignment-alias", "_e1 = exec\n_e2 = _e1\n_e3 = _e2\n_e3('any=min')\n"),
+    ("module-attribute-then-assignment",
+     "import builtins as _rb\n_e = _rb.exec\n_e('any=min')\n"),
+    ("conditional-alias", "_e = exec\nif True:\n    _e2 = _e\n_e2('any=min')\n"),
+    ("destructuring-alias", "_e, _unused = exec, None\n_e('any=min')\n"),
+    ("namespace-import-to-external-mutator",
+     "from builtins import __dict__ as _ns\nimport operator as _op\n"
+     "_op.setitem(_ns, 'any', min)\n"),
+    ("namespace-assignment-to-external-mutator",
+     "import builtins as _rb\n_ns = _rb.__dict__\nimport operator as _op\n"
+     "_op.setitem(_ns, 'any', min)\n"),
+    ("module-object-handed-to-callee",
+     "import builtins as _rb\nimport operator as _op\n_op.setattr(_rb, 'any', min)\n"),
+]
+
+#: Calls whose callee cannot be proven safe under the NARROW POSITIVE boundary. None of these is a
+#: "dangerous spelling" -- they are simply unproven, which is the whole point of the reversal.
+_UNPROVEN_CALLEE_MATRIX = [
+    ("unsafe-builtin-open", "_f = open(__file__)\n"),
+    ("unsafe-builtin-getattr", "_g = getattr(object, '__class__')\n"),
+    ("unsafe-builtin-compile", "_c = compile('1', '<s>', 'eval')\n"),
+    ("unsafe-builtin-input", "_i = input\n_v = _i()\n"),
+    ("unresolvable-callee-name", "_v = _never_defined_anywhere()\n"),
+    ("call-result-callee", "_mk = lambda: print\n_mk()('x')\n"),
+    ("subscript-callee", "_reg = {'f': print}\n_reg['f']('x')\n"),
+]
+
+#: Eager code that mutates nothing. Refusing any of these would mean the positive boundary is a
+#: blanket ban on module-scope execution rather than a proof obligation.
+_TRANSITIVE_PRECISION_MATRIX = [
+    ("safe-helper-called-eagerly", "def _h():\n    return sorted([2, 1])\n_r = _h()\n"),
+    ("safe-local-decorator", "def _dec(f):\n    return f\n@_dec\ndef _t():\n    pass\n"),
+    ("safe-decorator-factory",
+     "import functools as _ft\n@_ft.lru_cache(maxsize=1)\ndef _cached():\n    return 1\n"),
+    ("deferred-body-untouched",
+     "def _d():\n    import builtins as _rb\n    _rb.__dict__.update(any=min)\n"),
+    ("unconsumed-generator",
+     "import builtins as _rb\n_g = (_rb.__dict__.update(any=min) for _ in (1,))\n"),
+    ("helper-called-only-under-main-guard",
+     "import builtins as _rb\ndef _h():\n    _rb.__dict__.update(any=min)\n"
+     "if __name__ == '__main__':\n    _h()\n"),
+    ("safe-import-alias-of-a-pure-builtin",
+     "from builtins import sorted as _rs\n_s = _rs([2, 1])\n"),
+    ("safe-stdlib-chain", "from pathlib import Path as _P\n_y = _P(__file__).resolve()\n"),
+]
+
+
+class TestTransitiveExecutionAndAliasFlow:
+    """Execution and alias flow, not node type and spelling, decide what can change the outcome.
+
+    DELTA review 4961431702 raised two MAJORs and one MINOR. **MAJOR 1**: deferral was decided from
+    the AST node type alone, so a helper invoked by eager code, a bare-``Name`` decorator applied
+    implicitly at definition time, and a generator consumed by an eager caller all executed during
+    module initialization while being pruned. **MAJOR 2**: origin resolution covered only a callee
+    bound directly by an import, so one ordinary assignment laundered a dangerous callable, and a
+    namespace bound to a plain ``Name`` handed to an external mutator was invisible. **MINOR 1**:
+    annotations were scanned as eager even though the module enables postponed annotations.
+
+    Every reported form preserved the accepted digest, flipped one categorical FAIL from
+    BLOCKED_CATEGORICALLY to CONSTRUCTIBLE_CANDIDATE_IDENTIFIED under isolated subprocess
+    execution, and was accepted by the real public validator at both anchor arrangements.
+    """
+
+    _REPORTED = [
+        ("helper-called-eagerly",
+         "import builtins as _rb\ndef _h():\n    _rb.__dict__.update(any=min)\n_h()\n"),
+        ("local-decorator",
+         "import builtins as _rb\ndef _dec(f):\n    _rb.__dict__.update(any=min)\n    return f\n"
+         "@_dec\ndef _t():\n    pass\n"),
+        ("generator-consumed",
+         "import builtins as _rb\n_ns = _rb.__dict__\n"
+         "_c = tuple(_ns.update(any=min) for _ in (1,))\n"),
+        ("assignment-alias", "_e = exec\n_e('any=min')\n"),
+        ("namespace-alias-to-mutator",
+         "from builtins import __dict__ as _ns\nimport operator as _op\n"
+         "_op.setitem(_ns, 'any', min)\n"),
+    ]
+
+    @pytest.mark.parametrize("label,block", _REPORTED, ids=[e[0] for e in _REPORTED])
+    def test_each_reported_form_actually_flips_a_disposition(self, label, block):
+        """Established by EXECUTION in a disposable subprocess, never assumed."""
+        gate_results = dict.fromkeys(PREREG.GATE_IDS, "PASS")
+        gate_results[sorted(PREREG.CATEGORICAL_GATES)[0]] = "FAIL"
+        assert PREREG.derive_candidate_disposition(gate_results) == "BLOCKED_CATEGORICALLY"
+        assert (
+            _execute_derivation_in_subprocess(_with_module_level_line(block))
+            == "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED"
+        )
+
+    @pytest.mark.parametrize("label,block", _REPORTED, ids=[e[0] for e in _REPORTED])
+    def test_the_public_validator_refuses_each_reported_form_at_the_successor(
+        self, payload, label, block
+    ):
+        mutated = _with_module_level_line(block)
+        git = FakeGit()
+        git.texts[(HEAD, DERIVATION_RELPATH)] = mutated
+        git.texts[(MERGE, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection", sources(git=git))
+
+    @pytest.mark.parametrize("label,block", _REPORTED, ids=[e[0] for e in _REPORTED])
+    def test_the_public_validator_refuses_each_reported_form_at_every_anchor(
+        self, payload, label, block
+    ):
+        mutated = _with_module_level_line(block)
+        git = FakeGit()
+        for commit in (
+            HEAD, MERGE, A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, A.EXECUTABLE_PACKAGE_MERGE_SHA,
+        ):
+            git.texts[(commit, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection", sources(git=git))
+
+    # --- MAJOR 1: transitive execution reachability ---
+
+    @pytest.mark.parametrize(
+        "label,block", _TRANSITIVE_EXECUTION_MATRIX,
+        ids=[e[0] for e in _TRANSITIVE_EXECUTION_MATRIX],
+    )
+    def test_every_transitive_execution_path_fails_closed(self, label, block):
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(_with_module_level_line(block))
+
+    def test_a_generator_is_analysed_when_consumed_and_pruned_when_not(self):
+        """The distinction the review required, asserted in both directions."""
+        consumed = "import builtins as _rb\n_c = tuple(_rb.__dict__.update(any=min) for _ in (1,))\n"
+        unconsumed = "import builtins as _rb\n_g = (_rb.__dict__.update(any=min) for _ in (1,))\n"
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(_with_module_level_line(consumed))
+        assert A.outcome_producing_projection_digest(
+            _with_module_level_line(unconsumed)
+        ) == A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    def test_the_main_guard_is_scanned_but_does_not_make_bodies_reachable(self):
+        """Execution accuracy, both halves: on import that block does not run.
+
+        A mutation written DIRECTLY in the guard is still refused -- no defensive coverage is lost
+        -- while a helper called only from the guard is not analysed, because that call cannot
+        happen when the runner imports this module.
+        """
+        direct = "import builtins as _rb\nif __name__ == '__main__':\n    _rb.__dict__.update(any=min)\n"
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(_with_module_level_line(direct))
+        via_helper = (
+            "import builtins as _rb\ndef _h():\n    _rb.__dict__.update(any=min)\n"
+            "if __name__ == '__main__':\n    _h()\n"
+        )
+        assert A.outcome_producing_projection_digest(
+            _with_module_level_line(via_helper)
+        ) == A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    def test_the_real_module_guard_is_recognised(self):
+        """Derived from Python's own convention, not from a production constant."""
+        import ast as _ast
+
+        guards = [
+            node for node in _ast.parse(DERIVATION_SOURCE).body if A._is_main_guard(node)
+        ]
+        assert len(guards) == 1, "expected exactly one module-level __main__ guard"
+        assert not A._is_main_guard(_ast.parse("if True:\n    pass\n").body[0])
+        assert not A._is_main_guard(_ast.parse("if __name__ == '__other__':\n    pass\n").body[0])
+
+    # --- MAJOR 2: transitive origin / alias closure ---
+
+    @pytest.mark.parametrize(
+        "label,block", _ALIAS_FLOW_MATRIX, ids=[e[0] for e in _ALIAS_FLOW_MATRIX]
+    )
+    def test_every_alias_flow_fails_closed(self, label, block):
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(_with_module_level_line(block))
+
+    def test_origins_propagate_through_assignments(self):
+        """Asserted on the resolver directly, from Python's binding semantics."""
+        import ast as _ast
+
+        context = A._build_module_scope_context(
+            _ast.parse("_a = exec\n_b = _a\n_c = _b\nimport builtins as _rb\n_ns = _rb.__dict__\n")
+        )
+        for name in ("_a", "_b", "_c"):
+            assert ("builtin", "exec") in A._name_origins(name, context, frozenset()), name
+        assert any(
+            origin[0] == "namespace"
+            for origin in A._name_origins("_ns", context, frozenset())
+        )
+
+    def test_a_binding_cycle_fails_closed_rather_than_looping(self):
+        import ast as _ast
+
+        context = A._build_module_scope_context(_ast.parse("_a = _b\n_b = _a\n"))
+        assert A._name_origins("_a", context, frozenset()) == frozenset({("unresolvable",)})
+
+    # --- the positive boundary itself ---
+
+    @pytest.mark.parametrize(
+        "label,block", _UNPROVEN_CALLEE_MATRIX, ids=[e[0] for e in _UNPROVEN_CALLEE_MATRIX]
+    )
+    def test_an_unproven_callee_fails_closed(self, label, block):
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(_with_module_level_line(block))
+
+    def test_the_boundary_is_positive_not_a_denylist(self):
+        """A builtin absent from the narrow safe set is refused without being named dangerous."""
+        assert "open" not in A._SAFE_BUILTIN_CALLABLES
+        assert "open" not in A._DYNAMIC_NAMESPACE_CALLS
+        assert "open" not in A._NAMESPACE_REPLACING_CALLABLES
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(
+                _with_module_level_line("_f = open(__file__)\n")
+            )
+
+    # --- MINOR 1: postponed annotations ---
+
+    def test_postponed_annotations_are_not_treated_as_executed(self):
+        """The module enables `from __future__ import annotations`, so they never evaluate."""
+        for block in (
+            "import builtins as _rb\ndef _w(_a: (_rb.__dict__.update(any=min) or int)):\n    pass\n",
+            "import builtins as _rb\ndef _v() -> (_rb.__dict__.update(any=min) or None):\n    pass\n",
+        ):
+            assert A.outcome_producing_projection_digest(
+                _with_module_level_line(block)
+            ) == A.outcome_producing_projection_digest(DERIVATION_SOURCE), block
+
+    def test_annotations_are_still_scanned_when_a_module_does_not_postpone_them(self):
+        """No coverage is lost: without the future import, annotations DO execute and are scanned."""
+        import ast as _ast
+
+        eager_source = (
+            "import builtins as _rb\ndef _w(_a: (_rb.__dict__.update(any=min) or int)):\n    pass\n"
+        )
+        tree = _ast.parse(eager_source)
+        context = A._build_module_scope_context(tree)
+        assert context.future_annotations is False
+        with pytest.raises(A.ProjectionError):
+            A._reject_dynamic_namespace_mutation(tree, "synthetic.py", context)
+
+        postponed = _ast.parse("from __future__ import annotations\n" + eager_source)
+        postponed_context = A._build_module_scope_context(postponed)
+        assert postponed_context.future_annotations is True
+        A._reject_dynamic_namespace_mutation(postponed, "synthetic.py", postponed_context)
+
+    def test_the_real_module_postpones_annotations(self):
+        import ast as _ast
+
+        context = A._build_module_scope_context(_ast.parse(DERIVATION_SOURCE))
+        assert context.future_annotations is True
+
+    # --- precision ---
+
+    @pytest.mark.parametrize(
+        "label,block", _TRANSITIVE_PRECISION_MATRIX,
+        ids=[e[0] for e in _TRANSITIVE_PRECISION_MATRIX],
+    )
+    def test_harmless_eager_execution_is_not_refused(self, label, block):
+        assert A.outcome_producing_projection_digest(
+            _with_module_level_line(block)
+        ) == A.outcome_producing_projection_digest(DERIVATION_SOURCE), label
+
+    def test_the_real_modules_own_module_scope_calls_all_project(self):
+        import ast as _ast
+
+        tree = _ast.parse(DERIVATION_SOURCE)
+        calls = [
+            node
+            for statement in tree.body
+            for node in A._iter_eager_module_scope_nodes(statement, True)
+            if isinstance(node, _ast.Call)
+        ]
+        assert calls, "the derivation module has no eager module-scope calls to protect"
+        assert A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    # --- nothing earlier was disturbed ---
+
+    def test_the_identity_is_unchanged_by_this_correction(self):
+        surface = A.project_outcome_producing_surface(DERIVATION_SOURCE)
+        symbols = {
+            line.split("::", 1)[0]
+            for line in surface.splitlines()
+            if not line.startswith("@ambient::")
+        }
+        assert len(A.OUTCOME_PRODUCING_PROJECTION_SEEDS) == 18
+        assert len(symbols) == 26
+
+    def test_the_live_projection_is_still_identical_to_the_accepted_package(self):
+        live = A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        for anchor in (A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, A.EXECUTABLE_PACKAGE_MERGE_SHA):
+            blob = subprocess.run(
+                ["git", "show", f"{anchor}:{DERIVATION_RELPATH}"],
+                cwd=ROOT, capture_output=True, text=True, check=True,
+            ).stdout
+            assert A.outcome_producing_projection_digest(blob) == live
+
+    def test_all_earlier_protections_still_hold(self):
+        baseline = A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        for changing in (
+            "from builtins import min as any\n",
+            "if True:\n    from builtins import min as any\n",
+            "any, _unused = min, None\n",
+        ):
+            assert A.outcome_producing_projection_digest(
+                _with_module_level_line(changing)
+            ) != baseline, changing
+        for refusing in (
+            _REPORTED_CALL_MEDIATED_MUTATION,
+            _REPORTED_EAGER_DEFAULT,
+            _REPORTED_EAGER_CLASS_BODY,
+            "from builtins import exec as _rexec\n_rexec('any=min')\n",
+            "import builtins as _rb\ngetattr(_rb, 'exec')('any=min')\n",
         ):
             with pytest.raises(A.ProjectionError):
                 A.outcome_producing_projection_digest(_with_module_level_line(refusing))

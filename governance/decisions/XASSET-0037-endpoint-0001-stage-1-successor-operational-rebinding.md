@@ -875,3 +875,110 @@ was performed, no attestation generated, no lane state created, and nothing of `
 
 **Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires a further independent
 exact-head **DELTA** review from `4781ffbc06036d88884368c8dc4a7f1024fdc810`.
+
+## Sixth bounded correction — independent exact-head DELTA review `4961431702`
+
+The delta review of `d9c55d48da3abdec09c1a56d27a2f9fade3d486f` returned **CHANGES REQUIRED — 0
+BLOCKING / 2 MAJOR / 1 MINOR / 0 NOTE**. It confirmed all four exact forms from review `4960897843`
+now rejected, the delta confined to four files, no runner / result-validator / derivation / canonical
+/ universe / protected portfolio file changed, exact-head CI green, and Stage 1 UNARMED. Two
+independent gaps and one precision defect remained.
+
+### MAJOR 1 — deferral was decided from AST node type, not from what import actually executes
+
+`_iter_eager_module_scope_nodes` pruned every function, lambda, and generator body on node type
+alone. That is unsound the moment surrounding module-initialization code *invokes or consumes* the
+deferred body: a top-level helper called at module scope, a named local decorator applied implicitly
+during function creation (no `ast.Call` at the decorator site), and a generator expression consumed
+eagerly by its enclosing call all execute during import.
+
+### MAJOR 2 — origins did not propagate through ordinary assignments or namespace-valued arguments
+
+`_resolved_import_origins` resolved only a callee name bound *directly* by an import. It did not
+propagate through module-scope assignments, so one ordinary binding laundered a dangerous callable.
+Separately, argument inspection recognised a literal namespace-exposing `Attribute` but not a `Name`
+already bound to that namespace — precisely review `4960897843`'s required "namespace aliases handed
+to mutators" class, which the prior nine-case matrix did not exercise.
+
+### MINOR 1 — postponed annotations classified as eager
+
+The derivation source begins with `from __future__ import annotations`, under which annotation
+expressions are **not** evaluated at module creation. The traversal scanned every argument and
+return annotation as eager — fail-closed, but a violation of the stated execution-accurate precision
+boundary, and capable of rejecting lawful authorization-only annotation edits.
+
+### Reproduced first — all five forms, before any code changed
+
+Reviewed-head source (`d9c55d4…`, blob `6643fa14…f585b`) loaded in isolation, real projection,
+disposable subprocess execution, real public validator, **real lane never created, opened, or
+touched**. Two spellings named in the review were already refused by the prior head for incidental
+reasons (`_rb.__dict__.update(...)` inside a genexp hit the `__dict__`-as-argument clause; a
+`_d.update(_ns, ...)` form hit the mutator-name clause); rather than report a closed class on those,
+genuinely bypassing spellings were constructed for the same two mechanisms and are the ones recorded
+here.
+
+| Form | Mechanism | Reviewed head | Corrected head |
+|---|---|---|---|
+| `def _h(): _rb.__dict__.update(any=min)` then `_h()` | eager call into pruned body | **accepted, identical projection** | **`ProjectionError`** |
+| `@_d` where `_d` mutates | implicit decorator application | **accepted, identical projection** | **`ProjectionError`** |
+| `tuple(_ns.update(any=min) for _i in range(1))` | consumed generator | **accepted, identical projection** | **`ProjectionError`** |
+| `_alias = _rb.__dict__.update` then `_alias(any=min)` | assignment alias | **accepted, identical projection** | **`ProjectionError`** |
+| `_op(_ns, 'any', min)` with `from builtins import __dict__ as _ns` | namespace `Name` argument | **accepted, identical projection** | **`ProjectionError`** |
+
+### The correction
+
+**MAJOR 1 — model transitive execution reachable during module initialization.** A module-scope call
+whose callee resolves to a local definition now has that definition analysed (`analyse_definition`,
+cycle-guarded); a bare-`Name` decorator on an eagerly-reachable definition is treated as the
+**implicit call it is**; a generator expression consumed by an enclosing eager operation is analysed
+in full rather than reduced to its outermost iterable. `if __name__ == "__main__":` is recognised
+(`_is_main_guard`) and still scanned for *direct* mutation, but does not make called bodies eagerly
+reachable — that block provably does not execute on import, which is the only path by which the
+derivation module participates in outcome production, and it is what preserves the lawful CLI
+posture.
+
+**Positive safe-call boundary, per the review's explicit direction.** Where bounded analysis cannot
+prove an arbitrary call harmless, the gate no longer consults another list of dangerous spellings: a
+module-scope call is **refused unless provably safe**. `_SAFE_BUILTIN_CALLABLES` is a narrow closed
+set of pure builtins; `_origin_is_safe_callee` judges each resolved origin against it.
+
+**MAJOR 2 — a fail-closed transitive origin/alias closure.** `_name_origins` and `_value_origins`
+propagate origins through ordinary module-scope assignments, including destructuring, conditional,
+and multi-hop bindings, with a binding cycle resolving to `("unresolvable",)` rather than looping. A
+symbol import of a namespace-exposing attribute (`from builtins import __dict__ as _ns`) and a whole
+-module import of a projection-bearing module both yield a `("namespace", …)` origin, so a `Name`
+carrying a live namespace is refused as a call argument exactly as a literal `Attribute` already was.
+
+**MINOR 1 — annotation traversal is now conditional on the module's real future-annotations posture.**
+`_ModuleScopeContext.future_annotations` records it; argument and return annotations are scanned only
+when Python will actually evaluate them. The two former must-fail annotation cases moved to the
+precision matrix as `postponed-argument-annotation` / `postponed-return-annotation`, which now assert
+that postponed annotations are **not** treated as executed.
+
+### Verification
+
+Twenty must-fail forms and fifteen must-pass forms both close completely. The live projection digest
+is **unchanged at `574b9194b61cbc1fe9dca0f1536b91bd6b1c716d5d197df7529e27c9e0039af5`** — every
+lawful construct in the real module, including `Path(__file__).resolve()`, `tuple(genexp)`, five
+`re.compile(...)`, and `sys.exit(main())`, still projects identically. Per-mechanism mutation proof:
+disabling **only** the transitive-execution analysis fails 4 targeted tests; disabling **only** the
+origin closure fails 11; restoring reproduces the implementation byte-identically
+(`124daadd7b6dd617f7185b9a1868c1e830a2426146e60275242730e40e35c833`) and all 57 new tests pass.
+
+Two of the three pre-existing tests that changed were the MINOR 1 defect itself; the third
+(`test_an_unresolvable_referenced_name_fails_closed`) still fails closed but reaches the refusal
+earlier under a different message, so its regex was broadened **without** relaxing its
+`ProjectionError` requirement. `test_an_import_alias_resolves_to_the_imported_symbol` was rewritten
+against `_build_module_scope_context` on real source — strictly stronger than the removed rendering
+helper it previously asserted on.
+
+### Preserved
+
+The four-way identity separation, `LOAD_BEARING_RELPATHS = 10`, both V7 canonical pins, the
+680/48 universe and `73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224`, every
+protected portfolio path, and the whole non-activation posture. No gate semantics, construction
+identity, or disposition was reopened. No §G.B step 9-11 work was performed, no attestation
+generated, no lane state created, and nothing of `ATTEMPT_1` or `XASSET-0027` §P.1 consumed.
+
+**Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires a further independent
+exact-head **DELTA** review from `d9c55d48da3abdec09c1a56d27a2f9fade3d486f`.

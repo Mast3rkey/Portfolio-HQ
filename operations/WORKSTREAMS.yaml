@@ -14313,6 +14313,96 @@ workstreams:
           attestation, lane state, ATTEMPT_1 or XASSET-0027 SS-P.1 consumption occurred. Stage 1
           remains UNARMED and NOT EXECUTABLE. The corrected head requires a further independent
           exact-head DELTA review from 4781ffbc06036d88884368c8dc4a7f1024fdc810.
+          SIXTH BOUNDED CORRECTION after independent exact-head DELTA review 4961431702 at head
+          d9c55d48da3abdec09c1a56d27a2f9fade3d486f (CHANGES REQUIRED - 0 BLOCKING / 2 MAJOR /
+          1 MINOR / 0 NOTE). That review confirmed all four exact forms from review 4960897843 now
+          rejected, the delta confined to four files, no runner / result-validator / derivation /
+          canonical / universe / protected portfolio file changed, exact-head CI green, and Stage 1
+          UNARMED. MAJOR 1: _iter_eager_module_scope_nodes decided deferral FROM AST NODE TYPE ALONE,
+          which is unsound once surrounding module-initialization code INVOKES OR CONSUMES the
+          deferred body - a top-level helper called at module scope, a named local decorator applied
+          implicitly during function creation with NO ast.Call at the decorator site, and a generator
+          expression consumed eagerly by its enclosing call all execute during import. MAJOR 2:
+          _resolved_import_origins resolved only a callee name bound DIRECTLY by an import, so one
+          ordinary module-scope assignment laundered a dangerous callable; and argument inspection
+          recognised a literal namespace-exposing Attribute but not a Name ALREADY BOUND to that
+          namespace - precisely review 4960897843's own required 'namespace aliases handed to
+          mutators' class, which the prior nine-case matrix did not exercise. MINOR 1: the derivation
+          source begins with 'from __future__ import annotations', under which annotation expressions
+          are NOT evaluated at module creation, yet the traversal scanned every argument and return
+          annotation as eager - fail-closed, but a violation of the stated execution-accurate
+          precision boundary and capable of rejecting lawful authorization-only annotation edits.
+          ALL FIVE FORMS REPRODUCED BEFORE ANY CODE CHANGED against the reviewed-head blob
+          6643fa14cbcec0868bf953e559bdd7054364ef35539c2af34f297cd7ff8f585b, with disposable
+          subprocess execution and the real public validator, real lane never created, opened or
+          touched: each was ACCEPTED with an IDENTICAL projection. DISCLOSED HONESTLY: two spellings
+          named in the review were already refused by the prior head for incidental reasons - the
+          _rb.__dict__.update(...) genexp form hit the __dict__-as-argument clause and a
+          _d.update(_ns, ...) form hit the mutator-name clause - so rather than report a closed class
+          on those, genuinely bypassing spellings were constructed for the SAME TWO MECHANISMS
+          (_ns = _rb.__dict__ aliased inside the genexp; _op(_ns,'any',min) via operator.setitem) and
+          those are the ones recorded. CORRECTED, MAJOR 1, by MODELLING TRANSITIVE EXECUTION REACHABLE
+          DURING MODULE INITIALIZATION rather than node-type eagerness: a module-scope call whose
+          callee resolves to a local definition now has that definition analysed (analyse_definition,
+          cycle-guarded); a bare-Name decorator on an eagerly reachable definition is treated as THE
+          IMPLICIT CALL IT IS; and a generator expression consumed by an enclosing eager operation is
+          analysed in full rather than reduced to its outermost iterable. _is_main_guard recognises
+          'if __name__ == "__main__":', which is still scanned for DIRECT mutation but does NOT make
+          called bodies eagerly reachable - that block provably does not execute on import, the only
+          path by which the derivation module participates in outcome production, and this is what
+          preserves the lawful CLI posture. PER THE REVIEW'S EXPLICIT DIRECTION the gate REVERSED from
+          denylists to a NARROW POSITIVE SAFE-CALL BOUNDARY: a module-scope call is REFUSED UNLESS
+          PROVABLY SAFE, with _SAFE_BUILTIN_CALLABLES a narrow closed set of pure builtins and
+          _origin_is_safe_callee judging each resolved origin against it. CORRECTED, MAJOR 2, by a
+          FAIL-CLOSED TRANSITIVE ORIGIN/ALIAS CLOSURE: _name_origins and _value_origins propagate
+          origins through ordinary module-scope assignments including destructuring, conditional and
+          multi-hop bindings, with a binding cycle resolving to ('unresolvable',) rather than looping;
+          and a symbol import of a namespace-exposing attribute plus a whole-module import of a
+          projection-bearing module both yield a ('namespace', ...) origin, so a Name carrying a live
+          namespace is refused as a call argument exactly as a literal Attribute already was.
+          CORRECTED, MINOR 1, by making annotation traversal CONDITIONAL on the module's real
+          future-annotations posture (_ModuleScopeContext.future_annotations): argument and return
+          annotations are scanned only when Python will actually evaluate them, and the two former
+          must-fail annotation cases MOVED TO THE PRECISION MATRIX as postponed-argument-annotation /
+          postponed-return-annotation, now asserting postponed annotations are NOT treated as
+          executed. PRECISION VERIFIED NOT ASSUMED: twenty must-fail forms and fifteen must-pass forms
+          both close completely, and TWO FIRST-DRAFT DEVIATIONS were found and fixed before committing
+          - 'from builtins import __dict__ as _ns' handed to an external mutator was ACCEPTED until
+          namespace-exposing symbol imports began emitting a namespace origin, and
+          'from builtins import sorted as _rs; _rs([2,1])' was REJECTED until from-imports were judged
+          by SYMBOL against the narrow safe set. THE PROJECTED IDENTITY IS UNCHANGED at
+          574b9194b61cbc1fe9dca0f1536b91bd6b1c716d5d197df7529e27c9e0039af5: every lawful construct in
+          the real module, including Path(__file__).resolve(), tuple(genexp), five re.compile(...) and
+          sys.exit(main()), still projects identically; the 18-seed / 26-symbol projection,
+          scope-aware free-name analysis, recursive target-aware binder discovery, the symtable oracle
+          and the narrow docstring exclusion are all untouched. FIFTY-SEVEN new tests: a six-entry
+          transitive-execution matrix, an eight-entry alias-flow matrix, a seven-entry unproven-callee
+          matrix, an eight-entry precision matrix, and five reported forms each executed in a
+          DISPOSABLE SUBPROCESS and driven through the real public validator at the successor anchors
+          and at all four anchors, plus dedicated tests for consumed-versus-pruned generators, both
+          halves of the main guard, origin propagation, binding cycles, the positive boundary being a
+          boundary rather than a denylist, and postponed annotations in both directions - every entry
+          written from Python's own execution semantics rather than from any production constant,
+          tuple or allowlist. MUTATION PROOF PER CORRECTION: disabling ONLY the MAJOR-1
+          transitive-execution analysis fails 4 targeted tests; disabling ONLY the MAJOR-2 origin
+          closure fails 11; restoring reproduces the implementation BYTE-IDENTICALLY at
+          124daadd7b6dd617f7185b9a1868c1e830a2426146e60275242730e40e35c833 and all 57 pass. THREE
+          pre-existing tests changed and each is disclosed: two WERE the MINOR 1 defect itself, moved
+          to the precision matrix as the review required; the third,
+          test_an_unresolvable_referenced_name_fails_closed, STILL FAILS CLOSED but reaches the
+          refusal earlier under a different message, so its regex was broadened WITHOUT relaxing its
+          ProjectionError requirement; and test_an_import_alias_resolves_to_the_imported_symbol was
+          rewritten against _build_module_scope_context on real source, STRICTLY STRONGER than the
+          removed rendering helper it previously asserted on. NO OUTCOME-PRODUCING MODULE WAS EDITED.
+          The whole suite passes strictly at 506 - none weakened, skipped, deleted, xfailed or
+          loosened. NO CANONICAL BYTE CHANGED, so the V7 pins are again re-verified rather than
+          recomputed; the frozen universe stays 680 / 48 / 73c0965e...5224; LOAD_BEARING_RELPATHS
+          stays 10; B1/B2/B3, gate semantics, construction identities, dispositions, XASSET-0024
+          SS-K.1 and XASSET-0020 SS-E.1 are untouched; no accepted decision file was edited and no
+          protected portfolio path changed; and no SS-G.B step 9, 10 or 11, attestation, lane state,
+          ATTEMPT_1 or XASSET-0027 SS-P.1 consumption occurred. Stage 1 remains UNARMED and NOT
+          EXECUTABLE. The corrected head requires a further independent exact-head DELTA review from
+          d9c55d48da3abdec09c1a56d27a2f9fade3d486f.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
