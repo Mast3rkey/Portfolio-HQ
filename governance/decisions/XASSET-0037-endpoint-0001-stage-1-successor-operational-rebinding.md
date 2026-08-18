@@ -664,3 +664,112 @@ consumed.
 
 **Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires a further independent
 exact-head **DELTA** review from `41afe0992c7043739a5a84f92ea91a342370b863`.
+
+## Fourth bounded correction — independent exact-head DELTA review `4958940810`
+
+The delta review of `bc38501688679d3255da4703169a5c8d020441c6` returned **CHANGES REQUIRED — 0
+BLOCKING / 1 MAJOR / 0 MINOR / 0 NOTE**. It confirmed the conditional-import and
+destructuring-assignment bypasses genuinely fixed, that no outcome-producing module was in the
+delta, and that no review-time repository, lane, or activation mutation occurred. One defect
+remained — the same security property, reached through a different mechanism.
+
+### MAJOR 1 — call-mediated namespace mutation bypassed the identity
+
+`_reject_dynamic_namespace_mutation` recognised a dangerous call only when `call.func` was an
+`ast.Name`. A **method** call — callee an `ast.Attribute`, containing no `Store` node anywhere — was
+therefore neither refused nor represented. Two lines were enough:
+
+```python
+import builtins as _review_builtins
+_review_builtins.__dict__.update(any=min)
+```
+
+**Reproduced first**, in an isolated checkout with disposable subprocess execution, against the real
+public validator, with the real lane never created, opened, or touched. All five material proofs
+held:
+
+| # | Proof | Result |
+|---|---|---|
+| 1 | Accepted and mutated sources share the projection digest | **identical** — `574b9194…9af5` both |
+| 2 | Executing the mutation flips the categorical-failure case | `BLOCKED_CATEGORICALLY` → **`CONSTRUCTIBLE_CANDIDATE_IDENTIFIED`** |
+| 3 | Accepted at both package anchors + mutated at successor head / merge / working tree | **`valid=True`, `errors=()`** |
+| 4 | Mutated at **both package anchors** instead | **`valid=True`, `errors=()`** |
+| 5 | Real authorization lane | **absent and untouched** |
+
+The CPython `symtable` oracle cannot see this class at all, and a dedicated test now records why:
+the mutation binds **no new module global** — its only new binding is the import alias itself. It
+changes an *existing* namespace through a call.
+
+*Disclosed:* the review reported digest `1cdfbbd2…c15e` where this environment computes
+`574b9194…9af5`. That is the `ast.dump` cross-interpreter boundary the projection's own docstring
+already states, not a disagreement — the **property** the proof turns on, accepted digest ==
+mutated digest, is identical in both environments.
+
+### The correction — a fail-closed rule over the semantic class
+
+Every module-scope call is now routed through `_reject_call_mediated_namespace_mutation`. The rule
+is structural and refuses on any of:
+
+- **an unnameable callee** — `registry["f"]()`, `(a or b)()` — because what will run cannot be named,
+  let alone proven harmless;
+- **a namespace-exposing attribute anywhere in the callee's receiver chain** — `__dict__`,
+  `__globals__`, `__builtins__`, `__class__`, `__bases__`, `__mro__`, `__subclasses__`,
+  `__setattr__`, `__delattr__`, `__getattribute__`, `__setitem__`, `__delitem__`, `modules`;
+- **an in-place mutator method** — `update`, `setdefault`, `pop`, `popitem`, `clear`, `append`,
+  `extend`, `insert`, `__setitem__`, `__delitem__` — on **any** receiver, since a static projection
+  cannot prove `_ns.update(any=min)` is a scratch dict rather than `builtins.__dict__`;
+- **a root at a namespace-bearing module** — `builtins`, `importlib`, `gc`, `ctypes` — resolved
+  **through the module-scope import binders**, so an alias is caught as readily as the bare name;
+- **a namespace handed to an unknown callee as an argument**;
+- the pre-existing by-name set (`exec`, `eval`, `globals`, `vars`, `setattr`, `delattr`).
+
+**Nothing is modelled into the identity here.** A call's effect genuinely cannot be resolved
+statically, so this class fails closed rather than being represented — and the projected identity is
+therefore **unchanged** at `574b9194…9af5`, with the 18-seed → 26-symbol projection, scope-aware
+free-name analysis, direct-import binding, recursive target-aware binder discovery,
+controlling-expression identity, the `symtable` oracle, and the narrow docstring exclusion all
+untouched.
+
+**Precision is preserved deliberately, and cost real design work.** Two first-draft clauses were
+found over-broad against the real module and narrowed before anything was committed: `sys` was
+removed from the namespace-bearing module set, because `sys.exit(main())` is the lawful CLI guard
+and mutates nothing — the genuinely dangerous `sys` avenue, `sys.modules`, is caught by the precise
+attribute clause instead; and the callee decomposition now walks **through** an intermediate call, so
+`Path(__file__).resolve()` keeps a nameable root. The real module's own module-scope calls —
+`Path(__file__).resolve()`, `tuple(genexp)`, five `re.compile(...)` calls, and `sys.exit(main())` —
+all still project without refusal. A call is never rejected merely for being a call.
+
+### Proof, not assertion
+
+**Thirty-three new tests.** The reported spelling is executed in a **disposable subprocess** to prove
+the disposition flip — never assumed, and never run in-process, since mutating `builtins` would
+corrupt the whole session. It is driven through the **real public validator** at the successor
+anchors, at both package anchors, and at every anchor simultaneously. A sixteen-entry matrix covers
+materially distinct routes: aliased namespace, `from`-import of the namespace itself, `vars()`
+receiver, `setattr`, `getattr` chain, `sys.modules`, class-`__mro__` walk, unbound-method form,
+mapping mutator on an arbitrary receiver, namespace-as-argument, `importlib.reload`, subscript
+callee, conditional callee, and nesting inside `if` and `try`. A seven-entry matrix pins that
+harmless calls and the lawful CLI guard are **not** rejected. Every matrix entry is written from
+Python's own semantics rather than from any production constant, tuple, or allowlist, so production
+and tests cannot drift together unnoticed.
+
+**Mutation proof: disabling only the new call-mediated protection — restoring `ast.Name`-callee
+recognition — fails 18 of the 33**, verified by applying the mutation in an isolated copy and then
+restoring the fix to separate genuine detection from environment noise.
+
+**No drift at the real anchors:** the projection is identical at the PR #336 accepted head, the
+PR #336 merge, this head, and the working tree.
+
+### What this fourth correction did not do
+
+No canonical byte changed, so the **V7 pins are again re-verified, not recomputed**. The frozen
+universe is unchanged at **680 / 48 / `73c0965e…5224`**; `LOAD_BEARING_RELPATHS` remains **10**.
+**No outcome-producing module was edited.** All 364 pre-existing tests in the suite, including the
+70 from the binder correction, still pass strictly — none weakened, skipped, deleted, xfailed, or
+loosened. B1, B2, B3, gate semantics, construction identities, dispositions, `XASSET-0024` §K.1, and
+`XASSET-0020` §E.1 are untouched; no accepted decision file was edited and no protected portfolio
+path changed. No §G.B step 9, 10, or 11 was performed, no attestation generated, no lane state
+created, and nothing of `ATTEMPT_1` or `XASSET-0027` §P.1 consumed.
+
+**Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires a further independent
+exact-head **DELTA** review from `bc38501688679d3255da4703169a5c8d020441c6`.

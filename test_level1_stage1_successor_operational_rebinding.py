@@ -2169,3 +2169,245 @@ class TestModuleScopeBinderCompleteness:
                 cwd=ROOT, capture_output=True, text=True, check=True,
             ).stdout
             assert A.outcome_producing_projection_digest(blob) == live
+
+
+#: The exact spelling DELTA review 4958940810 reported. Two lines, no ``Store`` node anywhere.
+_REPORTED_CALL_MEDIATED_MUTATION = (
+    "import builtins as _review_builtins\n_review_builtins.__dict__.update(any=min)\n"
+)
+
+#: Materially distinct call-mediated routes to the same effect. Written from Python's own semantics,
+#: NOT from any production constant, tuple, or allowlist, so production and tests cannot drift
+#: together unnoticed: if a future edit narrows the gate, these still describe real mutations.
+_CALL_MEDIATED_MUTATION_MATRIX = [
+    ("reported-dunder-dict-update", _REPORTED_CALL_MEDIATED_MUTATION),
+    ("aliased-namespace-then-update",
+     "import builtins as _b\n_ns = _b.__dict__\n_ns.update(any=min)\n"),
+    ("from-import-of-the-namespace",
+     "from builtins import __dict__ as _ns\n_ns.update(any=min)\n"),
+    ("vars-receiver", "import builtins as _b\nvars(_b).update(any=min)\n"),
+    ("setattr-on-builtins", "import builtins as _b\nsetattr(_b, 'any', min)\n"),
+    ("getattr-chain-then-update",
+     "import builtins as _b\ngetattr(_b, '__dict__').update(any=min)\n"),
+    ("sys-modules-route",
+     "import sys as _s\n_s.modules['builtins'].__dict__.update(any=min)\n"),
+    ("class-mro-walk", "_x = ().__class__.__bases__[0].__subclasses__()\n"),
+    ("unbound-method-form", "import builtins as _b\ndict.update(_b.__dict__, any=min)\n"),
+    ("mapping-mutator-any-receiver", "_scratch = {}\n_scratch.update(any=min)\n"),
+    ("namespace-handed-to-callee", "import builtins as _b\n_ = dict(_b.__dict__)\n"),
+    ("importlib-reload", "import importlib as _il\nimport typing as _t\n_il.reload(_t)\n"),
+    ("subscript-callee", "_reg = {'f': print}\n_reg['f']('x')\n"),
+    ("conditional-callee", "(print or print)('x')\n"),
+    ("nested-in-if", "import builtins as _b\nif True:\n    _b.__dict__.update(any=min)\n"),
+    ("nested-in-try",
+     "import builtins as _b\ntry:\n    _b.__dict__.update(any=min)\nexcept Exception:\n    pass\n"),
+]
+
+#: Calls that mutate no namespace the projection resolves through. Refusing any of these would mean
+#: the gate rejects code merely for BEING a call, which the review expressly forbids.
+_HARMLESS_CALL_MATRIX = [
+    ("lawful-cli-guard", "if __name__ == '__main__':\n    import sys as _s2\n    _s2.exit(0)\n"),
+    ("ordinary-builtin-call", "_x = sorted([3, 1, 2])\n"),
+    ("chained-safe-call", "from pathlib import Path as _P\n_y = _P(__file__).resolve()\n"),
+    ("stdlib-factory-call", "import re as _re\n_pat = _re.compile('x')\n"),
+    ("generator-consumed-by-call", "_t2 = tuple(g for g in (1, 2))\n"),
+    ("nested-safe-calls", "_z = len(sorted([1]))\n"),
+    ("unused-import", "import json\n"),
+]
+
+
+def _execute_derivation_in_subprocess(source: str) -> str:
+    """Run a mutated derivation in a DISPOSABLE subprocess and return its disposition.
+
+    Mandatory isolation, not caution: ``builtins.__dict__.update(any=min)`` mutates the running
+    interpreter's own builtins. Executing it in-process would corrupt every later test in this
+    session -- and would prove nothing about the module under test.
+    """
+    import subprocess
+    import sys as _sys
+    import tempfile
+    import textwrap
+
+    directory = Path(tempfile.mkdtemp())
+    module_path = directory / "mutated_derivation.py"
+    module_path.write_text(source, encoding="utf-8")
+    driver = directory / "driver.py"
+    driver.write_text(
+        textwrap.dedent(
+            """
+            import importlib.util, sys
+            spec = importlib.util.spec_from_file_location("mutated_derivation", sys.argv[1])
+            module = importlib.util.module_from_spec(spec)
+            sys.modules["mutated_derivation"] = module
+            spec.loader.exec_module(module)
+            gates = dict.fromkeys(module.GATE_IDS, "PASS")
+            gates[sorted(module.CATEGORICAL_GATES)[0]] = "FAIL"
+            print(module.derive_candidate_disposition(gates))
+            """
+        ).strip(),
+        encoding="utf-8",
+    )
+    completed = subprocess.run(
+        [_sys.executable, str(driver), str(module_path)],
+        capture_output=True, text=True, cwd=str(ROOT), timeout=120,
+    )
+    assert completed.returncode == 0, completed.stderr
+    return completed.stdout.strip()
+
+
+class TestCallMediatedNamespaceMutation:
+    """A module-scope CALL can mutate a namespace without any ``Store`` node existing anywhere.
+
+    DELTA review 4958940810 demonstrated the whole chain with two lines,
+    ``import builtins as _review_builtins`` / ``_review_builtins.__dict__.update(any=min)``: the
+    projected identity did not move, one categorical FAIL turned from BLOCKED_CATEGORICALLY into
+    CONSTRUCTIBLE_CANDIDATE_IDENTIFIED, and the real public validator returned ``valid=True,
+    errors=()`` with the mutation at the successor anchors AND again with it at both package
+    anchors. CPython's ``symtable`` oracle cannot see this class at all -- it binds no new module
+    global. These tests pin the semantic class and the precision boundary that keeps the gate from
+    rejecting code merely for being a call.
+    """
+
+    # --- the reported case, executed and driven through the REAL public validator ---
+
+    def test_the_reported_mutation_actually_flips_a_disposition(self):
+        """Established by EXECUTION in a disposable subprocess, never assumed."""
+        gate_results = dict.fromkeys(PREREG.GATE_IDS, "PASS")
+        gate_results[sorted(PREREG.CATEGORICAL_GATES)[0]] = "FAIL"
+        assert PREREG.derive_candidate_disposition(gate_results) == "BLOCKED_CATEGORICALLY"
+        mutated = _with_module_level_line(_REPORTED_CALL_MEDIATED_MUTATION)
+        assert (
+            _execute_derivation_in_subprocess(mutated) == "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED"
+        )
+
+    def test_the_public_validator_refuses_the_reported_mutation_at_the_successor(self, payload):
+        """Accepted source at BOTH package anchors, mutated source at the successor anchors."""
+        mutated = _with_module_level_line(_REPORTED_CALL_MEDIATED_MUTATION)
+        git = FakeGit()
+        git.texts[(HEAD, DERIVATION_RELPATH)] = mutated
+        git.texts[(MERGE, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection", sources(git=git))
+
+    def test_the_public_validator_refuses_the_reported_mutation_at_the_package(self, payload):
+        """The review's fourth proof: mutated at both PACKAGE anchors was also accepted before."""
+        mutated = _with_module_level_line(_REPORTED_CALL_MEDIATED_MUTATION)
+        git = FakeGit()
+        git.texts[(A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, DERIVATION_RELPATH)] = mutated
+        git.texts[(A.EXECUTABLE_PACKAGE_MERGE_SHA, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection", sources(git=git))
+
+    def test_the_public_validator_refuses_the_reported_mutation_at_every_anchor(self, payload):
+        """Mutated everywhere: internally consistent, and still unacceptable."""
+        mutated = _with_module_level_line(_REPORTED_CALL_MEDIATED_MUTATION)
+        git = FakeGit()
+        for commit in (
+            HEAD, MERGE, A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, A.EXECUTABLE_PACKAGE_MERGE_SHA,
+        ):
+            git.texts[(commit, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection", sources(git=git))
+
+    # --- the semantic class, not the reported spelling ---
+
+    @pytest.mark.parametrize(
+        "label,line",
+        _CALL_MEDIATED_MUTATION_MATRIX,
+        ids=[entry[0] for entry in _CALL_MEDIATED_MUTATION_MATRIX],
+    )
+    def test_every_call_mediated_mutation_route_fails_closed(self, label, line):
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(_with_module_level_line(line))
+
+    def test_the_symtable_oracle_cannot_see_this_class(self):
+        """Stated because it matters: the completeness oracle is real but does not cover calls."""
+        import symtable as _symtable
+
+        accepted = {
+            symbol.get_name()
+            for symbol in _symtable.symtable(DERIVATION_SOURCE, "m.py", "exec").get_symbols()
+            if symbol.is_assigned() or symbol.is_imported()
+        }
+        mutated_source = _with_module_level_line("import builtins as _b\n_b.__dict__.update()\n")
+        mutated = {
+            symbol.get_name()
+            for symbol in _symtable.symtable(mutated_source, "m.py", "exec").get_symbols()
+            if symbol.is_assigned() or symbol.is_imported()
+        }
+        # The ONLY new module-global is the alias itself; the mutation binds nothing.
+        assert mutated - accepted == {"_b"}
+        # ...and the gate refuses it regardless, which is the point.
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(mutated_source)
+
+    # --- precision: a call is not refused merely for being a call ---
+
+    @pytest.mark.parametrize(
+        "label,line", _HARMLESS_CALL_MATRIX, ids=[entry[0] for entry in _HARMLESS_CALL_MATRIX]
+    )
+    def test_harmless_calls_do_not_change_or_block_the_identity(self, label, line):
+        assert A.outcome_producing_projection_digest(
+            _with_module_level_line(line)
+        ) == A.outcome_producing_projection_digest(DERIVATION_SOURCE), label
+
+    def test_the_real_module_still_projects_with_its_own_module_scope_calls(self):
+        """The derivation module really does call Path(...).resolve(), re.compile(...), sys.exit()."""
+        import ast as _ast
+
+        calls = [
+            node
+            for statement in _ast.parse(DERIVATION_SOURCE).body
+            if not isinstance(
+                statement, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef)
+            )
+            for node in _ast.walk(statement)
+            if isinstance(node, _ast.Call)
+        ]
+        assert calls, "the derivation module has no module-scope calls to protect"
+        assert A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    def test_the_lawful_cli_guard_survives_verbatim(self):
+        """`sys.exit(main())` is an Attribute callee too -- it must not be caught by association."""
+        import ast as _ast
+
+        guard = [
+            node
+            for node in _ast.parse(DERIVATION_SOURCE).body
+            if isinstance(node, _ast.If)
+            and "__name__" in _ast.dump(node.test)
+        ]
+        assert guard, "the derivation module no longer has its module-level CLI guard"
+        assert "sys.exit" in _ast.unparse(guard[0])
+        assert A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    # --- the correction did not disturb what came before ---
+
+    def test_the_identity_is_unchanged_by_this_correction(self):
+        """This gate REFUSES; it does not restate the surface, so the digest must not move."""
+        surface = A.project_outcome_producing_surface(DERIVATION_SOURCE)
+        symbols = {
+            line.split("::", 1)[0]
+            for line in surface.splitlines()
+            if not line.startswith("@ambient::")
+        }
+        assert len(A.OUTCOME_PRODUCING_PROJECTION_SEEDS) == 18
+        assert len(symbols) == 26
+
+    def test_the_live_projection_is_still_identical_to_the_accepted_package(self):
+        live = A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        for anchor in (A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, A.EXECUTABLE_PACKAGE_MERGE_SHA):
+            blob = subprocess.run(
+                ["git", "show", f"{anchor}:{DERIVATION_RELPATH}"],
+                cwd=ROOT, capture_output=True, text=True, check=True,
+            ).stdout
+            assert A.outcome_producing_projection_digest(blob) == live
+
+    def test_the_earlier_binder_and_import_protections_still_hold(self):
+        baseline = A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        assert A.outcome_producing_projection_digest(
+            _with_module_level_line("from builtins import min as any\n")
+        ) != baseline
+        assert A.outcome_producing_projection_digest(
+            _with_module_level_line("if True:\n    from builtins import min as any\n")
+        ) != baseline
+        assert A.outcome_producing_projection_digest(
+            _with_module_level_line("any, _unused = min, None\n")
+        ) != baseline

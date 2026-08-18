@@ -803,7 +803,165 @@ def _module_scope_binders(tree: ast.Module, where: str) -> dict[str, tuple[str, 
     return {name: tuple(records) for name, records in binders.items()}
 
 
-def _reject_dynamic_namespace_mutation(tree: ast.Module, where: str) -> None:
+#: Attributes that EXPOSE a live namespace. Reaching one in a module-scope call expression -- as the
+#: callee's receiver chain or as an argument handed to an unknown callable -- means the call can
+#: reach the very mapping the projected closure resolves through.
+_NAMESPACE_EXPOSING_ATTRIBUTES = frozenset(
+    {
+        "__dict__",
+        "__globals__",
+        "__builtins__",
+        "__class__",
+        "__bases__",
+        "__mro__",
+        "__subclasses__",
+        "__setattr__",
+        "__delattr__",
+        "__getattribute__",
+        "__setitem__",
+        "__delitem__",
+        "modules",
+    }
+)
+
+#: Method names that MUTATE their receiver in place. A static projection cannot prove the receiver
+#: is not a namespace -- ``_ns.update(any=min)`` looks identical whether ``_ns`` is a scratch dict or
+#: ``builtins.__dict__`` -- so at module scope these are refused on any receiver.
+_IN_PLACE_MUTATOR_METHODS = frozenset(
+    {
+        "update",
+        "setdefault",
+        "pop",
+        "popitem",
+        "clear",
+        "append",
+        "extend",
+        "insert",
+        "__setitem__",
+        "__delitem__",
+    }
+)
+
+#: Modules whose namespace the projected closure resolves through, or which hand out a live
+#: namespace on demand. A module-scope call rooted at one of these can rebind what a projected free
+#: name means. ``sys`` is deliberately NOT here: ``sys.exit(main())`` is the lawful CLI guard and
+#: mutates nothing, while the genuinely namespace-reaching ``sys`` avenue -- ``sys.modules`` -- is
+#: already refused by the namespace-attribute clause, which is the precise rule rather than a
+#: whole-module ban that would take the guard with it.
+_PROJECTION_BEARING_MODULES = frozenset({"builtins", "importlib", "gc", "ctypes"})
+
+
+def _callee_chain(node: ast.AST) -> tuple[str | None, tuple[str, ...]] | None:
+    """Decompose a callee into ``(root name, attribute chain)``, or ``None`` if not decomposable.
+
+    ``sys.exit`` -> ``("sys", ("exit",))``. ``b.__dict__.update`` ->
+    ``("b", ("__dict__", "update"))``. ``Path(__file__).resolve()`` -> ``("Path", ("resolve",))``,
+    because an intermediate call still leaves a nameable root. A callee rooted in a subscript,
+    lambda, conditional, comprehension, or literal -- ``registry["f"]()``, ``(a or b)()`` --
+    returns ``None``, because what it will run cannot be named statically.
+    """
+    attributes: list[str] = []
+    current = node
+    while True:
+        if isinstance(current, ast.Attribute):
+            attributes.append(current.attr)
+            current = current.value
+        elif isinstance(current, ast.Call):
+            # A chained call keeps a nameable root: ``Path(__file__).resolve()`` is rooted at
+            # ``Path``. Only the ROOT decides whether the chain reaches a namespace; refusing every
+            # chained call would take ordinary safe code with it.
+            current = current.func
+        else:
+            break
+    if isinstance(current, ast.Name):
+        return current.id, tuple(reversed(attributes))
+    return None
+
+
+def _reject_call_mediated_namespace_mutation(
+    call: ast.Call, binders: Mapping[str, tuple[str, ...]] | None, offences: set[str]
+) -> None:
+    """FAIL CLOSED on a module-scope CALL that could mutate a namespace the closure resolves through.
+
+    MAJOR 1 (delta review 4958940810). The predecessor recognised a dangerous call only when
+    ``call.func`` was an :class:`ast.Name`, so a method call -- whose callee is an
+    :class:`ast.Attribute` and which contains no ``Store`` node anywhere -- was neither refused nor
+    represented. Two lines were enough::
+
+        import builtins as _review_builtins
+        _review_builtins.__dict__.update(any=min)
+
+    Every projected ``any(...)`` became ``min(...)``, one categorical FAIL turned from
+    BLOCKED_CATEGORICALLY into CONSTRUCTIBLE_CANDIDATE_IDENTIFIED, and the projected identity did not
+    move. CPython's ``symtable`` oracle cannot see this class either: it binds no new module global,
+    it mutates an existing namespace through a call.
+
+    The rule is the SEMANTIC CLASS, not that spelling. A module-scope call is refused when:
+
+    * its callee cannot be decomposed to a root name -- ``getattr(m, "x")()``, ``registry["f"]()``,
+      ``(a or b)()`` -- because what it will run cannot be named, let alone proven harmless;
+    * anything in the callee's receiver chain, or in any argument, is a namespace-exposing attribute
+      such as ``__dict__``, ``__globals__``, ``__class__``, or ``sys.modules``;
+    * the method invoked mutates its receiver in place and the receiver cannot be proven not to be a
+      namespace -- which, statically, is always;
+    * the call is rooted at a module whose namespace the closure resolves through, or at a name
+      bound by a module-scope import of such a module however it is aliased;
+    * the callee is one of the pre-existing dangerous builtins by name.
+
+    ``sys.exit(main())`` survives every clause: its chain is ``("exit",)`` with no namespace
+    attribute, ``exit`` mutates no receiver, and ``sys.exit`` terminates the process rather than
+    rebinding anything the projection serialized -- so the lawful CLI guard is preserved, as are
+    ordinary calls like ``sorted(...)`` or ``Path(x).resolve()``.
+    """
+    decomposed = _callee_chain(call.func)
+    if decomposed is None:
+        offences.add(
+            "a module-scope call whose callee cannot be named statically "
+            f"({ast.dump(call.func, include_attributes=False)[:60]})"
+        )
+        return
+    root, attributes = decomposed
+
+    for attribute in attributes:
+        if attribute in _NAMESPACE_EXPOSING_ATTRIBUTES:
+            offences.add(f"a module-scope call reaching the namespace attribute {attribute!r}")
+
+    if attributes and attributes[-1] in _IN_PLACE_MUTATOR_METHODS:
+        offences.add(
+            f"a module-scope in-place mutator call {attributes[-1]!r}, whose receiver cannot be "
+            "proven not to be a namespace"
+        )
+
+    if not attributes and root in _DYNAMIC_NAMESPACE_CALLS:
+        offences.add(f"a call to {root!r}")
+
+    if attributes:
+        aliased = root
+        for record in (binders or {}).get(root, ()):  # resolve an import alias to its real module
+            _, _, rendering = record.partition("::")
+            for module in _PROJECTION_BEARING_MODULES:
+                if rendering.startswith(f"import {module}") or rendering.startswith(
+                    f"from {module} import"
+                ):
+                    aliased = module
+        if aliased in _PROJECTION_BEARING_MODULES:
+            offences.add(
+                f"a module-scope call rooted at {aliased!r}, whose namespace the outcome-producing "
+                "closure resolves through"
+            )
+
+    for argument in list(call.args) + [keyword.value for keyword in call.keywords]:
+        for inner in ast.walk(argument):
+            if isinstance(inner, ast.Attribute) and inner.attr in _NAMESPACE_EXPOSING_ATTRIBUTES:
+                offences.add(
+                    f"a module-scope call handed the namespace attribute {inner.attr!r} as an "
+                    "argument, so what the callee does with it cannot be proven harmless"
+                )
+
+
+def _reject_dynamic_namespace_mutation(
+    tree: ast.Module, where: str, binders: Mapping[str, tuple[str, ...]] | None = None
+) -> None:
     """FAIL CLOSED on namespace mutation this analysis cannot resolve statically.
 
     Deliberately unconditional rather than "only when it touches a projected name": deciding
@@ -815,6 +973,11 @@ def _reject_dynamic_namespace_mutation(tree: ast.Module, where: str) -> None:
 
     ``if __name__ == "__main__": sys.exit(main())`` binds nothing and mutates nothing, so the
     existing lawful CLI posture is untouched -- this gate is about MUTATION, not control flow.
+
+    EVERY module-scope call is now handed to
+    :func:`_reject_call_mediated_namespace_mutation`, which refuses the whole class of
+    call-mediated namespace mutation rather than the pre-existing by-name set alone. A method call
+    contains no ``Store`` node anywhere, so nothing else in this gate could ever have seen it.
 
     Augmented assignment and deletion are refused OUTRIGHT at module scope rather than merely
     modelled as binders. :func:`_module_scope_binders` records them too, so that model is complete
@@ -832,9 +995,8 @@ def _reject_dynamic_namespace_mutation(tree: ast.Module, where: str) -> None:
             for inner in ast.walk(node):
                 if isinstance(inner, _SCOPE_NODES) and inner is not node:
                     continue
-                if isinstance(inner, ast.Call) and isinstance(inner.func, ast.Name):
-                    if inner.func.id in _DYNAMIC_NAMESPACE_CALLS:
-                        offences.add(f"a call to {inner.func.id!r}")
+                if isinstance(inner, ast.Call):
+                    _reject_call_mediated_namespace_mutation(inner, binders, offences)
                 elif isinstance(inner, (ast.Global, ast.Nonlocal)):
                     offences.add(f"a {type(inner).__name__.lower()} declaration")
                 elif isinstance(inner, (ast.Attribute, ast.Subscript)) and isinstance(
@@ -1061,9 +1223,9 @@ def project_outcome_producing_surface(
         raise ProjectionError(f"{where}: source does not parse: {exc}") from exc
     _strip_docstrings(tree)
 
-    _reject_dynamic_namespace_mutation(tree, where)
-    table = _top_level_symbol_table(tree, where)
     binders = _module_scope_binders(tree, where)
+    _reject_dynamic_namespace_mutation(tree, where, binders)
+    table = _top_level_symbol_table(tree, where)
 
     # INDEPENDENT completeness oracle. Every module-global binding CPython's own symbol table
     # reports must be represented by the binder model; a form the AST walk forgot fails closed here
