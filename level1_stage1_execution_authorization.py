@@ -133,6 +133,7 @@ import hashlib
 import json
 import os
 import subprocess
+import symtable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping, Protocol, Sequence
@@ -601,6 +602,26 @@ _MODULE_DUNDERS = frozenset(
 )
 
 
+#: Compound statements whose bodies still EXECUTE IN MODULE SCOPE. A binder inside one of these
+#: binds a module global exactly as a direct statement does, which is why discovery must recurse
+#: through them rather than reading ``tree.body`` alone.
+_MODULE_SCOPE_COMPOUND_NODES: tuple[type[ast.AST], ...] = tuple(
+    node
+    for node in (
+        ast.If,
+        ast.Try,
+        ast.For,
+        ast.AsyncFor,
+        ast.While,
+        ast.With,
+        ast.AsyncWith,
+        getattr(ast, "TryStar", None),
+        getattr(ast, "Match", None),
+    )
+    if node is not None
+)
+
+
 def _import_binding_rendering(node: ast.Import | ast.ImportFrom, alias: ast.alias) -> str:
     """Render ONE import binding deterministically, independent of location or grouping.
 
@@ -613,63 +634,236 @@ def _import_binding_rendering(node: ast.Import | ast.ImportFrom, alias: ast.alia
     return f"from {module} import {alias.name}" + (f" as {alias.asname}" if alias.asname else "")
 
 
-def _module_ambient_bindings(tree: ast.Module, where: str) -> dict[str, tuple[str, ...]]:
-    """Map every name a MODULE-LEVEL import binds to its deterministic rendering.
+def _target_names(target: ast.AST | None) -> list[str]:
+    """Every name ONE binding target binds, unpacked recursively.
 
-    MAJOR 1 (delta review 4955476669). A projected function's AST can be byte-for-byte identical
-    while the MEANING of the names inside it changes, because a module-level import can shadow a
-    builtin or rebind a helper. ``from builtins import min as any`` is the demonstrated case: every
-    projected ``any(...)`` silently becomes ``min(...)``, which turns one categorical FAIL from
-    BLOCKED_CATEGORICALLY into CONSTRUCTIBLE_CANDIDATE_IDENTIFIED while the symbol projection is
-    unchanged. Ambient bindings are therefore part of the projected identity, not context around it.
-
-    A star import FAILS CLOSED: it binds an unknowable set of names, so no honest statement about
-    what the projected closure resolves to can be made in its presence.
-
-    Every rendering bound to a name is returned, in source order, rather than the last one winning.
-    A name bound more than once is resolution-order-dependent and is refused by the caller -- but
-    only if the closure actually resolves that name, so an unrelated authorization-only import block
-    is not made unlawful by a rule that exists to protect outcome semantics.
+    MAJOR 1 (delta review 4957056810). ``any, _unused = min, None`` binds ``any`` through a
+    ``Tuple`` target, which a ``isinstance(target, ast.Name)`` test misses entirely. Tuples, lists,
+    starred targets, and any nesting of them are unpacked here; attribute and subscript targets bind
+    no module name and are handled separately as namespace mutation.
     """
-    bindings: dict[str, tuple[str, ...]] = {}
-    for node in tree.body:
-        if not isinstance(node, (ast.Import, ast.ImportFrom)):
-            continue
-        for alias in node.names:
-            if alias.name == "*":
-                raise ProjectionError(
-                    f"{where}: a module-level star import binds an unknowable set of names, so the "
-                    "ambient surface of the outcome-producing closure cannot be established"
-                )
-            bound = alias.asname or alias.name.split(".")[0]
-            rendering = _import_binding_rendering(node, alias)
-            bindings[bound] = bindings.get(bound, ()) + (rendering,)
-    return bindings
+    if target is None:
+        return []
+    names: list[str] = []
+    stack: list[ast.AST] = [target]
+    while stack:
+        node = stack.pop()
+        if isinstance(node, ast.Name):
+            names.append(node.id)
+        elif isinstance(node, ast.Starred):
+            stack.append(node.value)
+        elif isinstance(node, (ast.Tuple, ast.List)):
+            stack.extend(node.elts)
+    return names
+
+
+def _pattern_names(pattern: ast.AST) -> list[str]:
+    """Every name a structural-pattern-matching case captures."""
+    names: list[str] = []
+    for node in ast.walk(pattern):
+        captured = getattr(node, "name", None)
+        if isinstance(captured, str):
+            names.append(captured)
+        rest = getattr(node, "rest", None)
+        if isinstance(rest, str):
+            names.append(rest)
+    return names
+
+
+def _controlling_identity(chain: Sequence[ast.AST]) -> str:
+    """Deterministic identity of the compound statements CONTROLLING a nested module-scope binder.
+
+    Requirement of the finding: "a conditional or order-dependent binding must include enough
+    controlling AST identity to detect a semantic change". Only the controlling EXPRESSION of each
+    enclosing statement is rendered -- an ``if``'s test, a loop's iterable, a ``with``'s items, a
+    ``match``'s subject, an ``except``'s type -- so ``if True:`` and ``if False:`` are different
+    identities while unrelated edits inside the same block are not swept in.
+    """
+    if not chain:
+        return "direct"
+    parts: list[str] = []
+    for node in chain:
+        label = type(node).__name__
+        controller: ast.AST | list | None = None
+        if isinstance(node, (ast.If, ast.While)):
+            controller = node.test
+        elif isinstance(node, (ast.For, ast.AsyncFor)):
+            controller = node.iter
+        elif isinstance(node, (ast.With, ast.AsyncWith)):
+            controller = [item.context_expr for item in node.items]
+        elif isinstance(node, ast.ExceptHandler):
+            controller = node.type
+        elif getattr(ast, "Match", None) is not None and isinstance(node, ast.Match):
+            controller = node.subject
+        elif getattr(ast, "match_case", None) is not None and isinstance(node, ast.match_case):
+            controller = node.pattern
+        if controller is None:
+            rendered = ""
+        elif isinstance(controller, list):
+            rendered = "|".join(ast.dump(item, include_attributes=False) for item in controller)
+        else:
+            rendered = ast.dump(controller, include_attributes=False)
+        parts.append(f"{label}({rendered})")
+    return "conditional[" + ">".join(parts) + "]"
+
+
+def _module_scope_binders(tree: ast.Module, where: str) -> dict[str, tuple[str, ...]]:
+    """Map EVERY name bound in module scope to the deterministic identity of each binder.
+
+    MAJOR 1 (delta review 4957056810). The predecessor scanned ``tree.body`` for direct ``Import`` /
+    ``ImportFrom`` nodes only, so two independent spellings slipped past it while changing outcome
+    semantics: a conditional import (``if True: from builtins import min as any``) and a
+    destructuring assignment (``any, _unused = min, None``). Both bind the module global ``any``,
+    both turned one categorical FAIL from BLOCKED_CATEGORICALLY into
+    CONSTRUCTIBLE_CANDIDATE_IDENTIFIED, and both left the projection byte-identical.
+
+    Discovery is therefore RECURSIVE through every compound statement that still executes in module
+    scope -- ``if`` / ``try`` / ``except`` / ``for`` / ``while`` / ``with`` / ``match`` -- and
+    TARGET-AWARE, unpacking tuple, list, and starred targets to arbitrary depth. Function, class,
+    lambda, and comprehension bodies are NOT entered: they open their own scope, and only the
+    definition's own name binds here.
+
+    Every binding form is covered: imports, ordinary/annotated/augmented assignments, named
+    expressions, loop targets, ``with ... as`` targets, ``except ... as`` names, match captures, and
+    function/class declarations. Each record carries its binder kind, the controlling identity of
+    any enclosing compound statement, and a deterministic rendering -- per-alias for imports, so
+    regrouping the import block still changes nothing, and a location-free ``ast.dump`` of the
+    binding statement otherwise, so the bound VALUE is part of the identity.
+
+    A star import fails closed here; every other refusal is deferred to the caller, which alone
+    knows which names the projected closure actually resolves.
+    """
+    binders: dict[str, list[str]] = {}
+
+    def record(name: str, kind: str, chain: Sequence[ast.AST], rendering: str) -> None:
+        binders.setdefault(name, []).append(
+            f"{kind}@{_controlling_identity(chain)}::{rendering}"
+        )
+
+    def dumped(node: ast.AST) -> str:
+        return ast.dump(node, include_attributes=False)
+
+    def visit(body: Sequence[ast.AST], chain: tuple[ast.AST, ...]) -> None:
+        for node in body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                record(node.name, "definition", chain, f"{type(node).__name__} {node.name}")
+                continue
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                for alias in node.names:
+                    if alias.name == "*":
+                        raise ProjectionError(
+                            f"{where}: a module-scope star import binds an unknowable set of names, "
+                            "so the ambient surface of the outcome-producing closure cannot be "
+                            "established"
+                        )
+                    bound = alias.asname or alias.name.split(".")[0]
+                    record(bound, "import", chain, _import_binding_rendering(node, alias))
+                continue
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    for name in _target_names(target):
+                        record(name, "assign", chain, dumped(node))
+            elif isinstance(node, ast.AnnAssign):
+                for name in _target_names(node.target):
+                    record(name, "annassign", chain, dumped(node))
+            elif isinstance(node, ast.AugAssign):
+                for name in _target_names(node.target):
+                    record(name, "augassign", chain, dumped(node))
+            elif isinstance(node, (ast.For, ast.AsyncFor)):
+                for name in _target_names(node.target):
+                    record(name, "loop-target", chain, dumped(node.target))
+            elif isinstance(node, (ast.With, ast.AsyncWith)):
+                for item in node.items:
+                    for name in _target_names(item.optional_vars):
+                        record(name, "with-target", chain, dumped(item))
+
+            # Named expressions bind wherever they appear in a module-scope expression.
+            for inner in ast.walk(node):
+                if isinstance(inner, _SCOPE_NODES):
+                    continue
+                if isinstance(inner, ast.NamedExpr):
+                    for name in _target_names(inner.target):
+                        record(name, "named-expression", chain, dumped(inner))
+
+            if isinstance(node, _MODULE_SCOPE_COMPOUND_NODES):
+                nested = chain + (node,)
+                for field in ("body", "orelse", "finalbody"):
+                    visit(getattr(node, field, None) or [], nested)
+                for handler in getattr(node, "handlers", None) or []:
+                    if handler.name:
+                        record(handler.name, "exception-name", nested + (handler,), handler.name)
+                    visit(handler.body, nested + (handler,))
+                for case in getattr(node, "cases", None) or []:
+                    case_chain = nested + (case,)
+                    for name in _pattern_names(case.pattern):
+                        record(name, "match-capture", case_chain, dumped(case.pattern))
+                    visit(case.body, case_chain)
+
+    visit(tree.body, ())
+    return {name: tuple(records) for name, records in binders.items()}
 
 
 def _reject_dynamic_namespace_mutation(tree: ast.Module, where: str) -> None:
     """FAIL CLOSED on namespace mutation this analysis cannot resolve statically.
 
     Deliberately unconditional rather than "only when it touches a projected name": deciding
-    whether a ``globals()`` write or an ``exec`` reaches the closure would require evaluating it,
-    which is precisely what a static projection cannot do. None of these forms exists in the real
-    module, so refusing them costs no lawful authorization-only edit, while silently tolerating one
-    would let an outcome change hide exactly where this projection is supposed to look.
+    whether a ``globals()`` write, an ``exec``, or an attribute assignment onto an imported module
+    reaches the closure would require evaluating it, which is precisely what a static projection
+    cannot do. None of these forms exists in the real module, so refusing them costs no lawful
+    authorization-only edit, while silently tolerating one would let an outcome change hide exactly
+    where this projection is supposed to look.
+
+    ``if __name__ == "__main__": sys.exit(main())`` binds nothing and mutates nothing, so the
+    existing lawful CLI posture is untouched -- this gate is about MUTATION, not control flow.
+
+    Augmented assignment and deletion are refused OUTRIGHT at module scope rather than merely
+    modelled as binders. :func:`_module_scope_binders` records them too, so that model is complete
+    in its own right and answers the symbol-table completeness check honestly, but this gate runs
+    first: a module-scope ``x += 1`` mutates a value the projection has already serialized, and no
+    lawful authorization-only edit needs one. That keeps the predecessor's blanket refusal exactly
+    as strict as it was while the recursion below makes it strictly broader.
     """
     offences: set[str] = set()
-    for node in tree.body:
-        if isinstance(node, ast.AugAssign) and isinstance(node.target, ast.Name):
-            offences.add(f"module-level augmented assignment to {node.target.id!r}")
-        elif isinstance(node, ast.Delete):
-            for target in node.targets:
-                if isinstance(target, ast.Name):
-                    offences.add(f"module-level deletion of {target.id!r}")
 
+    def scan(body: Sequence[ast.AST]) -> None:
+        for node in body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                continue
+            for inner in ast.walk(node):
+                if isinstance(inner, _SCOPE_NODES) and inner is not node:
+                    continue
+                if isinstance(inner, ast.Call) and isinstance(inner.func, ast.Name):
+                    if inner.func.id in _DYNAMIC_NAMESPACE_CALLS:
+                        offences.add(f"a call to {inner.func.id!r}")
+                elif isinstance(inner, (ast.Global, ast.Nonlocal)):
+                    offences.add(f"a {type(inner).__name__.lower()} declaration")
+                elif isinstance(inner, (ast.Attribute, ast.Subscript)) and isinstance(
+                    getattr(inner, "ctx", None), (ast.Store, ast.Del)
+                ):
+                    offences.add(
+                        f"module-scope {type(inner).__name__.lower()} mutation "
+                        f"({ast.dump(inner, include_attributes=False)[:60]})"
+                    )
+                elif isinstance(inner, ast.Delete):
+                    for target in inner.targets:
+                        for name in _target_names(target):
+                            offences.add(f"module-scope deletion of {name!r}")
+                elif isinstance(inner, ast.AugAssign):
+                    for name in _target_names(inner.target):
+                        offences.add(f"module-scope augmented assignment to {name!r}")
+            if isinstance(node, _MODULE_SCOPE_COMPOUND_NODES):
+                for field in ("body", "orelse", "finalbody"):
+                    scan(getattr(node, field, None) or [])
+                for handler in getattr(node, "handlers", None) or []:
+                    scan(handler.body)
+                for case in getattr(node, "cases", None) or []:
+                    scan(case.body)
+
+    scan(tree.body)
+
+    # A global/nonlocal declaration anywhere -- including inside a function -- reaches module scope.
     for node in ast.walk(tree):
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
-            if node.func.id in _DYNAMIC_NAMESPACE_CALLS:
-                offences.add(f"a call to {node.func.id!r}")
-        elif isinstance(node, (ast.Global, ast.Nonlocal)):
+        if isinstance(node, (ast.Global, ast.Nonlocal)):
             offences.add(f"a {type(node).__name__.lower()} declaration")
 
     if offences:
@@ -677,6 +871,24 @@ def _reject_dynamic_namespace_mutation(tree: ast.Module, where: str) -> None:
             f"{where}: unsupported dynamic namespace mutation ({', '.join(sorted(offences))}); the "
             "ambient surface of the outcome-producing closure cannot be established statically"
         )
+
+
+def _symtable_module_globals(source: str, where: str) -> set[str]:
+    """Every module-global BINDING Python's own symbol table reports.
+
+    An INDEPENDENT completeness oracle for :func:`_module_scope_binders`, deliberately built from a
+    different mechanism -- CPython's compiler front end rather than this module's AST walk -- so a
+    binding form the walk forgets is caught by something that did not inherit the same blind spot.
+    """
+    try:
+        table = symtable.symtable(source, where, "exec")
+    except (SyntaxError, ValueError) as exc:  # pragma: no cover - parse already succeeded
+        raise ProjectionError(f"{where}: symbol table could not be built: {exc}") from exc
+    return {
+        symbol.get_name()
+        for symbol in table.get_symbols()
+        if symbol.is_assigned() or symbol.is_imported()
+    }
 
 
 def _scope_parts(scope: ast.AST) -> list[ast.AST]:
@@ -826,8 +1038,9 @@ def project_outcome_producing_surface(
 
     FAILS CLOSED, raising :class:`ProjectionError`, on: unparseable source; a seed that is missing or
     was renamed; a top-level symbol defined more than once; a star import; a name the closure
-    resolves that is bound by more than one module-level import; unsupported dynamic namespace
-    mutation (``exec``, ``eval``, ``globals``,
+    resolves that is bound by more than one module-scope binder; a projected symbol conditionally
+    rebound in module scope; a module-global binding Python's own symbol table reports that the
+    binder model does not represent; unsupported dynamic namespace mutation (``exec``, ``eval``, ``globals``,
     ``vars``, ``setattr``, ``delattr``, ``global``/``nonlocal``, module-level augmented assignment or
     deletion); a referenced name that resolves to nothing this analysis can name; or a serialization
     that cannot be produced. It never returns a partial or best-effort surface.
@@ -850,7 +1063,18 @@ def project_outcome_producing_surface(
 
     _reject_dynamic_namespace_mutation(tree, where)
     table = _top_level_symbol_table(tree, where)
-    ambient_bindings = _module_ambient_bindings(tree, where)
+    binders = _module_scope_binders(tree, where)
+
+    # INDEPENDENT completeness oracle. Every module-global binding CPython's own symbol table
+    # reports must be represented by the binder model; a form the AST walk forgot fails closed here
+    # rather than falling silently through to a builtin.
+    unmodelled = sorted(_symtable_module_globals(source, where) - set(binders) - set(table))
+    if unmodelled:
+        raise ProjectionError(
+            f"{where}: Python's symbol table reports module-global binding(s) {unmodelled!r} that "
+            "the module-scope binder model does not represent; the ambient surface cannot be "
+            "established"
+        )
 
     missing = [name for name in seeds if name not in table]
     if missing:
@@ -885,16 +1109,30 @@ def project_outcome_producing_surface(
     for name in closure:
         referenced |= _free_names_of(table[name])
 
+    # A projected symbol that is ALSO rebound elsewhere in module scope is order-dependent: which
+    # definition the closure actually runs cannot be decided statically.
+    rebound = sorted(
+        name
+        for name in closure
+        if len({record for record in binders.get(name, ()) if "@direct::" not in record}) > 0
+    )
+    if rebound:
+        raise ProjectionError(
+            f"{where}: projected symbol(s) {rebound!r} are also bound by a conditional or nested "
+            "module-scope binder, so which definition the outcome-producing closure runs is "
+            "order-dependent and cannot be projected"
+        )
+
     ambient_parts: list[str] = []
     unresolved: list[str] = []
     ambiguous: list[str] = []
     for name in sorted(referenced - set(table)):
-        if name in ambient_bindings:
-            renderings = ambient_bindings[name]
-            if len(set(renderings)) != 1:
+        if name in binders:
+            records = binders[name]
+            if len(set(records)) != 1:
                 ambiguous.append(name)
                 continue
-            ambient_parts.append(f"@ambient::{name}::import::{renderings[0]}")
+            ambient_parts.append(f"@ambient::{name}::bound::{records[0]}")
         elif hasattr(builtins, name):
             ambient_parts.append(f"@ambient::{name}::builtin")
         elif name in _MODULE_DUNDERS:
@@ -904,7 +1142,7 @@ def project_outcome_producing_surface(
     if ambiguous:
         raise ProjectionError(
             f"{where}: the outcome-producing closure resolves {sorted(ambiguous)!r} through a "
-            "module-level name bound by more than one import, so what it means is "
+            "module-scope name bound by more than one binder, so what it means is "
             "resolution-order-dependent and cannot be projected"
         )
     if unresolved:

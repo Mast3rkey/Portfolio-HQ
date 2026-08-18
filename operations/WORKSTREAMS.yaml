@@ -14103,6 +14103,75 @@ workstreams:
           SS-P.1 consumption occurred. Stage 1 remains UNARMED and NOT EXECUTABLE. The corrected head
           requires a further independent exact-head DELTA review from
           eadbb8d4f44f7a2a4147c9e99f6d4ab43cdf154b.
+          THIRD BOUNDED CORRECTION after independent exact-head DELTA review 4957056810 at head
+          41afe0992c7043739a5a84f92ea91a342370b863 (CHANGES REQUIRED - 0 BLOCKING / 1 MAJOR /
+          0 MINOR / 0 NOTE). That review confirmed the direct-import case genuinely fixed and
+          objected to none of the 18-seed / 26-symbol projection, scope-aware free-name analysis,
+          four-way identity separation, V7 succession, 9->10 load-bearing extension, historical
+          preservation, exact-head lifecycle gates, pull-request provenance, closed schemas, or
+          non-activation posture; none of those changed. MAJOR 1, both reported spellings reproduced
+          in isolated checkouts against the real public validator BEFORE correcting, with the real
+          lane never created, opened or touched: binding discovery was DIRECT-NODE-ONLY -
+          _top_level_symbol_table read simple-Name targets from tree.body and _module_ambient_bindings
+          scanned tree.body for Import/ImportFrom nodes - so (A) a conditional import
+          ('if True:' / '    from builtins import min as any') and (B) a destructuring assignment
+          ('any, _unused = min, None') each left the projected identity IDENTICAL, each flipped one
+          categorical FAIL (G10_PAIR_INDEPENDENCE) from BLOCKED_CATEGORICALLY into
+          CONSTRUCTIBLE_CANDIDATE_IDENTIFIED, and with the accepted source at both PR #336 package
+          anchors and the mutated source plus matching load-bearing hashes at internally consistent
+          successor-head, successor-merge and working-tree anchors, validate_authorization_document
+          returned valid=True with errors=() in both cases. CORRECTED at the level of the SEMANTIC
+          CLASS rather than the two spellings: _module_ambient_bindings is replaced by
+          _module_scope_binders, which is RECURSIVE through every compound statement still executing
+          in module scope (if, try body/handlers/else/finally, for, async for, while, with,
+          async with, match) while never entering a function, class, lambda or comprehension body;
+          TARGET-AWARE, unpacking Tuple, List and Starred targets to arbitrary nesting depth;
+          COMPLETE across binder kinds (imports, ordinary/annotated/augmented assignments, named
+          expressions, loop targets, with-as targets, except-as names, match captures, and
+          function/class declarations); and CONTROLLING-IDENTITY AWARE, so a nested binding carries a
+          rendering of each enclosing statement's controlling expression and 'if True' and 'if False'
+          are different identities while unrelated edits in the same block are not swept in. FAILS
+          CLOSED where resolution cannot be modelled: star import; a closure-resolved name bound by
+          more than one binder; a projected symbol conditionally rebound elsewhere in module scope
+          (order-dependent); module-scope attribute or subscript mutation, which can reach an imported
+          module, a builtin or globals; exec/eval/globals/vars/setattr/delattr; global/nonlocal;
+          augmented assignment; deletion - the predecessor's blanket refusal of augmented assignment
+          and deletion is kept EXACTLY as strict, now recursive rather than direct-only. INDEPENDENTLY
+          CROSS-CHECKED: every module-global binding CPython's own symtable reports must be
+          represented by the binder model or the projection fails closed - a different mechanism from
+          this module's AST walk, so a form the walk forgets is caught by something that did not
+          inherit the same blind spot; on the real module the two agree exactly at 150 bindings, zero
+          on either side. PRECISION PRESERVED, which is what keeps this a projection rather than
+          whole-file equality: a binder the closure never resolves - an unused import, an unused
+          conditional import, a shadow of a builtin it never calls, an unrelated destructuring, a loop
+          counter - does NOT change the identity, and the lawful 'if __name__ == "__main__"' CLI
+          guard binds nothing and is untouched, since the gate refuses MUTATION and never ordinary
+          control flow. The 18-seed / 26-symbol projection, scope-aware free-name analysis,
+          direct-import binding and narrow docstring exclusion are all unchanged; the projected
+          identity moved to 574b9194b61cbc1fe9dca0f1536b91bd6b1c716d5d197df7529e27c9e0039af5 because
+          ambient records now name their binder kind and controlling identity, a richer surface rather
+          than a different subject. SEVENTY new tests: a parameterized binder matrix of sixteen forms
+          plus a match statement, ten namespace-mutation refusals, six precision cases and direct
+          target-unpacking cases; the two reported reproductions driven through the REAL public
+          validator at both the successor and the package anchors with the disposition flip
+          established by EXECUTING the mutated module; the completeness oracle called directly from
+          the test rather than through production code; and a dedicated test that blinds the
+          production model to prove the oracle is ENFORCED, not merely available. MUTATION PROOF:
+          reverting only the binder correction - restoring direct-node-only discovery - fails 28 of
+          the 70, verified by re-applying the mutation in an isolated copy and then restoring the fix
+          to separate genuine detection from environment noise. NO DRIFT AT THE REAL ANCHORS,
+          CONFIRMED RATHER THAN PRESUMED: the corrected projection is identical at the PR #336
+          accepted head, the PR #336 merge, this head and the working tree. NO OUTCOME-PRODUCING
+          MODULE WAS EDITED - level1_stage1_runner.py, level1_stage1_result_validator.py and
+          level1_endpoint_evidence_preregistration_validator.py are all absent from the diff. NO
+          CANONICAL BYTE CHANGED, so the V7 pins are again re-verified rather than recomputed; the
+          frozen universe stays 680 / 48 / 73c0965e...5224; LOAD_BEARING_RELPATHS stays 10 with
+          nothing removed and no byte check weakened; B1/B2/B3, gate semantics, construction
+          identities, dispositions, XASSET-0024 SS-K.1 and XASSET-0020 SS-E.1 are untouched; no
+          accepted decision file was edited and no protected portfolio path changed; and no SS-G.B
+          step 9, 10 or 11, attestation, lane state, ATTEMPT_1 or XASSET-0027 SS-P.1 consumption
+          occurred. Stage 1 remains UNARMED and NOT EXECUTABLE. The corrected head requires a further
+          independent exact-head DELTA review from 41afe0992c7043739a5a84f92ea91a342370b863.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

@@ -562,3 +562,105 @@ No accepted decision file was edited and no protected portfolio path changed. No
 
 **Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires a further independent
 exact-head **DELTA** review from `eadbb8d4f44f7a2a4147c9e99f6d4ab43cdf154b`.
+
+## Third bounded correction — independent exact-head DELTA review `4957056810`
+
+The delta review of `41afe0992c7043739a5a84f92ea91a342370b863` returned **CHANGES REQUIRED — 0
+BLOCKING / 1 MAJOR / 0 MINOR / 0 NOTE**. It confirmed the direct-import case from the previous round
+genuinely fixed, and objected to none of the 18-seed / 26-symbol projection, scope-aware free-name
+analysis, four-way identity separation, V7 succession, 9 → 10 load-bearing extension, historical
+preservation, exact-head lifecycle gates, truthful pull-request provenance, closed schemas, or
+non-activation posture. **None of those changed.** One defect remained, and it is the general form of
+the one just fixed.
+
+### MAJOR 1 — indirect module-scope binders still bypassed the identity
+
+Binding discovery was **direct-node-only**: `_top_level_symbol_table` read simple-`Name` targets from
+`tree.body`, and `_module_ambient_bindings` scanned `tree.body` for `Import` / `ImportFrom` nodes.
+Python binds module globals through many more forms than those, and every one of them fell through
+to the original builtin.
+
+**Both reported spellings reproduced first**, in isolated checkouts against the real public
+validator, with the real lane never created, opened, or touched:
+
+| | A — conditional import | B — destructuring assignment |
+|---|---|---|
+| Inserted | `if True:` / `    from builtins import min as any` | `any, _unused = min, None` |
+| Projected identity vs. accepted | **identical** | **identical** |
+| One categorical `FAIL` (`G10_PAIR_INDEPENDENCE`) | `BLOCKED_CATEGORICALLY` → **`CONSTRUCTIBLE_CANDIDATE_IDENTIFIED`** | same flip |
+| Accepted served at both PR #336 package anchors | yes | yes |
+| Mutated + matching load-bearing hashes at successor head / merge / working tree | yes | yes |
+| `validate_authorization_document` | **`valid=True`, `errors=()`** | **`valid=True`, `errors=()`** |
+
+### The correction — a complete, target-aware module-scope binder model
+
+The fix addresses the **semantic class**, not the two spellings. `_module_ambient_bindings` is
+replaced by `_module_scope_binders`, which is:
+
+- **Recursive** through every compound statement that still executes in module scope — `if`, `try`
+  (body, handlers, `else`, `finally`), `for` / `async for`, `while`, `with` / `async with`, `match`
+  — while never entering a function, class, lambda, or comprehension body, since those open their
+  own scope and only the definition's own name binds at module level.
+- **Target-aware**, unpacking `Tuple`, `List`, and `Starred` targets to arbitrary nesting depth.
+- **Complete across binder kinds**: imports, ordinary / annotated / augmented assignments, named
+  expressions, loop targets, `with … as` targets, `except … as` names, match captures, and
+  function / class declarations.
+- **Controlling-identity aware.** A nested binding carries a rendering of each enclosing statement's
+  *controlling expression* — an `if`'s test, a loop's iterable, a `with`'s items, an `except`'s type,
+  a `match`'s subject — so `if True:` and `if False:` are different identities while unrelated edits
+  inside the same block are not swept in.
+- **Fail-closed where resolution cannot be modelled**: a star import; a closure-resolved name bound
+  by more than one binder; a projected symbol conditionally rebound elsewhere in module scope
+  (order-dependent — which definition runs cannot be decided statically); module-scope attribute or
+  subscript mutation, which can reach an imported module, a builtin, or `globals`; `exec` / `eval` /
+  `globals` / `vars` / `setattr` / `delattr`; `global` / `nonlocal`; augmented assignment; deletion.
+  The predecessor's blanket refusal of augmented assignment and deletion is kept **exactly as
+  strict**, now recursive rather than direct-only.
+- **Independently cross-checked.** Every module-global binding CPython's own `symtable` reports must
+  be represented by the binder model, or the projection fails closed. That oracle is a different
+  mechanism — the compiler front end, not this module's AST walk — so a form the walk forgets is
+  caught by something that did not inherit the same blind spot. On the real module the two agree
+  exactly: **150 bindings, zero on either side**.
+
+**Precision is preserved**, which is what keeps this a projection rather than whole-file equality: a
+binder the closure never resolves — an unused import, an unused conditional import, a shadow of a
+builtin the closure never calls, an unrelated destructuring, a loop counter — does **not** change the
+identity. The lawful `if __name__ == "__main__":` CLI guard binds nothing and is untouched; the gate
+refuses *mutation*, never ordinary control flow. The 18-seed → 26-symbol projection, scope-aware
+free-name analysis, direct-import binding, and narrow docstring exclusion are all unchanged.
+
+The projected identity moved to
+**`574b9194b61cbc1fe9dca0f1536b91bd6b1c716d5d197df7529e27c9e0039af5`** because ambient records now
+name their binder kind and controlling identity — the surface is richer, not a different subject.
+
+### Proof, not assertion
+
+**Seventy new tests**, including a parameterized binder matrix of sixteen forms plus a `match`
+statement, ten namespace-mutation refusals, six precision cases, and direct target-unpacking cases.
+The two reported reproductions are driven through the **real public validator** at both the successor
+and the package anchors, and the disposition flip is established by **executing** the mutated module.
+The completeness oracle is called directly from the test rather than through production code, and a
+dedicated test blinds the production model to prove the oracle is **enforced**, not merely available.
+
+**Mutation proof: reverting only the binder correction — restoring direct-node-only discovery —
+fails 28 of the 70**, verified by re-applying the mutation in an isolated copy and re-running, then
+restoring the fix to separate genuine detection from environment noise.
+
+**No drift at the real anchors, confirmed rather than presumed.** The corrected projection is
+identical at the PR #336 accepted head, the PR #336 merge, this head, and the working tree.
+
+### What this third correction did not do
+
+No canonical byte changed, so the **V7 pins are again re-verified, not recomputed** —
+`PROTOCOL_V1.md` `367583b6…d8971` and `pre_registration.yaml` `768b013c…4bce1` stand. The frozen
+universe is unchanged at **680 / 48 / `73c0965e…5224`**. `LOAD_BEARING_RELPATHS` remains **10**.
+**No outcome-producing module was edited** — `level1_stage1_runner.py`,
+`level1_stage1_result_validator.py`, and `level1_endpoint_evidence_preregistration_validator.py` are
+all absent from the diff. B1, B2, B3, every gate's semantics, every construction identity, every
+disposition, `XASSET-0024` §K.1, and `XASSET-0020` §E.1 are untouched. No accepted decision file was
+edited and no protected portfolio path changed. No §G.B step 9, 10, or 11 was performed, no
+attestation generated, no lane state created, and nothing of `ATTEMPT_1` or `XASSET-0027` §P.1
+consumed.
+
+**Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires a further independent
+exact-head **DELTA** review from `41afe0992c7043739a5a84f92ea91a342370b863`.
