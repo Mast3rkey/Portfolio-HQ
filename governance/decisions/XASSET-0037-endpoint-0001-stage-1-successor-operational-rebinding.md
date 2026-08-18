@@ -473,3 +473,92 @@ construction identity, and every disposition are untouched. No accepted decision
 
 **Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires an independent exact-head
 **DELTA** review from `f7bd5ecff747ade2ffab30574c58da3d683e4d60`.
+
+## Second bounded correction — independent exact-head DELTA review `4955476669`
+
+The delta review of `eadbb8d4f44f7a2a4147c9e99f6d4ab43cdf154b` returned **CHANGES REQUIRED — 0
+BLOCKING / 1 MAJOR / 0 MINOR / 0 NOTE**. It recorded MINOR 1 and MINOR 2 above as **RESOLVED**, found
+the 18-seed / 26-symbol projection materially improved, and objected to none of the four-way identity
+separation, V7 succession, 9 → 10 load-bearing extension, historical preservation, exact-head
+lifecycle gates, truthful pull-request provenance, or non-activation posture. **None of those
+changed.** One defect remained, and it is a real one.
+
+### MAJOR 1 — ambient bindings can change what a projected AST *means*
+
+`_top_level_symbol_table` recorded functions, classes, and assignments but not `ast.Import` or
+`ast.ImportFrom`, and the closure then treated every referenced name absent from that table as "a
+builtin or an import" and left it out of scope. That is a syntactic boundary, not a semantic one: a
+module-level import can shadow a builtin the closure calls while every projected symbol stays
+byte-for-byte identical.
+
+**Reproduced first, in an isolated checkout, against the real public validator — the real lane was
+never created, opened, or touched.** Inserting exactly one line, `from builtins import min as any`:
+
+| Step | Result |
+|---|---|
+| Projected identity, original vs. mutated | **identical** — `9f61ba4b…` both times |
+| One categorical `FAIL` (`G10_PAIR_INDEPENDENCE`), accepted implementation | `BLOCKED_CATEGORICALLY` |
+| The same input, mutated implementation | `CONSTRUCTIBLE_CANDIDATE_IDENTIFIED` |
+| Original at both package anchors, mutated at successor head / merge / working tree | internally consistent |
+| `validate_authorization_document` | **`valid=True`, `errors=()`** |
+
+Every projected `any(...)` had silently become `min(...)`, and the rebinding accepted it.
+
+### The correction — the ambient surface joins the identity
+
+The 18-seed → 26-symbol projection is **retained exactly**; whole-file equality was again rejected,
+for the same reason as before. What is added is a second, separately derived half of the same
+identity: for every name the closure resolves through the **module namespace** rather than its own
+top-level symbols, the projection now records **what that name is bound to**.
+
+- **Free names are computed scope-aware.** Parameters, local assignments, comprehension targets,
+  `except … as` names, nested definitions, and function-local imports are bound and therefore not
+  free. Class-body bindings do not propagate into methods, matching Python's real scoping.
+  Decorators, defaults, annotations, and class bases are analysed in the scope where they execute.
+- **Each free name is then resolved**, and the resolution — not merely the name — is part of the
+  identity: `@ambient::any::builtin`, `@ambient::Mapping::import::from typing import Mapping`.
+  Renderings are built from AST fields, so regrouping or reordering the import block changes
+  nothing while changing *what a name is bound to* always changes the digest.
+- **Nothing is assumed harmless.** A star import, a name the closure resolves that is bound by more
+  than one module-level import, `exec` / `eval` / `globals` / `vars` / `setattr` / `delattr`, a
+  `global` or `nonlocal` declaration, a module-level augmented assignment or deletion, or a
+  referenced name that resolves to nothing nameable, each **fails closed** with a specific error.
+- **Precision is preserved deliberately.** An import the closure never references — including a
+  shadow of a builtin the closure never calls — does **not** change the identity, so lawful
+  authorization-only edits outside the outcome-producing surface remain possible. That is the whole
+  reason this is a projection rather than file equality.
+- **The docstring exclusion is unchanged and still narrow**, and is still tested in both directions.
+
+The projected identity therefore moved from `9f61ba4b…` to **`6da16369c2fcfd363b00f8319ffe46436a97dbfb3de886756c917eefc4673626`**
+— a different value because the surface is genuinely larger, not because any outcome semantics moved.
+
+### Proof, not assertion
+
+Thirty new tests. Nine of them independently detect the fix being reverted — including the reported
+reproduction driven through the real public validator at **both** the successor and the package
+anchors — verified by re-applying the mutation in an isolated copy. The remainder pin the precision
+boundary, every fail-closed edge, and the real anchors. The ambient surface is compared against a
+derivation performed **independently of every production constant and helper**, walking the module's
+own source, so the production declaration is never its own oracle. The disposition flip itself is
+established by executing the mutated module, rather than assumed.
+
+**Requirement: no drift at the real anchors, confirmed rather than presumed.** The corrected
+projection — ambient surface included — is identical at the PR #336 accepted head, the PR #336 merge,
+this head, and the working tree; and the eight module-level import nodes are AST-identical across all
+four, checked separately from the digest. **No Stage-1 outcome semantics changed.**
+
+### What this second correction did not do
+
+No canonical byte changed, so the **V7 pins are again re-verified, not recomputed** —
+`PROTOCOL_V1.md` `367583b6…d8971` and `pre_registration.yaml` `768b013c…4bce1` stand. The frozen
+universe is unchanged at **680 / 48 / `73c0965e…5224`**. `LOAD_BEARING_RELPATHS` remains **10**;
+nothing was removed and no byte check was weakened. `level1_stage1_runner.py` and
+`level1_stage1_result_validator.py` remain byte-identical to the accepted PR #336 package, and no
+outcome-producing behaviour in either was edited. B1, B2, B3, every gate's semantics, every
+construction identity, every disposition, `XASSET-0024` §K.1, and `XASSET-0020` §E.1 are untouched.
+No accepted decision file was edited and no protected portfolio path changed. No §G.B step 9, 10, or
+11 was performed, no attestation generated, no lane state created, and nothing of `ATTEMPT_1` or
+`XASSET-0027` §P.1 consumed.
+
+**Stage 1 remains UNARMED and NOT EXECUTABLE.** The corrected head requires a further independent
+exact-head **DELTA** review from `eadbb8d4f44f7a2a4147c9e99f6d4ab43cdf154b`.

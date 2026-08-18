@@ -1562,3 +1562,298 @@ class TestReviewedMinorFindings:
     def test_the_identity_schema_still_names_exactly_four_relationships(self):
         assert len(PREREG.SUCCESSOR_REBINDING_IDENTITY_KEYS) == 4
         assert len(set(PREREG.SUCCESSOR_REBINDING_IDENTITY_KEYS)) == 4
+
+
+def _with_module_level_line(text: str) -> str:
+    """Insert one module-level statement immediately after the ``__future__`` import.
+
+    Deliberately the smallest possible edit: it adds a line and touches nothing else, so any change
+    in projected identity is attributable to that line alone.
+    """
+    lines = DERIVATION_SOURCE.splitlines(keepends=True)
+    index = next(i for i, line in enumerate(lines) if line.startswith("from __future__ import"))
+    mutated = "".join(lines[: index + 1] + [text] + lines[index + 1 :])
+    assert mutated != DERIVATION_SOURCE
+    return mutated
+
+
+def _independently_derived_ambient_names() -> tuple[set[str], set[str]]:
+    """Re-derive, from the derivation module's OWN source, what the closure resolves ambiently.
+
+    Deliberately NOT read from any production constant, tuple, or helper output: the delta review's
+    requirement is that the production binding declaration must not be its own oracle. This walks
+    the module directly, reconstructs the seed closure by attribute reachability, and splits the
+    names it resolves outside its own top-level symbols into import-bound and builtin.
+    """
+    import ast as _ast
+    import builtins as _builtins
+
+    tree = _ast.parse(DERIVATION_SOURCE)
+    table: dict[str, _ast.AST] = {}
+    for node in tree.body:
+        if isinstance(node, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef)):
+            table[node.name] = node
+        elif isinstance(node, _ast.Assign):
+            for target in node.targets:
+                if isinstance(target, _ast.Name):
+                    table[target.id] = node
+        elif isinstance(node, _ast.AnnAssign) and isinstance(node.target, _ast.Name):
+            table[node.target.id] = node
+
+    closure: set[str] = set()
+    stack = list(_independently_derived_seed_symbols())
+    while stack:
+        name = stack.pop()
+        if name in closure or name not in table:
+            continue
+        closure.add(name)
+        for sub in _ast.walk(table[name]):
+            if isinstance(sub, _ast.Name) and sub.id in table and sub.id not in closure:
+                stack.append(sub.id)
+
+    imported: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, (_ast.Import, _ast.ImportFrom)):
+            for alias in node.names:
+                imported.add(alias.asname or alias.name.split(".")[0])
+
+    referenced: set[str] = set()
+    for name in closure:
+        for sub in _ast.walk(table[name]):
+            if isinstance(sub, _ast.Name) and isinstance(sub.ctx, _ast.Load):
+                referenced.add(sub.id)
+    outside = referenced - set(table)
+    return ({n for n in outside if n in imported}, {n for n in outside if hasattr(_builtins, n)})
+
+
+class TestAmbientBindingIdentity:
+    """A projected AST can be identical while the MEANING of the names inside it changes.
+
+    Delta review 4955476669 demonstrated the case end to end: inserting only
+    ``from builtins import min as any`` left every projected symbol byte-for-byte identical, turned
+    one categorical FAIL from BLOCKED_CATEGORICALLY into CONSTRUCTIBLE_CANDIDATE_IDENTIFIED, and the
+    real public validator returned ``valid=True`` with ``errors=()``. These tests pin the corrected
+    boundary, its precision, and its fail-closed edges.
+    """
+
+    # --- the exact reported case, proved through the REAL public validator ---
+
+    def test_the_import_shadow_flips_a_real_disposition(self):
+        """Establish that the mutation is genuinely outcome-changing before demanding refusal."""
+        import importlib.util
+        import sys
+        import tempfile
+
+        mutated_source = _with_module_level_line("from builtins import min as any\n")
+        directory = Path(tempfile.mkdtemp())
+        path = directory / "_shadowed_derivation.py"
+        path.write_text(mutated_source, encoding="utf-8")
+        spec = importlib.util.spec_from_file_location("_shadowed_derivation", path)
+        shadowed = importlib.util.module_from_spec(spec)
+        # ``@dataclass`` resolves ``cls.__module__`` through ``sys.modules`` while executing.
+        sys.modules["_shadowed_derivation"] = shadowed
+        try:
+            spec.loader.exec_module(shadowed)
+        finally:
+            sys.modules.pop("_shadowed_derivation", None)
+
+        gate_results = dict.fromkeys(PREREG.GATE_IDS, "PASS")
+        gate_results[sorted(PREREG.CATEGORICAL_GATES)[0]] = "FAIL"
+        assert PREREG.derive_candidate_disposition(gate_results) == "BLOCKED_CATEGORICALLY"
+        assert (
+            shadowed.derive_candidate_disposition(gate_results)
+            == "CONSTRUCTIBLE_CANDIDATE_IDENTIFIED"
+        )
+
+    def test_the_import_shadow_changes_the_projected_identity(self):
+        mutated = _with_module_level_line("from builtins import min as any\n")
+        assert A.outcome_producing_projection_digest(
+            mutated
+        ) != A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    def test_the_public_validator_refuses_the_import_shadow_at_the_successor(self, payload):
+        """The reported reproduction, exactly: package anchors accepted, successor anchors mutated."""
+        mutated = _with_module_level_line("from builtins import min as any\n")
+        git = FakeGit()
+        git.texts[(HEAD, DERIVATION_RELPATH)] = mutated
+        git.texts[(MERGE, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection drift", sources(git=git))
+
+    def test_the_public_validator_refuses_the_import_shadow_at_the_package(self, payload):
+        """Symmetric: a package anchor whose ambient surface differs is equally unacceptable."""
+        mutated = _with_module_level_line("from builtins import min as any\n")
+        git = FakeGit()
+        git.texts[(A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, DERIVATION_RELPATH)] = mutated
+        git.texts[(A.EXECUTABLE_PACKAGE_MERGE_SHA, DERIVATION_RELPATH)] = mutated
+        _rejected(payload, "outcome-producing projection drift", sources(git=git))
+
+    # --- import aliases and rebindings ---
+
+    @pytest.mark.parametrize(
+        "line",
+        [
+            "from builtins import min as any\n",
+            "from builtins import min as sorted\n",
+            "from builtins import list as set\n",
+        ],
+    )
+    def test_shadowing_a_builtin_the_closure_calls_changes_identity(self, line):
+        assert A.outcome_producing_projection_digest(
+            _with_module_level_line(line)
+        ) != A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    def test_changing_where_a_used_import_comes_from_changes_identity(self):
+        """Same bound name, different source module -- a different object, so a different identity."""
+        mutated = DERIVATION_SOURCE.replace(
+            "from typing import Any, Iterable, Mapping, Sequence",
+            "from collections.abc import Iterable, Mapping, Sequence\nfrom typing import Any",
+            1,
+        )
+        assert mutated != DERIVATION_SOURCE
+        assert A.outcome_producing_projection_digest(
+            mutated
+        ) != A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    def test_a_name_the_closure_uses_bound_twice_fails_closed(self):
+        with pytest.raises(A.ProjectionError, match="bound by more than one import"):
+            A.outcome_producing_projection_digest(
+                _with_module_level_line("import typing as Mapping\n")
+            )
+
+    # --- precision: lawful authorization-only edits must remain possible ---
+
+    def test_a_new_import_the_closure_never_uses_does_not_change_identity(self):
+        """Otherwise this would be whole-file equality, which would make a lawful rebinding impossible."""
+        for line in ("import json\n", "import itertools as _it\n", "from decimal import Decimal\n"):
+            assert A.outcome_producing_projection_digest(
+                _with_module_level_line(line)
+            ) == A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    def test_shadowing_a_builtin_the_closure_never_calls_does_not_change_identity(self):
+        """The boundary is 'capable of changing how the projected closure executes', not 'any import'."""
+        assert A.outcome_producing_projection_digest(
+            _with_module_level_line("from builtins import min as filter\n")
+        ) == A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    def test_reordering_the_import_block_does_not_change_identity(self):
+        """Renderings come from AST fields, so grouping and order are not identity."""
+        mutated = DERIVATION_SOURCE.replace(
+            "import hashlib\nimport re\nimport sys\n", "import sys\nimport re\nimport hashlib\n", 1
+        )
+        assert mutated != DERIVATION_SOURCE
+        assert A.outcome_producing_projection_digest(
+            mutated
+        ) == A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+
+    # --- unsupported dynamic namespace mutation must never be assumed harmless ---
+
+    @pytest.mark.parametrize(
+        "line",
+        [
+            "from typing import *\n",
+            "_smuggled = globals()\n",
+            "_smuggled = exec('pass')\n",
+            "_smuggled = eval('1')\n",
+            "_smuggled = vars()\n",
+            "_smuggled = setattr(object, 'x', 1)\n",
+            "_smuggled = delattr(object, 'x')\n",
+            "_tmp = 1\n_tmp += 1\n",
+            "_tmp = 1\ndel _tmp\n",
+        ],
+    )
+    def test_unsupported_namespace_mutation_fails_closed(self, line):
+        with pytest.raises(A.ProjectionError):
+            A.outcome_producing_projection_digest(_with_module_level_line(line))
+
+    def test_a_nonlocal_or_global_declaration_anywhere_fails_closed(self):
+        mutated = _with_module_level_line("def _smuggle():\n    global REGISTERED_CONSTRUCTION_COUNT\n")
+        with pytest.raises(A.ProjectionError, match="dynamic namespace mutation"):
+            A.outcome_producing_projection_digest(mutated)
+
+    def test_an_unresolvable_referenced_name_fails_closed(self):
+        """Removing an import the closure relies on leaves a name resolving to nothing nameable."""
+        mutated = DERIVATION_SOURCE.replace(
+            "from dataclasses import dataclass, field", "from dataclasses import dataclass", 1
+        )
+        assert mutated != DERIVATION_SOURCE
+        with pytest.raises(A.ProjectionError, match="resolve to neither a top-level symbol"):
+            A.outcome_producing_projection_digest(mutated)
+
+    # --- the ambient surface itself, derived independently of the production helpers ---
+
+    def test_the_projected_ambient_surface_matches_an_independent_derivation(self):
+        imported, builtin = _independently_derived_ambient_names()
+        assert imported and builtin, "the independent derivation found nothing to compare"
+        projected = {
+            line.split("::")[1]
+            for line in A.project_outcome_producing_surface(DERIVATION_SOURCE).splitlines()
+            if line.startswith("@ambient::")
+        }
+        assert projected == imported | builtin, (
+            f"ambient surface disagrees with an independent derivation; "
+            f"projected-only={projected - (imported | builtin)}, "
+            f"derived-only={(imported | builtin) - projected}"
+        )
+
+    def test_the_shadowed_builtin_is_actually_in_the_ambient_surface(self):
+        """Names the reported case turns on must be present, not merely presumed present."""
+        surface = A.project_outcome_producing_surface(DERIVATION_SOURCE)
+        assert "@ambient::any::builtin" in surface
+
+    def test_every_ambient_entry_is_resolved_rather_than_merely_listed(self):
+        for line in A.project_outcome_producing_surface(DERIVATION_SOURCE).splitlines():
+            if not line.startswith("@ambient::"):
+                continue
+            resolution = line.split("::", 2)[2]
+            assert resolution == "builtin" or resolution.startswith("import::") or (
+                resolution == "module-attribute"
+            ), line
+
+    # --- the real anchors carry no ambient drift ---
+
+    def test_the_live_ambient_surface_is_identical_to_the_accepted_package(self):
+        """Requirement 9: confirm the fact the rebinding relies on, rather than assume it."""
+        live = A.outcome_producing_projection_digest(DERIVATION_SOURCE)
+        for anchor in (A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, A.EXECUTABLE_PACKAGE_MERGE_SHA):
+            blob = subprocess.run(
+                ["git", "show", f"{anchor}:{DERIVATION_RELPATH}"],
+                cwd=ROOT, capture_output=True, text=True, check=True,
+            ).stdout
+            assert A.outcome_producing_projection_digest(blob) == live
+
+    def test_the_real_module_import_nodes_are_identical_to_the_accepted_package(self):
+        """A second, independent check of the same fact: the import nodes themselves."""
+        import ast as _ast
+
+        def import_nodes(source):
+            return [
+                _ast.dump(node, include_attributes=False)
+                for node in _ast.parse(source).body
+                if isinstance(node, (_ast.Import, _ast.ImportFrom))
+            ]
+
+        live = import_nodes(DERIVATION_SOURCE)
+        assert live, "the derivation module has no module-level imports to compare"
+        for anchor in (A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD, A.EXECUTABLE_PACKAGE_MERGE_SHA):
+            blob = subprocess.run(
+                ["git", "show", f"{anchor}:{DERIVATION_RELPATH}"],
+                cwd=ROOT, capture_output=True, text=True, check=True,
+            ).stdout
+            assert import_nodes(blob) == live
+
+    # --- the correction must not have loosened anything ---
+
+    def test_the_happy_path_still_validates(self, payload):
+        assert A.validate_authorization_document(payload, sources()).valid
+
+    def test_the_docstring_exclusion_is_unchanged_and_still_narrow(self):
+        """Prose still cannot decide an outcome, and the ambient work did not widen the exclusion."""
+        mutated = DERIVATION_SOURCE.replace(
+            '"""Compose already-decided gate results into a candidate disposition.',
+            '"""COMPLETELY REWRITTEN PROSE that decides nothing.',
+            1,
+        )
+        assert mutated != DERIVATION_SOURCE
+        assert A.outcome_producing_projection_digest(
+            mutated
+        ) == A.outcome_producing_projection_digest(DERIVATION_SOURCE)

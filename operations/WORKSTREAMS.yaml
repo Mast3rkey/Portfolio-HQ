@@ -14046,6 +14046,63 @@ workstreams:
           no accepted decision file was edited; and no SS-G.B step 9, 10 or 11, attestation, lane
           state, ATTEMPT_1 or XASSET-0027 SS-P.1 consumption occurred. The corrected head requires an
           independent exact-head DELTA review from f7bd5ecff747ade2ffab30574c58da3d683e4d60.
+          SECOND BOUNDED CORRECTION after independent exact-head DELTA review 4955476669 at head
+          eadbb8d4f44f7a2a4147c9e99f6d4ab43cdf154b (CHANGES REQUIRED - 0 BLOCKING / 1 MAJOR /
+          0 MINOR / 0 NOTE). That review recorded MINOR 1 and MINOR 2 above as RESOLVED and objected
+          to none of the four-way identity separation, V7 succession, 9->10 load-bearing extension,
+          historical preservation, exact-head lifecycle gates, pull-request provenance, or
+          non-activation posture; none of those changed. MAJOR 1, reproduced in an isolated checkout
+          against the real public validator BEFORE correcting, with the real lane never created,
+          opened or touched: _top_level_symbol_table recorded functions, classes and assignments but
+          not ast.Import or ast.ImportFrom, and the closure then treated every referenced name absent
+          from that table as a builtin or an import and left it OUT OF SCOPE - a syntactic boundary,
+          not a semantic one. Inserting exactly one line, 'from builtins import min as any', left the
+          projected identity IDENTICAL (9f61ba4b... both times) while turning one categorical FAIL
+          (G10_PAIR_INDEPENDENCE) from BLOCKED_CATEGORICALLY into CONSTRUCTIBLE_CANDIDATE_IDENTIFIED,
+          because every projected any(...) had silently become min(...); serving the accepted
+          original at both package anchors and the mutated source at internally consistent successor
+          head, successor merge and working-tree anchors, validate_authorization_document returned
+          valid=True with errors=(). CORRECTED by extending the identity to the AMBIENT surface while
+          RETAINING the 18-seed / 26-symbol projection exactly and again rejecting whole-file
+          equality: free names are computed scope-aware (parameters, local assignments, comprehension
+          targets, except-as names, nested definitions and function-local imports are bound and
+          therefore not free; class-body bindings do not propagate into methods; decorators, defaults,
+          annotations and class bases are analysed where they execute), and each remaining free name
+          is RESOLVED, with the resolution itself part of the identity - '@ambient::any::builtin',
+          '@ambient::Mapping::import::from typing import Mapping' - rendered from AST fields so
+          regrouping or reordering the import block changes nothing while changing WHAT a name is
+          bound to always changes the digest. NOTHING IS ASSUMED HARMLESS: a star import, a name the
+          closure resolves that is bound by more than one module-level import, exec/eval/globals/vars/
+          setattr/delattr, a global or nonlocal declaration, a module-level augmented assignment or
+          deletion, or a referenced name resolving to nothing nameable each FAIL CLOSED with a
+          specific error. PRECISION IS PRESERVED DELIBERATELY: an import the closure never references,
+          including a shadow of a builtin it never calls, does NOT change the identity, so lawful
+          authorization-only edits outside the outcome-producing surface remain possible - which is
+          the whole reason this is a projection rather than file equality. The docstring exclusion is
+          unchanged, still narrow, and still tested in both directions. The projected identity moved
+          from 9f61ba4b... to 6da16369c2fcfd363b00f8319ffe46436a97dbfb3de886756c917eefc4673626 because
+          the SURFACE is genuinely larger, not because any outcome semantics moved. THIRTY new tests;
+          NINE of them independently detect the fix being reverted - including the reported
+          reproduction driven through the real public validator at BOTH the successor and the package
+          anchors - verified by re-applying the mutation in an isolated copy; the remainder pin the
+          precision boundary, every fail-closed edge and the real anchors. The ambient surface is
+          compared against a derivation performed INDEPENDENTLY of every production constant and
+          helper, walking the module's own source, so the production declaration is never its own
+          oracle, and the disposition flip is established by EXECUTING the mutated module rather than
+          assumed. NO DRIFT AT THE REAL ANCHORS, CONFIRMED RATHER THAN PRESUMED: the corrected
+          projection is identical at the PR #336 accepted head, the PR #336 merge, this head and the
+          working tree, and the eight module-level import nodes are AST-identical across all four,
+          checked separately from the digest. NO STAGE-1 OUTCOME SEMANTICS CHANGED; runner and result
+          validator remain byte-identical to the accepted package and no outcome-producing behaviour
+          in either was edited. NO CANONICAL BYTE CHANGED, so the V7 pins are again re-verified rather
+          than recomputed; the frozen universe stays 680 / 48 / 73c0965e...5224;
+          LOAD_BEARING_RELPATHS stays 10 with nothing removed and no byte check weakened; B1/B2/B3,
+          gate semantics, construction identities, dispositions, XASSET-0024 SS-K.1 and XASSET-0020
+          SS-E.1 are untouched; no accepted decision file was edited and no protected portfolio path
+          changed; and no SS-G.B step 9, 10 or 11, attestation, lane state, ATTEMPT_1 or XASSET-0027
+          SS-P.1 consumption occurred. Stage 1 remains UNARMED and NOT EXECUTABLE. The corrected head
+          requires a further independent exact-head DELTA review from
+          eadbb8d4f44f7a2a4147c9e99f6d4ab43cdf154b.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

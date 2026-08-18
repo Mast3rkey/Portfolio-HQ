@@ -128,6 +128,7 @@ authorization at the first eligible work item, and fail-closed validation.
 from __future__ import annotations
 
 import ast
+import builtins
 import hashlib
 import json
 import os
@@ -576,6 +577,226 @@ def _top_level_symbol_table(tree: ast.Module, where: str) -> dict[str, ast.AST]:
     return table
 
 
+#: Node types that open a NEW name-resolution scope. Free-name analysis descends into each of
+#: these separately rather than treating their internals as part of the enclosing scope.
+_SCOPE_NODES = (
+    ast.FunctionDef,
+    ast.AsyncFunctionDef,
+    ast.Lambda,
+    ast.ClassDef,
+    ast.ListComp,
+    ast.SetComp,
+    ast.DictComp,
+    ast.GeneratorExp,
+)
+
+#: Calls that can mutate a module namespace in ways no static analysis can resolve. Encountering
+#: one is a HARD FAILURE; it is never assumed harmless.
+_DYNAMIC_NAMESPACE_CALLS = frozenset({"exec", "eval", "globals", "vars", "setattr", "delattr"})
+
+#: Module attributes the interpreter supplies. Resolvable, and not an ambient BINDING a successor
+#: could redirect, so they are recorded by name rather than refused.
+_MODULE_DUNDERS = frozenset(
+    {"__name__", "__file__", "__doc__", "__package__", "__spec__", "__loader__", "__builtins__"}
+)
+
+
+def _import_binding_rendering(node: ast.Import | ast.ImportFrom, alias: ast.alias) -> str:
+    """Render ONE import binding deterministically, independent of location or grouping.
+
+    Built from AST fields rather than the source line, so regrouping or reordering the import block
+    does not change identity, while changing WHAT a name is bound to always does.
+    """
+    if isinstance(node, ast.Import):
+        return f"import {alias.name}" + (f" as {alias.asname}" if alias.asname else "")
+    module = "." * (node.level or 0) + (node.module or "")
+    return f"from {module} import {alias.name}" + (f" as {alias.asname}" if alias.asname else "")
+
+
+def _module_ambient_bindings(tree: ast.Module, where: str) -> dict[str, tuple[str, ...]]:
+    """Map every name a MODULE-LEVEL import binds to its deterministic rendering.
+
+    MAJOR 1 (delta review 4955476669). A projected function's AST can be byte-for-byte identical
+    while the MEANING of the names inside it changes, because a module-level import can shadow a
+    builtin or rebind a helper. ``from builtins import min as any`` is the demonstrated case: every
+    projected ``any(...)`` silently becomes ``min(...)``, which turns one categorical FAIL from
+    BLOCKED_CATEGORICALLY into CONSTRUCTIBLE_CANDIDATE_IDENTIFIED while the symbol projection is
+    unchanged. Ambient bindings are therefore part of the projected identity, not context around it.
+
+    A star import FAILS CLOSED: it binds an unknowable set of names, so no honest statement about
+    what the projected closure resolves to can be made in its presence.
+
+    Every rendering bound to a name is returned, in source order, rather than the last one winning.
+    A name bound more than once is resolution-order-dependent and is refused by the caller -- but
+    only if the closure actually resolves that name, so an unrelated authorization-only import block
+    is not made unlawful by a rule that exists to protect outcome semantics.
+    """
+    bindings: dict[str, tuple[str, ...]] = {}
+    for node in tree.body:
+        if not isinstance(node, (ast.Import, ast.ImportFrom)):
+            continue
+        for alias in node.names:
+            if alias.name == "*":
+                raise ProjectionError(
+                    f"{where}: a module-level star import binds an unknowable set of names, so the "
+                    "ambient surface of the outcome-producing closure cannot be established"
+                )
+            bound = alias.asname or alias.name.split(".")[0]
+            rendering = _import_binding_rendering(node, alias)
+            bindings[bound] = bindings.get(bound, ()) + (rendering,)
+    return bindings
+
+
+def _reject_dynamic_namespace_mutation(tree: ast.Module, where: str) -> None:
+    """FAIL CLOSED on namespace mutation this analysis cannot resolve statically.
+
+    Deliberately unconditional rather than "only when it touches a projected name": deciding
+    whether a ``globals()`` write or an ``exec`` reaches the closure would require evaluating it,
+    which is precisely what a static projection cannot do. None of these forms exists in the real
+    module, so refusing them costs no lawful authorization-only edit, while silently tolerating one
+    would let an outcome change hide exactly where this projection is supposed to look.
+    """
+    offences: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, ast.AugAssign) and isinstance(node.target, ast.Name):
+            offences.add(f"module-level augmented assignment to {node.target.id!r}")
+        elif isinstance(node, ast.Delete):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    offences.add(f"module-level deletion of {target.id!r}")
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+            if node.func.id in _DYNAMIC_NAMESPACE_CALLS:
+                offences.add(f"a call to {node.func.id!r}")
+        elif isinstance(node, (ast.Global, ast.Nonlocal)):
+            offences.add(f"a {type(node).__name__.lower()} declaration")
+
+    if offences:
+        raise ProjectionError(
+            f"{where}: unsupported dynamic namespace mutation ({', '.join(sorted(offences))}); the "
+            "ambient surface of the outcome-producing closure cannot be established statically"
+        )
+
+
+def _scope_parts(scope: ast.AST) -> list[ast.AST]:
+    """The sub-expressions and statements that execute INSIDE one scope."""
+    if isinstance(scope, ast.Lambda):
+        return [scope.body]
+    if isinstance(scope, (ast.ListComp, ast.SetComp, ast.GeneratorExp, ast.DictComp)):
+        parts: list[ast.AST] = (
+            [scope.key, scope.value] if isinstance(scope, ast.DictComp) else [scope.elt]
+        )
+        for generator in scope.generators:
+            parts.append(generator.iter)
+            parts.extend(generator.ifs)
+        return parts
+    return list(scope.body)
+
+
+def _outer_parts(scope: ast.AST) -> list[ast.AST]:
+    """Sub-expressions of a scope NODE that evaluate in the ENCLOSING scope, not inside it."""
+    parts: list[ast.AST] = list(getattr(scope, "decorator_list", []) or [])
+    if isinstance(scope, ast.ClassDef):
+        parts.extend(scope.bases)
+        parts.extend(keyword.value for keyword in scope.keywords)
+        return parts
+    arguments = getattr(scope, "args", None)
+    if arguments is not None:
+        parts.extend(default for default in arguments.defaults if default is not None)
+        parts.extend(default for default in arguments.kw_defaults if default is not None)
+        for argument in (
+            *arguments.posonlyargs,
+            *arguments.args,
+            *arguments.kwonlyargs,
+            arguments.vararg,
+            arguments.kwarg,
+        ):
+            if argument is not None and argument.annotation is not None:
+                parts.append(argument.annotation)
+    if getattr(scope, "returns", None) is not None:
+        parts.append(scope.returns)
+    return parts
+
+
+def _scope_local_bindings(scope: ast.AST) -> set[str]:
+    """Names bound DIRECTLY in one scope, not descending into scopes nested inside it."""
+    bound: set[str] = set()
+
+    if isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+        arguments = scope.args
+        for argument in (*arguments.posonlyargs, *arguments.args, *arguments.kwonlyargs):
+            bound.add(argument.arg)
+        if arguments.vararg:
+            bound.add(arguments.vararg.arg)
+        if arguments.kwarg:
+            bound.add(arguments.kwarg.arg)
+
+    if isinstance(scope, (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)):
+        for generator in scope.generators:
+            for inner in ast.walk(generator.target):
+                if isinstance(inner, ast.Name):
+                    bound.add(inner.id)
+
+    stack: list[ast.AST] = list(_scope_parts(scope))
+    while stack:
+        node = stack.pop()
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            bound.add(node.name)
+            continue
+        if isinstance(node, _SCOPE_NODES):
+            continue
+        if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
+            bound.add(node.id)
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                bound.add(alias.asname or alias.name.split(".")[0])
+        elif isinstance(node, ast.ExceptHandler) and node.name:
+            bound.add(node.name)
+        stack.extend(ast.iter_child_nodes(node))
+    return bound
+
+
+def _free_names_of(node: ast.AST) -> set[str]:
+    """Names a top-level definition resolves through the MODULE namespace when it executes.
+
+    Scope-aware: parameters, local assignments, comprehension targets, ``except ... as`` names,
+    nested definitions, and function-local imports are all bound and therefore NOT free. Class-body
+    bindings deliberately do not propagate into methods, matching Python's actual scoping, so a
+    method reading a module-level name of the same name is still reported. Decorators, default
+    values, annotations, and class bases are analysed in the enclosing scope, where they execute.
+
+    Errs toward reporting a name rather than omitting it. Every reported name must then resolve to a
+    top-level symbol, a module-level import binding, a builtin, or an interpreter-supplied module
+    attribute; anything else fails closed rather than being assumed harmless.
+    """
+    free: set[str] = set()
+
+    def enter(scope: ast.AST, enclosing: frozenset[str]) -> None:
+        local = _scope_local_bindings(scope)
+        visible = frozenset(enclosing | local)
+        # A class body does not extend the scope chain of functions nested inside it.
+        nested = enclosing if isinstance(scope, ast.ClassDef) else visible
+        for part in _scope_parts(scope):
+            walk(part, visible, nested)
+
+    def walk(current: ast.AST, visible: frozenset[str], nested: frozenset[str]) -> None:
+        if isinstance(current, ast.Name):
+            if isinstance(current.ctx, ast.Load) and current.id not in visible:
+                free.add(current.id)
+            return
+        if isinstance(current, _SCOPE_NODES):
+            for part in _outer_parts(current):
+                walk(part, visible, nested)
+            enter(current, nested)
+            return
+        for child in ast.iter_child_nodes(current):
+            walk(child, visible, nested)
+
+    walk(node, frozenset(), frozenset())
+    return free
+
+
 def project_outcome_producing_surface(
     source: str,
     seeds: Sequence[str] = OUTCOME_PRODUCING_PROJECTION_SEEDS,
@@ -594,9 +815,22 @@ def project_outcome_producing_surface(
     location-free ``ast.dump``, so reordering definitions or reflowing whitespace does not change
     identity while any change to a value, branch, comparison, or ordering does.
 
+    The projection ALSO includes the AMBIENT surface: for every name the closure resolves through
+    the module namespace rather than its own top-level symbols, the projection records what that
+    name is bound to -- a module-level import binding, rendered from AST fields, or the builtin it
+    falls through to. MAJOR 1 (delta review 4955476669) demonstrated why this is not optional:
+    ``from builtins import min as any`` leaves every projected AST byte-for-byte identical while
+    turning one categorical FAIL from BLOCKED_CATEGORICALLY into CONSTRUCTIBLE_CANDIDATE_IDENTIFIED.
+    An import the closure never references is NOT included, so authorization-only edits outside the
+    outcome-producing surface -- including new imports serving them -- remain lawful.
+
     FAILS CLOSED, raising :class:`ProjectionError`, on: unparseable source; a seed that is missing or
-    was renamed; a top-level symbol defined more than once; or a serialization that cannot be
-    produced. It never returns a partial or best-effort surface.
+    was renamed; a top-level symbol defined more than once; a star import; a name the closure
+    resolves that is bound by more than one module-level import; unsupported dynamic namespace
+    mutation (``exec``, ``eval``, ``globals``,
+    ``vars``, ``setattr``, ``delattr``, ``global``/``nonlocal``, module-level augmented assignment or
+    deletion); a referenced name that resolves to nothing this analysis can name; or a serialization
+    that cannot be produced. It never returns a partial or best-effort surface.
 
     Determinism boundary, stated rather than overclaimed: ``ast.dump``'s exact text is stable for a
     given interpreter, not guaranteed identical across Python versions. That is sufficient and is
@@ -614,7 +848,9 @@ def project_outcome_producing_surface(
         raise ProjectionError(f"{where}: source does not parse: {exc}") from exc
     _strip_docstrings(tree)
 
+    _reject_dynamic_namespace_mutation(tree, where)
     table = _top_level_symbol_table(tree, where)
+    ambient_bindings = _module_ambient_bindings(tree, where)
 
     missing = [name for name in seeds if name not in table]
     if missing:
@@ -623,8 +859,9 @@ def project_outcome_producing_surface(
             "the surface cannot be projected"
         )
 
-    # Transitive closure over the module's OWN top-level names. A referenced name that is not a
-    # top-level symbol is a builtin or an import and is deliberately out of scope.
+    # Transitive closure over the module's OWN top-level names. A referenced name that is NOT a
+    # top-level symbol is resolved separately, below, as part of the ambient surface -- it is not
+    # assumed out of scope, which was exactly the MAJOR 1 defect.
     closure: set[str] = set()
     stack = list(seeds)
     while stack:
@@ -643,7 +880,41 @@ def project_outcome_producing_surface(
         except Exception as exc:  # pragma: no cover - defensive
             raise ProjectionError(f"{where}: {name!r} could not be serialized: {exc}") from exc
         parts.append(f"{name}::{rendered}")
-    return "\n".join(parts)
+
+    referenced: set[str] = set()
+    for name in closure:
+        referenced |= _free_names_of(table[name])
+
+    ambient_parts: list[str] = []
+    unresolved: list[str] = []
+    ambiguous: list[str] = []
+    for name in sorted(referenced - set(table)):
+        if name in ambient_bindings:
+            renderings = ambient_bindings[name]
+            if len(set(renderings)) != 1:
+                ambiguous.append(name)
+                continue
+            ambient_parts.append(f"@ambient::{name}::import::{renderings[0]}")
+        elif hasattr(builtins, name):
+            ambient_parts.append(f"@ambient::{name}::builtin")
+        elif name in _MODULE_DUNDERS:
+            ambient_parts.append(f"@ambient::{name}::module-attribute")
+        else:
+            unresolved.append(name)
+    if ambiguous:
+        raise ProjectionError(
+            f"{where}: the outcome-producing closure resolves {sorted(ambiguous)!r} through a "
+            "module-level name bound by more than one import, so what it means is "
+            "resolution-order-dependent and cannot be projected"
+        )
+    if unresolved:
+        raise ProjectionError(
+            f"{where}: the outcome-producing closure references {sorted(unresolved)!r}, which "
+            "resolve to neither a top-level symbol, a module-level import binding, a builtin, nor "
+            "an interpreter-supplied module attribute; the surface cannot be projected"
+        )
+
+    return "\n".join(ambient_parts + parts)
 
 
 def outcome_producing_projection_digest(
