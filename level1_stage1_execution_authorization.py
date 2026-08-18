@@ -218,9 +218,26 @@ EXECUTABLE_PACKAGE_MERGE_BASE = "be90aeef5c48e84849a007b31abbb1166857785d"
 #: identity after the final rebinding -- so the rebinding proves these are BYTE-IDENTICAL across
 #: the package's reviewed head, the package's merge, the successor's reviewed head, the successor's
 #: merge, and the working tree. A silent runner edit smuggled into the rebinding fails closed.
+#:
+#: MAJOR 1 (FULL review 4965914272). ``level1_construction_universe_closure_validator.py`` was
+#: missing from this tuple while being a DIRECT outcome-producing dependency: the runner imports it
+#: as ``CU`` and calls ``generate_construction_universe``, ``frozen_construction_universe`` and
+#: ``universe_aggregate_sha256`` to establish the actual 680-cell traversal, its exact order, the
+#: frozen mapping, the per-construction identities, and the aggregate hash; the result validator
+#: consumes the same module. It was already in :data:`LOAD_BEARING_RELPATHS`, but that boundary
+#: compares only the successor's reviewed head, the successor's merge, and the working tree -- NOT
+#: the two EXECUTABLE-PACKAGE anchors. Reproduced through the real mechanism before correcting:
+#: withholding its blob at both package anchors, with every other input valid,
+#: ``_verify_successor_rebinding_identity`` returned ``[]``. A coherent successor change to universe
+#: traversal, ordering, the frozen mapping, or the aggregate hash -- accompanied by matching
+#: successor load-bearing hashes -- would therefore not have violated the package binding. Its bytes
+#: are in fact unchanged from the package through this head (SHA-256
+#: ``1fed8f42b8c80ad2908a135a0c02517463dd04bb4ee3fdb20cad9d5a9acf95c5``); the defect was that the
+#: invariant was not mechanically PROVEN. Listing it here corrects that at its source.
 EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS = (
     "level1_stage1_runner.py",
     "level1_stage1_result_validator.py",
+    "level1_construction_universe_closure_validator.py",
 )
 
 # --------------------------------------------------------------------------------------

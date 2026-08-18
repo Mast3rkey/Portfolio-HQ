@@ -55,7 +55,21 @@ PACKAGE_SOURCE = subprocess.run(
 ).stdout.decode("utf-8")
 
 
-def _independently_derived_seed_symbols() -> set[str]:
+#: The two OUTCOME-DERIVING consumers whose use of the derivation module defines the direct seed
+#: surface. Held as test-local literals on purpose. Reading them from
+#: ``A.EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS`` would let a production declaration be its own
+#: oracle -- and, concretely, MAJOR 1's correction expanded that tuple to a third module, which
+#: silently changed what this helper measured (18 -> 22 symbols) even though neither consumer had
+#: changed. The seed surface is a property of these two consumers, so it is named here directly.
+OUTCOME_DERIVING_CONSUMER_RELPATHS = (
+    "level1_stage1_runner.py",
+    "level1_stage1_result_validator.py",
+)
+
+
+def _independently_derived_seed_symbols(
+    consumers: tuple[str, ...] = OUTCOME_DERIVING_CONSUMER_RELPATHS,
+) -> set[str]:
     """Re-derive the outcome-producing seed set from the CONSUMERS' own source, by AST.
 
     Deliberately derived from the CONSUMERS rather than from any production declaration: the
@@ -68,7 +82,7 @@ def _independently_derived_seed_symbols() -> set[str]:
     import ast
 
     found: set[str] = set()
-    for relative in A.EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS:
+    for relative in consumers:
         tree = ast.parse((ROOT / relative).read_text(encoding="utf-8"))
         aliases = {
             (entry.asname or entry.name)
@@ -1704,38 +1718,159 @@ class TestExactPackageToSuccessorTransition:
 
     # --- what the reviewed transition actually contains ---
 
-    def test_no_outcome_consumed_symbol_changed_across_the_transition(self):
-        """Evidence, not authorization: the seventeen regions touch authorization-only code.
+    #: The complete transitive outcome-consumed surface, stated as an INDEPENDENT expectation.
+    #:
+    #: MINOR 1 (FULL review 4965914272): the predecessor test derived the 18 direct consumer seeds
+    #: and compared only those 18 definitions, while the decision and report claimed all 26
+    #: transitive symbols were verified. Eight symbols the consumers reach only INDIRECTLY --
+    #: ``BOUNDS``, ``CANDIDATE_DISPOSITIONS``, ``CELL_OUTCOMES``, ``CONSTRUCTION_FAMILIES``,
+    #: ``DRIVER_CLASSES``, ``cell_id_of``, ``generate_family_slot_grid`` and ``map_g2_reading`` --
+    #: were never compared. The closure is now computed here to a fixed point over BOTH exact blobs
+    #: and every definition in it is compared.
+    #:
+    #: This literal is written out so the closure computation has an oracle that is neither the
+    #: production declaration nor the governance claim. It is checked in BOTH directions: the
+    #: computed closure must equal it exactly.
+    _EXPECTED_TRANSITIVE_SURFACE = frozenset({
+        "BOUNDS",
+        "CANDIDATE_DISPOSITIONS",
+        "CATEGORICAL_GATES",
+        "CELL_OUTCOMES",
+        "CONSTRUCTION_FAMILIES",
+        "DERIVED_IDENTITIES",
+        "DRIVER_CLASSES",
+        "G2_RECORD_REJECTED",
+        "GATE_IDS",
+        "GATE_RESULT_VOCABULARY",
+        "POINT_RANGE_VALUES",
+        "PREREQUISITE_GATES",
+        "READING_VOCABULARY",
+        "REGISTERED_CONSTRUCTION_COUNT",
+        "REQUIRED_CANDIDATE_RESULT_KEYS",
+        "SLEEVES",
+        "ValidationResult",
+        "cell_id_of",
+        "derive_candidate_disposition",
+        "derive_cell_outcome",
+        "derive_roll_up_outcome",
+        "generate_cell_universe",
+        "generate_family_slot_grid",
+        "is_reading_dependent",
+        "map_g2_reading",
+        "required_g2_gate_result",
+    })
 
-        The consumed set is re-derived from the CONSUMERS' own source, so neither the manifest nor
-        any production declaration is its own oracle. Authorization remains byte-exact; this test
-        records what those reviewed bytes mean.
+    @staticmethod
+    def _top_level_table(source: str):
+        """Every top-level definition in one blob, by bound name. Test-only; no production code."""
+        import ast as _ast
+
+        out = {}
+        for node in _ast.parse(source).body:
+            if isinstance(node, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef)):
+                out[node.name] = node
+            elif isinstance(node, _ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, _ast.Name):
+                        out[target.id] = node
+            elif isinstance(node, _ast.AnnAssign) and isinstance(node.target, _ast.Name):
+                out[node.target.id] = node
+        return out
+
+    @classmethod
+    def _transitive_closure(cls, seeds, table):
+        """Close ``seeds`` over top-level names referenced inside their own definitions.
+
+        Iterated to a FIXED POINT, so a symbol reached only through several hops is included.
+
+        STRICT in the seeds: a consumed symbol that is absent from the blob is an error, never a
+        silent omission. Filtering it out instead would make a DELETED outcome-consumed definition
+        invisible to the comparison below -- the precise failure mode this test exists to prevent.
         """
         import ast as _ast
 
-        def table(source: str):
-            out = {}
-            for node in _ast.parse(source).body:
-                if isinstance(node, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef)):
-                    out[node.name] = node
-                elif isinstance(node, _ast.Assign):
-                    for target in node.targets:
-                        if isinstance(target, _ast.Name):
-                            out[target.id] = node
-                elif isinstance(node, _ast.AnnAssign) and isinstance(node.target, _ast.Name):
-                    out[node.target.id] = node
-            return out
+        absent = sorted(name for name in seeds if name not in table)
+        assert absent == [], f"consumed symbols absent from the blob: {absent}"
+        closure = set(seeds)
+        while True:
+            discovered = set()
+            for name in closure:
+                for node in _ast.walk(table[name]):
+                    if isinstance(node, _ast.Name) and node.id in table:
+                        discovered.add(node.id)
+                    elif isinstance(node, _ast.Attribute) and node.attr in table:
+                        discovered.add(node.attr)
+            if discovered <= closure:
+                return closure
+            closure |= discovered
 
-        package = table(_package_blob().decode("utf-8"))
-        successor = table(_successor_blob().decode("utf-8"))
-        consumed = _independently_derived_seed_symbols()
-        assert consumed, "no consumed symbols were derived"
+    def test_the_direct_consumer_seed_set_is_eighteen_symbols(self):
+        """Derived from the runner and result validator, never from a production declaration."""
+        seeds = _independently_derived_seed_symbols()
+        assert len(seeds) == 18, sorted(seeds)
+        assert seeds <= self._EXPECTED_TRANSITIVE_SURFACE
+
+    def test_the_transitive_closure_is_exactly_the_twenty_six_symbol_surface(self):
+        """Computed independently in BOTH blobs, and equal to the stated surface in each."""
+        seeds = _independently_derived_seed_symbols()
+        for label, blob in (
+            ("package", _package_blob()),
+            ("successor", _successor_blob()),
+        ):
+            table = self._top_level_table(blob.decode("utf-8"))
+            closure = self._transitive_closure(seeds, table)
+            assert closure == self._EXPECTED_TRANSITIVE_SURFACE, (
+                f"{label} closure differs: "
+                f"missing={sorted(self._EXPECTED_TRANSITIVE_SURFACE - closure)} "
+                f"unexpected={sorted(closure - self._EXPECTED_TRANSITIVE_SURFACE)}"
+            )
+            assert len(closure) == 26, f"{label}: {len(closure)}"
+
+    def test_the_closure_strictly_exceeds_the_direct_seeds(self):
+        """The precise gap MINOR 1 reported: eight symbols reached only indirectly.
+
+        Derived from the COMPUTED closure, not by subtracting two constants -- otherwise a
+        degenerate closure would still satisfy this test and the gap would go unmeasured.
+        """
+        seeds = _independently_derived_seed_symbols()
+        table = self._top_level_table(_successor_blob().decode("utf-8"))
+        closure = self._transitive_closure(seeds, table)
+        assert seeds < closure, "the closure reached nothing the direct seeds did not"
+        indirect = closure - seeds
+        assert len(indirect) == 8
+        assert indirect == {
+            "BOUNDS", "CANDIDATE_DISPOSITIONS", "CELL_OUTCOMES", "CONSTRUCTION_FAMILIES",
+            "DRIVER_CLASSES", "cell_id_of", "generate_family_slot_grid", "map_g2_reading",
+        }, sorted(indirect)
+
+    def test_no_outcome_consumed_symbol_changed_across_the_transition(self):
+        """Evidence, not authorization: the seventeen regions touch authorization-only code.
+
+        MINOR 1 (FULL review 4965914272) corrected. Every definition in the COMPLETE transitive
+        closure is compared, not just the 18 direct seeds. The seeds are re-derived from the
+        CONSUMERS' own source and the closure is computed here, so neither the manifest, nor any
+        production declaration, nor the governance claim is its own oracle. Authorization remains
+        byte-exact; this test records what those reviewed bytes mean.
+        """
+        import ast as _ast
+
+        seeds = _independently_derived_seed_symbols()
+        assert seeds, "no consumed symbols were derived"
+
+        package = self._top_level_table(_package_blob().decode("utf-8"))
+        successor = self._top_level_table(_successor_blob().decode("utf-8"))
+        closure = self._transitive_closure(seeds, successor)
+        assert closure == self._EXPECTED_TRANSITIVE_SURFACE
+        assert len(closure) == 26
+
+        missing = sorted(name for name in closure if name not in package or name not in successor)
+        assert missing == [], f"closure symbols absent from a blob: {missing}"
         changed = [
-            name for name in sorted(consumed)
-            if name not in package or name not in successor
-            or _ast.dump(package[name]) != _ast.dump(successor[name])
+            name
+            for name in sorted(closure)
+            if _ast.dump(package[name]) != _ast.dump(successor[name])
         ]
-        assert changed == [], f"outcome-consumed symbols changed: {changed}"
+        assert changed == [], f"outcome-consumed definitions changed: {changed}"
 
     def test_representative_bypasses_would_have_changed_a_real_disposition(self):
         """Disposable evidence only -- never part of the authorization proof, never the real lane.
@@ -1793,3 +1928,169 @@ class TestExactPackageToSuccessorTransition:
         }
         for banned in ("eval", "exec", "compile", "__import__"):
             assert banned not in called, f"{banned}() is still called"
+
+
+# ======================================================================================
+# (13) MAJOR 1 (FULL review 4965914272) — the construction-universe module joins the
+#      exact FIVE-ANCHOR executable-package equality boundary
+# ======================================================================================
+
+#: The direct outcome-producing dependency the reviewed head left outside the package boundary.
+CONSTRUCTION_UNIVERSE_RELPATH = "level1_construction_universe_closure_validator.py"
+
+#: Its verified identity, unchanged from the accepted package through this head. Asserted against
+#: the real git objects below rather than trusted as a literal.
+CONSTRUCTION_UNIVERSE_SHA256 = (
+    "1fed8f42b8c80ad2908a135a0c02517463dd04bb4ee3fdb20cad9d5a9acf95c5"
+)
+
+
+class TestConstructionUniverseIsPackageBound:
+    """MAJOR 1 (FULL review 4965914272): a direct consumer dependency was unproven at the package.
+
+    ``level1_stage1_runner.py`` imports this module as ``CU`` and calls
+    ``generate_construction_universe``, ``frozen_construction_universe`` and
+    ``universe_aggregate_sha256`` — the actual 680-cell traversal, its exact order, the frozen
+    mapping, the per-construction identities, and the aggregate hash. ``level1_stage1_result_validator.py``
+    consumes the same module.
+
+    It was already load-bearing, but that boundary compares only the successor's reviewed head, the
+    successor's merge, and the working tree. **The two EXECUTABLE-PACKAGE anchors did not prove it.**
+    Reproduced through the real mechanism before correcting: withholding its blob at both package
+    anchors, with every other input valid, ``_verify_successor_rebinding_identity`` returned ``[]``.
+
+    Each test below perturbs exactly ONE anchor and leaves every other load-bearing declaration
+    coherent, so a generic earlier failure cannot mask the component under test, and each asserts the
+    RELEVANT error rather than merely ``valid=False``.
+    """
+
+    def test_it_is_now_inside_the_exact_package_equality_boundary(self):
+        assert (
+            CONSTRUCTION_UNIVERSE_RELPATH in A.EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS
+        ), "the construction-universe module must be package-bound, not merely load-bearing"
+
+    def test_the_load_bearing_boundary_is_unchanged_at_ten_paths(self):
+        """The correction ADDS a package binding; it removes nothing."""
+        assert CONSTRUCTION_UNIVERSE_RELPATH in A.LOAD_BEARING_RELPATHS
+        assert len(A.LOAD_BEARING_RELPATHS) == 10
+        assert len(set(A.LOAD_BEARING_RELPATHS)) == 10
+
+    def test_the_consumers_really_do_import_it(self):
+        """The premise, re-derived from the consumers rather than asserted."""
+        import ast as _ast
+
+        for relative in ("level1_stage1_runner.py", "level1_stage1_result_validator.py"):
+            tree = _ast.parse((ROOT / relative).read_text(encoding="utf-8"))
+            imported = {
+                entry.name
+                for node in _ast.walk(tree)
+                if isinstance(node, _ast.Import)
+                for entry in node.names
+            }
+            assert "level1_construction_universe_closure_validator" in imported, relative
+
+    def test_its_live_bytes_match_the_accepted_package_and_the_recorded_identity(self):
+        """Not synthetic: the real working tree against the real merged package."""
+        git = A.LiveGitTruthSource()
+        live = A.sha256_file(ROOT / CONSTRUCTION_UNIVERSE_RELPATH)
+        assert live == CONSTRUCTION_UNIVERSE_SHA256
+        for anchor in (
+            A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+            A.EXECUTABLE_PACKAGE_MERGE_SHA,
+        ):
+            assert git.blob_sha256_at(anchor, CONSTRUCTION_UNIVERSE_RELPATH) == live
+
+    # --- the eight required anchor cases, each independently diagnostic ---
+
+    @pytest.mark.parametrize(
+        "anchor",
+        ["package_accepted_head", "package_merge"],
+        ids=["missing-at-package-accepted-head", "missing-at-package-merge"],
+    )
+    def test_a_missing_construction_universe_blob_at_a_package_anchor_fails_closed(
+        self, payload, anchor
+    ):
+        commit = {
+            "package_accepted_head": A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+            "package_merge": A.EXECUTABLE_PACKAGE_MERGE_SHA,
+        }[anchor]
+        git = FakeGit()
+        del git.blobs[(commit, CONSTRUCTION_UNIVERSE_RELPATH)]
+        _rejected(payload, "the outcome-producing bytes being rebound", sources(git=git))
+
+    @pytest.mark.parametrize(
+        "anchor",
+        ["package_accepted_head", "package_merge", "successor_head", "successor_merge"],
+        ids=[
+            "mismatched-at-package-accepted-head",
+            "mismatched-at-package-merge",
+            "mismatched-at-successor-head",
+            "mismatched-at-successor-merge",
+        ],
+    )
+    def test_a_mismatched_construction_universe_blob_at_any_commit_anchor_fails_closed(
+        self, payload, anchor
+    ):
+        commit = {
+            "package_accepted_head": A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+            "package_merge": A.EXECUTABLE_PACKAGE_MERGE_SHA,
+            "successor_head": HEAD,
+            "successor_merge": MERGE,
+        }[anchor]
+        git = FakeGit()
+        git.blobs[(commit, CONSTRUCTION_UNIVERSE_RELPATH)] = "0" * 64
+        result = A.validate_authorization_document(payload, sources(git=git))
+        assert not result.valid
+        assert any(
+            CONSTRUCTION_UNIVERSE_RELPATH in error for error in result.errors
+        ), f"no error named the construction-universe module: {result.errors}"
+
+    def test_a_mismatched_construction_universe_blob_in_the_working_tree_fails_closed(
+        self, payload, tmp_path, monkeypatch
+    ):
+        """The fifth anchor. The real file is never touched; only the ROOT the check reads is."""
+        shadow = tmp_path / "shadow"
+        shadow.mkdir()
+        for relative in A.LOAD_BEARING_RELPATHS:
+            target = shadow / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((ROOT / relative).read_bytes())
+        (shadow / CONSTRUCTION_UNIVERSE_RELPATH).write_text(
+            (ROOT / CONSTRUCTION_UNIVERSE_RELPATH).read_text(encoding="utf-8") + "\n# drift\n",
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(A, "ROOT", shadow)
+        result = A.validate_authorization_document(payload, sources(git=FakeGit()))
+        assert not result.valid
+        assert any(
+            CONSTRUCTION_UNIVERSE_RELPATH in error for error in result.errors
+        ), f"no error named the construction-universe module: {result.errors}"
+        assert (
+            A.sha256_file(ROOT / CONSTRUCTION_UNIVERSE_RELPATH) == CONSTRUCTION_UNIVERSE_SHA256
+        ), "the real construction-universe module must remain untouched"
+
+    def test_the_happy_path_is_still_accepted(self, payload):
+        """Precision: with every anchor coherent, the added binding refuses nothing."""
+        result = A.validate_authorization_document(payload, sources(git=FakeGit()))
+        assert not [
+            error for error in result.errors if CONSTRUCTION_UNIVERSE_RELPATH in error
+        ], result.errors
+
+    def test_each_anchor_is_independently_diagnostic(self, payload):
+        """Perturbing ONE anchor must not be masked by, or masquerade as, another failure."""
+        for commit in (
+            A.EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
+            A.EXECUTABLE_PACKAGE_MERGE_SHA,
+            HEAD,
+            MERGE,
+        ):
+            git = FakeGit()
+            git.blobs[(commit, CONSTRUCTION_UNIVERSE_RELPATH)] = "0" * 64
+            named = [
+                error
+                for error in A.validate_authorization_document(
+                    payload, sources(git=git)
+                ).errors
+                if CONSTRUCTION_UNIVERSE_RELPATH in error
+            ]
+            assert named, f"anchor {commit} produced no construction-universe error"

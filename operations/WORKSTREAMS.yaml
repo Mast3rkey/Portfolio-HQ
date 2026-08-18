@@ -14575,6 +14575,81 @@ workstreams:
           security argument has changed from inferred semantic equivalence to exact reviewed byte
           identity plus an exact closed transition, so a delta anchored on the prior head would
           inspect a diff against a mechanism that no longer exists.
+          EIGHTH BOUNDED CORRECTION after the requested independent exact-head FULL review
+          4965914272 at head 9cc6b28f602731b6fa904d0010cc4daaf4834462 (CHANGES REQUIRED - 0
+          BLOCKING / 1 MAJOR / 1 MINOR / 1 NOTE). That review ACCEPTED the exact-transition
+          architecture; both findings are gaps in WHAT THE MECHANISM WAS POINTED AT, not defects in
+          its design. MAJOR 1: level1_construction_universe_closure_validator.py is a DIRECT
+          outcome-producing dependency - the runner binds it at line 79 and calls
+          generate_construction_universe, frozen_construction_universe and universe_aggregate_sha256,
+          the result validator binds it at line 45 - and it controls the 680-cell traversal, its
+          ordering, the frozen mapping, the construction identities and the aggregate hash, yet it
+          was absent from EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS, so its identity was PROVEN
+          AT NEITHER PACKAGE ANCHOR. REPRODUCED THROUGH THE REAL MECHANISM BEFORE CORRECTING:
+          withholding its blob at both package anchors with every other input valid,
+          _verify_successor_rebinding_identity returned no errors. CORRECTED AT SOURCE by listing it
+          in that tuple, so all five anchors - package accepted head, package merge, successor
+          reviewed head, successor merge, working tree - now prove its identity; its bytes were in
+          fact never changed (1fed8f42...c95c5, identical from the package through this head), so
+          the defect was that the invariant was ASSERTED RATHER THAN PROVEN. The module itself was
+          NOT edited, LOAD_BEARING_RELPATHS stays 10, and no existing byte check was weakened,
+          replaced or removed; no fixture change was needed because both stand-in git sources
+          already iterate the tuple. THIRTEEN new tests drive the PUBLIC authorization validator,
+          each isolating one anchor while leaving every other declaration and hash coherent so no
+          generic earlier failure can mask the mechanism under test, and each asserting the SPECIFIC
+          error rather than merely valid=False: happy path; blob missing at package accepted head;
+          missing at package merge; mismatched at package accepted head; at package merge; at
+          successor reviewed head; at successor merge; and mismatched in the working tree via a
+          copied shadow tree so the real file is never written. MUTATION: removing ONLY the new
+          tuple entry fails 6 of 13; byte-identical restoration reproduces
+          8186a50f...d91f2fc8 and all 13 pass. MINOR 1:
+          test_no_outcome_consumed_symbol_changed_across_the_transition compared only the 18 DIRECT
+          consumer seeds and never computed the 26-symbol transitive closure this record claimed, so
+          eight indirect-only symbols - BOUNDS, CANDIDATE_DISPOSITIONS, CELL_OUTCOMES,
+          CONSTRUCTION_FAMILIES, DRIVER_CLASSES, cell_id_of, generate_family_slot_grid,
+          map_g2_reading - were NEVER COMPARED AT ALL; reproduced independently at the reviewed head
+          (helper returned 18, an independently written fixed-point closure returned 26, difference
+          exactly those 8, matching the review symbol for symbol). CORRECTED with a TEST-ONLY proof
+          standing on its own evidence: seeds derived from the CONSUMERS' own source, package and
+          successor derivation blobs parsed INDEPENDENTLY (package from the git object store at the
+          package merge, successor from the working tree, neither read through the manifest),
+          top-level definition tables built per blob, seeds closed to a FIXED POINT over referenced
+          top-level names, and EVERY definition in the complete closure compared across both blobs -
+          establishing 18 direct seeds, a closure of exactly the 26 named symbols, and NO CHANGED
+          OUTCOME-CONSUMED DEFINITION, with neither the production mechanism nor any production
+          declaration nor this record's own claim used as its own oracle. Two weaknesses found while
+          writing it were fixed rather than left standing: the closure is now STRICT IN ITS SEEDS, so
+          a consumed symbol absent from a blob is an error rather than a silent omission that would
+          have hidden a DELETED definition, and the gap test now derives its eight indirect symbols
+          from the COMPUTED closure instead of subtracting two constants, which a degenerate closure
+          would otherwise have satisfied. A LATENT COUPLING WAS THE PROXIMATE CAUSE AND IS RECORDED:
+          the seed helper's docstring said it walked the two consumers but it in fact iterated
+          EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS, harmless while that tuple held exactly those
+          two paths, and MAJOR 1's correct expansion to three silently changed what it measured from
+          18 symbols to 22; the two consumer paths are now named directly as test-local literals so
+          no production declaration acts as its own oracle, and the third module's own derivation use
+          (scan_for_barred_content plus three symbols already inside the closure) remains covered by
+          the whole-blob exact-transition proof, which accounts for every byte of both files.
+          MUTATION: disabling only the fixed-point closure fails 3 tests and byte-identical
+          restoration passes all 20; a second, sharper mutation drove the REAL test methods over an
+          IN-MEMORY mutation of map_g2_reading, an indirect-only symbol, leaving every file on disk
+          untouched - the old 18-seed comparison reported no change, the corrected 26-symbol
+          comparison reported exactly map_g2_reading, and the unmutated blobs stayed clean, which is
+          the drift class MINOR 1 identified demonstrated as missed before and caught after. NOTE 1
+          recorded without code change, as the review intended. NO AST OR PROJECTION MACHINERY WAS
+          RETURNED TO PRODUCTION CODE - the closure is test-only transition evidence and the
+          authorization boundary remains exact bytes. The construction-universe module, the
+          preregistration derivation module, the Stage-1 runner, the Stage-1 result validator, the
+          canonical inputs, the preregistration and universe artifacts, the protected portfolio and
+          risk-lane paths and every accepted predecessor decision were NOT edited and were each
+          verified byte-identical against HEAD after all mutation testing; the real execution lane
+          was neither created, inspected nor modified; no attestation, authorization root, lane
+          state, ledger entry, claim, completion, recovery, execution or stage1_results.yaml was
+          produced; SS-G.B steps 9-11 were not performed; and the V7 canonical pins, the 680 / 48
+          universe and 73c0965e...5224, the four-way identity separation and the ten load-bearing
+          paths are unchanged. Stage 1 remains UNARMED and NOT EXECUTABLE, and ATTEMPT_1 is intact,
+          unclaimed and unconsumed. The corrected head requires a further independent exact-head
+          DELTA review from 9cc6b28f602731b6fa904d0010cc4daaf4834462.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

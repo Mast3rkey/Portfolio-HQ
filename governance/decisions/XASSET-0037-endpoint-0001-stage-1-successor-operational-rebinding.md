@@ -1259,3 +1259,112 @@ review anchored on the prior head would inspect a diff against a mechanism that 
 The next review must therefore be an independent **FULL** exact-head review of this head.
 
 **Stage 1 remains UNARMED and NOT EXECUTABLE.** `ATTEMPT_1` is intact, unclaimed, and unconsumed.
+
+---
+
+## Eighth bounded correction — independent exact-head FULL review `4965914272`
+
+The FULL review the architectural correction asked for was performed at head
+`9cc6b28f602731b6fa904d0010cc4daaf4834462`. It accepted the exact-transition architecture and
+returned **CHANGES REQUIRED — 0 BLOCKING / 1 MAJOR / 1 MINOR / 1 NOTE**. Both findings are
+corrected below. Neither is a defect in the new mechanism's design; both are gaps in **what the
+mechanism was pointed at**. No prior section of this record is edited — the audit trail is appended.
+
+### MAJOR 1 — an outcome-producing module sat outside the package-equality boundary
+
+`EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS` held two paths. It should have held three:
+`level1_construction_universe_closure_validator.py` is a **direct** outcome-producing dependency —
+`level1_stage1_runner.py` binds it at line 79 (`import … as CU`) and calls
+`generate_construction_universe`, `frozen_construction_universe` and `universe_aggregate_sha256`;
+`level1_stage1_result_validator.py` binds it at line 45 and calls into it twice. It controls the
+680-cell universe traversal, its ordering, the frozen mapping, the construction identities, and the
+aggregate hash. Being absent from that tuple, its identity was **not proven at either package
+anchor**.
+
+**Reproduced through the real mechanism before anything was corrected.** Using the suite's own
+`FakeGit` and payload fixtures, the construction-universe blob was withheld at *both* package
+anchors with every other input left valid. `_verify_successor_rebinding_identity` returned `[]` —
+no error. The finding is exactly as reported.
+
+**Corrected at source**, by listing the module in the tuple, so all five anchors — package accepted
+head, package merge, successor reviewed head, successor merge, working tree — now prove its
+identity. Its bytes were in fact never changed (SHA-256
+`1fed8f42b8c80ad2908a135a0c02517463dd04bb4ee3fdb20cad9d5a9acf95c5`, identical from the package
+through this head); the defect was that this was **asserted rather than proven**.
+
+`LOAD_BEARING_RELPATHS` remains at **10**. The module itself was not edited. No existing byte-check
+was weakened, replaced, or removed. No fixture change was required: both stand-in git sources
+already iterate the tuple, so they served the third path automatically.
+
+**Proof, not assertion.** Thirteen new tests in `TestConstructionUniverseIsPackageBound` drive the
+public authorization validator, each isolating one anchor while leaving every other declaration and
+hash coherent so no generic earlier failure can mask the mechanism under test, and each asserting
+the *specific* error rather than merely `valid is False`: the happy path; the blob missing at the
+package accepted head; missing at the package merge; mismatched at the package accepted head; at
+the package merge; at the successor reviewed head; at the successor merge; and mismatched in the
+working tree (through a copied shadow tree, so the real file is never written). Mutation: removing
+**only** the new tuple entry fails 6 of the 13; byte-identical restoration reproduces
+`8186a50f71d05bbb7189183bacad6aa0752147e9c7f4e1f5b3bacabad91f2fc8` and all 13 pass.
+
+### MINOR 1 — the evidence test measured 18 symbols while claiming 26
+
+`test_no_outcome_consumed_symbol_changed_across_the_transition` compared only the **18 direct
+consumer seeds**. It never computed the 26-symbol transitive closure this record claimed. Eight
+symbols reached only indirectly — `BOUNDS`, `CANDIDATE_DISPOSITIONS`, `CELL_OUTCOMES`,
+`CONSTRUCTION_FAMILIES`, `DRIVER_CLASSES`, `cell_id_of`, `generate_family_slot_grid`,
+`map_g2_reading` — were **never compared at all**. Reproduced independently at the reviewed head
+before correcting: the helper returned 18; an independently written fixed-point closure returned
+26; the difference was exactly those 8, matching the review's list symbol for symbol.
+
+**Corrected** with a test-only proof that stands on its own evidence. It derives the direct seeds
+from the **consumers' own source** (`level1_stage1_runner.py`, `level1_stage1_result_validator.py`),
+parses the package and successor derivation blobs **independently** — the package blob from the git
+object store at the package merge, the successor blob from the working tree, neither read through
+the manifest — builds each blob's top-level definition table, closes the seeds to a **fixed point**
+over referenced top-level names, and compares **every** definition in the complete closure across
+both blobs. It establishes 18 direct seeds and a closure of exactly the 26 named symbols, and finds
+**no changed outcome-consumed definition**. Neither the production mechanism, nor any production
+declaration, nor this record's own claim is used as its own oracle.
+
+Two weaknesses found while writing it were fixed rather than left standing. The closure is now
+**strict in its seeds** — a consumed symbol absent from a blob is an error, not a silent omission,
+which would otherwise have hidden a *deleted* definition. And the gap test now derives its eight
+indirect symbols from the **computed** closure instead of subtracting two constants, which a
+degenerate closure would otherwise have satisfied.
+
+A latent coupling was also the proximate cause of the shortfall and is worth recording. The seed
+helper's docstring said it walked the two consumers; it in fact iterated
+`EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS`. That was harmless while the tuple happened to hold
+exactly those two paths — and MAJOR 1's correct expansion to three silently changed what the helper
+measured, from 18 symbols to 22. The seed surface is a property of the two consumers, so the two
+consumer paths are now named directly as test-local literals, letting no production declaration act
+as its own oracle. The third module's own derivation use (`scan_for_barred_content`, plus three
+symbols already inside the closure) remains covered by the whole-blob exact-transition proof, which
+accounts for every byte of both files.
+
+**Proof, not assertion.** Disabling only the fixed-point closure fails 3 of the tests; byte-identical
+restoration passes all 20. A second, sharper mutation drove the *real* test methods over an
+**in-memory** mutation of `map_g2_reading` — an indirect-only symbol — leaving every file on disk
+untouched: the old 18-seed comparison reported no change, the corrected 26-symbol comparison
+reported exactly `map_g2_reading`, and the unmutated blobs stayed clean. That is the drift class
+MINOR 1 identified, demonstrated as missed before and caught after.
+
+### NOTE 1
+
+Recorded without code change, as the review intended.
+
+### What this eighth correction did not do
+
+No AST or projection machinery was returned to production code — the closure is test-only transition
+evidence, and the authorization boundary remains exact bytes. The construction-universe module, the
+preregistration derivation module, the Stage-1 runner, the Stage-1 result validator, the canonical
+inputs, the preregistration artifacts, the universe artifacts, the protected portfolio and risk-lane
+paths, and every accepted predecessor decision were **not edited**; each was verified byte-identical
+against `HEAD` after all mutation testing. The real execution lane was neither created, inspected,
+nor modified. No attestation, authorization root, lane state, ledger entry, claim, completion,
+recovery, execution, or `stage1_results.yaml` was produced. `XASSET-0030` §G.B steps 9–11 were not
+performed. The V7 canonical pins, the 680/48 universe and its aggregate hash
+`73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224`, the four-way identity
+separation, and the ten load-bearing paths are all unchanged.
+
+**Stage 1 remains UNARMED and NOT EXECUTABLE.** `ATTEMPT_1` is intact, unclaimed, and unconsumed.
