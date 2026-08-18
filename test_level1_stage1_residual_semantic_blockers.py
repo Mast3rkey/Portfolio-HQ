@@ -291,6 +291,10 @@ class TestFrozenInputsUnchanged:
             "level1_stage1_runner.py",
             "level1_stage1_result_validator.py",
             "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
+            # AMENDED BY XASSET-0037 / SS-G.B step 8: the successor rebinding adds its OWN decision
+            # to the bound identity, on the footing XASSET-0029 and XASSET-0036 already occupy.
+            # This filing's accepted six paths are still all retained above; NOTHING was removed.
+            "governance/decisions/XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
         }
         # No REAL results artifact is load-bearing, because none exists.
         assert "stage1_results" not in " ".join(A.LOAD_BEARING_RELPATHS).lower()
@@ -1146,8 +1150,18 @@ class TestGBUnlockIsTiedToLifecycleClosure:
         assert len(A.REQUIRED_LIFECYCLE_GATES) == 6
 
     def test_canonical_stage_1_names_all_six_gates(self, prereg):
+        """AMENDED BY XASSET-0037. The property protected here is ALL_SIX_GATES, unchanged.
+
+        XASSET-0030 SS-G.B step 8's rebinding moved the OPERATIVE lifecycle XASSET-0029 ->
+        XASSET-0037; this filing's own accepted value is retained verbatim as history in the
+        explicitly predecessor-named field, and both are asserted, so the check is stronger.
+        """
         assert (
             prereg["stages"]["stage_1"]["executable_only_after"]
+            == "XASSET_0037_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+        )
+        assert (
+            prereg["stages"]["stage_1"]["predecessor_executable_only_after_xasset_0029"]
             == "XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
         )
 

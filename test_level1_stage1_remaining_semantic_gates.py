@@ -782,6 +782,10 @@ class TestNothingHereAuthorizesOrExecutes:
             "level1_stage1_runner.py",
             "level1_stage1_result_validator.py",
             "governance/decisions/XASSET-0036-endpoint-0001-stage-1-gb-executable-package-authorization.md",
+            # AMENDED BY XASSET-0037 / SS-G.B step 8: the successor rebinding adds its OWN decision
+            # to the bound identity, on the footing XASSET-0029 and XASSET-0036 already occupy.
+            # This filing's accepted six paths are still all retained above; NOTHING was removed.
+            "governance/decisions/XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
         }
 
     def test_canonical_pins_are_history_and_current_bytes_match_the_effective_pins(self):

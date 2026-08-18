@@ -52,16 +52,25 @@ SUCCESSOR_DECISION_PATH = (
     / "XASSET-0028-concrete-construction-universe-closure-determination.md"
 )
 
-#: XASSET-0029 is the CURRENT successor authority over the canonical bytes.
+#: XASSET-0029 established the Stage-1 authorization MECHANISM. It is HISTORICAL authority over the
+#: canonical bytes now that XASSET-0037 has rebound them (XASSET-0030 SS-G.B step 8); it is retained,
+#: not invalidated.
 XASSET_0029_DECISION_PATH = (
     ROOT
     / "governance/decisions"
     / "XASSET-0029-endpoint-0001-stage-1-operational-authorization.md"
 )
 
+#: XASSET-0037 is the CURRENT successor authority over the canonical bytes.
+XASSET_0037_DECISION_PATH = (
+    ROOT
+    / "governance/decisions"
+    / "XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md"
+)
+
 STUDY_ID = "ENDPOINT-0001"
-HASH_VERSION = "ENDPOINT-0001-PREREG-V6"
-PREDECESSOR_HASH_VERSION = "ENDPOINT-0001-PREREG-V5"
+HASH_VERSION = "ENDPOINT-0001-PREREG-V7"
+PREDECESSOR_HASH_VERSION = "ENDPOINT-0001-PREREG-V6"
 
 # XASSET-0028 closes the construction universe. Cardinality and integrity hash are recomputed
 # from the real generator at validation time, never trusted as literals here.
@@ -309,11 +318,18 @@ STAGE_1_EFFECTIVITY_GATES = (
     "MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION",
 )
 
-#: AMENDED BY XASSET-0029. XASSET-0028's lifecycle has closed, retiring its blocker. Stage 1 is
-#: nonetheless still not executable: XASSET-0029 relocates authorization off committed state
-#: entirely, onto an external one-shot preexecution attestation that cannot exist until after the
-#: XASSET-0029 lifecycle has itself closed in full.
+#: AMENDED BY XASSET-0029, REBOUND BY XASSET-0037. XASSET-0028's lifecycle closed, retiring its
+#: blocker; XASSET-0029 then relocated authorization off committed state entirely, onto an external
+#: one-shot preexecution attestation. The XASSET-0036 executable package later changed the
+#: load-bearing bytes XASSET-0029 bound, so XASSET-0030 SS-G.B step 8's successor rebinding lifecycle
+#: -- XASSET-0037 -- is now the operative precondition. The MECHANISM is unchanged; the merged tree
+#: its load-bearing identity is proven against is not.
 STAGE_1_EXECUTION_PRECONDITION = (
+    "XASSET_0037_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+)
+
+#: XASSET-0029's precondition, retained as HISTORICAL identity. Spent is not invalidated.
+PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0029 = (
     "XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
 )
 
@@ -322,6 +338,10 @@ PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0028 = (
 )
 
 STAGE_1_BLOCKING_PREREQUISITE = (
+    "XASSET_0037_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+)
+
+PREDECESSOR_STAGE_1_BLOCKING_PREREQUISITE_XASSET_0029 = (
     "XASSET_0029_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
 )
 
@@ -331,8 +351,51 @@ STAGE_1_AUTHORIZATION_MECHANISM = "EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
 
 STAGE_1_EXECUTION_ATTEMPT_ID = "ENDPOINT-0001::STAGE_1::ATTEMPT_1"
 
-#: Failure modes the XASSET-0029 mechanism must refuse. Declared canonically so a future edit
-#: silently dropping one is a validation error.
+#: XASSET-0037 SS-G.B step 8. Who ESTABLISHED the mechanism and which decision is CURRENTLY the
+#: effective structural authorization source are two different facts, kept in two different fields
+#: so neither can be quietly erased by the other.
+STAGE_1_AUTHORIZATION_MECHANISM_ESTABLISHED_BY = "XASSET-0029"
+STAGE_1_EFFECTIVE_STRUCTURAL_AUTHORIZATION_SOURCE = "XASSET-0037"
+STAGE_1_AUTHORIZATION_REBOUND_BY = "XASSET-0037"
+
+#: The exact completed executable package the successor rebinding binds (XASSET-0036 SS-E's
+#: authorized implementation, delivered by pull request 336).
+STAGE_1_EXECUTABLE_PACKAGE_BOUND = "PULL_REQUEST_336"
+
+#: MINOR 2 (review 4955010993): the successor-rebinding block's CLOSED schema, in exact order. A
+#: future edit adding, removing, or reordering a key is a validation error rather than a silent
+#: change of meaning -- the same treatment every other closed mapping in this module receives.
+SUCCESSOR_REBINDING_KEYS = (
+    "rebinding_decision",
+    "rebinding_authority",
+    "package_authorization_decision",
+    "is_an_activation_step",
+    "is_an_attestation",
+    "adds_activation_authorizations",
+    "no_infinite_authorization_regress_preserved",
+    "no_infinite_authorization_regress_note",
+    "distinct_identities",
+    "historical_operational_authorization_is_invalidated",
+    "historical_operational_authorization_note",
+    "enforcement_drift_recorded_in_advance",
+    "enforcement_drift_note",
+    "outcome_producing_paths_must_be_byte_identical_to_the_accepted_package",
+    "outcome_producing_paths_note",
+    "load_bearing_paths_removed",
+    "exact_byte_checking_weakened",
+)
+
+#: The four distinct relationships, closed and ordered. A fifth key here would be a fifth claimed
+#: identity, which is precisely what the "four structurally distinct identities" doctrine forbids.
+SUCCESSOR_REBINDING_IDENTITY_KEYS = (
+    "structural_closure_predecessor",
+    "historical_operational_authorization",
+    "package_authority",
+    "executable_package",
+)
+
+#: Failure modes the mechanism must refuse. Declared canonically so a future edit silently dropping
+#: one is a validation error. EXTENDED BY XASSET-0037 with the successor-rebinding failure modes.
 STAGE_1_AUTHORIZATION_FAIL_CLOSED_CONDITIONS = (
     "NO_ATTESTATION_PRESENT",
     "MALFORMED_OR_DUPLICATE_KEYED_ATTESTATION",
@@ -361,6 +424,12 @@ STAGE_1_AUTHORIZATION_FAIL_CLOSED_CONDITIONS = (
     "MERGE_TREE_DIFFERS_FROM_THE_ACCEPTED_HEAD_TREE",
     "CLAIMED_OR_COMPLETED_LANE_WITHOUT_A_STILL_VALID_ATTESTATION",
     "SUPPLIED_RESULT_NOT_THE_COMPLETED_RESULT_IDENTITY",
+    # Added by XASSET-0037 / XASSET-0030 SS-G.B step 8. Each names a way a successor rebinding could
+    # otherwise bind the wrong tree, a superseded authorization, or silently altered outcome code.
+    "SUPERSEDED_PREDECESSOR_AUTHORIZATION_DECISION_OR_PULL_REQUEST",
+    "EXECUTABLE_PACKAGE_IDENTITY_ABSENT_MISMATCHED_OR_DRIFTED",
+    "EXECUTABLE_PACKAGE_NOT_AN_ANCESTOR_OF_THE_SUCCESSOR_MERGE",
+    "OUTCOME_PRODUCING_CODE_CHANGED_INSIDE_THE_REBINDING_THAT_BINDS_IT",
 )
 
 # XASSET-0027's precondition, retained as HISTORY only. Its lifecycle is complete, so an operative
@@ -891,12 +960,27 @@ def _validate_stage_1_operational_authorization(
         "stage_1_operational_authorization.mechanism",
         errors,
     )
+    # XASSET-0037: WHO ESTABLISHED the mechanism is historical truth and is deliberately not
+    # rewritten; WHICH decision is currently effective is a separate, separately checked field.
     _exact(
         block.get("established_by"),
-        "XASSET-0029",
+        STAGE_1_AUTHORIZATION_MECHANISM_ESTABLISHED_BY,
         "stage_1_operational_authorization.established_by",
         errors,
     )
+    _exact(
+        block.get("rebound_by"),
+        STAGE_1_AUTHORIZATION_REBOUND_BY,
+        "stage_1_operational_authorization.rebound_by",
+        errors,
+    )
+    _exact(
+        block.get("effective_structural_authorization_source"),
+        STAGE_1_EFFECTIVE_STRUCTURAL_AUTHORIZATION_SOURCE,
+        "stage_1_operational_authorization.effective_structural_authorization_source",
+        errors,
+    )
+    _validate_successor_operational_rebinding(block, errors)
     _exact(
         block.get("execution_attempt_id"),
         STAGE_1_EXECUTION_ATTEMPT_ID,
@@ -957,6 +1041,113 @@ def _validate_stage_1_operational_authorization(
                 "stage_1_operational_authorization.must_fail_closed_on: must include "
                 f"{condition!r}"
             )
+
+
+def _validate_successor_operational_rebinding(
+    block: Mapping[str, Any], errors: list[str]
+) -> None:
+    """XASSET-0037 / XASSET-0030 SS-G.B step 8's rebinding block must stay present and unweakened.
+
+    The four relationships are asserted SEPARATELY. A future edit collapsing them into one
+    "predecessor" field, or quietly declaring the rebinding an activation step, is a validation
+    error rather than a silent change of meaning.
+    """
+    where = "stage_1_operational_authorization.successor_operational_rebinding"
+    rebinding = block.get("successor_operational_rebinding")
+    if not isinstance(rebinding, Mapping):
+        errors.append(f"{where}: expected a mapping")
+        return
+
+    # MINOR 2 (review 4955010993): this block validated required VALUES but never rejected extra
+    # keys, so `smuggled: value` was accepted in both mappings while `validate(...).ok` stayed True.
+    # Reproduced before correcting. Both are now exact closed schemas through the module's own
+    # `_keys` mechanism -- missing keys, extra keys, and key-order drift are all refused, exactly as
+    # every other closed mapping in this validator is treated.
+    if not _keys(rebinding, SUCCESSOR_REBINDING_KEYS, where, errors):
+        return
+
+    _exact(rebinding.get("rebinding_decision"), "XASSET-0037", f"{where}.rebinding_decision", errors)
+    _exact(
+        rebinding.get("rebinding_authority"),
+        "XASSET-0030_SS_G_B_STEP_8",
+        f"{where}.rebinding_authority",
+        errors,
+    )
+    _exact(
+        rebinding.get("package_authorization_decision"),
+        "XASSET-0036",
+        f"{where}.package_authorization_decision",
+        errors,
+    )
+
+    # Rebinding is not arming, and may never quietly become an activation authorization.
+    _false(rebinding.get("is_an_activation_step"), f"{where}.is_an_activation_step", errors)
+    _false(rebinding.get("is_an_attestation"), f"{where}.is_an_attestation", errors)
+    _exact(
+        rebinding.get("adds_activation_authorizations"),
+        0,
+        f"{where}.adds_activation_authorizations",
+        errors,
+    )
+    _true(
+        rebinding.get("no_infinite_authorization_regress_preserved"),
+        f"{where}.no_infinite_authorization_regress_preserved",
+        errors,
+    )
+
+    # A spent predecessor is not an invalidated one.
+    _false(
+        rebinding.get("historical_operational_authorization_is_invalidated"),
+        f"{where}.historical_operational_authorization_is_invalidated",
+        errors,
+    )
+    _true(
+        rebinding.get("enforcement_drift_recorded_in_advance"),
+        f"{where}.enforcement_drift_recorded_in_advance",
+        errors,
+    )
+
+    # SS-G.B's invariant, and the two properties that make a rebinding honest.
+    _true(
+        rebinding.get("outcome_producing_paths_must_be_byte_identical_to_the_accepted_package"),
+        f"{where}.outcome_producing_paths_must_be_byte_identical_to_the_accepted_package",
+        errors,
+    )
+    _exact(rebinding.get("load_bearing_paths_removed"), 0, f"{where}.load_bearing_paths_removed", errors)
+    _false(
+        rebinding.get("exact_byte_checking_weakened"),
+        f"{where}.exact_byte_checking_weakened",
+        errors,
+    )
+
+    identities = rebinding.get("distinct_identities")
+    if not isinstance(identities, Mapping):
+        errors.append(f"{where}.distinct_identities: expected a mapping")
+        return
+    if not _keys(
+        identities, SUCCESSOR_REBINDING_IDENTITY_KEYS, f"{where}.distinct_identities", errors
+    ):
+        return
+    for key, want in (
+        ("structural_closure_predecessor", "XASSET-0028"),
+        ("historical_operational_authorization", "XASSET-0029"),
+        ("package_authority", "XASSET-0036"),
+        ("executable_package", "PULL_REQUEST_336"),
+    ):
+        _exact(identities.get(key), want, f"{where}.distinct_identities.{key}", errors)
+    # Four RELATIONSHIPS means four DISTINCT values; a collapse is exactly the overloading this
+    # block exists to prevent.
+    values = [identities.get(key) for key, _ in (
+        ("structural_closure_predecessor", None),
+        ("historical_operational_authorization", None),
+        ("package_authority", None),
+        ("executable_package", None),
+    )]
+    if len(set(values)) != len(values):
+        errors.append(
+            f"{where}.distinct_identities: the four relationships must carry four distinct "
+            f"identities, found {values!r}"
+        )
 
 
 def _validate_stages(data: Mapping[str, Any], errors: list[str]) -> None:
@@ -2972,6 +3163,16 @@ def protocol_mirror_expected() -> dict[str, str]:
         "stage_1_operationally_authorized": "false",
         "stage_1_authorization_mechanism": STAGE_1_AUTHORIZATION_MECHANISM,
         "stage_1_execution_attempt_id": STAGE_1_EXECUTION_ATTEMPT_ID,
+        # XASSET-0037 SS-G.B step 8. The mechanism's ESTABLISHER and its current EFFECTIVE source are
+        # separately mirrored: conflating them would erase either the history or the rebinding.
+        "stage_1_effective_structural_authorization_source": (
+            STAGE_1_EFFECTIVE_STRUCTURAL_AUTHORIZATION_SOURCE
+        ),
+        "stage_1_authorization_mechanism_established_by": (
+            STAGE_1_AUTHORIZATION_MECHANISM_ESTABLISHED_BY
+        ),
+        "stage_1_authorization_rebound_by": STAGE_1_AUTHORIZATION_REBOUND_BY,
+        "stage_1_executable_package_bound": STAGE_1_EXECUTABLE_PACKAGE_BOUND,
         "stage_2_authorized": "false",
         "j12_deferred": "true",
         "hash_version": HASH_VERSION,
@@ -3058,6 +3259,14 @@ XASSET_0029_PINS = {
     "preregistration_sha256": "6e0c07a8e3279f8100a41df489921720f7f3125346f977e64fb5deca2f34337c",
 }
 
+#: The XASSET-0036 executable package's V6 pins, retained as HISTORICAL identity now that
+#: XASSET-0037 rebinds the canonical bytes under successor authority. Same treatment as every
+#: generation before it: recorded verbatim, never rewritten to match amended bytes.
+XASSET_0036_PACKAGE_PINS = {
+    "protocol_sha256": "86b2a5e8674247698ac592ce4734744f940b4a119ffda5fd702bc3cbf3e40c13",
+    "preregistration_sha256": "e993df9f41d2f5352e51c9921dd006d50ab69518a730d37def106696b3f149d4",
+}
+
 
 def validate_current_canonical_pins(
     prereg_path: Path = PREREG_PATH, protocol_path: Path = PROTOCOL_PATH
@@ -3091,17 +3300,22 @@ def validate_current_canonical_pins(
                 f"canonical pins: {relative} is pinned {pinned}, file is {actual}"
             )
         # An amendment that left the bytes unchanged would not be an amendment, and would mean the
-        # successor pin was copied forward rather than recomputed.
-        historical = (
-            XASSET_0029_PINS["protocol_sha256"]
-            if relative == authorization.CANONICAL_PROTOCOL_RELPATH
-            else XASSET_0029_PINS["preregistration_sha256"]
-        )
-        if pinned == historical:
-            errors.append(
-                f"canonical pins: {relative} still carries the XASSET-0029 pin; the amendment must "
-                "change the canonical bytes it re-pins"
-            )
+        # successor pin was copied forward rather than recomputed. EXTENDED BY XASSET-0037: every
+        # predecessor generation is checked, not only the most recent, so a pin cannot be reverted
+        # to an older accepted value either.
+        is_protocol = relative == authorization.CANONICAL_PROTOCOL_RELPATH
+        for label, pins in (
+            ("XASSET-0036 executable-package", XASSET_0036_PACKAGE_PINS),
+            ("XASSET-0029", XASSET_0029_PINS),
+            ("XASSET-0028", XASSET_0028_PINS),
+            ("XASSET-0027", PREDECESSOR_PINS),
+        ):
+            historical = pins["protocol_sha256"] if is_protocol else pins["preregistration_sha256"]
+            if pinned == historical:
+                errors.append(
+                    f"canonical pins: {relative} still carries the {label} pin; the amendment must "
+                    "change the canonical bytes it re-pins"
+                )
     return ValidationResult(not errors, tuple(errors))
 
 
@@ -3244,6 +3458,67 @@ def validate_charter_hash_pins(
     return ValidationResult(not errors, tuple(errors))
 
 
+XASSET_0037_HASH_BLOCK_RE = re.compile(
+    r"<!-- XASSET-0037-HASH-PINS-V1\n(?P<body>.*?)\n-->", re.DOTALL
+)
+
+
+def validate_xasset_0037_successor_hash_pins(
+    decision_text: str, prereg_path: Path = PREREG_PATH, protocol_path: Path = PROTOCOL_PATH
+) -> ValidationResult:
+    """Validate XASSET-0037's pins as the CURRENT authority, against the LIVE canonical bytes.
+
+    ESTABLISHED BY XASSET-0037 / XASSET-0030 SS-G.B step 8. Each generation's pin block is verified
+    against the live files WHILE IT IS CURRENT, and demoted to verbatim-history verification once a
+    successor amends the bytes. This is that current-generation check.
+
+    It also asserts the predecessor digests the decision records are the previously ACCEPTED ones,
+    so a successor cannot rewrite the history it claims to succeed.
+    """
+    errors: list[str] = []
+    pins = extract_block(decision_text, XASSET_0037_HASH_BLOCK_RE)
+    if pins is None:
+        return ValidationResult(False, ("XASSET-0037: XASSET-0037-HASH-PINS-V1 block absent",))
+
+    for key, want in (
+        ("protocol_path", "research/level1_endpoint_evidence/PROTOCOL_V1.md"),
+        ("preregistration_path", "research/level1_endpoint_evidence/pre_registration.yaml"),
+    ):
+        if pins.get(key) != want:
+            errors.append(f"XASSET-0037 hash pins: {key} expected {want!r}, got {pins.get(key)!r}")
+
+    for key, path in (
+        ("protocol_sha256", protocol_path),
+        ("preregistration_sha256", prereg_path),
+    ):
+        pinned = pins.get(key)
+        actual = sha256_file(path)
+        if not pinned:
+            errors.append(f"XASSET-0037 hash pins: {key} is absent")
+        elif pinned != actual:
+            errors.append(
+                f"XASSET-0037 hash pins: {key} is {pinned}, but the live file is {actual}"
+            )
+
+    # Accepted history may not be rewritten by the decision that succeeds it.
+    for key, want in (
+        ("predecessor_protocol_sha256", XASSET_0036_PACKAGE_PINS["protocol_sha256"]),
+        (
+            "predecessor_preregistration_sha256",
+            XASSET_0036_PACKAGE_PINS["preregistration_sha256"],
+        ),
+    ):
+        pinned = pins.get(key)
+        if not pinned:
+            errors.append(f"XASSET-0037 hash pins: {key} is absent")
+        elif pinned != want:
+            errors.append(
+                f"XASSET-0037 hash pins: {key} is {pinned}, but the XASSET-0036 executable "
+                f"package's accepted pin is {want}; accepted history may not be rewritten"
+            )
+    return ValidationResult(not errors, tuple(errors))
+
+
 def validate_file(path: Path = PREREG_PATH) -> ValidationResult:
     """Validate the pre-registration file, its adversarial scans, and its companion documents."""
     if not path.exists():
@@ -3297,6 +3572,18 @@ def validate_file(path: Path = PREREG_PATH) -> ValidationResult:
         )
     else:
         errors.append(f"{XASSET_0029_DECISION_PATH}: file not found")
+
+    # XASSET-0037 is the CURRENT successor authority, so its own pin block is verified against the
+    # LIVE canonical bytes rather than verbatim -- the same treatment every generation received
+    # while it was current.
+    if XASSET_0037_DECISION_PATH.exists():
+        errors.extend(
+            validate_xasset_0037_successor_hash_pins(
+                XASSET_0037_DECISION_PATH.read_text(encoding="utf-8"), path, PROTOCOL_PATH
+            ).errors
+        )
+    else:
+        errors.append(f"{XASSET_0037_DECISION_PATH}: file not found")
 
     return ValidationResult(not errors, tuple(errors))
 

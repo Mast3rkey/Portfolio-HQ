@@ -105,10 +105,23 @@ PROTECTED_RELPATHS = (
 #: declared pin would mutate the expectation with it and the test would still pass. That
 #: non-circular design is preserved exactly; only the VALUES are advanced.
 #:
-#: AMENDED BY XASSET-0036 SS-E.1/SS-E.7. This filing changed no canonical byte, and that remains
-#: true of it. The implementation XASSET-0036 later authorized reconciled the XASSET-0035
-#: SS-E/SS-F/SS-G semantics into the canonical artifacts and recomputed the pins afterwards.
+#: AMENDED BY XASSET-0036 SS-E.1/SS-E.7, THEN AGAIN BY XASSET-0037 / XASSET-0030 SS-G.B step 8.
+#: This filing changed no canonical byte, and that remains true of it. The implementation
+#: XASSET-0036 later authorized reconciled the XASSET-0035 SS-E/SS-F/SS-G semantics into the
+#: canonical artifacts (V5 -> V6); the XASSET-0037 successor operational rebinding then amended the
+#: authorization language alone (V6 -> V7) and recomputed the pins once afterwards. Every
+#: superseded generation is retained below and asserted as history, never rewritten.
 EXPECTED_CANONICAL_PINS = {
+    "research/level1_endpoint_evidence/PROTOCOL_V1.md": (
+        "367583b616e1c6ab614bcf67d451fe27ce40507d073374190c57291e761d8971"
+    ),
+    "research/level1_endpoint_evidence/pre_registration.yaml": (
+        "768b013c0129f02577fea3c2a1a3100b4340b9a42f48ee0d0dbd6e671894bce1"
+    ),
+}
+
+#: The XASSET-0036 executable package's V6 pins, retained as HISTORICAL identity.
+XASSET_0036_PACKAGE_CANONICAL_PINS = {
     "research/level1_endpoint_evidence/PROTOCOL_V1.md": (
         "86b2a5e8674247698ac592ce4734744f940b4a119ffda5fd702bc3cbf3e40c13"
     ),
@@ -635,6 +648,9 @@ class TestCanonicalPinsStillMatch:
         """The literals XASSET-0029 accepted, asserted against the module's historical constant."""
         assert dict(A.XASSET_0029_CANONICAL_PINS) == XASSET_0029_CANONICAL_PINS
         assert dict(A.CANONICAL_PINS) != XASSET_0029_CANONICAL_PINS
+        # XASSET-0037: the generation superseded most recently is retained on the same terms.
+        assert dict(A.XASSET_0036_PACKAGE_CANONICAL_PINS) == XASSET_0036_PACKAGE_CANONICAL_PINS
+        assert dict(A.CANONICAL_PINS) != XASSET_0036_PACKAGE_CANONICAL_PINS
 
     def test_adversarial_a_truthiness_check_would_not_have_caught_either(self) -> None:
         """Pins the reviewer's diagnosis: truthiness is satisfied by a wrong digest."""

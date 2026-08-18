@@ -729,7 +729,7 @@ class TestUnifiedStage1Lifecycle:
         )
         expected = PREREG.STAGE_1_EXECUTION_PRECONDITION
         # FURTHER AMENDED BY XASSET-0029: the XASSET-0028 lifecycle is itself spent.
-        assert "XASSET_0029" in expected
+        assert "XASSET_0037" in expected  # rebound by XASSET-0030 SS-G.B step 8
         assert "EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION" in expected
         assert (
             data["lifecycle_effectivity"][
