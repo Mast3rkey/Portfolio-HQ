@@ -776,9 +776,9 @@ class TestCatalogAndRegisterSynchronisation:
         assert SUCCESSOR_MERGE_SHA != CURRENT_MAIN_SHA
         assert str(workstream["last_verified_date"]).startswith("2026-08-19")
         # ADVANCED AGAIN BY XASSET-0041, for the same reason `last_verified_main_sha` advances
-        # above: `active_pr` is WS-0014's single shared live field. PR #340 has merged and the
-        # XASSET-0041 PR is not yet open, so no live unmerged PR exists.
-        assert workstream["active_pr"] is None
+        # above: `active_pr` is WS-0014's single shared live field, and PR #341 is now the
+        # currently-live unmerged work. Strengthened to the exact value rather than relaxed.
+        assert workstream["active_pr"] == 341
 
 
 # --------------------------------------------------------------------------------------------------

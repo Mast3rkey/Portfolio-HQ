@@ -914,9 +914,9 @@ class TestCatalogAndRegisterSynchronisation:
         assert workstream["last_verified_main_sha"] == XASSET0041_MAIN_SHA
         assert str(workstream["last_verified_date"]).startswith("2026-08-19")
         # ADVANCED AGAIN BY XASSET-0041. `active_pr` is WS-0014's single shared live field, not
-        # this filing's own. PR #340 has merged and the XASSET-0041 PR is not yet open, so under
-        # `OPS-0001`'s Active-GitHub-fields rule no live unmerged PR exists.
-        assert workstream["active_pr"] is None
+        # this filing's own. PR #340 has merged and PR #341 is now the currently-live unmerged
+        # work under `OPS-0001`'s Active-GitHub-fields rule. Strengthened to the exact value.
+        assert workstream["active_pr"] == 341
 
     def test_workstream_stays_secondary_and_no_primary_is_introduced(self) -> None:
         data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))

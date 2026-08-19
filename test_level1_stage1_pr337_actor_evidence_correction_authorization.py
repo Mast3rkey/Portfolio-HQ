@@ -630,6 +630,7 @@ class TestCatalogAndRegisterSynchronisation:
         assert gate["status"] == "in_progress", (
             "this filing must not mark its own unmerged work complete"
         )
+        assert gate["pr"] == 341, "the self-gate must name its own live PR"
 
     def test_stop_evidence_gate_records_the_terminal_outcome(self, gates):
         description = gates[GATE_STOP]["description"]
@@ -667,8 +668,9 @@ class TestCatalogAndRegisterSynchronisation:
             "f212cce50e28ae887dc8c594bf8ae491a3ef85af"
         )
         assert str(ws0014["last_verified_date"]) == "2026-08-19"
-        # `active_pr` is WS-0014's single shared live field. Pinned to the exact live value.
-        assert ws0014["active_pr"] is None
+        # `active_pr` is WS-0014's single shared live field, holding currently-live unmerged
+        # work per `OPS-0001`. Set to 341 once this PR opened; pinned to the exact value.
+        assert ws0014["active_pr"] == 341
 
     def test_register_still_parses_and_ws0014_is_unique(self, ws0014):
         assert ws0014["id"] == "WS-0014"

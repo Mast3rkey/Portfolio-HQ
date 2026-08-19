@@ -15039,7 +15039,7 @@ workstreams:
           re-performs no part of it.
       - gate: xasset0041-pr337-actor-evidence-correction-authorization
         status: in_progress
-        pr: null
+        pr: 341
         description: >
           The narrow GOVERNANCE-ONLY authority required for ONE future, separate, bounded correction
           to the PR #337 lifecycle actor-evidence mechanism, filed as XASSET-0041. THIS FILING
@@ -16194,7 +16194,7 @@ workstreams:
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
     active_branch: claude/xasset-0040-step-11-8e912y
-    active_pr: null
+    active_pr: 341
     last_verified_main_sha: f212cce50e28ae887dc8c594bf8ae491a3ef85af
     last_verified_date: "2026-08-19"
     authorized_by: >
