@@ -91,7 +91,10 @@ BOUND_MERGE_SHA = "637eaa30302f5a71f84ab1d215ecbd32c01399b5"
 #: The PR #339 merge that carried XASSET-0039 onto `main` and made it effective.
 XASSET0039_MERGE_SHA = "6960ce5ddbfa8cff1ef591c58682341c4d4407c7"
 #: PR #340's merge -- live `main` as XASSET-0041 was drafted.
-XASSET0041_MAIN_SHA = "f212cce50e28ae887dc8c594bf8ae491a3ef85af"
+XASSET0041_MAIN_SHA = "9c8647f9dddacdf63825f569097214ba65299fe8"
+#: WS-0014's shared `active_pr` while THIS correction unit is the live work.
+#: Set to the real GitHub number issued when PR #342 was opened, never guessed.
+XASSET0042_ACTIVE_PR = 342
 
 #: The completed step-10 evidence -- §H item 5 -- and its formal determination.
 STEP10_EVIDENCE_COMMENT = "5341448714"
@@ -1072,10 +1075,10 @@ class TestCatalogAndRegisterSynchronisation:
         assert workstream["last_verified_main_sha"] == XASSET0041_MAIN_SHA
         assert XASSET0039_MERGE_SHA != XASSET0041_MAIN_SHA
         assert str(workstream["last_verified_date"]).startswith("2026-08-19")
-        # `active_pr` is WS-0014's single shared live field, not this filing's own. PR #340
-        # has merged; PR #341 (XASSET-0041) is now the currently-live unmerged work under
-        # `OPS-0001`'s Active-GitHub-fields rule. Strengthened to the exact value.
-        assert workstream["active_pr"] == 341
+        # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
+        # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
+        # module constant, set from the real number GitHub issued rather than guessed.
+        assert workstream["active_pr"] == XASSET0042_ACTIVE_PR
 
     def test_workstream_stays_secondary_and_no_primary_is_introduced(self) -> None:
         data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))

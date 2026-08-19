@@ -1037,6 +1037,487 @@ def _belongs_to_pull_request(record: Mapping[str, Any], number: Any) -> bool:
     return False
 
 
+# ======================================================================================
+# XASSET-0042 — the PR #337 lifecycle actor-evidence correction
+# ======================================================================================
+#
+# WHAT THIS IS, EXACTLY
+# ---------------------
+# Two comments in PR #337's completed lifecycle -- the principal acceptance ``5335697214``
+# and the post-merge verification ``5335849767`` -- were posted through an App-token write
+# path GitHub attributes to ``claude[bot]``. BLOCKING 2's actor requirement (above) is
+# therefore unmet for those two exact records, and the step-11 unit correctly stopped
+# rather than arming. XASSET-0041 authorizes ONE bounded correction, subject to ten
+# conjunctive properties, and its own principal acceptance carries the ratification.
+#
+# WHAT THIS IS NOT
+# ----------------
+# It is NOT an accepted-actor list. ``PRINCIPAL_ACCOUNT_LOGIN`` and
+# ``LIFECYCLE_OPERATOR_LOGIN`` remain ``Mast3rkey`` and are not consulted differently
+# anywhere. ``claude[bot]`` is never classified as principal or lifecycle operator, gains
+# no standing on any other pull request, comment, actor, head, review, merge, or future
+# lifecycle, and is named below ONLY as the actor of two exactly pinned historical records
+# the principal has durably ratified.
+#
+# It is NOT identity inference from comment text. Author identity is still derived
+# exclusively from durable ``user.login`` via :func:`_actor_login`, for the ratified
+# records and for the ratification itself. The body checks below verify that the
+# RATIFICATION RECORD names the identities XASSET-0041 SS-G.3/SS-G.4 require it to name;
+# they never establish who wrote anything.
+#
+# It is NOT a fictional pre-merge acceptance. The ratification is required to POSTDATE the
+# PR #337 merge (:data:`_RATIFICATION_MUST_POSTDATE_RATIFIED_MERGE`). It ratifies the two
+# historical acts as they stand; it rewrites no timestamp and relaxes no chronology rule.
+# Every ordinary chronology check still runs unchanged, for PR #337 and everything else.
+#
+# FAIL-CLOSED
+# -----------
+# The exception is a conjunction. Any missing, unreachable, malformed, ambiguous,
+# substituted, altered, wrong-actor, wrong-PR, wrong-head, wrong-review, wrong-comment,
+# wrong-merge, wrong-CI, or incomplete-lifecycle evidence yields the all-false result, and
+# the ordinary actor error fires with its wording unchanged.
+
+#: The decision that authorizes this exception, and whose own completed lifecycle unlocks it.
+RATIFICATION_AUTHORIZING_DECISION = "XASSET-0041"
+
+#: XASSET-0041 SS-F.5 -- the five exact PR #337 identities. ALL five must match the document
+#: under validation AND live truth. These are the entire scope of the exception.
+RATIFIED_PULL_REQUEST = 337
+RATIFIED_HEAD_SHA = "f40c816223c78f1d1e436b718455df5fb3d77fa7"
+RATIFIED_REVIEW_ID = "4966846374"
+RATIFIED_ACCEPTANCE_COMMENT_ID = "5335697214"
+RATIFIED_MERGE_SHA = "637eaa30302f5a71f84ab1d215ecbd32c01399b5"
+RATIFIED_POST_MERGE_VERIFICATION_COMMENT_ID = "5335849767"
+
+#: The actor of the two ratified historical records. NOT an accepted principal or lifecycle
+#: operator anywhere: this login authenticates nothing on its own and unlocks nothing except
+#: in conjunction with every other pin in this section.
+RATIFIED_HISTORICAL_ACTOR = "claude[bot]"
+
+#: XASSET-0041's own complete lifecycle (PR #341), every element pinned exactly. Anything
+#: short of all of it -- including a merged-but-CI-less or closure-less lifecycle -- leaves
+#: the exception locked.
+RATIFICATION_PULL_REQUEST = 341
+RATIFICATION_HEAD_SHA = "0449d08217b5c0e422721ff3ef76b4241fb8a95a"
+RATIFICATION_BASE_SHA = "f212cce50e28ae887dc8c594bf8ae491a3ef85af"
+RATIFICATION_REVIEW_ID = "4974291044"
+RATIFICATION_COMMENT_ID = "5345229177"
+RATIFICATION_MERGE_SHA = "9c8647f9dddacdf63825f569097214ba65299fe8"
+RATIFICATION_POST_MERGE_VERIFICATION_COMMENT_ID = "5345270602"
+RATIFICATION_FINAL_CLOSURE_COMMENT_ID = "5345376547"
+RATIFICATION_CI_RUN_ID = "32278094960"
+RATIFICATION_CI_JOB_ID = "96150134005"
+
+#: XASSET-0041 SS-G.4's required statement. The ratification must say what it is doing, not
+#: merely exist. An edited body that drops this stops unlocking the exception.
+RATIFICATION_REQUIRED_PHRASE = "authorized acts performed for"
+
+#: XASSET-0041 SS-F.8 / SS-F.1, made mechanical: a ratification is retrospective, so it must
+#: come STRICTLY AFTER the merge whose lifecycle records it ratifies. Equality fails: a
+#: ratification simultaneous with the act is not a retrospective ratification of it.
+_RATIFICATION_MUST_POSTDATE_RATIFIED_MERGE = True
+
+# --------------------------------------------------------------------------------------
+# MAJOR 1 (review 4975556072) -- bind the EXACT accepted records, not a bag of substrings
+# --------------------------------------------------------------------------------------
+#
+# Token presence proves names are PRESENT. It does not prove the record affirmatively
+# ratifies, verifies, or closes anything. Reproduced through the public validator: a
+# ratification edited to read "VOID. I do NOT ratify anything." while still quoting every
+# required identity still unlocked both gates; so did a post-merge comment reading "this does
+# NOT verify" and a closure reading "NO closure occurred". That is not hypothetical record
+# shape -- PR #341 comment 5345204885 was itself retracted by editing its body into a VOID
+# notice while retaining its historical text, and XASSET-0041 SS-F.7 expressly requires an
+# ALTERED record to be rejected.
+#
+# The fix is to authenticate the exact accepted records. Each pinned record is reduced to a
+# deterministic fingerprint over EXPLICITLY SELECTED identity-bearing and semantic fields,
+# with the body represented by its own SHA-256. Any body edit -- negation, VOID notice,
+# retraction, or a single changed character -- changes the fingerprint and relocks both
+# gates. So does a changed actor, state, reviewed commit, or timestamp.
+#
+# This is deliberately NOT a natural-language parser. Nothing here looks for the words
+# "VOID" or "not"; a permissive reader of prose is exactly the class of mechanism that
+# failed. The question asked is only "is this byte-for-byte the record that was accepted?"
+#
+# The fingerprints below were re-derived from the live records this session, not copied.
+
+#: Selected fields, canonically serialized, for the approving PR #341 review.
+RATIFICATION_REVIEW_FINGERPRINT = (
+    "904f4cb4642f0f7b8bcd6bb33be92d72678270b122402e5d423789960aa33067"
+)
+#: ... the principal acceptance carrying the SS-G ratification.
+RATIFICATION_COMMENT_FINGERPRINT = (
+    "acbd2bb2a9ccb9c71475dab83d2ab62cfc1b9110ed5a597e232cd6aaa620b0c6"
+)
+#: ... the immediate post-merge verification.
+RATIFICATION_VERIFICATION_FINGERPRINT = (
+    "763e4e2fbd2559bb4e4e6e04dd782e4f1d1840e750e23ab776cb44de74d9ed0d"
+)
+#: ... the final post-CI verification and lifecycle closure.
+RATIFICATION_CLOSURE_FINGERPRINT = (
+    "4e39a8b16248ebe616f5262b6c476f3b6780eedfaf9df2e85d7113272a26f568"
+)
+
+
+def _canonical_record_fingerprint(fields: Mapping[str, Any]) -> str:
+    """SHA-256 over EXPLICITLY SELECTED fields, canonically serialized.
+
+    Sorted keys and fixed separators, so the digest depends only on the selected values --
+    never on dictionary ordering or a ``repr``, neither of which is a stable contract.
+    """
+    encoded = json.dumps(
+        dict(fields), sort_keys=True, separators=(",", ":"), ensure_ascii=True
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _review_record_fingerprint(review: Mapping[str, Any]) -> str | None:
+    """Fingerprint a pull-request review. ``None`` when a selected field is unusable."""
+    body = review.get("body")
+    actor = _actor_login(review)
+    if not isinstance(body, str) or actor is None:
+        return None
+    return _canonical_record_fingerprint(
+        {
+            "kind": "pull_request_review",
+            "id": str(review.get("id") or ""),
+            "commit_id": str(review.get("commit_id") or ""),
+            "state": str(review.get("state") or "").upper(),
+            "actor": actor,
+            "submitted_at": str(review.get("submitted_at") or ""),
+            "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+        }
+    )
+
+
+def _comment_record_fingerprint(comment: Mapping[str, Any]) -> str | None:
+    """Fingerprint an issue comment. ``None`` when a selected field is unusable."""
+    body = comment.get("body")
+    actor = _actor_login(comment)
+    if not isinstance(body, str) or actor is None:
+        return None
+    return _canonical_record_fingerprint(
+        {
+            "kind": "issue_comment",
+            "id": str(comment.get("id") or ""),
+            "actor": actor,
+            "created_at": str(comment.get("created_at") or ""),
+            "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+        }
+    )
+
+
+def _instant(value: Any) -> str | None:
+    """A strictly formatted ``YYYY-MM-DDTHH:MM:SSZ`` instant, or ``None``.
+
+    MAJOR 2: every ordering comparison below needs a value it can trust. A missing,
+    differently-shaped, or non-string timestamp yields ``None`` and fails the chain closed
+    rather than comparing whatever happens to be there. The fixed shape is what makes plain
+    lexicographic comparison exact -- same length, same field widths, same UTC zone.
+    """
+    if not isinstance(value, str) or len(value) != 20:
+        return None
+    if (
+        value[4] != "-"
+        or value[7] != "-"
+        or value[10] != "T"
+        or value[13] != ":"
+        or value[16] != ":"
+        or value[19] != "Z"
+    ):
+        return None
+    digits = value[:4] + value[5:7] + value[8:10] + value[11:13] + value[14:16] + value[17:19]
+    return value if digits.isdigit() else None
+
+
+@dataclass(frozen=True)
+class _Pr337ActorRatification:
+    """Which of the two exactly pinned PR #337 actor gates are ratified.
+
+    Constructed only by :func:`_derive_pr337_actor_ratification`. The default instance --
+    the one returned for every document that is not PR #337's, and for every failure of any
+    conjunct -- ratifies nothing.
+    """
+
+    acceptance: bool = False
+    post_merge_verification: bool = False
+
+    def ratifies_acceptance(self, comment_id: Any, actor: Any) -> bool:
+        """Independently re-check the record's own identity at the call site."""
+        return (
+            self.acceptance
+            and str(comment_id) == RATIFIED_ACCEPTANCE_COMMENT_ID
+            and actor == RATIFIED_HISTORICAL_ACTOR
+        )
+
+    def ratifies_post_merge_verification(self, comment_id: Any, actor: Any) -> bool:
+        return (
+            self.post_merge_verification
+            and str(comment_id) == RATIFIED_POST_MERGE_VERIFICATION_COMMENT_ID
+            and actor == RATIFIED_HISTORICAL_ACTOR
+        )
+
+
+_NO_PR337_ACTOR_RATIFICATION = _Pr337ActorRatification()
+
+
+def _names_all(body: Any, required: Sequence[str]) -> bool:
+    """Does this record's body name every required identity? Content, never identity."""
+    if not isinstance(body, str):
+        return False
+    return all(token in body for token in required)
+
+
+def _derive_pr337_actor_ratification(
+    document: Mapping[str, Any], sources: TruthSources, pull: Mapping[str, Any] | None
+) -> _Pr337ActorRatification:
+    """Decide whether the two exactly pinned PR #337 actor gates are ratified.
+
+    A conjunction over four independent evidence families. Every one must hold:
+
+      1. **Scope.** The document under validation IS the PR #337 lifecycle -- all five
+         SS-F.5 identities, taken from the document itself, equal their pins exactly.
+      2. **Live agreement.** PR #337's own durable metadata still reports that head, that
+         merge, merged state, and this repository.
+      3. **The ratification.** XASSET-0041's complete lifecycle (PR #341) -- merged at the
+         pinned head and merge, an approving non-dismissed exact-head review, a principal
+         acceptance durably authored by ``Mast3rkey`` naming all five ratified identities
+         and stating SS-G.4's ratification, a post-merge verification and a final closure
+         both durably authored by ``Mast3rkey``, and merge-commit CI at the exact merge SHA.
+      4. **Git.** The ratification merge really has two parents in order, and zero drift.
+
+    Plus retrospection: the ratification postdates the PR #337 merge.
+
+    Returns the all-false instance on ANY failure, including an unreachable source.
+    """
+    evidence = document.get("lifecycle_evidence")
+    if not isinstance(evidence, Mapping):
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    def _sub(key: str, field_name: str) -> str:
+        block = evidence.get(key)
+        return str(block.get(field_name) or "") if isinstance(block, Mapping) else ""
+
+    # --- 1. Scope: this must BE the PR #337 lifecycle, on every one of the five pins ----
+    if document.get("authorizing_pull_request") != RATIFIED_PULL_REQUEST:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if document.get("authorization_head") != RATIFIED_HEAD_SHA:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if _sub("independent_review", "review_id") != RATIFIED_REVIEW_ID:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if _sub("merge", "merge_sha") != RATIFIED_MERGE_SHA:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if _sub("principal_acceptance", "comment_id") != RATIFIED_ACCEPTANCE_COMMENT_ID:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if (
+        _sub("post_merge_verification", "comment_id")
+        != RATIFIED_POST_MERGE_VERIFICATION_COMMENT_ID
+    ):
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    # --- 2. Live PR #337 must still agree with the pins --------------------------------
+    if not isinstance(pull, Mapping):
+        return _NO_PR337_ACTOR_RATIFICATION
+    if ((pull.get("base") or {}).get("repo") or {}).get("full_name") != REPOSITORY_IDENTITY:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if pull.get("merged") is not True:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if (pull.get("head") or {}).get("sha") != RATIFIED_HEAD_SHA:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if pull.get("merge_commit_sha") != RATIFIED_MERGE_SHA:
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    # --- 3. XASSET-0041's own complete lifecycle ---------------------------------------
+    rat_pull = sources.governance.pull_request(RATIFICATION_PULL_REQUEST)
+    if not isinstance(rat_pull, Mapping):
+        return _NO_PR337_ACTOR_RATIFICATION
+    if ((rat_pull.get("base") or {}).get("repo") or {}).get("full_name") != REPOSITORY_IDENTITY:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if rat_pull.get("merged") is not True:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if (rat_pull.get("head") or {}).get("sha") != RATIFICATION_HEAD_SHA:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if rat_pull.get("merge_commit_sha") != RATIFICATION_MERGE_SHA:
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    rat_review = sources.governance.review(RATIFICATION_PULL_REQUEST, RATIFICATION_REVIEW_ID)
+    if not isinstance(rat_review, Mapping):
+        return _NO_PR337_ACTOR_RATIFICATION
+    if rat_review.get("commit_id") != RATIFICATION_HEAD_SHA:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if str(rat_review.get("state") or "").upper() == "DISMISSED":
+        return _NO_PR337_ACTOR_RATIFICATION
+    # MAJOR 2: GitHub's NATIVE state is durable truth and is evaluated INDEPENDENTLY of the
+    # repository's body grammar. A CHANGES_REQUESTED review is adverse even when its prose
+    # still carries the approving formal line.
+    if str(rat_review.get("state") or "").upper() in NATIVE_ADVERSE_REVIEW_STATES:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if parse_formal_disposition(rat_review.get("body") or "") != APPROVING_REVIEW_DISPOSITION:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if not _belongs_to_pull_request(rat_review, RATIFICATION_PULL_REQUEST):
+        return _NO_PR337_ACTOR_RATIFICATION
+    # MAJOR 1: the exact accepted review, byte-for-byte.
+    if _review_record_fingerprint(rat_review) != RATIFICATION_REVIEW_FINGERPRINT:
+        return _NO_PR337_ACTOR_RATIFICATION
+    # MAJOR 2: and it must still be the FINAL clean pre-merge exact-head review. Reuses the
+    # existing finality machinery and the paginated review source rather than defining a
+    # second, weaker notion of finality -- including its fail-closed behaviour when the
+    # review list cannot be retrieved at all.
+    if _verify_selected_review_is_final(
+        sources,
+        RATIFICATION_PULL_REQUEST,
+        RATIFICATION_HEAD_SHA,
+        RATIFICATION_REVIEW_ID,
+        rat_review.get("submitted_at"),
+        rat_pull,
+    ):
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    # The ratification itself. Author identity DERIVED, never read out of the body.
+    ratification = sources.governance.issue_comment(RATIFICATION_COMMENT_ID)
+    if not isinstance(ratification, Mapping):
+        return _NO_PR337_ACTOR_RATIFICATION
+    if _actor_login(ratification) != PRINCIPAL_ACCOUNT_LOGIN:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if not _belongs_to_pull_request(ratification, RATIFICATION_PULL_REQUEST):
+        return _NO_PR337_ACTOR_RATIFICATION
+    ratification_body = ratification.get("body")
+    if not _names_all(
+        ratification_body,
+        (
+            # SS-G.2 -- its own accepted head and the review it relies upon.
+            RATIFICATION_HEAD_SHA,
+            RATIFICATION_REVIEW_ID,
+            # SS-G.3 -- all five ratified identities, explicitly.
+            RATIFIED_HEAD_SHA,
+            RATIFIED_REVIEW_ID,
+            RATIFIED_ACCEPTANCE_COMMENT_ID,
+            RATIFIED_MERGE_SHA,
+            RATIFIED_POST_MERGE_VERIFICATION_COMMENT_ID,
+            # SS-G.4 -- names the actor whose acts it ratifies, and says what it is doing.
+            RATIFIED_HISTORICAL_ACTOR,
+            RATIFICATION_REQUIRED_PHRASE,
+        ),
+    ):
+        return _NO_PR337_ACTOR_RATIFICATION
+    # MAJOR 1: the token list above states SS-G.3/SS-G.4's CONTENT REQUIREMENT and is kept for
+    # that reason. It is not, and never was, sufficient on its own -- the fingerprint below is
+    # what authenticates that this is the exact accepted record rather than an edited,
+    # negated, or retracted one that merely still quotes the same identities.
+    if _comment_record_fingerprint(ratification) != RATIFICATION_COMMENT_FINGERPRINT:
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    rat_verification = sources.governance.issue_comment(
+        RATIFICATION_POST_MERGE_VERIFICATION_COMMENT_ID
+    )
+    if not isinstance(rat_verification, Mapping):
+        return _NO_PR337_ACTOR_RATIFICATION
+    if _actor_login(rat_verification) != LIFECYCLE_OPERATOR_LOGIN:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if not _belongs_to_pull_request(rat_verification, RATIFICATION_PULL_REQUEST):
+        return _NO_PR337_ACTOR_RATIFICATION
+    if not _names_all(rat_verification.get("body"), (RATIFICATION_MERGE_SHA,)):
+        return _NO_PR337_ACTOR_RATIFICATION
+    # MAJOR 1: a post-merge comment edited to say it does NOT verify the merge, while still
+    # quoting the merge SHA, is not the accepted verification record.
+    if _comment_record_fingerprint(rat_verification) != RATIFICATION_VERIFICATION_FINGERPRINT:
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    rat_closure = sources.governance.issue_comment(RATIFICATION_FINAL_CLOSURE_COMMENT_ID)
+    if not isinstance(rat_closure, Mapping):
+        return _NO_PR337_ACTOR_RATIFICATION
+    if _actor_login(rat_closure) != LIFECYCLE_OPERATOR_LOGIN:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if not _belongs_to_pull_request(rat_closure, RATIFICATION_PULL_REQUEST):
+        return _NO_PR337_ACTOR_RATIFICATION
+    if not _names_all(
+        rat_closure.get("body"), (RATIFICATION_MERGE_SHA, RATIFICATION_CI_RUN_ID)
+    ):
+        return _NO_PR337_ACTOR_RATIFICATION
+    # MAJOR 1: likewise for a closure edited to say no closure occurred.
+    if _comment_record_fingerprint(rat_closure) != RATIFICATION_CLOSURE_FINGERPRINT:
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    rat_run = sources.governance.workflow_run(RATIFICATION_CI_RUN_ID)
+    if not isinstance(rat_run, Mapping):
+        return _NO_PR337_ACTOR_RATIFICATION
+    if rat_run.get("status") != "completed" or rat_run.get("conclusion") != "success":
+        return _NO_PR337_ACTOR_RATIFICATION
+    if rat_run.get("head_sha") != RATIFICATION_MERGE_SHA:
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    rat_job = sources.governance.workflow_job(RATIFICATION_CI_JOB_ID)
+    if not isinstance(rat_job, Mapping):
+        return _NO_PR337_ACTOR_RATIFICATION
+    if str(rat_job.get("run_id")) != RATIFICATION_CI_RUN_ID:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if rat_job.get("conclusion") != "success":
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    # --- 4. Git truth for the ratification merge ---------------------------------------
+    rat_parents = sources.git.commit_parents(RATIFICATION_MERGE_SHA)
+    if rat_parents is None or len(rat_parents) != 2:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if rat_parents[0] != RATIFICATION_BASE_SHA or rat_parents[1] != RATIFICATION_HEAD_SHA:
+        return _NO_PR337_ACTOR_RATIFICATION
+    rat_merge_tree = sources.git.commit_tree(RATIFICATION_MERGE_SHA)
+    rat_head_tree = sources.git.commit_tree(RATIFICATION_HEAD_SHA)
+    if rat_merge_tree is None or rat_head_tree is None or rat_merge_tree != rat_head_tree:
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    # --- 5. MAJOR 2: XASSET-0041's own lifecycle, as an ORDERED CHAIN ------------------
+    #
+    # Existence, content, actors, structure, and CI were all checked above -- but until now
+    # nothing proved they happened in the order SS-J requires. Reproduced through the public
+    # validator, every one of these still unlocked both gates: an acceptance dated BEFORE the
+    # review it certifies; an acceptance dated AFTER the merge it authorized; a "post-merge"
+    # verification dated BEFORE the merge; a closure dated before the merge or before CI
+    # finished. A lifecycle whose steps are out of order is not the lifecycle SS-J closed.
+    #
+    # Every instant must be present and strictly well formed. A missing or malformed
+    # timestamp is not treated as "no constraint" -- it fails the chain closed.
+    review_at = _instant(rat_review.get("submitted_at"))
+    accepted_at = _instant(ratification.get("created_at"))
+    rat_merged_at = _instant(rat_pull.get("merged_at"))
+    verified_at = _instant(rat_verification.get("created_at"))
+    ci_completed_at = _instant(rat_job.get("completed_at"))
+    closed_at = _instant(rat_closure.get("created_at"))
+    if None in (review_at, accepted_at, rat_merged_at, verified_at, ci_completed_at, closed_at):
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    # 5.1 the independent review precedes the acceptance that certifies it.
+    if accepted_at < review_at:
+        return _NO_PR337_ACTOR_RATIFICATION
+    # 5.2 acceptance STRICTLY precedes merge -- a merge cannot carry an acceptance that did
+    #     not yet exist, and an acceptance simultaneous with its own merge is not evidence
+    #     the merge relied on it.
+    if not accepted_at < rat_merged_at:
+        return _NO_PR337_ACTOR_RATIFICATION
+    # 5.3 post-merge verification never predates the merge it verifies. Equality is allowed:
+    #     the repository's convention is "immediately after", and a same-second record is a
+    #     real one -- only an EARLIER one is impossible.
+    if verified_at < rat_merged_at:
+        return _NO_PR337_ACTOR_RATIFICATION
+    # 5.4 final closure follows the post-merge verification AND the CI completion it reports.
+    if closed_at < verified_at:
+        return _NO_PR337_ACTOR_RATIFICATION
+    if closed_at < ci_completed_at:
+        return _NO_PR337_ACTOR_RATIFICATION
+
+    # --- 6. Retrospection: a ratification comes STRICTLY AFTER what it ratifies ---------
+    if _RATIFICATION_MUST_POSTDATE_RATIFIED_MERGE:
+        ratified_merge_at = _instant(pull.get("merged_at"))
+        if ratified_merge_at is None:
+            return _NO_PR337_ACTOR_RATIFICATION
+        # STRICT (MAJOR 2): equality fails. A ratification stamped at the very instant of the
+        # merge it ratifies is not a retrospective account of it.
+        if not accepted_at > ratified_merge_at:
+            return _NO_PR337_ACTOR_RATIFICATION
+
+    return _Pr337ActorRatification(acceptance=True, post_merge_verification=True)
+
+
 def verify_lifecycle_against_truth(
     document: Mapping[str, Any], sources: TruthSources
 ) -> tuple[str, ...]:
@@ -1074,6 +1555,11 @@ def verify_lifecycle_against_truth(
             f"authorization_head {head!r}"
         )
     real_merge = pull.get("merge_commit_sha")
+
+    # XASSET-0042: derived ONCE, from the pins and live truth above, before any gate reads
+    # it. Ratifies nothing for any document that is not PR #337's exact lifecycle, and
+    # nothing at all unless every conjunct in the section above holds.
+    ratification = _derive_pr337_actor_ratification(document, sources, pull)
 
     # --- Gate 1: the review really exists, on the exact head ---------------------------
     recorded_review = evidence.get("independent_review") or {}
@@ -1159,7 +1645,12 @@ def verify_lifecycle_against_truth(
                 f"governance truth: acceptance comment {acceptance_id} carries no durable author "
                 "identity, so the principal gate cannot be authenticated"
             )
-        elif acceptance_actor != PRINCIPAL_ACCOUNT_LOGIN:
+        elif acceptance_actor != PRINCIPAL_ACCOUNT_LOGIN and not ratification.ratifies_acceptance(
+            acceptance_id, acceptance_actor
+        ):
+            # XASSET-0042: the ONLY relaxation. It requires this exact comment id, this exact
+            # actor, and the whole ratified lifecycle above. Every other acceptance record on
+            # every other pull request reaches the unchanged error below.
             errors.append(
                 f"governance truth: acceptance comment {acceptance_id} was authored by "
                 f"{acceptance_actor!r}, not the principal {PRINCIPAL_ACCOUNT_LOGIN!r}"
@@ -1271,7 +1762,13 @@ def verify_lifecycle_against_truth(
                 f"governance truth: post-merge verification {verification_id} carries no durable "
                 "author identity, so the verification gate cannot be authenticated"
             )
-        elif verification_actor != LIFECYCLE_OPERATOR_LOGIN:
+        elif (
+            verification_actor != LIFECYCLE_OPERATOR_LOGIN
+            and not ratification.ratifies_post_merge_verification(
+                verification_id, verification_actor
+            )
+        ):
+            # XASSET-0042: the second and last relaxation, on the same conjunction.
             errors.append(
                 f"governance truth: post-merge verification {verification_id} was authored by "
                 f"{verification_actor!r}, not the lifecycle operator "

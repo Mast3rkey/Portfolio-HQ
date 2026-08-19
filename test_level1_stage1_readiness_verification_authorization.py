@@ -85,7 +85,10 @@ SUCCESSOR_MERGE_SHA = "b0361ce74dea357715b2ec2b4ce36b47c4f3cffc"
 #: "where main is now" field lawfully advances with each successor merge; this constant tracks it so
 #: the assertion stays exact rather than being relaxed. Neither ``MERGE_SHA`` (this decision's own
 #: anchor) nor ``SUCCESSOR_MERGE_SHA`` (its own merge) is changed by that advance.
-CURRENT_MAIN_SHA = "f212cce50e28ae887dc8c594bf8ae491a3ef85af"
+CURRENT_MAIN_SHA = "9c8647f9dddacdf63825f569097214ba65299fe8"
+#: WS-0014's shared `active_pr` while THIS correction unit is the live work.
+#: Set to the real GitHub number issued when PR #342 was opened, never guessed.
+XASSET0042_ACTIVE_PR = 342
 
 #: The three values accepted authority already fixes as exact constants, and the only three
 #: ``XASSET-0038`` restates. Everything else in its checklist derives from the merged tree.
@@ -775,10 +778,10 @@ class TestCatalogAndRegisterSynchronisation:
         assert MERGE_SHA != CURRENT_MAIN_SHA
         assert SUCCESSOR_MERGE_SHA != CURRENT_MAIN_SHA
         assert str(workstream["last_verified_date"]).startswith("2026-08-19")
-        # ADVANCED AGAIN BY XASSET-0041, for the same reason `last_verified_main_sha` advances
-        # above: `active_pr` is WS-0014's single shared live field, and PR #341 is now the
-        # currently-live unmerged work. Strengthened to the exact value rather than relaxed.
-        assert workstream["active_pr"] == 341
+        # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
+        # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
+        # module constant, set from the real number GitHub issued rather than guessed.
+        assert workstream["active_pr"] == XASSET0042_ACTIVE_PR
 
 
 # --------------------------------------------------------------------------------------------------

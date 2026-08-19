@@ -92,6 +92,10 @@ PROTECTED_RELPATHS = (
     "issuer_lookthrough.yaml",
 )
 
+#: WS-0014's shared `active_pr` while the XASSET-0042 correction unit is live.
+#: Set to the real GitHub number issued when PR #342 was opened, never guessed.
+XASSET0042_ACTIVE_PR = 342
+
 GATE_SELF = "xasset0041-pr337-actor-evidence-correction-authorization"
 GATE_STOP = "xasset0040-step11-unit-stopped-before-attestation"
 GATE_PRIOR = "xasset0040-step11-activation-authorization"
@@ -625,12 +629,28 @@ class TestCatalogAndRegisterSynchronisation:
         ids = [d.get("decision_id") for d in catalog]
         assert len(ids) == len(set(ids))
 
-    def test_self_gate_exists_and_is_not_prematurely_complete(self, gates):
+    def test_self_gate_is_complete_only_on_merged_lifecycle_evidence(self, gates):
+        """ADVANCED BY XASSET-0042.
+
+        This asserted `in_progress` because, at authoring time, PR #341 was an unmerged draft
+        and no session may mark its own unmerged work complete. PR #341 has since merged and
+        its seven-condition lifecycle closed, so `complete` is now the truthful state. The
+        guard is STRENGTHENED rather than relaxed: `complete` is no longer accepted on its own
+        word -- the gate must additionally carry the merged-lifecycle evidence that justifies
+        it, so a premature or unevidenced `complete` still fails here.
+        """
         gate = gates[GATE_SELF]
-        assert gate["status"] == "in_progress", (
-            "this filing must not mark its own unmerged work complete"
-        )
-        assert gate["pr"] == 341, "the self-gate must name its own live PR"
+        assert gate["status"] == "complete"
+        assert gate["pr"] == 341, "the self-gate must name its own PR"
+        description = gate["description"]
+        for evidence in (
+            "9c8647f9dddacdf63825f569097214ba65299fe8",  # the merge
+            "5345229177",  # the principal acceptance carrying the ratification
+            "4974291044",  # the independent exact-head review
+            "32278094960",  # merge-commit CI at the exact merge SHA
+            "5345376547",  # final post-CI closure
+        ):
+            assert evidence in description, f"completion is unevidenced: {evidence} missing"
 
     def test_stop_evidence_gate_records_the_terminal_outcome(self, gates):
         description = gates[GATE_STOP]["description"]
@@ -662,15 +682,21 @@ class TestCatalogAndRegisterSynchronisation:
         description = gates[GATE_SELF]["description"]
         assert "NEVER classify claude[bot] generally as" in description
 
-    def test_register_live_fields_point_at_this_work(self, ws0014):
-        assert ws0014["active_branch"] == "claude/xasset-0040-step-11-8e912y"
+    def test_register_live_fields_point_at_the_currently_live_work(self, ws0014):
+        """ADVANCED BY XASSET-0042.
+
+        `active_branch`, `active_pr`, and `last_verified_main_sha` are WS-0014's SINGLE SHARED
+        live self-reference fields, not any one filing's own. PR #341 has merged at
+        `9c8647f9`, so under `OPS-0001`'s Active-GitHub-fields rule they lawfully advance to
+        the correction unit that is now live. Each is strengthened to an exact value, never
+        relaxed to a range or a placeholder.
+        """
+        assert ws0014["active_branch"] == "claude/pr337-actor-evidence-correction-5evikl"
         assert ws0014["last_verified_main_sha"] == (
-            "f212cce50e28ae887dc8c594bf8ae491a3ef85af"
+            "9c8647f9dddacdf63825f569097214ba65299fe8"
         )
         assert str(ws0014["last_verified_date"]) == "2026-08-19"
-        # `active_pr` is WS-0014's single shared live field, holding currently-live unmerged
-        # work per `OPS-0001`. Set to 341 once this PR opened; pinned to the exact value.
-        assert ws0014["active_pr"] == 341
+        assert ws0014["active_pr"] == XASSET0042_ACTIVE_PR
 
     def test_register_still_parses_and_ws0014_is_unique(self, ws0014):
         assert ws0014["id"] == "WS-0014"
