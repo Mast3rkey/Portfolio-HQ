@@ -90,6 +90,8 @@ BOUND_MERGE_SHA = "637eaa30302f5a71f84ab1d215ecbd32c01399b5"
 
 #: The PR #339 merge that carried XASSET-0039 onto `main` and made it effective.
 XASSET0039_MERGE_SHA = "6960ce5ddbfa8cff1ef591c58682341c4d4407c7"
+#: PR #340's merge -- live `main` as XASSET-0041 was drafted.
+XASSET0041_MAIN_SHA = "f212cce50e28ae887dc8c594bf8ae491a3ef85af"
 
 #: The completed step-10 evidence -- §H item 5 -- and its formal determination.
 STEP10_EVIDENCE_COMMENT = "5341448714"
@@ -948,18 +950,31 @@ class TestEffectivityRequiresCompleteLifecycleClosure:
             "MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION",
         )
 
-    def test_register_gate_is_not_marked_complete_in_its_own_authoring_session(self) -> None:
-        """`in_progress` is the lifecycle fact; `pr: 340` is the live-work fact. Both are required.
+    def test_register_gate_records_the_closed_lifecycle(self) -> None:
+        """ADVANCED BY XASSET-0041. `in_progress` was the fact while PR #340 was open; it merged.
 
-        This originally asserted `pr is None`, which was accurate only in the window between
-        drafting and opening PR #340. `OPS-0001`'s Active-GitHub-fields rule requires the field to
-        hold currently-live unmerged work and permits `null` only when no live PR exists, and
-        `XASSET-0031` already corrected this exact post-opening condition. Setting the number is
-        factual synchronization; the gate stays `in_progress` because the work is not complete.
+        This originally asserted `pr is None` (accurate only before PR #340 opened), then
+        `in_progress` / `pr: 340` (accurate while it was live). PR #340 has since merged at
+        `f212cce5`, closing XASSET-0040's own seven-condition lifecycle, so the gate lawfully
+        advanced to `complete`. STRENGTHENED to the exact terminal value rather than relaxed: the
+        gate narrative is separately asserted byte-identical below, so only `status` moved.
         """
         gate = _ws0014_gate("xasset0040-step11-activation-authorization")
-        assert gate["status"] == "in_progress"
+        assert gate["status"] == "complete"
         assert gate["pr"] == 340
+
+    def test_xasset0040_authorized_unit_ran_and_stopped_before_attestation(self) -> None:
+        """ADDED BY XASSET-0041. The unit XASSET-0040 authorized ran and reached SS-K.1.
+
+        Recording the terminal outcome is what makes the `complete` status above truthful: the
+        lifecycle closed AND its single authorized unit is spent. `ATTEMPT_1` is still intact,
+        because the unit stopped before attesting.
+        """
+        gate = _ws0014_gate("xasset0040-step11-unit-stopped-before-attestation")
+        assert gate["status"] == "complete"
+        assert gate["pr"] == 340
+        assert "STOPPED_BEFORE_ATTESTATION" in gate["description"]
+        assert "ATTEMPT_1 IS INTACT" in gate["description"]
 
 
 # --------------------------------------------------------------------------------------------------
@@ -1051,11 +1066,16 @@ class TestCatalogAndRegisterSynchronisation:
     def test_workstream_live_fields_reflect_this_session(self) -> None:
         data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))
         workstream = next(w for w in data["workstreams"] if w.get("id") == "WS-0014")
-        assert workstream["last_verified_main_sha"] == XASSET0039_MERGE_SHA
+        # ADVANCED BY XASSET-0041. PR #340 merged at `f212cce5`, so the register's live
+        # "where main is now" field lawfully advanced. The anchor this decision authorizes
+        # against is unchanged; only the shared live self-reference moved.
+        assert workstream["last_verified_main_sha"] == XASSET0041_MAIN_SHA
+        assert XASSET0039_MERGE_SHA != XASSET0041_MAIN_SHA
         assert str(workstream["last_verified_date"]).startswith("2026-08-19")
-        # Was `is None`, accurate only before PR #340 opened. See the gate test above for the
-        # OPS-0001 / XASSET-0031 grounding.
-        assert workstream["active_pr"] == 340
+        # `active_pr` is WS-0014's single shared live field, not this filing's own. PR #340
+        # has merged; PR #341 (XASSET-0041) is now the currently-live unmerged work under
+        # `OPS-0001`'s Active-GitHub-fields rule. Strengthened to the exact value.
+        assert workstream["active_pr"] == 341
 
     def test_workstream_stays_secondary_and_no_primary_is_introduced(self) -> None:
         data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))

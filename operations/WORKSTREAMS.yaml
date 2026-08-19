@@ -14905,7 +14905,7 @@ workstreams:
           alone. Stage 1 remains UNARMED and NOT EXECUTABLE; ATTEMPT_1 is intact, unclaimed and
           unconsumed.
       - gate: xasset0040-step11-activation-authorization
-        status: in_progress
+        status: complete
         pr: 340
         description: >
           The narrow governance-only authority required for ONE future, separate XASSET-0030 SS-G.B
@@ -14998,6 +14998,94 @@ workstreams:
           hash pin, and no research, intelligence, portfolio or protected path. Stage 1 remains
           UNARMED and NOT EXECUTABLE; lane state remains ABSENT; ATTEMPT_1 is intact, unclaimed and
           unconsumed.
+      - gate: xasset0040-step11-unit-stopped-before-attestation
+        status: complete
+        pr: 340
+        description: >
+          Lane M factual synchronization only. The single XASSET-0030 SS-G.B STEP 11 unit that
+          XASSET-0040 authorized RAN under that decision's closed seven-condition lifecycle and
+          reached its FIRST terminal condition, XASSET-0040 SS-K.1, recorded as durable external
+          evidence at issue comment 5343692162 on PR #340 (authored by Mast3rkey): terminal outcome
+          STOPPED_BEFORE_ATTESTATION. NOTHING WAS ARMED, NOTHING WAS CLAIMED, ATTEMPT_1 IS INTACT
+          AND UNCONSUMED, AND LANE STATE REMAINED ABSENT THROUGHOUT. The unit created no branch, no
+          commit and no pull request, and wrote no repository byte. Every SS-H condition verified
+          CLEAN except one: all ten LOAD_BEARING_RELPATHS byte-identical to the effective PR #337
+          bound merge 637eaa30302f5a71f84ab1d215ecbd32c01399b5 across bound merge, acting head and
+          worktree with zero mismatches; both V7 pins exact; the frozen universe exactly 680 / 48 /
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224; no drift since the
+          completed STEP_10_NO_DRIFT checkpoint at issue comment 5341448714; lane ABSENT with all
+          four lane paths and AUTHORIZATION_ROOT absent; new_execution_is_authorized() False; no
+          stage1_results.yaml; and XASSET-0040's own SS-N lifecycle closed with its merge an
+          ancestor of the acting head. THE STOP WAS SS-H CONDITION 4, the XASSET-0037 lifecycle
+          evidence. Assembled with the accepted production mechanism bound exactly to XASSET-0037 /
+          PR 337 — no constant altered, no XASSET-0040 or PR 340 field inserted, closed schema
+          untouched — and validated READ-ONLY with validate_authorization_document.
+          write_authorization was NEVER called and no byte reached disk. Verdict valid=False with
+          exactly two errors: acceptance comment 5335697214 and post-merge verification comment
+          5335849767 are each authored by claude[bot], not the bound principal / lifecycle operator
+          Mast3rkey. Four of six REQUIRED_LIFECYCLE_GATES authenticate — the independent full
+          exact-head review 4966846374, the merge with exact parents and zero merge drift, the
+          merge-commit CI run 32198881652 / job 95908324747 at the exact merge SHA, and the merged
+          successor hash and universe hash verification. Two do not:
+          PRINCIPAL_EXACT_HEAD_ACCEPTANCE and POST_MERGE_VERIFICATION. All 13 PR #337 issue comments
+          were enumerated and tested against both gates and NO SUBSTITUTE RECORD EXISTS. Per
+          XASSET-0040 SS-J the unit identified the remediation and DID NOT PERFORM IT — no
+          load-bearing byte edited, no rebinding, no comment authored or backfilled, no retry, no
+          readiness or drift re-run. The preserved isolated execution clone at
+          /var/tmp/phq-endpoint0001-stage1-step11-exec (detached at f212cce5, worktree clean)
+          contains NO result artifact, because the run never became lawful. XASSET-0040's single
+          authorized unit is SPENT AS A STOP and is not revived; a future step-11 attempt requires
+          its own new authorization. This gate records that completed determination as fact and
+          re-performs no part of it.
+      - gate: xasset0041-pr337-actor-evidence-correction-authorization
+        status: in_progress
+        pr: 341
+        description: >
+          The narrow GOVERNANCE-ONLY authority required for ONE future, separate, bounded correction
+          to the PR #337 lifecycle actor-evidence mechanism, filed as XASSET-0041. THIS FILING
+          IMPLEMENTS NO PART OF THE CORRECTION: it edits no load-bearing byte, posts and backfills
+          no ratification or lifecycle comment, rebinds nothing, re-runs no readiness or drift
+          verification, retries no part of step 11, and creates no result. The defect was reproduced
+          READ-ONLY before anything was authorized, using the accepted production mechanism bound
+          exactly to XASSET-0037 / PR 337, and write_authorization was never called. Comment-only
+          backfill was PROVED impossible for the principal-acceptance gate from the mechanism's own
+          enforced chronology rather than assumed: verify_lifecycle_against_truth requires acceptance
+          NOT to follow the merge, PR #337 merged at 2026-08-18T23:50:58Z, and any new Mast3rkey
+          comment is necessarily created after that instant, so a backfilled acceptance necessarily
+          triggers "merge precedes acceptance". The asymmetry is disclosed honestly — the post-merge
+          verification gate is not chronologically blocked, only actor-blocked, but repairing it
+          alone leaves the acceptance gate unrepaired and would manufacture a record. The authorized
+          future design must satisfy TEN conjunctive properties: preserve the existing Mast3rkey
+          actor requirement for ordinary and future records; NEVER classify claude[bot] generally as
+          principal or lifecycle operator; never infer actor identity from comment body text; never
+          remove or weaken the ordinary review-acceptance-merge-verification chronology outside the
+          pinned set; apply ONLY to the exact PR #337 historical records — final head
+          f40c816223c78f1d1e436b718455df5fb3d77fa7, final review 4966846374, acceptance comment
+          5335697214, merge 637eaa30302f5a71f84ab1d215ecbd32c01399b5, post-merge verification
+          5335849767; require a new explicit Mast3rkey-authored ratification record naming all of
+          those exact identities and stating that the two claude[bot] lifecycle comments were
+          authorized acts performed for the principal; bind that ratification to XASSET-0041's own
+          completed lifecycle and reject missing, wrong-actor, wrong-PR, wrong-head, wrong-review,
+          wrong-merge, substituted-comment, altered-record or ambiguous evidence; treat the record as
+          RETROSPECTIVE RATIFICATION of the exact historical acts and not as a fictional pre-merge
+          acceptance event nor as permission for future bot-authored lifecycle gates; retain
+          fail-closed behaviour for every other PR, actor, comment and chronology; and add
+          adversarial tests proving the exception cannot generalize. XASSET-0029's BLOCKING 2
+          anti-impersonation property is PRESERVED, not weakened — the exception is unlocked only by
+          a record whose own actor is authenticated by the unchanged derived-user.login mechanism,
+          so an arbitrary account gains nothing. XASSET-0041's OWN principal-acceptance comment is
+          the required ratification record and must be authored by Mast3rkey and carry the explicit
+          ratification language; THIS AUTHORING SESSION SPECIFIES THAT REQUIREMENT AND DOES NOT
+          DISCHARGE IT. XASSET-0040 SS-J's downstream sequence is preserved and NOT collapsed:
+          correction first (this authorization), then a SEPARATELY AUTHORIZED rebinding, then
+          SEPARATELY AUTHORIZED renewed readiness verification, then a SEPARATELY AUTHORIZED renewed
+          post-rebinding drift check, then a NEW step-11 authorization — none of which is authorized,
+          pre-authorized, combined, or made reachable here. XASSET-0027 SS-P.1 remains one, unspent
+          and unopened; there is no result to deliver and none is created. Merging XASSET-0041 will
+          authorize a future correction only; it will NOT arm Stage 1, create lane state, claim
+          ATTEMPT_1, or execute anything. Stage 1 remains UNARMED and NOT EXECUTABLE, lane state
+          remains ABSENT, new_execution_is_authorized() returns False, and ATTEMPT_1 is intact,
+          unclaimed and unconsumed.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -16105,9 +16193,9 @@ workstreams:
       remains UNARMED and NOT EXECUTABLE, lane state remains ABSENT,
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
-    active_branch: claude/xasset-0040-governance-667uvi
-    active_pr: 340
-    last_verified_main_sha: 6960ce5ddbfa8cff1ef591c58682341c4d4407c7
+    active_branch: claude/xasset-0040-step-11-8e912y
+    active_pr: 341
+    last_verified_main_sha: f212cce50e28ae887dc8c594bf8ae491a3ef85af
     last_verified_date: "2026-08-19"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
