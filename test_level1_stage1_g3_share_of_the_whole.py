@@ -966,10 +966,28 @@ class TestNothingHereAuthorizesOrExecutes:
             assert relative in A.LOAD_BEARING_RELPATHS
 
     def test_load_bearing_paths_are_byte_identical_to_head(self):
+        """No load-bearing path may change in this working tree WITHOUT authority.
+
+        UPDATED BY XASSET-0042. This guard was written when no authorized correction to any
+        load-bearing path existed, so "nothing changed" and "nothing changed without
+        authority" were the same assertion. XASSET-0041 -- independently reviewed, principal
+        accepted, merged, and EFFECTIVE -- authorizes exactly ONE bounded correction to
+        exactly ONE load-bearing path. The guard is therefore made MORE specific rather than
+        relaxed: that single authorized path is named, and every OTHER load-bearing path must
+        still be byte-identical. An unauthorized change to any of the other nine still fails,
+        as does adding a second exception here without a decision authorizing it.
+        """
         import subprocess
 
+        #: The only load-bearing path any merged, effective decision authorizes changing.
+        AUTHORIZED_CORRECTION_PATH = "level1_stage1_execution_authorization.py"
+        assert AUTHORIZED_CORRECTION_PATH in A.LOAD_BEARING_RELPATHS
+
+        protected = [p for p in A.LOAD_BEARING_RELPATHS if p != AUTHORIZED_CORRECTION_PATH]
+        assert len(protected) == len(A.LOAD_BEARING_RELPATHS) - 1
+
         out = subprocess.run(
-            ["git", "diff", "--name-only", "HEAD", "--", *A.LOAD_BEARING_RELPATHS],
+            ["git", "diff", "--name-only", "HEAD", "--", *protected],
             cwd=ROOT,
             capture_output=True,
             text=True,

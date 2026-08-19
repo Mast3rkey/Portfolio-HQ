@@ -15038,7 +15038,7 @@ workstreams:
           its own new authorization. This gate records that completed determination as fact and
           re-performs no part of it.
       - gate: xasset0041-pr337-actor-evidence-correction-authorization
-        status: in_progress
+        status: complete
         pr: 341
         description: >
           The narrow GOVERNANCE-ONLY authority required for ONE future, separate, bounded correction
@@ -15086,6 +15086,103 @@ workstreams:
           ATTEMPT_1, or execute anything. Stage 1 remains UNARMED and NOT EXECUTABLE, lane state
           remains ABSENT, new_execution_is_authorized() returns False, and ATTEMPT_1 is intact,
           unclaimed and unconsumed.
+
+          ADDITIVE LANE-M SYNCHRONIZATION (2026-08-19, by the XASSET-0042 correction unit; every
+          word above is preserved unedited and describes this gate accurately as it stood at
+          authoring time, when PR #341 was an unmerged draft). PR #341 is now MERGED and its
+          XASSET-0041 SS-J lifecycle is CLOSED IN FULL, so this gate advances in_progress ->
+          complete. Independently re-verified against live git and live GitHub before any edit:
+          accepted head 0449d08217b5c0e422721ff3ef76b4241fb8a95a; independent FULL exact-head review
+          4974291044, APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE, 0 BLOCKING / 0 MAJOR / 0 MINOR /
+          1 NOTE, sole review, not dismissed, anchored to that exact head; no bounded correction was
+          required, the sole NOTE being PR metadata only, so the review held at the final head;
+          principal exact-head acceptance 5345229177, DURABLY AUTHORED BY Mast3rkey (type User),
+          carrying the complete SS-G ratification naming all five exact PR #337 identities and
+          stating that acceptance comment 5335697214 and post-merge-verification comment 5335849767,
+          both authored by claude[bot], were authorized acts performed for the principal; normal
+          merge 9c8647f9dddacdf63825f569097214ba65299fe8 with exactly two parents in order
+          (f212cce50e28ae887dc8c594bf8ae491a3ef85af, then the accepted head) and a merge tree
+          4ebd65c58fc7486294947cdec80f0a8725c6e20e byte-identical to the accepted head's tree, so
+          ZERO merge drift; immediate post-merge verification 5345270602, authored by Mast3rkey;
+          merge-commit CI run 32278094960 / job 96150134005, completed/success, head_sha exactly the
+          merge SHA, attempt 1; and final post-CI verification and lifecycle closure 5345376547,
+          authored by Mast3rkey. XASSET-0041 is therefore EFFECTIVE. Recorded for completeness and
+          NOT relied upon by anything: the earlier mis-attributed acceptance attempt 5345204885 is
+          durably authored by claude[bot] (type Bot), was RETRACTED IN FULL as VOID before any
+          ready-mark or merge, and conveys no acceptance, no ratification, and no authorization; the
+          XASSET-0042 correction pins the genuine ratification comment id and independently refuses
+          the retracted one on two grounds. Advancing this gate records completed lifecycle truth
+          only; it grants no new authority, revives nothing, and reaches no downstream link.
+      - gate: xasset0042-pr337-lifecycle-actor-evidence-correction
+        status: in_progress
+        pr: null
+        description: >
+          The ONE bounded correction XASSET-0041 authorizes, implemented and filed as XASSET-0042.
+          Scope is exactly two behavioural lines in level1_stage1_execution_authorization.py — the
+          acceptance actor branch and the post-merge-verification actor branch each gain ONE further
+          conjunct — plus one structurally isolated section holding the pins, a frozen two-field
+          result type, and a single derivation evaluated once per validation. Both existing error
+          messages are BYTE-UNCHANGED. The defect was reproduced before and after through the
+          accepted public mechanism against live git and GitHub, with the pre-correction baseline
+          measured in a TRANSIENT DETACHED WORKTREE at HEAD rather than by patching a copy's module
+          root, so the comparison is faithful: BEFORE, exactly two lifecycle errors, both actor
+          errors; AFTER, zero actor errors. write_authorization was never called and no byte reached
+          disk. All ten XASSET-0041 SS-F properties hold: the Mast3rkey actor requirement is
+          preserved for ordinary and future records; claude[bot] is NEVER classified generally as
+          principal or lifecycle operator and there is no allow-list, bot class, or trusted-
+          automation category (a test scans every module-level container for the login); identity
+          is still derived exclusively from durable user.login, for the ratified records and for the
+          ratification itself, and the ratification's body checks only verify that it NAMES what
+          SS-G requires; ordinary review-acceptance-merge-verification chronology is untouched, and
+          a backfilled acceptance still trips "merge precedes acceptance" EVEN WITH the ratification
+          present; the exception applies only to the five exactly pinned PR #337 identities; it
+          requires ratification comment 5345229177, durably authored by Mast3rkey; that ratification
+          is bound to XASSET-0041's COMPLETE lifecycle — PR #341 merged at the pinned head and merge,
+          an approving non-dismissed exact-head review owned by that PR, the acceptance itself, a
+          post-merge verification and a final closure both authored by Mast3rkey, and merge-commit CI
+          completed/success at the EXACT merge SHA with its job correctly paired — together with git
+          truth for the ratification merge (exactly two parents in order, zero drift); the exception
+          is RETROSPECTIVE, mechanically enforced by requiring the ratification to POSTDATE the PR
+          #337 merge, so it can never become a fictional pre-merge acceptance nor forward permission
+          for any future bot-authored gate; fail-closed behaviour is retained everywhere, with
+          unreachable governance, unreachable git, and malformed shapes all relocking; and the
+          adversarial suite proves the exception cannot generalize. The retracted comment 5345204885
+          is refused on two independent grounds — it is not the pinned id, and its durable author is
+          a bot — each separately tested. Proof: 121 tests and 43 mutations, 43 CAUGHT, 0 missed, 0
+          aborted, every needle verified present exactly once beforehand and every file restored
+          BYTE-IDENTICALLY with SHA-256 checked. Disclosed honestly: the first pass caught 41 of 42,
+          and the survivor was an UNDER-POWERED mutation rather than an escape (it substituted a stub
+          review the disposition check still refused downstream); the mutation was strengthened to
+          substitute a FULLY VALID review, a second mutation was added for the shape guard, and two
+          new tests gave that guard independent coverage, after which all 43 are caught. The suite
+          carries zero or-fallback assertions (its own AST guard caught a real one during
+          development), performs no filesystem write, imports no outcome-producing module,
+          references no protected RISK results path, and evaluates no gate — each AST-enforced. Also
+          disclosed and DELIBERATELY NOT REPAIRED: Gate 2's own pre-existing
+          "(evidence.get(...) or {}).get(...)" raises AttributeError on a TRUTHY non-mapping
+          sub-block; that fragility predates this correction, lies outside the two lines it touches,
+          and repairing unrelated production behaviour is outside XASSET-0041's authorized scope — a
+          test asserts the correction itself adds no such fragility. THE DOWNSTREAM BOUNDARY IS
+          PRESERVED, NOT COLLAPSED. Because a load-bearing module changed, identities were RECOMPUTED
+          FOR EVIDENCE ONLY, exactly as SS-E.3 permits and SS-H requires, and DELIBERATELY NOT
+          APPLIED: bound merged-tree sha256 8186a50f71d05bbb7189183bacad6aa0752147e9c7f4e1f5b3bacaba
+          d91f2fc8 versus corrected worktree sha256 03d842126913bf2d62aa5d7c070ecca236926ec847102da8
+          2414ee51e7422734. No pin was updated: LOAD_BEARING_RELPATHS (10 entries),
+          AUTHORIZING_DECISION (XASSET-0037), AUTHORIZING_PULL_REQUEST (337) and the accepted PR #337
+          bound identities are unchanged. A full live authorization therefore now reports ENFORCEMENT
+          DRIFT instead of the two actor errors; that is the EXPECTED, DISCLOSED hand-off to a
+          separately authorized rebinding, not a failed correction, and it is not repaired here.
+          Links 2 through 5 — rebinding, renewed readiness verification, renewed post-rebinding drift
+          check, and a new step-11 authorization — are NOT authorized, NOT pre-authorized, NOT
+          combined, and NOT made reachable; XASSET-0040 remains spent as a stop and is not revived;
+          XASSET-0027 SS-P.1 remains one, unspent and unopened. This gate stays in_progress because
+          its own pull request is unmerged: the correction becomes effective only on complete closure
+          of all seven XASSET-0042 SS-I conditions, including successful merge-commit CI whose
+          head_sha is the exact merge SHA. Merging it will NOT arm Stage 1, create lane state, claim
+          ATTEMPT_1, or execute anything. Stage 1 remains UNARMED and NOT EXECUTABLE, lane state
+          remains ABSENT, new_execution_is_authorized() returns False, ATTEMPT_1 is intact, unclaimed
+          and unconsumed, no gate was evaluated for any construction, and no stage1_results.yaml
+          exists anywhere.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -16193,9 +16290,9 @@ workstreams:
       remains UNARMED and NOT EXECUTABLE, lane state remains ABSENT,
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
-    active_branch: claude/xasset-0040-step-11-8e912y
-    active_pr: 341
-    last_verified_main_sha: f212cce50e28ae887dc8c594bf8ae491a3ef85af
+    active_branch: claude/pr337-actor-evidence-correction-5evikl
+    active_pr: null
+    last_verified_main_sha: 9c8647f9dddacdf63825f569097214ba65299fe8
     last_verified_date: "2026-08-19"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
