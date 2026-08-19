@@ -146,7 +146,7 @@ That rule is preserved **unweakened**, and the reconciliation is stated rather t
    final governance authorization the §G.B sequence names**, and it authorizes no successor
    authorization of any kind.
 
-### D.1 — This decision never enters the attestation
+#### D.1 — This decision never enters the attestation
 
 The accepted mechanism binds `AUTHORIZING_DECISION = "XASSET-0037"` and `AUTHORIZING_PULL_REQUEST = 337`
 as module constants inside `level1_stage1_execution_authorization.py`, which is a **load-bearing path**.

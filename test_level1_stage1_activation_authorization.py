@@ -758,9 +758,10 @@ class TestDecisionNeverEntersTheAttestation:
         assert A.AUTHORIZING_PULL_REQUEST == 337
 
     def test_the_decision_states_it_must_not_be_inserted(self, decision: str) -> None:
-        norm_all = _norm(decision)
-        assert "This decision never enters the attestation" in norm_all
-        assert "**`XASSET-0040` must not be inserted into that mechanism.**" in norm_all
+        # §D.1 is a `####` subsection of §D, so §D's own region covers it.
+        section = _section(decision, "D")
+        assert "This decision never enters the attestation" in section
+        assert "**`XASSET-0040` must not be inserted into that mechanism.**" in section
 
     def test_editing_the_binding_constants_is_prohibited(self, decision: str) -> None:
         section = _section(decision, "G")
@@ -771,11 +772,10 @@ class TestDecisionNeverEntersTheAttestation:
     def test_governance_authority_and_execution_identity_are_kept_distinct(
         self, decision: str
     ) -> None:
-        norm_all = _norm(decision)
         assert (
             "This decision is the **governance precondition** for the unit to act. The "
             "attestation's **content** remains fixed by the accepted mechanism exactly as it "
-            "stands today." in norm_all
+            "stands today." in _section(decision, "D")
         )
 
 
