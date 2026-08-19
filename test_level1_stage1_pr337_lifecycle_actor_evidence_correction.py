@@ -1726,3 +1726,120 @@ class TestStrictRetrospectionIsSeparable:
         """Guards the two above from passing for an unrelated reason."""
         gov = self._shifted("2026-08-18T23:50:59Z")
         assert actor_errors(run_repinned(governance=gov)) == []
+
+
+# ======================================================================================
+# 17. The decision's declared corrected-module identity must BE the module's identity
+# ======================================================================================
+
+
+class TestDeclaredCorrectedIdentityMatchesTheModule:
+    """DELTA review 4976030124 MINOR 1: the record published a superseded digest as current.
+
+    The module was corrected twice. After the second correction, XASSET-0042 still stated
+    ``03d84212…`` -- the module's identity at the SUPERSEDED reviewed head ``7573147e…`` --
+    as the corrected worktree digest, while the module actually hashed ``749597ee…``. That
+    weakened no enforcement, but it would have handed the separately authorized rebinding
+    unit the wrong corrected-byte identity if read literally.
+
+    These derive the digest from BYTES and from the decision's own single declaration, and
+    require them to agree, so the record cannot drift away from the module again. The
+    intermediate history is asserted to remain present and to stay distinguishable from the
+    current identity -- preserving it is the point, conflating it is the defect.
+    """
+
+    DECISION = (
+        REPO_ROOT / "governance/decisions"
+        / "XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md"
+    )
+    MODULE = REPO_ROOT / "level1_stage1_execution_authorization.py"
+
+    #: The module's identity at the superseded reviewed head. History, never the current value.
+    INTERMEDIATE_SHA256 = "03d842126913bf2d62aa5d7c070ecca236926ec847102da82414ee51e7422734"
+    #: The bound digest the step-8 rebinding pinned. Deliberately NOT re-pinned by this unit.
+    BOUND_SHA256 = "8186a50f71d05bbb7189183bacad6aa0752147e9c7f4e1f5b3bacabad91f2fc8"
+
+    #: The decision's single machine-readable declaration of the CURRENT corrected identity.
+    DECLARATION_MARKER = "FINAL_CORRECTED_MODULE_SHA256:"
+
+    def _declared(self) -> str:
+        """The declaration is the line that BEGINS with the marker.
+
+        Prose elsewhere in the decision refers to the marker by name; only a line that
+        starts with it is the declaration itself, which keeps extraction unambiguous
+        without forbidding the record from explaining what the marker is.
+        """
+        text = self.DECISION.read_text(encoding="utf-8")
+        lines = [
+            ln for ln in text.split("\n")
+            if ln.strip().startswith(self.DECLARATION_MARKER)
+        ]
+        assert len(lines) == 1, (
+            f"expected exactly one {self.DECLARATION_MARKER} declaration, found {len(lines)}"
+        )
+        tail = lines[0].split(self.DECLARATION_MARKER, 1)[1]
+        tokens = [
+            t for t in tail.replace("`", " ").split()
+            if len(t) == 64 and all(c in "0123456789abcdef" for c in t)
+        ]
+        assert len(tokens) == 1, f"expected exactly one 64-hex digest, found {tokens}"
+        return tokens[0]
+
+    def _module_sha256(self) -> str:
+        return hashlib.sha256(self.MODULE.read_bytes()).hexdigest()
+
+    def test_the_declaration_exists_and_is_unambiguous(self):
+        assert len(self._declared()) == 64
+
+    def test_the_declared_identity_is_the_modules_actual_identity(self):
+        assert self._declared() == self._module_sha256(), (
+            "XASSET-0042 declares a corrected-module digest that is not the module's own "
+            "bytes; the record has drifted from the file it describes"
+        )
+
+    def test_the_declared_identity_is_not_the_superseded_intermediate(self):
+        assert self._declared() != self.INTERMEDIATE_SHA256
+        assert self._module_sha256() != self.INTERMEDIATE_SHA256
+
+    def test_the_declared_identity_is_not_the_bound_pin(self):
+        """The correction changed the module; if these matched, nothing was corrected."""
+        assert self._declared() != self.BOUND_SHA256
+        assert AUTH.LOAD_BEARING_RELPATHS[0] == "level1_stage1_execution_authorization.py"
+
+    def test_the_intermediate_history_is_retained_and_labelled(self):
+        """Preserving the superseded value is required; presenting it as current is not."""
+        text = self.DECISION.read_text(encoding="utf-8")
+        assert self.INTERMEDIATE_SHA256 in text, "the intermediate history must be preserved"
+        assert "intermediate" in text.lower()
+        assert "7573147ed4bcb691b5bac9efe67eb84e3e8cdf6d" in text
+
+    def test_the_bound_pin_is_still_recorded_as_unchanged(self):
+        text = self.DECISION.read_text(encoding="utf-8")
+        assert self.BOUND_SHA256 in text
+        assert "NOT re-pinned" in text
+        assert "No pin was updated" in text
+
+    def test_the_three_identities_are_mutually_distinct(self):
+        values = {self._declared(), self.INTERMEDIATE_SHA256, self.BOUND_SHA256}
+        assert len(values) == 3
+
+    def test_the_register_records_the_current_identity_too(self):
+        register = (REPO_ROOT / "operations/WORKSTREAMS.yaml").read_text(encoding="utf-8")
+        assert self._module_sha256() in register.replace("\n", "").replace(" ", "")
+
+    def test_the_module_was_not_edited_by_this_evidence_correction(self):
+        """This unit corrects evidence only. The production module must be untouched."""
+        import subprocess
+
+        out = subprocess.run(
+            ["git", "diff", "--name-only",
+             "c8ea6efbeec166064aab293e7020cb221c402e19", "HEAD", "--",
+             "level1_stage1_execution_authorization.py"],
+            cwd=REPO_ROOT, capture_output=True, text=True,
+        )
+        if out.returncode != 0:
+            pytest.skip("prior head not available in this checkout")
+        assert out.stdout.strip() == "", (
+            "the production module changed after the reviewed head; this correction is "
+            "evidence-only and must not edit it"
+        )

@@ -15234,6 +15234,38 @@ workstreams:
           correction's authority. No rebinding, readiness verification, drift verification,
           attestation, arming, claim, execution, recovery or results work was performed. Stage 1
           remains UNARMED and NOT EXECUTABLE, lane ABSENT, ATTEMPT_1 intact and unconsumed.
+
+          SECOND BOUNDED CORRECTION (2026-08-19, independent DELTA exact-head review 4976030124 over
+          7573147ed4bcb691b5bac9efe67eb84e3e8cdf6d -> c8ea6efbeec166064aab293e7020cb221c402e19:
+          CHANGES REQUIRED, 0 BLOCKING / 0 MAJOR / 1 MINOR / 0 NOTE). The review accepted the first
+          correction in full - all four canonical-JSON fingerprints independently recomputed from the
+          live records and matching, the ordered lifecycle and finality enforcement, and the restored
+          all-ten-path guard - and found one EVIDENCE defect. MINOR 1: the first correction changed
+          the module a SECOND time, but XASSET-0042 and the paragraph above still published
+          03d842126913bf2d62aa5d7c070ecca236926ec847102da82414ee51e7422734 as the corrected worktree
+          identity. That value is the module's INTERMEDIATE identity at the now-SUPERSEDED reviewed
+          head 7573147e, not the current one. Reproduced from git-object bytes before editing, not
+          from prose: the blob at 7573147e hashes 03d84212...e7422734 while the blob at c8ea6ef
+          hashes 749597ee9085a189e187e23ccffb7718d98860847dfe514c173e7437b50f24c7. The defect
+          weakened no enforcement - the bound digest remains 8186a50f...d91f2fc8, the validator still
+          fails closed with enforcement drift, Stage 1 stays UNARMED and nothing was rebound - but it
+          would have handed the separately authorized rebinding unit the WRONG corrected-byte
+          identity if read literally. Corrected by EVIDENCE ONLY: XASSET-0042's reproduction block now
+          labels 03d84212...e7422734 explicitly as the intermediate superseded-head value and points
+          to SS-G for the current one; SS-G now states all three identities - the unchanged bound
+          digest, the intermediate historical digest, and a single machine-parseable
+          FINAL_CORRECTED_MODULE_SHA256 line carrying
+          749597ee9085a189e187e23ccffb7718d98860847dfe514c173e7437b50f24c7, which is the value the
+          separate rebinding unit must use; and this history is amended additively here so the
+          intermediate and final identities are never conflated. A narrow test hashes the production
+          module's own bytes, extracts that declared final digest from the decision file, and requires
+          them to match, so the same drift cannot recur on a further correction while the intermediate
+          history stays intact. level1_stage1_execution_authorization.py was NOT edited by this second
+          correction and remains byte-identical at 749597ee...b50f24c7. No pin was re-bound, no
+          readiness or drift verification was run, no lifecycle acceptance or merge occurred, and no
+          part of step 11 was begun. Stage 1 remains UNARMED and NOT EXECUTABLE, lane ABSENT,
+          new_execution_is_authorized() False, ATTEMPT_1 intact and unconsumed, and no
+          stage1_results.yaml exists.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

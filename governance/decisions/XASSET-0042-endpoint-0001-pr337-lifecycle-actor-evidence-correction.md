@@ -63,6 +63,11 @@ AFTER (corrected) — 0 actor errors; 1 remaining error, expected and disclosed:
     '03d84212…' but the authorized merged tree has '8186a50f…'
 ```
 
+**`03d84212…` above is the INTERMEDIATE module identity**, as it stood at the superseded reviewed
+head `7573147ed4bcb691b5bac9efe67eb84e3e8cdf6d`, and is retained only as the historical record of
+that reproduction. The module changed again under §J's bounded correction. **The current corrected
+identity is recorded in §G and is not this value.**
+
 That single remaining error is **not a failed correction**. It is exactly the consequence
 `XASSET-0041` §I names: corrected bytes "are no longer the bytes the single step-8 rebinding
 bound," so a **separately authorized rebinding** is required. That rebinding is link 2 of five and
@@ -170,10 +175,22 @@ The corrected bytes are no longer the bytes the step-8 rebinding bound. Identiti
 **recomputed for evidence only**, exactly as `XASSET-0041` §E.3 permits and §H requires, and
 **deliberately not applied**:
 
+The module was corrected **twice** — once for review `4975556072` and again under §J — so its
+identity has a history, and only the last value is current. All three are stated explicitly so the
+separately authorized rebinding unit cannot mistake a superseded value for the current one:
+
 ```
-bound (merged tree)  sha256  8186a50f71d05bbb7189183bacad6aa0752147e9c7f4e1f5b3bacabad91f2fc8
-corrected worktree   sha256  03d842126913bf2d62aa5d7c070ecca236926ec847102da82414ee51e7422734
+bound (merged tree, NOT re-pinned)                 sha256  8186a50f71d05bbb7189183bacad6aa0752147e9c7f4e1f5b3bacabad91f2fc8
+intermediate, superseded head 7573147e (historical) sha256  03d842126913bf2d62aa5d7c070ecca236926ec847102da82414ee51e7422734
+FINAL_CORRECTED_MODULE_SHA256: 749597ee9085a189e187e23ccffb7718d98860847dfe514c173e7437b50f24c7
 ```
+
+The `FINAL_CORRECTED_MODULE_SHA256:` line is the decision's single declaration of the **current**
+corrected-module identity, and is the value the separately authorized rebinding unit must use. It
+is machine-checked against the production module's own bytes by
+`TestDeclaredCorrectedIdentityMatchesTheModule` in
+`test_level1_stage1_pr337_lifecycle_actor_evidence_correction.py`, so this decision cannot again
+publish a stale identity while the module moves underneath it.
 
 No pin was updated. `LOAD_BEARING_RELPATHS` (10 entries), `AUTHORIZING_DECISION` (`XASSET-0037`),
 `AUTHORIZING_PULL_REQUEST` (337), and the accepted PR #337 bound identities are **unchanged**.
@@ -305,6 +322,46 @@ validator, and universe module are **unchanged**. The disclosed pre-existing Gat
 truthy-non-mapping fragility remains **deliberately unrepaired** — still outside this correction's
 authority. No rebinding, readiness verification, drift verification, attestation, arming, claim,
 execution, recovery, or results work was performed.
+
+### K. Second bounded correction — independent DELTA review `4976030124`
+
+An independent DELTA exact-head review of
+`7573147ed4bcb691b5bac9efe67eb84e3e8cdf6d` → `c8ea6efbeec166064aab293e7020cb221c402e19` returned
+**CHANGES REQUIRED — 0 BLOCKING / 0 MAJOR / 1 MINOR / 0 NOTE**. It accepted the §J work in full —
+the four canonical-JSON fingerprints (all four independently recomputed from the live records and
+matching), the ordered lifecycle and finality enforcement, and the restored all-ten-path guard — and
+found one evidence defect.
+
+**MINOR 1 — the decision published the superseded reviewed-head identity as the current one.** §J's
+correction changed the module a second time, but this record still stated `03d84212…` as the
+corrected worktree digest. That is the module's identity at the **superseded** reviewed head
+`7573147e…`; at `c8ea6ef…` the module hashes `749597ee…`.
+
+Reproduced from git-object bytes before editing, not from prose:
+
+```
+git cat-file blob 7573147e…:level1_stage1_execution_authorization.py | sha256sum
+  -> 03d842126913bf2d62aa5d7c070ecca236926ec847102da82414ee51e7422734   (intermediate)
+git cat-file blob c8ea6ef…:level1_stage1_execution_authorization.py | sha256sum
+  -> 749597ee9085a189e187e23ccffb7718d98860847dfe514c173e7437b50f24c7   (current)
+```
+
+The reviewer is right that this weakened no enforcement — the bound digest is still `8186a50f…`,
+the validator still fails closed with enforcement drift, Stage 1 stays unarmed, and nothing was
+rebound — but it would have handed the separate rebinding unit the wrong corrected-byte identity if
+read literally.
+
+**Corrected** by evidence only. The §B reproduction block now labels `03d84212…` explicitly as the
+intermediate reviewed-head value and points to §G for the current one; §G states all three
+identities — bound, intermediate, and a single machine-parseable
+`FINAL_CORRECTED_MODULE_SHA256:` line carrying `749597ee…`; and the register's correction history is
+amended additively to draw the same distinction. A narrow test hashes the production module's own
+bytes, extracts that declared final digest from this file, and requires them to match, so the same
+drift cannot recur on a further correction while the intermediate history stays intact.
+
+**`level1_stage1_execution_authorization.py` was NOT edited by this correction** — it remains
+byte-identical at `749597ee…`. No pin was re-bound, no readiness or drift verification was run, and
+no part of step 11 was begun.
 
 ## Rationale
 
