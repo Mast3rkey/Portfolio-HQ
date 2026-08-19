@@ -94,6 +94,8 @@ XASSET0038_CLOSURE_COMMENT = "5336559614"
 #: step-10 evidence the single unit it authorized then produced. Added by the XASSET-0040 filing so
 #: this suite's own now-merged lifecycle is asserted against merged truth rather than a stale value.
 XASSET0039_MERGE_SHA = "6960ce5ddbfa8cff1ef591c58682341c4d4407c7"
+#: PR #340's merge -- live `main` as XASSET-0041 was drafted.
+XASSET0041_MAIN_SHA = "f212cce50e28ae887dc8c594bf8ae491a3ef85af"
 STEP10_EVIDENCE_COMMENT = "5341448714"
 STEP10_DETERMINATION = "STEP_10_NO_DRIFT"
 
@@ -908,13 +910,13 @@ class TestCatalogAndRegisterSynchronisation:
         workstream = next(w for w in data["workstreams"] if w.get("id") == "WS-0014")
         # This pinned the PR #338 merge while PR #339 was open. STRENGTHENED to the merged
         # PR #339 value, which is the SHA the successor filing independently re-verified.
-        assert workstream["last_verified_main_sha"] == XASSET0039_MERGE_SHA
+        # ADVANCED AGAIN BY XASSET-0041 for the same reason: PR #340 merged at `f212cce5`.
+        assert workstream["last_verified_main_sha"] == XASSET0041_MAIN_SHA
         assert str(workstream["last_verified_date"]).startswith("2026-08-19")
-        # ADVANCED BY THE XASSET-0040 CORRECTION. `active_pr` is WS-0014's single shared live
-        # field, not this filing's own: it was `null` while no PR was live, and now holds the
-        # currently-live unmerged PR #340 per `OPS-0001`'s Active-GitHub-fields rule. Strengthened
-        # to the exact value rather than relaxed.
-        assert workstream["active_pr"] == 340
+        # ADVANCED AGAIN BY XASSET-0041. `active_pr` is WS-0014's single shared live field, not
+        # this filing's own. PR #340 has merged and the XASSET-0041 PR is not yet open, so under
+        # `OPS-0001`'s Active-GitHub-fields rule no live unmerged PR exists.
+        assert workstream["active_pr"] is None
 
     def test_workstream_stays_secondary_and_no_primary_is_introduced(self) -> None:
         data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))
