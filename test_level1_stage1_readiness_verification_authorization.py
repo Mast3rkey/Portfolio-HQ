@@ -77,6 +77,10 @@ ACCEPTED_HEAD = "f40c816223c78f1d1e436b718455df5fb3d77fa7"
 MERGE_BASE = "3e5de8f85c69c2e5dc2b75421446b5db996d7cf1"
 MERGE_TREE = "a370ecb9f24ecbc1f1f83f31042990f706ead20c"
 
+#: ADDED BY XASSET-0039 -- the PR #338 merge that carried this decision onto `main`. Distinct from
+#: ``MERGE_SHA`` above, which remains the PR #337 bound merge this decision anchors its checklist to.
+SUCCESSOR_MERGE_SHA = "b0361ce74dea357715b2ec2b4ce36b47c4f3cffc"
+
 #: The three values accepted authority already fixes as exact constants, and the only three
 #: ``XASSET-0038`` restates. Everything else in its checklist derives from the merged tree.
 PROTOCOL_SHA256 = "367583b616e1c6ab614bcf67d451fe27ce40507d073374190c57291e761d8971"
@@ -312,10 +316,26 @@ class TestEffectivityRequiresCompleteLifecycleClosure:
         assert "what becomes authorized is a **read-only verification**" in body
         assert "never arming and never execution" in body
 
-    def test_register_gate_is_not_marked_complete_in_its_own_authoring_session(self) -> None:
+    # AMENDED BY XASSET-0039. This test asserted the state as of THIS FILING, whose own PR was
+    # still open -- accurate then, and the same self-referential shape as the sibling tests below
+    # that pin the PREDECESSOR (XASSET-0037) gate as merged. PR #338 has since merged with all
+    # seven effectivity conditions closed, so the successor filing lawfully flipped this gate to
+    # `complete` / 338, exactly as THIS session flipped the xasset0037 gate. Nothing is weakened:
+    # the completed values are checked exactly, the gate's own DESCRIPTION TEXT is asserted
+    # byte-preserved as history, and the successor's additive post-merge gate is checked to exist
+    # rather than merely assumed.
+    def test_the_register_records_the_step9_authorization_as_merged(self) -> None:
         gate = _ws0014_gate("xasset0038-step9-readiness-verification-authorization")
-        assert gate["status"] == "in_progress"
-        assert gate["pr"] is None
+        assert gate["status"] == "complete"
+        assert gate["pr"] == 338
+        # The drafting session's own historical narrative is retained verbatim, not rewritten.
+        assert "THIS FILING PERFORMS NO PART OF STEP 9" in gate["description"]
+        assert "eleven conditions C1-C11" in gate["description"]
+        # The successor records completion additively rather than by editing the text above.
+        post_merge = _ws0014_gate("xasset0038-post-merge-verification")
+        assert post_merge["status"] == "complete"
+        assert post_merge["pr"] == 338
+        assert "STEP_9_READINESS_VERIFICATION_PASS" in post_merge["description"]
 
 
 # --------------------------------------------------------------------------------------------------
@@ -740,7 +760,11 @@ class TestCatalogAndRegisterSynchronisation:
     def test_workstream_live_fields_reflect_this_session(self) -> None:
         data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))
         workstream = next(w for w in data["workstreams"] if w.get("id") == "WS-0014")
-        assert workstream["last_verified_main_sha"] == MERGE_SHA
+        # AMENDED BY XASSET-0039. This pinned the PR #337 merge -- live `main` while THIS filing
+        # was drafted. PR #338 has since merged, so the register's live self-reference lawfully
+        # advanced to that merge. The anchor this decision authorizes against is unchanged and is
+        # still `MERGE_SHA`; only the register's own "where main is now" field moved.
+        assert workstream["last_verified_main_sha"] == SUCCESSOR_MERGE_SHA
         assert str(workstream["last_verified_date"]).startswith("2026-08-19")
         assert workstream["active_pr"] is None
 

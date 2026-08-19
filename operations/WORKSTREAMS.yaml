@@ -14686,8 +14686,8 @@ workstreams:
           closes for step 9 alone. Stage 1 remains UNARMED and NOT EXECUTABLE; ATTEMPT_1 is intact,
           unclaimed and unconsumed.
       - gate: xasset0038-step9-readiness-verification-authorization
-        status: in_progress
-        pr: null
+        status: complete
+        pr: 338
         description: >
           The narrow governance-only authority required for ONE future, separate XASSET-0030
           SS-G.B STEP 9 post-rebinding runner execution-readiness verification, filed as
@@ -14743,6 +14743,116 @@ workstreams:
           module, no runner, no result validator, no LOAD_BEARING_RELPATHS entry, no hash pin and no
           protected portfolio path. Stage 1 remains UNARMED and NOT EXECUTABLE; lane state remains
           ABSENT; ATTEMPT_1 is intact, unclaimed and unconsumed.
+      - gate: xasset0038-post-merge-verification
+        status: complete
+        pr: 338
+        description: >
+          Lane M factual synchronization, folded into the XASSET-0039 filing per the established
+          convention that a prior gate's own description text is never rewritten. The
+          xasset0038-step9-readiness-verification-authorization gate above is preserved verbatim as
+          historical text describing what was true when it was written — its description is
+          BYTE-IDENTICAL before and after this filing, proven by SHA-256
+          13ff20368cef04f30279eccdc7a84ed0ddd14c0a1eb2e40c53a8c64ee1fdcc4b on both sides, with only
+          its status and pr fields factually corrected. This gate records the completed lifecycle.
+          Independently re-verified this session from live GitHub and live git, not inherited from
+          any prior session's summary. PR #338 is MERGED and CLOSED — merged_by Mast3rkey, 1 commit,
+          6 files, accepted head 4afdb240518de5ae20eb7933139a83e0fb2f1741, base
+          637eaa30302f5a71f84ab1d215ecbd32c01399b5, merge commit
+          b0361ce74dea357715b2ec2b4ce36b47c4f3cffc whose two parents are, IN EXACT ORDER,
+          637eaa30302f5a71f84ab1d215ecbd32c01399b5 then 4afdb240518de5ae20eb7933139a83e0fb2f1741.
+          XASSET-0038 lifecycle closure is issue comment 5336559614, which records all seven SS-J
+          conditions closed including merge-commit CI workflow run 32206084371, job 95929536632,
+          completed / success with head_sha exactly the merge SHA. XASSET-0038 therefore became
+          EFFECTIVE, and the ONE read-only unit it authorized then RAN. Its determination is
+          STEP_9_READINESS_VERIFICATION_PASS, recorded as durable external evidence at issue comment
+          5336643459, with conditions C1 through C11 all PASS and ten bound identities enumerated.
+          XASSET-0030 SS-G.B STEP 9 IS THEREFORE COMPLETE. That step-9 unit created no branch, no
+          commit and no pull request, and made no repository mutation, exactly as XASSET-0038 SS-I
+          required. Independently reconfirmed in this session at merge
+          b0361ce74dea357715b2ec2b4ce36b47c4f3cffc: all ten LOAD_BEARING_RELPATHS present; the V7
+          canonical pins 367583b6...d8971 and 768b013c...4bce1 match their files exactly; the frozen
+          universe is 680 constructions / 48 cells / aggregate 73c0965e...5224; the
+          construction-universe module is 1fed8f42...c95c5; the runner, result validator,
+          preregistration derivation module and execution-authorization module hash exactly as the
+          step-9 evidence recorded; lane state is ABSENT with the authorization, claim, completion
+          and ledger paths all absent; and new_execution_is_authorized() returns False. SS-G.B steps
+          10 and 11 remain unperformed and unauthorized by that lifecycle. XASSET-0038 SS-K states
+          that step 10 retains its own separate-authority requirement, that its own fail-closed
+          stop-and-report rule is NOT a grant of step 10, and that a step-9 PASS however clean
+          authorizes nothing further — which is precisely the gap XASSET-0039 below closes for step
+          10 alone. Stage 1 remains UNARMED and NOT EXECUTABLE; ATTEMPT_1 is intact, unclaimed and
+          unconsumed.
+      - gate: xasset0039-step10-drift-fail-closed-authorization
+        status: in_progress
+        pr: null
+        description: >
+          The narrow governance-only authority required for ONE future, separate XASSET-0030 SS-G.B
+          STEP 10 unit — fail-closed handling of any post-rebinding or post-step-9 drift in runner
+          and result-production bytes BEFORE READY or claim — filed as XASSET-0039. THIS FILING
+          PERFORMS NO PART OF STEP 10: it runs no comparison, detects no drift and issues no step-10
+          determination. IT PERFORMS AND AUTHORIZES NO PART OF STEP 11. It also RE-PERFORMS NO PART
+          OF THE COMPLETED STEP 9 — it records the STEP_9_READINESS_VERIFICATION_PASS determination
+          at issue comment 5336643459 as a fact and an input, and does not re-run the C1-C11
+          checklist, re-derive the ten bound identities, or reopen any step-9 condition or finding.
+          The authority gap was reproduced from accepted merged text before anything was authorized:
+          XASSET-0030 SS-G.B closes by authorizing none of G.A or G.B and states that steps 4, 5, 8
+          and 10 describe what a successor must do while performing any of them there is prohibited;
+          XASSET-0037 SS-I withholds SS-G.B steps 9, 10 and 11 BY NAME while its Consequences state
+          each requires its own separate authority; and XASSET-0038 SS-I bars its own step-9 unit
+          from performing or authorizing step 10 or step 11 while SS-K states that step 10 retains
+          its own separate-authority requirement and that XASSET-0038's stop-and-report rule is what
+          the step-9 unit does FOR ITSELF and is not a grant of step 10. Four filings named step 10
+          and four declined to grant it, so the gap rests on accepted repository text rather than on
+          this unit's convenience. What is authorized is exactly one future, separate unit that
+          re-derives identities from live sources, COMPARES current bytes against BOTH required
+          anchors, determines whether post-rebinding or post-step-9 drift exists, confirms lane state
+          remains ABSENT and new_execution_is_authorized() remains False and the runner remains
+          fail-closed absent an attestation, executes the fail-closed response, and records durable
+          externally posted evidence. THE TWO ANCHORS ARE BOTH REQUIRED AND ARE NOT REDUNDANT: the
+          effective PR #337 bound merge 637eaa30302f5a71f84ab1d215ecbd32c01399b5, being the exact
+          bytes the single SS-G.B step-8 rebinding actually bound and the reference defining
+          post-rebinding drift; and the successful step-9 evidence at issue comment 5336643459,
+          being the identities verified clean at the last checked moment and the reference defining
+          post-step-9 drift. A comparison against only one anchor is a failure of the step, not a
+          partial success. The unit is FAIL-CLOSED: any drift, missing identity, validation failure,
+          unexpected lane state or state it cannot determine with certainty STOPS it, requires it to
+          report the exact condition and change nothing, and FORBIDS both a no-drift determination
+          and any READY or claim; uncertainty is failure and may not be resolved in favour of
+          no-drift. The unit is a DETECTOR AND A REFUSAL, NEVER A REMEDIATOR: it is PROHIBITED from
+          correcting, reverting, regenerating or re-pinning any drifted byte, from rebinding anything
+          or performing any part of a rebinding, and from re-running readiness verification to clear
+          what it found. Remediation instead requires THREE separately authorized things, none of
+          which this decision grants and none of which becomes authorized by the unit discovering it
+          is needed: a separately authorized correction, a separately authorized rebinding because
+          corrected bytes are no longer the bytes the single step-8 rebinding bound, and any renewed
+          readiness verification that correction and rebinding make necessary. A STEP-10 NO-DRIFT
+          DETERMINATION, HOWEVER CLEAN, AUTHORIZES NOTHING FURTHER — it is not permission to attest,
+          to arm, to reach READY, to claim ATTEMPT_1, to execute the 680-construction run, or to
+          perform any part of step 11. STEP 11 REMAINS ENTIRELY SEPARATE AND UNAUTHORIZED, retains
+          its own separate-authority requirement, and is not made reachable by a clean step-10 result
+          or by this decision's merge. The unit is additionally INCAPABLE of producing an
+          attestation, AUTHORIZATION_ROOT, lane state, claim, ledger entry, completion, recovery,
+          execution or stage1_results.yaml, of evaluating any gate for any registered construction or
+          consuming any part of ATTEMPT_1, and of reading or using protected risk_lane_boundary
+          results. Expected identity DERIVES FROM the effective bound merge tree and the step-9
+          evidence at verification time rather than from constants restated in a decision record;
+          only the values accepted authority already fixes as exact constants are restated. The
+          step-10 unit creates no branch, no commit and no pull request, so it does not contend for
+          the OPS-0014 SS-D single mutation lane. XASSET-0029 SS-E is preserved unweakened: this
+          filing adds ZERO activation authorizations, keeps stage_1_executability.executable
+          permanently false, and leaves final activation as the external one-shot runtime attestation
+          and the operator's act. XASSET-0027 SS-P.1's reserved evaluation/results PR remains ONE,
+          UNSPENT. Effective ONLY on complete closure of all seven SS-N conditions — independent FULL
+          exact-head review, any bounded correction and exact-head re-review, principal exact-head
+          acceptance at the final head, merge, immediate post-merge verification, successful
+          merge-commit CI whose head_sha is the exact merge SHA, and final post-CI verification —
+          none of which is individually sufficient. MERGING THIS DECISION AUTHORIZES A FUTURE
+          FAIL-CLOSED DRIFT CHECK ONLY; IT DOES NOT MAKE STAGE 1 ARMED OR EXECUTABLE. This filing
+          creates no production or outcome-producing code and changes no canonical file, no
+          validator, no authorization module, no runner, no result validator, no
+          LOAD_BEARING_RELPATHS entry, no hash pin, and no research, intelligence, portfolio or
+          protected path. Stage 1 remains UNARMED and NOT EXECUTABLE; lane state remains ABSENT;
+          ATTEMPT_1 is intact, unclaimed and unconsumed.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -15850,9 +15960,9 @@ workstreams:
       remains UNARMED and NOT EXECUTABLE, lane state remains ABSENT,
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
-    active_branch: claude/xasset-0038-step9-authority-k4r9eh
+    active_branch: claude/xasset-0039-governance-filing-wfjoa6
     active_pr: null
-    last_verified_main_sha: 637eaa30302f5a71f84ab1d215ecbd32c01399b5
+    last_verified_main_sha: b0361ce74dea357715b2ec2b4ce36b47c4f3cffc
     last_verified_date: "2026-08-19"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
