@@ -26,7 +26,10 @@ error returns with its wording unchanged. That is what "cannot generalize" means
 from __future__ import annotations
 
 import ast
+import contextlib
 import copy
+import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -72,6 +75,11 @@ T_ACCEPT_337 = "2026-08-18T23:50:29Z"
 T_MERGE_337 = "2026-08-18T23:50:58Z"
 T_VERIFY_337 = "2026-08-19T00:12:40Z"
 T_RATIFY = "2026-08-19T16:47:08Z"
+T_MERGE_341 = "2026-08-19T16:49:16Z"
+T_VERIFY_341 = "2026-08-19T16:50:40Z"
+T_CI_COMPLETED = "2026-08-19T16:57:31Z"
+T_CLOSURE_341 = "2026-08-19T16:59:15Z"
+T_REVIEW_341 = "2026-08-19T16:12:45Z"
 
 APPROVING = f"FORMAL DISPOSITION: {AUTH.APPROVING_REVIEW_DISPOSITION} — 0 BLOCKING"
 
@@ -150,7 +158,7 @@ class Governance:
                 "head": {"sha": P341_HEAD},
                 "merged": True,
                 "merge_commit_sha": P341_MERGE,
-                "merged_at": "2026-08-19T16:49:16Z",
+                "merged_at": T_MERGE_341,
             },
         }
         self.review_records = {
@@ -169,7 +177,7 @@ class Governance:
                 "body": APPROVING,
                 "user": {"login": PRINCIPAL},
                 "state": "COMMENTED",
-                "submitted_at": "2026-08-19T16:12:45Z",
+                "submitted_at": T_REVIEW_341,
                 "html_url": f"{_issue_url(P341)}#pullrequestreview-{P341_REVIEW}",
             },
         }
@@ -189,25 +197,29 @@ class Governance:
             },
             # XASSET-0041's own lifecycle records: durably authored by the PRINCIPAL.
             P341_RATIFY: {
+                "id": P341_RATIFY,
                 "body": ratification_body(),
                 "issue_url": _issue_url(P341),
                 "created_at": T_RATIFY,
                 "user": {"login": PRINCIPAL},
             },
             P341_VERIFY: {
+                "id": P341_VERIFY,
                 "body": f"Post-merge verification for merge `{P341_MERGE}`.",
                 "issue_url": _issue_url(P341),
-                "created_at": "2026-08-19T16:50:40Z",
+                "created_at": T_VERIFY_341,
                 "user": {"login": PRINCIPAL},
             },
             P341_CLOSURE: {
+                "id": P341_CLOSURE,
                 "body": f"Closure for merge `{P341_MERGE}`, CI run {P341_RUN}.",
                 "issue_url": _issue_url(P341),
-                "created_at": "2026-08-19T16:59:15Z",
+                "created_at": T_CLOSURE_341,
                 "user": {"login": PRINCIPAL},
             },
             # The retracted mis-attribution, present exactly as it is on the real PR.
             VOID_COMMENT_ID: {
+                "id": VOID_COMMENT_ID,
                 "body": "VOID — this comment is NOT a principal acceptance. " + ratification_body(),
                 "issue_url": _issue_url(P341),
                 "created_at": "2026-08-19T16:44:49Z",
@@ -217,7 +229,13 @@ class Governance:
         self.runs = {
             P341_RUN: {"status": "completed", "conclusion": "success", "head_sha": P341_MERGE}
         }
-        self.jobs = {P341_JOB: {"run_id": P341_RUN, "conclusion": "success"}}
+        self.jobs = {
+            P341_JOB: {
+                "run_id": P341_RUN,
+                "conclusion": "success",
+                "completed_at": T_CI_COMPLETED,
+            }
+        }
         self.__dict__.update(overrides)
 
     def pull_request(self, number):
@@ -241,6 +259,54 @@ class Governance:
 
 def sources(git=None, governance=None) -> AUTH.TruthSources:
     return AUTH.TruthSources(git=git or Git(), governance=governance or Governance())
+
+
+# --------------------------------------------------------------------------------------
+# Fingerprint pins for the ISOLATED fixture universe
+# --------------------------------------------------------------------------------------
+#
+# The production constants pin the REAL merged PR #341 records, whose bodies this suite
+# cannot reproduce -- that is the whole point of a body digest. So the fixture universe
+# carries its own accepted records, and their fingerprints are derived ONCE from the
+# BASELINE (unmutated) fixture below and swapped in for the duration of a call.
+#
+# Two things keep this honest:
+#   * the baseline is computed before any test mutates anything, so ANY alteration a test
+#     makes -- a negated body, a changed actor, a moved timestamp -- yields a different
+#     fingerprint and must relock;
+#   * the REAL production pins are asserted separately and UNPATCHED, against an
+#     independent copy of the expected digests, in ``TestFingerprintPinsAreTheRealRecords``.
+#     A mutation to any production constant is therefore still caught.
+
+_BASELINE_GOV = Governance()
+
+FIXTURE_FINGERPRINTS = {
+    "RATIFICATION_REVIEW_FINGERPRINT": AUTH._review_record_fingerprint(
+        _BASELINE_GOV.review_records[(P341, P341_REVIEW)]
+    ),
+    "RATIFICATION_COMMENT_FINGERPRINT": AUTH._comment_record_fingerprint(
+        _BASELINE_GOV.comments[P341_RATIFY]
+    ),
+    "RATIFICATION_VERIFICATION_FINGERPRINT": AUTH._comment_record_fingerprint(
+        _BASELINE_GOV.comments[P341_VERIFY]
+    ),
+    "RATIFICATION_CLOSURE_FINGERPRINT": AUTH._comment_record_fingerprint(
+        _BASELINE_GOV.comments[P341_CLOSURE]
+    ),
+}
+
+
+@contextlib.contextmanager
+def fixture_pins():
+    """Swap the four production fingerprint pins for the fixture universe's own."""
+    originals = {name: getattr(AUTH, name) for name in FIXTURE_FINGERPRINTS}
+    try:
+        for name, digest in FIXTURE_FINGERPRINTS.items():
+            setattr(AUTH, name, digest)
+        yield
+    finally:
+        for name, value in originals.items():
+            setattr(AUTH, name, value)
 
 
 def document(**overrides) -> dict:
@@ -280,9 +346,49 @@ def verification_actor_error(errors) -> list[str]:
 
 
 def run(doc=None, git=None, governance=None):
-    return AUTH.verify_lifecycle_against_truth(
-        doc if doc is not None else document(), sources(git, governance)
-    )
+    """Validate against the BASELINE fixture pins.
+
+    Any alteration a test makes to a fingerprinted record relocks here -- which is exactly
+    what MAJOR 1 requires, and what these tests assert.
+    """
+    with fixture_pins():
+        return AUTH.verify_lifecycle_against_truth(
+            doc if doc is not None else document(), sources(git, governance)
+        )
+
+
+def run_repinned(doc=None, git=None, governance=None):
+    """Validate with the fingerprints RECOMPUTED from the (possibly mutated) fixture.
+
+    This deliberately removes the fingerprint gate from the picture so a chronology or
+    finality test proves its OWN mechanism rather than piggy-backing on MAJOR 1's digest.
+    A test that relocks under this helper relocks because the ORDER is wrong, full stop.
+    """
+    gov = governance or Governance()
+    pins = {
+        "RATIFICATION_REVIEW_FINGERPRINT": AUTH._review_record_fingerprint(
+            gov.review_records.get((P341, P341_REVIEW)) or {}
+        ),
+        "RATIFICATION_COMMENT_FINGERPRINT": AUTH._comment_record_fingerprint(
+            gov.comments.get(P341_RATIFY) or {}
+        ),
+        "RATIFICATION_VERIFICATION_FINGERPRINT": AUTH._comment_record_fingerprint(
+            gov.comments.get(P341_VERIFY) or {}
+        ),
+        "RATIFICATION_CLOSURE_FINGERPRINT": AUTH._comment_record_fingerprint(
+            gov.comments.get(P341_CLOSURE) or {}
+        ),
+    }
+    originals = {name: getattr(AUTH, name) for name in pins}
+    try:
+        for name, digest in pins.items():
+            setattr(AUTH, name, digest)
+        return AUTH.verify_lifecycle_against_truth(
+            doc if doc is not None else document(), sources(git, gov)
+        )
+    finally:
+        for name, value in originals.items():
+            setattr(AUTH, name, value)
 
 
 # ======================================================================================
@@ -1128,3 +1234,495 @@ class TestSuiteHygiene:
         assert "It is NOT an accepted-actor list" in source
         assert "It is NOT identity inference from comment text" in source
         assert "It is NOT a fictional pre-merge acceptance" in source
+
+
+# ======================================================================================
+# 14. MAJOR 1 (review 4975556072) — an ALTERED record never authenticates,
+#     however faithfully it still quotes the identities
+# ======================================================================================
+
+
+class TestAlteredRecordsAreRefusedEvenWithEveryTokenRetained:
+    """Reproduced before the fix: each of these produced ZERO actor errors.
+
+    The failure was that token presence proves names are PRESENT, not that the record
+    affirmatively ratifies, verifies, or closes anything. PR #341 comment 5345204885 is a
+    live instance of the shape -- retracted by editing its body into a VOID notice while
+    retaining its historical text.
+    """
+
+    def test_ratification_voided_in_place_while_retaining_every_token(self):
+        gov = Governance()
+        gov.comments[P341_RATIFY] = {
+            **gov.comments[P341_RATIFY],
+            "body": (
+                "## VOID. I do NOT ratify anything.\n\n"
+                "It is FALSE that those comments were authorized acts performed for the "
+                "principal. This notice RETRACTS the ratification in full.\n\n"
+                "Historical text retained for audit only:\n" + ratification_body()
+            ),
+        }
+        # Every required token is still present -- the old mechanism's entire test.
+        assert AUTH._names_all(
+            gov.comments[P341_RATIFY]["body"],
+            (
+                P341_HEAD, P341_REVIEW, P337_HEAD, P337_REVIEW, P337_ACCEPT,
+                P337_MERGE, P337_VERIFY, BOT, AUTH.RATIFICATION_REQUIRED_PHRASE,
+            ),
+        )
+        assert len(actor_errors(run(governance=gov))) == 2
+
+    def test_post_merge_verification_negated_while_retaining_the_merge_sha(self):
+        gov = Governance()
+        gov.comments[P341_VERIFY] = {
+            **gov.comments[P341_VERIFY],
+            "body": f"VOID; this does NOT verify merge `{P341_MERGE}`. No verification occurred.",
+        }
+        assert AUTH._names_all(gov.comments[P341_VERIFY]["body"], (P341_MERGE,))
+        assert len(actor_errors(run(governance=gov))) == 2
+
+    def test_closure_negated_while_retaining_the_merge_and_ci_ids(self):
+        gov = Governance()
+        gov.comments[P341_CLOSURE] = {
+            **gov.comments[P341_CLOSURE],
+            "body": f"VOID; NO closure for `{P341_MERGE}`; CI {P341_RUN} referenced only.",
+        }
+        assert AUTH._names_all(gov.comments[P341_CLOSURE]["body"], (P341_MERGE, P341_RUN))
+        assert len(actor_errors(run(governance=gov))) == 2
+
+    @pytest.mark.parametrize("record_id", ["ratify", "verify", "closure"])
+    def test_a_single_appended_character_relocks(self, record_id):
+        gov = Governance()
+        key = {"ratify": P341_RATIFY, "verify": P341_VERIFY, "closure": P341_CLOSURE}[record_id]
+        gov.comments[key] = {**gov.comments[key], "body": gov.comments[key]["body"] + "."}
+        assert len(actor_errors(run(governance=gov))) == 2
+
+    def test_review_body_altered_while_keeping_the_approving_line(self):
+        gov = Governance()
+        gov.review_records[(P341, P341_REVIEW)] = {
+            **gov.review_records[(P341, P341_REVIEW)],
+            "body": APPROVING + "\n\nRETRACTED: this review is withdrawn.",
+        }
+        # Still parses as approving, so the disposition check alone cannot catch it.
+        assert AUTH.parse_formal_disposition(
+            gov.review_records[(P341, P341_REVIEW)]["body"]
+        ) == AUTH.APPROVING_REVIEW_DISPOSITION
+        assert len(actor_errors(run(governance=gov))) == 2
+
+    @pytest.mark.parametrize("field,value", [
+        ("commit_id", "9" * 40),
+        ("state", "APPROVED"),
+        ("submitted_at", "2026-08-19T16:12:46Z"),
+        ("id", "4900000000"),
+    ])
+    def test_any_selected_review_field_change_relocks(self, field, value):
+        gov = Governance()
+        gov.review_records[(P341, P341_REVIEW)] = {
+            **gov.review_records[(P341, P341_REVIEW)], field: value,
+        }
+        assert len(actor_errors(run(governance=gov))) == 2
+
+    @pytest.mark.parametrize("field,value", [
+        ("id", "5900000000"),
+        ("created_at", "2026-08-19T16:47:09Z"),
+    ])
+    def test_any_selected_comment_field_change_relocks(self, field, value):
+        gov = Governance()
+        gov.comments[P341_RATIFY] = {**gov.comments[P341_RATIFY], field: value}
+        assert len(actor_errors(run(governance=gov))) == 2
+
+    def test_the_mechanism_is_not_a_natural_language_parser(self):
+        """A body containing VOID is not what relocks -- an ALTERED body is.
+
+        The accepted PR #341 acceptance itself contains the word VOID (it discloses the
+        retracted attempt). If the mechanism keyed on that word it would refuse the genuine
+        record. The baseline fixture body is accepted unchanged; only alteration relocks.
+        """
+        assert "VOID" in Governance().comments[VOID_COMMENT_ID]["body"]
+        assert actor_errors(run()) == []
+        gov = Governance()
+        gov.comments[P341_RATIFY] = {
+            **gov.comments[P341_RATIFY],
+            "body": ratification_body() + "\n\nNote: an earlier attempt was VOID.",
+        }
+        # Relocks because it is ALTERED, not because it says VOID.
+        assert len(actor_errors(run(governance=gov))) == 2
+
+
+class TestFingerprintIsCanonicalAndDeterministic:
+    def test_fingerprint_is_stable_across_key_ordering(self):
+        a = AUTH._canonical_record_fingerprint({"x": "1", "y": "2"})
+        b = AUTH._canonical_record_fingerprint({"y": "2", "x": "1"})
+        assert a == b
+
+    def test_fingerprint_is_not_a_repr_of_the_mapping(self):
+        digest = AUTH._canonical_record_fingerprint({"x": "1"})
+        assert digest != hashlib.sha256(str({"x": "1"}).encode()).hexdigest()
+        assert digest == hashlib.sha256(
+            json.dumps({"x": "1"}, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+
+    def test_fingerprint_changes_when_any_selected_value_changes(self):
+        base = AUTH._canonical_record_fingerprint({"x": "1", "y": "2"})
+        assert AUTH._canonical_record_fingerprint({"x": "1", "y": "3"}) != base
+
+    @pytest.mark.parametrize("missing", ["body", "user"])
+    def test_unusable_records_fingerprint_to_none(self, missing):
+        record = {"id": "1", "body": "x", "user": {"login": "a"}, "created_at": "t"}
+        record.pop(missing)
+        assert AUTH._comment_record_fingerprint(record) is None
+        assert AUTH._review_record_fingerprint(record) is None
+
+
+class TestFingerprintPinsAreTheRealRecords:
+    """UNPATCHED. An independent copy of the digests derived from the live PR #341 records.
+
+    The isolated tests above swap these for the fixture universe's own, so this class is
+    what catches a mutation to the production constants themselves.
+    """
+
+    EXPECTED = {
+        "RATIFICATION_REVIEW_FINGERPRINT":
+            "904f4cb4642f0f7b8bcd6bb33be92d72678270b122402e5d423789960aa33067",
+        "RATIFICATION_COMMENT_FINGERPRINT":
+            "acbd2bb2a9ccb9c71475dab83d2ab62cfc1b9110ed5a597e232cd6aaa620b0c6",
+        "RATIFICATION_VERIFICATION_FINGERPRINT":
+            "763e4e2fbd2559bb4e4e6e04dd782e4f1d1840e750e23ab776cb44de74d9ed0d",
+        "RATIFICATION_CLOSURE_FINGERPRINT":
+            "4e39a8b16248ebe616f5262b6c476f3b6780eedfaf9df2e85d7113272a26f568",
+    }
+
+    @pytest.mark.parametrize("name", sorted(EXPECTED))
+    def test_pin_matches_the_independently_recorded_digest(self, name):
+        assert getattr(AUTH, name) == self.EXPECTED[name]
+
+    def test_pins_are_well_formed_and_distinct(self):
+        values = [getattr(AUTH, name) for name in self.EXPECTED]
+        assert len(set(values)) == len(values)
+        for value in values:
+            assert len(value) == 64
+            assert all(c in "0123456789abcdef" for c in value)
+
+    def test_pins_are_not_the_fixture_values(self):
+        for name, fixture_value in FIXTURE_FINGERPRINTS.items():
+            assert getattr(AUTH, name) != fixture_value
+
+
+# ======================================================================================
+# 15. MAJOR 2 (review 4975556072) — XASSET-0041's own lifecycle is an ORDERED chain
+# ======================================================================================
+
+
+class TestRatificationLifecycleOrdering:
+    """Every case below is run REPINNED, so it proves ordering alone -- not the digest."""
+
+    def test_the_unmutated_baseline_still_passes_repinned(self):
+        """Guards this whole class from becoming vacuously green."""
+        assert actor_errors(run_repinned()) == []
+
+    def test_acceptance_before_the_review_it_certifies(self):
+        gov = Governance()
+        gov.comments[P341_RATIFY] = {**gov.comments[P341_RATIFY], "created_at": "2026-08-19T16:00:00Z"}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_acceptance_after_the_merge_it_authorized(self):
+        gov = Governance()
+        gov.comments[P341_RATIFY] = {**gov.comments[P341_RATIFY], "created_at": "2026-08-19T17:30:00Z"}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_acceptance_exactly_at_the_merge_instant_is_refused(self):
+        """Strict: an acceptance simultaneous with its own merge did not precede it."""
+        gov = Governance()
+        gov.comments[P341_RATIFY] = {**gov.comments[P341_RATIFY], "created_at": T_MERGE_341}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_post_merge_verification_predating_the_merge(self):
+        gov = Governance()
+        gov.comments[P341_VERIFY] = {**gov.comments[P341_VERIFY], "created_at": "2026-08-19T16:00:00Z"}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_post_merge_verification_exactly_at_the_merge_instant_is_allowed(self):
+        """Only an EARLIER verification is impossible; a same-second one is real."""
+        gov = Governance()
+        gov.comments[P341_VERIFY] = {**gov.comments[P341_VERIFY], "created_at": T_MERGE_341}
+        assert actor_errors(run_repinned(governance=gov)) == []
+
+    def test_closure_before_the_post_merge_verification(self):
+        gov = Governance()
+        gov.comments[P341_CLOSURE] = {**gov.comments[P341_CLOSURE], "created_at": "2026-08-19T16:49:30Z"}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_closure_before_ci_completion(self):
+        gov = Governance()
+        gov.comments[P341_CLOSURE] = {**gov.comments[P341_CLOSURE], "created_at": "2026-08-19T16:52:00Z"}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_ratification_exactly_at_the_pr337_merge_instant_is_refused(self):
+        """Strict retrospection: equality is not 'after'."""
+        gov = Governance()
+        gov.comments[P341_RATIFY] = {**gov.comments[P341_RATIFY], "created_at": T_MERGE_337}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    @pytest.mark.parametrize("target", ["ratify", "verify", "closure"])
+    def test_a_missing_required_timestamp_fails_closed(self, target):
+        gov = Governance()
+        key = {"ratify": P341_RATIFY, "verify": P341_VERIFY, "closure": P341_CLOSURE}[target]
+        gov.comments[key] = {k: v for k, v in gov.comments[key].items() if k != "created_at"}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    @pytest.mark.parametrize(
+        "malformed",
+        ["2026-08-19", "2026-08-19T16:47:08", "2026-08-19 16:47:08Z", "", "not-a-time", 17,
+         "2026-08-19T16:47:08+00:00", "20260819T164708Z"],
+    )
+    def test_a_malformed_timestamp_fails_closed(self, malformed):
+        gov = Governance()
+        gov.comments[P341_RATIFY] = {**gov.comments[P341_RATIFY], "created_at": malformed}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_missing_review_submission_time_fails_closed(self):
+        gov = Governance()
+        gov.review_records[(P341, P341_REVIEW)] = {
+            k: v for k, v in gov.review_records[(P341, P341_REVIEW)].items()
+            if k != "submitted_at"
+        }
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_missing_ci_job_completion_time_fails_closed(self):
+        gov = Governance()
+        gov.jobs[P341_JOB] = {k: v for k, v in gov.jobs[P341_JOB].items() if k != "completed_at"}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_missing_ratification_merge_time_fails_closed(self):
+        gov = Governance()
+        gov.pulls[P341] = {k: v for k, v in gov.pulls[P341].items() if k != "merged_at"}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_missing_pr337_merge_time_fails_closed(self):
+        gov = Governance()
+        gov.pulls[P337] = {k: v for k, v in gov.pulls[P337].items() if k != "merged_at"}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+
+class TestInstantParsing:
+    @pytest.mark.parametrize("good", ["2026-08-19T16:47:08Z", "1999-01-01T00:00:00Z"])
+    def test_accepts_exact_utc_instants(self, good):
+        assert AUTH._instant(good) == good
+
+    @pytest.mark.parametrize(
+        "bad",
+        ["2026-08-19T16:47:08", "2026-08-19T16:47:08.000Z", "2026-08-19T16:47:08+00:00",
+         "2026-08-19 16:47:08Z", "20260819T164708Z", "", None, 17, "xxxx-xx-xxTxx:xx:xxZ",
+         "2026/08/19T16:47:08Z"],
+    )
+    def test_rejects_everything_else(self, bad):
+        assert AUTH._instant(bad) is None
+
+
+class TestRatificationReviewFinality:
+    def test_native_changes_requested_selected_review_is_refused(self):
+        """Native state is durable truth; approving prose cannot override it."""
+        gov = Governance()
+        gov.review_records[(P341, P341_REVIEW)] = {
+            **gov.review_records[(P341, P341_REVIEW)], "state": "CHANGES_REQUESTED",
+        }
+        assert AUTH.parse_formal_disposition(
+            gov.review_records[(P341, P341_REVIEW)]["body"]
+        ) == AUTH.APPROVING_REVIEW_DISPOSITION
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def _later_review(self, submitted_at, state="CHANGES_REQUESTED", commit=None, rid="4979999999"):
+        return {
+            "commit_id": commit or P341_HEAD,
+            "id": rid,
+            "body": "FORMAL DISPOSITION: CHANGES REQUIRED — 1 BLOCKING",
+            "user": {"login": PRINCIPAL},
+            "state": state,
+            "submitted_at": submitted_at,
+            "html_url": f"{_issue_url(P341)}#pullrequestreview-{rid}",
+        }
+
+    def test_later_adverse_exact_head_review_before_merge_is_refused(self):
+        gov = Governance()
+        gov.review_records[(P341, "4979999999")] = self._later_review("2026-08-19T16:30:00Z")
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_later_adverse_review_after_the_merge_is_outside_the_lifecycle(self):
+        gov = Governance()
+        gov.review_records[(P341, "4979999999")] = self._later_review("2026-08-19T18:00:00Z")
+        assert actor_errors(run_repinned(governance=gov)) == []
+
+    def test_later_adverse_review_on_a_different_head_is_history(self):
+        gov = Governance()
+        gov.review_records[(P341, "4979999999")] = self._later_review(
+            "2026-08-19T16:30:00Z", commit="9" * 40
+        )
+        assert actor_errors(run_repinned(governance=gov)) == []
+
+    def test_a_dismissed_later_adverse_review_is_not_a_live_finding(self):
+        gov = Governance()
+        gov.review_records[(P341, "4979999999")] = self._later_review(
+            "2026-08-19T16:30:00Z", state="DISMISSED"
+        )
+        assert actor_errors(run_repinned(governance=gov)) == []
+
+    def test_an_earlier_adverse_review_is_legitimate_history(self):
+        gov = Governance()
+        gov.review_records[(P341, "4979999999")] = self._later_review("2026-08-19T16:00:00Z")
+        assert actor_errors(run_repinned(governance=gov)) == []
+
+    def test_an_unavailable_review_list_fails_closed(self):
+        class NoList(Governance):
+            def reviews(self, number):
+                return None
+
+        assert len(actor_errors(run_repinned(governance=NoList()))) == 2
+
+    def test_finality_reuses_the_shared_machinery_not_a_parallel_definition(self):
+        source = (REPO_ROOT / "level1_stage1_execution_authorization.py").read_text(
+            encoding="utf-8"
+        )
+        derivation = source.split("def _derive_pr337_actor_ratification")[1].split(
+            "\ndef verify_lifecycle_against_truth"
+        )[0]
+        assert "_verify_selected_review_is_final(" in derivation
+        assert "NATIVE_ADVERSE_REVIEW_STATES" in derivation
+
+
+# ======================================================================================
+# 16. Each individual check, ISOLATED from the fingerprint
+# ======================================================================================
+
+
+class TestEachCheckIsIndependentlyLoadBearing:
+    """Run REPINNED, so the fingerprint matches and only the named check can relock.
+
+    Without this, the digest masks every field it covers: a dismissed review, an adverse
+    body, or a swapped actor all change the fingerprint too, so a test using the baseline
+    pins would pass even if the specific check were deleted. These prove each check does
+    its own work.
+    """
+
+    def test_baseline_is_not_vacuously_green(self):
+        assert actor_errors(run_repinned()) == []
+
+    def test_review_exact_head_check_alone(self):
+        gov = Governance()
+        gov.review_records[(P341, P341_REVIEW)] = {
+            **gov.review_records[(P341, P341_REVIEW)], "commit_id": "9" * 40,
+        }
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_dismissed_review_check_alone(self):
+        gov = Governance()
+        gov.review_records[(P341, P341_REVIEW)] = {
+            **gov.review_records[(P341, P341_REVIEW)], "state": "DISMISSED",
+        }
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_approving_disposition_check_alone(self):
+        gov = Governance()
+        gov.review_records[(P341, P341_REVIEW)] = {
+            **gov.review_records[(P341, P341_REVIEW)],
+            "body": "FORMAL DISPOSITION: CHANGES REQUIRED — 1 BLOCKING",
+        }
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_unparseable_disposition_check_alone(self):
+        gov = Governance()
+        gov.review_records[(P341, P341_REVIEW)] = {
+            **gov.review_records[(P341, P341_REVIEW)], "body": "Looks fine to me.",
+        }
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    @pytest.mark.parametrize("who", ["ratify", "verify", "closure"])
+    def test_actor_check_alone(self, who):
+        gov = Governance()
+        key = {"ratify": P341_RATIFY, "verify": P341_VERIFY, "closure": P341_CLOSURE}[who]
+        gov.comments[key] = {**gov.comments[key], "user": {"login": BOT}}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    @pytest.mark.parametrize("token", [
+        P341_HEAD, P341_REVIEW, P337_HEAD, P337_REVIEW, P337_ACCEPT,
+        P337_MERGE, P337_VERIFY, BOT, AUTH.RATIFICATION_REQUIRED_PHRASE,
+    ])
+    def test_required_token_check_alone(self, token):
+        """SS-G.3/SS-G.4's content requirement does its own work, not the digest's."""
+        gov = Governance()
+        gov.comments[P341_RATIFY] = {
+            **gov.comments[P341_RATIFY],
+            "body": ratification_body().replace(token, "REDACTED"),
+        }
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_verification_merge_naming_check_alone(self):
+        gov = Governance()
+        gov.comments[P341_VERIFY] = {**gov.comments[P341_VERIFY], "body": "Verified."}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_closure_ci_naming_check_alone(self):
+        gov = Governance()
+        gov.comments[P341_CLOSURE] = {
+            **gov.comments[P341_CLOSURE], "body": f"Closure for merge `{P341_MERGE}`.",
+        }
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+
+class TestClosureOrderingChecksAreSeparable:
+    """The two closure comparisons are separate rules and must each stand alone.
+
+    In the real ordering the CI completes AFTER the verification, so "closure precedes the
+    verification" also implies "closure precedes CI" -- one rule hides behind the other.
+    These fixtures put the CI completion BEFORE the verification so each comparison can be
+    violated on its own.
+    """
+
+    def _ci_before_verification(self):
+        gov = Governance()
+        gov.jobs[P341_JOB] = {**gov.jobs[P341_JOB], "completed_at": "2026-08-19T16:49:30Z"}
+        return gov
+
+    def test_closure_between_ci_and_verification_violates_only_the_verification_rule(self):
+        gov = self._ci_before_verification()
+        # after CI (16:49:30), before the verification (16:50:40)
+        gov.comments[P341_CLOSURE] = {**gov.comments[P341_CLOSURE], "created_at": "2026-08-19T16:50:00Z"}
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_closure_after_both_is_accepted(self):
+        gov = self._ci_before_verification()
+        assert actor_errors(run_repinned(governance=gov)) == []
+
+
+class TestStrictRetrospectionIsSeparable:
+    """Isolate rule 6 from rule 5.1.
+
+    Stamping the acceptance at the PR #337 merge instant normally makes it PRECEDE the
+    PR #341 review, so rule 5.1 fires first and rule 6 is never reached. Shifting the whole
+    PR #341 lifecycle earlier keeps 5.1-5.4 satisfied, leaving strict retrospection as the
+    only rule that can relock.
+    """
+
+    def _shifted(self, acceptance_at):
+        gov = Governance()
+        gov.review_records[(P341, P341_REVIEW)] = {
+            **gov.review_records[(P341, P341_REVIEW)], "submitted_at": "2026-08-18T23:00:00Z",
+        }
+        gov.comments[P341_RATIFY] = {**gov.comments[P341_RATIFY], "created_at": acceptance_at}
+        gov.pulls[P341] = {**gov.pulls[P341], "merged_at": "2026-08-19T00:00:00Z"}
+        gov.comments[P341_VERIFY] = {**gov.comments[P341_VERIFY], "created_at": "2026-08-19T00:05:00Z"}
+        gov.jobs[P341_JOB] = {**gov.jobs[P341_JOB], "completed_at": "2026-08-19T00:10:00Z"}
+        gov.comments[P341_CLOSURE] = {**gov.comments[P341_CLOSURE], "created_at": "2026-08-19T00:15:00Z"}
+        return gov
+
+    def test_acceptance_exactly_at_the_pr337_merge_is_refused_by_retrospection_alone(self):
+        gov = self._shifted(T_MERGE_337)  # 2026-08-18T23:50:58Z
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_acceptance_one_second_before_the_pr337_merge_is_refused(self):
+        gov = self._shifted("2026-08-18T23:50:57Z")
+        assert len(actor_errors(run_repinned(governance=gov))) == 2
+
+    def test_acceptance_one_second_after_the_pr337_merge_is_accepted(self):
+        """Guards the two above from passing for an unrelated reason."""
+        gov = self._shifted("2026-08-18T23:50:59Z")
+        assert actor_errors(run_repinned(governance=gov)) == []

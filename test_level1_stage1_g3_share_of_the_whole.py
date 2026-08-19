@@ -966,34 +966,62 @@ class TestNothingHereAuthorizesOrExecutes:
             assert relative in A.LOAD_BEARING_RELPATHS
 
     def test_load_bearing_paths_are_byte_identical_to_head(self):
-        """No load-bearing path may change in this working tree WITHOUT authority.
+        """No load-bearing path may differ from ``HEAD`` in this working tree.
 
-        UPDATED BY XASSET-0042. This guard was written when no authorized correction to any
-        load-bearing path existed, so "nothing changed" and "nothing changed without
-        authority" were the same assertion. XASSET-0041 -- independently reviewed, principal
-        accepted, merged, and EFFECTIVE -- authorizes exactly ONE bounded correction to
-        exactly ONE load-bearing path. The guard is therefore made MORE specific rather than
-        relaxed: that single authorized path is named, and every OTHER load-bearing path must
-        still be byte-identical. An unauthorized change to any of the other nine still fails,
-        as does adding a second exception here without a decision authorizing it.
+        RESTORED BY XASSET-0042 after review 4975556072 MINOR 1. An interim revision removed
+        ``level1_stage1_execution_authorization.py`` from this comparison, on the reasoning
+        that an authorized correction lawfully changes it. That was wrong in scope: the
+        exemption was permanent and unconditional, so every future UNCOMMITTED, unauthorized
+        edit to the most sensitive load-bearing path would have been invisible here --
+        reproduced by appending a line to the module and watching this guard pass.
+
+        The authorized correction is a COMMITTED change. At any committed head the working
+        tree matches ``HEAD``, so all ten paths compare clean and no exemption is needed. The
+        PR's own base->head delta is covered separately, by
+        ``test_pr_delta_touches_only_the_one_authorized_load_bearing_path``, which is a
+        different question and must not be answered by weakening this one.
         """
         import subprocess
 
-        #: The only load-bearing path any merged, effective decision authorizes changing.
-        AUTHORIZED_CORRECTION_PATH = "level1_stage1_execution_authorization.py"
-        assert AUTHORIZED_CORRECTION_PATH in A.LOAD_BEARING_RELPATHS
-
-        protected = [p for p in A.LOAD_BEARING_RELPATHS if p != AUTHORIZED_CORRECTION_PATH]
-        assert len(protected) == len(A.LOAD_BEARING_RELPATHS) - 1
-
+        assert len(A.LOAD_BEARING_RELPATHS) == 10
         out = subprocess.run(
-            ["git", "diff", "--name-only", "HEAD", "--", *protected],
+            ["git", "diff", "--name-only", "HEAD", "--", *A.LOAD_BEARING_RELPATHS],
             cwd=ROOT,
             capture_output=True,
             text=True,
             check=True,
         )
         assert out.stdout.strip() == ""
+
+    def test_pr_delta_touches_only_the_one_authorized_load_bearing_path(self):
+        """The committed base->head delta may change exactly ONE load-bearing path.
+
+        Added alongside the restoration above, never in place of it. This asks about the
+        PR's committed content; the guard above asks about the working tree. Both must hold.
+        """
+        import subprocess
+
+        #: The only load-bearing path a merged, effective decision (XASSET-0041) authorizes
+        #: this pull request to change.
+        AUTHORIZED_CORRECTION_PATH = "level1_stage1_execution_authorization.py"
+        assert AUTHORIZED_CORRECTION_PATH in A.LOAD_BEARING_RELPATHS
+
+        base = subprocess.run(
+            ["git", "merge-base", "origin/main", "HEAD"],
+            cwd=ROOT, capture_output=True, text=True,
+        )
+        if base.returncode != 0 or not base.stdout.strip():
+            pytest.skip("no origin/main available to compute the PR delta")
+
+        out = subprocess.run(
+            ["git", "diff", "--name-only", base.stdout.strip(), "HEAD",
+             "--", *A.LOAD_BEARING_RELPATHS],
+            cwd=ROOT, capture_output=True, text=True, check=True,
+        )
+        changed = [line for line in out.stdout.split("\n") if line.strip()]
+        assert changed in ([], [AUTHORIZED_CORRECTION_PATH]), (
+            f"the delta changes load-bearing paths beyond the one authorized: {changed}"
+        )
 
     def test_decision_carries_the_absolute_non_authorization(self, decision_text):
         for clause in (

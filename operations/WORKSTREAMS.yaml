@@ -15183,6 +15183,57 @@ workstreams:
           remains ABSENT, new_execution_is_authorized() returns False, ATTEMPT_1 is intact, unclaimed
           and unconsumed, no gate was evaluated for any construction, and no stage1_results.yaml
           exists anywhere.
+
+          BOUNDED CORRECTION (2026-08-19, independent FULL exact-head review 4975556072 of head
+          7573147ed4bcb691b5bac9efe67eb84e3e8cdf6d: CHANGES REQUIRED, 0 BLOCKING / 2 MAJOR / 1
+          MINOR / 0 NOTE). The review accepted the architecture and found the mechanism did not
+          prove enough about the records it relied on. ALL THIRTEEN bypasses were independently
+          reproduced through the public validator BEFORE anything was edited, and all thirteen are
+          now closed. MAJOR 1: token presence authenticated a record that explicitly voided itself
+          - a ratification edited to read "VOID. I do NOT ratify anything", a post-merge comment
+          reading "does NOT verify", and a closure reading "NO closure occurred" each retained
+          every required token and each still produced ZERO actor errors, the same shape by which
+          PR #341 comment 5345204885 was itself retracted. Corrected by authenticating the EXACT
+          accepted records: each pinned record is reduced to a deterministic fingerprint over
+          canonical JSON of explicitly selected identity-bearing and semantic fields, with the body
+          represented by its own SHA-256, sorted keys and fixed separators, never a repr of a
+          mapping; four pins re-derived from the live records this session, covering review
+          4974291044, acceptance 5345229177, verification 5345270602 and closure 5345376547. Any
+          body edit, negation, VOID notice, changed actor, state, reviewed commit, id or timestamp
+          relocks both gates. Deliberately NOT a natural-language parser - nothing looks for the
+          words VOID or not, and a test proves the genuine acceptance itself contains the word VOID
+          and is accepted unchanged, so only ALTERATION relocks. The SS-G.3/SS-G.4 token list is
+          retained as the independent statement of the content requirement, no longer as the
+          authentication. MAJOR 2: the ratification lifecycle was never checked for its own order
+          or finality - an acceptance before the review it certifies, an acceptance after the merge
+          it authorized, a post-merge verification before the merge, a closure before the merge or
+          before CI finished, a selected review whose native state was CHANGES_REQUESTED while its
+          prose kept the approving line, a later non-dismissed adverse exact-head review before the
+          merge, and an unavailable review list all produced zero actor errors. Corrected to an
+          ordered chain with every instant required to be a strictly formatted UTC value, missing
+          or malformed failing closed: review precedes acceptance; acceptance STRICTLY precedes
+          merge; verification never predates merge, equality allowed; closure follows both the
+          verification and the CI job completion; and the retrospection comparison is now STRICT so
+          a ratification stamped at the very instant of the PR #337 merge FAILS. Native
+          CHANGES_REQUESTED is rejected independently of body prose, and finality REUSES
+          _verify_selected_review_is_final and the existing paginated reviews() source, including
+          its fail-closed behaviour when the list cannot be retrieved, rather than defining a
+          second weaker notion. MINOR 1: the working-tree load-bearing guard had been permanently
+          weakened by unconditionally removing level1_stage1_execution_authorization.py, so every
+          future UNCOMMITTED unauthorized edit to the most sensitive load-bearing path would have
+          been invisible - reproduced by appending a line and watching the guard pass. Corrected by
+          RESTORING the original all-ten-path working-tree comparison; no exemption is needed since
+          the authorized correction is a COMMITTED change and at any committed head the working
+          tree matches HEAD, and the PR's own base-to-head delta is covered by a SEPARATE new test
+          added alongside rather than in place of it. Unchanged by the correction: the five PR #337
+          scope pins, PRINCIPAL_ACCOUNT_LOGIN, LIFECYCLE_OPERATOR_LOGIN, the isolated two-gate
+          design, both actor-error messages, LOAD_BEARING_RELPATHS, AUTHORIZING_DECISION,
+          AUTHORIZING_PULL_REQUEST, every accepted rebinding pin, the canonical artifacts, runner,
+          result validator and universe module. The disclosed pre-existing Gate 2
+          truthy-non-mapping fragility remains DELIBERATELY UNREPAIRED, still outside this
+          correction's authority. No rebinding, readiness verification, drift verification,
+          attestation, arming, claim, execution, recovery or results work was performed. Stage 1
+          remains UNARMED and NOT EXECUTABLE, lane ABSENT, ATTEMPT_1 intact and unconsumed.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

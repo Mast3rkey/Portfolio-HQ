@@ -220,6 +220,92 @@ not; principal acceptance does not; merge does not. **Merging this correction do
 creates no lane state, claims no `ATTEMPT_1`, and executes nothing.** Immediately after it merges,
 `new_execution_is_authorized()` still returns `False` and the lane is still `ABSENT`.
 
+### J. Bounded correction — independent review `4975556072`
+
+An independent FULL exact-head review of `7573147ed4bcb691b5bac9efe67eb84e3e8cdf6d` returned
+**CHANGES REQUIRED — 0 BLOCKING / 2 MAJOR / 1 MINOR / 0 NOTE**. It accepted the architecture —
+isolated exception, exact PR #337 pins, unchanged actor constants, no bot standing, narrow call
+sites, rebinding correctly withheld — and found that the mechanism did not prove enough about the
+records it relied on. **All thirteen bypasses were independently reproduced through the public
+validator before anything was edited**, and all thirteen are now closed.
+
+#### MAJOR 1 — token presence authenticated a record that explicitly voided itself
+
+Reproduced: a ratification edited to read *"VOID. I do NOT ratify anything"*, a post-merge comment
+reading *"does NOT verify"*, and a closure reading *"NO closure occurred"* each retained **every**
+required token and each still produced **zero actor errors**. That is not hypothetical — PR #341
+comment `5345204885` was itself retracted exactly that way, and §F.7 requires an **altered** record
+to be rejected.
+
+**Corrected** by authenticating the exact accepted records. Each pinned record is reduced to a
+deterministic fingerprint — canonical JSON over explicitly selected identity-bearing and semantic
+fields, with the body represented by its own SHA-256, sorted keys and fixed separators, never a
+`repr` of a mapping. Four pins, **re-derived from the live records this session, not copied**:
+
+| Record | Fingerprint |
+|---|---|
+| review `4974291044` | `904f4cb4642f0f7b8bcd6bb33be92d72678270b122402e5d423789960aa33067` |
+| acceptance `5345229177` | `acbd2bb2a9ccb9c71475dab83d2ab62cfc1b9110ed5a597e232cd6aaa620b0c6` |
+| verification `5345270602` | `763e4e2fbd2559bb4e4e6e04dd782e4f1d1840e750e23ab776cb44de74d9ed0d` |
+| closure `5345376547` | `4e39a8b16248ebe616f5262b6c476f3b6780eedfaf9df2e85d7113272a26f568` |
+
+Any body edit, negation, VOID notice, changed actor, state, reviewed commit, id, or timestamp
+changes the fingerprint and relocks **both** gates. **This is deliberately not a natural-language
+parser** — nothing looks for the words "VOID" or "not"; a permissive reader of prose is the class of
+mechanism that failed. A test proves the point directly: the genuine acceptance itself *contains*
+the word VOID (it discloses the retracted attempt) and is accepted unchanged; only **alteration**
+relocks. The §G.3/§G.4 token list is retained as the independent statement of the content
+requirement, no longer as the authentication.
+
+#### MAJOR 2 — the ratification lifecycle was never checked for its own order or finality
+
+Reproduced: an acceptance dated **before** the review it certifies; an acceptance dated **after**
+the merge it authorized; a "post-merge" verification dated **before** the merge; a closure dated
+before the merge or before CI finished; a selected review whose native state was
+`CHANGES_REQUESTED` while its prose kept the approving line; and a **later** non-dismissed adverse
+exact-head review submitted after `4974291044` and before the merge. All produced **zero actor
+errors**. An unavailable review list did too.
+
+**Corrected** to an ordered chain, with every instant required to be a strictly formatted
+`YYYY-MM-DDTHH:MM:SSZ` value — missing or malformed fails closed rather than comparing whatever is
+there:
+
+```
+review.submitted_at  <=  acceptance.created_at        review precedes the acceptance certifying it
+acceptance.created_at  <   pr341.merged_at            STRICT — equality is not "before"
+verification.created_at >= pr341.merged_at            never predates the merge (equality allowed)
+closure.created_at     >=  verification.created_at
+closure.created_at     >=  ci_job.completed_at
+acceptance.created_at  >   pr337.merged_at            STRICT retrospection — equality FAILS
+```
+
+Native `CHANGES_REQUESTED` is now rejected independently of body prose, and finality **reuses**
+`_verify_selected_review_is_final` and the existing paginated `reviews()` source — including its
+fail-closed behaviour when the list cannot be retrieved — rather than defining a second, weaker
+notion of finality.
+
+#### MINOR 1 — the working-tree load-bearing guard was permanently weakened
+
+The interim revision removed `level1_stage1_execution_authorization.py` from
+`test_load_bearing_paths_are_byte_identical_to_head` unconditionally, so every future
+**uncommitted, unauthorized** edit to the most sensitive load-bearing path would have been invisible
+— reproduced by appending a line and watching the guard pass.
+
+**Corrected** by restoring the original all-ten-path working-tree comparison. No exemption is
+needed: the authorized correction is a **committed** change, and at any committed head the working
+tree matches `HEAD`. The PR's own base→head delta — a different question — is covered by a
+**separate** new test, added alongside rather than in place of the restored guard.
+
+#### What the correction did not touch
+
+The five PR #337 scope pins, `PRINCIPAL_ACCOUNT_LOGIN`, `LIFECYCLE_OPERATOR_LOGIN`, the isolated
+two-gate design, both actor-error messages, `LOAD_BEARING_RELPATHS`, `AUTHORIZING_DECISION`,
+`AUTHORIZING_PULL_REQUEST`, every accepted rebinding pin, the canonical artifacts, runner, result
+validator, and universe module are **unchanged**. The disclosed pre-existing Gate 2
+truthy-non-mapping fragility remains **deliberately unrepaired** — still outside this correction's
+authority. No rebinding, readiness verification, drift verification, attestation, arming, claim,
+execution, recovery, or results work was performed.
+
 ## Rationale
 
 `XASSET-0041` established that the two `claude[bot]` records are real acts of the principal and that
