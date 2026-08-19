@@ -90,11 +90,14 @@ BOUND_MERGE_SHA = "637eaa30302f5a71f84ab1d215ecbd32c01399b5"
 
 #: The PR #339 merge that carried XASSET-0039 onto `main` and made it effective.
 XASSET0039_MERGE_SHA = "6960ce5ddbfa8cff1ef591c58682341c4d4407c7"
-#: PR #340's merge -- live `main` as XASSET-0041 was drafted.
-XASSET0041_MAIN_SHA = "9c8647f9dddacdf63825f569097214ba65299fe8"
-#: WS-0014's shared `active_pr` while THIS correction unit is the live work.
-#: Set to the real GitHub number issued when PR #342 was opened, never guessed.
-XASSET0042_ACTIVE_PR = 342
+#: PR #342's merge -- live `main` as XASSET-0043 was drafted. ADVANCED BY XASSET-0043:
+#: PR #341 (`9c8647f9`) and then PR #342 have both merged, so WS-0014's single shared
+#: `last_verified_main_sha` advances with them. The assertion stays exact.
+XASSET0043_MAIN_SHA = "5fbfc94d7333e552bd2654261e0c57134a172e31"
+#: WS-0014's shared `active_pr` while THIS rebinding-authorization unit is the live work.
+#: Set to the real GitHub number issued when the pull request was opened, verified
+#: against live GitHub afterwards, never left as a guess.
+XASSET0043_ACTIVE_PR = 343
 
 #: The completed step-10 evidence -- §H item 5 -- and its formal determination.
 STEP10_EVIDENCE_COMMENT = "5341448714"
@@ -1072,13 +1075,13 @@ class TestCatalogAndRegisterSynchronisation:
         # ADVANCED BY XASSET-0041. PR #340 merged at `f212cce5`, so the register's live
         # "where main is now" field lawfully advanced. The anchor this decision authorizes
         # against is unchanged; only the shared live self-reference moved.
-        assert workstream["last_verified_main_sha"] == XASSET0041_MAIN_SHA
-        assert XASSET0039_MERGE_SHA != XASSET0041_MAIN_SHA
+        assert workstream["last_verified_main_sha"] == XASSET0043_MAIN_SHA
+        assert XASSET0039_MERGE_SHA != XASSET0043_MAIN_SHA
         assert str(workstream["last_verified_date"]).startswith("2026-08-19")
         # ADVANCED AGAIN BY XASSET-0042: PR #341 has merged, so WS-0014's single shared
         # `active_pr` now points at THIS correction unit's own pull request. Pinned to a
         # module constant, set from the real number GitHub issued rather than guessed.
-        assert workstream["active_pr"] == XASSET0042_ACTIVE_PR
+        assert workstream["active_pr"] == XASSET0043_ACTIVE_PR
 
     def test_workstream_stays_secondary_and_no_primary_is_introduced(self) -> None:
         data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))

@@ -1061,3 +1061,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0007, OPS-0009, OPS-0014, NUM-0001, XASSET-0019, XASSET-0020, XASSET-0021, XASSET-0022, XASSET-0023, XASSET-0024, XASSET-0025, XASSET-0026, XASSET-0027, XASSET-0028, XASSET-0029, XASSET-0030, XASSET-0031, XASSET-0032, XASSET-0033, XASSET-0034, XASSET-0035, XASSET-0036, XASSET-0037, XASSET-0038, XASSET-0039, XASSET-0040, XASSET-0041, LEVEL2-0001, RISK-0001]
     supporting_artifact: test_level1_stage1_pr337_lifecycle_actor_evidence_correction.py
     file: governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md
+  - decision_id: XASSET-0043
+    date: 2026-08-19
+    status: Proposed
+    category: cross_asset_allocation_architecture
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, NUM-0001, XASSET-0019, XASSET-0020, XASSET-0021, XASSET-0022, XASSET-0023, XASSET-0024, XASSET-0025, XASSET-0026, XASSET-0027, XASSET-0028, XASSET-0029, XASSET-0030, XASSET-0031, XASSET-0032, XASSET-0033, XASSET-0034, XASSET-0035, XASSET-0036, XASSET-0037, XASSET-0038, XASSET-0039, XASSET-0040, XASSET-0041, XASSET-0042, LEVEL2-0001, RISK-0001]
+    supporting_artifact: test_level1_stage1_post_correction_rebinding_authorization.py
+    file: governance/decisions/XASSET-0043-endpoint-0001-stage-1-post-correction-rebinding-authorization.md
