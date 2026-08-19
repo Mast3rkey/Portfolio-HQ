@@ -76,6 +76,30 @@ LOAD_BEARING_RELPATHS_AT_FILING = (
     "governance/decisions/XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
 )
 
+#: The four decision files the FUTURE boundary must add (review 4976985695 MAJOR 1). The first
+#: three exist now and are checked on disk; the fourth is the future rebinding decision, which by
+#: construction cannot be named here -- naming it would reserve an identifier §F forbids reserving.
+FUTURE_BOUNDARY_ADDITIONS = (
+    "governance/decisions/"
+    "XASSET-0041-endpoint-0001-pr337-lifecycle-actor-evidence-correction-authorization.md",
+    "governance/decisions/"
+    "XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md",
+    "governance/decisions/"
+    "XASSET-0043-endpoint-0001-stage-1-post-correction-rebinding-authorization.md",
+)
+
+#: The exact base this pull request is measured against. Fixed for the life of the PR: unlike
+#: ``HEAD`` it does not move when a correction commit lands, which is precisely why the
+#: base->head protected-path proof uses it (review 4976985695 MINOR 1).
+PR_BASE_SHA = "5fbfc94d7333e552bd2654261e0c57134a172e31"
+
+#: A real, immutable, historical commit pair in which a protected path GENUINELY changed --
+#: PR #342's base and its merge, across which the authorization module was lawfully corrected.
+#: Used as a positive control so the base->head comparison can never pass vacuously.
+PROTECTED_CHANGE_CONTROL_BEFORE = "9c8647f9dddacdf63825f569097214ba65299fe8"
+PROTECTED_CHANGE_CONTROL_AFTER = "5fbfc94d7333e552bd2654261e0c57134a172e31"
+PROTECTED_CHANGE_CONTROL_PATH = "level1_stage1_execution_authorization.py"
+
 #: Portfolio and allocator bytes a governance-only filing must never touch.
 PORTFOLIO_RELPATHS = (
     "allocate.py",
@@ -146,6 +170,32 @@ def _git(*args: str) -> str:
     if out.returncode != 0:
         pytest.skip(f"git {' '.join(args)} unavailable in this checkout")
     return out.stdout
+
+
+def _paths_changed_between(before: str, after: str, relpaths) -> list[str]:
+    """Which of ``relpaths`` differ between two commits, read only from the object store.
+
+    Deliberately compares COMMITS, not the working tree: a protected file edited *and committed*
+    is invisible to a ``HEAD``-versus-worktree comparison, which is the defect review 4976985695
+    MINOR 1 identified. Skips rather than silently passing when a commit is unavailable.
+    """
+    for commit in (before, after):
+        probe = subprocess.run(
+            ["git", "cat-file", "-e", f"{commit}^{{commit}}"],
+            cwd=ROOT, capture_output=True, check=False,
+        )
+        if probe.returncode != 0:
+            pytest.skip(f"commit {commit} unavailable in this checkout")
+    changed: list[str] = []
+    for relative in relpaths:
+        out = subprocess.run(
+            ["git", "diff", "--name-only", before, after, "--", relative],
+            cwd=ROOT, capture_output=True, text=True, check=False,
+        )
+        assert out.returncode == 0, f"git diff failed for {relative}"
+        if out.stdout.strip():
+            changed.append(relative)
+    return changed
 
 
 def _flat(text: str) -> str:
@@ -450,7 +500,10 @@ class TestTenRequiredProperties:
 
     def test_g2_preserves_every_path_and_forbids_weakening(self, flat_sections):
         text = flat_sections["G"]
-        assert "Every one of the ten paths in §B is retained." in text
+        assert (
+            "Every one of the ten paths in §B is retained, with its existing identity and its "
+            "existing comparison"
+        ) in text
         assert "No path is removed, exempted, made conditional, or excluded" in text
         assert (
             "may be deleted, `skip`ped, `xfail`ed, narrowed to a subset of paths, or rewritten to "
@@ -477,9 +530,29 @@ class TestTenRequiredProperties:
     def test_g4_preserves_the_outcome_producing_surface_and_universe(self, flat_sections):
         text = flat_sections["G"]
         assert DERIVATION_SUCCESSOR_SHA256[:8] in text
-        assert "17-region package-to-successor transition manifest" in text
+        assert "17-region" in text
         assert UNIVERSE_HASH in text
         assert "unchanged at **680** / **48**" in text
+
+    def test_g4_keeps_the_two_outcome_producing_modules_whole_file_identical(self, flat_sections):
+        """The runner and result validator get NO transition -- that freeze is not loosened."""
+        text = flat_sections["G"]
+        assert (
+            "`level1_stage1_runner.py` and `level1_stage1_result_validator.py` stay "
+            "**byte-identical** across every anchor the mechanism already compares — no transition, "
+            "no exception."
+        ) in text
+
+    def test_g4_no_longer_freezes_the_derivation_module_whole_file(self, flat_sections):
+        """CORRECTED after review 4976985695 MAJOR 2.
+
+        Whole-file freezing that module and permitting §J's canonical amendment were not jointly
+        satisfiable. The stale requirement must be gone, not merely contradicted elsewhere.
+        """
+        text = flat_sections["G"]
+        assert "stays at the accepted successor blob" not in text
+        assert "transition manifest remains\nsatisfied and unweakened" not in text
+        assert "remains satisfied and unweakened" not in text
 
     def test_g5_requires_exact_identities_and_fail_closed(self, flat_sections):
         text = flat_sections["G"]
@@ -506,6 +579,146 @@ class TestTenRequiredProperties:
         assert "Independent **FULL** exact-head review under `OPS-0007` §1" in text
         assert "successful merge-commit CI whose `head_sha` is the exact merge SHA" in text
         assert "**None is individually sufficient.**" in text
+
+
+# ======================================================================================
+# 5a -- §G.4a: the derivation surface moves by an appended exact closed transition only
+# ======================================================================================
+
+
+class TestDerivationSurfaceTransitionIsAppendedNotLoosened:
+    """Review 4976985695 MAJOR 2.
+
+    §G.4 froze ``level1_endpoint_evidence_preregistration_validator.py`` whole-file while §J
+    permitted -- and §F.2 requires -- advancing canonical successor-lifecycle language that the
+    frozen module validates against hard-coded ``XASSET-0037`` expectations. The two were not
+    jointly satisfiable. §G.4a resolves it by APPENDING a second exact closed transition, and these
+    guard both halves: that the mechanism is real, and that it is not a loosening.
+    """
+
+    DERIVATION_RELPATH = "level1_endpoint_evidence_preregistration_validator.py"
+
+    def test_the_contradiction_is_real_and_still_reproducible(self):
+        """Derived live from the real public validation surface, never taken from the record.
+
+        Parsed from source with ``ast`` -- the module is not imported, so nothing it defines is
+        executed here. If a future change made the successor-lifecycle expectations non-literal,
+        this fails rather than silently vouching for a premise that no longer holds.
+        """
+        source = (ROOT / self.DERIVATION_RELPATH).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        frozen: dict[str, str] = {}
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Assign):
+                continue
+            for target in node.targets:
+                if not isinstance(target, ast.Name):
+                    continue
+                if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                    frozen[target.id] = node.value.value
+        assert frozen.get("STAGE_1_AUTHORIZATION_REBOUND_BY") == "XASSET-0037"
+        assert frozen.get("STAGE_1_EFFECTIVE_STRUCTURAL_AUTHORIZATION_SOURCE") == "XASSET-0037"
+
+    def test_g4a_exists_and_is_substantive(self, sections):
+        text = sections["G"]
+        assert "**G.4a —" in text
+        start = text.index("**G.4a —")
+        end = text.find("**G.5 —", start)
+        body = text[start: end if end != -1 else len(text)]
+        assert len(body.strip()) > 1200, "§G.4a is too thin to constrain anything"
+
+    def test_g4a_preserves_the_accepted_blob_and_the_first_transition(self, flat_sections):
+        text = flat_sections["G"]
+        assert DERIVATION_SUCCESSOR_SHA256 in text, "the accepted blob must be named in full"
+        assert "is preserved as a historical anchor" in text
+        assert (
+            "existing exact closed 17-region package-to-successor transition manifest is preserved "
+            "as accepted history"
+        ) in text
+        assert "Neither is deleted, edited, re-derived, or weakened" in text
+
+    def test_g4a_appends_rather_than_replaces(self, flat_sections):
+        text = flat_sections["G"]
+        assert "**A new, second exact closed transition is appended**" in text
+        assert "package → successor → rebound" in text
+        assert "**never replaces or subsumes** the first" in text
+
+    def test_g4a_requires_stabilization_first(self, flat_sections):
+        assert "only after the future bytes have stabilized (§G.6)" in flat_sections["G"]
+
+    def test_g4a_enumerates_and_authenticates_every_region(self, flat_sections):
+        text = flat_sections["G"]
+        assert "**Every permitted changed region is enumerated and authenticated**" in text
+        assert "exact source and target byte offsets, exact lengths, and the SHA-256" in text
+
+    def test_g4a_requires_every_byte_outside_a_region_identical(self, flat_sections):
+        text = flat_sections["G"]
+        assert "**Every byte outside a declared region must be byte-identical**" in text
+        assert "no gap, overlap, duplicate, reordering, resizing, addition, or removal is" in text
+        assert "fails closed just as a change outside one does" in text
+
+    def test_g4a_confines_regions_to_the_authorization_only_surface(self, flat_sections):
+        text = flat_sections["G"]
+        assert "**Every declared region must lie inside the authorization-only surface**" in text
+        assert (
+            "successor-lifecycle constants, canonical validation of those constants, pin "
+            "succession, and rebinding-block validation"
+        ) in text
+        assert "A region touching anything else is a stop (§L), not a widening." in text
+
+    def test_g4a_requires_reproving_the_consumer_reachable_surface(self, flat_sections):
+        text = flat_sections["G"]
+        assert (
+            "**The consumer-reachable and outcome-producing definitions must be re-proved "
+            "unchanged**"
+        ) in text
+        assert "**semantically and byte-identically**" in text
+        assert "derived from the consumers' own source" in text
+
+    def test_g4a_forbids_any_behavioural_change(self, flat_sections):
+        text = flat_sections["G"]
+        assert (
+            "**No runner, result-validator, universe, construction, gate, disposition, scoring, "
+            "portfolio, or protected-`RISK` behaviour may change**"
+        ) in text
+        assert "for nothing else" in text
+
+    def test_g4a_keeps_the_authorization_boundary_at_bytes(self, flat_sections):
+        text = flat_sections["G"]
+        assert "**The authorization boundary remains bytes.**" in text
+        assert "no version-dependent diff algorithm participates in the authorization" in text
+        assert "loosens nothing about how the link is proved" in text
+
+    def test_section_j_no_longer_contradicts_g4(self, flat_sections):
+        """The stale absolute is the contradiction itself; it must be gone, not merely qualified."""
+        text = flat_sections["J"]
+        assert "Everything §G.4 enumerates is **unchanged**" not in text
+        assert "Every substantive thing §G.4 enumerates is **unchanged**" in text
+
+    def test_section_j_requires_lockstep_and_names_g4a_as_the_only_mechanism(self, flat_sections):
+        text = flat_sections["J"]
+        assert "**The enforcement side must move in lockstep, and §G.4a is what permits it.**" in text
+        assert "frozen expectations that currently name `XASSET-0037`" in text
+        assert "The two move together or not at all" in text
+        assert (
+            "§G.4a's appended exact closed transition is the **only** mechanism by which the "
+            "enforcement side may move"
+        ) in text
+        assert "Anything beyond that surface is out of scope for both §J and §G.4a." in text
+
+    def test_this_correction_unit_did_not_edit_the_derivation_module(self):
+        """§G.4a authorizes a FUTURE transition; this unit changes no production byte."""
+        changed = _paths_changed_between(PR_BASE_SHA, "HEAD", (self.DERIVATION_RELPATH,))
+        assert changed == [], f"{self.DERIVATION_RELPATH} must be untouched by this PR"
+        actual = hashlib.sha256((ROOT / self.DERIVATION_RELPATH).read_bytes()).hexdigest()
+        assert actual == DERIVATION_SUCCESSOR_SHA256
+
+    def test_this_correction_unit_did_not_edit_either_canonical_artifact(self):
+        changed = _paths_changed_between(PR_BASE_SHA, "HEAD", (
+            "research/level1_endpoint_evidence/PROTOCOL_V1.md",
+            "research/level1_endpoint_evidence/pre_registration.yaml",
+        ))
+        assert changed == []
 
 
 # ======================================================================================
@@ -562,11 +775,71 @@ class TestLoadBearingPreservationAndGrowth:
         assert values["AUTHORIZING_DECISION"] == "XASSET-0037"
         assert values["AUTHORIZING_PULL_REQUEST"] == 337
 
-    def test_section_h_grows_the_boundary_by_exactly_one(self, flat_sections):
+    def test_section_h_grows_the_boundary_to_fourteen(self, flat_sections):
+        """CORRECTED after review 4976985695 MAJOR 1: 10 -> 11 bound only the future decision."""
         text = flat_sections["H"]
-        assert "`LOAD_BEARING_RELPATHS` **10 → 11**" in text
+        assert "`LOAD_BEARING_RELPATHS` **10 → 14**" in text
         assert "using the **existing exact-byte mechanism unchanged**" in text
-        assert "The single addition is the new rebinding decision file itself" in text
+        assert "The four additions are the `XASSET-0041`, `XASSET-0042`, and `XASSET-0043`" in text
+
+    def test_section_h_no_longer_claims_a_single_addition(self, flat_sections):
+        """The nearest regression: quietly reverting to binding only the future decision."""
+        text = flat_sections["H"]
+        assert "The single addition is the new rebinding decision file itself" not in text
+        assert "**10 → 11**" not in text
+
+    def test_section_h_states_why_the_chain_is_four_files_long(self, flat_sections):
+        text = flat_sections["H"]
+        assert "the corrected bytes were made lawful by four decisions, not by the rebinding alone" in text
+        assert "binding fewer would leave the rest editable after attestation" in text
+
+    def test_section_h_marks_the_count_nominal_but_the_guarantee_fixed(self, flat_sections):
+        """A proved equivalent may change the number; it may never change the guarantee."""
+        text = flat_sections["H"]
+        assert "The count **14** is nominal" in text
+        assert "What may not change is the guarantee" in text
+        assert (
+            "every file in the authority chain for the corrected bytes is inside the attested "
+            "identity"
+        ) in text
+
+    @pytest.mark.parametrize("relpath", FUTURE_BOUNDARY_ADDITIONS)
+    def test_each_named_future_addition_exists_and_is_bound_by_g8(self, relpath, flat_sections):
+        """The requirement must name real files, not remembered ones."""
+        assert (ROOT / relpath).exists(), f"{relpath} does not exist"
+        assert relpath in flat_sections["G"], f"§G.8 must bind {relpath}"
+
+    def test_g8_binds_all_four_including_the_future_decision(self, flat_sections):
+        text = flat_sections["G"]
+        assert "reaches **four** files here, not one" in text
+        assert (
+            "the future rebinding decision, under its own independently verified unused identifier"
+        ) in text
+
+    def test_g8_requires_direct_membership_and_refuses_citation_as_binding(self, flat_sections):
+        """The overreach the reviewer named explicitly: relabelling a citation as a binding."""
+        text = flat_sections["G"]
+        assert "**Direct membership, not an equivalent.**" in text
+        assert (
+            "a future decision that merely *describes* or *cites* predecessor text does not "
+            "byte-bind it"
+        ) in text
+        assert "is **not** a binding of those files" in text
+
+    def test_g8_requires_any_claimed_equivalence_to_be_proved(self, flat_sections):
+        text = flat_sections["G"]
+        assert "it must **prove** the equivalence" in text
+        assert "never assume it" in text
+
+    def test_section_f_requires_four_additions(self, flat_sections):
+        text = flat_sections["F"]
+        assert "add **four** decision files to `LOAD_BEARING_RELPATHS`" in text
+        assert "taking the boundary from **10 to 14**" in text
+
+    def test_g2_states_growth_is_additive_not_a_trade(self, flat_sections):
+        text = flat_sections["G"]
+        assert "while §G.8 adds four (10 → 14)" in text
+        assert "Growth is additive; nothing is displaced or traded away." in text
 
     def test_section_h_removes_nothing_and_weakens_nothing(self, flat_sections):
         assert (
@@ -828,7 +1101,47 @@ class TestEffectivityRequiresCompleteLifecycleClosure:
 
 class TestNoProtectedByteWasTouched:
     @pytest.mark.parametrize("relpath", PROTECTED_RELPATHS)
+    def test_protected_path_is_unchanged_from_the_pr_base_to_head(self, relpath):
+        """PROOF 1 of 2, added after review 4976985695 MINOR 1.
+
+        The governance-only claim is about the PR's own diff, so it must be measured across the
+        PR's own diff: exact base -> head, from the object store. A protected file edited *and
+        committed* is invisible to a HEAD-versus-worktree comparison, which is what the previous
+        single check actually measured.
+        """
+        assert (ROOT / relpath).exists(), f"{relpath} must still exist"
+        changed = _paths_changed_between(PR_BASE_SHA, "HEAD", (relpath,))
+        assert changed == [], (
+            f"{relpath} changed between the PR base {PR_BASE_SHA} and HEAD; this filing is "
+            "governance-only and must not touch it"
+        )
+
+    def test_the_base_to_head_comparison_detects_a_real_protected_change(self):
+        """MUTATION PIN for proof 1: the check must not be able to pass vacuously.
+
+        Uses a real, immutable historical commit pair -- PR #342's base and its merge -- across
+        which the authorization module was lawfully corrected. If the comparison mechanism ever
+        stops detecting a genuine committed protected-path change, this fails, even while the
+        assertion above still (correctly) reports no change across this PR.
+        """
+        changed = _paths_changed_between(
+            PROTECTED_CHANGE_CONTROL_BEFORE,
+            PROTECTED_CHANGE_CONTROL_AFTER,
+            (PROTECTED_CHANGE_CONTROL_PATH,),
+        )
+        assert changed == [PROTECTED_CHANGE_CONTROL_PATH], (
+            "the base->head protected-path comparison failed to detect a known real change; it "
+            "would pass vacuously"
+        )
+
+    @pytest.mark.parametrize("relpath", PROTECTED_RELPATHS)
     def test_protected_path_is_unchanged_against_head(self, relpath):
+        """PROOF 2 of 2 -- RETAINED UNWEAKENED.
+
+        Worktree cleanliness at the reviewed head. This never proved the base->head boundary and
+        is not asked to; it is kept because an uncommitted protected edit is a real, separate
+        failure mode that proof 1 cannot see.
+        """
         path = ROOT / relpath
         assert path.exists(), f"{relpath} must still exist"
         blob = _git("rev-parse", f"HEAD:{relpath}").strip()
@@ -839,6 +1152,69 @@ class TestNoProtectedByteWasTouched:
         assert hashlib.sha256(committed.stdout).hexdigest() == hashlib.sha256(
             path.read_bytes()
         ).hexdigest(), f"{relpath} differs from HEAD; this filing must not touch it"
+
+    def test_the_pr_base_pin_is_a_real_commit_distinct_from_head(self):
+        """MUTATION PIN for proof 1's anchor (mutation C3-04).
+
+        Repointing ``PR_BASE_SHA`` at ``HEAD`` -- or at any commit that is not this PR's real
+        base -- would make the base->head comparison compare a commit with itself and pass
+        vacuously without touching a single assertion. Pinned here so that edit fails.
+        """
+        assert len(PR_BASE_SHA) == 40
+        assert all(c in "0123456789abcdef" for c in PR_BASE_SHA)
+        head = _git("rev-parse", "HEAD").strip()
+        assert PR_BASE_SHA != head, "the base pin must not be HEAD"
+        merge_base = _git("merge-base", PR_BASE_SHA, "HEAD").strip()
+        assert merge_base == PR_BASE_SHA, (
+            "the base pin must be an ancestor of HEAD; it is this PR's real base"
+        )
+
+    def test_the_positive_control_uses_the_real_constants(self):
+        """MUTATION PIN for the positive control itself (mutation C3-03).
+
+        A control can be neutered without looking neutered -- pass an empty path tuple and expect
+        an empty result, and it still passes while proving nothing. This reads the control's own
+        source and requires it to reference the real path constant on both sides.
+        """
+        tree = ast.parse(SUITE_PATH.read_text(encoding="utf-8"))
+        target = None
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.FunctionDef)
+                and node.name == "test_the_base_to_head_comparison_detects_a_real_protected_change"
+            ):
+                target = node
+        assert target is not None, "the positive control is missing"
+        names = {n.id for n in ast.walk(target) if isinstance(n, ast.Name)}
+        for required in (
+            "PROTECTED_CHANGE_CONTROL_BEFORE",
+            "PROTECTED_CHANGE_CONTROL_AFTER",
+            "PROTECTED_CHANGE_CONTROL_PATH",
+        ):
+            assert required in names, f"the control must reference {required}"
+        # The control must ASSERT a non-empty change, never an empty one.
+        asserts = [n for n in ast.walk(target) if isinstance(n, ast.Assert)]
+        assert asserts, "the control must assert something"
+        source = ast.get_source_segment(SUITE_PATH.read_text(encoding="utf-8"), target)
+        assert "changed == [PROTECTED_CHANGE_CONTROL_PATH]" in source, (
+            "the control must require the known change to be DETECTED, not require an empty result"
+        )
+
+    def test_the_two_protected_proofs_are_distinct_mechanisms(self):
+        """Proof 1 compares two COMMITS; proof 2 compares a commit with the WORKING TREE.
+
+        Pinned structurally so a later simplification cannot collapse them into one check and
+        silently reintroduce the MINOR 1 blind spot.
+        """
+        tree = ast.parse(SUITE_PATH.read_text(encoding="utf-8"))
+        names = {
+            node.name
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef)
+        }
+        assert "test_protected_path_is_unchanged_from_the_pr_base_to_head" in names
+        assert "test_protected_path_is_unchanged_against_head" in names
+        assert "test_the_base_to_head_comparison_detects_a_real_protected_change" in names
 
     def test_suite_never_calls_an_execution_entry_point(self):
         tree = ast.parse(SUITE_PATH.read_text(encoding="utf-8"))
@@ -963,6 +1339,53 @@ class TestCatalogAndRegisterSynchronisation:
         assert "CONSUMED by XASSET-0037 and is NOT reopened" in description
         assert "RECONCILIATION lifecycle" in description
         assert "step-8 EQUIVALENT" in description
+
+    def test_self_gate_records_the_corrected_boundary_not_the_stale_one(self, gates):
+        """Review 4976985695 MAJOR 1 -- the register must not contradict the corrected decision."""
+        description = gates[GATE_SELF]["description"]
+        assert "LOAD_BEARING_RELPATHS 10 -> 14" in description
+        assert "DIRECT MEMBERSHIP" in description
+        for decision in ("XASSET-0041", "XASSET-0042", "XASSET-0043"):
+            assert decision in description
+        assert "citing or describing predecessor text explicitly NOT a binding of it" in description
+
+    def test_self_gate_operative_requirement_is_not_the_superseded_ten_to_eleven(self, gates):
+        """`10 -> 11` may appear only where the correction history DESCRIBES the old defect."""
+        description = gates[GATE_SELF]["description"]
+        assert "LOAD_BEARING_RELPATHS 10 -> 11" not in description
+        if "10 -> 11" in description:
+            index = description.index("10 -> 11")
+            window = description[max(0, index - 200): index]
+            assert "MAJOR 1" in window, (
+                "`10 -> 11` may only appear inside the correction history's description of the "
+                "superseded requirement"
+            )
+
+    def test_self_gate_records_the_appended_derivation_transition(self, gates):
+        """Review 4976985695 MAJOR 2."""
+        description = gates[GATE_SELF]["description"]
+        assert "HISTORICAL ANCHORS" in description
+        assert (
+            "APPENDING a second exact closed successor-to-rebound transition after the future "
+            "bytes stabilize"
+        ) in description
+        assert "SS-G.4a" in description
+
+    def test_self_gate_records_the_correction_history_with_all_three_findings(self, gates):
+        description = gates[GATE_SELF]["description"]
+        assert "BOUNDED CORRECTION" in description
+        assert "4976985695" in description
+        assert "0 BLOCKING / 2 MAJOR /" in description
+        assert "REPRODUCED THROUGH THE REAL MECHANISMS before anything" in description
+        for finding in ("MAJOR 1:", "MAJOR 2:", "MINOR 1:"):
+            assert finding in description, f"the correction history must record {finding}"
+
+    def test_self_gate_records_the_two_protected_proofs(self, gates):
+        """Review 4976985695 MINOR 1."""
+        description = gates[GATE_SELF]["description"]
+        assert "TWO distinct proofs" in description
+        assert "RETAINED UNWEAKENED" in description
+        assert "mutation-pinned against a real" in description
 
     def test_self_gate_records_the_reproduced_drift_exactly(self, gates):
         description = gates[GATE_SELF]["description"]

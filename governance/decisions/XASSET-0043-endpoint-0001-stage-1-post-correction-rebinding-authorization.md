@@ -174,7 +174,8 @@ separate, bounded pull request may:
    base;
 3. edit `level1_stage1_execution_authorization.py` **only** to the extent the rebinding's own
    configuration, identity constants, evidence, and validation require (§G.3);
-4. add its own decision file to `LOAD_BEARING_RELPATHS` (§G.8, §H);
+4. add **four** decision files to `LOAD_BEARING_RELPATHS` — `XASSET-0041`, `XASSET-0042`,
+   `XASSET-0043`, and its own — taking the boundary from **10 to 14** (§G.8, §H);
 5. amend the canonical artifacts **only** in authorization language, in lockstep (§J);
 6. recompute stale identities and pins **once**, after every authorized byte has stabilized (§G.6);
 7. resolve the `XASSET-0042` current-identity evidence explicitly (§I);
@@ -190,7 +191,8 @@ disclose**, not decide it silently.
 ### G. The ten required properties of the authorized rebinding
 
 Each is a condition on the authorized unit. None is satisfied by this filing, and none may be waived
-by the unit that performs it.
+by the unit that performs it. §G.4a is a sub-clause of §G.4, not an eleventh property: it states the
+one mechanism by which §G.4's derivation surface may lawfully move, and constrains it.
 
 **G.1 — Bind only stabilized, independently reviewed exact bytes.** The rebinding binds exact
 git-object identities at its own accepted head and its own merge, never a value asserted in prose,
@@ -199,7 +201,8 @@ review saw. Expected identity continues to be derived from the merged git tree a
 from a hard-coded constant.
 
 **G.2 — Preserve all ten existing load-bearing paths; remove none; weaken no exact-byte check.** Every
-one of the ten paths in §B is retained. No path is removed, exempted, made conditional, or excluded
+one of the ten paths in §B is retained, with its existing identity and its existing comparison, while
+§G.8 adds four (10 → 14). Growth is additive; nothing is displaced or traded away. No path is removed, exempted, made conditional, or excluded
 from any comparison. The pin-succession refusal — a successor pin equal to **any** predecessor
 generation's accepted pin is refused — is retained and may be strengthened, never relaxed. No test
 guarding these properties may be deleted, `skip`ped, `xfail`ed, narrowed to a subset of paths, or
@@ -217,16 +220,80 @@ other change to that section must be **argued as strictly necessary, not assumed
 such.
 
 **G.4 — Preserve the outcome-producing surface, the universe, and canonical substance.**
-`level1_stage1_runner.py` and `level1_stage1_result_validator.py` stay byte-identical across every
-anchor the mechanism already compares. The transitive derivation surface,
-`level1_endpoint_evidence_preregistration_validator.py`, stays at the accepted successor blob
-`2b8ead2b…deb3d356`, and the exact closed 17-region package-to-successor transition manifest remains
-satisfied and unweakened. `level1_construction_universe_closure_validator.py` is unchanged. Every
-gate's index, question, class, controlling authority, and failure disposition; every disposition rule;
-B1, B2, and B3; `comparison_subject_kind`; `unordered_pair_id`; every construction identity; and
-universe membership, ordering, and cardinality are unchanged, with the aggregate universe hash
+`level1_stage1_runner.py` and `level1_stage1_result_validator.py` stay **byte-identical** across every
+anchor the mechanism already compares — no transition, no exception.
+`level1_construction_universe_closure_validator.py` is unchanged. Every gate's index, question, class,
+controlling authority, and failure disposition; every disposition rule; B1, B2, and B3;
+`comparison_subject_kind`; `unordered_pair_id`; every construction identity; and universe membership,
+ordering, and cardinality are unchanged, with the aggregate universe hash
 `73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224` independently regenerated after any
 canonical amendment and unchanged at **680** / **48**.
+
+The transitive derivation surface, `level1_endpoint_evidence_preregistration_validator.py`, is treated
+**exactly as `XASSET-0037` §D.1 already treats it** — bound by an exact closed transition rather than by
+whole-file equality — and §G.4a states why that is now required rather than optional.
+
+**G.4a — The derivation surface: a second exact closed transition, appended, never a loosening.**
+Whole-file equality is the wrong instrument for this one file, and `XASSET-0037` §D.1 said so before
+this decision existed: the same module also carries the canonical lifecycle constants and the
+pin-succession and rebinding-block validators — *authorization-only code a lawful rebinding must
+change*. That was true of the step-8 rebinding and it is true again here, now demonstrably so:
+
+> Reproduced read-only, in memory, against the real public validation surface and the canonical bytes
+> exactly as merged — no file written, no lane touched. Baseline: **0 errors**. Advancing only
+> successor-lifecycle authorization language that §J permits and §F.2 requires:
+>
+> ```
+> stage_1_operational_authorization.rebound_by:
+>     expected 'XASSET-0037', got '<successor>'
+> stage_1_operational_authorization.effective_structural_authorization_source:
+>     expected 'XASSET-0037', got '<successor>'
+> stage_1_executability.blocking_prerequisite:
+>     expected 'XASSET_0037_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION',
+>     got 'XASSET_0044_…'
+> ```
+>
+> The frozen module hard-codes `XASSET-0037` in precisely the fields the successor must advance. So
+> freezing it whole-file and permitting the §J amendment are not both satisfiable: a rebinding could
+> keep the blob and leave the canonical artifacts naming `XASSET-0037` as the *current* source after it
+> had ceased to be — a false record — or advance them and fail closed. Neither is acceptable, and the
+> defect is in this decision's own drafting, not in the module.
+
+Therefore, and **only** for this file:
+
+1. **The accepted successor blob `2b8ead2b0d661ddd14fa6019ee1802fe49900a214ec443228636701edeb3d356`
+   is preserved as a historical anchor**, and the **existing exact closed 17-region
+   package-to-successor transition manifest is preserved as accepted history**. Neither is deleted,
+   edited, re-derived, or weakened, and both remain verified at the `XASSET-0036` package anchors and
+   at `XASSET-0037`'s own anchors.
+2. **A new, second exact closed transition is appended** — successor (`2b8ead2b…`) → rebound — and only
+   after the future bytes have stabilized (§G.6). The chain becomes
+   `package → successor → rebound`, each link a separate frozen manifest; the new link **never
+   replaces or subsumes** the first.
+3. **Every permitted changed region is enumerated and authenticated**, on exactly the first
+   transition's terms: exact source and target byte offsets, exact lengths, and the SHA-256 of the
+   bytes it replaces and the bytes it installs.
+4. **Every byte outside a declared region must be byte-identical**, both blobs must be consumed
+   completely, and no gap, overlap, duplicate, reordering, resizing, addition, or removal is
+   tolerated. A change *inside* a declared region that is not exactly the authorized bytes fails
+   closed just as a change outside one does.
+5. **Every declared region must lie inside the authorization-only surface** — successor-lifecycle
+   constants, canonical validation of those constants, pin succession, and rebinding-block validation.
+   A region touching anything else is a stop (§L), not a widening.
+6. **The consumer-reachable and outcome-producing definitions must be re-proved unchanged** — every
+   symbol the runner and the result validator import, and everything those symbols reach: the gate,
+   disposition, cell-outcome, roll-up, `G2`-reading and vocabulary surfaces, **semantically and
+   byte-identically**, region-by-region and in the assembled result. Not asserted — derived from the
+   consumers' own source, as `XASSET-0037` §D.1's evidence check already does.
+7. **No runner, result-validator, universe, construction, gate, disposition, scoring, portfolio, or
+   protected-`RISK` behaviour may change**, by this transition or through it. The transition exists to
+   let authorization language tell the truth after a rebinding, and for nothing else.
+
+**The authorization boundary remains bytes.** No AST interpretation, no import or execution of the
+audited module, no `eval`, and no version-dependent diff algorithm participates in the authorization;
+the manifests are frozen constants verified by comparison only. What the reviewed regions *mean* is
+settled by independent review, as `XASSET-0037` §D.1's honest-scope paragraph already records — this
+appends one link to that chain and loosens nothing about how the link is proved.
 
 **G.5 — Use exact identities, correct parent ordering, exact-head review, merge-tree equality, and
 fail-closed drift handling.** Derived from the git object store rather than declared: the rebinding
@@ -247,13 +314,34 @@ rebinding lawfully changes the module, which makes that declaration stale by con
 resolved by amendment or by retirement-with-equivalent-replacement, argued not assumed; it may never
 be left silently false, and its guard may never be deleted or weakened.
 
-**G.8 — Keep the effective governing rebinding decision inside the authenticated boundary, without
-removing historical authority.** On `XASSET-0037` §E's principle — the decision supplying the effective
-structural authorization must sit inside the identity it authorizes, or an attestation could
-authenticate perfectly while its own governing text had been edited afterwards — the new rebinding
-decision file joins `LOAD_BEARING_RELPATHS`. The `XASSET-0029`, `XASSET-0036`, and `XASSET-0037`
-decision files are **retained**, on exactly the footing they occupy today: historical authority is
-preserved, never displaced.
+**G.8 — Bind the whole authority chain for the corrected bytes, without removing historical
+authority.** `XASSET-0037` §E's principle is that the decision supplying the effective structural
+authorization must sit inside the identity it authorizes, or an attestation could authenticate
+perfectly while its own governing text had been edited afterwards. Applied honestly, that principle
+reaches **four** files here, not one — because after the rebinding, four decisions jointly make the
+corrected bytes lawful, and any of them left outside the boundary stays editable after attestation:
+
+| File | Why it is in the chain |
+|---|---|
+| `governance/decisions/XASSET-0041-endpoint-0001-pr337-lifecycle-actor-evidence-correction-authorization.md` | authorized the actor-evidence correction |
+| `governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md` | implemented it, and records the corrected module's identity being rebound |
+| `governance/decisions/XASSET-0043-endpoint-0001-stage-1-post-correction-rebinding-authorization.md` | this decision — the authority for the rebinding itself |
+| the future rebinding decision, under its own independently verified unused identifier | the effective structural authorization source after the rebinding |
+
+`XASSET-0036`'s package authorization and `XASSET-0037`'s rebinding decision are already bound
+alongside `XASSET-0029`, which is exactly this precedent one generation earlier; the corrected bytes
+simply have a longer chain.
+
+**Direct membership, not an equivalent.** Each of the four joins `LOAD_BEARING_RELPATHS` and is
+verified by the existing exact-byte mechanism, whose expected identity is derived from the merged git
+tree at validation time. No substitute binding is adopted, and none may be: a future decision that
+merely *describes* or *cites* predecessor text does not byte-bind it, and citing `XASSET-0041` or
+`XASSET-0042` inside the rebinding decision is **not** a binding of those files. If a future unit
+believes it has a genuinely equivalent exact-byte mechanism, it must **prove** the equivalence
+file-by-file and justify departing from `XASSET-0036` §E.6's stated preference — never assume it.
+
+The `XASSET-0029`, `XASSET-0036`, and `XASSET-0037` decision files are **retained**, on exactly the
+footing they occupy today: historical authority is preserved, never displaced.
 
 **G.9 — Authorize nothing downstream.** The rebinding performs and authorizes no readiness
 verification, no drift verification, no part of step 11, no attestation, no arming, no claim, no
@@ -268,14 +356,23 @@ and lifecycle closure. **None is individually sufficient.**
 
 ### H. The trust boundary grows, and nothing is removed
 
-`LOAD_BEARING_RELPATHS` **10 → 11**, using the **existing exact-byte mechanism unchanged**. The single
-addition is the new rebinding decision file itself, for the reason §G.8 states. `XASSET-0036` §E.6's
-stated preference for the existing mechanism holds; a rebinding that departs from it must argue a
-concrete technical reason rather than assume one.
+`LOAD_BEARING_RELPATHS` **10 → 14**, using the **existing exact-byte mechanism unchanged**. The four
+additions are the `XASSET-0041`, `XASSET-0042`, and `XASSET-0043` decision files and the future
+rebinding decision, for the reason §G.8 states. `XASSET-0036` §E.6's stated preference for the existing
+mechanism holds; a rebinding that departs from it must argue a concrete technical reason rather than
+assume one.
 
 **No load-bearing path is removed and no exact-byte check is weakened.** Growth here is the same shape
-as `XASSET-0029`'s six, `XASSET-0037`'s ten, and now eleven: each generation adds the decision that
-governs it and keeps every path its predecessors bound.
+as `XASSET-0029`'s six and `XASSET-0037`'s ten: each generation binds the decisions that govern it and
+keeps every path its predecessors bound. This generation's chain is four files long rather than one
+because the corrected bytes were made lawful by four decisions, not by the rebinding alone — binding
+fewer would leave the rest editable after attestation, which is the exact gap `XASSET-0037` §E exists
+to close.
+
+The count **14** is nominal: it is what direct membership yields, and a future unit that proves a
+genuinely equivalent exact-byte binding for one of the four (§G.8) may reach the same guarantee with a
+different number. What may not change is the guarantee — every file in the authority chain for the
+corrected bytes is inside the attested identity.
 
 ### I. The `XASSET-0042` current-identity evidence must be explicitly resolved
 
@@ -329,10 +426,20 @@ the currently effective lifecycle, `stage_1_operational_authorization`'s `reboun
 truth is not rewritten — and every superseded value is retained in an explicitly predecessor-named
 field.
 
-Everything §G.4 enumerates is **unchanged**, and the universe hash must be independently regenerated
-after the amendment and shown unchanged at 680 / 48. `stage_1_executability.executable` stays `false`.
-If no authorization-language change is actually required, none may be made merely to have amended
-something.
+Every substantive thing §G.4 enumerates is **unchanged** — the runner and result validator
+byte-identical, the universe module unchanged, and every gate, disposition rule, B1/B2/B3,
+`comparison_subject_kind`, `unordered_pair_id`, construction identity, and membership/ordering/
+cardinality untouched — with the universe hash independently regenerated after the amendment and shown
+unchanged at 680 / 48. `stage_1_executability.executable` stays `false`. If no authorization-language
+change is actually required, none may be made merely to have amended something.
+
+**The enforcement side must move in lockstep, and §G.4a is what permits it.** These canonical fields
+are not free text: `level1_endpoint_evidence_preregistration_validator.py` validates them against
+frozen expectations that currently name `XASSET-0037`, so an amendment here without the corresponding
+authorization-only change there fails closed, and the change there without the amendment here leaves
+the canonical record naming a superseded source as current. The two move together or not at all, and
+§G.4a's appended exact closed transition is the **only** mechanism by which the enforcement side may
+move. Anything beyond that surface is out of scope for both §J and §G.4a.
 
 ### K. Authority withheld — absolute
 
@@ -508,3 +615,73 @@ and the operator's act.
 **If the rebinding stops**, the cost is one authorized unit. `ATTEMPT_1` is untouched, every recovery
 option stays open, and the drift stays fail-closed — which is the property that made the `XASSET-0040`
 stop cheap, and the reason this program keeps paying for one link at a time.
+
+## Bounded correction — independent FULL exact-head review `4976985695`
+
+An independent FULL exact-head review of `b266f8c294c8c7f135b039eaf4d836818916b5f4` returned **CHANGES
+REQUIRED — 0 BLOCKING / 2 MAJOR / 1 MINOR / 0 NOTE**. It accepted the determination, the §C step-8
+precision, the read-only drift reproduction, the §I hand-off, the downstream boundary, and the
+nine-file governance-only scope, and found two places where this decision asked for less than its own
+principles require and one where its evidence test proved less than it claimed. All three were
+**reproduced through the real mechanisms before anything was edited**.
+
+### MAJOR 1 — the future trust boundary omitted the decisions that made the corrected bytes lawful
+
+§G.8 and §H required `LOAD_BEARING_RELPATHS` to grow **10 → 11**, adding only the future rebinding
+decision. Reproduced by reading this decision's own §H: it named `XASSET-0029`, `XASSET-0036`, and
+`XASSET-0037`, and named **none** of `XASSET-0041`, `XASSET-0042`, or `XASSET-0043` — the three
+decisions that respectively authorized the correction, implemented it and record the corrected
+module's identity, and authorize the rebinding. Under this decision's own adopted `XASSET-0037` §E
+principle, all three would have remained editable outside the attested identity.
+
+**Corrected** by requiring the boundary to bind all four — nominally **10 → 14** — by **direct
+membership**, not by an asserted equivalence. §G.8 now carries the chain file-by-file with the reason
+each is in it, and states explicitly that citing or describing predecessor text inside the future
+rebinding decision is **not** a binding of it; any claimed equivalent must be proved file-by-file and
+justified against `XASSET-0036` §E.6. §F.4, §G.2, §H, the register, and the suite are updated in
+lockstep. The ten existing paths and their existing identities are untouched.
+
+### MAJOR 2 — §G.4 made the canonical amendment §J authorizes impossible
+
+§G.4 required `level1_endpoint_evidence_preregistration_validator.py` to stay at the whole-file blob
+`2b8ead2b…deb3d356` with the 17-region transition terminal, while §J permitted — and §F.2 requires —
+advancing canonical successor-lifecycle language. Reproduced read-only, in memory, against the real
+public validation surface: the canonical bytes as merged produce **0 errors**, and advancing only
+`rebound_by`, `effective_structural_authorization_source`, or
+`stage_1_executability.blocking_prerequisite` to a successor value produces the errors quoted in
+§G.4a. The frozen module hard-codes `XASSET-0037` in exactly those fields, so the two requirements
+were not jointly satisfiable.
+
+**Corrected** by adding §G.4a: the accepted `2b8ead2b…` blob and the existing 17-region transition are
+**preserved as historical anchors and accepted history**, and the future rebinding must **append** a
+second exact closed transition — successor → rebound — after its bytes stabilize, enumerating and
+authenticating every permitted changed region, requiring every byte outside those regions to be
+identical, confining every region to the authorization-only surface, and **re-proving** every
+consumer-reachable and outcome-producing definition semantically and byte-identically unchanged. No
+runner, result-validator, universe, construction, gate, disposition, scoring, portfolio, or protected
+`RISK` behaviour may change. §J now states the lockstep requirement and names §G.4a as the only
+mechanism by which the enforcement side may move.
+
+**Neither the production validator nor either canonical artifact is edited by this correction unit.**
+
+### MINOR 1 — the protected-path test could not detect a protected file committed in this PR
+
+`test_protected_path_is_unchanged_against_head` read each path from `HEAD` and compared it with the
+working tree, so an edit **committed** at the reviewed head made both sides identical and the test
+still passed. Reproduced in a disposable detached worktree at the reviewed head: a protected edit was
+committed, `git diff --name-only <base> <probe-head>` confirmed the protected path had changed, and
+the existing test nonetheless returned **17 passed**. The worktree was removed and the real branch was
+verified unchanged.
+
+**Corrected** by requiring two distinct proofs — exact **base → head** for every protected and
+load-bearing path, and **head → working tree** for cleanliness. The original working-tree check is
+**retained unweakened**, not replaced, and the base→head comparison is mutation-pinned against a real
+historical commit pair in which a protected path genuinely changed, so it cannot pass vacuously.
+
+### What this correction did not do
+
+It performed no part of the rebinding; edited no load-bearing, canonical, validator, runner,
+result-production, universe, or protected portfolio byte; rebound nothing and changed no
+`LOAD_BEARING_RELPATHS` entry, `AUTHORIZING_*` constant, or hash pin; ran no readiness verification and
+no drift check; retried no part of step 11; generated no attestation; created no lane state; consumed
+nothing of `ATTEMPT_1`; and authorized no successor beyond the one future rebinding unit §F defines.
