@@ -1240,14 +1240,30 @@ class TestGovernanceRecord:
     def test_the_decision_withholds_steps_9_to_11(self, decision_text, step):
         assert step in decision_text
 
-    def test_the_register_records_the_rebinding_as_in_progress(self):
+    # AMENDED BY XASSET-0038. This test asserted the state as of THIS FILING, whose own PR was
+    # still open — accurate then, and the same self-referential shape as the sibling test below
+    # that pins the PREDECESSOR (XASSET-0036) gate as merged. PR #337 has since merged with all
+    # six REQUIRED_LIFECYCLE_GATES closed, so the successor filing lawfully flipped this gate to
+    # `complete` / 337, exactly as THIS session flipped the xasset0036 gate below. Nothing is
+    # weakened: the completed values are checked exactly, the gate's own DESCRIPTION TEXT is
+    # asserted byte-preserved as history, and the successor's additive post-merge gate is checked
+    # to exist rather than merely assumed.
+    def test_the_register_records_the_rebinding_as_merged(self):
         register = yaml.safe_load(
             (ROOT / "operations/WORKSTREAMS.yaml").read_text(encoding="utf-8")
         )
         ws = [w for w in register["workstreams"] if w["id"] == "WS-0014"][0]
         gates = {g["gate"]: g for g in ws["milestones"]}
-        assert gates["xasset0037-successor-operational-rebinding"]["status"] == "in_progress"
-        assert gates["xasset0037-successor-operational-rebinding"]["pr"] is None
+        rebinding = gates["xasset0037-successor-operational-rebinding"]
+        assert rebinding["status"] == "complete"
+        assert rebinding["pr"] == 337
+        # The drafting session's own historical narrative is retained verbatim, not rewritten.
+        assert "STEP 8" in rebinding["description"]
+        assert "SS-G.B steps 9-11 were not performed" in rebinding["description"]
+        # The successor records completion additively rather than by editing the text above.
+        post_merge = gates["xasset0037-post-merge-verification"]
+        assert post_merge["status"] == "complete"
+        assert post_merge["pr"] == 337
 
     def test_the_register_records_the_package_implementation_as_merged(self):
         register = yaml.safe_load(
