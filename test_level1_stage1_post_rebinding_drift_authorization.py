@@ -888,6 +888,47 @@ class TestCatalogAndRegisterSynchronisation:
 
 
 # --------------------------------------------------------------------------------------------------
+# 14. Evidence is external, and the unit mutates nothing to record it
+# --------------------------------------------------------------------------------------------------
+
+
+class TestEvidenceIsExternalAndNonMutating:
+    """§M was reachable by no assertion in an earlier draft of this suite.
+
+    Its clauses are substantive: they are what keeps the step-10 unit from contending for the
+    ``OPS-0014`` §D single mutation lane, and what stops "record the result" from becoming a
+    licence to write to the repository. An unpinned section can be weakened later with nothing
+    failing, so each operative clause is pinned here.
+    """
+
+    def test_unit_creates_no_branch_commit_or_pr(self, decision: str) -> None:
+        assert "**no branch, no commit, and no pull request**" in _section(decision, "M")
+
+    def test_unit_makes_no_repository_mutation(self, decision: str) -> None:
+        assert "**no repository mutation**" in _section(decision, "M")
+
+    def test_unit_does_not_contend_for_the_single_mutation_lane(self, decision: str) -> None:
+        assert (
+            "it does not contend for the `OPS-0014` §D single mutation lane"
+            in _section(decision, "M")
+        )
+
+    def test_evidence_is_durable_and_externally_posted(self, decision: str) -> None:
+        section = _section(decision, "M")
+        assert "**durable, externally posted evidence**" in section
+        assert "the outcome against each of the two §H anchors" in section
+
+    def test_a_mutation_to_record_the_result_is_not_authorized(self, decision: str) -> None:
+        """The nearest overreach: "we need a commit to record this" becoming self-granted scope."""
+        section = _section(decision, "M")
+        assert (
+            "**A repository mutation to record the result is neither required nor authorized**"
+            in section
+        )
+        assert "that is a finding to report under §I, not scope to assume" in section
+
+
+# --------------------------------------------------------------------------------------------------
 # Suite hygiene -- guards that make the assertions above non-vacuous
 # --------------------------------------------------------------------------------------------------
 
@@ -972,7 +1013,7 @@ class TestSuiteHygiene:
 
     def test_section_extractor_is_not_vacuous(self, decision: str) -> None:
         """Every section this suite reads must exist and be substantial."""
-        for letter in "ABCDEFGHIJKLNO":
+        for letter in "ABCDEFGHIJKLMNO":
             assert len(_section(decision, letter)) > 200
 
     def test_section_extractor_rejects_a_missing_section(self, decision: str) -> None:
