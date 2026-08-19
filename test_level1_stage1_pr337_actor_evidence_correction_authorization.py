@@ -93,8 +93,8 @@ PROTECTED_RELPATHS = (
 )
 
 #: WS-0014's shared `active_pr` while the XASSET-0042 correction unit is live.
-#: `None` until its pull request exists; set to the real GitHub number, never guessed.
-XASSET0042_ACTIVE_PR = None
+#: Set to the real GitHub number issued when PR #342 was opened, never guessed.
+XASSET0042_ACTIVE_PR = 342
 
 GATE_SELF = "xasset0041-pr337-actor-evidence-correction-authorization"
 GATE_STOP = "xasset0040-step11-unit-stopped-before-attestation"

@@ -93,8 +93,8 @@ XASSET0039_MERGE_SHA = "6960ce5ddbfa8cff1ef591c58682341c4d4407c7"
 #: PR #340's merge -- live `main` as XASSET-0041 was drafted.
 XASSET0041_MAIN_SHA = "9c8647f9dddacdf63825f569097214ba65299fe8"
 #: WS-0014's shared `active_pr` while THIS correction unit is the live work.
-#: `None` until its pull request exists; set to the real GitHub number, never guessed.
-XASSET0042_ACTIVE_PR = None
+#: Set to the real GitHub number issued when PR #342 was opened, never guessed.
+XASSET0042_ACTIVE_PR = 342
 
 #: The completed step-10 evidence -- §H item 5 -- and its formal determination.
 STEP10_EVIDENCE_COMMENT = "5341448714"

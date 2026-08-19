@@ -87,8 +87,8 @@ SUCCESSOR_MERGE_SHA = "b0361ce74dea357715b2ec2b4ce36b47c4f3cffc"
 #: anchor) nor ``SUCCESSOR_MERGE_SHA`` (its own merge) is changed by that advance.
 CURRENT_MAIN_SHA = "9c8647f9dddacdf63825f569097214ba65299fe8"
 #: WS-0014's shared `active_pr` while THIS correction unit is the live work.
-#: `None` until its pull request exists; set to the real GitHub number, never guessed.
-XASSET0042_ACTIVE_PR = None
+#: Set to the real GitHub number issued when PR #342 was opened, never guessed.
+XASSET0042_ACTIVE_PR = 342
 
 #: The three values accepted authority already fixes as exact constants, and the only three
 #: ``XASSET-0038`` restates. Everything else in its checklist derives from the merged tree.

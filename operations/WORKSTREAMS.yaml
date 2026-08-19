@@ -15115,7 +15115,7 @@ workstreams:
           only; it grants no new authority, revives nothing, and reaches no downstream link.
       - gate: xasset0042-pr337-lifecycle-actor-evidence-correction
         status: in_progress
-        pr: null
+        pr: 342
         description: >
           The ONE bounded correction XASSET-0041 authorizes, implemented and filed as XASSET-0042.
           Scope is exactly two behavioural lines in level1_stage1_execution_authorization.py — the
@@ -16291,7 +16291,7 @@ workstreams:
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
     active_branch: claude/pr337-actor-evidence-correction-5evikl
-    active_pr: null
+    active_pr: 342
     last_verified_main_sha: 9c8647f9dddacdf63825f569097214ba65299fe8
     last_verified_date: "2026-08-19"
     authorized_by: >
