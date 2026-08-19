@@ -81,6 +81,12 @@ MERGE_TREE = "a370ecb9f24ecbc1f1f83f31042990f706ead20c"
 #: ``MERGE_SHA`` above, which remains the PR #337 bound merge this decision anchors its checklist to.
 SUCCESSOR_MERGE_SHA = "b0361ce74dea357715b2ec2b4ce36b47c4f3cffc"
 
+#: ADVANCED BY XASSET-0040 -- the PR #339 merge, which is where `main` is now. The register's live
+#: "where main is now" field lawfully advances with each successor merge; this constant tracks it so
+#: the assertion stays exact rather than being relaxed. Neither ``MERGE_SHA`` (this decision's own
+#: anchor) nor ``SUCCESSOR_MERGE_SHA`` (its own merge) is changed by that advance.
+CURRENT_MAIN_SHA = "6960ce5ddbfa8cff1ef591c58682341c4d4407c7"
+
 #: The three values accepted authority already fixes as exact constants, and the only three
 #: ``XASSET-0038`` restates. Everything else in its checklist derives from the merged tree.
 PROTOCOL_SHA256 = "367583b616e1c6ab614bcf67d451fe27ce40507d073374190c57291e761d8971"
@@ -760,11 +766,14 @@ class TestCatalogAndRegisterSynchronisation:
     def test_workstream_live_fields_reflect_this_session(self) -> None:
         data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))
         workstream = next(w for w in data["workstreams"] if w.get("id") == "WS-0014")
-        # AMENDED BY XASSET-0039. This pinned the PR #337 merge -- live `main` while THIS filing
-        # was drafted. PR #338 has since merged, so the register's live self-reference lawfully
-        # advanced to that merge. The anchor this decision authorizes against is unchanged and is
-        # still `MERGE_SHA`; only the register's own "where main is now" field moved.
-        assert workstream["last_verified_main_sha"] == SUCCESSOR_MERGE_SHA
+        # AMENDED BY XASSET-0039, ADVANCED AGAIN BY XASSET-0040. This originally pinned the PR #337
+        # merge -- live `main` while THIS filing was drafted -- then the PR #338 merge. PR #339 has
+        # since merged, so the register's live self-reference lawfully advanced again. The anchor
+        # this decision authorizes against is unchanged and is still `MERGE_SHA`, and its own merge
+        # is still `SUCCESSOR_MERGE_SHA`; only the register's "where main is now" field moved.
+        assert workstream["last_verified_main_sha"] == CURRENT_MAIN_SHA
+        assert MERGE_SHA != CURRENT_MAIN_SHA
+        assert SUCCESSOR_MERGE_SHA != CURRENT_MAIN_SHA
         assert str(workstream["last_verified_date"]).startswith("2026-08-19")
         assert workstream["active_pr"] is None
 

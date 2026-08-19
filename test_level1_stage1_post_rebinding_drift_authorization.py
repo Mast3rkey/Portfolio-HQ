@@ -90,6 +90,13 @@ STEP9_DETERMINATION = "STEP_9_READINESS_VERIFICATION_PASS"
 #: XASSET-0038's own lifecycle closure, which made the step-9 unit authorized.
 XASSET0038_CLOSURE_COMMENT = "5336559614"
 
+#: The PR #339 merge that carried XASSET-0039 onto `main` and made it effective, and the completed
+#: step-10 evidence the single unit it authorized then produced. Added by the XASSET-0040 filing so
+#: this suite's own now-merged lifecycle is asserted against merged truth rather than a stale value.
+XASSET0039_MERGE_SHA = "6960ce5ddbfa8cff1ef591c58682341c4d4407c7"
+STEP10_EVIDENCE_COMMENT = "5341448714"
+STEP10_DETERMINATION = "STEP_10_NO_DRIFT"
+
 #: The values accepted authority already fixes as exact constants, and the only ones XASSET-0039
 #: restates. Everything else in its comparison derives from the bound merge tree and the step-9
 #: evidence at verification time.
@@ -399,10 +406,31 @@ class TestEffectivityRequiresCompleteLifecycleClosure:
             "execution" in _section(decision, "N")
         )
 
-    def test_register_gate_is_not_marked_complete_in_its_own_authoring_session(self) -> None:
+    def test_register_gate_records_the_completed_lifecycle_without_losing_its_history(self) -> None:
+        # This assertion pinned `in_progress` / `pr: null` while PR #339 was open, which was
+        # accurate then and is factually false now that PR #339 is merged. It is STRENGTHENED
+        # rather than relaxed: the merged values are checked exactly, and the drafting session's
+        # own narrative -- including its statement that it performed no part of step 10 -- must
+        # still be present byte-for-byte in the same gate.
         gate = _ws0014_gate("xasset0039-step10-drift-fail-closed-authorization")
-        assert gate["status"] == "in_progress"
-        assert gate["pr"] is None
+        assert gate["status"] == "complete"
+        assert gate["pr"] == 339
+        assert "THIS FILING PERFORMS NO PART OF STEP 10" in gate["description"]
+        assert "IT PERFORMS AND AUTHORIZES NO PART OF STEP 11" in gate["description"]
+
+    def test_additive_post_merge_gate_records_the_step_10_determination(self) -> None:
+        # The completed lifecycle is recorded by a NEW additive gate, never by rewriting the
+        # gate above -- the established convention this repository has followed since
+        # xasset0037-post-merge-verification.
+        gate = _ws0014_gate("xasset0039-post-merge-verification")
+        assert gate["status"] == "complete"
+        assert gate["pr"] == 339
+        assert XASSET0039_MERGE_SHA in gate["description"]
+        assert STEP10_EVIDENCE_COMMENT in gate["description"]
+        assert STEP10_DETERMINATION in gate["description"]
+        assert "STEP 10 IS THEREFORE COMPLETE" in gate["description"]
+        # Step 11 must still be recorded as unauthorized by that lifecycle.
+        assert "STEP 11 remains unperformed and unauthorized" in gate["description"]
 
 
 # --------------------------------------------------------------------------------------------------
@@ -833,16 +861,19 @@ class TestThisFilingMutatesNothingLoadBearing:
 
 class TestCatalogAndRegisterSynchronisation:
     def test_catalog_entry_is_present_and_points_at_the_real_file(self) -> None:
+        # Anchored to XASSET-0039's own identity rather than to the tail position it happened to
+        # occupy while PR #339 was open. STRENGTHENED, not relaxed: the entry must exist, carry
+        # its own status, point at a real file, and name THIS suite as its supporting artifact.
         entries = yaml.safe_load(CATALOG.read_text(encoding="utf-8"))["decisions"]
-        entry = entries[-1]
-        assert entry["decision_id"] == "XASSET-0039"
+        entry = next(e for e in entries if e["decision_id"] == "XASSET-0039")
         assert entry["status"] == "Proposed"
         assert (ROOT / entry["file"]).is_file()
         assert entry["supporting_artifact"] == Path(__file__).name
 
     def test_catalog_entry_relates_to_its_immediate_predecessor(self) -> None:
         entries = yaml.safe_load(CATALOG.read_text(encoding="utf-8"))["decisions"]
-        assert "XASSET-0038" in entries[-1]["related_decisions"]
+        entry = next(e for e in entries if e["decision_id"] == "XASSET-0039")
+        assert "XASSET-0038" in entry["related_decisions"]
 
     def test_prior_step9_gate_is_marked_complete_without_losing_its_history(self) -> None:
         gate = _ws0014_gate("xasset0038-step9-readiness-verification-authorization")
@@ -875,7 +906,9 @@ class TestCatalogAndRegisterSynchronisation:
     def test_workstream_live_fields_reflect_this_session(self) -> None:
         data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))
         workstream = next(w for w in data["workstreams"] if w.get("id") == "WS-0014")
-        assert workstream["last_verified_main_sha"] == XASSET0038_MERGE_SHA
+        # This pinned the PR #338 merge while PR #339 was open. STRENGTHENED to the merged
+        # PR #339 value, which is the SHA the successor filing independently re-verified.
+        assert workstream["last_verified_main_sha"] == XASSET0039_MERGE_SHA
         assert str(workstream["last_verified_date"]).startswith("2026-08-19")
         assert workstream["active_pr"] is None
 
