@@ -353,9 +353,48 @@ class TestAttestationAndArmingAreGated:
         section = _section(decision, "F")
         assert "Produce the external one-shot attestation" in section
         assert (
-            "each of 3–6 is permitted only when every §H condition and every §I condition still "
-            "holds at the moment it is taken" in section
+            "Items **3–6** are each permitted only when every §H condition and every §I condition "
+            "still holds at the moment it is taken." in section
         )
+
+    def test_activation_authority_ends_at_item_6(self, decision: str) -> None:
+        """The four act-kinds §F actually grants must be named, and their ceiling stated."""
+        section = _section(decision, "F")
+        assert (
+            "**Items 1–6 are the whole of the activation, execution, result-production, and "
+            "lane-transition authority granted here, and that authority ends at item 6.**" in section
+        )
+        assert "No act of any of those four kinds is authorized beyond item 6" in section
+
+    def test_items_7_and_8_are_mandatory_duties_not_withdrawn(self, decision: str) -> None:
+        """§F numbers the fail-closed response and the external report; it must not then deny them.
+
+        The pre-correction text closed with an absolute "No step beyond 6 is authorized", which
+        withdrew the two items it had just granted (independent review 4972220888, MAJOR 1). At an
+        irreversible boundary where §I makes uncertainty a stop condition, a future executor cannot
+        safely resolve that by inference — so both halves are pinned here.
+        """
+        section = _section(decision, "F")
+        assert "**Items 7 and 8 are duties, not further steps.**" in section
+        assert "are **mandatory**, owed on every path" in section
+        assert "not weakened by the sentence above and are not exceptions to it" in section
+
+    def test_the_withdrawn_absolute_wording_is_gone(self, decision: str) -> None:
+        """Pins the exact contradictory sentence out of §F so it cannot silently return."""
+        section = _section(decision, "F")
+        assert "No step beyond 6 is authorized" not in section
+        assert "each of 3–6 is permitted" not in section
+
+    def test_duties_do_not_extend_the_sequence_or_authorize_successors(
+        self, decision: str
+    ) -> None:
+        section = _section(decision, "F")
+        assert (
+            "they do not extend the execution sequence, do not move the lane, do not produce, "
+            "publish, commit, or deliver any result, and authorize no successor work of any kind."
+            in section
+        )
+        assert "Discharging them is how the unit ends, never how it continues." in section
 
     def test_merge_alone_arms_nothing(self, decision: str) -> None:
         section = _section(decision, "N")
@@ -910,9 +949,17 @@ class TestEffectivityRequiresCompleteLifecycleClosure:
         )
 
     def test_register_gate_is_not_marked_complete_in_its_own_authoring_session(self) -> None:
+        """`in_progress` is the lifecycle fact; `pr: 340` is the live-work fact. Both are required.
+
+        This originally asserted `pr is None`, which was accurate only in the window between
+        drafting and opening PR #340. `OPS-0001`'s Active-GitHub-fields rule requires the field to
+        hold currently-live unmerged work and permits `null` only when no live PR exists, and
+        `XASSET-0031` already corrected this exact post-opening condition. Setting the number is
+        factual synchronization; the gate stays `in_progress` because the work is not complete.
+        """
         gate = _ws0014_gate("xasset0040-step11-activation-authorization")
         assert gate["status"] == "in_progress"
-        assert gate["pr"] is None
+        assert gate["pr"] == 340
 
 
 # --------------------------------------------------------------------------------------------------
@@ -1006,7 +1053,9 @@ class TestCatalogAndRegisterSynchronisation:
         workstream = next(w for w in data["workstreams"] if w.get("id") == "WS-0014")
         assert workstream["last_verified_main_sha"] == XASSET0039_MERGE_SHA
         assert str(workstream["last_verified_date"]).startswith("2026-08-19")
-        assert workstream["active_pr"] is None
+        # Was `is None`, accurate only before PR #340 opened. See the gate test above for the
+        # OPS-0001 / XASSET-0031 grounding.
+        assert workstream["active_pr"] == 340
 
     def test_workstream_stays_secondary_and_no_primary_is_introduced(self) -> None:
         data = yaml.safe_load(WORKSTREAMS.read_text(encoding="utf-8"))

@@ -211,8 +211,19 @@ The future step-11 unit **may**, and only in service of `XASSET-0030` §G.B step
    failure, authentication failure, unexpected lane state, stale evidence, or uncertainty.
 8. **Record** what it did as durable, externally posted step-11 evidence (§M).
 
-**No step beyond 6 is authorized**, and each of 3–6 is permitted only when every §H condition and every
-§I condition still holds at the moment it is taken.
+**Items 1–6 are the whole of the activation, execution, result-production, and lane-transition
+authority granted here, and that authority ends at item 6.** No act of any of those four kinds is
+authorized beyond item 6 — no further attestation, no further arming, no `READY`, no further claim, no
+further execution, no further result, and no further lane transition. Items **3–6** are each permitted
+only when every §H condition and every §I condition still holds at the moment it is taken.
+
+**Items 7 and 8 are duties, not further steps.** The fail-closed response (§I) and the durable external
+report (§M) are **mandatory**, owed on every path — whether the unit stops before attesting, stops after
+arming, stops after a lawful claim, or completes at item 6 — which is exactly what §K requires of all
+four terminal outcomes. They are therefore not weakened by the sentence above and are not exceptions to
+it: **they do not extend the execution sequence, do not move the lane, do not produce, publish, commit,
+or deliver any result, and authorize no successor work of any kind.** Discharging them is how the unit
+ends, never how it continues.
 
 #### F.1 — The allowed sequence, in exact order
 

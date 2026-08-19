@@ -14906,7 +14906,7 @@ workstreams:
           unconsumed.
       - gate: xasset0040-step11-activation-authorization
         status: in_progress
-        pr: null
+        pr: 340
         description: >
           The narrow governance-only authority required for ONE future, separate XASSET-0030 SS-G.B
           STEP 11 unit — production of the external one-shot attestation under the existing
@@ -16106,7 +16106,7 @@ workstreams:
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
     active_branch: claude/xasset-0040-governance-667uvi
-    active_pr: null
+    active_pr: 340
     last_verified_main_sha: 6960ce5ddbfa8cff1ef591c58682341c4d4407c7
     last_verified_date: "2026-08-19"
     authorized_by: >
