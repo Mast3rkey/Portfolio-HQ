@@ -92,9 +92,10 @@ PROTECTED_RELPATHS = (
     "issuer_lookthrough.yaml",
 )
 
-#: WS-0014's shared `active_pr` while the XASSET-0042 correction unit is live.
-#: Set to the real GitHub number issued when PR #342 was opened, never guessed.
-XASSET0042_ACTIVE_PR = 342
+#: WS-0014's shared `active_pr` while the XASSET-0043 rebinding-authorization unit is live.
+#: Set to the real GitHub number issued when the pull request was opened, verified
+#: against live GitHub afterwards, never left as a guess.
+XASSET0043_ACTIVE_PR = 343
 
 GATE_SELF = "xasset0041-pr337-actor-evidence-correction-authorization"
 GATE_STOP = "xasset0040-step11-unit-stopped-before-attestation"
@@ -683,20 +684,20 @@ class TestCatalogAndRegisterSynchronisation:
         assert "NEVER classify claude[bot] generally as" in description
 
     def test_register_live_fields_point_at_the_currently_live_work(self, ws0014):
-        """ADVANCED BY XASSET-0042.
+        """ADVANCED BY XASSET-0043.
 
         `active_branch`, `active_pr`, and `last_verified_main_sha` are WS-0014's SINGLE SHARED
-        live self-reference fields, not any one filing's own. PR #341 has merged at
-        `9c8647f9`, so under `OPS-0001`'s Active-GitHub-fields rule they lawfully advance to
-        the correction unit that is now live. Each is strengthened to an exact value, never
-        relaxed to a range or a placeholder.
+        live self-reference fields, not any one filing's own. PR #341 merged at `9c8647f9`
+        and PR #342 has since merged at `5fbfc94d`, so under `OPS-0001`'s Active-GitHub-fields
+        rule they lawfully advance to the rebinding-authorization unit that is now live. Each
+        is strengthened to an exact value, never relaxed to a range or a placeholder.
         """
-        assert ws0014["active_branch"] == "claude/pr337-actor-evidence-correction-5evikl"
+        assert ws0014["active_branch"] == "claude/xasset-0043-rebinding-auth-1qrj1i"
         assert ws0014["last_verified_main_sha"] == (
-            "9c8647f9dddacdf63825f569097214ba65299fe8"
+            "5fbfc94d7333e552bd2654261e0c57134a172e31"
         )
         assert str(ws0014["last_verified_date"]) == "2026-08-19"
-        assert ws0014["active_pr"] == XASSET0042_ACTIVE_PR
+        assert ws0014["active_pr"] == XASSET0043_ACTIVE_PR
 
     def test_register_still_parses_and_ws0014_is_unique(self, ws0014):
         assert ws0014["id"] == "WS-0014"

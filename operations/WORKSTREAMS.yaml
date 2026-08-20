@@ -15114,7 +15114,7 @@ workstreams:
           the retracted one on two grounds. Advancing this gate records completed lifecycle truth
           only; it grants no new authority, revives nothing, and reaches no downstream link.
       - gate: xasset0042-pr337-lifecycle-actor-evidence-correction
-        status: in_progress
+        status: complete
         pr: 342
         description: >
           The ONE bounded correction XASSET-0041 authorizes, implemented and filed as XASSET-0042.
@@ -15266,6 +15266,147 @@ workstreams:
           part of step 11 was begun. Stage 1 remains UNARMED and NOT EXECUTABLE, lane ABSENT,
           new_execution_is_authorized() False, ATTEMPT_1 intact and unconsumed, and no
           stage1_results.yaml exists.
+          COMPLETED AND MERGED, appended additively 2026-08-19 by the XASSET-0043 filing; every
+          sentence above is preserved byte-identically as this description's own prefix. PR #342
+          merged at 5fbfc94d7333e552bd2654261e0c57134a172e31, whose two parents are exactly, in
+          order, 9c8647f9dddacdf63825f569097214ba65299fe8 and the accepted head
+          4d5d99d67364d3c940aad74c3093bd2afbc3481d, and whose merge tree
+          96215644985ae322d78915850bec21b7b247c12d is byte-identical to that accepted head's own
+          tree — zero merge drift. Review chain, each anchored to its own head: FULL 4975556072 at
+          7573147e... (CHANGES REQUIRED, 0 BLOCKING / 2 MAJOR / 1 MINOR), corrective DELTA
+          4976030124 at c8ea6ef... (CHANGES REQUIRED, 0/0/1/0), then the final clean DELTA
+          4976294690 at the exact accepted head, APPROVED FOR PRINCIPAL EXACT-HEAD ACCEPTANCE with
+          0 BLOCKING / 0 MAJOR / 0 MINOR / 0 NOTE. 4976294690 is a DELTA review, not a standalone
+          FULL review, and is recorded as such. Principal acceptance 5347516573, immediate
+          post-merge verification 5347527432 and final post-CI closure 5347619800 are each durably
+          authored by user.login Mast3rkey, type User. Merge-commit CI run 32297842564 / job
+          96213267167 is completed/success on event push, attempt 1, with head_sha equal to the
+          exact merge SHA. All seven XASSET-0042 SS-I conditions are therefore closed and
+          XASSET-0042 is EFFECTIVE. The corrected production module's current identity is git blob
+          d55b9e1882368a5e8ed888a336a5d00e49b2b05e, SHA-256
+          749597ee9085a189e187e23ccffb7718d98860847dfe514c173e7437b50f24c7, 153591 bytes; the
+          bound merged-tree digest remains 8186a50f71d05bbb7189183bacad6aa0752147e9c7f4e1f5b3bacabad91f2fc8
+          and was deliberately NOT re-pinned, and 03d842126913bf2d62aa5d7c070ecca236926ec847102da82414ee51e7422734
+          remains the intermediate superseded-head identity, history only. Exactly one of the ten
+          load-bearing paths therefore drifts from the bound XASSET-0037 tree; the other nine are
+          byte-identical. That expected enforcement drift is the hand-off XASSET-0041 SS-I link 2
+          reserves for a SEPARATELY AUTHORIZED rebinding, which XASSET-0042 neither performed nor
+          authorized. Advancing this gate records completed lifecycle truth only; it grants no new
+          authority, rebinds nothing, and reaches no downstream link. Stage 1 remains UNARMED and
+          NOT EXECUTABLE, lane ABSENT, new_execution_is_authorized() False, ATTEMPT_1 intact,
+          unclaimed and unconsumed, and no stage1_results.yaml exists.
+      - gate: xasset0043-post-correction-rebinding-authorization
+        status: in_progress
+        pr: 343
+        description: >
+          The narrow GOVERNANCE-ONLY authority required for ONE future, separate, bounded successor
+          operational / load-bearing REBINDING unit, filed as XASSET-0043. This is XASSET-0041
+          SS-I link 2 and nothing else: link 1 (the correction) is complete and merged as
+          XASSET-0042, and links 3 (renewed readiness), 4 (renewed drift check) and 5 (a new
+          step-11 authorization) remain unauthorized, unperformed and NOT made reachable by this
+          filing. THIS FILING PERFORMS NO PART OF THE REBINDING: it edits no load-bearing byte,
+          rebinds nothing, changes no LOAD_BEARING_RELPATHS entry, AUTHORIZING_* constant or hash
+          pin, amends no canonical artifact, runs no readiness verification and no drift check,
+          retries no part of step 11, generates no attestation, and creates no result. The
+          enforcement drift was reproduced READ-ONLY before anything was authorized, at the git
+          object level only (git rev-parse, git cat-file, and a hash of working-tree bytes): of the
+          ten load-bearing paths compared against the bound XASSET-0037 merged tree
+          637eaa30302f5a71f84ab1d215ecbd32c01399b5, exactly ONE drifts —
+          level1_stage1_execution_authorization.py, bound
+          8186a50f71d05bbb7189183bacad6aa0752147e9c7f4e1f5b3bacabad91f2fc8 (128252 bytes) versus
+          working 749597ee9085a189e187e23ccffb7718d98860847dfe514c173e7437b50f24c7 (153591 bytes) —
+          and the other nine are byte-identical. NO LANE WAS CREATED, INSPECTED OR TOUCHED, no
+          attestation mechanism was driven, write_authorization was never called, and no part of the
+          separately authorized step-9 readiness verification or step-10 drift check was performed.
+          Stated precisely rather than conveniently: XASSET-0030 SS-G.B step 8's own single
+          rebinding was CONSUMED by XASSET-0037 and is NOT reopened, re-consumed or re-issued here.
+          The authority for a further rebinding is separate and predates the need for it —
+          XASSET-0030 SS-D provides generally for a successor operational-authorization OR
+          RECONCILIATION lifecycle whenever a lawful correction of load-bearing code creates
+          enforcement drift, and XASSET-0041 SS-I link 2 names the required next link as a
+          step-8 EQUIVALENT, separately authorized. XASSET-0037 and XASSET-0029 are preserved as
+          valid accepted history, not invalidated. The authorized future unit is ONE coherent pull
+          request carrying its own rebinding decision (under the next XASSET-#### identifier
+          verified unused live, never predicted here) and its own adversarial suite, bound by ten
+          conjunctive SS-G properties: bind only stabilized, independently reviewed exact bytes;
+          preserve all ten existing load-bearing paths, removing none and weakening no exact-byte
+          check; preserve XASSET-0042's actor-evidence correction byte-for-byte except where
+          rebinding strictly requires otherwise, with any other change ARGUED not assumed; preserve
+          the runner and the result validator byte-identically; preserve the transitive derivation
+          surface's accepted 2b8ead2b...deb3d356 blob and its exact closed 17-region transition as
+          HISTORICAL ANCHORS while APPENDING a second exact closed successor-to-rebound transition
+          after the future bytes stabilize (SS-G.4a); preserve the
+          construction-universe module, canonical substance, every construction identity, and the
+          680/48 universe at aggregate hash
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224; use exact git-object
+          identities, correct two-parent ordering, exact-head review, merge-tree equality and
+          fail-closed drift handling; recompute stale identities and pins ONCE, only after every
+          authorized byte has stabilized; explicitly resolve XASSET-0042's
+          FINAL_CORRECTED_MODULE_SHA256 current-identity evidence, which the rebinding makes stale
+          by construction, by amendment or by retirement-with-equivalent-replacement, argued not
+          assumed, never left silently false and with its nine-assertion guard re-anchored but NEVER
+          deleted, skipped, xfailed or relaxed; bind the WHOLE authority chain for the corrected
+          bytes inside the authenticated boundary (LOAD_BEARING_RELPATHS 10 -> 14, nominal, by DIRECT
+          MEMBERSHIP of the XASSET-0041, XASSET-0042 and XASSET-0043 decision files and the future
+          rebinding decision, with citing or describing predecessor text explicitly NOT a binding of
+          it) while RETAINING the
+          XASSET-0029, XASSET-0036 and XASSET-0037 decision files as historical authority; authorize
+          nothing downstream; and complete its own full seven-condition lifecycle. Canonical
+          amendment is permitted only in authorization language, in lockstep, with the universe hash
+          independently regenerated and unchanged at 680/48 and stage_1_executability.executable
+          permanently false. Every SS-G condition is conjunctive and fail-closed: an anchor that
+          cannot be read, an identity that cannot be reproduced, a guard that cannot be re-anchored
+          without weakening, or a regeneration that does not return 680/48 STOPS the unit and is
+          disclosed, never repaired outside scope or proceeded past on a partial result. This filing
+          adds ZERO activation authorizations — XASSET-0029 SS-E terminates the activation regress
+          on a step that changes no repository state, and a rebinding changes repository state
+          extensively, so it is categorically outside that step. XASSET-0027 SS-P.1's exactly-one
+          evaluation/results PR is NOT consumed, replaced, amended or counted against and remains
+          one, unspent. XASSET-0040 stays spent as STOPPED_BEFORE_ATTESTATION and is NOT revived.
+          Merging XASSET-0043 authorizes a future rebinding unit only; it does NOT rebind anything,
+          does NOT make Stage 1 armed or executable, and leaves the enforcement drift above exactly
+          where it is. Stage 1 remains UNARMED and NOT EXECUTABLE, lane ABSENT,
+          new_execution_is_authorized() False, AUTHORIZING_DECISION still XASSET-0037,
+          AUTHORIZING_PULL_REQUEST still 337, LOAD_BEARING_RELPATHS still 10, ATTEMPT_1 intact,
+          unclaimed and unconsumed, and no stage1_results.yaml exists. BOUNDED CORRECTION,
+          appended additively 2026-08-19 after independent FULL exact-head review 4976985695 of
+          b266f8c294c8c7f135b039eaf4d836818916b5f4 returned CHANGES REQUIRED (0 BLOCKING / 2 MAJOR /
+          1 MINOR / 0 NOTE); every sentence above is preserved byte-identically as this description's
+          own prefix. All three findings were REPRODUCED THROUGH THE REAL MECHANISMS before anything
+          was edited. MAJOR 1: SS-G.8/SS-H bound only the future rebinding decision (10 -> 11) and
+          named none of XASSET-0041, XASSET-0042 or XASSET-0043, leaving the very decisions that made
+          the corrected bytes lawful editable outside the attested identity - corrected to bind all
+          four by DIRECT MEMBERSHIP (10 -> 14, nominal), with citing or describing predecessor text
+          explicitly NOT a binding of it and any claimed equivalent required to be proved
+          file-by-file. MAJOR 2: SS-G.4 froze
+          level1_endpoint_evidence_preregistration_validator.py whole-file at 2b8ead2b...deb3d356
+          while SS-J permitted and SS-F.2 required advancing canonical successor-lifecycle language -
+          reproduced read-only in memory against the real public validation surface, where the merged
+          canonical bytes give 0 errors and advancing rebound_by,
+          effective_structural_authorization_source or stage_1_executability.blocking_prerequisite to
+          a successor value fails closed because the frozen module hard-codes XASSET-0037 in exactly
+          those fields; corrected by new SS-G.4a, which PRESERVES the 2b8ead2b blob and the 17-region
+          transition as historical anchors and accepted history and requires the future rebinding to
+          APPEND a second exact closed successor-to-rebound transition after its bytes stabilize,
+          enumerating and authenticating every permitted changed region, requiring every byte outside
+          those regions to be identical, confining every region to the authorization-only surface, and
+          RE-PROVING every consumer-reachable and outcome-producing definition semantically and
+          byte-identically unchanged, with no runner, result-validator, universe, construction, gate,
+          disposition, scoring, portfolio or protected-RISK behaviour permitted to change. MINOR 1:
+          the protected-path evidence test compared HEAD with the working tree and therefore could not
+          detect a protected file edited AND COMMITTED at the reviewed head - reproduced in a
+          disposable detached worktree where exactly that edit was committed, the base-to-probe-head
+          diff confirmed the protected path had changed, and the existing test still returned 17
+          passed; corrected to require TWO distinct proofs, exact base-to-head for every protected and
+          load-bearing path and head-to-worktree for cleanliness, with the original working-tree check
+          RETAINED UNWEAKENED and the base-to-head comparison mutation-pinned against a real
+          historical commit pair in which a protected path genuinely changed. The correction unit
+          edits NO production, load-bearing, canonical, validator, runner, result-production, universe
+          or protected portfolio byte, rebinds nothing, changes no LOAD_BEARING_RELPATHS entry,
+          AUTHORIZING_* constant or hash pin, runs no readiness or drift verification, retries no part
+          of step 11, generates no attestation, creates no lane state, consumes nothing of ATTEMPT_1,
+          and authorizes no successor beyond the one future rebinding unit SS-F defines. Stage 1
+          remains UNARMED and NOT EXECUTABLE.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -16373,9 +16514,9 @@ workstreams:
       remains UNARMED and NOT EXECUTABLE, lane state remains ABSENT,
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
-    active_branch: claude/pr337-actor-evidence-correction-5evikl
-    active_pr: 342
-    last_verified_main_sha: 9c8647f9dddacdf63825f569097214ba65299fe8
+    active_branch: claude/xasset-0043-rebinding-auth-1qrj1i
+    active_pr: 343
+    last_verified_main_sha: 5fbfc94d7333e552bd2654261e0c57134a172e31
     last_verified_date: "2026-08-19"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
