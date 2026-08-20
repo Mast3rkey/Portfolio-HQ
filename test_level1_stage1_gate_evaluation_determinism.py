@@ -747,7 +747,22 @@ class TestLoadBearingReauthorizationDependency:
             # paths are still all retained above, and the additions remain EXACTLY the authorized
             # set -- outcome-producing code plus each authorizing decision.
             "governance/decisions/XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
+            # FURTHER AMENDED BY XASSET-0044's post-correction operational rebinding, filed under
+            # SS-D's reconciliation clause (SS-G.B step 8 is NOT re-consumed). The invariant this
+            # test exists to hold is unchanged and is still exact: SS-D's six enumerated paths are
+            # all retained above, and every addition is still EXACTLY outcome-producing code plus
+            # each authorizing decision -- here, the correction's own authorization, the corrected
+            # module's decision, the rebinding's authorization, and the rebinding itself. Each is
+            # bound by DIRECT MEMBERSHIP; a citation or prose restatement is not a byte binding.
+            "governance/decisions/XASSET-0041-endpoint-0001-pr337-lifecycle-actor-evidence-correction-authorization.md",
+            "governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md",
+            "governance/decisions/XASSET-0043-endpoint-0001-stage-1-post-correction-rebinding-authorization.md",
+            "governance/decisions/XASSET-0044-endpoint-0001-stage-1-post-correction-operational-rebinding.md",
         }
+        # Every addition beyond SS-D's six is either outcome-producing code or a governance
+        # decision file. Nothing else may enter the trust boundary by this route.
+        for path in set(A.LOAD_BEARING_RELPATHS) - enumerated:
+            assert path.startswith("governance/decisions/") or path.endswith(".py"), path
         assert not any("stage1_results" in path for path in A.LOAD_BEARING_RELPATHS)
 
 

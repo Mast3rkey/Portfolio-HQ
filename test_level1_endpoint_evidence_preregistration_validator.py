@@ -487,7 +487,17 @@ class TestStage1IsNotExecutable:
         # AMENDED BY XASSET-0029: XASSET-0028's lifecycle has closed, so its blocker is spent and
         # is replaced by the strictly narrower external-attestation prerequisite.
         assert block["blocking_prerequisite"] == V.STAGE_1_BLOCKING_PREREQUISITE
-        assert "XASSET_0037" in block["blocking_prerequisite"]
+        # FURTHER AMENDED BY XASSET-0044's post-correction operational rebinding, which advanced
+        # the operative generation from XASSET-0037. Not weakened: the operative generation is
+        # still pinned exactly, the spent generation must now be absent from the operative string,
+        # and the spent string must survive verbatim in its own predecessor-named field.
+        assert "XASSET_0044" in block["blocking_prerequisite"]
+        assert "XASSET_0037" not in block["blocking_prerequisite"]
+        assert (
+            block["predecessor_blocking_prerequisite_xasset_0037"]
+            == V.PREDECESSOR_STAGE_1_BLOCKING_PREREQUISITE_XASSET_0037
+        )
+        assert "XASSET_0037" in block["predecessor_blocking_prerequisite_xasset_0037"]
         assert "XASSET_0029" in block["predecessor_blocking_prerequisite_xasset_0029"]
         assert "EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION" in block["blocking_prerequisite"]
         assert block["authorized_by_xasset_0027"] is False
@@ -532,7 +542,16 @@ class TestStage1IsNotExecutable:
         # which is strictly stronger than the spent predecessor string it replaces.
         # FURTHER AMENDED BY XASSET-0029: the XASSET-0028 lifecycle is itself spent, so the
         # operative precondition is the XASSET-0029 lifecycle plus an external attestation.
-        assert "XASSET_0037_LIFECYCLE_CLOSURE_ALL_SIX_GATES" in V.STAGE_1_EXECUTION_PRECONDITION
+        # FURTHER AMENDED BY XASSET-0044's post-correction operational rebinding, which advanced
+        # the operative generation from XASSET-0037. Not weakened: the operative generation is
+        # still pinned exactly, the spent generation must now be absent from the operative string,
+        # and the spent string must survive verbatim in its own predecessor-named constant.
+        assert "XASSET_0044_LIFECYCLE_CLOSURE_ALL_SIX_GATES" in V.STAGE_1_EXECUTION_PRECONDITION
+        assert "XASSET_0037" not in V.STAGE_1_EXECUTION_PRECONDITION
+        assert (
+            "XASSET_0037_LIFECYCLE_CLOSURE_ALL_SIX_GATES"
+            in V.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0037
+        )
         assert (
             "XASSET_0029_LIFECYCLE_CLOSURE_ALL_SIX_GATES"
             in V.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0029
@@ -1652,7 +1671,14 @@ class TestLifecycleEffectivity:
         precondition = base_data["lifecycle_effectivity"]["stage_1_execution_may_begin_only_after"]
         assert precondition == V.STAGE_1_EXECUTION_PRECONDITION
         # AMENDED BY XASSET-0028: the operative precondition is the six-gate successor lifecycle.
-        assert precondition.startswith("XASSET_0037_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_")
+        # FURTHER AMENDED BY XASSET-0044's post-correction operational rebinding, which advanced
+        # the operative generation from XASSET-0037. Not weakened: the prefix is still pinned
+        # exactly, and each spent generation must remain distinguishable from the operative one.
+        assert precondition.startswith("XASSET_0044_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_")
+        assert precondition != V.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0037
+        assert V.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0037.startswith(
+            "XASSET_0037_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_"
+        )
         assert V.PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION.startswith(
             "CONSTRUCTION_UNIVERSE_CLOSURE_THEN_"
         )
