@@ -40,6 +40,9 @@ import yaml
 
 import level1_stage1_execution_authorization as A
 import level1_endpoint_evidence_preregistration_validator as PREREG
+# The accepted production harness -- injectable git/GitHub stand-ins -- so the bounded
+# correction below exercises validate_authorization_document itself, not a private helper.
+import test_level1_stage1_execution_authorization as H
 
 ROOT = Path(__file__).resolve().parent
 
@@ -1096,6 +1099,254 @@ class TestCatalogAndRegisterSynchronisation:
 # ======================================================================================
 # 13 -- No section is vacuous
 # ======================================================================================
+
+
+# =============================================================================================
+# Bounded correction after independent FULL review 4986931575.
+#
+# Three findings, each reproduced through its REAL public mechanism before being corrected, and
+# each pinned here by the negative cases the review named. These use the accepted production
+# harness (``test_level1_stage1_execution_authorization``'s injectable truth sources) so they
+# exercise ``validate_authorization_document`` itself rather than a private helper.
+# =============================================================================================
+
+
+def _valid_document():
+    """A document that validates cleanly, assembled by the module's own public builder."""
+    doc = H.AUTH.build_authorization_payload(
+        authorization_head=H.HEAD,
+        lifecycle_evidence=H.lifecycle(),
+        author_identity=H.AUTHOR_LOGIN,
+        generated_at_utc="2026-08-16T00:00:00Z",
+        merge_sha=H.MERGE,
+    )
+    doc["load_bearing_identity"] = {
+        rel: A.sha256_file(ROOT / rel) for rel in sorted(A.LOAD_BEARING_RELPATHS)
+    }
+    return doc
+
+
+def _refused(doc, fragment, *, git=None, governance=None):
+    result = A.validate_authorization_document(
+        doc, H.sources(git=git, governance=governance)
+    )
+    assert not result.valid, f"expected refusal for {fragment!r}; document validated"
+    assert any(fragment in e for e in result.errors), (
+        f"expected an error containing {fragment!r}, got {result.errors}"
+    )
+
+
+class TestLifecycleClosureIsAuthenticated:
+    """BLOCKING 1 -- SS-L condition 7 is a gate, not a claim.
+
+    SS-L makes seven conditions conjunctively necessary. Before this correction the runtime
+    authenticated six and stopped, so a document naming NO closure at all validated -- meaning an
+    attestation could be assembled the moment merge-commit CI went green, strictly earlier than
+    this decision's own stated effectivity. Reproduced through the public path before correcting.
+    """
+
+    def test_the_baseline_document_still_validates(self):
+        # The gate must refuse the bad cases WITHOUT refusing the good one.
+        result = A.validate_authorization_document(_valid_document(), H.sources())
+        assert result.valid, result.errors
+
+    def test_closure_evidence_is_structurally_required(self):
+        assert "lifecycle_closure" in A.REQUIRED_LIFECYCLE_EVIDENCE_KEYS
+
+    def test_missing_closure_is_refused(self):
+        doc = _valid_document()
+        del doc["lifecycle_evidence"]["lifecycle_closure"]
+        _refused(doc, "lifecycle_closure")
+
+    def test_a_nonexistent_closure_comment_is_refused(self):
+        doc = _valid_document()
+        doc["lifecycle_evidence"]["lifecycle_closure"]["comment_id"] = "9999999999"
+        _refused(doc, "does not exist")
+
+    def test_wrong_actor_is_refused(self):
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.comments[H.CLOSURE_ID] = dict(gov.comments[H.CLOSURE_ID], user={"login": "claude[bot]"})
+        _refused(_valid_document(), "not the lifecycle operator", governance=gov)
+
+    def test_the_pr337_bot_ratification_does_not_reach_this_gate(self):
+        """XASSET-0042's exception is pinned to two PR #337 comment ids on two pre-existing
+        gates. It must never become forward permission for a bot-authored closure."""
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.comments[H.CLOSURE_ID] = dict(gov.comments[H.CLOSURE_ID], user={"login": "claude[bot]"})
+        _refused(_valid_document(), "not the lifecycle operator", governance=gov)
+
+    def test_wrong_pull_request_is_refused(self):
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.comments[H.CLOSURE_ID] = dict(
+            gov.comments[H.CLOSURE_ID],
+            issue_url="https://api.github.com/repos/Mast3rkey/Portfolio-HQ/issues/999",
+        )
+        _refused(_valid_document(), "does not belong to pull request", governance=gov)
+
+    def test_wrong_merge_sha_is_refused(self):
+        doc = _valid_document()
+        doc["lifecycle_evidence"]["lifecycle_closure"]["closed_merge_sha"] = "9" * 40
+        _refused(doc, "closed_merge_sha")
+
+    def test_wrong_run_id_is_refused(self):
+        doc = _valid_document()
+        doc["lifecycle_evidence"]["lifecycle_closure"]["closed_run_id"] = "1234567890"
+        _refused(doc, "closed_run_id")
+
+    def test_wrong_job_id_is_refused(self):
+        doc = _valid_document()
+        doc["lifecycle_evidence"]["lifecycle_closure"]["closed_job_id"] = "1234567890"
+        _refused(doc, "closed_job_id")
+
+    def test_a_closure_body_not_naming_the_merge_is_refused(self):
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.comments[H.CLOSURE_ID] = dict(
+            gov.comments[H.CLOSURE_ID], body=f"Closed. Run {H.RUN_ID}."
+        )
+        _refused(_valid_document(), "does not name the merge SHA", governance=gov)
+
+    def test_a_closure_body_not_naming_the_ci_run_is_refused(self):
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.comments[H.CLOSURE_ID] = dict(
+            gov.comments[H.CLOSURE_ID], body=f"Closed for merge `{H.MERGE}`."
+        )
+        _refused(_valid_document(), "does not name the merge-commit CI run", governance=gov)
+
+    def test_closure_before_post_merge_verification_is_refused(self):
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.comments[H.CLOSURE_ID] = dict(
+            gov.comments[H.CLOSURE_ID], created_at="2026-08-16T12:30:00Z"
+        )
+        _refused(_valid_document(), "does not follow post-merge verification", governance=gov)
+
+    def test_closure_simultaneous_with_verification_is_refused(self):
+        """Strictly after, not merely not-before: an identical instant proves no ordering."""
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.comments[H.CLOSURE_ID] = dict(
+            gov.comments[H.CLOSURE_ID], created_at=gov.comments[H.VERIFY_ID]["created_at"]
+        )
+        _refused(_valid_document(), "does not follow post-merge verification", governance=gov)
+
+    def test_closure_before_ci_completion_is_refused(self):
+        """PREMATURE CLOSURE -- the exact hole the review named: after verification, but before
+        the merge-commit CI job it claims to close actually finished."""
+        gov = H.FakeGovernance()
+        gov.comments = dict(gov.comments)
+        gov.comments[H.CLOSURE_ID] = dict(
+            gov.comments[H.CLOSURE_ID], created_at="2026-08-16T13:10:00Z"
+        )
+        gov.jobs = dict(gov.jobs)
+        gov.jobs[H.JOB_ID] = dict(gov.jobs[H.JOB_ID], completed_at="2026-08-16T13:30:00Z")
+        gov.runs = dict(gov.runs)
+        gov.runs[H.RUN_ID] = dict(gov.runs[H.RUN_ID], updated_at="2026-08-16T13:30:00Z")
+        _refused(_valid_document(), "precedes completion of the merge-commit CI job", governance=gov)
+
+    def test_an_unresolvable_ci_completion_time_fails_closed(self):
+        gov = H.FakeGovernance()
+        gov.jobs = {H.JOB_ID: {"run_id": H.RUN_ID, "conclusion": "success", "head_sha": H.MERGE}}
+        gov.runs = {
+            H.RUN_ID: {"status": "completed", "conclusion": "success", "head_sha": H.MERGE}
+        }
+        _refused(_valid_document(), "completion time could not be resolved", governance=gov)
+
+    def test_an_unknown_closure_key_is_refused(self):
+        doc = _valid_document()
+        doc["lifecycle_evidence"]["lifecycle_closure"]["approved"] = True
+        _refused(doc, "the schema is closed")
+
+    def test_the_closure_schema_is_closed_and_exact(self):
+        assert A.LIFECYCLE_CLOSURE_KEYS == (
+            "comment_id", "closed_merge_sha", "closed_run_id", "closed_job_id",
+        )
+
+    def test_the_six_gate_tuple_and_canonical_strings_are_untouched(self):
+        """The correction is bounded: the seventh condition gets its own gate WITHOUT rewriting
+        the six-gate list that the canonical ``..._ALL_SIX_GATES_...`` strings name verbatim."""
+        assert len(A.REQUIRED_LIFECYCLE_GATES) == 6
+        assert "LIFECYCLE_CLOSURE" not in " ".join(A.REQUIRED_LIFECYCLE_GATES)
+        assert "ALL_SIX_GATES" in PREREG.STAGE_1_EXECUTION_PRECONDITION
+
+
+class TestCorrectionAuthorizationMergeIsFullyVerified:
+    """MAJOR 1 -- PR #341's inherited merge was only half-checked.
+
+    Its base and accepted head were ``None``, and the verification loop skips BOTH the
+    exact-parent and the merge-tree check whenever either is absent. Reproduced through
+    ``validate_authorization_document`` before correcting: a PR #341 merge rewritten to a single
+    WRONG parent with a DRIFTED tree still validated.
+    """
+
+    def test_the_identities_are_bound(self):
+        assert A.CORRECTION_AUTHORIZING_MERGE_BASE == "f212cce50e28ae887dc8c594bf8ae491a3ef85af"
+        assert A.CORRECTION_AUTHORIZING_ACCEPTED_HEAD == "0449d08217b5c0e422721ff3ef76b4241fb8a95a"
+
+    def test_the_bound_identities_match_the_real_object_store(self):
+        """Independently re-derived, not taken from the review on faith."""
+        out = subprocess.run(
+            ["git", "rev-parse", f"{A.CORRECTION_AUTHORIZING_MERGE_SHA}^@"],
+            cwd=ROOT, capture_output=True, text=True, check=True,
+        ).stdout.split()
+        assert out == [
+            A.CORRECTION_AUTHORIZING_MERGE_BASE,
+            A.CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+        ]
+
+    def test_the_real_merge_carries_zero_drift(self):
+        def tree(rev):
+            return subprocess.run(
+                ["git", "rev-parse", f"{rev}^{{tree}}"],
+                cwd=ROOT, capture_output=True, text=True, check=True,
+            ).stdout.strip()
+        assert tree(A.CORRECTION_AUTHORIZING_MERGE_SHA) == tree(
+            A.CORRECTION_AUTHORIZING_ACCEPTED_HEAD
+        )
+
+    def test_the_identities_are_in_the_closed_payload(self):
+        block = _valid_document()["correction_identity"]
+        assert block["authorizing_merge_base"] == A.CORRECTION_AUTHORIZING_MERGE_BASE
+        assert block["authorizing_accepted_head"] == A.CORRECTION_AUTHORIZING_ACCEPTED_HEAD
+
+    def test_wrong_parent_count_is_refused(self):
+        git = H.FakeGit()
+        git.parents = dict(git.parents)
+        git.parents[A.CORRECTION_AUTHORIZING_MERGE_SHA] = (A.CORRECTION_AUTHORIZING_MERGE_BASE,)
+        _refused(_valid_document(), "merge parents", git=git)
+
+    def test_wrong_parent_order_is_refused(self):
+        """Order is the whole point: base then accepted head, never the reverse."""
+        git = H.FakeGit()
+        git.parents = dict(git.parents)
+        git.parents[A.CORRECTION_AUTHORIZING_MERGE_SHA] = (
+            A.CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+            A.CORRECTION_AUTHORIZING_MERGE_BASE,
+        )
+        _refused(_valid_document(), "are not exactly", git=git)
+
+    def test_merge_tree_drift_is_refused(self):
+        git = H.FakeGit()
+        git.trees = dict(git.trees)
+        git.trees[A.CORRECTION_AUTHORIZING_MERGE_SHA] = "0" * 40
+        _refused(_valid_document(), "carries drift the review never saw", git=git)
+
+    def test_an_unresolvable_tree_fails_closed(self):
+        git = H.FakeGit()
+        git.trees = dict(git.trees)
+        del git.trees[A.CORRECTION_AUTHORIZING_ACCEPTED_HEAD]
+        _refused(_valid_document(), "zero merge drift cannot be proven", git=git)
+
+    def test_no_inherited_merge_is_bound_without_complete_identity(self):
+        """The hole was OMISSION, so omission itself must now fail rather than skip."""
+        source = (ROOT / "level1_stage1_execution_authorization.py").read_text(encoding="utf-8")
+        assert "is bound without a complete " in source
+        assert "elif inherited_base is not None and" not in source
+        assert "if inherited_head is not None:" not in source
 
 
 class TestNoSectionIsVacuous:

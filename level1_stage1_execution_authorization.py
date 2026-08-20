@@ -286,6 +286,14 @@ PRIOR_SUCCESSOR_REBINDING_MERGE_BASE = "3e5de8f85c69c2e5dc2b75421446b5db996d7cf1
 CORRECTION_AUTHORIZING_DECISION = "XASSET-0041"
 CORRECTION_AUTHORIZING_PULL_REQUEST = 341
 CORRECTION_AUTHORIZING_MERGE_SHA = "9c8647f9dddacdf63825f569097214ba65299fe8"
+#: MAJOR 1 (review 4986931575). These two were absent, and their absence silently DISABLED the
+#: exact-parent and merge-tree checks for this one inherited merge: the verification loop skips
+#: both whenever a base or accepted head is ``None``. Reproduced through the public path before
+#: this correction -- a PR #341 merge rewritten to a single WRONG parent with a DRIFTED tree still
+#: validated. Re-derived independently from the local object store and cross-checked against
+#: GitHub's own record of PR #341, which agree exactly.
+CORRECTION_AUTHORIZING_ACCEPTED_HEAD = "0449d08217b5c0e422721ff3ef76b4241fb8a95a"
+CORRECTION_AUTHORIZING_MERGE_BASE = "f212cce50e28ae887dc8c594bf8ae491a3ef85af"
 
 #: PR #342 itself -- the exact COMPLETED CORRECTION this rebinding binds, and the reason it exists.
 #: Distinct from the decision that authorized it: the authority is a governance record, this is a
@@ -789,6 +797,32 @@ REQUIRED_LIFECYCLE_EVIDENCE_KEYS = (
     "merge",
     "post_merge_verification",
     "merge_commit_ci",
+    # BLOCKING 1 (review 4986931575). XASSET-0044 SS-L makes SEVEN conditions conjunctively
+    # necessary, and its seventh is "final post-CI verification and lifecycle closure". The five
+    # keys above carry conditions 1-6; the seventh had NO evidence key and NO gate, so a document
+    # naming no closure at all validated -- allowing an attestation to be written after CI but
+    # before the decision it cites is effective. Reproduced through the public path before this
+    # correction: build_authorization_payload + validate_authorization_document returned valid
+    # with zero closure evidence.
+    #
+    # Deliberately NOT added to REQUIRED_LIFECYCLE_GATES. That tuple is a differently-scoped list
+    # -- six gates that are not in 1:1 correspondence with SS-L's seven conditions (SS-L 1 and 2
+    # both close the single review gate, and MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION
+    # answers to no SS-L condition at all) -- and it is named verbatim by the canonical
+    # ``..._LIFECYCLE_CLOSURE_ALL_SIX_GATES_...`` strings and by every predecessor-named history
+    # field beside them. Renaming those to "SEVEN" would rewrite accepted predecessor semantics to
+    # fix a hole that is closed here exactly, so the six-gate list and the canonical strings are
+    # left byte-identical and the seventh condition is authenticated on its own footing.
+    "lifecycle_closure",
+)
+
+#: The keys a ``lifecycle_closure`` record may carry. Closed: an unknown key is refused rather
+#: than ignored, so a closure record cannot smuggle an unverified field past the gate.
+LIFECYCLE_CLOSURE_KEYS = (
+    "comment_id",
+    "closed_merge_sha",
+    "closed_run_id",
+    "closed_job_id",
 )
 
 
@@ -2064,7 +2098,158 @@ def verify_lifecycle_against_truth(
     errors.extend(_verify_git_anchored_identity(document, merge_sha, sources))
     # --- Gate 7 (XASSET-0037): the successor rebinding binds the EXACT merged package ---
     errors.extend(_verify_successor_rebinding_identity(document, merge_sha, sources))
+    # --- Gate 8 (XASSET-0044 SS-L condition 7): final post-CI verification and closure ---
+    errors.extend(
+        _verify_lifecycle_closure(
+            evidence,
+            number=number,
+            merge_sha=merge_sha,
+            run_id=run_id,
+            job_id=job_id,
+            run=run,
+            job=job,
+            verification=verification,
+            sources=sources,
+        )
+    )
     return tuple(errors)
+
+
+def _verify_lifecycle_closure(
+    evidence: Mapping[str, Any],
+    *,
+    number: Any,
+    merge_sha: Any,
+    run_id: str,
+    job_id: str,
+    run: Mapping[str, Any] | None,
+    job: Mapping[str, Any] | None,
+    verification: Mapping[str, Any] | None,
+    sources: TruthSources,
+) -> list[str]:
+    """XASSET-0044 SS-L condition 7, authenticated from durable truth.
+
+    SS-L: "final post-CI verification and lifecycle closure". Before this gate the runtime
+    authenticated conditions 1-6 and stopped, so an attestation could be assembled the moment CI
+    went green -- strictly earlier than the decision's own stated effectivity.
+
+    Nothing here is accepted because it is well-formed. The closure record must be a real comment,
+    on the EXACT authorizing pull request, authored by the lifecycle operator, naming and recording
+    the EXACT merge and CI identities Gates 3 and 5 independently derived, and created strictly
+    AFTER both the post-merge verification and the completion of that CI job. Every unobtainable
+    fact is an error, never silent agreement.
+
+    The XASSET-0042 PR #337 actor ratification is deliberately NOT consulted. That exception is
+    pinned to two specific PR #337 comment ids on two specific pre-existing gates; extending it to
+    a gate that did not exist when it was granted would turn a closed, retrospective ratification
+    into forward permission for bot-authored closure.
+    """
+    errors: list[str] = []
+    recorded = evidence.get("lifecycle_closure")
+    if not isinstance(recorded, Mapping):
+        return [
+            "authorization.lifecycle_evidence.lifecycle_closure: expected a mapping; "
+            "XASSET-0044 SS-L condition 7 is not optional"
+        ]
+    for unknown in sorted(set(recorded) - set(LIFECYCLE_CLOSURE_KEYS)):
+        errors.append(
+            f"authorization.lifecycle_evidence.lifecycle_closure.{unknown}: unknown key; "
+            "the schema is closed"
+        )
+
+    closure_id = str(recorded.get("comment_id") or "")
+    closure = sources.governance.issue_comment(closure_id) if closure_id else None
+    if closure is None:
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id!r} does not exist; "
+            "successful CI alone never makes this decision effective"
+        )
+        return errors
+
+    # --- the exact pull request ---------------------------------------------------------
+    if not _belongs_to_pull_request(closure, number):
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id} does not belong to pull "
+            f"request #{number}; a closure recorded elsewhere closes nothing here"
+        )
+
+    # --- the exact actor, with no ratification relaxation --------------------------------
+    closure_actor = _actor_login(closure)
+    if closure_actor is None:
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id} carries no durable author "
+            "identity, so the closure gate cannot be authenticated"
+        )
+    elif closure_actor != LIFECYCLE_OPERATOR_LOGIN:
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id} was authored by "
+            f"{closure_actor!r}, not the lifecycle operator {LIFECYCLE_OPERATOR_LOGIN!r}"
+        )
+
+    # --- the exact merge and CI identities, recorded AND named ---------------------------
+    _exact(
+        recorded.get("closed_merge_sha"),
+        merge_sha,
+        "authorization.lifecycle_evidence.lifecycle_closure.closed_merge_sha",
+        errors,
+    )
+    _exact(
+        str(recorded.get("closed_run_id") or ""),
+        run_id,
+        "authorization.lifecycle_evidence.lifecycle_closure.closed_run_id",
+        errors,
+    )
+    _exact(
+        str(recorded.get("closed_job_id") or ""),
+        job_id,
+        "authorization.lifecycle_evidence.lifecycle_closure.closed_job_id",
+        errors,
+    )
+    body = closure.get("body") or ""
+    if isinstance(merge_sha, str) and merge_sha and merge_sha not in body:
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id} does not name the merge "
+            f"SHA {merge_sha!r}"
+        )
+    if run_id and run_id not in body:
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id} does not name the "
+            f"merge-commit CI run {run_id!r}"
+        )
+
+    # --- chronology: strictly after BOTH the post-merge verification and CI completion ----
+    closed_at = _instant(closure.get("created_at"))
+    if closed_at is None:
+        errors.append(
+            f"governance truth: lifecycle-closure record {closure_id} carries no usable "
+            "timestamp, so it cannot be proven to follow post-merge verification and CI"
+        )
+    else:
+        verified_at = _instant((verification or {}).get("created_at"))
+        if verified_at is None:
+            errors.append(
+                "governance truth: the post-merge verification timestamp could not be resolved, "
+                "so lifecycle closure cannot be proven to follow it; this fails closed"
+            )
+        elif closed_at <= verified_at:
+            errors.append(
+                f"governance truth: lifecycle closure {closed_at} does not follow post-merge "
+                f"verification {verified_at}; a closure cannot precede what it closes"
+            )
+        finished_at = _instant((job or {}).get("completed_at")) or _instant(
+            (run or {}).get("updated_at")
+        )
+        if finished_at is None:
+            errors.append(
+                "governance truth: the merge-commit CI completion time could not be resolved, so "
+                "lifecycle closure cannot be proven to follow it; this fails closed"
+            )
+        elif closed_at < finished_at:
+            errors.append(
+                f"governance truth: lifecycle closure {closed_at} precedes completion of the "
+                f"merge-commit CI job {finished_at}; SS-L condition 7 is FINAL post-CI closure"
+            )
+    return errors
 
 
 def _verify_successor_rebinding_identity(
@@ -2143,6 +2328,8 @@ def _verify_successor_rebinding_identity(
             "authorizing_decision": CORRECTION_AUTHORIZING_DECISION,
             "authorizing_pull_request": CORRECTION_AUTHORIZING_PULL_REQUEST,
             "authorizing_merge_sha": CORRECTION_AUTHORIZING_MERGE_SHA,
+            "authorizing_accepted_head": CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+            "authorizing_merge_base": CORRECTION_AUTHORIZING_MERGE_BASE,
             "decision": CORRECTED_MODULE_DECISION,
             "pull_request": CORRECTED_MODULE_PULL_REQUEST,
             "merge_sha": CORRECTED_MODULE_MERGE_SHA,
@@ -2251,8 +2438,8 @@ def _verify_successor_rebinding_identity(
         (
             "correction authorization (XASSET-0041 / PR #341)",
             CORRECTION_AUTHORIZING_MERGE_SHA,
-            None,
-            None,
+            CORRECTION_AUTHORIZING_MERGE_BASE,
+            CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
         ),
         (
             "corrected module (XASSET-0042 / PR #342)",
@@ -2268,30 +2455,40 @@ def _verify_successor_rebinding_identity(
         ),
     )
     for label, inherited_merge, inherited_base, inherited_head in inherited:
+        # MAJOR 1 (review 4986931575): an absent anchor is a REFUSAL, never a skip. Previously a
+        # ``None`` base or head quietly disabled this entry's parent-order and merge-tree checks,
+        # so an unverifiable merge read as a verified one. Every entry above now carries real
+        # identities, and this branch exists so no future entry can re-open the hole by omission.
+        if inherited_base is None or inherited_head is None:
+            errors.append(
+                f"authority: the {label} merge {inherited_merge} is bound without a complete "
+                "base/accepted-head identity, so its exact parents and zero merge drift cannot be "
+                "proven; an unverifiable inherited merge never authorizes execution"
+            )
+            continue
         parents = git.commit_parents(inherited_merge)
         if parents is None:
             errors.append(
                 f"git truth: the {label} merge {inherited_merge} is absent from the local object "
                 "store, so this rebinding cannot prove what it inherits from"
             )
-        elif inherited_base is not None and list(parents) != [inherited_base, inherited_head]:
+        elif list(parents) != [inherited_base, inherited_head]:
             errors.append(
                 f"git truth: {label} merge parents {list(parents)!r} are not exactly "
                 f"[{inherited_base!r}, {inherited_head!r}]"
             )
-        if inherited_head is not None:
-            merge_tree = git.commit_tree(inherited_merge)
-            head_tree = git.commit_tree(inherited_head)
-            if merge_tree is None or head_tree is None:
-                errors.append(
-                    f"git truth: the {label} merge or accepted-head tree could not be resolved, so "
-                    "zero merge drift cannot be proven; this fails closed"
-                )
-            elif merge_tree != head_tree:
-                errors.append(
-                    f"git truth: the {label} merge tree {merge_tree} differs from its accepted-head "
-                    f"tree {head_tree}; the merge carries drift the review never saw"
-                )
+        merge_tree = git.commit_tree(inherited_merge)
+        head_tree = git.commit_tree(inherited_head)
+        if merge_tree is None or head_tree is None:
+            errors.append(
+                f"git truth: the {label} merge or accepted-head tree could not be resolved, so "
+                "zero merge drift cannot be proven; this fails closed"
+            )
+        elif merge_tree != head_tree:
+            errors.append(
+                f"git truth: the {label} merge tree {merge_tree} differs from its accepted-head "
+                f"tree {head_tree}; the merge carries drift the review never saw"
+            )
         if _is_commit_sha(merge_sha) and not git.is_ancestor(inherited_merge, str(merge_sha)):
             errors.append(
                 f"git truth: the {label} merge {inherited_merge} is not an ancestor of the "
@@ -3451,6 +3648,8 @@ def build_authorization_payload(
             "authorizing_decision": CORRECTION_AUTHORIZING_DECISION,
             "authorizing_pull_request": CORRECTION_AUTHORIZING_PULL_REQUEST,
             "authorizing_merge_sha": CORRECTION_AUTHORIZING_MERGE_SHA,
+            "authorizing_accepted_head": CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+            "authorizing_merge_base": CORRECTION_AUTHORIZING_MERGE_BASE,
             "decision": CORRECTED_MODULE_DECISION,
             "pull_request": CORRECTED_MODULE_PULL_REQUEST,
             "merge_sha": CORRECTED_MODULE_MERGE_SHA,

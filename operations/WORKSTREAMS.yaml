@@ -15476,7 +15476,7 @@ workstreams:
           RE-ANCHORED to closed, immutable commit ranges and none is deleted, skipped, xfailed or
           relaxed; two mutation pins are added so the re-anchoring cannot pass vacuously. Identities
           recomputed ONCE after every authorized byte stabilized: module
-          c27437dc67f76254f00af57cc0d783c88181e0a18417281a6c8dcd3e6fb84047, derivation validator
+          513bd0cb33e6a9b174cbcd462094fb93011a90cae0cd5bd60c6e852d37ac057b, derivation validator
           b3a87e4f8b828d420795348642c977a9f0585eafa9262a4be48df406f770233d, PROTOCOL_V1.md
           1ad1d060d5bf970288844b05b94e1fd38c3cc9cc87afc1481a45ed1b315d0c84, pre_registration.yaml
           898c329d9941c5c24ff2a800f842e860c63e2e500acc4257eb14646c1012d82f. Rebinding is NOT arming: this adds ZERO
@@ -15490,6 +15490,62 @@ workstreams:
           and NOT made reachable by this unit completing. This gate is deliberately in_progress with
           pr: null while its own pull request is unmerged: a filing does not mark its own unmerged
           work complete.
+      - gate: xasset0044-bounded-correction-after-full-review-4986931575
+        status: in_progress
+        pr: 344
+        description: >-
+          Bounded correction of PR #344 after an independent FULL exact-head review at
+          c07120d695b1750c85912c0d2851416db519353f returned CHANGES REQUIRED -- 1 BLOCKING /
+          2 MAJOR / 0 MINOR / 0 NOTE. Each finding was REPRODUCED THROUGH ITS OWN REAL PUBLIC
+          MECHANISM before anything was edited, and each correction is pinned by the negative cases
+          the review named. BLOCKING 1: XASSET-0044 SS-L makes seven conditions conjunctively
+          necessary and its seventh is final post-CI verification and lifecycle closure, but the
+          closed evidence schema and verify_lifecycle_against_truth authenticated only six --
+          reproduced via build_authorization_payload plus validate_authorization_document returning
+          VALID for a document carrying no closure evidence at all, which would let an attestation
+          be assembled the moment merge-commit CI went green. Corrected by adding lifecycle_closure
+          to REQUIRED_LIFECYCLE_EVIDENCE_KEYS and a Gate 8 that authenticates it from durable truth:
+          a real comment, on the exact authorizing pull request, authored by the lifecycle operator
+          Mast3rkey, recording AND naming the exact merge and CI run/job identities Gates 3 and 5
+          independently derived, and created strictly after the post-merge verification and after
+          that CI job completed. The closure block is closed -- an unknown key is refused -- and
+          every unobtainable fact is an error rather than silent agreement. XASSET-0042's PR #337
+          actor ratification is deliberately NOT consulted by this gate, so a closed retrospective
+          ratification cannot become forward permission for bot-authored closure.
+          REQUIRED_LIFECYCLE_GATES and the canonical ..._ALL_SIX_GATES_... strings are left
+          BYTE-IDENTICAL: that tuple is differently scoped, its six entries are not in 1:1
+          correspondence with SS-L's seven conditions, and renaming them would rewrite accepted
+          predecessor semantics to fix a hole this closes exactly. MAJOR 1: XASSET-0041 / PR #341's
+          inherited merge supplied None for base and accepted head, which silently disabled BOTH
+          its exact-parent and merge-tree checks -- reproduced via validate_authorization_document
+          returning VALID for a PR #341 merge rewritten to a single WRONG parent with a DRIFTED
+          tree. The identities were independently re-derived from the local object store AND
+          cross-checked against GitHub's own record of PR #341, which agree exactly: base
+          f212cce50e28ae887dc8c594bf8ae491a3ef85af, accepted head
+          0449d08217b5c0e422721ff3ef76b4241fb8a95a, merge
+          9c8647f9dddacdf63825f569097214ba65299fe8, accepted-head and merge trees both
+          4ebd65c58fc7486294947cdec80f0a8725c6e20e so zero merge drift is proven not assumed. They
+          are bound, carried in the closed payload and schema, and enforced on the same footing as
+          every other inherited merge; the OMISSION itself is also closed, since an incomplete
+          base/accepted-head identity is now an explicit refusal rather than a skip. MAJOR 2:
+          AUTHORIZED_DECISION_MODIFICATIONS was exact by path but bound to nothing else, so it
+          survived this pull request forever -- reproduced behaviourally against a synthetic later
+          PR whose base already contained this rebinding and which rewrote the same XASSET-0042
+          decision again, which PASSED. XASSET-0043 SS-I.2 authorizes ONE transition, so the
+          allowance now names that transition exactly: this pull request's own base
+          0709d2f05ab031ecb6f69c40465ed4a227983aed, the blob that file had at that base
+          e4cda7a5042da68f347598a62d9e6d5cfc40ae55, and the single blob it may become
+          b08a625a5adb840e9576e5cd9218be24e63bd57e. Each conjunct is independently required, and
+          the new side is read from the WORKING TREE rather than HEAD because the diff this guard
+          reads compares base against the working tree. Nothing is deleted, skipped, xfailed or
+          broadly relaxed; every other pre-existing decision stays protected, a second modified file
+          still fails, and a rename or copy is still never permitted. No outcome-producing
+          behaviour, canonical construction input, universe identity, runner, result validator,
+          protected path or ATTEMPT_1 state is touched, and no gate is evaluated for any
+          construction. Stage 1 remains UNARMED and NOT EXECUTABLE, lane ABSENT,
+          new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
+          stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
+          request is unmerged: a filing does not mark its own unmerged work complete.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md

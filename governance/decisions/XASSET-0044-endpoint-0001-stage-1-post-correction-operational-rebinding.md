@@ -232,8 +232,75 @@ Accordingly:
 bound (XASSET-0037 merged tree, historical)          sha256  8186a50f71d05bbb7189183bacad6aa0752147e9c7f4e1f5b3bacabad91f2fc8
 intermediate, superseded head 7573147e (historical)  sha256  03d842126913bf2d62aa5d7c070ecca236926ec847102da82414ee51e7422734
 XASSET-0042 final, closed at PR #342 (historical)    sha256  749597ee9085a189e187e23ccffb7718d98860847dfe514c173e7437b50f24c7
-CURRENT_MODULE_SHA256: c27437dc67f76254f00af57cc0d783c88181e0a18417281a6c8dcd3e6fb84047
+CURRENT_MODULE_SHA256: 513bd0cb33e6a9b174cbcd462094fb93011a90cae0cd5bd60c6e852d37ac057b
 ```
+
+### M. Bounded correction after independent FULL review `4986931575`
+
+An independent FULL exact-head review at `c07120d6…` returned **CHANGES REQUIRED — 1 BLOCKING /
+2 MAJOR**. Each finding was **reproduced through its own real public mechanism before anything was
+edited**, and each correction is pinned by the negative cases the review named.
+
+**BLOCKING 1 — the runtime could authorize before this decision was effective.** §L makes seven
+conditions conjunctively necessary, and its seventh is *final post-CI verification and lifecycle
+closure*. The closed evidence schema and `verify_lifecycle_against_truth` authenticated six and
+stopped. Reproduced: `build_authorization_payload` + `validate_authorization_document`, with
+faithful injectable truth sources, returned **valid** for a document carrying **no closure evidence
+at all** — so an attestation could be assembled the moment merge-commit CI went green.
+
+Corrected by adding `lifecycle_closure` to `REQUIRED_LIFECYCLE_EVIDENCE_KEYS` and a **Gate 8**
+that authenticates it from durable truth: a real comment, on the **exact** authorizing pull
+request, authored by the **lifecycle operator**, recording **and naming** the exact merge and CI
+run/job identities Gates 3 and 5 independently derived, created **strictly after** the post-merge
+verification **and** after that CI job completed. The block is closed — an unknown key is refused.
+Every unobtainable fact is an error, never silent agreement. `XASSET-0042`'s PR #337 actor
+ratification is **deliberately not consulted** here: it is pinned to two PR #337 comment ids on two
+pre-existing gates, and extending it to a gate that did not exist when it was granted would convert
+a closed retrospective ratification into forward permission for bot-authored closure.
+
+`REQUIRED_LIFECYCLE_GATES` and the canonical `…_ALL_SIX_GATES_…` strings are **left byte-identical**.
+That tuple is differently scoped — its six entries are not in 1:1 correspondence with §L's seven
+conditions (§L 1 and 2 both close the single review gate, and
+`MERGED_SUCCESSOR_HASH_AND_UNIVERSE_HASH_VERIFICATION` answers to no §L condition at all) — and it
+is named verbatim by the canonical strings and by every predecessor-named history field beside
+them. Renaming those to "SEVEN" would rewrite accepted predecessor semantics to fix a hole this
+closes exactly, so the correction stays bounded and the seventh condition is authenticated on its
+own footing.
+
+**MAJOR 1 — `XASSET-0041`'s inherited merge was only half-verified.** Its base and accepted head
+were `None`, and the verification loop skips **both** the exact-parent and the merge-tree check
+whenever either is absent. Reproduced through `validate_authorization_document`: a PR #341 merge
+rewritten to a **single wrong parent** with a **drifted tree** still returned valid.
+
+The two identities were **independently re-derived from the local object store** and
+**cross-checked against GitHub's own record of PR #341**, which agree exactly — base
+`f212cce5…`, accepted head `0449d082…`, merge `9c8647f9…`, with the accepted-head and merge trees
+both `4ebd65c5…`, so zero merge drift is proven rather than assumed. They are bound, carried in the
+closed payload and schema, and enforced on the same footing as every other inherited merge.
+
+The **omission itself** is also closed: an incomplete base/accepted-head identity is now an
+explicit refusal rather than a skip, so no future entry can re-open the hole by leaving a field out.
+
+**MAJOR 2 — the governance-decision exception survived this pull request forever.** The allowance
+was exact by path but bound to nothing else. Reproduced behaviourally against a synthetic later PR
+whose base **already contained this rebinding** and which rewrote the same `XASSET-0042` decision
+again: the guard **passed**, turning a one-transition authority into standing permission.
+
+`XASSET-0043` §I.2 authorizes **one** transition, so the allowance now names that transition
+exactly: this pull request's **own base**, the **blob that file had at that base**, and the
+**single blob it may become**. Each conjunct is independently required. A later pull request has a
+different base and, at that base, already holds the new blob, so neither conjunct can hold again.
+The new side is read from the **working tree**, not `HEAD`, because the diff this guard reads
+compares base against the working tree — reading `HEAD` would let an uncommitted rewrite pass while
+`HEAD` still held the authorized blob, which is the same class of gap being closed. Nothing is
+deleted, `skip`ped, `xfail`ed, or broadly relaxed; every other pre-existing decision stays protected
+exactly as before, a second modified file still fails, and a rename or copy is still never permitted.
+
+**Nothing else moved.** No outcome-producing behaviour, canonical construction input, universe
+identity, runner, result validator, protected path, or `ATTEMPT_1` state is touched by this
+correction, and no gate is evaluated for any construction. Stage 1 remains **UNARMED** and **NOT
+EXECUTABLE**.
+
 
 ### I. Authority withheld — absolute
 

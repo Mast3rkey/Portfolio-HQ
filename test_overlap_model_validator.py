@@ -826,10 +826,38 @@ def _resolve_pr_base_sha(cwd: Path = REPO_ROOT) -> str | None:
     return result.stdout.strip()
 
 
+def _blob_at(repo_root: Path, revision: str, relpath: str) -> str | None:
+    """The git blob id of ``relpath`` at ``revision``, or None if it is not present there.
+
+    Used to prove a one-use modification allowance against real object identities rather than
+    against a path string, so an allowance cannot outlive the exact transition it was granted for.
+    """
+    result = subprocess.run(
+        ["git", "rev-parse", f"{revision}:{relpath}"],
+        cwd=repo_root, capture_output=True, text=True,
+    )
+    return result.stdout.strip() if result.returncode == 0 and result.stdout.strip() else None
+
+
+def _worktree_blob(repo_root: Path, relpath: str) -> str | None:
+    """The git blob id of the file as it exists ON DISK right now.
+
+    The diff this guard reads compares base against the WORKING TREE, so the "new" side of an
+    authorized transition must be read from disk too. Reading HEAD instead would let an
+    uncommitted rewrite of the allow-listed file pass while HEAD still held the authorized blob --
+    the same class of gap as the path-only allowance this replaces.
+    """
+    result = subprocess.run(
+        ["git", "hash-object", "--", relpath],
+        cwd=repo_root, capture_output=True, text=True,
+    )
+    return result.stdout.strip() if result.returncode == 0 and result.stdout.strip() else None
+
+
 def _assert_no_unauthorized_change_since_base(
     paths: list[str],
     repo_root: Path = REPO_ROOT,
-    authorized_modifications: tuple[str, ...] = (),
+    authorized_modifications: dict[str, dict[str, str]] | None = None,
 ) -> None:
     """A file that already existed at this PR's base commit must never be
     modified, renamed, copied, type-changed, or deleted between base and
@@ -848,13 +876,27 @@ def _assert_no_unauthorized_change_since_base(
         ["git", "diff", "--name-status", base_sha, "--", *paths],
         cwd=repo_root, capture_output=True, text=True, check=True,
     )
+    allowed = authorized_modifications or {}
+
     def _is_violation(line: str) -> bool:
         status, _, rest = line.partition("\t")
         if status.startswith("A"):
             return False
-        # An exactly-named, separately-authorized modification is permitted. A rename or copy
-        # carries two paths and is NEVER permitted by this allow-list, which names one file.
-        return rest.strip() not in authorized_modifications
+        # A rename or copy carries two paths and is NEVER permitted by this allowance, which names
+        # one file. ``rest`` therefore has to be exactly one known path to be considered at all.
+        transition = allowed.get(rest.strip())
+        if transition is None:
+            return True
+        # MAJOR 2: exact ONE-USE proof. The allowance holds only for this pull request's own base
+        # AND only for the single old -> new blob transition it was granted for. Every conjunct is
+        # required; any mismatch -- including an unresolvable blob -- is a violation, not a pass.
+        if base_sha != transition["base_sha"]:
+            return True
+        if _blob_at(repo_root, base_sha, rest.strip()) != transition["old_blob"]:
+            return True
+        if _worktree_blob(repo_root, rest.strip()) != transition["new_blob"]:
+            return True
+        return False
 
     violations = [
         line for line in result.stdout.splitlines()
@@ -880,9 +922,21 @@ def _assert_no_unauthorized_change_since_base(
 #: repair-not-delete precedent, recorded in the docstring below: a guard correct for one PR's
 #: scope, which a later lawfully-broader session outgrows, is narrowed to the real authority
 #: rather than removed.
-AUTHORIZED_DECISION_MODIFICATIONS = (
-    "governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md",
-)
+#: MAJOR 2 (review 4986931575): a PATH is not a one-use authority. The allow-list was exact by
+#: path but bound to nothing else, so it survived this pull request forever -- reproduced before
+#: this correction against a synthetic later PR whose base already contained this rebinding and
+#: which rewrote the same decision again: the guard passed. XASSET-0043 SS-I.2 authorizes ONE
+#: transition, so the allowance now names that transition exactly: this pull request's own base,
+#: the blob that file had AT that base, and the single blob it may become. A later PR has a
+#: different base and, at that base, already holds the new blob -- so neither conjunct can hold
+#: again and the exception cannot be reused, without deleting, skipping, or relaxing the guard.
+AUTHORIZED_DECISION_MODIFICATIONS = {
+    "governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md": {
+        "base_sha": "0709d2f05ab031ecb6f69c40465ed4a227983aed",
+        "old_blob": "e4cda7a5042da68f347598a62d9e6d5cfc40ae55",
+        "new_blob": "b08a625a5adb840e9576e5cd9218be24e63bd57e",
+    },
+}
 
 
 def test_governance_decision_files_untouched():
@@ -1180,3 +1234,206 @@ def test_real_repository_manifest_reconciles_bidirectionally():
         record = yaml.safe_load((directory / f"{row['dimension_id']}.yaml").read_text())
         assert row["content_sha256"] == record["content_sha256"]
         assert row["content_sha256"] == ov.canonical_record_hash(record)
+
+
+# =============================================================================================
+# MAJOR 2 (independent FULL review 4986931575): the one-use allowance must EXPIRE.
+#
+# Reproduced before correcting: a synthetic later PR whose base already contained this rebinding,
+# and which rewrote the same XASSET-0042 decision again, PASSED -- turning a one-transition
+# authority into standing permission. These prove it cannot happen again, without deleting,
+# skipping, xfailing, or broadly relaxing the guard.
+# =============================================================================================
+
+
+def _repo_with_decision(tmp_path: Path, content: str):
+    run = _init_synthetic_repo(tmp_path)
+    (tmp_path / "governance/decisions").mkdir(parents=True)
+    (tmp_path / _ALLOWED_DECISION_PATH).write_text(content)
+    run("add", "-A")
+    run("commit", "-q", "-m", "base")
+    base = run("rev-parse", "HEAD").stdout.strip()
+    run("update-ref", "refs/remotes/origin/main", base)
+    return run, base
+
+
+_ALLOWED_DECISION_PATH = (
+    "governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md"
+)
+
+
+def test_the_decision_allowance_names_an_exact_one_use_transition():
+    """Not a path. A base, an old blob, and the single new blob it may become."""
+    assert set(AUTHORIZED_DECISION_MODIFICATIONS) == {_ALLOWED_DECISION_PATH}
+    transition = AUTHORIZED_DECISION_MODIFICATIONS[_ALLOWED_DECISION_PATH]
+    assert set(transition) == {"base_sha", "old_blob", "new_blob"}
+    assert transition["base_sha"] == "0709d2f05ab031ecb6f69c40465ed4a227983aed"
+    assert transition["old_blob"] != transition["new_blob"]
+
+
+def test_the_allowance_matches_this_pull_requests_real_objects():
+    """Independently re-derived from the object store, not asserted."""
+    transition = AUTHORIZED_DECISION_MODIFICATIONS[_ALLOWED_DECISION_PATH]
+    assert _blob_at(REPO_ROOT, transition["base_sha"], _ALLOWED_DECISION_PATH) == transition["old_blob"]
+    assert _worktree_blob(REPO_ROOT, _ALLOWED_DECISION_PATH) == transition["new_blob"]
+
+
+def test_a_later_pr_modifying_the_same_decision_is_refused(tmp_path):
+    """THE finding. A future base already carries the new content, so the allowance is spent."""
+    run, base = _repo_with_decision(tmp_path, "content as this rebinding left it\n")
+    (tmp_path / _ALLOWED_DECISION_PATH).write_text("rewritten by an unrelated later PR\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "later PR rewrites the same decision again")
+    with pytest.raises(AssertionError, match="unauthorized modification"):
+        _assert_no_unauthorized_change_since_base(
+            ["governance/decisions"], repo_root=tmp_path,
+            authorized_modifications=AUTHORIZED_DECISION_MODIFICATIONS,
+        )
+
+
+def test_a_wrong_base_alone_refuses_even_with_matching_blobs(tmp_path):
+    """Each conjunct is independently required: the base must be THIS pull request's own."""
+    run, base = _repo_with_decision(tmp_path, "anything\n")
+    (tmp_path / _ALLOWED_DECISION_PATH).write_text("changed\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "modify")
+    forged = {
+        _ALLOWED_DECISION_PATH: {
+            "base_sha": base,  # the synthetic base, NOT the bound one
+            "old_blob": _blob_at(tmp_path, base, _ALLOWED_DECISION_PATH),
+            "new_blob": _worktree_blob(tmp_path, _ALLOWED_DECISION_PATH),
+        }
+    }
+    # With the transition's own base, blobs matching, it is permitted...
+    _assert_no_unauthorized_change_since_base(
+        ["governance/decisions"], repo_root=tmp_path, authorized_modifications=forged,
+    )
+    # ...and with any other base recorded, it is refused, blobs notwithstanding.
+    wrong_base = dict(forged[_ALLOWED_DECISION_PATH], base_sha="0" * 40)
+    with pytest.raises(AssertionError, match="unauthorized modification"):
+        _assert_no_unauthorized_change_since_base(
+            ["governance/decisions"], repo_root=tmp_path,
+            authorized_modifications={_ALLOWED_DECISION_PATH: wrong_base},
+        )
+
+
+def test_a_different_new_blob_at_the_right_base_is_refused(tmp_path):
+    """The allowance permits ONE destination, not any edit of the allow-listed path."""
+    run, base = _repo_with_decision(tmp_path, "original\n")
+    (tmp_path / _ALLOWED_DECISION_PATH).write_text("some OTHER destination\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "modify to an unauthorized destination")
+    transition = {
+        _ALLOWED_DECISION_PATH: {
+            "base_sha": base,
+            "old_blob": _blob_at(tmp_path, base, _ALLOWED_DECISION_PATH),
+            "new_blob": "0" * 40,  # the authorized destination, which this is not
+        }
+    }
+    with pytest.raises(AssertionError, match="unauthorized modification"):
+        _assert_no_unauthorized_change_since_base(
+            ["governance/decisions"], repo_root=tmp_path, authorized_modifications=transition,
+        )
+
+
+def test_an_uncommitted_rewrite_of_the_allow_listed_path_is_refused(tmp_path):
+    """The diff reads the WORKING TREE, so the new side must be read from disk. Reading HEAD
+    instead would let an uncommitted rewrite pass while HEAD still held the authorized blob."""
+    run, base = _repo_with_decision(tmp_path, "original\n")
+    (tmp_path / _ALLOWED_DECISION_PATH).write_text("authorized destination\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "the authorized modification")
+    transition = {
+        _ALLOWED_DECISION_PATH: {
+            "base_sha": base,
+            "old_blob": _blob_at(tmp_path, base, _ALLOWED_DECISION_PATH),
+            "new_blob": _worktree_blob(tmp_path, _ALLOWED_DECISION_PATH),
+        }
+    }
+    _assert_no_unauthorized_change_since_base(
+        ["governance/decisions"], repo_root=tmp_path, authorized_modifications=transition,
+    )
+    # Now rewrite it on disk only, leaving HEAD holding the authorized blob.
+    (tmp_path / _ALLOWED_DECISION_PATH).write_text("smuggled, uncommitted\n")
+    with pytest.raises(AssertionError, match="unauthorized modification"):
+        _assert_no_unauthorized_change_since_base(
+            ["governance/decisions"], repo_root=tmp_path, authorized_modifications=transition,
+        )
+
+
+def test_a_second_decision_file_is_still_refused(tmp_path):
+    """The allowance names one file. Another pre-existing decision stays protected."""
+    run, base = _repo_with_decision(tmp_path, "original\n")
+    other = "governance/decisions/XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md"
+    (tmp_path / other).write_text("pre-existing\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "second decision at base")
+    base2 = run("rev-parse", "HEAD").stdout.strip()
+    run("update-ref", "refs/remotes/origin/main", base2)
+    (tmp_path / other).write_text("rewritten\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "rewrite the OTHER decision")
+    transition = {
+        _ALLOWED_DECISION_PATH: {
+            "base_sha": base2,
+            "old_blob": _blob_at(tmp_path, base2, _ALLOWED_DECISION_PATH),
+            "new_blob": _worktree_blob(tmp_path, _ALLOWED_DECISION_PATH),
+        }
+    }
+    with pytest.raises(AssertionError, match="unauthorized modification"):
+        _assert_no_unauthorized_change_since_base(
+            ["governance/decisions"], repo_root=tmp_path, authorized_modifications=transition,
+        )
+
+
+def test_a_wrong_old_blob_at_the_right_base_is_refused(tmp_path):
+    """Mutation C17. Each conjunct is INDEPENDENTLY required: even with the correct base and the
+    correct destination blob, an allowance whose recorded old blob is not what the file actually
+    held at that base is refused. Without this the allowance would survive any future base whose
+    content happened to differ, which is exactly the reusability being closed."""
+    run, base = _repo_with_decision(tmp_path, "original\n")
+    (tmp_path / _ALLOWED_DECISION_PATH).write_text("authorized destination\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "the authorized modification")
+    real_old = _blob_at(tmp_path, base, _ALLOWED_DECISION_PATH)
+    real_new = _worktree_blob(tmp_path, _ALLOWED_DECISION_PATH)
+    # Correct base, correct destination -> permitted.
+    _assert_no_unauthorized_change_since_base(
+        ["governance/decisions"], repo_root=tmp_path,
+        authorized_modifications={
+            _ALLOWED_DECISION_PATH: {
+                "base_sha": base, "old_blob": real_old, "new_blob": real_new,
+            }
+        },
+    )
+    # Same base, same destination, WRONG recorded starting point -> refused.
+    with pytest.raises(AssertionError, match="unauthorized modification"):
+        _assert_no_unauthorized_change_since_base(
+            ["governance/decisions"], repo_root=tmp_path,
+            authorized_modifications={
+                _ALLOWED_DECISION_PATH: {
+                    "base_sha": base, "old_blob": "0" * 40, "new_blob": real_new,
+                }
+            },
+        )
+
+
+def test_an_unresolvable_blob_on_either_side_is_refused(tmp_path):
+    """An allowance that cannot be PROVEN is refused, never passed. This covers the case where a
+    recorded object simply is not resolvable in the repository being checked."""
+    run, base = _repo_with_decision(tmp_path, "original\n")
+    (tmp_path / _ALLOWED_DECISION_PATH).write_text("destination\n")
+    run("add", "-A")
+    run("commit", "-q", "-m", "modify")
+    assert _blob_at(tmp_path, base, "governance/decisions/DOES-NOT-EXIST.md") is None
+    with pytest.raises(AssertionError, match="unauthorized modification"):
+        _assert_no_unauthorized_change_since_base(
+            ["governance/decisions"], repo_root=tmp_path,
+            authorized_modifications={
+                _ALLOWED_DECISION_PATH: {
+                    "base_sha": base,
+                    "old_blob": None,      # unresolvable / unrecorded
+                    "new_blob": _worktree_blob(tmp_path, _ALLOWED_DECISION_PATH),
+                }
+            },
+        )

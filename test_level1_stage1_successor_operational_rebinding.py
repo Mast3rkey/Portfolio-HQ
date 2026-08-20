@@ -122,6 +122,7 @@ BASE = A.REVIEWED_BASE_SHA
 REVIEW_ID = "4970000001"
 ACCEPT_ID = "5970000001"
 VERIFY_ID = "5970000002"
+CLOSURE_ID = "5970000003"
 RUN_ID = "3200000001"
 JOB_ID = "9600000001"
 REVIEWER_LOGIN = "independent-reviewer"
@@ -156,7 +157,12 @@ class FakeGit:
                 A.PRIOR_SUCCESSOR_REBINDING_MERGE_BASE,
                 A.PRIOR_SUCCESSOR_REBINDING_ACCEPTED_HEAD,
             ),
-            A.CORRECTION_AUTHORIZING_MERGE_SHA: ("1" * 40, "2" * 40),
+            # AMENDED BY review 4986931575 MAJOR 1: PR #341's base and accepted head are now
+            # BOUND, so its exact parent order and merge-tree identity are actually verified.
+            A.CORRECTION_AUTHORIZING_MERGE_SHA: (
+                A.CORRECTION_AUTHORIZING_MERGE_BASE,
+                A.CORRECTION_AUTHORIZING_ACCEPTED_HEAD,
+            ),
             A.CORRECTED_MODULE_MERGE_SHA: (
                 A.CORRECTED_MODULE_MERGE_BASE,
                 A.CORRECTED_MODULE_ACCEPTED_HEAD,
@@ -189,6 +195,8 @@ class FakeGit:
             A.CORRECTED_MODULE_ACCEPTED_HEAD: "c" * 40,
             A.REBINDING_AUTHORIZING_MERGE_SHA: "a" * 39 + "z",
             A.REBINDING_AUTHORIZING_ACCEPTED_HEAD: "a" * 39 + "z",
+            A.CORRECTION_AUTHORIZING_MERGE_SHA: "4" * 40,
+            A.CORRECTION_AUTHORIZING_ACCEPTED_HEAD: "4" * 40,
         }
         # The exact transition needs blob TEXT, not a digest, and distinguishes the anchors: the
         # two PACKAGE anchors carry the accepted package bytes and the successor anchors carry
@@ -270,9 +278,28 @@ class FakeGovernance:
                 "created_at": "2026-08-17T13:00:00Z",
                 "user": {"login": PRINCIPAL_LOGIN},
             },
+            # ADDED BY review 4986931575 BLOCKING 1: SS-L condition 7's own record -- lifecycle
+            # operator, exact merge and CI identities, strictly after verification AND after the
+            # CI job completed.
+            CLOSURE_ID: {
+                "body": f"Lifecycle closure for merge `{MERGE}`, run {RUN_ID}, job {JOB_ID}.",
+                "issue_url": PR_URL,
+                "created_at": "2026-08-17T14:00:00Z",
+                "user": {"login": PRINCIPAL_LOGIN},
+            },
         }
-        self.runs = {RUN_ID: {"status": "completed", "conclusion": "success", "head_sha": MERGE}}
-        self.jobs = {JOB_ID: {"run_id": RUN_ID, "conclusion": "success", "head_sha": MERGE}}
+        self.runs = {
+            RUN_ID: {
+                "status": "completed", "conclusion": "success", "head_sha": MERGE,
+                "updated_at": "2026-08-17T13:30:00Z",
+            }
+        }
+        self.jobs = {
+            JOB_ID: {
+                "run_id": RUN_ID, "conclusion": "success", "head_sha": MERGE,
+                "completed_at": "2026-08-17T13:30:00Z",
+            }
+        }
         self.__dict__.update(overrides)
 
     def pull_request(self, number):
@@ -318,6 +345,14 @@ def lifecycle() -> dict:
             "status": "completed",
             "conclusion": "success",
             "head_sha": MERGE,
+        },
+        # ADDED BY review 4986931575 BLOCKING 1: XASSET-0044 SS-L condition 7, now a required,
+        # closed, actor-bound, identity-bound and chronology-bound gate.
+        "lifecycle_closure": {
+            "comment_id": CLOSURE_ID,
+            "closed_merge_sha": MERGE,
+            "closed_run_id": RUN_ID,
+            "closed_job_id": JOB_ID,
         },
     }
 
