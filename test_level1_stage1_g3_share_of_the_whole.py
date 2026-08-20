@@ -1007,16 +1007,57 @@ class TestNothingHereAuthorizesOrExecutes:
         AUTHORIZED_CORRECTION_PATH = "level1_stage1_execution_authorization.py"
         assert AUTHORIZED_CORRECTION_PATH in A.LOAD_BEARING_RELPATHS
 
-        base = subprocess.run(
-            ["git", "merge-base", "origin/main", "HEAD"],
-            cwd=ROOT, capture_output=True, text=True,
+        # RE-ANCHORED BY XASSET-0044. This asks what XASSET-0042's OWN pull request changed, and
+        # that pull request is merged and closed, so its delta is a CLOSED range: PR #342's base
+        # through PR #342's merge. Computing `merge-base origin/main HEAD` instead re-scoped the
+        # question to whatever branch happens to be checked out -- so any later, separately
+        # authorized unit lawfully changing a load-bearing path would fail here, reporting a defect
+        # in XASSET-0042 that XASSET-0042 did not commit. Immutable, and evaluated over the ten
+        # paths XASSET-0042 itself bound rather than a set a later generation grew.
+        CORRECTION_BASE = "9c8647f9dddacdf63825f569097214ba65299fe8"
+        CORRECTION_MERGE = "5fbfc94d7333e552bd2654261e0c57134a172e31"
+        for commit in (CORRECTION_BASE, CORRECTION_MERGE):
+            probe = subprocess.run(
+                ["git", "cat-file", "-e", f"{commit}^{{commit}}"],
+                cwd=ROOT, capture_output=True,
+            )
+            if probe.returncode != 0:
+                pytest.skip(f"{commit} is unavailable in this checkout")
+        # The boundary AS XASSET-0042 BOUND IT -- ten paths, read from the module at that merge.
+        # Using the LIVE set would be wrong in kind, not just in size: XASSET-0044 later made
+        # XASSET-0042's OWN decision file load-bearing, so the live set retroactively re-scopes a
+        # question about what XASSET-0042 was allowed to touch.
+        import ast as _ast
+
+        module_source = subprocess.run(
+            ["git", "show", f"{CORRECTION_MERGE}:level1_stage1_execution_authorization.py"],
+            cwd=ROOT, capture_output=True, check=False,
         )
-        if base.returncode != 0 or not base.stdout.strip():
-            pytest.skip("no origin/main available to compute the PR delta")
+        if module_source.returncode != 0:
+            pytest.skip("the correction merge's module is unavailable in this checkout")
+        tree = _ast.parse(module_source.stdout.decode("utf-8"))
+        literals: dict[str, str] = {}
+        bound_paths: list[str] | None = None
+        for node in tree.body:
+            if not isinstance(node, _ast.Assign) or len(node.targets) != 1:
+                continue
+            target = node.targets[0]
+            if not isinstance(target, _ast.Name):
+                continue
+            if isinstance(node.value, _ast.Constant) and isinstance(node.value.value, str):
+                literals[target.id] = node.value.value
+            elif target.id == "LOAD_BEARING_RELPATHS" and isinstance(node.value, _ast.Tuple):
+                bound_paths = [
+                    element.value if isinstance(element, _ast.Constant)
+                    else literals[element.id]
+                    for element in node.value.elts
+                ]
+        assert bound_paths is not None and len(bound_paths) == 10
+        assert AUTHORIZED_CORRECTION_PATH in bound_paths
 
         out = subprocess.run(
-            ["git", "diff", "--name-only", base.stdout.strip(), "HEAD",
-             "--", *A.LOAD_BEARING_RELPATHS],
+            ["git", "diff", "--name-only", CORRECTION_BASE, CORRECTION_MERGE,
+             "--", *bound_paths],
             cwd=ROOT, capture_output=True, text=True, check=True,
         )
         changed = [line for line in out.stdout.split("\n") if line.strip()]

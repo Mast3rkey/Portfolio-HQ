@@ -15426,7 +15426,9 @@ workstreams:
           every run at that SHA returns exactly one, which succeeded. All seven XASSET-0043 SS-N
           conditions are therefore closed and XASSET-0043 is EFFECTIVE. The prior gate's own text is
           left byte-unedited; this gate records the confirmed state additively rather than rewriting
-          it.
+          it. PR #343 was developed on branch claude/xasset-0043-rebinding-auth-1qrj1i, retained
+          here as closed provenance now that WS-0014's single shared active_branch has lawfully
+          advanced to the unit that is currently live.
       - gate: xasset0044-post-correction-operational-rebinding
         status: in_progress
         pr: null

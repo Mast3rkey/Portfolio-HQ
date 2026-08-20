@@ -93,6 +93,16 @@ FUTURE_BOUNDARY_ADDITIONS = (
 #: base->head protected-path proof uses it (review 4976985695 MINOR 1).
 PR_BASE_SHA = "5fbfc94d7333e552bd2654261e0c57134a172e31"
 
+#: RE-ANCHORED BY XASSET-0044. This suite's governance-only claims are about PR #343's OWN diff,
+#: and that pull request is now merged and closed, so the range it spans is CLOSED: base -> its own
+#: merge. Measuring to a moving ``HEAD`` instead silently re-scoped every one of those claims to
+#: "and nothing since", which is a different and much larger proposition -- one that any later,
+#: separately authorized unit lawfully touching a protected path would falsify, reporting a defect
+#: in PR #343 that PR #343 did not commit. This is exactly the moving-anchor defect XASSET-0043
+#: SS-I.4 names, applied here to XASSET-0043's own suite. Immutable, so it cannot be satisfied by
+#: editing anything today.
+PR_MERGE_SHA = "0709d2f05ab031ecb6f69c40465ed4a227983aed"
+
 #: A real, immutable, historical commit pair in which a protected path GENUINELY changed --
 #: PR #342's base and its merge, across which the authorization module was lawfully corrected.
 #: Used as a positive control so the base->head comparison can never pass vacuously.
@@ -198,6 +208,22 @@ def _paths_changed_between(before: str, after: str, relpaths) -> list[str]:
     return changed
 
 
+def _blob_at_pr_merge(relpath: str) -> bytes:
+    """The bytes of ``relpath`` AT PR #343's OWN MERGE, from the git object store.
+
+    ADDED BY XASSET-0044's re-anchoring. Every guard below asks what PR #343 left behind, which
+    was the same as the working tree only while PR #343 was the most recent unit to touch these
+    files. Reading the closed anchor is immutable and cannot be satisfied by editing anything now.
+    """
+    out = subprocess.run(
+        ["git", "cat-file", "blob", f"{PR_MERGE_SHA}:{relpath}"],
+        cwd=ROOT, capture_output=True, check=False,
+    )
+    if out.returncode != 0:
+        pytest.skip(f"{relpath} is unavailable at {PR_MERGE_SHA} in this checkout")
+    return out.stdout
+
+
 def _flat(text: str) -> str:
     """Collapse markdown line wrapping and blockquote markers.
 
@@ -297,9 +323,9 @@ class TestFilingIsGovernanceOnly:
         ) in flat_body
 
     def test_the_authorizing_module_is_byte_identical_to_head(self):
-        working = hashlib.sha256((ROOT / AUTH_MODULE_RELPATH).read_bytes()).hexdigest()
-        assert working == CURRENT_MODULE_SHA256
-        blob = _git("rev-parse", f"HEAD:{AUTH_MODULE_RELPATH}").strip()
+        at_merge = hashlib.sha256(_blob_at_pr_merge(AUTH_MODULE_RELPATH)).hexdigest()
+        assert at_merge == CURRENT_MODULE_SHA256
+        blob = _git("rev-parse", f"{PR_MERGE_SHA}:{AUTH_MODULE_RELPATH}").strip()
         assert blob == CURRENT_MODULE_BLOB
 
 
@@ -320,8 +346,8 @@ class TestDriftReproducedReadOnlyOnly:
             if out.returncode != 0:
                 pytest.skip("the bound merge is unavailable in this checkout")
             bound = hashlib.sha256(out.stdout).hexdigest()
-            working = hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
-            if bound != working:
+            at_merge = hashlib.sha256(_blob_at_pr_merge(relative)).hexdigest()
+            if bound != at_merge:
                 drifted.append(relative)
         assert drifted == [AUTH_MODULE_RELPATH], (
             f"expected exactly one drifted load-bearing path, found {drifted!r}"
@@ -605,7 +631,12 @@ class TestDerivationSurfaceTransitionIsAppendedNotLoosened:
         executed here. If a future change made the successor-lifecycle expectations non-literal,
         this fails rather than silently vouching for a premise that no longer holds.
         """
-        source = (ROOT / self.DERIVATION_RELPATH).read_text(encoding="utf-8")
+        # RE-ANCHORED BY XASSET-0044. The contradiction §G.4a records was real AT PR #343's
+        # MERGE, which is when it was reproduced and when it justified authorizing the appended
+        # transition. XASSET-0044 has since RESOLVED it by performing that authorized amendment,
+        # so reading the live file would now (correctly) show XASSET-0044 in these fields and
+        # would turn a true historical premise into a false present-tense one.
+        source = _blob_at_pr_merge(self.DERIVATION_RELPATH).decode("utf-8")
         tree = ast.parse(source)
         frozen: dict[str, str] = {}
         for node in ast.walk(tree):
@@ -618,6 +649,22 @@ class TestDerivationSurfaceTransitionIsAppendedNotLoosened:
                     frozen[target.id] = node.value.value
         assert frozen.get("STAGE_1_AUTHORIZATION_REBOUND_BY") == "XASSET-0037"
         assert frozen.get("STAGE_1_EFFECTIVE_STRUCTURAL_AUTHORIZATION_SOURCE") == "XASSET-0037"
+        # ... and the authorized resolution really was applied, so this premise is not merely
+        # preserved as folklore. The live module must NO LONGER carry the frozen XASSET-0037
+        # expectations, which is exactly what §G.4a's appended transition was authorized to change.
+        live = ast.parse((ROOT / self.DERIVATION_RELPATH).read_text(encoding="utf-8"))
+        live_frozen: dict[str, str] = {}
+        for node in ast.walk(live):
+            if not isinstance(node, ast.Assign):
+                continue
+            for target in node.targets:
+                if isinstance(target, ast.Name) and isinstance(node.value, ast.Constant):
+                    if isinstance(node.value.value, str):
+                        live_frozen[target.id] = node.value.value
+        assert live_frozen.get("STAGE_1_AUTHORIZATION_REBOUND_BY") != "XASSET-0037"
+        assert (
+            live_frozen.get("STAGE_1_EFFECTIVE_STRUCTURAL_AUTHORIZATION_SOURCE") != "XASSET-0037"
+        )
 
     def test_g4a_exists_and_is_substantive(self, sections):
         text = sections["G"]
@@ -708,13 +755,13 @@ class TestDerivationSurfaceTransitionIsAppendedNotLoosened:
 
     def test_this_correction_unit_did_not_edit_the_derivation_module(self):
         """§G.4a authorizes a FUTURE transition; this unit changes no production byte."""
-        changed = _paths_changed_between(PR_BASE_SHA, "HEAD", (self.DERIVATION_RELPATH,))
+        changed = _paths_changed_between(PR_BASE_SHA, PR_MERGE_SHA, (self.DERIVATION_RELPATH,))
         assert changed == [], f"{self.DERIVATION_RELPATH} must be untouched by this PR"
-        actual = hashlib.sha256((ROOT / self.DERIVATION_RELPATH).read_bytes()).hexdigest()
+        actual = hashlib.sha256(_blob_at_pr_merge(self.DERIVATION_RELPATH)).hexdigest()
         assert actual == DERIVATION_SUCCESSOR_SHA256
 
     def test_this_correction_unit_did_not_edit_either_canonical_artifact(self):
-        changed = _paths_changed_between(PR_BASE_SHA, "HEAD", (
+        changed = _paths_changed_between(PR_BASE_SHA, PR_MERGE_SHA, (
             "research/level1_endpoint_evidence/PROTOCOL_V1.md",
             "research/level1_endpoint_evidence/pre_registration.yaml",
         ))
@@ -734,7 +781,7 @@ class TestLoadBearingPreservationAndGrowth:
         tuple is resolved against the module's own constant assignments. A member that
         resolves to nothing fails here rather than being silently dropped.
         """
-        tree = ast.parse((ROOT / AUTH_MODULE_RELPATH).read_text(encoding="utf-8"))
+        tree = ast.parse(_blob_at_pr_merge(AUTH_MODULE_RELPATH).decode("utf-8"))
         constants: dict[str, str] = {}
         tuple_node: ast.AST | None = None
         for node in ast.walk(tree):
@@ -763,7 +810,7 @@ class TestLoadBearingPreservationAndGrowth:
         assert len(resolved) == 10
 
     def test_authorizing_constants_are_unchanged_by_this_filing(self):
-        tree = ast.parse((ROOT / AUTH_MODULE_RELPATH).read_text(encoding="utf-8"))
+        tree = ast.parse(_blob_at_pr_merge(AUTH_MODULE_RELPATH).decode("utf-8"))
         values: dict[str, object] = {}
         for node in ast.walk(tree):
             if isinstance(node, ast.Assign):
@@ -879,17 +926,17 @@ class TestXasset0042EvidenceMustBeResolved:
 
     def test_the_guard_currently_matches_the_real_module_bytes(self):
         """Independently recomputed here, so §I rests on live truth rather than the record."""
-        decision = (
-            ROOT / "governance/decisions"
-            / "XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md"
-        ).read_text(encoding="utf-8")
+        decision = _blob_at_pr_merge(
+            "governance/decisions/"
+            "XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md"
+        ).decode("utf-8")
         declared = [
             ln for ln in decision.split("\n")
             if ln.strip().startswith("FINAL_CORRECTED_MODULE_SHA256:")
         ]
         assert len(declared) == 1
         assert CURRENT_MODULE_SHA256 in declared[0]
-        actual = hashlib.sha256((ROOT / AUTH_MODULE_RELPATH).read_bytes()).hexdigest()
+        actual = hashlib.sha256(_blob_at_pr_merge(AUTH_MODULE_RELPATH)).hexdigest()
         assert actual == CURRENT_MODULE_SHA256
 
     def test_section_i_quotes_the_reviewer_handoff(self, flat_sections):
@@ -933,16 +980,31 @@ class TestXasset0042EvidenceMustBeResolved:
 
     def test_the_guard_has_exactly_the_nine_assertions_section_i_counts(self):
         """§I says 'nine assertions'; that count is verified, not asserted."""
-        tree = ast.parse(self.GUARD_SUITE.read_text(encoding="utf-8"))
-        for node in ast.walk(tree):
-            if isinstance(node, ast.ClassDef) and node.name == self.GUARD_CLASS:
-                tests = [
-                    n for n in node.body
-                    if isinstance(n, ast.FunctionDef) and n.name.startswith("test_")
-                ]
-                assert len(tests) == 9, f"expected nine guard tests, found {len(tests)}"
-                return
-        pytest.fail(f"{self.GUARD_CLASS} not found")
+        def _guard_test_names(source: str) -> list[str]:
+            tree = ast.parse(source)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ClassDef) and node.name == self.GUARD_CLASS:
+                    return [
+                        n.name for n in node.body
+                        if isinstance(n, ast.FunctionDef) and n.name.startswith("test_")
+                    ]
+            pytest.fail(f"{self.GUARD_CLASS} not found")
+            raise AssertionError  # pragma: no cover - unreachable
+
+        # RE-ANCHORED BY XASSET-0044: nine is what §I counted AT PR #343's MERGE, and that is
+        # where it is verified. XASSET-0044's authorized re-anchoring (§I.4) ADDED guard tests to
+        # this class; SS-I.4 forbids deleting, skipping, xfailing or relaxing any, so the live
+        # class is required to be a strict SUPERSET, never smaller.
+        at_merge = _guard_test_names(
+            _blob_at_pr_merge(str(self.GUARD_SUITE.relative_to(ROOT))).decode("utf-8")
+        )
+        assert len(at_merge) == 9, f"expected nine guard tests, found {len(at_merge)}"
+        live = _guard_test_names(self.GUARD_SUITE.read_text(encoding="utf-8"))
+        assert set(at_merge) <= set(live), (
+            "a guard test present at PR #343's merge has been removed or renamed; SS-I.4 permits "
+            "re-anchoring but never deletion"
+        )
+        assert len(live) >= 9
 
     def test_deferring_the_guard_to_implementation_was_rejected(self, flat_body):
         assert (
@@ -986,7 +1048,7 @@ class TestCanonicalAmendmentIsAuthorizationLanguageOnly:
             ("research/level1_endpoint_evidence/pre_registration.yaml",
              "768b013c0129f02577fea3c2a1a3100b4340b9a42f48ee0d0dbd6e671894bce1"),
         ):
-            actual = hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
+            actual = hashlib.sha256(_blob_at_pr_merge(relative)).hexdigest()
             assert actual == expected, f"{relative} changed; this filing must not touch it"
 
 
@@ -1110,7 +1172,7 @@ class TestNoProtectedByteWasTouched:
         single check actually measured.
         """
         assert (ROOT / relpath).exists(), f"{relpath} must still exist"
-        changed = _paths_changed_between(PR_BASE_SHA, "HEAD", (relpath,))
+        changed = _paths_changed_between(PR_BASE_SHA, PR_MERGE_SHA, (relpath,))
         assert changed == [], (
             f"{relpath} changed between the PR base {PR_BASE_SHA} and HEAD; this filing is "
             "governance-only and must not touch it"
@@ -1162,11 +1224,17 @@ class TestNoProtectedByteWasTouched:
         """
         assert len(PR_BASE_SHA) == 40
         assert all(c in "0123456789abcdef" for c in PR_BASE_SHA)
-        head = _git("rev-parse", "HEAD").strip()
-        assert PR_BASE_SHA != head, "the base pin must not be HEAD"
-        merge_base = _git("merge-base", PR_BASE_SHA, "HEAD").strip()
+        assert len(PR_MERGE_SHA) == 40
+        assert all(c in "0123456789abcdef" for c in PR_MERGE_SHA)
+        assert PR_BASE_SHA != PR_MERGE_SHA, "the base and merge pins must be distinct commits"
+        merge_base = _git("merge-base", PR_BASE_SHA, PR_MERGE_SHA).strip()
         assert merge_base == PR_BASE_SHA, (
-            "the base pin must be an ancestor of HEAD; it is this PR's real base"
+            "the base pin must be an ancestor of the merge pin; it is this PR's real base"
+        )
+        # The closed range must be on the authorized history, not an orphan.
+        head = _git("rev-parse", "HEAD").strip()
+        assert _git("merge-base", PR_MERGE_SHA, head).strip() == PR_MERGE_SHA, (
+            "the merge pin must be an ancestor of HEAD"
         )
 
     def test_the_positive_control_uses_the_real_constants(self):
@@ -1440,10 +1508,21 @@ class TestCatalogAndRegisterSynchronisation:
         """`active_branch`, `active_pr` and `last_verified_main_sha` are WS-0014's SINGLE SHARED
         live self-reference fields. PR #342 has merged at `5fbfc94d`, so under `OPS-0001`'s
         Active-GitHub-fields rule they lawfully advance to the unit that is now live."""
-        assert ws0014["active_branch"] == ACTIVE_BRANCH
-        assert ws0014["active_pr"] == XASSET0043_ACTIVE_PR
-        assert ws0014["last_verified_main_sha"] == CORRECTION_MERGE_SHA
-        assert str(ws0014["last_verified_date"]) == "2026-08-19"
+        # ADVANCED BY XASSET-0044, on exactly the terms the docstring above already states: these
+        # are WS-0014's SINGLE SHARED live fields, PR #343 has since merged at `0709d2f0`, and
+        # under OPS-0001's Active-GitHub-fields rule they lawfully advance again to whatever unit
+        # is now live. What this test protects -- that they point at the LIVE work rather than at a
+        # closed one -- is unchanged, so it is asserted against the closed values it must NOT still
+        # be showing, plus the current anchor.
+        assert ws0014["active_branch"] != ACTIVE_BRANCH
+        assert ws0014["active_pr"] != XASSET0043_ACTIVE_PR
+        assert ws0014["last_verified_main_sha"] != CORRECTION_MERGE_SHA
+        assert ws0014["last_verified_main_sha"] == PR_MERGE_SHA
+        assert str(ws0014["last_verified_date"]) >= "2026-08-20"
+        # PR #343's own closed record survives in the register as history, not as live state.
+        register = REGISTER_PATH.read_text(encoding="utf-8")
+        assert ACTIVE_BRANCH in register
+        assert str(XASSET0043_ACTIVE_PR) in register
 
     def test_register_still_parses_and_ws0014_is_unique(self, ws0014):
         assert ws0014["id"] == "WS-0014"
