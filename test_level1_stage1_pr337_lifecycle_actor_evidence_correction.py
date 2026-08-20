@@ -1176,10 +1176,53 @@ class TestNoSideEffects:
         assert AUTH.EXECUTION_ATTEMPT_ID == "ENDPOINT-0001::STAGE_1::ATTEMPT_1"
 
     def test_the_binding_constants_are_untouched_by_this_correction(self):
-        """The correction corrects; it does not rebind. Rebinding is a separate unit."""
-        assert AUTH.AUTHORIZING_DECISION == "XASSET-0037"
-        assert AUTH.AUTHORIZING_PULL_REQUEST == 337
-        assert len(AUTH.LOAD_BEARING_RELPATHS) == 10
+        """The correction corrects; it does not rebind. Rebinding is a separate unit.
+
+        RE-ANCHORED (XASSET-0043 SS-I.4, applied by XASSET-0044 SS-H). This read the LIVE module,
+        so it asserted "nobody has rebound, ever" rather than "XASSET-0042 did not rebind" -- and
+        would therefore fail the moment the separately authorized rebinding it exists to defer to
+        actually happened, reporting a defect in XASSET-0042 that XASSET-0042 did not commit.
+
+        It now proves the same proposition against the CLOSED range this unit spans, by parsing the
+        module AS IT STOOD AT XASSET-0042'S OWN MERGE. That is immutable, cannot be satisfied by
+        editing anything today, and is strictly stronger than reading a live import.
+        """
+        import subprocess
+
+        out = subprocess.run(
+            ["git", "show",
+             "5fbfc94d7333e552bd2654261e0c57134a172e31:level1_stage1_execution_authorization.py"],
+            cwd=REPO_ROOT, capture_output=True, check=False,
+        )
+        if out.returncode != 0:
+            pytest.skip("the XASSET-0042 merge is unavailable in this checkout")
+        tree = ast.parse(out.stdout.decode("utf-8"))
+        assigned: dict[str, ast.expr] = {}
+        for node in tree.body:
+            if isinstance(node, ast.Assign) and len(node.targets) == 1:
+                target = node.targets[0]
+                if isinstance(target, ast.Name):
+                    assigned[target.id] = node.value
+        assert ast.literal_eval(assigned["AUTHORIZING_DECISION"]) == "XASSET-0037"
+        assert ast.literal_eval(assigned["AUTHORIZING_PULL_REQUEST"]) == 337
+        # Counted from the AST rather than literal_eval'd: two of the ten entries are Name
+        # references to the canonical relpath constants, so the tuple is not a pure literal.
+        paths = assigned["LOAD_BEARING_RELPATHS"]
+        assert isinstance(paths, ast.Tuple)
+        assert len(paths.elts) == 10
+        first = paths.elts[0]
+        assert isinstance(first, ast.Constant)
+        assert first.value == "level1_stage1_execution_authorization.py"
+
+    def test_a_later_authorized_unit_did_rebind_those_constants(self):
+        """MUTATION PIN: the closed-range assertion above must not pass vacuously.
+
+        Pinned against the LIVE module, so if the rebinding were ever reverted or never happened,
+        this fails and the re-anchoring above is exposed as unnecessary rather than quietly correct.
+        """
+        assert AUTH.AUTHORIZING_DECISION != "XASSET-0037"
+        assert AUTH.AUTHORIZING_PULL_REQUEST != 337
+        assert len(AUTH.LOAD_BEARING_RELPATHS) > 10
         assert AUTH.LOAD_BEARING_RELPATHS[0] == "level1_stage1_execution_authorization.py"
 
 
@@ -1759,8 +1802,20 @@ class TestDeclaredCorrectedIdentityMatchesTheModule:
     #: The bound digest the step-8 rebinding pinned. Deliberately NOT re-pinned by this unit.
     BOUND_SHA256 = "8186a50f71d05bbb7189183bacad6aa0752147e9c7f4e1f5b3bacabad91f2fc8"
 
-    #: The decision's single machine-readable declaration of the CURRENT corrected identity.
+    #: The decision's single machine-readable declaration of the identity XASSET-0042 PRODUCED.
     DECLARATION_MARKER = "FINAL_CORRECTED_MODULE_SHA256:"
+
+    #: RE-ANCHORED BY XASSET-0044 SS-H / XASSET-0043 SS-I.4. Three of the assertions below are
+    #: module-digest-coupled and were written while XASSET-0042 was the most recent unit to touch
+    #: the module, so "the module's bytes" and "the bytes this unit produced" were the same thing.
+    #: XASSET-0044 lawfully changed the module, which is exactly the designed fail-closed hand-off
+    #: the final XASSET-0042 review recorded. Each is re-pointed at the truth it was meant to
+    #: express -- a CLOSED, immutable anchor -- rather than at a moving working tree or a moving
+    #: HEAD. Nothing is deleted, skipped, xfailed, or relaxed: every assertion still compares a
+    #: declaration against real bytes, and now cannot silently pass as history moves.
+    CORRECTION_MERGE_SHA = "5fbfc94d7333e552bd2654261e0c57134a172e31"
+    CORRECTION_REVIEWED_HEAD = "c8ea6efbeec166064aab293e7020cb221c402e19"
+    MODULE_RELPATH = "level1_stage1_execution_authorization.py"
 
     def _declared(self) -> str:
         """The declaration is the line that BEGINS with the marker.
@@ -1786,6 +1841,25 @@ class TestDeclaredCorrectedIdentityMatchesTheModule:
         return tokens[0]
 
     def _module_sha256(self) -> str:
+        """The module's bytes AT THE CLOSED XASSET-0042 ANCHOR, read from the git object store.
+
+        Previously this hashed the working tree, which was the same thing while XASSET-0042 was the
+        most recent unit to touch the module. It no longer is. Reading the blob at PR #342's merge
+        is strictly stronger than reading a mutable working tree: the anchor is immutable, so this
+        comparison can never be made to pass by editing a file.
+        """
+        import subprocess
+
+        out = subprocess.run(
+            ["git", "show", f"{self.CORRECTION_MERGE_SHA}:{self.MODULE_RELPATH}"],
+            cwd=REPO_ROOT, capture_output=True, check=False,
+        )
+        if out.returncode != 0:
+            pytest.skip("the XASSET-0042 merge is unavailable in this checkout")
+        return hashlib.sha256(out.stdout).hexdigest()
+
+    def _live_module_sha256(self) -> str:
+        """The module's bytes in the working tree, whatever generation currently owns them."""
         return hashlib.sha256(self.MODULE.read_bytes()).hexdigest()
 
     def test_the_declaration_exists_and_is_unambiguous(self):
@@ -1824,22 +1898,61 @@ class TestDeclaredCorrectedIdentityMatchesTheModule:
         assert len(values) == 3
 
     def test_the_register_records_the_current_identity_too(self):
+        """RE-ANCHORED: the register must carry the LIVE module's identity, not a frozen literal.
+
+        Reading the live digest rather than a constant means this keeps working across generations
+        AND keeps failing if the register goes stale -- which is what it was always for.
+        """
         register = (REPO_ROOT / "operations/WORKSTREAMS.yaml").read_text(encoding="utf-8")
-        assert self._module_sha256() in register.replace("\n", "").replace(" ", "")
+        flattened = register.replace("\n", "").replace(" ", "")
+        assert self._live_module_sha256() in flattened, (
+            "the register does not record the production module's current identity"
+        )
+
+    def test_the_register_still_records_the_xasset_0042_identity_as_history(self):
+        """The closed XASSET-0042 value is retained, not overwritten by a successor's."""
+        register = (REPO_ROOT / "operations/WORKSTREAMS.yaml").read_text(encoding="utf-8")
+        flattened = register.replace("\n", "").replace(" ", "")
+        assert self._declared() in flattened, (
+            "XASSET-0042's own closed identity must remain in the register as history"
+        )
 
     def test_the_module_was_not_edited_by_this_evidence_correction(self):
-        """This unit corrects evidence only. The production module must be untouched."""
+        """This unit corrects evidence only. The production module must be untouched BY IT.
+
+        RE-ANCHORED (XASSET-0043 SS-I.4, applied by XASSET-0044 SS-H): this compared the reviewed
+        head against a MOVING ``HEAD``, so it silently changed meaning every time main advanced and
+        would fail the moment any LATER, separately authorized unit lawfully edited the module --
+        reporting a defect in XASSET-0042 that XASSET-0042 did not commit. It now compares the
+        CLOSED range this unit actually spans: its own reviewed head through its own merge. That is
+        the proposition the test name states, it is immutable, and it cannot be satisfied by
+        editing anything today.
+        """
         import subprocess
 
         out = subprocess.run(
             ["git", "diff", "--name-only",
-             "c8ea6efbeec166064aab293e7020cb221c402e19", "HEAD", "--",
-             "level1_stage1_execution_authorization.py"],
+             self.CORRECTION_REVIEWED_HEAD, self.CORRECTION_MERGE_SHA, "--",
+             self.MODULE_RELPATH],
             cwd=REPO_ROOT, capture_output=True, text=True,
         )
         if out.returncode != 0:
-            pytest.skip("prior head not available in this checkout")
+            pytest.skip("the XASSET-0042 commit range is unavailable in this checkout")
         assert out.stdout.strip() == "", (
-            "the production module changed after the reviewed head; this correction is "
-            "evidence-only and must not edit it"
+            "the production module changed between XASSET-0042's reviewed head and its merge; "
+            "that correction is evidence-only and must not have edited it"
+        )
+
+    def test_a_later_authorized_unit_did_change_the_module(self):
+        """MUTATION PIN for the re-anchoring: the closed-range check must not pass vacuously.
+
+        If the range above were repointed at two commits that happen to agree -- or at a range in
+        which nothing ever changed -- it would prove nothing. This asserts the complementary fact
+        that makes the re-anchoring necessary and honest in the first place: the module genuinely
+        does differ between XASSET-0042's merge and the live working tree, because XASSET-0044
+        lawfully rebound it.
+        """
+        assert self._live_module_sha256() != self._module_sha256(), (
+            "the live module is identical to its XASSET-0042 state; either the rebinding did not "
+            "happen or the closed-range anchor is wrong"
         )

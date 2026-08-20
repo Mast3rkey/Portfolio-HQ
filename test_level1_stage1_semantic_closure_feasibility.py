@@ -109,9 +109,22 @@ PROTECTED_RELPATHS = (
 #: This filing changed no canonical byte, and that remains true of it. The implementation
 #: XASSET-0036 later authorized reconciled the XASSET-0035 SS-E/SS-F/SS-G semantics into the
 #: canonical artifacts (V5 -> V6); the XASSET-0037 successor operational rebinding then amended the
-#: authorization language alone (V6 -> V7) and recomputed the pins once afterwards. Every
+#: authorization language alone (V6 -> V7) and recomputed the pins once afterwards; XASSET-0044's
+#: post-correction rebinding then did the same again (V7 -> V8) under XASSET-0030 SS-D. Every
 #: superseded generation is retained below and asserted as history, never rewritten.
 EXPECTED_CANONICAL_PINS = {
+    "research/level1_endpoint_evidence/PROTOCOL_V1.md": (
+        "1ad1d060d5bf970288844b05b94e1fd38c3cc9cc87afc1481a45ed1b315d0c84"
+    ),
+    "research/level1_endpoint_evidence/pre_registration.yaml": (
+        "898c329d9941c5c24ff2a800f842e860c63e2e500acc4257eb14646c1012d82f"
+    ),
+}
+
+#: XASSET-0037's V7 pins, retained as HISTORICAL identity now that XASSET-0044's post-correction
+#: rebinding amends the authorization language again (V7 -> V8) and recomputes the pins once
+#: afterwards. Same treatment as every generation before it: recorded verbatim, never rewritten.
+XASSET_0037_CANONICAL_PINS = {
     "research/level1_endpoint_evidence/PROTOCOL_V1.md": (
         "367583b616e1c6ab614bcf67d451fe27ce40507d073374190c57291e761d8971"
     ),

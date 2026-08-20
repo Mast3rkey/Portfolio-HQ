@@ -61,11 +61,22 @@ XASSET_0029_DECISION_PATH = (
     / "XASSET-0029-endpoint-0001-stage-1-operational-authorization.md"
 )
 
-#: XASSET-0037 is the CURRENT successor authority over the canonical bytes.
+#: XASSET-0037 performed XASSET-0030 SS-G.B step 8's single rebinding. It is HISTORICAL authority
+#: over the canonical bytes now that XASSET-0044 has rebound them again under SS-D's reconciliation
+#: clause, authorized by XASSET-0043; it is retained, not invalidated.
 XASSET_0037_DECISION_PATH = (
     ROOT
     / "governance/decisions"
     / "XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md"
+)
+
+#: XASSET-0044 is the CURRENT successor authority over the canonical bytes. XASSET-0042 lawfully
+#: corrected a load-bearing path, which created the enforcement drift XASSET-0030 SS-D recorded in
+#: advance; XASSET-0043 authorized exactly one reconciliation lifecycle, and this is it.
+XASSET_0044_DECISION_PATH = (
+    ROOT
+    / "governance/decisions"
+    / "XASSET-0044-endpoint-0001-stage-1-post-correction-operational-rebinding.md"
 )
 
 STUDY_ID = "ENDPOINT-0001"
@@ -325,6 +336,11 @@ STAGE_1_EFFECTIVITY_GATES = (
 #: -- XASSET-0037 -- is now the operative precondition. The MECHANISM is unchanged; the merged tree
 #: its load-bearing identity is proven against is not.
 STAGE_1_EXECUTION_PRECONDITION = (
+    "XASSET_0044_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+)
+
+#: XASSET-0037's precondition, retained as HISTORICAL identity. Spent is not invalidated.
+PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0037 = (
     "XASSET_0037_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
 )
 
@@ -338,6 +354,10 @@ PREDECESSOR_STAGE_1_EXECUTION_PRECONDITION_XASSET_0028 = (
 )
 
 STAGE_1_BLOCKING_PREREQUISITE = (
+    "XASSET_0044_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+)
+
+PREDECESSOR_STAGE_1_BLOCKING_PREREQUISITE_XASSET_0037 = (
     "XASSET_0037_LIFECYCLE_CLOSURE_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
 )
 
@@ -355,8 +375,13 @@ STAGE_1_EXECUTION_ATTEMPT_ID = "ENDPOINT-0001::STAGE_1::ATTEMPT_1"
 #: effective structural authorization source are two different facts, kept in two different fields
 #: so neither can be quietly erased by the other.
 STAGE_1_AUTHORIZATION_MECHANISM_ESTABLISHED_BY = "XASSET-0029"
-STAGE_1_EFFECTIVE_STRUCTURAL_AUTHORIZATION_SOURCE = "XASSET-0037"
-STAGE_1_AUTHORIZATION_REBOUND_BY = "XASSET-0037"
+STAGE_1_EFFECTIVE_STRUCTURAL_AUTHORIZATION_SOURCE = "XASSET-0044"
+STAGE_1_AUTHORIZATION_REBOUND_BY = "XASSET-0044"
+
+#: XASSET-0037's own values, retained so a successor cannot quietly erase the generation it
+#: succeeds. Both are HISTORICAL; neither is the effective source.
+PREDECESSOR_STAGE_1_EFFECTIVE_STRUCTURAL_AUTHORIZATION_SOURCE_XASSET_0037 = "XASSET-0037"
+PREDECESSOR_STAGE_1_AUTHORIZATION_REBOUND_BY_XASSET_0037 = "XASSET-0037"
 
 #: The exact completed executable package the successor rebinding binds (XASSET-0036 SS-E's
 #: authorized implementation, delivered by pull request 336).
@@ -368,6 +393,14 @@ STAGE_1_EXECUTABLE_PACKAGE_BOUND = "PULL_REQUEST_336"
 SUCCESSOR_REBINDING_KEYS = (
     "rebinding_decision",
     "rebinding_authority",
+    # EXTENDED BY XASSET-0044. The prior generation's own decision and authority are retained
+    # rather than overwritten, and the three decisions that jointly make the corrected bytes
+    # lawful are named. Closed as ever: a sixth addition is a validation error, not a silent one.
+    "predecessor_rebinding_decision_xasset_0037",
+    "predecessor_rebinding_authority_xasset_0037",
+    "correction_authorization_decision",
+    "correction_decision",
+    "rebinding_authorization_decision",
     "package_authorization_decision",
     "is_an_activation_step",
     "is_an_attestation",
@@ -908,6 +941,24 @@ def _validate_stage_1_executability(data: Mapping[str, Any], errors: list[str]) 
         "stage_1_executability.authorized_by_xasset_0029",
         errors,
     )
+    # Neither the XASSET-0036 executable package, nor XASSET-0037's rebinding, nor XASSET-0044's
+    # post-correction rebinding authorizes execution. Rebinding is not arming, and the canonical
+    # file must keep saying so for every generation that has ever bound these bytes.
+    _false(
+        block.get("authorized_by_xasset_0036"),
+        "stage_1_executability.authorized_by_xasset_0036",
+        errors,
+    )
+    _false(
+        block.get("authorized_by_xasset_0037"),
+        "stage_1_executability.authorized_by_xasset_0037",
+        errors,
+    )
+    _false(
+        block.get("authorized_by_xasset_0044"),
+        "stage_1_executability.authorized_by_xasset_0044",
+        errors,
+    )
     _true(
         block.get("executable_is_never_the_authorization_source"),
         "stage_1_executability.executable_is_never_the_authorization_source",
@@ -1066,11 +1117,43 @@ def _validate_successor_operational_rebinding(
     if not _keys(rebinding, SUCCESSOR_REBINDING_KEYS, where, errors):
         return
 
-    _exact(rebinding.get("rebinding_decision"), "XASSET-0037", f"{where}.rebinding_decision", errors)
+    _exact(rebinding.get("rebinding_decision"), "XASSET-0044", f"{where}.rebinding_decision", errors)
+    # XASSET-0030 SS-G.B step 8's single rebinding was SPENT by XASSET-0037 and is not drawn on
+    # twice. This generation's authority is SS-D's reconciliation clause, authorized by XASSET-0043.
     _exact(
         rebinding.get("rebinding_authority"),
-        "XASSET-0030_SS_G_B_STEP_8",
+        "XASSET-0030_SS_D_RECONCILIATION_LIFECYCLE_AUTHORIZED_BY_XASSET_0043",
         f"{where}.rebinding_authority",
+        errors,
+    )
+    _exact(
+        rebinding.get("predecessor_rebinding_decision_xasset_0037"),
+        "XASSET-0037",
+        f"{where}.predecessor_rebinding_decision_xasset_0037",
+        errors,
+    )
+    _exact(
+        rebinding.get("predecessor_rebinding_authority_xasset_0037"),
+        "XASSET-0030_SS_G_B_STEP_8",
+        f"{where}.predecessor_rebinding_authority_xasset_0037",
+        errors,
+    )
+    _exact(
+        rebinding.get("correction_authorization_decision"),
+        "XASSET-0041",
+        f"{where}.correction_authorization_decision",
+        errors,
+    )
+    _exact(
+        rebinding.get("correction_decision"),
+        "XASSET-0042",
+        f"{where}.correction_decision",
+        errors,
+    )
+    _exact(
+        rebinding.get("rebinding_authorization_decision"),
+        "XASSET-0043",
+        f"{where}.rebinding_authorization_decision",
         errors,
     )
     _exact(
@@ -3267,6 +3350,14 @@ XASSET_0036_PACKAGE_PINS = {
     "preregistration_sha256": "e993df9f41d2f5352e51c9921dd006d50ab69518a730d37def106696b3f149d4",
 }
 
+#: XASSET-0037's pins, retained as HISTORICAL identity now that XASSET-0044 rebinds the canonical
+#: bytes under successor authority. Same treatment as every generation before it: recorded
+#: verbatim, never rewritten to match amended bytes.
+XASSET_0037_PINS = {
+    "protocol_sha256": "367583b616e1c6ab614bcf67d451fe27ce40507d073374190c57291e761d8971",
+    "preregistration_sha256": "768b013c0129f02577fea3c2a1a3100b4340b9a42f48ee0d0dbd6e671894bce1",
+}
+
 
 def validate_current_canonical_pins(
     prereg_path: Path = PREREG_PATH, protocol_path: Path = PROTOCOL_PATH
@@ -3305,6 +3396,7 @@ def validate_current_canonical_pins(
         # to an older accepted value either.
         is_protocol = relative == authorization.CANONICAL_PROTOCOL_RELPATH
         for label, pins in (
+            ("XASSET-0037", XASSET_0037_PINS),
             ("XASSET-0036 executable-package", XASSET_0036_PACKAGE_PINS),
             ("XASSET-0029", XASSET_0029_PINS),
             ("XASSET-0028", XASSET_0028_PINS),
@@ -3466,15 +3558,23 @@ XASSET_0037_HASH_BLOCK_RE = re.compile(
 def validate_xasset_0037_successor_hash_pins(
     decision_text: str, prereg_path: Path = PREREG_PATH, protocol_path: Path = PROTOCOL_PATH
 ) -> ValidationResult:
-    """Validate XASSET-0037's pins as the CURRENT authority, against the LIVE canonical bytes.
+    """Validate XASSET-0037's pins as HISTORICAL identity.
 
-    ESTABLISHED BY XASSET-0037 / XASSET-0030 SS-G.B step 8. Each generation's pin block is verified
-    against the live files WHILE IT IS CURRENT, and demoted to verbatim-history verification once a
-    successor amends the bytes. This is that current-generation check.
+    AMENDED BY XASSET-0044. This previously asserted that XASSET-0037's pins still matched the live
+    canonical files, which was correct while XASSET-0037 was current. XASSET-0044 amends those files
+    under successor authority, so that assertion would now force either a false failure or a rewrite
+    of accepted history. It instead asserts XASSET-0037 still records exactly the digests it
+    accepted. Current-byte verification lives in :func:`validate_current_canonical_pins` and
+    :func:`validate_xasset_0044_successor_hash_pins`. This is precisely the treatment XASSET-0037
+    itself gave :func:`validate_xasset_0029_successor_hash_pins`.
 
     It also asserts the predecessor digests the decision records are the previously ACCEPTED ones,
     so a successor cannot rewrite the history it claims to succeed.
+
+    The two path parameters are retained so every generation's validator keeps one signature; they
+    are deliberately unused now that the check is verbatim rather than live.
     """
+    del prereg_path, protocol_path  # historical verification reads no live canonical byte
     errors: list[str] = []
     pins = extract_block(decision_text, XASSET_0037_HASH_BLOCK_RE)
     if pins is None:
@@ -3487,17 +3587,15 @@ def validate_xasset_0037_successor_hash_pins(
         if pins.get(key) != want:
             errors.append(f"XASSET-0037 hash pins: {key} expected {want!r}, got {pins.get(key)!r}")
 
-    for key, path in (
-        ("protocol_sha256", protocol_path),
-        ("preregistration_sha256", prereg_path),
-    ):
+    for key in ("protocol_sha256", "preregistration_sha256"):
         pinned = pins.get(key)
-        actual = sha256_file(path)
+        want = XASSET_0037_PINS[key]
         if not pinned:
             errors.append(f"XASSET-0037 hash pins: {key} is absent")
-        elif pinned != actual:
+        elif pinned != want:
             errors.append(
-                f"XASSET-0037 hash pins: {key} is {pinned}, but the live file is {actual}"
+                f"XASSET-0037 hash pins: {key} is {pinned}, but XASSET-0037's accepted historical "
+                f"pin is {want}; accepted history may not be rewritten"
             )
 
     # Accepted history may not be rewritten by the decision that succeeds it.
@@ -3515,6 +3613,65 @@ def validate_xasset_0037_successor_hash_pins(
             errors.append(
                 f"XASSET-0037 hash pins: {key} is {pinned}, but the XASSET-0036 executable "
                 f"package's accepted pin is {want}; accepted history may not be rewritten"
+            )
+    return ValidationResult(not errors, tuple(errors))
+
+
+XASSET_0044_HASH_BLOCK_RE = re.compile(
+    r"<!-- XASSET-0044-HASH-PINS-V1\n(?P<body>.*?)\n-->", re.DOTALL
+)
+
+
+def validate_xasset_0044_successor_hash_pins(
+    decision_text: str, prereg_path: Path = PREREG_PATH, protocol_path: Path = PROTOCOL_PATH
+) -> ValidationResult:
+    """Validate XASSET-0044's pins as the CURRENT authority, against the LIVE canonical bytes.
+
+    Each generation's pin block is verified against the live files WHILE IT IS CURRENT, and demoted
+    to verbatim-history verification once a successor amends the bytes. This is that
+    current-generation check, one generation on from
+    :func:`validate_xasset_0037_successor_hash_pins`.
+
+    It also asserts the predecessor digests the decision records are the previously ACCEPTED ones,
+    so a successor cannot rewrite the history it claims to succeed.
+    """
+    errors: list[str] = []
+    pins = extract_block(decision_text, XASSET_0044_HASH_BLOCK_RE)
+    if pins is None:
+        return ValidationResult(False, ("XASSET-0044: XASSET-0044-HASH-PINS-V1 block absent",))
+
+    for key, want in (
+        ("protocol_path", "research/level1_endpoint_evidence/PROTOCOL_V1.md"),
+        ("preregistration_path", "research/level1_endpoint_evidence/pre_registration.yaml"),
+    ):
+        if pins.get(key) != want:
+            errors.append(f"XASSET-0044 hash pins: {key} expected {want!r}, got {pins.get(key)!r}")
+
+    for key, path in (
+        ("protocol_sha256", protocol_path),
+        ("preregistration_sha256", prereg_path),
+    ):
+        pinned = pins.get(key)
+        actual = sha256_file(path)
+        if not pinned:
+            errors.append(f"XASSET-0044 hash pins: {key} is absent")
+        elif pinned != actual:
+            errors.append(
+                f"XASSET-0044 hash pins: {key} is {pinned}, but the live file is {actual}"
+            )
+
+    # Accepted history may not be rewritten by the decision that succeeds it.
+    for key, want in (
+        ("predecessor_protocol_sha256", XASSET_0037_PINS["protocol_sha256"]),
+        ("predecessor_preregistration_sha256", XASSET_0037_PINS["preregistration_sha256"]),
+    ):
+        pinned = pins.get(key)
+        if not pinned:
+            errors.append(f"XASSET-0044 hash pins: {key} is absent")
+        elif pinned != want:
+            errors.append(
+                f"XASSET-0044 hash pins: {key} is {pinned}, but XASSET-0037's accepted pin is "
+                f"{want}; accepted history may not be rewritten"
             )
     return ValidationResult(not errors, tuple(errors))
 
@@ -3573,9 +3730,8 @@ def validate_file(path: Path = PREREG_PATH) -> ValidationResult:
     else:
         errors.append(f"{XASSET_0029_DECISION_PATH}: file not found")
 
-    # XASSET-0037 is the CURRENT successor authority, so its own pin block is verified against the
-    # LIVE canonical bytes rather than verbatim -- the same treatment every generation received
-    # while it was current.
+    # XASSET-0037's pins are retained as HISTORICAL identity, verified verbatim rather than against
+    # the live files, which XASSET-0044 has since amended under successor authority.
     if XASSET_0037_DECISION_PATH.exists():
         errors.extend(
             validate_xasset_0037_successor_hash_pins(
@@ -3584,6 +3740,18 @@ def validate_file(path: Path = PREREG_PATH) -> ValidationResult:
         )
     else:
         errors.append(f"{XASSET_0037_DECISION_PATH}: file not found")
+
+    # XASSET-0044 is the CURRENT successor authority, so its own pin block is verified against the
+    # LIVE canonical bytes rather than verbatim -- the same treatment every generation received
+    # while it was current.
+    if XASSET_0044_DECISION_PATH.exists():
+        errors.extend(
+            validate_xasset_0044_successor_hash_pins(
+                XASSET_0044_DECISION_PATH.read_text(encoding="utf-8"), path, PROTOCOL_PATH
+            ).errors
+        )
+    else:
+        errors.append(f"{XASSET_0044_DECISION_PATH}: file not found")
 
     return ValidationResult(not errors, tuple(errors))
 

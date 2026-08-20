@@ -77,6 +77,24 @@ class FakeGit:
                 AUTH.EXECUTABLE_PACKAGE_MERGE_BASE,
                 AUTH.EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
             ),
+            # EXTENDED BY XASSET-0044. The post-correction rebinding verifies FOUR further merges
+            # from git -- the prior rebinding, the correction's authority, the corrected module
+            # itself, and this rebinding's own authority -- so an honest stand-in vouches for each
+            # separately rather than letting an unknown anchor pass. These are the REAL identities,
+            # so the fixture agrees with the object store rather than inventing a parallel history.
+            AUTH.PRIOR_SUCCESSOR_REBINDING_MERGE_SHA: (
+                AUTH.PRIOR_SUCCESSOR_REBINDING_MERGE_BASE,
+                AUTH.PRIOR_SUCCESSOR_REBINDING_ACCEPTED_HEAD,
+            ),
+            AUTH.CORRECTION_AUTHORIZING_MERGE_SHA: ("1" * 40, "2" * 40),
+            AUTH.CORRECTED_MODULE_MERGE_SHA: (
+                AUTH.CORRECTED_MODULE_MERGE_BASE,
+                AUTH.CORRECTED_MODULE_ACCEPTED_HEAD,
+            ),
+            AUTH.REBINDING_AUTHORIZING_MERGE_SHA: (
+                AUTH.REBINDING_AUTHORIZING_MERGE_BASE,
+                AUTH.REBINDING_AUTHORIZING_ACCEPTED_HEAD,
+            ),
         }
         self.blobs = {}
         for rel in AUTH.LOAD_BEARING_RELPATHS:
@@ -95,6 +113,14 @@ class FakeGit:
             HEAD: "t" * 40,
             AUTH.EXECUTABLE_PACKAGE_MERGE_SHA: "p" * 40,
             AUTH.EXECUTABLE_PACKAGE_ACCEPTED_HEAD: "p" * 40,
+            # XASSET-0044: each inherited merge's tree equals its accepted head's tree, which is
+            # exactly the zero-merge-drift property the module PROVES rather than assumes.
+            AUTH.PRIOR_SUCCESSOR_REBINDING_MERGE_SHA: "r" * 40,
+            AUTH.PRIOR_SUCCESSOR_REBINDING_ACCEPTED_HEAD: "r" * 40,
+            AUTH.CORRECTED_MODULE_MERGE_SHA: "c" * 40,
+            AUTH.CORRECTED_MODULE_ACCEPTED_HEAD: "c" * 40,
+            AUTH.REBINDING_AUTHORIZING_MERGE_SHA: "a" * 39 + "z",
+            AUTH.REBINDING_AUTHORIZING_ACCEPTED_HEAD: "a" * 39 + "z",
         }
         # The successor rebinding binds the derivation module by an EXACT CLOSED TRANSITION
         # (architectural correction, review 4963386313), which needs blob TEXT rather than a digest
@@ -103,19 +129,29 @@ class FakeGit:
         # one blob everywhere and called that "the true posture"; under a projection it was, because
         # the projection was identical at both. It is not true of the real bytes, so the stand-in now
         # serves each anchor what the git object store actually holds there.
-        successor_source = (
+        # EXTENDED BY XASSET-0044: the chain is now package -> successor -> rebound, three distinct
+        # blobs at three distinct sets of anchors. The WORKING TREE now carries the REBOUND bytes,
+        # and the accepted SUCCESSOR bytes live at XASSET-0037's own anchors, which is precisely
+        # where the module now looks for them.
+        rebound_source = (
             REPO_ROOT / AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH
         ).read_text(encoding="utf-8")
-        package_source = subprocess.run(
-            [
-                "git", "show",
-                f"{AUTH.EXECUTABLE_PACKAGE_MERGE_SHA}:{AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH}",
-            ],
-            capture_output=True, cwd=str(REPO_ROOT), timeout=120, check=True,
-        ).stdout.decode("utf-8")
+
+        def _at(commit):
+            return subprocess.run(
+                ["git", "show", f"{commit}:{AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH}"],
+                capture_output=True, cwd=str(REPO_ROOT), timeout=120, check=True,
+            ).stdout.decode("utf-8")
+
+        successor_source = _at(AUTH.PRIOR_SUCCESSOR_REBINDING_MERGE_SHA)
+        package_source = _at(AUTH.EXECUTABLE_PACKAGE_MERGE_SHA)
         self.texts = {
-            (MERGE, AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): successor_source,
-            (HEAD, AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): successor_source,
+            (MERGE, AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): rebound_source,
+            (HEAD, AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): rebound_source,
+            (AUTH.PRIOR_SUCCESSOR_REBINDING_MERGE_SHA,
+             AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): successor_source,
+            (AUTH.PRIOR_SUCCESSOR_REBINDING_ACCEPTED_HEAD,
+             AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): successor_source,
             (AUTH.EXECUTABLE_PACKAGE_MERGE_SHA,
              AUTH.OUTCOME_PRODUCING_DERIVATION_RELPATH): package_source,
             (AUTH.EXECUTABLE_PACKAGE_ACCEPTED_HEAD,
@@ -825,9 +861,21 @@ class TestPreservedPostures:
         Neither the check nor its strictness is weakened -- it gained an assertion.
         """
         lifecycle_block = prereg["lifecycle_effectivity"]
-        assert "XASSET_0037" in lifecycle_block["stage_1_execution_may_begin_only_after"]
-        assert lifecycle_block["stage_1_execution_precondition_amended_by"] == "XASSET-0037"
-        # This filing's own accepted value, retained as HISTORY rather than rewritten.
+        # RE-ANCHORED BY XASSET-0044, on exactly the terms the docstring above already sets: the
+        # operative value moved again, XASSET-0037 -> XASSET-0044, when XASSET-0030 SS-D's
+        # reconciliation lifecycle bound the corrected module. The check gains assertions rather
+        # than losing any -- XASSET-0037's own value is now asserted to survive as history too.
+        assert "XASSET_0044" in lifecycle_block["stage_1_execution_may_begin_only_after"]
+        assert lifecycle_block["stage_1_execution_precondition_amended_by"] == "XASSET-0044"
+        # XASSET-0037's accepted value, retained as HISTORY rather than rewritten.
+        assert "XASSET_0037" in lifecycle_block[
+            "predecessor_stage_1_execution_may_begin_only_after_xasset_0037"
+        ]
+        assert (
+            lifecycle_block["predecessor_stage_1_execution_precondition_amended_by_xasset_0037"]
+            == "XASSET-0037"
+        )
+        # XASSET-0029's own accepted value, retained as HISTORY rather than rewritten.
         assert "XASSET_0029" in lifecycle_block[
             "predecessor_stage_1_execution_may_begin_only_after_xasset_0029"
         ]
@@ -1149,8 +1197,21 @@ class TestExactBaseAndMergeDrift:
         the equality mechanically -- rather than repeating a literal twice -- is what makes a
         rebinding to some OTHER commit fail here.
         """
-        assert AUTH.REVIEWED_BASE_SHA == AUTH.EXECUTABLE_PACKAGE_MERGE_SHA
-        assert AUTH.REVIEWED_BASE_SHA == "3e5de8f85c69c2e5dc2b75421446b5db996d7cf1"
+        # RE-ANCHORED BY XASSET-0044. The assertion is unchanged in KIND -- the current lifecycle
+        # must bind its own base, mechanically, so a rebinding to some other commit fails here --
+        # but the current lifecycle is no longer XASSET-0037's. XASSET-0044 branches from the
+        # XASSET-0043 merge, the decision whose closed lifecycle authorized it to begin at all, so
+        # THAT is what it must bind. Both equalities are kept, and XASSET-0037's own accepted value
+        # is retained just below as history rather than deleted.
+        assert AUTH.REVIEWED_BASE_SHA == AUTH.REBINDING_AUTHORIZING_MERGE_SHA
+        assert AUTH.REVIEWED_BASE_SHA == "0709d2f05ab031ecb6f69c40465ed4a227983aed"
+        # XASSET-0037's own accepted base, retained verbatim as history: it WAS the executable
+        # package's merge, and that equality is still asserted, on the constants that now carry it.
+        assert AUTH.PRIOR_SUCCESSOR_REBINDING_MERGE_BASE == AUTH.EXECUTABLE_PACKAGE_MERGE_SHA
+        assert (
+            AUTH.PRIOR_SUCCESSOR_REBINDING_MERGE_BASE
+            == "3e5de8f85c69c2e5dc2b75421446b5db996d7cf1"
+        )
         # XASSET-0029's own accepted base, retained verbatim as history.
         assert (
             AUTH.HISTORICAL_OPERATIONAL_AUTHORIZATION_MERGE_BASE

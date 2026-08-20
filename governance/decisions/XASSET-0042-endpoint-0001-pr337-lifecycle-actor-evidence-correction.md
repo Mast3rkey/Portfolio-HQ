@@ -185,12 +185,34 @@ intermediate, superseded head 7573147e (historical) sha256  03d842126913bf2d62aa
 FINAL_CORRECTED_MODULE_SHA256: 749597ee9085a189e187e23ccffb7718d98860847dfe514c173e7437b50f24c7
 ```
 
-The `FINAL_CORRECTED_MODULE_SHA256:` line is the decision's single declaration of the **current**
-corrected-module identity, and is the value the separately authorized rebinding unit must use. It
-is machine-checked against the production module's own bytes by
+The `FINAL_CORRECTED_MODULE_SHA256:` line is this decision's single declaration of the
+corrected-module identity **as this unit left it**, and is the value the separately authorized
+rebinding unit had to use. It is machine-checked against the production module's own bytes by
 `TestDeclaredCorrectedIdentityMatchesTheModule` in
 `test_level1_stage1_pr337_lifecycle_actor_evidence_correction.py`, so this decision cannot again
 publish a stale identity while the module moves underneath it.
+
+> **Re-anchored by `XASSET-0044` §H (2026-08-20), additively and without changing the digest above.**
+> This declaration was written while `XASSET-0042` was the most recent unit to touch the module, so
+> "the current identity" and "the identity this unit produced" were then the same fact. They are no
+> longer. `XASSET-0044` — the rebinding `XASSET-0041` §I link 2 required and `XASSET-0043` §F
+> authorized — lawfully changed the module again, so `749597ee…` is now the **closed, historical**
+> identity of the module at the end of the `XASSET-0042` lifecycle (PR #342, merge `5fbfc94d…`),
+> which is exactly what a line named `FINAL_CORRECTED_MODULE_SHA256` should mean. It is correct for
+> that closed range and is verified against the module's bytes **at that anchor**; it is not, and
+> after `XASSET-0044` was never intended to be, a claim about the module in perpetuity.
+>
+> **The current-identity role moved, not the value.** `XASSET-0044` carries the single
+> machine-readable `CURRENT_MODULE_SHA256:` declaration, checked against the live module's real
+> bytes by an equivalently strong guard in its own suite. `XASSET-0043` §I.2 expressly permitted
+> either amending this line or retiring its current-identity role; `XASSET-0044` §H chose
+> retirement, on the ground that repointing a line named *final corrected* at bytes this unit never
+> produced would trade a stale reading for a false one.
+>
+> **Everything this decision says about its own unit remains true and is not deleted**, including
+> that `XASSET-0042` itself re-pinned nothing. That statement is about *this* unit. It is not a
+> claim about the repository after a later, separately authorized rebinding — and `XASSET-0044`
+> **did** re-pin, and was authorized to.
 
 No pin was updated. `LOAD_BEARING_RELPATHS` (10 entries), `AUTHORIZING_DECISION` (`XASSET-0037`),
 `AUTHORIZING_PULL_REQUEST` (337), and the accepted PR #337 bound identities are **unchanged**.

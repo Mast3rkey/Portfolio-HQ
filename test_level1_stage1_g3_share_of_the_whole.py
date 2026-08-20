@@ -983,7 +983,8 @@ class TestNothingHereAuthorizesOrExecutes:
         """
         import subprocess
 
-        assert len(A.LOAD_BEARING_RELPATHS) == 10
+        # EXTENDED BY XASSET-0044, 10 -> 14, by direct membership; nothing removed.
+        assert len(A.LOAD_BEARING_RELPATHS) == 14
         out = subprocess.run(
             ["git", "diff", "--name-only", "HEAD", "--", *A.LOAD_BEARING_RELPATHS],
             cwd=ROOT,
