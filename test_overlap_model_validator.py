@@ -826,7 +826,11 @@ def _resolve_pr_base_sha(cwd: Path = REPO_ROOT) -> str | None:
     return result.stdout.strip()
 
 
-def _assert_no_unauthorized_change_since_base(paths: list[str], repo_root: Path = REPO_ROOT) -> None:
+def _assert_no_unauthorized_change_since_base(
+    paths: list[str],
+    repo_root: Path = REPO_ROOT,
+    authorized_modifications: tuple[str, ...] = (),
+) -> None:
     """A file that already existed at this PR's base commit must never be
     modified, renamed, copied, type-changed, or deleted between base and
     the current working tree (covering both this PR's own committed
@@ -844,14 +848,41 @@ def _assert_no_unauthorized_change_since_base(paths: list[str], repo_root: Path 
         ["git", "diff", "--name-status", base_sha, "--", *paths],
         cwd=repo_root, capture_output=True, text=True, check=True,
     )
+    def _is_violation(line: str) -> bool:
+        status, _, rest = line.partition("\t")
+        if status.startswith("A"):
+            return False
+        # An exactly-named, separately-authorized modification is permitted. A rename or copy
+        # carries two paths and is NEVER permitted by this allow-list, which names one file.
+        return rest.strip() not in authorized_modifications
+
     violations = [
         line for line in result.stdout.splitlines()
-        if line.strip() and not line.split("\t", 1)[0].startswith("A")
+        if line.strip() and _is_violation(line)
     ]
     assert violations == [], (
         f"unauthorized modification/rename/deletion of pre-existing content since base {base_sha}:\n"
         + "\n".join(violations)
     )
+
+
+#: The ONE pre-existing governance decision a merged, effective authority permits this branch to
+#: modify. ``XASSET-0043`` SS-I.2 -- accepted, merged, and in force -- offers the separately
+#: authorized rebinding unit a choice of "(a) **amend** ``XASSET-0042``'s declaration ... or
+#: (b) **retire** the current-identity role from ``XASSET-0042`` -- re-anchoring its declaration
+#: to the closed head range it truthfully describes", and requires the choice to be argued.
+#: ``XASSET-0044`` SS-H takes (b) and argues it, so re-anchoring that file's prose is authorized
+#: content, not an unauthorized modification.
+#:
+#: This is deliberately an exact single-path allow-list rather than a relaxed status filter: every
+#: other pre-existing decision stays protected exactly as before, and a second modified file --
+#: including a different XASSET decision -- still fails. It follows this check's own established
+#: repair-not-delete precedent, recorded in the docstring below: a guard correct for one PR's
+#: scope, which a later lawfully-broader session outgrows, is narrowed to the real authority
+#: rather than removed.
+AUTHORIZED_DECISION_MODIFICATIONS = (
+    "governance/decisions/XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md",
+)
 
 
 def test_governance_decision_files_untouched():
@@ -872,7 +903,9 @@ def test_governance_decision_files_untouched():
     repaired an analogous stale assertion by resolving it dynamically
     against live PR-base state, it did not remove the protection; this
     correction now does the same."""
-    _assert_no_unauthorized_change_since_base(["governance/decisions"])
+    _assert_no_unauthorized_change_since_base(
+        ["governance/decisions"], authorized_modifications=AUTHORIZED_DECISION_MODIFICATIONS
+    )
 
 
 def _init_synthetic_repo(tmp_path: Path):
@@ -1015,10 +1048,23 @@ def test_real_repository_governance_decisions_pass_the_repaired_check():
         cwd=REPO_ROOT, capture_output=True, text=True, check=True,
     )
     lines = [line for line in result.stdout.splitlines() if line.strip()]
+    modified: list[str] = []
     for line in lines:
-        assert line.split("\t", 1)[0].startswith("A"), (
-            f"expected only newly-added governance decisions, found: {line}"
+        status, _, rest = line.partition("\t")
+        if status.startswith("A"):
+            continue
+        assert rest.strip() in AUTHORIZED_DECISION_MODIFICATIONS, (
+            f"expected only newly-added or separately-authorized governance decisions, "
+            f"found: {line}"
         )
+        assert status.startswith("M"), (
+            f"only a MODIFICATION may be authorized here, never a rename, copy or delete: {line}"
+        )
+        modified.append(rest.strip())
+    # The authorized exception must be genuinely exercised, not carried as dead permission.
+    assert modified == list(AUTHORIZED_DECISION_MODIFICATIONS), (
+        f"the authorized modification set is not exactly what this branch changed: {modified}"
+    )
 
 
 # ── no dimension_type / source_mechanism confusion between mechanical and

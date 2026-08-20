@@ -1063,9 +1063,11 @@ class TestCatalogAndRegisterSynchronisation:
     def test_the_register_records_this_units_gate(self, ws0014):
         gates = {g["gate"]: g for g in ws0014["milestones"]}
         assert GATE_SELF in gates
-        assert gates[GATE_SELF]["status"] == "in_progress"
-        assert gates[GATE_SELF]["pr"] is None, (
+        assert gates[GATE_SELF]["status"] == "in_progress", (
             "a filing may not mark its own unmerged work complete"
+        )
+        assert gates[GATE_SELF]["pr"] == 344, (
+            "the gate records its own real pull-request number while in progress"
         )
 
     def test_the_prior_gates_own_text_is_not_rewritten(self, ws0014):

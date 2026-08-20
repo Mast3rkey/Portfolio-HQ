@@ -94,9 +94,9 @@ XASSET0044_MAIN_SHA = "0709d2f05ab031ecb6f69c40465ed4a227983aed"
 #: Set to the real GitHub number issued when the pull request was opened, verified
 #: against live GitHub afterwards, never left as a guess.
 XASSET0043_ACTIVE_PR = 343
-#: ADVANCED BY XASSET-0044. WS-0014's single shared `active_pr` is null while this unit's
-#: own pull request is unopened, and is set to the real number GitHub issues once it is.
-XASSET0044_ACTIVE_PR = None
+#: ADVANCED BY XASSET-0044. WS-0014's single shared `active_pr`, set from the real number
+#: GitHub issued and verified against the live pull request after opening, never guessed.
+XASSET0044_ACTIVE_PR = 344
 
 #: The three values accepted authority already fixes as exact constants, and the only three
 #: ``XASSET-0038`` restates. Everything else in its checklist derives from the merged tree.

@@ -692,12 +692,18 @@ class TestCatalogAndRegisterSynchronisation:
         rule they lawfully advance to the rebinding-authorization unit that is now live. Each
         is strengthened to an exact value, never relaxed to a range or a placeholder.
         """
-        assert ws0014["active_branch"] == "claude/xasset-0043-rebinding-auth-1qrj1i"
+        # ADVANCED AGAIN BY XASSET-0044, on exactly the terms the docstring above sets out:
+        # PR #343 has since merged at `0709d2f0`, so these shared fields lawfully advance once
+        # more, to the post-correction rebinding unit that is now live. Each stays an exact
+        # value, never relaxed to a range or a placeholder.
+        assert ws0014["active_branch"] == "claude/xasset-0043-rebinding-7ywmdx"
         assert ws0014["last_verified_main_sha"] == (
-            "5fbfc94d7333e552bd2654261e0c57134a172e31"
+            "0709d2f05ab031ecb6f69c40465ed4a227983aed"
         )
-        assert str(ws0014["last_verified_date"]) == "2026-08-19"
-        assert ws0014["active_pr"] == XASSET0043_ACTIVE_PR
+        assert str(ws0014["last_verified_date"]) == "2026-08-20"
+        assert ws0014["active_pr"] == 344
+        # PR #343's own closed record survives in the register as history, not as live state.
+        assert ws0014["active_pr"] != XASSET0043_ACTIVE_PR
 
     def test_register_still_parses_and_ws0014_is_unique(self, ws0014):
         assert ws0014["id"] == "WS-0014"

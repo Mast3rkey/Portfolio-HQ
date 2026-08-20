@@ -295,6 +295,17 @@ class TestFrozenInputsUnchanged:
             # to the bound identity, on the footing XASSET-0029 and XASSET-0036 already occupy.
             # This filing's accepted six paths are still all retained above; NOTHING was removed.
             "governance/decisions/XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
+            # EXTENDED AGAIN BY XASSET-0044 / XASSET-0030 SS-D. The post-correction rebinding binds
+            # the four decisions that jointly make the corrected bytes lawful, by DIRECT MEMBERSHIP.
+            # XASSET-0035's own six paths are still all retained above; NOTHING was removed.
+            "governance/decisions/"
+            "XASSET-0041-endpoint-0001-pr337-lifecycle-actor-evidence-correction-authorization.md",
+            "governance/decisions/"
+            "XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md",
+            "governance/decisions/"
+            "XASSET-0043-endpoint-0001-stage-1-post-correction-rebinding-authorization.md",
+            "governance/decisions/"
+            "XASSET-0044-endpoint-0001-stage-1-post-correction-operational-rebinding.md",
         }
         # No REAL results artifact is load-bearing, because none exists.
         assert "stage1_results" not in " ".join(A.LOAD_BEARING_RELPATHS).lower()
@@ -1156,8 +1167,16 @@ class TestGBUnlockIsTiedToLifecycleClosure:
         XASSET-0037; this filing's own accepted value is retained verbatim as history in the
         explicitly predecessor-named field, and both are asserted, so the check is stronger.
         """
+        # AMENDED AGAIN BY XASSET-0044. ALL_SIX_GATES is still the property protected, and the
+        # check keeps getting stronger rather than weaker: the operative value moved
+        # XASSET-0037 -> XASSET-0044 under XASSET-0030 SS-D, and BOTH predecessors are now
+        # asserted verbatim in their own explicitly predecessor-named fields.
         assert (
             prereg["stages"]["stage_1"]["executable_only_after"]
+            == "XASSET_0044_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
+        )
+        assert (
+            prereg["stages"]["stage_1"]["predecessor_executable_only_after_xasset_0037"]
             == "XASSET_0037_LIFECYCLE_CLOSURE_ALL_SIX_GATES_THEN_EXTERNAL_ONE_SHOT_PREEXECUTION_ATTESTATION"
         )
         assert (

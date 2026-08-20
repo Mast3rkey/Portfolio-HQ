@@ -758,6 +758,17 @@ class TestThisFilingMutatesNothingLoadBearing:
             # to the bound identity, on the footing XASSET-0029 and XASSET-0036 already occupy.
             # This filing's accepted six paths are still all retained above; NOTHING was removed.
             "governance/decisions/XASSET-0037-endpoint-0001-stage-1-successor-operational-rebinding.md",
+            # EXTENDED AGAIN BY XASSET-0044 / XASSET-0030 SS-D. The post-correction rebinding
+            # binds the four decisions that jointly make the corrected bytes lawful, by DIRECT
+            # MEMBERSHIP. Every path above is still retained; NOTHING was removed.
+            "governance/decisions/"
+            "XASSET-0041-endpoint-0001-pr337-lifecycle-actor-evidence-correction-authorization.md",
+            "governance/decisions/"
+            "XASSET-0042-endpoint-0001-pr337-lifecycle-actor-evidence-correction.md",
+            "governance/decisions/"
+            "XASSET-0043-endpoint-0001-stage-1-post-correction-rebinding-authorization.md",
+            "governance/decisions/"
+            "XASSET-0044-endpoint-0001-stage-1-post-correction-operational-rebinding.md",
         }
 
     def test_frozen_universe_is_unchanged(self) -> None:
