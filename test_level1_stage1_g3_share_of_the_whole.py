@@ -984,7 +984,13 @@ class TestNothingHereAuthorizesOrExecutes:
         import subprocess
 
         # EXTENDED BY XASSET-0044, 10 -> 14, by direct membership; nothing removed.
-        assert len(A.LOAD_BEARING_RELPATHS) == 14
+        # EXTENDED AGAIN BY XASSET-0047, 14 -> 16, likewise by direct membership and likewise
+        # removing nothing. The byte-identity comparison below is the load-bearing check and is
+        # unchanged in kind -- it still covers EVERY path in the live tuple, so it grows with it.
+        # This count is bound at BOTH ends so neither a silent shrink back nor an unexplained
+        # further growth passes.
+        assert len(A.LOAD_BEARING_RELPATHS) == 16
+        assert len(A.LOAD_BEARING_RELPATHS) != 14
         out = subprocess.run(
             ["git", "diff", "--name-only", "HEAD", "--", *A.LOAD_BEARING_RELPATHS],
             cwd=ROOT,
