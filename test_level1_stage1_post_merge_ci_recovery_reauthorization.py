@@ -41,6 +41,7 @@ from __future__ import annotations
 import ast
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -834,7 +835,7 @@ class TestTheFilingCanAttainGreenCI:
         """The strongest available form of the claim: run the two corrected proofs in THIS
         checkout, which is merged ``main`` -- the exact ref state that failed."""
         result = subprocess.run(
-            ["python3", "-m", "pytest", "-q", "--no-header", "-p", "no:cacheprovider",
+            [sys.executable, "-m", "pytest", "-q", "--no-header", "-p", "no:cacheprovider",
              f"{CORRECTED_ARTIFACT_RELPATH}::TestFilingIsGovernancePlusOneEnablingCorrection"],
             cwd=ROOT, capture_output=True, text=True,
         )
