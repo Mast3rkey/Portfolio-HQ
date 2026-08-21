@@ -1120,9 +1120,17 @@ class TestCatalogAndRegisterSynchronisation:
         """WS-0014's shared live self-reference fields. PR #344 has merged at ``f5dedce1``,
         so under ``OPS-0001``'s Active-GitHub-fields rule they lawfully advance to the unit
         that is now live. Each stays an exact value, never relaxed to a range."""
-        assert ws0014["last_verified_main_sha"] == PR344_MERGE_SHA
+        # ADVANCED BY XASSET-0046, on exactly the terms the docstring above already states:
+        # these are WS-0014's SINGLE SHARED live fields, PR #345 has since merged at
+        # `2f8cdebe`, and they lawfully advance again to whatever unit is now live. The
+        # anchor THIS decision authorizes against is unchanged; only the shared
+        # self-reference moved. Bound at BOTH ends -- the exact current value, and the closed
+        # value it must no longer be showing.
+        assert ws0014["last_verified_main_sha"] == PR345_MERGE_SHA
+        assert ws0014["last_verified_main_sha"] != PR344_MERGE_SHA
         assert str(ws0014["last_verified_date"]) == "2026-08-21"
         assert ws0014["active_branch"] != "claude/xasset-0043-rebinding-7ywmdx"
+        assert ws0014["active_branch"] != "claude/xasset-0045-filing-9yxavw"
 
     def test_workstream_stays_secondary_and_no_primary_is_introduced(self, register, ws0014):
         assert ws0014["status"] == "proposed"

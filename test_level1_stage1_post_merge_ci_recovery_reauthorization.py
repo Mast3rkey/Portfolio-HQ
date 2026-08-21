@@ -239,6 +239,44 @@ class TestPredecessorIsPermanentlyIneffective:
         assert "permanently unsatisfiable" in d
         assert "not effective and cannot become effective through PR #345" in d
 
+    def test_every_permanence_claim_is_pinned_at_its_own_occurrence(self, decision_flat):
+        """`permanently unsatisfiable` appears three times, so a bare `in` check is satisfied
+        by ANY surviving occurrence -- the exact gap review 4989608238 identified on the
+        predecessor. Each operative sentence is therefore pinned where it is stated."""
+        for sentence in (
+            "`MERGE_COMMIT_CI_SUCCESS` is permanently unsatisfiable for PR #345",
+            "§M is permanently unsatisfiable as written for that pull request",
+            "conditions are permanently unsatisfiable for both PR #344 and PR #345",
+        ):
+            assert sentence in decision_flat, sentence
+
+    def test_no_softening_qualifier_is_applied_to_the_ineffectivity(self, decision_flat_lower):
+        """Mutation pin: "permanently" downgraded to anything weaker.
+
+        Deliberately a small, closed set of phrases that could only ever be an ASSERTION
+        that the condition might yet be satisfied. ``partially effective`` and
+        ``provisionally effective`` are excluded from this list on purpose: the decision must
+        be able to NAME them in order to refuse them, and a check that flagged its own
+        prohibition would be the same over-broad-heuristic error the detectors in this
+        program already guard against. Their refusal is pinned separately, below.
+        """
+        for softener in (
+            "temporarily unsatisfiable", "provisionally unsatisfiable",
+            "currently unsatisfiable", "unsatisfiable for now",
+            "unsatisfiable until", "not yet unsatisfiable",
+        ):
+            assert softener not in decision_flat_lower, softener
+
+    def test_partial_and_provisional_effectivity_appear_only_as_refusals(self, decision_flat):
+        """The complement of the check above: these two phrases are permitted, but only
+        inside the sentence that forbids reading a predecessor that way."""
+        for phrase in ("partially effective", "provisionally effective"):
+            assert phrase in decision_flat, phrase
+        assert (
+            "may not be treated as effective, partially effective, or provisionally effective"
+            in decision_flat
+        )
+
     def test_the_decision_quotes_the_conditions_own_exclusion_of_other_commits(self, decision_flat):
         """The exclusion must rest on §M.6's own words, not on this filing's preference."""
         assert "not a run against any other commit" in decision_flat
@@ -287,10 +325,20 @@ class TestBothFailedRunsAreImmutable:
         assert "immutable adverse history" in d.lower()
 
     def test_xasset0044s_failed_run_is_preserved_on_the_same_footing(self, decision_text):
-        """Correcting the newer stop must not quietly drop the older one."""
+        """Correcting the newer stop must not quietly drop the older one.
+
+        Identity presence alone is too weak: a sentence that NAMES both ids while dropping
+        the claim about them passes an ``in`` check. The operative sentence is therefore
+        pinned directly, and the "same footing" clause with it.
+        """
         d = _section(decision_text, "D")
         assert XASSET0044_FAILED_CI_RUN in d
         assert XASSET0044_FAILED_CI_JOB in d
+        assert (
+            "`XASSET-0044` remains not effective, and **its own** failed merge-commit CI run "
+            f"`{XASSET0044_FAILED_CI_RUN}` / job `{XASSET0044_FAILED_CI_JOB}` at merge "
+            "`f5dedce1…` remains immutable adverse history on exactly the same footing" in d
+        )
 
     def test_every_form_of_rewriting_a_failed_run_is_refused(self, decision_text):
         d = _section(decision_text, "D")
@@ -318,6 +366,16 @@ class TestBothFailedRunsAreImmutable:
         assert "**G.5 —" in g
         assert XASSET0045_FAILED_CI_RUN in g
         assert XASSET0044_FAILED_CI_RUN in g
+        assert XASSET0045_FAILED_CI_JOB in g
+        assert XASSET0044_FAILED_CI_JOB in g
+        # The prohibition itself, not merely the identities it applies to: a §G.5 that named
+        # both runs while dropping what may not be done to them would satisfy an id check.
+        assert "must both be retained, by exact identity, as failed merge-commit CI" in g
+        assert (
+            "Neither **may ever** be relabelled successful, deleted, suppressed, re-run in "
+            "place, described as passing, or represented as satisfying its decision's own "
+            "effectivity condition." in g
+        )
 
 
 # ======================================================================================
@@ -532,11 +590,14 @@ class TestOperativePropertiesAreRestatedDirectly:
     def test_no_property_is_delegated_by_bare_cross_reference(self, decision_text):
         """A §G that said "as XASSET-0045 §G required" would build obligations on an
         ineffective decision."""
-        g = _section(decision_text, "G")
+        g = _section(decision_text, "G").lower()
         for delegation in (
-            "as `XASSET-0045` §G requires",
-            "per `XASSET-0045` §G",
-            "unchanged from `XASSET-0045`",
+            "as `xasset-0045` §g requires",
+            "as `xasset-0045` § requires",
+            "per `xasset-0045` §g",
+            "unchanged from `xasset-0045`",
+            "as required by `xasset-0045`",
+            "see `xasset-0045` §g",
         ):
             assert delegation not in g, delegation
 
