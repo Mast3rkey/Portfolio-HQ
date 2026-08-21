@@ -18,7 +18,9 @@ from __future__ import annotations
 import ast
 import copy
 import os
+import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -1685,18 +1687,368 @@ def test_the_invariance_scenarios_cover_branch_merged_and_later_main():
     assert scenarios == {"branch", "merged_main", "later_main"}, scenarios
 
 
-def test_the_real_repository_refs_were_not_disturbed_by_the_invariance_simulation():
-    """Defence in depth for the isolation above: the real repository's ``origin/main``
-    must still be PR #344's merge after these simulations run."""
+def _live_ref(name: str) -> str | None:
+    """The real repository's current value for a ref, or None if unresolvable.
+
+    Deliberately returns whatever the ref happens to be. Nothing in this file may require
+    a LIVE ref to equal a HISTORICAL commit: `origin/main` lawfully advances every time a
+    pull request merges, including this one.
+    """
+    result = subprocess.run(
+        ["git", "rev-parse", name], cwd=REPO_ROOT, capture_output=True, text=True,
+    )
+    return result.stdout.strip() if result.returncode == 0 else None
+
+
+def test_the_invariance_simulation_does_not_mutate_the_real_repository_refs(tmp_path):
+    """Isolation, proved as a BEFORE/AFTER invariant rather than a fixed value.
+
+    Superseding ``test_the_real_repository_refs_were_not_disturbed_by_the_invariance_
+    simulation``, which asserted ``origin/main == CLOSED_RANGE_MERGE_SHA``. That was true
+    only while this branch sat over PR #344's merge: once THIS pull request merges,
+    ``origin/main`` lawfully becomes ITS merge, the ref still resolves, and the equality
+    fails -- recreating the very merge-CI deadlock the closed-range repair exists to
+    remove. Reproduced before correcting, in an isolated successor-merge clone.
+
+    The property actually worth protecting is not the ref's VALUE but that the isolated
+    simulation does not TOUCH it. `git worktree` shares the ref namespace, so a simulation
+    built that way really would move the real `origin/main`; a clone does not. That is
+    what is asserted here, against whatever the refs happen to be.
+    """
+    before = {name: _live_ref(name) for name in ("HEAD", "origin/main")}
+    if before["origin/main"] is None:
+        pytest.skip("origin/main not resolvable in this environment")
     if not _commit_exists(REPO_ROOT, CLOSED_RANGE_MERGE_SHA):
         pytest.skip("PR #344's merge is not present in this checkout")
-    resolved = subprocess.run(
-        ["git", "rev-parse", "origin/main"],
-        cwd=REPO_ROOT, capture_output=True, text=True,
+
+    # Exercise the SAME isolated-simulation code path the invariance test uses, including
+    # the ref moves that would be destructive if the isolation were wrong.
+    clone = _shared_clone(tmp_path)
+    successor = _simulated_successor_merge(clone)
+    for ref, value in (("HEAD", successor), ("refs/remotes/origin/main", successor)):
+        subprocess.run(
+            ["git", "update-ref", ref, value], cwd=clone, capture_output=True, text=True, check=True,
+        )
+    assert _git_in(clone, "rev-parse", "origin/main") == successor
+
+    after = {name: _live_ref(name) for name in ("HEAD", "origin/main")}
+    assert after == before, (
+        f"the isolated simulation mutated the real repository's refs: {before} -> {after}"
     )
-    if resolved.returncode != 0:
-        pytest.skip("origin/main not resolvable in this environment")
-    assert resolved.stdout.strip() == CLOSED_RANGE_MERGE_SHA
+
+
+def _git_in(repo: Path, *args: str) -> str:
+    return subprocess.run(
+        ["git", *args], cwd=repo, capture_output=True, text=True, check=True,
+    ).stdout.strip()
+
+
+def _working_clone(tmp_path: Path) -> Path:
+    """An isolated clone WITH a working tree, checked out at this branch's content.
+
+    Separate from ``_shared_clone`` (``--no-checkout``): the ref-state regression below
+    runs a real nested pytest inside the clone, which needs the files on disk.
+    """
+    dst = tmp_path / "working-clone"
+    result = subprocess.run(
+        ["git", "clone", "--quiet", "--shared", str(REPO_ROOT), str(dst)],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        pytest.skip(f"could not create an isolated working clone: {result.stderr.strip()}")
+    return dst
+
+
+def _simulated_successor_merge(repo: Path) -> str:
+    """A REAL two-parent merge of this branch into PR #344's merge, built with plumbing.
+
+    This is what ``origin/main`` becomes once THIS pull request merges normally.
+    """
+    head_tree = _git_in(repo, "rev-parse", f"{_LOCAL_HEAD_FOR_SIMULATION}^{{tree}}")
+    return subprocess.run(
+        ["git", "commit-tree", head_tree,
+         "-p", CLOSED_RANGE_MERGE_SHA, "-p", _LOCAL_HEAD_FOR_SIMULATION,
+         "-m", "simulated successor merge"],
+        cwd=repo, capture_output=True, text=True, check=True,
+        env={**os.environ,
+             "GIT_AUTHOR_NAME": "sim", "GIT_AUTHOR_EMAIL": "sim@sim",
+             "GIT_COMMITTER_NAME": "sim", "GIT_COMMITTER_EMAIL": "sim@sim"},
+    ).stdout.strip()
+
+
+#: This branch's own current commit, resolved live. Used ONLY to build simulated ref
+#: states; never asserted to equal anything.
+_LOCAL_HEAD_FOR_SIMULATION = _live_ref("HEAD") or CLOSED_RANGE_MERGE_SHA
+
+
+#: The real-repository tests whose behaviour must not depend on where HEAD or origin/main
+#: point. Run as a nested pytest inside an isolated clone under each ref state below.
+REF_STATE_SENSITIVE_TESTS = (
+    "test_real_repository_governance_decisions_pass_the_repaired_check",
+    "test_the_repaired_check_reads_no_moving_reference",
+    "test_governance_decision_files_untouched",
+    "test_the_invariance_simulation_does_not_mutate_the_real_repository_refs",
+)
+
+
+@pytest.mark.parametrize(
+    "ref_state", ["branch", "merged_main_at_pr344", "later_main", "pr345_successor_merge"]
+)
+def test_relevant_tests_pass_under_every_real_repository_ref_state(tmp_path, ref_state):
+    """The regression review 4993351528 required: run the ref-sensitive tests for real,
+    under each ref state this branch will actually pass through, and require them to pass.
+
+    The WORKING TREE is always this branch's content -- the tests under examination are
+    this PR's own. Only ``HEAD`` and ``origin/main`` move, so ref position is isolated as
+    the single variable. ``pr345_successor_merge`` is the state that exposed the defect:
+    under the superseded assertion this scenario FAILED, because live ``origin/main`` had
+    lawfully advanced past PR #344's merge.
+    """
+    if not _commit_exists(REPO_ROOT, CLOSED_RANGE_MERGE_SHA):
+        pytest.skip("PR #344's merge is not present in this checkout")
+    clone = _working_clone(tmp_path)
+    _git_in(clone, "checkout", "--quiet", "--detach", _LOCAL_HEAD_FOR_SIMULATION)
+    # The suite under examination is THIS working tree's, which during a correction is
+    # ahead of the last commit. Copying it in keeps the regression honest about the code
+    # actually being reviewed rather than about the previous commit's version.
+    shutil.copy2(SUITE_SOURCE_PATH, clone / SUITE_SOURCE_PATH.name)
+
+    if ref_state == "branch":
+        head, main = _LOCAL_HEAD_FOR_SIMULATION, CLOSED_RANGE_MERGE_SHA
+    elif ref_state == "merged_main_at_pr344":
+        head = main = CLOSED_RANGE_MERGE_SHA
+    elif ref_state == "later_main":
+        tree = _git_in(clone, "rev-parse", f"{CLOSED_RANGE_MERGE_SHA}^{{tree}}")
+        head = main = subprocess.run(
+            ["git", "commit-tree", tree, "-p", CLOSED_RANGE_MERGE_SHA, "-m", "later main"],
+            cwd=clone, capture_output=True, text=True, check=True,
+            env={**os.environ,
+                 "GIT_AUTHOR_NAME": "sim", "GIT_AUTHOR_EMAIL": "sim@sim",
+                 "GIT_COMMITTER_NAME": "sim", "GIT_COMMITTER_EMAIL": "sim@sim"},
+        ).stdout.strip()
+    else:
+        head = main = _simulated_successor_merge(clone)
+
+    # Move the refs WITHOUT touching the working tree, so the files under test stay this
+    # branch's own while `git rev-parse` reports the simulated state.
+    _git_in(clone, "update-ref", "HEAD", head)
+    _git_in(clone, "update-ref", "refs/remotes/origin/main", main)
+    assert _git_in(clone, "rev-parse", "HEAD") == head
+    assert _git_in(clone, "rev-parse", "origin/main") == main
+    if ref_state == "pr345_successor_merge":
+        assert main != CLOSED_RANGE_MERGE_SHA, "the successor state must advance past PR #344"
+
+    node_ids = [f"{Path(__file__).name}::{name}" for name in REF_STATE_SENSITIVE_TESTS]
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "--no-header", "-p", "no:cacheprovider", *node_ids],
+        cwd=clone, capture_output=True, text=True,
+    )
+    assert result.returncode == 0, (
+        f"ref state {ref_state!r} (HEAD={head}, origin/main={main}) broke the "
+        f"ref-sensitive tests:\n{result.stdout[-4000:]}\n{result.stderr[-2000:]}"
+    )
+
+
+#: Git subcommands that write refs. A simulation must never run one against the real
+#: repository -- `git worktree` shares the ref namespace, so an `update-ref` inside one
+#: really does move the REAL `origin/main`. That happened once during this work and had to
+#: be repaired; this refuses the shape statically, before any damage.
+REF_MUTATING_GIT_SUBCOMMANDS = frozenset(
+    {"update-ref", "branch", "reset", "checkout", "worktree"}
+)
+
+
+def real_repo_ref_mutation_offenders(source: str) -> list[str]:
+    """Calls in ``source`` that would write a ref in the REAL repository.
+
+    A shared, module-level detector -- not a private helper and not re-implemented inside
+    its own proof -- so disabling it makes its self-test fail rather than silently pass.
+    """
+    # A container constructor is a VOCABULARY declaration, not an invocation -- without
+    # this the detector flags its own REF_MUTATING_GIT_SUBCOMMANDS definition.
+    containers = {"frozenset", "set", "list", "tuple", "dict"}
+    offenders: list[str] = []
+    for call in (c for c in ast.walk(ast.parse(source)) if isinstance(c, ast.Call)):
+        if isinstance(call.func, ast.Name) and call.func.id in containers:
+            continue
+        literals = {
+            a.value for a in ast.walk(call)
+            if isinstance(a, ast.Constant) and isinstance(a.value, str)
+        }
+        if "worktree" in literals:
+            offenders.append(f"worktree created at line {call.lineno}")
+            continue
+        if not (literals & REF_MUTATING_GIT_SUBCOMMANDS):
+            continue
+        # "Targets the real repository" covers both call shapes used in this file:
+        # ``subprocess.run(..., cwd=REPO_ROOT)`` and ``_git_in(REPO_ROOT, ...)``.
+        targets_real_repo = any(
+            kw.arg == "cwd" and isinstance(kw.value, ast.Name) and kw.value.id == "REPO_ROOT"
+            for kw in call.keywords
+        ) or (
+            bool(call.args)
+            and isinstance(call.args[0], ast.Name)
+            and call.args[0].id == "REPO_ROOT"
+        )
+        if targets_real_repo:
+            offenders.append(f"ref-mutating git call against REPO_ROOT at line {call.lineno}")
+    return offenders
+
+
+def live_ref_frozen_comparison_offenders(source: str) -> list[str]:
+    """Functions in ``source`` that compare a LIVE ref to a frozen historical constant.
+
+    "Resolves a LIVE ref" means, precisely: the function calls ``_live_ref``, or runs a
+    ``rev-parse`` with ``cwd=REPO_ROOT``. Merely naming ``REPO_ROOT`` is not enough -- the
+    ref-state regression legitimately names the frozen constants while resolving refs only
+    inside an isolated clone, and must not be flagged.
+
+    Shared and module-level for the same reason as above.
+    """
+    frozen = {
+        "CLOSED_RANGE_BASE_SHA", "CLOSED_RANGE_ACCEPTED_HEAD",
+        "CLOSED_RANGE_MERGE_SHA", "CLOSED_RANGE_MERGE_TREE",
+    }
+    offenders: list[str] = []
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.FunctionDef):
+            continue
+        resolves_live_ref = False
+        for call in (c for c in ast.walk(node) if isinstance(c, ast.Call)):
+            if isinstance(call.func, ast.Name) and call.func.id == "_live_ref":
+                resolves_live_ref = True
+                break
+            call_literals = {
+                a.value for a in ast.walk(call)
+                if isinstance(a, ast.Constant) and isinstance(a.value, str)
+            }
+            if "rev-parse" in call_literals and any(
+                kw.arg == "cwd" and isinstance(kw.value, ast.Name) and kw.value.id == "REPO_ROOT"
+                for kw in call.keywords
+            ):
+                resolves_live_ref = True
+                break
+        if not resolves_live_ref:
+            continue
+        for compare in (c for c in ast.walk(node) if isinstance(c, ast.Compare)):
+            operands = [compare.left, *compare.comparators]
+            if any(isinstance(o, ast.Name) and o.id in frozen for o in operands):
+                offenders.append(f"{node.name}:{compare.lineno}")
+    return offenders
+
+
+def test_no_simulation_writes_a_ref_in_the_real_repository():
+    assert real_repo_ref_mutation_offenders(
+        SUITE_SOURCE_PATH.read_text(encoding="utf-8")
+    ) == []
+
+
+def test_the_ref_mutation_detector_actually_detects(tmp_path):
+    """Falsifiability proof, run through the REAL detector.
+
+    Without this, neutering the detector (emptying its subcommand set, or making its loop
+    unreachable) leaves a guard that reports "clean" because it inspects nothing.
+    """
+    bad_worktree = 'subprocess.run(["git", "worktree", "add", d], cwd=other)'
+    bad_update = 'subprocess.run(["git", "update-ref", "HEAD", x], cwd=REPO_ROOT)'
+    bad_positional = '_git_in(REPO_ROOT, "update-ref", "refs/remotes/origin/main", x)'
+    clean_kw = 'subprocess.run(["git", "update-ref", "HEAD", x], cwd=clone)'
+    clean_positional = '_git_in(clone, "update-ref", "refs/remotes/origin/main", x)'
+    vocabulary_only = 'frozenset({"update-ref", "worktree"})'
+    assert real_repo_ref_mutation_offenders(bad_worktree) != []
+    assert real_repo_ref_mutation_offenders(bad_update) != []
+    assert real_repo_ref_mutation_offenders(bad_positional) != []
+    assert real_repo_ref_mutation_offenders(clean_kw) == []
+    assert real_repo_ref_mutation_offenders(clean_positional) == []
+    assert real_repo_ref_mutation_offenders(vocabulary_only) == []
+    # And it genuinely parsed this suite's own real source, rather than something empty.
+    source = SUITE_SOURCE_PATH.read_text(encoding="utf-8")
+    assert len([c for c in ast.walk(ast.parse(source)) if isinstance(c, ast.Call)]) > 200
+
+
+def test_no_test_requires_a_live_ref_to_equal_a_historical_commit():
+    """Mutation pin for the defect class itself.
+
+    A function that resolves a LIVE ref against the real repository may not compare that
+    result to any frozen closed-range constant. That is what the superseded assertion did,
+    and it is what makes a test pass before a merge and fail after it.
+    """
+    assert live_ref_frozen_comparison_offenders(
+        SUITE_SOURCE_PATH.read_text(encoding="utf-8")
+    ) == []
+
+
+def test_the_live_ref_comparison_detector_actually_detects():
+    """Falsifiability proof, run through the REAL detector -- the superseded assertion's
+    own shape must be flagged, and the legitimate isolated-clone shape must not."""
+    offending = (
+        "def bad():\n"
+        "    r = subprocess.run(['git', 'rev-parse', 'origin/main'], cwd=REPO_ROOT)\n"
+        "    assert r.stdout.strip() == CLOSED_RANGE_MERGE_SHA\n"
+    )
+    via_helper = (
+        "def bad2():\n"
+        "    assert _live_ref('origin/main') == CLOSED_RANGE_MERGE_SHA\n"
+    )
+    legitimate = (
+        "def fine():\n"
+        "    m = _git_in(clone, 'rev-parse', 'origin/main')\n"
+        "    assert m != CLOSED_RANGE_MERGE_SHA\n"
+    )
+    assert live_ref_frozen_comparison_offenders(offending) != []
+    assert live_ref_frozen_comparison_offenders(via_helper) != []
+    assert live_ref_frozen_comparison_offenders(legitimate) == []
+
+
+def test_the_ref_state_regression_covers_every_state_this_branch_will_pass_through():
+    """Coverage pin. Dropping ``pr345_successor_merge`` would silently stop proving the
+    exact state in which the superseded assertion failed."""
+    source = SUITE_SOURCE_PATH.read_text(encoding="utf-8")
+    node = next(
+        n for n in ast.walk(ast.parse(source))
+        if isinstance(n, ast.FunctionDef)
+        and n.name == "test_relevant_tests_pass_under_every_real_repository_ref_state"
+    )
+    states: set[str] = set()
+    for decorator in node.decorator_list:
+        for arg in getattr(decorator, "args", []):
+            if isinstance(arg, (ast.List, ast.Tuple)):
+                states |= {
+                    e.value for e in arg.elts
+                    if isinstance(e, ast.Constant) and isinstance(e.value, str)
+                }
+    assert states == {
+        "branch", "merged_main_at_pr344", "later_main", "pr345_successor_merge"
+    }, states
+    # The successor state must be REQUIRED to advance past PR #344's merge, or it silently
+    # degrades into a second copy of the pre-merge state.
+    advances = [
+        c for c in ast.walk(node)
+        if isinstance(c, ast.Compare)
+        and any(isinstance(op, ast.NotEq) for op in c.ops)
+        and any(
+            isinstance(o, ast.Name) and o.id == "CLOSED_RANGE_MERGE_SHA"
+            for o in [c.left, *c.comparators]
+        )
+    ]
+    assert advances, "nothing requires the successor ref state to advance past PR #344"
+
+
+def test_this_suites_new_ref_state_assertions_are_not_vacuous():
+    """No ``assert ... or True``-style disjunct and no bare truthy constant may hide a
+    disabled guard anywhere in this file. Checked over the parsed AST, not by substring
+    scan -- a text search would flag the comments that explain the rule."""
+    tree = ast.parse(SUITE_SOURCE_PATH.read_text(encoding="utf-8"))
+    asserts = [n for n in ast.walk(tree) if isinstance(n, ast.Assert)]
+    assert len(asserts) > 150, len(asserts)
+    for node in asserts:
+        test = node.test
+        if isinstance(test, ast.Constant):
+            pytest.fail(f"bare constant assertion at line {node.lineno}")
+        if isinstance(test, ast.BoolOp) and isinstance(test.op, ast.Or):
+            for value in test.values:
+                if isinstance(value, ast.Constant) and bool(value.value):
+                    pytest.fail(f"constant-truthy disjunct at line {node.lineno}")
 
 
 # ── no dimension_type / source_mechanism confusion between mechanical and
