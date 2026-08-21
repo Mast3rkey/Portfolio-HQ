@@ -1009,24 +1009,15 @@ def test_no_declared_historical_proof_reads_the_working_tree_for_its_subject():
 
     This is the instance XASSET-0047's own audit found in XASSET-0046's artifact: a claim about
     what a merged pull request did, measured half against an immutable blob and half against the
-    live file. The detector above catches reference NAMES; this one catches the other shape.
+    live file. The name detector catches reference NAMES; this catches the other shape.
+
+    The scan itself lives in :func:`working_tree_subject_offenders` at module level and has its
+    own falsifiability proof, because an in-test version could be made unreachable while still
+    reporting clean -- which is exactly what mutation probe A08 demonstrated.
     """
-    source = SUITE_PATH.read_text(encoding="utf-8")
-    offenders: list[str] = []
-    for node in ast.walk(ast.parse(source)):
-        if not isinstance(node, ast.FunctionDef) or node.name not in HISTORICAL_PROOF_FUNCTIONS:
-            continue
-        for call in ast.walk(node):
-            if not isinstance(call, ast.Call) or not isinstance(call.func, ast.Attribute):
-                continue
-            if call.func.attr not in {"read_text", "read_bytes"}:
-                continue
-            # ``ROOT / relative`` reads the live file. Permitted ONLY where the same function
-            # also resolves the immutable blob it is compared against -- which is what makes
-            # it a comparison rather than a measurement of a moving thing.
-            enclosing = ast.get_source_segment(source, node) or ""
-            if "cat-file" not in enclosing and "git show" not in enclosing:
-                offenders.append(f"{node.name}: live read at line {call.lineno}")
+    offenders = working_tree_subject_offenders(
+        SUITE_PATH.read_text(encoding="utf-8"), HISTORICAL_PROOF_FUNCTIONS
+    )
     assert offenders == [], offenders
 
 
@@ -1734,3 +1725,151 @@ def test_the_two_predecessor_working_tree_guards_are_deliberately_left_alone():
     widening = _function_source(source, "test_portfolio_path_is_unchanged_from_the_pr_base_to_head")
     assert "PR_BASE_SHA" in widening
     assert '"HEAD"' in widening
+
+
+# ======================================================================================
+# 16 -- Coverage pins found by mutation testing
+#
+# Five probes MISSED on the first pass and are fixed here rather than dropped. Every one was
+# the same shape: a declared VOCABULARY -- a ref-state list, a selection tuple, a frozen-path
+# list, an audited-file list -- that could be gutted while every guard consuming it still
+# reported clean, because nothing pinned the vocabulary itself. A guard that inspects an empty
+# list is not a guard, and that is precisely the silent-disable shape this whole programme
+# exists to refuse.
+# ======================================================================================
+
+
+def test_every_ref_state_this_branch_will_pass_through_is_actually_parametrised():
+    """MUTATION PIN (probe A03). Deleting ``merged_main`` -- the exact state that broke PR
+    #345 -- left every other assertion passing, because nothing pinned the state list."""
+    assert set(REF_STATES) == {
+        "branch",
+        "merged_main",
+        "later_main",
+        "head_equals_origin_main_later",
+        "unrelated_later_commits",
+    }
+    assert len(REF_STATES) == 5
+    # The two states where HEAD equals origin/main are the ones that collapse a moving base,
+    # so their presence is pinned individually rather than only through the set above.
+    assert "merged_main" in REF_STATES
+    assert "head_equals_origin_main_later" in REF_STATES
+
+
+def test_the_ref_state_selection_runs_the_declared_proofs_and_nothing_instead_of_them():
+    """MUTATION PIN (probe A04). The selection could be padded or emptied while the nested
+    run still reported ``passed``, so it is pinned to the declared historical proofs."""
+    selected_leaves = {name.split("::")[-1] for name in REF_STATE_SENSITIVE_TESTS}
+    # Every selected leaf is either a declared historical proof, the detector that guards them,
+    # or one of exactly two LIVE-state checks whose comparison is anchored to an immutable base
+    # and which must therefore also survive every ref position. The permitted set is CLOSED:
+    # nothing else may be smuggled in to make the selection look populated.
+    REF_STATE_INVARIANT_LIVE_CHECKS = {
+        "test_the_additions_are_exactly_the_two_authority_chain_files",
+    }
+    permitted = (
+        set(HISTORICAL_PROOF_FUNCTIONS)
+        | {"test_no_historical_proof_consults_a_moving_reference"}
+        | REF_STATE_INVARIANT_LIVE_CHECKS
+    )
+    assert selected_leaves <= permitted, selected_leaves - permitted
+    assert REF_STATE_INVARIANT_LIVE_CHECKS <= selected_leaves
+    # ... and the ones that matter most are individually required, so the selection cannot be
+    # quietly reduced to a single cheap case.
+    for required in (
+        "test_the_accepted_head_is_the_second_parent_of_this_units_base",
+        "test_the_preserved_pr345_range_still_carries_its_enabling_correction",
+        "test_every_frozen_path_is_byte_identical_to_this_units_base",
+        "test_no_historical_proof_consults_a_moving_reference",
+    ):
+        assert required in selected_leaves, required
+    assert len(REF_STATE_SENSITIVE_TESTS) >= 8
+
+
+def test_the_frozen_path_list_actually_names_the_surface_it_claims_to_freeze():
+    """MUTATION PIN (probe A06). Swapping one entry for an unrelated unchanged file kept the
+    length and kept the comparison green, so the list's CONTENT is pinned, not just its size."""
+    frozen = set(FROZEN_AGAINST_BASE_RELPATHS)
+    for required in (
+        "level1_stage1_runner.py",
+        "level1_stage1_result_validator.py",
+        "level1_construction_universe_closure_validator.py",
+        "level1_endpoint_evidence_preregistration_validator.py",
+        "research/level1_endpoint_evidence/PROTOCOL_V1.md",
+        "research/level1_endpoint_evidence/pre_registration.yaml",
+        OVERLAP_ARTIFACT_RELPATH,
+        "allocate.py",
+        "targets.yaml",
+        "holdings.yaml",
+        AUTHORITY_RELPATH,
+    ):
+        assert required in frozen, required
+    # Every outcome-producing path the module itself names must be frozen here too, so the
+    # two lists cannot drift apart.
+    assert set(A.EXECUTABLE_PACKAGE_OUTCOME_PRODUCING_RELPATHS) <= frozen
+    assert A.OUTCOME_PRODUCING_DERIVATION_RELPATH in frozen
+    assert set(A.CANONICAL_PINS) <= frozen
+
+
+def test_the_audited_artifact_list_is_exactly_the_three_this_unit_is_responsible_for():
+    """MUTATION PIN (probe A09). The list could be padded or narrowed unnoticed."""
+    assert set(AUDITED_ARTIFACTS) == {
+        CORRECTED_ARTIFACT_RELPATH,
+        "test_level1_stage1_post_merge_ci_recovery_reauthorization.py",
+        SUITE_PATH.name,
+    }
+    assert len(AUDITED_ARTIFACTS) == 3
+
+
+def working_tree_subject_offenders(source: str, names: frozenset[str]) -> list[str]:
+    """Declared historical proofs that read the LIVE working tree as their SUBJECT.
+
+    Extracted to module level, and given its own falsifiability proof below, because the
+    in-test version could be made unreachable while still reporting clean -- probe A08.
+
+    A live read is permitted ONLY inside a function that also resolves the immutable blob it
+    compares against, which is what makes it a comparison rather than a measurement of a
+    moving thing.
+    """
+    offenders: list[str] = []
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.FunctionDef) or node.name not in names:
+            continue
+        enclosing = ast.get_source_segment(source, node) or ""
+        resolves_immutable = "cat-file" in enclosing or "git show" in enclosing
+        for call in ast.walk(node):
+            if not isinstance(call, ast.Call) or not isinstance(call.func, ast.Attribute):
+                continue
+            if call.func.attr not in {"read_text", "read_bytes"}:
+                continue
+            if not resolves_immutable:
+                offenders.append(f"{node.name}: live read at line {call.lineno}")
+    return offenders
+
+
+def test_the_working_tree_subject_detector_actually_detects():
+    """MUTATION PIN (probe A08). Falsifiability proof against synthetic source, in both
+    directions, so making the scan unreachable fails its own test rather than reporting clean."""
+    names = frozenset({"test_historical"})
+    bad = (
+        "def test_historical():\n"
+        "    live = (ROOT / REL).read_text()\n"
+        "    assert live == EXPECTED\n"
+    )
+    good = (
+        "def test_historical():\n"
+        "    live = (ROOT / REL).read_text()\n"
+        "    at_base = subprocess.run(['git', 'cat-file', 'blob', PINNED]).stdout\n"
+        "    assert live == at_base\n"
+    )
+    out_of_scope = (
+        "def test_live_state():\n"
+        "    assert (ROOT / REL).read_text()\n"
+    )
+    assert working_tree_subject_offenders(bad, names) != []
+    assert working_tree_subject_offenders(good, names) == []
+    assert working_tree_subject_offenders(out_of_scope, names) == []
+    # ... and it genuinely inspects this suite's own real source.
+    real = SUITE_PATH.read_text(encoding="utf-8")
+    assert working_tree_subject_offenders(real, HISTORICAL_PROOF_FUNCTIONS) == []
+    assert len([n for n in ast.walk(ast.parse(real)) if isinstance(n, ast.FunctionDef)]) > 80
