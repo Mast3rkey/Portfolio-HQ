@@ -312,6 +312,14 @@ unit must classify every use of `HEAD`, `origin/main`, `merge-base`, and any wor
 the files it touches by whether that use's **subject** is live state or immutable history, and
 re-anchor every historical one. Fixing only the assertion a failure names is not sufficient.
 
+One such use is already identified and deliberately **left in place** by this filing:
+`test_on_merged_main_the_moving_base_collapses_to_head_itself` gates itself on an `origin/main` skip
+guard even though both operands of the comparison it makes are pinned commits, so a live reference can
+silence a proof about immutable history for a reason unrelated to that history. This filing had no
+authority to change it (§K) and did not. The recovery unit inherits the observation, not a conclusion:
+it must classify that use on its own evidence and, if it agrees, correct it under authority that
+actually covers it — never on the strength of this paragraph alone.
+
 **G.12 — Complete a full lifecycle.** Independent **FULL** exact-head review under `OPS-0007` §1;
 any required bounded correction and exact-head re-review; explicit principal exact-head acceptance;
 normal merge; immediate post-merge verification; **successful merge-commit CI at the future recovery
@@ -384,9 +392,28 @@ operative.
 The corrections are **strictly narrowing in effect**: every conjunct the previous guards proved is
 still proved, and the parent-ordering, tree-identity, status, blob-identity, and non-vacuity proofs are
 new. Nothing was deleted, skipped, `xfail`ed, weakened, or replaced with a less falsifiable assertion.
-One further audit finding is disclosed and corrected in the same narrowing direction: a leftover
-`origin/main` skip guard on a historical proof whose own computation was already fully pinned, removed
-so that a historical proof can no longer be silenced by where a live reference points.
+
+**Exactly two, and the count is load-bearing.** An earlier revision of this filing performed a
+**third** test change — removing a leftover `origin/main` skip guard from a pre-existing historical
+proof — and disclosed it as being "in the same narrowing direction." Independent FULL exact-head
+review `4995297886` found that **BLOCKING**, and was right: the authorization above is expressly
+bounded to *exactly* these two corrections, so a third correction sits outside it however sensible its
+direction, and "in the same narrowing direction" is a description of a change, not a grant of
+authority to make it. The review also caught the resulting internal contradiction — a scope paragraph
+asserting that nothing was deleted or skipped, immediately before recording that a skip guard had been
+removed.
+
+**That third correction has been reverted**, and the affected function is byte-identical to its state
+at this pull request's base. Its `origin/main` skip guard therefore stands exactly as it did before
+this filing. This decision neither performs that correction nor records it as performed; the audit
+observation that prompted it is preserved in §G.11 as a **requirement on the future recovery unit**,
+which is where an observation this filing lacks authority to act on belongs. Nothing in the two
+authorized corrections was weakened, deleted, skipped, `xfail`ed, or re-anchored to compensate.
+
+The alternative — obtaining a fresh principal authorization covering a third correction and restating
+the scope as three — was available and was **not** taken. Widening an authority to fit work already
+done is the wrong direction of fit, and the correction was never necessary for this filing's own
+effectivity in the way the two authorized ones were.
 
 Beyond those test-only corrections, this filing still edits **no** load-bearing implementation, no
 runner, no result validator, no universe module, no canonical artifact, no operational-authorization

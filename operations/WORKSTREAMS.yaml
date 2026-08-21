@@ -15779,10 +15779,16 @@ workstreams:
           the enabling correction's exact status M and both blob ends (old
           5b916d881ed83db164233091863f2af87fa50828, new 536bf08bb7db81ffad15dcfa1de6e9ce4fca4899),
           and a NON-EMPTY 12-file input so the protected-path claim can never again be satisfied
-          vacuously. A third audit finding is disclosed and corrected in the same narrowing
-          direction: a leftover origin/main skip guard on a historical proof whose own computation
-          was already fully pinned, removed so a historical proof cannot be silenced by where a live
-          reference points. The authority for these corrections is a SEPARATE, EXPLICIT PRINCIPAL
+          vacuously. EXACTLY TWO corrections, and the count is load-bearing: an earlier revision of
+          this filing performed a THIRD test change -- removing a leftover origin/main skip guard
+          from a pre-existing historical proof -- which independent FULL exact-head review 4995297886
+          found BLOCKING, because the principal authorization is expressly bounded to exactly two
+          corrections and "in the same narrowing direction" describes a change rather than granting
+          authority to make it. That third correction was REVERTED; the affected function
+          test_on_merged_main_the_moving_base_collapses_to_head_itself is byte-identical to its state
+          at this pull request's base and keeps its pre-existing skip guard untouched. The audit
+          observation survives as a REQUIREMENT ON THE FUTURE RECOVERY UNIT in SS-G.11, not as work
+          this filing performed. The authority for these corrections is a SEPARATE, EXPLICIT PRINCIPAL
           AUTHORIZATION -- not created by XASSET-0046, which cannot authorize its own enabling repair
           without circularity, and not inherited from an ineffective XASSET-0045 either. Proved three
           ways: STRUCTURALLY by a shared detector refusing any moving-reference literal inside a

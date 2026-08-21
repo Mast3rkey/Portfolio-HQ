@@ -104,6 +104,11 @@ PR345_PRINCIPAL_ACCEPTANCE = "5370936620"
 PR345_POST_MERGE_VERIFICATION = "5370989769"
 PR345_AUDITABLE_STOP = "5371158269"
 
+#: THIS pull request's own independent FULL exact-head review, which found the third,
+#: out-of-scope correction BLOCKING and required it reverted or separately authorized.
+#: Retained as correction history, on the same footing as every other adverse record here.
+THIS_PR_FULL_REVIEW = "4995297886"
+
 #: THIS unit's own pull request, set from the real number GitHub issued and verified against
 #: live GitHub after opening, never predicted.
 THIS_PULL_REQUEST = 346
@@ -460,6 +465,21 @@ class TestAuthorityIsNotCircular:
         assert "given after run" in k
         assert XASSET0045_FAILED_CI_RUN in k
 
+    def test_the_authority_bound_is_pinned_at_exactly_two(self, decision_flat):
+        """The clause the BLOCKING finding turns on. Deleting one word -- "exactly" -- would
+        silently widen the authorization to cover any number of corrections, which is the
+        move review 4995297886 exists to refuse."""
+        assert (
+            "covering exactly these two historical-proof corrections and this governance "
+            "replacement" in decision_flat
+        )
+        for widened in (
+            "covering these historical-proof corrections",
+            "covering the historical-proof corrections",
+            "covering three historical-proof corrections",
+        ):
+            assert widened not in decision_flat, widened
+
     def test_a_decision_minting_its_own_authority_is_named_as_the_refused_shape(self, decision_text):
         k = _section(decision_text, "K")
         assert "exercising authority it minted in the same document" in k
@@ -491,12 +511,57 @@ class TestFilingIsBounded:
             "falsifiable assertion." in k
         )
 
-    def test_the_third_audit_finding_is_disclosed_not_hidden(self, decision_text):
-        """The removed skip guard was not reported by CI and had to be disclosed, not
-        silently folded in."""
+    def test_the_scope_is_exactly_two_corrections_and_says_so(self, decision_text):
+        """Superseding ``test_the_third_audit_finding_is_disclosed_not_hidden``, which required
+        the decision to record a THIRD correction. Independent FULL review 4995297886 found
+        that third correction BLOCKING -- outside an authorization expressly bounded to exactly
+        two -- so it was reverted, and a test demanding its disclosure would now demand a
+        fiction."""
         k = _section(decision_text, "K")
-        assert "One further audit finding is disclosed" in k
-        assert "skip guard" in k
+        assert "**Exactly two, and the count is load-bearing.**" in k
+        assert "That third correction has been reverted" in k
+        assert "byte-identical to its state" in k
+        # The reverted work must NOT be recorded as performed anywhere in the decision.
+        assert "One further audit finding is disclosed and corrected" not in k
+
+    def test_the_reverted_correction_is_recorded_as_reverted_not_erased(self, decision_text):
+        """A reverted correction is adverse history like any other: the filing must say it
+        happened and was undone, not quietly present a clean two-correction scope."""
+        k = _section(decision_text, "K")
+        assert THIS_PR_FULL_REVIEW in k
+        assert "BLOCKING" in k
+        assert "is a description of a change, not a grant of" in k
+
+    def test_the_observation_is_carried_forward_as_a_requirement_not_an_action(self, decision_text):
+        """The audit observation survives as a duty on the FUTURE unit, which is where an
+        observation this filing lacks authority to act on belongs."""
+        g = _section(decision_text, "G")
+        assert "test_on_merged_main_the_moving_base_collapses_to_head_itself" in g
+        assert "left in place" in g
+        assert "under authority that actually covers it" in g
+        # Without this, a future unit could read the observation itself as the permission.
+        assert "never on the strength of this paragraph alone" in g
+        assert "inherits the observation, not a conclusion" in g
+
+    def test_the_reverted_function_is_byte_identical_to_base(self):
+        """Proven from the object store, not asserted: the revert is real and complete."""
+        base_blob = _git(
+            "show", f"{PR345_MERGE_SHA}:{CORRECTED_ARTIFACT_RELPATH}"
+        ) if _commit_exists(PR345_MERGE_SHA) else None
+        if base_blob is None:
+            pytest.skip("this pull request's base is not present in this checkout")
+        marker = "def test_on_merged_main_the_moving_base_collapses_to_head_itself"
+        end = 'assert diff == "", f"expected an empty comparison, got: {diff!r}"'
+
+        def _extract(text: str) -> str:
+            i = text.index(marker)
+            j = text.index(end, i) + len(end)
+            return text[i:j]
+
+        current = (ROOT / CORRECTED_ARTIFACT_RELPATH).read_text(encoding="utf-8")
+        assert _extract(current) == _extract(base_blob)
+        # And it genuinely still carries the pre-existing skip guard this filing did not touch.
+        assert 'pytest.skip("origin/main not resolvable in this environment")' in _extract(current)
 
     def test_the_filing_edits_no_production_or_canonical_byte(self, decision_text):
         k = _section(decision_text, "K")
@@ -957,6 +1022,36 @@ class TestCatalogAndRegisterSynchronisation:
     def test_the_gate_records_this_units_own_pull_request(self, gate):
         assert gate["pr"] == THIS_PULL_REQUEST
 
+    def test_the_register_records_the_third_correction_as_reverted(self, gate):
+        """The register must not re-record work the decision says was reverted. Pinned here
+        rather than only in the register itself, so deleting it in one place fails in the
+        other."""
+        d = " ".join(str(gate["description"]).split())
+        assert "That third correction was REVERTED" in d
+        assert THIS_PR_FULL_REVIEW in d
+        assert "keeps its pre-existing skip guard untouched" in d
+        for performed in (
+            "A third audit finding is disclosed and corrected",
+            "That third correction was PERFORMED",
+        ):
+            assert performed not in d, performed
+
+    def test_the_corrected_artifact_keeps_its_scope_exclusion_pin(self):
+        """Cross-pin for the exclusion in the corrected artifact: re-adding the reverted
+        function to its declared proof set would reimpose the third correction by test, and
+        the pin that refuses it must not be quietly deletable."""
+        source = (ROOT / CORRECTED_ARTIFACT_RELPATH).read_text(encoding="utf-8")
+        assert (
+            '"test_on_merged_main_the_moving_base_collapses_to_head_itself"\n'
+            "        not in HISTORICAL_PROOF_FUNCTIONS" in source
+        )
+        import test_level1_stage1_post_merge_ci_recovery_authorization as corrected
+
+        assert (
+            "test_on_merged_main_the_moving_base_collapses_to_head_itself"
+            not in corrected.HISTORICAL_PROOF_FUNCTIONS
+        )
+
 
 # ======================================================================================
 # 15 -- No section is vacuous, and every identity is a KNOWN identity
@@ -988,6 +1083,7 @@ KNOWN_LONG_DIGITS = frozenset(
         PR345_PRINCIPAL_ACCEPTANCE,
         PR345_POST_MERGE_VERIFICATION,
         PR345_AUDITABLE_STOP,
+        THIS_PR_FULL_REVIEW,
     }
 )
 

@@ -187,14 +187,23 @@ PR345_CHANGED_FILE_COUNT = 12
 XASSET0045_FAILED_CI_RUN = "32490789238"
 XASSET0045_FAILED_CI_JOB = "96797667282"
 
-#: The functions whose SUBJECT is immutable history. None of them may consult a moving
-#: reference -- not in an assertion, and not in a skip guard, because a historical proof that
-#: can be silenced by where a live ref points is not a proof of history.
+#: The functions whose SUBJECT is immutable history AND which this filing is authorized to
+#: hold to the rule. None of them may consult a moving reference -- not in an assertion, and
+#: not in a skip guard, because a historical proof that can be silenced by where a live ref
+#: points is not a proof of history.
+#:
+#: ``test_on_merged_main_the_moving_base_collapses_to_head_itself`` is deliberately ABSENT,
+#: and its absence is a scope fact rather than a technical one. That pre-existing test carries
+#: an ``origin/main`` skip guard which an earlier revision of this filing removed -- a THIRD
+#: correction, outside a principal authorization expressly bounded to exactly two. Independent
+#: FULL review 4995297886 found that BLOCKING, the correction was reverted, and the function is
+#: byte-identical to its state at this pull request's base again. Declaring it here would
+#: reimpose by test what the filing has no authority to change, so it stays out until some
+#: future unit is separately authorized to touch it.
 HISTORICAL_PROOF_FUNCTIONS = frozenset({
     "_assert_pr345_closed_range_facts",
     "test_the_enabling_correction_was_actually_performed",
     "test_no_protected_path_was_touched_by_this_filing",
-    "test_on_merged_main_the_moving_base_collapses_to_head_itself",
     "test_the_closed_range_does_exercise_the_authorized_transition",
     "test_the_authorized_transition_matches_its_bound_blob_identities",
     "test_merge_drift_is_affirmatively_excluded_from_the_object_store",
@@ -424,16 +433,10 @@ class TestDefectIsAMovingAnchor:
 
     def test_on_merged_main_the_moving_base_collapses_to_head_itself(self):
         """On merged ``main`` the merge-base of HEAD and origin/main IS the merge commit, so
-        the comparison is empty. This is the whole failure, reproduced from real git.
-
-        CORRECTED under XASSET-0046's audit. The mechanism was already sound -- both sides of
-        the ``merge-base`` are the pinned ``PR344_MERGE_SHA``, so nothing here has ever
-        depended on where a live ref points. But a leftover skip guard consulted
-        ``origin/main`` anyway, which could have silenced a historical proof for a reason
-        entirely unrelated to the history it proves. Removed: only the pinned commit's own
-        presence gates this test now, which is strictly harder to satisfy, never easier.
-        """
-        if not _commit_exists(PR344_MERGE_SHA):
+        the comparison is empty. This is the whole failure, reproduced from real git."""
+        if not _git_ok("rev-parse", "--verify", "origin/main"):
+            pytest.skip("origin/main not resolvable in this environment")
+        if not _git_ok("cat-file", "-e", f"{PR344_MERGE_SHA}^{{commit}}"):
             pytest.skip("PR #344's merge commit is not present in this checkout")
         base = _git("merge-base", PR344_MERGE_SHA, PR344_MERGE_SHA)
         assert base == PR344_MERGE_SHA
@@ -1607,7 +1610,12 @@ def test_the_declared_proof_set_covers_both_corrected_assertions():
         "_assert_pr345_closed_range_facts",
     ):
         assert required in HISTORICAL_PROOF_FUNCTIONS, required
-    assert len(HISTORICAL_PROOF_FUNCTIONS) >= 8
+    assert len(HISTORICAL_PROOF_FUNCTIONS) >= 7
+    # Scope pin: re-adding the reverted function would reimpose the third correction by test.
+    assert (
+        "test_on_merged_main_the_moving_base_collapses_to_head_itself"
+        not in HISTORICAL_PROOF_FUNCTIONS
+    )
     assert "origin/main" in MOVING_REFERENCE_LITERALS
     assert "HEAD" in MOVING_REFERENCE_LITERALS
     # merge-base is a subcommand, not a reference: flagging it would refuse a sound proof.
