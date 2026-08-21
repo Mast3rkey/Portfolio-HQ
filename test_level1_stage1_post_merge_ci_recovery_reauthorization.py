@@ -95,6 +95,21 @@ XASSET0045_FAILED_CI_JOB = "96797667282"
 XASSET0044_FAILED_CI_RUN = "32439614683"
 XASSET0044_FAILED_CI_JOB = "96647501864"
 
+#: ADDED BY XASSET-0047. PR #346's OWN accepted head -- the exact commit clean DELTA review
+#: 4995648329 examined, principal acceptance 5372996734 named, and merge
+#: 0b76c09f8d1aba01780b4f06fdd692f7393fbfd3 carries as its second parent.
+#:
+#: It is bound here for one reason only: a proof about what THIS filing did to a file is a proof
+#: about IMMUTABLE HISTORY, and must therefore be measured across THIS filing's own closed range
+#: -- PR345_MERGE_SHA (its base) to this accepted head -- never against the live working tree,
+#: which a later lawful unit may change. That is XASSET-0046 §G.10's rule applied to XASSET-0046's
+#: own artifact, and XASSET-0047's audit is what found the remaining instance.
+THIS_PR_ACCEPTED_HEAD = "0964dc2bd6ab3be8282193f76fa04c764198db0f"
+#: ADDED BY XASSET-0047: THIS pull request's own merge commit, which is also the successful
+#: merge-commit CI head_sha that closed XASSET-0046's seventh condition. Recorded here so the
+#: shared register field can be bound at both ends when it lawfully advances past this unit.
+THIS_PR_MERGE_SHA = "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
+
 #: PR #345's lifecycle evidence that DID complete, preserved as authenticated predecessor
 #: evidence.
 PR345_FINAL_CLEAN_REVIEW = "4993994386"
@@ -544,12 +559,24 @@ class TestFilingIsBounded:
         assert "inherits the observation, not a conclusion" in g
 
     def test_the_reverted_function_is_byte_identical_to_base(self):
-        """Proven from the object store, not asserted: the revert is real and complete."""
-        base_blob = _git(
-            "show", f"{PR345_MERGE_SHA}:{CORRECTED_ARTIFACT_RELPATH}"
-        ) if _commit_exists(PR345_MERGE_SHA) else None
-        if base_blob is None:
-            pytest.skip("this pull request's base is not present in this checkout")
+        """Proven from the object store, not asserted: the revert is real and complete.
+
+        RE-ANCHORED BY XASSET-0047 under XASSET-0046 §G.11, and this is a finding of that unit's
+        own audit rather than a consequence of it. The claim here is about IMMUTABLE HISTORY --
+        that XASSET-0046 reverted its own third correction -- but one half of the comparison read
+        the LIVE WORKING TREE, which is a moving subject. It held only while nothing lawful ever
+        touched that function again, and XASSET-0047 lawfully did, under authority XASSET-0046
+        §G.11 expressly reserved for it.
+
+        Both ends are now immutable objects: PR #346's base and PR #346's accepted head. The
+        historical fact is therefore proved exactly as it always should have been, and it stays
+        true forever regardless of what any later authorized unit does to the live file.
+        """
+        for sha in (PR345_MERGE_SHA, THIS_PR_ACCEPTED_HEAD):
+            if not _commit_exists(sha):
+                pytest.skip("this pull request's closed range is not present in this checkout")
+        base_blob = _git("show", f"{PR345_MERGE_SHA}:{CORRECTED_ARTIFACT_RELPATH}")
+        head_blob = _git("show", f"{THIS_PR_ACCEPTED_HEAD}:{CORRECTED_ARTIFACT_RELPATH}")
         marker = "def test_on_merged_main_the_moving_base_collapses_to_head_itself"
         end = 'assert diff == "", f"expected an empty comparison, got: {diff!r}"'
 
@@ -558,10 +585,13 @@ class TestFilingIsBounded:
             j = text.index(end, i) + len(end)
             return text[i:j]
 
-        current = (ROOT / CORRECTED_ARTIFACT_RELPATH).read_text(encoding="utf-8")
-        assert _extract(current) == _extract(base_blob)
-        # And it genuinely still carries the pre-existing skip guard this filing did not touch.
-        assert 'pytest.skip("origin/main not resolvable in this environment")' in _extract(current)
+        assert _extract(head_blob) == _extract(base_blob)
+        # And at that accepted head it genuinely still carried the pre-existing skip guard
+        # XASSET-0046 did not touch.
+        assert (
+            'pytest.skip("origin/main not resolvable in this environment")'
+            in _extract(head_blob)
+        )
 
     def test_the_filing_edits_no_production_or_canonical_byte(self, decision_text):
         k = _section(decision_text, "K")
@@ -1011,13 +1041,17 @@ class TestCatalogAndRegisterSynchronisation:
         """`active_branch`, `active_pr` and `last_verified_main_sha` are WS-0014's SINGLE
         SHARED live fields. PR #345 has merged at `2f8cdebe`, so they lawfully advance under
         `OPS-0001`'s Active-GitHub-fields rule."""
-        assert ws0014["last_verified_main_sha"] == PR345_MERGE_SHA
+        # ADVANCED BY XASSET-0047, on exactly the terms the docstring above already states:
+        # PR #346 has since merged at `0b76c09f`, so the shared fields advance once more to the
+        # recovery unit that is now live. THIS unit's own closed record survives below as a
+        # negative pin rather than being deleted, so the field stays bound at both ends.
+        assert ws0014["last_verified_main_sha"] == THIS_PR_MERGE_SHA
+        assert ws0014["last_verified_main_sha"] != PR345_MERGE_SHA
         assert ws0014["last_verified_main_sha"] != PR345_BASE_SHA
-        # Exact, set from the real number GitHub issued and verified against the live pull
-        # request after opening -- never guessed, and never relaxed to a range.
-        assert ws0014["active_pr"] == THIS_PULL_REQUEST
+        assert ws0014["active_pr"] != THIS_PULL_REQUEST
         assert ws0014["active_pr"] != 345
         assert ws0014["active_branch"] != "claude/xasset-0045-filing-9yxavw"
+        assert ws0014["active_branch"] != "claude/xasset-0045-test-governance-103t6t"
 
     def test_the_gate_records_this_units_own_pull_request(self, gate):
         assert gate["pr"] == THIS_PULL_REQUEST
@@ -1036,20 +1070,37 @@ class TestCatalogAndRegisterSynchronisation:
         ):
             assert performed not in d, performed
 
-    def test_the_corrected_artifact_keeps_its_scope_exclusion_pin(self):
-        """Cross-pin for the exclusion in the corrected artifact: re-adding the reverted
-        function to its declared proof set would reimpose the third correction by test, and
-        the pin that refuses it must not be quietly deletable."""
+    def test_the_scope_exclusion_pin_was_superseded_loudly_not_deleted_quietly(self):
+        """The exclusion pin's PURPOSE, preserved exactly, with its subject advanced.
+
+        The pin existed so that re-adding the reverted function to the declared proof set could
+        not happen SILENTLY -- not so that it could never happen at all. XASSET-0046 §G.11 said
+        so in terms: the recovery unit must classify the use itself and, if it agrees, correct it
+        under authority that actually covers it. XASSET-0047 did exactly that, so the exclusion is
+        now superseded by an INCLUSION, and this guard checks that the supersession is loud.
+
+        Bound at both ends, with no ``or``: the exclusion form must be GONE, the inclusion must be
+        present in the live declared set, the corrected function must no longer carry the
+        ``origin/main`` skip guard, and the artifact must name the authority that removed it. A
+        quiet deletion satisfies none of those.
+        """
         source = (ROOT / CORRECTED_ARTIFACT_RELPATH).read_text(encoding="utf-8")
         assert (
             '"test_on_merged_main_the_moving_base_collapses_to_head_itself"\n'
-            "        not in HISTORICAL_PROOF_FUNCTIONS" in source
+            "        not in HISTORICAL_PROOF_FUNCTIONS" not in source
         )
+        assert (
+            '"test_on_merged_main_the_moving_base_collapses_to_head_itself"\n'
+            "        in HISTORICAL_PROOF_FUNCTIONS" in source
+        )
+        # The supersession names its authority, so it can never read as an unexplained deletion.
+        assert "CORRECTED UNDER XASSET-0047, per XASSET-0046 SS-G.11" in source
+        assert "XASSET-0047 IS THAT UNIT" in source
         import test_level1_stage1_post_merge_ci_recovery_authorization as corrected
 
         assert (
             "test_on_merged_main_the_moving_base_collapses_to_head_itself"
-            not in corrected.HISTORICAL_PROOF_FUNCTIONS
+            in corrected.HISTORICAL_PROOF_FUNCTIONS
         )
 
 

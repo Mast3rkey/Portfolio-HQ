@@ -104,6 +104,25 @@ class FakeGit:
                 AUTH.REBINDING_AUTHORIZING_MERGE_BASE,
                 AUTH.REBINDING_AUTHORIZING_ACCEPTED_HEAD,
             ),
+            # EXTENDED BY XASSET-0047. The recovery verifies THREE further merges from git --
+            # its own authority (XASSET-0046 / PR #346) and the two STOPPED lifecycles it
+            # supersedes as the anchor (XASSET-0044 / PR #344 and XASSET-0045 / PR #345) -- so an
+            # honest stand-in vouches for each separately rather than letting an unknown anchor
+            # pass. These are the REAL identities, so the fixture agrees with the object store.
+            # Serving the stopped merges here is NOT treating them as effective: the module
+            # verifies them as history and refuses them as authority, and both facts are proven.
+            AUTH.RECOVERY_AUTHORIZING_MERGE_SHA: (
+                AUTH.RECOVERY_AUTHORIZING_MERGE_BASE,
+                AUTH.RECOVERY_AUTHORIZING_ACCEPTED_HEAD,
+            ),
+            AUTH.STOPPED_REBINDING_MERGE_SHA: (
+                AUTH.STOPPED_REBINDING_MERGE_BASE,
+                AUTH.STOPPED_REBINDING_ACCEPTED_HEAD,
+            ),
+            AUTH.STOPPED_RECOVERY_AUTHORIZATION_MERGE_SHA: (
+                AUTH.STOPPED_RECOVERY_AUTHORIZATION_MERGE_BASE,
+                AUTH.STOPPED_RECOVERY_AUTHORIZATION_ACCEPTED_HEAD,
+            ),
         }
         self.blobs = {}
         for rel in AUTH.LOAD_BEARING_RELPATHS:
@@ -130,6 +149,15 @@ class FakeGit:
             AUTH.CORRECTED_MODULE_ACCEPTED_HEAD: "c" * 40,
             AUTH.REBINDING_AUTHORIZING_MERGE_SHA: "a" * 39 + "z",
             AUTH.REBINDING_AUTHORIZING_ACCEPTED_HEAD: "a" * 39 + "z",
+            # XASSET-0047: each added merge's tree equals its accepted head's tree, which is
+            # exactly the zero-merge-drift property the module PROVES rather than assumes. Three
+            # DISTINCT synthetic trees, so a swap between the three new entries is still caught.
+            AUTH.RECOVERY_AUTHORIZING_MERGE_SHA: "6" * 40,
+            AUTH.RECOVERY_AUTHORIZING_ACCEPTED_HEAD: "6" * 40,
+            AUTH.STOPPED_REBINDING_MERGE_SHA: "7" * 40,
+            AUTH.STOPPED_REBINDING_ACCEPTED_HEAD: "7" * 40,
+            AUTH.STOPPED_RECOVERY_AUTHORIZATION_MERGE_SHA: "8" * 40,
+            AUTH.STOPPED_RECOVERY_AUTHORIZATION_ACCEPTED_HEAD: "8" * 40,
             AUTH.CORRECTION_AUTHORIZING_MERGE_SHA: "4" * 40,
             AUTH.CORRECTION_AUTHORIZING_ACCEPTED_HEAD: "4" * 40,
         }
@@ -1241,8 +1269,19 @@ class TestExactBaseAndMergeDrift:
         # XASSET-0043 merge, the decision whose closed lifecycle authorized it to begin at all, so
         # THAT is what it must bind. Both equalities are kept, and XASSET-0037's own accepted value
         # is retained just below as history rather than deleted.
-        assert AUTH.REVIEWED_BASE_SHA == AUTH.REBINDING_AUTHORIZING_MERGE_SHA
-        assert AUTH.REVIEWED_BASE_SHA == "0709d2f05ab031ecb6f69c40465ed4a227983aed"
+        #
+        # RE-ANCHORED AGAIN BY XASSET-0047, unchanged in KIND for the third time. The current
+        # lifecycle is the XASSET-0046-authorized recovery, which branches from the XASSET-0046
+        # merge, so THAT is what it must bind. XASSET-0044's own accepted value is retained
+        # immediately below as history rather than deleted, and the field is bound at BOTH ends so
+        # a silent revert to the stopped lifecycle's base cannot pass.
+        assert AUTH.REVIEWED_BASE_SHA == AUTH.RECOVERY_AUTHORIZING_MERGE_SHA
+        assert AUTH.REVIEWED_BASE_SHA == "0b76c09f8d1aba01780b4f06fdd692f7393fbfd3"
+        assert AUTH.REVIEWED_BASE_SHA != "0709d2f05ab031ecb6f69c40465ed4a227983aed"
+        # XASSET-0044's own accepted base, retained verbatim as history: it WAS the XASSET-0043
+        # merge, and that equality is still asserted, on the constants that now carry it.
+        assert AUTH.STOPPED_REBINDING_MERGE_BASE == AUTH.REBINDING_AUTHORIZING_MERGE_SHA
+        assert AUTH.STOPPED_REBINDING_MERGE_BASE == "0709d2f05ab031ecb6f69c40465ed4a227983aed"
         # XASSET-0037's own accepted base, retained verbatim as history: it WAS the executable
         # package's merge, and that equality is still asserted, on the constants that now carry it.
         assert AUTH.PRIOR_SUCCESSOR_REBINDING_MERGE_BASE == AUTH.EXECUTABLE_PACKAGE_MERGE_SHA
