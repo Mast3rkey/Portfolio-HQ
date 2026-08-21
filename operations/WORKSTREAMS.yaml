@@ -15839,7 +15839,7 @@ workstreams:
           retrospectively.
       - gate: xasset0047-post-merge-ci-recovery-reconciliation
         status: in_progress
-        pr: 0
+        pr: 347
         description: >-
           THE ONE RECOVERY/RECONCILIATION UNIT XASSET-0046 SS-F AUTHORIZED, filed as its own
           decision and performed in one coherent pull request. Its substantive act is narrow: the
@@ -15891,7 +15891,7 @@ workstreams:
           the overlap-model repair to 0709d2f05ab031ecb6f69c40465ed4a227983aed ->
           9c2821ab9e0e0dff09f5a03da5a6034775b00750, all re-proved independently from the object
           store and re-run under five simulated ref states in ISOLATED CLONES, never a git worktree.
-          CURRENT_MODULE_SHA256: 67a903e55a849353ee7ea8b3ed016eaca8f62bf19f2ebbd2633ad1da571c8243 -- recomputed ONCE after every permitted byte
+          CURRENT_MODULE_SHA256: e6927b3693b5b870ae278ef113771604fc2c1af59445b070d47969b2778f784a -- recomputed ONCE after every permitted byte
           stabilised, never mid-correction and never carried forward. ZERO ACTIVATION AUTHORITY: no
           readiness verification, drift verification, Step 11, attestation, lane creation, arming,
           claim, gate evaluation, execution, recovery execution or results work is performed or
@@ -17011,7 +17011,7 @@ workstreams:
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
     active_branch: claude/xasset-0046-recovery-b31nba
-    active_pr: 0
+    active_pr: 347
     last_verified_main_sha: 0b76c09f8d1aba01780b4f06fdd692f7393fbfd3
     last_verified_date: "2026-08-21"
     authorized_by: >

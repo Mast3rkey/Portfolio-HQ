@@ -136,7 +136,7 @@ XASSET0046_ACTIVE_PR = 346
 #: GitHub issued for this recovery unit -- never guessed: the branch's first commit carried
 #: the impossible sentinel 0, the draft was opened, and the issued number was read back from
 #: live GitHub before being bound here.
-XASSET0047_ACTIVE_PR = 0
+XASSET0047_ACTIVE_PR = 347
 STEP10_EVIDENCE_COMMENT = "5341448714"
 STEP10_DETERMINATION = "STEP_10_NO_DRIFT"
 

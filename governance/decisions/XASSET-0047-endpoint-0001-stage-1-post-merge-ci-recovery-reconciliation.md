@@ -118,7 +118,7 @@ anchor requires:
 | Constant | Closed transition |
 |---|---|
 | `AUTHORIZING_DECISION` | `"XASSET-0044"` → `"XASSET-0047"` |
-| `AUTHORIZING_PULL_REQUEST` | `344` → this pull request's own GitHub-issued number |
+| `AUTHORIZING_PULL_REQUEST` | `344` → `347` — this pull request's own GitHub-issued number |
 | `REVIEWED_BASE_SHA` | `0709d2f05ab031ecb6f69c40465ed4a227983aed` → `0b76c09f8d1aba01780b4f06fdd692f7393fbfd3` |
 | `LOAD_BEARING_RELPATHS` | **14 → 16** |
 
@@ -134,9 +134,11 @@ that equality against `RECOVERY_AUTHORIZING_MERGE_SHA` rather than leaving it to
 
 **The pull-request number was never guessed.** The first commit on this branch bound the sentinel
 `0` — an impossible pull-request number that can never validate — precisely so no guessed value could
-be reviewed, merged, or relied upon. The draft pull request was then opened, GitHub issued its own
-number, that number was read back from live GitHub, and only then was it bound and re-verified
-against the live pull request's own head, base and state.
+be reviewed, merged, or relied upon. The draft pull request was then opened, GitHub issued **#347**,
+that number was read back from live GitHub, and only then was it bound and re-verified against the
+live pull request's own head, base and state. It is additionally pinned as strictly greater than
+every predecessor pull request in the chain, so a copied or reverted number fails at a test rather
+than at an attestation nobody is watching.
 
 **`LOAD_BEARING_RELPATHS` grows by direct membership, and nothing is removed.** `XASSET-0037` §E's
 principle — the decision supplying the effective structural authorization must sit *inside* the
@@ -162,7 +164,7 @@ would mean this unit had not actually rebound anything.
 
 ```
 XASSET-0044 declaration, closed at PR #344 (historical)  sha256  f89c38d49d160795795a73627777c7174d84a61583fc9ed6b5aa921648ee8df1
-CURRENT_MODULE_SHA256: 67a903e55a849353ee7ea8b3ed016eaca8f62bf19f2ebbd2633ad1da571c8243
+CURRENT_MODULE_SHA256: e6927b3693b5b870ae278ef113771604fc2c1af59445b070d47969b2778f784a
 ```
 
 ### E. The mechanism became stricter, never more permissive

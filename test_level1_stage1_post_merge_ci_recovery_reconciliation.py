@@ -1873,3 +1873,69 @@ def test_the_working_tree_subject_detector_actually_detects():
     real = SUITE_PATH.read_text(encoding="utf-8")
     assert working_tree_subject_offenders(real, HISTORICAL_PROOF_FUNCTIONS) == []
     assert len([n for n in ast.walk(ast.parse(real)) if isinstance(n, ast.FunctionDef)]) > 80
+
+
+# ======================================================================================
+# 17 -- The bound pull-request number, verified rather than asserted
+#
+# The branch's first commit carried the impossible sentinel ``0``. GitHub then issued the real
+# number, it was read back from live GitHub, and only then was it bound. These pins hold the
+# bound value to what a real, distinct, later pull request must look like -- so a copied,
+# guessed, or reverted number fails here rather than at an attestation nobody is watching.
+# ======================================================================================
+
+
+#: The number GitHub issued for this unit's own pull request, read back after the draft was
+#: opened. Never predicted: the first commit on this branch bound ``0``.
+THIS_PULL_REQUEST = 347
+
+
+class TestTheBoundPullRequestNumber:
+    def test_the_module_binds_the_number_github_actually_issued(self):
+        assert A.AUTHORIZING_PULL_REQUEST == THIS_PULL_REQUEST
+
+    def test_the_sentinel_is_gone(self):
+        """``0`` can never validate, which is exactly why it was safe to commit first."""
+        assert A.AUTHORIZING_PULL_REQUEST != 0
+        source = (ROOT / AUTH_MODULE_RELPATH).read_text(encoding="utf-8")
+        assert "AUTHORIZING_PULL_REQUEST = 0" not in source
+
+    def test_it_is_a_later_pull_request_than_every_predecessor_in_the_chain(self):
+        """Monotonic by construction: GitHub issues numbers in order, so a number at or below
+        any predecessor's would mean the constant was copied rather than read back."""
+        for predecessor in (
+            A.HISTORICAL_OPERATIONAL_AUTHORIZATION_PULL_REQUEST,
+            A.PACKAGE_AUTHORIZING_PULL_REQUEST,
+            A.EXECUTABLE_PACKAGE_PULL_REQUEST,
+            A.PRIOR_SUCCESSOR_REBINDING_PULL_REQUEST,
+            A.CORRECTION_AUTHORIZING_PULL_REQUEST,
+            A.CORRECTED_MODULE_PULL_REQUEST,
+            A.REBINDING_AUTHORIZING_PULL_REQUEST,
+            A.STOPPED_REBINDING_PULL_REQUEST,
+            A.STOPPED_RECOVERY_AUTHORIZATION_PULL_REQUEST,
+            A.RECOVERY_AUTHORIZING_PULL_REQUEST,
+        ):
+            assert A.AUTHORIZING_PULL_REQUEST > predecessor, predecessor
+
+    def test_the_register_and_the_module_agree(self, register_text):
+        data = yaml.safe_load(register_text)
+        ws = next(w for w in data["workstreams"] if w["id"] == "WS-0014")
+        gate = next(
+            g for g in ws["milestones"]
+            if g["gate"] == "xasset0047-post-merge-ci-recovery-reconciliation"
+        )
+        assert gate["pr"] == THIS_PULL_REQUEST
+        assert ws["active_pr"] == THIS_PULL_REQUEST
+        assert ws["active_branch"] == "claude/xasset-0046-recovery-b31nba"
+
+    def test_every_surface_that_names_the_number_names_the_same_one(self):
+        """Three predecessor suites carry it too. Divergence between any of them and the
+        module is how a rebinding starts authenticating against the wrong pull request."""
+        for relative in (
+            "test_level1_stage1_activation_authorization.py",
+            "test_level1_stage1_post_rebinding_drift_authorization.py",
+            "test_level1_stage1_readiness_verification_authorization.py",
+        ):
+            source = (ROOT / relative).read_text(encoding="utf-8")
+            assert f"XASSET0047_ACTIVE_PR = {THIS_PULL_REQUEST}" in source, relative
+            assert "XASSET0047_ACTIVE_PR = 0" not in source, relative

@@ -124,7 +124,7 @@ XASSET0046_ACTIVE_PR = 346
 #: GitHub issued for this recovery unit -- never guessed: the branch's first commit carried
 #: the impossible sentinel 0, the draft was opened, and the issued number was read back from
 #: live GitHub before being bound here.
-XASSET0047_ACTIVE_PR = 0
+XASSET0047_ACTIVE_PR = 347
 
 #: The three values accepted authority already fixes as exact constants, and the only three
 #: ``XASSET-0038`` restates. Everything else in its checklist derives from the merged tree.
