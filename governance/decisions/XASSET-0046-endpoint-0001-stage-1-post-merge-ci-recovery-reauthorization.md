@@ -213,9 +213,14 @@ Accordingly:
   for any unit.
 
 **`XASSET-0045`'s substantive requirements are preserved as historical design input, not as effective
-authority.** Its §§B–K were independently reviewed to a clean disposition and contain work worth
-keeping: the moving-anchor diagnosis, the closed-range discipline, the trust-boundary reasoning, and
-the successor-lifecycle-anchor requirement. This decision **restates directly, in §G, every operative
+authority.** It reached a clean final disposition at its accepted head through a three-round
+independent review chain, and its substantive analysis contains work worth keeping: the moving-anchor
+diagnosis, the closed-range discipline, the trust-boundary reasoning, and the
+successor-lifecycle-anchor requirement. Stated precisely rather than conveniently, because it is the
+kind of claim a reviewer should press: the **final** review `4993994386` was a DELTA over one changed
+file, so it does not amount to a fresh section-by-section endorsement of that decision's substantive
+text at the accepted head — which is one more reason those requirements are carried here as reasoning
+to consult rather than authority to cite. This decision **restates directly, in §G, every operative
 property and prohibition the authorized unit must satisfy**, so that the recovery unit derives its
 obligations from **this** decision and from nothing ineffective. Where §G reaches the same requirement
 `XASSET-0045` reached, that is because the requirement is right, not because `XASSET-0045` makes it
