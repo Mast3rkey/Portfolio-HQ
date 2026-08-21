@@ -1082,3 +1082,10 @@ decisions:
     related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, NUM-0001, XASSET-0027, XASSET-0028, XASSET-0029, XASSET-0030, XASSET-0036, XASSET-0037, XASSET-0038, XASSET-0039, XASSET-0040, XASSET-0041, XASSET-0042, XASSET-0043, XASSET-0044, LEVEL2-0001, RISK-0001]
     supporting_artifact: test_level1_stage1_post_merge_ci_recovery_authorization.py
     file: governance/decisions/XASSET-0045-endpoint-0001-stage-1-post-merge-ci-recovery-authorization.md
+  - decision_id: XASSET-0046
+    date: 2026-08-21
+    status: Proposed
+    category: cross_asset_allocation_architecture
+    related_decisions: [GOV-0001, GOV-0002, OPS-0001, OPS-0007, OPS-0009, OPS-0014, NUM-0001, XASSET-0027, XASSET-0028, XASSET-0029, XASSET-0030, XASSET-0036, XASSET-0037, XASSET-0038, XASSET-0039, XASSET-0040, XASSET-0041, XASSET-0042, XASSET-0043, XASSET-0044, XASSET-0045, LEVEL2-0001, RISK-0001]
+    supporting_artifact: test_level1_stage1_post_merge_ci_recovery_reauthorization.py
+    file: governance/decisions/XASSET-0046-endpoint-0001-stage-1-post-merge-ci-recovery-reauthorization.md

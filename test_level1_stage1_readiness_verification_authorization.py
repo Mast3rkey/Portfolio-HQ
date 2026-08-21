@@ -95,6 +95,12 @@ XASSET0044_MAIN_SHA = "0709d2f05ab031ecb6f69c40465ed4a227983aed"
 #: rule. The anchor each decision authorizes against is unchanged; only the shared
 #: self-reference moved. The assertion stays EXACT.
 XASSET0045_MAIN_SHA = "f5dedce1d1d3116ed8a6845c4447388c85a5414c"
+#: ADVANCED BY XASSET-0046: PR #345 merged at `2f8cdebe`, so the register's shared live
+#: "where main is now" field lawfully advanced again under OPS-0001's Active-GitHub-fields
+#: rule. The anchor each decision authorizes against is unchanged; only the shared
+#: self-reference moved. The assertion stays EXACT, and gains a negative pin so the field is
+#: bound at BOTH ends rather than only at one.
+XASSET0046_MAIN_SHA = "2f8cdebe14925021171b9779453946be1f69b506"
 #: WS-0014's shared `active_pr` while THIS rebinding-authorization unit is the live work.
 #: Set to the real GitHub number issued when the pull request was opened, verified
 #: against live GitHub afterwards, never left as a guess.
@@ -817,7 +823,8 @@ class TestCatalogAndRegisterSynchronisation:
         # since merged, so the register's live self-reference lawfully advanced again. The anchor
         # this decision authorizes against is unchanged and is still `MERGE_SHA`, and its own merge
         # is still `SUCCESSOR_MERGE_SHA`; only the register's "where main is now" field moved.
-        assert workstream["last_verified_main_sha"] == XASSET0045_MAIN_SHA
+        assert workstream["last_verified_main_sha"] == XASSET0046_MAIN_SHA
+        assert workstream["last_verified_main_sha"] != XASSET0045_MAIN_SHA
         assert MERGE_SHA != CURRENT_MAIN_SHA
         assert SUCCESSOR_MERGE_SHA != CURRENT_MAIN_SHA
         assert str(workstream["last_verified_date"]).startswith("2026-08-21")

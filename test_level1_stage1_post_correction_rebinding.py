@@ -91,6 +91,12 @@ PR_BASE_SHA = "0709d2f05ab031ecb6f69c40465ed4a227983aed"
 #: THIS decision's own pull request merged. Distinct from PR_BASE_SHA above, which
 #: remains this decision's own unchanged closed anchor.
 XASSET0045_MAIN_SHA = "f5dedce1d1d3116ed8a6845c4447388c85a5414c"
+#: ADVANCED BY XASSET-0046: PR #345 merged at `2f8cdebe`, so the register's shared live
+#: "where main is now" field lawfully advanced again under OPS-0001's Active-GitHub-fields
+#: rule. The anchor each decision authorizes against is unchanged; only the shared
+#: self-reference moved. The assertion stays EXACT, and gains a negative pin so the field is
+#: bound at BOTH ends rather than only at one.
+XASSET0046_MAIN_SHA = "2f8cdebe14925021171b9779453946be1f69b506"
 
 #: A real, immutable historical commit pair across which a protected path GENUINELY changed --
 #: PR #342's base and merge -- so the base->head comparison can never pass vacuously.
@@ -1104,7 +1110,8 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["status"] == "proposed"
         assert ws0014["priority"] == "secondary"
         assert ws0014["last_verified_main_sha"] != PR_BASE_SHA
-        assert ws0014["last_verified_main_sha"] == XASSET0045_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] == XASSET0046_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0045_MAIN_SHA
 
 
 # ======================================================================================

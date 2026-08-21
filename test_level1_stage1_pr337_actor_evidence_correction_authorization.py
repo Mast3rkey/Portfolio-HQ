@@ -696,16 +696,23 @@ class TestCatalogAndRegisterSynchronisation:
         # PR #344 has since merged at `f5dedce1`, so these shared fields lawfully advance once
         # more, to the post-merge-CI recovery-authorization unit that is now live. Each stays
         # an exact value, never relaxed to a range or a placeholder.
-        assert ws0014["active_branch"] == "claude/xasset-0045-filing-9yxavw"
+        # ADVANCED AGAIN BY XASSET-0046: PR #345 has since merged at `2f8cdebe`, so these
+        # shared fields advance once more, to the reauthorization unit that is now live. Each
+        # stays an exact value, never relaxed to a range or a placeholder.
+        assert ws0014["active_branch"] == "claude/xasset-0045-test-governance-103t6t"
         assert ws0014["last_verified_main_sha"] == (
-            "f5dedce1d1d3116ed8a6845c4447388c85a5414c"
+            "2f8cdebe14925021171b9779453946be1f69b506"
         )
         assert str(ws0014["last_verified_date"]) == "2026-08-21"
-        assert ws0014["active_pr"] == 345
-        # PR #343's and PR #344's own closed records survive in the register as history, not
-        # as live state.
+        # PR #343's, #344's and #345's own closed records survive in the register as history,
+        # not as live state.
+        assert ws0014["active_branch"] != "claude/xasset-0045-filing-9yxavw"
+        assert ws0014["last_verified_main_sha"] != (
+            "f5dedce1d1d3116ed8a6845c4447388c85a5414c"
+        )
         assert ws0014["active_pr"] != XASSET0043_ACTIVE_PR
         assert ws0014["active_pr"] != 344
+        assert ws0014["active_pr"] != 345
 
     def test_register_still_parses_and_ws0014_is_unique(self, ws0014):
         assert ws0014["id"] == "WS-0014"

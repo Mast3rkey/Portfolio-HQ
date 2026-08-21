@@ -106,6 +106,10 @@ PR_MERGE_SHA = "0709d2f05ab031ecb6f69c40465ed4a227983aed"
 #: `last_verified_main_sha` advances to ITS merge. `PR_MERGE_SHA` above is retained
 #: unchanged as the closed predecessor anchor this decision authorizes against.
 XASSET0044_MERGE_SHA = "f5dedce1d1d3116ed8a6845c4447388c85a5414c"
+#: ADVANCED BY XASSET-0046: PR #345 merged at `2f8cdebe`. WS-0014's single shared
+#: "where main is now" field advances again under OPS-0001's Active-GitHub-fields rule; the
+#: anchor this decision authorizes against is unchanged.
+XASSET0046_MAIN_SHA = "2f8cdebe14925021171b9779453946be1f69b506"
 
 #: A real, immutable, historical commit pair in which a protected path GENUINELY changed --
 #: PR #342's base and its merge, across which the authorization module was lawfully corrected.
@@ -1522,7 +1526,11 @@ class TestCatalogAndRegisterSynchronisation:
         assert ws0014["active_pr"] != XASSET0043_ACTIVE_PR
         assert ws0014["last_verified_main_sha"] != CORRECTION_MERGE_SHA
         assert ws0014["last_verified_main_sha"] != PR_MERGE_SHA
-        assert ws0014["last_verified_main_sha"] == XASSET0044_MERGE_SHA
+        # ADVANCED AGAIN BY XASSET-0046, on the same terms: PR #345 has since merged at
+        # `2f8cdebe`, so the shared field advances once more. Bound at BOTH ends -- the exact
+        # current value, and every closed value it must no longer be showing.
+        assert ws0014["last_verified_main_sha"] == XASSET0046_MAIN_SHA
+        assert ws0014["last_verified_main_sha"] != XASSET0044_MERGE_SHA
         assert str(ws0014["last_verified_date"]) >= "2026-08-21"
         # PR #343's own closed record survives in the register as history, not as live state.
         register = REGISTER_PATH.read_text(encoding="utf-8")
