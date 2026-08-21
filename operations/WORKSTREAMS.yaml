@@ -15624,6 +15624,122 @@ workstreams:
           new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
           stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
           request is unmerged: a filing does not mark its own unmerged work complete.
+      - gate: xasset0045-post-merge-ci-recovery-authorization
+        status: in_progress
+        pr: 345
+        description: >-
+          GOVERNANCE AUTHORIZATION PLUS ONE NARROW, SEPARATELY PRINCIPAL-AUTHORIZED, TEST-ONLY
+          ENABLING CORRECTION (amended after independent FULL review 4989608238 -- see the
+          xasset0045-bounded-correction gate below; this entry originally read DESIGN-ONLY and
+          described the filing as barred from editing test_overlap_model_validator.py, both of which
+          the separate principal authorization superseded). XASSET-0045 authorizes EXACTLY ONE
+          future, separate
+          recovery/reconciliation unit for the STOPPED XASSET-0044 rebinding, and performs no part of
+          that recovery itself. PR #344 merged at f5dedce1d1d3116ed8a6845c4447388c85a5414c with
+          exactly two parents in order (0709d2f05ab031ecb6f69c40465ed4a227983aed then
+          9c2821ab9e0e0dff09f5a03da5a6034775b00750) and a merge tree
+          bd9ce6694261a7b4fb664a5121d04571f9606924 BYTE-IDENTICAL to the accepted-head tree -- zero
+          merge drift -- but merge-commit CI run 32439614683 / job 96647501864 at that exact merge
+          SHA FAILED with 1 failed, 10199 passed. The single failure is a MOVING TEST ANCHOR at
+          test_overlap_model_validator.py:1119, NOT merge drift and NOT outcome-surface drift: the
+          guard resolves its base as merge-base(HEAD, origin/main), which on the PR branch was
+          0709d2f0 and exercised the authorized XASSET-0042 one-use decision transition, but on
+          merged main resolves to f5dedce1 itself, making the comparison empty so modified == [].
+          A later green CI run at ANY OTHER COMMIT cannot retroactively satisfy XASSET-0044 SS-L.6,
+          which requires successful merge-commit CI whose head_sha is the EXACT resulting merge SHA
+          and which excludes runs against any other commit by its own words; the failed f5dedce1
+          commit and its recorded history are immutable, so MERGE_COMMIT_CI_SUCCESS is permanently
+          unsatisfiable for PR #344 and XASSET-0044 is NOT effective and cannot become effective
+          through PR #344. XASSET-0043 SS-F's exactly-one rebinding unit was SPENT by PR #344 -- a
+          grant is consumed by being used, whether or not SS-L's effectivity later completed -- so
+          XASSET-0043 may NOT be reused and XASSET-0044 may NOT be treated as effective. The
+          authorized future unit must file its own decision under the next independently verified
+          unused XASSET identifier; correct the guard against the immutable CLOSED range
+          0709d2f05ab031ecb6f69c40465ed4a227983aed -> 9c2821ab9e0e0dff09f5a03da5a6034775b00750
+          rather than any moving merge-base; prove the accepted head is the second parent of merge
+          f5dedce1 and that its tree is byte-identical to the merge tree; continue proving the
+          one-use XASSET-0042 transition (old blob e4cda7a5042da68f347598a62d9e6d5cfc40ae55, new
+          blob b08a625a5adb840e9576e5cd9218be24e63bd57e, status M) was exactly exercised in that
+          closed range; PRESERVE run 32439614683 / job 96647501864 as immutable adverse history,
+          never relabelled successful, ignored, or represented as satisfying SS-L.6; establish a
+          LAWFUL SUCCESSOR LIFECYCLE ANCHOR, because production currently binds authorization truth
+          to XASSET-0044 / PR #344 and its failed exact-merge CI; rebind the operational-
+          authorization mechanism ONLY as strictly necessary to the future recovery decision, PR,
+          accepted head, merge, successful exact-merge CI and final closure; preserve the accepted
+          head, merge, zero-drift tree, review 4989080551, acceptance 5364401900, post-merge
+          verification 5364422640, failed CI and stop notice 5364490220 as independently
+          authenticated predecessor evidence; preserve all outcome-producing semantics, the runner,
+          result validator, construction-universe membership/order/hash, canonical inputs, all
+          protected paths and every valid actor-evidence correction; use EXACT CLOSED TRANSITIONS
+          for every lawfully changed load-bearing byte, with no moving HEAD/origin-main guard
+          claiming historical byte identity; and complete a full lifecycle including successful
+          merge-commit CI at its own recovery merge SHA. The authorized unit adds ZERO ACTIVATION
+          AUTHORITY: no readiness verification, drift verification, Step 11, attestation, lane
+          creation, arming, claim, gate evaluation, execution, recovery execution, results work or
+          protected RISK access. This filing edits no load-bearing implementation, runner, result
+          validator, universe module, canonical artifact or protected portfolio path, and does NOT
+          itself perform the production recovery. CORRECTED after review 4989608238: at the
+          reviewed head the SS-B defect also fired on this branch, because a newly added decision
+          file is status A and is skipped, leaving modified == []. That is now REPAIRED rather than
+          merely disclosed -- see the bounded correction gate below. Nothing was worked around,
+          weakened, skipped or deleted. Universe remains 680 constructions over
+          48 cells with aggregate hash
+          73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224, lane ABSENT,
+          new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and no
+          stage1_results.yaml exists. XASSET-0027 SS-P.1 remains one and unspent; XASSET-0040 stays
+          spent as STOPPED_BEFORE_ATTESTATION. This gate is deliberately in_progress while its own
+          pull request is unmerged: a filing does not mark its own unmerged work complete.
+      - gate: xasset0045-bounded-correction-after-full-review-4989608238
+        status: in_progress
+        pr: 345
+        description: >-
+          BOUNDED CORRECTION after independent FULL exact-head review 4989608238 (CHANGES REQUIRED --
+          1 BLOCKING / 0 MAJOR / 1 MINOR / 0 NOTE) anchored to reviewed head
+          e6e4874aca34f383f99cb130da3b45625d8c9aa3. BLOCKING 1: the filing could NEVER become
+          effective. SS-M.6 requires successful merge-commit CI at its own exact future merge SHA,
+          while SS-N as reviewed declared that same CI necessarily impossible on every branch derived
+          from f5dedce1 and barred the filing from repairing it -- a closed deadlock, evidenced by
+          exact-head CI run 32443765403 / job 96659425926 (failure, 1 failed / 10292 passed) and
+          reproduced here by building a real two-parent merge in an ISOLATED clone, where
+          merge-base(HEAD, origin/main) equals HEAD, the comparison is empty and modified == [].
+          Under a SEPARATE, EXPLICIT PRINCIPAL AUTHORIZATION -- which superseded ONLY the prior
+          instruction barring this filing from editing test_overlap_model_validator.py, leaving every
+          other scope limit and every Stage-1 prohibition fully operative -- the historical
+          real-repository guard was re-anchored from merge-base(HEAD, origin/main) to the IMMUTABLE
+          CLOSED RANGE 0709d2f05ab031ecb6f69c40465ed4a227983aed ->
+          9c2821ab9e0e0dff09f5a03da5a6034775b00750. The repaired guard additionally proves that merge
+          f5dedce1d1d3116ed8a6845c4447388c85a5414c has exactly two parents in correct order with
+          9c2821ab as the exact second parent, and that accepted-head and merge trees are
+          byte-identical at bd9ce6694261a7b4fb664a5121d04571f9606924 -- so it proves strictly MORE
+          than before. The one-use XASSET-0042 transition (old blob
+          e4cda7a5042da68f347598a62d9e6d5cfc40ae55, new blob
+          b08a625a5adb840e9576e5cd9218be24e63bd57e, status M) is still required to be exactly
+          exercised and never dead permission; additions remain permitted by the existing rule; every
+          other pre-existing decision remains protected. _resolve_pr_base_sha is DELIBERATELY
+          UNCHANGED and still serves the live working-tree guard, whose subject genuinely is a moving
+          base. Nothing was deleted, skipped, xfailed, weakened or replaced with a less falsifiable
+          assertion. Invariance is proved by RUNNING the repaired property on the PR branch, on a
+          merged-main state where HEAD == origin/main, and after later main advancement, inside an
+          isolated clone so the real repository's refs are never touched. XASSET-0045 is amended to
+          state honestly that it is governance PLUS this one test-only enabling correction, that the
+          authority for the correction is the separate principal authorization and is NOT created by
+          XASSET-0045 itself, and SS-G.2 now requires the future recovery unit to PRESERVE and
+          INDEPENDENTLY RE-PROVE the corrected guard rather than perform a correction already
+          completed here. The future unit still performs the successor operational lifecycle
+          rebinding. PR #344's failed run 32439614683 / job 96647501864 remains immutable adverse
+          history and is NOT retroactively repaired; XASSET-0044 remains ineffective; XASSET-0043
+          remains spent; SS-M still requires successful exact-merge CI, and a red corrected-head CI is
+          a stop, not an accepted deviation. A combined non-deadlock guard now refuses the CONJUNCTION
+          the reviewed head passed only because nothing tested the two halves together. MINOR 1: the
+          durable PR body was stale at 75 tests / 5 files against an actual 93 / 11 and is refreshed
+          at the corrected head, preserving the reviewed-head red CI as correction history. NO
+          production, canonical, runner, result-validator, universe, portfolio, lane, results or
+          Stage-1 authority is added: test_overlap_model_validator.py is independently confirmed NOT a
+          member of LOAD_BEARING_RELPATHS, the universe remains 680 constructions over 48 cells with
+          aggregate hash 73c0965e73de2cc505bc54ac8317aa1d75b3955eb7e624af9eeb2cddf5dc5224, lane
+          ABSENT, new_execution_is_authorized() False, ATTEMPT_1 intact, unclaimed and unconsumed, and
+          no stage1_results.yaml exists. This gate is deliberately in_progress while its own pull
+          request is unmerged: a filing does not mark its own unmerged work complete.
     evidence_refs:
       - governance/decisions/CONTENDER-0001-universal-contender-universe-principle.md
       - governance/decisions/XASSET-0001-cross-asset-whole-portfolio-allocation-architecture.md
@@ -16731,10 +16847,10 @@ workstreams:
       remains UNARMED and NOT EXECUTABLE, lane state remains ABSENT,
       new_execution_is_authorized() returns False, and ATTEMPT_1 is intact, unclaimed and
       unconsumed.
-    active_branch: claude/xasset-0043-rebinding-7ywmdx
-    active_pr: 344
-    last_verified_main_sha: 0709d2f05ab031ecb6f69c40465ed4a227983aed
-    last_verified_date: "2026-08-20"
+    active_branch: claude/xasset-0045-filing-9yxavw
+    active_pr: 345
+    last_verified_main_sha: f5dedce1d1d3116ed8a6845c4447388c85a5414c
+    last_verified_date: "2026-08-21"
     authorized_by: >
       Controlling principal directive, this session, 2026-08-06: "I
       authorize creation of one dedicated new workstream, tentatively
